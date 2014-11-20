@@ -46,7 +46,7 @@ _scaleFactors(_propScaleFactors.getValueDblVec()),
 _segmentName(_propSegmentName.getValueStr()),
 _apply(_propApply.getValueBool())
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -60,10 +60,10 @@ _scaleFactors(_propScaleFactors.getValueDblVec()),
 _segmentName(_propSegmentName.getValueStr()),
 _apply(_propApply.getValueBool())
 {
-	setNull();
+    setNull();
 
-	// ASSIGN
-	*this = aScale;
+    // ASSIGN
+    *this = aScale;
 }
 //_____________________________________________________________________________
 /**
@@ -75,8 +75,8 @@ _scaleFactors(_propScaleFactors.getValueDblVec()),
 _segmentName(_propSegmentName.getValueStr()),
 _apply(_propApply.getValueBool())
 {
-	setNull();
-	updateFromXMLDocument();
+    setNull();
+    updateFromXMLDocument();
 }
 
 //=============================================================================
@@ -94,19 +94,19 @@ _apply(_propApply.getValueBool())
 Scale& Scale::
 operator=(const Scale &aScale)
 {
-	// BASE CLASS
-	_segmentName = aScale.getSegmentName();
-	aScale.getScaleFactors(_scaleFactors);
-	_apply = aScale.getApply();
+    // BASE CLASS
+    _segmentName = aScale.getSegmentName();
+    aScale.getScaleFactors(_scaleFactors);
+    _apply = aScale.getApply();
 
-	return(*this);
+    return(*this);
 }
 
 
 void Scale::setNull()
 {
-	setName("");
-	setupProperties();
+    setName("");
+    setupProperties();
 }
 //_____________________________________________________________________________
 /**
@@ -115,23 +115,23 @@ void Scale::setNull()
 void Scale::
 setupProperties()
 {
-	Vec3 one3(1.0);	
+    Vec3 one3(1.0); 
 
-	// scale factors
-	_propScaleFactors.setName("scales");
-	_propScaleFactors.setValue(one3);
-	//_propScaleFactors.setAllowableListSize(3);
-	_propertySet.append( &_propScaleFactors );
+    // scale factors
+    _propScaleFactors.setName("scales");
+    _propScaleFactors.setValue(one3);
+    //_propScaleFactors.setAllowableListSize(3);
+    _propertySet.append( &_propScaleFactors );
 
-	// segment name
-	_propSegmentName.setName("segment");
-	_propSegmentName.setValue("unnamed_segment");
-	_propertySet.append( &_propSegmentName );
+    // segment name
+    _propSegmentName.setName("segment");
+    _propSegmentName.setValue("unnamed_segment");
+    _propertySet.append( &_propSegmentName );
 
-	// whether or not to apply the scale
-	_propApply.setName("apply");
-	_propApply.setValue(true);
-	_propertySet.append(&_propApply);
+    // whether or not to apply the scale
+    _propApply.setName("apply");
+    _propApply.setValue(true);
+    _propertySet.append(&_propApply);
 }
 //=============================================================================
 // GET AND SET
@@ -143,7 +143,7 @@ setupProperties()
 const std::string& Scale::
 getSegmentName() const
 {
-	return _segmentName;
+    return _segmentName;
 }
 //_____________________________________________________________________________
 /**
@@ -152,7 +152,7 @@ getSegmentName() const
 void Scale::
 getScaleFactors(SimTK::Vec3& aScaleFactors) const
 {
-	aScaleFactors = _scaleFactors;
+    aScaleFactors = _scaleFactors;
 }
 
 //_____________________________________________________________________________
@@ -162,7 +162,7 @@ getScaleFactors(SimTK::Vec3& aScaleFactors) const
 void Scale::
 setSegmentName(const string& aSegmentName)
 {
-	_segmentName = aSegmentName;
+    _segmentName = aSegmentName;
 }
 //_____________________________________________________________________________
 /**
@@ -171,5 +171,5 @@ setSegmentName(const string& aSegmentName)
 void Scale::
 setScaleFactors(const SimTK::Vec3& aScaleFactors)
 {
-	_scaleFactors = aScaleFactors;
+    _scaleFactors = aScaleFactors;
 }

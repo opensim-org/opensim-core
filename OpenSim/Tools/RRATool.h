@@ -34,10 +34,10 @@
 
 
 #ifdef SWIG
-	#ifdef OSIMTOOLS_API
-		#undef OSIMTOOLS_API
-		#define OSIMTOOLS_API
-	#endif
+    #ifdef OSIMTOOLS_API
+        #undef OSIMTOOLS_API
+        #define OSIMTOOLS_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -60,149 +60,149 @@ OpenSim_DECLARE_CONCRETE_OBJECT(RRATool, AbstractTool);
 // MEMBER VARIABLES
 //=============================================================================
 private:
-	/** Name of the file containing the desired kinematic
-	trajectories. */
-	PropertyStr _desiredPointsFileNameProp;
-	std::string &_desiredPointsFileName;
+    /** Name of the file containing the desired kinematic
+    trajectories. */
+    PropertyStr _desiredPointsFileNameProp;
+    std::string &_desiredPointsFileName;
 
-    /** Name of the file containing the desired kinematic trajectories. */ 		 
-    PropertyStr _desiredKinematicsFileNameProp; 		 
+    /** Name of the file containing the desired kinematic trajectories. */       
+    PropertyStr _desiredKinematicsFileNameProp;          
     std::string &_desiredKinematicsFileName;
 
-   /** Name of the file containing the tracking tasks. */  	 	 
-    PropertyStr _taskSetFileNameProp; 		 
-    std::string &_taskSetFileName; 		 
+   /** Name of the file containing the tracking tasks. */        
+    PropertyStr _taskSetFileNameProp;        
+    std::string &_taskSetFileName;       
 
       /** Name of the file containing the constraints on the controls. */
-	PropertyStr _constraintsFileNameProp;
-	std::string &_constraintsFileName;
+    PropertyStr _constraintsFileNameProp;
+    std::string &_constraintsFileName;
 
-	/** Low-pass cut-off frequency for filtering the desired kinematics. A negative
-	value results in no filtering.  The default value is -1.0, so no filtering. */
-	PropertyDbl _lowpassCutoffFrequencyProp;
-	double &_lowpassCutoffFrequency;
-	/** Time window */
-	double _targetDT;
-	/** Preferred optimizer algorithm. */
-	PropertyStr _optimizerAlgorithmProp;
-	std::string &_optimizerAlgorithm;
-	/** Perturbation size used by the optimizer to compute numerical derivatives. */
-	PropertyDbl _numericalDerivativeStepSizeProp;
-	double &_numericalDerivativeStepSize;
-	/** Convergence criterion for the optimizer. */
-	PropertyDbl _optimizationConvergenceToleranceProp;
-	double &_optimizationConvergenceTolerance;
+    /** Low-pass cut-off frequency for filtering the desired kinematics. A negative
+    value results in no filtering.  The default value is -1.0, so no filtering. */
+    PropertyDbl _lowpassCutoffFrequencyProp;
+    double &_lowpassCutoffFrequency;
+    /** Time window */
+    double _targetDT;
+    /** Preferred optimizer algorithm. */
+    PropertyStr _optimizerAlgorithmProp;
+    std::string &_optimizerAlgorithm;
+    /** Perturbation size used by the optimizer to compute numerical derivatives. */
+    PropertyDbl _numericalDerivativeStepSizeProp;
+    double &_numericalDerivativeStepSize;
+    /** Convergence criterion for the optimizer. */
+    PropertyDbl _optimizationConvergenceToleranceProp;
+    double &_optimizationConvergenceTolerance;
 
-	/** Flag indicating whether or not to make an adjustment in the center of
-	mass of a body to reduced DC offsets in MX and MZ. */
-	PropertyBool _adjustCOMToReduceResidualsProp;
-	bool &_adjustCOMToReduceResiduals;
-	/** Initial time for computing average residuals used to adjust COM. */
-	PropertyDbl _initialTimeForCOMAdjustmentProp;
-	double &_initialTimeForCOMAdjustment;
-	/** Final time for computing average residuals used to adjust COM. */
-	PropertyDbl _finalTimeForCOMAdjustmentProp;
-	double &_finalTimeForCOMAdjustment;
-	/** Name of the body whose center of mass is adjusted. */
-	PropertyStr _adjustedCOMBodyProp;
-	std::string &_adjustedCOMBody;
-	/** Name of the output model file containing adjustments to anthropometry
-	made to reduce average residuals. This file is written if the property
-	adjust_com_to_reduce_residuals is set to true. */
-	PropertyStr _outputModelFileProp;
-	std::string &_outputModelFile;
+    /** Flag indicating whether or not to make an adjustment in the center of
+    mass of a body to reduced DC offsets in MX and MZ. */
+    PropertyBool _adjustCOMToReduceResidualsProp;
+    bool &_adjustCOMToReduceResiduals;
+    /** Initial time for computing average residuals used to adjust COM. */
+    PropertyDbl _initialTimeForCOMAdjustmentProp;
+    double &_initialTimeForCOMAdjustment;
+    /** Final time for computing average residuals used to adjust COM. */
+    PropertyDbl _finalTimeForCOMAdjustmentProp;
+    double &_finalTimeForCOMAdjustment;
+    /** Name of the body whose center of mass is adjusted. */
+    PropertyStr _adjustedCOMBodyProp;
+    std::string &_adjustedCOMBody;
+    /** Name of the output model file containing adjustments to anthropometry
+    made to reduce average residuals. This file is written if the property
+    adjust_com_to_reduce_residuals is set to true. */
+    PropertyStr _outputModelFileProp;
+    std::string &_outputModelFile;
 
-	/** Flag indicating whether or not to adjust the kinematics in order to reduce residuals. */
-	bool _adjustKinematicsToReduceResiduals;
-	/** Flag for turning on and off verbose printing. */
-	PropertyBool _verboseProp;
-	bool &_verbose;
+    /** Flag indicating whether or not to adjust the kinematics in order to reduce residuals. */
+    bool _adjustKinematicsToReduceResiduals;
+    /** Flag for turning on and off verbose printing. */
+    PropertyBool _verboseProp;
+    bool &_verbose;
 
-	ForceSet _originalForceSet;
+    ForceSet _originalForceSet;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	virtual ~RRATool();
-	RRATool();
-	RRATool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
-	RRATool(const RRATool &aObject);
+    virtual ~RRATool();
+    RRATool();
+    RRATool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
+    RRATool(const RRATool &aObject);
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	RRATool&
-		operator=(const RRATool &aRRATool);
+    RRATool&
+        operator=(const RRATool &aRRATool);
 #endif
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 
-	const std::string &getDesiredPointsFileName() { return _desiredPointsFileName; }
-	void setDesiredPointsFileName(const std::string &aFileName) { _desiredPointsFileName = aFileName; }
+    const std::string &getDesiredPointsFileName() { return _desiredPointsFileName; }
+    void setDesiredPointsFileName(const std::string &aFileName) { _desiredPointsFileName = aFileName; }
 
-	const std::string &getDesiredKinematicsFileName() { return _desiredKinematicsFileName; }
-	void setDesiredKinematicsFileName(const std::string &aFileName) { _desiredKinematicsFileName = aFileName; }
+    const std::string &getDesiredKinematicsFileName() { return _desiredKinematicsFileName; }
+    void setDesiredKinematicsFileName(const std::string &aFileName) { _desiredKinematicsFileName = aFileName; }
 
-    const std::string &getConstraintsFileName() { return _constraintsFileName; }  	 	 
-    void setConstraintsFileName(const std::string &aFileName) { _constraintsFileName = aFileName; } 		 
-  		 
-    const std::string &getTaskSetFileName() { return _taskSetFileName; } 		 
+    const std::string &getConstraintsFileName() { return _constraintsFileName; }         
+    void setConstraintsFileName(const std::string &aFileName) { _constraintsFileName = aFileName; }          
+         
+    const std::string &getTaskSetFileName() { return _taskSetFileName; }         
     void setTaskSetFileName(const std::string &aFileName) { _taskSetFileName = aFileName; }
 
-	const std::string &getOutputModelFileName() { return _outputModelFile; }
-	void setOutputModelFileName(const std::string &aFileName) { _outputModelFile = aFileName; }
+    const std::string &getOutputModelFileName() { return _outputModelFile; }
+    void setOutputModelFileName(const std::string &aFileName) { _outputModelFile = aFileName; }
 
-	bool getAdjustCOMToReduceResiduals() { return _adjustCOMToReduceResiduals; }
-	void setAdjustCOMToReduceResiduals(bool aAdjust) { _adjustCOMToReduceResiduals = aAdjust; }
+    bool getAdjustCOMToReduceResiduals() { return _adjustCOMToReduceResiduals; }
+    void setAdjustCOMToReduceResiduals(bool aAdjust) { _adjustCOMToReduceResiduals = aAdjust; }
 
-	const std::string &getAdjustedCOMBody() { return _adjustedCOMBody; }
-	void setAdjustedCOMBody(const std::string &aBody) { _adjustedCOMBody = aBody; }
+    const std::string &getAdjustedCOMBody() { return _adjustedCOMBody; }
+    void setAdjustedCOMBody(const std::string &aBody) { _adjustedCOMBody = aBody; }
 
-	double getLowpassCutoffFrequency() const { return _lowpassCutoffFrequency; }
-	void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) { _lowpassCutoffFrequency = aLowpassCutoffFrequency; }
+    double getLowpassCutoffFrequency() const { return _lowpassCutoffFrequency; }
+    void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) { _lowpassCutoffFrequency = aLowpassCutoffFrequency; }
 
-	// External loads get/set
-	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
-	void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
+    // External loads get/set
+    const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
+    void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
 
-	//--------------------------------------------------------------------------
-	// INTERFACE
-	//--------------------------------------------------------------------------
-	virtual bool run() SWIG_DECLARE_EXCEPTION;
+    //--------------------------------------------------------------------------
+    // INTERFACE
+    //--------------------------------------------------------------------------
+    virtual bool run() SWIG_DECLARE_EXCEPTION;
 
-	//--------------------------------------------------------------------------
-	// UTILITY
-	//--------------------------------------------------------------------------
-	Storage &getForceStorage();
+    //--------------------------------------------------------------------------
+    // UTILITY
+    //--------------------------------------------------------------------------
+    Storage &getForceStorage();
 
-	void setOriginalForceSet(const ForceSet &aForceSet);
+    void setOriginalForceSet(const ForceSet &aForceSet);
 
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 #ifndef SWIG
 
-	void initializeControlSetUsingConstraints(const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints, ControlSet& rControlSet );
-	std::string adjustCOMToReduceResiduals(SimTK::State& s, const Storage &qStore, const Storage &uStore);
-	std::string adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Array<double> &aMAve);
-	void addNecessaryAnalyses();
-	void writeAdjustedModel();
+    void initializeControlSetUsingConstraints(const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints, ControlSet& rControlSet );
+    std::string adjustCOMToReduceResiduals(SimTK::State& s, const Storage &qStore, const Storage &uStore);
+    std::string adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Array<double> &aMAve);
+    void addNecessaryAnalyses();
+    void writeAdjustedModel();
 
-	static void computeAverageResiduals(const Storage &aForceStore,OpenSim::Array<double> &rFAve,OpenSim::Array<double> &rMAve);
-	static void computeAverageResiduals(SimTK::State& s, Model &aModel,double aTi,double aTf,const Storage &aStatesStore,OpenSim::Array<double>& rFAve,OpenSim::Array<double>& rMAve);
+    static void computeAverageResiduals(const Storage &aForceStore,OpenSim::Array<double> &rFAve,OpenSim::Array<double> &rMAve);
+    static void computeAverageResiduals(SimTK::State& s, Model &aModel,double aTi,double aTf,const Storage &aStatesStore,OpenSim::Array<double>& rFAve,OpenSim::Array<double>& rMAve);
 #endif
 //=============================================================================
-};	// END of class RRATool
+};  // END of class RRATool
 //=============================================================================
 //=============================================================================
 

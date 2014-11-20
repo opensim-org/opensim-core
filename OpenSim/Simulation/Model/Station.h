@@ -49,36 +49,36 @@ class Body;
 class OSIMSIMULATION_API Station : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(Station, ModelComponent);
 public:
-	//==============================================================================
-	// PROPERTIES
-	//==============================================================================
-	/** @name Property declarations
-	These are the serializable properties associated with a Station. **/
-	/**@{**/
-	OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
-		"The location (Vec3) of the station in a reference frame. "
-		"Frame is specified as Connector.");
-	/**@}**/
+    //==============================================================================
+    // PROPERTIES
+    //==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with a Station. **/
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
+        "The location (Vec3) of the station in a reference frame. "
+        "Frame is specified as Connector.");
+    /**@}**/
 
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	Station();
-	virtual ~Station();
-	/** getter of Reference Frame off which the Station is defined */
-	const OpenSim::RigidFrame& getReferenceFrame() const;
-	/** setter of Reference Frame off which the Station is defined */
-	void setReferenceFrame(const OpenSim::RigidFrame& aFrame);
-	/** Find this Station's location in any Frame */
-	SimTK::Vec3 findLocationInFrame(const SimTK::State& s, const OpenSim::Frame& aFrame) const;
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    Station();
+    virtual ~Station();
+    /** getter of Reference Frame off which the Station is defined */
+    const OpenSim::RigidFrame& getReferenceFrame() const;
+    /** setter of Reference Frame off which the Station is defined */
+    void setReferenceFrame(const OpenSim::RigidFrame& aFrame);
+    /** Find this Station's location in any Frame */
+    SimTK::Vec3 findLocationInFrame(const SimTK::State& s, const OpenSim::Frame& aFrame) const;
 private:
-	void setNull();
-	void constructProperties() override;
-	void constructConnectors() override;
+    void setNull();
+    void constructProperties() override;
+    void constructConnectors() override;
 
 //=============================================================================
-};	// END of class Station
+};  // END of class Station
 //=============================================================================
 //=============================================================================
 

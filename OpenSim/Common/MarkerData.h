@@ -51,55 +51,55 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MarkerData, Object);
 // DATA
 //=============================================================================
 private:
-	int _numFrames;
-	int _numMarkers;
-	int _firstFrameNumber;
-	double _dataRate;
-	double _cameraRate;
-	double _originalDataRate;
-	int _originalStartFrame;
-	int _originalNumFrames;
-	std::string _fileName;
-	Units _units;
-	Array<std::string> _markerNames;
-	ArrayPtrs<MarkerFrame> _frames;
+    int _numFrames;
+    int _numMarkers;
+    int _firstFrameNumber;
+    double _dataRate;
+    double _cameraRate;
+    double _originalDataRate;
+    int _originalStartFrame;
+    int _originalNumFrames;
+    std::string _fileName;
+    Units _units;
+    Array<std::string> _markerNames;
+    ArrayPtrs<MarkerFrame> _frames;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	MarkerData();
-	explicit MarkerData(const std::string& aFileName) SWIG_DECLARE_EXCEPTION;
-	virtual ~MarkerData();
+    MarkerData();
+    explicit MarkerData(const std::string& aFileName) SWIG_DECLARE_EXCEPTION;
+    virtual ~MarkerData();
 
-	void findFrameRange(double aStartTime, double aEndTime, int& rStartFrame, int& rEndFrame) const;
-	void averageFrames(double aThreshold = -1.0, double aStartTime = -SimTK::Infinity, double aEndTime = SimTK::Infinity);
-	const std::string& getFileName() const { return _fileName; }
-	void makeRdStorage(Storage& rStorage);
-	const MarkerFrame& getFrame(int aIndex) const;
-	int getMarkerIndex(const std::string& aName) const;
-	const Units& getUnits() const { return _units; }
-	void convertToUnits(const Units& aUnits);
-	const Array<std::string>& getMarkerNames() const { return _markerNames; }
-	int getNumMarkers() const { return _numMarkers; }
-	int getNumFrames() const { return _numFrames; }
-	double getStartFrameTime() const;
-	double getLastFrameTime() const;
-	double getDataRate() const { return _dataRate; }
-	double getCameraRate() const { return _cameraRate; }
+    void findFrameRange(double aStartTime, double aEndTime, int& rStartFrame, int& rEndFrame) const;
+    void averageFrames(double aThreshold = -1.0, double aStartTime = -SimTK::Infinity, double aEndTime = SimTK::Infinity);
+    const std::string& getFileName() const { return _fileName; }
+    void makeRdStorage(Storage& rStorage);
+    const MarkerFrame& getFrame(int aIndex) const;
+    int getMarkerIndex(const std::string& aName) const;
+    const Units& getUnits() const { return _units; }
+    void convertToUnits(const Units& aUnits);
+    const Array<std::string>& getMarkerNames() const { return _markerNames; }
+    int getNumMarkers() const { return _numMarkers; }
+    int getNumFrames() const { return _numFrames; }
+    double getStartFrameTime() const;
+    double getLastFrameTime() const;
+    double getDataRate() const { return _dataRate; }
+    double getCameraRate() const { return _cameraRate; }
 
 private:
-	void readTRCFile(const std::string& aFileName, MarkerData& aSMD);
-	void readTRCFileHeader(std::ifstream &in, const std::string& aFileName, MarkerData& aSMD);
-	void readTRBFile(const std::string& aFileName, MarkerData& aSMD);
+    void readTRCFile(const std::string& aFileName, MarkerData& aSMD);
+    void readTRCFileHeader(std::ifstream &in, const std::string& aFileName, MarkerData& aSMD);
+    void readTRBFile(const std::string& aFileName, MarkerData& aSMD);
     void readStoFile(const std::string& aFileName);
     void buildMarkerMap(const Storage& storageToReadFrom, std::map<int, std::string>& markerNames);
 
 //=============================================================================
-};	// END of class MarkerData
+};  // END of class MarkerData
 //=============================================================================
 //=============================================================================
 

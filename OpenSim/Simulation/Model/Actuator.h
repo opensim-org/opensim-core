@@ -28,10 +28,10 @@
 
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+    #ifdef OSIMSIMULATION_API
+        #undef OSIMSIMULATION_API
+        #define OSIMSIMULATION_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -63,59 +63,59 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(Actuator, Force);
 protected:
  
     // index in Controls Vector shared system cache entry
-	int _controlIndex;
+    int _controlIndex;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	Actuator();
+    Actuator();
 
     // default destructor, copy constructor, copy assignment
 
 private:
-	void setNull();
+    void setNull();
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 protected:
-	// ModelComponent Interface
-	virtual void addToSystem(SimTK::MultibodySystem& system) const override;
+    // ModelComponent Interface
+    virtual void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-	// Update the geometry attached to the actuator. Use inertial frame.
-	virtual void updateGeometry();
+    // Update the geometry attached to the actuator. Use inertial frame.
+    virtual void updateGeometry();
 
 public:
 
-	//Model building
-	virtual int numControls() const = 0;
+    //Model building
+    virtual int numControls() const = 0;
 
-	/** Actuator default controls are zero */
-	virtual const SimTK::Vector getDefaultControls() { return SimTK::Vector(numControls(), 0.0); } 
+    /** Actuator default controls are zero */
+    virtual const SimTK::Vector getDefaultControls() { return SimTK::Vector(numControls(), 0.0); } 
 #ifndef SWIG
-	// CONTROLS
-	virtual const SimTK::VectorView_<double> getControls( const SimTK::State& s ) const;
+    // CONTROLS
+    virtual const SimTK::VectorView_<double> getControls( const SimTK::State& s ) const;
 #endif
-	/** Convenience methods for getting, setting and adding to actuator controls from/into 
-	    the model controls. These methods have no effect on the realization stage. */
-	virtual void getControls(const SimTK::Vector& modelControls, SimTK::Vector& actuatorControls) const;
-	/** set actuator controls subvector into the right slot in the system-wide model controls */
-	virtual void setControls(const SimTK::Vector& actuatorControls, SimTK::Vector& modelControls) const;
-	/** add actuator controls to the values already occupying the slot in the system-wide model controls */
-	virtual void addInControls(const SimTK::Vector& actuatorControls, SimTK::Vector& modelControls) const;
+    /** Convenience methods for getting, setting and adding to actuator controls from/into 
+        the model controls. These methods have no effect on the realization stage. */
+    virtual void getControls(const SimTK::Vector& modelControls, SimTK::Vector& actuatorControls) const;
+    /** set actuator controls subvector into the right slot in the system-wide model controls */
+    virtual void setControls(const SimTK::Vector& actuatorControls, SimTK::Vector& modelControls) const;
+    /** add actuator controls to the values already occupying the slot in the system-wide model controls */
+    virtual void addInControls(const SimTK::Vector& actuatorControls, SimTK::Vector& modelControls) const;
 
-	//--------------------------------------------------------------------------
-	// COMPUTATIONS
-	//--------------------------------------------------------------------------
-	virtual double getPower(const SimTK::State& s) const = 0;
-	virtual void computeEquilibrium(SimTK::State& s) const { }
+    //--------------------------------------------------------------------------
+    // COMPUTATIONS
+    //--------------------------------------------------------------------------
+    virtual double getPower(const SimTK::State& s) const = 0;
+    virtual void computeEquilibrium(SimTK::State& s) const { }
 
 //=============================================================================
-};	// END of class Actuator
+};  // END of class Actuator
 //=============================================================================
 
 
@@ -131,7 +131,7 @@ public:
  * @author Ajay Seth
  */
 class OSIMSIMULATION_API ScalarActuator : public Actuator {
-	OpenSim_DECLARE_ABSTRACT_OBJECT(ScalarActuator, Actuator);
+    OpenSim_DECLARE_ABSTRACT_OBJECT(ScalarActuator, Actuator);
 public:
 //==============================================================================
 // PROPERTIES
@@ -140,47 +140,47 @@ public:
     These are the serializable properties associated with this class. **/
     /**@{**/
     /** Default is -Infinity (no limit). **/
-	OpenSim_DECLARE_PROPERTY(min_control, double,
-		"Minimum allowed value for control signal. Used primarily when solving "
+    OpenSim_DECLARE_PROPERTY(min_control, double,
+        "Minimum allowed value for control signal. Used primarily when solving "
         "for control values.");
     /** Default is Infinity (no limit). **/
-	OpenSim_DECLARE_PROPERTY(max_control, double,
-		"Maximum allowed value for control signal. Used primarily when solving "
+    OpenSim_DECLARE_PROPERTY(max_control, double,
+        "Maximum allowed value for control signal. Used primarily when solving "
         "for control values.");
     /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-	ScalarActuator();
+    ScalarActuator();
 
     // default destructor, copy constructor, copy assignment
 
-	/** Convenience method to set controls given scalar (double) valued control */
-	//virtual void setControl(const SimTK::State &s, double control) const;
+    /** Convenience method to set controls given scalar (double) valued control */
+    //virtual void setControl(const SimTK::State &s, double control) const;
 
-	/** Convenience method to get control given scalar (double) valued control */
-	virtual double getControl(const SimTK::State& s ) const;
+    /** Convenience method to get control given scalar (double) valued control */
+    virtual double getControl(const SimTK::State& s ) const;
 
-	//Model building
-	virtual int numControls() const {return 1;};
+    //Model building
+    virtual int numControls() const {return 1;};
 
-	// Accessing actuation, speed, and power of a scalar valued actuator
-	virtual void setActuation(const SimTK::State& s, double aActuation) const;
-	virtual double getActuation(const SimTK::State& s) const;
+    // Accessing actuation, speed, and power of a scalar valued actuator
+    virtual void setActuation(const SimTK::State& s, double aActuation) const;
+    virtual double getActuation(const SimTK::State& s) const;
     virtual void setSpeed( const SimTK::State& s, double aspeed) const;
     virtual double getSpeed( const SimTK::State& s) const;
-	virtual double getPower(const SimTK::State& s) const { return getActuation(s)*getSpeed(s); }
-	virtual double getStress(const SimTK::State& s) const;
-	virtual double getOptimalForce() const;
+    virtual double getPower(const SimTK::State& s) const { return getActuation(s)*getSpeed(s); }
+    virtual double getStress(const SimTK::State& s) const;
+    virtual double getOptimalForce() const;
 
-	// manage bounds on Control
-	void setMinControl(const double& aMinControl) 
+    // manage bounds on Control
+    void setMinControl(const double& aMinControl) 
     {   set_min_control(aMinControl); }
-	double getMinControl() const { return get_min_control(); }
-	void setMaxControl(const double& aMaxControl) 
+    double getMinControl() const { return get_min_control(); }
+    void setMaxControl(const double& aMaxControl) 
     {   set_max_control(aMaxControl); }
-	double getMaxControl() const { return get_max_control(); }
+    double getMaxControl() const { return get_max_control(); }
 
     //--------------------------------------------------------------------------
     // Overriding Actuation
@@ -192,17 +192,17 @@ public:
     * When the ScalarActuator's actuation is overriden, the ScalarActuator will
     * by defualt produce a constant actuation which can be set with
     * setOverrideActuation().
-	*
+    *
     * @param s    current state
     * @param flag true = override ScalarActuator's output actuation
     *             false = use ScalarActuator's computed forc (normal operation)
     */
-	void overrideActuation(SimTK::State& s, bool flag) const;
+    void overrideActuation(SimTK::State& s, bool flag) const;
 
     /**
     *  return ScalarActuator's override status
     */
-	bool isActuationOverriden(const SimTK::State& s) const;
+    bool isActuationOverriden(const SimTK::State& s) const;
 
     /**
     * set the actuation value used when the override is true 
@@ -210,52 +210,52 @@ public:
     * @param s      current state
     * @param value  value of override actuation   
     */
-	void setOverrideActuation(SimTK::State& s, double value) const;
+    void setOverrideActuation(SimTK::State& s, double value) const;
 
     /**
     * return override actuation 
     */
-	double getOverrideActuation(const SimTK::State& s) const;
+    double getOverrideActuation(const SimTK::State& s) const;
 
 
 protected:
 
-	// ScalarActuator interface
-	virtual double computeActuation(const SimTK::State& s) const = 0;
+    // ScalarActuator interface
+    virtual double computeActuation(const SimTK::State& s) const = 0;
 
-	// ModelComponent Interface
-	virtual void addToSystem(SimTK::MultibodySystem& system) const override;
+    // ModelComponent Interface
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-	double computeOverrideActuation(const SimTK::State& s) const;
+    double computeOverrideActuation(const SimTK::State& s) const;
 
-	//Actuation reporting
-	/** 
-	 * Methods to query a actuation for the value actually applied during 
-	 * simulation. The names of the quantities (column labels) is returned
-	 * by this first function getRecordLabels()
-	 */
-	OpenSim::Array<std::string> getRecordLabels() const {
-		OpenSim::Array<std::string> labels("");
-		labels.append(getName());
-		return labels;
-	}
-	/**
-	 * Given SimTK::State object extract all the values necessary to report 
-	 * actuation, application location frame, etc. used in conjunction 
-	 * with getRecordLabels and should return same size Array
-	 */
-	OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {
-		OpenSim::Array<double> values(1);
-		values.append(getActuation(state));
-		return values;
-	}
+    //Actuation reporting
+    /** 
+     * Methods to query a actuation for the value actually applied during 
+     * simulation. The names of the quantities (column labels) is returned
+     * by this first function getRecordLabels()
+     */
+    OpenSim::Array<std::string> getRecordLabels() const {
+        OpenSim::Array<std::string> labels("");
+        labels.append(getName());
+        return labels;
+    }
+    /**
+     * Given SimTK::State object extract all the values necessary to report 
+     * actuation, application location frame, etc. used in conjunction 
+     * with getRecordLabels and should return same size Array
+     */
+    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {
+        OpenSim::Array<double> values(1);
+        values.append(getActuation(state));
+        return values;
+    }
 
 private:
-	void constructProperties() override;
-	void constructOutputs() override;
+    void constructProperties() override;
+    void constructOutputs() override;
 
 //=============================================================================
-};	// END of class ScalarActuator
+};  // END of class ScalarActuator
 //=============================================================================
 
 } // end of namespace OpenSim

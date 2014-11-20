@@ -393,7 +393,7 @@ bool OpenSimContext::processModelScale(ModelScaler& modelScaler,
                      double aFinalMass) {
   aModel->getMultibodySystem().realizeTopology();
     _configState=&aModel->updWorkingState();
-  bool retValue= modelScaler.processModel(*_configState, aModel, aPathToSubject, aFinalMass);
+  bool retValue= modelScaler.processModel(aModel, aPathToSubject, aFinalMass);
   // Model has changed need to recreate a valid state
   aModel->getMultibodySystem().realizeTopology();
     _configState=&aModel->updWorkingState();
@@ -404,7 +404,7 @@ bool OpenSimContext::processModelScale(ModelScaler& modelScaler,
 bool OpenSimContext::processModelMarkerPlacer( MarkerPlacer& markerPlacer,
                         Model* aModel,
                         const std::string& aPathToSubject) {
-  return markerPlacer.processModel(*_configState, aModel, aPathToSubject);
+  return markerPlacer.processModel(aModel, aPathToSubject);
 }
 
 double OpenSimContext::computeMeasurementScaleFactor(ModelScaler& modelScaler,
@@ -432,29 +432,29 @@ void OpenSimContext::realizeVelocity() {
 
 void OpenSimContext::cacheModelAndState() 
 {
-	clonedModel = _model->clone();
-	clonedState = this->getCurrentStateCopy();
+    clonedModel = _model->clone();
+    clonedState = this->getCurrentStateCopy();
 }
 
 void OpenSimContext::restoreStateFromCachedModel() 
 {
-	_model->initSystem();
-	clonedModel->initSystem();
+    _model->initSystem();
+    clonedModel->initSystem();
 
-	Array<std::string> modelVariableNames = _model->getStateVariableNames();
-	Array<std::string> clonedModelVariableNames = clonedModel->getStateVariableNames();
+    Array<std::string> modelVariableNames = _model->getStateVariableNames();
+    Array<std::string> clonedModelVariableNames = clonedModel->getStateVariableNames();
 
-	for(int i = 0; i < modelVariableNames.getSize(); i++)
-	{
-		std::string name = modelVariableNames.get(i);
-		if(clonedModelVariableNames.findIndex(name) >= 0)
-		{
-			double value = clonedModel->getStateVariable(clonedState, name);
-			_model->setStateVariable(_model->updWorkingState(), name, value);
-		}
-	}
-	this->setState(&(_model->updWorkingState()));
-	this->realizePosition();
-	delete clonedModel;
+    for(int i = 0; i < modelVariableNames.getSize(); i++)
+    {
+        std::string name = modelVariableNames.get(i);
+        if(clonedModelVariableNames.findIndex(name) >= 0)
+        {
+            double value = clonedModel->getStateVariableValue(clonedState, name);
+            _model->setStateVariableValue(_model->updWorkingState(), name, value);
+        }
+    }
+    this->setState(&(_model->updWorkingState()));
+    this->realizePosition();
+    delete clonedModel;
 }
 } // namespace

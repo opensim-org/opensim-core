@@ -105,13 +105,13 @@ private:
     //--------------------------------------------------------------------------
     // ModelComponent Interface
     //--------------------------------------------------------------------------
-    void connectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
     
     void setNull();
     void constructProperties();
 
 //==============================================================================
-};	// END of class MuscleActiveFiberPowerProbe
+};  // END of class MuscleActiveFiberPowerProbe
 //==============================================================================
 //==============================================================================
 

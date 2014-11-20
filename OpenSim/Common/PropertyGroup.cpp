@@ -41,9 +41,9 @@ using namespace OpenSim;
  */
 PropertyGroup::
 PropertyGroup() :
-	_properties(NULL)
+    _properties(NULL)
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -52,10 +52,10 @@ PropertyGroup() :
  */
 PropertyGroup::
 PropertyGroup(string& aName) :
-	_properties(NULL)
+    _properties(NULL)
 {
-	setName(aName);
-	setNull();
+    setName(aName);
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -75,9 +75,9 @@ PropertyGroup::
  */
 PropertyGroup::
 PropertyGroup(const PropertyGroup &aGroup) :
-	_properties(NULL)
+    _properties(NULL)
 {
-	copyData(aGroup);
+    copyData(aGroup);
 }
 
 //=============================================================================
@@ -92,8 +92,8 @@ PropertyGroup(const PropertyGroup &aGroup) :
 void PropertyGroup::
 copyData(const PropertyGroup &aGroup)
 {
-	_name = aGroup._name;
-	_properties = aGroup._properties;
+    _name = aGroup._name;
+    _properties = aGroup._properties;
 }
 
 //_____________________________________________________________________________
@@ -103,8 +103,8 @@ copyData(const PropertyGroup &aGroup)
 void PropertyGroup::
 clear()
 {
-	_properties.setSize(0);
-	_properties.trim();
+    _properties.setSize(0);
+    _properties.trim();
 }
 
 //_____________________________________________________________________________
@@ -127,8 +127,8 @@ setNull()
  */
 PropertyGroup* PropertyGroup::clone() const
 {
-	PropertyGroup *propertyGroup = new PropertyGroup(*this);
-	return(propertyGroup);
+    PropertyGroup *propertyGroup = new PropertyGroup(*this);
+    return(propertyGroup);
 }
 
 //=============================================================================
@@ -143,9 +143,9 @@ PropertyGroup* PropertyGroup::clone() const
 PropertyGroup& PropertyGroup::
 operator=(const PropertyGroup &aGroup)
 {
-	copyData(aGroup);
+    copyData(aGroup);
 
-	return(*this);
+    return(*this);
 }
 
 //_____________________________________________________________________________
@@ -159,10 +159,10 @@ operator=(const PropertyGroup &aGroup)
 bool PropertyGroup::
 operator<(const PropertyGroup& aGroup) const
 {
-	if (_properties.getSize() < aGroup.getProperties().getSize())
-		return true;
-	else
-		return false;
+    if (_properties.getSize() < aGroup.getProperties().getSize())
+        return true;
+    else
+        return false;
 }
 //_____________________________________________________________________________
 /**
@@ -174,10 +174,10 @@ operator<(const PropertyGroup& aGroup) const
 bool PropertyGroup::
 operator==(const PropertyGroup& aGroup) const
 {
-	if (_properties.getSize() == aGroup.getProperties().getSize())
-		return true;
-	else
-		return false;
+    if (_properties.getSize() == aGroup.getProperties().getSize())
+        return true;
+    else
+        return false;
 }
 
 //_____________________________________________________________________________
@@ -190,11 +190,11 @@ operator==(const PropertyGroup& aGroup) const
 bool PropertyGroup::
 contains(const string& aName) const
 {
-	for (int i = 0; i < _properties.getSize(); i++)
-		if (_properties.get(i)->getName() == aName)
-			return true;
+    for (int i = 0; i < _properties.getSize(); i++)
+        if (_properties.get(i)->getName() == aName)
+            return true;
 
-	return false;
+    return false;
 }
 
 //_____________________________________________________________________________
@@ -205,8 +205,8 @@ contains(const string& aName) const
 void PropertyGroup::
 add(Property_Deprecated* aProperty)
 {
-	if (_properties.findIndex(aProperty) < 0)
-		_properties.append(aProperty);
+    if (_properties.findIndex(aProperty) < 0)
+        _properties.append(aProperty);
 }
 
 //_____________________________________________________________________________
@@ -217,9 +217,9 @@ add(Property_Deprecated* aProperty)
 void PropertyGroup::
 remove(Property_Deprecated* aProperty)
 {
-	int index = getPropertyIndex(aProperty);
-	if (index >= 0)
-		_properties.remove(index);
+    int index = getPropertyIndex(aProperty);
+    if (index >= 0)
+        _properties.remove(index);
 }
 
 //_____________________________________________________________________________
@@ -230,10 +230,10 @@ remove(Property_Deprecated* aProperty)
 Property_Deprecated* PropertyGroup::
 get(int aIndex)
 {
-	if (aIndex >= 0 && aIndex < _properties.getSize())
-		return _properties.get(aIndex);
+    if (aIndex >= 0 && aIndex < _properties.getSize())
+        return _properties.get(aIndex);
 
-	return NULL;
+    return NULL;
 }
 
 //_____________________________________________________________________________
@@ -244,9 +244,9 @@ get(int aIndex)
 int PropertyGroup::
 getPropertyIndex(Property_Deprecated* aProperty) const
 {
-	for (int i = 0; i < _properties.getSize(); i++)
-		if (_properties.get(i) == aProperty)
-			return i;
+    for (int i = 0; i < _properties.getSize(); i++)
+        if (_properties.get(i) == aProperty)
+            return i;
 
-	return -1;
+    return -1;
 }

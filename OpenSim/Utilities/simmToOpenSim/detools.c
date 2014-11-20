@@ -246,7 +246,7 @@ void de_track_cb (void* data, SimmEvent se)
 
    for (count = 0, i = 0; i < de->numdevs; i++)
       if (de_vals[i] == 1)
-	 count++;
+     count++;
 
    if (count == 0)
    {
@@ -279,7 +279,7 @@ void de_track_cb (void* data, SimmEvent se)
 
                find_world_coords(scene, mx_new, my_new,
                                  z_dist, &wx_new, &wy_new, &wz_new);
-	 
+     
                if (tracker->mx_old == -1 || tracker->my_old == -1)
                {
                    tracker->mx_old = mx_new;
@@ -426,11 +426,11 @@ void de_track_cb (void* data, SimmEvent se)
 
            if (de_vals[DE_ZOOM_DEFORM_KEY])
            {
-	      if (tracker->zoom_mx_old == -1 || tracker->zoom_my_old == -1)
-	      {
-	         tracker->zoom_mx_old = mx_new;
-	         tracker->zoom_my_old = my_new;
-	      
+          if (tracker->zoom_mx_old == -1 || tracker->zoom_my_old == -1)
+          {
+             tracker->zoom_mx_old = mx_new;
+             tracker->zoom_my_old = my_new;
+          
                  wpt[0] = wpt[1] = 0.0;
                  wpt[2] = wpt[3] = 1.0;
 
@@ -452,20 +452,20 @@ void de_track_cb (void* data, SimmEvent se)
                  tracker->zoom_vec.xyz[0] -= wpt2[0];
                  tracker->zoom_vec.xyz[1] -= wpt2[1];
                  tracker->zoom_vec.xyz[2] -= wpt2[2];
-	      }
-     	      else if (tracker->zoom_mx_old != mx_new || tracker->zoom_my_old != my_new)
-	      {
-	         double netmove = (mx_new - tracker->zoom_mx_old) * 0.002;
-	         
+          }
+              else if (tracker->zoom_mx_old != mx_new || tracker->zoom_my_old != my_new)
+          {
+             double netmove = (mx_new - tracker->zoom_mx_old) * 0.002;
+             
                  xform->translation.xyz[0] += netmove * tracker->zoom_vec.xyz[0];
                  xform->translation.xyz[1] += netmove * tracker->zoom_vec.xyz[1];
                  xform->translation.xyz[2] += netmove * tracker->zoom_vec.xyz[2];
 
-	         redraw = yes;
-	         
-	         tracker->zoom_mx_old = mx_new;
-	         tracker->zoom_my_old = my_new;
-	      }
+             redraw = yes;
+             
+             tracker->zoom_mx_old = mx_new;
+             tracker->zoom_my_old = my_new;
+          }
            }
            else
               tracker->zoom_mx_old = tracker->zoom_my_old = -1;
@@ -934,7 +934,7 @@ void deform_segment (ModelStruct* ms, int segment)
             sBoneScale = seg->bone_scale;
          }
 #else
-	 sBoneScale = NULL;
+     sBoneScale = NULL;
 #endif
          /*if (deop->deformMode != DE_POSITION_MODE)*/
             for (j = 0; j < seg->num_deforms; j++)
@@ -1686,7 +1686,7 @@ void init_deform_box_verts (DeformObject* dfm)
    {
       corner = &dfm->innerMin.xyz[0];
       vert   = dfm->innerBoxUndeformed;
-   	
+    
       for (i = 0; i < 12; i++)
       {
          _SET_VERT(start, corner[m[i][0]], corner[m[i][1]], corner[m[i][2]]);
@@ -1708,7 +1708,7 @@ void init_deform_box_verts (DeformObject* dfm)
    {
       corner = &dfm->outerMin.xyz[0];
       vert   = dfm->outerBoxUndeformed;
-   	
+    
       for (i = 0; i < 12; i++)
       {
          _SET_VERT(start, corner[m[i][0]], corner[m[i][1]], corner[m[i][2]]);

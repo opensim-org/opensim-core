@@ -813,20 +813,20 @@ void load_model_textures(ModelStruct* model)
    {
       if (model->worldobj[i].texture_filename && model->worldobj[i].wobj)
       {
-			FileReturnCode frc = lookup_texture_file(model->worldobj[i].wobj, model->worldobj[i].texture_filename, model);
+            FileReturnCode frc = lookup_texture_file(model->worldobj[i].wobj, model->worldobj[i].texture_filename, model);
 
-			if (frc == file_missing)
+            if (frc == file_missing)
          {
-				(void)sprintf(errorbuffer, "Unable to locate texture file %s", model->worldobj[i].texture_filename);
-				error(none, errorbuffer);
-				model->worldobj[i].wobj->texture = -1;
+                (void)sprintf(errorbuffer, "Unable to locate texture file %s", model->worldobj[i].texture_filename);
+                error(none, errorbuffer);
+                model->worldobj[i].wobj->texture = -1;
          }
          else if (frc == file_bad)
-			{
-				(void)sprintf(errorbuffer, "Unable to read texture from file %s", model->worldobj[i].texture_filename);
-				error(none, errorbuffer);
-				model->worldobj[i].wobj->texture = -1;
-			}
+            {
+                (void)sprintf(errorbuffer, "Unable to read texture from file %s", model->worldobj[i].texture_filename);
+                error(none, errorbuffer);
+                model->worldobj[i].wobj->texture = -1;
+            }
       }
    }
 }

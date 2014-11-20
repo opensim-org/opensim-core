@@ -44,13 +44,13 @@ using namespace OpenSim;
  * Default constructor.
  */
 PathWrap::PathWrap() :
-	Object(),
-	_wrapObjectName(_wrapObjectNameProp.getValueStr()),
-	_methodName(_methodNameProp.getValueStr()),
+    Object(),
+    _wrapObjectName(_wrapObjectNameProp.getValueStr()),
+    _methodName(_methodNameProp.getValueStr()),
    _range(_rangeProp.getValueIntArray())
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -68,14 +68,14 @@ PathWrap::~PathWrap()
  * @param aPathWrap PathWrap to be copied.
  */
 PathWrap::PathWrap(const PathWrap& aPathWrap) :
-	Object(aPathWrap),
-	_wrapObjectName(_wrapObjectNameProp.getValueStr()),
-	_methodName(_methodNameProp.getValueStr()),
+    Object(aPathWrap),
+    _wrapObjectName(_wrapObjectNameProp.getValueStr()),
+    _methodName(_methodNameProp.getValueStr()),
    _range(_rangeProp.getValueIntArray())
 {
-	setNull();
-	setupProperties();
-	copyData(aPathWrap);
+    setNull();
+    setupProperties();
+    copyData(aPathWrap);
 }
 
 
@@ -88,9 +88,9 @@ PathWrap::PathWrap(const PathWrap& aPathWrap) :
  */
 void PathWrap::setNull()
 {
-	_method = hybrid;
+    _method = hybrid;
 
-	resetPreviousWrap();
+    resetPreviousWrap();
 }
 
 //_____________________________________________________________________________
@@ -99,18 +99,18 @@ void PathWrap::setNull()
  */
 void PathWrap::setupProperties()
 {
-	_wrapObjectNameProp.setName("wrap_object");
-	_propertySet.append(&_wrapObjectNameProp);
+    _wrapObjectNameProp.setName("wrap_object");
+    _propertySet.append(&_wrapObjectNameProp);
 
-	_methodNameProp.setName("method");
-	_methodNameProp.setValue("Unassigned");
-	_propertySet.append(&_methodNameProp);
+    _methodNameProp.setName("method");
+    _methodNameProp.setValue("Unassigned");
+    _propertySet.append(&_methodNameProp);
 
-	const int defaultRange[] = {-1, -1};
-	_rangeProp.setName("range");
-	_rangeProp.setValue(2, defaultRange);
-	_rangeProp.setAllowableListSize(2);
-	_propertySet.append(&_rangeProp);
+    const int defaultRange[] = {-1, -1};
+    _rangeProp.setName("range");
+    _rangeProp.setValue(2, defaultRange);
+    _rangeProp.setAllowableListSize(2);
+    _propertySet.append(&_rangeProp);
 }
 
 //_____________________________________________________________________________
@@ -122,41 +122,41 @@ void PathWrap::setupProperties()
  */
 void PathWrap::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
 {
-	int i;
-	const BodySet& bodySet = aModel.getBodySet();
+    int i;
+    const BodySet& bodySet = aModel.getBodySet();
 
-	_path = &aPath;
+    _path = &aPath;
 
-	for (i = 0; i < bodySet.getSize(); i++) {
-		const WrapObject* wo = bodySet.get(i).getWrapObject(getWrapObjectName());
-		if (wo) {
-			_wrapObject = wo;
-			_wrapPoints[0].setBody(bodySet.get(i));
-			_wrapPoints[0].setWrapObject(wo);
-			_wrapPoints[1].setBody(bodySet.get(i));
-			_wrapPoints[1].setWrapObject(wo);
-			break;
-		}
-	}
+    for (i = 0; i < bodySet.getSize(); i++) {
+        const WrapObject* wo = bodySet.get(i).getWrapObject(getWrapObjectName());
+        if (wo) {
+            _wrapObject = wo;
+            _wrapPoints[0].setBody(bodySet.get(i));
+            _wrapPoints[0].setWrapObject(wo);
+            _wrapPoints[1].setBody(bodySet.get(i));
+            _wrapPoints[1].setWrapObject(wo);
+            break;
+        }
+    }
 
-	// connectToModelAndPath() must be called after setBody() because it requires
-	// that _bodyName already be assigned.
-	_wrapPoints[0].connectToModelAndPath(aModel, aPath);
-	_wrapPoints[1].connectToModelAndPath(aModel, aPath);
+    // connectToModelAndPath() must be called after setBody() because it requires
+    // that _bodyName already be assigned.
+    _wrapPoints[0].connectToModelAndPath(aModel, aPath);
+    _wrapPoints[1].connectToModelAndPath(aModel, aPath);
 
-	if (_methodName == "hybrid" || _methodName == "Hybrid" || _methodName == "HYBRID")
-		_method = hybrid;
-	else if (_methodName == "midpoint" || _methodName == "Midpoint" || _methodName == "MIDPOINT")
-		_method = midpoint;
-	else if (_methodName == "axial" || _methodName == "Axial" || _methodName == "AXIAL")
-		_method = axial;
-	else if (_methodName == "Unassigned") {  // method was not specified in wrap object definition; use default
-		_method = hybrid;
-		_methodName = "hybrid";
-	} else {  // method was specified incorrectly in wrap object definition; throw an exception
-		string errorMessage = "Error: wrapping method for wrap object " + getName() + " was either not specified, or specified incorrectly.";
-		throw Exception(errorMessage);
-	}
+    if (_methodName == "hybrid" || _methodName == "Hybrid" || _methodName == "HYBRID")
+        _method = hybrid;
+    else if (_methodName == "midpoint" || _methodName == "Midpoint" || _methodName == "MIDPOINT")
+        _method = midpoint;
+    else if (_methodName == "axial" || _methodName == "Axial" || _methodName == "AXIAL")
+        _method = axial;
+    else if (_methodName == "Unassigned") {  // method was not specified in wrap object definition; use default
+        _method = hybrid;
+        _methodName = "hybrid";
+    } else {  // method was specified incorrectly in wrap object definition; throw an exception
+        string errorMessage = "Error: wrapping method for wrap object " + getName() + " was either not specified, or specified incorrectly.";
+        throw Exception(errorMessage);
+    }
 }
 
 //_____________________________________________________________________________
@@ -167,15 +167,15 @@ void PathWrap::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
  */
 void PathWrap::copyData(const PathWrap& aPathWrap)
 {
-	_wrapObjectName = aPathWrap._wrapObjectName;
-	_methodName = aPathWrap._methodName;
-	_method = aPathWrap._method;
-	_range = aPathWrap._range;
-	_wrapObject = aPathWrap._wrapObject;
-	_previousWrap = aPathWrap._previousWrap;
+    _wrapObjectName = aPathWrap._wrapObjectName;
+    _methodName = aPathWrap._methodName;
+    _method = aPathWrap._method;
+    _range = aPathWrap._range;
+    _wrapObject = aPathWrap._wrapObject;
+    _previousWrap = aPathWrap._previousWrap;
 
-	_wrapPoints[0] = aPathWrap._wrapPoints[0];
-	_wrapPoints[1] = aPathWrap._wrapPoints[1];
+    _wrapPoints[0] = aPathWrap._wrapPoints[0];
+    _wrapPoints[1] = aPathWrap._wrapPoints[1];
 }
 
 //=============================================================================
@@ -189,80 +189,80 @@ void PathWrap::copyData(const PathWrap& aPathWrap)
  */
 PathWrap& PathWrap::operator=(const PathWrap& aPathWrap)
 {
-	// BASE CLASS
-	Object::operator=(aPathWrap);
+    // BASE CLASS
+    Object::operator=(aPathWrap);
 
-	copyData(aPathWrap);
+    copyData(aPathWrap);
 
-	return(*this);
+    return(*this);
 }
 
 PathWrapPoint& PathWrap::getWrapPoint(int aIndex)
 {
-	if (aIndex < 0 || aIndex > 1)
-	{
-		// TODO string errorMessage = "PathWrap::getWrapPoint(): invalid index (" + aIndex + ")";
-		// throw Exception(errorMessage);
-	}
+    if (aIndex < 0 || aIndex > 1)
+    {
+        // TODO string errorMessage = "PathWrap::getWrapPoint(): invalid index (" + aIndex + ")";
+        // throw Exception(errorMessage);
+    }
 
-	return _wrapPoints[aIndex];
+    return _wrapPoints[aIndex];
 }
 
 void PathWrap::setStartPoint( const SimTK::State& s, int aIndex)
 {
-	if ((aIndex != _range[0]) && (aIndex == -1 || _range[1] == -1 || (aIndex >= 1 && aIndex <= _range[1])))
-	{
-		_range[0] = aIndex;
-		_rangeProp.setValueIsDefault(false);
-	}
+    if ((aIndex != _range[0]) && (aIndex == -1 || _range[1] == -1 || (aIndex >= 1 && aIndex <= _range[1])))
+    {
+        _range[0] = aIndex;
+        _rangeProp.setValueIsDefault(false);
+    }
 }
 
 void PathWrap::setEndPoint( const SimTK::State& s, int aIndex)
 {
-	if ((aIndex != _range[1]) && (aIndex == -1 || _range[0] == -1 || (aIndex >= _range[0] && aIndex <= _path->getPathPointSet().getSize())))
-	{
-		_range[1] = aIndex;
-		_rangeProp.setValueIsDefault(false);
-	}
+    if ((aIndex != _range[1]) && (aIndex == -1 || _range[0] == -1 || (aIndex >= _range[0] && aIndex <= _path->getPathPointSet().getSize())))
+    {
+        _range[1] = aIndex;
+        _rangeProp.setValueIsDefault(false);
+    }
 }
 
 void PathWrap::resetPreviousWrap()
 {
-	_previousWrap.startPoint = -1;
-	_previousWrap.endPoint = -1;
+    _previousWrap.startPoint = -1;
+    _previousWrap.endPoint = -1;
 
-	_previousWrap.wrap_pts.setSize(0);
-	_previousWrap.wrap_path_length = 0.0;
+    _previousWrap.wrap_pts.setSize(0);
+    _previousWrap.wrap_path_length = 0.0;
 
-	int i;
-	for (i = 0; i < 3; i++) {
-		_previousWrap.r1[i] = -std::numeric_limits<SimTK::Real>::infinity();
-		_previousWrap.r2[i] = -std::numeric_limits<SimTK::Real>::infinity();
-		_previousWrap.sv[i] = -std::numeric_limits<SimTK::Real>::infinity();
-	}
+    int i;
+    for (i = 0; i < 3; i++) {
+        _previousWrap.r1[i] = -std::numeric_limits<SimTK::Real>::infinity();
+        _previousWrap.r2[i] = -std::numeric_limits<SimTK::Real>::infinity();
+        _previousWrap.sv[i] = -std::numeric_limits<SimTK::Real>::infinity();
+    }
 }
 
 void PathWrap::setPreviousWrap(const WrapResult& aWrapResult)
 {
-	_previousWrap = aWrapResult;
+    _previousWrap = aWrapResult;
 }
 
 void PathWrap::setWrapObject(WrapObject& aWrapObject)
 {
-	_wrapObject = &aWrapObject;
-	_wrapObjectName = aWrapObject.getName();
+    _wrapObject = &aWrapObject;
+    _wrapObjectName = aWrapObject.getName();
 }
 
 void PathWrap::setMethod(WrapMethod aMethod)
 {
-	if (aMethod == axial) {
-		_method = axial;
-		_methodName = "axial";
-	} else if (aMethod == midpoint) {
-		_method = midpoint;
-		_methodName = "midpoint";
-	} else if (aMethod == hybrid) {
-		_method = hybrid;
-		_methodName = "hybrid";
-	}
+    if (aMethod == axial) {
+        _method = axial;
+        _methodName = "axial";
+    } else if (aMethod == midpoint) {
+        _method = midpoint;
+        _methodName = "midpoint";
+    } else if (aMethod == hybrid) {
+        _method = hybrid;
+        _methodName = "hybrid";
+    }
 }

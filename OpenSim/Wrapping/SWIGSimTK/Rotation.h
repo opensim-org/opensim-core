@@ -876,22 +876,6 @@ public:
         return calcUnnormalizedNInvForQuaternion(q)*qdot;
     }
 
-    /// Given a quaternion q representing R_PB, angular velocity of B in P, and
-    /// the time derivative of the angular velocity, return the second time 
-    /// derivative qdotdot of the quaternion. Everything is measured and 
-    /// expressed in the parent.
-    /// Cost is 78 flops.
-    // TODO: reimplement
-    static Vec4 OLDconvertAngVelDotToQuaternionDotDot
-       (const Vec4& q, const Vec3& w_PB_P, const Vec3& wdot_PB_P)
-    {
-        const Mat43P N    = calcUnnormalizedNForQuaternion(q);
-        const Vec4      qdot = N*w_PB_P;   // 20 flops
-        const Mat43P NDot = calcUnnormalizedNDotForQuaternion(qdot);
-
-        return  N*wdot_PB_P + NDot*w_PB_P;  // 44 flops
-    }
-
     /// We want to differentiate qdot=N(q)*w to get qdotdot=N*b+NDot*w where
     /// b is angular acceleration wdot. Note that NDot=NDot(qdot), but it is 
     /// far better to calculate the matrix-vector product NDot(N*w)*w directly

@@ -44,13 +44,13 @@ using namespace OpenSim;
  * Default constructor.
  */
 FunctionThresholdCondition::FunctionThresholdCondition() :
-	Condition(),
-	_function(_functionProp.getValueObjPtrRef()),
-	_threshold( _thresholdProp.getValueDbl())
+    Condition(),
+    _function(_functionProp.getValueObjPtrRef()),
+    _threshold( _thresholdProp.getValueDbl())
 {
-	setNull();
-	setupProperties();
-	_isDisabled = false;
+    setNull();
+    setupProperties();
+    _isDisabled = false;
 }
 
 //_____________________________________________________________________________
@@ -68,12 +68,12 @@ FunctionThresholdCondition::~FunctionThresholdCondition()
  * @param aCondition FunctionThresholdCondition to be copied.
  */
 FunctionThresholdCondition::FunctionThresholdCondition(const FunctionThresholdCondition &aCondition) :
-	_function(_functionProp.getValueObjPtrRef()),
-	_threshold( _thresholdProp.getValueDbl())
+    _function(_functionProp.getValueObjPtrRef()),
+    _threshold( _thresholdProp.getValueDbl())
 {
-	setNull();
-	setupProperties();
-	copyData(aCondition);
+    setNull();
+    setupProperties();
+    copyData(aCondition);
 }
 
 
@@ -88,9 +88,9 @@ FunctionThresholdCondition::FunctionThresholdCondition(const FunctionThresholdCo
  */
 void FunctionThresholdCondition::copyData(const FunctionThresholdCondition &aCondition)
 {
-	Condition::copyData(aCondition);
-	_function = aCondition._function;
-	_threshold = aCondition._threshold;
+    Condition::copyData(aCondition);
+    _function = aCondition._function;
+    _threshold = aCondition._threshold;
 }
 
 
@@ -100,7 +100,7 @@ void FunctionThresholdCondition::copyData(const FunctionThresholdCondition &aCon
  */
 void FunctionThresholdCondition::setNull(void)
 {
-	setAuthors("Ajay Seth");
+    setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________
@@ -109,13 +109,13 @@ void FunctionThresholdCondition::setNull(void)
  */
 void FunctionThresholdCondition::setupProperties(void)
 {
-	// Condition Function
-	_functionProp.setName("condition_function");
-	_propertySet.append(&_functionProp);
+    // Condition Function
+    _functionProp.setName("condition_function");
+    _propertySet.append(&_functionProp);
 
-	//Threshold
-	_thresholdProp.setName("threshold");
-	_propertySet.append(&_thresholdProp);
+    //Threshold
+    _thresholdProp.setName("threshold");
+    _propertySet.append(&_thresholdProp);
 
 
 }
@@ -132,12 +132,12 @@ void FunctionThresholdCondition::setupProperties(void)
  */
 FunctionThresholdCondition& FunctionThresholdCondition::operator=(const FunctionThresholdCondition &aCondition)
 {
-	// BASE CLASS
-	Condition::operator=(aCondition);
+    // BASE CLASS
+    Condition::operator=(aCondition);
 
-	copyData(aCondition);
+    copyData(aCondition);
 
-	return(*this);
+    return(*this);
 }
 
 //=============================================================================
@@ -154,7 +154,7 @@ FunctionThresholdCondition& FunctionThresholdCondition::operator=(const Function
 //-----------------------------------------------------------------------------
 bool FunctionThresholdCondition::calcCondition(const SimTK::State& s) const
 {
-	return (_function->calcValue(SimTK::Vector(1, s.getTime())) > _threshold);
+    return (_function->calcValue(SimTK::Vector(1, s.getTime())) > _threshold);
 }
 
 //_____________________________________________________________________________

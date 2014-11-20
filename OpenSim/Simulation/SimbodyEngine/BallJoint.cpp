@@ -51,23 +51,23 @@ BallJoint::~BallJoint()
  */
 BallJoint::BallJoint() : Joint()
 {
-	setAuthors("Ajay Seth");
-	constructCoordinates();
+    setAuthors("Ajay Seth");
+    constructCoordinates();
 }
 //_____________________________________________________________________________
 /**
  * Convenience Constructor.
  */
 BallJoint::BallJoint(const std::string &name, const OpenSim::Body& parent, 
-					 const Vec3& locationInParent, const Vec3& orientationInParent,
-					 const OpenSim::Body& body,
-					 const Vec3& locationInBody, const Vec3& orientationInBody, 
-					 bool reverse) :
-			Joint(name, parent, locationInParent,orientationInParent,
-					body, locationInBody, orientationInBody, reverse)
+                     const Vec3& locationInParent, const Vec3& orientationInParent,
+                     const OpenSim::Body& body,
+                     const Vec3& locationInBody, const Vec3& orientationInBody, 
+                     bool reverse) :
+            Joint(name, parent, locationInParent,orientationInParent,
+                    body, locationInBody, orientationInBody, reverse)
 {
-	setAuthors("Ajay Seth");
-	constructCoordinates();
+    setAuthors("Ajay Seth");
+    constructCoordinates();
 }
 
 
@@ -75,46 +75,42 @@ BallJoint::BallJoint(const std::string &name, const OpenSim::Body& parent,
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void BallJoint::addToSystem(SimTK::MultibodySystem& system) const
+void BallJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Ball>(system);
-
-    // TODO: Joints require super class to be called last.
-    Super::addToSystem(system);
+    createMobilizedBody<MobilizedBody::Ball>(system);
 }
 
-void BallJoint::initStateFromProperties(SimTK::State& s) const
+void BallJoint::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 
     const MultibodySystem& system = getModel().getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (matter.getUseEulerAngles(s))
         return;
 
-	const CoordinateSet& coordinateSet = get_CoordinateSet();
+    const CoordinateSet& coordinateSet = get_CoordinateSet();
 
-	double xangle = coordinateSet[0].getDefaultValue();
+    double xangle = coordinateSet[0].getDefaultValue();
     double yangle = coordinateSet[1].getDefaultValue();
     double zangle = coordinateSet[2].getDefaultValue();
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
-	
-	BallJoint* mutableThis = const_cast<BallJoint*>(this);
-	matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).setQToFitRotation(s, r);
+    BallJoint* mutableThis = const_cast<BallJoint*>(this);
+    getChildBody().getMobilizedBody().setQToFitRotation(s, r);
 }
 
-void BallJoint::setPropertiesFromState(const SimTK::State& state)
+void BallJoint::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
 
     // Override default behavior in case of quaternions.
     const MultibodySystem&        system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-		Rotation r = matter.getMobilizedBody(MobilizedBodyIndex(getChildBody().getMobilizedBodyIndex())).getBodyRotation(state);
+        Rotation r = getChildBody().getMobilizedBody().getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
-	
-		const CoordinateSet& coordinateSet = get_CoordinateSet();
+    
+        const CoordinateSet& coordinateSet = get_CoordinateSet();
 
         coordinateSet[0].setDefaultValue(angles[0]);
         coordinateSet[1].setDefaultValue(angles[1]);

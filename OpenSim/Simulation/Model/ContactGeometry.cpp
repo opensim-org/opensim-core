@@ -41,7 +41,7 @@ namespace OpenSim {
 // Default constructor.
 ContactGeometry::ContactGeometry() : ModelComponent()
 {
-	setNull();
+    setNull();
     constructProperties();
 }
 
@@ -49,7 +49,7 @@ ContactGeometry::ContactGeometry() : ModelComponent()
 // Convienience constructor.
 ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, Body& body) : ModelComponent()
 {
-	setNull();
+    setNull();
     constructProperties();
 
     _body = &body;
@@ -60,7 +60,7 @@ ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, 
 
 void ContactGeometry::setNull()
 {
-	setAuthors("Peter Eastman");
+    setAuthors("Peter Eastman");
     _body = NULL;
 }
 
@@ -77,7 +77,7 @@ void ContactGeometry::constructProperties()
     constructProperty_display_preference(1);
 
     Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
-	defaultColor[0] = 0.0; 
+    defaultColor[0] = 0.0; 
     constructProperty_color(defaultColor);
 }
 
@@ -146,20 +146,20 @@ void ContactGeometry::setDisplayPreference(const int dispPref)
     set_display_preference(dispPref);
 }
 
-void ContactGeometry::connectToModel(Model& aModel)
+void ContactGeometry::extendConnectToModel(Model& aModel)
 {
     try {
-    	_body = &aModel.updBodySet().get(get_body_name());
-		_model = &aModel;
+        _body = &aModel.updBodySet().get(get_body_name());
+        _model = &aModel;
     }
-	catch (...)
+    catch (...)
     {
         std::string errorMessage = "Invalid body (" + get_body_name() + ") specified in contact geometry " + getName();
-		throw (Exception(errorMessage.c_str()));
-	}
-	_body->updDisplayer()->addDependent(updDisplayer());
-	_displayer.setTransform(getTransform());
-	_displayer.setOwner(this);
+        throw (Exception(errorMessage.c_str()));
+    }
+    _body->updDisplayer()->addDependent(updDisplayer());
+    _displayer.setTransform(getTransform());
+    _displayer.setOwner(this);
 }
 
 void ContactGeometry::scale(const ScaleSet& aScaleSet)

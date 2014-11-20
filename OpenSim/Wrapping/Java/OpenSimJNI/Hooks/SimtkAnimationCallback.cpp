@@ -52,9 +52,9 @@ using namespace OpenSim;
 SimtkAnimationCallback*
 SimtkAnimationCallback::CreateAnimationCallback(Model *aModel)
 {
-	SimtkAnimationCallback* newAnimationCallback = new SimtkAnimationCallback(aModel);
-	aModel->addIntegCallback(newAnimationCallback);
-	return newAnimationCallback;
+    SimtkAnimationCallback* newAnimationCallback = new SimtkAnimationCallback(aModel);
+    aModel->addIntegCallback(newAnimationCallback);
+    return newAnimationCallback;
 }
 
 //=============================================================================
@@ -66,7 +66,7 @@ SimtkAnimationCallback::CreateAnimationCallback(Model *aModel)
  */
 SimtkAnimationCallback::~SimtkAnimationCallback()
 {
-	delete[] _transforms;
+    delete[] _transforms;
 }
 
 //_____________________________________________________________________________
@@ -79,36 +79,36 @@ SimtkAnimationCallback::~SimtkAnimationCallback()
  * @param aModel Model to which the callback mthods apply.
  */
 SimtkAnimationCallback::SimtkAnimationCallback(Model *aModel, Model *aModelForDisplay) :
-	IntegCallback(aModel)
+    IntegCallback(aModel)
 {
-	//cout<<"\n\nCreating new SimtkAnimationCallback...\n";
-	// NULL
-	setNull();
+    //cout<<"\n\nCreating new SimtkAnimationCallback...\n";
+    // NULL
+    setNull();
 
-	if(aModelForDisplay) _modelForDisplay = aModelForDisplay;
-	else _modelForDisplay = aModel;
+    if(aModelForDisplay) _modelForDisplay = aModelForDisplay;
+    else _modelForDisplay = aModel;
 
-	AbstractDynamicsEngine& de = getModelForDisplay()->getDynamicsEngine();
-	// We could keep pointer to body's xform, but that requires display
-	// to be synchronous.
-	// For now we make new list, copy then we'll fix performance
-	_transforms = new Transform[de.getNumBodies()];
+    AbstractDynamicsEngine& de = getModelForDisplay()->getDynamicsEngine();
+    // We could keep pointer to body's xform, but that requires display
+    // to be synchronous.
+    // For now we make new list, copy then we'll fix performance
+    _transforms = new Transform[de.getNumBodies()];
 
-	// Make sure the models are compatible (in terms of q's and u's)
-	assert(getModel()->getDynamicsEngine().getNumCoordinates() == getModelForDisplay()->getDynamicsEngine().getNumCoordinates());
-	assert(getModel()->getDynamicsEngine().getNumSpeeds() == getModelForDisplay()->getDynamicsEngine().getNumSpeeds());
+    // Make sure the models are compatible (in terms of q's and u's)
+    assert(getModel()->getDynamicsEngine().getNumCoordinates() == getModelForDisplay()->getDynamicsEngine().getNumCoordinates());
+    assert(getModel()->getDynamicsEngine().getNumSpeeds() == getModelForDisplay()->getDynamicsEngine().getNumSpeeds());
 
-	if(getModel()!=getModelForDisplay()) {
-		Array<std::string> stateNames1, stateNames2;
-		getModel()->getStateNames(stateNames1);
-		getModelForDisplay()->getStateNames(stateNames2);
-		if(stateNames1==stateNames2) _modelForDisplayCompatibleStates=true;
-	}
+    if(getModel()!=getModelForDisplay()) {
+        Array<std::string> stateNames1, stateNames2;
+        getModel()->getStateNames(stateNames1);
+        getModelForDisplay()->getStateNames(stateNames2);
+        if(stateNames1==stateNames2) _modelForDisplayCompatibleStates=true;
+    }
 
-	getTransformsFromKinematicsEngine(*getModelForDisplay());
+    getTransformsFromKinematicsEngine(*getModelForDisplay());
 
-	_currentTime=0.0;
-	//cout<<endl<<endl;
+    _currentTime=0.0;
+    //cout<<endl<<endl;
 }
 
 //=============================================================================
@@ -121,12 +121,12 @@ SimtkAnimationCallback::SimtkAnimationCallback(Model *aModel, Model *aModelForDi
 void SimtkAnimationCallback::
 setNull()
 {
-	setType("SimtkAnimationCallback");
-	setName("UNKNOWN");
-	//_transforms.setSize(0);
-	_currentTime=0.0;
-	_modelForDisplaySetConfiguration=true;
-	_modelForDisplayCompatibleStates=false;
+    setType("SimtkAnimationCallback");
+    setName("UNKNOWN");
+    //_transforms.setSize(0);
+    _currentTime=0.0;
+    _modelForDisplaySetConfiguration=true;
+    _modelForDisplayCompatibleStates=false;
 }
 
 
@@ -141,7 +141,7 @@ setNull()
 const double SimtkAnimationCallback::
 getCurrentTime() const
 {
-	return _currentTime;
+    return _currentTime;
 }
 
 //=============================================================================
@@ -165,28 +165,28 @@ getCurrentTime() const
  */
 int SimtkAnimationCallback::
 step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP,double *aDYDT,void *aClientData)
+        double *aX,double *aY,double *aYP,double *aDYDT,void *aClientData)
 {
-	_currentTime = aT;
+    _currentTime = aT;
 
-	if(!proceed(aStep)) return 0;
+    if(!proceed(aStep)) return 0;
 
-	if(getModelForDisplay() != getModel() && _modelForDisplaySetConfiguration) {
-		if(_modelForDisplayCompatibleStates) getModelForDisplay()->setStates(aY);
-		else getModelForDisplay()->getDynamicsEngine().setConfiguration(&aY[0], &aY[getModelForDisplay()->getNumCoordinates()]);
-	}
-	
-	//mutex_begin(0);	// Intention is to make sure xforms that are cached are consistent from the same time
-	getTransformsFromKinematicsEngine(*getModelForDisplay());
-	// update muscle geometry
-	getModelForDisplay()->getActuatorSet()->updateDisplayers();
-	//mutex_end(0);
-	return (0);
+    if(getModelForDisplay() != getModel() && _modelForDisplaySetConfiguration) {
+        if(_modelForDisplayCompatibleStates) getModelForDisplay()->setStates(aY);
+        else getModelForDisplay()->getDynamicsEngine().setConfiguration(&aY[0], &aY[getModelForDisplay()->getNumCoordinates()]);
+    }
+    
+    //mutex_begin(0);   // Intention is to make sure xforms that are cached are consistent from the same time
+    getTransformsFromKinematicsEngine(*getModelForDisplay());
+    // update muscle geometry
+    getModelForDisplay()->getActuatorSet()->updateDisplayers();
+    //mutex_end(0);
+    return (0);
 }
 
 const Transform* SimtkAnimationCallback::getBodyTransform(int index) const
 {
-	return &_transforms[index];
+    return &_transforms[index];
 }
 /**
  * Cache Coms for bodies so that we can get the xform for the bodies from SDFast in one go with 
@@ -203,12 +203,12 @@ void SimtkAnimationCallback::extractOffsets(Model& displayModel)
 void SimtkAnimationCallback::
 getTransformsFromKinematicsEngine(Model& dModel)
 {
-	AbstractDynamicsEngine& de = dModel.getDynamicsEngine();
-	BodySet *bodySet = de.getBodySet();
-	AbstractBody* body;
-	int i,nb = bodySet->getSize();
-	for(i=0;i<nb;i++) {
-		body = bodySet->get(i);
-//  JACKM NEEDS STATE		_transforms[i] = de.getTransform(*body);
-	}
+    AbstractDynamicsEngine& de = dModel.getDynamicsEngine();
+    BodySet *bodySet = de.getBodySet();
+    AbstractBody* body;
+    int i,nb = bodySet->getSize();
+    for(i=0;i<nb;i++) {
+        body = bodySet->get(i);
+//  JACKM NEEDS STATE       _transforms[i] = de.getTransform(*body);
+    }
 }

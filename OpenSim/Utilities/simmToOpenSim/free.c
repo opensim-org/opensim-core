@@ -29,7 +29,7 @@
 
 
 /*************** DEFINES (for this file only) *********************************/
-	
+    
 
 
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
@@ -151,12 +151,12 @@ void freeModelStruct(ModelStruct* ms)
    {
       if (ms->gencoord[i]->defined == yes)
       {
-	      FREE_IFNOTNULL(ms->gencoord[i]->name);
-	      FREE_IFNOTNULL(ms->gencoord[i]->jointnum);
+          FREE_IFNOTNULL(ms->gencoord[i]->name);
+          FREE_IFNOTNULL(ms->gencoord[i]->jointnum);
 #if INCLUDE_MOCAP_MODULE
          FREE_IFNOTNULL(ms->gencoord[i]->mocap_segment);
 #endif
-	      FREE_IFNOTNULL(ms->gencoord[i]->group);
+          FREE_IFNOTNULL(ms->gencoord[i]->group);
       }
    }
    FREE_IFNOTNULL(ms->gencoord);

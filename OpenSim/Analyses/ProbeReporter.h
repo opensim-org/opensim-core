@@ -173,7 +173,7 @@ public:
         double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
-};	// END of class ProbeReporter
+};  // END of class ProbeReporter
 
 }; //namespace
 //=============================================================================

@@ -65,10 +65,10 @@ ControlSet::~ControlSet()
  * Default constructor.
  */
 ControlSet::ControlSet() :
-	_ptcMap(-1), _ptpMap(-1)
+    _ptcMap(-1), _ptpMap(-1)
 {
-	setNull();
-	generateParameterMaps();
+    setNull();
+    generateParameterMaps();
 }
 //_____________________________________________________________________________
 /**
@@ -77,13 +77,13 @@ ControlSet::ControlSet() :
  * @param aFileName Name of the file.
  */
 ControlSet::ControlSet(const string &aFileName) :
-	Set<Control>(aFileName, false), _ptcMap(-1), _ptpMap(-1)
+    Set<Control>(aFileName, false), _ptcMap(-1), _ptpMap(-1)
 {
-	setNull();
-	SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
-	updateFromXMLNode(e, getDocument()->getDocumentVersion());
-	// removeInvalidObjects();
-	generateParameterMaps();
+    setNull();
+    SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
+    updateFromXMLNode(e, getDocument()->getDocumentVersion());
+    // removeInvalidObjects();
+    generateParameterMaps();
 }
 //_____________________________________________________________________________
 /**
@@ -92,12 +92,12 @@ ControlSet::ControlSet(const string &aFileName) :
  * @param aSet Analysis set to be copied.
  */
 ControlSet::ControlSet(const ControlSet &aSet) :
-	Set<Control>(aSet),
-	_ptcMap(-1), _ptpMap(-1)
+    Set<Control>(aSet),
+    _ptcMap(-1), _ptpMap(-1)
 {
-	setNull();
-	_ptcMap = aSet._ptcMap;
-	_ptpMap = aSet._ptpMap;
+    setNull();
+    _ptcMap = aSet._ptcMap;
+    _ptpMap = aSet._ptpMap;
 }
 
 //_____________________________________________________________________________
@@ -110,24 +110,24 @@ ControlSet::ControlSet(const ControlSet &aSet) :
  */
 ControlSet::ControlSet(const Storage& aStorage, int numControls, int startIndex)
 {
-	setNull();
-	// LOOP THROUGH LIST
-	int j;
-	ControlLinear *control;
-	int nControls = numControls;
-	// If 0 then get all
-	if (nControls==0){
-		nControls = aStorage.getColumnLabels().getSize()-startIndex-1;	//-1 because ExtractControl assumes no time col.
-	}
-	for(j=0;j<nControls;j++) {
+    setNull();
+    // LOOP THROUGH LIST
+    int j;
+    ControlLinear *control;
+    int nControls = numControls;
+    // If 0 then get all
+    if (nControls==0){
+        nControls = aStorage.getColumnLabels().getSize()-startIndex-1;  //-1 because ExtractControl assumes no time col.
+    }
+    for(j=0;j<nControls;j++) {
 
-		//cout << "Process column number " << j+startIndex << endl;
-		// EXTRACT CONTROL NODE
-		control = ExtractControl(aStorage,j+startIndex);
+        //cout << "Process column number " << j+startIndex << endl;
+        // EXTRACT CONTROL NODE
+        control = ExtractControl(aStorage,j+startIndex);
 
-		// APPEND ON TO CONTROL SET
-		adoptAndAppend(control);
-	}
+        // APPEND ON TO CONTROL SET
+        adoptAndAppend(control);
+    }
 
 }
 
@@ -141,10 +141,10 @@ ControlSet::ControlSet(const Storage& aStorage, int numControls, int startIndex)
 void ControlSet::
 setNull()
 {
-	setName("Control Set");
-	setupProperties();
-	_ptcMap.setSize(0);
-	_ptpMap.setSize(0);
+    setName("Control Set");
+    setupProperties();
+    _ptcMap.setSize(0);
+    _ptpMap.setSize(0);
 }
 //_____________________________________________________________________________
 /**
@@ -177,15 +177,15 @@ setupProperties()
 #ifndef SWIG
 ControlSet& ControlSet::
 operator=(const ControlSet &aSet)
-{	
-	// BASE CLASS
-	Set<Control>::operator=(aSet);
+{   
+    // BASE CLASS
+    Set<Control>::operator=(aSet);
 
-	// MEMBERS
-	_ptcMap = aSet._ptcMap;
-	_ptpMap = aSet._ptpMap;
+    // MEMBERS
+    _ptcMap = aSet._ptcMap;
+    _ptpMap = aSet._ptpMap;
 
-	return(*this);
+    return(*this);
 }
 #endif // SWIG
 
@@ -213,15 +213,15 @@ operator=(const ControlSet &aSet)
 int ControlSet::
 getSize(bool aForModelControls) const
 {
-	if(!aForModelControls) return( Set<Control>::getSize() );
+    if(!aForModelControls) return( Set<Control>::getSize() );
 
-	int i,n;
-	for(n=i=0;i<Set<Control>::getSize();i++) {
-		Control& control = get(i);
-		if(control.getIsModelControl()) n++;
-	}
+    int i,n;
+    for(n=i=0;i<Set<Control>::getSize();i++) {
+        Control& control = get(i);
+        if(control.getIsModelControl()) n++;
+    }
 
-	return(n);
+    return(n);
 }
 
 //-----------------------------------------------------------------------------
@@ -242,18 +242,18 @@ getSize(bool aForModelControls) const
 void ControlSet::
 getControlList(const char *aType,Array<int> &rList,bool aForModelControls) const
 {
-	rList.setSize(0);
+    rList.setSize(0);
 
-	int i;
-	int size = getSize(false);
-	for(i=0;i<size;i++) {
-		Control& control = get(i);
-		if(aForModelControls) if(!control.getIsModelControl()) continue;
+    int i;
+    int size = getSize(false);
+    for(i=0;i<size;i++) {
+        Control& control = get(i);
+        if(aForModelControls) if(!control.getIsModelControl()) continue;
 
-		if(control.getConcreteClassName()==aType) {
-			rList.append(i);
-		}
-	}
+        if(control.getConcreteClassName()==aType) {
+            rList.append(i);
+        }
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -281,18 +281,18 @@ getControlList(const char *aType,Array<int> &rList,bool aForModelControls) const
  */
 void ControlSet::
 setControlValues(double aT,const double aX[],
-	bool aForModelControls)
+    bool aForModelControls)
 {
-	int i,j;
-	int size = getSize(false);
-	for(i=j=0;j<size;j++) {
-		Control& control = get(j);
-		if(aForModelControls) if(!control.getIsModelControl()) continue;
-	
-		control.setControlValue(aT,aX[i]);
-		i++;
-	}
-	generateParameterMaps();
+    int i,j;
+    int size = getSize(false);
+    for(i=j=0;j<size;j++) {
+        Control& control = get(j);
+        if(aForModelControls) if(!control.getIsModelControl()) continue;
+    
+        control.setControlValue(aT,aX[i]);
+        i++;
+    }
+    generateParameterMaps();
 }
 //_____________________________________________________________________________
 /**
@@ -316,24 +316,24 @@ setControlValues(double aT,const double aX[],
  */
 void ControlSet::
 setControlValues(double aT,const Array<double> &aX,
-	bool aForModelControls)
+    bool aForModelControls)
 {
-	int i,n;
-	int size = getSize(false);
-	for(n=i=0;(n<aX.getSize())&&(i<size);i++) {
-		Control& control = get(i);
-		if(aForModelControls) if(!control.getIsModelControl()) continue;
-	
-		control.setControlValue(aT,aX[n]);
-		n++;
-	}
-	generateParameterMaps();
+    int i,n;
+    int size = getSize(false);
+    for(n=i=0;(n<aX.getSize())&&(i<size);i++) {
+        Control& control = get(i);
+        if(aForModelControls) if(!control.getIsModelControl()) continue;
+    
+        control.setControlValue(aT,aX[n]);
+        n++;
+    }
+    generateParameterMaps();
 }
 //_____________________________________________________________________________
 /**
  * Get the values of the control curves held in this set at a specified time.
  *
- *	This is the bread-and-butter method of the controls class; it is called
+ *  This is the bread-and-butter method of the controls class; it is called
  * repeatedly throughout an integration.
  *
  * @param aT Time at which to get the values of the control curves.
@@ -343,24 +343,24 @@ setControlValues(double aT,const Array<double> &aX,
  */
 void ControlSet::
 getControlValues(double aT,double rX[],
-	bool aForModelControls) const
+    bool aForModelControls) const
 {
-	// GET VALUES
-	int i,n;
-	int size = getSize(false);
-	for(n=i=0;i<size;i++) {
-		Control& control = get(i);
-		if(aForModelControls) if(!control.getIsModelControl()) continue;
-	
-		rX[n] = control.getControlValue(aT);
-		n++;
-	}
+    // GET VALUES
+    int i,n;
+    int size = getSize(false);
+    for(n=i=0;i<size;i++) {
+        Control& control = get(i);
+        if(aForModelControls) if(!control.getIsModelControl()) continue;
+    
+        rX[n] = control.getControlValue(aT);
+        n++;
+    }
 }
 //_____________________________________________________________________________
 /**
  * Get the values of the control curves held in this set at a specified time.
  *
- *	This is the bread-and-butter method of the controls class; it is called
+ *  This is the bread-and-butter method of the controls class; it is called
  * repeatedly throughout an integration.
  *
  * @param aT Time at which to get the values of the control curves.
@@ -370,20 +370,20 @@ getControlValues(double aT,double rX[],
  */
 void ControlSet::
 getControlValues(double aT,Array<double> &rX,
-	bool aForModelControls) const
+    bool aForModelControls) const
 {
-	// INITIALIZE SIZE
-	rX.setSize(0);
+    // INITIALIZE SIZE
+    rX.setSize(0);
 
-	// GET VALUES
-	int i;
-	int size = getSize(false);
-	for(i=0;i<size;i++) {
-		Control& control = get(i);
-		if(aForModelControls) if(!control.getIsModelControl()) continue;
-	
-		rX.append(control.getControlValue(aT));
-	}
+    // GET VALUES
+    int i;
+    int size = getSize(false);
+    for(i=0;i<size;i++) {
+        Control& control = get(i);
+        if(aForModelControls) if(!control.getIsModelControl()) continue;
+    
+        rX.append(control.getControlValue(aT));
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -400,14 +400,14 @@ getControlValues(double aT,Array<double> &rX,
 int ControlSet::
 getNumParameters(bool aForModelControls) const
 {
-	int i,n;
-	int size = getSize(false);
-	for(n=i=0;i<size;i++) {
-		Control& control = get(i);
-		if(aForModelControls) if(!control.getIsModelControl()) continue;
-		n += control.getNumParameters();
-	}
-	return(n);
+    int i,n;
+    int size = getSize(false);
+    for(n=i=0;i<size;i++) {
+        Control& control = get(i);
+        if(aForModelControls) if(!control.getIsModelControl()) continue;
+        n += control.getNumParameters();
+    }
+    return(n);
 }
 
 //-----------------------------------------------------------------------------
@@ -429,19 +429,19 @@ getNumParameters(bool aForModelControls) const
 void ControlSet::
 getParameterList(Array<int> &rList,bool aForModelControls) const
 {
-	rList.setSize(0);
+    rList.setSize(0);
 
-	int i,j,sp,n;
-	int size = getSize(false);
-	for(sp=i=0;i<size;i++) {
-		Control& control = get(i);
-		n = control.getNumParameters();
-		for(j=0;j<n;j++,sp++) {
-			if(aForModelControls) if(!control.getIsModelControl())
-				continue;
-			rList.append(sp);
-		}
-	}	
+    int i,j,sp,n;
+    int size = getSize(false);
+    for(sp=i=0;i<size;i++) {
+        Control& control = get(i);
+        n = control.getNumParameters();
+        for(j=0;j<n;j++,sp++) {
+            if(aForModelControls) if(!control.getIsModelControl())
+                continue;
+            rList.append(sp);
+        }
+    }   
 }
 //_____________________________________________________________________________
 /**
@@ -458,31 +458,31 @@ getParameterList(Array<int> &rList,bool aForModelControls) const
  */
 void ControlSet::
 getParameterList(double aT,Array<int> &rList,
-	bool aForModelControls) const
+    bool aForModelControls) const
 {
-	rList.setSize(0);
+    rList.setSize(0);
 
-	int i,j,n;
-	int size = getSize(false);
-	Array<int> list(-1);
-	for(n=i=0;i<size;i++) {
+    int i,j,n;
+    int size = getSize(false);
+    Array<int> list(-1);
+    for(n=i=0;i<size;i++) {
 
-		// GET CONTROL
-		Control& control = get(i);
+        // GET CONTROL
+        Control& control = get(i);
 
-		// ACTUATOR CONTROL?
-		if(aForModelControls) if(!control.getIsModelControl()) {
-			n += control.getNumParameters();
-			continue;
-		}
+        // ACTUATOR CONTROL?
+        if(aForModelControls) if(!control.getIsModelControl()) {
+            n += control.getNumParameters();
+            continue;
+        }
 
-		// GET LIST
-		control.getParameterList(aT,list);
-		for(j=0;j<list.getSize();j++) {
-			rList.append(n+list[j]);
-		}
-		n += control.getNumParameters();
-	}	
+        // GET LIST
+        control.getParameterList(aT,list);
+        for(j=0;j<list.getSize();j++) {
+            rList.append(n+list[j]);
+        }
+        n += control.getNumParameters();
+    }   
 }
 //_____________________________________________________________________________
 /**
@@ -516,31 +516,31 @@ getParameterList(double aT,Array<int> &rList,
  */
 void ControlSet::
 getParameterList(double aTLower,double aTUpper,Array<int> &rList,
-	bool aForModelControls) const
+    bool aForModelControls) const
 {
-	rList.setSize(0);
+    rList.setSize(0);
 
-	int i,j,n;
-	int size = getSize(false);
-	Array<int> list(-1);
-	for(n=i=0;i<size;i++) {
+    int i,j,n;
+    int size = getSize(false);
+    Array<int> list(-1);
+    for(n=i=0;i<size;i++) {
 
-		// GET CONTROL
-		Control& control = get(i);
+        // GET CONTROL
+        Control& control = get(i);
 
-		// ACTUATOR CONTROL?
-		if(aForModelControls) if(!control.getIsModelControl()) {
-			n += control.getNumParameters();
-			continue;
-		}
+        // ACTUATOR CONTROL?
+        if(aForModelControls) if(!control.getIsModelControl()) {
+            n += control.getNumParameters();
+            continue;
+        }
 
-		// GET LIST
-		control.getParameterList(aTLower,aTUpper,list);
-		for(j=0;j<list.getSize();j++) {
-			rList.append(n+list[j]);
-		}
-		n += control.getNumParameters();
-	}	
+        // GET LIST
+        control.getParameterList(aTLower,aTUpper,list);
+        for(j=0;j<list.getSize();j++) {
+            rList.append(n+list[j]);
+        }
+        n += control.getNumParameters();
+    }   
 }
 
 //-----------------------------------------------------------------------------
@@ -558,44 +558,44 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList,
 void ControlSet::
 getParameterMins(Array<double> &rMins,const Array<int> *aList) const
 {
-	// INITIALIZE SIZE
-	rMins.setSize(0);
+    // INITIALIZE SIZE
+    rMins.setSize(0);
 
-	// VARIABLE DECLARATIONS
-	int i,p;
-	int size = getSize(false);
+    // VARIABLE DECLARATIONS
+    int i,p;
+    int size = getSize(false);
 
-	// NO LIST
-	if(aList==NULL) {
-		for(i=0;i<size;i++) {
-    		Control& control = get(i);
-			for(p=0;p<control.getNumParameters();p++) {
-				rMins.append(control.getParameterMin(p));
-			}
-		}
+    // NO LIST
+    if(aList==NULL) {
+        for(i=0;i<size;i++) {
+            Control& control = get(i);
+            for(p=0;p<control.getNumParameters();p++) {
+                rMins.append(control.getParameterMin(p));
+            }
+        }
 
-	// LIST
-	} else {
-		int c,sp;
-		for(i=0;i<aList->getSize();i++) {
+    // LIST
+    } else {
+        int c,sp;
+        for(i=0;i<aList->getSize();i++) {
 
-			// PARAMETER
-			sp = (*aList)[i];
+            // PARAMETER
+            sp = (*aList)[i];
 
-			// GET CONTROL
-			try {
-				c = _ptcMap.get(sp);
-			} catch(const Exception& x) {
-				x.print(cout);
-				continue;
-			}
-			Control& control = get(c);
-		
-			// GET PARAMETER MIN
-			p = _ptpMap[sp];
-			rMins.append(control.getParameterMin(p));
-		}
-	}
+            // GET CONTROL
+            try {
+                c = _ptcMap.get(sp);
+            } catch(const Exception& x) {
+                x.print(cout);
+                continue;
+            }
+            Control& control = get(c);
+        
+            // GET PARAMETER MIN
+            p = _ptpMap[sp];
+            rMins.append(control.getParameterMin(p));
+        }
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -609,44 +609,44 @@ getParameterMins(Array<double> &rMins,const Array<int> *aList) const
 void ControlSet::
 getParameterMaxs(Array<double> &rMaxs,const Array<int> *aList) const
 {
-	// INITIALIZE SIZE
-	rMaxs.setSize(0);
+    // INITIALIZE SIZE
+    rMaxs.setSize(0);
 
-	// VARIABLE DECLARATIONS
-	int i,p;
-	int size = getSize(false);
+    // VARIABLE DECLARATIONS
+    int i,p;
+    int size = getSize(false);
 
-	// NO LIST
-	if(aList==NULL) {
-		for(i=0;i<size;i++) {
-    		Control& control = get(i);
-			for(p=0;p<control.getNumParameters();p++) {
-				rMaxs.append(control.getParameterMax(p));
-			}
-		}
+    // NO LIST
+    if(aList==NULL) {
+        for(i=0;i<size;i++) {
+            Control& control = get(i);
+            for(p=0;p<control.getNumParameters();p++) {
+                rMaxs.append(control.getParameterMax(p));
+            }
+        }
 
-	// LIST
-	} else {
-		int c,sp;
-		for(i=0;i<aList->getSize();i++) {
+    // LIST
+    } else {
+        int c,sp;
+        for(i=0;i<aList->getSize();i++) {
 
-			// PARAMETER
-			sp = (*aList)[i];
+            // PARAMETER
+            sp = (*aList)[i];
 
-			// GET CONTROL
-			try {
-				c = _ptcMap.get(sp);
-			} catch(const Exception& x) {
-				x.print(cout);
-				continue;
-			}
-			Control& control = get(c);
-		
-			// GET PARAMETER MAX
-			p = _ptpMap[sp];
-			rMaxs.append(control.getParameterMax(p));
-		}
-	}
+            // GET CONTROL
+            try {
+                c = _ptcMap.get(sp);
+            } catch(const Exception& x) {
+                x.print(cout);
+                continue;
+            }
+            Control& control = get(c);
+        
+            // GET PARAMETER MAX
+            p = _ptpMap[sp];
+            rMaxs.append(control.getParameterMax(p));
+        }
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -665,42 +665,42 @@ getParameterMaxs(Array<double> &rMaxs,const Array<int> *aList) const
 void ControlSet::
 getParameterValues(double rP[],const Array<int> *aList) const
 {
-	// VARIABLE DECLARATIONS
-	int i,p;
-	int size = getSize(false);
+    // VARIABLE DECLARATIONS
+    int i,p;
+    int size = getSize(false);
 
-	// NO LIST
-	if(aList==NULL) {
-		int n;
-		for(n=i=0;i<size;i++) {
-    		Control& control = get(i);
-			for(p=0;p<control.getNumParameters();p++,n++) {
-				rP[n] = control.getParameterValue(p);
-			}
-		}
+    // NO LIST
+    if(aList==NULL) {
+        int n;
+        for(n=i=0;i<size;i++) {
+            Control& control = get(i);
+            for(p=0;p<control.getNumParameters();p++,n++) {
+                rP[n] = control.getParameterValue(p);
+            }
+        }
 
-	// LIST
-	} else {
-		int c,sp;
-		for(i=0;i<aList->getSize();i++) {
+    // LIST
+    } else {
+        int c,sp;
+        for(i=0;i<aList->getSize();i++) {
 
-			// PARAMETER
-			sp = (*aList)[i];
+            // PARAMETER
+            sp = (*aList)[i];
 
-			// GET CONTROL
-			try {
-				c = _ptcMap.get(sp);
-			} catch(const Exception& x) {
-				x.print(cout);
-				continue;
-			}
-			Control& control = get(c);
-		
-			// GET PARAMETER MAX
-			p = _ptpMap[sp];
-			rP[i] = control.getParameterValue(p);
-		}
-	}
+            // GET CONTROL
+            try {
+                c = _ptcMap.get(sp);
+            } catch(const Exception& x) {
+                x.print(cout);
+                continue;
+            }
+            Control& control = get(c);
+        
+            // GET PARAMETER MAX
+            p = _ptpMap[sp];
+            rP[i] = control.getParameterValue(p);
+        }
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -715,43 +715,43 @@ getParameterValues(double rP[],const Array<int> *aList) const
 void ControlSet::
 getParameterValues(Array<double> &rP,const Array<int> *aList) const
 {
-	rP.setSize(0);
+    rP.setSize(0);
 
-	// VARIABLE DECLARATIONS
-	int i,p;
-	int size = getSize(false);
+    // VARIABLE DECLARATIONS
+    int i,p;
+    int size = getSize(false);
 
-	// NO LIST
-	if(aList==NULL) {
-		for(i=0;i<size;i++) {
-    		Control& control = get(i);
-			for(p=0;p<control.getNumParameters();p++) {
-				rP.append(control.getParameterValue(p));
-			}
-		}
+    // NO LIST
+    if(aList==NULL) {
+        for(i=0;i<size;i++) {
+            Control& control = get(i);
+            for(p=0;p<control.getNumParameters();p++) {
+                rP.append(control.getParameterValue(p));
+            }
+        }
 
-	// LIST
-	} else {
-		int c,sp;
-		for(i=0;i<aList->getSize();i++) {
+    // LIST
+    } else {
+        int c,sp;
+        for(i=0;i<aList->getSize();i++) {
 
-			// PARAMETER
-			sp = (*aList)[i];
+            // PARAMETER
+            sp = (*aList)[i];
 
-			// GET CONTROL
-			try {
-				c = _ptcMap.get(sp);
-			} catch(const Exception& x) {
-				x.print(cout);
-				continue;
-			}
-			Control& control = get(c);
-		
-			// GET PARAMETER MAX
-			p = _ptpMap[sp];
-			rP.append(control.getParameterValue(p));
-		}
-	}
+            // GET CONTROL
+            try {
+                c = _ptcMap.get(sp);
+            } catch(const Exception& x) {
+                x.print(cout);
+                continue;
+            }
+            Control& control = get(c);
+        
+            // GET PARAMETER MAX
+            p = _ptpMap[sp];
+            rP.append(control.getParameterValue(p));
+        }
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -767,42 +767,42 @@ getParameterValues(Array<double> &rP,const Array<int> *aList) const
 void ControlSet::
 setParameterValues(const double *aP,const Array<int> *aList)
 {
-	// VARIABLE DECLARATIONS
-	int i,sp,p;
-	int size = getSize(false);
+    // VARIABLE DECLARATIONS
+    int i,sp,p;
+    int size = getSize(false);
 
-	// NO LIST
-	if(aList==NULL) {
-		for(sp=i=0;i<size;i++) {
-    		Control& control = get(i);
-			for(p=0;p<control.getNumParameters();p++,sp++) {
-				control.setParameterValue(p,aP[sp]);
-			}
-		}
+    // NO LIST
+    if(aList==NULL) {
+        for(sp=i=0;i<size;i++) {
+            Control& control = get(i);
+            for(p=0;p<control.getNumParameters();p++,sp++) {
+                control.setParameterValue(p,aP[sp]);
+            }
+        }
 
-	// LIST
-	} else {
-		int c;
-		int n = aList->getSize();
-		for(i=0;i<n;i++) {
+    // LIST
+    } else {
+        int c;
+        int n = aList->getSize();
+        for(i=0;i<n;i++) {
 
-			// PARAMETER
-			sp = (*aList)[i];
+            // PARAMETER
+            sp = (*aList)[i];
 
-			// GET CONTROL
-			try {
-				c = _ptcMap.get(sp);
-			} catch(const Exception& x) {
-				x.print(cout);
-				continue;
-			}
-			Control& control = get(c);
-		
-			// SET PARAMETER
-			p = _ptpMap[sp];
-			control.setParameterValue(p,aP[i]);
-		}
-	}
+            // GET CONTROL
+            try {
+                c = _ptcMap.get(sp);
+            } catch(const Exception& x) {
+                x.print(cout);
+                continue;
+            }
+            Control& control = get(c);
+        
+            // SET PARAMETER
+            p = _ptpMap[sp];
+            control.setParameterValue(p,aP[i]);
+        }
+    }
 }
 
 //_____________________________________________________________________________
@@ -819,53 +819,53 @@ setParameterValues(const double *aP,const Array<int> *aList)
 void ControlSet::
 setParameterValues(const Array<double> &aP,const Array<int> *aList)
 {
-	// VARIABLE DECLARATIONS
-	int i,sp,p;
-	int size = getSize(false);
+    // VARIABLE DECLARATIONS
+    int i,sp,p;
+    int size = getSize(false);
 
-	// NO LIST
-	if(aList==NULL) {
-		for(sp=i=0;i<size;i++) {
-    		Control& control = get(i);
-			for(p=0;p<control.getNumParameters();p++,sp++) {
-				if(sp>=aP.getSize()) {
-					printf("ControlSet.setParameterValues: ERR- incorrect ");
-					printf("number of parameters.\n");
-					return;
-				}
-				control.setParameterValue(p,aP[sp]);
-			}
-		}
+    // NO LIST
+    if(aList==NULL) {
+        for(sp=i=0;i<size;i++) {
+            Control& control = get(i);
+            for(p=0;p<control.getNumParameters();p++,sp++) {
+                if(sp>=aP.getSize()) {
+                    printf("ControlSet.setParameterValues: ERR- incorrect ");
+                    printf("number of parameters.\n");
+                    return;
+                }
+                control.setParameterValue(p,aP[sp]);
+            }
+        }
 
-	// LIST
-	} else {
-		int c;
-		int n = aList->getSize();
-		if(n > aP.getSize()) {
-			n = aP.getSize();
-			printf("ControlSet.setParameterValues: WARN- aP and aList are ");
-			printf("different sizes.\n");
-		}
+    // LIST
+    } else {
+        int c;
+        int n = aList->getSize();
+        if(n > aP.getSize()) {
+            n = aP.getSize();
+            printf("ControlSet.setParameterValues: WARN- aP and aList are ");
+            printf("different sizes.\n");
+        }
 
-		for(i=0;i<n;i++) {
+        for(i=0;i<n;i++) {
 
-			// PARAMETER
-			sp = (*aList)[i];
+            // PARAMETER
+            sp = (*aList)[i];
 
-			// GET CONTROL
-			try {
-				c = _ptcMap.get(sp);
-			} catch(const Exception& x) {
-				x.print(cout);
-				continue;
-			}
-			Control& control = get(c);
-		
-			// SET PARAMETER
-			p = _ptpMap[sp];
-			control.setParameterValue(p,aP[i]);
-		}
-	}
+            // GET CONTROL
+            try {
+                c = _ptcMap.get(sp);
+            } catch(const Exception& x) {
+                x.print(cout);
+                continue;
+            }
+            Control& control = get(c);
+        
+            // SET PARAMETER
+            p = _ptpMap[sp];
+            control.setParameterValue(p,aP[i]);
+        }
+    }
 }
 
 
@@ -886,20 +886,20 @@ setParameterValues(const Array<double> &aP,const Array<int> *aList)
 void ControlSet::
 simplify(const PropertySet &aProperties)
 {
-	int i;
-	int size = getSize();
-	for(i=0;i<size;i++) {
+    int i;
+    int size = getSize();
+    for(i=0;i<size;i++) {
 
-		// GET CONTROL
-		Control& control = get(i);
+        // GET CONTROL
+        Control& control = get(i);
 
-		// SIMPLIFY
-		try {
-			control.simplify(aProperties);
-		} catch(const Exception& x) {
-			x.print(cout);
-		}
-	}
+        // SIMPLIFY
+        try {
+            control.simplify(aProperties);
+        } catch(const Exception& x) {
+            x.print(cout);
+        }
+    }
 }
 //-----------------------------------------------------------------------------
 // FILTER
@@ -914,23 +914,23 @@ simplify(const PropertySet &aProperties)
 void ControlSet::
 filter(double aT)
 {
-	int i;
-	int size = getSize();
-	for(i=0;i<size;i++) {
+    int i;
+    int size = getSize();
+    for(i=0;i<size;i++) {
 
-		// GET CONTROL
-		Control& control = get(i);
+        // GET CONTROL
+        Control& control = get(i);
 
-		// FILTER
-		try {
-			if (control.getFilterOn())
-			{
-				control.filter(aT);
-			}
-		} catch(const Exception& x) {
-			x.print(cout);
-		}
-	}
+        // FILTER
+        try {
+            if (control.getFilterOn())
+            {
+                control.filter(aT);
+            }
+        } catch(const Exception& x) {
+            x.print(cout);
+        }
+    }
 }
 //-----------------------------------------------------------------------------
 // STORAGE
@@ -948,20 +948,20 @@ filter(double aT)
 Storage* ControlSet::
 constructStorage(int aN,double aT1,double aT2,bool aForModelControls)
 {
-	if(aN<=2) aN=2;
-	double dt = (aT2-aT1) / (aN-1);
+    if(aN<=2) aN=2;
+    double dt = (aT2-aT1) / (aN-1);
 
-	double t;
-	Array<double> x(0.0);
-	Storage *store = new Storage();
-	for(t=aT1;t<aT2;t+=dt) {
-		getControlValues(t,x,aForModelControls);
-		store->append(t,x.getSize(),&x[0]);
-	}
+    double t;
+    Array<double> x(0.0);
+    Storage *store = new Storage();
+    for(t=aT1;t<aT2;t+=dt) {
+        getControlValues(t,x,aForModelControls);
+        store->append(t,x.getSize(),&x[0]);
+    }
 
-	store->setName(getName());
+    store->setName(getName());
 
-	return(store);
+    return(store);
 }
 //-----------------------------------------------------------------------------
 // PARAMETER MAPS
@@ -986,9 +986,9 @@ constructStorage(int aN,double aT1,double aT2,bool aForModelControls)
 int ControlSet::
 mapParameterToControl(int aIndex) const
 {
-	if(aIndex<0) return(-1);
-	if(aIndex>_ptcMap.getSize()) return(-1);
-	return(_ptcMap[aIndex]);
+    if(aIndex<0) return(-1);
+    if(aIndex>_ptcMap.getSize()) return(-1);
+    return(_ptcMap[aIndex]);
 }
 //_____________________________________________________________________________
 /**
@@ -1010,9 +1010,9 @@ mapParameterToControl(int aIndex) const
 int ControlSet::
 mapParameterToParameter(int aIndex) const
 {
-	if(aIndex<0) return(-1);
-	if(aIndex>_ptcMap.getSize()) return(-1);
-	return(_ptcMap[aIndex]);
+    if(aIndex<0) return(-1);
+    if(aIndex>_ptcMap.getSize()) return(-1);
+    return(_ptcMap[aIndex]);
 }
 //_____________________________________________________________________________
 /**
@@ -1025,20 +1025,20 @@ mapParameterToParameter(int aIndex) const
 void ControlSet::
 generateParameterMaps()
 {
-	_ptcMap.setSize(0);
-	_ptpMap.setSize(0);
+    _ptcMap.setSize(0);
+    _ptpMap.setSize(0);
 
-	int i,j;
-	int size = getSize(false);
-	for(i=0;i<size;i++) {
+    int i,j;
+    int size = getSize(false);
+    for(i=0;i<size;i++) {
 
-   		Control& control = get(i);
+        Control& control = get(i);
 
-		for(j=0;j<control.getNumParameters();j++) {
-			_ptcMap.append(i);
-			_ptpMap.append(j);
-		}
-	}
+        for(j=0;j<control.getNumParameters();j++) {
+            _ptcMap.append(i);
+            _ptpMap.append(j);
+        }
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -1048,34 +1048,34 @@ generateParameterMaps()
 ControlLinear*
 ControlSet::ExtractControl(const Storage& storage,int index)
 {
-	int i;
+    int i;
 
-	// cout << "index=" << index << endl;
-	// NAME ATTRIBUTE
-	const Array<std::string> &columnLabels = storage.getColumnLabels();
-	// cout << "colabels size=" << columnLabels.getSize() << endl;
-	std::string colName = columnLabels.get(index+1);
+    // cout << "index=" << index << endl;
+    // NAME ATTRIBUTE
+    const Array<std::string> &columnLabels = storage.getColumnLabels();
+    // cout << "colabels size=" << columnLabels.getSize() << endl;
+    std::string colName = columnLabels.get(index+1);
 
-	// TIME
-	double *times = NULL;
-	int nTimes = storage.getTimeColumn(times);
+    // TIME
+    double *times = NULL;
+    int nTimes = storage.getTimeColumn(times);
 
-	// VALUE
-	int nValues = nTimes;
-	int rValue;
-	double *values = NULL;
-	rValue = storage.getDataColumn(index,values);
+    // VALUE
+    int nValues = nTimes;
+    int rValue;
+    double *values = NULL;
+    rValue = storage.getDataColumn(index,values);
 
-	// CONSTRUCT LINEAR CONTROL NODE
-	ControlLinear *control = new ControlLinear;
-	control->setName(colName);
-	control->clearControlNodes();
+    // CONSTRUCT LINEAR CONTROL NODE
+    ControlLinear *control = new ControlLinear;
+    control->setName(colName);
+    control->clearControlNodes();
 
-	// APPEND CONTROL ELEMENTS
-	int n = nTimes;
-	if(n>nValues) n = nValues;
-	for(i=0;i<n;i++) {
-		control->setControlValue(times[i],values[i]);
-	}
-	return(control);
+    // APPEND CONTROL ELEMENTS
+    int n = nTimes;
+    if(n>nValues) n = nValues;
+    for(i=0;i<n;i++) {
+        control->setControlValue(times[i],values[i]);
+    }
+    return(control);
 }

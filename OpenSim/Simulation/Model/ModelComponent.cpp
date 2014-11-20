@@ -50,7 +50,7 @@ const Model& ModelComponent::getModel() const
 {
     if(!_model)
         throw Exception("ModelComponent::getModel(): component does not "
-                        "belong to a model."); 
+                "belong to a model. Have you called Model::initSystem()?"); 
     return *_model;
 }
 
@@ -58,21 +58,20 @@ Model& ModelComponent::updModel()
 {
     if(!_model)
         throw Exception("ModelComponent::updModel(): component does not "
-                        "belong to a model."); 
+                "belong to a model. Have you called Model::initSystem()?"); 
     return *_model;
 }
 
 
-void ModelComponent::connect(Component &root)
+void ModelComponent::extendConnect(Component &root)
 {
-	Model* model = dynamic_cast<Model*>(&root);
-	// Allow (model) component to include its own subcomponents
-	// before calling the base method which automatically invokes
-	// connect all the subcomponents.
-	if (model)
-		connectToModel(*model);
-
-	Super::connect(root);
+    Super::extendConnect(root);
+    Model* model = dynamic_cast<Model*>(&root);
+    // Allow (model) component to include its own subcomponents
+    // before calling the base method which automatically invokes
+    // connect all the subcomponents.
+    if (model)
+        connectToModel(*model);
 }
 
 
@@ -80,6 +79,7 @@ void ModelComponent::connect(Component &root)
 void ModelComponent::connectToModel(Model& model)
 {
     _model = &model;
+    extendConnectToModel(model);
 }
 
 // Base class implementation of virtual method.
@@ -90,11 +90,10 @@ void ModelComponent::generateDecorations
     SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const 
 {
     for(unsigned int i=0; i < _components.size(); i++){
-		ModelComponent *mc = dynamic_cast<ModelComponent*>(_components[i]);
+        ModelComponent *mc = dynamic_cast<ModelComponent*>(_components[i]);
         mc->generateDecorations(fixed,hints,state,appendToThis);
-	}
+    }
 }
-
 
 const SimTK::DefaultSystemSubsystem& ModelComponent::
 getDefaultSubsystem() const
@@ -103,8 +102,5 @@ getDefaultSubsystem() const
 const SimTK::DefaultSystemSubsystem& ModelComponent::
 updDefaultSubsystem()
 {   return updModel().updDefaultSubsystem(); }
-
-
-
 
 } // end of namespace OpenSim

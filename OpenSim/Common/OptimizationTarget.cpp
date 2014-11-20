@@ -56,7 +56,7 @@ const double OptimizationTarget::SMALLDX = 1.0e-14;
 OptimizationTarget::
 OptimizationTarget(int aNX)
 {
-	if(aNX>0) setNumParameters(aNX); // OptimizerSystem
+    if(aNX>0) setNumParameters(aNX); // OptimizerSystem
 }
 //==============================================================================
 // SET AND GET
@@ -78,8 +78,8 @@ OptimizationTarget(int aNX)
 void OptimizationTarget::
 setNumParameters(const int aNX)
 {
-	OptimizerSystem::setNumParameters(aNX);
-	_dx.setSize(getNumParameters());
+    OptimizerSystem::setNumParameters(aNX);
+    _dx.setSize(getNumParameters());
 }
 
 //------------------------------------------------------------------------------
@@ -92,11 +92,11 @@ setNumParameters(const int aNX)
 void OptimizationTarget::
 setDX(int aIndex,double aValue)
 {
-	// VALIDATE VALUE
-	validatePerturbationSize(aValue);
+    // VALIDATE VALUE
+    validatePerturbationSize(aValue);
 
-	// SET VALUE (use get to do bounds checking)
-	_dx.updElt(aIndex) = aValue;
+    // SET VALUE (use get to do bounds checking)
+    _dx.updElt(aIndex) = aValue;
 }
 //______________________________________________________________________________
 /**
@@ -105,11 +105,11 @@ setDX(int aIndex,double aValue)
 void OptimizationTarget::
 setDX(double aValue)
 {
-	// VALIDATE VALUE
-	validatePerturbationSize(aValue);
+    // VALIDATE VALUE
+    validatePerturbationSize(aValue);
 
-	// SET VALUE
-	for(int i=0;i<getNumParameters();i++) _dx.updElt(i) = aValue;
+    // SET VALUE
+    for(int i=0;i<getNumParameters();i++) _dx.updElt(i) = aValue;
 }
 //______________________________________________________________________________
 /**
@@ -118,7 +118,7 @@ setDX(double aValue)
 double OptimizationTarget::
 getDX(int aIndex)
 {
-	return _dx.get(aIndex);
+    return _dx.get(aIndex);
 }
 //______________________________________________________________________________
 /**
@@ -127,7 +127,7 @@ getDX(int aIndex)
 double* OptimizationTarget::
 getDXArray()
 {
-	return &_dx[0];
+    return &_dx[0];
 }
 
 //==============================================================================
@@ -140,12 +140,12 @@ getDXArray()
 void OptimizationTarget::
 validatePerturbationSize(double &aSize)
 {
-	if(aSize<SMALLDX) {
-		printf("OptimizationTarget.validatePerturbationSize: WARNING- ");
-		printf("dx size too small (%le).\n",aSize);
-		printf("\tResetting dx=%le.\n",SMALLDX);
-		aSize = SMALLDX;
-	}
+    if(aSize<SMALLDX) {
+        printf("OptimizationTarget.validatePerturbationSize: WARNING- ");
+        printf("dx size too small (%le).\n",aSize);
+        printf("\tResetting dx=%le.\n",SMALLDX);
+        aSize = SMALLDX;
+    }
 }
 //______________________________________________________________________________
 /**
@@ -153,9 +153,9 @@ validatePerturbationSize(double &aSize)
 void OptimizationTarget::
 printPerformance(double *x)
 {
-	double p;
-	objectiveFunc(SimTK::Vector(getNumParameters(),x,true),true,p);
-	std::cout << "performance = " << p << std::endl;
+    double p;
+    objectiveFunc(SimTK::Vector(getNumParameters(),x,true),true,p);
+    std::cout << "performance = " << p << std::endl;
 }
 
 //=============================================================================
@@ -175,41 +175,41 @@ printPerformance(double *x)
  */
 int OptimizationTarget::
 CentralDifferencesConstraint(const OptimizationTarget *aTarget,
-	double *dx,const Vector &x,Matrix &jacobian)
+    double *dx,const Vector &x,Matrix &jacobian)
 {
-	if(aTarget==NULL) return(-1);
+    if(aTarget==NULL) return(-1);
 
-	// INITIALIZE CONTROLS
-	int nx = aTarget->getNumParameters(); if(nx<=0) return(-1);
-	int nc = aTarget->getNumConstraints(); if(nc<=0) return(-1);
-	Vector xp=x;
-	Vector cf(nc),cb(nc);
+    // INITIALIZE CONTROLS
+    int nx = aTarget->getNumParameters(); if(nx<=0) return(-1);
+    int nc = aTarget->getNumConstraints(); if(nc<=0) return(-1);
+    Vector xp=x;
+    Vector cf(nc),cb(nc);
 
-	// INITIALIZE STATUS
-	int status = -1;
+    // INITIALIZE STATUS
+    int status = -1;
 
-	// LOOP OVER CONTROLS
-	for(int i=0;i<nx;i++) {
+    // LOOP OVER CONTROLS
+    for(int i=0;i<nx;i++) {
 
-		// PERTURB FORWARD
-		xp[i] = x[i] + dx[i];
-		status = aTarget->constraintFunc(xp,true,cf);
-		if(status<0) return(status);
+        // PERTURB FORWARD
+        xp[i] = x[i] + dx[i];
+        status = aTarget->constraintFunc(xp,true,cf);
+        if(status<0) return(status);
 
-		// PERTURB BACKWARD
-		xp[i] = x[i] - dx[i];
-		status = aTarget->constraintFunc(xp,true,cb);
-		if(status<0) return(status);
+        // PERTURB BACKWARD
+        xp[i] = x[i] - dx[i];
+        status = aTarget->constraintFunc(xp,true,cb);
+        if(status<0) return(status);
 
-		// DERIVATIVES OF CONSTRAINTS
-		double rdx = 0.5 / dx[i];
-		for(int j=0;j<nc;j++) jacobian(j,i) = rdx*(cf[j]-cb[j]);
+        // DERIVATIVES OF CONSTRAINTS
+        double rdx = 0.5 / dx[i];
+        for(int j=0;j<nc;j++) jacobian(j,i) = rdx*(cf[j]-cb[j]);
 
-		// RESTORE CONTROLS
-		xp[i] = x[i];
-	}
+        // RESTORE CONTROLS
+        xp[i] = x[i];
+    }
 
-	return(status);
+    return(status);
 }
 //_____________________________________________________________________________
 /**
@@ -225,42 +225,42 @@ CentralDifferencesConstraint(const OptimizationTarget *aTarget,
  */
 int OptimizationTarget::
 CentralDifferences(const OptimizationTarget *aTarget,
-	double *dx,const Vector &x,Vector &dpdx)
+    double *dx,const Vector &x,Vector &dpdx)
 {
-	if(aTarget==NULL) return(-1);
+    if(aTarget==NULL) return(-1);
 
-	// CONTROLS
-	int nx = aTarget->getNumParameters();  if(nx<=0) return(-1);
-	Vector xp=x;
+    // CONTROLS
+    int nx = aTarget->getNumParameters();  if(nx<=0) return(-1);
+    Vector xp=x;
 
-	// PERFORMANCE
-	double pf,pb;
+    // PERFORMANCE
+    double pf,pb;
 
-	// INITIALIZE STATUS
-	int status = -1;
+    // INITIALIZE STATUS
+    int status = -1;
 
-	// LOOP OVER CONTROLS
-	for(int i=0;i<nx;i++) {
+    // LOOP OVER CONTROLS
+    for(int i=0;i<nx;i++) {
 
-		// PERTURB FORWARD
-		xp[i] = x[i] + dx[i];
-		status = aTarget->objectiveFunc(xp,true,pf);
-		if(status<0) return(status);
+        // PERTURB FORWARD
+        xp[i] = x[i] + dx[i];
+        status = aTarget->objectiveFunc(xp,true,pf);
+        if(status<0) return(status);
 
-		// PERTURB BACKWARD
-		xp[i] = x[i] - dx[i];
-		status = aTarget->objectiveFunc(xp,true,pb);
-		if(status<0) return(status);
+        // PERTURB BACKWARD
+        xp[i] = x[i] - dx[i];
+        status = aTarget->objectiveFunc(xp,true,pb);
+        if(status<0) return(status);
 
-		// DERIVATIVES OF PERFORMANCE
-		double rdx = 0.5 / dx[i];
-		dpdx[i] = rdx*(pf-pb);
+        // DERIVATIVES OF PERFORMANCE
+        double rdx = 0.5 / dx[i];
+        dpdx[i] = rdx*(pf-pb);
 
-		// RESTORE CONTROLS
-		xp[i] = x[i];
-	}
+        // RESTORE CONTROLS
+        xp[i] = x[i];
+    }
 
-	return(status);
+    return(status);
 }
 
 //_____________________________________________________________________________
@@ -277,37 +277,37 @@ CentralDifferences(const OptimizationTarget *aTarget,
  */
 int OptimizationTarget::
 ForwardDifferences(const OptimizationTarget *aTarget,
-	double *dx,const Vector &x,Vector &dpdx)
+    double *dx,const Vector &x,Vector &dpdx)
 {
-	if(aTarget==NULL) return(-1);
+    if(aTarget==NULL) return(-1);
 
-	// CONTROLS
-	int nx = aTarget->getNumParameters();  if(nx<=0) return(-1);
-	Vector xp=x;
+    // CONTROLS
+    int nx = aTarget->getNumParameters();  if(nx<=0) return(-1);
+    Vector xp=x;
 
-	// INITIALIZE STATUS
-	int status = -1;
+    // INITIALIZE STATUS
+    int status = -1;
 
-	// PERFORMANCE
-	double pf,pb;
-	
-	// current objective function value
-	status = aTarget->objectiveFunc(xp,true,pb);
-	if(status<0) return(status);
+    // PERFORMANCE
+    double pf,pb;
+    
+    // current objective function value
+    status = aTarget->objectiveFunc(xp,true,pb);
+    if(status<0) return(status);
 
-	// LOOP OVER CONTROLS
-	for(int i=0;i<nx;i++) {
-		// PERTURB FORWARD
-		xp[i] = x[i] + dx[i];
-		status = aTarget->objectiveFunc(xp,true,pf);
-		if(status<0) return(status);
+    // LOOP OVER CONTROLS
+    for(int i=0;i<nx;i++) {
+        // PERTURB FORWARD
+        xp[i] = x[i] + dx[i];
+        status = aTarget->objectiveFunc(xp,true,pf);
+        if(status<0) return(status);
 
-		// DERIVATIVES OF PERFORMANCE
-		dpdx[i] = (pf-pb)/dx[i];
+        // DERIVATIVES OF PERFORMANCE
+        dpdx[i] = (pf-pb)/dx[i];
 
-		// RESTORE CONTROLS
-		xp[i] = x[i];
-	}
+        // RESTORE CONTROLS
+        xp[i] = x[i];
+    }
 
-	return(status);
+    return(status);
 }

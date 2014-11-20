@@ -55,49 +55,49 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WrapSphereObst, WrapObject);
 // DATA
 //=============================================================================
 private:
-	PropertyDbl _radiusProp;
-	double& _radius;
+    PropertyDbl _radiusProp;
+    double& _radius;
 
-	PropertyDbl _lengthProp;
-	double& _length;
+    PropertyDbl _lengthProp;
+    double& _length;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	WrapSphereObst();
-	WrapSphereObst(const WrapSphereObst& aWrapSphereObst);
-	virtual ~WrapSphereObst();
+    WrapSphereObst();
+    WrapSphereObst(const WrapSphereObst& aWrapSphereObst);
+    virtual ~WrapSphereObst();
 
 #ifndef SWIG
-	WrapSphereObst& operator=(const WrapSphereObst& aWrapSphereObst);
+    WrapSphereObst& operator=(const WrapSphereObst& aWrapSphereObst);
 #endif
    void copyData(const WrapSphereObst& aWrapSphereObst);
 
-	double getRadius() const { return _radius; }
-	void setRadius(double aRadius) { _radius = aRadius; }
-	double getLength() const { return _length; }
-	void setLength(double aLength) { _length = aLength; }
+    double getRadius() const { return _radius; }
+    void setRadius(double aRadius) { _radius = aRadius; }
+    double getLength() const { return _length; }
+    void setLength(double aLength) { _length = aLength; }
 
-	virtual const char* getWrapTypeName() const;
-	virtual std::string getDimensionsString() const;
-	virtual void scale(const SimTK::Vec3& aScaleFactors) { }
-	virtual void connectToModelAndBody(Model& aModel, OpenSim::Body& aBody);
+    virtual const char* getWrapTypeName() const;
+    virtual std::string getDimensionsString() const;
+    virtual void scale(const SimTK::Vec3& aScaleFactors) { }
+    virtual void connectToModelAndBody(Model& aModel, OpenSim::Body& aBody);
 #ifndef SWIG
-	virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-		const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
+    virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
 #endif
 protected:
-	void setupProperties();
+    void setupProperties();
 
 private:
-	void setNull();
+    void setNull();
 
 //=============================================================================
-};	// END of class WrapCylinder
+};  // END of class WrapCylinder
 //=============================================================================
 //=============================================================================
 

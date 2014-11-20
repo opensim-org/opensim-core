@@ -96,8 +96,8 @@ void Marker::setFrameName(const string& aName)
  */
 const string& Marker::getFrameName() const
 {
-	//if (_bodyNameProp.getValueIsDefault())
-	//	return NULL;
+    //if (_bodyNameProp.getValueIsDefault())
+    //  return NULL;
 
     return getReferenceFrame().getName();
 }
@@ -105,7 +105,7 @@ const string& Marker::getFrameName() const
 //_____________________________________________________________________________
 /**
  * Change the RigidFrame that this marker is attached to. It assumes that the frame is
- * already set, so that connectToModel() needs to be called to update 
+ * already set, so that extendConnectToModel() needs to be called to update 
  * dependent information.
  *
  * @param aFrame Reference to the RigidFrame.
@@ -114,16 +114,16 @@ void Marker::changeFrame(const OpenSim::RigidFrame& aRigidFrame)
 {
 
     if (aRigidFrame == getReferenceFrame())
-		return;
+        return;
 
-	setFrameName(aRigidFrame.getName());
-    connectToModel(updModel());
+    setFrameName(aRigidFrame.getName());
+    extendConnectToModel(updModel());
 }
 
 //_____________________________________________________________________________
 /**
  * Change the RigidFrame that this marker is attached to. It assumes that the body is
- * already set, so that connectToModel() needs to be called to update 
+ * already set, so that extendConnectToModel() needs to be called to update 
  * dependent information.
  *
  * @param s State.
@@ -133,15 +133,15 @@ void Marker::changeFramePreserveLocation(const SimTK::State& s, OpenSim::RigidFr
 {
 
     if (aRigidFrame == getReferenceFrame())
-		return;
+        return;
 
-	// Preserve location means to switch bodies without changing
-	// the location of the marker in the inertial reference frame.
+    // Preserve location means to switch bodies without changing
+    // the location of the marker in the inertial reference frame.
     Vec3 newLocation;
     newLocation = findLocationInFrame(s, aRigidFrame);
     set_location(newLocation);
-	setFrameName(aRigidFrame.getName());
-    connectToModel(aRigidFrame.updModel());
+    setFrameName(aRigidFrame.getName());
+    extendConnectToModel(aRigidFrame.updModel());
 }
 
 //=============================================================================
