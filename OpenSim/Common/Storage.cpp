@@ -66,10 +66,10 @@ string Storage::simmReservedKeys[] = {
                                   "enforce_loops",
                                   "enforce_constraints",
                                   "calc_derivatives"};
-int numSimmReservedKeys=10;	// Keep this number in sync with above array size
+int numSimmReservedKeys=10; // Keep this number in sync with above array size
 
 // up version to 20301 for separation of RRATool, CMCTool
-const int Storage::LatestVersion = 1;	
+const int Storage::LatestVersion = 1;   
 
 //=============================================================================
 // DESTRUCTOR
@@ -163,7 +163,7 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
     int indexRange = currentLabels.findIndex("range");
 
 
-    // DATA	
+    // DATA 
     if(indexTime != -1 || indexRange != -1){ //MM edit
         int ny = nc-1;
         double time;
@@ -177,7 +177,7 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
         delete[] y;
         // CLOSE FILE
         delete fp;
-    }else{	//MM the modifications below are to make the Storage class
+    }else{  //MM the modifications below are to make the Storage class
             //well behaved when it is given data that does not contain a 
             //time or a range column
         int ny = nc;
@@ -451,7 +451,7 @@ getStateIndex(const std::string &aColumnName, int startIndex) const
  * If the labels string is set to NULL, the following default labels
  * will be used when the Storage instance is saved to file:
  *
- * time	state_0	state_1	state_2	...
+ * time state_0 state_1 state_2 ...
  *
  * @param aLabels Character string containing labels for the columns.
  */
@@ -865,7 +865,7 @@ getData(int aTimeIndex,int aStateIndex,int aN,double *rData) const
  * a specified state.  The method simply gets part of a row of data
  * from adjacent columns in the storage object.
  *
- *	@param aTimeIndex Time index at which to get the states.
+ *  @param aTimeIndex Time index at which to get the states.
  * @param aStateIndex Index of the state (column) at which to start getting
  * the data.
  * @param aN Number of states to get.
@@ -883,7 +883,7 @@ getData(int aTimeIndex,int aN,double **rData) const
 /**
  * Get the first aN states at a specified time index.
  *
- *	@param aTimeIndex Time index at which to get the states.
+ *  @param aTimeIndex Time index at which to get the states.
  * @param aN Number of states to get.
  * @param rData Array where the returned data will be set.  The
  * size of rData is assumed to be at least aN.
@@ -899,7 +899,7 @@ getData(int aTimeIndex,int aN,double *rData) const
 /**
  * Get the first aN states at a specified time index.
  *
- *	@param aTimeIndex Time index at which to get the states.
+ *  @param aTimeIndex Time index at which to get the states.
  * @param aN Number of states to get.
  * @param rData Array where the returned data will be set.  The
  * size of rData is assumed to be at least aN.
@@ -915,7 +915,7 @@ getData(int aTimeIndex,int aN,Array<double> &rData) const
 /**
  * Get the first aN states at a specified time index.
  *
- *	@param aTimeIndex Time index at which to get the states.
+ *  @param aTimeIndex Time index at which to get the states.
  * @param aN Number of states to get.
  * @param rData Array where the returned data will be set.  The
  * size of rData is assumed to be at least aN.
@@ -936,7 +936,7 @@ getData(int aTimeIndex,int aN,SimTK::Vector& v) const
  * Get the first aN states at a specified time.
  * The values of the states are determined by linear interpolation.
  *
- *	@param aT Time at which to get the states.
+ *  @param aT Time at which to get the states.
  * @param aN Number of states to get.
  * @param rData Pointer to an array where the returned data will be set.  The
  * size of *rData is assumed to be at least aN.  If rData comes in as NULL,
@@ -1004,16 +1004,16 @@ getDataAtTime(double aT,int aN,double **rData) const
     }
 
     // ASSIGN FOR RETURN
-    *rData = y;	
+    *rData = y; 
 
-    return(ns);	
+    return(ns); 
 }
 //_____________________________________________________________________________
 /**
  * Get the first aN states at a specified time.
  * The values of the states are determined by linear interpolation.
  *
- *	@param aT Time at which to get the states.
+ *  @param aT Time at which to get the states.
  * @param aN Number of states to get.
  * @param rData Array where the returned data will be set.  The
  * size of rData is assumed to be at least aN.
@@ -1190,8 +1190,8 @@ getDataColumn(const std::string& aColumnName,double *&rData) const
 
 /** It is desirable to access the block as a single entity provided an identifier that is common 
     to all components (such as prefix in the column label).
-     @param identifier	string identifying a single block of data 
-     @param rData		Array<Array<double>> of data belonging to the identifier */
+     @param identifier  string identifying a single block of data 
+     @param rData       Array<Array<double>> of data belonging to the identifier */
 void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<double> >& rData, double startTime) const
 {
 
@@ -2655,7 +2655,7 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
             cout << "Storage.print(const string&,const string&): error printing to " << aFileName;
             return(false);
         }
-        nTotal += n;		
+        nTotal += n;        
     }
 
     // CLOSE
@@ -2746,7 +2746,7 @@ print(const string &aFileName,double aDT,const string &aMode) const
             cout << "Storage.print(const string&,const string&): error printing to " << aFileName;
             return(n);
         }
-        nTotal += n;		
+        nTotal += n;        
     }
 
     // CLEANUP
@@ -2917,7 +2917,7 @@ void Storage::addToRdStorage(Storage& rStorage, double aStartTime, double aEndTi
             if (EQUAL_WITHIN_TOLERANCE(time, stateTime, 0.0001))
             {
                 Array<double>& states = rStorage.getStateVector(i)->getData();
-                for (int k = 1; k < numColumns; k++)	// Start at 1 to avoid duplicate time column
+                for (int k = 1; k < numColumns; k++)    // Start at 1 to avoid duplicate time column
                 {
                     if (_columnLabels[k] != "Unassigned")
                     {
@@ -3041,10 +3041,10 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
             setName(rest);
         }
         else if (key== "nr" || key== "nRows" || key== "datarows"){
-            rNumRows = atoi(rest.c_str());			
+            rNumRows = atoi(rest.c_str());          
         }
         else if (key== "nc" || key== "nColumns" || key== "datacolumns"){
-            rNumColumns = atoi(rest.c_str());			
+            rNumColumns = atoi(rest.c_str());           
         }
         else if (isSimmReservedToken(key)) {
                 _keyValueMap[key]= rest;
@@ -3066,10 +3066,10 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
             else if (line == "Angles are in radians.")
                 setInDegrees(false);
         }
-        else if(key== DEFAULT_HEADER_TOKEN){				
-            break;			
+        else if(key== DEFAULT_HEADER_TOKEN){                
+            break;          
         }
-        else if (firstLine){	// Storage file have their names without "name prefix on first line"
+        else if (firstLine){    // Storage file have their names without "name prefix on first line"
             setName(line);
         }
         firstLine=false;
@@ -3087,7 +3087,7 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
 }
 //_____________________________________________________________________________
 /**
- * This function exchanges the time column (including the label) with the column	
+ * This function exchanges the time column (including the label) with the column    
  * at the passed in aColumnIndex. The index is zero based relative to the Data
  */
 void Storage::
@@ -3124,16 +3124,16 @@ void Storage::postProcessSIMMMotion()
         if (timeColumnIndx!=-1){ // Exchange column timeColumnIndx with time
             exchangeTimeColumnWith(timeColumnIndx);
         }
-        else {	
+        else {  
             // There was no time column altogether. make one based on
             // range (if specified) and number of entries
             MapKeysToValues::iterator iter;
-            iter = _keyValueMap.find("range");	// Should we check "Range", "RANGE" too?
+            iter = _keyValueMap.find("range");  // Should we check "Range", "RANGE" too?
             if (iter !=_keyValueMap.end()){
                 string rangeValue = iter->second;
                 double start, end;
                 sscanf(rangeValue.c_str(), "%lf %lf", &start, &end);
-                if (_storage.getSize()<2){	// Something wrong throw exception unless start==end
+                if (_storage.getSize()<2){  // Something wrong throw exception unless start==end
                     if (start !=end){
                         stringstream errorMessage;
                         errorMessage << "Error: Motion file has inconsistent headers";
@@ -3149,7 +3149,7 @@ void Storage::postProcessSIMMMotion()
                     else
                         throw (Exception("File has no data"));
                 }
-                else {	// time  column from range, size
+                else {  // time  column from range, size
                     double timeStep = (end - start)/(_storage.getSize()-1);
                     _columnLabels.append("time");
                     for(int i=0; i<_storage.getSize(); i++){
@@ -3160,7 +3160,7 @@ void Storage::postProcessSIMMMotion()
                     exchangeTimeColumnWith(timeColumnIndex-1);
                 }
             }
-            else {	// No time specified altogether
+            else {  // No time specified altogether
                     throw (Exception("Storage::postProcessSIMMMotion no time column found."));
             }
         }

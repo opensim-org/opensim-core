@@ -42,19 +42,19 @@ ContactMesh::ContactMesh(const std::string& filename, const SimTK::Vec3& locatio
     _filename(_filenameProp.getValueStr()),
     _geometry(NULL)
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
     setFilename(filename);
-	if (filename != ""){
-		std::ifstream file;
-		file.open(filename.c_str());
-		if (file.fail())
-			throw Exception("Error loading mesh file: "+filename+". The file should exist in same folder with model.\n Model loading is aborted.");
-		SimTK::PolygonalMesh mesh;
-		mesh.loadObjFile(file);
-		file.close();
-		_geometry = new SimTK::ContactGeometry::TriangleMesh(mesh);
-	}
+    if (filename != ""){
+        std::ifstream file;
+        file.open(filename.c_str());
+        if (file.fail())
+            throw Exception("Error loading mesh file: "+filename+". The file should exist in same folder with model.\n Model loading is aborted.");
+        SimTK::PolygonalMesh mesh;
+        mesh.loadObjFile(file);
+        file.close();
+        _geometry = new SimTK::ContactGeometry::TriangleMesh(mesh);
+    }
 }
 
 ContactMesh::ContactMesh(const std::string& filename, const SimTK::Vec3& location, const SimTK::Vec3& orientation, Body& body, const std::string& name) :
@@ -62,17 +62,17 @@ ContactMesh::ContactMesh(const std::string& filename, const SimTK::Vec3& locatio
     _filename(_filenameProp.getValueStr()),
     _geometry(NULL)
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
     setFilename(filename);
     setName(name);
-	if (filename != ""){
-		std::ifstream file;
-		file.open(filename.c_str());
-		if (file.fail())
-			throw Exception("Error loading mesh file: "+filename+". The file should exist in same folder with model.\n Loading is aborted.");
-		file.close();
-	}
+    if (filename != ""){
+        std::ifstream file;
+        file.open(filename.c_str());
+        if (file.fail())
+            throw Exception("Error loading mesh file: "+filename+". The file should exist in same folder with model.\n Loading is aborted.");
+        file.close();
+    }
 }
 
 ContactMesh::ContactMesh(const ContactMesh& geom) :
@@ -80,20 +80,20 @@ ContactMesh::ContactMesh(const ContactMesh& geom) :
     _filename(_filenameProp.getValueStr()),
     _geometry(NULL)
 {
-	setNull();
-	setupProperties();
-	_filename = geom._filename;
+    setNull();
+    setupProperties();
+    _filename = geom._filename;
 }
 
 void ContactMesh::setNull()
 {
-	setAuthors("Peter Eastman");
+    setAuthors("Peter Eastman");
 }
 
 void ContactMesh::setupProperties()
 {
-	_filenameProp.setName("filename");
-	_propertySet.append(&_filenameProp);
+    _filenameProp.setName("filename");
+    _propertySet.append(&_filenameProp);
 }
 
 const std::string& ContactMesh::getFilename() const
@@ -112,28 +112,28 @@ void ContactMesh::setFilename(const std::string& filename)
 
 void ContactMesh::loadMesh(const std::string& filename)
 {
-	if (_geometry==NULL){
-		SimTK::PolygonalMesh mesh;
-		std::ifstream file;
-		assert (_model);
-		const std::string& savedCwd = IO::getCwd();
-		bool restoreDirectory = false;
-		if ((_model->getInputFileName()!="") && (_model->getInputFileName()!="Unassigned")) {
-			std::string parentDirectory = IO::getParentDirectory(_model->getInputFileName());
-			IO::chDir(parentDirectory);
-			restoreDirectory=true;
-		}
-		file.open(filename.c_str());
-		if (file.fail()){
-			if (restoreDirectory) IO::chDir(savedCwd);
-			throw Exception("Error loading mesh file: "+filename+". The file should exist in same folder with model.\n Loading is aborted.");
-		}
-		mesh.loadObjFile(file);
-		file.close();
-		if (restoreDirectory) IO::chDir(savedCwd);
-		_geometry = new SimTK::ContactGeometry::TriangleMesh(mesh);
-	}
-	_displayer.addGeometry(new PolyhedralGeometry(filename));
+    if (_geometry==NULL){
+        SimTK::PolygonalMesh mesh;
+        std::ifstream file;
+        assert (_model);
+        const std::string& savedCwd = IO::getCwd();
+        bool restoreDirectory = false;
+        if ((_model->getInputFileName()!="") && (_model->getInputFileName()!="Unassigned")) {
+            std::string parentDirectory = IO::getParentDirectory(_model->getInputFileName());
+            IO::chDir(parentDirectory);
+            restoreDirectory=true;
+        }
+        file.open(filename.c_str());
+        if (file.fail()){
+            if (restoreDirectory) IO::chDir(savedCwd);
+            throw Exception("Error loading mesh file: "+filename+". The file should exist in same folder with model.\n Loading is aborted.");
+        }
+        mesh.loadObjFile(file);
+        file.close();
+        if (restoreDirectory) IO::chDir(savedCwd);
+        _geometry = new SimTK::ContactGeometry::TriangleMesh(mesh);
+    }
+    _displayer.addGeometry(new PolyhedralGeometry(filename));
 
 }
 

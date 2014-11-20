@@ -43,7 +43,7 @@ class Body;
  * @author Matt DeMers
  */
 class OSIMSIMULATION_API FixedFrame : public RigidFrame {
-	OpenSim_DECLARE_CONCRETE_OBJECT(FixedFrame, RigidFrame);
+    OpenSim_DECLARE_CONCRETE_OBJECT(FixedFrame, RigidFrame);
 public:
 //==============================================================================
 // PROPERTIES
@@ -51,31 +51,31 @@ public:
     /** @name Property declarations 
     These are the serializable properties associated with a FixedFrame. **/
     /**@{**/
-	
-	OpenSim_DECLARE_PROPERTY(translation, SimTK::Vec3, 
-		"Position of this frame's origin from the parent frame's origin, " 
-		"expressed in the parent frame.");
-	OpenSim_DECLARE_PROPERTY(orientation, SimTK::Vec3,
-		"Orientation of this frame in its parent frame, expressed as a "
-		"body-fixed x-y-z rotation sequence.");
-	
-	/**@}**/
+    
+    OpenSim_DECLARE_PROPERTY(translation, SimTK::Vec3, 
+        "Position of this frame's origin from the parent frame's origin, " 
+        "expressed in the parent frame.");
+    OpenSim_DECLARE_PROPERTY(orientation, SimTK::Vec3,
+        "Orientation of this frame in its parent frame, expressed as a "
+        "body-fixed x-y-z rotation sequence.");
+    
+    /**@}**/
 protected:
 
-	
+    
 
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
 
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
     /** By default, the frame is not connected to any parent frame,
      * and its transform is an identity transform.
      */
-	FixedFrame();
+    FixedFrame();
 
     virtual ~FixedFrame() {};
     /** A convenience constructor that initializes the connections and
@@ -83,7 +83,7 @@ public:
      *
      * @param[in] parent_frame the parent reference frame.
      */
-	FixedFrame(const RigidFrame& parent_frame);
+    FixedFrame(const RigidFrame& parent_frame);
 
     /** A convenience constructor that initializes the connections and
      * properties of this object.
@@ -94,73 +94,73 @@ public:
      */
     FixedFrame(const RigidFrame& parent_frame, const SimTK::Transform&
             transform);
-	
-	/** Set the parent reference frame*/
-	void setParentFrame(const RigidFrame& frame);
-	/** Get the parent reference frame*/
-	const RigidFrame& getParentFrame() const;
-	/**
-	* Get the transform that describes the translation and rotation of this
-	* frame (F frame) relative to its parent frame (P frame).  This method
-	* returns the transform converting quantities expressed in F frame to
-	* quantities expressed in the P frame. This is mathematically stated as,
-	* vec_P = X_PF*vec_F ,
-	* where X_PF is the transform returned by getTransform.
+    
+    /** Set the parent reference frame*/
+    void setParentFrame(const RigidFrame& frame);
+    /** Get the parent reference frame*/
+    const RigidFrame& getParentFrame() const;
+    /**
+    * Get the transform that describes the translation and rotation of this
+    * frame (F frame) relative to its parent frame (P frame).  This method
+    * returns the transform converting quantities expressed in F frame to
+    * quantities expressed in the P frame. This is mathematically stated as,
+    * vec_P = X_PF*vec_F ,
+    * where X_PF is the transform returned by getTransform.
     *
     * This transform is computed using the translation and orientation
     * properties of this object.
-	*
-	* @return transform  The transform between this frame and its parent frame.
-	*/
-	const SimTK::Transform& getTransform() const;
-	/** Set the transform the translates and rotates this frame (F frame) from 
-	* its parent frame (P frame). You should provide the transform X_PF
-	* such that vec_P = X_PF*vec_F.
+    *
+    * @return transform  The transform between this frame and its parent frame.
+    */
+    const SimTK::Transform& getTransform() const;
+    /** Set the transform the translates and rotates this frame (F frame) from 
+    * its parent frame (P frame). You should provide the transform X_PF
+    * such that vec_P = X_PF*vec_F.
     *
     * This transform is stored via the translation and orientation
     * properties of this object.
-	*
-	* @param transform  The transform between this frame and its parent frame.
-	*/
-	void setTransform(const SimTK::Transform& transform);
-	
+    *
+    * @param transform  The transform between this frame and its parent frame.
+    */
+    void setTransform(const SimTK::Transform& transform);
+    
 protected:
     
-	
+    
     /** @name Model Component Interface
     These methods adhere to the Model Component Interface**/
     /**@{**/
     
-	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-	void constructConnectors() override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    void constructConnectors() override;
     /**@}**/
 
     /** @name Utilities
     Internal helpers used by FixedFrames for initializing themselves.**/
     /**@{**/
     
-	/** this helper function is called during buildSytem, after all connnection are resolved. **/
-	void initFixedFrameCache() const;
+    /** this helper function is called during buildSytem, after all connnection are resolved. **/
+    void initFixedFrameCache() const;
     /** call this helper function whenever there is a structural change
     **  meaning when the transform or parent frame is updated. */
     void invalidate() const;
     /** Check the validity of the tree of RigidFrames connecting this to a base segment. */
     bool isPathToBaseValid() const;
-	mutable bool _isCacheInitialized;
+    mutable bool _isCacheInitialized;
     /**@}**/
 private:
 
-	void setNull();
-	void constructProperties() override;
+    void setNull();
+    void constructProperties() override;
 
     // made mutable since it's used only for caching, public const methods can
     // still modify it.
     
     // a private member to cache the tranform on my parent frame
-	mutable SimTK::Transform _transform;
+    mutable SimTK::Transform _transform;
 
 //=============================================================================
-};	// END of class FixedFrame
+};  // END of class FixedFrame
 //=============================================================================
 //=============================================================================
 

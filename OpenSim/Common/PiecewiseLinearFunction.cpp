@@ -57,48 +57,48 @@ PiecewiseLinearFunction::~PiecewiseLinearFunction()
  * Default constructor.
  */
 PiecewiseLinearFunction::PiecewiseLinearFunction() :
-	_x(_propX.getValueDblArray()),
-	_y(_propY.getValueDblArray())
+    _x(_propX.getValueDblArray()),
+    _y(_propY.getValueDblArray())
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
  */
 PiecewiseLinearFunction::PiecewiseLinearFunction(int aN,const double *aX,const double *aY,
-	const string &aName) :
-	_x(_propX.getValueDblArray()),
-	_y(_propY.getValueDblArray()),
+    const string &aName) :
+    _x(_propX.getValueDblArray()),
+    _y(_propY.getValueDblArray()),
    _b(0.0)
 {
-	setNull();
+    setNull();
 
-	// OBJECT TYPE AND NAME
-	setName(aName);
+    // OBJECT TYPE AND NAME
+    setName(aName);
 
-	// NUMBER OF DATA POINTS
-	if(aN < 2)
-	{
-		printf("PiecewiseLinearFunction: ERROR- there must be 2 or more data points.\n");
-		return;
-	}
+    // NUMBER OF DATA POINTS
+    if(aN < 2)
+    {
+        printf("PiecewiseLinearFunction: ERROR- there must be 2 or more data points.\n");
+        return;
+    }
 
-	// CHECK DATA
-	if((aX==NULL)||(aY==NULL))
-	{
-		printf("PiecewiseLinearFunction: ERROR- NULL arrays for data points encountered.\n");
-		return;
-	}
+    // CHECK DATA
+    if((aX==NULL)||(aY==NULL))
+    {
+        printf("PiecewiseLinearFunction: ERROR- NULL arrays for data points encountered.\n");
+        return;
+    }
 
-	// INDEPENDENT VALUES (KNOT SEQUENCE)
-	_x.setSize(0);
-	_x.append(aN,aX);
+    // INDEPENDENT VALUES (KNOT SEQUENCE)
+    _x.setSize(0);
+    _x.append(aN,aX);
 
-	_y.setSize(0);
-	_y.append(aN,aY);
+    _y.setSize(0);
+    _y.append(aN,aY);
 
-	// Calculate the slope coefficients
-	calcCoefficients();
+    // Calculate the slope coefficients
+    calcCoefficients();
 }
 //_____________________________________________________________________________
 /**
@@ -108,12 +108,12 @@ PiecewiseLinearFunction::PiecewiseLinearFunction(int aN,const double *aX,const d
  * @param aFunction PiecewiseLinearFunction object to be copied.
  */
 PiecewiseLinearFunction::PiecewiseLinearFunction(const PiecewiseLinearFunction &aFunction) :
-	Function(aFunction),
-	_x(_propX.getValueDblArray()),
-	_y(_propY.getValueDblArray()),
+    Function(aFunction),
+    _x(_propX.getValueDblArray()),
+    _y(_propY.getValueDblArray()),
    _b(0.0)
 {
-	setEqual(aFunction);
+    setEqual(aFunction);
 }
 
 
@@ -126,7 +126,7 @@ PiecewiseLinearFunction::PiecewiseLinearFunction(const PiecewiseLinearFunction &
  */
 void PiecewiseLinearFunction::setNull()
 {
-	setupProperties();
+    setupProperties();
 }
 //_____________________________________________________________________________
 /**
@@ -136,17 +136,17 @@ void PiecewiseLinearFunction::setNull()
  */
 void PiecewiseLinearFunction::setupProperties()
 {
-	// X- INDEPENDENT VARIABLES
-	_propX.setName("x");
-	Array<double> x(0.0);
-	_propX.setValue(x);
-	_propertySet.append( &_propX );
+    // X- INDEPENDENT VARIABLES
+    _propX.setName("x");
+    Array<double> x(0.0);
+    _propX.setValue(x);
+    _propertySet.append( &_propX );
 
-	// Y- DEPENDENT VARIABLES
-	_propY.setName("y");
-	Array<double> y(0.0);
-	_propY.setValue(y);
-	_propertySet.append( &_propY );
+    // Y- DEPENDENT VARIABLES
+    _propY.setName("y");
+    Array<double> y(0.0);
+    _propY.setValue(y);
+    _propertySet.append( &_propY );
 }
 //_____________________________________________________________________________
 /**
@@ -157,15 +157,15 @@ void PiecewiseLinearFunction::setupProperties()
  */
 void PiecewiseLinearFunction::setEqual(const PiecewiseLinearFunction &aFunction)
 {
-	setNull();
+    setNull();
 
-	// CHECK ARRAY SIZES
-	if(aFunction.getSize()<=0) return;
+    // CHECK ARRAY SIZES
+    if(aFunction.getSize()<=0) return;
 
-	// ALLOCATE ARRAYS
-	_x = aFunction._x;
-	_y = aFunction._y;
-	_b = aFunction._b;
+    // ALLOCATE ARRAYS
+    _x = aFunction._x;
+    _y = aFunction._y;
+    _b = aFunction._b;
 }
 //_____________________________________________________________________________
 /**
@@ -177,37 +177,37 @@ void PiecewiseLinearFunction::setEqual(const PiecewiseLinearFunction &aFunction)
  */
 void PiecewiseLinearFunction::init(Function* aFunction)
 {
-	if (aFunction == NULL)
-		return;
+    if (aFunction == NULL)
+        return;
 
-	PiecewiseLinearFunction* lf = dynamic_cast<PiecewiseLinearFunction*>(aFunction);
-	if (lf != NULL) {
-		setEqual(*lf);
-	} else {
-		XYFunctionInterface xyFunc(aFunction);
-		if (xyFunc.getNumberOfPoints() == 0) {
-			// A PiecewiseLinearFunction must have at least 2 data points.
-			// If aFunction is a Constant, use its Y value for both data points.
-			// If it is not, make up two data points.
-			double x[2] = {0.0, 1.0}, y[2];
-			Constant* cons = dynamic_cast<Constant*>(aFunction);
-			if (cons != NULL) {
-				y[0] = y[1] = cons->calcValue(SimTK::Vector(0));
-			} else {
-				y[0] = y[1] = 1.0;
-			}
-			*this = PiecewiseLinearFunction(2, x, y);
-		} else if (xyFunc.getNumberOfPoints() == 1) {
-			double x[2], y[2];
-			x[0] = xyFunc.getXValues()[0];
-			x[1] = x[0] + 1.0;
-			y[0] = y[1] = xyFunc.getYValues()[0];
-			*this = PiecewiseLinearFunction(2, x, y);
-		} else {
-			*this = PiecewiseLinearFunction(xyFunc.getNumberOfPoints(),
-				xyFunc.getXValues(), xyFunc.getYValues());
-		}
-	}
+    PiecewiseLinearFunction* lf = dynamic_cast<PiecewiseLinearFunction*>(aFunction);
+    if (lf != NULL) {
+        setEqual(*lf);
+    } else {
+        XYFunctionInterface xyFunc(aFunction);
+        if (xyFunc.getNumberOfPoints() == 0) {
+            // A PiecewiseLinearFunction must have at least 2 data points.
+            // If aFunction is a Constant, use its Y value for both data points.
+            // If it is not, make up two data points.
+            double x[2] = {0.0, 1.0}, y[2];
+            Constant* cons = dynamic_cast<Constant*>(aFunction);
+            if (cons != NULL) {
+                y[0] = y[1] = cons->calcValue(SimTK::Vector(0));
+            } else {
+                y[0] = y[1] = 1.0;
+            }
+            *this = PiecewiseLinearFunction(2, x, y);
+        } else if (xyFunc.getNumberOfPoints() == 1) {
+            double x[2], y[2];
+            x[0] = xyFunc.getXValues()[0];
+            x[1] = x[0] + 1.0;
+            y[0] = y[1] = xyFunc.getYValues()[0];
+            *this = PiecewiseLinearFunction(2, x, y);
+        } else {
+            *this = PiecewiseLinearFunction(xyFunc.getNumberOfPoints(),
+                xyFunc.getXValues(), xyFunc.getYValues());
+        }
+    }
 }
 
 //=============================================================================
@@ -222,13 +222,13 @@ void PiecewiseLinearFunction::init(Function* aFunction)
  */
 PiecewiseLinearFunction& PiecewiseLinearFunction::operator=(const PiecewiseLinearFunction &aFunction)
 {
-	// BASE CLASS
-	Function::operator=(aFunction);
+    // BASE CLASS
+    Function::operator=(aFunction);
 
-	// DATA
-	setEqual(aFunction);
+    // DATA
+    setEqual(aFunction);
 
-	return(*this);
+    return(*this);
 }
 
 
@@ -247,7 +247,7 @@ PiecewiseLinearFunction& PiecewiseLinearFunction::operator=(const PiecewiseLinea
  */
 int PiecewiseLinearFunction::getSize() const
 {
-	return(_x.getSize());
+    return(_x.getSize());
 }
 
 //-----------------------------------------------------------------------------
@@ -263,7 +263,7 @@ int PiecewiseLinearFunction::getSize() const
  */
 const Array<double>& PiecewiseLinearFunction::getX() const
 {
-	return(_x);
+    return(_x);
 }
 //_____________________________________________________________________________
 /**
@@ -275,7 +275,7 @@ const Array<double>& PiecewiseLinearFunction::getX() const
  */
 const Array<double>& PiecewiseLinearFunction::getY() const
 {
-	return(_y);
+    return(_y);
 }
 //_____________________________________________________________________________
 /**
@@ -287,7 +287,7 @@ const Array<double>& PiecewiseLinearFunction::getY() const
  */
 const double* PiecewiseLinearFunction::getXValues() const
 {
-	return(&_x[0]);
+    return(&_x[0]);
 }
 //_____________________________________________________________________________
 /**
@@ -297,7 +297,7 @@ const double* PiecewiseLinearFunction::getXValues() const
  */
 const double* PiecewiseLinearFunction::getYValues() const
 {
-	return(&_y[0]);
+    return(&_y[0]);
 }
 
 
@@ -310,101 +310,101 @@ const double* PiecewiseLinearFunction::getYValues() const
  */
 void PiecewiseLinearFunction::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	Function::updateFromXMLNode(aNode, versionNumber);
-	calcCoefficients();
-}	
+    Function::updateFromXMLNode(aNode, versionNumber);
+    calcCoefficients();
+}   
 
 double PiecewiseLinearFunction::getX(int aIndex) const
 {
-	if (aIndex >= 0 && aIndex < _x.getSize())
-		return _x.get(aIndex);
-	else {
-		throw Exception("PiecewiseLinearFunction::getX(): index out of bounds.");
-		return 0.0;
-	}
+    if (aIndex >= 0 && aIndex < _x.getSize())
+        return _x.get(aIndex);
+    else {
+        throw Exception("PiecewiseLinearFunction::getX(): index out of bounds.");
+        return 0.0;
+    }
 }
 
 double PiecewiseLinearFunction::getY(int aIndex) const
 {
-	if (aIndex >= 0 && aIndex < _y.getSize())
-		return _y.get(aIndex);
-	else {
-		throw Exception("PiecewiseLinearFunction::getY(): index out of bounds.");
-		return 0.0;
-	}
+    if (aIndex >= 0 && aIndex < _y.getSize())
+        return _y.get(aIndex);
+    else {
+        throw Exception("PiecewiseLinearFunction::getY(): index out of bounds.");
+        return 0.0;
+    }
 }
 
 void PiecewiseLinearFunction::setX(int aIndex, double aValue)
 {
-	if (aIndex >= 0 && aIndex < _x.getSize()) {
-		_x[aIndex] = aValue;
-		calcCoefficients();
-	} else {
-		throw Exception("PiecewiseLinearFunction::setX(): index out of bounds.");
-	}
+    if (aIndex >= 0 && aIndex < _x.getSize()) {
+        _x[aIndex] = aValue;
+        calcCoefficients();
+    } else {
+        throw Exception("PiecewiseLinearFunction::setX(): index out of bounds.");
+    }
 }
 
 void PiecewiseLinearFunction::setY(int aIndex, double aValue)
 {
-	if (aIndex >= 0 && aIndex < _y.getSize()) {
-		_y[aIndex] = aValue;
-		calcCoefficients();
-	} else {
-		throw Exception("PiecewiseLinearFunction::setY(): index out of bounds.");
-	}
+    if (aIndex >= 0 && aIndex < _y.getSize()) {
+        _y[aIndex] = aValue;
+        calcCoefficients();
+    } else {
+        throw Exception("PiecewiseLinearFunction::setY(): index out of bounds.");
+    }
 }
 
 bool PiecewiseLinearFunction::deletePoint(int aIndex)
 {
-	if (_x.getSize() > 2 && _y.getSize() > 2 &&
-		 aIndex < _x.getSize() && aIndex < _y.getSize()) {
-	   _x.remove(aIndex);
-	   _y.remove(aIndex);
+    if (_x.getSize() > 2 && _y.getSize() > 2 &&
+         aIndex < _x.getSize() && aIndex < _y.getSize()) {
+       _x.remove(aIndex);
+       _y.remove(aIndex);
 
-	   // Recalculate the slopes
+       // Recalculate the slopes
       calcCoefficients();
-		return true;
-	}
+        return true;
+    }
 
    return false;
 }
 
 bool PiecewiseLinearFunction::deletePoints(const Array<int>& indices)
 {
-	bool pointsDeleted = false;
-	int numPointsLeft = _x.getSize() - indices.getSize();
+    bool pointsDeleted = false;
+    int numPointsLeft = _x.getSize() - indices.getSize();
 
-	if (numPointsLeft >= 2) {
-		// Assume the indices are sorted highest to lowest
-		for (int i=0; i<indices.getSize(); i++) {
-			int index = indices.get(i);
-			if (index >= 0 && index < _x.getSize()) {
-	         _x.remove(index);
-	         _y.remove(index);
-				pointsDeleted = true;
-			}
-		}
-		if (pointsDeleted)
-			calcCoefficients();
-	}
+    if (numPointsLeft >= 2) {
+        // Assume the indices are sorted highest to lowest
+        for (int i=0; i<indices.getSize(); i++) {
+            int index = indices.get(i);
+            if (index >= 0 && index < _x.getSize()) {
+             _x.remove(index);
+             _y.remove(index);
+                pointsDeleted = true;
+            }
+        }
+        if (pointsDeleted)
+            calcCoefficients();
+    }
 
    return pointsDeleted;
 }
 
 int PiecewiseLinearFunction::addPoint(double aX, double aY)
 {
-	int i=0;
-	for (i=0; i<_x.getSize(); i++)
-		if (_x[i] > aX)
-			break;
+    int i=0;
+    for (i=0; i<_x.getSize(); i++)
+        if (_x[i] > aX)
+            break;
 
-	_x.insert(i, aX);
-	_y.insert(i, aY);
+    _x.insert(i, aX);
+    _y.insert(i, aY);
 
-	// Recalculate the slopes
-	calcCoefficients();
+    // Recalculate the slopes
+    calcCoefficients();
 
-	return i;
+    return i;
 }
 
 //=============================================================================
@@ -419,11 +419,11 @@ void PiecewiseLinearFunction::calcCoefficients()
 
    _b.setSize(n);
 
-	for (int i=0; i<n-1; i++) {
-		double range = MAX(TINY_NUMBER, _x[i+1] - _x[i]);
-		_b[i] = (_y[i+1] - _y[i]) / range;
-	}
-	_b[n-1] = _b[n-2];
+    for (int i=0; i<n-1; i++) {
+        double range = MAX(TINY_NUMBER, _x[i+1] - _x[i]);
+        _b[i] = (_y[i+1] - _y[i]) / range;
+    }
+    _b[n-1] = _b[n-2];
 }
 
 double PiecewiseLinearFunction::calcValue(const Vector& x) const

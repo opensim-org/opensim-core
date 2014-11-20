@@ -69,13 +69,13 @@ void compareModel(const Model& resultModel, const std::string& stdFileName, doub
     const SimTK::State& s = resultModel.getWorkingState();
     resultModel.getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
-    ASSERT(sStd.getNQ()==s.getNQ());	
+    ASSERT(sStd.getNQ()==s.getNQ());    
     // put them in same configuration
     sStd.updQ() = s.getQ();
     refModel->getMultibodySystem().realize(sStd, SimTK::Stage::Velocity);
 
-    ASSERT(sStd.getNU()==s.getNU());	
-    ASSERT(sStd.getNZ()==s.getNZ());	
+    ASSERT(sStd.getNU()==s.getNU());    
+    ASSERT(sStd.getNZ()==s.getNZ());    
 
     // Now cycle thru ModelComponents recursively
 

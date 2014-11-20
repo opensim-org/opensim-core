@@ -105,7 +105,7 @@ typedef double dbl;
 typedef long int inl;
 
 int gcvspl(dbl *, dbl *, inl *, dbl *, dbl *, inl *, inl *,
-	 		  inl *, inl *, dbl *, dbl *, inl *, dbl *, inl *);
+              inl *, inl *, dbl *, dbl *, inl *, dbl *, inl *);
 
 dbl splder(inl *, inl *, inl *, dbl *, dbl *, dbl *, inl *, dbl *);
 
@@ -115,9 +115,9 @@ dbl splder(inl *, inl *, inl *, dbl *, dbl *, dbl *, inl *, dbl *);
 static doublereal c_b6 = 1e-15;
 
 int gcvspl(doublereal *x, doublereal *y, integer *ny,
-	        doublereal *wx, doublereal *wy, integer *m, integer *n, integer *k,
-	        integer *md, doublereal *val, doublereal *c, integer *nc, doublereal *
-	        wk, integer *ier)
+            doublereal *wx, doublereal *wy, integer *m, integer *n, integer *k,
+            integer *md, doublereal *val, doublereal *c, integer *nc, doublereal *
+            wk, integer *ier)
 {
     static integer m2 = 0;
     static integer nm1 = 0;
@@ -129,15 +129,15 @@ int gcvspl(doublereal *x, doublereal *y, integer *ny,
     /* Local variables */
     static integer nm2m1, nm2p1;
     extern doublereal splc(integer *, integer *, integer *, doublereal *,
-	    integer *, doublereal *, doublereal *, integer *, doublereal *,
-	    doublereal *, doublereal *, doublereal *, integer *, doublereal *,
-	     doublereal *, doublereal *, doublereal *, doublereal *);
+        integer *, doublereal *, doublereal *, integer *, doublereal *,
+        doublereal *, doublereal *, doublereal *, integer *, doublereal *,
+         doublereal *, doublereal *, doublereal *, doublereal *);
     extern /* Subroutine */ int prep(integer *, integer *, doublereal *,
-	    doublereal *, doublereal *, doublereal *);
+        doublereal *, doublereal *, doublereal *);
     static integer i, j;
     static doublereal alpha;
     extern /* Subroutine */ int basis(integer *, integer *, doublereal *,
-	    doublereal *, doublereal *, doublereal *);
+        doublereal *, doublereal *, doublereal *);
     static doublereal r1, r2, r3, r4;
     static integer ib;
     static doublereal gf2, gf1, gf3, gf4;
@@ -579,27 +579,27 @@ int prep(integer *m, integer *n, doublereal *x, doublereal *w, doublereal *we,
 /* SPLC.FOR, 1985-12-12 */
 
 doublereal splc(integer *m, integer *n, integer *k, doublereal *y, integer *
-	             ny, doublereal *wx, doublereal *wy, integer *mode, doublereal *val,
-	             doublereal *p, doublereal *eps, doublereal *c, integer *nc,
-	             doublereal *stat, doublereal *b, doublereal *we, doublereal *el,
-	             doublereal *bwe)
+                 ny, doublereal *wx, doublereal *wy, integer *mode, doublereal *val,
+                 doublereal *p, doublereal *eps, doublereal *c, integer *nc,
+                 doublereal *stat, doublereal *b, doublereal *we, doublereal *el,
+                 doublereal *bwe)
 {
     /* System generated locals */
     integer y_dim1, y_offset, c_dim1, c_offset, b_dim1, b_offset, we_dim1,
-	    we_offset, bwe_dim1, bwe_offset, i__1, i__2, i__3, i__4;
+        we_offset, bwe_dim1, bwe_offset, i__1, i__2, i__3, i__4;
     doublereal ret_val, d__1;
 
     /* Local variables */
     static integer i, j, l;
     extern doublereal trinv(doublereal *, doublereal *, integer *, integer *)
-	    ;
+        ;
     static doublereal dp;
     static integer km;
     static doublereal dt;
     static integer kp;
     extern /* Subroutine */ int bandet(doublereal *, integer *, integer *),
-	    bansol(doublereal *, doublereal *, integer *, doublereal *,
-	    integer *, integer *, integer *, integer *);
+        bansol(doublereal *, doublereal *, integer *, doublereal *,
+        integer *, integer *, integer *, integer *);
     static doublereal pel, esn, trn;
 
 /* ***  Check on p-value */
@@ -775,7 +775,7 @@ int bandet(doublereal *e, integer *m, integer *n)
 /* BANSOL.FOR, 1985-12-12 */
 
 int bansol(doublereal *e, doublereal *y, integer *ny,
-	         doublereal *c, integer *nc, integer *m, integer *n, integer *k)
+             doublereal *c, integer *nc, integer *m, integer *n, integer *k)
 {
     /* System generated locals */
     integer e_dim1, e_offset, y_dim1, y_offset, c_dim1, c_offset, i__1, i__2, i__3, i__4;
@@ -950,7 +950,7 @@ doublereal trinv(doublereal *b, doublereal *e, integer *m, integer *n)
 /* SPLDER.FOR, 1985-06-11 */
 
 doublereal splder(integer *ider, integer *m, integer *n, doublereal *t,
-	               doublereal *x, doublereal *c, integer *l, doublereal *q)
+                   doublereal *x, doublereal *c, integer *l, doublereal *q)
 {
     /* System generated locals */
     integer i__1, i__2;
@@ -1104,7 +1104,7 @@ L6:
 
 /* SEARCH.FOR, 1985-06-03 */
 
-int search(integer *n, doublereal *x, doublereal *t,	integer *l)
+int search(integer *n, doublereal *x, doublereal *t,    integer *l)
 {
     static integer il, iu;
 

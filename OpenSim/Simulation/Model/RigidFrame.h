@@ -42,32 +42,32 @@ class Body;
 * @author Matt DeMers
 */
 class OSIMSIMULATION_API RigidFrame : public Frame {
-	OpenSim_DECLARE_ABSTRACT_OBJECT(RigidFrame, Frame);
+    OpenSim_DECLARE_ABSTRACT_OBJECT(RigidFrame, Frame);
 public:
-	//==========================================================================
-	// PROPERTIES
-	//==========================================================================
-	/** @name Property declarations
-	These are the serializable properties associated with a RigidFrame. **/
-	/**@{**/
-	/**@}**/
+    //==========================================================================
+    // PROPERTIES
+    //==========================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with a RigidFrame. **/
+    /**@{**/
+    /**@}**/
 protected:
 
 
 
-	//==========================================================================
-	// PUBLIC METHODS
-	//==========================================================================
+    //==========================================================================
+    // PUBLIC METHODS
+    //==========================================================================
 
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
     RigidFrame();
 
     virtual ~RigidFrame() {};
 
-	/**
+    /**
      * All RigidFrames are ultimately rooted to a SimTK::MobilizedBody.  Return
      * the MobilizedBodyIndex of the MobilizedBody to which this RigidFrame is
      * rooted. This index is only available after Model::initSystem() is
@@ -77,8 +77,8 @@ public:
      * MobilizedBody
      *
      * @see getMobilizedBody, updMobilizedBody
-	 */
-	SimTK::MobilizedBodyIndex getMobilizedBodyIndex() const { return _index; }
+     */
+    SimTK::MobilizedBodyIndex getMobilizedBodyIndex() const { return _index; }
 
     /**
      * The SimTK::MobilizedBody to which this RigidFrame is rooted. This
@@ -105,13 +105,13 @@ public:
     */
     SimTK::Transform getTransformInMobilizedBody() const { return _mbTransform; }
 private:
-	void setNull();
-	
+    void setNull();
+    
 protected:
-	/* ID for the underlying mobilized body in Simbody system.
-	Only Joint can set, since it defines the mobilized body type and
-	the connection to the parent body in the multibody tree. */
-	mutable SimTK::MobilizedBodyIndex _index;
+    /* ID for the underlying mobilized body in Simbody system.
+    Only Joint can set, since it defines the mobilized body type and
+    the connection to the parent body in the multibody tree. */
+    mutable SimTK::MobilizedBodyIndex _index;
     /* RigidFrames, by definition have a fixed transform in their root MobilizedBody.
     This stores the fixed transform of this RigidFrame in it's root MobilizedBody*/
     mutable SimTK::Transform _mbTransform;
@@ -120,8 +120,8 @@ protected:
     /**@{**/
     SimTK::Transform calcGroundTransform(const SimTK::State& state) const override;
     /**@}**/
-	//==========================================================================
-};	// END of class RigidFrame
+    //==========================================================================
+};  // END of class RigidFrame
 //=============================================================================
 //=============================================================================
 

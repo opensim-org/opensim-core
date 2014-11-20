@@ -44,46 +44,46 @@ class OSIMCOMMON_API Units
 {
 
 public:
-	enum UnitType
-	{
-		UnknownUnits = 0,
-		Radians,
-		Degrees,
-		Millimeters,
-		Centimeters,
-		Meters,
-		Seconds,
-		Milliseconds,
-		Newtons
-	};
+    enum UnitType
+    {
+        UnknownUnits = 0,
+        Radians,
+        Degrees,
+        Millimeters,
+        Centimeters,
+        Meters,
+        Seconds,
+        Milliseconds,
+        Newtons
+    };
 
 //=============================================================================
 // DATA
 //=============================================================================
 private:
-	UnitType _type;
+    UnitType _type;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	Units();
-	Units(const Units& aUnits);
-	Units(const std::string aString);
-	Units(UnitType aType);
-	virtual ~Units();
-	double convertTo(UnitType aType, double aValue) const;
-	double convertTo(UnitType aType) const;
-	double convertTo(const Units& aUnit) const;
-	UnitType getType() const { return _type; }
-	std::string getLabel() const;
-	std::string getAbbreviation() const;
+    Units();
+    Units(const Units& aUnits);
+    Units(const std::string aString);
+    Units(UnitType aType);
+    virtual ~Units();
+    double convertTo(UnitType aType, double aValue) const;
+    double convertTo(UnitType aType) const;
+    double convertTo(const Units& aUnit) const;
+    UnitType getType() const { return _type; }
+    std::string getLabel() const;
+    std::string getAbbreviation() const;
 
 //=============================================================================
-};	// END of class Units
+};  // END of class Units
 //=============================================================================
 //=============================================================================
 

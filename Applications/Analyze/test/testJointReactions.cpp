@@ -30,20 +30,20 @@ using namespace std;
 
 int main()
 {
-	try {
-		AnalyzeTool analyze("SinglePin_Setup_JointReaction.xml");
-		analyze.run();
-		Storage result1("SinglePin_JointReaction_ReactionLoads.sto"), standard1("std_SinglePin_JointReaction_ReactionLoads.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(1e-5, 24), __FILE__, __LINE__, "SinglePin failed");
-		cout << "SinglePin passed" << endl;
+    try {
+        AnalyzeTool analyze("SinglePin_Setup_JointReaction.xml");
+        analyze.run();
+        Storage result1("SinglePin_JointReaction_ReactionLoads.sto"), standard1("std_SinglePin_JointReaction_ReactionLoads.sto");
+        CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(1e-5, 24), __FILE__, __LINE__, "SinglePin failed");
+        cout << "SinglePin passed" << endl;
 
-		AnalyzeTool analyze2("DoublePendulum3D_Setup_JointReaction.xml");
-		analyze2.run();
-		Storage result2("DoublePendulum3D_JointReaction_ReactionLoads.sto"), standard2("std_DoublePendulum3D_JointReaction_ReactionLoads.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(1e-5, 24), __FILE__, __LINE__, "DoublePendulum3D failed");
-		cout << "DoublePendulum3D passed" << endl;
-	}
-	catch (const Exception& e) {
+        AnalyzeTool analyze2("DoublePendulum3D_Setup_JointReaction.xml");
+        analyze2.run();
+        Storage result2("DoublePendulum3D_JointReaction_ReactionLoads.sto"), standard2("std_DoublePendulum3D_JointReaction_ReactionLoads.sto");
+        CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(1e-5, 24), __FILE__, __LINE__, "DoublePendulum3D failed");
+        cout << "DoublePendulum3D passed" << endl;
+    }
+    catch (const Exception& e) {
         e.print(cerr);
         return 1;
     }

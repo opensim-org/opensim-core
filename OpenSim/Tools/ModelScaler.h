@@ -202,7 +202,7 @@ private:
     double takeExperimentalMarkerMeasurement(const MarkerData& aMarkerData, const std::string& aName1, const std::string& aName2, const std::string& aMeasurementName) const;
 
 //=============================================================================
-};	// END of class ModelScaler
+};  // END of class ModelScaler
 //=============================================================================
 //=============================================================================
 

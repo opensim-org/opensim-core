@@ -362,7 +362,7 @@ private:
         constructProperty_Foo2(Foo());
         constructProperty_scale1(1.0);
         constructProperty_scale2(2.0);
-    }	
+    }   
 }; // End of Class CompoundFoo
 
 SimTK_NICETYPENAME_LITERAL(Foo);

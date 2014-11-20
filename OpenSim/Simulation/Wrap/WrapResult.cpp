@@ -59,19 +59,19 @@ WrapResult::~WrapResult()
  */
 void WrapResult::copyData(const WrapResult& aWrapResult)
 {
-	wrap_pts = aWrapResult.wrap_pts;
-	wrap_path_length = aWrapResult.wrap_path_length;
+    wrap_pts = aWrapResult.wrap_pts;
+    wrap_path_length = aWrapResult.wrap_path_length;
 
-	startPoint = aWrapResult.startPoint;
-	endPoint = aWrapResult.endPoint;
+    startPoint = aWrapResult.startPoint;
+    endPoint = aWrapResult.endPoint;
 
-	int i;
-	for (i = 0; i < 3; i++) {
-		r1[i] = aWrapResult.r1[i];
-		r2[i] = aWrapResult.r2[i];
-		c1[i] = aWrapResult.c1[i];
-		sv[i] = aWrapResult.sv[i];
-	}
+    int i;
+    for (i = 0; i < 3; i++) {
+        r1[i] = aWrapResult.r1[i];
+        r2[i] = aWrapResult.r2[i];
+        c1[i] = aWrapResult.c1[i];
+        sv[i] = aWrapResult.sv[i];
+    }
 }
 
 //=============================================================================
@@ -85,7 +85,7 @@ void WrapResult::copyData(const WrapResult& aWrapResult)
  */
 WrapResult& WrapResult::operator=(const WrapResult& aWrapResult)
 {
-	copyData(aWrapResult);
+    copyData(aWrapResult);
 
-	return(*this);
+    return(*this);
 }

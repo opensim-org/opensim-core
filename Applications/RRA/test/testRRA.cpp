@@ -54,15 +54,15 @@ int main() {
 
 void checkCOM(string resultsFile, string body, const SimTK::Vec3 &standardCOM, const Array<double> &tolerances) {
 
-	// compare the adjusted center of mass to OpenSim 1.9.1 values
-	Model adjusted_model(resultsFile);
-	const BodySet& bodies = adjusted_model.getBodySet();
-	const Body& torso = bodies.get(bodies.getIndex(body));
-	SimTK::Vec3 com = torso.getMassCenter();
-	cout << "body:           " << body << endl;
-	cout << "center of mass: (" << com[0] << ", " << com[1] << ", " << com[2] << ")\n";
-	cout << "standard COM:   (" << standardCOM[0] << ", " << standardCOM[1] << ", " << standardCOM[2] << ")\n";
-	cout << "tolerances:     (" << tolerances[0] << ", " << tolerances[1] << ", " << tolerances[2] << ")\n" << endl;
-	for (int i = 0; i < 3; ++i)
-		ASSERT_EQUAL(standardCOM[i], com[i], tolerances[i]);
+    // compare the adjusted center of mass to OpenSim 1.9.1 values
+    Model adjusted_model(resultsFile);
+    const BodySet& bodies = adjusted_model.getBodySet();
+    const Body& torso = bodies.get(bodies.getIndex(body));
+    SimTK::Vec3 com = torso.getMassCenter();
+    cout << "body:           " << body << endl;
+    cout << "center of mass: (" << com[0] << ", " << com[1] << ", " << com[2] << ")\n";
+    cout << "standard COM:   (" << standardCOM[0] << ", " << standardCOM[1] << ", " << standardCOM[2] << ")\n";
+    cout << "tolerances:     (" << tolerances[0] << ", " << tolerances[1] << ", " << tolerances[2] << ")\n" << endl;
+    for (int i = 0; i < 3; ++i)
+        ASSERT_EQUAL(standardCOM[i], com[i], tolerances[i]);
 }

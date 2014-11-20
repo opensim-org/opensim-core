@@ -32,16 +32,16 @@ using namespace std;
 
 int main() {
     try {
-		double value = Lepton::Parser::parse("sqrt(9)-1").evaluate();
-		ASSERT(fabs(value-2.) < 1E-7);
-		map<string, double> variables;
-		variables.insert(pair<string, double>("x", 9.0));
-		value = Lepton::Parser::parse("sqrt(x)-1").evaluate(variables);
-		ASSERT(fabs(value-2.) < 1E-7);
+        double value = Lepton::Parser::parse("sqrt(9)-1").evaluate();
+        ASSERT(fabs(value-2.) < 1E-7);
+        map<string, double> variables;
+        variables.insert(pair<string, double>("x", 9.0));
+        value = Lepton::Parser::parse("sqrt(x)-1").evaluate(variables);
+        ASSERT(fabs(value-2.) < 1E-7);
         Lepton::Parser::parse("state.muscle1.activation^2");
     }
     catch (...) {
-		//cout << "Failed" << endl;
+        //cout << "Failed" << endl;
         return 1;
     }
     //cout << "Done" << endl;

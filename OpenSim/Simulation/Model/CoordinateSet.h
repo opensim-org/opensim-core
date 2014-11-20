@@ -44,41 +44,41 @@ class OSIMSIMULATION_API CoordinateSet : public ModelComponentSet<Coordinate> {
 OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateSet, ModelComponentSet<Coordinate>);
 
 private:
-	void setNull();
+    void setNull();
 public:
-	CoordinateSet();
-	CoordinateSet(Model& model) : Super(model) {}
-	CoordinateSet(Model& model, const std::string &aFileName, 
+    CoordinateSet();
+    CoordinateSet(Model& model) : Super(model) {}
+    CoordinateSet(Model& model, const std::string &aFileName, 
                   bool aUpdateFromXMLNode=true)
     :   Super(model, aFileName, aUpdateFromXMLNode) {}
-	CoordinateSet(const CoordinateSet& aCoordinateSet);
-	~CoordinateSet(void);
+    CoordinateSet(const CoordinateSet& aCoordinateSet);
+    ~CoordinateSet(void);
 
-	/**
+    /**
      * Populate this flat list of Coordinates given a Model that has already
      * been setup.
      */
-	void populate(Model& model);
+    void populate(Model& model);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	CoordinateSet& operator=(const CoordinateSet &aCoordinateSet);
+    CoordinateSet& operator=(const CoordinateSet &aCoordinateSet);
 #endif
-	void getSpeedNames(OpenSim::Array<std::string> &rNames ) const
+    void getSpeedNames(OpenSim::Array<std::string> &rNames ) const
 {
-	for(int i=0;i<_objects.getSize();i++) {
-		Coordinate *obj = _objects[i];
-		if(obj==NULL) {
-			rNames.append("NULL");
-		} else {
-			rNames.append(obj->getSpeedName());
-		}
-	}
+    for(int i=0;i<_objects.getSize();i++) {
+        Coordinate *obj = _objects[i];
+        if(obj==NULL) {
+            rNames.append("NULL");
+        } else {
+            rNames.append(obj->getSpeedName());
+        }
+    }
 }
 //=============================================================================
-};	// END of class CoordinateSet
+};  // END of class CoordinateSet
 //=============================================================================
 //=============================================================================
 

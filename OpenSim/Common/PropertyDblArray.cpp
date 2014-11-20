@@ -48,10 +48,10 @@ using namespace std;
  */
 PropertyDblArray::
 PropertyDblArray(const string &aName,
-	const Array<double> &aArray) :
-	Property_Deprecated(Property_Deprecated::DblArray,aName), _array(0.0)
+    const Array<double> &aArray) :
+    Property_Deprecated(Property_Deprecated::DblArray,aName), _array(0.0)
 {
-	_array = aArray;
+    _array = aArray;
 }
 //_____________________________________________________________________________
 /**
@@ -59,7 +59,7 @@ PropertyDblArray(const string &aName,
  */
 PropertyDblArray::
 PropertyDblArray() :
-	Property_Deprecated(Property_Deprecated::DblArray,"BoolArrayPropertyName"), _array(0.0)
+    Property_Deprecated(Property_Deprecated::DblArray,"BoolArrayPropertyName"), _array(0.0)
 {
 
 }
@@ -69,12 +69,12 @@ PropertyDblArray() :
  */
 PropertyDblArray::
 PropertyDblArray(const string &aName,
-	int aSize,const double aArray[]) :
-	Property_Deprecated(Property_Deprecated::DblArray,aName), _array(0.0)
+    int aSize,const double aArray[]) :
+    Property_Deprecated(Property_Deprecated::DblArray,aName), _array(0.0)
 {
-	if(aSize<=0) return;
-	if(aArray==NULL) return;
-	_array.append(aSize,aArray);
+    if(aSize<=0) return;
+    if(aArray==NULL) return;
+    _array.append(aSize,aArray);
 }
 //_____________________________________________________________________________
 /**
@@ -83,9 +83,9 @@ PropertyDblArray(const string &aName,
  * @param aProperty Property_Deprecated to be copied.
  */
 PropertyDblArray::PropertyDblArray(const PropertyDblArray &aProperty) :
-	Property_Deprecated(aProperty), _array(0.0)
+    Property_Deprecated(aProperty), _array(0.0)
 {
-	_array = aProperty._array;
+    _array = aProperty._array;
 }
 //_____________________________________________________________________________
 /**
@@ -97,8 +97,8 @@ PropertyDblArray::PropertyDblArray(const PropertyDblArray &aProperty) :
  */
 PropertyDblArray* PropertyDblArray::clone() const
 {
-	PropertyDblArray *property = new PropertyDblArray(*this);
-	return(property);
+    PropertyDblArray *property = new PropertyDblArray(*this);
+    return(property);
 }
 
 
@@ -118,9 +118,9 @@ PropertyDblArray* PropertyDblArray::clone() const
 PropertyDblArray& PropertyDblArray::
 operator=(const PropertyDblArray &aProperty)
 {
-	Property_Deprecated::operator =(aProperty);
-	_array = aProperty._array;
-	return(*this);
+    Property_Deprecated::operator =(aProperty);
+    _array = aProperty._array;
+    return(*this);
 }
 
 
@@ -139,7 +139,7 @@ operator=(const PropertyDblArray &aProperty)
 std::string PropertyDblArray::
 getTypeName() const
 {
-	return("double");
+    return("double");
 }
 
 //-----------------------------------------------------------------------------
@@ -154,7 +154,7 @@ getTypeName() const
 void PropertyDblArray::
 setValue(const Array<double>& aArray)
 {
-	_array = aArray;
+    _array = aArray;
 }
 //_____________________________________________________________________________
 /**
@@ -166,10 +166,10 @@ setValue(const Array<double>& aArray)
 void PropertyDblArray::
 setValue(int aSize,const double aArray[])
 {
-	_array.setSize(0);
-	if(aSize<=0) return;
-	if(aArray==NULL) return;
-	_array.append(aSize,aArray);
+    _array.setSize(0);
+    if(aSize<=0) return;
+    if(aArray==NULL) return;
+    _array.append(aSize,aArray);
 }
 //_____________________________________________________________________________
 /**
@@ -181,7 +181,7 @@ setValue(int aSize,const double aArray[])
 Array<double>& PropertyDblArray::
 getValueDblArray()
 {
-	return(_array);
+    return(_array);
 }
 //_____________________________________________________________________________
 /**
@@ -192,7 +192,7 @@ getValueDblArray()
 const Array<double>& PropertyDblArray::
 getValueDblArray() const
 {
-	return(_array);
+    return(_array);
 }
 //_____________________________________________________________________________
 /**
@@ -203,12 +203,12 @@ getValueDblArray() const
 string PropertyDblArray::
 toString() const
 {
-	string str = "(";
-	char dbl[256];
-	for(int i=0; i < _array.getSize(); i++){
-		sprintf(dbl, "%g", _array[i]);
-		str += (i>0?" ":"") + string(dbl);
-	}
-	str += ")";
-	return str;
+    string str = "(";
+    char dbl[256];
+    for(int i=0; i < _array.getSize(); i++){
+        sprintf(dbl, "%g", _array[i]);
+        str += (i>0?" ":"") + string(dbl);
+    }
+    str += ")";
+    return str;
 }

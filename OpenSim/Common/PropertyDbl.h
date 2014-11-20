@@ -50,45 +50,45 @@ class OSIMCOMMON_API PropertyDbl : public Property_Deprecated
 // DATA
 //=============================================================================
 private:
-	/** Value. */
-	double _value;
+    /** Value. */
+    double _value;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	PropertyDbl();
-	PropertyDbl(const std::string &aName,double aValue);
-	PropertyDbl(const PropertyDbl &aProperty);
-	virtual PropertyDbl* clone() const;
-	virtual ~PropertyDbl() { };
+    PropertyDbl();
+    PropertyDbl(const std::string &aName,double aValue);
+    PropertyDbl(const PropertyDbl &aProperty);
+    virtual PropertyDbl* clone() const;
+    virtual ~PropertyDbl() { };
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
-	PropertyDbl& operator=(const PropertyDbl &aProperty);
+    PropertyDbl& operator=(const PropertyDbl &aProperty);
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 public:
-	// TYPE
-	virtual std::string getTypeName() const override;
-	// VALUE
-	virtual void setValue(double aValue);
+    // TYPE
+    virtual std::string getTypeName() const override;
+    // VALUE
+    virtual void setValue(double aValue);
 #ifndef SWIG
-	virtual double& getValueDbl();
+    virtual double& getValueDbl();
 #endif
-	virtual const double& getValueDbl() const;
-	// VALUE as String
-	virtual std::string toString() const;
+    virtual const double& getValueDbl() const;
+    // VALUE as String
+    virtual std::string toString() const;
 
 //=============================================================================
-};	// END of class PropertyDbl
+};  // END of class PropertyDbl
 
 }; //namespace
 //=============================================================================

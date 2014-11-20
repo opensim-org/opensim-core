@@ -219,17 +219,17 @@ int convert_vector(ModelStruct* ms, double p[], int n1, int n2)
    {
       mat = get_ground_conversion(ms,n2,from_ground);
       result[0] = p[0]*(*mat)[0][0] + p[1]*(*mat)[1][0] +
-	          p[2]*(*mat)[2][0] + (*mat)[3][0];
+              p[2]*(*mat)[2][0] + (*mat)[3][0];
       result[1] = p[0]*(*mat)[0][1] + p[1]*(*mat)[1][1] +
-	          p[2]*(*mat)[2][1] + (*mat)[3][1];
+              p[2]*(*mat)[2][1] + (*mat)[3][1];
       result[2] = p[0]*(*mat)[0][2] + p[1]*(*mat)[1][2] +
-	          p[2]*(*mat)[2][2] + (*mat)[3][2];
+              p[2]*(*mat)[2][2] + (*mat)[3][2];
       new_origin[0] = origin[0]*(*mat)[0][0] + origin[1]*(*mat)[1][0] +
-	              origin[2]*(*mat)[2][0] + (*mat)[3][0];
+                  origin[2]*(*mat)[2][0] + (*mat)[3][0];
       new_origin[1] = origin[0]*(*mat)[0][1] + origin[1]*(*mat)[1][1] +
-	              origin[2]*(*mat)[2][1] + (*mat)[3][1];
+                  origin[2]*(*mat)[2][1] + (*mat)[3][1];
       new_origin[2] = origin[0]*(*mat)[0][2] + origin[1]*(*mat)[1][2] +
-	              origin[2]*(*mat)[2][2] + (*mat)[3][2];
+                  origin[2]*(*mat)[2][2] + (*mat)[3][2];
       p[0] = result[0] - new_origin[0];
       p[1] = result[1] - new_origin[1];
       p[2] = result[2] - new_origin[2];
@@ -239,17 +239,17 @@ int convert_vector(ModelStruct* ms, double p[], int n1, int n2)
    {
       mat = get_ground_conversion(ms,n1,to_ground);
       result[0] = p[0]*(*mat)[0][0] + p[1]*(*mat)[1][0] +
-	          p[2]*(*mat)[2][0] + (*mat)[3][0];
+              p[2]*(*mat)[2][0] + (*mat)[3][0];
       result[1] = p[0]*(*mat)[0][1] + p[1]*(*mat)[1][1] +
-	          p[2]*(*mat)[2][1] + (*mat)[3][1];
+              p[2]*(*mat)[2][1] + (*mat)[3][1];
       result[2] = p[0]*(*mat)[0][2] + p[1]*(*mat)[1][2] +
-	          p[2]*(*mat)[2][2] + (*mat)[3][2];
+              p[2]*(*mat)[2][2] + (*mat)[3][2];
       new_origin[0] = origin[0]*(*mat)[0][0] + origin[1]*(*mat)[1][0] +
-	              origin[2]*(*mat)[2][0] + (*mat)[3][0];
+                  origin[2]*(*mat)[2][0] + (*mat)[3][0];
       new_origin[1] = origin[0]*(*mat)[0][1] + origin[1]*(*mat)[1][1] +
-	              origin[2]*(*mat)[2][1] + (*mat)[3][1];
+                  origin[2]*(*mat)[2][1] + (*mat)[3][1];
       new_origin[2] = origin[0]*(*mat)[0][2] + origin[1]*(*mat)[1][2] +
-	              origin[2]*(*mat)[2][2] + (*mat)[3][2];
+                  origin[2]*(*mat)[2][2] + (*mat)[3][2];
       p[0] = result[0] - new_origin[0];
       p[1] = result[1] - new_origin[1];
       p[2] = result[2] - new_origin[2];
@@ -272,22 +272,22 @@ int convert_vector(ModelStruct* ms, double p[], int n1, int n2)
        */
 
       if (path[i] > 0)
-	 mat = get_conversion(ms,path[i]-1,INVERSE);
+     mat = get_conversion(ms,path[i]-1,INVERSE);
       else
-	 mat = get_conversion(ms,-path[i]-1,FORWARD);
+     mat = get_conversion(ms,-path[i]-1,FORWARD);
 
       result[0] = p[0]*(*mat)[0][0] + p[1]*(*mat)[1][0] +
-	          p[2]*(*mat)[2][0] + (*mat)[3][0];
+              p[2]*(*mat)[2][0] + (*mat)[3][0];
       result[1] = p[0]*(*mat)[0][1] + p[1]*(*mat)[1][1] +
-	          p[2]*(*mat)[2][1] + (*mat)[3][1];
+              p[2]*(*mat)[2][1] + (*mat)[3][1];
       result[2] = p[0]*(*mat)[0][2] + p[1]*(*mat)[1][2] +
-	          p[2]*(*mat)[2][2] + (*mat)[3][2];
+              p[2]*(*mat)[2][2] + (*mat)[3][2];
       new_origin[0] = origin[0]*(*mat)[0][0] + origin[1]*(*mat)[1][0] +
-	              origin[2]*(*mat)[2][0] + (*mat)[3][0];
+                  origin[2]*(*mat)[2][0] + (*mat)[3][0];
       new_origin[1] = origin[0]*(*mat)[0][1] + origin[1]*(*mat)[1][1] +
-	              origin[2]*(*mat)[2][1] + (*mat)[3][1];
+                  origin[2]*(*mat)[2][1] + (*mat)[3][1];
       new_origin[2] = origin[0]*(*mat)[0][2] + origin[1]*(*mat)[1][2] +
-	              origin[2]*(*mat)[2][2] + (*mat)[3][2];
+                  origin[2]*(*mat)[2][2] + (*mat)[3][2];
       p[0] = result[0] - new_origin[0];
       p[1] = result[1] - new_origin[1];
       p[2] = result[2] - new_origin[2];
@@ -614,8 +614,8 @@ static void make_joint_conversion(ModelStruct* ms, int joint)
  */
 
 void calc_joint_transform(int order[], double dofs[], double rmat[][4], double xaxis[],
-		                    double yaxis[], double zaxis[], double axis1[], double axis2[],
-		                    double axis3[], int mode, Direction dir, JointStruct* joint)
+                            double yaxis[], double zaxis[], double axis1[], double axis2[],
+                            double axis3[], int mode, Direction dir, JointStruct* joint)
 {
    int i;
    int absorder[4], ordersigns[4];
@@ -685,7 +685,7 @@ void calc_joint_transform(int order[], double dofs[], double rmat[][4], double x
             axis[3] = 0.0;
          }
 
-	      /* the following matrix is taken from Kane's 'Spacecraft Dynamics,' pp 6-7 */
+          /* the following matrix is taken from Kane's 'Spacecraft Dynamics,' pp 6-7 */
          omc = 1.0 - cl;
          mat[0][0] = cl + axis[0]*axis[0]*omc;
          mat[1][0] = -axis[2]*sl + axis[0]*axis[1]*omc;

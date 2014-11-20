@@ -43,7 +43,7 @@ using namespace std;
  */
 AbstractProperty::AbstractProperty()
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -53,8 +53,8 @@ AbstractProperty::AbstractProperty(const std::string& name,
                                    const std::string& comment)
 {
     setNull();
-	_name       = name;
-	_comment    = comment;
+    _name       = name;
+    _comment    = comment;
 }
 
 
@@ -64,11 +64,11 @@ AbstractProperty::AbstractProperty(const std::string& name,
  */
 void AbstractProperty::setNull()
 {
-	_name           = "";
+    _name           = "";
     _comment        = "";
-	_valueIsDefault = false;
-	_minListSize    = 0;
-	_maxListSize    = std::numeric_limits<int>::max();
+    _valueIsDefault = false;
+    _minListSize    = 0;
+    _maxListSize    = std::numeric_limits<int>::max();
 }
 
 void AbstractProperty::clear() {
@@ -190,14 +190,14 @@ void AbstractProperty::readFromXMLParentElement(Xml::Element& parent,
     parent.insertNodeBefore(prev, 
                             dummy.removeNode(dummy.element_begin()));
     setValueIsDefault(false);
-	dummy.clearOrphan();
+    dummy.clearOrphan();
 }
 
 
 void AbstractProperty::writeToXMLParentElement(Xml::Element& parent) const {
-	// Add comment if any.
-	if (!getComment().empty())
-		parent.insertNodeAfter(parent.node_end(), Xml::Comment(getComment()));
+    // Add comment if any.
+    if (!getComment().empty())
+        parent.insertNodeAfter(parent.node_end(), Xml::Comment(getComment()));
 
     if (!isOneObjectProperty()) {
         // Concrete property will be represented by an Xml element of

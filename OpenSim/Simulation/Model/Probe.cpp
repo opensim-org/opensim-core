@@ -157,7 +157,7 @@ void Probe::extendAddToSystem(MultibodySystem& system) const
     // save for when we can directly operate on Vector SimTK::Measures
     //ProbeMeasure<SimTK::Vector> beforeOperationValueVector(system, *this);
 
-	int npi = getNumProbeInputs();
+    int npi = getNumProbeInputs();
     SimTK::Array_<ProbeMeasure<double> > beforeOperationValues;
     mutableThis->afterOperationValues.resize(npi);
 
@@ -340,12 +340,12 @@ string Probe::getOperation() const
  */
 Vector Probe::getInitialConditions() const
 {
-	int size = getProperty_initial_conditions_for_integration().size();
-	Vector v(size);
-	for(int i = 0; i < size ; i++)
-	{
-		v[i] = get_initial_conditions_for_integration(i);
-	}
+    int size = getProperty_initial_conditions_for_integration().size();
+    Vector v(size);
+    for(int i = 0; i < size ; i++)
+    {
+        v[i] = get_initial_conditions_for_integration(i);
+    }
     return v;
 }
 

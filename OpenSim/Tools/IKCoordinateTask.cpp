@@ -41,12 +41,12 @@ using namespace OpenSim;
  * Default constructor.
  */
 IKCoordinateTask::IKCoordinateTask() :
-	_valueType(_valueTypeProp.getValueStr()),
+    _valueType(_valueTypeProp.getValueStr()),
    _value(_valueProp.getValueDbl())
 {
-	_valueType = ValueTypeToString(DefaultValue);
-	_value = 0;
-	setupProperties();
+    _valueType = ValueTypeToString(DefaultValue);
+    _value = 0;
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -55,12 +55,12 @@ IKCoordinateTask::IKCoordinateTask() :
  */
 IKCoordinateTask::IKCoordinateTask(const IKCoordinateTask &aIKCoordinateTask) :
    IKTask(aIKCoordinateTask),
-	_valueType(_valueTypeProp.getValueStr()),
+    _valueType(_valueTypeProp.getValueStr()),
    _value(_valueProp.getValueDbl())
 {
-	_valueType = aIKCoordinateTask._valueType;
-	_value = aIKCoordinateTask._value;
-	setupProperties();
+    _valueType = aIKCoordinateTask._valueType;
+    _value = aIKCoordinateTask._value;
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -69,16 +69,16 @@ IKCoordinateTask::IKCoordinateTask(const IKCoordinateTask &aIKCoordinateTask) :
  */
 void IKCoordinateTask::setupProperties()
 {
-	_valueTypeProp.setComment("Indicates the source of the coordinate value for this task.  Possible values are"
-								     " default_value (use default value of coordinate, as specified in the model file, as the fixed target value),"
-								     " manual_value (use the value specified in the value property of this task as the fixed target value),"
-									  " or from_file (use the coordinate values from the coordinate data specified by the coordinates_file property).");
-	_valueTypeProp.setName("value_type");
-	_propertySet.append(&_valueTypeProp);
+    _valueTypeProp.setComment("Indicates the source of the coordinate value for this task.  Possible values are"
+                                     " default_value (use default value of coordinate, as specified in the model file, as the fixed target value),"
+                                     " manual_value (use the value specified in the value property of this task as the fixed target value),"
+                                      " or from_file (use the coordinate values from the coordinate data specified by the coordinates_file property).");
+    _valueTypeProp.setName("value_type");
+    _propertySet.append(&_valueTypeProp);
 
-	_valueProp.setComment("This value will be used as the desired (or prescribed) coordinate value if value_type is set to manual_value.");
-	_valueProp.setName("value");
-	_propertySet.append(&_valueProp);
+    _valueProp.setComment("This value will be used as the desired (or prescribed) coordinate value if value_type is set to manual_value.");
+    _valueProp.setName("value");
+    _propertySet.append(&_valueProp);
 }
 
 //=============================================================================
@@ -92,28 +92,28 @@ void IKCoordinateTask::setupProperties()
  */
 IKCoordinateTask& IKCoordinateTask::operator=(const IKCoordinateTask &aIKCoordinateTask)
 {
-	IKTask::operator=(aIKCoordinateTask);
-	_valueType = aIKCoordinateTask._valueType;
-	_value = aIKCoordinateTask._value;
-	return *this;
+    IKTask::operator=(aIKCoordinateTask);
+    _valueType = aIKCoordinateTask._valueType;
+    _value = aIKCoordinateTask._value;
+    return *this;
 }
 
 //=============================================================================
 // ValueType enum utilities
 //=============================================================================
 string IKCoordinateTask::ValueTypeToString(ValueType type) {
-	switch(type) {
-		case DefaultValue: return "default_value";
-		case ManualValue: return "manual_value";
-		case FromFile: return "from_file";
-		default: return "";
-	}
+    switch(type) {
+        case DefaultValue: return "default_value";
+        case ManualValue: return "manual_value";
+        case FromFile: return "from_file";
+        default: return "";
+    }
 }
 
 IKCoordinateTask::ValueType IKCoordinateTask::StringToValueType(const string &str) {
-	string strLower = IO::Lowercase(str);
-	if(strLower=="default_value") return DefaultValue;
-	else if(strLower=="manual_value") return ManualValue;
-	else if(strLower=="from_file") return FromFile;
-	else throw Exception("IKCoordinateTask: ERROR- Unrecognized value type '"+str+"', expecting default_value, manual_value, or from_file.",__FILE__,__LINE__);
+    string strLower = IO::Lowercase(str);
+    if(strLower=="default_value") return DefaultValue;
+    else if(strLower=="manual_value") return ManualValue;
+    else if(strLower=="from_file") return FromFile;
+    else throw Exception("IKCoordinateTask: ERROR- Unrecognized value type '"+str+"', expecting default_value, manual_value, or from_file.",__FILE__,__LINE__);
 }

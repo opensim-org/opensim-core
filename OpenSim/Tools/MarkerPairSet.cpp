@@ -42,9 +42,9 @@ MarkerPairSet::~MarkerPairSet(void)
  * Default constructor of a MarkerPairSet.
  */
 MarkerPairSet::MarkerPairSet() :
-	Set<MarkerPair>()
+    Set<MarkerPair>()
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -52,10 +52,10 @@ MarkerPairSet::MarkerPairSet() :
  * Copy constructor of a MarkerPairSet.
  */
 MarkerPairSet::MarkerPairSet(const MarkerPairSet& aSimmMarkerPairSet):
-	Set<MarkerPair>(aSimmMarkerPairSet)
+    Set<MarkerPair>(aSimmMarkerPairSet)
 {
-	setNull();
-	*this = aSimmMarkerPairSet;
+    setNull();
+    *this = aSimmMarkerPairSet;
 }
 
 //=============================================================================
@@ -80,7 +80,7 @@ void MarkerPairSet::setNull()
 #ifndef SWIG
 MarkerPairSet& MarkerPairSet::operator=(const MarkerPairSet &aSimmMarkerPairSet)
 {
-	Set<MarkerPair>::operator=(aSimmMarkerPairSet);
-	return (*this);
+    Set<MarkerPair>::operator=(aSimmMarkerPairSet);
+    return (*this);
 }
 #endif

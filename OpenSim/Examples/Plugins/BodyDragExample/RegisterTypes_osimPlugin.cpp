@@ -39,7 +39,7 @@ static dllObjectInstantiator instantiator;
  */
 OSIMPLUGIN_API void RegisterTypes_osimPlugin()
 {
-	Object::RegisterType( BodyDragForce() );
+    Object::RegisterType( BodyDragForce() );
 }
 
 dllObjectInstantiator::dllObjectInstantiator() 

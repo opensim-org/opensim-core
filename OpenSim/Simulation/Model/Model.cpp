@@ -95,7 +95,7 @@ Model::Model() :
     _workingState()
 {
     constructProperties();
-    setNull();	
+    setNull();  
     createGroundBodyIfNecessary();
 }
 //_____________________________________________________________________________
@@ -111,7 +111,7 @@ Model::Model(const string &aFileName, const bool finalize) :
     _allControllersEnabled(true),
     _system(NULL),
     _workingState()
-{	
+{   
     constructProperties();
     setNull();
     updateFromXMLDocument();
@@ -136,7 +136,7 @@ Model::~Model()
     delete _gravityForce;
     delete _forceSubsystem;
     delete _matter;
-    delete _system;	
+    delete _system; 
 }
 //_____________________________________________________________________________
 /**
@@ -483,7 +483,7 @@ void Model::createMultibodySystem()
         delete _system;
     }
 
-    // create system	
+    // create system    
     _system = new SimTK::MultibodySystem;
     _matter = new SimTK::SimbodyMatterSubsystem(*_system);
     _forceSubsystem = new SimTK::GeneralForceSubsystem(*_system);
@@ -542,7 +542,7 @@ void Model::extendFinalizeFromProperties()
             _multibodyTree.addBody(bs[i].getName(), 
                                    bs[i].getMass(), 
                                    false, 
-                                   &bs[i]);	
+                                   &bs[i]); 
         }
     }
 
@@ -1318,7 +1318,7 @@ void Model::addAnalysis(Analysis *aAnalysis)
 {
     if (aAnalysis )
     {
-//		aAnalysis->setModel(this);
+//      aAnalysis->setModel(this);
         _analysisSet.adoptAndAppend(aAnalysis);
     }
 }
@@ -1593,7 +1593,7 @@ void Model::createAssemblySolver(const SimTK::State& s)
 
 void Model::updateAssemblyConditions(SimTK::State& s)
 {
-    createAssemblySolver(s);	
+    createAssemblySolver(s);    
 }
 //--------------------------------------------------------------------------
 // MARKERS
@@ -1675,7 +1675,7 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
             //}
             //else
             //{
-            //	modelMarker.updateFromMarker(updatingMarker);
+            //  modelMarker.updateFromMarker(updatingMarker);
             //}
         }
         //else
@@ -1761,7 +1761,7 @@ OpenSim::Body& Model::getGroundBody() const
 // CONTROLS
 //--------------------------------------------------------------------------
 /** Get the number of controls for this the model.
- * Throws an exception if called before Model::initSystem()	 */
+ * Throws an exception if called before Model::initSystem()  */
 int Model::getNumControls() const
 {
     if(!_system){
@@ -1802,7 +1802,7 @@ void Model::markControlsAsValid(const SimTK::State& s) const
 }
 
 void Model::setControls(const SimTK::State& s, const SimTK::Vector& controls) const
-{	
+{   
     if( (!_system) || (!_modelControlsIndex.isValid()) ){
         throw Exception("Model::setControls() requires an initialized Model./n" 
             "Prior call to Model::initSystem() is required.");
@@ -2125,7 +2125,7 @@ SimTK::Inertia Model::getInertiaAboutMassCenter(const SimTK::State &s) const
 SimTK::Vec3 Model::calcMassCenterPosition(const SimTK::State &s) const
 {
     getMultibodySystem().realize(s, Stage::Position);
-    return getMatterSubsystem().calcSystemMassCenterLocationInGround(s);	
+    return getMatterSubsystem().calcSystemMassCenterLocationInGround(s);    
 }
 /**
  * Return the velocity vector of the system mass center, measured from the Ground origin, and expressed in Ground.
@@ -2134,7 +2134,7 @@ SimTK::Vec3 Model::calcMassCenterPosition(const SimTK::State &s) const
 SimTK::Vec3 Model::calcMassCenterVelocity(const SimTK::State &s) const
 {
     getMultibodySystem().realize(s, Stage::Velocity);
-    return getMatterSubsystem().calcSystemMassCenterVelocityInGround(s);	
+    return getMatterSubsystem().calcSystemMassCenterVelocityInGround(s);    
 }
 /**
  * Return the acceleration vector of the system mass center, measured from the Ground origin, and expressed in Ground.
@@ -2143,7 +2143,7 @@ SimTK::Vec3 Model::calcMassCenterVelocity(const SimTK::State &s) const
 SimTK::Vec3 Model::calcMassCenterAcceleration(const SimTK::State &s) const
 {
     getMultibodySystem().realize(s, Stage::Acceleration);
-    return getMatterSubsystem().calcSystemMassCenterAccelerationInGround(s);	
+    return getMatterSubsystem().calcSystemMassCenterAccelerationInGround(s);    
 }
 
 /**

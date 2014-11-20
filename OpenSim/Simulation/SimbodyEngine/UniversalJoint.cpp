@@ -51,7 +51,7 @@ UniversalJoint::~UniversalJoint()
 UniversalJoint::UniversalJoint() : Joint()
 {
     setAuthors("Tim Dorn");
-	constructCoordinates();
+    constructCoordinates();
 
     const CoordinateSet& coordinateSet = get_CoordinateSet();
     coordinateSet[0].setMotionType(Coordinate::Rotational);
@@ -68,7 +68,7 @@ UniversalJoint::UniversalJoint() : Joint()
             body, locationInBody, orientationInBody, reverse)
 {
     setAuthors("Tim Dorn");
-	constructCoordinates();
+    constructCoordinates();
 
     const CoordinateSet& coordinateSet = get_CoordinateSet();
     coordinateSet[0].setMotionType(Coordinate::Rotational);
