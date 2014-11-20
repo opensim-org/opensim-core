@@ -43,14 +43,14 @@ using namespace OpenSim;
  * Default constructor.
  */
 PlanarJoint::PlanarJoint() :
-	Joint()
+    Joint()
 {
-	setAuthors("Ajay Seth");
-	constructCoordinates();
+    setAuthors("Ajay Seth");
+    constructCoordinates();
 
-	const CoordinateSet& coordinateSet = get_CoordinateSet();
-	coordinateSet[1].setMotionType(Coordinate::Translational);
-	coordinateSet[2].setMotionType(Coordinate::Translational);
+    const CoordinateSet& coordinateSet = get_CoordinateSet();
+    coordinateSet[1].setMotionType(Coordinate::Translational);
+    coordinateSet[2].setMotionType(Coordinate::Translational);
 }
 
 //_____________________________________________________________________________
@@ -64,12 +64,12 @@ PlanarJoint::PlanarJoint(const std::string &name, OpenSim::Body& parent,
     Joint(name, parent, locationInParent,orientationInParent,
             body, locationInBody, orientationInBody, reverse)
 {
-	setAuthors("Ajay Seth");
-	constructCoordinates();
+    setAuthors("Ajay Seth");
+    constructCoordinates();
 
-	const CoordinateSet& coordinateSet = get_CoordinateSet();
-	coordinateSet[1].setMotionType(Coordinate::Translational);
-	coordinateSet[2].setMotionType(Coordinate::Translational);
+    const CoordinateSet& coordinateSet = get_CoordinateSet();
+    coordinateSet[1].setMotionType(Coordinate::Translational);
+    coordinateSet[2].setMotionType(Coordinate::Translational);
 }
 
 

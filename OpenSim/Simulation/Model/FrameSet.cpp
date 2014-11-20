@@ -45,13 +45,13 @@ FrameSet::~FrameSet(void)
  */
 FrameSet::FrameSet()
 {
-	
+    
 }
 
 FrameSet::FrameSet(Model& model) :
-	ModelComponentSet<Frame>(model)
+    ModelComponentSet<Frame>(model)
 {
-	
+    
 }
 
 
@@ -64,6 +64,6 @@ FrameSet::FrameSet(Model& model) :
  *
 void FrameSet::scale(const ScaleSet& aScaleSet)
 {
-	for(int i=0; i<getSize(); i++) get(i).scale(aScaleSet);
+    for(int i=0; i<getSize(); i++) get(i).scale(aScaleSet);
 }
 */

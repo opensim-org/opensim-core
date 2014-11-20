@@ -5,7 +5,7 @@ MARK_AS_ADVANCED(BUILD_API_EXAMPLES)
 
 IF (BUILD_API_EXAMPLES)
 ## ExampleMain ControllerExample MuscleExample CustomActuatorExample OptimizationExample_Arm26 checkEnvironment
-##	INSTALL_FILES(/examples/ FILES README.txt
+##  INSTALL_FILES(/examples/ FILES README.txt
 INSTALL(DIRECTORY ExampleMain DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)
 INSTALL(DIRECTORY ControllerExample DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)
 INSTALL(DIRECTORY MuscleExample DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)

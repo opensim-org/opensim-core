@@ -4,15 +4,15 @@
  * Copyright (c)  2008, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
-* 	1. The software is used only for non-commercial research and education. It may not
+*   1. The software is used only for non-commercial research and education. It may not
 *     be used in relation to any commercial activity.
-* 	2. The software is not distributed or redistributed.  Software distribution is allowed 
+*   2. The software is not distributed or redistributed.  Software distribution is allowed 
 *     only through https://simtk.org/home/opensim.
-* 	3. Use of the OpenSim software or derivatives must be acknowledged in all publications,
+*   3. Use of the OpenSim software or derivatives must be acknowledged in all publications,
 *      presentations, or documents describing work in which OpenSim or derivatives are used.
-* 	4. Credits to developers may not be removed from executables
+*   4. Credits to developers may not be removed from executables
 *     created from modifications of the source.
-* 	5. Modifications of source code must retain the above copyright notice, this list of
+*   5. Modifications of source code must retain the above copyright notice, this list of
 *     conditions and the following disclaimer. 
 * 
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
@@ -71,9 +71,9 @@ SimbodySimmDof::SimbodySimmDof()
  */
 void SimbodySimmDof::setNull()
 {
-	_name = "undefined";
+    _name = "undefined";
    _type = Coordinate::Translational;
-	_userFunctionNumber = -1;
+    _userFunctionNumber = -1;
    _coordinateName = "";
    _axis[0] = _axis[1] = _axis[2] = 0.0;
 }
@@ -150,7 +150,7 @@ void SimbodySimmDof::write(ofstream& aStream)
  */
 void SimbodySimmDof::getAxis(double rAxis[]) const
 {
-	rAxis[0] = _axis[0];
-	rAxis[1] = _axis[1];
-	rAxis[2] = _axis[2];
+    rAxis[0] = _axis[0];
+    rAxis[1] = _axis[1];
+    rAxis[2] = _axis[2];
 }
