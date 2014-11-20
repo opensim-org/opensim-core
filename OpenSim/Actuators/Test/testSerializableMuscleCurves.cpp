@@ -48,9 +48,9 @@ void testFiberCompressiveForceCosPennationCurve();
 
 int main(int argc, char* argv[])
 {
-	
+    
 
-	try {
+    try {
             SimTK_START_TEST("Testing Serializable Curves");
             testActiveForceLengthCurve();
             testForceVelocityCurve();
@@ -114,20 +114,20 @@ int main(int argc, char* argv[])
     catch (const std::exception& ex)
     {
         cout << ex.what() << endl;
-		cin.get();		
-		return 1;
+        cin.get();      
+        return 1;
     }
     catch (...)
     {
         cout << "UNRECOGNIZED EXCEPTION" << endl;
-		cin.get();
+        cin.get();
         return 1;
     }
 
-	
+    
 
     cout << "\n Serializable Curve Testing completed successfully.\n";
-	return 0;
+    return 0;
 }
 
 void testActiveForceLengthCurve()

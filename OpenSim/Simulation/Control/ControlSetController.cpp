@@ -54,7 +54,7 @@ using namespace OpenSim;
  */
 ControlSetController::~ControlSetController()
 {
-	delete _controlSet;
+    delete _controlSet;
 }
 //_____________________________________________________________________________
 /**
@@ -64,7 +64,7 @@ ControlSetController::~ControlSetController()
 ControlSetController::ControlSetController() :
     Controller(),
     _controlsFileName(_controlsFileNameProp.getValueStr() ) {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -72,11 +72,11 @@ ControlSetController::ControlSetController() :
  * Copy constructor.
  */
 ControlSetController::ControlSetController(const ControlSetController &aController) :
-	Controller(aController),
+    Controller(aController),
    _controlsFileName(_controlsFileNameProp.getValueStr())
 {
-	setNull();
-	copyData(aController);
+    setNull();
+    copyData(aController);
 }
 
 
@@ -88,7 +88,7 @@ void ControlSetController::setNull()
 {
     setupProperties();
 
-	_model = NULL;
+    _model = NULL;
     _controlSet = NULL;
 
 
@@ -138,13 +138,13 @@ void ControlSetController::copyData(const ControlSetController &aController)
 ControlSetController& ControlSetController::
 operator=(const ControlSetController &aController)
 {
-	// BASE CLASS
-	Object::operator=(aController);
+    // BASE CLASS
+    Object::operator=(aController);
 
-	// DATA
-	copyData(aController);
+    // DATA
+    copyData(aController);
 
-	return(*this);
+    return(*this);
 }
 
 
@@ -159,26 +159,26 @@ operator=(const ControlSetController &aController)
 // compute the control value for all actuators this Controller is responsible for
 void ControlSetController::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
 {
-	SimTK_ASSERT( _controlSet , "ControlSetController::computeControls controlSet is NULL");
+    SimTK_ASSERT( _controlSet , "ControlSetController::computeControls controlSet is NULL");
 
-	std::string actName = "";
-	int index = -1;
+    std::string actName = "";
+    int index = -1;
 
-	int na = getActuatorSet().getSize();
+    int na = getActuatorSet().getSize();
 
-	for(int i=0; i< na; ++i){
-		actName = getActuatorSet()[i].getName();
-		index = _controlSet->getIndex(actName);
-		if(index < 0){
-			actName = actName + ".excitation";
-			index = _controlSet->getIndex(actName);
-		}
+    for(int i=0; i< na; ++i){
+        actName = getActuatorSet()[i].getName();
+        index = _controlSet->getIndex(actName);
+        if(index < 0){
+            actName = actName + ".excitation";
+            index = _controlSet->getIndex(actName);
+        }
 
-		if(index >= 0){
-			SimTK::Vector actControls(1, _controlSet->get(index).getControlValue(s.getTime()));
-			getActuatorSet()[i].addInControls(actControls, controls);
-		}
-	}
+        if(index >= 0){
+            SimTK::Vector actControls(1, _controlSet->get(index).getControlValue(s.getTime()));
+            getActuatorSet()[i].addInControls(actControls, controls);
+        }
+    }
 }
 
 double ControlSetController::getFirstTime() const {

@@ -498,7 +498,7 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
             case 0: //converged, all is normal
             {
                 setActuation(s,tendonForce);
-		        setFiberLength(s,fiberLength);
+                setFiberLength(s,fiberLength);
             }break;
 
             case 1: //lower fiber length bound hit
@@ -583,7 +583,7 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
 }
 
 void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s,
-											MuscleLengthInfo& mli) const
+                                            MuscleLengthInfo& mli) const
 {    
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
                     "Thelen2003Muscle: Muscle is not"
@@ -630,17 +630,17 @@ void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s,
 }
 
 void Thelen2003Muscle::calcMusclePotentialEnergyInfo(const SimTK::State& s,
-		MusclePotentialEnergyInfo& mpei) const
+        MusclePotentialEnergyInfo& mpei) const
 {
-	try {
-		// Get the quantities that we've already computed.
+    try {
+        // Get the quantities that we've already computed.
         const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
         mpei.fiberPotentialEnergy = calcfpefisoPE(mli.fiberLength);
         mpei.tendonPotentialEnergy= calcfsefisoPE(mli.tendonStrain);
         mpei.musclePotentialEnergy=  mpei.fiberPotentialEnergy 
                                     + mpei.tendonPotentialEnergy;
-	}
-	catch(const std::exception &x){
+    }
+    catch(const std::exception &x){
         std::string msg = "Exception caught in Thelen2003Muscle::" 
                           "calcMusclePotentialEnergyInfo\n"                 
                            "of " + getName()  + "\n"                            
@@ -1534,7 +1534,7 @@ void Thelen2003Muscle::
     printMatrixToFile(SimTK::Matrix& data, SimTK::Array_<std::string>& colNames,
     const std::string& path, const std::string& filename) const
 {
-	
+    
     ofstream datafile;
     std::string fullpath = path;
     
@@ -1543,7 +1543,7 @@ void Thelen2003Muscle::
     
     fullpath.append(filename);
 
-	datafile.open(fullpath.c_str(),std::ios::out);
+    datafile.open(fullpath.c_str(),std::ios::out);
 
     if(!datafile){
         datafile.close();
@@ -1563,15 +1563,15 @@ void Thelen2003Muscle::
             datafile << colNames[i] << "\n";
     }
 
-	for(int i = 0; i < data.nrow(); i++){		
-		for(int j = 0; j < data.ncol(); j++){
-			if(j<data.ncol()-1)
-				datafile << data(i,j) << ",";
-			else
-				datafile << data(i,j) << "\n";
-		}	
-	}
-	datafile.close();
+    for(int i = 0; i < data.nrow(); i++){       
+        for(int j = 0; j < data.ncol(); j++){
+            if(j<data.ncol()-1)
+                datafile << data(i,j) << ",";
+            else
+                datafile << data(i,j) << "\n";
+        }   
+    }
+    datafile.close();
 } 
 
 //==============================================================================

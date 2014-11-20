@@ -72,55 +72,55 @@ using SimTK::Mat33;
  */
 bool WrapMath::
 IntersectLines(SimTK::Vec3& p1, SimTK::Vec3& p2, SimTK::Vec3& p3, SimTK::Vec3& p4,
-					SimTK::Vec3& pInt1, double& s, SimTK::Vec3& pInt2, double& t)
+                    SimTK::Vec3& pInt1, double& s, SimTK::Vec3& pInt2, double& t)
 {
-	SimTK::Vec3 cross_prod, vec1, vec2;
+    SimTK::Vec3 cross_prod, vec1, vec2;
 
-	vec1 = p2 - p1;
+    vec1 = p2 - p1;
 
-	double mag1 = Mtx::Normalize(3, vec1, vec1);
+    double mag1 = Mtx::Normalize(3, vec1, vec1);
 
-	vec2 = p4 - p3;
+    vec2 = p4 - p3;
 
-	double mag2 = Mtx::Normalize(3, vec2, vec2);
+    double mag2 = Mtx::Normalize(3, vec2, vec2);
 
-	Mtx::CrossProduct(vec1, vec2, cross_prod);
+    Mtx::CrossProduct(vec1, vec2, cross_prod);
 
-	double denom = cross_prod.normSqr();
+    double denom = cross_prod.normSqr();
 
-	if (EQUAL_WITHIN_ERROR(denom,0.0)) {
-		s = t = SimTK::NaN;
-		return false;
-	}
+    if (EQUAL_WITHIN_ERROR(denom,0.0)) {
+        s = t = SimTK::NaN;
+        return false;
+    }
 
-	Mat33 mat;
+    Mat33 mat;
 
-	mat[0][0] = p3[0] - p1[0];
-	mat[0][1] = p3[1] - p1[1];
-	mat[0][2] = p3[2] - p1[2];
-	mat[1][0] = vec1[0];
-	mat[1][1] = vec1[1];
-	mat[1][2] = vec1[2];
-	mat[2][0] = cross_prod[0];
-	mat[2][1] = cross_prod[1];
-	mat[2][2] = cross_prod[2];
+    mat[0][0] = p3[0] - p1[0];
+    mat[0][1] = p3[1] - p1[1];
+    mat[0][2] = p3[2] - p1[2];
+    mat[1][0] = vec1[0];
+    mat[1][1] = vec1[1];
+    mat[1][2] = vec1[2];
+    mat[2][0] = cross_prod[0];
+    mat[2][1] = cross_prod[1];
+    mat[2][2] = cross_prod[2];
 
-	t = CALC_DETERMINANT(mat) / denom;
+    t = CALC_DETERMINANT(mat) / denom;
 
-	pInt2 = p3 + t * (vec2);
+    pInt2 = p3 + t * (vec2);
 
-	mat[1][0] = vec2[0];
-	mat[1][1] = vec2[1];
-	mat[1][2] = vec2[2];
+    mat[1][0] = vec2[0];
+    mat[1][1] = vec2[1];
+    mat[1][2] = vec2[2];
 
-	s = CALC_DETERMINANT(mat) / denom;
+    s = CALC_DETERMINANT(mat) / denom;
 
-	pInt1 = p1 + s * (vec1);
+    pInt1 = p1 + s * (vec1);
 
-	s /= mag1;
-	t /= mag2;
+    s /= mag1;
+    t /= mag2;
 
-	return true;
+    return true;
 }
 
 /* Compute the intersection of a line segment and a plane
@@ -133,27 +133,27 @@ IntersectLines(SimTK::Vec3& p1, SimTK::Vec3& p2, SimTK::Vec3& p3, SimTK::Vec3& p
  */
 bool WrapMath::
 IntersectLineSegPlane(SimTK::Vec3& pt1, SimTK::Vec3& pt2, 
-							 SimTK::Vec3& plane, double d,
-							 SimTK::Vec3& inter)
+                             SimTK::Vec3& plane, double d,
+                             SimTK::Vec3& inter)
 {
-	SimTK::Vec3 vec;
+    SimTK::Vec3 vec;
 
-	MAKE_3DVECTOR(pt1,pt2,vec);
-	double dotprod = Mtx::DotProduct(3, vec,plane);
+    MAKE_3DVECTOR(pt1,pt2,vec);
+    double dotprod = Mtx::DotProduct(3, vec,plane);
 
-	if (DABS(dotprod) < LINE_EPSILON)
-		return false;
+    if (DABS(dotprod) < LINE_EPSILON)
+        return false;
 
-	double t = (-d - plane[0]*pt1[0] - plane[1]*pt1[1] - plane[2]*pt1[2]) / dotprod;
+    double t = (-d - plane[0]*pt1[0] - plane[1]*pt1[1] - plane[2]*pt1[2]) / dotprod;
 
-	if ((t < -LINE_EPSILON) || (t > 1.0 + LINE_EPSILON))
-		return false;
+    if ((t < -LINE_EPSILON) || (t > 1.0 + LINE_EPSILON))
+        return false;
 
-	inter[0] = pt1[0] + (t * vec[0]);
-	inter[1] = pt1[1] + (t * vec[1]);
-	inter[2] = pt1[2] + (t * vec[2]);
+    inter[0] = pt1[0] + (t * vec[0]);
+    inter[1] = pt1[1] + (t * vec[1]);
+    inter[2] = pt1[2] + (t * vec[2]);
 
-	return true;
+    return true;
 }
 
 /* Convert an axis/angle rotation into a quaternion
@@ -164,23 +164,23 @@ IntersectLineSegPlane(SimTK::Vec3& pt1, SimTK::Vec3& pt2,
 void WrapMath::
 ConvertAxisAngleToQuaternion(const SimTK::Vec3& axis, double angle, double quat[4])
 {
-	quat[0] = axis[0];
-	quat[1] = axis[1];
-	quat[2] = axis[2];
-	quat[3] = 0.0;
+    quat[0] = axis[0];
+    quat[1] = axis[1];
+    quat[2] = axis[2];
+    quat[3] = 0.0;
 
-	double n = sqrt(quat[0] * quat[0] + quat[1] * quat[1] + quat[2] * quat[2]);
+    double n = sqrt(quat[0] * quat[0] + quat[1] * quat[1] + quat[2] * quat[2]);
 
-	if (NOT_EQUAL_WITHIN_ERROR(n, 0.0))
-	{
-		double halfAngle = 0.5 * angle;
-		double s = sin(halfAngle) / n;
+    if (NOT_EQUAL_WITHIN_ERROR(n, 0.0))
+    {
+        double halfAngle = 0.5 * angle;
+        double s = sin(halfAngle) / n;
 
-		quat[0] *= s;
-		quat[1] *= s;
-		quat[2] *= s;
-		quat[3] = cos(halfAngle);
-	}
+        quat[0] *= s;
+        quat[1] *= s;
+        quat[2] *= s;
+        quat[3] = cos(halfAngle);
+    }
 }
 
 /* Calculate the point (closestPt) on a line (linePt, line)
@@ -194,19 +194,19 @@ ConvertAxisAngleToQuaternion(const SimTK::Vec3& axis, double angle, double quat[
  */
 void WrapMath::
 GetClosestPointOnLineToPoint(SimTK::Vec3& pt, SimTK::Vec3& linePt, SimTK::Vec3& line,
-									  SimTK::Vec3& closestPt, double& t)
+                                      SimTK::Vec3& closestPt, double& t)
 {
-	SimTK::Vec3 v1, v2;
+    SimTK::Vec3 v1, v2;
 
-	v1 = pt - linePt;
+    v1 = pt - linePt;
 
-	v2 = line;
-	double mag = Mtx::Normalize(3, v1, v1);
-	double mag2 = Mtx::Normalize(3, v2, v2);
-	t = Mtx::DotProduct(3, v1, v2) * mag;
+    v2 = line;
+    double mag = Mtx::Normalize(3, v1, v1);
+    double mag2 = Mtx::Normalize(3, v2, v2);
+    t = Mtx::DotProduct(3, v1, v2) * mag;
 
-	closestPt = linePt + t * v2;
-	t = t / mag2;
+    closestPt = linePt + t * v2;
+    t = t / mag2;
 }
 
 /* Make a 3x3 direction cosine matrix for a
@@ -217,17 +217,17 @@ GetClosestPointOnLineToPoint(SimTK::Vec3& pt, SimTK::Vec3& linePt, SimTK::Vec3& 
 void WrapMath::
 Make3x3DirCosMatrix(double angle, double mat[][3])
 {
-	mat[0][0] = 1.0;
-	mat[0][1] = 0.0;
-	mat[0][2] = 0.0;
+    mat[0][0] = 1.0;
+    mat[0][1] = 0.0;
+    mat[0][2] = 0.0;
 
-	mat[1][0] = 0.0;
-	mat[1][1] = cos(angle);
-	mat[1][2] = sin(angle);
+    mat[1][0] = 0.0;
+    mat[1][1] = cos(angle);
+    mat[1][2] = sin(angle);
 
-	mat[2][0] = 0.0;
-	mat[2][1] = -mat[1][2];
-	mat[2][2] = mat[1][1];
+    mat[2][0] = 0.0;
+    mat[2][1] = -mat[1][2];
+    mat[2][2] = mat[1][1];
 }
 
 /* Make a 4x4 direction cosine matrix from an
@@ -239,25 +239,25 @@ Make3x3DirCosMatrix(double angle, double mat[][3])
 void WrapMath::
 ConvertAxisAngleTo4x4DirCosMatrix(const SimTK::Vec3& axis, double angle, double mat[][4])
 {
-	SimTK::Vec3 normAxis;
+    SimTK::Vec3 normAxis;
 
-	Mtx::Identity(4, (double*)mat);
-	Mtx::Normalize(3, axis, normAxis);
+    Mtx::Identity(4, (double*)mat);
+    Mtx::Normalize(3, axis, normAxis);
 
-	double cl = cos(angle);
-	double sl = sin(angle);
-	double omc = 1.0 - cl;
+    double cl = cos(angle);
+    double sl = sin(angle);
+    double omc = 1.0 - cl;
 
-	// the following matrix is taken from Kane's 'Spacecraft Dynamics,' pp 6-7
-	mat[0][0] = cl + normAxis[0]*normAxis[0]*omc;
-	mat[1][0] = -normAxis[2]*sl + normAxis[0]*normAxis[1]*omc;
-	mat[2][0] = normAxis[1]*sl + normAxis[2]*normAxis[0]*omc;
-	mat[0][1] = normAxis[2]*sl + normAxis[0]*normAxis[1]*omc;
-	mat[1][1] = cl + normAxis[1]*normAxis[1]*omc;
-	mat[2][1] = -normAxis[0]*sl + normAxis[1]*normAxis[2]*omc;
-	mat[0][2] = -normAxis[1]*sl + normAxis[2]*normAxis[0]*omc;
-	mat[1][2] = normAxis[0]*sl + normAxis[1]*normAxis[2]*omc;
-	mat[2][2] = cl + normAxis[2]*normAxis[2]*omc;
+    // the following matrix is taken from Kane's 'Spacecraft Dynamics,' pp 6-7
+    mat[0][0] = cl + normAxis[0]*normAxis[0]*omc;
+    mat[1][0] = -normAxis[2]*sl + normAxis[0]*normAxis[1]*omc;
+    mat[2][0] = normAxis[1]*sl + normAxis[2]*normAxis[0]*omc;
+    mat[0][1] = normAxis[2]*sl + normAxis[0]*normAxis[1]*omc;
+    mat[1][1] = cl + normAxis[1]*normAxis[1]*omc;
+    mat[2][1] = -normAxis[0]*sl + normAxis[1]*normAxis[2]*omc;
+    mat[0][2] = -normAxis[1]*sl + normAxis[2]*normAxis[0]*omc;
+    mat[1][2] = normAxis[0]*sl + normAxis[1]*normAxis[2]*omc;
+    mat[2][2] = cl + normAxis[2]*normAxis[2]*omc;
 }
 
 /* Compute the square of the distance between two
@@ -269,9 +269,9 @@ ConvertAxisAngleTo4x4DirCosMatrix(const SimTK::Vec3& axis, double angle, double 
 double WrapMath::
 CalcDistanceSquaredBetweenPoints(SimTK::Vec3& point1, SimTK::Vec3& point2)
 {
-	SimTK::Vec3 vec = point2 - point1;
+    SimTK::Vec3 vec = point2 - point1;
 
-	return vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2];
+    return vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2];
 }
 
 /* Compute the square of the distance between a point
@@ -284,13 +284,13 @@ CalcDistanceSquaredBetweenPoints(SimTK::Vec3& point1, SimTK::Vec3& point2)
 double WrapMath::
 CalcDistanceSquaredPointToLine(SimTK::Vec3& point, SimTK::Vec3& linePt, SimTK::Vec3& line)
 {
-	double t;
-	Vec3 ptemp;
+    double t;
+    Vec3 ptemp;
 
-	// find the closest point on line
-	GetClosestPointOnLineToPoint(point, linePt, line, ptemp, t);
+    // find the closest point on line
+    GetClosestPointOnLineToPoint(point, linePt, line, ptemp, t);
 
-	return CalcDistanceSquaredBetweenPoints(point, ptemp);
+    return CalcDistanceSquaredBetweenPoints(point, ptemp);
 }
 /* Rotate a 4x4 transform matrix by 'angle' radians about axis 'axis'.
  * @param matrix The 4x4 transform matrix
@@ -302,7 +302,7 @@ RotateMatrixAxisAngle(double matrix[][4], const SimTK::Vec3& axis, double angle)
 {
     double quat[4];
 
-	ConvertAxisAngleToQuaternion(axis, angle, quat);
+    ConvertAxisAngleToQuaternion(axis, angle, quat);
     RotateMatrixQuaternion(matrix, quat);
 }
 
@@ -314,20 +314,20 @@ RotateMatrixAxisAngle(double matrix[][4], const SimTK::Vec3& axis, double angle)
 void WrapMath::
 ConvertQuaternionToMatrix(const double quat[4], double matrix[][4]) 
 {
-	double Nq = quat[0] * quat[0] + quat[1] * quat[1] + quat[2] * quat[2] + quat[3] * quat[3];
-	double s = (Nq > 0.0) ? (2.0 / Nq) : 0.0;
+    double Nq = quat[0] * quat[0] + quat[1] * quat[1] + quat[2] * quat[2] + quat[3] * quat[3];
+    double s = (Nq > 0.0) ? (2.0 / Nq) : 0.0;
 
-	double xs = quat[0] * s,   ys = quat[1] * s,   zs = quat[2] * s;
-	double wx = quat[3] * xs,  wy = quat[3] * ys,  wz = quat[3] * zs;
-	double xx = quat[0] * xs,  xy = quat[0] * ys,  xz = quat[0] * zs;
-	double yy = quat[1] * ys,  yz = quat[1] * zs,  zz = quat[2] * zs;
+    double xs = quat[0] * s,   ys = quat[1] * s,   zs = quat[2] * s;
+    double wx = quat[3] * xs,  wy = quat[3] * ys,  wz = quat[3] * zs;
+    double xx = quat[0] * xs,  xy = quat[0] * ys,  xz = quat[0] * zs;
+    double yy = quat[1] * ys,  yz = quat[1] * zs,  zz = quat[2] * zs;
 
-	matrix[0][0] = 1.0 - (yy + zz);  matrix[0][1] = xy + wz;          matrix[0][2] = xz - wy;
-	matrix[1][0] = xy - wz;          matrix[1][1] = 1.0 - (xx + zz);  matrix[1][2] = yz + wx;
-	matrix[2][0] = xz + wy;          matrix[2][1] = yz - wx;          matrix[2][2] = 1.0 - (xx + yy);
+    matrix[0][0] = 1.0 - (yy + zz);  matrix[0][1] = xy + wz;          matrix[0][2] = xz - wy;
+    matrix[1][0] = xy - wz;          matrix[1][1] = 1.0 - (xx + zz);  matrix[1][2] = yz + wx;
+    matrix[2][0] = xz + wy;          matrix[2][1] = yz - wx;          matrix[2][2] = 1.0 - (xx + yy);
 
-	matrix[0][3] = matrix[1][3] = matrix[2][3] = matrix[3][0] = matrix[3][1] = matrix[3][2] = 0.0;
-	matrix[3][3] = 1.0;
+    matrix[0][3] = matrix[1][3] = matrix[2][3] = matrix[3][0] = matrix[3][1] = matrix[3][2] = 0.0;
+    matrix[3][3] = 1.0;
 }
 
 /* Rotate a 4x4 transform matrix by a quaternion.
@@ -337,10 +337,10 @@ ConvertQuaternionToMatrix(const double quat[4], double matrix[][4])
 void WrapMath::
 RotateMatrixQuaternion(double matrix[][4], const double quat[4])
 {
-	// append a quaternion rotation to a matrix
-	double n[4][4];
+    // append a quaternion rotation to a matrix
+    double n[4][4];
 
-	ConvertQuaternionToMatrix(quat, n);
+    ConvertQuaternionToMatrix(quat, n);
 
-	Mtx::Multiply(4, 4, 4, (double*)matrix, (double*)n, (double*)matrix);
+    Mtx::Multiply(4, 4, 4, (double*)matrix, (double*)n, (double*)matrix);
 }

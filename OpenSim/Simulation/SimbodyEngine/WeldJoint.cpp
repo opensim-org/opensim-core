@@ -50,10 +50,10 @@ WeldJoint::~WeldJoint()
  * Default constructor.
  */
 WeldJoint::WeldJoint() :
-	Joint()
+    Joint()
 {
-	setAuthors("Ajay Seth");
-	constructCoordinates();
+    setAuthors("Ajay Seth");
+    constructCoordinates();
 }
 
 //_____________________________________________________________________________
@@ -61,15 +61,15 @@ WeldJoint::WeldJoint() :
  * Convenience Constructor.
  */
 WeldJoint::WeldJoint(const std::string &name, const OpenSim::Body &parent,
-	const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-	const OpenSim::Body& child,
-	const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-	bool reverse) :
-		Super(name, parent, locationInParent,orientationInParent,
-			          child, locationInchild, orientationInChild, reverse)
+    const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+    const OpenSim::Body& child,
+    const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
+    bool reverse) :
+        Super(name, parent, locationInParent,orientationInParent,
+                      child, locationInchild, orientationInChild, reverse)
 {
-	setAuthors("Ajay Seth");
-	constructCoordinates();
+    setAuthors("Ajay Seth");
+    constructCoordinates();
 }
 
 //=============================================================================
@@ -90,21 +90,21 @@ void WeldJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 namespace OpenSim {
 template <> SimTK::MobilizedBody::Weld Joint::createMobilizedBody<SimTK::MobilizedBody::Weld>(
     SimTK::MobilizedBody& inboard,
-	const SimTK::Transform& inboardTransform,
-	const SimTK::Body& outboard,
-	const SimTK::Transform& outboardTransform,
-	int& startingCoorinateIndex,
-	const OpenSim::Body* associatedBod) const 
+    const SimTK::Transform& inboardTransform,
+    const SimTK::Body& outboard,
+    const SimTK::Transform& outboardTransform,
+    int& startingCoorinateIndex,
+    const OpenSim::Body* associatedBod) const 
 {
-	// CREATE MOBILIZED BODY
+    // CREATE MOBILIZED BODY
     // Weld does not include reverse option since it has no coordinates to define
-	SimTK::MobilizedBody::Weld simtkBody(inboard, inboardTransform, outboard, outboardTransform);
+    SimTK::MobilizedBody::Weld simtkBody(inboard, inboardTransform, outboard, outboardTransform);
 
-	startingCoorinateIndex = assignSystemIndicesToBodyAndCoordinates(simtkBody,
-		associatedBod,
-		0,
-		startingCoorinateIndex);
+    startingCoorinateIndex = assignSystemIndicesToBodyAndCoordinates(simtkBody,
+        associatedBod,
+        0,
+        startingCoorinateIndex);
 
-	return simtkBody;
+    return simtkBody;
 }
 } // namespace OpenSim

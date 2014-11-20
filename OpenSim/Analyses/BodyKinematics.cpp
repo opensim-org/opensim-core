@@ -53,7 +53,7 @@ using namespace std;
  */
 BodyKinematics::~BodyKinematics()
 {
-	deleteStorage();
+    deleteStorage();
 }
 //_____________________________________________________________________________
 /**
@@ -63,17 +63,17 @@ BodyKinematics::~BodyKinematics()
  * @param aModel Model for which the analyses are to be recorded.
  */
 BodyKinematics::BodyKinematics(Model *aModel, bool aInDegrees) :
-	Analysis(aModel),
-	_bodies(_bodiesProp.getValueStrArray()),
-	_expressInLocalFrame(_expressInLocalFrameProp.getValueBool())
+    Analysis(aModel),
+    _bodies(_bodiesProp.getValueStrArray()),
+    _expressInLocalFrame(_expressInLocalFrameProp.getValueBool())
 {
-	 setNull();
+     setNull();
 
-	// STORAGE
-	allocateStorage();
+    // STORAGE
+    allocateStorage();
 
-	if (_model ==0)
-		return;
+    if (_model ==0)
+        return;
 }
 //_____________________________________________________________________________
 /**
@@ -85,14 +85,14 @@ BodyKinematics::BodyKinematics(Model *aModel, bool aInDegrees) :
  * @param aFileName File name of the document.
  */
 BodyKinematics::BodyKinematics(const std::string &aFileName):
-	Analysis(aFileName, false),
-	_bodies(_bodiesProp.getValueStrArray()),
-	_expressInLocalFrame(_expressInLocalFrameProp.getValueBool())
+    Analysis(aFileName, false),
+    _bodies(_bodiesProp.getValueStrArray()),
+    _expressInLocalFrame(_expressInLocalFrameProp.getValueBool())
 {
-	setNull();
+    setNull();
 
-	// Serialize from XML
-	updateFromXMLDocument();
+    // Serialize from XML
+    updateFromXMLDocument();
 
 }
 
@@ -103,13 +103,13 @@ BodyKinematics::BodyKinematics(const std::string &aFileName):
  *
  */
 BodyKinematics::BodyKinematics(const BodyKinematics &aBodyKinematics):
-	Analysis(aBodyKinematics),
-	_bodies(_bodiesProp.getValueStrArray()),
-	_expressInLocalFrame(_expressInLocalFrameProp.getValueBool())
+    Analysis(aBodyKinematics),
+    _bodies(_bodiesProp.getValueStrArray()),
+    _expressInLocalFrame(_expressInLocalFrameProp.getValueBool())
 {
-	setNull();
-	// COPY TYPE AND NAME
-	*this = aBodyKinematics;
+    setNull();
+    // COPY TYPE AND NAME
+    *this = aBodyKinematics;
 }
 
 //=============================================================================
@@ -127,11 +127,11 @@ BodyKinematics::BodyKinematics(const BodyKinematics &aBodyKinematics):
 BodyKinematics& BodyKinematics::
 operator=(const BodyKinematics &aBodyKinematics)
 {
-	// BASE CLASS
-	Analysis::operator=(aBodyKinematics);
-	_bodies = aBodyKinematics._bodies;
-	_expressInLocalFrame = aBodyKinematics._expressInLocalFrame;
-	return(*this);
+    // BASE CLASS
+    Analysis::operator=(aBodyKinematics);
+    _bodies = aBodyKinematics._bodies;
+    _expressInLocalFrame = aBodyKinematics._expressInLocalFrame;
+    return(*this);
 }
 
 //_____________________________________________________________________________
@@ -141,20 +141,20 @@ operator=(const BodyKinematics &aBodyKinematics)
 void BodyKinematics::
 setNull()
 {
-	setupProperties();
+    setupProperties();
 
-	// POINTERS
-	_pStore = NULL;
-	_vStore = NULL;
-	_aStore = NULL;
-	_bodies.setSize(1);
-	_bodies[0] = "all";
-	_recordCenterOfMass = true;
+    // POINTERS
+    _pStore = NULL;
+    _vStore = NULL;
+    _aStore = NULL;
+    _bodies.setSize(1);
+    _bodies[0] = "all";
+    _recordCenterOfMass = true;
 
-	// OTHER VARIABLES
+    // OTHER VARIABLES
 
-	//?_body
-	setName("BodyKinematics");
+    //?_body
+    setName("BodyKinematics");
 }
 //_____________________________________________________________________________
 /**
@@ -163,18 +163,18 @@ setNull()
 void BodyKinematics::
 setupProperties()
 {
-	_bodiesProp.setName("bodies");
-	_bodiesProp.setComment("Names of bodies to record kinematics for.  Use 'all' to record all bodies."
-								  "  The special name '"+CENTER_OF_MASS_NAME+"' refers to the combined center of mass.");
-	_propertySet.append( &_bodiesProp );
+    _bodiesProp.setName("bodies");
+    _bodiesProp.setComment("Names of bodies to record kinematics for.  Use 'all' to record all bodies."
+                                  "  The special name '"+CENTER_OF_MASS_NAME+"' refers to the combined center of mass.");
+    _propertySet.append( &_bodiesProp );
 
-	_expressInLocalFrameProp.setName("express_results_in_body_local_frame");
-	_expressInLocalFrameProp.setComment("Flag (true or false) indicating whether"
-		" to express results in the global frame or local-frames of the bodies. "
-		"Body positions and center of mass results are always given in the global frame. "
-		"This flag is set to false by default.");
-	_expressInLocalFrameProp.setValue(false);
-	_propertySet.append(&_expressInLocalFrameProp);
+    _expressInLocalFrameProp.setName("express_results_in_body_local_frame");
+    _expressInLocalFrameProp.setComment("Flag (true or false) indicating whether"
+        " to express results in the global frame or local-frames of the bodies. "
+        "Body positions and center of mass results are always given in the global frame. "
+        "This flag is set to false by default.");
+    _expressInLocalFrameProp.setValue(false);
+    _propertySet.append(&_expressInLocalFrameProp);
 }
 
 //=============================================================================
@@ -187,30 +187,30 @@ setupProperties()
 void BodyKinematics::
 constructDescription()
 {
-	char descrip[1024];
-	char tmp[MAXLEN];
+    char descrip[1024];
+    char tmp[MAXLEN];
 
-	strcpy(descrip,"\nThis file contains the kinematics ");
-	strcat(descrip,"(positions and orientations,\n");
-	strcat(descrip,"velocities and angular velocities, or");
-	strcat(descrip," accelerations and angular accelerations)\n");
-	strcat(descrip,"of the centers of mass");
-	sprintf(tmp," of the body segments in model %s.\n",
-		_model->getName().c_str());
-	strcat(descrip,tmp);
-	strcat(descrip,"\nBody segment orientations are described using");
-	strcat(descrip," body-fixed X-Y-Z Euler angles.\n");
-	strcat(descrip,"\nAngular velocities and accelerations are given about");
-	strcat(descrip," the body-local axes.\n");
-	strcat(descrip,"\nUnits are S.I. units (seconds, meters, Newtons, ...)");
-	if(getInDegrees()) {
-		strcat(descrip,"\nAngles are in degrees.");
-	} else {
-		strcat(descrip,"\nAngles are in radians.");
-	}
-	strcat(descrip,"\n\n");
+    strcpy(descrip,"\nThis file contains the kinematics ");
+    strcat(descrip,"(positions and orientations,\n");
+    strcat(descrip,"velocities and angular velocities, or");
+    strcat(descrip," accelerations and angular accelerations)\n");
+    strcat(descrip,"of the centers of mass");
+    sprintf(tmp," of the body segments in model %s.\n",
+        _model->getName().c_str());
+    strcat(descrip,tmp);
+    strcat(descrip,"\nBody segment orientations are described using");
+    strcat(descrip," body-fixed X-Y-Z Euler angles.\n");
+    strcat(descrip,"\nAngular velocities and accelerations are given about");
+    strcat(descrip," the body-local axes.\n");
+    strcat(descrip,"\nUnits are S.I. units (seconds, meters, Newtons, ...)");
+    if(getInDegrees()) {
+        strcat(descrip,"\nAngles are in degrees.");
+    } else {
+        strcat(descrip,"\nAngles are in radians.");
+    }
+    strcat(descrip,"\n\n");
 
-	setDescription(descrip);
+    setDescription(descrip);
 }
 
 //_____________________________________________________________________________
@@ -220,28 +220,28 @@ constructDescription()
 void BodyKinematics::
 constructColumnLabels()
 {
-	Array<string> labels;
-	labels.append("time");
+    Array<string> labels;
+    labels.append("time");
 
-	BodySet& bs = _model->updBodySet();
-	for(int i=0; i<_bodyIndices.getSize(); i++) {
-		Body& body = bs.get(_bodyIndices[i]);
-		labels.append(body.getName() + "_X");
-		labels.append(body.getName() + "_Y");
-		labels.append(body.getName() + "_Z");
-		labels.append(body.getName() + "_Ox");
-		labels.append(body.getName() + "_Oy");
-		labels.append(body.getName() + "_Oz");
-	}
+    BodySet& bs = _model->updBodySet();
+    for(int i=0; i<_bodyIndices.getSize(); i++) {
+        Body& body = bs.get(_bodyIndices[i]);
+        labels.append(body.getName() + "_X");
+        labels.append(body.getName() + "_Y");
+        labels.append(body.getName() + "_Z");
+        labels.append(body.getName() + "_Ox");
+        labels.append(body.getName() + "_Oy");
+        labels.append(body.getName() + "_Oz");
+    }
 
-	if(_recordCenterOfMass) {
-		// ADD NAMES FOR POSITION, VELOCITY, AND ACCELERATION OF WHOLE BODY
-		labels.append(CENTER_OF_MASS_NAME + "_X");
-		labels.append(CENTER_OF_MASS_NAME + "_Y");
-		labels.append(CENTER_OF_MASS_NAME + "_Z");
-	}
+    if(_recordCenterOfMass) {
+        // ADD NAMES FOR POSITION, VELOCITY, AND ACCELERATION OF WHOLE BODY
+        labels.append(CENTER_OF_MASS_NAME + "_X");
+        labels.append(CENTER_OF_MASS_NAME + "_Y");
+        labels.append(CENTER_OF_MASS_NAME + "_Z");
+    }
 
-	setColumnLabels(labels);
+    setColumnLabels(labels);
 }
 
 //_____________________________________________________________________________
@@ -251,20 +251,20 @@ constructColumnLabels()
 void BodyKinematics::
 allocateStorage()
 {
-	// ACCELERATIONS
-	_aStore = new Storage(1000,"Accelerations");
-	_aStore->setDescription(getDescription());
-	_aStore->setColumnLabels(getColumnLabels());
+    // ACCELERATIONS
+    _aStore = new Storage(1000,"Accelerations");
+    _aStore->setDescription(getDescription());
+    _aStore->setColumnLabels(getColumnLabels());
 
-	// VELOCITIES
-	_vStore = new Storage(1000,"Velocities");
-	_vStore->setDescription(getDescription());
-	_vStore->setColumnLabels(getColumnLabels());
+    // VELOCITIES
+    _vStore = new Storage(1000,"Velocities");
+    _vStore->setDescription(getDescription());
+    _vStore->setColumnLabels(getColumnLabels());
 
-	// POSITIONS
-	_pStore = new Storage(1000,"Positions");
-	_pStore->setDescription(getDescription());
-	_pStore->setColumnLabels(getColumnLabels());
+    // POSITIONS
+    _pStore = new Storage(1000,"Positions");
+    _pStore->setDescription(getDescription());
+    _pStore->setColumnLabels(getColumnLabels());
 }
 
 
@@ -278,9 +278,9 @@ allocateStorage()
 void BodyKinematics::
 deleteStorage()
 {
-	if(_aStore!=NULL) { delete _aStore;  _aStore=NULL; }
-	if(_vStore!=NULL) { delete _vStore;  _vStore=NULL; }
-	if(_pStore!=NULL) { delete _pStore;  _pStore=NULL; }
+    if(_aStore!=NULL) { delete _aStore;  _aStore=NULL; }
+    if(_vStore!=NULL) { delete _vStore;  _vStore=NULL; }
+    if(_pStore!=NULL) { delete _pStore;  _pStore=NULL; }
 }
 
 //_____________________________________________________________________________
@@ -290,34 +290,34 @@ deleteStorage()
 void BodyKinematics::
 updateBodiesToRecord()
 {
-	if(!_model) {
-		_bodyIndices.setSize(0);
-		_kin.setSize(0);
-		return;
-	}
+    if(!_model) {
+        _bodyIndices.setSize(0);
+        _kin.setSize(0);
+        return;
+    }
 
-	BodySet& bs = _model->updBodySet();
-	_recordCenterOfMass = false;
-	_bodyIndices.setSize(0);
-	for(int i=0; i<_bodies.getSize(); i++) {
-		if(_bodies[i] == "all") {
-			_bodyIndices.setSize(bs.getSize());
-			for(int j=0;j<bs.getSize();j++) _bodyIndices[j]=j;
-			_recordCenterOfMass = true;
-			break;
-		}
-		if(_bodies[i] == CENTER_OF_MASS_NAME) {
-			_recordCenterOfMass = true;
-			continue;
-		}
-		int index = bs.getIndex(_bodies[i]);
-		if(index<0) 
-			throw Exception("BodyKinematics: ERR- Cound not find body named '"+_bodies[i]+"'",__FILE__,__LINE__);
-		_bodyIndices.append(index);
-	}
-	_kin.setSize(6*_bodyIndices.getSize()+(_recordCenterOfMass?3:0));
+    BodySet& bs = _model->updBodySet();
+    _recordCenterOfMass = false;
+    _bodyIndices.setSize(0);
+    for(int i=0; i<_bodies.getSize(); i++) {
+        if(_bodies[i] == "all") {
+            _bodyIndices.setSize(bs.getSize());
+            for(int j=0;j<bs.getSize();j++) _bodyIndices[j]=j;
+            _recordCenterOfMass = true;
+            break;
+        }
+        if(_bodies[i] == CENTER_OF_MASS_NAME) {
+            _recordCenterOfMass = true;
+            continue;
+        }
+        int index = bs.getIndex(_bodies[i]);
+        if(index<0) 
+            throw Exception("BodyKinematics: ERR- Cound not find body named '"+_bodies[i]+"'",__FILE__,__LINE__);
+        _bodyIndices.append(index);
+    }
+    _kin.setSize(6*_bodyIndices.getSize()+(_recordCenterOfMass?3:0));
 
-	if(_kin.getSize()==0) cout << "WARNING: BodyKinematics analysis has no bodies to record kinematics for" << endl;
+    if(_kin.getSize()==0) cout << "WARNING: BodyKinematics analysis has no bodies to record kinematics for" << endl;
 }
 
 
@@ -334,16 +334,16 @@ updateBodiesToRecord()
 void BodyKinematics::
 setModel(Model& aModel)
 {
-	Analysis::setModel(aModel);
+    Analysis::setModel(aModel);
 
 
-	// DESCRIPTION AND LABELS
-	constructDescription();
-	updateBodiesToRecord();
-	constructColumnLabels();
+    // DESCRIPTION AND LABELS
+    constructDescription();
+    updateBodiesToRecord();
+    constructColumnLabels();
 
-	deleteStorage();
-	allocateStorage();
+    deleteStorage();
+    allocateStorage();
 }
 
 //-----------------------------------------------------------------------------
@@ -358,7 +358,7 @@ setModel(Model& aModel)
 Storage* BodyKinematics::
 getAccelerationStorage()
 {
-	return(_aStore);
+    return(_aStore);
 }
 //_____________________________________________________________________________
 /**
@@ -369,7 +369,7 @@ getAccelerationStorage()
 Storage* BodyKinematics::
 getVelocityStorage()
 {
-	return(_vStore);
+    return(_vStore);
 }
 //_____________________________________________________________________________
 /**
@@ -380,7 +380,7 @@ getVelocityStorage()
 Storage* BodyKinematics::
 getPositionStorage()
 {
-	return(_pStore);
+    return(_pStore);
 }
 
 //-----------------------------------------------------------------------------
@@ -396,9 +396,9 @@ getPositionStorage()
 void BodyKinematics::
 setStorageCapacityIncrements(int aIncrement)
 {
-	_aStore->setCapacityIncrement(aIncrement);
-	_vStore->setCapacityIncrement(aIncrement);
-	_pStore->setCapacityIncrement(aIncrement);
+    _aStore->setCapacityIncrement(aIncrement);
+    _vStore->setCapacityIncrement(aIncrement);
+    _pStore->setCapacityIncrement(aIncrement);
 }
 
 //-----------------------------------------------------------------------------
@@ -410,12 +410,12 @@ setStorageCapacityIncrements(int aIncrement)
  * the body local reference frame.
  *
  * @param aTrueFalse  False will result in the angular velocities being output
- *		in the global reference frame
+ *      in the global reference frame
  */
 void BodyKinematics::
 setExpressResultsInLocalFrame(bool aTrueFalse)
 {
-	_expressInLocalFrame = aTrueFalse;
+    _expressInLocalFrame = aTrueFalse;
 }
 
 /**
@@ -423,12 +423,12 @@ setExpressResultsInLocalFrame(bool aTrueFalse)
  * the body local reference frame.
  *
  * @param rTrueFalse  False indicates the angular velocities being output
- *		in the global reference frame
+ *      in the global reference frame
  */
 bool BodyKinematics::
 getExpressResultsInLocalFrame()
 {
-	return(_expressInLocalFrame);
+    return(_expressInLocalFrame);
 }
 
 
@@ -443,161 +443,161 @@ int BodyKinematics::
 record(const SimTK::State& s)
 {
 
-	// Realize to Acceleration first since we'll ask for Accelerations 
-	_model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
-	// VARIABLES
-	double dirCos[3][3];
-	SimTK::Vec3 vec,angVec;
-	double Mass = 0.0;
+    // Realize to Acceleration first since we'll ask for Accelerations 
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
+    // VARIABLES
+    double dirCos[3][3];
+    SimTK::Vec3 vec,angVec;
+    double Mass = 0.0;
 
-	// GROUND BODY
-	Body &ground = _model->getSimbodyEngine().getGroundBody();
+    // GROUND BODY
+    Body &ground = _model->getSimbodyEngine().getGroundBody();
 
-	// POSITION
-	BodySet& bs = _model->updBodySet();
+    // POSITION
+    BodySet& bs = _model->updBodySet();
 
-	for(int i=0;i<_bodyIndices.getSize();i++) {
-		Body& body = bs.get(_bodyIndices[i]);
-		const SimTK::Vec3& com = body.get_mass_center();
-		// GET POSITIONS AND EULER ANGLES
-		_model->getSimbodyEngine().getPosition(s, body,com,vec);
-		_model->getSimbodyEngine().getDirectionCosines(s, body,dirCos);
-		_model->getSimbodyEngine().convertDirectionCosinesToAngles(dirCos,
-			&angVec[0],&angVec[1],&angVec[2]);
+    for(int i=0;i<_bodyIndices.getSize();i++) {
+        Body& body = bs.get(_bodyIndices[i]);
+        const SimTK::Vec3& com = body.get_mass_center();
+        // GET POSITIONS AND EULER ANGLES
+        _model->getSimbodyEngine().getPosition(s, body,com,vec);
+        _model->getSimbodyEngine().getDirectionCosines(s, body,dirCos);
+        _model->getSimbodyEngine().convertDirectionCosinesToAngles(dirCos,
+            &angVec[0],&angVec[1],&angVec[2]);
 
-		// CONVERT TO DEGREES?
-		if(getInDegrees()) {
-			angVec[0] *= SimTK_RADIAN_TO_DEGREE;
-			angVec[1] *= SimTK_RADIAN_TO_DEGREE;
-			angVec[2] *= SimTK_RADIAN_TO_DEGREE;
-		}			
+        // CONVERT TO DEGREES?
+        if(getInDegrees()) {
+            angVec[0] *= SimTK_RADIAN_TO_DEGREE;
+            angVec[1] *= SimTK_RADIAN_TO_DEGREE;
+            angVec[2] *= SimTK_RADIAN_TO_DEGREE;
+        }           
 
-		// FILL KINEMATICS ARRAY
-		int I=6*i;
-		memcpy(&_kin[I],&vec[0],3*sizeof(double));
-		memcpy(&_kin[I+3],&angVec[0],3*sizeof(double));
-	}
+        // FILL KINEMATICS ARRAY
+        int I=6*i;
+        memcpy(&_kin[I],&vec[0],3*sizeof(double));
+        memcpy(&_kin[I+3],&angVec[0],3*sizeof(double));
+    }
 
-	if(_recordCenterOfMass) {
-		double rP[3] = { 0.0, 0.0, 0.0 };
-		for(int i=0;i<bs.getSize();i++) {
-			Body& body = bs.get(i);
-			const SimTK::Vec3& com = body.get_mass_center();
-			_model->getSimbodyEngine().getPosition(s, body,com,vec);
-			// ADD TO WHOLE BODY MASS
-			Mass += body.get_mass();
-			rP[0] += body.get_mass() * vec[0];
-			rP[1] += body.get_mass() * vec[1];
-			rP[2] += body.get_mass() * vec[2];
-		}
+    if(_recordCenterOfMass) {
+        double rP[3] = { 0.0, 0.0, 0.0 };
+        for(int i=0;i<bs.getSize();i++) {
+            Body& body = bs.get(i);
+            const SimTK::Vec3& com = body.get_mass_center();
+            _model->getSimbodyEngine().getPosition(s, body,com,vec);
+            // ADD TO WHOLE BODY MASS
+            Mass += body.get_mass();
+            rP[0] += body.get_mass() * vec[0];
+            rP[1] += body.get_mass() * vec[1];
+            rP[2] += body.get_mass() * vec[2];
+        }
 
-		//COMPUTE COM OF WHOLE BODY AND ADD TO ARRAY
-		rP[0] /= Mass;
-		rP[1] /= Mass;
-		rP[2] /= Mass;
-		int I = 6*_bodyIndices.getSize();
-		memcpy(&_kin[I],rP,3*sizeof(double));
-	}
-	
-	_pStore->append(s.getTime(),_kin.getSize(),&_kin[0]);
+        //COMPUTE COM OF WHOLE BODY AND ADD TO ARRAY
+        rP[0] /= Mass;
+        rP[1] /= Mass;
+        rP[2] /= Mass;
+        int I = 6*_bodyIndices.getSize();
+        memcpy(&_kin[I],rP,3*sizeof(double));
+    }
+    
+    _pStore->append(s.getTime(),_kin.getSize(),&_kin[0]);
 
-	// VELOCITY
-	for(int i=0;i<_bodyIndices.getSize();i++) {
-		Body& body = bs.get(_bodyIndices[i]);
-		const SimTK::Vec3& com = body.get_mass_center();
-		// GET VELOCITIES AND ANGULAR VELOCITIES
-		_model->getSimbodyEngine().getVelocity(s, body,com,vec);
-		if(_expressInLocalFrame) {
-			_model->getSimbodyEngine().transform(s, ground,vec,body,vec);
-			_model->getSimbodyEngine().getAngularVelocityBodyLocal(s, body,angVec);
-		} else {
-			_model->getSimbodyEngine().getAngularVelocity(s, body,angVec);
-		}
+    // VELOCITY
+    for(int i=0;i<_bodyIndices.getSize();i++) {
+        Body& body = bs.get(_bodyIndices[i]);
+        const SimTK::Vec3& com = body.get_mass_center();
+        // GET VELOCITIES AND ANGULAR VELOCITIES
+        _model->getSimbodyEngine().getVelocity(s, body,com,vec);
+        if(_expressInLocalFrame) {
+            _model->getSimbodyEngine().transform(s, ground,vec,body,vec);
+            _model->getSimbodyEngine().getAngularVelocityBodyLocal(s, body,angVec);
+        } else {
+            _model->getSimbodyEngine().getAngularVelocity(s, body,angVec);
+        }
 
-		// CONVERT TO DEGREES?
-		if(getInDegrees()) {
-			angVec[0] *= SimTK_RADIAN_TO_DEGREE;
-			angVec[1] *= SimTK_RADIAN_TO_DEGREE;
-			angVec[2] *= SimTK_RADIAN_TO_DEGREE;
-		}			
+        // CONVERT TO DEGREES?
+        if(getInDegrees()) {
+            angVec[0] *= SimTK_RADIAN_TO_DEGREE;
+            angVec[1] *= SimTK_RADIAN_TO_DEGREE;
+            angVec[2] *= SimTK_RADIAN_TO_DEGREE;
+        }           
 
-		// FILL KINEMATICS ARRAY
-		int I = 6*i;
-		memcpy(&_kin[I],&vec[0],3*sizeof(double));
-		memcpy(&_kin[I+3],&angVec[0],3*sizeof(double));
-	}
+        // FILL KINEMATICS ARRAY
+        int I = 6*i;
+        memcpy(&_kin[I],&vec[0],3*sizeof(double));
+        memcpy(&_kin[I+3],&angVec[0],3*sizeof(double));
+    }
 
-	if(_recordCenterOfMass) {
-		double rV[3] = { 0.0, 0.0, 0.0 };
-		for(int i=0;i<bs.getSize();i++) {
-			Body& body = bs.get(i);
-			const SimTK::Vec3& com = body.get_mass_center();
-			_model->getSimbodyEngine().getVelocity(s, body,com,vec);
-			rV[0] += body.get_mass() * vec[0];
-			rV[1] += body.get_mass() * vec[1];
-			rV[2] += body.get_mass() * vec[2];
-		}
+    if(_recordCenterOfMass) {
+        double rV[3] = { 0.0, 0.0, 0.0 };
+        for(int i=0;i<bs.getSize();i++) {
+            Body& body = bs.get(i);
+            const SimTK::Vec3& com = body.get_mass_center();
+            _model->getSimbodyEngine().getVelocity(s, body,com,vec);
+            rV[0] += body.get_mass() * vec[0];
+            rV[1] += body.get_mass() * vec[1];
+            rV[2] += body.get_mass() * vec[2];
+        }
 
-		//COMPUTE VELOCITY OF COM OF WHOLE BODY AND ADD TO ARRAY
-		rV[0] /= Mass;
-		rV[1] /= Mass;
-		rV[2] /= Mass;
-		int I = 6*_bodyIndices.getSize();
-		memcpy(&_kin[I],rV,3*sizeof(double));
-	}
+        //COMPUTE VELOCITY OF COM OF WHOLE BODY AND ADD TO ARRAY
+        rV[0] /= Mass;
+        rV[1] /= Mass;
+        rV[2] /= Mass;
+        int I = 6*_bodyIndices.getSize();
+        memcpy(&_kin[I],rV,3*sizeof(double));
+    }
 
-	_vStore->append(s.getTime(),_kin.getSize(),&_kin[0]);
+    _vStore->append(s.getTime(),_kin.getSize(),&_kin[0]);
 
-	// ACCELERATIONS
-	for(int i=0;i<_bodyIndices.getSize();i++) {
-		Body& body = bs.get(_bodyIndices[i]);
-		const SimTK::Vec3& com = body.get_mass_center();
+    // ACCELERATIONS
+    for(int i=0;i<_bodyIndices.getSize();i++) {
+        Body& body = bs.get(_bodyIndices[i]);
+        const SimTK::Vec3& com = body.get_mass_center();
 
-		// GET ACCELERATIONS AND ANGULAR ACCELERATIONS
-		_model->getSimbodyEngine().getAcceleration(s, body,com,vec);
-		if(_expressInLocalFrame) {
-			_model->getSimbodyEngine().transform(s, ground,vec,body,vec);
-			_model->getSimbodyEngine().getAngularAccelerationBodyLocal(s, body,angVec);
-		} else {
-			_model->getSimbodyEngine().getAngularAcceleration(s, body,angVec);
-		}
+        // GET ACCELERATIONS AND ANGULAR ACCELERATIONS
+        _model->getSimbodyEngine().getAcceleration(s, body,com,vec);
+        if(_expressInLocalFrame) {
+            _model->getSimbodyEngine().transform(s, ground,vec,body,vec);
+            _model->getSimbodyEngine().getAngularAccelerationBodyLocal(s, body,angVec);
+        } else {
+            _model->getSimbodyEngine().getAngularAcceleration(s, body,angVec);
+        }
 
-		// CONVERT TO DEGREES?
-		if(getInDegrees()) {
-			angVec[0] *= SimTK_RADIAN_TO_DEGREE;
-			angVec[1] *= SimTK_RADIAN_TO_DEGREE;
-			angVec[2] *= SimTK_RADIAN_TO_DEGREE;
-		}			
+        // CONVERT TO DEGREES?
+        if(getInDegrees()) {
+            angVec[0] *= SimTK_RADIAN_TO_DEGREE;
+            angVec[1] *= SimTK_RADIAN_TO_DEGREE;
+            angVec[2] *= SimTK_RADIAN_TO_DEGREE;
+        }           
 
-		// FILL KINEMATICS ARRAY
-		int I = 6*i;
-		memcpy(&_kin[I],&vec[0],3*sizeof(double));
-		memcpy(&_kin[I+3],&angVec[0],3*sizeof(double));
-	}
+        // FILL KINEMATICS ARRAY
+        int I = 6*i;
+        memcpy(&_kin[I],&vec[0],3*sizeof(double));
+        memcpy(&_kin[I+3],&angVec[0],3*sizeof(double));
+    }
 
-	if(_recordCenterOfMass) {
-		double rA[3] = { 0.0, 0.0, 0.0 };
-		for(int i=0;i<bs.getSize();i++) {
-			Body& body = bs.get(i);
-			const SimTK::Vec3& com = body.get_mass_center();
-			_model->getSimbodyEngine().getAcceleration(s, body,com,vec);
-			rA[0] += body.get_mass() * vec[0];
-			rA[1] += body.get_mass() * vec[1];
-			rA[2] += body.get_mass() * vec[2];
-		}
+    if(_recordCenterOfMass) {
+        double rA[3] = { 0.0, 0.0, 0.0 };
+        for(int i=0;i<bs.getSize();i++) {
+            Body& body = bs.get(i);
+            const SimTK::Vec3& com = body.get_mass_center();
+            _model->getSimbodyEngine().getAcceleration(s, body,com,vec);
+            rA[0] += body.get_mass() * vec[0];
+            rA[1] += body.get_mass() * vec[1];
+            rA[2] += body.get_mass() * vec[2];
+        }
 
-		//COMPUTE ACCELERATION OF COM OF WHOLE BODY AND ADD TO ARRAY
-		rA[0] /= Mass;
-		rA[1] /= Mass;
-		rA[2] /= Mass;
-		int I = 6*_bodyIndices.getSize();
-		memcpy(&_kin[I],rA,3*sizeof(double));
-	}
+        //COMPUTE ACCELERATION OF COM OF WHOLE BODY AND ADD TO ARRAY
+        rA[0] /= Mass;
+        rA[1] /= Mass;
+        rA[2] /= Mass;
+        int I = 6*_bodyIndices.getSize();
+        memcpy(&_kin[I],rA,3*sizeof(double));
+    }
 
-	_aStore->append(s.getTime(),_kin.getSize(),&_kin[0]);
+    _aStore->append(s.getTime(),_kin.getSize(),&_kin[0]);
 
-	//printf("BodyKinematics:\taT:\t%.16f\trA[1]:\t%.16f\n",s.getTime(),rA[1]);
-	return(0);
+    //printf("BodyKinematics:\taT:\t%.16f\trA[1]:\t%.16f\n",s.getTime(),rA[1]);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -617,20 +617,20 @@ record(const SimTK::State& s)
 int BodyKinematics::
 begin(SimTK::State& s )
 {
-	if(!proceed()) return(0);
+    if(!proceed()) return(0);
 
-	// RESET STORAGE
-	_pStore->reset(s.getTime());
-	_vStore->reset(s.getTime());
-	_aStore->reset(s.getTime());
+    // RESET STORAGE
+    _pStore->reset(s.getTime());
+    _vStore->reset(s.getTime());
+    _aStore->reset(s.getTime());
 
-	// RECORD
-	int status = 0;
-	if(_pStore->getSize()<=0) {
-		status = record(s);
-	}
+    // RECORD
+    int status = 0;
+    if(_pStore->getSize()<=0) {
+        status = record(s);
+    }
 
-	return(status);
+    return(status);
 }
 //_____________________________________________________________________________
 /**
@@ -651,11 +651,11 @@ begin(SimTK::State& s )
 int BodyKinematics::
 step(const SimTK::State& s, int stepNumber)
 {
-	if(!proceed(stepNumber )) return(0);
+    if(!proceed(stepNumber )) return(0);
 
-	record(s);
+    record(s);
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -675,11 +675,11 @@ step(const SimTK::State& s, int stepNumber)
 int BodyKinematics::
 end(SimTK::State& s )
 {
-	if(!proceed()) return(0);
+    if(!proceed()) return(0);
 
-	record(s);
+    record(s);
 
-	return(0);
+    return(0);
 }
 
 
@@ -705,22 +705,22 @@ end(SimTK::State& s )
  */
 int BodyKinematics::
 printResults(const string &aBaseName,const string &aDir,double aDT,
-				 const string &aExtension)
+                 const string &aExtension)
 {
-	string suffix;
-	if(_expressInLocalFrame) suffix = "_bodyLocal";
-	else suffix = "_global";
+    string suffix;
+    if(_expressInLocalFrame) suffix = "_bodyLocal";
+    else suffix = "_global";
 
-	// ACCELERATIONS
-	Storage::printResult(_aStore,aBaseName+"_"+getName()+"_acc"+suffix,aDir,aDT,aExtension);
+    // ACCELERATIONS
+    Storage::printResult(_aStore,aBaseName+"_"+getName()+"_acc"+suffix,aDir,aDT,aExtension);
 
-	// VELOCITIES
-	Storage::printResult(_vStore,aBaseName+"_"+getName()+"_vel"+suffix,aDir,aDT,aExtension);
+    // VELOCITIES
+    Storage::printResult(_vStore,aBaseName+"_"+getName()+"_vel"+suffix,aDir,aDT,aExtension);
 
-	// POSITIONS
-	Storage::printResult(_pStore,aBaseName+"_"+getName()+"_pos_global",aDir,aDT,aExtension);
+    // POSITIONS
+    Storage::printResult(_pStore,aBaseName+"_"+getName()+"_pos_global",aDir,aDT,aExtension);
 
-	return(0);
+    return(0);
 }
 
 

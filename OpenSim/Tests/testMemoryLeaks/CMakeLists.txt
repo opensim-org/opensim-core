@@ -6,6 +6,6 @@ LINK_LIBRARIES(psapi osimSimulation)
 ADD_EXECUTABLE(testMemoryLeaks ${SOURCE_FILES} ${INCLUDE_FILES})
 
 SET_TARGET_PROPERTIES(testMemoryLeaks PROPERTIES
-	${EXCLUDE_IF_MINIMAL_BUILD}
-	PROJECT_LABEL "Tests - testMemoryLeaks"
+    ${EXCLUDE_IF_MINIMAL_BUILD}
+    PROJECT_LABEL "Tests - testMemoryLeaks"
 )

@@ -308,7 +308,7 @@ void Component::computeStateVariableDerivatives(const SimTK::State& s) const
         if(nasv > 0){
             std::stringstream msg;
             msg << "Component " + getConcreteClassName()+"::"+getName();
-            msg	<< " added " << nasv << " state variables and ";
+            msg << " added " << nasv << " state variables and ";
             msg << " must specify their derivatives." << std::endl; 
 
             throw Exception(msg.str());
@@ -818,7 +818,7 @@ void Component::addComponent(Component *aComponent)
     if ( _components.empty() ){
         _components.push_back(aComponent);
     }
-    else{ //otherwise check that it isn't apart of the component already		
+    else{ //otherwise check that it isn't apart of the component already        
         SimTK::Array_<Component *>::iterator it =
             std::find(_components.begin(), _components.end(), aComponent);
         if ( it == _components.end() ){
