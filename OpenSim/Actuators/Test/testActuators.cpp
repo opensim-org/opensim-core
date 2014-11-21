@@ -574,7 +574,7 @@ void testBodyActuator()
                                              blockMassCenter, blockInertia);
 
     // Add display geometry to the block to visualize in the GUI
-    block->addDisplayGeometry("block.vtp");
+    block->addMeshGeometry("block.vtp");
 
     Vec3 locationInParent(0, blockSideLength / 2, 0), orientationInParent(0), 
         locationInBody(0), orientationInBody(0);
@@ -757,7 +757,7 @@ void testActuatorsCombination()
                                     blockMassCenter, blockInertia);
 
     // Add display geometry to the block to visualize in the GUI
-    block->addDisplayGeometry("block.vtp");
+    block->addMeshGeometry("block.vtp");
 
     // Make a FreeJoint from block to ground
     Vec3 locationInParent(0, blockSideLength/2, 0), orientationInParent(0), //locationInParent(0, blockSideLength, 0)

@@ -51,8 +51,8 @@ SimTK::Transform OpenSim::Geometry::getTransform(const SimTK::State& state, cons
         return Transform();
 
     if (model.getBodySet().contains(frame.getName()))
-        return  gFrame.calcTransformToOtherFrame(state, model.getBodySet().get(frame.getName()));
-    return gFrame.calcTransformToOtherFrame(state, frame);
+        return  gFrame.findTransformBetween(state, model.getBodySet().get(frame.getName()));
+    return gFrame.findTransformBetween(state, frame);
 }
 
 void Sphere::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const

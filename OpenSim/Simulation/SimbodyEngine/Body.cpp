@@ -508,23 +508,12 @@ Body* Body::addSlave()
 	return slave;
 }
 
-/**
- * Implementation of Frame interface by Body
- */
-SimTK::Transform Body::calcGroundTransform(const SimTK::State& state) const {
-
-    const SimTK::MobilizedBody &B = getModel().getMatterSubsystem().getMobilizedBody(_index);
-    const SimTK::Transform& ground_X_B = B.getBodyTransform(state);
-
-    return ground_X_B;
-}
-
 void Body::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
 {
     Super::generateDecorations(fixed, hints, state, appendToThis);
     if (!fixed) return;
-    const SimTK::MobilizedBodyIndex bx = getIndex();
+    const SimTK::MobilizedBodyIndex bx = getMobilizedBodyIndex();
     int nGeom = getProperty_GeometrySet().size();
 
     for (int g = 0; g < nGeom; ++g) {
