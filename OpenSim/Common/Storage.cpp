@@ -419,7 +419,7 @@ getHeaderToken() const
  *
  * @return State index of column or -1.  Note that the returned index is equivalent
  * to the state index.  For example, for the first column in a storage (usually
- * time) -1 would be returned.  For the second colunn in a storage (the first
+ * time) -1 would be returned.  For the second column in a storage (the first
  * state) 0 would be returned.
  * @todo Rename this method getStateIndex()
  * 
@@ -428,12 +428,47 @@ getHeaderToken() const
 const int Storage::
 getStateIndex(const std::string &aColumnName, int startIndex) const
 {
-    int size = _columnLabels.getSize();
-    for(int i=startIndex;i<size;i++)
-        if(_columnLabels[i]==aColumnName)
-            return(i-1);
+    int thisColumnIndex = _columnLabels.findIndex(aColumnName);
+    if (thisColumnIndex >= 0)
+        // subtract 1 because time is included in the labels but not 
+        // in the "state vector"
+        return thisColumnIndex-1;
 
-    return(-1);
+    // Assume a mismatch between earlier and the latest component state variable 
+    // labeling mechanism and redo find with the just the ending substring instead
+    // of its full path name
+    std::string::size_type back = aColumnName.rfind("/");
+    std::string prefix = aColumnName.substr(0, back);
+    std::string shortName = aColumnName.substr(back + 1, aColumnName.length() - back);
+    thisColumnIndex = _columnLabels.findIndex(shortName);
+
+    // additional checking for old coordinate state names that have been renamed
+    // <coord_name>/value and <coord_name>/speed
+    if (thisColumnIndex < 0){
+        if (shortName == "value"){
+            // old formats did not have "/value" so remove it if here
+            back = prefix.rfind("/");
+            shortName = prefix.substr(back + 1, prefix.length());
+            thisColumnIndex = _columnLabels.findIndex(shortName);
+        }
+        else if (shortName == "speed"){
+            // replace "/speed" (the latest labeling for speeds) with "_u"
+            back = prefix.rfind("/");
+            shortName = prefix.substr(back + 1, prefix.length() - back) + "_u";
+            thisColumnIndex = _columnLabels.findIndex(shortName);
+        }
+        else if (back < aColumnName.length()) {
+            // try replacing the '/' with '.' in the last connection
+            shortName = aColumnName;
+            shortName.replace(back, 1, ".");
+            back = shortName.rfind("/");
+            shortName = shortName.substr(back + 1, shortName.length() - back);
+            thisColumnIndex = _columnLabels.findIndex(shortName);
+        }
+    }
+    // subtract 1 because time is included in the labels but not 
+    // in the "state vector"
+    return thisColumnIndex-1;
 }
 
 
@@ -3217,52 +3252,11 @@ double Storage::compareColumn(Storage& aOtherStorage, const std::string& aColumn
  */
 double Storage::compareColumnRMS(Storage& aOtherStorage, const std::string& aColumnName, double startTime, double endTime)
 {
-    int thisColumnIndex=_columnLabels.findIndex(aColumnName);
-    int otherColumnIndex = aOtherStorage._columnLabels.findIndex(aColumnName);
+    int thisColumnIndex = getStateIndex(aColumnName);
+    int otherColumnIndex = aOtherStorage.getStateIndex(aColumnName);
 
-    if ((thisColumnIndex < 0) || (otherColumnIndex < 0)) {
-        //Assume new component state variable labeling so redo find with the just the
-        //ending substring instead of its full path name
-        std::string::size_type back = aColumnName.rfind("/");
-        std::string prefix = aColumnName.substr(0, back);
-        std::string shortName = aColumnName.substr(back+1, aColumnName.length()-back);
-        
-        if (thisColumnIndex < 0)
-            thisColumnIndex = _columnLabels.findIndex(shortName) - 1;
-
-        if (otherColumnIndex < 0){
-            otherColumnIndex = aOtherStorage._columnLabels.findIndex(shortName) - 1;
-            if (otherColumnIndex < 0){
-                if (shortName == "value"){
-                    // old formats did not have "/value" so remove it if here
-                    back = prefix.rfind("/");
-                    shortName = prefix.substr(back + 1, prefix.length());
-                    otherColumnIndex = aOtherStorage.getColumnLabels().findIndex(shortName);
-                }
-                else if (shortName == "speed"){
-                    // replace "/speed" (the latest labeling for speeds) with "_u"
-                    back = prefix.rfind("/");
-                    shortName = prefix.substr(back + 1, prefix.length() - back) + "_u";
-                    otherColumnIndex = aOtherStorage.getColumnLabels().findIndex(shortName);
-                }
-                else {
-                    // try replacing the '/' with '.' in the last connection
-                    shortName = aColumnName;
-                    shortName.replace(back, 1, ".");
-                    back = shortName.rfind("/");
-                    shortName = shortName.substr(back + 1, shortName.length() - back);
-                    otherColumnIndex = aOtherStorage.getColumnLabels().findIndex(shortName);
-                }
-            }
-        }
-
-        if ((thisColumnIndex < 0) || (otherColumnIndex < 0))
-            return SimTK::NaN;
-    }
-
-    //NOTE!!!! Subtract one since, the data does not include the time column!
-    thisColumnIndex -= 1;
-    otherColumnIndex -= 1;
+    if ((thisColumnIndex < 0) || (otherColumnIndex < 0))
+        return SimTK::NaN;
 
     // Now we have two columnNumbers. get the data and compare
     Array<double> thisData, otherData;

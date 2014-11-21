@@ -136,6 +136,8 @@ public:
     /** get the speed value of the Coordinate from the state */
     double getSpeedValue(const SimTK::State& s) const;
     void setSpeedValue(SimTK::State& s, double aValue) const;
+    /** return the name (label) used to identify the Coordinate's speed
+        state variable. Returns the string "<coordinate_name>/speed" */
     const std::string& getSpeedName() const;
 
     /** get the default value for this coordinate. This is the value 
