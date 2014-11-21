@@ -130,6 +130,7 @@ public:
      */
     void adoptGeometry(OpenSim::Geometry* aGeometry);
 
+    void extendFinalizeFromProperties();
 protected:
 template <class T> friend class ModelComponentSet;
 

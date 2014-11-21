@@ -79,18 +79,21 @@ void ModelComponent::extendConnect(Component &root)
 		connectToModel(*model);
 }
 
-
+void ModelComponent::extendFinalizeFromProperties()
+{
+    Super::extendFinalizeFromProperties();
+    int geomSize = getProperty_GeometrySet().size();
+    if (geomSize > 0){
+        for (int i = 0; i < geomSize; ++i)
+            if (findComponent(get_GeometrySet(i).getName()) == nullptr)
+                addComponent(&upd_GeometrySet(i));
+    }
+}
 // Base class implementation of virtual method.
 void ModelComponent::connectToModel(Model& model)
 {
     _model = &model;
     extendConnectToModel(model);
-    int geomSize = getProperty_GeometrySet().size();
-    if (geomSize > 0){
-        for (int i = 0; i < geomSize; ++i)
-            if (findComponent(get_GeometrySet(i).getName())==nullptr)
-                addComponent(&upd_GeometrySet(i));
-    }
 }
 
 // Base class implementation of virtual method.
