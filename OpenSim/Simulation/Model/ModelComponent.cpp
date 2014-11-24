@@ -84,9 +84,12 @@ void ModelComponent::extendFinalizeFromProperties()
     Super::extendFinalizeFromProperties();
     int geomSize = getProperty_GeometrySet().size();
     if (geomSize > 0){
-        for (int i = 0; i < geomSize; ++i)
-            if (findComponent(get_GeometrySet(i).getName()) == nullptr)
+        for (int i = 0; i < geomSize; ++i){
+            if (findComponent(get_GeometrySet(i).getName()) == nullptr){
                 addComponent(&upd_GeometrySet(i));
+            }
+            upd_GeometrySet(i).setOwnerModelComponent(*this);
+        }
     }
 }
 // Base class implementation of virtual method.
@@ -113,6 +116,7 @@ void ModelComponent::generateDecorations
 void ModelComponent::adoptGeometry(OpenSim::Geometry* geom) {
     append_GeometrySet(*geom);
     addComponent(geom); // Geometry is a subcomponent.
+    geom->setOwnerModelComponent(*this);
     return;
 }
 

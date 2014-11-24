@@ -43,16 +43,46 @@ using namespace SimTK;
  * Compute Transform of a Geometry w.r.t. passed in Frame
  * Both Frame(s) could be Bodies, state is assumed to be realized ro position
 */
-SimTK::Transform OpenSim::Geometry::getTransform(const SimTK::State& state, const OpenSim::RigidFrame& frame) const {
+SimTK::Transform  Geometry::getTransform(const SimTK::State& state, const OpenSim::RigidFrame& frame) const {
     const OpenSim::Model& model = frame.getModel();
-    const OpenSim::Frame& gFrame = model.getBodySet().contains(get_frame_name()) ? model.getBodySet().get(get_frame_name()) :
-        model.getFrameSet().get(get_frame_name());
-    if (gFrame == frame) // Identity transform, no need to call Frame methods
-        return Transform();
 
-    if (model.getBodySet().contains(frame.getName()))
-        return  gFrame.findTransformBetween(state, model.getBodySet().get(frame.getName()));
-    return gFrame.findTransformBetween(state, frame);
+    const ModelComponent& owner = getOwnerModelComponent();
+    std::string gFrameName;
+
+    // If owner is already a kind of frame then use owner otherwise get it from model
+    if (dynamic_cast<const Frame*>(&owner) && getProperty_frame_name().size()==0)
+        gFrameName = owner.getName();
+    else
+        gFrameName = get_frame_name();
+
+    ComponentList<Frame> framesList = model.getComponentList<Frame>();
+    if (gFrameName == frame.getName()) // Identity transform, no need to call Frame methods
+        return Transform();
+    
+    for (ComponentList<Frame>::const_iterator it = framesList.begin();
+        it != framesList.end();
+        ++it) {
+        if (it->getName() == gFrameName){
+            const OpenSim::Frame& gFrame = *it;
+            return gFrame.findTransformBetween(state, frame);
+        }
+
+    }
+    std::clog << "Geometry::getTransform given unknown Frame" << frame.getName() << std::endl;
+    return Transform();
+}
+
+std::string Geometry::getFrameName() const
+{
+    const ModelComponent& owner = getOwnerModelComponent();
+    // If owner is already a kind of frame then use owner otherwise get it from model
+    if (dynamic_cast<const Frame*>(&owner))
+        return owner.getName();
+    if (getProperty_frame_name().size() == 0) // No frame specified, assume ground
+        return "ground";
+    else
+        return get_frame_name();
+    
 }
 
 void Sphere::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const

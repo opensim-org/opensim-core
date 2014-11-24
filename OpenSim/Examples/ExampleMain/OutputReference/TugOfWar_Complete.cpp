@@ -134,7 +134,7 @@ int main()
 		block->addMeshGeometry("block.vtp");
         
         Geometry* sphereGeometry = new Sphere(0.1);
-        sphereGeometry->set_frame_name(block->getName());
+        //sphereGeometry->set_frame_name(block->getName());
         block->adoptGeometry(sphereGeometry);
         
 		// FREE JOINT

@@ -67,6 +67,7 @@ namespace OpenSim {
 class RigidFrame;
 class Model;
 class Frame;
+class ModelComponent;
 //=============================================================================
 //=============================================================================
 /**
@@ -131,6 +132,16 @@ public:
     void setRepresentation(const Representation& rep) { upd_Appearance().set_representation(rep); };
     const Representation& getRepresentation() { return (const Representation&)get_Appearance().get_representation(); };
 
+    void setOwnerModelComponent(const OpenSim::ModelComponent& mc) {
+        _owner = mc;
+    }
+    const ModelComponent& getOwnerModelComponent() const {
+        return _owner.getRef();
+    }
+    std::string getFrameName() const;
+
+private:
+    SimTK::ReferencePtr<const OpenSim::ModelComponent> _owner;
     //=============================================================================
 };	// END of class Geometry
 
