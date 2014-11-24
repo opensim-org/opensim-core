@@ -9,8 +9,6 @@
             <Brick>
 							<!--Scale factors in X, Y, Z directotions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
-							<!--Name of the Frame that this Geometry is attached to.-->
-							<frame_name>ground</frame_name>
 							<!--Name of geometry file.-->
               <half_lengths>0.5 0.01 0.5</half_lengths>
 						</Brick>
