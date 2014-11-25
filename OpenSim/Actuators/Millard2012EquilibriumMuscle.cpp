@@ -517,12 +517,7 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
 
     // Elastic tendon initialization routine.
     try {
-        // Initialize activation as specified by the user.
-        double clampedActivation = clampActivation(get_default_activation());
-        setActivation(s,clampedActivation);
-
-        // Initialize the multibody system to the initial state vector.
-        setFiberLength(s, getOptimalFiberLength());
+        // Initialize activation and fiber length provided by the State s
         _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
         // Compute the fiber length where the fiber and tendon are in static
@@ -543,8 +538,10 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
         double pathLength = getLength(s);
         double pathLengtheningSpeed = 0.0;
 
+        double activation = getActivation(s);
+
         SimTK::Vector soln;
-        soln = estimateMuscleFiberState(clampedActivation, pathLength,
+        soln = estimateMuscleFiberState(activation, pathLength,
                                         pathLengtheningSpeed, tol, maxIter,
                                         true);
         flag_status   = (int)soln[0];
@@ -595,7 +592,7 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
                     penMdl.getOptimalFiberLength(),
                     abs(solnErr), tol,
                     iterations, maxIter,
-                    clampedActivation,
+                    activation,
                     fiberLength);
 
                     cerr << msgBuffer << endl;

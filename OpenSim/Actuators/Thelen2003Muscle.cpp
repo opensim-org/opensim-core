@@ -466,14 +466,9 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
                     "Thelen2003Muscle: Muscle is not"
                     " to date with properties");
 
-        //Initialize activation to the users desired setting, while enforcing
-        //that it lie in within the allowable bounds.
-        double clampedActivation = actMdl.clampActivation(getActivation(s));
-        setActivation(s,clampedActivation);
-
-        //Initialize the multibody system to the initial state vector
-        setFiberLength(s, getOptimalFiberLength());
-        _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);        
+        //Initial activation and fiber length from input State, s.
+        _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
+        double activation = getActivation(s);
 
         //Tolerance, in Newtons, of the desired equilibrium
         double tol = 1e-8*getMaxIsometricForce();  //Should this be user settable?
@@ -483,7 +478,7 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
         int maxIter = 200;  //Should this be user settable?
 
     
-        SimTK::Vector soln = initMuscleState(s,clampedActivation, tol, maxIter);
+        SimTK::Vector soln = initMuscleState(s, activation, tol, maxIter);
     
         int flag_status    = (int)soln[0];
         double solnErr        = soln[1];
@@ -544,7 +539,7 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
                         tol,
                         iterations,
                         maxIter,
-                        clampedActivation, 
+                        activation, 
                         fiberLength);
 
                     cerr << msgBuffer << endl;
