@@ -814,28 +814,28 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
     int nu = _model->getNumSpeeds();
 
     // Get coordinate file indices
-    Array<string> columnLabels, speedLabels;
+    Array<string> columnLabels, speedLabels, coordStateNames;
     columnLabels.append("time");
     speedLabels = columnLabels;
-    string qName;
+
     Array<int> index(-1,nq);
     const CoordinateSet& coordinateSet = _model->getCoordinateSet();
     int sizeCoordSet = coordinateSet.getSize();
     for(i=0;i<sizeCoordSet;i++) {
         Coordinate& coord = coordinateSet.get(i);
-        qName = coord.getName();
-        columnLabels.append(qName);
-        speedLabels.append(coord.getSpeedName());
-        int fix = aQIn.getStateIndex(qName);
-        if (fix==-1){
-            // try the complete path name to identify the state_name in storage
-            string name = coord.getJoint().getName()+"/"+coord.getName()+"/"+qName;
-            fix = aQIn.getStateIndex(name);
+        string prefix = coord.getJoint().getName() + "/" + coord.getName() + "/";
+        coordStateNames = coord.getStateVariableNames();
+        columnLabels.append(prefix+coordStateNames[0]);
+        speedLabels.append(prefix+coordStateNames[1]);
+        int fix = aQIn.getStateIndex(coord.getName());
+        if (fix < 0) {
+            fix = aQIn.getStateIndex(columnLabels[i+1]);
         }
+
         index[i] = fix;
         if(index[i]<0) {
             string msg = "Model::formCompleteStorages(): WARNING- Did not find column ";
-            msg += qName;
+            msg += coordStateNames[0];
             msg += " in storage object.\n";
             cout << msg << endl;
         }
@@ -929,6 +929,7 @@ void SimbodyEngine::scaleRotationalDofColumns(Storage &rStorage, double factor) 
     // see if it has a corresponding column of data. If it does, multiply that
     // column by the given scaling factor.
     std::string shortName = "";
+    std::string prefix = "";
     int index = -1;
     const CoordinateSet& coordinateSet = _model->getCoordinateSet();
     
@@ -938,13 +939,14 @@ void SimbodyEngine::scaleRotationalDofColumns(Storage &rStorage, double factor) 
         index = coordinateSet.getIndex(name);
         if (index < 0){
             std::string::size_type back = name.rfind("/");
+            prefix = name.substr(0, back);
             shortName = name.substr(back+1, name.length()-back);
             index = coordinateSet.getIndex(shortName);
             // This is a necessary hack to use new component naming,
             // but SimbodyEngine will be deprecated and so will this code- aseth
             if (index < 0){ // could be a speed then trim off _u
-                std::string::size_type ext = shortName.rfind("_u");
-                shortName = shortName.substr(0, shortName.length() - ext);
+                back = prefix.rfind("/");
+                shortName = prefix.substr(back+1, prefix.length()-back);
                 index = coordinateSet.getIndex(shortName);
             }
         }

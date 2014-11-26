@@ -217,6 +217,17 @@ setFunctions(FunctionSet &aFuncSet)
         f[0] = f[1] = f[2] = NULL;
         nTrk = task.getNumTaskFunctions();
         iFunc = aFuncSet.getIndex(name,iFunc);
+        if (iFunc < 0){
+            const Coordinate& coord = _model->getCoordinateSet().get(name);
+            name = coord.getJoint().getName() + "/" + name + "/value";
+            iFunc = aFuncSet.getIndex(name, iFunc);
+            if (iFunc < 0){
+                string msg = "CMC_TaskSet::setFunctionsForVelocity: function for task '";
+                msg += name + " not found.";
+                throw Exception(msg);
+            }
+        }
+
         for(j=0;j<nTrk;j++) {
             try {
                 f[j] = &aFuncSet.get(iFunc);
@@ -283,6 +294,17 @@ setFunctionsForVelocity(FunctionSet &aFuncSet)
         f[0] = f[1] = f[2] = NULL;
         nTrk = task.getNumTaskFunctions();
         iFunc = aFuncSet.getIndex(coord.getSpeedName(),iFunc);
+
+        if (iFunc < 0){
+            name = coord.getJoint().getName() + "/" + coord.getSpeedName();
+            iFunc = aFuncSet.getIndex(name, iFunc);
+            if (iFunc < 0){
+                string msg = "CMC_TaskSet::setFunctionsForVelocity: function for task '";
+                msg += name + " not found.";
+                throw Exception(msg);
+            }
+        }
+
         for(j=0;j<nTrk;j++) {
             try {
                 f[j] = &aFuncSet.get(iFunc);
@@ -368,6 +390,17 @@ setFunctionsForAcceleration(FunctionSet &aFuncSet)
         f[0] = f[1] = f[2] = NULL;
         nTrk = task.getNumTaskFunctions();
         iFunc = aFuncSet.getIndex(coord.getSpeedName(),iFunc);
+
+        if (iFunc < 0){
+            name = coord.getJoint().getName() + "/" + coord.getSpeedName();
+            iFunc = aFuncSet.getIndex(name, iFunc);
+            if (iFunc < 0){
+                string msg = "CMC_TaskSet::setFunctionsForAcceleration: function for task '";
+                msg += name + " not found.";
+                throw Exception(msg);
+            }
+        }
+
         for(j=0;j<nTrk;j++) {
             try {
                 f[j] = &aFuncSet.get(iFunc);

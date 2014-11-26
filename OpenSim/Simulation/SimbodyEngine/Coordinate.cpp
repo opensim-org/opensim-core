@@ -174,6 +174,8 @@ void Coordinate::extendFinalizeFromProperties()
     _lockFunction = new ModifiableConstant(get_default_value(), 1); 
 
     _lockedWarningGiven=false;
+
+    _speedName = getName() + "/speed";
 }
 
 void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
@@ -215,12 +217,13 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
 
     //Expose coordinate state variable
     CoordinateStateVariable* csv 
-        = new CoordinateStateVariable(getName(), *this, sbsix, _mobilizerQIndex);
+        = new CoordinateStateVariable("value", *this,
+                                       sbsix, _mobilizerQIndex );
     addStateVariable(csv);
 
     //Expose coordinate's speed state variable  
     SpeedStateVariable* ssv = 
-        new SpeedStateVariable(getSpeedName(), *this, sbsix, _mobilizerQIndex);
+        new SpeedStateVariable("speed", *this, sbsix, _mobilizerQIndex);
     addStateVariable(ssv);
 }
 
@@ -358,9 +361,9 @@ void Coordinate::setSpeedValue(SimTK::State& s, double aValue) const
     _model->updMatterSubsystem().getMobilizedBody(_bodyIndex).setOneU(s,_mobilizerQIndex,aValue);
 }
 
-const std::string  Coordinate::getSpeedName() const
+const std::string&  Coordinate::getSpeedName() const
 {
-    return getName() + "_u";
+    return _speedName;
 }
 
 double Coordinate::getAccelerationValue(const SimTK::State& s) const
@@ -633,13 +636,13 @@ void Coordinate::setClamped(SimTK::State& s, bool aLocked) const
 void Coordinate::constructOutputs()
 {
     //return the coordinate value
-    constructOutput<double>("coord",std::bind(&Coordinate::getValue,this,std::placeholders::_1),SimTK::Stage::Position);
+    constructOutput<double>("value", &Coordinate::getValue, Stage::Position);
     //return the speed value;
-    constructOutput<double>("speed",std::bind(&Coordinate::getSpeedValue,this,std::placeholders::_1),SimTK::Stage::Velocity);
+    constructOutput<double>("speed", &Coordinate::getSpeedValue, Stage::Velocity);
     //return the acceleration value;
-    constructOutput<double>("acc",std::bind(&Coordinate::getAccelerationValue,this,std::placeholders::_1),SimTK::Stage::Acceleration);
+    constructOutput<double>("acceleration", &Coordinate::getAccelerationValue,
+                             Stage::Acceleration);
 }
-
 
 //-----------------------------------------------------------------------------
 // Coordinate::CoordinateStateVariable

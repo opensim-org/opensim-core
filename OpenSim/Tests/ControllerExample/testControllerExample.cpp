@@ -26,7 +26,6 @@
 //==============================================================================
 //==============================================================================
 
-
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
@@ -42,8 +41,10 @@ int main()
 
         Array<double> tols(0.01, 16);
         // speeds are not matched as precisely
-        for(int i =0; i < 8; ++i)
+        for(int i =0; i < 6; ++i)
             tols[2*i+1] = 0.03;
+        // activations within 2%
+        tols[12] = tols[14] = 0.02;
 
         Storage result2("tugOfWar_states.sto"), standard2("std_tugOfWar_states.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, tols, __FILE__, __LINE__, "tugOfWar states failed");

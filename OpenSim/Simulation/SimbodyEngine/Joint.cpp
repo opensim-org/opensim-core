@@ -317,15 +317,15 @@ void Joint::scale(const ScaleSet& scaleSet)
     bool found_b = false; 
     for (int i=0; i<scaleSet.getSize(); i++) {
         Scale& scale = scaleSet.get(i);
-        if (!found_p & scale.getSegmentName() == parentName) {
+        if (!found_p && (scale.getSegmentName() == parentName)) {
             scale.getScaleFactors(parentFactors);
             found_p = true;
         }
-        if (!found_b & scale.getSegmentName() == bodyName) {
+        if (!found_b && (scale.getSegmentName() == bodyName)) {
             scale.getScaleFactors(bodyFactors);
             found_b = true;
         }
-        if(found_p & found_b)
+        if(found_p && found_b)
             break;
     }
 
