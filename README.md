@@ -1,5 +1,8 @@
-OpenSim Core [![Build Status][buildstatus_image]][travisci]
+OpenSim Core
 ============
+
+Ubuntu build status: [![Build Status][buildstatus_image]][travisci]. 
+Windows build status: [![Build status][appveyor_buildstatus_image]][appveyor]
 
 OpenSim is software that lets users develop models of musculoskeletal
 structures and create dynamic simulations of movement, such as this one:
@@ -478,6 +481,8 @@ Your changes will only take effect in new terminal windows.
 
 [travisci]: https://travis-ci.org/opensim-org/opensim-core
 [buildstatus_image]: https://travis-ci.org/opensim-org/opensim-core.svg?branch=master
+[appveyor]: https://ci.appveyor.com/project/chrisdembia/opensim-core-182/branch/master
+[appveyor_buildstatus_image]: https://ci.appveyor.com/api/projects/status/7ejaehk5n6pscmm5/branch/master?svg=true
 [running_gif]: OpenSim/doc/images/opensim_running.gif
 [simple_example_gif]: OpenSim/doc/images/opensim_double_pendulum_muscle.gif
 [java]: http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase6-419409.html
