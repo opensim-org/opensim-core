@@ -472,16 +472,30 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
             }
             // Now compose scale factors and xforms and create new node to insert into bodyNode
              SimTK::Xml::Element meshNode("Mesh");
-             std::string geomName = "geom_" + to_string(counter);
+             std::string geomName = bodyName+"_geom_" + to_string(counter);
              meshNode.setAttributeValue("name", geomName);
-             SimTK::Xml::Element frameNode("frame_name", bodyName);
              SimTK::Xml::Element meshFileNode("mesh_file", geomFile);
              std::stringstream localScaleStr;
              localScaleStr << localScale[0] << " " << localScale[1] << " " << localScale[2];
              SimTK::Xml::Element scaleFactorsNode("scale_factors", localScaleStr.str());
              meshNode.insertNodeAfter(meshNode.element_end(), scaleFactorsNode);
-             meshNode.insertNodeAfter(meshNode.element_end(), frameNode);
              meshNode.insertNodeAfter(meshNode.element_end(), meshFileNode);
+             SimTK::Xml::Element appearanceNode("Appearance");
+             // Move color and opacity under Appearance
+             SimTK::Xml::element_iterator colorIter = displayGeomIter->element_begin("color");
+             if (colorIter != displayGeomIter->element_end()){
+                 appearanceNode.insertNodeAfter(appearanceNode.element_end(), displayGeomIter->removeNode(colorIter));
+             }
+             SimTK::Xml::element_iterator opacityIter = displayGeomIter->element_begin("opacity");
+             if (opacityIter != displayGeomIter->element_end()){
+                 appearanceNode.insertNodeAfter(appearanceNode.element_end(), displayGeomIter->removeNode(opacityIter));
+             }
+             SimTK::Xml::element_iterator reprIter = displayGeomIter->element_begin("display_preference");
+             if (reprIter != displayGeomIter->element_end()){
+                 reprIter->setElementTag("representation");
+                 appearanceNode.insertNodeAfter(appearanceNode.element_end(), displayGeomIter->removeNode(reprIter));
+             }
+             meshNode.insertNodeAfter(meshNode.element_end(), appearanceNode);
              // Insert Mesh into parent
              geometrySetNode.insertNodeAfter(geometrySetNode.element_end(), meshNode);
              displayGeomIter++;
