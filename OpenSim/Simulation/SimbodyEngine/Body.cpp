@@ -535,7 +535,7 @@ void Body::generateDecorations(bool fixed, const ModelDisplayHints& hints, const
         const std::string geoID = geo.getPathName();
         const Vec3 netScale = geo.get_scale_factors();
         //const std::string frameName = geo.get_frame_name();
-        std::cout << "Compute transform of " << geo.getName() << " wrt body " << getName() << std::endl;
+        //std::cout << "Compute transform of " << geo.getName() << " wrt body " << getName() << std::endl;
         SimTK::Transform xformRelativeToBody = geo.getTransform(state, *this);
         const Appearance& ap = geo.get_Appearance();
         int repG = ap.get_representation();
