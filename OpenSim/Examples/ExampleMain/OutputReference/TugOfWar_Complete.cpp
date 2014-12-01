@@ -301,28 +301,6 @@ int main()
 
 		// Initialize the system and get the default state
 		SimTK::State& si = osimModel.initSystem();
-        /*
-        OpenSim::AppearanceMap& aMap = osimModel.upd_ModelDisplay().upd_AppearanceMap();
-        ComponentList<Component> compList = osimModel.getComponentList();
-        std::cout << "list begin: " << compList.begin()->getName() << std::endl;
-        for (ComponentList<Component>::iterator cit = compList.begin();
-            cit != compList.end();
-            ++cit) {
-            //std::cout << "Iterator is at: " << cit->getName() << std::endl;
-            const Component& comp = *cit;
-            const OpenSim::ModelComponent* it = dynamic_cast<const ModelComponent*>(&comp);
-            if (it == nullptr) continue;
-            int sz = it->getProperty_GeometrySet().size();
-            for (int j = 0; j < sz; ++j) {
-                GeometryAppearance ga;
-                const Geometry& nextGeom = it->get_GeometrySet(j);
-                ga.set_geometryID(it->get_GeometrySet(j).getPathName());
-                ga.set_Appearance(it->get_GeometrySet(j).getAppearance());
-                aMap.append_AppearanceList(ga);
-                std::cout << "Iterator is at: " << it->get_GeometrySet(j).getPathName() << std::endl;
-            }
-        }
-        osimModel.print("tugOfWar_model_withDisplay.osim"); */
         // Enable constraint consistent with current configuration of the model
 		constDist->setDisabled(si, false);
 
