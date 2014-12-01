@@ -114,6 +114,31 @@ void ModelComponent::generateDecorations
 }
 
 void ModelComponent::adoptGeometry(OpenSim::Geometry* geom) {
+    // Check that name exists and is unique as it's used to form PathName
+    if (geom->getName().empty()){
+        bool nameFound = false;
+        int index = 1;
+        while (!nameFound){
+            std::stringstream ss;
+            // generate candiate name
+            ss << getName() << "_geom_" << index;
+            std::string candidate = ss.str();
+            bool exists = false;
+            for (int idx = 0; idx < getProperty_GeometrySet().size() && !exists; idx++){
+                if (get_GeometrySet(idx).getName() == candidate){
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists){
+                nameFound = true;
+                geom->setName(candidate);
+            }
+            else
+                index++;
+        }
+        
+    }
     append_GeometrySet(*geom);
     addComponent(geom); // Geometry is a subcomponent.
     geom->setOwnerModelComponent(*this);
