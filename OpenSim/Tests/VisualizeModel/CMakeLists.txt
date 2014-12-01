@@ -8,9 +8,15 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors)
 FILE(GLOB SOURCE_FILES *.h *.cpp)
 SET(SOURCE ${SOURCE_FILES})
 
-ADD_EXECUTABLE(${TARGET} ${SOURCE})
+SET(APPNAME visualizeModel)
+ADD_EXECUTABLE(${APPNAME} ${SOURCE})
 
-TARGET_LINK_LIBRARIES(${TARGET}
+SET_TARGET_PROPERTIES(${APPNAME}        
+       PROPERTIES        
+       PROJECT_LABEL "Utilities - ${APPNAME}"       
+)
+
+TARGET_LINK_LIBRARIES(${APPNAME}
     debug osimSimulation_d  optimized osimSimulation
     debug osimActuators_d   optimized osimActuators
     debug osimCommon_d      optimized osimCommon
@@ -32,18 +38,6 @@ ELSE (WIN32)
     SET(PLTAFORM_LIBS SimTKAtlas_Lin_generic)
   ENDIF(APPLE)
 ENDIF (WIN32)
-
-# This block copies the additional files into the running directory
-# For example vtp, obj files. Add to the end for more extentions
-FILE(GLOB DATA_FILES *.vtp *.obj)
-FOREACH (dataFile ${DATA_FILES})
- ADD_CUSTOM_COMMAND(
-    TARGET ${TARGET}
-    COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy
-    ${dataFile}
-    ${OpenSimTugOfWar_BINARY_DIR})
- ENDFOREACH (dataFile) 
 
 MARK_AS_ADVANCED(CMAKE_INSTALL_PREFIX)
 MARK_AS_ADVANCED(EXECUTABLE_OUTPUT_PATH)
