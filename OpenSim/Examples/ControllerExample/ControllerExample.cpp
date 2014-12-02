@@ -296,8 +296,6 @@ int main()
             integrator( osimModel.getMultibodySystem() );
         integrator.setAccuracy( 1.0e-4 );
 
-
-
         Manager manager( osimModel, integrator );
 
         // Examine the model.
