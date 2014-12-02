@@ -53,6 +53,7 @@ int main(int argc, char **argv)
         Model osimModel(modelFile);
         //osimModel.print("updated_" + modelFile);
         osimModel.setUseVisualizer(true);
+        osimModel.updDisplayHints().setShowFrames(true);
         SimTK::State& si = osimModel.initSystem();
         osimModel.equilibrateMuscles(si);
         osimModel.getMultibodySystem().realize(si, Stage::Velocity);
