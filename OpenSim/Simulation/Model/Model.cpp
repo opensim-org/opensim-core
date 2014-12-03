@@ -217,7 +217,6 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 void Model::setNull()
 {
     _useVisualizer = false;
-    _displayHints.clear();
     _allControllersEnabled = true;
 
     _system = NULL;

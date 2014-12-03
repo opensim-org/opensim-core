@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Michael A. Sherman                                              *
+ * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Author(s): Michael A. Sherman, Ayman Habib                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -24,7 +24,9 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDES
-// none yet
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Object.h>
+
 
 namespace OpenSim {
 
@@ -75,95 +77,54 @@ be chained for convenience like assignment statements.
 
 @see ModelComponent::generateDecorations(), ModelVisualizer 
 @author Michael Sherman **/
-class ModelDisplayHints {
+class OSIMSIMULATION_API ModelDisplayHints : public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ModelDisplayHints, Object);
 public:
-    /** Default construction creates a valid display hints object with all 
+    OpenSim_DECLARE_PROPERTY(show_wrap_geometry, bool,
+        "Flag to indicate whether or not to show wrap geometry, default to true.");
+
+    OpenSim_DECLARE_PROPERTY(show_contact_geometry, bool,
+        "Flag to indicate whether or not to show contact geometry, default to true.");
+
+    OpenSim_DECLARE_PROPERTY(show_path_geometry, bool,
+        "Flag to indicate whether or not to show path geometry for forces and actuators, default to true.");
+
+    OpenSim_DECLARE_PROPERTY(show_path_points, bool,
+        "Flag to indicate whether or not to show points along path are shown, default to true.");
+
+    OpenSim_DECLARE_PROPERTY(show_markers, bool,
+        "Flag to indicate whether or not to show wrap geometry, default to true.");
+
+    OpenSim_DECLARE_PROPERTY(show_forces, bool,
+        "Flag to indicate whether or not to show forces, default to true.");
+
+    OpenSim_DECLARE_PROPERTY(show_frames, bool,
+        "Flag to indicate whether or not to show frames, default to false.");
+
+    OpenSim_DECLARE_PROPERTY(show_labels, bool,
+        "Flag to indicate whether or not to show labels, default to false.");
+
+    OpenSim_DECLARE_PROPERTY(show_debug_geometry, bool,
+        "Flag to indicate whether or not to show debug geometry, default to false.");
+
+    /** Default construction creates a valid display hints object with all
     hints set to their default values. **/
-    ModelDisplayHints() {clear();}
-
-    /** @name     Methods for specifying what should get displayed **/
-    /**@{**/
-
-    /** Specify whether wrap geometry should be displayed. 
-    The default is yes. **/
-    ModelDisplayHints& setShowWrapGeometry(bool showWrap) 
-    {   _showWrapGeometry=showWrap; return *this; }
-    /** Return current setting of the "show wrap geometry" flag. **/
-    bool getShowWrapGeometry() const {return _showWrapGeometry;}
-
-    /** Specify whether contact geometry should be displayed.
-    The default is yes. **/
-    ModelDisplayHints& setShowContactGeometry(bool showContact) 
-    {   _showContactGeometry=showContact; return *this; }
-    /** Return current setting of the "show contact geometry" flag. **/
-    bool getShowContactGeometry() const {return _showContactGeometry;}
-
-    /** Specify whether muscle path lines (or path lines for other path-using
-    components like ligaments) should be displayed. The default is yes. **/
-    ModelDisplayHints& setShowMusclePaths(bool showMusclePaths) 
-    {   _showMusclePaths=showMusclePaths; return *this; }
-    /** Return current setting of the "show muscle paths" flag. **/
-    bool getShowMusclePaths() const {return _showMusclePaths;}
-
-    /** Specify whether path points should appear along muscle paths in the 
-    display. The default is yes but has no effect if muscle paths
-    are not being displayed. **/
-    ModelDisplayHints& setShowPathPoints(bool showPathPoints) 
-    {   _showPathPoints=showPathPoints; return *this; }
-    /** Return current setting of the "show path points" flag. **/
-    bool getShowPathPoints() const {return _showPathPoints;}
-
-    /** Specify whether marker points should be displayed.
-    The default is yes. **/
-    ModelDisplayHints& setShowMarkers(bool showMarkers) 
-    {   _showMarkers=showMarkers; return *this; }
-    /** Return current setting of the "show markers" flag. **/
-    bool getShowMarkers() const {return _showMarkers;}
-
-    /** Specify whether forces should be generated and displayed. This may 
-    apply to forces applied by a component, or calculated reaction forces. The 
-    default is no. **/
-    ModelDisplayHints& setShowForces(bool showForces) 
-    {   _showForces=showForces; return *this; }
-    /** Return current setting of the "show forces" flag. **/
-    bool getShowForces() const {return _showForces;}
-
-    /** Specify whether coordinate frames should be displayed. The 
-    default is no. **/
-    ModelDisplayHints& setShowFrames(bool showFrames) 
-    {   _showFrames=showFrames; return *this; }
-    /** Return current setting of the "show frames" flag. **/
-    bool getShowFrames() const {return _showFrames;}
-
-    /** Specify whether text labels should be generated and displayed. The 
-    default is no. **/
-    ModelDisplayHints& setShowLabels(bool showLabels) 
-    {   _showLabels=showLabels; return *this; }
-    /** Return current setting of the "show labels" flag. **/
-    bool getShowLabels() const {return _showLabels;}
-
-    /** Specify whether debug geometry should be generated and displayed. The 
-    default is no. **/
-    ModelDisplayHints& setShowDebugGeometry(bool showDebugGeometry) 
-    {   _showDebugGeometry=showDebugGeometry; return *this; }
-    /** Return current setting of the "show debug geometry" flag. **/
-    bool getShowDebugGeometry() const {return _showDebugGeometry;}
+    ModelDisplayHints() { constructProperties(); }
     /**@}**/
 
-    /** This method sets all the display hints to their default values. **/
-    void clear() {
-        _showWrapGeometry = _showContactGeometry = _showMusclePaths =
-        _showPathPoints = _showMarkers = true;
-        _showForces = _showFrames = _showLabels = _showDebugGeometry = false;
-    }
+
 private:
-    // Fields should match the clear() method; use order and alignment so that
-    // any omissions can be spotted immediately.
-    bool _showWrapGeometry, _showContactGeometry, _showMusclePaths, 
-         _showPathPoints, _showMarkers;                     // default=yes
-    bool _showForces, _showFrames, _showLabels, _showDebugGeometry; //=no
-    // Add new fields to the end of the class to allow some hope for 
-    // backwards compatibility.
+    void constructProperties() {
+        constructProperty_show_wrap_geometry(true);
+        constructProperty_show_contact_geometry(true);
+        constructProperty_show_path_geometry(true);
+        constructProperty_show_path_points(true);
+        constructProperty_show_markers(true);
+        constructProperty_show_frames(false);
+        constructProperty_show_labels(false);
+        constructProperty_show_forces(true);
+        constructProperty_show_debug_geometry(false);
+    }
 };
 
 

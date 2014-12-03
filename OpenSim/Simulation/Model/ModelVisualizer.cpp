@@ -83,19 +83,19 @@ public:
         ModelDisplayHints& hints = _model.updDisplayHints();
         switch(item) {
         case ToggleWrapGeometry:
-            hints.setShowWrapGeometry(!hints.getShowWrapGeometry());
+            hints.set_show_wrap_geometry(!hints.get_show_wrap_geometry());
             return true; // absorb this input
         case ToggleContactGeometry:
-            hints.setShowContactGeometry(!hints.getShowContactGeometry());
+            hints.set_show_contact_geometry(!hints.get_show_contact_geometry());
             return true;
         case ToggleMusclePaths:
-            hints.setShowMusclePaths(!hints.getShowMusclePaths());
+            hints.set_show_path_geometry(!hints.get_show_path_geometry());
             return true;
         case TogglePathPoints:
-            hints.setShowPathPoints(!hints.getShowPathPoints());
+            hints.set_show_path_points(!hints.get_show_path_points());
             return true;
         case ToggleMarkers:
-            hints.setShowMarkers(!hints.getShowMarkers());
+            hints.set_show_markers(!hints.get_show_markers());
             return true;
         case ToggleDefaultGeometry: {
             SimbodyMatterSubsystem& matter = 
@@ -136,7 +136,7 @@ void DefaultGeometry::generateDecorations
     const ModelDisplayHints&      hints  = _model.getDisplayHints();
 
     // Display markers.
-    if (hints.getShowMarkers()) {
+    if (hints.get_show_markers()) {
         const Vec3 pink(1,.6,.8);
         const MarkerSet& markers = _model.getMarkerSet();
         for (int i=0; i < markers.getSize(); ++i) {
@@ -152,7 +152,7 @@ void DefaultGeometry::generateDecorations
 
 
     // Display wrap objects.
-    if (hints.getShowWrapGeometry()) {
+    if (hints.get_show_wrap_geometry()) {
         const Vec3 color(SimTK::Cyan);
         Transform ztoy;
         ztoy.updR().setRotationFromAngleAboutX(SimTK_PI/2);
@@ -204,7 +204,7 @@ void DefaultGeometry::generateDecorations
 
 
     // Display contact geometry objects.
-    if (hints.getShowContactGeometry()) {
+    if (hints.get_show_contact_geometry()) {
         const Vec3 color(SimTK::Green);
         Transform ztoy;
         ztoy.updR().setRotationFromAngleAboutX(SimTK_PI/2);

@@ -181,7 +181,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
     Vec3 lastLoc_B = lastPoint->getLocation();
     MobilizedBodyIndex lastBody = lastPoint->getBody().getMobilizedBodyIndex();
 
-    if (hints.getShowPathPoints())
+    if (hints.get_show_path_points())
         DefaultGeometry::drawPathPoint(lastBody, lastLoc_B, getColor(state), 
                                        appendToThis);
 
@@ -193,7 +193,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
         const Vec3 loc_B = point->getLocation();
         const MobilizedBodyIndex body = point->getBody().getMobilizedBodyIndex();
 
-        if(hints.getShowPathPoints())
+        if (hints.get_show_path_points())
             DefaultGeometry::drawPathPoint(body, loc_B, getColor(state), 
                                            appendToThis);
 

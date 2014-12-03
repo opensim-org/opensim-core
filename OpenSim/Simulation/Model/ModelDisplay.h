@@ -29,6 +29,8 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "SimTKcommon.h"
 #include <OpenSim/Common/Property.h>
+#include <OpenSim/Simulation/Model/ModelDisplayHints.h>
+
 #include "AppearanceMap.h"
 
 namespace OpenSim {
@@ -54,6 +56,9 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with ModelDisplay. **/
     /**@{**/
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ModelDisplayHints,
+        "Model display preferences");
+
     OpenSim_DECLARE_UNNAMED_PROPERTY(AppearanceMap,
         "Specific object display attributes");
 
@@ -71,6 +76,7 @@ public:
 private:
     void constructProperties() {
         constructProperty_AppearanceMap(AppearanceMap());
+        constructProperty_ModelDisplayHints(ModelDisplayHints());
     }
 //=============================================================================
 };	// END of class ModelDisplay

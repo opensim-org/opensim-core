@@ -237,11 +237,11 @@ public:
     /** Get read only access to the ModelDisplayHints object stored with this
     %Model. These should be checked whenever display geometry is being
     generated. **/
-    const ModelDisplayHints& getDisplayHints() const {return _displayHints;}
+    const ModelDisplayHints& getDisplayHints() const {return get_ModelDisplay().get_ModelDisplayHints();}
     /** Get writable access to the ModelDisplayHints object stored with this
     %Model. The GUI or ModelVisualizer can update these as a result of user
     requests, or an OpenSim API program can set them programmatically. **/
-    ModelDisplayHints& updDisplayHints() {return _displayHints;}
+    ModelDisplayHints& updDisplayHints() {return upd_ModelDisplay().upd_ModelDisplayHints();}
 
     /** Request or suppress visualization of this %Model. This flag is checked
     during initSystem() and if set causes the %Model to allocate a
