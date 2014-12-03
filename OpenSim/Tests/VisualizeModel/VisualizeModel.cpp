@@ -58,7 +58,7 @@ int main(int argc, char **argv)
         osimModel.equilibrateMuscles(si);
         osimModel.getMultibodySystem().realize(si, Stage::Velocity);
         osimModel.getVisualizer().show(si);
-        getchar(); // Keep Visualizer from dying..
+        getchar(); // Keep Visualizer from dying until we inspect the visualization window..
     }
     catch (OpenSim::Exception ex)
     {
