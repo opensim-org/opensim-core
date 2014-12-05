@@ -426,9 +426,36 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 if (outerTransformIter != visObjElement.element_end()){
                     outerTransform = outerTransformIter->getValueAs<SimTK::Vec6>();
                 }
-                SimTK::Xml::element_iterator geomSetIter = visObjElement.element_begin("GeometrySet");
-                if (geomSetIter != visObjElement.element_end()){
-                    convertDisplayGeometryToGeometryXML(aNode, outerScaleFactors, outerTransform, *geomSetIter);
+                
+                if (versionNumber < 20101) {
+                    SimTK::Xml::element_iterator geometryIter = visObjElement.element_begin("geometry_files");
+                    SimTK::Array_<SimTK::String> oldGeometryFiles;
+                    if (geometryIter != aNode.element_end()){
+                        geometryIter->getValueAs(oldGeometryFiles);
+                    }
+                    std::string bodyName = aNode.getRequiredAttribute("name").getValue();
+                    SimTK::Xml::Element geometrySetNode("GeometrySet");
+                    aNode.insertNodeAfter(aNode.element_end(), geometrySetNode);
+                    // Create Mesh node for each item in oldGeometryFiles
+                    for (unsigned ng = 0; ng < oldGeometryFiles.size(); ng++) {
+                        SimTK::Xml::Element meshNode("Mesh");
+                        std::string geomName = bodyName + "_geom_" + to_string(ng);
+                        meshNode.setAttributeValue("name", geomName);
+                        SimTK::Xml::Element meshFileNode("mesh_file", oldGeometryFiles[ng]);
+                        std::stringstream localScaleStr;
+                        localScaleStr << outerScaleFactors[0] << " " << outerScaleFactors[1]
+                            << " " << outerScaleFactors[2];
+                        SimTK::Xml::Element scaleFactorsNode("scale_factors", localScaleStr.str());
+                        meshNode.insertNodeAfter(meshNode.element_end(), scaleFactorsNode);
+                        meshNode.insertNodeAfter(meshNode.element_end(), meshFileNode);
+                        geometrySetNode.insertNodeAfter(geometrySetNode.element_end(), meshNode);
+                    }
+                }
+                else {
+                    SimTK::Xml::element_iterator geomSetIter = visObjElement.element_begin("GeometrySet");
+                    if (geomSetIter != visObjElement.element_end()){
+                        convertDisplayGeometryToGeometryXML(aNode, outerScaleFactors, outerTransform, *geomSetIter);
+                    }
                 }
             }
         }
@@ -465,7 +492,7 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
                 localXform = localXformIter->getValueAs<SimTK::Vec6>();
             }
             // scale_factor
-            SimTK::Vec3 localScale(0.);
+            SimTK::Vec3 localScale(1.);
             SimTK::Xml::element_iterator localScaleIter = displayGeomIter->element_begin("scale_factors");
             if (localScaleIter != displayGeomIter->element_end()){
                 localScale = localScaleIter->getValueAs<SimTK::Vec3>();
@@ -476,7 +503,8 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
              meshNode.setAttributeValue("name", geomName);
              SimTK::Xml::Element meshFileNode("mesh_file", geomFile);
              std::stringstream localScaleStr;
-             localScaleStr << localScale[0] << " " << localScale[1] << " " << localScale[2];
+             localScaleStr << localScale[0] * outerScaleFactors[0] << " " << localScale[1] * outerScaleFactors[1] 
+                 << " " << localScale[2] * outerScaleFactors[2];
              SimTK::Xml::Element scaleFactorsNode("scale_factors", localScaleStr.str());
              meshNode.insertNodeAfter(meshNode.element_end(), scaleFactorsNode);
              meshNode.insertNodeAfter(meshNode.element_end(), meshFileNode);
