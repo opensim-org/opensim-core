@@ -32,7 +32,9 @@ ENDIF(WIN32)
 
 ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
-SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES PROJECT_LABEL "Vendor Libraries - osim${KIT}")
+SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES 
+    DEFINE_SYMBOL LEPTON_EXPORT
+    PROJECT_LABEL "Vendor Libraries - osim${KIT}")
 
 # Shared libraries are needed at runtime for applications, so we put them
 # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
