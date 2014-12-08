@@ -752,6 +752,8 @@ namespace SimTK {
 
 // osimSimulation
 %include <OpenSim/Simulation/osimSimulationDLL.h>
+%include <OpenSim/Simulation/Model/Appearance.h>
+%include <OpenSim/Simulation/Model/Geometry.h>
 %include <OpenSim/Simulation/Model/ModelComponent.h>
 %template(SetModelComponents) OpenSim::Set<OpenSim::ModelComponent>;
 %include <OpenSim/Simulation/Model/ModelComponentSet.h>
@@ -817,6 +819,7 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/Station.h>
 %include <OpenSim/Simulation/Model/Marker.h>
 %template(SetMarkers) OpenSim::Set<OpenSim::Marker>;
+%template(ModelComponentSetMarkers) OpenSim::ModelComponentSet<OpenSim::Marker>;
 %include <OpenSim/Simulation/Model/MarkerSet.h>
 
 %include <OpenSim/Simulation/Wrap/WrapObject.h>
