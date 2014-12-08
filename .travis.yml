@@ -41,8 +41,7 @@ before_install:
 
   ## Install SWIG to build Java/python wrapping.
   - mkdir ~/swig-source && cd ~/swig-source
-  - wget http://sourceforge.net/projects/swig/files/swig/$SWIG/$SWIG.tar.gz/download
-  - mv download $SWIG.tar.gz
+  - wget http://prdownloads.sourceforge.net/swig/$SWIG.tar.gz
   - tar xzf $SWIG.tar.gz && cd $SWIG
   - ./configure && make && sudo make -j8 install
 
