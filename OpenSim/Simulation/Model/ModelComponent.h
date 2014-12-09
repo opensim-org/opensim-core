@@ -120,13 +120,15 @@ public:
      */
     Model& updModel();
     /**
-     * hasGeometry returns a boolean flag indicating whether the TopComponent has published any Geometry
+     * getGeometrySize returns the number of published Geometry objects 
+     * maintained by the ModelComponent.
      */
-    const bool hasGeometry() const {
-        return getProperty_GeometrySet().size() > 0;
+    int getGeometrySize() const {
+        return getProperty_GeometrySet().size();
     }
     /**
-     * Adopt the passed in Geometry and add it to the visualization of this ModelComponent
+     * Adopt the passed in Geometry and add it to the visualization of 
+     * this ModelComponent.
      */
     void adoptGeometry(OpenSim::Geometry* aGeometry);
 
