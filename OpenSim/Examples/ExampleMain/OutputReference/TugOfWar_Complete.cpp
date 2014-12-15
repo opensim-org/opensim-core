@@ -288,7 +288,6 @@ int main()
 		muscle2->setDefaultFiberLength(optimalFiberLength);
 		muscle1->setDefaultFiberLength(optimalFiberLength);
 
-        osimModel.dumpPathName();
 		// Save the model to a file
 		osimModel.print("tugOfWar_model.osim");
 
