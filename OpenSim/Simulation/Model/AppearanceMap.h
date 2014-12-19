@@ -37,7 +37,7 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class that holds the map between object pathID and Appearance
+ * A class that holds the map between object PathName and Appearance
  *
  * @author Ayman Habib
  * @version 1.0
@@ -46,7 +46,7 @@ class OSIMSIMULATION_API GeometryAppearance : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(GeometryAppearance, Object);
 public:
     OpenSim_DECLARE_PROPERTY(geometryID, std::string,
-        "Path ID for the geometry.");
+        "PathName for the geometry.");
     OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance, 
         "Desired Appearance for the specific geometry.");
 public:

@@ -72,6 +72,10 @@ public:
     }
     virtual ~Appearance() {};
 
+    bool hasTexture() {
+        return getProperty_texture_file().size() > 0;
+    }
+
 private:
     void constructProperties() {
         constructProperty_color(SimTK::Vec3(1.0));
