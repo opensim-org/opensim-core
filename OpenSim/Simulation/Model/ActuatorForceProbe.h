@@ -122,7 +122,7 @@ namespace OpenSim {
         to name your probe appropiately! */
         virtual OpenSim::Array<std::string> getProbeOutputLabels() const override;
 
-        void extendConnectToModel(Model& model) override final;
+        void extendConnectToModel(Model& model) final;
         //==============================================================================
         // PRIVATE
         //==============================================================================
