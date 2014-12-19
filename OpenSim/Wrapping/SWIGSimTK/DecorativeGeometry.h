@@ -123,7 +123,7 @@ or addition, see setUserRef(). In any case the \a index is simply stored with
 the object and returned if you ask for it. If you don't set it the value 
 is -1. The \a index is copied if you copy the %DecorativeGeometry object. Be
 sure to change it afterwards if that is not the correct index for the copy. **/
-//DecorativeGeometry& setIndexOnBody(int index);
+DecorativeGeometry& setIndexOnBody(int index);
 
 /** Use this method to store an arbitrary reference pointer with this 
 %DecorativeGeometry object. This is particularly useful in selection operations
@@ -138,7 +138,7 @@ object will not be deleted when the %DecorativeGeometry object is deleted.
 %DecorativeGeometry object. That is likely to be incorrect in many 
 circumstances, depending on how you are using this value. Be sure to clear or 
 change the pointer if necessary after you make a copy. **/
-//DecorativeGeometry& setUserRef(void* userRef);
+DecorativeGeometry& setUserRef(void* userRef);
 
 /** This transform shifts the generated polygons with respect to this object's
 local frame. Subsequent calls with other transforms simply replace the earlier
@@ -180,13 +180,13 @@ int getBodyId() const;
 call for this %DecorativeGeometry object, or -1 if that method has not been
 called. Copy construction and copy assignment copy the \a index. Interpretation 
 of this integer is up to the caller. **/
-//int getIndexOnBody() const;
+int getIndexOnBody() const;
 
 /** Return the pointer value that was supplied to the most recent setUserRef()
 call for this %DecorativeGeometry object, or zero (nullptr) if that method has
 not been called. Copy construction and copy assignment copy the pointer. 
 Interpretation of this value is up to the caller. **/
-//void* getUserRef() const; 
+void* getUserRef() const; 
 
 /** Return the current setting of the "resolution" factor. A return value of
 -1 means "use the default". **/
@@ -277,8 +277,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativePoint& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativePoint& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativePoint& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativePoint& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativePoint& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativePoint& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativePoint& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativePoint& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -315,8 +315,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativeLine& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeLine& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeLine& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeLine& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeLine& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeLine& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeLine& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeLine& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -346,8 +346,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativeCircle& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeCircle& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeCircle& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeCircle& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeCircle& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeCircle& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeCircle& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeCircle& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -375,8 +375,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativeSphere& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeSphere& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeSphere& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeSphere& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeSphere& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeSphere& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeSphere& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeSphere& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -406,8 +406,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativeEllipsoid& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeEllipsoid& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeEllipsoid& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeEllipsoid& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeEllipsoid& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeEllipsoid& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeEllipsoid& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeEllipsoid& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -436,8 +436,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativeBrick& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeBrick& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeBrick& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeBrick& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeBrick& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeBrick& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeBrick& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeBrick& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -468,8 +468,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativeCylinder& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeCylinder& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeCylinder& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeCylinder& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeCylinder& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeCylinder& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeCylinder& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeCylinder& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -498,8 +498,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativeFrame& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeFrame& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeFrame& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeFrame& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeFrame& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeFrame& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeFrame& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeFrame& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -532,8 +532,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativeText& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeText& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeText& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeText& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeText& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeText& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeText& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeText& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -558,8 +558,8 @@ public:
     const PolygonalMesh& getMesh() const;
     // Retain the derived type when setting generic geometry options.
     DecorativeMesh& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeMesh& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeMesh& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeMesh& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeMesh& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeMesh& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeMesh& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeMesh& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -635,8 +635,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     Decorations& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //Decorations& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //Decorations& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    Decorations& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    Decorations& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     Decorations& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     Decorations& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     Decorations& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
