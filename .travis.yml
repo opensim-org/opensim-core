@@ -6,7 +6,7 @@ matrix:
     - compiler: clang
       env: BUILD_WRAPPING=on NPROC=8
     - compiler: gcc
-      env: BUILD_WRAPPING=off NPROC=3
+      env: BUILD_WRAPPING=off NPROC=2
 
 env:
   global:
