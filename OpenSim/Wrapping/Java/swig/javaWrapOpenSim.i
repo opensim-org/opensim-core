@@ -316,6 +316,12 @@ using namespace SimTK;
        this.setValues(values, splits.length);
 	}
 %}
+
+%typemap(javacode) SimTK::Vec3 %{
+    double[] getAsJavaArray() {
+		return new double[]{this->get(0), this->get(1), this->get(2)};
+	}
+%}
 /*
 %extend  SimTK::DecorativeGeometry {
 	bool hasUserRef() const {
