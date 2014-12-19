@@ -135,21 +135,6 @@ void DefaultGeometry::generateDecorations
     const SimbodyMatterSubsystem& matter = _model.getMatterSubsystem();
     const ModelDisplayHints&      hints  = _model.getDisplayHints();
 
-    // Display markers.
-    if (hints.get_show_markers()) {
-        const Vec3 pink(1,.6,.8);
-        const MarkerSet& markers = _model.getMarkerSet();
-        for (int i=0; i < markers.getSize(); ++i) {
-            const Marker& marker = markers[i];
-            const OpenSim::PhysicalFrame& frame = marker.getReferenceFrame();
-            const Vec3& p_BM = frame.findTransformInBaseFrame()*marker.get_location();
-            geometry.push_back(
-                DecorativeSphere(_dispMarkerRadius).setBodyId(frame.getMobilizedBodyIndex())
-                .setColor(pink).setOpacity(_dispMarkerOpacity)
-                .setTransform(marker.get_location()));
-        }
-    }
-
 
     // Display wrap objects.
     if (hints.get_show_wrap_geometry()) {

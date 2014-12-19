@@ -189,3 +189,20 @@ void Marker::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
     // Call base class now assuming _node has been corrected for current version
     Object::updateFromXMLNode(aNode, versionNumber);
 }
+
+void Marker::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
+{
+    Super::generateDecorations(fixed, hints, state, appendToThis);
+    if (!fixed) return;
+    if (hints.get_show_markers()) { 
+        // @TODO default color, size, shape should be obtained from hints
+        const Vec3 pink(1, .6, .8);
+        const OpenSim::RigidFrame& frame = getReferenceFrame();
+        const Vec3& p_BM = frame.getTransformInMobilizedBody()*get_location();
+        appendToThis.push_back(
+            SimTK::DecorativeSphere(.005).setBodyId(frame.getMobilizedBodyIndex())
+            .setColor(pink).setOpacity(1.0)
+            .setTransform(get_location()));
+    }
+}

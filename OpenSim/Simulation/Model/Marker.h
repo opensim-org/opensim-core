@@ -70,6 +70,8 @@ public:
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode,
         int versionNumber = -1) override;
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+        SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
 
 private:
     void setNull();
