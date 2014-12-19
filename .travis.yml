@@ -31,7 +31,7 @@ before_install:
   - git clone https://github.com/simbody/simbody.git ~/simbody-source --depth 1 --branch master
   - cd ~/simbody-source
   # Configure Simbody.
-  - cmake . -DBUILD_VISUALIZER=off -DBUILD_EXAMPLES=off -DSIMBODY_STANDARD_11=on -DCMAKE_INSTALL_PREFIX=~/simbody-install
+  - cmake . -DBUILD_VISUALIZER=off -DBUILD_EXAMPLES=off -DCMAKE_INSTALL_PREFIX=~/simbody-install -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
   # Build Simbody.
   - make -j${NPROC}
   # Test Simbody.
