@@ -79,10 +79,10 @@ class Object;
         #undef override
     #endif
     #define override
-    #ifdef FINAL_11
-        #undef FINAL_11
+    #ifdef final
+        #undef final
     #endif
-    #define FINAL_11 
+    #define final 
 #endif
 
 #ifdef WIN32

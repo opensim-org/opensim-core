@@ -265,7 +265,7 @@ public:
                                             double fiberVelocity) const; 
 
     virtual double calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
-                                             double aActivation) const FINAL_11;
+                                             double aActivation) const final;
     ///@endcond
 
 protected:

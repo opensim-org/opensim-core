@@ -626,7 +626,7 @@ public:
     @param s the state of the system
     @returns the tensile force the muscle is generating in N
     */
-    double computeActuation(const SimTK::State& s) const FINAL_11;
+    double computeActuation(const SimTK::State& s) const final;
 
 
     /** This function computes the fiber length such that muscle fiber and 
@@ -636,7 +636,7 @@ public:
         
         @param s the state of the system
     */
-    void computeInitialFiberEquilibrium(SimTK::State& s) const FINAL_11;
+    void computeInitialFiberEquilibrium(SimTK::State& s) const final;
         
 ///@cond TO BE DEPRECATED. 
     /*  Once the ignore_tendon_compliance flag is implemented correctly get rid 
@@ -644,7 +644,7 @@ public:
         calcFiberVelocityInfo, and calcMuscleDynamicsInfo
     */
     virtual double calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
-                                       double aActivation) const FINAL_11;
+                                       double aActivation) const final;
     /*
     @param activation of the muscle [0-1]
     @param fiberLength in (m)
@@ -683,7 +683,7 @@ protected:
                about the muscle that is available at the position stage
     */
     void calcMuscleLengthInfo(const SimTK::State& s, 
-                              MuscleLengthInfo& mli) const FINAL_11;  
+                              MuscleLengthInfo& mli) const final;  
     
 
     /** calculate muscle's velocity related values such fiber and tendon 
@@ -694,7 +694,7 @@ protected:
 
     */
     virtual void  calcFiberVelocityInfo(const SimTK::State& s, 
-                                      FiberVelocityInfo& fvi) const FINAL_11;
+                                      FiberVelocityInfo& fvi) const final;
 
     /** calculate muscle's active and passive force-length, force-velocity, 
         tendon force, relationships and their related values 
@@ -703,11 +703,11 @@ protected:
             information about the muscle that is available at the dynamics stage    
     */
     void  calcMuscleDynamicsInfo(const SimTK::State& s, 
-                                    MuscleDynamicsInfo& mdi) const FINAL_11;
+                                    MuscleDynamicsInfo& mdi) const final;
 
 
     void calcMusclePotentialEnergyInfo(const SimTK::State& s,
-        MusclePotentialEnergyInfo& mpei) const FINAL_11;
+        MusclePotentialEnergyInfo& mpei) const final;
  
 //==============================================================================
 //ModelComponent Interface requirements
@@ -715,22 +715,22 @@ protected:
     /**Creates the ModelComponent so that it can be used in simulation
     @param system the multibody system
     */
-    void extendAddToSystem(SimTK::MultibodySystem& system) const FINAL_11;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const final;
 
     /**Initializes the state of the ModelComponent
     @param s the state of the model
     */
-    void extendInitStateFromProperties(SimTK::State& s) const FINAL_11;
+    void extendInitStateFromProperties(SimTK::State& s) const final;
     
     /**Sets the default state for ModelComponent
     @param s the state of the model
     */
-    void extendSetPropertiesFromState(const SimTK::State& s) FINAL_11;
+    void extendSetPropertiesFromState(const SimTK::State& s) final;
     
     /**computes state variable derivatives
     @param s the state of the model
     */
-    void computeStateVariableDerivatives(const SimTK::State& s) const FINAL_11;
+    void computeStateVariableDerivatives(const SimTK::State& s) const final;
  
 //==============================================================================
 //State derivative helper methods

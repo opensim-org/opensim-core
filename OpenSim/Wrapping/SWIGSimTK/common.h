@@ -238,42 +238,15 @@ extern "C" {
 /* Transition macros for C++11 support. VC10 and VC11 have partial support for
 C++11, early VC's do not. Currently we're assuming no support from gcc. */
 #ifndef SWIG
-    #if _MSC_VER>=1700 /* VC11 or higher */
-        #define override  override
-        #define FINAL_11     final
-    #elif _MSC_VER==1600 /* VC10 */
-        #define override  override
-        #define FINAL_11     sealed
-    #else /* gcc or earlier VC */
-        #define override
-        #define FINAL_11
-    #endif
+    #define OVERRIDE_11 override
+    #define FINAL_11 final
 #else /* Swigging */
-    #define override
+    #define OVERRIDE_11  
     #define FINAL_11
-#endif
-
-
-/* Currently (Microsoft VC++ 9) these C99-compatible floating point functions 
-are missing. We'll create them here and install them into namespace std.
-TODO: This should be removed when these are available. */
-#ifdef _MSC_VER
-namespace std {
-inline bool isfinite(float f) {return _finite(f) != 0;}
-inline bool isfinite(double d) {return _finite(d) != 0;}
-inline bool isfinite(long double l) {return _finite(l) != 0;}
-inline bool isnan(float f) {return _isnan(f) != 0;}
-inline bool isnan(double d) {return _isnan(d) != 0;}
-inline bool isnan(long double l) {return _isnan(l) != 0;}
-inline bool isinf(float f) {return std::abs(f)==std::numeric_limits<float>::infinity();}
-inline bool isinf(double d) {return std::abs(d)==std::numeric_limits<double>::infinity();}
-inline bool isinf(long double l) {return std::abs(l)==std::numeric_limits<double>::infinity();}
-inline bool signbit(float f) {return (*reinterpret_cast<unsigned*>(&f) & 0x80000000U) != 0;}
-inline bool signbit(double d) {return (*reinterpret_cast<unsigned long long*>(&d)
-                               & 0x8000000000000000ULL) != 0;}
-inline bool signbit(long double l) {return (*reinterpret_cast<unsigned long long*>(&l)
-                                    & 0x8000000000000000ULL) != 0;}
-}
+    #undef override
+    #define override
+    #undef final
+    #define final
 #endif
 
 

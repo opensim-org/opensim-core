@@ -125,7 +125,7 @@ namespace OpenSim {
         virtual OpenSim::Array<std::string> getProbeOutputLabels() const override;
 
         // connectToModel is protected for Java wrapping purpose
-        void extendConnectToModel(Model& aModel) override FINAL_11;
+        void extendConnectToModel(Model& aModel) override final;
 
         //==============================================================================
         // PRIVATE
