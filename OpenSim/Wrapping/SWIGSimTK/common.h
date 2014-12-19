@@ -241,6 +241,7 @@ C++11, early VC's do not. Currently we're assuming no support from gcc. */
     #define OVERRIDE_11 override
     #define FINAL_11 final
 #else /* Swigging */
+    // TODO Remove when moving to SWIG 3.
     #define OVERRIDE_11  
     #define FINAL_11
     #undef override
