@@ -105,7 +105,7 @@ public:
     */
     void addMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
     void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
-        SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const;
+        SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
 
  protected:
 
