@@ -30,10 +30,11 @@ before_install:
   # only need the master branch.
   - git clone https://github.com/simbody/simbody.git ~/simbody-source --depth 1 --branch master
   - cd ~/simbody-source
-  # Configure Simbody.
+  # Configure Simbody. No matter how we're compiling OpenSim,
+  # compile Simbody with clang for a faster build (allows us to use 8 procs).
   - cmake . -DBUILD_VISUALIZER=off -DBUILD_EXAMPLES=off -DCMAKE_INSTALL_PREFIX=~/simbody-install -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
   # Build Simbody.
-  - make -j${NPROC}
+  - make -j8
   # Test Simbody.
   - ctest -j8 --output-on-failure
   # Install Simbody.
