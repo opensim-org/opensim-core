@@ -109,7 +109,7 @@ On Windows using Visual Studio
 
 * **operating system**: Windows 7 or 8.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.6
 * **compiler / IDE**: Visual Studio 2013. We recommended either:
     * *Visual Studio Express 2013 for Windows Desktop*, which is free, or
     * *Visual Studio Professional 2013* through
@@ -227,13 +227,14 @@ On Mac using Xcode
 
 * **operating system**: OS X 10.8 or later.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.6
 * **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 5, through
   the Mac App Store.
 * **physics engine**:
-  [Simbody](https://github.com/simbody/simbody#installing) >= 3.4.
-  **Important**: If installing Simbody using Makefile's, make sure Simbody's
-  CMake variable `SIMBODY_STANDARD_11` is turned on.
+  [Simbody](https://github.com/simbody/simbody#installing) >= 3.5.
+  **Important**: If installing Simbody 3.5 using Makefile's, make sure Simbody's
+  CMake variable `SIMBODY_STANDARD_11` is turned on (in 3.6 and later, this variable
+  is removed).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8
 * **version control** (optional): git.
@@ -350,14 +351,15 @@ line below, we show the corresponding package.
 
 * **operating system**: Ubuntu 13.10 or later.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8;
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.6;
   `cmake-gui`.
 * **compiler**: [gcc](http://gcc.gnu.org) >= 4.8; `g++-4.8`, or
       [Clang](http://clang.llvm.org) >= 3.4; `clang-3.4`.
 * **physics engine**:
-  [Simbody](https://github.com/simbody/simbody#installing) >= 3.4.
-  **Important**: If installing Simbody using Makefile's, make sure Simbody's
-  CMake variable `SIMBODY_STANDARD_11` is turned on.
+  [Simbody](https://github.com/simbody/simbody#installing) >= 3.5.
+  **Important**: If installing Simbody 3.5 using Makefile's, make sure Simbody's
+  CMake variable `SIMBODY_STANDARD_11` is turned on (in 3.6 and later, this variable
+  is removed).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8;
   `doxygen`.
