@@ -761,8 +761,8 @@ bool CMCTool::run()
         cout<<"Computing initial values for muscles states (activation, length)\n";
         time(&startTime);
         localTime = localtime(&startTime);
-        cout<<"Start time = "<<asctime(localTime);
-        cout<<"\n================================================================\n";
+        cout<<"Start time = "<<asctime(localTime)<<endl;
+        cout<<"================================================================\n";
         try {
         controller->computeInitialStates(s,_ti);
         }
@@ -782,17 +782,17 @@ bool CMCTool::run()
         cout<<endl;
         // copy the final states from the last integration 
         s.updY() = cmcActSubsystem.getCompleteState().getY();
-        cout<<"-----------------------------------------------------------------\n";
+        cout<<"----------------------------------------------------------------\n";
         cout<<"Finished computing initial states:\n";
-        cout<<"-----------------------------------------------------------------\n";
-        cout<<"=================================================================\n";
+        cout<<"----------------------------------------------------------------\n";
+        cout<<"================================================================\n";
         localTime = localtime(&startTime);
         cout<<"Start time   = "<<asctime(localTime);
         localTime = localtime(&finishTime);
         cout<<"Finish time  = "<<asctime(localTime);
         elapsedTime = difftime(finishTime,startTime);
         cout<<"Elapsed time = "<<elapsedTime<<" seconds.\n";
-        cout<<"=================================================================\n";
+        cout<<"================================================================\n";
     } else {
         cmcActSubsystem.setCompleteState( s );
         actuatorSystemState.updTime() = _ti; 
@@ -850,7 +850,7 @@ bool CMCTool::run()
     if( _verbose ){
       std::cout << "states= " << s.getY() << std::endl;
     }
-    cout<<"=================================================================\n";
+    cout<<"================================================================\n";
     localTime = localtime(&startTime);
     cout<<"Start time   = "<<asctime(localTime);
     localTime = localtime(&finishTime);
