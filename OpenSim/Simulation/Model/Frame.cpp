@@ -25,7 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "Frame.h"
-#include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
 // STATICS
@@ -44,16 +43,8 @@ using SimTK::Vec3;
  */
 Frame::Frame() : ModelComponent()
 {
-    setNull();
-    
+    setAuthors("Matt DeMers, Ajay Seth");
 }
-
-
-void Frame::setNull()
-{
-    setAuthors("Matt DeMers");
-}
-
 
 //=============================================================================
 // FRAME COMPUTATIONS
@@ -79,5 +70,15 @@ SimTK::Vec3 Frame::findLocationInAnotherFrame(const SimTK::State& state, const
 {
     SimTK::Transform other_X_me = findTransformBetween(state, otherFrame);
     return other_X_me*point;
+}
+
+const Frame& Frame::findBaseFrame() const
+{
+    return extendFindBaseFrame();
+}
+
+SimTK::Transform Frame::findTransformInBaseFrame() const
+{
+    return extendFindTransformInBaseFrame();
 }
 

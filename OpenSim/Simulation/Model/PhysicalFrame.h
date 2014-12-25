@@ -1,7 +1,7 @@
-#ifndef OPENSIM_RIGIDFRAME_H_
-#define OPENSIM_RIGIDFRAME_H_
+#ifndef OPENSIM_PHYSICAL_FRAME_H_
+#define OPENSIM_PHYSICAL_FRAME_H_
 /* -------------------------------------------------------------------------- *
-*                              OpenSim:  RigidFrame.h                             *
+*                              OpenSim:  PhysicalFrame.h                             *
 * -------------------------------------------------------------------------- *
 * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
 * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -24,11 +24,7 @@
 * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/Frame.h>
-
-
-
 namespace OpenSim {
 
 class Model;
@@ -36,52 +32,49 @@ class Body;
 //=============================================================================
 //=============================================================================
 /**
-* A RigidFrame is fixed to body in the articulating, multibody system. That is,
-* its transform to this body is constant. A RigidFrame can be a Body itself. 
+* A PhysicalFrame is a frame that represents a phyisical location at which 
+* Joints and Constraints can be connected and Forces applied. A Body is an
+* example of PhysicalFrame and so is Ground.
 *
 * @author Matt DeMers
 */
-class OSIMSIMULATION_API RigidFrame : public Frame {
-    OpenSim_DECLARE_ABSTRACT_OBJECT(RigidFrame, Frame);
-public:
-    //==========================================================================
-    // PROPERTIES
-    //==========================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with a RigidFrame. **/
-    /**@{**/
-    /**@}**/
-protected:
 
-
+class OSIMSIMULATION_API PhysicalFrame : public Frame {
+    OpenSim_DECLARE_CONCRETE_OBJECT(PhysicalFrame, Frame);
 
     //==========================================================================
     // PUBLIC METHODS
     //==========================================================================
-
 public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
-    RigidFrame();
+    PhysicalFrame();
 
-    virtual ~RigidFrame() {};
+    virtual ~PhysicalFrame() {};
 
     /**
-     * All RigidFrames are ultimately rooted to a SimTK::MobilizedBody.  Return
-     * the MobilizedBodyIndex of the MobilizedBody to which this RigidFrame is
-     * rooted. This index is only available after Model::initSystem() is
-     * invoked.
+     * All PhysicalFrames are backed by a SimTK::MobilizedBody, which is the
+     * fundamental rigid element of a Simbody MultibodySystem. This method 
+     * returns the MobilizedBodyIndex of the MobilizedBody for this PhysicalFrame.
+     * This index is only available after Model::initSystem() has been invoked.
      *
-     * @return index The MobilizedBodyIndex corresponding to this RigidFrame's
-     * MobilizedBody
+     * The MobilizedBodyIndex is necessary to access individual PhysicalFrame
+     * forces from the underlying MultibodySystem's body forces since the Vector
+     * of net body forces (torque and force on each body) is indexed by its 
+     * MobilizedBodyIndex.
+     *
+     * @return index The MobilizedBodyIndex corresponding to this PhysicalFrame's
+     *               underlying MobilizedBody
      *
      * @see getMobilizedBody, updMobilizedBody
      */
-    SimTK::MobilizedBodyIndex getMobilizedBodyIndex() const { return _index; }
+    const SimTK::MobilizedBodyIndex& getMobilizedBodyIndex() const {
+        return _mbIndex;
+    }
 
     /**
-     * The SimTK::MobilizedBody to which this RigidFrame is rooted. This
+     * Access the SimTK::MobilizedBody that backs this PhysicalFrame. The
      * MobilizedBody is only available after Model::initSystem() has been
      * invoked.
      *
@@ -90,43 +83,56 @@ public:
     const SimTK::MobilizedBody& getMobilizedBody() const;
 
     /**
-     * The SimTK::MobilizedBody to which this RigidFrame is rooted. This
-     * MobilizedBody is only available after Model::initSystem() has been
+     * Access a writeable SimTK::MobilizedBody that backs this PhysicalFrame.
+     * The MobilizedBody is only available after Model::initSystem() has been
      * invoked.
      *
      * @see getMobilizedBodyIndex
      */
     SimTK::MobilizedBody& updMobilizedBody();
 
-    /**
-     * Get the fixed transform describing this RigidFrame's transform in its root MobilizedBody.
-     *
-     * @return Transform  The transform between this frame and its root RigidFrame.
-    */
-    SimTK::Transform getTransformInMobilizedBody() const { return _mbTransform; }
-private:
-    void setNull();
-    
 protected:
+    /** @name PhysicalFrame devloper interface
+    These methods are for PhysicalFrame builders. **/
+    /**@{**/
+    /** Specify the MobilizedBody that implements this PhysicalFrame 
+        in the underlying MultibodySystem. */
+    void setMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix) const {
+        _mbIndex = mbix; 
+    }
+
+    /** Extend how concrete Frame determines its base Frame. */
+    const Frame& extendFindBaseFrame() const override {
+        return *this;
+    }
+
+    SimTK::Transform extendFindTransformInBaseFrame() const override;
+
+    /**@}**/
+
+    /** Implement the Frame interface and return the transform X_GF for this
+    PhysicalFrame, F, in ground, G.*/
+    const SimTK::Transform&
+        calcGroundTransform(const SimTK::State& state) const override;
+
+    /** Extend Component */
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+
+
+private:
     /* ID for the underlying mobilized body in Simbody system.
     Only Joint can set, since it defines the mobilized body type and
     the connection to the parent body in the multibody tree. */
-    mutable SimTK::MobilizedBodyIndex _index;
-    /* RigidFrames, by definition have a fixed transform in their root MobilizedBody.
-    This stores the fixed transform of this RigidFrame in it's root MobilizedBody*/
-    mutable SimTK::Transform _mbTransform;
-    /** @name Frame Interface
-    These methods adhere to the Frame Interface**/
-    /**@{**/
-    SimTK::Transform calcGroundTransform(const SimTK::State& state) const override;
-    /**@}**/
+    mutable SimTK::MobilizedBodyIndex _mbIndex;
+
     //==========================================================================
-};  // END of class RigidFrame
+};  // END of class PhysicalFrame
+
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // OPENSIM_RIGIDFRAME_H_
+#endif // OPENSIM_PHYSICAL_FRAME_H_
 
 

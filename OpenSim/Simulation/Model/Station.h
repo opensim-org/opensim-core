@@ -28,7 +28,7 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "OpenSim/Simulation/Model/ModelComponent.h"
 #include "OpenSim/Simulation/Model/Frame.h"
-#include "OpenSim/Simulation/Model/RigidFrame.h"
+#include "OpenSim/Simulation/Model/PhysicalFrame.h"
 
 namespace OpenSim {
 
@@ -39,8 +39,8 @@ class Body;
 /**
  * A class implementing a Station. A Station is a point fixed to and defined with 
  * respect to a reference frame. The reference frame can be a Body (fixed 
- * to origin of a Body), a FixedFrame (affixed to another RigidFrame) or any 
- * other RigidFrame. The main functionality provided by Station is to find its 
+ * to origin of a Body), a FixedFrame (affixed to another PhysicalFrame) or any 
+ * other PhysicalFrame. The main functionality provided by Station is to find its 
  * location in any Frame.
  *
  * @author Ayman Habib
@@ -67,9 +67,9 @@ public:
     Station();
     virtual ~Station();
     /** getter of Reference Frame off which the Station is defined */
-    const OpenSim::RigidFrame& getReferenceFrame() const;
+    const OpenSim::PhysicalFrame& getReferenceFrame() const;
     /** setter of Reference Frame off which the Station is defined */
-    void setReferenceFrame(const OpenSim::RigidFrame& aFrame);
+    void setReferenceFrame(const OpenSim::PhysicalFrame& aFrame);
     /** Find this Station's location in any Frame */
     SimTK::Vec3 findLocationInFrame(const SimTK::State& s, const OpenSim::Frame& aFrame) const;
 private:

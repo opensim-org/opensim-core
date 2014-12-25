@@ -360,12 +360,12 @@ void Joint::constructCoordinates()
 const SimTK::MobilizedBodyIndex Joint::
     getMobilizedBodyIndex(const OpenSim::Body& body) const
 {
-        return body._index;
+        return body.getMobilizedBodyIndex();
 } 
 
 void Joint::setChildMobilizedBodyIndex(const SimTK::MobilizedBodyIndex index) const
 { 
-    getChildBody()._index = index;
+    getChildBody().setMobilizedBodyIndex(index);
 }
 
 
@@ -620,7 +620,7 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
                       getName().c_str(), mobilized->getName().c_str());
 
         // ONLY the base Joint can do this assignment
-        mobilized->_index = mobod.getMobilizedBodyIndex();
+        mobilized->setMobilizedBodyIndex(mobod.getMobilizedBodyIndex());
     }
     int nc = numCoordinates();
     SimTK_ASSERT3(numMobilities <= (nc - startingCoordinateIndex),

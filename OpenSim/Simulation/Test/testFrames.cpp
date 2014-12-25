@@ -25,24 +25,24 @@
 //
 //  Tests Include:
 //      1. BodyFrame
-//      2. FixedFrame
+//      2. PhysicalOffsetFrame
 //      
 //     Add tests here as Frames are added to OpenSim
 //
 //==============================================================================
 #include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
 #include <OpenSim/Simulation/osimSimulation.h>
-#include <OpenSim/Analyses/osimAnalyses.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/OffsetFrame.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
 
 void testBodyFrame();
-void testFixedFrameOnBodyFrame();
-void testFixedFrameOnBodyFrameSerialize();
-void testFixedFrameOnFixedFrame();
+void testOffsetFrameOnBodyFrame();
+void testOffsetFrameOnBodyFrameSerialize();
+void testOffsetFrameOnOffsetFrame();
 void testStationOnFrame();
 
 int main()
@@ -54,17 +54,17 @@ int main()
         cout << e.what() <<endl; failures.push_back("testBodyFrame");
     }
         
-    try { testFixedFrameOnBodyFrame(); }
+    try { testOffsetFrameOnBodyFrame(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testFixedFrameOnBodyFrame");
     }
 
-    try { testFixedFrameOnBodyFrameSerialize(); }
+    try { testOffsetFrameOnBodyFrameSerialize(); }
     catch (const std::exception& e){
         cout << e.what() << endl; failures.push_back("testFixedFrameOnBodyFrame");
     }
     
-    try { testFixedFrameOnFixedFrame(); }
+    try { testOffsetFrameOnOffsetFrame(); }
     catch (const std::exception& e){
         cout << e.what() << endl; failures.push_back("testFixedFrameOnFixedFrame");
     }
@@ -99,7 +99,7 @@ void testBodyFrame()
         const Coordinate& coord = dPendulum->getCoordinateSet().get("q1");
         coord.setValue(st, radAngle);
         SimTK::Transform xform = rod1.getGroundTransform(st);
-        // By construction the transform should gove a translation of .353553, .353553, 0.0 since 0.353553 = .5 /sqr(2)
+        // By construction the transform should give a translation of .353553, .353553, 0.0 since 0.353553 = .5 /sqr(2)
         double dNorm = (xform.p() - SimTK::Vec3(0.5*std::sin(radAngle), -0.5*std::cos(radAngle), 0.)).norm();
         ASSERT(dNorm < 1e-6, __FILE__, __LINE__, "testBodyFrame() failed");
         // The rotation part is a pure bodyfixed Z-rotation by radAngle.
@@ -112,45 +112,48 @@ void testBodyFrame()
     return;
 }
 
-void testFixedFrameOnBodyFrame()
+void testOffsetFrameOnBodyFrame()
 {
     cout << "Running testFixedFrameOnBodyFrame" << endl;
     Model* dPendulum = new Model("double_pendulum.osim");
     const OpenSim::Body& rod1 = dPendulum->getBodySet().get("rod1");
-    FixedFrame* atOriginFrame = new FixedFrame(rod1);
-    SimTK::Transform relXform;
-    relXform.setP(SimTK::Vec3(0.0, .5, 0.0));
-    relXform.updR().setRotationFromAngleAboutAxis(SimTK::Pi / 4.0, SimTK::CoordinateAxis(2));
-    atOriginFrame->setTransform(relXform);
+
+    SimTK::Transform relX;
+    //offset position by some random vector
+    relX.setP(SimTK::Vec3(1.2, 2.5, 3.3));
+    // rotate the frame 60 degs about some random direction
+    relX.updR().setRotationFromAngleAboutNonUnitVector(SimTK::Pi/3, SimTK::Vec3(3.0, 2.0, 1.0));
+    PhysicalOffsetFrame* atOriginFrame = new PhysicalOffsetFrame(rod1, relX);
     dPendulum->addFrame(atOriginFrame);
-    SimTK::State& st = dPendulum->initSystem();
-    const SimTK::Transform rod1FrameXform = rod1.getGroundTransform(st);
-    SimTK::Transform xform = atOriginFrame->getGroundTransform(st);
-    // xform should have 0.0 translation
-    ASSERT(xform.p().norm() < 1e-6, __FILE__, __LINE__, "testFixedFrameOnBodyFrame() failed");
+    SimTK::State& s = dPendulum->initSystem();
+    const SimTK::Transform& rod1InG = rod1.getGroundTransform(s);
+    const SimTK::Transform& offsetInG = atOriginFrame->getGroundTransform(s);
+
+    // Expressed in ground the translation offset shoul be preserved
+    ASSERT_EQUAL((rod1InG.p() - offsetInG.p()).norm(), relX.p().norm(), SimTK::Eps,  __FILE__, __LINE__, "testFixedFrameOnBodyFrame() failed");
     // make sure that this FixedFrame knows that it is rigidly fixed to the
     // same MobilizedBody as Body rod1
     ASSERT(rod1.getMobilizedBodyIndex() == atOriginFrame->getMobilizedBodyIndex(), __FILE__, __LINE__, "testFixedFrameOnBodyFrame() failed");
     return;
 }
 
-void testFixedFrameOnFixedFrame()
+void testOffsetFrameOnOffsetFrame()
 {
     cout << "Running testFixedFrameOnFrame" << endl;
     Model* dPendulum = new Model("double_pendulum.osim");
     const OpenSim::Body& rod1 = dPendulum->getBodySet().get("rod1");
-    FixedFrame* atOriginFrame = new FixedFrame(rod1);
+    
     SimTK::Transform relXform;
     relXform.setP(SimTK::Vec3(0.0, .5, 0.0));
     relXform.updR().setRotationFromAngleAboutAxis(SimTK::Pi / 4.0, SimTK::CoordinateAxis(2));
-    atOriginFrame->setTransform(relXform);
+    PhysicalOffsetFrame* atOriginFrame = new PhysicalOffsetFrame(rod1, relXform);
     dPendulum->addFrame(atOriginFrame);
 
     //connect a second frame to the first FixedFrame without any offset
-    FixedFrame* secondFrame = atOriginFrame->clone();
+    PhysicalOffsetFrame* secondFrame = atOriginFrame->clone();
     secondFrame->setParentFrame(*atOriginFrame);
     relXform.setP(SimTK::Vec3(0.0));
-    secondFrame->setTransform(relXform);
+    secondFrame->setOffsetTransform(relXform);
     dPendulum->addFrame(secondFrame);
 
     SimTK::State& st = dPendulum->initSystem();
@@ -164,26 +167,30 @@ void testFixedFrameOnFixedFrame()
     return;
 }
 
-void testFixedFrameOnBodyFrameSerialize()
+void testOffsetFrameOnBodyFrameSerialize()
 {
     cout << "Running testFixedFrameOnBodyFrameSerialize" << endl;
     Model* dPendulum = new Model("double_pendulum.osim");
     const OpenSim::Body& rod1 = dPendulum->getBodySet().get("rod1");
-    FixedFrame* atOriginFrame = new FixedFrame(rod1);
-    atOriginFrame->setName("myExtraFrame");
+
     SimTK::Transform relXform;
     relXform.setP(SimTK::Vec3(0.0, .5, 0.0));
-    relXform.updR().setRotationFromAngleAboutAxis(SimTK::Pi / 4.0, SimTK::CoordinateAxis(2));
-    atOriginFrame->setTransform(relXform);
+    relXform.updR().setRotationFromAngleAboutAxis(SimTK::Pi / 4.0, SimTK::ZAxis);
+
+    PhysicalOffsetFrame* atOriginFrame = new PhysicalOffsetFrame(rod1, relXform);
+    atOriginFrame->setName("myExtraFrame");
     dPendulum->addFrame(atOriginFrame);
-    SimTK::State& st1 = dPendulum->initSystem();
-    SimTK::Transform xformPre = atOriginFrame->getGroundTransform(st1);
+
+    SimTK::State& s1 = dPendulum->initSystem();
+    const SimTK::Transform& xformPre = atOriginFrame->getGroundTransform(s1);
     dPendulum->print("double_pendulum_extraFrame.osim");
     // now read the model from file
     Model* dPendulumWFrame = new Model("double_pendulum_extraFrame.osim");
-    SimTK::State& st2 = dPendulumWFrame->initSystem();
-    const FixedFrame* myExtraFrame = dynamic_cast<const FixedFrame*> (&dPendulumWFrame->getFrameSet().get("myExtraFrame"));
-    SimTK::Transform xformPost = myExtraFrame->getGroundTransform(st2);
+    SimTK::State& s2 = dPendulumWFrame->initSystem();
+    const PhysicalFrame* myExtraFrame = dynamic_cast<const PhysicalFrame*> (&dPendulumWFrame->getFrameSet().get("myExtraFrame"));
+    ASSERT(*atOriginFrame == *myExtraFrame);
+
+    const SimTK::Transform& xformPost = myExtraFrame->getGroundTransform(s2);
     ASSERT((xformPost.p() - xformPre.p()).norm() < 1e-6, __FILE__, __LINE__, "testFixedFrameOnBodyFrameSerialized failed");
     // make sure that this FixedFrame knows that it is rigidly fixed to the
     // same MobilizedBody as Body rod1
@@ -194,6 +201,7 @@ void testFixedFrameOnBodyFrameSerialize()
 void testStationOnFrame()
 {
     cout << "Running testStationOnFrame" << endl;
+
     Model* dPendulum = new Model("double_pendulum.osim");
     // Get "rod1" frame
     const OpenSim::Body& rod1 = dPendulum->getBodySet().get("rod1");
@@ -201,7 +209,7 @@ void testStationOnFrame()
     // Create station aligned with rod1 com in rod1_frame
     Station* myStation = new Station();
     myStation->set_location(com);
-    myStation->updConnector<RigidFrame>("reference_frame").set_connected_to_name("rod1");
+    myStation->updConnector<PhysicalFrame>("reference_frame").set_connected_to_name("rod1");
     dPendulum->addModelComponent(myStation);
     // myStation should coinicde with com location of rod1 in ground
     SimTK::State& st = dPendulum->initSystem();
@@ -209,6 +217,7 @@ void testStationOnFrame()
         double radAngle = SimTK::convertDegreesToRadians(ang);
         const Coordinate& coord = dPendulum->getCoordinateSet().get("q1");
         coord.setValue(st, radAngle);
+
         SimTK::Vec3 comInGround = myStation->findLocationInFrame(st, dPendulum->getGroundBody());
         SimTK::Vec3 comBySimbody(0.);
         dPendulum->getSimbodyEngine().getPosition(st, rod1, com, comBySimbody);

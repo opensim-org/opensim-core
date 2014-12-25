@@ -233,9 +233,10 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
             const SimTK::MobilizedBody& mobod =
                 marker.getReferenceFrame().getMobilizedBody();
 
-            const SimTK::Transform& X_BF = marker.getReferenceFrame().getTransformInMobilizedBody();
+            const SimTK::Transform& X_BF = marker.getReferenceFrame().findTransformInBaseFrame();
             _markerAssemblyCondition->
                 addMarker(marker.getName(), mobod, X_BF*marker.get_location(),
+
                 markerWeights[i]);
 
             //cout << "IKSolver Marker: " << markerNames[i] << " " << marker.getName() << "  weight: " << markerWeights[i] << endl;
