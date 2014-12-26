@@ -98,43 +98,52 @@ void testBodyFrame()
         double radAngle = SimTK::convertDegreesToRadians(ang);
         const Coordinate& coord = dPendulum->getCoordinateSet().get("q1");
         coord.setValue(st, radAngle);
-        SimTK::Transform xform = rod1.getGroundTransform(st);
-        // By construction the transform should give a translation of .353553, .353553, 0.0 since 0.353553 = .5 /sqr(2)
-        double dNorm = (xform.p() - SimTK::Vec3(0.5*std::sin(radAngle), -0.5*std::cos(radAngle), 0.)).norm();
-        ASSERT(dNorm < 1e-6, __FILE__, __LINE__, "testBodyFrame() failed");
+        const SimTK::Transform& xform = rod1.getGroundTransform(st);
+        // The transform should give a translation of .353553, .353553, 0.0 since 0.353553 = .5 /sqr(2)
+        SimTK::Vec3 p_known(0.5*std::sin(radAngle), -0.5*std::cos(radAngle), 0.0);
+        ASSERT_EQUAL(p_known, xform.p(), SimTK::Vec3(SimTK::Eps),
+            __FILE__, __LINE__, "testBodyFrame() failed");
         // The rotation part is a pure bodyfixed Z-rotation by radAngle.
         SimTK::Vec3 angles = xform.R().convertRotationToBodyFixedXYZ();
-        ASSERT(std::abs(angles[0]) < 1e-6, __FILE__, __LINE__, "testBodyFrame() failed");
-        ASSERT(std::abs(angles[1]) < 1e-6, __FILE__, __LINE__, "testBodyFrame() failed");
-        ASSERT(std::abs(angles[2] - radAngle) < 1e-6, __FILE__, __LINE__, "testBodyFrame() failed");
+        SimTK::Vec3 angs_known(0, 0, radAngle);
+        ASSERT_EQUAL(angs_known, angles, SimTK::Vec3(SimTK::Eps), 
+            __FILE__, __LINE__, "testBodyFrame() failed");
     }
-
-    return;
 }
 
 void testOffsetFrameOnBodyFrame()
 {
+    SimTK::Vec3 tolerance(SimTK::Eps);
+
     cout << "Running testFixedFrameOnBodyFrame" << endl;
     Model* dPendulum = new Model("double_pendulum.osim");
     const OpenSim::Body& rod1 = dPendulum->getBodySet().get("rod1");
+
 
     SimTK::Transform relX;
     //offset position by some random vector
     relX.setP(SimTK::Vec3(1.2, 2.5, 3.3));
     // rotate the frame 60 degs about some random direction
-    relX.updR().setRotationFromAngleAboutNonUnitVector(SimTK::Pi/3, SimTK::Vec3(3.0, 2.0, 1.0));
+    SimTK::Vec3 angs_known(0.33, 0.22, 0.11);
+    relX.updR().setRotationToBodyFixedXYZ(angs_known);
     PhysicalOffsetFrame* atOriginFrame = new PhysicalOffsetFrame(rod1, relX);
     dPendulum->addFrame(atOriginFrame);
     SimTK::State& s = dPendulum->initSystem();
     const SimTK::Transform& rod1InG = rod1.getGroundTransform(s);
     const SimTK::Transform& offsetInG = atOriginFrame->getGroundTransform(s);
 
-    // Expressed in ground the translation offset shoul be preserved
-    ASSERT_EQUAL((rod1InG.p() - offsetInG.p()).norm(), relX.p().norm(), SimTK::Eps,  __FILE__, __LINE__, "testFixedFrameOnBodyFrame() failed");
+    // Compute the offset of these frames in ground
+    SimTK::Transform deltaX = ~rod1InG*offsetInG;
+    SimTK::Vec3 angles = deltaX.R().convertRotationToBodyFixedXYZ();
+
+    // Offsets should be identical expressed in ground or in the Body
+    ASSERT_EQUAL(relX.p(), deltaX.p(), tolerance,
+        __FILE__, __LINE__, "testFixedFrameOnBodyFrame() failed");
+    ASSERT_EQUAL(angs_known, angles, tolerance,
+        __FILE__, __LINE__, "testFixedFrameOnBodyFrame() failed");
     // make sure that this FixedFrame knows that it is rigidly fixed to the
     // same MobilizedBody as Body rod1
     ASSERT(rod1.getMobilizedBodyIndex() == atOriginFrame->getMobilizedBodyIndex(), __FILE__, __LINE__, "testFixedFrameOnBodyFrame() failed");
-    return;
 }
 
 void testOffsetFrameOnOffsetFrame()
@@ -187,6 +196,8 @@ void testOffsetFrameOnBodyFrameSerialize()
     // now read the model from file
     Model* dPendulumWFrame = new Model("double_pendulum_extraFrame.osim");
     SimTK::State& s2 = dPendulumWFrame->initSystem();
+    ASSERT(*dPendulum == *dPendulumWFrame);
+
     const PhysicalFrame* myExtraFrame = dynamic_cast<const PhysicalFrame*> (&dPendulumWFrame->getFrameSet().get("myExtraFrame"));
     ASSERT(*atOriginFrame == *myExtraFrame);
 

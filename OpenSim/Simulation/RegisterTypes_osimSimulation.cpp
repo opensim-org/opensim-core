@@ -174,6 +174,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     // CURRENT RELEASE
     Object::registerType( SimbodyEngine() );
+    Object::registerType(PhysicalFrame());
     Object::registerType( OpenSim::Body() );
     Object::registerType( PhysicalOffsetFrame());
     Object::registerType( WeldConstraint() );

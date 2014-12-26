@@ -33,11 +33,11 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A OffsetFrame is a Frame whose transform (position and orientation)
+ * An OffsetFrame is a Frame whose transform (position and orientation)
  * with respect to another (parent) Frame is constant. It acts as an extension
  * of the parent Frame type so that an OffsetFrame<Body>, for example,
  * can be treated identically to a Body. This enables Frames to be filtered by
- * their type (e.g. Physcial or not) and not whether or not is an Offset.
+ * their type (e.g. Physcial or not) and not whether or not it is an Offset.
  *
  * @author Matt DeMers
  * @author Ajay Seth

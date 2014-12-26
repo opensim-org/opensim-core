@@ -39,6 +39,12 @@ namespace OpenSim {
  * calculations such as a frame aligned with the normal direction of a contact
  * surface or located at the center-of-pressure.
  *
+ * The puprose of a Frame it to provide its transform (location and orientation)
+ * in the Ground frame as a function of the Model's (Multibodysystem's) state.
+ *
+ * The Frame class also provides convenience methods for reexpressing vectors
+ * from one Frame to another.
+
  * @author Matt DeMers
  * @author Ajay Seth
  */

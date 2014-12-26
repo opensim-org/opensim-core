@@ -45,13 +45,12 @@ int main()
     // get all registered Components
     SimTK::Array_<Component*> availableComponents;
 
-    // starting with type Body
-    ArrayPtrs<Body> availableBodies;
-    Object::getRegisteredObjectsOfGivenType(availableBodies);
-    for (int i = 0; i < availableBodies.size(); ++i) {
-        availableComponents.push_back(availableBodies[i]);
+    // starting with type Frame
+    ArrayPtrs<Frame> availableFrames;
+    Object::getRegisteredObjectsOfGivenType(availableFrames);
+    for (int i = 0; i < availableFrames.size(); ++i) {
+        availableComponents.push_back(availableFrames[i]);
     }
-
 
     // then type Joint
     ArrayPtrs<Joint> availableJoints;

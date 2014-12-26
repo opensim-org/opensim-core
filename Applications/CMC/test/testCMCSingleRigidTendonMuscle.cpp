@@ -66,7 +66,6 @@ void testSingleRigidTendonMuscle() {
 
     Model model("block_hanging_RigidTendonMuscle.osim");
     Model* modelCopy = model.clone();
-    modelCopy->setup();
     ASSERT(model == *modelCopy);
 
     ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
