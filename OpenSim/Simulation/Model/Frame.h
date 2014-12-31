@@ -32,19 +32,46 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A Frame is an OpenSim abstraction for a right-handed set of orthogonal axes.
- * It is a reference frame. Frames are intended to provide convenient reference
- * frames for locating phyical structures (such as joints and muscle
- * attachments) as well as provide a convenient basis for performing spatial 
- * calculations such as a frame aligned with the normal direction of a contact
- * surface or located at the center-of-pressure.
+ * A Frame is an OpenSim abstraction for a reference frame. It consists of 
+ * a right-handed set of three orthogonal axes. Frames are intended to provide
+ * convenient reference frames for locating phyical structures (such as joints
+ * and muscle attachments) as well as provide a convenient basis for performing
+ * spatial calculations such as a frame aligned with the normal direction of a
+ * contact surface and/or located at the center-of-pressure.
  *
- * The puprose of a Frame it to provide its transform (location and orientation)
- * in the Ground frame as a function of the Model's (Multibodysystem's) state.
+ * The puprose of a Frame is to provide its Transform (location of the origin 
+ * and orientation of its axes) in the Ground frame as a function of the
+ * Model's (SimTK::MultibodySystem's) state.
  *
- * The Frame class also provides convenience methods for reexpressing vectors
+ * The Frame class also provides convenience methods for re-expressing vectors
  * from one Frame to another.
-
+ *
+ * As already noted, Frames are intended for the purpose of and useful for
+ * locating physical structures such as bodies, their joints, and the locations
+ * where constraints can be connected and forces can be applied. It is perhaps
+ * less evident that Frames can be extremely useful for relating a multitude of
+ * reference frames together to form chains and trees. For example, a Frame to
+ * specify muscle attachements (M) and a Frame to specify a joint location (J)
+ * could themselves be specified in an anatomical Frame (A) defined by boney
+ * landmarks idenitied by surface markers or tagged on CT or MRI images.
+ * The body (B), to which the anatomical frame (A) is attached, can be thought
+ * of as a "Base" frame or a root of a tree from which all the descendant frames
+ * arise. A Base frame and all its descendants have the property that they share
+ * the same angular velocity, since they are affixed to the same underlying body.
+ * <pre>
+ *         M---muscle points
+ *        /
+ *   B---A 
+ *        \
+ *         J---joint axes
+ * </pre>
+ * Therefore, a very useful notion is that of the Base frame. When computing
+ * the kinematics of any Frame, its efficiency can be improved by resolving the
+ * Base and knowing its transform in the Base frame.
+ * 
+ *
+ * @see SimTK::Transform
+ *
  * @author Matt DeMers
  * @author Ajay Seth
  */
@@ -58,6 +85,7 @@ public:
     Frame();
 
     virtual ~Frame() {};
+
     /** @name Spatial Operations for Frames
     These methods allow access to the frame's transform and some convenient
     operations that could be performed with this transform.*/
@@ -65,7 +93,7 @@ public:
 
     /**
     Get the transform of this frame (F) relative to the ground frame (G).
-    The transform transforms quantities expressed in F to quantities expressed
+    It transforms quantities expressed in F to quantities expressed
     in G. This is mathematically stated as:
         vec_G = X_GF*vec_F ,
     where X_GF is the transform returned by getGroundTransform.
@@ -79,10 +107,10 @@ public:
     }
 
     /**
-    Get the transform that describes the translation and rotation of this
-    frame (F frame) relative to another frame (A frame).  This method returns
-    the transform converting quantities expressed in F frame to quantities
-    expressed in the A frame. This is mathematically stated as:
+    Find the transform that describes this frame (F) relative to another
+    frame (A). It transforms quantities expressed in F to quantities expressed
+    in A. This is mathematically stated as:
+    This is mathematically stated as:
         vec_A = X_AF*vec_F ,
     where X_AF is the transform returned by this method.
 
@@ -95,28 +123,29 @@ public:
                                           const Frame& otherFrame) const;
 
     /**
-    Take a vector expressed in this frame (F) re-express the same vector 
-    in another frame (A).  This re-expression accounts for the difference
+    Take a vector expressed in this frame (F) and re-express the same vector
+    in another frame (A). This re-expression accounts for the difference
     in orientation between the frames. This is mathematically stated as:
-        vec_A = R_AF*vec  
-    and thus is does not translate the vector. This is intended to reexpress
-    physical qunatities such as angular velocity
-    THIS METHOD DOES NOT PERFORM A HOMOGENOUS TRANSFORM
+        vec_A = R_AF*vec_F
+    which does not translate the vector. This is intended to reexpress
+    physical vector quantities such as a frame's angular velocity or an
+    applied force, from one frame to another without changing the physical
+    quantity.
 
     @param state       The state of the model.
     @param vec         The vector to be re-expressed.
     @param otherFrame  The frame in which the vector will be re-expressed
-    @return newVec     The expression of the vector in otherFrame.
+    @return vec_A     The expression of the vector in otherFrame.
     */
     SimTK::Vec3 expressVectorInAnotherFrame(const SimTK::State& state,
                         const SimTK::Vec3& vec, const Frame& otherFrame) const;
 
     /**
     Take a point located and expressed in this frame (F) and determine
-    its location expressed in another frame (A) using the homogeneous
-    transformation. That is the transformation accounts for the difference in
-    orientation and translation between the frames. In mathematical form,
-    this method returns point_A, where point_A = X_AF*point_F.
+    its location expressed in another frame (A). The transform accounts for
+    the difference in orientation and translation between the frames.
+    This is mathematically stated as: 
+        point_A = X_AF*point_F
 
     @param state       The state of the model.
     @param point       The point to be re-expressed.
@@ -127,21 +156,24 @@ public:
                     const SimTK::Vec3& point, const Frame& otherFrame) const;
     /**@}**/
 
-    /** @name Frame Ancestry 
-        These methods enable algorithms to employ Frames efficiently.
-    */
-    /**@{**/
-    /** 
-    A base Frame is the furthest Frame in a Frame's ancestry (e.g. itself,
+    /** @name Advanced: A Frame's Base Frame and Transform 
+    A base Frame is the furthest Frame in a Frame's ancestral tree (e.g. itself,
     it's parent, grandparent, great-grandparent, etc... up the family tree)
-    whose angular velocity is identical to this Frame. That is they represnt
+    whose angular velocity is identical to this Frame. That is they share
     the same spatial entity. For example, anatomical frames may be used
     to identify points of intereset (muscle attachments) and joint connections
-    on bodies in a convenient way, but they still represent he same Body.
+    on bodies in a convenient way, but they still attache to the same Body.
     That body, in this case would be a base frame for any of the anatomical
-    attached to the body including frames attached to other anatomical frames.
+    frames attached to the body including frames attached to other anatomical
+    frames.
+    
+    Direct access to base frames enable algorithms to employ Frames efficiently.
+    */
+    ///@{
+    /** 
+    Find this Frame's base Frame.
 
-    @return baseFrame     The Frame that represents the base for this Frame.
+    @return baseFrame     The Frame that is the base for this Frame.
     */
     const Frame& findBaseFrame() const;
 
@@ -153,7 +185,8 @@ public:
     */
     SimTK::Transform findTransformInBaseFrame() const;
 
-    /**@}**/
+    // End of Frame ancesr
+    ///@}
 
 private:
     /** @name Extension methods.

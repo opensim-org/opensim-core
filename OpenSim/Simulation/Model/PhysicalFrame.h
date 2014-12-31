@@ -1,26 +1,26 @@
 #ifndef OPENSIM_PHYSICAL_FRAME_H_
 #define OPENSIM_PHYSICAL_FRAME_H_
 /* -------------------------------------------------------------------------- *
-*                              OpenSim:  PhysicalFrame.h                             *
+*                              OpenSim:  PhysicalFrame.h                        
 * -------------------------------------------------------------------------- *
 * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
 * See http://opensim.stanford.edu and the NOTICE file for more information.  *
-* OpenSim is developed at Stanford University and supported by the US        *
+* OpenSim is developed at Stanford University and supported by the US   
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
-* through the Warrior Web program.                                           *
-*                                                                            *
-* Copyright (c) 2005-2013 Stanford University and the Authors                *
-* Author(s): Matt DeMers, Ajay Seth, Ayman Habib                             *
-*                                                                            *
+* through the Warrior Web program.                                      
+*                                                                       
+* Copyright (c) 2005-2013 Stanford University and the Authors           
+* Author(s): Matt DeMers, Ajay Seth, Ayman Habib                        
+*                                                                       
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
 * not use this file except in compliance with the License. You may obtain a  *
-* copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
-*                                                                            *
-* Unless required by applicable law or agreed to in writing, software        *
-* distributed under the License is distributed on an "AS IS" BASIS,          *
+* copy of the License at http://www.apache.org/licenses/LICENSE-2.0.    
+*                                                                       
+* Unless required by applicable law or agreed to in writing, software   
+* distributed under the License is distributed on an "AS IS" BASIS,     
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
-* See the License for the specific language governing permissions and        *
-* limitations under the License.                                             *
+* See the License for the specific language governing permissions and   
+* limitations under the License.                                        
 * -------------------------------------------------------------------------- */
 
 // INCLUDE
@@ -34,9 +34,10 @@ class Body;
 /**
 * A PhysicalFrame is a frame that represents a phyisical location at which 
 * Joints and Constraints can be connected and Forces applied. A Body is an
-* example of PhysicalFrame and so is Ground.
+* example of a PhysicalFrame and so is Ground.
 *
 * @author Matt DeMers
+* @author Ajay Seth
 */
 
 class OSIMSIMULATION_API PhysicalFrame : public Frame {
@@ -53,50 +54,64 @@ public:
 
     virtual ~PhysicalFrame() {};
 
+    /** @name Advanced: PhysicalFrame's SimTK::MobilizedBody Access
+    Although these methods are public, they are intended for advanced users and
+    developers to access System resources associated with the MobilizedBody that
+    underlies the PhysicalFrame. For example, Solvers operate on the System and
+    not on the OpenSim modeling abstractions, such as Frames. 
+    All PhysicalFrames are backed by a SimTK::MobilizedBody, which is the
+    fundamental rigid element of a Simbody SimTK::MultibodySystem. */
+
+    ///@{
     /**
-     * All PhysicalFrames are backed by a SimTK::MobilizedBody, which is the
-     * fundamental rigid element of a Simbody MultibodySystem. This method 
-     * returns the MobilizedBodyIndex of the MobilizedBody for this PhysicalFrame.
-     * This index is only available after Model::initSystem() has been invoked.
-     *
-     * The MobilizedBodyIndex is necessary to access individual PhysicalFrame
-     * forces from the underlying MultibodySystem's body forces since the Vector
-     * of net body forces (torque and force on each body) is indexed by its 
-     * MobilizedBodyIndex.
-     *
-     * @return index The MobilizedBodyIndex corresponding to this PhysicalFrame's
-     *               underlying MobilizedBody
-     *
-     * @see getMobilizedBody, updMobilizedBody
-     */
+    This method returns the MobilizedBodyIndex of the MobilizedBody for this
+    PhysicalFrame. This index is only available after Model::initSystem() has
+    been invoked.
+
+    The MobilizedBodyIndex is necessary to access the underlying MobilizedBody
+    in the System. It allows access to physical quantities (e.g. forces)
+    associated with invidual PhysicalFrames. For examples, the underlying
+    MultibodySystem's net body forces are represented as a Vector of spatial
+    forces (torque and force on each body) and it is indexed by the 
+    MobilizedBodyIndex.
+
+    @return index The MobilizedBodyIndex corresponding to this PhysicalFrame's
+               underlying MobilizedBody
+
+    @see getMobilizedBody, updMobilizedBody
+    */
     const SimTK::MobilizedBodyIndex& getMobilizedBodyIndex() const {
         return _mbIndex;
     }
 
     /**
-     * Access the SimTK::MobilizedBody that backs this PhysicalFrame. The
-     * MobilizedBody is only available after Model::initSystem() has been
-     * invoked.
-     *
-     * @see getMobilizedBodyIndex
-     */
+    Access a readable SimTK::MobilizedBody that backs this PhysicalFrame.
+    The MobilizedBody is only available after Model::initSystem() has been
+    invoked.
+    @see getMobilizedBodyIndex
+    */
     const SimTK::MobilizedBody& getMobilizedBody() const;
 
     /**
-     * Access a writeable SimTK::MobilizedBody that backs this PhysicalFrame.
-     * The MobilizedBody is only available after Model::initSystem() has been
-     * invoked.
-     *
-     * @see getMobilizedBodyIndex
-     */
+    Access a writeable SimTK::MobilizedBody that backs this PhysicalFrame.
+    The MobilizedBody is only available after Model::initSystem() has been
+    invoked.
+    @see getMobilizedBodyIndex
+    */
     SimTK::MobilizedBody& updMobilizedBody();
 
+    // End of underlying MobilizedBody accessors.
+    ///@} 
+
 protected:
-    /** @name PhysicalFrame devloper interface
-    These methods are for PhysicalFrame builders. **/
-    /**@{**/
-    /** Specify the MobilizedBody that implements this PhysicalFrame 
-        in the underlying MultibodySystem. */
+    /** @name Advanced: PhysicalFrame Devloper Interface
+    These methods are intended for PhysicalFrame builders. */
+    ///@{
+    /**
+    Specify the MobilizedBody that implements this PhysicalFrame in the
+    underlying MultibodySystem. The PhysicalFrame's MobilizedBodyIndex must be
+    set by the end of PhysicalFrame::addToSystem()
+        */
     void setMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix) const {
         _mbIndex = mbix; 
     }
@@ -108,7 +123,7 @@ protected:
 
     SimTK::Transform extendFindTransformInBaseFrame() const override;
 
-    /**@}**/
+    ///@}
 
     /** Implement the Frame interface and return the transform X_GF for this
     PhysicalFrame, F, in ground, G.*/

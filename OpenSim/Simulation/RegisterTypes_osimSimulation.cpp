@@ -177,10 +177,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType(PhysicalFrame());
     Object::registerType( OpenSim::Body() );
     Object::registerType( PhysicalOffsetFrame());
-    Object::registerType( WeldConstraint() );
-    Object::registerType( PointConstraint() );
-    Object::registerType( ConstantDistanceConstraint() );
-    Object::registerType( CoordinateCouplerConstraint() );
+
     Object::registerType( WeldJoint());
     Object::registerType( CustomJoint());
     Object::registerType( EllipsoidJoint() );
@@ -195,6 +192,13 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( Coordinate() );
     Object::registerType( SpatialTransform() );
 
+    Object::registerType(WeldConstraint());
+    Object::registerType(PointConstraint());
+    Object::registerType(ConstantDistanceConstraint());
+    Object::registerType(CoordinateCouplerConstraint());
+    Object::registerType(PointOnLineConstraint());
+    Object::registerType(RollingOnSurfaceConstraint());
+
     Object::registerType( ContactGeometrySet() );
     Object::registerType( ContactHalfSpace() );
     Object::registerType( ContactMesh() );
@@ -206,8 +210,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( HuntCrossleyForce::ContactParametersSet() );
     Object::registerType( ElasticFoundationForce::ContactParameters() );
     Object::registerType( ElasticFoundationForce::ContactParametersSet() );
-    Object::registerType( PointOnLineConstraint() );
-    Object::registerType( RollingOnSurfaceConstraint() );
+
     Object::registerType( Ligament() );
     Object::registerType( PrescribedForce() );
     Object::registerType( ExternalForce() );
