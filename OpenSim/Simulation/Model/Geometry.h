@@ -32,31 +32,29 @@
 // Geometry.h
 // Authors: Ayman Habib
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-/*
-* Copyright (c)  2005, Stanford University. All rights reserved. 
-* Use of the OpenSim software in source form is permitted provided that the following
-* conditions are met:
-* 	1. The software is used only for non-commercial research and education. It may not
-*     be used in relation to any commercial activity.
-* 	2. The software is not distributed or redistributed.  Software distribution is allowed 
-*     only through https://simtk.org/home/opensim.
-* 	3. Use of the OpenSim software or derivatives must be acknowledged in all publications,
-*      presentations, or documents describing work in which OpenSim or derivatives are used.
-* 	4. Credits to developers may not be removed from executables
-*     created from modifications of the source.
-* 	5. Modifications of source code must retain the above copyright notice, this list of
-*     conditions and the following disclaimer. 
-* 
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-*  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-*  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
-*  SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-*  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
-*  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-*  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
-*  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+/* -------------------------------------------------------------------------- *
+*                              OpenSim:  Geometry.h                          *
+* -------------------------------------------------------------------------- *
+* The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
+* See http://opensim.stanford.edu and the NOTICE file for more information.  *
+* OpenSim is developed at Stanford University and supported by the US        *
+* National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
+* through the Warrior Web program.                                           *
+*                                                                            *
+* Copyright (c) 2005-2015 Stanford University and the Authors                *
+* Author(s): Ayman Habib                                                     *
+*                                                                            *
+* Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+* not use this file except in compliance with the License. You may obtain a  *
+* copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
+*                                                                            *
+* Unless required by applicable law or agreed to in writing, software        *
+* distributed under the License is distributed on an "AS IS" BASIS,          *
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+* See the License for the specific language governing permissions and        *
+* limitations under the License.                                             *
+* -------------------------------------------------------------------------- */
+
 
 /*  
  * Author:  Ayman Habib
@@ -72,9 +70,11 @@ class ModelComponent;
 //=============================================================================
 /**
  * Class Geometry is intended to be used as the base class for all
- * geometry that needs to be represented in the system, both as vtk files, or analytic
+ * geometry that needs to be represented in the system, both as mesh files, 
+ * or built in analytic shapes. Any ModelComponent can specify a list of
+ * Geometry items to represent itself in graphics window. The association between
+ * a ModelComponent and specific Geometry is made using the subcomponent paradigm.
  *
- * @version 1.0
  * @author Ayman Habib
  */
 
@@ -82,11 +82,15 @@ class ModelComponent;
 class OSIMSIMULATION_API Geometry : public Component {
     OpenSim_DECLARE_ABSTRACT_OBJECT(Geometry, Component);
 public:
+    // Properties common to all Geometry types are included as Properties
     // Scale factors
     OpenSim_DECLARE_PROPERTY(scale_factors, SimTK::Vec3,
         "Scale factors in X, Y, Z directotions respectively.");
+    // Optional frame_name (optional since some objects already have default
+    // frames, e.g. Body, Frame
     OpenSim_DECLARE_OPTIONAL_PROPERTY(frame_name, std::string,
         "Name of the Frame that this Geometry is attached to.");
+    // Default display properiies e.g. Representation, color, texture, etc.
     OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
         "Default appearance for this Geometry");
 
@@ -102,73 +106,90 @@ public:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
+    // Default constructor, does nothing
 	Geometry()
 	{
         constructProperty_scale_factors(SimTK::Vec3(1));
         constructProperty_frame_name();
         constructProperty_Appearance(Appearance());
     }
+    // Default destructor
 	virtual ~Geometry() {}
 
 	//=============================================================================
 	// METHODS
 	//=============================================================================
-    SimTK::Transform getTransform(const SimTK::State& state, const OpenSim::RigidFrame& frame) const;
-
-    virtual void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& ) const {};
-    // Manage Appearance or how the Geometry is rendered.
+    // Get Transform of this geometry relative to passed in frame, utilizing passed 
+    // in state.
+    SimTK::Transform getTransform(const SimTK::State& state, 
+        const OpenSim::RigidFrame& frame) const;
+    // Manage Appearance or how the Geometry is rendered by moving Appearance down
+    // from Geometry to DecorativeGeometry.
     void setDecorativeGeometryAppearance(SimTK::DecorativeGeometry& decoration) const {
         decoration.setColor(get_Appearance().get_color());
         decoration.setOpacity(get_Appearance().get_opacity());
         decoration.setRepresentation((SimTK::DecorativeGeometry::Representation)get_Appearance().get_representation());
     };
-    // Convenient access to Appearance constituents
+    // Convenient access to Appearance constituents: Color
     void setColor(const SimTK::Vec3& color) { upd_Appearance().set_color(color); };
     const SimTK::Vec3& getColor() const { return get_Appearance().get_color(); };
 
+    // Convenient access to Appearance constituents: Opacity
     void setOpacity(const double opacity) { upd_Appearance().set_opacity(opacity); };
     const double getOpacity() { return get_Appearance().get_opacity(); };
 
+    // Convenient access to Appearance constituents: /representation
     void setRepresentation(const Representation& rep) { upd_Appearance().set_representation(rep); };
     const Representation& getRepresentation() { return (const Representation&)get_Appearance().get_representation(); };
 
+    // set/get ModelComponent that owns this Geometry.
     void setOwnerModelComponent(const OpenSim::ModelComponent& mc) {
         _owner = mc;
     }
     const ModelComponent& getOwnerModelComponent() const {
         return _owner.getRef();
     }
+    // Get name of Frame that this Geometry is attached to. This could 
+    // either be a property, or owner ModelComponent if it's a type of frame
     std::string getFrameName() const;
+
+    // Map this Geometry into a list of primitives aka SimTK::DecorativeGeometry 
+    // and return it in the passed in Array.
+    virtual void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>&) const {};
 
 private:
     SimTK::ReferencePtr<const OpenSim::ModelComponent> _owner;
-    //=============================================================================
+    //=========================================================================
 };	// END of class Geometry
 
-/***
+/**
  * LineGeometry is a utility class used to abstract a line segment.
- * It is used by muscle segments so that it's as small and useful as possiblethe 
- * For muscle segments, GUI is free to display it as a line, cylinder or ellipsoid
+ * It is used by muscle segments so that it's as small and useful as possible.
  */
 class OSIMSIMULATION_API LineGeometry : public Geometry
 {	
     OpenSim_DECLARE_CONCRETE_OBJECT(LineGeometry, Geometry);
+public:
+    // Property start_point
     OpenSim_DECLARE_PROPERTY(start_point, SimTK::Vec3,
         "Line start point.");
+    // Property end_point
     OpenSim_DECLARE_PROPERTY(end_point, SimTK::Vec3,
         "Line end point.");
-public:
+    // Convenience constructor that takes two end points
 	LineGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2):
 	  Geometry()
 	{
         constructProperties();
         setPoints(aPoint1, aPoint2);
 	}
+    // default constructor, creates line (0,0,0)-(1,1,1)
 	LineGeometry():
 	  Geometry()
 	{
         constructProperties();
 	}
+    // destructor
 	virtual ~LineGeometry() {}
 	// Get & Set end points
 	void getPoints(SimTK::Vec3& rPoint1, SimTK::Vec3& rPoint2) const 
@@ -180,6 +201,7 @@ public:
 	{
 		getPoints(SimTK::Vec3::updAs(rPoint1), SimTK::Vec3::updAs(rPoint2));
 	}
+    // Scripting friendly setter methods
 	void setPoints(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2)
 	{
         upd_start_point() = aPoint1;
@@ -197,16 +219,21 @@ private:
         constructProperty_end_point(SimTK::Vec3(1));
     }
 };
+/**
+* ArrowGeometry is a class used to abstract an arrow.
+*/
 
-// unimplemented yet, make Properties
+// untested yet
 class OSIMSIMULATION_API ArrowGeometry : public LineGeometry
 {	
-    OpenSim_DECLARE_CONCRETE_OBJECT(ArrowGeometry, Geometry);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ArrowGeometry, LineGeometry);
 public:
+    // constructor that takes startPoint, direction vector and length
 	ArrowGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aUnitDirTo, double aLength):
-	  LineGeometry(aPoint1, /* aPoint1+aLength* */aUnitDirTo)
+	  LineGeometry(aPoint1, aPoint1+aLength* aUnitDirTo)
 	{
 	}
+    // destructor
 	virtual ~ArrowGeometry() {}
 
     void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override {};
@@ -214,7 +241,8 @@ public:
 
 
 /**
- * Utility class used to abstract anayltic geometry. 
+ * Utility class used to abstract anayltic geometry. This will need to be 
+ * revisited when wrapping is re-done.
  */
 class OSIMSIMULATION_API AnalyticGeometry : public Geometry
 {	 
@@ -256,28 +284,33 @@ private:
         constructProperty_quadrants();
     }
 };
-
+/**
+ * A class to represent Sphere geometry. 
+ */
 class OSIMSIMULATION_API Sphere : public AnalyticGeometry
 {
 OpenSim_DECLARE_CONCRETE_OBJECT(Sphere, AnalyticGeometry);
 public:
     OpenSim_DECLARE_PROPERTY(radius, double,
-        "Radius of sphere."); 
+        "Radius of sphere, defaults to 1.0"); 
+    // Default constructor, creates a sphere of radius 1.0
     Sphere() :
 	AnalyticGeometry()
 	{
         constructProperties();
     }
+    // Another constructor that takes in a specified radius
 	Sphere(double radius):
 		AnalyticGeometry()
 		{
         constructProperties();
         upd_radius() = radius;
 		}
-	virtual ~Sphere() {}
+    // destructor
+	~Sphere() {}
+    // Scripting friendly method to set radius
 	void setSphereRadius(double radius)
 	{
-		//assert(_analyticType==Sphere);
         upd_radius() = radius;
 	}
     void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
@@ -287,33 +320,36 @@ private:
     }
 };	// Sphere
 
+/**
+* A class to represent an Ellipsoid geometry.
+*/
 class OSIMSIMULATION_API Ellipsoid : public AnalyticGeometry
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(Ellipsoid, AnalyticGeometry);
 public:
     OpenSim_DECLARE_PROPERTY(radii, SimTK::Vec3, "Radii of Ellipsoid."); 
+    // Default constructor, creates an Ellipsoid of radii 0.5, 1., 2.
     Ellipsoid() :
 	AnalyticGeometry()
 	{
         constructProperties();
     }
+    // Constructor that takes in three radii
 	Ellipsoid(double radius1, double radius2, double radius3):
 		AnalyticGeometry(){
         constructProperties();
         setEllipsoidParams(radius1, radius2, radius3);
 	}
-	virtual ~Ellipsoid() {}
+    // destructor
+	~Ellipsoid() {}
+    // Scripting friendly interface to set radii
 	void setEllipsoidParams(double radius1, double radius2, double radius3)
 	{
 		//assert(_analyticType==Sphere);
         upd_radii()[0] = radius1;
         upd_radii()[1] = radius2;
         upd_radii()[2] = radius3;
-    }
-	void getEllipsoidParams(SimTK::Vec3& params)
-	{
-        params = get_radii();
-	} 
+    } 
     void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
     void constructProperties() {
@@ -321,17 +357,24 @@ private:
     }
 };
 
+
+/**
+* A class to represent a Cylinder geometry.
+*/
+
 class OSIMSIMULATION_API Cylinder : public AnalyticGeometry
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(Cylinder, AnalyticGeometry);
 public:
     OpenSim_DECLARE_PROPERTY(radius, double, "Radius of cylinder.");
     OpenSim_DECLARE_PROPERTY(half_height, double, "Half-Height of cylinder.");
+    // Default constructor
     Cylinder() :
 	AnalyticGeometry()
 	{
         constructProperties();
     }
+    // Convenience constructor that takes radius and half-height
 	Cylinder(const double radius, const double hheight):
 		AnalyticGeometry()
 		{
@@ -339,10 +382,11 @@ public:
         upd_radius() = radius;
         upd_half_height() = hheight;
 		}
-	virtual ~Cylinder() {}
+    // destructor
+	~Cylinder() {}
+    // Convenient way to get the two parameters that define the cylinder
 	void getCylinderParams(SimTK::Vec2& params) const
 	{
-		//assert(_analyticType==Cylinder);
         params[0] = get_radius();
         params[1] = get_half_height();
 	}
@@ -353,6 +397,9 @@ private:
         constructProperty_half_height(0.5);
     }
 };
+/**
+* A class to represent Torus geometry.
+*/
 // unimplemented need Properties too
 class OSIMSIMULATION_API Torus : public AnalyticGeometry
 {
@@ -379,31 +426,39 @@ public:
 	}
     void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override {};
 };
-
+/**
+* A class to represent Brick geometry.
+*/
 class OSIMSIMULATION_API Brick : public Geometry
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(Brick, Geometry);
 public:
-public:
+    // Half lengths in X,Y,Z directions respectively
     OpenSim_DECLARE_PROPERTY(half_lengths, SimTK::Vec3, "Half lengths in X, Y, Z respectively.");
 
 public:
+    // Default constructor, makes a Brick with half-length 0.1,0.2,0.3
     Brick() :
-        Geometry()
+    Geometry()
     {
         constructProperty_half_lengths(SimTK::Vec3(0.1, 0.2, 0.3));
     }
+    // Convenience constructor with specified half-lengths
     Brick(const SimTK::Vec3& halfLengths) :
         Geometry()
     {
         constructProperty_half_lengths(SimTK::Vec3(0.1, 0.2, 0.3));
         upd_half_lengths() = halfLengths;
     }
-    virtual ~Brick() {}
+    // Destructor
+    ~Brick() {}
     void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 
 };
-
+/**
+* A class to represent Mesh geometry that comes from a file.
+* Supported file formats .vtp, .stl, .obj but will change over time
+*/
 class OSIMSIMULATION_API Mesh : public Geometry
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(Mesh, Geometry);
@@ -412,17 +467,20 @@ public:
         "Name of geometry file.");
 
 public:
+    // Default constructor
     Mesh() :
         Geometry()
     {
         constructProperty_mesh_file("");
     }
+    // Constructor that takes a mesh file name
     Mesh(const std::string& geomFile) :
         Geometry()
     {
         constructProperty_mesh_file("");
         upd_mesh_file() = geomFile;
     }
+    // destructor
     virtual ~Mesh() {};
     const std::string&  getGeometryFilename() const
 	{
