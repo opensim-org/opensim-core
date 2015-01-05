@@ -230,8 +230,10 @@ class OSIMSIMULATION_API ArrowGeometry : public LineGeometry
 public:
     // constructor that takes startPoint, direction vector and length
 	ArrowGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aUnitDirTo, double aLength):
-	  LineGeometry(aPoint1, aPoint1+aLength* aUnitDirTo)
+	  LineGeometry()
 	{
+        SimTK::Vec3 point2 = aPoint1 + aLength* aUnitDirTo;
+        setPoints(aPoint1, point2);
 	}
     // destructor
 	virtual ~ArrowGeometry() {}
