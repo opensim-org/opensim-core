@@ -237,6 +237,7 @@ template <class T> friend class ModelComponentSet;
     through Position stage; if you need anything higher than that (reaction 
     forces, for example) you should make sure the \a state is realized through 
     Acceleration stage. **/
+    public:
     virtual void generateDecorations
        (bool                                        fixed, 
         const ModelDisplayHints&                    hints,
