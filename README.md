@@ -118,7 +118,7 @@ On Windows using Visual Studio
 * **physics engine**:
   [Simbody](https://github.com/simbody/simbody#windows-and-visual-studio) >= 3.4
 * **API documentation** (optional):
-  [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8
+  [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git. There are many options:
     * [Git for Windows](http://msysgit.github.io/), most advanced;
     * [TortoiseGit](https://code.google.com/p/tortoisegit/wiki/Download),
@@ -236,7 +236,7 @@ On Mac using Xcode
   CMake variable `SIMBODY_STANDARD_11` is turned on (in 3.6 and later, this variable
   is removed).
 * **API documentation** (optional):
-  [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8
+  [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git.
     * Xcode Command Line Tools gives you git on the command line.
     * [GitHub for Mac](https://mac.github.com), easiest.
@@ -361,7 +361,7 @@ line below, we show the corresponding package.
   CMake variable `SIMBODY_STANDARD_11` is turned on (in 3.6 and later, this variable
   is removed).
 * **API documentation** (optional):
-  [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8;
+  [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
 * **version control** (optional): git; `git`.
 * **Wrapping** (optional): [SWIG](http://www.swig.org/) 2.0.10 `swig`
