@@ -168,6 +168,10 @@ public:
     bool operator==(const ComponentListIterator& iter) const {
         return _node == &*iter;
     }
+    /// Check for equality using method rather than operator to support scripting
+    bool equals(const ComponentListIterator& iter) const {
+        return (*this) == iter;
+    }
     /// Check for inequality using same convention as operator==.
     bool operator!=(const ComponentListIterator& iter) const {
          return _node != &*iter;
@@ -197,6 +201,7 @@ public:
      languages.
      */
     ComponentListIterator<T>& next() { return ++(*this); }
+
 private:
     // Internal method to advance iterator to next valid component.
     void advanceToNextValidComponent();
