@@ -243,6 +243,7 @@ using namespace SimTK;
 %feature("director") SimTK::DecorativeGeometryImplementation;
 %feature("notabstract") ControlLinear;
 
+
 %rename(OpenSimObject) OpenSim::Object;
 %rename(OpenSimException) OpenSim::Exception;
 
@@ -734,23 +735,30 @@ namespace SimTK {
 
 %include <OpenSim/Common/ComponentOutput.h>
 %include <OpenSim/Common/ComponentConnector.h>
-%include <OpenSim/Common/Component.h>
-%include <OpenSim/Common/ComponentList.h>
 
-%template(ComponentList_Muscles) OpenSim::ComponentList<OpenSim::Muscle>;
-%template(MuscleIterator) OpenSim::ComponentListIterator<OpenSim::Muscle>;
-%template(ComponentList_Bodies) OpenSim::ComponentList<OpenSim::Body>;
-%template(BodyIterator) OpenSim::ComponentListIterator<OpenSim::Body>;
-%template(ComponentList_Forces) OpenSim::ComponentList<OpenSim::Force>;
-%template(ForceIterator) OpenSim::ComponentListIterator<OpenSim::Force>;
-%template(ComponentList_GeometryPaths) OpenSim::ComponentList<OpenSim::GeometryPath>;
-%template(GeometryPathIterator) OpenSim::ComponentListIterator<OpenSim::GeometryPath>;
-%template(ComponentList_Markers) OpenSim::ComponentList<OpenSim::Marker>;
-%template(MarkerIterator) OpenSim::ComponentListIterator<OpenSim::Marker>;
-%template(ComponentList_Joints) OpenSim::ComponentList<OpenSim::Joint>;
-%template(JointIterator) OpenSim::ComponentListIterator<OpenSim::Joint>;
-%template(ComponentList_Components) OpenSim::ComponentList<OpenSim::Component>;
+%include <OpenSim/Common/ComponentList.h>
+%template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
 %template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
+
+%template(BodiesList) OpenSim::ComponentList<OpenSim::Body>;
+%template(BodyIterator) OpenSim::ComponentListIterator<OpenSim::Body>;
+
+%template(MusclesList) OpenSim::ComponentList<OpenSim::Muscle>;
+%template(MuscleIterator) OpenSim::ComponentListIterator<OpenSim::Muscle>;
+
+%template(ModelComponentList) OpenSim::ComponentList<OpenSim::ModelComponent>;
+%template(ModelComponentIterator) OpenSim::ComponentListIterator<OpenSim::ModelComponent>;
+
+%template(JointsList) OpenSim::ComponentList<OpenSim::Joint>;
+%template(JointIterator) OpenSim::ComponentListIterator<OpenSim::Joint>;
+
+%include <OpenSim/Common/Component.h>
+
+%template(getBodiesList) OpenSim::Component::getComponentList<OpenSim::Body>;
+%template(getMusclesList) OpenSim::Component::getComponentList<OpenSim::Muscle>;
+%template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
+%template(getModelComponentList) OpenSim::Component::getComponentList<OpenSim::ModelComponent>;
+%template(getJointList) OpenSim::Component::getComponentList<OpenSim::Joint>;
 
 %include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
