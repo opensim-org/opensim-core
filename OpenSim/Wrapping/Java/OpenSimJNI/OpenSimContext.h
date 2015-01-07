@@ -245,6 +245,9 @@ class OpenSimJavaObject : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(OpenSimJavaObject, Object);
 };
 
+class AdhocModelComponent : public ModelComponent {
+    OpenSim_DECLARE_CONCRETE_OBJECT(AdhocModelComponent, ModelComponent);
+};
 //==============================================================================
 //                                 AnalysisWrapper
 //==============================================================================
