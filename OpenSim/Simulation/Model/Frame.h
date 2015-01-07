@@ -39,8 +39,8 @@ namespace OpenSim {
  * spatial calculations such as a frame aligned with the normal direction of a
  * contact surface and/or located at the center-of-pressure.
  *
- * The puprose of a Frame is to provide its Transform (location of the origin 
- * and orientation of its axes) in the Ground frame as a function of the
+ * The puprose of a Frame is to provide its Transform (translation of the origin
+ * and the orientation of its axes) in the Ground frame as a function of the
  * Model's (SimTK::MultibodySystem's) state.
  *
  * The Frame class also provides convenience methods for re-expressing vectors
@@ -53,11 +53,12 @@ namespace OpenSim {
  * reference frames together to form chains and trees. For example, a Frame to
  * specify muscle attachements (M) and a Frame to specify a joint location (J)
  * could themselves be specified in an anatomical Frame (A) defined by boney
- * landmarks idenitied by surface markers or tagged on CT or MRI images.
- * The body (B), to which the anatomical frame (A) is attached, can be thought
- * of as a "Base" frame or a root of a tree from which all the descendant frames
- * arise. A Base frame and all its descendants have the property that they share
- * the same angular velocity, since they are affixed to the same underlying body.
+ * landmarks identified by surface markers or tagged on CT or MRI images. The
+ * body (B), to which the anatomical frame (A) is attached, can be thought of
+ * as a "Base" frame or a root of a tree from which a set of descendant frames
+ * arise. In particular, a Base frame and all its descendants have the property
+ * that they share the same angular velocity, since they are affixed to the same
+ * underlying Frame (in this case a Body).
  * <pre>
  *         M---muscle points
  *        /
@@ -65,10 +66,11 @@ namespace OpenSim {
  *        \
  *         J---joint axes
  * </pre>
- * Therefore, a very useful notion is that of the Base frame. When computing
- * the kinematics of any Frame, its efficiency can be improved by resolving the
- * Base and knowing its transform in the Base frame.
- * 
+ * Therefore, a useful concept is that of a Base frame and a Frame can always
+ * provide it. Note, the Base frame can be the Frame itself if not affixed to
+ * any other Frame. The efficiency of computing the kinematics of a frame, can
+ * be improved by resolving its Base and knowing its transform in the Base frame.
+ * This is especially true if multiple frames are affixed to the same Base.
  *
  * @see SimTK::Transform
  *
@@ -102,7 +104,8 @@ public:
                        transform.
     @return transform  The transform between this frame and the ground frame
     */
-    const SimTK::Transform& getGroundTransform(const SimTK::State& state) const {
+    const SimTK::Transform& getGroundTransform(const SimTK::State& state) const
+    {
         return calcGroundTransform(state);
     }
 
@@ -157,17 +160,15 @@ public:
     /**@}**/
 
     /** @name Advanced: A Frame's Base Frame and Transform 
-    A base Frame is the furthest Frame in a Frame's ancestral tree (e.g. itself,
-    it's parent, grandparent, great-grandparent, etc... up the family tree)
-    whose angular velocity is identical to this Frame. That is they share
+    A base Frame is the most ancestral Frame (itself, it's parent, 
+    grandparent, great-grandparent, etc... down the family tree)
+    whose angular velocity is identical to this Frame. That is they belong to
     the same spatial entity. For example, anatomical frames may be used
     to identify points of intereset (muscle attachments) and joint connections
-    on bodies in a convenient way, but they still attache to the same Body.
+    on a body in a convenient way, but their movement is dictated by the body.
     That body, in this case would be a base frame for any of the anatomical
-    frames attached to the body including frames attached to other anatomical
-    frames.
-    
-    Direct access to base frames enable algorithms to employ Frames efficiently.
+    frames attached to the body including frames subsequently attached to the 
+    anatomical frames and so on.
     */
     ///@{
     /** 
@@ -185,7 +186,7 @@ public:
     */
     SimTK::Transform findTransformInBaseFrame() const;
 
-    // End of Frame ancesr
+    // End of Base Frame and Transform accessors
     ///@}
 
 private:

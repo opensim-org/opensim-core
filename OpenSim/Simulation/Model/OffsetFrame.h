@@ -33,11 +33,16 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * An OffsetFrame is a Frame whose transform (position and orientation)
+ * An OffsetFrame is a Frame whose transform (translation and orientation)
  * with respect to another (parent) Frame is constant. It acts as an extension
  * of the parent Frame type so that an OffsetFrame<Body>, for example,
  * can be treated identically to a Body. This enables Frames to be filtered by
  * their type (e.g. Physcial or not) and not whether or not it is an Offset.
+ *
+ * OffsetFrames also have the property that if they form a chain or a tree,
+ * each OffsetFrame shares the same Base which is the parent of the first/root
+ * OffsetFrame in the tree. This allows Solvers and algorithms to work directly
+ * with the Base which can be more efficient.
  *
  * @author Matt DeMers
  * @author Ajay Seth
@@ -53,11 +58,11 @@ public:
     These are the serializable properties associated with a OffsetFrame. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(translation, SimTK::Vec3, 
-    "Position of this frame's origin from the parent frame's origin, " 
+    "Translational offset of this frame's origin from the parent frame's origin, " 
     "expressed in the parent frame.");
     OpenSim_DECLARE_PROPERTY(orientation, SimTK::Vec3,
-    "Orientation of this frame in its parent frame, expressed as a "
-    "body-fixed x-y-z rotation sequence.");
+    "Orientation offset of this frame in its parent frame, expressed as a "
+    "frame-fixed x-y-z rotation sequence.");
     /**@}**/
 
 //=============================================================================

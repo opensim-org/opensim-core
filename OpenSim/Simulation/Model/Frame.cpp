@@ -53,23 +53,24 @@ Frame::Frame() : ModelComponent()
 SimTK::Transform Frame::findTransformBetween(const SimTK::State& state,
         const Frame& otherFrame) const
 {
-    SimTK::Transform ground_X_me = calcGroundTransform(state);
-    SimTK::Transform ground_X_other = otherFrame.calcGroundTransform(state);
-    return ~ground_X_other*ground_X_me;
+    SimTK::Transform X_GF = calcGroundTransform(state);
+    SimTK::Transform X_GA = otherFrame.calcGroundTransform(state);
+    // return the transform, X_AF that expresses quantities in F into A
+    return ~X_GA*X_GF;
 }
 
-SimTK::Vec3 Frame::expressVectorInAnotherFrame(const SimTK::State& state, const
-        SimTK::Vec3& vec, const Frame& frame) const
+SimTK::Vec3 Frame::expressVectorInAnotherFrame(const SimTK::State& state,
+                                const SimTK::Vec3& vec, const Frame& frame) const
 {
-    SimTK::Transform other_X_me = findTransformBetween(state, frame);
-    return other_X_me.R()*vec;
+    SimTK::Transform X_AF = findTransformBetween(state, frame);
+    return X_AF.R()*vec;
 }
 
 SimTK::Vec3 Frame::findLocationInAnotherFrame(const SimTK::State& state, const
         SimTK::Vec3& point, const Frame& otherFrame) const
 {
-    SimTK::Transform other_X_me = findTransformBetween(state, otherFrame);
-    return other_X_me*point;
+    SimTK::Transform X_AF = findTransformBetween(state, otherFrame);
+    return X_AF*point;
 }
 
 const Frame& Frame::findBaseFrame() const
