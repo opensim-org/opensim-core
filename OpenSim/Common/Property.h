@@ -1127,11 +1127,11 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
     OpenSim_DECLARE_PROPERTY_HELPER(name,T)                                 \
     template <template <class> class Container>                             \
     void constructProperty_##name(const Container<T>& initValue)            \
-    {   PropertyIndex_##name = addListProperty<T>(#name, comment,           \
-                            minSize, maxSize, initValue); }                 \
+    {   PropertyIndex_##name = this->template addListProperty<T>(#name,     \
+            comment, minSize, maxSize, initValue); }                        \
     template <template <class> class Container>                             \
     void set_##name(const Container<T>& value)                              \
-    {   updProperty_##name().setValue(value); }
+    {   this->updProperty_##name().setValue(value); }
 /** @endcond **/
 
 /** Declare a required, single-value property of the given \a name and 
@@ -1173,13 +1173,14 @@ initialized with an object of type T.
 #define OpenSim_DECLARE_UNNAMED_PROPERTY(T, comment)                        \
     OpenSim_DECLARE_PROPERTY_HELPER(T,T)                                    \
     void constructProperty_##T(const T& initValue)                          \
-    {   PropertyIndex_##T = addProperty<T>("", comment, initValue); }       \
+    {   PropertyIndex_##T =                                                 \
+            this->template addProperty<T>("", comment, initValue); }        \
     const T& get_##T() const                                                \
-    {   return getProperty_##T().getValue(); }                              \
+    {   return this->getProperty_##T().getValue(); }                        \
     T& upd_##T()                                                            \
-    {   return updProperty_##T().updValue(); }                              \
+    {   return this->updProperty_##T().updValue(); }                        \
     void set_##T(const T& value)                                            \
-    {   updProperty_##T().setValue(value); }
+    {   this->updProperty_##T().setValue(value); }
 
 /** Declare a property of the given \a name containing an optional value of
 the given type T (that is, the value list can be of length 0 or 1 only).
@@ -1189,16 +1190,18 @@ value of type T.
 #define OpenSim_DECLARE_OPTIONAL_PROPERTY(name, T, comment)                 \
     OpenSim_DECLARE_PROPERTY_HELPER(name,T)                                 \
     void constructProperty_##name()                                         \
-    {   PropertyIndex_##name = addOptionalProperty<T>(#name, comment); }    \
+    {   PropertyIndex_##name =                                              \
+            this->template addOptionalProperty<T>(#name, comment); }        \
     void constructProperty_##name(const T& initValue)                       \
-    {   PropertyIndex_##name = addOptionalProperty<T>(#name, comment,       \
-                                                      initValue); }         \
+    {   PropertyIndex_##name =                                              \
+            this->template addOptionalProperty<T>(#name, comment,           \
+                                                  initValue); }             \
     const T& get_##name() const                                             \
-    {   return getProperty_##name().getValue(); }                           \
+    {   return this->getProperty_##name().getValue(); }                     \
     T& upd_##name()                                                         \
-    {   return updProperty_##name().updValue(); }                           \
+    {   return this->updProperty_##name().updValue(); }                     \
     void set_##name(const T& value)                                         \
-    {   updProperty_##name().setValue(value); }
+    {   this->updProperty_##name().setValue(value); }
 
 /** Declare a property of the given \a name containing a variable-length
 list of values of the given type T. The property may be constructed as empty, 
@@ -1213,7 +1216,7 @@ supports a %size() method and operator[] element selection.
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
                                          0, std::numeric_limits<int>::max())\
     void constructProperty_##name()                                         \
-    {   PropertyIndex_##name = addListProperty<T>                           \
+    {   PropertyIndex_##name = this->template addListProperty<T>            \
            (#name, comment, 0, std::numeric_limits<int>::max()); }
 
 /** Declare a property of the given \a name containing a list of values of 
@@ -1248,8 +1251,8 @@ method and operator[] element selection.
 #define OpenSim_DECLARE_LIST_PROPERTY_ATMOST(name, T, maxSize, comment)     \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment, 0, (maxSize))    \
     void constructProperty_##name()                                         \
-    {   PropertyIndex_##name = addListProperty<T>(#name, comment,           \
-                                                  0, (maxSize)); }
+    {   PropertyIndex_##name = this->template addListProperty<T>            \
+            (#name, comment, 0, (maxSize)); }
 
 /** Declare a property of the given \a name containing a list of values of 
 the given type T, with the number of values in the list restricted to be
