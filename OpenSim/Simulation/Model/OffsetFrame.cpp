@@ -206,4 +206,4 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
 // Explicit template instantiation
 template class OffsetFrame<PhysicalFrame>;
 
-}
+} // namespace OpenSim
