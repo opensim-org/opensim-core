@@ -31,7 +31,8 @@
 // STATICS
 //=============================================================================
 using namespace std;
-using namespace OpenSim;
+
+namespace OpenSim {
 
 //=============================================================================
 // CONSTRUCTOR(S)
@@ -44,7 +45,7 @@ template <class C>
 OffsetFrame<C>::OffsetFrame() : C()
 {
     setNull();
-    constructInfrastructure();
+    this->constructInfrastructure();
 }
 
 //_____________________________________________________________________________
@@ -56,7 +57,7 @@ OffsetFrame<C>::OffsetFrame(const C& parent,
     const SimTK::Transform& offset) : C()
 {
     setNull();
-    constructInfrastructure();
+    this->constructInfrastructure();
     setParentFrame(parent);
     setOffsetTransform(offset);
 }
@@ -68,7 +69,7 @@ template <class C>
 void OffsetFrame<C>::setNull()
 {
     _offsetTransform.setToNaN();
-    setAuthors("Matt DeMers, Ajay Seth");
+    this->setAuthors("Matt DeMers, Ajay Seth");
 }
 //_____________________________________________________________________________
 /**
@@ -86,7 +87,7 @@ void OffsetFrame<C>::constructProperties()
 template <class C>
 void OffsetFrame<C>::constructConnectors()
 {
-    constructConnector<C>("parent");
+    this->template constructConnector<C>("parent");
 }
 
 //=============================================================================
@@ -101,12 +102,14 @@ template <class C>
 const SimTK::Transform& OffsetFrame<C>::
     calcGroundTransform(const SimTK::State& s) const
 {
-    if (!isCacheVariableValid(s, "ground_transform")){
-        setCacheVariableValue<SimTK::Transform>(s, "ground_transform",
-            getParentFrame().getGroundTransform(s)*getOffsetTransform());
+    if (!this->isCacheVariableValid(s, "ground_transform")){
+        this->template setCacheVariableValue<SimTK::Transform>(s,
+                "ground_transform",
+                getParentFrame().getGroundTransform(s)*getOffsetTransform());
     }
     // return X_GF = X_GB * X_BF where F is the offset frame;
-    return getCacheVariableValue<SimTK::Transform>(s, "ground_transform");
+    return this->template getCacheVariableValue<SimTK::Transform>(s,
+            "ground_transform");
 }
 
 //=============================================================================
@@ -116,13 +119,13 @@ const SimTK::Transform& OffsetFrame<C>::
 template <class C>
 void OffsetFrame<C>::setParentFrame(const C& parent)
 { 
-    updConnector<C>("parent").connect(parent);
+    this->template updConnector<C>("parent").connect(parent);
 }
 
 template <class C>
 const C& OffsetFrame<C>::getParentFrame() const
 {
-    return getConnector<C>("parent").getConnectee();
+    return this->template getConnector<C>("parent").getConnectee();
 }
 
 template <class C>
@@ -202,3 +205,5 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
 
 // Explicit template instantiation
 template class OffsetFrame<PhysicalFrame>;
+
+} // namespace OpenSim
