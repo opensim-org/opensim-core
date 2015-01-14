@@ -31,7 +31,8 @@
 // STATICS
 //=============================================================================
 using namespace std;
-using namespace OpenSim;
+
+namespace OpenSim {
 
 //=============================================================================
 // CONSTRUCTOR(S)
@@ -203,6 +204,6 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
 
 
 // Explicit template instantiation
-namespace OpenSim {
 template class OffsetFrame<PhysicalFrame>;
+
 }
