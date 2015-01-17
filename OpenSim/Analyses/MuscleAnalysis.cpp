@@ -165,8 +165,8 @@ void MuscleAnalysis::setupProperties()
     _coordinateListProp.setName("moment_arm_coordinate_list");
     _propertySet.append( &_coordinateListProp );
 
-    _computeMomentsProp.setComment("Flag indicating whether moments should be"
-                                   " computed.");
+    _computeMomentsProp.setComment("Flag indicating whether moment-arms and/or "
+                                   "moments should be computed.");
     _computeMomentsProp.setName("compute_moments");
     _propertySet.append( &_computeMomentsProp );
 
