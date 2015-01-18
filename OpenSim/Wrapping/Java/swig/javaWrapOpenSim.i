@@ -323,8 +323,9 @@ using namespace SimTK;
 		return new double[]{this->get(0), this->get(1), this->get(2)};
 	}
 %}
-/*
+
 %extend  SimTK::DecorativeGeometry {
+public:
 	bool hasUserRef() const {
 		return (self->getUserRef()!=0);
 	}
@@ -332,8 +333,108 @@ using namespace SimTK;
 	OpenSim::Object& getUserRefAsObject() {
 		return *((OpenSim::Object*)self->getUserRef());
 	}
+	bool attributesEquals(const SimTK::DecorativeGeometry& other) const {
+	    bool isEqual = other.getColor()==self->getColor();
+		isEqual = isEqual && (other.getRepresentation() == self->getRepresentation());
+		isEqual = isEqual && (other.getScaleFactors() == self->getScaleFactors());
+		isEqual = isEqual && (other.getOpacity() == self->getOpacity());
+		isEqual = isEqual && (other.getBodyId() == self->getBodyId());
+		isEqual = isEqual && (other.getIndexOnBody() == self->getIndexOnBody());
+		isEqual = isEqual && (other.getTransform() == self->getTransform());
+		return isEqual;
+	}
 }
-*/
+%extend SimTK::DecorativeMeshFile {
+     SimTK::DecorativeMeshFile* clone() { return new SimTK::DecorativeMeshFile(*self); }
+
+	 bool equals(const SimTK::DecorativeMeshFile& other) const { 
+	 bool isEqual = other.getColor()==self->getColor();
+		isEqual = isEqual && (other.getRepresentation() == self->getRepresentation());
+		isEqual = isEqual && (other.getScaleFactors() == self->getScaleFactors());
+		isEqual = isEqual && (other.getOpacity() == self->getOpacity());
+		isEqual = isEqual && (other.getBodyId() == self->getBodyId());
+		isEqual = isEqual && (other.getIndexOnBody() == self->getIndexOnBody());
+		isEqual = isEqual && (other.getTransform() == self->getTransform());
+		return isEqual && (other.getMeshFile() == self->getMeshFile()); }
+}
+%extend SimTK::DecorativeSphere {
+     SimTK::DecorativeSphere* clone() { return new SimTK::DecorativeSphere(*self); }
+
+	 bool equals(const SimTK::DecorativeSphere& other) const { 
+	 bool isEqual = other.getColor()==self->getColor();
+		isEqual = isEqual && (other.getRepresentation() == self->getRepresentation());
+		isEqual = isEqual && (other.getScaleFactors() == self->getScaleFactors());
+		isEqual = isEqual && (other.getOpacity() == self->getOpacity());
+		isEqual = isEqual && (other.getBodyId() == self->getBodyId());
+		isEqual = isEqual && (other.getIndexOnBody() == self->getIndexOnBody());
+		isEqual = isEqual && (other.getTransform() == self->getTransform());
+		return isEqual && (other.getRadius() == self->getRadius()); }
+}
+%extend SimTK::DecorativeBrick {
+     SimTK::DecorativeBrick* clone() { return new SimTK::DecorativeBrick(*self); }
+
+	 bool equals(const SimTK::DecorativeBrick& other) const { 
+	 bool isEqual = other.getColor()==self->getColor();
+		isEqual = isEqual && (other.getRepresentation() == self->getRepresentation());
+		isEqual = isEqual && (other.getScaleFactors() == self->getScaleFactors());
+		isEqual = isEqual && (other.getOpacity() == self->getOpacity());
+		isEqual = isEqual && (other.getBodyId() == self->getBodyId());
+		isEqual = isEqual && (other.getIndexOnBody() == self->getIndexOnBody());
+		isEqual = isEqual && (other.getTransform() == self->getTransform());
+		return isEqual && (other.getHalfLengths() == self->getHalfLengths()); }
+}
+
+%extend SimTK::DecorativeLine {
+     SimTK::DecorativeLine* clone() { return new SimTK::DecorativeLine(*self); }
+	 bool equals(const SimTK::DecorativeLine& other) const {  
+	 bool isEqual = other.getColor()==self->getColor();
+		isEqual = isEqual && (other.getRepresentation() == self->getRepresentation());
+		isEqual = isEqual && (other.getScaleFactors() == self->getScaleFactors());
+		isEqual = isEqual && (other.getOpacity() == self->getOpacity());
+		isEqual = isEqual && (other.getBodyId() == self->getBodyId());
+		isEqual = isEqual && (other.getIndexOnBody() == self->getIndexOnBody());
+		isEqual = isEqual && (other.getTransform() == self->getTransform());
+		return isEqual && (other.getPoint1() == self->getPoint1()) &&
+								(other.getPoint2() == self->getPoint2()); }
+}
+%extend SimTK::DecorativeCylinder {
+     SimTK::DecorativeCylinder* clone() { return new SimTK::DecorativeCylinder(*self); }
+
+	 bool equals(const SimTK::DecorativeCylinder& other) const {  
+	 bool isEqual = other.getColor()==self->getColor();
+		isEqual = isEqual && (other.getRepresentation() == self->getRepresentation());
+		isEqual = isEqual && (other.getScaleFactors() == self->getScaleFactors());
+		isEqual = isEqual && (other.getOpacity() == self->getOpacity());
+		isEqual = isEqual && (other.getBodyId() == self->getBodyId());
+		isEqual = isEqual && (other.getIndexOnBody() == self->getIndexOnBody());
+		isEqual = isEqual && (other.getTransform() == self->getTransform());
+		return isEqual && (other.getRadius() == self->getRadius()) &&
+							(other.getHalfHeight() == self->getHalfHeight()); }
+}
+%extend SimTK::DecorativeEllipsoid {
+     SimTK::DecorativeEllipsoid* clone() { return new SimTK::DecorativeEllipsoid(*self); }
+	 bool equals(const SimTK::DecorativeEllipsoid& other) const {  
+	 bool isEqual = other.getColor()==self->getColor();
+		isEqual = isEqual && (other.getRepresentation() == self->getRepresentation());
+		isEqual = isEqual && (other.getScaleFactors() == self->getScaleFactors());
+		isEqual = isEqual && (other.getOpacity() == self->getOpacity());
+		isEqual = isEqual && (other.getBodyId() == self->getBodyId());
+		isEqual = isEqual && (other.getIndexOnBody() == self->getIndexOnBody());
+		isEqual = isEqual && (other.getTransform() == self->getTransform());
+		return isEqual && (other.getRadii() == self->getRadii()); }
+}
+%extend SimTK::DecorativeFrame {
+     SimTK::DecorativeFrame* clone() { return new SimTK::DecorativeFrame(*self); }
+	 bool equals(const SimTK::DecorativeFrame& other) const {  
+	 bool isEqual = other.getColor()==self->getColor();
+		isEqual = isEqual && (other.getRepresentation() == self->getRepresentation());
+		isEqual = isEqual && (other.getScaleFactors() == self->getScaleFactors());
+		isEqual = isEqual && (other.getOpacity() == self->getOpacity());
+		isEqual = isEqual && (other.getBodyId() == self->getBodyId());
+		isEqual = isEqual && (other.getIndexOnBody() == self->getIndexOnBody());
+		isEqual = isEqual && (other.getTransform() == self->getTransform());
+		return isEqual; }
+}
 %javamethodmodifiers OpenSim::Model::addModelComponent "private";
 %javamethodmodifiers OpenSim::Model::addBody "private";
 %javamethodmodifiers OpenSim::Model::addConstraint "private";
