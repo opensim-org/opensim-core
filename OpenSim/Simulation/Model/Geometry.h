@@ -85,7 +85,7 @@ public:
     // Properties common to all Geometry types are included as Properties
     // Scale factors
     OpenSim_DECLARE_PROPERTY(scale_factors, SimTK::Vec3,
-        "Scale factors in X, Y, Z directotions respectively.");
+        "Scale factors in X, Y, Z directions respectively.");
     // Optional frame_name (optional since some objects already have default
     // frames, e.g. Body, Frame
     OpenSim_DECLARE_OPTIONAL_PROPERTY(frame_name, std::string,
