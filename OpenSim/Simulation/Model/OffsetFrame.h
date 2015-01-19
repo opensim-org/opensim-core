@@ -34,15 +34,23 @@ namespace OpenSim {
 //=============================================================================
 /**
  * An OffsetFrame is a Frame whose transform (translation and orientation)
- * with respect to another (parent) Frame is constant. It acts as an extension
- * of the parent Frame type so that an OffsetFrame<Body>, for example,
- * can be treated identically to a Body. This enables Frames to be filtered by
- * their type (e.g. Physcial or not) and not whether or not it is an Offset.
+ * with respect to another (parent) Frame is constant in time. It acts as an
+ * extension of the parent Frame type so that an OffsetFrame<Body>, for
+ * example, can be treated identically to a Body. This enables Frames to be
+ * filtered by their type (e.g. PhyscialFrame or not), regardless of whether or
+ * not the Frame is also an OffsetFrame. (A class whose super class is a
+ * template parameter is called a mixin class.)
  *
  * OffsetFrames also have the property that if they form a chain or a tree,
  * each OffsetFrame shares the same Base which is the parent of the first/root
  * OffsetFrame in the tree. This allows Solvers and algorithms to work directly
  * with the Base which can be more efficient.
+ *
+ * The only OffsetFrame we currently expect users to use is
+ * OpenSim::PhysicalOffsetFrame.
+ *
+ * @tparam C The type of the parent frame, as well as the super class. Must be
+ * of type Frame.
  *
  * @author Matt DeMers
  * @author Ajay Seth
@@ -72,8 +80,9 @@ public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
-    /** By default, the frame is not connected to any parent frame,
-    and its transform is an identity transform.
+    /**
+    By default, the frame is not connected to any parent frame, and its
+    transform is an identity transform.
     */
     OffsetFrame();
 
@@ -88,7 +97,7 @@ public:
 
     // use compiler generated destructor, copy constructor and assignment operator
 
-    /** Set the parent reference frame*/
+    /** Sets the parent reference frame*/
     void setParentFrame(const C& parent);
     /** Get the parent reference frame*/
     const C& getParentFrame() const;
@@ -107,7 +116,8 @@ public:
     */
     const SimTK::Transform& getOffsetTransform() const;
 
-    /** Set the transform the translates and rotates this frame (F frame) from 
+    /**
+    Sets the transform the translates and rotates this frame (F frame) from 
     its parent frame (P frame). You should provide the transform X_PF
     such that vec_P = X_PF*vec_F.
     
@@ -119,8 +129,7 @@ public:
     void setOffsetTransform(const SimTK::Transform& offsetTransform);
 
 protected:
-    /** Implement the Frame interface and return the transform X_GF for this
-    OffsetFrame, F, in ground, G.*/
+    /** The transform X_GF for this OffsetFrame, F, in ground, G.*/
     const SimTK::Transform&
         calcGroundTransform(const SimTK::State& state) const override;
 
@@ -150,6 +159,13 @@ private:
 //=============================================================================
 //=============================================================================
 
+/** A PhysicalFrame whose location and orientation is specified as a constant
+ * offset from another PhysicalFrame. One potential use case for a
+ * PhysicalOffsetFrame is to specify the location of a Joint; e.g. the location
+ * and orientation of the ankle joint frame as specified in the knee Body
+ * frame. This class has the methods of both the OffsetFrame template class
+ * and the PhysicalFrame class.
+ */
 typedef OffsetFrame<PhysicalFrame> PhysicalOffsetFrame;
 
 } // end of namespace OpenSim

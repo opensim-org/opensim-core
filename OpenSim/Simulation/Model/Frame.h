@@ -32,45 +32,45 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A Frame is an OpenSim abstraction for a reference frame. It consists of 
- * a right-handed set of three orthogonal axes. Frames are intended to provide
- * convenient reference frames for locating phyical structures (such as joints
- * and muscle attachments) as well as provide a convenient basis for performing
- * spatial calculations such as a frame aligned with the normal direction of a
- * contact surface and/or located at the center-of-pressure.
+ * A Frame is an OpenSim representation of a reference frame. It consists of
+ * a right-handed set of three orthogonal axes and an origin point. Frames are
+ * intended to provide convenient reference frames for locating phyical
+ * structures (such as joints and muscle attachments) as well as provide a
+ * convenient basis for performing spatial calculations. For example, if your
+ * system involves contact, you might define a Frame that is aligned with the
+ * normal direction of a contact surface and whose origin is at the
+ * center-of-pressure.
  *
- * The puprose of a Frame is to provide its Transform (translation of the origin
- * and the orientation of its axes) in the Ground frame as a function of the
- * Model's (SimTK::MultibodySystem's) state.
+ * Every Frame is capable of providing its SimTK::Transform (translation of
+ * the origin and the orientation of its axes) in the Ground frame as a
+ * function of the Model's (SimTK::MultibodySystem's) state.
  *
  * The Frame class also provides convenience methods for re-expressing vectors
  * from one Frame to another.
  *
- * As already noted, Frames are intended for the purpose of and useful for
- * locating physical structures such as bodies, their joints, and the locations
- * where constraints can be connected and forces can be applied. It is perhaps
- * less evident that Frames can be extremely useful for relating a multitude of
- * reference frames together to form chains and trees. For example, a Frame to
- * specify muscle attachements (M) and a Frame to specify a joint location (J)
- * could themselves be specified in an anatomical Frame (A) defined by boney
- * landmarks identified by surface markers or tagged on CT or MRI images. The
- * body (B), to which the anatomical frame (A) is attached, can be thought of
- * as a "Base" frame or a root of a tree from which a set of descendant frames
- * arise. In particular, a Base frame and all its descendants have the property
- * that they share the same angular velocity, since they are affixed to the same
- * underlying Frame (in this case a Body).
+ * As already noted, Frames are useful for locating physical structures such as
+ * bodies, their joints, and the locations where constraints can be connected
+ * and forces can be applied. It is perhaps less evident that Frames can be
+ * extremely useful for relating a multitude of reference frames together to
+ * form chains and trees. For example, a Frame to specify muscle attachements
+ * (M) and a Frame to specify a joint location (J) could themselves be
+ * specified in an anatomical Frame (A) defined by bony landmarks identified
+ * by surface markers or tagged on CT or MRI images. The body (B), to which the
+ * anatomical frame (A) is attached, can be thought of as a "Base" frame or a
+ * root of a tree from which a set of descendant frames arise. In particular, a
+ * Base frame and all its descendants have the property that they share the
+ * same angular velocity, since they are affixed to the same underlying Frame
+ * (in this case a Body).
  * <pre>
  *         M---muscle points
  *        /
- *   B---A 
+ *   B---A
  *        \
  *         J---joint axes
  * </pre>
- * Therefore, a useful concept is that of a Base frame and a Frame can always
- * provide it. Note, the Base frame can be the Frame itself if not affixed to
- * any other Frame. The efficiency of computing the kinematics of a frame, can
- * be improved by resolving its Base and knowing its transform in the Base frame.
- * This is especially true if multiple frames are affixed to the same Base.
+ * Therefore, a useful concept is that of a Base frame, and a Frame can always
+ * provide a Base frame. If a Frame is not affixed to another frame, its Base
+ * frame is itself.
  *
  * @see SimTK::Transform
  *
@@ -95,7 +95,7 @@ public:
 
     /**
     Get the transform of this frame (F) relative to the ground frame (G).
-    It transforms quantities expressed in F to quantities expressed
+    It transforms quantities expressed in F into quantities expressed
     in G. This is mathematically stated as:
         vec_G = X_GF*vec_F ,
     where X_GF is the transform returned by getGroundTransform.
@@ -133,12 +133,13 @@ public:
     which does not translate the vector. This is intended to reexpress
     physical vector quantities such as a frame's angular velocity or an
     applied force, from one frame to another without changing the physical
-    quantity.
+    quantity. If you have a position vector and want to change the point from
+    which the position is measured, you want findLocationInAnotherFrame().
 
     @param state       The state of the model.
-    @param vec         The vector to be re-expressed.
+    @param vec_F       The vector to be re-expressed.
     @param otherFrame  The frame in which the vector will be re-expressed
-    @return vec_A     The expression of the vector in otherFrame.
+    @return vec_A; the expression of the vector in otherFrame.
     */
     SimTK::Vec3 expressVectorInAnotherFrame(const SimTK::State& state,
                         const SimTK::Vec3& vec, const Frame& otherFrame) const;
@@ -160,15 +161,15 @@ public:
     /**@}**/
 
     /** @name Advanced: A Frame's Base Frame and Transform 
-    A base Frame is the most ancestral Frame (itself, it's parent, 
-    grandparent, great-grandparent, etc... down the family tree)
+    A base Frame is the most ancestral Frame (itself, its parent, 
+    grandparent, great-grandparent, etc, down the family tree)
     whose angular velocity is identical to this Frame. That is they belong to
-    the same spatial entity. For example, anatomical frames may be used
-    to identify points of intereset (muscle attachments) and joint connections
-    on a body in a convenient way, but their movement is dictated by the body.
-    That body, in this case would be a base frame for any of the anatomical
-    frames attached to the body including frames subsequently attached to the 
-    anatomical frames and so on.
+    the same rigid spatial entity. For example, anatomical frames may
+    be used to identify points of intereset (muscle attachments) and joint
+    connections on a body in a convenient way, but their movement is dictated
+    by the body.  That body, in this case, would be a base frame for any of the
+    anatomical frames attached to the body including frames subsequently
+    attached to the anatomical frames and so on.
     */
     ///@{
     /** 

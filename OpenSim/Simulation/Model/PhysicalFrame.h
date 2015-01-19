@@ -32,9 +32,11 @@ class Body;
 //=============================================================================
 //=============================================================================
 /**
-* A PhysicalFrame is a frame that represents a phyisical location at which 
-* Joints and Constraints can be connected and Forces applied. A Body is an
-* example of a PhysicalFrame and so is Ground.
+* A PhysicalFrame is either a Body frame, the Ground frame, or whose transform
+* to a Body or the Ground frame is constant in time. This type of frame is
+* useful because, for example, Joints can only be attached to PhysicalFrames.
+* PhysicalFrames are often used for specifying the location and orientation of
+* Joints, Constraints, and where Forces are applied.
 *
 * @author Matt DeMers
 * @author Ajay Seth
@@ -125,8 +127,7 @@ protected:
 
     ///@}
 
-    /** Implement the Frame interface and return the transform X_GF for this
-    PhysicalFrame, F, in ground, G.*/
+    /** The transform X_GF for this PhysicalFrame, F, in ground, G. */
     const SimTK::Transform&
         calcGroundTransform(const SimTK::State& state) const override;
 
