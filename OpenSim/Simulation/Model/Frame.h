@@ -142,7 +142,8 @@ public:
     @return vec_A; the expression of the vector in otherFrame.
     */
     SimTK::Vec3 expressVectorInAnotherFrame(const SimTK::State& state,
-                        const SimTK::Vec3& vec, const Frame& otherFrame) const;
+                        const SimTK::Vec3& vec_F,
+                        const Frame& otherFrame) const;
 
     /**
     Take a point located and expressed in this frame (F) and determine
