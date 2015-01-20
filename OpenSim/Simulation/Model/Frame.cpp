@@ -44,14 +44,14 @@ using SimTK::Vec3;
  */
 Frame::Frame() : ModelComponent()
 {
-	setNull();
-	
+    setNull();
+    
 }
 
 
 void Frame::setNull()
 {
-	setAuthors("Matt DeMers");
+    setAuthors("Matt DeMers");
 }
 
 
@@ -64,20 +64,20 @@ SimTK::Transform Frame::findTransformBetween(const SimTK::State& state,
 {
     SimTK::Transform ground_X_me = calcGroundTransform(state);
     SimTK::Transform ground_X_other = otherFrame.calcGroundTransform(state);
-	return ~ground_X_other*ground_X_me;
+    return ~ground_X_other*ground_X_me;
 }
 
 SimTK::Vec3 Frame::expressVectorInAnotherFrame(const SimTK::State& state, const
         SimTK::Vec3& vec, const Frame& frame) const
 {
     SimTK::Transform other_X_me = findTransformBetween(state, frame);
-	return other_X_me.R()*vec;
+    return other_X_me.R()*vec;
 }
 
 SimTK::Vec3 Frame::findLocationInAnotherFrame(const SimTK::State& state, const
         SimTK::Vec3& point, const Frame& otherFrame) const
 {
     SimTK::Transform other_X_me = findTransformBetween(state, otherFrame);
-	return other_X_me*point;
+    return other_X_me*point;
 }
 

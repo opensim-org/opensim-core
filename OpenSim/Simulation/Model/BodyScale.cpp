@@ -40,10 +40,10 @@ using namespace OpenSim;
  * Default constructor.
  */
 BodyScale::BodyScale() :
-	_axisNames(_axisNamesProp.getValueStrArray())
+    _axisNames(_axisNamesProp.getValueStrArray())
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -62,11 +62,11 @@ BodyScale::~BodyScale()
  */
 BodyScale::BodyScale(const BodyScale &aBodyScale) :
    Object(aBodyScale),
-	_axisNames(_axisNamesProp.getValueStrArray())
+    _axisNames(_axisNamesProp.getValueStrArray())
 {
-	setNull();
-	setupProperties();
-	copyData(aBodyScale);
+    setNull();
+    setupProperties();
+    copyData(aBodyScale);
 }
 
 //=============================================================================
@@ -80,7 +80,7 @@ BodyScale::BodyScale(const BodyScale &aBodyScale) :
  */
 void BodyScale::copyData(const BodyScale &aBodyScale)
 {
-	_axisNames = aBodyScale._axisNames;
+    _axisNames = aBodyScale._axisNames;
 }
 
 //_____________________________________________________________________________
@@ -96,11 +96,11 @@ void BodyScale::setNull()
  */
 void BodyScale::setupProperties()
 {
-	_axisNamesProp.setComment("Axes (X Y Z) along which to scale a body. "
-		"For example, 'X Y Z' scales along all three axes, and 'Y' scales "
-		"just along the Y axis.");
-	_axisNamesProp.setName("axes");
-	_propertySet.append(&_axisNamesProp);
+    _axisNamesProp.setComment("Axes (X Y Z) along which to scale a body. "
+        "For example, 'X Y Z' scales along all three axes, and 'Y' scales "
+        "just along the Y axis.");
+    _axisNamesProp.setName("axes");
+    _propertySet.append(&_axisNamesProp);
 }
 
 //=============================================================================
@@ -114,10 +114,10 @@ void BodyScale::setupProperties()
  */
 BodyScale& BodyScale::operator=(const BodyScale &aBodyScale)
 {
-	// BASE CLASS
-	Object::operator=(aBodyScale);
+    // BASE CLASS
+    Object::operator=(aBodyScale);
 
-	copyData(aBodyScale);
+    copyData(aBodyScale);
 
-	return(*this);
+    return(*this);
 }

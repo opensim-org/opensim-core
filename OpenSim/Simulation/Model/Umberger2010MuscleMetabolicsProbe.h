@@ -427,7 +427,7 @@ private:
     //--------------------------------------------------------------------------
     // ModelComponent Interface
     //--------------------------------------------------------------------------
-    void connectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
     void connectIndividualMetabolicMuscle
        (Model& aModel, 
         Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter& mm);
@@ -451,7 +451,7 @@ public:
 
 
 //=============================================================================
-};	// END of class Umberger2010MuscleMetabolicsProbe
+};  // END of class Umberger2010MuscleMetabolicsProbe
 //=============================================================================
 
 //==============================================================================
@@ -531,7 +531,7 @@ private:
                             // <use_provided_muscle_mass> is true or false.
 
 //=============================================================================
-};	// END of class MetabolicMuscleParameter
+};  // END of class MetabolicMuscleParameter
 //=============================================================================
 
 
@@ -556,7 +556,7 @@ public:
     {  }   
 
 //=============================================================================
-};	// END of class MetabolicMuscleParameterSet
+};  // END of class MetabolicMuscleParameterSet
 //=============================================================================
 
 

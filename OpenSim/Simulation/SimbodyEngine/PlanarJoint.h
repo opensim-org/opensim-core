@@ -33,19 +33,22 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A PlanarJoint provides three DoFs: rotation about the the common Z of the
- * parent and child joint frames, X and Y translation in the parent body's 
- * joint frame. The underlying Simbody implementation is a 
- * MobilizedBody::Planar. 
- *
- * @author Ajay Seth
- * @version 1.0
- */
+
+A class implementing a Planar joint. The underlying implementation
+in Simbody is a SimTK::MobilizedBody::Planar. A Planar joint provides three
+ordered mobilities; rotation about Z and translation in X then Y.
+
+\image html planarJoint.gif
+
+@author Ajay Seth
+*/
+
+
 class OSIMSIMULATION_API PlanarJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PlanarJoint, Joint);
 
 private:
-	static const int _numMobilities = 3;
+    static const int _numMobilities = 3;
 //=============================================================================
 // DATA
 //=============================================================================
@@ -56,27 +59,25 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	PlanarJoint();
+    // CONSTRUCTION
+    PlanarJoint();
 
-	// Convenience constructor
-	PlanarJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
-				    bool reverse=false);
+    // Convenience constructor
+    PlanarJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
+                    OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
+                    bool reverse=false);
 
-	int numCoordinates() const { return _numMobilities; }
+    int numCoordinates() const { return _numMobilities; }
 
 protected:
-	/** Model component interface */
-    void addToSystem(SimTK::MultibodySystem& system) const override;
+    /** Model component interface */
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 //=============================================================================
-};	// END of class PlanarJoint
+};  // END of class PlanarJoint
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
 #endif // OPENSIM_PLANAR_JOINT_H_
-
-

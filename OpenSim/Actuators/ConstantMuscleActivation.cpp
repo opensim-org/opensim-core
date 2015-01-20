@@ -50,22 +50,22 @@ MuscleActivationDynamics(name, getter)
 //==============================================================================
 // MODELCOMPONENT INTERFACE REQUIREMENTS
 //==============================================================================
-void ConstantMuscleActivation::addToSystem(SimTK::MultibodySystem& system) const
+void ConstantMuscleActivation::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
     addCacheVariable<double>(CACHE_NAME_ACTIVATION, getDefaultActivation(),
                              SimTK::Stage::Topology);
 }
 
-void ConstantMuscleActivation::initStateFromProperties(SimTK::State& s) const
+void ConstantMuscleActivation::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
     setActivation(s, getDefaultActivation());
 }
 
-void ConstantMuscleActivation::setPropertiesFromState(const SimTK::State& s)
+void ConstantMuscleActivation::extendSetPropertiesFromState(const SimTK::State& s)
 {
-    Super::setPropertiesFromState(s);
+    Super::extendSetPropertiesFromState(s);
     setDefaultActivation(getActivation(s));
 }
 
@@ -75,13 +75,13 @@ void ConstantMuscleActivation::setPropertiesFromState(const SimTK::State& s)
 double ConstantMuscleActivation::getActivation(const SimTK::State& s) const
 {
     return clampToValidInterval(
-        getCacheVariable<double>(s, CACHE_NAME_ACTIVATION));
+        getCacheVariableValue<double>(s, CACHE_NAME_ACTIVATION));
 }
 
 void ConstantMuscleActivation::
 setActivation(SimTK::State& s, double activation) const
 {
-    setCacheVariable<double>(s, CACHE_NAME_ACTIVATION,
+    setCacheVariableValue<double>(s, CACHE_NAME_ACTIVATION,
                              clampToValidInterval(activation));
 }
 

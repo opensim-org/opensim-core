@@ -90,8 +90,13 @@ class Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  *
  * <H2><B> ACTIVATION HEAT RATE (W) </B></H2>
  * If <I>activation_rate_on</I> is set to true, then Adot is calculated as follows:\n
- * <B>Adot = m * [ Adot_slow * r * sin((pi/2)*u)    +    Adot_fast * (1-r) * (1-cos((pi/2)*u)) ]</B>
+ * <B>Adot = phi * m * [ Adot_slow * r * sin((pi/2)*u) +
+ *                       Adot_fast * (1-r) * (1-cos((pi/2)*u)) ]</B>
  *     - u = muscle excitation at the current time.
+ *     - phi = decay function. Bhargava et al. (2004) use a function to model
+ *             the observation that the rate of heat generation is greatest
+ *             immediately after the muscle is excited and then decays. We
+ *             follow the work of Anderson and Pandy, who set this value to 1.0.
  *
  *
  * <H2><B> MAINTENANCE HEAT RATE (W) </B></H2>
@@ -445,7 +450,7 @@ private:
     //--------------------------------------------------------------------------
     // ModelComponent Interface
     //--------------------------------------------------------------------------
-    void connectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
     void connectIndividualMetabolicMuscle(Model& aModel, 
         Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter& mm);
 
@@ -465,7 +470,7 @@ private:
         updMetabolicParameters(const std::string& muscleName);
 
 //=============================================================================
-};	// END of class Bhargava2004MuscleMetabolicsProbe
+};  // END of class Bhargava2004MuscleMetabolicsProbe
 //=============================================================================
 
 //==============================================================================
@@ -580,7 +585,7 @@ private:
     void constructProperties();
 
 //=============================================================================
-};	// END of class MetabolicMuscleParameter
+};  // END of class MetabolicMuscleParameter
 //=============================================================================
 
 
@@ -610,7 +615,7 @@ public:
     
 
 //=============================================================================
-};	// END of class MetabolicMuscleParameterSet
+};  // END of class MetabolicMuscleParameterSet
 //=============================================================================
 
 

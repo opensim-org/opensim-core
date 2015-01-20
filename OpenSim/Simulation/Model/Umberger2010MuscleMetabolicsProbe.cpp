@@ -75,8 +75,8 @@ Umberger2010MuscleMetabolicsProbe::Umberger2010MuscleMetabolicsProbe(
  */
 void Umberger2010MuscleMetabolicsProbe::setNull()
 {
-	setAuthors("Tim Dorn");
-	setReferences("Umberger, B. R. (2010). Stance and swing phase costs in "
+    setAuthors("Tim Dorn");
+    setReferences("Umberger, B. R. (2010). Stance and swing phase costs in "
     "human walking. J R Soc Interface 7, 1329-40.");
     _muscleMap.clear();
 }
@@ -118,9 +118,9 @@ void Umberger2010MuscleMetabolicsProbe::constructProperties()
  *
  * @param aModel OpenSim model containing this Umberger2010MuscleMetabolicsProbe.
  */
-void Umberger2010MuscleMetabolicsProbe::connectToModel(Model& aModel)
+void Umberger2010MuscleMetabolicsProbe::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
     if (isDisabled()) return;   // Nothing to connect
 
     const int nM = 
@@ -146,7 +146,7 @@ void Umberger2010MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
     stringstream errorMessage;
 
     int k = aModel.getMuscles().getIndex(mm.getName());
-    if( k < 0 )	{
+    if( k < 0 ) {
         cout << "WARNING: Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter: "
             "Muscle '" << mm.getName() << "' not found in model. Ignoring..." << endl;
         setDisabled(true);
@@ -204,7 +204,7 @@ void Umberger2010MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
     // -----------------------------------------------------------------------
     // Check that <ratio_slow_twitch_fibers> is between 0 and 1.
     // -----------------------------------------------------------------------
-    if (mm.get_ratio_slow_twitch_fibers() < 0 || mm.get_ratio_slow_twitch_fibers() > 1)	{
+    if (mm.get_ratio_slow_twitch_fibers() < 0 || mm.get_ratio_slow_twitch_fibers() > 1) {
         errorMessage << "MetabolicMuscleParameter: Invalid ratio_slow_twitch_fibers for muscle: " 
             << getName() << ". ratio_slow_twitch_fibers must be between 0 and 1." << endl;
              std::cout << "WARNING: " << errorMessage.str() << "Probe will be disabled." << std::endl;
@@ -368,7 +368,7 @@ SimTK::Vector Umberger2010MuscleMetabolicsProbe::computeProbeInputs(const State&
                 Sdot = get_aerobic_factor() * std::pow(A, 2.0) * unscaledSdot;                      // scaled shortening heat rate: muscle shortening
             }
 
-            else	// eccentric contraction, Vm>0
+            else    // eccentric contraction, Vm>0
             {
                 unscaledSdot =
                     (get_include_negative_mechanical_work() ? 4.0 : 0.3)
@@ -437,7 +437,7 @@ SimTK::Vector Umberger2010MuscleMetabolicsProbe::computeProbeInputs(const State&
                 //    << "  (t = " << s.getTime() 
                 //    << "), the muscle '" << mm.getName() 
                 //    << "' has a net metabolic energy rate of less than 1.0 W/kg." << endl; 
-                totalHeatRate = 1.0;			// not allowed to fall below 1.0 W.kg-1
+                totalHeatRate = 1.0;            // not allowed to fall below 1.0 W.kg-1
         }
         
 
@@ -488,7 +488,7 @@ SimTK::Vector Umberger2010MuscleMetabolicsProbe::computeProbeInputs(const State&
         cout << "Bdot = " << Bdot << endl;
         cout << "Wdot = " << Wdot << endl;
         cout << "Edot = " << Edot << endl;
-		std::cin.get();
+        std::cin.get();
 #endif
     }
 
@@ -549,9 +549,9 @@ Array<string> Umberger2010MuscleMetabolicsProbe::getProbeOutputLabels() const
 * Get the number of muscles being analysed in the metabolic analysis. 
 */
 const int Umberger2010MuscleMetabolicsProbe::
-	getNumMetabolicMuscles() const  
+    getNumMetabolicMuscles() const  
 { 
-	return get_Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet().getSize(); 
+    return get_Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet().getSize(); 
 }
 
 
@@ -560,7 +560,7 @@ const int Umberger2010MuscleMetabolicsProbe::
  * Add a muscle and its parameters so that it can be included in the metabolic analysis
  */
 void Umberger2010MuscleMetabolicsProbe::
-	addMuscle(const string& muscleName, 
+    addMuscle(const string& muscleName, 
     double ratio_slow_twitch_fibers)
 {
     Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter* mm = 
@@ -577,7 +577,7 @@ void Umberger2010MuscleMetabolicsProbe::
  * Add a muscle and its parameters so that it can be included in the metabolic analysis
  */
 void Umberger2010MuscleMetabolicsProbe::
-	addMuscle(const string& muscleName, 
+    addMuscle(const string& muscleName, 
     double ratio_slow_twitch_fibers,
     double muscle_mass)
 {
@@ -597,12 +597,12 @@ void Umberger2010MuscleMetabolicsProbe::
  * Remove a muscle from the MetabolicMuscleParameterSet.
  */
 void Umberger2010MuscleMetabolicsProbe::
-	removeMuscle(const string& muscleName)
+    removeMuscle(const string& muscleName)
 {
     // Step 1: Remove the reference to this MetabolicMuscleParameter
     // from the muscle map.
     // -----------------------------------------------------------------
-	_muscleMap.erase(muscleName);
+    _muscleMap.erase(muscleName);
 
 
     // Step 2: Remove the MetabolicMuscleParameter object from
@@ -614,7 +614,7 @@ void Umberger2010MuscleMetabolicsProbe::
             << muscleName << "' specified. No metabolic muscles removed." << endl;
         return;
     }
-	disconnect();
+    disconnect();
     upd_Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet().remove(k);
 }
 
@@ -625,7 +625,7 @@ void Umberger2010MuscleMetabolicsProbe::
  * to use an provided muscle mass.
  */
 void Umberger2010MuscleMetabolicsProbe::
-	useProvidedMass(const string& muscleName, double providedMass)
+    useProvidedMass(const string& muscleName, double providedMass)
 {
     Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter* mm = 
         updMetabolicParameters(muscleName);
@@ -642,7 +642,7 @@ void Umberger2010MuscleMetabolicsProbe::
  * to calculate its own mass.
  */
 void Umberger2010MuscleMetabolicsProbe::
-	useCalculatedMass(const string& muscleName)
+    useCalculatedMass(const string& muscleName)
 {
     Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter* mm = 
         updMetabolicParameters(muscleName);
@@ -659,9 +659,9 @@ void Umberger2010MuscleMetabolicsProbe::
  * False means that the muscle mass is being calculated from muscle properties. 
  */
 bool Umberger2010MuscleMetabolicsProbe::
-	isUsingProvidedMass(const std::string& muscleName)
+    isUsingProvidedMass(const std::string& muscleName)
 { 
-	return getMetabolicParameters(muscleName)->get_use_provided_muscle_mass(); 
+    return getMetabolicParameters(muscleName)->get_use_provided_muscle_mass(); 
 }
 
 
@@ -670,9 +670,9 @@ bool Umberger2010MuscleMetabolicsProbe::
  * Get the muscle mass used in the metabolic analysis. 
  */
 const double Umberger2010MuscleMetabolicsProbe::
-	getMuscleMass(const std::string& muscleName) const 
+    getMuscleMass(const std::string& muscleName) const 
 { 
-	return getMetabolicParameters(muscleName)->getMuscleMass();
+    return getMetabolicParameters(muscleName)->getMuscleMass();
 }
 
 
@@ -681,9 +681,9 @@ const double Umberger2010MuscleMetabolicsProbe::
  * Get the ratio of slow twitch fibers for an existing muscle. 
  */
 const double Umberger2010MuscleMetabolicsProbe::
-	getRatioSlowTwitchFibers(const std::string& muscleName) const 
+    getRatioSlowTwitchFibers(const std::string& muscleName) const 
 { 
-	return getMetabolicParameters(muscleName)->get_ratio_slow_twitch_fibers();
+    return getMetabolicParameters(muscleName)->get_ratio_slow_twitch_fibers();
 }
 
 
@@ -692,9 +692,9 @@ const double Umberger2010MuscleMetabolicsProbe::
  * Set the ratio of slow twitch fibers for an existing muscle. 
  */
 void Umberger2010MuscleMetabolicsProbe::
-	setRatioSlowTwitchFibers(const std::string& muscleName, const double& ratio) 
+    setRatioSlowTwitchFibers(const std::string& muscleName, const double& ratio) 
 { 
-	updMetabolicParameters(muscleName)->set_ratio_slow_twitch_fibers(ratio);
+    updMetabolicParameters(muscleName)->set_ratio_slow_twitch_fibers(ratio);
 }
 
 
@@ -703,9 +703,9 @@ void Umberger2010MuscleMetabolicsProbe::
  * Get the density for an existing muscle (kg/m^3).. 
  */
 const double Umberger2010MuscleMetabolicsProbe::
-	getDensity(const std::string& muscleName) const 
+    getDensity(const std::string& muscleName) const 
 { 
-	return getMetabolicParameters(muscleName)->get_density();
+    return getMetabolicParameters(muscleName)->get_density();
 }
 
 
@@ -714,9 +714,9 @@ const double Umberger2010MuscleMetabolicsProbe::
  * Set the density for an existing muscle (kg/m^3). 
  */
 void Umberger2010MuscleMetabolicsProbe::
-	setDensity(const std::string& muscleName, const double& density) 
+    setDensity(const std::string& muscleName, const double& density) 
 { 
-	updMetabolicParameters(muscleName)->set_density(density);
+    updMetabolicParameters(muscleName)->set_density(density);
 }
 
 
@@ -725,9 +725,9 @@ void Umberger2010MuscleMetabolicsProbe::
  * Get the specific tension for an existing muscle (Pascals (N/m^2)). 
  */
 const double Umberger2010MuscleMetabolicsProbe::
-	getSpecificTension(const std::string& muscleName) const 
+    getSpecificTension(const std::string& muscleName) const 
 { 
-	return getMetabolicParameters(muscleName)->get_specific_tension();
+    return getMetabolicParameters(muscleName)->get_specific_tension();
 }
 
 
@@ -736,9 +736,9 @@ const double Umberger2010MuscleMetabolicsProbe::
  * Set the specific tension for an existing muscle (Pascals (N/m^2)). 
  */
 void Umberger2010MuscleMetabolicsProbe::
-	setSpecificTension(const std::string& muscleName, const double& specificTension) 
+    setSpecificTension(const std::string& muscleName, const double& specificTension) 
 { 
-	updMetabolicParameters(muscleName)->set_specific_tension(specificTension);
+    updMetabolicParameters(muscleName)->set_specific_tension(specificTension);
 }
 
 
@@ -751,7 +751,7 @@ void Umberger2010MuscleMetabolicsProbe::
  * string accessor.
  */
 const Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter* 
-	Umberger2010MuscleMetabolicsProbe::getMetabolicParameters(
+    Umberger2010MuscleMetabolicsProbe::getMetabolicParameters(
     const std::string& muscleName) const
 {
     MuscleMap::const_iterator m_i = _muscleMap.find(muscleName);
@@ -796,28 +796,28 @@ Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter*
 Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter::
 Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter() 
 {
-	setNull();
-	constructProperties(); 
+    setNull();
+    constructProperties(); 
 }
 
 Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter::
 Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter(
-	const std::string& muscleName,
-	double ratio_slow_twitch_fibers, 
-	double muscle_mass)
+    const std::string& muscleName,
+    double ratio_slow_twitch_fibers, 
+    double muscle_mass)
 {
-	setNull();
-	constructProperties();
-	setName(muscleName);
-	set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
+    setNull();
+    constructProperties();
+    setName(muscleName);
+    set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
     if (isNaN(muscle_mass)) {
-	    set_use_provided_muscle_mass(false);
+        set_use_provided_muscle_mass(false);
     }
     else {
         set_use_provided_muscle_mass(true);
         set_provided_muscle_mass(muscle_mass);
     }
-	
+    
 }
 
 
@@ -827,13 +827,13 @@ Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter(
 void Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter::
 setMuscleMass()    
 { 
-	if (get_use_provided_muscle_mass())
-		_muscMass = get_provided_muscle_mass();
-	else {
-		_muscMass = (_musc->getMaxIsometricForce() / get_specific_tension()) 
-					* get_density() 
-					* _musc->getOptimalFiberLength();
-		}
+    if (get_use_provided_muscle_mass())
+        _muscMass = get_provided_muscle_mass();
+    else {
+        _muscMass = (_musc->getMaxIsometricForce() / get_specific_tension()) 
+                    * get_density() 
+                    * _musc->getOptimalFiberLength();
+        }
 }
 
 
@@ -842,23 +842,23 @@ setMuscleMass()
 //--------------------------------------------------------------------------
 void Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter::setNull()
 {
-	setAuthors("Tim Dorn");
-	// Actual muscle mass used. If <use_provided_muscle_mass> == true, 
-	// this value will set to the property value <muscle_mass> provided by the 
-	// user. If <use_provided_muscle_mass> == false, then this value
-	// will be set (by the metabolic probes) to the calculated mass based on
-	// the muscle's Fmax, optimal fiber length, specific tension & muscle density. 
-	_muscMass = SimTK::NaN;
-	_musc = NULL;
+    setAuthors("Tim Dorn");
+    // Actual muscle mass used. If <use_provided_muscle_mass> == true, 
+    // this value will set to the property value <muscle_mass> provided by the 
+    // user. If <use_provided_muscle_mass> == false, then this value
+    // will be set (by the metabolic probes) to the calculated mass based on
+    // the muscle's Fmax, optimal fiber length, specific tension & muscle density. 
+    _muscMass = SimTK::NaN;
+    _musc = NULL;
 }
 
 void Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter::
 constructProperties()
 {
-	constructProperty_specific_tension(0.25e6);  // (Pascals (N/m^2)), specific tension of mammalian muscle.
-	constructProperty_density(1059.7);           // (kg/m^3), density of mammalian muscle.
-	constructProperty_ratio_slow_twitch_fibers(0.5);
-	constructProperty_use_provided_muscle_mass(false);
-	constructProperty_provided_muscle_mass(SimTK::NaN);
+    constructProperty_specific_tension(0.25e6);  // (Pascals (N/m^2)), specific tension of mammalian muscle.
+    constructProperty_density(1059.7);           // (kg/m^3), density of mammalian muscle.
+    constructProperty_ratio_slow_twitch_fibers(0.5);
+    constructProperty_use_provided_muscle_mass(false);
+    constructProperty_provided_muscle_mass(SimTK::NaN);
 }
 

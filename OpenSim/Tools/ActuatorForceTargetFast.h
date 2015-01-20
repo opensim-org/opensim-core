@@ -74,58 +74,58 @@ class OSIMTOOLS_API ActuatorForceTargetFast : public OptimizationTarget
 // DATA
 //==============================================================================
 private:
-	/** Model. */
-	CMC *_controller;
-	/** Work array of the states. */
-	Array<double> _y;
-	/** Work array of the derivatives of the derivatives of the states. */
-	Array<double> _dydt;
-	/** Array of the derivatives of the generalized coordinates. */
-	Array<double> _dqdt;
-	/** Array of the derivatives of the generalized speeds. */
-	Array<double> _dudt;
-	/** Reciprocal of actuator area squared. */
-	Array<double> _recipAreaSquared;
-	/** Reciprocal of optimal force squared accounting for force-length curve if actuator is a muscle. */
-	Array<double> _recipOptForceSquared;
-	
-	Array<double> _recipAvgActForceRangeSquared;
+    /** Model. */
+    CMC *_controller;
+    /** Work array of the states. */
+    Array<double> _y;
+    /** Work array of the derivatives of the derivatives of the states. */
+    Array<double> _dydt;
+    /** Array of the derivatives of the generalized coordinates. */
+    Array<double> _dqdt;
+    /** Array of the derivatives of the generalized speeds. */
+    Array<double> _dudt;
+    /** Reciprocal of actuator area squared. */
+    Array<double> _recipAreaSquared;
+    /** Reciprocal of optimal force squared accounting for force-length curve if actuator is a muscle. */
+    Array<double> _recipOptForceSquared;
+    
+    Array<double> _recipAvgActForceRangeSquared;
 
-	SimTK::Matrix _constraintMatrix;
-	SimTK::Vector _constraintVector;
-	
-	// Save a (copy) of the state for state tracking purposes
-	SimTK::State	_saveState;
+    SimTK::Matrix _constraintMatrix;
+    SimTK::Vector _constraintVector;
+    
+    // Save a (copy) of the state for state tracking purposes
+    SimTK::State    _saveState;
 //==============================================================================
 // METHODS
 //==============================================================================
 public:
-	//---------------------------------------------------------------------------
-	// CONSTRUCTION
-	//---------------------------------------------------------------------------
-	virtual ~ActuatorForceTargetFast();
-	ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController);
+    //---------------------------------------------------------------------------
+    // CONSTRUCTION
+    //---------------------------------------------------------------------------
+    virtual ~ActuatorForceTargetFast();
+    ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController);
 
 private:
-	void setNull();
+    void setNull();
 
 public:
 
-	bool prepareToOptimize(SimTK::State& s, double *x);
+    bool prepareToOptimize(SimTK::State& s, double *x);
 
-	//--------------------------------------------------------------------------
-	// REQUIRED OPTIMIZATION TARGET METHODS
-	//--------------------------------------------------------------------------
-	int objectiveFunc(const SimTK::Vector &aF, bool new_coefficients, SimTK::Real& rP) const;
-	int gradientFunc(const SimTK::Vector &x, bool new_coefficients, SimTK::Vector &gradient) const;
-	int constraintFunc( const SimTK::Vector &x, bool new_coefficients, SimTK::Vector &constraints) const;
-	int constraintJacobian(const SimTK::Vector &x, bool new_coefficients, SimTK::Matrix &jac) const;
-	CMC* getController() {return (_controller); }
+    //--------------------------------------------------------------------------
+    // REQUIRED OPTIMIZATION TARGET METHODS
+    //--------------------------------------------------------------------------
+    int objectiveFunc(const SimTK::Vector &aF, bool new_coefficients, SimTK::Real& rP) const;
+    int gradientFunc(const SimTK::Vector &x, bool new_coefficients, SimTK::Vector &gradient) const;
+    int constraintFunc( const SimTK::Vector &x, bool new_coefficients, SimTK::Vector &constraints) const;
+    int constraintJacobian(const SimTK::Vector &x, bool new_coefficients, SimTK::Matrix &jac) const;
+    CMC* getController() {return (_controller); }
 private:
-	void computeConstraintVector(SimTK::State& s, const SimTK::Vector &x, SimTK::Vector &c) const;
+    void computeConstraintVector(SimTK::State& s, const SimTK::Vector &x, SimTK::Vector &c) const;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-};	// END class ActuatorForceTargetFast
+};  // END class ActuatorForceTargetFast
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

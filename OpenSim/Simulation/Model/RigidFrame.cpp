@@ -42,14 +42,24 @@ using namespace OpenSim;
 */
 RigidFrame::RigidFrame() : Frame()
 {
-	setNull();
+    setNull();
 
 }
 
 
 void RigidFrame::setNull()
 {
-	setAuthors("Matt DeMers");
+    setAuthors("Matt DeMers");
+}
+
+const SimTK::MobilizedBody& RigidFrame::getMobilizedBody() const
+{
+    return getModel().getMatterSubsystem().getMobilizedBody(_index);
+}
+
+SimTK::MobilizedBody& RigidFrame::updMobilizedBody() 
+{
+    return updModel().updMatterSubsystem().updMobilizedBody(_index);
 }
 
 /**

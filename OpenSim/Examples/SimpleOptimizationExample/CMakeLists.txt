@@ -6,7 +6,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.6)
 # ---------
 SET(TARGET simpleOptimizationExample CACHE TYPE STRING)
 SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME} 
-		CACHE PATH "Top-level directory of OpenSim install")
+        CACHE PATH "Top-level directory of OpenSim install")
 
 # Find and hook up to OpenSim.
 # ----------------------------
@@ -35,7 +35,7 @@ LINK_DIRECTORIES(${OpenSim_LIB_DIR})
 # Configure this project.
 # -----------------------
 FILE(GLOB SOURCE_FILES *.h *.cpp)
-	
+    
 ADD_EXECUTABLE(${TARGET} ${SOURCE_FILES})
 
 TARGET_LINK_LIBRARIES(${TARGET} ${OpenSim_LIBRARIES})

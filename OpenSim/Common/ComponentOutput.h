@@ -64,105 +64,105 @@ namespace OpenSim {
  */
 class OSIMCOMMON_API AbstractOutput {
 public:
-	AbstractOutput() : numSigFigs(8), dependsOnStage(SimTK::Stage::Infinity) {}
-	AbstractOutput(const std::string& name, SimTK::Stage dependsOnStage) : 
-		name(name), dependsOnStage(dependsOnStage), numSigFigs(8) {}
-	virtual ~AbstractOutput() { }
+    AbstractOutput() : numSigFigs(8), dependsOnStage(SimTK::Stage::Infinity) {}
+    AbstractOutput(const std::string& name, SimTK::Stage dependsOnStage) : 
+        name(name), dependsOnStage(dependsOnStage), numSigFigs(8) {}
+    virtual ~AbstractOutput() { }
 
-	/** Output's name */
-	const std::string& getName() const { return name; }
-	/** Output's dependence on System being realized to at least this System::Stage */
-	const SimTK::Stage& getDependsOnStage() const { return dependsOnStage; }
+    /** Output's name */
+    const std::string& getName() const { return name; }
+    /** Output's dependence on System being realized to at least this System::Stage */
+    const SimTK::Stage& getDependsOnStage() const { return dependsOnStage; }
 
-	/** Output Interface */
-	virtual std::string     getTypeName() const = 0;
-	virtual std::string		getValueAsString(const SimTK::State& state) const = 0;
-	virtual bool        isCompatible(const AbstractOutput&) const = 0;
-	virtual void compatibleAssign(const AbstractOutput&) = 0;
+    /** Output Interface */
+    virtual std::string     getTypeName() const = 0;
+    virtual std::string     getValueAsString(const SimTK::State& state) const = 0;
+    virtual bool        isCompatible(const AbstractOutput&) const = 0;
+    virtual void compatibleAssign(const AbstractOutput&) = 0;
 
-	AbstractOutput& operator=(const AbstractOutput& o)
-	{ compatibleAssign(o); return *this; }
+    AbstractOutput& operator=(const AbstractOutput& o)
+    { compatibleAssign(o); return *this; }
 
-	virtual AbstractOutput* clone() const = 0;
+    virtual AbstractOutput* clone() const = 0;
 
-	/** Specification for number of significant figures in string value. */
-	unsigned int getNumberOfSignificantDigits() const { return numSigFigs; }
-	void		 setNumberOfSignificantDigits(unsigned int numSigFigs) 
-	{ numSigFigs = numSigFigs; }
+    /** Specification for number of significant figures in string value. */
+    unsigned int getNumberOfSignificantDigits() const { return numSigFigs; }
+    void         setNumberOfSignificantDigits(unsigned int numSigFigs) 
+    { numSigFigs = numSigFigs; }
 
 private:
-	unsigned int numSigFigs;
-	SimTK::Stage dependsOnStage;
-	std::string name;
+    unsigned int numSigFigs;
+    SimTK::Stage dependsOnStage;
+    std::string name;
 //=============================================================================
-};	// END class AbstractOutput
+};  // END class AbstractOutput
 
 template<class T>
 class  Output : public AbstractOutput {
 public:
-	//default construct output function pointer and result container
-	Output() : AbstractOutput(), _outputFcn(nullptr) {}   
-	/** Convenience constructor
-	Create a Component::Output bound to a specific method of the Component and 
-	valid at a given realization Stage.
+    //default construct output function pointer and result container
+    Output() : AbstractOutput(), _outputFcn(nullptr) {}   
+    /** Convenience constructor
+    Create a Component::Output bound to a specific method of the Component and 
+    valid at a given realization Stage.
     @param name             The name of the output.
-	@param outputFunction	The output function to be invoked (returns Output T)
-	@param dependsOnStage	Stage at which Output can be evaluated. */
-	explicit Output(const std::string& name,
-		const std::function<T(const SimTK::State&)> outputFunction,
-		const SimTK::Stage&		dependsOnStage) : 
-			AbstractOutput(name, dependsOnStage), _outputFcn(outputFunction)
-	{}
-	
-	virtual ~Output() {}
+    @param outputFunction   The output function to be invoked (returns Output T)
+    @param dependsOnStage   Stage at which Output can be evaluated. */
+    explicit Output(const std::string& name,
+        const std::function<T(const SimTK::State&)> outputFunction,
+        const SimTK::Stage&     dependsOnStage) : 
+            AbstractOutput(name, dependsOnStage), _outputFcn(outputFunction)
+    {}
+    
+    virtual ~Output() {}
 
-	bool isCompatible(const AbstractOutput& o) const override { return isA(o); }
-		void compatibleAssign(const AbstractOutput& o) override {
-		if (!isA(o)) 
-			SimTK_THROW2(SimTK::Exception::IncompatibleValues, o.getTypeName(), getTypeName());
-		*this = downcast(o);
-	}
+    bool isCompatible(const AbstractOutput& o) const override { return isA(o); }
+        void compatibleAssign(const AbstractOutput& o) override {
+        if (!isA(o)) 
+            SimTK_THROW2(SimTK::Exception::IncompatibleValues, o.getTypeName(), getTypeName());
+        *this = downcast(o);
+    }
 
 
-	//--------------------------------------------------------------------------
-	// OUTPUT VALUE
-	//--------------------------------------------------------------------------
-	/** return the Value of this ouput if the state is appropriately realized   
-	    to a stage at our beyond the dependsOnStage, otherwise expect an
-		Exception. */
-	const T& getValue(const SimTK::State& state) const {
-		_result = SimTK::NaN;
+    //--------------------------------------------------------------------------
+    // OUTPUT VALUE
+    //--------------------------------------------------------------------------
+    /** return the Value of this ouput if the state is appropriately realized   
+        to a stage at our beyond the dependsOnStage, otherwise expect an
+        Exception. */
+    const T& getValue(const SimTK::State& state) const {
+        _result = SimTK::NaN;
         if (state.getSystemStage() < getDependsOnStage())
         {
             throw SimTK::Exception::StageTooLow(__FILE__, __LINE__,
                     state.getSystemStage(), getDependsOnStage(),
                     "Output::getValue(state)");
         }
-		_result = _outputFcn(state); 
-		return _result;
-	}
-	
-	/** determine the value type for this Output*/
+        _result = _outputFcn(state); 
+        return _result;
+    }
+    
+    /** determine the value type for this Output*/
     std::string getTypeName() const override 
-		{ return SimTK::NiceTypeName<T>::name(); }
+        { return SimTK::NiceTypeName<T>::name(); }
 
-	std::string	getValueAsString(const SimTK::State& state) const override
-	{
-		unsigned int ns = getNumberOfSignificantDigits();
-		std::stringstream s;
-		s << std::setprecision(ns) << getValue(state);
-		return s.str();
-	}
+    std::string getValueAsString(const SimTK::State& state) const override
+    {
+        unsigned int ns = getNumberOfSignificantDigits();
+        std::stringstream s;
+        s << std::setprecision(ns) << getValue(state);
+        return s.str();
+    }
 
-	AbstractOutput* clone() const override { return new Output(*this); }
-	SimTK_DOWNCAST(Output, AbstractOutput);
+    AbstractOutput* clone() const override { return new Output(*this); }
+    SimTK_DOWNCAST(Output, AbstractOutput);
 
 private:
-	mutable T _result;
-	std::function<T(const SimTK::State&)> _outputFcn;
+    mutable T _result;
+    std::function<T(const SimTK::State&)> _outputFcn;
 
 //=============================================================================
-};	// END class Output
+};  // END class Output
 
 //=============================================================================
 //=============================================================================

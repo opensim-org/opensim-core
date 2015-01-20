@@ -306,7 +306,7 @@ public:
     double calcValue(double cosPennationAngle) const;
 
 
-	/** Implement the generic OpenSim::Function interface **/
+    /** Implement the generic OpenSim::Function interface **/
     double calcValue(const SimTK::Vector& x) const override
     {
         return calcValue(x[0]);
@@ -417,38 +417,38 @@ public:
     
 
 private:
-	/**
-	//--------------------------------------------------------------------------
-	<B> OpenSim::Function Interface </B>
-	//--------------------------------------------------------------------------
-	Create the underlying SimTK::Function that implements the calculations
-	necessary for this curve. */
-	SimTK::Function* createSimTKFunction() const override;
+    /**
+    //--------------------------------------------------------------------------
+    <B> OpenSim::Function Interface </B>
+    //--------------------------------------------------------------------------
+    Create the underlying SimTK::Function that implements the calculations
+    necessary for this curve. */
+    SimTK::Function* createSimTKFunction() const override;
 
-	void setNull();
-	void constructProperties();
+    void setNull();
+    void constructProperties();
 
-	/**
-	  This function will take all of the current property values, and if they
-	  have changed since the last time the curve was built, and build a curve.
+    /**
+      This function will take all of the current property values, and if they
+      have changed since the last time the curve was built, and build a curve.
 
-	  <B>Computational Costs</B>
-	  \verbatim 
-	  Curve Construction Costs :   ~20,500 flops
-	  \endverbatim
+      <B>Computational Costs</B>
+      \verbatim 
+      Curve Construction Costs :   ~20,500 flops
+      \endverbatim
 
-	 */
-	void buildCurve( bool computeIntegral = false );
-
-
+     */
+    void buildCurve( bool computeIntegral = false );
 
 
-	SmoothSegmentedFunction m_curve;
-	double m_stiffnessAtPerpendicularInUse;
-	double m_curvinessInUse;
-	bool  m_isFittedCurveBeingUsed;
-	};
 
-	}
+
+    SmoothSegmentedFunction m_curve;
+    double m_stiffnessAtPerpendicularInUse;
+    double m_curvinessInUse;
+    bool  m_isFittedCurveBeingUsed;
+    };
+
+    }
 
 #endif //OPENSIM_FiberCompressiveForceCosPennationCurve_h__

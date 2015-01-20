@@ -8,9 +8,9 @@ FILE(GLOB INCLUDE_FILES *.h )
 # Settings.
 # ---------
 SET(TARGET toyLeg_example
-		CACHE STRING "Name of example to build")
+        CACHE STRING "Name of example to build")
 SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME} 
-		CACHE PATH "Top-level directory of OpenSim install")
+        CACHE PATH "Top-level directory of OpenSim install")
 
 # Find and hook up to OpenSim.
 # ----------------------------
@@ -43,8 +43,8 @@ ADD_EXECUTABLE(${TARGET}  ${SOURCE_FILES} ${INCLUDE_FILES})
 TARGET_LINK_LIBRARIES(${TARGET} ${OpenSim_LIBRARIES})
 
 SET_TARGET_PROPERTIES(
-	${TARGET} PROPERTIES
-	PROJECT_LABEL "Actuator_examples")
+    ${TARGET} PROPERTIES
+    PROJECT_LABEL "Actuator_examples")
 
 INSTALL_TARGETS(/ ${TARGET})
 

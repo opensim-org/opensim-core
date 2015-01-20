@@ -45,8 +45,8 @@ using SimTK::Vec3;
  */
 FixedFrame::FixedFrame() : RigidFrame()
 {
-	setNull();
-	constructInfrastructure();
+    setNull();
+    constructInfrastructure();
 }
 
 //_____________________________________________________________________________
@@ -55,19 +55,19 @@ FixedFrame::FixedFrame() : RigidFrame()
  */
 FixedFrame::FixedFrame(const RigidFrame& parent_frame) : RigidFrame()
 {
-	setNull();
-	constructInfrastructure();
-	setParentFrame(parent_frame);
-	
+    setNull();
+    constructInfrastructure();
+    setParentFrame(parent_frame);
+    
 }
 
 FixedFrame::FixedFrame(const RigidFrame& parent_frame, const SimTK::Transform&
         xform) : RigidFrame()
 {
-	setNull();
-	constructInfrastructure();
-	setParentFrame(parent_frame);
-	setTransform(xform);
+    setNull();
+    constructInfrastructure();
+    setParentFrame(parent_frame);
+    setTransform(xform);
 
 }
 //_____________________________________________________________________________
@@ -76,10 +76,10 @@ FixedFrame::FixedFrame(const RigidFrame& parent_frame, const SimTK::Transform&
 */
 void FixedFrame::setNull()
 {
-	_isCacheInitialized = false;
-	_transform.setToZero();
+    _isCacheInitialized = false;
+    _transform.setToZero();
     _mbTransform.setToZero();
-	setAuthors("Matt DeMers");
+    setAuthors("Matt DeMers");
 }
 //_____________________________________________________________________________
 /**
@@ -88,25 +88,25 @@ void FixedFrame::setNull()
 
 void FixedFrame::constructProperties()
 {
-	SimTK::Vec3 zero(0.0, 0.0, 0.0);
-	constructProperty_translation(zero);
-	constructProperty_orientation(zero);
-	// transform at default
+    SimTK::Vec3 zero(0.0, 0.0, 0.0);
+    constructProperty_translation(zero);
+    constructProperty_orientation(zero);
+    // transform at default
 }
 
 void FixedFrame::constructConnectors()
 {
-	constructConnector<RigidFrame>("parent_frame");
+    constructConnector<RigidFrame>("parent_frame");
 }
 
-void FixedFrame::addToSystem(SimTK::MultibodySystem& system) const
+void FixedFrame::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	// Traverse the tree of consecutive FixedFrame connections to determine 
-	// this FixedFrame's root segment (Body/MobilizedBody).  We store that 
-	// information instead of recomputing it on the fly when asked for information
-	// about our connection to a root segment.
+    // Traverse the tree of consecutive FixedFrame connections to determine 
+    // this FixedFrame's root segment (Body/MobilizedBody).  We store that 
+    // information instead of recomputing it on the fly when asked for information
+    // about our connection to a root segment.
 
-	initFixedFrameCache();
+    initFixedFrameCache();
 
 }
 //=============================================================================
@@ -117,19 +117,19 @@ const SimTK::Transform& FixedFrame::getTransform() const
 {
     // If properties have been updated, then update the cached transform object
     // to be in sync.
-	_transform.updP() = get_translation();
-	_transform.updR().setRotationToBodyFixedXYZ(get_orientation());
-	return _transform;
+    _transform.updP() = get_translation();
+    _transform.updR().setRotationToBodyFixedXYZ(get_orientation());
+    return _transform;
 }
 void FixedFrame::setTransform(const SimTK::Transform& xform)
 {
-	_transform = xform;
+    _transform = xform;
     // Make sure properties are updated in case we either call gettters or
     // serialize after this call
-	set_translation(xform.p());
-	set_orientation(xform.R().convertRotationToBodyFixedXYZ());
+    set_translation(xform.p());
+    set_orientation(xform.R().convertRotationToBodyFixedXYZ());
     invalidate();
-	
+    
 }
 
 void FixedFrame::invalidate() const
@@ -161,22 +161,23 @@ bool FixedFrame::isPathToBaseValid() const
 
 void FixedFrame::initFixedFrameCache() const
 {
-	const RigidFrame& parent = getParentFrame();
-	const OpenSim::FixedFrame* parentFixedFrame =
-		+dynamic_cast<const OpenSim::FixedFrame *>(&parent);
-	if (parentFixedFrame != 0)
-	{
-		// The parent frame is another FixedFrame
-		// The parent FixedFrame must resolve its hierarchy before we ask
-		// for its root MobilizedBodyIndex.
-		// check if the FixedFrame has populated its root segments
-		if (parentFixedFrame->isPathToBaseValid() == 0)
-		{
-			parentFixedFrame->initFixedFrameCache();
-		}
-		// all variables pointing to the parents root MobilizedBody should be valid
-        _mbTransform = getTransform()*parentFixedFrame->getTransformInMobilizedBody();
-	}
+    const RigidFrame& parent = getParentFrame();
+    const OpenSim::FixedFrame* parentFixedFrame =
+        dynamic_cast<const OpenSim::FixedFrame *>(&parent);
+    if (parentFixedFrame != 0)
+    {
+        // The parent frame is another FixedFrame
+        // The parent FixedFrame must resolve its hierarchy before we ask
+        // for its root MobilizedBodyIndex.
+        // check if the FixedFrame has populated its root segments
+        if (!parentFixedFrame->isPathToBaseValid())
+        {
+            parentFixedFrame->initFixedFrameCache();
+        }
+        // all variables pointing to the parent's root MobilizedBody should be valid
+        // X_BF = X_BP*X_PF
+        _mbTransform = parentFixedFrame->getTransformInMobilizedBody()*getTransform();
+    }
     else
     {
         // if I'm not on a FixedFrame, I'm on a Body or other root RigidFrame.  
@@ -184,10 +185,10 @@ void FixedFrame::initFixedFrameCache() const
         _mbTransform = getTransform();
     }
 
-	// Ask my parent RigidFrame which root Body/MobilizedBody I'm attached to
+    // Ask my parent RigidFrame which root Body/MobilizedBody I'm attached to
 
-	_index = parent.getMobilizedBodyIndex();
-	
+    _index = parent.getMobilizedBodyIndex();
+    
     _isCacheInitialized = true;
 }
 //=============================================================================
@@ -196,7 +197,7 @@ void FixedFrame::initFixedFrameCache() const
 //_____________________________________________________________________________
 void FixedFrame::setParentFrame(const RigidFrame& parent_frame) 
 { 
-	updConnector<RigidFrame>("parent_frame").connect(parent_frame);
+    updConnector<RigidFrame>("parent_frame").connect(parent_frame);
     invalidate();
 }
 const RigidFrame& FixedFrame::getParentFrame() const

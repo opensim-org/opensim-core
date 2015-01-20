@@ -33,10 +33,10 @@
 #include <OpenSim/Simulation/Model/PathPoint.h>
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+    #ifdef OSIMSIMULATION_API
+        #undef OSIMSIMULATION_API
+        #define OSIMSIMULATION_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -59,41 +59,41 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PathWrapPoint, PathPoint);
 // DATA
 //=============================================================================
 private:
-	Array<SimTK::Vec3> _wrapPath; // points defining muscle path on surface of wrap object
+    Array<SimTK::Vec3> _wrapPath; // points defining muscle path on surface of wrap object
     double _wrapPathLength; // length of _wrapPath
 
-	const WrapObject* _wrapObject; // the wrap object this point is on
+    const WrapObject* _wrapObject; // the wrap object this point is on
 
 protected:
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	PathWrapPoint();
-	PathWrapPoint(const PathWrapPoint &aPoint);
-	virtual ~PathWrapPoint();
+    PathWrapPoint();
+    PathWrapPoint(const PathWrapPoint &aPoint);
+    virtual ~PathWrapPoint();
 
-	void copyData(const PathWrapPoint &aPoint);
+    void copyData(const PathWrapPoint &aPoint);
 
 #ifndef SWIG
-	PathWrapPoint& operator=(const PathWrapPoint &aPoint);
+    PathWrapPoint& operator=(const PathWrapPoint &aPoint);
 #endif
 
-	Array<SimTK::Vec3>& getWrapPath() { return _wrapPath; }
-	double getWrapLength() const { return _wrapPathLength; }
-	void setWrapLength(double aLength) { _wrapPathLength = aLength; }
-	const WrapObject* getWrapObject() const { return _wrapObject; }
-	void setWrapObject(const WrapObject* aWrapObject) { _wrapObject = aWrapObject; }
+    Array<SimTK::Vec3>& getWrapPath() { return _wrapPath; }
+    double getWrapLength() const { return _wrapPathLength; }
+    void setWrapLength(double aLength) { _wrapPathLength = aLength; }
+    const WrapObject* getWrapObject() const { return _wrapObject; }
+    void setWrapObject(const WrapObject* aWrapObject) { _wrapObject = aWrapObject; }
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 //=============================================================================
-};	// END of class PathWrapPoint
+};  // END of class PathWrapPoint
 //=============================================================================
 //=============================================================================
 
