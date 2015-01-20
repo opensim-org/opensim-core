@@ -33,8 +33,6 @@ SET(SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR
 EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E make_directory
     ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR})
 
-SET(SimTK_INCLUDE_PATH ${SIMTK_INCLUDE_DIR})
-
 ADD_CUSTOM_COMMAND(
     OUTPUT "${swig_generated_file_fullname}" "${swig_generated_header_fullname}"
     COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
