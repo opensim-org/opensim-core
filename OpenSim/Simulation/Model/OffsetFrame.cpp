@@ -147,30 +147,16 @@ void OffsetFrame<C>::setOffsetTransform(const SimTK::Transform& xform)
 template<class C>
 const Frame& OffsetFrame<C>::extendFindBaseFrame() const
 {
-    // check if parent is also an offset 
-    const OffsetFrame<C>* parentOffset =
-        dynamic_cast<const OffsetFrame<C>*>(&getParentFrame());
-    if (parentOffset) {
-        return parentOffset->findBaseFrame();
-    }
-    else {
-        return getParentFrame();
-    }
+    // Offset defers finding the base frame to its parent
+    // since it is never a base frame itself.
+    return getParentFrame().findBaseFrame();
 }
 
 template<class C>
 SimTK::Transform OffsetFrame<C>::extendFindTransformInBaseFrame() const
 {
-    // check if parent is also an offset 
-    const OffsetFrame<C>* parentOffset
-        = dynamic_cast<const OffsetFrame<C>*>(&getParentFrame());
-    if (parentOffset) {
-        return parentOffset->findTransformInBaseFrame()
-                * getOffsetTransform();
-    }
-    else {
-        return getOffsetTransform();
-    }
+    // transform is always an offset on the parent's transform
+    return getParentFrame().findTransformInBaseFrame() * getOffsetTransform();
 }
 
 template<class C>
