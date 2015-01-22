@@ -122,10 +122,10 @@ namespace OpenSim {
         /** Returns the column labels of the probe values for reporting.
         Currently uses the Probe name as the column label, so be sure
         to name your probe appropiately! */
-        virtual OpenSim::Array<std::string> getProbeOutputLabels() const override;
+        OpenSim::Array<std::string> getProbeOutputLabels() const override;
 
         // connectToModel is protected for Java wrapping purpose
-        void extendConnectToModel(Model& aModel) final;
+        void extendConnectToModel(Model& aModel) override final;
 
         //==============================================================================
         // PRIVATE

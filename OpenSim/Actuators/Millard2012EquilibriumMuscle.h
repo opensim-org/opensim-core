@@ -392,7 +392,7 @@ public:
 //==============================================================================
     /** @param[in] s The state of the system.
         @returns The tensile force the muscle is generating (N). */
-    double computeActuation(const SimTK::State& s) const final;
+    double computeActuation(const SimTK::State& s) const override final;
 
     /** Computes the fiber length such that the fiber and tendon are developing
     the same force, distributing the velocity of the entire musculotendon
@@ -447,7 +447,8 @@ public:
         @param s the state of the system
         @param aActivation the activation of the muscle */
     virtual double calcInextensibleTendonActiveFiberForce(SimTK::State& s,
-                                        double aActivation) const final;
+                                        double aActivation) const override
+        final;
     ///@endcond
 
 //==============================================================================
