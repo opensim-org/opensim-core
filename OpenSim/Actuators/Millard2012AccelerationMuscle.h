@@ -693,9 +693,8 @@ protected:
                about the muscle that is available at the velocity stage
 
     */
-    virtual void calcFiberVelocityInfo(const SimTK::State& s, 
-                                       FiberVelocityInfo& fvi)
-        const override final;
+    void calcFiberVelocityInfo(const SimTK::State& s, 
+                               FiberVelocityInfo& fvi) const override final;
 
     /** calculate muscle's active and passive force-length, force-velocity, 
         tendon force, relationships and their related values 
