@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                     *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Author(s): Ayman Habib, Ajay Seth                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -21,17 +21,20 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//==============================================================================
-//
-//  Tests Include:
-//      1. Body
-//      2. PhysicalOffsetFrame
-//      
-//     Add tests here as Frames are added to OpenSim
-//
-//==============================================================================
+/*=============================================================================
+
+Tests Include:
+    1. Body
+    2. PhysicalOffsetFrame on a Body computations
+    3. PhysicalOffsetFrame on a Body serialization
+    4. PhysicalOffsetFrame on a PhysicalOffsetFrame computations
+    5. Station on a PhysicalFrame computations 
+      
+     Add tests here as Frames are added to OpenSim
+
+//=============================================================================*/
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/OffsetFrame.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
@@ -92,13 +95,16 @@ void testBody()
 {
     cout << "Running testBody" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
+
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
-    SimTK::State& st = pendulum->initSystem();
+    SimTK::State& s = pendulum->initSystem();
+
+    //move the pendulum through a range of motion of 0 to 90 degrees
     for (double ang = 0; ang <= 90.0; ang += 10.){
         double radAngle = SimTK::convertDegreesToRadians(ang);
         const Coordinate& coord = pendulum->getCoordinateSet().get("q1");
-        coord.setValue(st, radAngle);
-        const SimTK::Transform& xform = rod1.getGroundTransform(st);
+        coord.setValue(s, radAngle);
+        const SimTK::Transform& xform = rod1.getGroundTransform(s);
         // The transform should give a translation of .353553, .353553, 0.0
         SimTK::Vec3 p_known(0.5*sin(radAngle), -0.5*cos(radAngle), 0.0);
         ASSERT_EQUAL(p_known, xform.p(), SimTK::Vec3(SimTK::Eps),
@@ -128,8 +134,10 @@ void testOffsetFrameOnBody()
     // rotate the frame by some non-planar rotation
     SimTK::Vec3 angs_known(0.33, 0.22, 0.11);
     X_RO.updR().setRotationToBodyFixedXYZ(angs_known);
+
     PhysicalOffsetFrame* offsetFrame = new PhysicalOffsetFrame(rod1, X_RO);
     pendulum->addFrame(offsetFrame);
+
     SimTK::State& s = pendulum->initSystem();
     const SimTK::Transform& X_GR = rod1.getGroundTransform(s);
     const SimTK::Transform& X_GO = offsetFrame->getGroundTransform(s);

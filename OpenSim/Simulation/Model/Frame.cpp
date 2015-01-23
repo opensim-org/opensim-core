@@ -46,6 +46,27 @@ Frame::Frame() : ModelComponent()
     setAuthors("Matt DeMers, Ajay Seth");
 }
 
+
+void Frame::extendAddToSystem(SimTK::MultibodySystem& system) const
+{
+    SimTK::Transform x;
+    // If the properties, topology or coordinate values, change, 
+    // Stage::Position will be invalid.
+    addCacheVariable("ground_transform", x, SimTK::Stage::Position);
+}
+
+const SimTK::Transform& Frame::getGroundTransform(const SimTK::State& s) const
+{
+    if (!this->isCacheVariableValid(s, "ground_transform")){
+        this->template setCacheVariableValue<SimTK::Transform>(s,
+            "ground_transform", calcGroundTransform(s) );
+    }
+    // return X_GF = X_GB * X_BF where F is the offset frame;
+    return this->template getCacheVariableValue<SimTK::Transform>(s,
+        "ground_transform");
+}
+
+
 //=============================================================================
 // FRAME COMPUTATIONS
 //=============================================================================

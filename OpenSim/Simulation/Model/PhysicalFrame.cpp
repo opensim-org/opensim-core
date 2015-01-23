@@ -59,15 +59,11 @@ SimTK::MobilizedBody& PhysicalFrame::updMobilizedBody()
 * Implementation of Frame interface by PhysicalFrame.
 * 
 */
-const SimTK::Transform& PhysicalFrame::
+const SimTK::Transform PhysicalFrame::
     calcGroundTransform(const SimTK::State& s) const
 {
     // return X_GF = X_GB * X_BF;
     return getMobilizedBody().getBodyTransform(s);
-}
-
-void PhysicalFrame::extendAddToSystem(SimTK::MultibodySystem& system) const
-{
 }
 
 

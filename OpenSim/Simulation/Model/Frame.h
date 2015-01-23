@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
  * Author(s): Matt DeMers, Ajay Seth, Ayman Habib                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -104,10 +104,7 @@ public:
                        transform.
     @return transform  The transform between this frame and the ground frame
     */
-    const SimTK::Transform& getGroundTransform(const SimTK::State& state) const
-    {
-        return calcGroundTransform(state);
-    }
+    const SimTK::Transform& getGroundTransform(const SimTK::State& state) const;
 
     /**
     Find the transform that describes this frame (F) relative to another
@@ -153,7 +150,7 @@ public:
         point_A = X_AF*point_F
 
     @param state       The state of the model.
-    @param point       The point to be re-expressed.
+    @param point_F     The point to be re-expressed.
     @param otherFrame  The frame in which the point will be re-expressed
     @return point_A    The re-expression of the point in another frame.
     */
@@ -166,7 +163,7 @@ public:
     grandparent, great-grandparent, etc, down the family tree)
     whose angular velocity is identical to this Frame. That is they belong to
     the same rigid spatial entity. For example, anatomical frames may
-    be used to identify points of intereset (muscle attachments) and joint
+    be used to identify points of interest (muscle attachments) and joint
     connections on a body in a convenient way, but their movement is dictated
     by the body.  That body, in this case, would be a base frame for any of the
     anatomical frames attached to the body including frames subsequently
@@ -191,6 +188,8 @@ public:
     // End of Base Frame and Transform accessors
     ///@}
 
+protected:
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 private:
     /** @name Extension methods.
         Concrete Frame types must override these methods. */
@@ -201,7 +200,7 @@ private:
     in this frame, F, to quantities expressed in the ground, G, frame.
     This is mathematically stated as:
         vec_G = X_GF*vec_F  */
-    virtual const SimTK::Transform&
+    virtual const SimTK::Transform
         calcGroundTransform(const SimTK::State& state) const = 0;
 
     /** Extend how concrete Frame determines its base Frame. */

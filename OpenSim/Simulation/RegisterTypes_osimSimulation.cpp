@@ -72,6 +72,7 @@
 #include "Model/Frame.h"
 #include "Model/PhysicalFrame.h"
 #include "Model/OffsetFrame.h"
+#include "Model/PhysicalOffsetFrame.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"

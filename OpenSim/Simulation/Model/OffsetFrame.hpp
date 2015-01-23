@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
  * Author(s): Matt DeMers, Ajay Seth                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -99,17 +99,10 @@ void OffsetFrame<C>::constructConnectors()
  *
  */
 template <class C>
-const SimTK::Transform& OffsetFrame<C>::
+const SimTK::Transform OffsetFrame<C>::
     calcGroundTransform(const SimTK::State& s) const
 {
-    if (!this->isCacheVariableValid(s, "ground_transform")){
-        this->template setCacheVariableValue<SimTK::Transform>(s,
-                "ground_transform",
-                getParentFrame().getGroundTransform(s)*getOffsetTransform());
-    }
-    // return X_GF = X_GB * X_BF where F is the offset frame;
-    return this->template getCacheVariableValue<SimTK::Transform>(s,
-            "ground_transform");
+    return getParentFrame().getGroundTransform(s)*getOffsetTransform();
 }
 
 //=============================================================================
@@ -166,30 +159,5 @@ void OffsetFrame<C>::extendFinalizeFromProperties()
     _offsetTransform.updR().setRotationToBodyFixedXYZ(get_orientation());
 }
 
-
-//Specialization for Offset on a Frame of type PhysicalFrame
-template<>
-OffsetFrame<PhysicalFrame>::OffsetFrame(const PhysicalFrame& parent,
-    const SimTK::Transform& offset) : PhysicalFrame() {
-    setNull();
-    constructInfrastructure();
-    setParentFrame(parent);
-    setOffsetTransform(offset);
-}
-
-template <>
-void OffsetFrame<PhysicalFrame>::
-extendAddToSystem(SimTK::MultibodySystem& system) const
-{
-    SimTK::Transform x;
-    // If the properties, topology or coordinate values, change, 
-    // Stage::Position will be invalid.
-    addCacheVariable("ground_transform", x, SimTK::Stage::Position);
-    setMobilizedBodyIndex(getParentFrame().getMobilizedBodyIndex());
-}
-
-
-// Explicit template instantiation
-template class OffsetFrame<PhysicalFrame>;
 
 } // namespace OpenSim

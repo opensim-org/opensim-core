@@ -9,7 +9,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                      
 *                                                                       
-* Copyright (c) 2005-2013 Stanford University and the Authors           
+* Copyright (c) 2005-2015 Stanford University and the Authors           
 * Author(s): Matt DeMers, Ajay Seth, Ayman Habib                        
 *                                                                       
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -128,12 +128,8 @@ protected:
     ///@}
 
     /** The transform X_GF for this PhysicalFrame, F, in ground, G. */
-    const SimTK::Transform&
+    const SimTK::Transform
         calcGroundTransform(const SimTK::State& state) const override;
-
-    /** Extend Component */
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-
 
 private:
     /* ID for the underlying mobilized body in Simbody system.

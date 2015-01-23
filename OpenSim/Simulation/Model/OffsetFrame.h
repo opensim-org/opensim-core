@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    
  * through the Warrior Web program.                                           
  *                                                                            
- * Copyright (c) 2005-2013 Stanford University and the Authors                
+ * Copyright (c) 2005-2015 Stanford University and the Authors                
  * Author(s): Matt DeMers Ajay Seth, Ayman Habib                              
  *                                                                            
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    
@@ -35,9 +35,9 @@ namespace OpenSim {
 /**
  * An OffsetFrame is a Frame whose transform (translation and orientation)
  * with respect to another (parent) Frame is constant in time. It acts as an
- * extension of the parent Frame type so that an OffsetFrame<Body>, for
- * example, can be treated identically to a Body. This enables Frames to be
- * filtered by their type (e.g. PhyscialFrame or not), regardless of whether or
+ * extension of the parent Frame type so that an OffsetFrame<PhysicalFrame>,
+ * for example, can be treated as a PhysicalFrame. This enables Frames to be
+ * filtered by their type (e.g. Physcial or not), regardless of whether or
  * not the Frame is also an OffsetFrame. (A class whose super class is a
  * template parameter is called a mixin class.)
  *
@@ -87,8 +87,8 @@ public:
     OffsetFrame();
 
     /**
-    A convenience constructor that initializes the connections and
-    properties of this object.
+    A convenience constructor that initializes the parent connection and
+    offset property of this OffsetFrame.
      
     @param[in] parent   The parent reference frame.
     @param[in] offset The offset transform between this frame and its parent
@@ -130,7 +130,7 @@ public:
 
 protected:
     /** The transform X_GF for this OffsetFrame, F, in ground, G.*/
-    const SimTK::Transform&
+    const SimTK::Transform
         calcGroundTransform(const SimTK::State& state) const override;
 
     /** Extend how OffsetFrame determines its base Frame. */
@@ -157,17 +157,6 @@ private:
 //=============================================================================
 }; // END of class OffsetFrame
 //=============================================================================
-//=============================================================================
-
-/** A PhysicalFrame whose location and orientation is specified as a constant
- * offset from another PhysicalFrame. One potential use case for a
- * PhysicalOffsetFrame is to specify the location of a Joint; e.g. the location
- * and orientation of the ankle joint frame as specified in the knee Body
- * frame. This class has the methods of both the OffsetFrame template class
- * and the PhysicalFrame class.
- */
-typedef OffsetFrame<PhysicalFrame> PhysicalOffsetFrame;
-
 } // end of namespace OpenSim
 
 #endif // OPENSIM_OFFSET_FRAME_H_
