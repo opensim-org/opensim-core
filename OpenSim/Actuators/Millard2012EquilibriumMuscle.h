@@ -446,7 +446,7 @@ public:
     muscle model
         @param s the state of the system
         @param aActivation the activation of the muscle */
-    virtual double calcInextensibleTendonActiveFiberForce(SimTK::State& s,
+    double calcInextensibleTendonActiveFiberForce(SimTK::State& s,
                                         double aActivation) const override
         final;
     ///@endcond

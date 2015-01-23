@@ -643,7 +643,7 @@ public:
         of this method as it duplicates code in calcMuscleLengthInfo,
         calcFiberVelocityInfo, and calcMuscleDynamicsInfo
     */
-    virtual double calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
+    double calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
                                        double aActivation) const override final;
     /*
     @param activation of the muscle [0-1]
