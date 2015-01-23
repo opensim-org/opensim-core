@@ -3,15 +3,14 @@ SET(UKIT PYOPENSIM)
 
 IF(BUILD_PYTHON_WRAPPING)
 
-INCLUDE(${CMAKE_ROOT}/Modules/FindPythonLibs.cmake)
-INCLUDE(${CMAKE_ROOT}/Modules/FindPythonInterp.cmake)
-
+FIND_PACKAGE(PythonLibs 2.7)
+#FIND_PACKAGE(PythonInterp 2.7)
 
 IF(NOT PYTHONLIBS_FOUND)
     MESSAGE(FATAL_ERROR "Cannot build Python wrapping because "
         "Python libraries were not found. Either turn "
         "BUILD_PYTHON_WRAPPING off or install Python "
-        "libraries (on Ubuntu, apt-get install python2.7-dev).")
+        "libraries (on Ubuntu, sudo apt-get install python2.7-dev).")
 ENDIF()
 
 
