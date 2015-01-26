@@ -42,6 +42,8 @@
 #include "MultiplierFunction.h"
 #include "PolynomialFunction.h"
 
+#include "Delay.h"
+
 #include "DisplayGeometry.h"
 #include "GeometrySet.h"
 #include "VisibleObject.h"
@@ -90,6 +92,7 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::registerType( MultiplierFunction() );
     Object::registerType(PolynomialFunction());
 
+    Object::registerType(Delay());
 
     Object::registerType( DisplayGeometry() );
     Object::registerType( GeometrySet() );

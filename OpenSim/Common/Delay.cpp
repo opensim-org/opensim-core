@@ -1,7 +1,5 @@
-#ifndef _osimCommon_h_
-#define _osimCommon_h_
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  osimCommon.h                           *
+ *                             OpenSim: Delay.cpp                             *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                     *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Author(s): Chris Dembia                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,34 +21,41 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Object.h"
-#include "VisibleObject.h"
-#include "RegisterTypes_osimCommon.h"
-#include "FunctionSet.h"
-#include "GCVSplineSet.h"
-#include "ScaleSet.h"
-#include "GCVSpline.h"
-#include "IO.h"
-
-#include "Scale.h"
-#include "SimmSpline.h"
-#include "Constant.h"
-#include "Sine.h"
-#include "StepFunction.h"
-#include "LinearFunction.h"
-#include "PiecewiseConstantFunction.h"
-#include "PiecewiseLinearFunction.h"
-
-#include "MultiplierFunction.h"
-#include "PolynomialFunction.h"
-
 #include "Delay.h"
 
-#include "VisibleObject.h"
-#include "ObjectGroup.h"
-#include "StorageInterface.h"
-#include "LoadOpenSimLibrary.h"
-#include "RegisterTypes_osimCommon.h"   // to expose RegisterTypes_osimCommon
-#include "SmoothSegmentedFunctionFactory.h"
+using namespace OpenSim;
 
-#endif // _osimCommon_h_
+Delay::Delay() {
+    constructProperties();
+}
+
+void Delay::constructProperties() {
+    constructProperty_delay(0.0);
+}
+
+void Delay::constructInputs() {
+    constructInput<double>("input", SimTK::Stage::Model);
+}
+
+void Delay::constructOutputs() {
+    constructOutput<double>("output", &Delay::getValue, SimTK::Stage::Model);
+}
+
+double Delay::getValue(const SimTK::State& s) const {
+    const auto& subsys = getSystem().getDefaultSubsystem();
+    const auto& measure = subsys.getMeasure(_delayMeasureIndex);
+    return SimTK::Measure::Delay::getAs(measure).getValue(s);
+}
+
+void Delay::extendAddToSystem(SimTK::MultibodySystem& system) const {
+    Super::extendAddToSystem(system);
+
+    auto& sub = system.updDefaultSubsystem();
+    const auto& input = *static_cast<const Input<double>*>(&getInput("input"));
+    SimTK::Measure::Delay delayMeasure(sub,
+            InputMeasure<double>(sub, input),
+            get_delay());
+    const_cast<Delay*>(this)->_delayMeasureIndex =
+        delayMeasure.getSubsystemMeasureIndex();
+        
+}
