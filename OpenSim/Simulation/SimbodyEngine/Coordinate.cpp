@@ -90,7 +90,7 @@ private:
  */
 Coordinate::Coordinate() 
 {
-    constructProperties();
+    constructInfrastructure();
 }
 
 //_____________________________________________________________________________
@@ -98,9 +98,9 @@ Coordinate::Coordinate()
  * Constructor.
  */
 Coordinate::Coordinate(const std::string &aName, MotionType aMotionType,
-        double defaultValue, double aRangeMin, double aRangeMax)
+        double defaultValue, double aRangeMin, double aRangeMax) :
+    Coordinate()
 {
-    constructProperties();
     setName(aName);
     setMotionType(aMotionType);
     setDefaultValue(defaultValue);
