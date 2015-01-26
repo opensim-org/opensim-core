@@ -57,15 +57,21 @@ void Frame::extendAddToSystem(SimTK::MultibodySystem& system) const
 
 const SimTK::Transform& Frame::getGroundTransform(const SimTK::State& s) const
 {
-    if (!this->isCacheVariableValid(s, "ground_transform")){
-        this->template setCacheVariableValue<SimTK::Transform>(s,
-            "ground_transform", calcGroundTransform(s) );
+    if (!getSystem().getDefaultSubsystem().
+            isCacheValueRealized(s, groundTransformIndex)){
+        //cache is not valid so calculate the transform
+        SimTK::Value<SimTK::Transform>::downcast(
+            getSystem().getDefaultSubsystem().
+            updCacheEntry(s, groundTransformIndex)).upd()
+                = calcGroundTransform(s);
+        // mark cache as up-to-date
+        getSystem().getDefaultSubsystem().
+            markCacheValueRealized(s, groundTransformIndex);
     }
-    // return X_GF = X_GB * X_BF where F is the offset frame;
-    return this->template getCacheVariableValue<SimTK::Transform>(s,
-        "ground_transform");
+    return SimTK::Value<SimTK::Transform>::downcast(
+        getSystem().getDefaultSubsystem().
+            getCacheEntry(s, groundTransformIndex)).get();
 }
-
 
 //=============================================================================
 // FRAME COMPUTATIONS
@@ -104,3 +110,8 @@ SimTK::Transform Frame::findTransformInBaseFrame() const
     return extendFindTransformInBaseFrame();
 }
 
+void Frame::extendRealizeTopology(SimTK::State& s) const
+{
+    Super::extendRealizeTopology(s);
+    groundTransformIndex = getCacheVariableIndex("ground_transform");
+}

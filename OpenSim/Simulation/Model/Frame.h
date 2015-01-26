@@ -189,7 +189,13 @@ public:
     ///@}
 
 protected:
+    /** @name Component Extension methods.
+        Frame types override these Component methods. */
+    /**@{**/
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    void extendRealizeTopology(SimTK::State& s) const override;
+    /**@}**/
+
 private:
     /** @name Extension methods.
         Concrete Frame types must override these methods. */
@@ -207,6 +213,8 @@ private:
     virtual const Frame& extendFindBaseFrame() const = 0;
     virtual SimTK::Transform extendFindTransformInBaseFrame() const = 0;
     /**@}**/
+
+    mutable SimTK::CacheEntryIndex groundTransformIndex;
 
 //=============================================================================
 };  // END of class Frame

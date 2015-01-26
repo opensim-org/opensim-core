@@ -99,12 +99,28 @@ void testBody()
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
     SimTK::State& s = pendulum->initSystem();
 
+    const SimTK::DefaultSystemSubsystem& dsys =
+        pendulum->getSystem().getDefaultSubsystem();
+
+    std::clock_t now = std::clock();
+    std::clock_t after = now;
+    std::clock_t lookup_time = 0;
+
     //move the pendulum through a range of motion of 0 to 90 degrees
     for (double ang = 0; ang <= 90.0; ang += 10.){
         double radAngle = SimTK::convertDegreesToRadians(ang);
         const Coordinate& coord = pendulum->getCoordinateSet().get("q1");
         coord.setValue(s, radAngle);
+
         const SimTK::Transform& xform = rod1.getGroundTransform(s);
+
+        now = std::clock();
+        for (int i = 0; i < 1000; ++i){
+            const SimTK::Transform& xform1 = rod1.getGroundTransform(s);
+        }
+        after = std::clock();
+        lookup_time += (after-now);
+
         // The transform should give a translation of .353553, .353553, 0.0
         SimTK::Vec3 p_known(0.5*sin(radAngle), -0.5*cos(radAngle), 0.0);
         ASSERT_EQUAL(p_known, xform.p(), SimTK::Vec3(SimTK::Eps),
@@ -117,6 +133,7 @@ void testBody()
             __FILE__, __LINE__,
             "testBody(): incorrect rod1 orientation in ground.");
     }
+    cout << "get transform access time = " << 1e3*lookup_time << "ms" << endl;
 }
 
 void testOffsetFrameOnBody()
