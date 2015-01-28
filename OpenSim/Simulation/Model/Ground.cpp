@@ -64,8 +64,7 @@ void Ground::extendAddToSystem(SimTK::MultibodySystem& system) const
 void RigidFrame::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
 {
-    Super::generateDecorations(fixed, hints, state, appendToThis);
+    //Super::generateDecorations(fixed, hints, state, appendToThis);
     if (!fixed || !hints.get_show_frames()) return;
-    SimTK::DecorativeGeometry dg = SimTK::DecorativeFrame().setBodyId(_index).setLineThickness(2);
-    appendToThis.push_back(dg);
+    getDisplayDelegate().generateDecorations(*this, fixed, hints, state, appendToThis);
 }

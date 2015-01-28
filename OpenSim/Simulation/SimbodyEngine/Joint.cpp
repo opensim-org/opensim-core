@@ -338,6 +338,42 @@ void Joint::scale(const ScaleSet& scaleSet)
     }
 }
 
+/** Create 2 geometry frames and add them to passed in array. */
+void Joint::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {
+
+     // invoke parent class method
+    Super::generateDecorations(fixed, hints, state, appendToThis);
+    if (!fixed) return;
+    // the frame on body 1 will be red
+    SimTK::Vec3 frame1color(1.0,0.0,0.0);
+    // the frame on body 2 will be blue
+    SimTK::Vec3 frame2color(0.0,0.5,1.0);
+    // the moment on body 2 will be yellow
+    SimTK::Vec3 moment2color(1.0,1.0,0.0);
+    // the force on body 2 will be green
+    //SimTK::Vec3 force2color(0.0,1.0,0.0);
+    double dimension = 1.0;
+    // create frames to be fixed on body 1 and body 2
+    SimTK::DecorativeFrame childFrame(dimension);
+    SimTK::DecorativeFrame parentFrame(dimension);
+
+    // attach frame to body, translate and rotate it to the location of the joint
+    childFrame.setBodyId(getChildBody().getMobilizedBodyIndex());
+    childFrame.setTransform(getChildTransform());
+    childFrame.setColor(frame1color);
+
+    // attach frame to parent, translate and rotate it to the location of the joint
+    parentFrame.setBodyId(getParentBody().getMobilizedBodyIndex());
+    parentFrame.setTransform(getParentTransform());
+    parentFrame.setColor(frame2color);
+    
+    appendToThis.push_back(childFrame);
+    appendToThis.push_back(parentFrame);
+
+}
+
+
 /** Construct coordinates according to the mobilities of the Joint */
 void Joint::constructCoordinates()
 {

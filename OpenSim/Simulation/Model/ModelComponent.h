@@ -46,6 +46,7 @@
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
+#include <OpenSim/Simulation/Model/DisplayerInterface.h>
 #include "Simbody.h"
 
 namespace OpenSim {
@@ -275,13 +276,19 @@ private:
     void setNull() {
         _model = NULL;
     }
-    
+public:    
+    void setDisplayDelegate(const OpenSim::DisplayerInterface& newDelegate) {
+        _displayDelegate = newDelegate;
+    }
 protected:
+    const OpenSim::DisplayerInterface& getDisplayDelegate() const {
+        return *_displayDelegate;
+    }
     /** The model this component belongs to. */
     // TODO: this should be private; all components should use getModel()
     // and updModel() to get access. This is just a reference; don't delete!
     SimTK::ReferencePtr<Model> _model;
-
+    SimTK::ClonePtr<OpenSim::DisplayerInterface> _displayDelegate;
 
 //==============================================================================
 };  // END of class ModelComponent

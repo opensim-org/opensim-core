@@ -213,8 +213,6 @@ private:
 	void setNull();
 	void constructProperties();
 	void updateDisplayPath(const SimTK::State& s) const;
-	void updateGeometrySize(const SimTK::State& ) const;
-	void updateGeometryLocations(const SimTK::State& s) const;
 	void namePathPoints(int aStartingIndex);
     void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, 
                            int aIndex, const PhysicalFrame& aBody);

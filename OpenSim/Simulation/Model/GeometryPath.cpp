@@ -62,7 +62,8 @@ GeometryPath::GeometryPath() :
 {
     setNull();
     constructProperties();
-}
+    _displayDelegate = new PathDisplayer();
+ }
 
 //_____________________________________________________________________________
 /*
@@ -159,52 +160,16 @@ void GeometryPath::
 generateDecorations(bool fixed, const ModelDisplayHints& hints, 
                     const SimTK::State& state, 
                     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
-{		
-    Super::generateDecorations(fixed, hints, state, appendToThis);
-
+{		 
     // There is no fixed geometry to generate here.
     if (fixed) { return; }
-
     // Ensure that the state has been realized to Stage::Dynamics to give
     // clients of this path a chance to calculate meaningful color information.
     this->getModel().getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
 
-    const SimbodyMatterSubsystem& matter = this->getModel().getMatterSubsystem();
-
     this->updateDisplayPath(state);
-    
-    const Array<PathPoint*>& points = this->getCurrentDisplayPath(state);
 
-    if (points.getSize() == 0) { return; }
-
-    const PathPoint* lastPoint = points[0];	
-    Vec3 lastLoc_B = lastPoint->getLocation();
-    MobilizedBodyIndex lastBody = lastPoint->getBody().getMobilizedBodyIndex();
-
-    if (hints.get_show_path_points())
-        DefaultGeometry::drawPathPoint(lastBody, lastLoc_B, getColor(state), 
-                                       appendToThis);
-
-    Vec3 lastPos = matter.getMobilizedBody(lastBody)
-                         .getBodyTransform(state) * lastLoc_B;
-
-    for(int j = 1; j < points.getSize(); j++) {
-        const PathPoint* point = points[j];
-        const Vec3 loc_B = point->getLocation();
-        const MobilizedBodyIndex body = point->getBody().getMobilizedBodyIndex();
-
-        if (hints.get_show_path_points())
-            DefaultGeometry::drawPathPoint(body, loc_B, getColor(state), 
-                                           appendToThis);
-
-        Vec3 pos = matter.getMobilizedBody(body).getBodyTransform(state)*loc_B;
-
-        appendToThis.push_back(DecorativeLine(lastPos, pos)
-                               .setLineThickness(4)
-                               .setColor(getColor(state)));
-
-        lastPos = pos;
-    }
+    getDisplayDelegate().generateDecorations(*this, fixed, hints, state, appendToThis);
 }
 
 //_____________________________________________________________________________
@@ -440,88 +405,6 @@ getCurrentDisplayPath(const SimTK::State& s) const
 
 //_____________________________________________________________________________
 /*
- * updateGeometrySize updates the size of the array of geometry items to be of 
- * the correct size based on changes to the path.
- * 
- */
-void GeometryPath::updateGeometrySize(const SimTK::State& s) const
-{
-/*    const int numberOfSegments = get_display().countGeometry();
-    const Array<PathPoint*>& currentDisplayPath = 
-        getCacheVariableValue<Array<PathPoint*> >(s, "current_display_path");
-
-    // Track whether we're creating geometry from scratch or
-    // just updating
-
-    GeometryPath* mutableThis = const_cast<GeometryPath*>(this);	
-    
-    bool update = (numberOfSegments!=0);  
-    int newNumberOfSegments=currentDisplayPath.getSize()-1;
-    if (newNumberOfSegments <= 0)
-        return;
-    // update geom array to have correct number of entries
-    if (!update || (update && (newNumberOfSegments != numberOfSegments))) {	
-        if (newNumberOfSegments > numberOfSegments) { // add entries
-            for (int segment = numberOfSegments; 
-                 segment < newNumberOfSegments; 
-                 segment++)
-            {
-                Geometry *g = new LineGeometry();
-                g->setFixed(false);
-                mutableThis->upd_display().addGeometry(g);
-            }
-        }
-        else {	// remove entries
-            for (int segment = numberOfSegments-1;
-                 segment >= newNumberOfSegments; 
-                 segment--) //Remove back to front so no array packing is needed
-            {
-                mutableThis->upd_display().removeGeometry
-                    (mutableThis->upd_display().getGeometry(segment));
-            }
-        }
-    }*/
-}
-
-//_____________________________________________________________________________
-/*
- * updateGeometryLocations updates the locations of the array of geometry items 
- * to be in the right place based changes to the path.
- * 
- */
-void GeometryPath::updateGeometryLocations(const SimTK::State& s) const
-{
-    SimTK::Vec3 globalLocation;
-    SimTK::Vec3 previousPointGlobalLocation;
-    const Array<PathPoint*>& currentDisplayPath = 
-        getCacheVariableValue<Array<PathPoint*> >(s, "current_display_path");
-
-    GeometryPath * mutableThis = const_cast<GeometryPath*>(this);
-    /**
-    for (int i = 0; i < currentDisplayPath.getSize(); i++){
-        PathPoint* nextPoint =currentDisplayPath.get(i);
-        // xform point to global frame
-        const Vec3& location=nextPoint->getLocation();
-        const PhysicalFrame& body = nextPoint->getBody();
-        if (i > 0){
-            previousPointGlobalLocation = globalLocation;
-        }
-        //_model->getSimbodyEngine().transformPosition(s, body, location, 
-        //                                             globalLocation);
-        globalLocation = body.getGroundTransform(s)*location;
-        
-        // Make a segment between globalLocation, previousPointGlobalLocation.
-        if (i > 0){
-            // Geometry will be deleted when the object is deleted.
-            LineGeometry *g = static_cast<LineGeometry *>
-                                (mutableThis->upd_display().getGeometry(i-1));
-            g->setPoints(previousPointGlobalLocation, globalLocation);
-        }
-    }*/
-}
-
-//_____________________________________________________________________________
-/*
  * Update the geometric representation of the path.
  * The resulting geometry is maintained at the VisibleObject layer.
  * This function should not be made public. It is called internally
@@ -540,8 +423,6 @@ void GeometryPath::updateGeometry(const SimTK::State& s) const
     // Updating the display path will also validate the current_display_path 
     // cache variable.
     updateDisplayPath(s);
-    updateGeometrySize(s);
-    updateGeometryLocations(s);
 }
 
 //=============================================================================
@@ -576,7 +457,6 @@ Vec3 GeometryPath::getColor(const SimTK::State& s) const
 {
     return getCacheVariableValue<SimTK::Vec3>(s, "color");
 }
-
 
 //_____________________________________________________________________________
 /*

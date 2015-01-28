@@ -1014,7 +1014,14 @@ void Model::generateDecorations
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
 {
-    Super::generateDecorations(fixed,hints,state,appendToThis);
+    ComponentList<ModelComponent> allModelComps = getComponentList<ModelComponent>();
+    ComponentList<ModelComponent>::const_iterator iter = allModelComps.begin(); 
+    iter++; // Skip Model itself
+    while (iter != allModelComps.end()){
+        //std::string cn = iter->getConcreteClassName();
+        iter->generateDecorations(fixed, hints, state, appendToThis);
+        iter++;
+    }
 }
 
 void Model::equilibrateMuscles(SimTK::State& state)
