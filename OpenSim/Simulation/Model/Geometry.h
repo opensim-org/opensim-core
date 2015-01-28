@@ -229,16 +229,22 @@ class OSIMSIMULATION_API ArrowGeometry : public LineGeometry
     OpenSim_DECLARE_CONCRETE_OBJECT(ArrowGeometry, LineGeometry);
 public:
     // constructor that takes startPoint, direction vector and length
-	ArrowGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aUnitDirTo, double aLength):
-	  LineGeometry()
-	{
+    ArrowGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aUnitDirTo, double aLength) :
+        LineGeometry()
+    {
         SimTK::Vec3 point2 = aPoint1 + aLength* aUnitDirTo;
         setPoints(aPoint1, point2);
-	}
+    }
+    // constructor that takes startPoint, direction vector and length
+    ArrowGeometry() :
+        LineGeometry()
+    {
+        setPoints(SimTK::Vec3(0), SimTK::Vec3(1));
+    }
     // destructor
 	virtual ~ArrowGeometry() {}
 
-    void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override {};
+    void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 };
 
 

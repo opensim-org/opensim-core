@@ -110,6 +110,15 @@ void LineGeometry::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeome
     decoGeoms.push_back(deco);
 }
 
+void ArrowGeometry::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+{
+    LineGeometry::createDecorativeGeometry(decoGeoms);
+    // Add Brick at the top
+    DecorativeBrick tip(Vec3(.005));
+    tip.setTransform(SimTK::Transform(get_end_point()));
+    decoGeoms.push_back(tip);
+}
+
 void Ellipsoid::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();

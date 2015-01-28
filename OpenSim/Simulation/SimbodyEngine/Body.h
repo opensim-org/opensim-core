@@ -136,6 +136,8 @@ private:
                                              const SimTK::Vec3& outerScaleFactors, 
                                              const SimTK::Vec6& outerTransform, 
                                              SimTK::Xml::Element& geomSetElement) const;
+    void createFrameForXform(const SimTK::Xml::element_iterator&, const std::string& frameName, 
+                                            const SimTK::Vec6& localXform, const std::string& bodyName) const;
 	// mutable because fist get constructs tensor from properties
 	mutable SimTK::Inertia _inertia;
 

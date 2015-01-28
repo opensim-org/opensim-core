@@ -58,7 +58,7 @@ public:
     OpenSim_DECLARE_PROPERTY(opacity, double,
         "The opacity (0-1) used to display the object. ");
     OpenSim_DECLARE_PROPERTY(representation, int,
-        "The representation (0:Hide, 1:Wire 2:Shaded) used to display the object. ");
+        "The representation (0:Hide, 1:Points, 2:Wire 2:Shaded) used to display the object. ");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(texture_file, std::string,
         "Name of file containing texture. ");
     /**@}**/
@@ -80,7 +80,7 @@ private:
     void constructProperties() {
         constructProperty_color(SimTK::Vec3(1.0));
         constructProperty_opacity(1.0);
-        constructProperty_representation(4);
+        constructProperty_representation(3);
     }
 //=============================================================================
 };	// END of class Appearance

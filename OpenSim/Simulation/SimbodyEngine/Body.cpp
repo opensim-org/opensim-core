@@ -479,6 +479,9 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
         int counter = 1;
         while (displayGeomIter != objectsIter->element_end()){
             // Create a <Mesh> Element and populate it
+            SimTK::Xml::Element meshNode("Mesh");
+            std::string geomName = bodyName + "_geom_" + to_string(counter);
+            meshNode.setAttributeValue("name", geomName);
             // geometry_file
             std::string geomFile = "";
             SimTK::Xml::element_iterator geomFileIter = displayGeomIter->element_begin("geometry_file");
@@ -491,6 +494,25 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
             if (localXformIter != displayGeomIter->element_end()){
                 localXform = localXformIter->getValueAs<SimTK::Vec6>();
             }
+            if (localXform.norm() > SimTK::Eps){
+                // Create a Frame
+/*
+                std::string frameName = bodyName + "_Frame_" + to_string(counter);
+                SimTK::Xml::Element frameNode("frame_name", frameName);
+                meshNode.insertNodeAfter(meshNode.element_end(), frameNode);
+                
+                SimTK::Xml::Element modelNode = bodyNode;
+                do {
+                    modelNode = modelNode.getParentElement();
+                    SimTK::String edump;
+                    modelNode.writeToString(edump);
+                } while (modelNode.getElementTag() != "Model" && !modelNode.isTopLevelNode());              
+
+                SimTK::Xml::element_iterator frameSetIter = modelNode.element_begin("FrameSet");
+                SimTK::Xml::element_iterator frameSetObjectsIter = frameSetIter->element_begin("objects");
+                createFrameForXform(frameSetObjectsIter, frameName, localXform, bodyName);
+                 */
+            }
             // scale_factor
             SimTK::Vec3 localScale(1.);
             SimTK::Xml::element_iterator localScaleIter = displayGeomIter->element_begin("scale_factors");
@@ -498,9 +520,6 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
                 localScale = localScaleIter->getValueAs<SimTK::Vec3>();
             }
             // Now compose scale factors and xforms and create new node to insert into bodyNode
-             SimTK::Xml::Element meshNode("Mesh");
-             std::string geomName = bodyName+"_geom_" + to_string(counter);
-             meshNode.setAttributeValue("name", geomName);
              SimTK::Xml::Element meshFileNode("mesh_file", geomFile);
              std::stringstream localScaleStr;
              localScaleStr << localScale[0] * outerScaleFactors[0] << " " << localScale[1] * outerScaleFactors[1] 
@@ -521,6 +540,11 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
              SimTK::Xml::element_iterator reprIter = displayGeomIter->element_begin("display_preference");
              if (reprIter != displayGeomIter->element_end()){
                  reprIter->setElementTag("representation");
+                 if (reprIter->getValue() == "4"){
+                     // Enum changed to go 0-3 instead of 0-4
+                     SimTK::String rep = "3";
+                     reprIter->setValue(rep);
+                 }
                  appearanceNode.insertNodeAfter(appearanceNode.element_end(), displayGeomIter->removeNode(reprIter));
              }
              meshNode.insertNodeAfter(meshNode.element_end(), appearanceNode);
@@ -530,6 +554,17 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
              counter++;
         }
     }
+}
+// This private method creates a frame in the owner model document with passed in name and content relative to bodyName
+void Body::createFrameForXform(const SimTK::Xml::element_iterator& frameSetIter, const std::string& frameName, const SimTK::Vec6& localXform, const std::string& bodyName) const
+{
+    SimTK::Xml::Element frameNode("FixedFrame");
+    frameNode.setAttributeValue("name", frameName);
+    SimTK::Xml::Element translationNode("translation", localXform.getSubVec<3>(3));
+    SimTK::Xml::Element orientationNode("rotation", localXform.getSubVec<3>(0));
+    frameNode.insertNodeAfter(frameNode.element_end(), translationNode);
+    frameNode.insertNodeAfter(frameNode.element_end(), orientationNode);
+    frameSetIter->insertNodeAfter(frameSetIter->element_end(), frameNode);
 }
 
 Body* Body::addSlave()
@@ -555,101 +590,5 @@ void Body::generateDecorations(bool fixed, const ModelDisplayHints& hints, const
 {
     Super::generateDecorations(fixed, hints, state, appendToThis);
     if (!fixed) return;
-    const SimTK::MobilizedBodyIndex bx = getMobilizedBodyIndex();
-    int nGeom = getProperty_GeometrySet().size();
-
-    for (int g = 0; g < nGeom; ++g) {
-        const Geometry& geo = get_GeometrySet(g);
-        const std::string geoID = geo.getPathName();
-        const Vec3 netScale = geo.get_scale_factors();
-        //const std::string frameName = geo.get_frame_name();
-        //std::cout << "Compute transform of " << geo.getName() << " wrt body " << getName() << std::endl;
-        SimTK::Transform xformRelativeToBody = geo.getTransform(state, *this);
-        const Appearance& ap = geo.get_Appearance();
-        int repG = ap.get_representation();
-        Vec3 color = ap.get_color();
-        double opacity = ap.get_opacity();
-        DecorativeGeometry::Representation rep;
-        switch (repG) {
-        case 0:
-        continue; // don't bother with this one (TODO: is that right)
-        case 1:
-        case 2:
-        rep=DecorativeGeometry::DrawWireframe;
-        break;
-        case 3:
-        case 4:
-            rep = DecorativeGeometry::DrawSurface;
-        break;
-        default: assert(!"bad DisplayPreference");
-        };
-        
-        const OpenSim::Mesh* mGeom = Mesh::safeDownCast(const_cast<OpenSim::Geometry*>(&geo));
-        if (mGeom){
-            const std::string& file = mGeom->get_mesh_file();
-            bool isAbsolutePath; string directory, fileName, extension;
-            SimTK::Pathname::deconstructPathname(file,
-                isAbsolutePath, directory, fileName, extension);
-            const string lowerExtension = SimTK::String::toLower(extension);
-            if (lowerExtension != ".vtp" && lowerExtension != ".obj") {
-                std::clog << "ModelVisualizer ignoring '" << file
-                    << "'; only .vtp and .obj files currently supported.\n";
-                continue;
-            }
-
-            // File is a .vtp or .obj. See if we can find it.
-            SimTK::Array_<string> attempts;
-            bool foundIt = ModelVisualizer::findGeometryFile(getModel(), file, isAbsolutePath, attempts);
-
-            if (!foundIt) {
-                std::clog << "ModelVisualizer couldn't find file '" << file
-                    << "'; tried\n";
-                for (unsigned i = 0; i < attempts.size(); ++i)
-                    std::clog << "  " << attempts[i] << "\n";
-                if (!isAbsolutePath &&
-                    !SimTK::Pathname::environmentVariableExists("OPENSIM_HOME"))
-                    std::clog << "Set environment variable OPENSIM_HOME "
-                    << "to search $OPENSIM_HOME/Geometry.\n";
-                continue;
-            }
-
-            SimTK::PolygonalMesh pmesh;
-            try {
-                if (lowerExtension == ".vtp") {
-                    pmesh.loadVtpFile(attempts.back());
-                }
-                else {
-                    std::ifstream objFile;
-                    objFile.open(attempts.back().c_str());
-                    pmesh.loadObjFile(objFile);
-                    // objFile closes when destructed
-                }
-            }
-            catch (const std::exception& e) {
-                std::clog << "ModelVisualizer couldn't read "
-                    << attempts.back() << " because:\n"
-                    << e.what() << "\n";
-                continue;
-            }
-
-            SimTK::DecorativeMesh dmesh(pmesh);
-            dmesh.setScaleFactors(netScale);
-            dmesh.setTransform(xformRelativeToBody);
-            geo.setDecorativeGeometryAppearance(dmesh);
-            dmesh.setBodyId(bx);
-            appendToThis.push_back(dmesh);
-        }
-        else {
-            SimTK::Array_<SimTK::DecorativeGeometry> deocrationsForGeom;
-            geo.createDecorativeGeometry(deocrationsForGeom);
-            for (unsigned g = 0; g < deocrationsForGeom.size(); ++g){
-                //_viz->addDecoration(bx, xformRelativeToBody, deocrationsForGeom[g]);
-                SimTK::DecorativeGeometry dg = deocrationsForGeom[g];
-                dg.setTransform(xformRelativeToBody);
-                dg.setBodyId(bx);
-                geo.setDecorativeGeometryAppearance(dg);
-                appendToThis.push_back(dg);
-            }
-        }
-    }
+    getDisplayDelegate().generateDecorations(*this, fixed, hints, state, appendToThis);
 }
