@@ -106,7 +106,9 @@ void testVisModel(string fileName)
     ModelDisplayHints mdh; // default
     SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
     model->generateDecorations(true, mdh, si, geometryToDisplay);
+    cout << geometryToDisplay.size() << endl;
     model->generateDecorations(false, mdh, si, geometryToDisplay);
+    cout << geometryToDisplay.size() << endl;
     DecorativeGeometryImplementationText dgiText;
     for (int i = 0; i < geometryToDisplay.size(); i++)
         geometryToDisplay[i].implementGeometry(dgiText);
@@ -117,7 +119,10 @@ void testVisModel(string fileName)
     buffer << t.rdbuf();
     std::string fromFile = buffer.str();
     std::string fromModel = dgiText.getAsString();
+    cout << "From Model " << endl << "=====" << endl;
     cout << fromModel << endl;
+    cout << "From File " << endl << "=====" << endl;
+    cout << fromFile << endl;
     int same = fromFile.compare(fromModel);
 	delete model;
     ASSERT(same == 0);
