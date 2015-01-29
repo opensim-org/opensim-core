@@ -61,10 +61,10 @@ void DefaultDisplayer::generateDecorationsInFrame(const RigidFrame& frame,
     const Model& model = frame.getModel();
     for (int g = 0; g < nGeom; ++g) {
         const Geometry& geo = frame.get_GeometrySet(g);
-        const std::string geoID = geo.getPathName();
+        //const std::string geoID = geo.getPathName();
         const Vec3 netScale = geo.get_scale_factors();
         //
-        std::cout << "Adding geometry " << geo.getName() << " type " << geo.getConcreteClassName() << std::endl;
+        //std::cout << "Adding geometry " << geo.getName() << " type " << geo.getConcreteClassName() << std::endl;
         SimTK::Transform xformRelativeToBody;
         xformRelativeToBody = geo.getTransform(state, frame);
         const Appearance& ap = geo.get_Appearance();
@@ -126,11 +126,11 @@ void DefaultDisplayer::generateDecorationsInFrame(const RigidFrame& frame,
         else {
             SimTK::Array_<SimTK::DecorativeGeometry> deocrationsForGeom;
             geo.createDecorativeGeometry(deocrationsForGeom);
-            for (unsigned g = 0; g < deocrationsForGeom.size(); ++g){
-                SimTK::DecorativeGeometry dg = deocrationsForGeom[g];
+            for (unsigned gi = 0; gi < deocrationsForGeom.size(); ++gi){
+                SimTK::DecorativeGeometry dg = deocrationsForGeom[gi];
                 dg.setTransform(xformRelativeToBody);
                 dg.setBodyId(bx);
-                dg.setIndexOnBody(g + 1);
+                dg.setIndexOnBody(100*g+gi + 1);
                 geo.setDecorativeGeometryAppearance(dg);
                 appendToThis.push_back(dg);
             }
@@ -147,7 +147,7 @@ void DefaultDisplayer::generateDecorationsNeedFrame(const ModelComponent& mc,
         const Model& model = mc.getModel();
         for (int g = 0; g < nGeom; ++g) {
             const Geometry& geo = mc.get_GeometrySet(g);
-            const std::string geoID = geo.getPathName();
+            //const std::string geoID = geo.getPathName();
             const Vec3 netScale = geo.get_scale_factors();
             //
             //std::cout << "Compute transform of " << geo.getName() << " wrt body " << getName() << std::endl;
@@ -221,11 +221,11 @@ void DefaultDisplayer::generateDecorationsNeedFrame(const ModelComponent& mc,
             else {
                 SimTK::Array_<SimTK::DecorativeGeometry> deocrationsForGeom;
                 geo.createDecorativeGeometry(deocrationsForGeom);
-                for (unsigned g = 0; g < deocrationsForGeom.size(); ++g){
-                    SimTK::DecorativeGeometry dg = deocrationsForGeom[g];
+                for (unsigned gi = 0; gi < deocrationsForGeom.size(); ++gi){
+                    SimTK::DecorativeGeometry dg = deocrationsForGeom[gi];
                     dg.setTransform(xformRelativeToBody);
                     dg.setBodyId(frame->getMobilizedBodyIndex());
-                    dg.setIndexOnBody(g + 1);
+                    dg.setIndexOnBody(100*g + gi +1);
                     geo.setDecorativeGeometryAppearance(dg);
                     appendToThis.push_back(dg);
                 }
