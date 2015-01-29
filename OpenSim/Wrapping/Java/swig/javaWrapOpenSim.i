@@ -886,6 +886,7 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/Frame.h>
 %include <OpenSim/Simulation/Model/PhysicalFrame.h>
 %include <OpenSim/Simulation/Model/Ground.h>
+%include <OpenSim/Simulation/Model/DisplayerInterface.h>
 %template(SetFrames) OpenSim::Set<OpenSim::Frame>;
 %template(ModelComponentSetFrames) OpenSim::ModelComponentSet<OpenSim::Frame>;
 

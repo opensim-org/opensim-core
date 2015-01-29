@@ -34,7 +34,6 @@ namespace OpenSim {
 class Body;
 class Model;
 class ModelDisplayHints;
-class SimTK::State;
 class ModelComponent;
 class RigidFrame;
 //=============================================================================

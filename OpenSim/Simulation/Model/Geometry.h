@@ -233,13 +233,14 @@ public:
         LineGeometry()
     {
         SimTK::Vec3 point2 = aPoint1 + aLength* aUnitDirTo;
-        setPoints(aPoint1, point2);
+        LineGeometry::setPoints(aPoint1, point2);
     }
     // constructor that takes startPoint, direction vector and length
     ArrowGeometry() :
         LineGeometry()
     {
-        setPoints(SimTK::Vec3(0), SimTK::Vec3(1));
+        SimTK::Vec3 point1(0.), point2(1.);
+        LineGeometry::setPoints(point1, point2);
     }
     // destructor
 	virtual ~ArrowGeometry() {}
