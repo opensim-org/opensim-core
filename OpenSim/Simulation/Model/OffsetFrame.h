@@ -46,8 +46,7 @@ namespace OpenSim {
  * OffsetFrame in the tree. This allows Solvers and algorithms to work directly
  * with the Base which can be more efficient.
  *
- * The only OffsetFrame we currently expect users to use is
- * OpenSim::PhysicalOffsetFrame.
+ * @see PhysicalOffsetFrame.
  *
  * @tparam C The type of the parent frame, as well as the super class. Must be
  * of type Frame.
@@ -56,7 +55,7 @@ namespace OpenSim {
  * @author Ajay Seth
  */
 template <class C = Frame>
-class OSIMSIMULATION_API OffsetFrame : public C {
+class  OffsetFrame : public C {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(OffsetFrame, C, C);
 public:
 //==============================================================================
@@ -142,7 +141,7 @@ protected:
     /**@{**/
     void constructConnectors() override;
     void extendFinalizeFromProperties() override;
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    //void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     /**@}**/
 
 private:
@@ -153,10 +152,119 @@ private:
     
     // the tranform on my parent frame
     SimTK::Transform _offsetTransform;
-
 //=============================================================================
 }; // END of class OffsetFrame
 //=============================================================================
+
+//=============================================================================
+// Implementation of OffsetFrame<C> template methods
+//=============================================================================
+// Default constructor
+template <class C>
+OffsetFrame<C>::OffsetFrame() : C()
+{
+    setNull();
+    this->constructInfrastructure();
+}
+
+// Convenience constructors
+template <class C>
+OffsetFrame<C>::OffsetFrame(const C& parent,
+    const SimTK::Transform& offset) : C()
+{
+    setNull();
+    this->constructInfrastructure();
+    setParentFrame(parent);
+    setOffsetTransform(offset);
+}
+
+// Set a null frame as Identity rotation, 0 translation
+template <class C>
+void OffsetFrame<C>::setNull()
+{
+    _offsetTransform.setToNaN();
+    this->setAuthors("Matt DeMers, Ajay Seth");
+}
+template <class C>
+void OffsetFrame<C>::constructProperties()
+{
+    SimTK::Vec3 zero(0.0, 0.0, 0.0);
+    constructProperty_translation(zero);
+    constructProperty_orientation(zero);
+    // transform at default
+}
+
+template <class C>
+void OffsetFrame<C>::constructConnectors()
+{
+    this->template constructConnector<C>("parent");
+}
+
+//=============================================================================
+// FRAME COMPUTATIONS
+//=============================================================================
+// Implementation of Frame interface by OffsetFrame.
+template <class C>
+const SimTK::Transform OffsetFrame<C>::
+calcGroundTransform(const SimTK::State& s) const
+{
+    return getParentFrame().getGroundTransform(s)*getOffsetTransform();
+}
+
+//=============================================================================
+// GET AND SET
+//=============================================================================
+template <class C>
+void OffsetFrame<C>::setParentFrame(const C& parent)
+{
+    this->template updConnector<C>("parent").connect(parent);
+}
+
+template <class C>
+const C& OffsetFrame<C>::getParentFrame() const
+{
+    return this->template getConnector<C>("parent").getConnectee();
+}
+
+template <class C>
+const SimTK::Transform& OffsetFrame<C>::getOffsetTransform() const
+{
+    return _offsetTransform;
+}
+
+template <class C>
+void OffsetFrame<C>::setOffsetTransform(const SimTK::Transform& xform)
+{
+    _offsetTransform = xform;
+    // Make sure properties are updated in case we either call gettters or
+    // serialize after this call
+    set_translation(xform.p());
+    set_orientation(xform.R().convertRotationToBodyFixedXYZ());
+}
+
+template<class C>
+const Frame& OffsetFrame<C>::extendFindBaseFrame() const
+{
+    // Offset defers finding the base frame to its parent
+    // since it is never a base frame itself.
+    return getParentFrame().findBaseFrame();
+}
+
+template<class C>
+SimTK::Transform OffsetFrame<C>::extendFindTransformInBaseFrame() const
+{
+    // transform is always an offset on the parent's transform
+    return getParentFrame().findTransformInBaseFrame() * getOffsetTransform();
+}
+
+template<class C>
+void OffsetFrame<C>::extendFinalizeFromProperties()
+{
+    _offsetTransform.updP() = get_translation();
+    _offsetTransform.updR().setRotationToBodyFixedXYZ(get_orientation());
+}
+
+
 } // end of namespace OpenSim
 
 #endif // OPENSIM_OFFSET_FRAME_H_

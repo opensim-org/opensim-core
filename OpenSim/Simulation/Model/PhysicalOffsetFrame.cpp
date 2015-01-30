@@ -25,60 +25,23 @@
 // INCLUDES
 //=============================================================================
 #include "PhysicalOffsetFrame.h"
-#include "OffsetFrame.hpp"
 
-using namespace std;
 using namespace OpenSim;
 
-//Specialization for Offset on a Frame of type PhysicalFrame
-template <>
-void OffsetFrame<PhysicalFrame>::
-extendAddToSystem(SimTK::MultibodySystem& system) const
-{
-    Super::extendAddToSystem(system);
-    setMobilizedBodyIndex(getParentFrame().getMobilizedBodyIndex());
-}
-
-//Specialization for Offset on a Frame of type PhysicalFrame
-template<>
-OffsetFrame<PhysicalFrame>::OffsetFrame(const PhysicalFrame& parent,
-    const SimTK::Transform& offset) : PhysicalFrame() {
-    setNull();
-    constructInfrastructure();
-    setParentFrame(parent);
-    setOffsetTransform(offset);
-}
-
-
-//=============================================================================
-// CONSTRUCTOR(S)
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
 PhysicalOffsetFrame::PhysicalOffsetFrame() : OffsetFrame<PhysicalFrame>()
 {
-    setNull();
+    setAuthors("Ajay Seth");
 }
-
-//_____________________________________________________________________________
-/**
- * Constructors.
- */
 
 PhysicalOffsetFrame::PhysicalOffsetFrame(const PhysicalFrame& parent,
     const SimTK::Transform& offset) : 
         OffsetFrame<PhysicalFrame>(parent, offset)
 {
-    setNull();
-}
-//_____________________________________________________________________________
-/**
-* Set a null frame as Identity rotation, 0 translation
-*/
-void PhysicalOffsetFrame::setNull()
-{
     setAuthors("Ajay Seth");
 }
 
+void PhysicalOffsetFrame::extendAddToSystem(SimTK::MultibodySystem& system) const
+{
+    Super::extendAddToSystem(system);
+    setMobilizedBodyIndex(getParentFrame().getMobilizedBodyIndex());
+}
