@@ -4,25 +4,25 @@ DecorativeBrick:~[0.5,0.01,0.5] bodyId:0 color:~[1,1,1] indexOnBody:1 Opacity:1 
 [0,0,1,0]
 [0,0,0,1]
 
-DecorativeBrick:~[0.05,0.05,0.05] bodyId:0 color:~[1,1,1] indexOnBody:1 Opacity:1 Rep:3 Scale:~[5,1,1] Transform:
+DecorativeBrick:~[0.05,0.05,0.05] bodyId:0 color:~[1,1,1] indexOnBody:101 Opacity:1 Rep:3 Scale:~[5,1,1] Transform:
 [1,0,0,0]
 [0,1,0,0.05]
 [0,0,1,0.35]
 [0,0,0,1]
 
-DecorativeBrick:~[0.05,0.05,0.05] bodyId:0 color:~[1,1,1] indexOnBody:1 Opacity:1 Rep:3 Scale:~[5,1,1] Transform:
+DecorativeBrick:~[0.05,0.05,0.05] bodyId:0 color:~[1,1,1] indexOnBody:201 Opacity:1 Rep:3 Scale:~[5,1,1] Transform:
 [1,0,0,0]
 [0,1,0,0.05]
 [0,0,1,-0.35]
 [0,0,0,1]
 
-DecorativeCylinder:0.30.2 bodyId:0 color:~[1,1,1] indexOnBody:1 Opacity:1 Rep:3 Scale:~[1,1,1] Transform:
+DecorativeCylinder:0.30.2 bodyId:0 color:~[1,1,1] indexOnBody:301 Opacity:1 Rep:3 Scale:~[1,1,1] Transform:
 [1,0,0,-0.2]
 [0,1,0,0]
 [0,0,1,0]
 [0,0,0,1]
 
-DecorativeEllipsoid:~[0.2,0.7,0.5] bodyId:0 color:~[1,1,1] indexOnBody:1 Opacity:1 Rep:3 Scale:~[1,1,1] Transform:
+DecorativeEllipsoid:~[0.2,0.7,0.5] bodyId:0 color:~[1,1,1] indexOnBody:401 Opacity:1 Rep:3 Scale:~[1,1,1] Transform:
 [1,0,0,-0.6]
 [0,1,0,0.6]
 [0,0,1,0]

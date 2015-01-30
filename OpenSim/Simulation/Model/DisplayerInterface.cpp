@@ -61,31 +61,9 @@ void DefaultDisplayer::generateDecorationsInFrame(const RigidFrame& frame,
     const Model& model = frame.getModel();
     for (int g = 0; g < nGeom; ++g) {
         const Geometry& geo = frame.get_GeometrySet(g);
-        //const std::string geoID = geo.getPathName();
-        const Vec3 netScale = geo.get_scale_factors();
-        //
-        //std::cout << "Adding geometry " << geo.getName() << " type " << geo.getConcreteClassName() << std::endl;
+         //
         SimTK::Transform xformRelativeToBody;
         xformRelativeToBody = geo.getTransform(state, frame);
-        const Appearance& ap = geo.get_Appearance();
-        int repG = ap.get_representation();
-        Vec3 color = ap.get_color();
-        double opacity = ap.get_opacity();
-        DecorativeGeometry::Representation rep;
-        switch (repG) {
-        case 0:
-            continue; // don't bother with this one (TODO: is that right)
-        case 1:
-        case 2:
-            rep = DecorativeGeometry::DrawWireframe;
-            break;
-        case 3:
-        case 4:
-            rep = DecorativeGeometry::DrawSurface;
-            break;
-        default: assert(!"bad DisplayPreference");
-        };
-
         const OpenSim::Mesh* mGeom = Mesh::safeDownCast(const_cast<OpenSim::Geometry*>(&geo));
         if (mGeom){
             const std::string& file = mGeom->get_mesh_file();
@@ -116,6 +94,7 @@ void DefaultDisplayer::generateDecorationsInFrame(const RigidFrame& frame,
             }
 
             SimTK::DecorativeMeshFile dmesh(file);
+            const Vec3 netScale = geo.get_scale_factors();
             dmesh.setScaleFactors(netScale);
             dmesh.setTransform(xformRelativeToBody);
             geo.setDecorativeGeometryAppearance(dmesh);
@@ -147,12 +126,9 @@ void DefaultDisplayer::generateDecorationsNeedFrame(const ModelComponent& mc,
         const Model& model = mc.getModel();
         for (int g = 0; g < nGeom; ++g) {
             const Geometry& geo = mc.get_GeometrySet(g);
-            //const std::string geoID = geo.getPathName();
             const Vec3 netScale = geo.get_scale_factors();
-            //
-            //std::cout << "Compute transform of " << geo.getName() << " wrt body " << getName() << std::endl;
             SimTK::Transform xformRelativeToBody;
-            const std::string& frameName = geo.get_frame_name();
+            const std::string& frameName = geo.isFrameSpecified()?geo.get_frame_name():"ground";
             ComponentList<RigidFrame> framesList = model.getComponentList<OpenSim::RigidFrame>();
             const RigidFrame* frame=0;
             for (const RigidFrame& frm : framesList) {
@@ -162,24 +138,6 @@ void DefaultDisplayer::generateDecorationsNeedFrame(const ModelComponent& mc,
                 }
             }
             xformRelativeToBody = geo.getTransform(state, *frame);
-            const Appearance& ap = geo.get_Appearance();
-            int repG = ap.get_representation();
-            Vec3 color = ap.get_color();
-            double opacity = ap.get_opacity();
-            DecorativeGeometry::Representation rep;
-            switch (repG) {
-            case 0:
-                continue; // don't bother with this one (TODO: is that right)
-            case 1:
-            case 2:
-                rep = DecorativeGeometry::DrawWireframe;
-                break;
-            case 3:
-            case 4:
-                rep = DecorativeGeometry::DrawSurface;
-                break;
-            default: assert(!"bad DisplayPreference");
-            };
 
             const OpenSim::Mesh* mGeom = Mesh::safeDownCast(const_cast<OpenSim::Geometry*>(&geo));
             if (mGeom){
@@ -240,6 +198,7 @@ void PathDisplayer::generateDecorations(const OpenSim::ModelComponent& mc,
     const SimTK::State&                         state,
     SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
 {
+    DefaultDisplayer::generateDecorations(mc, fixed, hints, state, appendToThis);
     if (fixed) return;
 
     const OpenSim::GeometryPath& gp = dynamic_cast<const OpenSim::GeometryPath&>(mc);

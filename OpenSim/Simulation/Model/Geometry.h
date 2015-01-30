@@ -153,6 +153,11 @@ public:
     // either be a property, or owner ModelComponent if it's a type of frame
     std::string getFrameName() const;
 
+    // Has frame returns whether a Frame is specifid. If not "ground" will be assumed
+    bool isFrameSpecified() const {
+        return getProperty_frame_name().size() > 0;
+    }
+
     // Map this Geometry into a list of primitives aka SimTK::DecorativeGeometry 
     // and return it in the passed in Array.
     virtual void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>&) const {};
@@ -182,6 +187,8 @@ public:
 	{
         constructProperties();
         setPoints(aPoint1, aPoint2);
+        std::string gnd("ground");
+        set_frame_name(gnd);
 	}
     // default constructor, creates line (0,0,0)-(1,1,1)
 	LineGeometry():
