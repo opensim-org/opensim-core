@@ -782,7 +782,7 @@ void Model::extendConnectToModel(Model &model)
 
     // Reorder coordinates in order of the underlying mobilities
     updCoordinateSet().populate(*this);
-
+    updFrameSet().invokeConnectToModel(*this);
     updMarkerSet().invokeConnectToModel(*this);
     updContactGeometrySet().invokeConnectToModel(*this);
     updForceSet().setupGroups();
@@ -1631,7 +1631,7 @@ int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
         const string& frameName = marker->getFrameName();
         if (getFrameSet().contains(frameName))
         {
-            const OpenSim::RigidFrame* frame = dynamic_cast<const RigidFrame*>(&getFrameSet().get(frameName));
+            const OpenSim::PhysicalFrame* frame = dynamic_cast<const PhysicalFrame*>(&getFrameSet().get(frameName));
             if(frame) marker->changeFrame(*frame);
             upd_MarkerSet().adoptAndAppend(marker);
             numAdded++;

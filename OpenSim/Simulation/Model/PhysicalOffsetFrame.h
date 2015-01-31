@@ -1,7 +1,7 @@
-#ifndef OPENSIM_STATION_H_
-#define OPENSIM_STATION_H_
+#ifndef OPENSIM_PHYSICAL_OFFSET_FRAME_H_
+#define OPENSIM_PHYSICAL_OFFSET_FRAME_H_
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  Station.h                             *
+ *                    OpenSim:  PhysicalOffsetFrame.h                         *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                     *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,67 +23,66 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "OpenSim/Simulation/Model/ModelComponent.h"
-#include "OpenSim/Simulation/Model/Frame.h"
-#include "OpenSim/Simulation/Model/PhysicalFrame.h"
+#include <OpenSim/Simulation/Model/OffsetFrame.h> 
+#include <OpenSim/Simulation/Model/PhysicalFrame.h> 
 
 namespace OpenSim {
-
-class Body;
 
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Station. A Station is a point fixed to and defined with 
- * respect to a reference frame. The reference frame can be a Body (fixed 
- * to origin of a Body), a FixedFrame (affixed to another PhysicalFrame) or any 
- * other PhysicalFrame. The main functionality provided by Station is to find its 
- * location in any Frame.
- *
- * @author Ayman Habib
- * @version 1.0
- */
-class OSIMSIMULATION_API Station : public ModelComponent {
-OpenSim_DECLARE_CONCRETE_OBJECT(Station, ModelComponent);
-public:
-    //==============================================================================
-    // PROPERTIES
-    //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with a Station. **/
-    /**@{**/
-    OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
-        "The location (Vec3) of the station in a reference frame. "
-        "Frame is specified as Connector.");
-    /**@}**/
+* A PhysicalOffsetFrame is a PhysicalFrame whose trasform is specified as a 
+* constant offset from another PhysicalFrame. Potential use cases for the 
+* PhysicalOffsetFrames are to specify the location of a Joint or Constraint on
+* a Body. For example, the location and orientation of the ankle joint frame
+* specified in the shank (tibia) Body's reference frame.
+* This class has the methods of both the OffsetFrame (template) and the
+* PhysicalFrame class.
+*
+* @author Ajay Seth
+*/
+class OSIMSIMULATION_API PhysicalOffsetFrame : public OffsetFrame<PhysicalFrame> {
+    OpenSim_DECLARE_CONCRETE_OBJECT(PhysicalOffsetFrame, OffsetFrame<PhysicalFrame>);
 
+//=============================================================================
+// PUBLIC METHODS
+//=============================================================================
 public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
-    Station();
-    virtual ~Station();
-    /** getter of Reference Frame off which the Station is defined */
-    const OpenSim::PhysicalFrame& getReferenceFrame() const;
-    /** setter of Reference Frame off which the Station is defined */
-    void setReferenceFrame(const OpenSim::PhysicalFrame& aFrame);
-    /** Find this Station's location in any Frame */
-    SimTK::Vec3 findLocationInFrame(const SimTK::State& s, const OpenSim::Frame& aFrame) const;
-private:
-    void setNull();
-    void constructProperties() override;
-    void constructConnectors() override;
+    /** By default, the frame is not connected to any parent frame,
+     * and its transform is an identity transform.
+     */
+    PhysicalOffsetFrame();
+
+    virtual ~PhysicalOffsetFrame() {};
+
+    /**
+    A convenience constructor that initializes the parent connection and
+    offset property of this PhysicalOffsetFrame.
+
+    @param[in] parent   The parent PhysicalOffsetFrame.
+    @param[in] offset   The offset transform between this frame and its parent
+    */
+    PhysicalOffsetFrame(const PhysicalFrame& parent,
+                        const SimTK::Transform& transform);
+
+protected:
+    /** Extend Component interface for adding the PhysicalOffsetFrame to the 
+        underlying multibody system */
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+
 
 //=============================================================================
-};  // END of class Station
+}; // END of class PhysicalOffsetFrame
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // OPENSIM_STATION_H_
+#endif // OPENSIM_PHYSICAL_OFFSET_FRAME_H_
 
 

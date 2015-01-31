@@ -63,7 +63,7 @@ own project.
 #include <OpenSim/Simulation/MomentArmSolver.h>
 
 #include <OpenSim/Simulation/Model/Frame.h>
-#include <OpenSim/Simulation/Model/FixedFrame.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
@@ -94,7 +94,7 @@ own project.
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/FixedFrame.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 #include <OpenSim/Simulation/Control/Control.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
@@ -593,8 +593,7 @@ namespace SimTK {
 %include <OpenSim/Simulation/MomentArmSolver.h>
 
 %include <OpenSim/Simulation/Model/Frame.h>
-%include <OpenSim/Simulation/Model/RigidFrame.h>
-%include <OpenSim/Simulation/Model/FixedFrame.h>
+%include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 %include <OpenSim/Simulation/Model/Force.h>
 %template(SetForces) OpenSim::Set<OpenSim::Force>;

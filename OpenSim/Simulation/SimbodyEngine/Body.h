@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/Model/RigidFrame.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 
@@ -36,14 +36,15 @@ class WrapObjectSet;
 //=============================================================================
 //=============================================================================
 /**
- * An OpenSim rigid body component. An OpenSim::Body is essentially a reference
- * frame with inertial properties specified by its mass, center-of-mass located
- * in the body frame and the moment of inertia tensor about the center-of-mass.  
+ * An OpenSim::Body is a PhysicalFrame (reference frame) with associated 
+ * inertia specified by its mass, center-of-mass located in the PhysicalFrame,
+ * and its moment of inertia tensor about the center-of-mass.
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API Body : public RigidFrame {
-    OpenSim_DECLARE_CONCRETE_OBJECT(Body, RigidFrame);
+class OSIMSIMULATION_API Body : public PhysicalFrame {
+    OpenSim_DECLARE_CONCRETE_OBJECT(Body, PhysicalFrame);
+
 public:
 //==============================================================================
 // PROPERTIES
@@ -112,8 +113,6 @@ public:
     const VisibleObject* getDisplayer() const { return &get_VisibleObject(); }
     VisibleObject* updDisplayer() { return &upd_VisibleObject(); }
 
-    
-    
     /** Get the named wrap object, if it exists.
     *
     * @param aName Name of the wrap object.
@@ -132,7 +131,7 @@ public:
     // Model component interface.
     void extendFinalizeFromProperties() override;
     void extendConnectToModel(Model& model) override;
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;  
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     // Underlying multibody tree building operations. Should only be called
     // by the connecting Joint
@@ -174,7 +173,6 @@ private:
     // involves splitting bodies to satsify loop constraints. Only the Model,
     // therefore, can tell a Body if it must add slaves to implement a valid
     // Multibody tree.
-
     friend class Model;
 
 //=============================================================================

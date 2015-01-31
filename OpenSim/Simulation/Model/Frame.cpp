@@ -25,7 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "Frame.h"
-#include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
 // STATICS
@@ -44,16 +43,35 @@ using SimTK::Vec3;
  */
 Frame::Frame() : ModelComponent()
 {
-    setNull();
-    
+    setAuthors("Matt DeMers, Ajay Seth");
 }
 
 
-void Frame::setNull()
+void Frame::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    setAuthors("Matt DeMers");
+    SimTK::Transform x;
+    // If the properties, topology or coordinate values, change, 
+    // Stage::Position will be invalid.
+    addCacheVariable("ground_transform", x, SimTK::Stage::Position);
 }
 
+const SimTK::Transform& Frame::getGroundTransform(const SimTK::State& s) const
+{
+    if (!getSystem().getDefaultSubsystem().
+            isCacheValueRealized(s, groundTransformIndex)){
+        //cache is not valid so calculate the transform
+        SimTK::Value<SimTK::Transform>::downcast(
+            getSystem().getDefaultSubsystem().
+            updCacheEntry(s, groundTransformIndex)).upd()
+                = calcGroundTransform(s);
+        // mark cache as up-to-date
+        getSystem().getDefaultSubsystem().
+            markCacheValueRealized(s, groundTransformIndex);
+    }
+    return SimTK::Value<SimTK::Transform>::downcast(
+        getSystem().getDefaultSubsystem().
+            getCacheEntry(s, groundTransformIndex)).get();
+}
 
 //=============================================================================
 // FRAME COMPUTATIONS
@@ -62,22 +80,38 @@ void Frame::setNull()
 SimTK::Transform Frame::findTransformBetween(const SimTK::State& state,
         const Frame& otherFrame) const
 {
-    SimTK::Transform ground_X_me = calcGroundTransform(state);
-    SimTK::Transform ground_X_other = otherFrame.calcGroundTransform(state);
-    return ~ground_X_other*ground_X_me;
+    SimTK::Transform X_GF = calcGroundTransform(state);
+    SimTK::Transform X_GA = otherFrame.calcGroundTransform(state);
+    // return the transform, X_AF that expresses quantities in F into A
+    return ~X_GA*X_GF;
 }
 
-SimTK::Vec3 Frame::expressVectorInAnotherFrame(const SimTK::State& state, const
-        SimTK::Vec3& vec, const Frame& frame) const
+SimTK::Vec3 Frame::expressVectorInAnotherFrame(const SimTK::State& state,
+                                const SimTK::Vec3& vec, const Frame& frame) const
 {
-    SimTK::Transform other_X_me = findTransformBetween(state, frame);
-    return other_X_me.R()*vec;
+    SimTK::Transform X_AF = findTransformBetween(state, frame);
+    return X_AF.R()*vec;
 }
 
 SimTK::Vec3 Frame::findLocationInAnotherFrame(const SimTK::State& state, const
         SimTK::Vec3& point, const Frame& otherFrame) const
 {
-    SimTK::Transform other_X_me = findTransformBetween(state, otherFrame);
-    return other_X_me*point;
+    SimTK::Transform X_AF = findTransformBetween(state, otherFrame);
+    return X_AF*point;
 }
 
+const Frame& Frame::findBaseFrame() const
+{
+    return extendFindBaseFrame();
+}
+
+SimTK::Transform Frame::findTransformInBaseFrame() const
+{
+    return extendFindTransformInBaseFrame();
+}
+
+void Frame::extendRealizeTopology(SimTK::State& s) const
+{
+    Super::extendRealizeTopology(s);
+    groundTransformIndex = getCacheVariableIndex("ground_transform");
+}

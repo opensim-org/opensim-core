@@ -1030,7 +1030,7 @@ const SimTK::MultibodySystem& Component::getSystem() const
         msg += "called Model::initSystem(). ";
         throw Exception(msg, __FILE__, __LINE__);
     }
-    return *_system;
+    return _system.getRef();
 }
 
 //------------------------------------------------------------------------------

@@ -223,6 +223,7 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
     
     int index = -1;
     int wIndex = -1;
+    SimTK::Transform X_BF;
     //Loop through all markers in the reference
     for(unsigned int i=0; i < markerNames.size(); ++i){
         // Check if we have this marker in the model, else ignore it
@@ -233,9 +234,10 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
             const SimTK::MobilizedBody& mobod =
                 marker.getReferenceFrame().getMobilizedBody();
 
-            const SimTK::Transform& X_BF = marker.getReferenceFrame().getTransformInMobilizedBody();
+            X_BF = marker.getReferenceFrame().findTransformInBaseFrame();
             _markerAssemblyCondition->
                 addMarker(marker.getName(), mobod, X_BF*marker.get_location(),
+
                 markerWeights[i]);
 
             //cout << "IKSolver Marker: " << markerNames[i] << " " << marker.getName() << "  weight: " << markerWeights[i] << endl;
