@@ -70,8 +70,9 @@
 #include "Model/Umberger2010MuscleMetabolicsProbe.h"
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
 #include "Model/Frame.h"
-#include "Model/FixedFrame.h"
-#include "Model/RigidFrame.h"
+#include "Model/PhysicalFrame.h"
+#include "Model/OffsetFrame.h"
+#include "Model/PhysicalOffsetFrame.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -174,12 +175,10 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     // CURRENT RELEASE
     Object::registerType( SimbodyEngine() );
+    Object::registerType(PhysicalFrame());
     Object::registerType( OpenSim::Body() );
-    Object::registerType( FixedFrame());
-    Object::registerType( WeldConstraint() );
-    Object::registerType( PointConstraint() );
-    Object::registerType( ConstantDistanceConstraint() );
-    Object::registerType( CoordinateCouplerConstraint() );
+    Object::registerType( PhysicalOffsetFrame());
+
     Object::registerType( WeldJoint());
     Object::registerType( CustomJoint());
     Object::registerType( EllipsoidJoint() );
@@ -194,6 +193,13 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( Coordinate() );
     Object::registerType( SpatialTransform() );
 
+    Object::registerType(WeldConstraint());
+    Object::registerType(PointConstraint());
+    Object::registerType(ConstantDistanceConstraint());
+    Object::registerType(CoordinateCouplerConstraint());
+    Object::registerType(PointOnLineConstraint());
+    Object::registerType(RollingOnSurfaceConstraint());
+
     Object::registerType( ContactGeometrySet() );
     Object::registerType( ContactHalfSpace() );
     Object::registerType( ContactMesh() );
@@ -205,8 +211,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( HuntCrossleyForce::ContactParametersSet() );
     Object::registerType( ElasticFoundationForce::ContactParameters() );
     Object::registerType( ElasticFoundationForce::ContactParametersSet() );
-    Object::registerType( PointOnLineConstraint() );
-    Object::registerType( RollingOnSurfaceConstraint() );
+
     Object::registerType( Ligament() );
     Object::registerType( PrescribedForce() );
     Object::registerType( ExternalForce() );
@@ -235,7 +240,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     // Register commonly used Connectors for de/serialization
     Object::registerType(Connector<OpenSim::Body>());
     Object::registerType(Connector<Frame>());
-    Object::registerType(Connector<RigidFrame>());
+    Object::registerType(Connector<PhysicalFrame>());
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.

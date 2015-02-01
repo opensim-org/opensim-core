@@ -79,16 +79,16 @@ void Station::constructProperties()
 
 void Station::constructConnectors()
 {
-    constructConnector<RigidFrame>("reference_frame");
+    constructConnector<PhysicalFrame>("reference_frame");
 }
 
 /**
  * Return the reference frame with respect to which this station is defined
  *
 */
-const RigidFrame& Station::getReferenceFrame() const
+const PhysicalFrame& Station::getReferenceFrame() const
 {
-    return getConnector<RigidFrame>("reference_frame").getConnectee();
+    return getConnector<PhysicalFrame>("reference_frame").getConnectee();
 }
 /**
  * setReferenceFrame sets the "reference_frame" connection
@@ -99,9 +99,9 @@ const RigidFrame& Station::getReferenceFrame() const
 // TODO: Connection is based on name so it may make more sense to pass in name instead
 // TODO: Not clear what to do when connection is re-established or who would trigger it
 
-void Station::setReferenceFrame(const OpenSim::RigidFrame& aFrame)
+void Station::setReferenceFrame(const OpenSim::PhysicalFrame& aFrame)
 {
-    updConnector<RigidFrame>("reference_frame").connect(aFrame);
+    updConnector<PhysicalFrame>("reference_frame").connect(aFrame);
 }
 
 SimTK::Vec3 Station::findLocationInFrame(const SimTK::State& s,

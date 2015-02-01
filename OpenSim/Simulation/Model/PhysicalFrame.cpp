@@ -1,5 +1,5 @@
-/* -------------------------------------------------------------------------- *
-*                             OpenSim:  RigidFrame.cpp                             *
+/* --------------------------------------------------------------------------*
+*                         OpenSim:  PhysicalFrame.cpp                        *
 * -------------------------------------------------------------------------- *
 * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
 * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -24,8 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "RigidFrame.h"
-#include <OpenSim/Simulation/Model/Model.h>
+#include "PhysicalFrame.h"
+#include "Model.h"
 
 //=============================================================================
 // STATICS
@@ -40,36 +40,36 @@ using namespace OpenSim;
 /**
 * Default constructor.
 */
-RigidFrame::RigidFrame() : Frame()
-{
-    setNull();
-
-}
-
-
-void RigidFrame::setNull()
+PhysicalFrame::PhysicalFrame() : Frame()
 {
     setAuthors("Matt DeMers");
 }
 
-const SimTK::MobilizedBody& RigidFrame::getMobilizedBody() const
+const SimTK::MobilizedBody& PhysicalFrame::getMobilizedBody() const
 {
-    return getModel().getMatterSubsystem().getMobilizedBody(_index);
+    return getModel().getMatterSubsystem().getMobilizedBody(_mbIndex);
 }
 
-SimTK::MobilizedBody& RigidFrame::updMobilizedBody() 
+SimTK::MobilizedBody& PhysicalFrame::updMobilizedBody() 
 {
-    return updModel().updMatterSubsystem().updMobilizedBody(_index);
+    return updModel().updMatterSubsystem().updMobilizedBody(_mbIndex);
 }
 
-/**
-* Implementation of Frame interface by RigidFrame
+/*
+* Implementation of Frame interface by PhysicalFrame.
+* 
 */
-SimTK::Transform RigidFrame::calcGroundTransform(const SimTK::State& state) const {
+const SimTK::Transform PhysicalFrame::
+    calcGroundTransform(const SimTK::State& s) const
+{
+    // return X_GF = X_GB * X_BF;
+    return getMobilizedBody().getBodyTransform(s);
+}
 
-    const SimTK::MobilizedBody &B = getModel().getMatterSubsystem().getMobilizedBody(_index);
-    const SimTK::Transform& X_GB = B.getBodyTransform(state);
 
-    return X_GB*getTransformInMobilizedBody();
+SimTK::Transform PhysicalFrame::extendFindTransformInBaseFrame() const
+{
+    Transform identity;
+    return identity.setToZero();
 }
 

@@ -66,6 +66,7 @@ public:
 #ifndef SWIG
     MarkerSet& operator=(const MarkerSet &aMarkerSet);
 #endif
+
     //--------------------------------------------------------------------------
     // UTILITIES
     //--------------------------------------------------------------------------
@@ -73,7 +74,8 @@ public:
     void scale(const ScaleSet& aScaleSet);
     /** Add a prefix to marker names for all markers in the set**/
     void addNamePrefix(const std::string& prefix);
-    Marker* addMarker( const std::string& aName, const SimTK::Vec3& aOffset, OpenSim::RigidFrame& aRigidFrame);
+    Marker* addMarker( const std::string& aName, const SimTK::Vec3& aOffset, OpenSim::PhysicalFrame& aPhysicalFrame);
+
 //=============================================================================
 };  // END of class MarkerSet
 //=============================================================================
