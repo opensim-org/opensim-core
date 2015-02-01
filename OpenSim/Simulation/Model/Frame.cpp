@@ -50,7 +50,7 @@ Frame::Frame() : ModelComponent()
 void Frame::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     SimTK::Transform x;
-    // If the properties, topology or coordinate values, change, 
+    // If the properties, topology or coordinate values change, 
     // Stage::Position will be invalid.
     addCacheVariable("ground_transform", x, SimTK::Stage::Position);
 }

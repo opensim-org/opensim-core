@@ -206,7 +206,7 @@ private:
     in this frame, F, to quantities expressed in the ground, G, frame.
     This is mathematically stated as:
         vec_G = X_GF*vec_F  */
-    virtual const SimTK::Transform
+    virtual SimTK::Transform
         calcGroundTransform(const SimTK::State& state) const = 0;
 
     /** Extend how concrete Frame determines its base Frame. */

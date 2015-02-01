@@ -32,11 +32,16 @@ class Body;
 //=============================================================================
 //=============================================================================
 /**
-* A PhysicalFrame is either a Body frame, the Ground frame, or whose transform
-* to a Body or the Ground frame is constant in time. This type of frame is
-* useful because, for example, Joints can only be attached to PhysicalFrames.
-* PhysicalFrames are often used for specifying the location and orientation of
-* Joints, Constraints, and where Forces are applied.
+* A PhysicalFrame is a Frame that locates a physical element of the multi-
+* body system that underlies a Model. A PhysicalFrame supports physical 
+* connections (e.g. Joints, Constraints) and is the Frame type upon which 
+* forces can be applied. A concrete example of a PhysicalFrame is a Body.
+* Attributes of a Body (its center-of-mass, geometry, ...) are located in the
+* Body frame. Bodies are connected by Joints and Constraints and Forces are 
+* readily applied to them. A location that represents an offset from the Body
+* frame, can also a PhysicalFrame (e.g. a PhysicalOffsetFrame).
+*
+* @see PhysicalOffsetFrame
 *
 * @author Matt DeMers
 * @author Ajay Seth
@@ -54,7 +59,7 @@ public:
     //--------------------------------------------------------------------------
     PhysicalFrame();
 
-    virtual ~PhysicalFrame() {};
+    virtual ~PhysicalFrame() {}
 
     /** @name Advanced: PhysicalFrame's SimTK::MobilizedBody Access
     Although these methods are public, they are intended for advanced users and
@@ -118,17 +123,18 @@ protected:
         _mbIndex = mbix; 
     }
 
-    /** Extend how concrete Frame determines its base Frame. */
+    /** Extend how PhysicalFrame determines its base Frame. */
     const Frame& extendFindBaseFrame() const override {
         return *this;
     }
 
+    /** Extend how PhysicalFrame determines its Transform in the base Frame. */
     SimTK::Transform extendFindTransformInBaseFrame() const override;
 
     ///@}
 
     /** The transform X_GF for this PhysicalFrame, F, in ground, G. */
-    const SimTK::Transform
+    SimTK::Transform
         calcGroundTransform(const SimTK::State& state) const override;
 
 private:
