@@ -3,15 +3,14 @@ SET(UKIT PYOPENSIM)
 
 IF(BUILD_PYTHON_WRAPPING)
 
-INCLUDE(${CMAKE_ROOT}/Modules/FindPythonLibs.cmake)
-INCLUDE(${CMAKE_ROOT}/Modules/FindPythonInterp.cmake)
-
+FIND_PACKAGE(PythonLibs 2.7)
+#FIND_PACKAGE(PythonInterp 2.7)
 
 IF(NOT PYTHONLIBS_FOUND)
     MESSAGE(FATAL_ERROR "Cannot build Python wrapping because "
         "Python libraries were not found. Either turn "
         "BUILD_PYTHON_WRAPPING off or install Python "
-        "libraries (on Ubuntu, apt-get install python2.7-dev).")
+        "libraries (on Ubuntu, sudo apt-get install python2.7-dev).")
 ENDIF()
 
 
@@ -22,7 +21,6 @@ SET(swig_output_header_file_fullname
     ${CMAKE_CURRENT_BINARY_DIR}/pyOpenSim_wrap.h)
 SET(swig_interface_file_fullname
     ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/Python/swig/pyWrapOpenSim.i)
-SET(SimTK_INCLUDE_PATH ${SIMTK_INCLUDE_DIR})
 
 # Using a custom command / custom target pair so that SWIG is only run when
 # it's out of date. Previously, we used a custom target only. But, custom

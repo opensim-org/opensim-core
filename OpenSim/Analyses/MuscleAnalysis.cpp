@@ -165,8 +165,8 @@ void MuscleAnalysis::setupProperties()
     _coordinateListProp.setName("moment_arm_coordinate_list");
     _propertySet.append( &_coordinateListProp );
 
-    _computeMomentsProp.setComment("Flag indicating whether moments should be"
-                                   " computed.");
+    _computeMomentsProp.setComment("Flag indicating whether moment-arms and/or "
+                                   "moments should be computed.");
     _computeMomentsProp.setName("compute_moments");
     _propertySet.append( &_computeMomentsProp );
 
@@ -212,56 +212,58 @@ void MuscleAnalysis::allocateStorageObjects()
     _muscleArray.setSize(0);
 
     // FOR MOMENT ARMS AND MOMEMTS
-    const CoordinateSet& qSet = _model->getCoordinateSet();
-    _coordinateList = _coordinateListProp.getValueStrArray();
+    if(_computeMoments) {
+        const CoordinateSet& qSet = _model->getCoordinateSet();
+        _coordinateList = _coordinateListProp.getValueStrArray();
 
-    if(IO::Lowercase(_coordinateList[0]) == "all"){
-        _coordinateList.setSize(0);
-        for(int i=0; i < qSet.getSize(); ++i) {
-            _coordinateList.append(qSet[i].getName());
+        if(IO::Lowercase(_coordinateList[0]) == "all"){
+            _coordinateList.setSize(0);
+            for(int i=0; i < qSet.getSize(); ++i) {
+                _coordinateList.append(qSet[i].getName());
+            }
+        } 
+        else{
+            int i=0;
+            while(i <_coordinateList.getSize()){
+                int found = qSet.getIndex(_coordinateList[i]);
+                if(found < 0){
+                    cout << "MuscleAnalysis: WARNING - coordinate ";
+                    cout << _coordinateList[i] << " is not part of model." << endl;
+                    _coordinateList.remove(i);
+                }
+                else{
+                    ++i;
+                }
+            }
         }
-    } 
-    else{
-        int i=0;
-        while(i <_coordinateList.getSize()){
+
+        int nq = _coordinateList.getSize();
+        Storage* store;
+        for(int i=0;i<nq;i++) {
+            string name = "MomentArm_" + _coordinateList[i];
+            store = new Storage(1000,name);
+            store->setDescription(getDescription());
+            _storageList.append(store);
+        }
+        for(int i=0;i<nq;i++) {
+            string name = "Moment_" + _coordinateList[i];
+            store = new Storage(1000,name);
+            store->setDescription(getDescription());
+            _storageList.append(store);
+        }
+
+        // POPULATE ACTIVE MOMENT ARM ARRAY
+        _momentArmStorageArray.setSize(0);
+
+        for(int i=0; i<nq; i++) {
             int found = qSet.getIndex(_coordinateList[i]);
-            if(found < 0){
-                cout << "MuscleAnalysis: WARNING - coordinate ";
-                cout << _coordinateList[i] << " is not part of model." << endl;
-                _coordinateList.remove(i);
+            if(found >=0){
+                StorageCoordinatePair *pair = new StorageCoordinatePair();
+                pair->q = &qSet[found];
+                pair->momentArmStore = _storageList[i];
+                pair->momentStore = _storageList[i+nq];
+                _momentArmStorageArray.append(pair);
             }
-            else{
-                ++i;
-            }
-        }
-    }
-
-    int nq = _coordinateList.getSize();
-    Storage *store;
-    for(int i=0;i<nq;i++) {
-        string name = "MomentArm_" + _coordinateList[i];
-        store = new Storage(1000,name);
-        store->setDescription(getDescription());
-        _storageList.append(store);
-    }
-    for(int i=0;i<nq;i++) {
-        string name = "Moment_" + _coordinateList[i];
-        store = new Storage(1000,name);
-        store->setDescription(getDescription());
-        _storageList.append(store);
-    }
-
-    // POPULATE ACTIVE MOMENT ARM ARRAY
-    _momentArmStorageArray.setSize(0);
-
-    for(int i=0; i<nq; i++) {
-        int found = qSet.getIndex(_coordinateList[i]);
-        if(found >=0){
-            StorageCoordinatePair *pair = new StorageCoordinatePair();
-            pair->q = &qSet[found];
-            pair->momentArmStore = _storageList[i];
-            pair->momentStore = _storageList[i+nq];
-            _momentArmStorageArray.append(pair);
         }
     }
 
@@ -373,6 +375,7 @@ void MuscleAnalysis::allocateStorageObjects()
     constructColumnLabels();
 
     int size = _storageList.getSize();
+    Storage* store;
     for(int i=0;i<size;i++) {
         store = _storageList[i];
         if(store==NULL) continue;
@@ -496,8 +499,8 @@ setStorageCapacityIncrements(int aIncrement)
  */
 int MuscleAnalysis::record(const SimTK::State& s)
 {
-    if(_model==NULL) return(-1);
-    if (!getOn()) return(-1);
+    if(_model==NULL) return -1;
+    if (!getOn()) return -1;
 
     // MAKE SURE ALL ACTUATION QUANTITIES ARE VALID
     // COMPUTE DERIVATIVES
@@ -667,7 +670,7 @@ int MuscleAnalysis::record(const SimTK::State& s)
             mStore->append(s.getTime(),nm,&m[0]);
         }
     }
-    return(0);
+    return 0;
 }
 //_____________________________________________________________________________
 /**
@@ -686,7 +689,7 @@ int MuscleAnalysis::record(const SimTK::State& s)
  */
 int MuscleAnalysis::begin(SimTK::State& s )
 {
-    if(!proceed()) return(0);
+    if(!proceed()) return 0;
 
     allocateStorageObjects();
 
@@ -714,7 +717,7 @@ int MuscleAnalysis::begin(SimTK::State& s )
     }
     if(_storageList.getSize()> 0 && _storageList.get(0)->getSize() <= 0) status = record(s);
 
-    return(status);
+    return status;
 }
 //_____________________________________________________________________________
 /**
@@ -734,11 +737,11 @@ int MuscleAnalysis::begin(SimTK::State& s )
  */
 int MuscleAnalysis::step(const SimTK::State& s, int stepNumber )
 {
-    if(!proceed(stepNumber)) return(0);
+    if(!proceed(stepNumber)) return 0;
 
     int status = record(s);
 
-    return(0);
+    return 0;
 }
 //_____________________________________________________________________________
 /**
@@ -759,7 +762,7 @@ int MuscleAnalysis::end(SimTK::State& s )
 {
     if (!proceed()) return 0;
     record(s);
-    return(0);
+    return 0;
 }
 
 //_____________________________________________________________________________
@@ -781,7 +784,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 {
     if(!getOn()) {
         printf("MuscleAnalysis.printResults: Off- not printing.\n");
-        return(0);
+        return 0;
     }
 
     std::string prefix = aBaseName + "_" + getName() + "_";
@@ -801,6 +804,6 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
             ->momentStore,fileName,aDir,aDT,aExtension);
     }
 
-    return(0);
+    return 0;
 }
 

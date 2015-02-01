@@ -34,7 +34,7 @@ endif()
 
 list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
     "@CMAKE_INSTALL_PREFIX@/sdk/include"
-    "@CMAKE_INSTALL_PREFIX@/sdk/include/Vendors/lepton/include"
+    "@CMAKE_INSTALL_PREFIX@/sdk/include/Vendors/Lepton/include"
     "@CMAKE_INSTALL_PREFIX@/sdk/include/SimTK/${_SIMBODY_INCLUDE_RELPATH}"
     )
 
