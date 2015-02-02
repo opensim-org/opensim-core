@@ -39,7 +39,7 @@ class Body;
 * Attributes of a Body (its center-of-mass, geometry, ...) are located in the
 * Body frame. Bodies are connected by Joints and Constraints and Forces are 
 * readily applied to them. A location that represents an offset from the Body
-* frame, can also a PhysicalFrame (e.g. a PhysicalOffsetFrame).
+* frame, can also be a PhysicalFrame (e.g. a PhysicalOffsetFrame).
 *
 * @see PhysicalOffsetFrame
 *

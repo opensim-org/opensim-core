@@ -46,6 +46,11 @@ namespace OpenSim {
  * OffsetFrame in the tree. This allows Solvers and algorithms to work directly
  * with the Base which can be more efficient.
  *
+ * OffsetFrame is an abstract class. Derive concrete subclasses in order to
+ * accomodate new Frame types that require their offsets to retain the same
+ * type as the parent. Fore example:
+ *  class PhysicalOffsetFrame : public OffsetFrame<PhysicalFrame>
+ *
  * @see PhysicalOffsetFrame.
  *
  * @tparam C The type of the parent frame, as well as the super class. Must be
@@ -56,7 +61,7 @@ namespace OpenSim {
  */
 template <class C = Frame>
 class OffsetFrame : public C {
-    OpenSim_DECLARE_CONCRETE_OBJECT_T(OffsetFrame, C, C);
+    OpenSim_DECLARE_ABSTRACT_OBJECT_T(OffsetFrame, C, C);
 public:
 //==============================================================================
 // PROPERTIES

@@ -47,6 +47,17 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame();
 void testFilterByFrameType();
 void testStationOnFrame();
 
+class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
+    OpenSim_DECLARE_CONCRETE_OBJECT(OrdinaryOffsetFrame, OffsetFrame<Frame>);
+public:
+    OrdinaryOffsetFrame() : OffsetFrame() {}
+    virtual ~OrdinaryOffsetFrame() {}
+
+    OrdinaryOffsetFrame(const Frame& parent, const SimTK::Transform& offset) :
+        OffsetFrame(parent, offset) {}
+};
+
+
 int main()
 {
     SimTK::Array_<std::string> failures;
@@ -330,7 +341,8 @@ void testFilterByFrameType()
     SimTK::Transform X_RO_2;
     X_RO_2.setP(SimTK::Vec3(0.1, 0.22, 0.333));
     X_RO_2.updR().setRotationToBodyFixedXYZ(SimTK::Vec3(1.2, -0.7, 0.48));
-    OffsetFrame<Frame>* anOffset = new OffsetFrame<Frame>(rod2, X_RO_2);
+    OrdinaryOffsetFrame* anOffset = 
+        new OrdinaryOffsetFrame(rod2, X_RO_2);
 
     // add OffsetFrame to the model
     pendulumWFrame->addFrame(anOffset);
@@ -408,3 +420,4 @@ void testStationOnFrame()
             "testStationOnFrame(): failed to resolve station psoition in ground.");
     }
 }
+
