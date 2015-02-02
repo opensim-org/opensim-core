@@ -47,8 +47,8 @@ namespace OpenSim {
  * with the Base which can be more efficient.
  *
  * OffsetFrame is an abstract class. Derive concrete subclasses in order to
- * accomodate new Frame types that require their offsets to retain the same
- * type as the parent. Fore example:
+ * accommodate new Frame types that require their offsets to retain the same
+ * type as the parent. For example:
  *  class PhysicalOffsetFrame : public OffsetFrame<PhysicalFrame>
  *
  * @see PhysicalOffsetFrame.
@@ -138,9 +138,9 @@ protected:
         calcGroundTransform(const SimTK::State& state) const override;
 
     /** Extend how OffsetFrame determines its base Frame. */
-    const Frame& extendFindBaseFrame() const final;
+    const Frame& extendFindBaseFrame() const override final;
     /** Extend how OffsetFrame determines its transform in its base Frame. */
-    SimTK::Transform extendFindTransformInBaseFrame() const final;
+    SimTK::Transform extendFindTransformInBaseFrame() const override final;
 
     /** @name Model Component Interface
     These methods adhere to the Model Component Interface**/

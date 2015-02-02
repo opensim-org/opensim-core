@@ -35,7 +35,7 @@ namespace OpenSim {
 /**
 * A PhysicalOffsetFrame is a PhysicalFrame whose transform is specified as a 
 * constant offset from another PhysicalFrame. PhysicalOffsetFrames can be used
-* to specify the location of a Joint or Constraint on a Body pr any other 
+* to specify the location of a Joint or Constraint on a Body or any other 
 * PhysicalFrame. For example, the location and orientation of the knee joint 
 * frame specified in the femur (thigh) and tibia (shank) Body reference frames.
 * This class has the methods of both the OffsetFrame (template) and the

@@ -417,7 +417,7 @@ void testStationOnFrame()
         SimTK::Vec3 comBySimbody = 
             rod1.getMobilizedBody().findStationLocationInGround(s, com);
         ASSERT_EQUAL(comInGround, comBySimbody, tolerance, __FILE__, __LINE__,
-            "testStationOnFrame(): failed to resolve station psoition in ground.");
+            "testStationOnFrame(): failed to resolve station position in ground.");
     }
 }
 
