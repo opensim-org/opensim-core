@@ -155,7 +155,7 @@ public:
     @return point_A    The re-expression of the point in another frame.
     */
     SimTK::Vec3 findLocationInAnotherFrame(const SimTK::State& state, 
-                    const SimTK::Vec3& point, const Frame& otherFrame) const;
+                    const SimTK::Vec3& point_F, const Frame& otherFrame) const;
     /**@}**/
 
     /** @name Advanced: A Frame's Base Frame and Transform 
