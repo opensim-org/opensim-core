@@ -7,8 +7,8 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2012 Stanford University and the Authors                *
-* Author(s): Matt DeMers & Ayman Habib                                       *
+* Copyright (c) 2005-2015 Stanford University and the Authors                *
+* Author(s): Matt DeMers, Ayman Habib, Ajay Seth                             *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
 * not use this file except in compliance with the License. You may obtain a  *
@@ -42,7 +42,7 @@ using namespace OpenSim;
 */
 PhysicalFrame::PhysicalFrame() : Frame()
 {
-    setAuthors("Matt DeMers");
+    setAuthors("Matt DeMers, Ayman Habib, Ajay Seth");
 }
 
 const SimTK::MobilizedBody& PhysicalFrame::getMobilizedBody() const
@@ -59,7 +59,7 @@ SimTK::MobilizedBody& PhysicalFrame::updMobilizedBody()
 * Implementation of Frame interface by PhysicalFrame.
 * 
 */
-const SimTK::Transform PhysicalFrame::
+SimTK::Transform PhysicalFrame::
     calcGroundTransform(const SimTK::State& s) const
 {
     // return X_GF = X_GB * X_BF;
@@ -69,7 +69,6 @@ const SimTK::Transform PhysicalFrame::
 
 SimTK::Transform PhysicalFrame::extendFindTransformInBaseFrame() const
 {
-    Transform identity;
-    return identity.setToZero();
+    return Transform();
 }
 

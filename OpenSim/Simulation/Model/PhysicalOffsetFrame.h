@@ -33,11 +33,11 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
-* A PhysicalOffsetFrame is a PhysicalFrame whose trasform is specified as a 
-* constant offset from another PhysicalFrame. Potential use cases for the 
-* PhysicalOffsetFrames are to specify the location of a Joint or Constraint on
-* a Body. For example, the location and orientation of the ankle joint frame
-* specified in the shank (tibia) Body's reference frame.
+* A PhysicalOffsetFrame is a PhysicalFrame whose transform is specified as a 
+* constant offset from another PhysicalFrame. PhysicalOffsetFrames can be used
+* to specify the location of a Joint or Constraint on a Body or any other 
+* PhysicalFrame. For example, the location and orientation of the knee joint 
+* frame specified in the femur (thigh) and tibia (shank) Body reference frames.
 * This class has the methods of both the OffsetFrame (template) and the
 * PhysicalFrame class.
 *
@@ -58,7 +58,7 @@ public:
      */
     PhysicalOffsetFrame();
 
-    virtual ~PhysicalOffsetFrame() {};
+    virtual ~PhysicalOffsetFrame() {}
 
     /**
     A convenience constructor that initializes the parent connection and
@@ -68,7 +68,7 @@ public:
     @param[in] offset   The offset transform between this frame and its parent
     */
     PhysicalOffsetFrame(const PhysicalFrame& parent,
-                        const SimTK::Transform& transform);
+                        const SimTK::Transform& offset);
 
 protected:
     /** Extend Component interface for adding the PhysicalOffsetFrame to the 

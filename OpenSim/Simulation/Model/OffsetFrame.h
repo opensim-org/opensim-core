@@ -37,7 +37,7 @@ namespace OpenSim {
  * with respect to another (parent) Frame is constant in time. It acts as an
  * extension of the parent Frame type so that an OffsetFrame<PhysicalFrame>,
  * for example, can be treated as a PhysicalFrame. This enables Frames to be
- * filtered by their type (e.g. Physcial or not), regardless of whether or
+ * filtered by their type (e.g. Physical or not), regardless of whether or
  * not the Frame is also an OffsetFrame. (A class whose super class is a
  * template parameter is called a mixin class.)
  *
@@ -45,6 +45,11 @@ namespace OpenSim {
  * each OffsetFrame shares the same Base which is the parent of the first/root
  * OffsetFrame in the tree. This allows Solvers and algorithms to work directly
  * with the Base which can be more efficient.
+ *
+ * OffsetFrame is an abstract class. Derive concrete subclasses in order to
+ * accommodate new Frame types that require their offsets to retain the same
+ * type as the parent. For example:
+ * @code class PhysicalOffsetFrame : public OffsetFrame<PhysicalFrame> @endcode
  *
  * @see PhysicalOffsetFrame.
  *
@@ -55,8 +60,8 @@ namespace OpenSim {
  * @author Ajay Seth
  */
 template <class C = Frame>
-class  OffsetFrame : public C {
-    OpenSim_DECLARE_CONCRETE_OBJECT_T(OffsetFrame, C, C);
+class OffsetFrame : public C {
+    OpenSim_DECLARE_ABSTRACT_OBJECT_T(OffsetFrame, C, C);
 public:
 //==============================================================================
 // PROPERTIES
@@ -90,7 +95,7 @@ public:
     offset property of this OffsetFrame.
      
     @param[in] parent   The parent reference frame.
-    @param[in] offset The offset transform between this frame and its parent
+    @param[in] offset   The offset transform between this frame and its parent
     */
     OffsetFrame(const C& parent, const SimTK::Transform& offset);
 
@@ -111,7 +116,7 @@ public:
     This transform is computed using the translation and orientation
     properties of this object.
     
-    @return transform  The transform between this frame and its parent frame.
+    @return offset  The transform between this frame and its parent frame.
     */
     const SimTK::Transform& getOffsetTransform() const;
 
@@ -123,25 +128,25 @@ public:
     This transform is stored via the translation and orientation
     properties of this object.
     
-    @param transform  The transform between this frame and its parent frame.
+    @param offset   The transform between this frame and its parent frame.
     */
-    void setOffsetTransform(const SimTK::Transform& offsetTransform);
+    void setOffsetTransform(const SimTK::Transform& offset);
 
 protected:
     /** The transform X_GF for this OffsetFrame, F, in ground, G.*/
-    const SimTK::Transform
+    SimTK::Transform
         calcGroundTransform(const SimTK::State& state) const override;
 
     /** Extend how OffsetFrame determines its base Frame. */
-    const Frame& extendFindBaseFrame() const final;
-    SimTK::Transform extendFindTransformInBaseFrame() const final;
+    const Frame& extendFindBaseFrame() const override final;
+    /** Extend how OffsetFrame determines its transform in its base Frame. */
+    SimTK::Transform extendFindTransformInBaseFrame() const override final;
 
-    /** @name Model Component Interface
-    These methods adhere to the Model Component Interface**/
+    /** @name Component Interface
+    These methods adhere to the Component Interface**/
     /**@{**/
     void constructConnectors() override;
     void extendFinalizeFromProperties() override;
-    //void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     /**@}**/
 
 private:
@@ -205,7 +210,7 @@ void OffsetFrame<C>::constructConnectors()
 //=============================================================================
 // Implementation of Frame interface by OffsetFrame.
 template <class C>
-const SimTK::Transform OffsetFrame<C>::
+SimTK::Transform OffsetFrame<C>::
 calcGroundTransform(const SimTK::State& s) const
 {
     return getParentFrame().getGroundTransform(s)*getOffsetTransform();

@@ -155,7 +155,7 @@ public:
     @return point_A    The re-expression of the point in another frame.
     */
     SimTK::Vec3 findLocationInAnotherFrame(const SimTK::State& state, 
-                    const SimTK::Vec3& point, const Frame& otherFrame) const;
+                    const SimTK::Vec3& point_F, const Frame& otherFrame) const;
     /**@}**/
 
     /** @name Advanced: A Frame's Base Frame and Transform 
@@ -206,7 +206,7 @@ private:
     in this frame, F, to quantities expressed in the ground, G, frame.
     This is mathematically stated as:
         vec_G = X_GF*vec_F  */
-    virtual const SimTK::Transform
+    virtual SimTK::Transform
         calcGroundTransform(const SimTK::State& state) const = 0;
 
     /** Extend how concrete Frame determines its base Frame. */
