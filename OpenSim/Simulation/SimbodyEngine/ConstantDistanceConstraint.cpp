@@ -81,7 +81,6 @@ ConstantDistanceConstraint::ConstantDistanceConstraint(
 
     set_location_body_2(locationBody2);
     set_constant_distance(distance);
-    append_GeometrySet(*new LineGeometry(locationBody1, locationBody2));
 }
 
 /* Set the data members of this ConstantDistanceConstraint to their null values.
@@ -207,10 +206,10 @@ void ConstantDistanceConstraint::generateDecorations(
     if (fixed) return;
     const Vec3 pink(1, .6, .8);
     const OpenSim::RigidFrame& frame1 = *_body1;
-    const Vec3& p_B1 = frame1.getTransformInMobilizedBody()*get_location_body_1();
+    const Vec3& p_B1 = frame1.getGroundTransform(state)*get_location_body_1();
     const OpenSim::RigidFrame& frame2 = *_body2;
-    const Vec3& p_B2 = frame2.getTransformInMobilizedBody()*get_location_body_2();
+    const Vec3& p_B2 = frame2.getGroundTransform(state)*get_location_body_2();
     appendToThis.push_back(
         SimTK::DecorativeLine(p_B1, p_B2).setBodyId(0)
-        .setColor(pink).setOpacity(1.0).setLineThickness(.005));
+        .setColor(pink).setOpacity(1.0).setLineThickness(.05));
 }
