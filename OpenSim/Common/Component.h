@@ -1182,6 +1182,8 @@ template <class T> friend class ComponentMeasure;
         constructOutput<SimTK::Vec3>("force", &MyComponent::calcForce,
                 SimTK::Stage::Velocity);
         @endcode
+
+       @see constructOutputForStateVariable()
      */
 #ifndef SWIG // SWIG can't parse the const at the end of the second argument.
     template <typename T, typename Class>
@@ -1214,6 +1216,8 @@ template <class T> friend class ComponentMeasure;
                std::placeholders::_1, "ankle"),
                SimTK::Stage::Position);
        @endcode
+
+      @see constructOutputForStateVariable()
     */
     template <typename T>
     void constructOutput(const std::string& name, 
@@ -1222,6 +1226,13 @@ template <class T> friend class ComponentMeasure;
         _outputsTable[name] = std::unique_ptr<const AbstractOutput>(new
                 Output<T>(name, outputFunction, dependsOn));
     }
+
+    /** Construct an Output for a StateVariable.
+     *
+     * @param name Name of the output, which must be the same as the name of
+     * the corresponding state variable.
+     */
+    void constructOutputForStateVariable(const std::string& name);
     
     /**
      * Add another Component as a subcomponent of this Component.
@@ -1262,6 +1273,9 @@ template <class T> friend class ComponentMeasure;
     indices are automatically determined using this interface. As an advanced
     option you may choose to hide the state variable from being accessed outside
     of this component, in which case it is considered to be "hidden". 
+    You may also want to create an Output for this state variable using
+    constructOutputForStateVariable(); Reporters should use this Output to get
+    the StateVariable's value (instead of using getStateVariableValue()).
     @param[in] stateVariableName     string value to access variable by name
     @param[in] invalidatesStage      the system realization stage that is
                                      invalidated when variable value is changed
@@ -1279,10 +1293,11 @@ template <class T> friend class ComponentMeasure;
     add/expose state variables that are allocated by underlying Simbody
     components and specify how the state variable value is accessed by
     implementing a concrete StateVariable and adding it to the component using
-    this method. If the StateVariable is NOT hidden, this also creates an
-    Output in this Component with the same name as the StateVariable. Reporters
-    should use this Output to get the StateVariable's value (instead of using
-    getStateVariableValue()). */
+    this method. You may also want to create an Output for this state variable
+    using constructOutputForStateVariable(); Reporters should use this Output
+    to get the StateVariable's value (instead of using
+    getStateVariableValue()).
+    */
     void addStateVariable(Component::StateVariable*  stateVariable) const;
 
     /** Add a system discrete variable belonging to this Component, give
