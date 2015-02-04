@@ -61,11 +61,11 @@ CMC_Joint::~CMC_Joint()
  * should be used.
  */
 CMC_Joint::CMC_Joint(const string &aCoordinateName) :
-	_coordinateName(_propCoordinateName.getValueStr()),
-   	_limit(_propLimit.getValueDbl())
+    _coordinateName(_propCoordinateName.getValueStr()),
+    _limit(_propLimit.getValueDbl())
 {
-	setNull();
-	setCoordinateName(aCoordinateName);
+    setNull();
+    setCoordinateName(aCoordinateName);
 }
 
 //_____________________________________________________________________________
@@ -75,12 +75,12 @@ CMC_Joint::CMC_Joint(const string &aCoordinateName) :
  * @param aTask Joint task to be copied.
  */
 CMC_Joint::CMC_Joint(const CMC_Joint &aTask) :
-	CMC_Task(aTask),
-	_coordinateName(_propCoordinateName.getValueStr()),
-	_limit(_propLimit.getValueDbl())
+    CMC_Task(aTask),
+    _coordinateName(_propCoordinateName.getValueStr()),
+    _limit(_propLimit.getValueDbl())
 {
-	setNull();
-	*this = aTask;
+    setNull();
+    *this = aTask;
 }
 
 
@@ -94,10 +94,10 @@ CMC_Joint::CMC_Joint(const CMC_Joint &aTask) :
 void CMC_Joint::
 setNull()
 {
-	setupProperties();
+    setupProperties();
 
-	_nTrk = 1;
-	_q = 0;
+    _nTrk = 1;
+    _q = 0;
 }
 //_____________________________________________________________________________
 /**
@@ -106,17 +106,17 @@ setNull()
 void CMC_Joint::
 setupProperties()
 {
-	_propCoordinateName.setComment("Name of the coordinate to be tracked.");
-	_propCoordinateName.setName("coordinate");
-	_propCoordinateName.setValue("");
-	_propertySet.append(&_propCoordinateName);
+    _propCoordinateName.setComment("Name of the coordinate to be tracked.");
+    _propCoordinateName.setName("coordinate");
+    _propCoordinateName.setValue("");
+    _propertySet.append(&_propCoordinateName);
 
-	_propLimit.setComment("Error limit on the tracking accuracy for this "
-		"coordinate. If the tracking errors approach this limit, the weighting "
-		"for this coordinate is increased. ");
-	_propLimit.setName("limit");
-	_propLimit.setValue(0);
-	_propertySet.append(&_propLimit);
+    _propLimit.setComment("Error limit on the tracking accuracy for this "
+        "coordinate. If the tracking errors approach this limit, the weighting "
+        "for this coordinate is increased. ");
+    _propLimit.setName("limit");
+    _propLimit.setValue(0);
+    _propertySet.append(&_propLimit);
 }
 
 
@@ -127,8 +127,8 @@ setupProperties()
 void CMC_Joint::
 copyData(const CMC_Joint &aTask)
 {
-	setCoordinateName(aTask.getCoordinateName());
-	_limit = aTask._limit;
+    setCoordinateName(aTask.getCoordinateName());
+    _limit = aTask._limit;
 }
 
 
@@ -139,16 +139,16 @@ copyData(const CMC_Joint &aTask)
 void CMC_Joint::
 updateWorkVariables()
 {
-	_q = 0;
-	if(_model) {
+    _q = 0;
+    if(_model) {
         try {
             _q = &_model->updCoordinateSet().get(_coordinateName);
         }
         catch (const Exception&) {
             throw Exception("CMC_Joint.updateWorkVariables: ERROR- joint task '" + getName() 
-									+ "' references invalid coordinate '" + _coordinateName + "'",__FILE__,__LINE__);
+                                    + "' references invalid coordinate '" + _coordinateName + "'",__FILE__,__LINE__);
         }
-	} 
+    } 
 }
 
 
@@ -169,13 +169,13 @@ updateWorkVariables()
 CMC_Joint& CMC_Joint::
 operator=(const CMC_Joint &aTask)
 {
-	// BASE CLASS
-	CMC_Task::operator =(aTask);
+    // BASE CLASS
+    CMC_Task::operator =(aTask);
 
-	// DATA
-	copyData(aTask);
+    // DATA
+    copyData(aTask);
 
-	return(*this);
+    return(*this);
 }
 
 
@@ -195,8 +195,8 @@ operator=(const CMC_Joint &aTask)
 void CMC_Joint::
 setModel(Model& aModel)
 {
-	CMC_Task::setModel(aModel);
-	updateWorkVariables();
+    CMC_Task::setModel(aModel);
+    updateWorkVariables();
 }
 //-----------------------------------------------------------------------------
 // Coordinate Name
@@ -210,8 +210,8 @@ setModel(Model& aModel)
 void CMC_Joint::
 setCoordinateName(const string &aName)
 {
-	_coordinateName = aName;
-	updateWorkVariables();
+    _coordinateName = aName;
+    updateWorkVariables();
 }
 //_____________________________________________________________________________
 /**
@@ -222,7 +222,7 @@ setCoordinateName(const string &aName)
 string CMC_Joint::
 getCoordinateName() const
 {
-	return(_coordinateName);
+    return(_coordinateName);
 }
 //_____________________________________________________________________________
 /**
@@ -233,7 +233,7 @@ getCoordinateName() const
 double CMC_Joint::
 getLimit() const
 {
-	return _limit;
+    return _limit;
 }
 
 
@@ -252,18 +252,18 @@ getLimit() const
 void CMC_Joint::
 computeErrors(const SimTK::State& s, double aT)
 {
-	// COMPUTE ERRORS
-	//std::cout<<_coordinateName<<std::endl;
-	//std::cout<<"_pTrk[0]->evaluate(0,aT) = "<<_pTrk[0]->evaluate(0,aT)<<std::endl;
-	//std::cout<<"_q->getValue() = "<<_q->getValue()<<std::endl;
-	_pErr[0] = _pTrk[0]->calcValue(SimTK::Vector(1,aT)) - _q->getValue(s);
-	if(_vTrk[0]==NULL) {
-		std::vector<int> derivComponents(1);
-		derivComponents[0]=0;
-		_vErr[0] = _pTrk[0]->calcDerivative(derivComponents,SimTK::Vector(1,aT)) - _q->getSpeedValue(s);
-	} else {
-		_vErr[0] = _vTrk[0]->calcValue(SimTK::Vector(1,aT)) - _q->getSpeedValue(s);
-	}
+    // COMPUTE ERRORS
+    //std::cout<<_coordinateName<<std::endl;
+    //std::cout<<"_pTrk[0]->evaluate(0,aT) = "<<_pTrk[0]->evaluate(0,aT)<<std::endl;
+    //std::cout<<"_q->getValue() = "<<_q->getValue()<<std::endl;
+    _pErr[0] = _pTrk[0]->calcValue(SimTK::Vector(1,aT)) - _q->getValue(s);
+    if(_vTrk[0]==NULL) {
+        std::vector<int> derivComponents(1);
+        derivComponents[0]=0;
+        _vErr[0] = _pTrk[0]->calcDerivative(derivComponents,SimTK::Vector(1,aT)) - _q->getSpeedValue(s);
+    } else {
+        _vErr[0] = _vTrk[0]->calcValue(SimTK::Vector(1,aT)) - _q->getSpeedValue(s);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -278,33 +278,33 @@ computeErrors(const SimTK::State& s, double aT)
 void CMC_Joint::
 computeDesiredAccelerations(const SimTK::State& s, double aT)
 {
-	_aDes=SimTK::NaN;
+    _aDes=SimTK::NaN;
 
-	// CHECK
-	if(_model==NULL) return;
-	if(_pTrk[0]==NULL) return;
+    // CHECK
+    if(_model==NULL) return;
+    if(_pTrk[0]==NULL) return;
 
-	// COMPUTE ERRORS
-	computeErrors(s, aT);
+    // COMPUTE ERRORS
+    computeErrors(s, aT);
 
-	// DESIRED ACCELERATION
-	double p = (_kp)[0]*_pErr[0];
-	double v = (_kv)[0]*_vErr[0];
-	double a;
-	if(_aTrk[0]==NULL) {
-		std::vector<int> derivComponents(2);
-		derivComponents[0]=0;
-		derivComponents[1]=0;
-		a = (_ka)[0]*_pTrk[0]->calcDerivative(derivComponents,SimTK::Vector(1,aT));
-	} else {
-		a = (_ka)[0]*_aTrk[0]->calcValue(SimTK::Vector(1,aT));
-	}
-	_aDes[0] = a + v + p;
+    // DESIRED ACCELERATION
+    double p = (_kp)[0]*_pErr[0];
+    double v = (_kv)[0]*_vErr[0];
+    double a;
+    if(_aTrk[0]==NULL) {
+        std::vector<int> derivComponents(2);
+        derivComponents[0]=0;
+        derivComponents[1]=0;
+        a = (_ka)[0]*_pTrk[0]->calcDerivative(derivComponents,SimTK::Vector(1,aT));
+    } else {
+        a = (_ka)[0]*_aTrk[0]->calcValue(SimTK::Vector(1,aT));
+    }
+    _aDes[0] = a + v + p;
 
-	// PRINT
-	//printf("CMC_Joint.computeDesiredAcceleration:\n");
-	//printf("%s:  t=%lf aDes=%lf a=%lf vErr=%lf pErr=%lf\n",getName(),t,_aDes[0],
-	//	_pTrk[0]->evaluate(2,t),_vErr[0],_pErr[0]);
+    // PRINT
+    //printf("CMC_Joint.computeDesiredAcceleration:\n");
+    //printf("%s:  t=%lf aDes=%lf a=%lf vErr=%lf pErr=%lf\n",getName(),t,_aDes[0],
+    //  _pTrk[0]->evaluate(2,t),_vErr[0],_pErr[0]);
 }
 //_____________________________________________________________________________
 /**
@@ -319,34 +319,34 @@ computeDesiredAccelerations(const SimTK::State& s, double aT)
 void CMC_Joint::
 computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF)
 {
-	double a;
-	_aDes=SimTK::NaN;
+    double a;
+    _aDes=SimTK::NaN;
 
-	// CHECK
-	if(_model==NULL) return;
-	if(_pTrk[0]==NULL) return;
+    // CHECK
+    if(_model==NULL) return;
+    if(_pTrk[0]==NULL) return;
 
-	// COMPUTE ERRORS
-	computeErrors(s, aTI);
+    // COMPUTE ERRORS
+    computeErrors(s, aTI);
 
-	// DESIRED ACCELERATION
-	double p = (_kp)[0]*_pErr[0];
-	double v = (_kv)[0]*_vErr[0];
-	
-	if(_aTrk[0]==NULL) {
-		std::vector<int> derivComponents(2);
-		derivComponents[0]=0;
-		derivComponents[1]=0;
-		a = (_ka)[0]*_pTrk[0]->calcDerivative(derivComponents,SimTK::Vector(1,aTF));
-	} else {
-		a = (_ka)[0]*_aTrk[0]->calcValue(SimTK::Vector(1,aTF));
-	}
-	_aDes[0] = a + v + p;
+    // DESIRED ACCELERATION
+    double p = (_kp)[0]*_pErr[0];
+    double v = (_kv)[0]*_vErr[0];
+    
+    if(_aTrk[0]==NULL) {
+        std::vector<int> derivComponents(2);
+        derivComponents[0]=0;
+        derivComponents[1]=0;
+        a = (_ka)[0]*_pTrk[0]->calcDerivative(derivComponents,SimTK::Vector(1,aTF));
+    } else {
+        a = (_ka)[0]*_aTrk[0]->calcValue(SimTK::Vector(1,aTF));
+    }
+    _aDes[0] = a + v + p;
 
-	// PRINT
-	//printf("CMC_Joint.computeDesiredAcceleration:\n");
-	//printf("%s:  t=%lf aDes=%lf a=%lf vErr=%lf pErr=%lf\n",getName(),t,_aDes[0],
-	//	_pTrk[0]->evaluate(2,t),_vErr[0],_pErr[0]);
+    // PRINT
+    //printf("CMC_Joint.computeDesiredAcceleration:\n");
+    //printf("%s:  t=%lf aDes=%lf a=%lf vErr=%lf pErr=%lf\n",getName(),t,_aDes[0],
+    //  _pTrk[0]->evaluate(2,t),_vErr[0],_pErr[0]);
 }
 //_____________________________________________________________________________
 /**
@@ -364,13 +364,13 @@ computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF)
 void CMC_Joint::
 computeAccelerations(const SimTK::State& s )
 {
-	_a=SimTK::NaN;
+    _a=SimTK::NaN;
 
-	// CHECK
-	if(_model==NULL) return;
+    // CHECK
+    if(_model==NULL) return;
 
-	// ACCELERATION
-	_a[0] = _q->getAccelerationValue(s);
+    // ACCELERATION
+    _a[0] = _q->getAccelerationValue(s);
 }
 
 
@@ -391,6 +391,6 @@ computeAccelerations(const SimTK::State& s )
 void CMC_Joint::
 updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	CMC_Task::updateFromXMLNode(aNode, versionNumber);
-	setCoordinateName(_coordinateName);
+    CMC_Task::updateFromXMLNode(aNode, versionNumber);
+    setCoordinateName(_coordinateName);
 }

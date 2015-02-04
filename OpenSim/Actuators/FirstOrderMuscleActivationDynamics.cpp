@@ -76,23 +76,23 @@ setDeactivationTimeConstant(double deactivationTimeConstant)
 // MODELCOMPONENT INTERFACE REQUIREMENTS
 //==============================================================================
 void FirstOrderMuscleActivationDynamics::
-addToSystem(SimTK::MultibodySystem& system) const
+extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
     addStateVariable(STATE_NAME_ACTIVATION, SimTK::Stage::Dynamics);
 }
 
 void FirstOrderMuscleActivationDynamics::
-initStateFromProperties(SimTK::State& s) const
+extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
     setActivation(s, getDefaultActivation());
 }
 
 void FirstOrderMuscleActivationDynamics::
-setPropertiesFromState(const SimTK::State& s)
+extendSetPropertiesFromState(const SimTK::State& s)
 {
-    Super::setPropertiesFromState(s);
+    Super::extendSetPropertiesFromState(s);
     setDefaultActivation(getActivation(s));
 }
 
@@ -100,9 +100,9 @@ void FirstOrderMuscleActivationDynamics::
 computeStateVariableDerivatives(const SimTK::State& s) const
 {
      double adot = 
-		 calcActivationDerivative(getExcitation(s), getActivation(s));
+         calcActivationDerivative(getExcitation(s), getActivation(s));
 
-	 setStateVariableDerivative(s, STATE_NAME_ACTIVATION, adot);
+     setStateVariableDerivativeValue(s, STATE_NAME_ACTIVATION, adot);
 }
 
 //==============================================================================
@@ -111,13 +111,13 @@ computeStateVariableDerivatives(const SimTK::State& s) const
 double FirstOrderMuscleActivationDynamics::
 getActivation(const SimTK::State& s) const
 {
-    return clampToValidInterval(getStateVariable(s, STATE_NAME_ACTIVATION));
+    return clampToValidInterval(getStateVariableValue(s, STATE_NAME_ACTIVATION));
 }
 
 void FirstOrderMuscleActivationDynamics::setActivation(SimTK::State& s,
                                                        double activation) const
 {
-    setStateVariable(s, STATE_NAME_ACTIVATION,
+    setStateVariableValue(s, STATE_NAME_ACTIVATION,
                      clampToValidInterval(activation));
 }
 

@@ -47,7 +47,7 @@ using namespace std;
  */
 PropertyObj::~PropertyObj()
 {
-	if(_value!=NULL) { delete _value;  _value=NULL; }
+    if(_value!=NULL) { delete _value;  _value=NULL; }
 }
 //_____________________________________________________________________________
 /**
@@ -55,11 +55,11 @@ PropertyObj::~PropertyObj()
  */
 PropertyObj::
 PropertyObj(const string &aName,const Object &aValue) :
-	Property_Deprecated(Property_Deprecated::Obj,aName)
+    Property_Deprecated(Property_Deprecated::Obj,aName)
 {
-	setName(aName);
-	_value = aValue.clone();
-	_value->setName(aName);
+    setName(aName);
+    _value = aValue.clone();
+    _value->setName(aName);
     setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
@@ -68,9 +68,9 @@ PropertyObj(const string &aName,const Object &aValue) :
  */
 PropertyObj::
 PropertyObj() :
-	Property_Deprecated(Property_Deprecated::Obj,"Object")
+    Property_Deprecated(Property_Deprecated::Obj,"Object")
 {
-	_value = 0;
+    _value = 0;
     setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
@@ -80,9 +80,9 @@ PropertyObj() :
  * @param aProperty Property_Deprecated to be copied.
  */
 PropertyObj::PropertyObj(const PropertyObj &aProperty) :
-	Property_Deprecated(aProperty)
+    Property_Deprecated(aProperty)
 {
-	_value = aProperty.getValueObj().clone();
+    _value = aProperty.getValueObj().clone();
 }
 //_____________________________________________________________________________
 /**
@@ -94,8 +94,8 @@ PropertyObj::PropertyObj(const PropertyObj &aProperty) :
  */
 PropertyObj* PropertyObj::clone() const
 {
-	PropertyObj *property = new PropertyObj(*this);
-	return(property);
+    PropertyObj *property = new PropertyObj(*this);
+    return(property);
 }
 
 
@@ -115,10 +115,10 @@ PropertyObj* PropertyObj::clone() const
 PropertyObj& PropertyObj::
 operator=(const PropertyObj &aProperty)
 {
-	Property_Deprecated::operator =(aProperty);
-	if(_value!=NULL) { delete _value;  _value=NULL; }
-	_value = aProperty.getValueObj().clone();
-	return(*this);
+    Property_Deprecated::operator =(aProperty);
+    if(_value!=NULL) { delete _value;  _value=NULL; }
+    _value = aProperty.getValueObj().clone();
+    return(*this);
 }
 
 
@@ -139,7 +139,7 @@ operator=(const PropertyObj &aProperty)
 Object& PropertyObj::
 getValueObj()
 {
-	return((*_value));
+    return((*_value));
 }
 //_____________________________________________________________________________
 /**
@@ -150,7 +150,7 @@ getValueObj()
 const Object& PropertyObj::
 getValueObj() const
 {
-	return((*_value));
+    return((*_value));
 }
 //_____________________________________________________________________________
 /**
@@ -161,5 +161,5 @@ getValueObj() const
 string PropertyObj::
 toString() const
 {
-	return "(Object)";
+    return "(Object)";
 }

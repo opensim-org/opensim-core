@@ -31,14 +31,19 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Universal joint.  The underlying implementation 
- * in Simbody is a MobilizedBody::Universal. Universal provides two DoF:
- * rotation about the x axis of the joint frames, followed by a rotation 
- * about the new y axis.
- *
- * @author Tim Dorn
- * @version 1.0
+
+A class implementing a Universal joint. The underlying implementation
+in Simbody is a SimTK::MobilizedBody::Universal.
+Universal provides two DoF: rotation about the x axis of the joint frames,
+followed by a rotation about the new y axis. The joint is badly behaved when the
+second rotation is near 90 degrees. 
+
+\image html universalJoint.gif
+
+@author Tim Dorn
  */
+
+
 class OSIMSIMULATION_API UniversalJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(UniversalJoint, Joint);
 
@@ -60,7 +65,7 @@ public:
     UniversalJoint();
     // Convenience constructor
     UniversalJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-                    OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
+                    OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
                     bool reverse=false);
     virtual ~UniversalJoint();
 
@@ -68,15 +73,13 @@ public:
 
 
 protected:
-    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 //=============================================================================
-};	// END of class UniversalJoint
+};  // END of class UniversalJoint
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
 #endif // OPENSIM_UNIVERSAL_JOINT_H_
-
-

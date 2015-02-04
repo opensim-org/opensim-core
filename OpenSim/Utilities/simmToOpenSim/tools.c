@@ -308,9 +308,9 @@ int set_gencoord_value(ModelStruct* ms, GeneralizedCoord* gencoord, double value
    if (gencoord->clamped == yes)
    {
       if (value < gencoord->range.start)
-	      value = gencoord->range.start;
+          value = gencoord->range.start;
       else if (value > gencoord->range.end)
-	      value = gencoord->range.end;
+          value = gencoord->range.end;
    }
 
    /* Resolve any closed loops in the model, then update the gencoord value
@@ -389,7 +389,7 @@ int set_gencoord_value(ModelStruct* ms, GeneralizedCoord* gencoord, double value
          //ms->gencform.option[genc].use_alternate_colors = yes; ///dkb jul 2008
          ms->gc_chpanel.checkbox[genc].use_alternate_colors = yes; ///dkb jul 2008
 #endif
-	      value = gencoord->range.start;
+          value = gencoord->range.start;
       }
       else if (value > gencoord->range.end)
       {
@@ -397,14 +397,14 @@ int set_gencoord_value(ModelStruct* ms, GeneralizedCoord* gencoord, double value
      // ms->gencform.option[genc].use_alternate_colors = yes; ///dkb jul 2008
          ms->gc_chpanel.checkbox[genc].use_alternate_colors = yes;
 #endif
-	      value = gencoord->range.end;
+          value = gencoord->range.end;
       }
    }
    else
    {
 #if ! ENGINE && ! CORTEX_PLUGIN
       if (value < gencoord->range.start || value > gencoord->range.end)
-	      ms->gencform.option[genc].use_alternate_colors = yes;
+          ms->gencform.option[genc].use_alternate_colors = yes;
 #endif
    }
 
@@ -501,26 +501,26 @@ void change_filename_suffix(const char input[], char output[], const char suffix
    while (input[cp] != '.' && cp > 0)
       cp--;
 
-	if (cp == 0)
-	{
-		if (suffix)
-			sprintf(output, "%s.%s", input, suffix);
-		else
-			strcpy(output, input);
-	}
+    if (cp == 0)
+    {
+        if (suffix)
+            sprintf(output, "%s.%s", input, suffix);
+        else
+            strcpy(output, input);
+    }
    else
    {
-		if (suffix)
-		{
-			strncpy(output, input, cp + 1);
-			output[cp + 1] = STRING_TERMINATOR;
-			strcat(output, suffix);
-		}
-		else
-		{
-			strncpy(output, input, cp);
-			output[cp] = STRING_TERMINATOR;
-		}
+        if (suffix)
+        {
+            strncpy(output, input, cp + 1);
+            output[cp + 1] = STRING_TERMINATOR;
+            strcat(output, suffix);
+        }
+        else
+        {
+            strncpy(output, input, cp);
+            output[cp] = STRING_TERMINATOR;
+        }
    }
 }
 
@@ -531,19 +531,19 @@ void change_filename_suffix(const char input[], char output[], const char suffix
 void message(char message_str[], int format, int xoffset)
 {
 #if OPENSMAC
-	static int overwritable = 0;
+    static int overwritable = 0;
    if (overwritable || (format & OVERWRITE_LAST_LINE))
    {
-		add_line_to_converter_dialog(message_str, 1);
+        add_line_to_converter_dialog(message_str, 1);
    }
-	else
-	{
-		add_line_to_converter_dialog(message_str, 0);
-	}
-	if (format & OVERWRITABLE)
-		overwritable = 1;
-	else
-		overwritable = 0;
+    else
+    {
+        add_line_to_converter_dialog(message_str, 0);
+    }
+    if (format & OVERWRITABLE)
+        overwritable = 1;
+    else
+        overwritable = 0;
 #elif NO_GUI
    printf("%s\n", message_str);
    fflush(stdout);
@@ -717,10 +717,10 @@ void print_4x4matrix(double matrix[][4])
 
 #if ! ENGINE
 ToolStruct* register_tool(int struct_size, unsigned int event_mask,
-			  void (*event_handler)(SimmEvent),
-			  void (*command_handler)(char*),
-			  SBoolean (*query_handler)(QueryType, void*),
-			  char name[], int* ref_number)
+              void (*event_handler)(SimmEvent),
+              void (*command_handler)(char*),
+              SBoolean (*query_handler)(QueryType, void*),
+              char name[], int* ref_number)
 {
 
    int i;
@@ -794,7 +794,7 @@ ReturnCode mstrcpy(char* dest_str[], const char original_str[])
 
    p = (char*)simm_malloc(len * sizeof(char));
 
-	if (p == NULL)
+    if (p == NULL)
    {
       *dest_str = NULL;
       return code_bad;
@@ -834,7 +834,7 @@ void draw_title_area(WindowParams* win_params, ModelStruct* ms, PlotStruct* ps, 
 {
    simm_color(TOOL_TITLE_AREA_BACKGROUND);
    glRecti(win_params->vp.x1, win_params->vp.y2-TITLE_AREA_HEIGHT,
-	   win_params->vp.x2+1, win_params->vp.y2+1);
+       win_params->vp.x2+1, win_params->vp.y2+1);
 
    simm_color(TOOL_TITLE_AREA_BORDER);
    glBegin(GL_LINE_STRIP);
@@ -1262,9 +1262,9 @@ void* simm_malloc(unsigned mem_size)
 
    if (ptr == NULL)
    {
-		// error() may need to malloc, so don't call it.
+        // error() may need to malloc, so don't call it.
       //sprintf(errorbuffer,"Ran out of memory. Unable to malloc %d bytes.",
-	      //(int)mem_size);
+          //(int)mem_size);
       //error(none,errorbuffer);
    }
 
@@ -1293,7 +1293,7 @@ void* simm_calloc(unsigned num_elements, unsigned elem_size)
    if (ptr == NULL)
    {
       sprintf(errorbuffer, "Ran out of memory. Unable to calloc %d bytes.",
-	      (int)(num_elements*elem_size));
+          (int)(num_elements*elem_size));
       error(none, errorbuffer);
    }
 
@@ -1319,7 +1319,7 @@ void* simm_realloc(void* ptr, unsigned mem_size, ReturnCode* rc)
    if (new_ptr == NULL)
    {
       sprintf(errorbuffer, "Ran out of memory. Unable to realloc %d bytes.",
-	      (int)mem_size);
+          (int)mem_size);
       *rc = code_bad;
       return (ptr);
    }
@@ -1628,8 +1628,8 @@ void append_if_necessary (char* str, char c)
 {
    int n = strlen(str);
 
-	if (n == 0)
-		return;
+    if (n == 0)
+        return;
 
    if (str[n-1] != c)
    {
@@ -1753,7 +1753,7 @@ public ReturnCode read_double (FILE* f, double* value)
 
    if (STRINGS_ARE_EQUAL(buffer, "nan"))
    {
-	  *value = 0.0;  /* ACK! can't seem to find a way to assign NAN in VC++!! */
+      *value = 0.0;  /* ACK! can't seem to find a way to assign NAN in VC++!! */
    }
    else if (isdigit(buffer[0]) || buffer[0] == '.' || buffer[0] == '-' || buffer[0] == '+')
       *value = atof(buffer);
@@ -1809,7 +1809,7 @@ public ReturnCode read_double_tab(FILE* f, double* value)
 
    if (STRINGS_ARE_EQUAL(buffer, "nan"))
    {
-	  *value = 0.0;  /* ACK! can't seem to find a way to assign NAN in VC++!! */
+      *value = 0.0;  /* ACK! can't seem to find a way to assign NAN in VC++!! */
    }
    else if (isdigit(buffer[0]) || buffer[0] == '.' || buffer[0] == '-' || buffer[0] == '+')
       *value = atof(buffer);
@@ -2072,10 +2072,10 @@ void load_preferences_file(SBoolean verbose)
 
    if (fp == NULL)
    {
-   	strcpy(filename, get_preference("RESOURCES_FOLDER"));
+    strcpy(filename, get_preference("RESOURCES_FOLDER"));
       append_if_necessary(filename, DIR_SEP_CHAR);
-   	strcat(filename, "preferences");
-   	fp = simm_fopen(filename, "r");
+    strcat(filename, "preferences");
+    fp = simm_fopen(filename, "r");
    }
 
    if (fp)
@@ -2125,9 +2125,9 @@ static char bones_buf[CHARBUFFER];
 
 const char* get_bones_folder(void)
 {
-	const char* p = get_preference("BONES_FOLDER");
+    const char* p = get_preference("BONES_FOLDER");
 
-	if (p)
+    if (p)
    {
       strcpy(bones_buf, p);
       append_if_necessary(bones_buf, DIR_SEP_CHAR);
@@ -2139,14 +2139,14 @@ const char* get_bones_folder(void)
       strcat(bones_buf, "bones\\");
    }
 
-	return bones_buf;
+    return bones_buf;
 }
 
 static char help_buf[CHARBUFFER];
 
 const char* get_help_folder(void)
 {
-	const char* p = get_preference("HELP_FOLDER");
+    const char* p = get_preference("HELP_FOLDER");
 
    if (p)
    {
@@ -2160,14 +2160,14 @@ const char* get_help_folder(void)
       strcat(help_buf, "help\\");
    }
 
-	return help_buf;
+    return help_buf;
 }
 
 static char mocap_buf[CHARBUFFER];
 
 const char* get_mocap_folder(void)
 {
-	const char* p = get_preference("MOCAP_FOLDER");
+    const char* p = get_preference("MOCAP_FOLDER");
 
    if (p)
    {
@@ -2181,14 +2181,14 @@ const char* get_mocap_folder(void)
       strcat(mocap_buf, "mocap\\");
    }
 
-	return mocap_buf;
+    return mocap_buf;
 }
 
 static char mocap_misc_buf[CHARBUFFER];
 
 const char* get_mocap_misc_folder(void)
 {
-	const char* p = get_preference("MOCAP_MISC_FOLDER");
+    const char* p = get_preference("MOCAP_MISC_FOLDER");
 
    if (p)
    {
@@ -2202,7 +2202,7 @@ const char* get_mocap_misc_folder(void)
       strcat(mocap_misc_buf, "misc\\");
    }
 
-	return mocap_misc_buf;
+    return mocap_misc_buf;
 }
 
 static char color_buf[CHARBUFFER];
@@ -2344,9 +2344,9 @@ void setMusclePointSegment(dpMuscleStruct *muscle, int pointIndex, int newSeg)
 int makeDir(const char aDirName[])
 {
 #ifdef __linux__
-	return mkdir(aDirName,S_IRWXU);
+    return mkdir(aDirName,S_IRWXU);
 #else
-	return _mkdir(aDirName);
+    return _mkdir(aDirName);
 #endif
 }
 
@@ -2368,49 +2368,49 @@ static char simm_clipboard[CHARBUFFER];
 
 const char* get_clipboard_text(void)
 {
-	if (OpenClipboard(__mdiClientHwnd) && IsClipboardFormatAvailable(CF_TEXT)) 
-	{
-		HANDLE clipboard_handle = GetClipboardData(CF_TEXT);
-		const char* clip = (const char*)GlobalLock(clipboard_handle);
-		strncpy(simm_clipboard, clip, CHARBUFFER-1);
-		GlobalUnlock(clipboard_handle);
-		simm_clipboard[CHARBUFFER-1] = STRING_TERMINATOR;
-		CloseClipboard();
-	}
+    if (OpenClipboard(__mdiClientHwnd) && IsClipboardFormatAvailable(CF_TEXT)) 
+    {
+        HANDLE clipboard_handle = GetClipboardData(CF_TEXT);
+        const char* clip = (const char*)GlobalLock(clipboard_handle);
+        strncpy(simm_clipboard, clip, CHARBUFFER-1);
+        GlobalUnlock(clipboard_handle);
+        simm_clipboard[CHARBUFFER-1] = STRING_TERMINATOR;
+        CloseClipboard();
+    }
 
-	return simm_clipboard;
+    return simm_clipboard;
 }
 
 void set_clipboard_text(const char text[])
 {
-	if (OpenClipboard(__mdiClientHwnd) && IsClipboardFormatAvailable(CF_TEXT)) 
-	{
+    if (OpenClipboard(__mdiClientHwnd) && IsClipboardFormatAvailable(CF_TEXT)) 
+    {
 #if 0
-		strcpy(simm_clipboard, text);
-		SetClipboardData(CF_TEXT, simm_clipboard); 
-		CloseClipboard();
+        strcpy(simm_clipboard, text);
+        SetClipboardData(CF_TEXT, simm_clipboard); 
+        CloseClipboard();
 #else
-		// Allocate a global memory object for the text.
-		LPTSTR lptstrCopy; 
-		int len = strlen(text);
-		HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, (len+1) * sizeof(TCHAR));
-		if (hglbCopy == NULL) 
-		{ 
-			CloseClipboard(); 
-			return; 
-		} 
+        // Allocate a global memory object for the text.
+        LPTSTR lptstrCopy; 
+        int len = strlen(text);
+        HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, (len+1) * sizeof(TCHAR));
+        if (hglbCopy == NULL) 
+        { 
+            CloseClipboard(); 
+            return; 
+        } 
 
-		// Lock the handle and copy the text to the buffer. 
-		strcpy(simm_clipboard, text);
-		lptstrCopy = GlobalLock(hglbCopy); 
-		memcpy(lptstrCopy, simm_clipboard, len * sizeof(TCHAR)); 
-		lptstrCopy[len] = (TCHAR) 0;
-		GlobalUnlock(hglbCopy); 
+        // Lock the handle and copy the text to the buffer. 
+        strcpy(simm_clipboard, text);
+        lptstrCopy = GlobalLock(hglbCopy); 
+        memcpy(lptstrCopy, simm_clipboard, len * sizeof(TCHAR)); 
+        lptstrCopy[len] = (TCHAR) 0;
+        GlobalUnlock(hglbCopy); 
 
-		// Place the handle on the clipboard. 
-		SetClipboardData(CF_TEXT, hglbCopy); 
+        // Place the handle on the clipboard. 
+        SetClipboardData(CF_TEXT, hglbCopy); 
 #endif
-	}
+    }
 }
 
 #endif
@@ -2446,7 +2446,7 @@ int getLigamentIndex(ModelStruct* model, char lig_name[])
 
    for (i=0; i<model->numligaments; i++)
       if (STRINGS_ARE_EQUAL(lig_name, model->ligament[i].name))
-	  return i;
+      return i;
 
    return -1;
 }

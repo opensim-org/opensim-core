@@ -53,7 +53,7 @@ template class OSIMSIMULATION_API ModelComponentSet<Controller>;
  */
 ControllerSet::~ControllerSet()
 {
-	delete _controlStore;
+    delete _controlStore;
 }
 //_____________________________________________________________________________
 /**
@@ -84,11 +84,11 @@ ControllerSet::ControllerSet(Model& model, const std::string &aFileName, bool aU
  * @param aControllerSet ControllerSet to be copied.
  */
 ControllerSet::ControllerSet(const ControllerSet &aControllerSet) :
-	ModelComponentSet<Controller>(aControllerSet)
+    ModelComponentSet<Controller>(aControllerSet)
 {
 
-	// Class Members
-	copyData(aControllerSet);
+    // Class Members
+    copyData(aControllerSet);
 }
 
 //=============================================================================
@@ -102,13 +102,13 @@ ControllerSet::ControllerSet(const ControllerSet &aControllerSet) :
  */
 void ControllerSet::copyData(const ControllerSet &aControllerSet)
 {
-	_actuatorSet =  aControllerSet._actuatorSet;
-	const Storage *source = (Storage *)aControllerSet._controlStore;
-	if(source == NULL){
-		_controlStore =  NULL;
-	} else {
-		_controlStore =  new Storage(*source, true);
-	}
+    _actuatorSet =  aControllerSet._actuatorSet;
+    const Storage *source = (Storage *)aControllerSet._controlStore;
+    if(source == NULL){
+        _controlStore =  NULL;
+    } else {
+        _controlStore =  new Storage(*source, true);
+    }
 }
 
 
@@ -124,13 +124,13 @@ void ControllerSet::copyData(const ControllerSet &aControllerSet)
  */
 ControllerSet& ControllerSet::operator=(const ControllerSet &aControllerSet)
 {
-	// BASE CLASS
-	Set<Controller>::operator=(aControllerSet);
+    // BASE CLASS
+    Set<Controller>::operator=(aControllerSet);
 
-	// Class Members
-	copyData(aControllerSet);
+    // Class Members
+    copyData(aControllerSet);
 
-	return(*this);
+    return(*this);
 }
 
 
@@ -147,13 +147,13 @@ ControllerSet& ControllerSet::operator=(const ControllerSet &aControllerSet)
  */
 bool ControllerSet::addController(Controller *aController)
 {
-	bool success = Set<Controller>::adoptAndAppend(aController);
+    bool success = Set<Controller>::adoptAndAppend(aController);
 
-	if(success) {
-		aController->connectToModel(updModel());
-	}
+    if(success) {
+        aController->extendConnectToModel(updModel());
+    }
 
-	return success;
+    return success;
 }
 //_____________________________________________________________________________
 /**
@@ -170,9 +170,9 @@ bool ControllerSet::addController(Controller *aController)
  */
 bool ControllerSet::set(int aIndex,Controller *aController)
 {
-	bool success = Set<Controller>::set(aIndex,aController);
+    bool success = Set<Controller>::set(aIndex,aController);
 
-	return(success);
+    return(success);
 }
 
 
@@ -181,12 +181,12 @@ void ControllerSet::constructStorage()
     Array<string> columnLabels;
 
     // CONTROLS
-	delete _controlStore;
+    delete _controlStore;
     _controlStore = new Storage(1023,"controls");
     columnLabels.append("time");
 
     for(int i=0;i<_actuatorSet->getSize();i++)
-		columnLabels.append(_actuatorSet->get(i).getName());
+        columnLabels.append(_actuatorSet->get(i).getName());
 
     _controlStore->setColumnLabels(columnLabels);
         
@@ -196,10 +196,10 @@ void ControllerSet::storeControls( const SimTK::State& s, int step  )
 {
     int size = _actuatorSet->getSize();
     
-	if( size > 0 )
-	{
-		_controlStore->store( step, s.getTime(), getModel().getNumControls(), 
-			                  &(getModel().getControls(s)[0]) );
+    if( size > 0 )
+    {
+        _controlStore->store( step, s.getTime(), getModel().getNumControls(), 
+                              &(getModel().getControls(s)[0]) );
     }
 }
 
@@ -221,9 +221,9 @@ void ControllerSet::setDesiredStates( Storage* yStore)
 {
    for(int i=0;i<getSize();i++ ) {
        if( !get(i).isDisabled() ) {
-		   TrackingController *controller = dynamic_cast<TrackingController *>(&get(i));
-		   if(controller != NULL)
-				controller->setDesiredStatesStorage( yStore );
+           TrackingController *controller = dynamic_cast<TrackingController *>(&get(i));
+           if(controller != NULL)
+                controller->setDesiredStatesStorage( yStore );
        }
    }
 }
@@ -258,8 +258,8 @@ void ControllerSet::printInfo() const
 
 void ControllerSet::computeControls(const SimTK::State& s, SimTK::Vector &controls) const
 {
-	for(int i=0;i<getSize(); i++ ) {
-		if(!get(i).isDisabled() )
-			get(i).computeControls(s, controls);
-	}
+    for(int i=0;i<getSize(); i++ ) {
+        if(!get(i).isDisabled() )
+            get(i).computeControls(s, controls);
+    }
 }

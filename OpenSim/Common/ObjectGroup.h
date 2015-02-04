@@ -36,10 +36,10 @@
 namespace OpenSim {
 
 #ifdef SWIG
-	#ifdef OSIMCOMMON_API
-		#undef OSIMCOMMON_API
-		#define OSIMCOMMON_API
-	#endif
+    #ifdef OSIMCOMMON_API
+        #undef OSIMCOMMON_API
+        #define OSIMCOMMON_API
+    #endif
 #endif
 
 //=============================================================================
@@ -60,41 +60,41 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ObjectGroup, Object);
 private:
 
 protected:
-	PropertyStrArray _memberNamesProp;
-	Array<std::string>& _memberNames;
+    PropertyStrArray _memberNamesProp;
+    Array<std::string>& _memberNames;
 
-	Array<Object*> _memberObjects;
+    Array<Object*> _memberObjects;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	ObjectGroup();
-	ObjectGroup(const std::string& aName);
-	ObjectGroup(const ObjectGroup &aGroup);
-	virtual ~ObjectGroup();
+    ObjectGroup();
+    ObjectGroup(const std::string& aName);
+    ObjectGroup(const ObjectGroup &aGroup);
+    virtual ~ObjectGroup();
 
 #ifndef SWIG
-	ObjectGroup& operator=(const ObjectGroup &aGroup);
+    ObjectGroup& operator=(const ObjectGroup &aGroup);
 #endif
    void copyData(const ObjectGroup &aGroup);
 
-	bool contains(const std::string& aName) const;
-	void add(Object* aObject);
-	void remove(const Object* aObject);
-	void replace(const Object* aOldObject, Object* aNewObject);
-	void setupGroup(ArrayPtrs<Object>& aObjects);
-	const Array<Object*>& getMembers() const { return _memberObjects; }
+    bool contains(const std::string& aName) const;
+    void add(Object* aObject);
+    void remove(const Object* aObject);
+    void replace(const Object* aOldObject, Object* aNewObject);
+    void setupGroup(ArrayPtrs<Object>& aObjects);
+    const Array<Object*>& getMembers() const { return _memberObjects; }
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 
 //=============================================================================
-};	// END of class ObjectGroup
+};  // END of class ObjectGroup
 //=============================================================================
 //=============================================================================
 

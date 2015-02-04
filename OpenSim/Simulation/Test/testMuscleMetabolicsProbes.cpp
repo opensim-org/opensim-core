@@ -143,7 +143,7 @@ public:
     //--------------------------------------------------------------------------
     void setFiberLength(SimTK::State& s, double fiberLength) const
     {
-        setStateVariable(s, stateName_fiberLength, fiberLength);
+        setStateVariableValue(s, stateName_fiberLength, fiberLength);
         markCacheVariableInvalid(s, "lengthInfo");
         markCacheVariableInvalid(s, "velInfo");
         markCacheVariableInvalid(s, "dynamicsInfo");
@@ -151,7 +151,7 @@ public:
 
     void setNormFiberVelocity(SimTK::State& s, double normFiberVelocity) const
     {
-        setStateVariable(s, stateName_fiberVelocity, normFiberVelocity *
+        setStateVariableValue(s, stateName_fiberVelocity, normFiberVelocity *
                          getMaxContractionVelocity() * getOptimalFiberLength());
         markCacheVariableInvalid(s, "velInfo");
         markCacheVariableInvalid(s, "dynamicsInfo");
@@ -160,33 +160,32 @@ public:
     //--------------------------------------------------------------------------
     // MODELCOMPONENT INTERFACE
     //--------------------------------------------------------------------------
-    void connectToModel(Model& model) override
+    void extendConnectToModel(Model& model) override
     {
+        Super::extendConnectToModel(model);
         #ifdef USE_ACTIVATION_DYNAMICS_MODEL
         ZerothOrderMuscleActivationDynamics &zomad =
             upd_ZerothOrderMuscleActivationDynamics();
         includeAsSubComponent(&zomad);
         #endif
-
-        Super::connectToModel(model);
     }
 
-    void addToSystem(SimTK::MultibodySystem& system) const override
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override
     {
-        Super::addToSystem(system);
+        Super::extendAddToSystem(system);
         addStateVariable(stateName_fiberLength);
         addStateVariable(stateName_fiberVelocity);
     }
 
-    void initStateFromProperties(SimTK::State& s) const override
+    void extendInitStateFromProperties(SimTK::State& s) const override
     {
-        Super::initStateFromProperties(s);
+        Super::extendInitStateFromProperties(s);
         setFiberLength(s, getOptimalFiberLength());
     }
 
-    void setPropertiesFromState(const SimTK::State& s) override
+    void extendSetPropertiesFromState(const SimTK::State& s) override
     {
-        Super::setPropertiesFromState(s);
+        Super::extendSetPropertiesFromState(s);
         setOptimalFiberLength(getFiberLength(s));
     }
 
@@ -194,8 +193,8 @@ public:
     {
         // This implementation is not intended for use in dynamic simulations.
         const int n = getNumStateVariables();
-        setStateVariableDerivative(s, stateName_fiberLength, 0.0);
-		setStateVariableDerivative(s, stateName_fiberVelocity, 0.0);
+        setStateVariableDerivativeValue(s, stateName_fiberLength, 0.0);
+        setStateVariableDerivativeValue(s, stateName_fiberVelocity, 0.0);
     }
 
     //--------------------------------------------------------------------------
@@ -215,7 +214,7 @@ public:
     double computeActuation(const SimTK::State& s) const override
     {
         const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
-        setForce(s, mdi.tendonForce);
+        setActuation(s, mdi.tendonForce);
         return mdi.tendonForce;
     }
 
@@ -223,7 +222,7 @@ public:
     void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli)
         const override
     {
-        mli.fiberLength            = getStateVariable(s, stateName_fiberLength);
+        mli.fiberLength            = getStateVariableValue(s, stateName_fiberLength);
         mli.fiberLengthAlongTendon = mli.fiberLength;
         mli.normFiberLength        = mli.fiberLength / getOptimalFiberLength();
         mli.tendonLength           = 0;
@@ -251,7 +250,7 @@ public:
     void calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi)
         const override
     {
-        fvi.fiberVelocity = getStateVariable(s, stateName_fiberVelocity);
+        fvi.fiberVelocity = getStateVariableValue(s, stateName_fiberVelocity);
         fvi.fiberVelocityAlongTendon = fvi.fiberVelocity;
         fvi.normFiberVelocity        = fvi.fiberVelocity /
                         (getMaxContractionVelocity() * getOptimalFiberLength());
@@ -382,7 +381,7 @@ void generateUmbergerMuscleData(const std::string& muscleName,
     CoordinateSet& prisCoordSet = prismatic->upd_CoordinateSet();
     prisCoordSet[0].setName("xTranslation");
     model.addBody(block);
-	model.addJoint(prismatic);
+    model.addJoint(prismatic);
 
     // Create muscle attached to ground and block.
     UmbergerMuscle *muscle = new UmbergerMuscle(muscleName, maxIsometricForce,
@@ -403,7 +402,7 @@ void generateUmbergerMuscleData(const std::string& muscleName,
         new Umberger2010MuscleMetabolicsProbe(false, false, false, true);
     model.addProbe(mechanicalPowerProbe);
 
-	model.setup();
+    model.setup();
     mechanicalPowerProbe->setName("mechanicalPowerProbe");
     mechanicalPowerProbe->setOperation("value");
     mechanicalPowerProbe->addMuscle(muscleName, slowTwitchRatio, muscleMass);
@@ -629,7 +628,7 @@ Storage simulateModel(Model& model,double t0, double t1)
     cout << "- initializing" << endl;
     SimTK::State& state = model.initSystem();
 
-	
+    
 
     for (int i=0; i<model.getMuscles().getSize(); ++i)
         model.getMuscles().get(i).setIgnoreActivationDynamics(state, true);
@@ -641,7 +640,7 @@ Storage simulateModel(Model& model,double t0, double t1)
     SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
     integrator.setAccuracy(integrationAccuracy);
 
-	Manager manager(model,integrator);
+    Manager manager(model,integrator);
 
     manager.setInitialTime(t0);
     manager.setFinalTime(t1);
@@ -653,7 +652,7 @@ Storage simulateModel(Model& model,double t0, double t1)
     cout << "- simulation complete (" << (double)(clock()-tStart)/CLOCKS_PER_SEC
          << " seconds elapsed)" << endl;
 
-	return manager.getStateStorage();
+    return manager.getStateStorage();
 }
 
 void testProbesUsingMillardMuscleSimulation()
@@ -686,7 +685,7 @@ void testProbesUsingMillardMuscleSimulation()
     prisCoordSet[0].setPrescribedFunction(motion);
     prisCoordSet[0].setDefaultIsPrescribed(true);
     model.addBody(block);
-	model.addJoint(prismatic);
+    model.addJoint(prismatic);
 
     // Create muscles attached to ground and block.
     //                    _______
@@ -738,7 +737,7 @@ void testProbesUsingMillardMuscleSimulation()
 
     // Add a muscle to the probe without providing the muscle mass.
     umbergerTest->addMuscle(muscle1->getName(), 0.6);
-	model.setup();
+    model.setup();
     ASSERT(umbergerTest->getNumMetabolicMuscles()==1, __FILE__, __LINE__,
         "Muscle could not be added to Umberger2010MuscleMetabolicsProbe.");
     ASSERT(!umbergerTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
@@ -754,19 +753,19 @@ void testProbesUsingMillardMuscleSimulation()
 
     // Add another muscle to the probe, this time providing the muscle mass.
     umbergerTest->addMuscle(muscle2->getName(), 0.6, 1.0);
-	model.setup();
+    model.setup();
     ASSERT(umbergerTest->isUsingProvidedMass(muscle2->getName()), __FILE__,
         __LINE__, "Umberger probe should be using provided muscle mass.");
 
     // Remove a muscle from the probe.
     umbergerTest->removeMuscle(muscle1->getName());
-	model.setup();
+    model.setup();
     ASSERT(umbergerTest->getNumMetabolicMuscles()==1, __FILE__, __LINE__,
         "Muscle could not be removed from Umberger2010MuscleMetabolicsProbe.");
 
     // Remove the probe from the model.
     model.removeProbe(umbergerTest);
-	model.setup();
+    model.setup();
     ASSERT(model.getNumProbes()==0, __FILE__, __LINE__,
         "Umberger2010MuscleMetabolicsProbe could not be removed from the model.");
 
@@ -787,7 +786,7 @@ void testProbesUsingMillardMuscleSimulation()
 
     // Add a muscle to the probe without providing the muscle mass.
     bhargavaTest->addMuscle(muscle1->getName(), 0.6, 40, 133, 74, 111);
-	model.setup();
+    model.setup();
     ASSERT(bhargavaTest->getNumMetabolicMuscles()==1, __FILE__, __LINE__,
         "Muscle could not be added to Bhargava2004MuscleMetabolicsProbe.");
     ASSERT(!bhargavaTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
@@ -803,19 +802,19 @@ void testProbesUsingMillardMuscleSimulation()
 
     // Add another muscle to the probe, this time providing the muscle mass.
     bhargavaTest->addMuscle(muscle1->getName(), 0.6, 40, 133, 74, 111, 1.0);
-	model.setup();
+    model.setup();
     ASSERT(bhargavaTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
         __LINE__, "Bhargava probe should be using provided muscle mass.");
 
     // Remove a muscle from the probe.
     bhargavaTest->removeMuscle(muscle1->getName());
-	model.setup();
+    model.setup();
     ASSERT(bhargavaTest->getNumMetabolicMuscles()==1, __FILE__, __LINE__,
         "Muscle could not be removed from Bhargava2004MuscleMetabolicsProbe.");
 
     // Remove the probe from the model.
     model.removeProbe(bhargavaTest);
-	model.setup();
+    model.setup();
     ASSERT(model.getNumProbes()==0, __FILE__, __LINE__,
         "Bhargava2004MuscleMetabolicsProbe could not be removed from the model.");
 
@@ -1328,7 +1327,7 @@ void testProbesUsingMillardMuscleSimulation()
     }
 
     // Simulate.
-	model.setup();
+    model.setup();
     Storage stateStorage2 = simulateModel(model, t0, t1);
 
     if (OUTPUT_FILES) {

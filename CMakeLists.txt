@@ -154,9 +154,9 @@ IF( APPLE )
    SET(ARCH64 OFF) 
 ENDIF( APPLE )
 
-IF(UNIX AND NOT CMAKE_BUILD_TYPE)
+IF(NOT MSVC AND NOT XCODE AND NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release build" FORCE)
-ENDIF (UNIX AND NOT CMAKE_BUILD_TYPE)
+ENDIF()
 
 ## Choose the maximum level of x86 instruction set that the compiler is 
 ## allowed to use. Was using sse2 but changed to let the compilers choose. Most

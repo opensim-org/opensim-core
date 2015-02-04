@@ -278,7 +278,6 @@ protected:
     void calcMuscleLengthInfo(const SimTK::State& s, 
                               MuscleLengthInfo& mli) const override;
 
-
     /** calculate muscle's velocity related values such fiber and tendon 
         velocities,normalized velocities, pennation angular velocity, etc... */
     void  calcFiberVelocityInfo(const SimTK::State& s, 
@@ -289,18 +288,17 @@ protected:
     void  calcMuscleDynamicsInfo(const SimTK::State& s, 
                                     MuscleDynamicsInfo& mdi) const override;
 
-	/** calculate muscle's fiber and tendon potential energy */
-	void calcMusclePotentialEnergyInfo(const SimTK::State& s,
-		MusclePotentialEnergyInfo& mpei) const;
+    /** calculate muscle's fiber and tendon potential energy */
+    void calcMusclePotentialEnergyInfo(const SimTK::State& s,
+        MusclePotentialEnergyInfo& mpei) const;
 
     /** Calculate activation rate */
     double calcActivationRate(const SimTK::State& s) const override; 
 
-    virtual void addToSystem(SimTK::MultibodySystem& system) const;
-	virtual void initStateFromProperties(SimTK::State& s) const;
-    virtual void setPropertiesFromState(const SimTK::State& state);
-    virtual void connectToModel(Model& aModel);
-
+    /** Implement the ModelComponent interface */
+    void extendConnectToModel(Model& aModel) override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
 private:
     void setNull();

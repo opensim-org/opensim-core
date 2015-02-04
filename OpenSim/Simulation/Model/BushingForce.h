@@ -56,43 +56,43 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
-	OpenSim_DECLARE_OPTIONAL_PROPERTY(body_1, std::string,
-		"One of the two bodies connected by the bushing.");
-	OpenSim_DECLARE_OPTIONAL_PROPERTY(body_2, std::string,
-		"The other of the two bodies connected by the bushing.");
-	OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
-		"Location of bushing frame on body 1.");
-	OpenSim_DECLARE_PROPERTY(orientation_body_1, SimTK::Vec3,
-		"Orientation of bushing frame in body 1 as x-y-z, body fixed Euler rotations.");
-	OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
-		"Location of bushing frame on body 2.");
-	OpenSim_DECLARE_PROPERTY(orientation_body_2, SimTK::Vec3,
-		"Orientation of bushing frame in body 2 as x-y-z, body fixed Euler rotations.");
-	OpenSim_DECLARE_PROPERTY(rotational_stiffness, SimTK::Vec3,
-		"Stiffness parameters resisting relative rotation (Nm/rad).");
-	OpenSim_DECLARE_PROPERTY(translational_stiffness, SimTK::Vec3,
-		"Stiffness parameters resisting relative translation (N/m).");
-	OpenSim_DECLARE_PROPERTY(rotational_damping, SimTK::Vec3,
-		"Damping parameters resisting relative angular velocity. (Nm/(rad/s))");
-	OpenSim_DECLARE_PROPERTY(translational_damping, SimTK::Vec3,
-		"Damping parameters resisting relative translational velocity. (N/(m/s)");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(body_1, std::string,
+        "One of the two bodies connected by the bushing.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(body_2, std::string,
+        "The other of the two bodies connected by the bushing.");
+    OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
+        "Location of bushing frame on body 1.");
+    OpenSim_DECLARE_PROPERTY(orientation_body_1, SimTK::Vec3,
+        "Orientation of bushing frame in body 1 as x-y-z, body fixed Euler rotations.");
+    OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
+        "Location of bushing frame on body 2.");
+    OpenSim_DECLARE_PROPERTY(orientation_body_2, SimTK::Vec3,
+        "Orientation of bushing frame in body 2 as x-y-z, body fixed Euler rotations.");
+    OpenSim_DECLARE_PROPERTY(rotational_stiffness, SimTK::Vec3,
+        "Stiffness parameters resisting relative rotation (Nm/rad).");
+    OpenSim_DECLARE_PROPERTY(translational_stiffness, SimTK::Vec3,
+        "Stiffness parameters resisting relative translation (N/m).");
+    OpenSim_DECLARE_PROPERTY(rotational_damping, SimTK::Vec3,
+        "Damping parameters resisting relative angular velocity. (Nm/(rad/s))");
+    OpenSim_DECLARE_PROPERTY(translational_damping, SimTK::Vec3,
+        "Damping parameters resisting relative translational velocity. (N/(m/s)");
     /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-	/** Default constructor leaves bodies unspecified, sets the bushing frames
+    /** Default constructor leaves bodies unspecified, sets the bushing frames
     to be at their body origins, and sets all bushing parameters to zero. **/
-	BushingForce();
+    BushingForce();
     /** This constructor provides everything needed to create a real 
     bushing. See property declarations for more information. **/
-	BushingForce(const std::string& body1Name, 
+    BushingForce(const std::string& body1Name, 
                  const SimTK::Vec3& point1, 
                  const SimTK::Vec3& orientation1,
-		         const std::string& body2Name, 
+                 const std::string& body2Name, 
                  const SimTK::Vec3& point2, 
                  const SimTK::Vec3& orientation2,
-				 const SimTK::Vec3& transStiffness, 
+                 const SimTK::Vec3& transStiffness, 
                  const SimTK::Vec3& rotStiffness, 
                  const SimTK::Vec3& transDamping, 
                  const SimTK::Vec3& rotDamping);
@@ -100,49 +100,49 @@ public:
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.
 
-	/** Set the name of the Body that will serve as body 1 for this bushing. **/
-	void setBody1ByName(const std::string& aBodyName);
+    /** Set the name of the Body that will serve as body 1 for this bushing. **/
+    void setBody1ByName(const std::string& aBodyName);
     /** Set the location and orientation (optional) for bushing frame on 
     body 1. **/
-	void setBody1BushingLocation(const SimTK::Vec3& location, 
+    void setBody1BushingLocation(const SimTK::Vec3& location, 
                                  const SimTK::Vec3& orientation=SimTK::Vec3(0));
-	/** Set the name of the Body that will serve as body 2 for this bushing. **/
-	void setBody2ByName(const std::string& aBodyName);
+    /** Set the name of the Body that will serve as body 2 for this bushing. **/
+    void setBody2ByName(const std::string& aBodyName);
     /** Set the location and orientation (optional) for bushing frame on 
     body 2. **/
-	void setBody2BushingLocation(const SimTK::Vec3& location, 
+    void setBody2BushingLocation(const SimTK::Vec3& location, 
                                  const SimTK::Vec3& orientation=SimTK::Vec3(0));
 
-	/** Potential energy is determine by the elastic energy storage of the 
+    /** Potential energy is determine by the elastic energy storage of the 
     bushing. **/
-	virtual double computePotentialEnergy(const SimTK::State& s) const;
+    virtual double computePotentialEnergy(const SimTK::State& s) const;
 
-	//--------------------------------------------------------------------------
-	// Reporting
-	//--------------------------------------------------------------------------
-	/** 
-	 * Provide name(s) of the quantities (column labels) of the force value(s) 
+    //--------------------------------------------------------------------------
+    // Reporting
+    //--------------------------------------------------------------------------
+    /** 
+     * Provide name(s) of the quantities (column labels) of the force value(s) 
      * to be reported.
-	 */
-	virtual OpenSim::Array<std::string> getRecordLabels() const ;
-	/**
-	*  Provide the value(s) to be reported that correspond to the labels
-	*/
-	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
+     */
+    virtual OpenSim::Array<std::string> getRecordLabels() const ;
+    /**
+    *  Provide the value(s) to be reported that correspond to the labels
+    */
+    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
 
 private:
-	//--------------------------------------------------------------------------
-	// Implement ModelComponent interface.
-	//--------------------------------------------------------------------------
-	void connectToModel(Model& aModel) override;
-	// Create a SimTK::Force::LinarBushing which implements this BushingForce.
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+    //--------------------------------------------------------------------------
+    // Implement ModelComponent interface.
+    //--------------------------------------------------------------------------
+    void extendConnectToModel(Model& aModel) override;
+    // Create a SimTK::Force::LinarBushing which implements this BushingForce.
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-	void setNull();
-	void constructProperties();
+    void setNull();
+    void constructProperties();
 
 //==============================================================================
-};	// END of class BushingForce
+};  // END of class BushingForce
 //==============================================================================
 //==============================================================================
 

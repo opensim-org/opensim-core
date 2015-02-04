@@ -32,10 +32,10 @@
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle_Deprecated.h>
 
 #ifdef SWIG
-	#ifdef OSIMACTUATORS_API
-		#undef OSIMACTUATORS_API
-		#define OSIMACTUATORS_API
-	#endif
+    #ifdef OSIMACTUATORS_API
+        #undef OSIMACTUATORS_API
+        #define OSIMACTUATORS_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -60,78 +60,78 @@ public:
     These are the serializable properties associated with this class. Other
     properties are inherited from its superclass. **/
     /**@{**/
-	OpenSim_DECLARE_PROPERTY(time_scale, double,
-		"Scale factor for normalizing time");
-	OpenSim_DECLARE_PROPERTY(activation1, double,
-		"Parameter used in time constant of ramping up of muscle force");
-	OpenSim_DECLARE_PROPERTY(activation2, double,
-		"Parameter used in time constant of ramping up and ramping down of muscle force");
-	OpenSim_DECLARE_PROPERTY(damping, double,
-		"Damping factor related to maximum contraction velocity");
-	OpenSim_DECLARE_PROPERTY(tendon_force_length_curve, Function,
-		"Function representing force-length behavior of tendon");
-	OpenSim_DECLARE_PROPERTY(active_force_length_curve, Function,
-		"Function representing active force-length behavior of muscle fibers");
-	OpenSim_DECLARE_PROPERTY(passive_force_length_curve, Function,
-		"Function representing passive force-length behavior of muscle fibers");
+    OpenSim_DECLARE_PROPERTY(time_scale, double,
+        "Scale factor for normalizing time");
+    OpenSim_DECLARE_PROPERTY(activation1, double,
+        "Parameter used in time constant of ramping up of muscle force");
+    OpenSim_DECLARE_PROPERTY(activation2, double,
+        "Parameter used in time constant of ramping up and ramping down of muscle force");
+    OpenSim_DECLARE_PROPERTY(damping, double,
+        "Damping factor related to maximum contraction velocity");
+    OpenSim_DECLARE_PROPERTY(tendon_force_length_curve, Function,
+        "Function representing force-length behavior of tendon");
+    OpenSim_DECLARE_PROPERTY(active_force_length_curve, Function,
+        "Function representing active force-length behavior of muscle fibers");
+    OpenSim_DECLARE_PROPERTY(passive_force_length_curve, Function,
+        "Function representing passive force-length behavior of muscle fibers");
     /**@}**/
 
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	Schutte1993Muscle_Deprecated();
-	Schutte1993Muscle_Deprecated(const std::string& aName,
+    Schutte1993Muscle_Deprecated();
+    Schutte1993Muscle_Deprecated(const std::string& aName,
                                  double             aMaxIsometricForce,
                                  double             aOptimalFiberLength,
                                  double             aTendonSlackLength,
                                  double             aPennationAngle);
-	
+    
     // default destructor, copy constructor, copy assignment
 
-	//--------------------------------------------------------------------------
-	// GET
-	//--------------------------------------------------------------------------
-	// Properties
-	virtual double getTimeScale() const { return get_time_scale(); }
-	virtual double getDamping() const { return get_damping(); }
-	virtual bool setTimeScale(double aTimeScale);
-	virtual bool setActivation1(double aActivation1);
-	virtual bool setActivation2(double aActivation2);
-	virtual bool setDamping(double aDamping);
+    //--------------------------------------------------------------------------
+    // GET
+    //--------------------------------------------------------------------------
+    // Properties
+    virtual double getTimeScale() const { return get_time_scale(); }
+    virtual double getDamping() const { return get_damping(); }
+    virtual bool setTimeScale(double aTimeScale);
+    virtual bool setActivation1(double aActivation1);
+    virtual bool setActivation2(double aActivation2);
+    virtual bool setDamping(double aDamping);
 
-	//--------------------------------------------------------------------------
-	// COMPUTATION
-	//--------------------------------------------------------------------------
-	virtual double computeActuation( const SimTK::State& s ) const;
-	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
+    //--------------------------------------------------------------------------
+    // COMPUTATION
+    //--------------------------------------------------------------------------
+    virtual double computeActuation( const SimTK::State& s ) const;
+    virtual double computeIsometricForce(SimTK::State& s, double activation) const;
 
-	virtual const Function& getActiveForceLengthCurve() const;
-	virtual bool setActiveForceLengthCurve(const Function& aActiveForceLengthCurve);
-	virtual const Function& getPassiveForceLengthCurve() const;
-	virtual bool setPassiveForceLengthCurve(const Function& aPassiveForceLengthCurve);
-	virtual const Function& getTendonForceLengthCurve() const;
-	virtual bool setTendonForceLengthCurve(const Function& aTendonForceLengthCurve);
+    virtual const Function& getActiveForceLengthCurve() const;
+    virtual bool setActiveForceLengthCurve(const Function& aActiveForceLengthCurve);
+    virtual const Function& getPassiveForceLengthCurve() const;
+    virtual bool setPassiveForceLengthCurve(const Function& aPassiveForceLengthCurve);
+    virtual const Function& getTendonForceLengthCurve() const;
+    virtual bool setTendonForceLengthCurve(const Function& aTendonForceLengthCurve);
 
 protected:
-	// Model Component Interface
-	void connectToModel(Model& aModel)  override;
+    // Model Component Interface
+    void extendConnectToModel(Model& aModel)  override;
 
-	// Super interface
-	double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const;
-	double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;
+    // Super interface
+    double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const;
+    double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;
 
 private:
-	double calcNonzeroPassiveForce(const SimTK::State& s, double aNormFiberLength, double aNormFiberVelocity) const;
-	double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
-	double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
+    double calcNonzeroPassiveForce(const SimTK::State& s, double aNormFiberLength, double aNormFiberVelocity) const;
+    double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
+    double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
 
-	void constructProperties();
+    void constructProperties();
 //=============================================================================
-};	// END of class Schutte1993Muscle_Deprecated
+};  // END of class Schutte1993Muscle_Deprecated
 //=============================================================================
 //=============================================================================
 

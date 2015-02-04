@@ -66,8 +66,8 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(UnilateralConstraint, Constraint);
 //=============================================================================
 
 protected:
-	/** number of constraint equations and thus unilateral conditions to be satisfied */
-	int _numConstraintEquations;
+    /** number of constraint equations and thus unilateral conditions to be satisfied */
+    int _numConstraintEquations;
 
 //=============================================================================
 // METHODS
@@ -76,23 +76,23 @@ protected:
 // CONSTRUCTION
 //--------------------------------------------------------------------------
 public:
-	UnilateralConstraint();
-	virtual ~UnilateralConstraint();
+    UnilateralConstraint();
+    virtual ~UnilateralConstraint();
 
-	virtual int getNumConstraintEquations() {return _numConstraintEquations;};
+    virtual int getNumConstraintEquations() {return _numConstraintEquations;};
 
-	// The unilateral conditions for this constraint.
-	virtual std::vector<bool> unilateralConditionsSatisfied(const SimTK::State &s)
-		{ return std::vector<bool>(_numConstraintEquations, false); };
+    // The unilateral conditions for this constraint.
+    virtual std::vector<bool> unilateralConditionsSatisfied(const SimTK::State &s)
+        { return std::vector<bool>(_numConstraintEquations, false); };
 
 protected:
-	void connectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
 
 private:
-	void setNull();
+    void setNull();
 
 //=============================================================================
-};	// END of class Constraint
+};  // END of class Constraint
 //=============================================================================
 //=============================================================================
 

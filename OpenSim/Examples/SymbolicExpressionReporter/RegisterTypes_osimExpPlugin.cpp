@@ -39,8 +39,8 @@ static dllPluginObjectInstantiator dInstantiator;
  */
 OSIMEXPPLUGIN_API void RegisterTypes_osimPlugin()
 {
-	//Object::registerType( MyAnalysis() );
-	Object::registerType( SymbolicExpressionReporter() );
+    //Object::registerType( MyAnalysis() );
+    Object::registerType( SymbolicExpressionReporter() );
 }
 
 dllPluginObjectInstantiator::dllPluginObjectInstantiator() 

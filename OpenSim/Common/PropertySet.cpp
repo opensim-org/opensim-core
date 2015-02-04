@@ -47,7 +47,7 @@ using namespace std;
  */
 PropertySet::PropertySet()
 {
-	_array.setMemoryOwner(false);
+    _array.setMemoryOwner(false);
 }
 //_____________________________________________________________________________
 /**
@@ -57,8 +57,8 @@ PropertySet::PropertySet()
  */
 PropertySet::PropertySet(const PropertySet &aSet)
 {
-	_array = aSet._array;
-	_array.setMemoryOwner(false);
+    _array = aSet._array;
+    _array.setMemoryOwner(false);
 
 }
 
@@ -79,14 +79,14 @@ PropertySet::PropertySet(const PropertySet &aSet)
 ostream&
 operator<<(ostream &aOut,const PropertySet &aSet)
 {
-	aOut << "\nProperty Set:\n";
+    aOut << "\nProperty Set:\n";
 
-	int i;
-	for(i=0;i<aSet.getSize();i++)  {
-		aOut << aSet.get(i) << "\n";
-	}
+    int i;
+    for(i=0;i<aSet.getSize();i++)  {
+        aOut << aSet.get(i) << "\n";
+    }
 
-	return(aOut);
+    return(aOut);
 }
  */
 
@@ -103,8 +103,8 @@ operator<<(ostream &aOut,const PropertySet &aSet)
 bool PropertySet::
 isEmpty() const
 {
-	if(_array.getSize()<=0) return(true);
-	return(false);
+    if(_array.getSize()<=0) return(true);
+    return(false);
 }
 
 
@@ -121,7 +121,7 @@ isEmpty() const
 int PropertySet::
 getSize() const
 {
-	return(_array.getSize());
+    return(_array.getSize());
 }
 
 
@@ -138,13 +138,13 @@ getSize() const
 Property_Deprecated* PropertySet::
 get(int aIndex) throw(Exception)
 {
-	// NO SUCH PROPERTY - THROW EXCEPTION
-	if((aIndex<0)||(aIndex>=_array.getSize())) {
-		string msg = "PropertySet.get(int): Index is out of bounds.";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
+    // NO SUCH PROPERTY - THROW EXCEPTION
+    if((aIndex<0)||(aIndex>=_array.getSize())) {
+        string msg = "PropertySet.get(int): Index is out of bounds.";
+        throw Exception(msg,__FILE__,__LINE__);
+    }
 
-	return(_array[aIndex]);
+    return(_array[aIndex]);
 }
 //_____________________________________________________________________________
 /**
@@ -156,13 +156,13 @@ get(int aIndex) throw(Exception)
 const Property_Deprecated* PropertySet::
 get(int aIndex) const
 {
-	// NO SUCH PROPERTY - THROW EXCEPTION
-	if((aIndex<0)||(aIndex>=_array.getSize())) {
-		string msg = "PropertySet.get(int): Index is out of bounds.";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
+    // NO SUCH PROPERTY - THROW EXCEPTION
+    if((aIndex<0)||(aIndex>=_array.getSize())) {
+        string msg = "PropertySet.get(int): Index is out of bounds.";
+        throw Exception(msg,__FILE__,__LINE__);
+    }
 
-	return(_array[aIndex]);
+    return(_array[aIndex]);
 }
 //_____________________________________________________________________________
 /**
@@ -174,15 +174,15 @@ get(int aIndex) const
 Property_Deprecated* PropertySet::
 get(const string &aName) throw(Exception)
 {
-	int i;
-	PropertyInt prop(aName,0);
-	for(i=0;i<_array.getSize();i++) {
-		if((*_array[i]) == prop) return(_array[i]);
-	}
-		
-	// NO SUCH PROPERTY - THROW EXCEPTION
-	string msg = "PropertySet.get: No property named " + aName;
-	throw Exception(msg,__FILE__,__LINE__);
+    int i;
+    PropertyInt prop(aName,0);
+    for(i=0;i<_array.getSize();i++) {
+        if((*_array[i]) == prop) return(_array[i]);
+    }
+        
+    // NO SUCH PROPERTY - THROW EXCEPTION
+    string msg = "PropertySet.get: No property named " + aName;
+    throw Exception(msg,__FILE__,__LINE__);
 }
 //_____________________________________________________________________________
 /**
@@ -194,15 +194,15 @@ get(const string &aName) throw(Exception)
 const Property_Deprecated* PropertySet::
 get(const string &aName) const
 {
-	int i;
-	PropertyInt prop(aName,0);
-	for(i=0;i<_array.getSize();i++) {
-		if((*_array[i]) == prop) return(_array[i]);
-	}
-		
-	// NO SUCH PROPERTY - THROW EXCEPTION
-	string msg = "PropertySet.get: No property named " + aName;
-	throw Exception(msg,__FILE__,__LINE__);
+    int i;
+    PropertyInt prop(aName,0);
+    for(i=0;i<_array.getSize();i++) {
+        if((*_array[i]) == prop) return(_array[i]);
+    }
+        
+    // NO SUCH PROPERTY - THROW EXCEPTION
+    string msg = "PropertySet.get: No property named " + aName;
+    throw Exception(msg,__FILE__,__LINE__);
 }
 //_____________________________________________________________________________
 /**
@@ -214,12 +214,12 @@ get(const string &aName) const
 const Property_Deprecated* PropertySet::
 contains(const string& aName) const
 {
-	int i;
-	PropertyInt prop(aName,0);
-	for(i=0;i<_array.getSize();i++) {
-		if((*_array[i]) == prop) return(_array[i]);
-	}
-	return NULL;
+    int i;
+    PropertyInt prop(aName,0);
+    for(i=0;i<_array.getSize();i++) {
+        if((*_array[i]) == prop) return(_array[i]);
+    }
+    return NULL;
 }
 //_____________________________________________________________________________
 /**
@@ -231,12 +231,12 @@ contains(const string& aName) const
 Property_Deprecated* PropertySet::
 contains(const string& aName)
 {
-	int i;
-	PropertyInt prop(aName,0);
-	for(i=0;i<_array.getSize();i++) {
-		if((*_array[i]) == prop) return(_array[i]);
-	}
-	return NULL;
+    int i;
+    PropertyInt prop(aName,0);
+    for(i=0;i<_array.getSize();i++) {
+        if((*_array[i]) == prop) return(_array[i]);
+    }
+    return NULL;
 }
 
 
@@ -252,7 +252,7 @@ contains(const string& aName)
 void PropertySet::
 append(Property_Deprecated *aProperty)
 {
-	_array.append(aProperty);
+    _array.append(aProperty);
 }
 
 //_____________________________________________________________________________
@@ -264,7 +264,7 @@ append(Property_Deprecated *aProperty)
 void PropertySet::
 append(Property_Deprecated *aProperty, const string& aName)
 {
-	_array.append(aProperty);
+    _array.append(aProperty);
 }
 
 //=============================================================================
@@ -280,18 +280,18 @@ append(Property_Deprecated *aProperty, const string& aName)
 void PropertySet::
 remove(const string &aName)
 {
-	int i;
-	PropertyInt prop(aName,0);
-	for(i=0;i<_array.getSize();i++) {
-		if((*_array[i]) == prop) {
-			_array.remove(i);
-			return;
-		}
-	}
-		
-	// NO SUCH PROPERTY - THROW EXCEPTION
-	string msg = "PropertySet.get: No property named " + aName;
-	throw Exception(msg,__FILE__,__LINE__);
+    int i;
+    PropertyInt prop(aName,0);
+    for(i=0;i<_array.getSize();i++) {
+        if((*_array[i]) == prop) {
+            _array.remove(i);
+            return;
+        }
+    }
+        
+    // NO SUCH PROPERTY - THROW EXCEPTION
+    string msg = "PropertySet.get: No property named " + aName;
+    throw Exception(msg,__FILE__,__LINE__);
 }
 
 
@@ -305,7 +305,7 @@ remove(const string &aName)
 void PropertySet::
 clear()
 {
-	// Remove all the properties.
-	_array.setSize(0);
-	_array.trim();
+    // Remove all the properties.
+    _array.setSize(0);
+    _array.trim();
 }

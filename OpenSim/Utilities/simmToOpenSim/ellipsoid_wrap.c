@@ -156,7 +156,7 @@
 
 
 /*************** DEFINES (for this file only) *********************************/
-#define E_INSIDE_RADIUS	  -1
+#define E_INSIDE_RADIUS   -1
 #define E_NO_WRAP 0
 #define E_WRAPPED 1
 #define E_MANDATORY_WRAP 2
@@ -214,10 +214,10 @@ static double pt_to_ellipsoid(double a, double b, double c,
                               double* x, double* y, double* z, int specialCaseAxis);
 
 static int calc_r(double p1e, double r1[], double p1[], double m[], double a[],
-	          double vs[], double vs4);
+              double vs[], double vs4);
 
 static void dell(double r1[], double r2[], double m[], double a[], double vs[], 
-	         double vs4, SBoolean far_side_wrap, double *afst, double** wrap_pts, int* num_wrap_pts);
+             double vs4, SBoolean far_side_wrap, double *afst, double** wrap_pts, int* num_wrap_pts);
 
 /**** for constraints ****/
 static double pt_to_ellipse2(double a, double b, double u, double v, double* x, double* y);
@@ -274,20 +274,20 @@ void cons_ellipsoid_normal_at_pt(const double m[],  const double a[],
       the specified ellipsoid.
 ---------------------------------------------------------------------------- */
 int calc_line_intersect_ellipsoid (
-	double		p1[3],		/* input:  muscle point 1		*/
-	double		p2[3],		/* input:  muscle point 2		*/
-	double		m[3],		/* input:  ellipsoid origin (0,0,0)	*/
-	double		a[3],		/* input:  ellipsoid xyz radii		*/
-	double*		rlen,		/* output: length of surface wrap	*/
-	double		r1[],		/* output: wrap tangent point 1		*/
-	double		r2[],		/* output: wrap tangent point 2		*/
-	double**	wrap_pts,	/* output: intermediate surface wrap pts*/
-	int*		num_wrap_pts,	/* output: number of intermediate pts	*/
-	int		wrap_axis,	/* input:  constraint axis		*/
-	int		wrap_sign,	/* input:  constraint direction		*/
-	dpMuscleWrapStruct* mwrap, /* in/out: muscle wrap structure	*/
-	int*		p_flag,		/* output: did wrapping occur?		*/
-	dpWrapObject*	wo)
+    double      p1[3],      /* input:  muscle point 1       */
+    double      p2[3],      /* input:  muscle point 2       */
+    double      m[3],       /* input:  ellipsoid origin (0,0,0) */
+    double      a[3],       /* input:  ellipsoid xyz radii      */
+    double*     rlen,       /* output: length of surface wrap   */
+    double      r1[],       /* output: wrap tangent point 1     */
+    double      r2[],       /* output: wrap tangent point 2     */
+    double**    wrap_pts,   /* output: intermediate surface wrap pts*/
+    int*        num_wrap_pts,   /* output: number of intermediate pts   */
+    int     wrap_axis,  /* input:  constraint axis      */
+    int     wrap_sign,  /* input:  constraint direction     */
+    dpMuscleWrapStruct* mwrap, /* in/out: muscle wrap structure */
+    int*        p_flag,     /* output: did wrapping occur?      */
+    dpWrapObject*   wo)
 {
    int i,j, bestMu;
    
@@ -353,7 +353,7 @@ int calc_line_intersect_ellipsoid (
    MAKE_3DVECTOR21(p2, m, p2m);
    normalize_vector(p2m, p2m);
 
-   ppm = DOT_VECTORS(p1m, p2m) - 1.0;	/* angle between p1->m and p2->m: -2.0 to 0.0 */
+   ppm = DOT_VECTORS(p1m, p2m) - 1.0;   /* angle between p1->m and p2->m: -2.0 to 0.0 */
 
    if (fabs(ppm) < 0.0001)
    {
@@ -538,7 +538,7 @@ int calc_line_intersect_ellipsoid (
          normalize_vector(v_sum, v_sum);
          
          for (i = 0; i < 3; i++)
-      	   t_c1[0][i] = t_sv[2][i] + v_sum[i];
+           t_c1[0][i] = t_sv[2][i] + v_sum[i];
          
          if (mwrap->wrap_algorithm == WE_FAN_ALGORITHM || mu[bestMu] <= MU_BLEND_MIN)
          {
@@ -1061,7 +1061,7 @@ static double pt_to_ellipsoid (double a, double b, double c,
      r1    tangent point on ellipsoid surface and in vs plane
 ---------------------------------------------------------------------------- */
 static int calc_r (double p1e, double r1[], double p1[], double m[], double a[],
-	           double vs[], double vs4)
+               double vs[], double vs4)
 {
    int i, j, k, nit, nit2, maxit=50, maxit2=1000;
    double nr1[3], d1, v[4], ee[4], ssqo, ssq, pcos, p1r1[3], p1m[3], dedth[4][4];
@@ -1070,19 +1070,19 @@ static int calc_r (double p1e, double r1[], double p1[], double m[], double a[],
    if (fabs(p1e) < 0.0001)
    {
       for (i = 0; i < 3; i++)
-	 r1[i] = p1[i];
+     r1[i] = p1[i];
    }
    else
    {
       for (i = 0; i < 3; i++)
-	 nr1[i] = 2.0 * (r1[i] - m[i])/(SQR(a[i]));
+     nr1[i] = 2.0 * (r1[i] - m[i])/(SQR(a[i]));
 
       d1 = -DOT_VECTORS(nr1, r1);
       ee[0] = DOT_VECTORS(vs, r1) + vs4;
       ee[1] = -1.0;
 
       for (i = 0; i < 3; i++)
-	 ee[1] += SQR((r1[i] - m[i]) / a[i]);
+     ee[1] += SQR((r1[i] - m[i]) / a[i]);
 
       ee[2] = DOT_VECTORS(nr1, r1) + d1;
       ee[3] = DOT_VECTORS(nr1, p1) + d1;
@@ -1094,152 +1094,152 @@ static int calc_r (double p1e, double r1[], double p1[], double m[], double a[],
 
       while ((ssq > ELLIPSOID_TINY) && (nit < maxit))
       {
-	 nit++;
+     nit++;
 
-	 for (i = 0; i < 3; i++)
-	 {
-	    dedth[i][0] = vs[i];
-	    dedth[i][1] = 2.0 * (r1[i] - m[i]) / SQR(a[i]);
-	    dedth[i][2] = 2.0 * (2.0 * r1[i] - m[i]) / SQR(a[i]);
-	    dedth[i][3] = 2.0 * p1[i] / SQR(a[i]);
-	 }
+     for (i = 0; i < 3; i++)
+     {
+        dedth[i][0] = vs[i];
+        dedth[i][1] = 2.0 * (r1[i] - m[i]) / SQR(a[i]);
+        dedth[i][2] = 2.0 * (2.0 * r1[i] - m[i]) / SQR(a[i]);
+        dedth[i][3] = 2.0 * p1[i] / SQR(a[i]);
+     }
 
-	 dedth[3][0] = 0.0;
-	 dedth[3][1] = 0.0;
-	 dedth[3][2] = 1.0;
-	 dedth[3][3] = 1.0;
+     dedth[3][0] = 0.0;
+     dedth[3][1] = 0.0;
+     dedth[3][2] = 1.0;
+     dedth[3][3] = 1.0;
 #if 1
-	 MAKE_3DVECTOR21(p1, r1, p1r1);
-	 normalize_vector(p1r1, p1r1);
+     MAKE_3DVECTOR21(p1, r1, p1r1);
+     normalize_vector(p1r1, p1r1);
 
          MAKE_3DVECTOR21(p1, m, p1m);
          normalize_vector(p1m, p1m);
 
-	 pcos = DOT_VECTORS(p1r1, p1m);
+     pcos = DOT_VECTORS(p1r1, p1m);
 
-	 if (pcos > 0.1)
-	    dd = 1.0 - pow(pcos, 100);
-	 else
+     if (pcos > 0.1)
+        dd = 1.0 - pow(pcos, 100);
+     else
 #endif
-	    dd = 1.0;
+        dd = 1.0;
 
-	 for (i = 0; i < 4; i++)
-	 {
-	    v[i] = 0.0;
-	    
-	    for (j = 0; j < 4; j++)
-	       v[i] -= dedth[i][j] * ee[j];
-	 }
+     for (i = 0; i < 4; i++)
+     {
+        v[i] = 0.0;
+        
+        for (j = 0; j < 4; j++)
+           v[i] -= dedth[i][j] * ee[j];
+     }
 
-	 for (i = 0; i < 4; i++)
-	 {
-	    for (j = 0; j < 4; j++)
-	    {
-	       dedth2[i][j] = 0.0;
-	       
-	       for (k = 0; k < 4; k++)
-		  dedth2[i][j] += dedth[i][k] * dedth[j][k];
-	    }
-	 }
+     for (i = 0; i < 4; i++)
+     {
+        for (j = 0; j < 4; j++)
+        {
+           dedth2[i][j] = 0.0;
+           
+           for (k = 0; k < 4; k++)
+          dedth2[i][j] += dedth[i][k] * dedth[j][k];
+        }
+     }
 
-	 for (i = 0; i < 4; i++)
-	    diag[i] = dedth2[i][i];
+     for (i = 0; i < 4; i++)
+        diag[i] = dedth2[i][i];
 
-	 nit2 = 0;
-	 
-	 while ((ssq >= ssqo) && (nit2 < maxit2))
-	 {
-	    for (i = 0; i < 4; i++)
-	       dedth2[i][i] = diag[i] * (1.0 + alpha);
+     nit2 = 0;
+     
+     while ((ssq >= ssqo) && (nit2 < maxit2))
+     {
+        for (i = 0; i < 4; i++)
+           dedth2[i][i] = diag[i] * (1.0 + alpha);
 
-	    invert_4x4matrix(dedth2, ddinv2);
+        invert_4x4matrix(dedth2, ddinv2);
 
-	    for (i = 0; i < 4; i++)
-	    {
-	       vt[i] = 0.0;
-	       
-	       for (j = 0; j < 4; j++)
-		  vt[i] += dd * ddinv2[i][j] * v[j] / 16.0;
-	    }
+        for (i = 0; i < 4; i++)
+        {
+           vt[i] = 0.0;
+           
+           for (j = 0; j < 4; j++)
+          vt[i] += dd * ddinv2[i][j] * v[j] / 16.0;
+        }
 
-	    for (i = 0; i < 3; i++)
-	       r1[i] += vt[i];
-	 
-	    d1 += vt[3];
+        for (i = 0; i < 3; i++)
+           r1[i] += vt[i];
+     
+        d1 += vt[3];
 
-	    for (i = 0; i < 3; i++)
-	       nr1[i] = 2.0 * (r1[i] - m[i])/SQR(a[i]);
-	    
-	    ee[0] = DOT_VECTORS(vs, r1) + vs4;
-	    ee[1] = -1.0;
+        for (i = 0; i < 3; i++)
+           nr1[i] = 2.0 * (r1[i] - m[i])/SQR(a[i]);
+        
+        ee[0] = DOT_VECTORS(vs, r1) + vs4;
+        ee[1] = -1.0;
 
-	    for (i = 0; i < 3; i++)
-	       ee[1] += SQR((r1[i] - m[i])/a[i]);
+        for (i = 0; i < 3; i++)
+           ee[1] += SQR((r1[i] - m[i])/a[i]);
 
-	    ee[2] = DOT_VECTORS(nr1, r1) + d1;
-	    ee[3] = DOT_VECTORS(nr1, p1) + d1;
+        ee[2] = DOT_VECTORS(nr1, r1) + d1;
+        ee[3] = DOT_VECTORS(nr1, p1) + d1;
 
-	    ssqo = ssq;
+        ssqo = ssq;
 
-	    ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
+        ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
 
-	    alpha *= 4.0;
-	    nit2++;
-	 }
+        alpha *= 4.0;
+        nit2++;
+     }
 
-	 alpha /= 8.0;
+     alpha /= 8.0;
 
-	 fakt = 0.5;
+     fakt = 0.5;
 
-	 nit2 = 0;
-	 
-	 while ((ssq <= ssqo) && (nit2 < maxit2))
-	 {
-	    fakt *= 2.0;
+     nit2 = 0;
+     
+     while ((ssq <= ssqo) && (nit2 < maxit2))
+     {
+        fakt *= 2.0;
 
-	    for (i = 0; i < 3; i++)
-	       r1[i] += vt[i] * fakt;
+        for (i = 0; i < 3; i++)
+           r1[i] += vt[i] * fakt;
 
-	    d1 += vt[3] * fakt;
+        d1 += vt[3] * fakt;
 
-	    for (i = 0; i < 3; i++)
-	       nr1[i] = 2.0 * (r1[i] - m[i]) / SQR(a[i]);
+        for (i = 0; i < 3; i++)
+           nr1[i] = 2.0 * (r1[i] - m[i]) / SQR(a[i]);
 
-	    ee[0] = DOT_VECTORS(vs, r1) + vs4;
-	    ee[1] = -1.0;
-	    
-	    for (i=0; i<3; i++)
-	       ee[1] += SQR((r1[i] - m[i]) / a[i]);
+        ee[0] = DOT_VECTORS(vs, r1) + vs4;
+        ee[1] = -1.0;
+        
+        for (i=0; i<3; i++)
+           ee[1] += SQR((r1[i] - m[i]) / a[i]);
 
-	    ee[2] = DOT_VECTORS(nr1, r1) + d1;
-	    ee[3] = DOT_VECTORS(nr1, p1) + d1;
+        ee[2] = DOT_VECTORS(nr1, r1) + d1;
+        ee[3] = DOT_VECTORS(nr1, p1) + d1;
 
-	    ssqo = ssq;	    
-	    
-	    ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
+        ssqo = ssq;     
+        
+        ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
 
-	    nit2++;
-	 }
+        nit2++;
+     }
 
-	 for (i = 0; i < 3; i++)
-	    r1[i] -= vt[i] * fakt;
+     for (i = 0; i < 3; i++)
+        r1[i] -= vt[i] * fakt;
 
-	 d1 -= vt[3] * fakt;
+     d1 -= vt[3] * fakt;
 
-	 for (i=0; i<3; i++)
-	    nr1[i] = 2.0 * (r1[i] - m[i]) / SQR(a[i]);
+     for (i=0; i<3; i++)
+        nr1[i] = 2.0 * (r1[i] - m[i]) / SQR(a[i]);
 
-	 ee[0] = DOT_VECTORS(vs, r1) + vs4;
-	 ee[1] = -1.0;
-	 
-	 for (i = 0; i < 3; i++)
-	    ee[1] += SQR((r1[i] - m[i]) / a[i]);
-	 
-	 ee[2] = DOT_VECTORS(nr1, r1) + d1;
-	 ee[3] = DOT_VECTORS(nr1, p1) + d1;
+     ee[0] = DOT_VECTORS(vs, r1) + vs4;
+     ee[1] = -1.0;
+     
+     for (i = 0; i < 3; i++)
+        ee[1] += SQR((r1[i] - m[i]) / a[i]);
+     
+     ee[2] = DOT_VECTORS(nr1, r1) + d1;
+     ee[3] = DOT_VECTORS(nr1, p1) + d1;
 
-	 ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
-	 ssqo = ssq;	    
+     ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
+     ssqo = ssq;        
       }
    }   
    return 1;
@@ -1261,9 +1261,9 @@ static int calc_r (double p1e, double r1[], double p1[], double m[], double a[],
      wrap_pts: line segments connecting r1 to r2 along the ellipsoid surface
 ---------------------------------------------------------------------------- */
 static void dell (double r1[], double r2[], double m[], double a[], 
-	          double vs[], double vs4, SBoolean far_side_wrap,
-	          double *afst,
-	          double** wrap_pts, int* num_wrap_pts)
+              double vs[], double vs4, SBoolean far_side_wrap,
+              double *afst,
+              double** wrap_pts, int* num_wrap_pts)
 {
    int i, j, k, l, imax, index, numPts = 101;
    int numSegs = numPts - 1;
@@ -1306,7 +1306,7 @@ static void dell (double r1[], double r2[], double m[], double a[],
    
    for (i = 1; i < 3; i++)
       if (fabs(vs[i]) > fabs(vs[imax]))
-	 imax = i;
+     imax = i;
 
    clear_vector(u, 3);
 
@@ -1337,8 +1337,8 @@ static void dell (double r1[], double r2[], double m[], double a[],
    {
       for (j = 0; j < 3; j++)
       {
-	 rphi[i][j] = 0.0;
-	 r0[i][j] = 0.0;
+     rphi[i][j] = 0.0;
+     r0[i][j] = 0.0;
       }
    }
 

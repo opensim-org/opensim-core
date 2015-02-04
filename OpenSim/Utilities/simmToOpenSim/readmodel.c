@@ -100,7 +100,7 @@ ReturnCode read_model_file(Scene* scene, ModelStruct* ms, char filename[], SBool
    ReturnCode status = code_fine;
 
 #if ENGINE
-	strcpy(tempFileName, ".model");
+    strcpy(tempFileName, ".model");
 #else
    strcpy(tempFileName, glutGetTempFileName("simm-model"));
 #endif
@@ -368,13 +368,13 @@ ReturnCode read_model_file(Scene* scene, ModelStruct* ms, char filename[], SBool
       }
       else if (STRINGS_ARE_EQUAL(buffer,"beginworldobject"))
       {
-	      if (read_world_object(ms, fp) == code_bad)
-	         goto input_error;
+          if (read_world_object(ms, fp) == code_bad)
+             goto input_error;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"beginmotionobject"))
       {
-	      if (read_motion_object(ms, fp) == code_bad)
-	         goto input_error;
+          if (read_motion_object(ms, fp) == code_bad)
+             goto input_error;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"begincontact"))
       {
@@ -880,7 +880,7 @@ static ReturnCode read_gencoord(ModelStruct* ms, FILE* fp)
          if (fscanf(fp,"%lg", &gc->mocap_adjust) != 1)
          {
             (void)sprintf(errorbuffer, "Error reading \'mocap_adjust\' for gencoord %s",
-			  gc->name);
+              gc->name);
             error(abort_action,errorbuffer);
             return code_bad;
          }
@@ -899,7 +899,7 @@ static ReturnCode read_gencoord(ModelStruct* ms, FILE* fp)
       else
       {
          (void)sprintf(errorbuffer, "Unknown string (%s) in definition of gencoord %s",
-		       buffer, gc->name);
+               buffer, gc->name);
          error(recover,errorbuffer);
       }
 
@@ -2152,7 +2152,7 @@ static ReturnCode read_modelview(Scene* scene, ModelStruct* ms, FILE* fp)
    if (ms->dis.num_file_views >= MAXSAVEDVIEWS)
    {
       sprintf(errorbuffer,"Only %d cameras are allowed in the joints file",
-	      MAXSAVEDVIEWS);
+          MAXSAVEDVIEWS);
       error(recover,errorbuffer);
       return code_bad;
    }
@@ -2229,18 +2229,18 @@ static ReturnCode read_gencoord_groups (ModelStruct* ms, FILE* fp, GeneralizedCo
 
       if (gencoord->numgroups > num_malloced_so_far)
       {
-	     num_malloced_so_far += 10;
-	     
-	     gencoord->group = (int*)simm_realloc(gencoord->group, num_malloced_so_far * sizeof(int), &rc);
-	     
-	     if (rc == code_bad)
-	        break;
+         num_malloced_so_far += 10;
+         
+         gencoord->group = (int*)simm_realloc(gencoord->group, num_malloced_so_far * sizeof(int), &rc);
+         
+         if (rc == code_bad)
+            break;
       }
 
       gencoord->group[gencoord->numgroups] = enter_gencoord_group(ms, buffer, gencoord);
       
       if (gencoord->group[gencoord->numgroups] == -1)
-	     return code_bad;
+         return code_bad;
       
       gencoord->numgroups++;
    }
@@ -2268,25 +2268,25 @@ static ReturnCode read_segment_groups (ModelStruct* ms, FILE* fp, int segnum)
 
       if (STRINGS_ARE_EQUAL(buffer,"endgroups"))
       {
-	     seg->group = (int*) simm_realloc(seg->group, seg->numgroups * sizeof(int), &rc);
+         seg->group = (int*) simm_realloc(seg->group, seg->numgroups * sizeof(int), &rc);
 
          break;
       }
 
       if (seg->numgroups > num_malloced_so_far)
       {
-	     num_malloced_so_far += 10;
-	     
-	     seg->group = (int*) simm_realloc(seg->group, num_malloced_so_far * sizeof(int), &rc);
-	     
-	     if (rc == code_bad)
-	        break;
+         num_malloced_so_far += 10;
+         
+         seg->group = (int*) simm_realloc(seg->group, num_malloced_so_far * sizeof(int), &rc);
+         
+         if (rc == code_bad)
+            break;
       }
 
       seg->group[seg->numgroups] = enter_segment_group(ms, buffer, segnum);
       
       if (seg->group[seg->numgroups] == -1)
-	     return code_bad;
+         return code_bad;
       
       seg->numgroups++;
    }
@@ -2319,7 +2319,7 @@ static DrawingMode get_drawmode(char buffer[])
    else if (STRINGS_ARE_EQUAL(buffer,"gouraud_shading"))
       return gouraud_shading;
    else if (STRINGS_ARE_EQUAL(buffer,"outlined_polygons") ||
-	    STRINGS_ARE_EQUAL(buffer,"outlined"))
+        STRINGS_ARE_EQUAL(buffer,"outlined"))
       return outlined_polygons;
    else if (STRINGS_ARE_EQUAL(buffer,"bounding_box"))
       return bounding_box;
@@ -2378,7 +2378,7 @@ static ReturnCode read_contact(ModelStruct* ms, FILE* fp)
 static ReturnCode read_spring(ModelStruct* ms, FILE* fp)
 {
    int i, segnum;
-	char floorName[CHARBUFFER];
+    char floorName[CHARBUFFER];
    SpringPoint* sp;
    SegmentStruct* seg;
 
@@ -2425,28 +2425,28 @@ static ReturnCode read_spring(ModelStruct* ms, FILE* fp)
    }
    else
    {
-		sp->name = NULL;
-		sp->visible = yes;
-		sp->segment = segnum;
+        sp->name = NULL;
+        sp->visible = yes;
+        sp->segment = segnum;
 
-		// Find the corresponding floor object and add the spring to it.
-		for (i=0; i<ms->numsegments; i++)
-		{
-			if (ms->segment[i].springFloor && STRINGS_ARE_EQUAL(floorName, ms->segment[i].springFloor->name))
-				break;
-		}
-		if (i == ms->numsegments)
-		{
-			sprintf(errorbuffer, "Unknown spring floor (%s) referenced by spring point (was point defined before floor?)", floorName);
-			error(abort_action, errorbuffer);
-			return code_bad;
-		}
-		else
-		{
-			sp->floorSegment = i;
-			add_spring_point_to_floor(seg, sp);
-			seg->numSpringPoints++;
-		}
+        // Find the corresponding floor object and add the spring to it.
+        for (i=0; i<ms->numsegments; i++)
+        {
+            if (ms->segment[i].springFloor && STRINGS_ARE_EQUAL(floorName, ms->segment[i].springFloor->name))
+                break;
+        }
+        if (i == ms->numsegments)
+        {
+            sprintf(errorbuffer, "Unknown spring floor (%s) referenced by spring point (was point defined before floor?)", floorName);
+            error(abort_action, errorbuffer);
+            return code_bad;
+        }
+        else
+        {
+            sp->floorSegment = i;
+            add_spring_point_to_floor(seg, sp);
+            seg->numSpringPoints++;
+        }
    }
 
    return code_fine;
@@ -2519,33 +2519,33 @@ static ReturnCode read_spring_floor(ModelStruct* ms, FILE* fp)
 
 static void add_spring_point_to_floor(SegmentStruct* segment, SpringPoint* point)
 {
-	if (segment && segment->springFloor)
-	{
-		SpringFloor* floor = segment->springFloor;
+    if (segment && segment->springFloor)
+    {
+        SpringFloor* floor = segment->springFloor;
 
-		// Make the list longer if necessary.
-		if (floor->numPoints >= floor->pointArraySize)
-		{
-			ReturnCode rc = code_fine;
+        // Make the list longer if necessary.
+        if (floor->numPoints >= floor->pointArraySize)
+        {
+            ReturnCode rc = code_fine;
 
-			floor->pointArraySize += SEGMENT_ARRAY_INCREMENT;
-			if (floor->points == NULL)
-				floor->points = (SpringPoint**)simm_malloc(floor->pointArraySize * sizeof(SpringPoint*));
-			else
-				floor->points = (SpringPoint**)simm_realloc(floor->points, floor->pointArraySize * sizeof(SpringPoint*), &rc);
-			if (rc == code_bad || floor->points == NULL)
-			{
-				floor->pointArraySize -= SEGMENT_ARRAY_INCREMENT;
-				return;
-			}
-		}
+            floor->pointArraySize += SEGMENT_ARRAY_INCREMENT;
+            if (floor->points == NULL)
+                floor->points = (SpringPoint**)simm_malloc(floor->pointArraySize * sizeof(SpringPoint*));
+            else
+                floor->points = (SpringPoint**)simm_realloc(floor->points, floor->pointArraySize * sizeof(SpringPoint*), &rc);
+            if (rc == code_bad || floor->points == NULL)
+            {
+                floor->pointArraySize -= SEGMENT_ARRAY_INCREMENT;
+                return;
+            }
+        }
 
-		// Add the point to the list.
-		sprintf(buffer, "%s_pt%d", segment->springFloor->name, floor->numPoints+1);
-		if (!point->name)
-			mstrcpy(&point->name, buffer);
-		floor->points[floor->numPoints++] = point;
-	}
+        // Add the point to the list.
+        sprintf(buffer, "%s_pt%d", segment->springFloor->name, floor->numPoints+1);
+        if (!point->name)
+            mstrcpy(&point->name, buffer);
+        floor->points[floor->numPoints++] = point;
+    }
 }
 
 
@@ -2813,23 +2813,23 @@ static ReturnCode read_contact_group(ModelStruct* ms, FILE* fp)
    {
       if (fscanf(fp,"%s", buffer) != 1)
       {
-			sprintf(errorbuffer,"Error reading elements of group %s\n", cg->name);
+            sprintf(errorbuffer,"Error reading elements of group %s\n", cg->name);
          error(abort_action,errorbuffer);
          return code_bad;
       }
 
-		if (STRINGS_ARE_EQUAL(buffer,"end_group"))
-		{
-			break;
-		}
+        if (STRINGS_ARE_EQUAL(buffer,"end_group"))
+        {
+            break;
+        }
       cg->numElements++;
-		if (cg->element == NULL)
-			cg->element = (char**)simm_malloc(sizeof(char*));
-		else
-			cg->element = (char**)simm_realloc(cg->element,
-					      cg->numElements*sizeof(char*),&rc);
+        if (cg->element == NULL)
+            cg->element = (char**)simm_malloc(sizeof(char*));
+        else
+            cg->element = (char**)simm_realloc(cg->element,
+                          cg->numElements*sizeof(char*),&rc);
 
-		mstrcpy(&cg->element[cg->numElements-1], buffer);
+        mstrcpy(&cg->element[cg->numElements-1], buffer);
    }
 
    ms->numContactGroups++;
@@ -2869,9 +2869,9 @@ static PolyhedronStruct* make_bone(ModelStruct* ms, SegmentStruct* seg, char fil
 
    frc = lookup_polyhedron(ph, filename, ms);
    if (frc == file_bad)
-	   simm_printf(yes, "Unable to read bone from file %s\n", filename);
+       simm_printf(yes, "Unable to read bone from file %s\n", filename);
    else if (frc == file_missing)
-	   simm_printf(yes, "Unable to locate bone file %s\n", filename);
+       simm_printf(yes, "Unable to locate bone file %s\n", filename);
 
    return ph;
 }
@@ -2947,7 +2947,7 @@ static ReturnCode read_marker(ModelStruct* ms, SegmentStruct* seg, FILE* fp)
             m->fixed = yes;
       }
       mstrcpy(&m->name, buffer);
-		m->visible = ms->marker_visibility;
+        m->visible = ms->marker_visibility;
       seg->numMarkers++;
    }
 
@@ -3258,7 +3258,7 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE* fp)
 }
 
 static ConstraintPoint* read_constraint_points(ModelStruct* ms, FILE* fp, int *numpoints,
-					   int *cp_array_size)
+                       int *cp_array_size)
 {
    int num;
    double x, y, z, w, tol;

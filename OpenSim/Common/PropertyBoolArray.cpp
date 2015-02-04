@@ -47,10 +47,10 @@ using namespace std;
  */
 PropertyBoolArray::
 PropertyBoolArray(const string &aName,
-	const Array<bool> &aArray) :
-	Property_Deprecated(Property_Deprecated::BoolArray,aName), _array(0)
+    const Array<bool> &aArray) :
+    Property_Deprecated(Property_Deprecated::BoolArray,aName), _array(0)
 {
-	_array = aArray;
+    _array = aArray;
 }
 //_____________________________________________________________________________
 /**
@@ -58,7 +58,7 @@ PropertyBoolArray(const string &aName,
  */
 PropertyBoolArray::
 PropertyBoolArray() :
-	Property_Deprecated(Property_Deprecated::BoolArray,"BoolArrayPropertyName"), _array(0)
+    Property_Deprecated(Property_Deprecated::BoolArray,"BoolArrayPropertyName"), _array(0)
 {
 }
 //_____________________________________________________________________________
@@ -67,12 +67,12 @@ PropertyBoolArray() :
  */
 PropertyBoolArray::
 PropertyBoolArray(const string &aName,
-	int aSize,const bool aArray[]) :
-	Property_Deprecated(Property_Deprecated::BoolArray,aName), _array(0)
+    int aSize,const bool aArray[]) :
+    Property_Deprecated(Property_Deprecated::BoolArray,aName), _array(0)
 {
-	if(aSize<=0) return;
-	if(aArray==NULL) return;
-	_array.append(aSize,aArray);
+    if(aSize<=0) return;
+    if(aArray==NULL) return;
+    _array.append(aSize,aArray);
 }
 //_____________________________________________________________________________
 /**
@@ -81,9 +81,9 @@ PropertyBoolArray(const string &aName,
  * @param aProperty Property_Deprecated to be copied.
  */
 PropertyBoolArray::PropertyBoolArray(const PropertyBoolArray &aProperty) :
-	Property_Deprecated(aProperty), _array(0)
+    Property_Deprecated(aProperty), _array(0)
 {
-	_array = aProperty._array;
+    _array = aProperty._array;
 }
 //_____________________________________________________________________________
 /**
@@ -95,8 +95,8 @@ PropertyBoolArray::PropertyBoolArray(const PropertyBoolArray &aProperty) :
  */
 PropertyBoolArray* PropertyBoolArray::clone() const
 {
-	PropertyBoolArray *prop = new PropertyBoolArray(*this);
-	return prop;
+    PropertyBoolArray *prop = new PropertyBoolArray(*this);
+    return prop;
 }
 
 
@@ -116,9 +116,9 @@ PropertyBoolArray* PropertyBoolArray::clone() const
 PropertyBoolArray& PropertyBoolArray::
 operator=(const PropertyBoolArray &aProperty)
 {
-	Property_Deprecated::operator =(aProperty);
-	_array = aProperty._array;
-	return(*this);
+    Property_Deprecated::operator =(aProperty);
+    _array = aProperty._array;
+    return(*this);
 }
 
 
@@ -137,7 +137,7 @@ operator=(const PropertyBoolArray &aProperty)
 std::string PropertyBoolArray::
 getTypeName() const
 {
-	return "bool";
+    return "bool";
 }
 
 //-----------------------------------------------------------------------------
@@ -152,7 +152,7 @@ getTypeName() const
 void PropertyBoolArray::
 setValue(const Array<bool>& aArray)
 {
-	_array = aArray;
+    _array = aArray;
 }
 //_____________________________________________________________________________
 /**
@@ -164,10 +164,10 @@ setValue(const Array<bool>& aArray)
 void PropertyBoolArray::
 setValue(int aSize,const bool aArray[])
 {
-	_array.setSize(0);
-	if(aSize<=0) return;
-	if(aArray==NULL) return;
-	_array.append(aSize,aArray);
+    _array.setSize(0);
+    if(aSize<=0) return;
+    if(aArray==NULL) return;
+    _array.append(aSize,aArray);
 }
 //_____________________________________________________________________________
 /**
@@ -179,7 +179,7 @@ setValue(int aSize,const bool aArray[])
 Array<bool>& PropertyBoolArray::
 getValueBoolArray()
 {
-	return(_array);
+    return(_array);
 }
 //_____________________________________________________________________________
 /**
@@ -190,7 +190,7 @@ getValueBoolArray()
 const Array<bool>& PropertyBoolArray::
 getValueBoolArray() const
 {
-	return(_array);
+    return(_array);
 }
 //_____________________________________________________________________________
 /**
@@ -201,9 +201,9 @@ getValueBoolArray() const
 string PropertyBoolArray::
 toString() const
 {
-	string str = "(";
-	for(int i=0; i < _array.getSize(); i++)
-		str += (i>0?" ":"") + (_array[i]?string("True"):string("False"));
-	str += ")";
-	return str;
+    string str = "(";
+    for(int i=0; i < _array.getSize(); i++)
+        str += (i>0?" ":"") + (_array[i]?string("True"):string("False"));
+    str += ")";
+    return str;
 }

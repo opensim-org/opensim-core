@@ -43,14 +43,14 @@ using namespace OpenSim;
  * Default constructor.
  */
 PlanarJoint::PlanarJoint() :
-	Joint()
+    Joint()
 {
-	setAuthors("Ajay Seth");
-	constructCoordinates();
+    setAuthors("Ajay Seth");
+    constructCoordinates();
 
-	const CoordinateSet& coordinateSet = get_CoordinateSet();
-	coordinateSet[1].setMotionType(Coordinate::Translational);
-	coordinateSet[2].setMotionType(Coordinate::Translational);
+    const CoordinateSet& coordinateSet = get_CoordinateSet();
+    coordinateSet[1].setMotionType(Coordinate::Translational);
+    coordinateSet[2].setMotionType(Coordinate::Translational);
 }
 
 //_____________________________________________________________________________
@@ -64,12 +64,12 @@ PlanarJoint::PlanarJoint(const std::string &name, OpenSim::Body& parent,
     Joint(name, parent, locationInParent,orientationInParent,
             body, locationInBody, orientationInBody, reverse)
 {
-	setAuthors("Ajay Seth");
-	constructCoordinates();
+    setAuthors("Ajay Seth");
+    constructCoordinates();
 
-	const CoordinateSet& coordinateSet = get_CoordinateSet();
-	coordinateSet[1].setMotionType(Coordinate::Translational);
-	coordinateSet[2].setMotionType(Coordinate::Translational);
+    const CoordinateSet& coordinateSet = get_CoordinateSet();
+    coordinateSet[1].setMotionType(Coordinate::Translational);
+    coordinateSet[2].setMotionType(Coordinate::Translational);
 }
 
 
@@ -78,10 +78,7 @@ PlanarJoint::PlanarJoint(const std::string &name, OpenSim::Body& parent,
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void PlanarJoint::addToSystem(SimTK::MultibodySystem& system) const
+void PlanarJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Planar>(system);
-
-    // TODO: Joints require super class to be called last.
-    Super::addToSystem(system);
+    createMobilizedBody<MobilizedBody::Planar>(system);
 }

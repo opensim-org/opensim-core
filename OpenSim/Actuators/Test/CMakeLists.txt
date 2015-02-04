@@ -1,13 +1,13 @@
 #INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-#		    ${OpenSim_SOURCE_DIR}/Vendors)
+#           ${OpenSim_SOURCE_DIR}/Vendors)
 
 
 LINK_LIBRARIES( debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
-		debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
-		debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators
-		debug osimAnalyses${CMAKE_DEBUG_POSTFIX} optimized osimAnalyses
-		debug osimTools${CMAKE_DEBUG_POSTFIX} optimized osimTools
-		${SIMTK_ALL_LIBS})
+        debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
+        debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators
+        debug osimAnalyses${CMAKE_DEBUG_POSTFIX} optimized osimAnalyses
+        debug osimTools${CMAKE_DEBUG_POSTFIX} optimized osimTools
+        ${SIMTK_ALL_LIBS})
 
 
 FILE(GLOB TEST_PROGS "test*.cpp")
@@ -20,8 +20,8 @@ FOREACH(TEST_PROG ${TEST_PROGS})
     TARGET_LINK_LIBRARIES(${TEST_ROOT} ${LINK_LIBRARIES})
     ADD_TEST(${TEST_ROOT} ${EXECUTABLE_OUTPUT_PATH}/${TEST_ROOT})
     SET_TARGET_PROPERTIES(${TEST_ROOT} 
-		PROPERTIES 
-		PROJECT_LABEL "Tests - ${TEST_ROOT}")
+        PROPERTIES 
+        PROJECT_LABEL "Tests - ${TEST_ROOT}")
 
 ENDFOREACH(TEST_PROG ${TEST_PROGS})
 

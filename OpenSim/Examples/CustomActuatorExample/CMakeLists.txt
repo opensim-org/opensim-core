@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 2.8.6)
 # ---------
 SET(TARGET exampleCustomActuator CACHE TYPE STRING)
 SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME} 
-		CACHE PATH "Top-level directory of OpenSim install")
+        CACHE PATH "Top-level directory of OpenSim install")
 
 # Find and hook up to OpenSim.
 # ----------------------------

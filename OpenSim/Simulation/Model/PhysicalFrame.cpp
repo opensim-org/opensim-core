@@ -1,5 +1,5 @@
-/* -------------------------------------------------------------------------- *
-*                             OpenSim:  RigidFrame.cpp                             *
+/* --------------------------------------------------------------------------*
+*                         OpenSim:  PhysicalFrame.cpp                        *
 * -------------------------------------------------------------------------- *
 * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
 * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -7,8 +7,8 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2012 Stanford University and the Authors                *
-* Author(s): Matt DeMers & Ayman Habib                                       *
+* Copyright (c) 2005-2015 Stanford University and the Authors                *
+* Author(s): Matt DeMers, Ayman Habib, Ajay Seth                             *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
 * not use this file except in compliance with the License. You may obtain a  *
@@ -24,8 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "RigidFrame.h"
-#include <OpenSim/Simulation/Model/Model.h>
+#include "PhysicalFrame.h"
+#include "Model.h"
 
 //=============================================================================
 // STATICS
@@ -40,26 +40,35 @@ using namespace OpenSim;
 /**
 * Default constructor.
 */
-RigidFrame::RigidFrame() : Frame()
+PhysicalFrame::PhysicalFrame() : Frame()
 {
-	setNull();
-
+    setAuthors("Matt DeMers, Ayman Habib, Ajay Seth");
 }
 
-
-void RigidFrame::setNull()
+const SimTK::MobilizedBody& PhysicalFrame::getMobilizedBody() const
 {
-	setAuthors("Matt DeMers");
+    return getModel().getMatterSubsystem().getMobilizedBody(_mbIndex);
 }
 
-/**
-* Implementation of Frame interface by RigidFrame
+SimTK::MobilizedBody& PhysicalFrame::updMobilizedBody() 
+{
+    return updModel().updMatterSubsystem().updMobilizedBody(_mbIndex);
+}
+
+/*
+* Implementation of Frame interface by PhysicalFrame.
+* 
 */
-SimTK::Transform RigidFrame::calcGroundTransform(const SimTK::State& state) const {
+SimTK::Transform PhysicalFrame::
+    calcGroundTransform(const SimTK::State& s) const
+{
+    // return X_GF = X_GB * X_BF;
+    return getMobilizedBody().getBodyTransform(s);
+}
 
-    const SimTK::MobilizedBody &B = getModel().getMatterSubsystem().getMobilizedBody(_index);
-    const SimTK::Transform& X_GB = B.getBodyTransform(state);
 
-    return X_GB*getTransformInMobilizedBody();
+SimTK::Transform PhysicalFrame::extendFindTransformInBaseFrame() const
+{
+    return Transform();
 }
 
