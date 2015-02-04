@@ -473,14 +473,11 @@ ENDIF()
 SET(OpenSim_LIBRARY_DIR ${LIBRARY_OUTPUT_PATH})
 SET(OpenSim_EXECUTABLE_DIR ${EXECUTABLE_OUTPUT_PATH})
 
-# Specify directories for Simbody headers and libraries.
-# ------------------------------------------------------
+# Directories for Simbody headers and libraries for building.
+# -----------------------------------------------------------
 INCLUDE_DIRECTORIES("${Simbody_INCLUDE_DIR}")
-IF(WIN32)
-    LINK_DIRECTORIES("${OpenSim_LIBRARY_DIR}")
-ELSE()
-    LINK_DIRECTORIES("${Simbody_LIB_DIR}")
-ENDIF()
+LINK_DIRECTORIES("${Simbody_LIB_DIR}")
+
 
 # Other than Windows we can debug without debuggable SimTK libraries
 IF(WIN32)
