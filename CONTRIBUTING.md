@@ -72,13 +72,12 @@ Coding Standards
 - [Replace Tabs with Four Spaces](#replace-tabs-with-four-spaces)
 - [Renaming Classes in the OpenSim API](#renaming-classes-in-the-opensim-api)
 - [Naming Conventions](#naming-conventions)
-- [Other C++ Coding Style Suggestions](#other-c-coding-style-suggestions)
 - [Throw and return are not functions](#throw-and-return-are-not-functions)
 - [Always use pre-increment and pre-decrement operators when you have a choice](#always-use-pre-increment-and-pre-decrement-operators-when-you-have-a-choice)
 - [Place pointer and reference symbols with the type](#place-pointer-and-reference-symbols-with-the-type)
 - [Removing Methods](#removing-methods)
 
-## Header Guards
+### Header Guards
 
 Header guards are preprocessor defines that surround every header file to prevent it from being included multiple times. OpenSim header guards should be written like this:
 
@@ -101,7 +100,7 @@ As a reminder, the C++ standard prohibits user code from using identifiers that 
 
 One other minor point is that preprocessor macros should typically have very ugly names with LOTS_OF_CAPS to make it obvious that they are not ordinary identifiers, and to avoid conflicts with NiceUpperCamelCaseIdentifiers used for class names.
 
-## Creating New OpenSim Objects
+### Creating New OpenSim Objects
 
 Every OpenSim object class now automatically defines a typedef “Super” that refers to the immediate parent (“superclass”) of that class. If you have to delegate something to your parent, use “Super” rather than explicitly listing the parent class, because if that changes due to future refactoring your code will still compile but be wrong! This is not a hypothetical problem - this construct was developed because these bugs kept recurring. By using automatically defined `Super` you can completely avoid these issues into the future.
 
@@ -129,7 +128,7 @@ void MyNewComponent::extendBaseClassMethod() {
 
 Now if someone changes the class structure later so that your component’s parent changes in the header file, the code in the .cpp file (which will have been long forgotten) will automatically change its behavior.
 
-##Assignment Operators in C++
+### Assignment Operators in C++
 
 You should let the compiler automatically generate the copy constructor and copy assignment operator for your classes whenever possible. But sometimes you have to write one. Here is the basic template for copy assignment:
 
@@ -147,37 +146,37 @@ You run into problems if copy assignment operators are missing lines 2 and 4. Si
 
 If the “copy stuff” part consists only of assignments that work for self assignment, then you can get away without the test, but unless you’ve thought it through carefully you should just get in the habit of putting in the test.
 
-## Documenting your Code
+### Documenting your Code
 
 Doxygen only looks in your .h files. It does not generate documentation from cpp files. Thus comments in .cpp files don't need to follow doxygen formatting, and in fact they should not because it is confusing and makes it look like there is API documentation when there isn't. You should mostly use "//"-style comments in .cpp files, and be sure you are addressing your comments to the right audience -- no doxygen reader will ever see them.
 
 Read more about doxygen on this page: Guide to Building Doxygen
 
-## Each line of text should be at most 80 characters
+### Each line of text should be at most 80 characters
 
 It is common to display multiple code windows side by side. For the code to display nicely,
 it is necessary to choose a limit on the line length.
 
-## Replace Tabs with Four Spaces
+### Replace Tabs with Four Spaces
 
 Please be sure that your IDE (code editor) is set to replace tabs with four spaces. You should never allow tab characters to get into your code. They will look great to you, but most other people will see your code as randomly formatted.
 
 If you use Visual Studio, goto Tools:Options:Text Editor:C/C++:Tabs, set tab size=indent size=4, and check the "Insert spaces" button.
 
-## Renaming Classes in the OpenSim API
+### Renaming Classes in the OpenSim API
 
 Sometimes it makes sense to change the name of a class in OpenSim because the name is confusing or doesn't reflect the desired function. This seemingly innocent, and usually desirable refactoring, has some side-effects that API developers should be aware of so that changes do not break working functionality.
 
 **Deserialization** : The code that reads objects from XML files keys on the String representing class name to create corresponding objects (e.g. "PinJoint" class shows in XML as ``<PinJoint>``). If you change the name of PinJoint (e.g. to MyPinJoint) you need to make sure old models that have the tag <PinJoint> still work. Normally this is captured by test cases. If you decide to make the change, you'll have to edit the file "RegisterTypes_osimSimulation.cpp" and add the line ```Object::renameType("PinJoint", "MyPinJoint")```, so that the deserialization code knows how to handle the XML tag.
 
-**Swig wrapping and GUI** : Most API users don't build the GUI, however they should continue to build the JavaWrapping to make sure changes on the C++ side do not cause serious problems downstream to either the GUI or scripts that we'll be distributing that utilize the Java wrapping. The mechanics for this procedure are as follows:
-- Turn on JavaWrapping in CMake.  You have to have SWIG and Java installed.
+**Swig wrapping and GUI** : Most API users don't build the GUI, however they should continue to build the JavaWrap project used by the GUI to make sure changes on the C++ side do not cause serious problems downstream to either the GUI or scripts that we'll be distributing that utilize the Java wrapping. The mechanics for this procedure are as follows:
+- Turn on JavaWrapping in CMake (`BULD_JAVA_WRAPPING=on`). You must have SWIG and Java installed.
 - Build JavaWrap project to run SWIG (see README.md for obtaining SWIG).
-- Run test case testContext which ends up simulating a few GUI calls.
+- Run test case testContext, which simulates a few GUI calls.
 
 If a class is not included in the wrapping interface file [OpenSim/Java/swig/javaWrapOpenSim.i](https://github.com/opensim-org/opensim-core/blob/master/OpenSim/Wrapping/Java/swig/javaWrapOpenSim.i) then the class is likely not used by the GUI and so is safe to change, otherwise please consult with GUI developers first before renaming.
 
-## Naming Conventions
+### Naming Conventions
 Please follow the convention that property names use “lower_case_with_underscores” as their names, while object types use “CamelCaseUpAndDownWithoutUnderscores”. That ensures no conflicts with XML tag names and makes it easy to tell a property name from an object name.
 
 #### Functions and methods
@@ -201,9 +200,6 @@ We have some conventional starting verbs and you should use the same ones when t
 `add`     | Add the object (Component) to list of references. Should not assume ownership.
 `adopt`   | Take over ownership
 `extend`  | A virtual method intended to extend a defining capability of a Base class. The first line of the derived class implementation must be `Super::extend<DoSomething>()`. For example, a ModelComponent knows how to ``connectToModel``, but the details of how each concrete ModelComponent type does this is implemented by the derived class'
-
-
-## Other C++ Coding Style Suggestions
 
 ### ``throw`` and ``return`` are not functions
 
