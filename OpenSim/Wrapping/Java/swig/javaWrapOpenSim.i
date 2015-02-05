@@ -841,6 +841,9 @@ namespace SimTK {
 %template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
 %template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
 
+%template(FramesList) OpenSim::ComponentList<OpenSim::Frame>;
+%template(FrameIterator) OpenSim::ComponentListIterator<OpenSim::Frame>;
+
 %template(BodiesList) OpenSim::ComponentList<OpenSim::Body>;
 %template(BodyIterator) OpenSim::ComponentListIterator<OpenSim::Body>;
 
@@ -855,6 +858,7 @@ namespace SimTK {
 
 %include <OpenSim/Common/Component.h>
 
+%template(getFramesList) OpenSim::Component::getComponentList<OpenSim::Frame>;
 %template(getBodiesList) OpenSim::Component::getComponentList<OpenSim::Body>;
 %template(getMusclesList) OpenSim::Component::getComponentList<OpenSim::Muscle>;
 %template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
