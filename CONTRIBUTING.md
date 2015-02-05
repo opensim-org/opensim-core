@@ -177,7 +177,7 @@ Sometimes it makes sense to change the name of a class in OpenSim because the na
 If a class is not included in the wrapping interface file [OpenSim/Java/swig/javaWrapOpenSim.i](https://github.com/opensim-org/opensim-core/blob/master/OpenSim/Wrapping/Java/swig/javaWrapOpenSim.i) then the class is likely not used by the GUI and so is safe to change, otherwise please consult with GUI developers first before renaming.
 
 ### Naming Conventions
-Please follow the convention that property names use “lower_case_with_underscores” as their names, while object types use “CamelCaseUpAndDownWithoutUnderscores”. That ensures no conflicts with XML tag names and makes it easy to tell a property name from an object name.
+Please follow the convention that property, input, and output names use the `lower_case_with_underscores` convention, while class names use `CamelCaseUpAndDownWithoutUnderscores`. This ensures no conflicts with XML tag names and makes it easy to tell a property name from a class name.
 
 #### Functions and methods
 Names should begin with a verb and use the `lowerCamelCase` convention.
@@ -197,8 +197,8 @@ We have some conventional starting verbs and you should use the same ones when t
 `find`    | Perform a small calculation (e.g., find the distance between two points) and return the result without changing anything else.
 `calc`    | (calculate) Perform an expensive calculation and return the result. Does not cause any other changes.
 `realize` | Initiate state-dependent computations and cache results internally; no result returned.
-`add`     | Add the object (Component) to list of references. Should not assume ownership.
-`adopt`   | Take over ownership
+`add`     | Add the object (Component) to an internal list of references. Should not assume ownership. 
+`adopt`   | Take over ownership (e.g., `Set::adoptAndAppend()`).
 `extend`  | A virtual method intended to extend a defining capability of a Base class. The first line of the derived class implementation must be `Super::extend<DoSomething>()`. For example, a ModelComponent knows how to ``connectToModel``, but the details of how each concrete ModelComponent type does this is implemented by the derived class'
 
 ### ``throw`` and ``return`` are not functions
