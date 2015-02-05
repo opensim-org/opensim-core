@@ -10,7 +10,7 @@ Even great programmers benefit from additional eyeballs on their code to catch b
 Contents:
 
 - [Ways to Contribute](#ways-to-contribute)
-- [Making a Pull Request](#making-a-pull-request)
+- [Making a Pull Request](#making-a-pull-request-pr)
 - [Checking for Memory Leaks through GitHub](#checking-for-memory-leaks-through-github)
 - [Coding Standards](#coding-standards)
 - [List of Contributors](#list-of-contributors)
