@@ -94,7 +94,7 @@ Common problems with header guards:
 1. They can interfere with user code, and
 2. They violate the C++ standard.
 
-OpenSim uses many very common class names, like “Object” and “Array” and probably “PropertyTable”. These are likely to appear in other code libraries as well, so anyone who combines the OpenSim API with other libraries or their own code may have conflicts. A simple rule to avoid conflicts is for the header guards to be unique symbols, easily achieved by including the product name in them (that is, they should contain “OPENSIM”).
+OpenSim uses many very common class names, like “Object” and “Array”. These are likely to appear in other code libraries as well, so anyone who combines the OpenSim API with other libraries or their own code may have conflicts. A simple rule to avoid conflicts is for the header guards to be unique symbols, easily achieved by including the product name in them (that is, they should contain “OPENSIM”).
 
 As a reminder, the C++ standard prohibits user code from using identifiers that contain double underscore (“__”) or begin with an underscore followed by a capital letter (“_P”). Those symbols are reserved for the compiler and the std::library. Use of symbols like that means it is subject to conflict with the compiler, either now or in future releases or new platforms. Hopefully those conflicts would cause compiler errors, but that is not guaranteed.
 
