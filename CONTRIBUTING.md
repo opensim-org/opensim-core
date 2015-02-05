@@ -68,7 +68,7 @@ Coding Standards
 - [Creating New OpenSim Objects](#creating-new-opensim-objects)
 - [Assignment Operators in C++](#assignment-operators-in-c)
 - [Documenting your Code](#documenting-your-code)
-- [Each line of text should be at most 80 characters long](#each-line-of-text-should-be-at-most-80-characters-long)
+- [Each line of text should be at most 80 characters](#each-line-of-text-should-be-at-most-80-characters)
 - [Replace Tabs with Four Spaces](#replace-tabs-with-four-spaces)
 - [Renaming Classes in the OpenSim API](#renaming-classes-in-the-opensim-api)
 - [Naming Conventions](#naming-conventions)
