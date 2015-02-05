@@ -58,15 +58,18 @@ class RigidFrame;
 class OSIMSIMULATION_API DisplayerInterface {
 
 protected:
+    // Default constructor, does nothing
     DisplayerInterface() {};
 public:
-
+    // Main interface to be implemented by concrete implementations
     virtual void generateDecorations(const ModelComponent& mc,
         bool fixed,
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const = 0;
+    // make a copy so that an object can make its own copy
     virtual DisplayerInterface* clone() const = 0;
+    //Ddefault destructor 
     virtual ~DisplayerInterface() {};
 //=============================================================================
 };	// END of class DisplayerInterface
@@ -102,11 +105,13 @@ private:
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const;
 
-    void generateDecorationsNeedFrame(const OpenSim::ModelComponent& mc,
+    void generateDecorationsArbitraryFrame(const OpenSim::ModelComponent& mc,
         bool fixed,
         const OpenSim::ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const;
+
+    bool validateFile(const std::string& filename, const Model&) const;
     
 };
 /**

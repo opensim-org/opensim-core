@@ -47,7 +47,7 @@ void DefaultDisplayer::generateDecorations(const ModelComponent& mc,
     if (frm != nullptr)
         generateDecorationsInFrame(*frm, fixed, hints, state, appendToThis);
     else
-        generateDecorationsNeedFrame(mc, fixed, hints, state, appendToThis);
+        generateDecorationsArbitraryFrame(mc, fixed, hints, state, appendToThis);
 }
 
 void DefaultDisplayer::generateDecorationsInFrame(const RigidFrame& frame,
@@ -67,43 +67,20 @@ void DefaultDisplayer::generateDecorationsInFrame(const RigidFrame& frame,
         const OpenSim::Mesh* mGeom = Mesh::safeDownCast(const_cast<OpenSim::Geometry*>(&geo));
         if (mGeom){
             const std::string& file = mGeom->get_mesh_file();
-            bool isAbsolutePath; string directory, fileName, extension;
-            SimTK::Pathname::deconstructPathname(file,
-                isAbsolutePath, directory, fileName, extension);
-            const string lowerExtension = SimTK::String::toLower(extension);
-            if (lowerExtension != ".vtp" && lowerExtension != ".obj") {
-                std::clog << "ModelVisualizer ignoring '" << file
-                    << "'; only .vtp and .obj files currently supported.\n";
-                continue;
+            if (validateFile(file, model)){
+                SimTK::DecorativeMeshFile dmesh(file);
+                const Vec3 netScale = geo.get_scale_factors();
+                dmesh.setScaleFactors(netScale);
+                dmesh.setTransform(xformRelativeToBody);
+                geo.setDecorativeGeometryAppearance(dmesh);
+                dmesh.setBodyId(bx);
+                dmesh.setIndexOnBody(g + 1);
+                appendToThis.push_back(dmesh);
             }
-
-            // File is a .vtp or .obj. See if we can find it.
-            SimTK::Array_<string> attempts;
-            bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);
-
-            if (!foundIt) {
-                std::clog << "ModelVisualizer couldn't find file '" << file
-                    << "'; tried\n";
-                for (unsigned i = 0; i < attempts.size(); ++i)
-                    std::clog << "  " << attempts[i] << "\n";
-                if (!isAbsolutePath &&
-                    !SimTK::Pathname::environmentVariableExists("OPENSIM_HOME"))
-                    std::clog << "Set environment variable OPENSIM_HOME "
-                    << "to search $OPENSIM_HOME/Geometry.\n";
-                continue;
-            }
-
-            SimTK::DecorativeMeshFile dmesh(file);
-            const Vec3 netScale = geo.get_scale_factors();
-            dmesh.setScaleFactors(netScale);
-            dmesh.setTransform(xformRelativeToBody);
-            geo.setDecorativeGeometryAppearance(dmesh);
-            dmesh.setBodyId(bx);
-            dmesh.setIndexOnBody(g + 1);
-            appendToThis.push_back(dmesh);
         }
         else {
             SimTK::Array_<SimTK::DecorativeGeometry> deocrationsForGeom;
+            // createDecorativeGeometry sest gemetric parameters and scale factors
             geo.createDecorativeGeometry(deocrationsForGeom);
             for (unsigned gi = 0; gi < deocrationsForGeom.size(); ++gi){
                 SimTK::DecorativeGeometry dg = deocrationsForGeom[gi];
@@ -116,7 +93,7 @@ void DefaultDisplayer::generateDecorationsInFrame(const RigidFrame& frame,
         }
     }
 }
-void DefaultDisplayer::generateDecorationsNeedFrame(const ModelComponent& mc,
+void DefaultDisplayer::generateDecorationsArbitraryFrame(const ModelComponent& mc,
     bool fixed,
     const ModelDisplayHints&                    hints,
     const SimTK::State&                         state,
@@ -142,39 +119,15 @@ void DefaultDisplayer::generateDecorationsNeedFrame(const ModelComponent& mc,
             const OpenSim::Mesh* mGeom = Mesh::safeDownCast(const_cast<OpenSim::Geometry*>(&geo));
             if (mGeom){
                 const std::string& file = mGeom->get_mesh_file();
-                bool isAbsolutePath; string directory, fileName, extension;
-                SimTK::Pathname::deconstructPathname(file,
-                    isAbsolutePath, directory, fileName, extension);
-                const string lowerExtension = SimTK::String::toLower(extension);
-                if (lowerExtension != ".vtp" && lowerExtension != ".obj") {
-                    std::clog << "ModelVisualizer ignoring '" << file
-                        << "'; only .vtp and .obj files currently supported.\n";
-                    continue;
+                if (validateFile(file, model)){
+                    SimTK::DecorativeMeshFile dmesh(file);
+                    dmesh.setScaleFactors(netScale);
+                    dmesh.setTransform(xformRelativeToBody);
+                    geo.setDecorativeGeometryAppearance(dmesh);
+                    dmesh.setBodyId(frame->getMobilizedBodyIndex());
+                    dmesh.setIndexOnBody(g*100 + 1);
+                    appendToThis.push_back(dmesh);
                 }
-
-                // File is a .vtp or .obj. See if we can find it.
-                SimTK::Array_<string> attempts;
-                bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);
-
-                if (!foundIt) {
-                    std::clog << "ModelVisualizer couldn't find file '" << file
-                        << "'; tried\n";
-                    for (unsigned i = 0; i < attempts.size(); ++i)
-                        std::clog << "  " << attempts[i] << "\n";
-                    if (!isAbsolutePath &&
-                        !SimTK::Pathname::environmentVariableExists("OPENSIM_HOME"))
-                        std::clog << "Set environment variable OPENSIM_HOME "
-                        << "to search $OPENSIM_HOME/Geometry.\n";
-                    continue;
-                }
-
-                SimTK::DecorativeMeshFile dmesh(file);
-                dmesh.setScaleFactors(netScale);
-                dmesh.setTransform(xformRelativeToBody);
-                geo.setDecorativeGeometryAppearance(dmesh);
-                dmesh.setBodyId(frame->getMobilizedBodyIndex());
-                dmesh.setIndexOnBody(g + 1);
-                appendToThis.push_back(dmesh);
             }
             else {
                 SimTK::Array_<SimTK::DecorativeGeometry> deocrationsForGeom;
@@ -183,13 +136,42 @@ void DefaultDisplayer::generateDecorationsNeedFrame(const ModelComponent& mc,
                     SimTK::DecorativeGeometry dg = deocrationsForGeom[gi];
                     dg.setTransform(xformRelativeToBody);
                     dg.setBodyId(frame->getMobilizedBodyIndex());
-                    dg.setIndexOnBody(100*g + gi +1);
+                    dg.setIndexOnBody(g*100 + gi + 1);
                     geo.setDecorativeGeometryAppearance(dg);
                     appendToThis.push_back(dg);
                 }
             }
         }
 
+}
+
+bool DefaultDisplayer::validateFile(const std::string& file, const Model& model) const {
+    bool isAbsolutePath; string directory, fileName, extension;
+    SimTK::Pathname::deconstructPathname(file,
+        isAbsolutePath, directory, fileName, extension);
+    const string lowerExtension = SimTK::String::toLower(extension);
+    if (lowerExtension != ".vtp" && lowerExtension != ".obj") {
+        std::clog << "ModelVisualizer ignoring '" << file
+            << "'; only .vtp and .obj files currently supported.\n";
+        return false;
+    }
+
+    // File is a .vtp or .obj. See if we can find it.
+    SimTK::Array_<string> attempts;
+    bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);
+
+    if (!foundIt) {
+        std::clog << "ModelVisualizer couldn't find file '" << file
+            << "'; tried\n";
+        for (unsigned i = 0; i < attempts.size(); ++i)
+            std::clog << "  " << attempts[i] << "\n";
+        if (!isAbsolutePath &&
+            !SimTK::Pathname::environmentVariableExists("OPENSIM_HOME"))
+            std::clog << "Set environment variable OPENSIM_HOME "
+            << "to search $OPENSIM_HOME/Geometry.\n";
+        return false;
+    }
+    return true;
 }
 
 void PathDisplayer::generateDecorations(const OpenSim::ModelComponent& mc,

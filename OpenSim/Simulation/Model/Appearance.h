@@ -44,8 +44,8 @@ class Model;
  * @author Ayman Habib
  * @version 1.0
  */
-class OSIMSIMULATION_API Appearance : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(Appearance, Object);
+class OSIMSIMULATION_API BaseAppearance : public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(BaseAppearance, Object);
 public:
     //==============================================================================
     // PROPERTIES
@@ -59,6 +59,36 @@ public:
         "The opacity (0-1) used to display the object. ");
     OpenSim_DECLARE_PROPERTY(representation, int,
         "The representation (0:Hide, 1:Points, 2:Wire 2:Shaded) used to display the object. ");
+    /**@}**/
+
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+public:
+    BaseAppearance() {
+        constructProperties();
+    }
+    virtual ~BaseAppearance() {};
+
+private:
+    void constructProperties() {
+        constructProperty_color(SimTK::Vec3(1.0));
+        constructProperty_opacity(1.0);
+        constructProperty_representation(3);
+    }
+    //=============================================================================
+};	// END of class BaseAppearance
+
+
+class OSIMSIMULATION_API Appearance : public BaseAppearance {
+    OpenSim_DECLARE_CONCRETE_OBJECT(Appearance, BaseAppearance);
+public:
+    //==============================================================================
+    // PROPERTIES
+    //==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with Appearance. **/
+    /**@{**/
     OpenSim_DECLARE_OPTIONAL_PROPERTY(texture_file, std::string,
         "Name of file containing texture. ");
     /**@}**/
@@ -68,25 +98,48 @@ public:
 	//--------------------------------------------------------------------------
 public:
     Appearance() {
-        constructProperties();
     }
     virtual ~Appearance() {};
 
     bool hasTexture() {
         return getProperty_texture_file().size() > 0;
     }
-
-private:
-    void constructProperties() {
-        constructProperty_color(SimTK::Vec3(1.0));
-        constructProperty_opacity(1.0);
-        constructProperty_representation(3);
-    }
 //=============================================================================
 };	// END of class Appearance
 //=============================================================================
-//=============================================================================
 
+//=============================================================================
+class OSIMSIMULATION_API LineAppearance : public BaseAppearance {
+    OpenSim_DECLARE_CONCRETE_OBJECT(LineAppearance, Object);
+public:
+    //==============================================================================
+    // PROPERTIES
+    //==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with Appearance. **/
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(radius, double,
+        "The radius of the shape used to display the object. ");
+    OpenSim_DECLARE_PROPERTY(size, double,
+        "The length of the displayed line object. ");
+    /**@}**/
+
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+public:
+    LineAppearance() {
+        constructProperties();
+    }
+    virtual ~LineAppearance() {};
+
+private:
+    void constructProperties() {
+        constructProperty_radius(.05);
+        constructProperty_size(1.0);
+    }
+    //=============================================================================
+};	// END of class LineAppearance
 } // end of namespace OpenSim
 
 #endif // OPENSIM_APPEARANCE_H_

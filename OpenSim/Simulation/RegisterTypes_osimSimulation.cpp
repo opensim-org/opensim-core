@@ -163,8 +163,9 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( PathPointSet() );
     Object::registerType( ConditionalPathPoint() );
     Object::registerType( MovingPathPoint() );
-    Object::registerType( Appearance());
-    Object::registerType( GeometryAppearance());
+    Object::registerType(BaseAppearance());
+    Object::registerType(Appearance());
+    Object::registerType(LineAppearance());
     Object::registerType( AppearanceMap());
     Object::registerType( ModelDisplay());
 
