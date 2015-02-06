@@ -77,7 +77,7 @@ private:
         constructProperty_representation(3);
     }
     //=============================================================================
-};	// END of class BaseAppearance
+};  // END of class BaseAppearance
 
 
 class OSIMSIMULATION_API Appearance : public BaseAppearance {
@@ -93,9 +93,9 @@ public:
         "Name of file containing texture. ");
     /**@}**/
 
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
     Appearance() {
     }
@@ -105,7 +105,7 @@ public:
         return getProperty_texture_file().size() > 0;
     }
 //=============================================================================
-};	// END of class Appearance
+};  // END of class Appearance
 //=============================================================================
 
 //=============================================================================
@@ -139,7 +139,7 @@ private:
         constructProperty_size(1.0);
     }
     //=============================================================================
-};	// END of class LineAppearance
+};  // END of class LineAppearance
 } // end of namespace OpenSim
 
 #endif // OPENSIM_APPEARANCE_H_

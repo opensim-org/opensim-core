@@ -105,10 +105,10 @@ protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     // Visual support Constraint drawing in visualizer.
     void generateDecorations(
-        bool 									    fixed,
-        const ModelDisplayHints&				    hints,
-        const SimTK::State&						    state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&	appendToThis) const
+        bool                                        fixed,
+        const ModelDisplayHints&                    hints,
+        const SimTK::State&                         state,
+        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
         override;
 
     /** Updating XML formating to latest revision */

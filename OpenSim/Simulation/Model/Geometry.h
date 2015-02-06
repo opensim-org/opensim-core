@@ -103,22 +103,22 @@ public:
         DrawDefault = -1  ///< Let someone else decide.
     };
     //--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
     // Default constructor, does nothing
-	Geometry()
-	{
+    Geometry()
+    {
         constructProperty_scale_factors(SimTK::Vec3(1));
         constructProperty_frame_name();
         constructProperty_Appearance(Appearance());
     }
     // Default destructor
-	virtual ~Geometry() {}
+    virtual ~Geometry() {}
 
-	//=============================================================================
-	// METHODS
-	//=============================================================================
+    //=============================================================================
+    // METHODS
+    //=============================================================================
     // Get Transform of this geometry relative to passed in frame, utilizing passed 
     // in state.
     SimTK::Transform getTransform(const SimTK::State& state, 
@@ -165,14 +165,14 @@ public:
 private:
     SimTK::ReferencePtr<const OpenSim::ModelComponent> _owner;
     //=========================================================================
-};	// END of class Geometry
+};  // END of class Geometry
 
 /**
  * LineGeometry is a utility class used to abstract a line segment.
  * It is used by muscle segments so that it's as small and useful as possible.
  */
 class OSIMSIMULATION_API LineGeometry : public Geometry
-{	
+{   
     OpenSim_DECLARE_CONCRETE_OBJECT(LineGeometry, Geometry);
 public:
     // Property start_point
@@ -182,42 +182,42 @@ public:
     OpenSim_DECLARE_PROPERTY(end_point, SimTK::Vec3,
         "Line end point.");
     // Convenience constructor that takes two end points
-	LineGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2):
-	  Geometry()
-	{
+    LineGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2):
+      Geometry()
+    {
         constructProperties();
         setPoints(aPoint1, aPoint2);
         std::string gnd("ground");
         set_frame_name(gnd);
-	}
+    }
     // default constructor, creates line (0,0,0)-(1,1,1)
-	LineGeometry():
-	  Geometry()
-	{
+    LineGeometry():
+      Geometry()
+    {
         constructProperties();
-	}
+    }
     // destructor
-	virtual ~LineGeometry() {}
-	// Get & Set end points
-	void getPoints(SimTK::Vec3& rPoint1, SimTK::Vec3& rPoint2) const 
-	{
-		rPoint1 = get_start_point();
-		rPoint2 = get_end_point();
-	}
-	void getPoints(double rPoint1[], double rPoint2[]) const // A variant that uses basic types for use by GUI
-	{
-		getPoints(SimTK::Vec3::updAs(rPoint1), SimTK::Vec3::updAs(rPoint2));
-	}
+    virtual ~LineGeometry() {}
+    // Get & Set end points
+    void getPoints(SimTK::Vec3& rPoint1, SimTK::Vec3& rPoint2) const 
+    {
+        rPoint1 = get_start_point();
+        rPoint2 = get_end_point();
+    }
+    void getPoints(double rPoint1[], double rPoint2[]) const // A variant that uses basic types for use by GUI
+    {
+        getPoints(SimTK::Vec3::updAs(rPoint1), SimTK::Vec3::updAs(rPoint2));
+    }
     // Scripting friendly setter methods
-	void setPoints(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2)
-	{
+    void setPoints(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2)
+    {
         upd_start_point() = aPoint1;
         upd_end_point() = aPoint2;
     }
-	void setPoints(double aPoint1[], double aPoint2[])	// A variant that uses basic types for use by GUI
-	{
-		setPoints(SimTK::Vec3::updAs(aPoint1), SimTK::Vec3::updAs(aPoint2));
-	}
+    void setPoints(double aPoint1[], double aPoint2[])  // A variant that uses basic types for use by GUI
+    {
+        setPoints(SimTK::Vec3::updAs(aPoint1), SimTK::Vec3::updAs(aPoint2));
+    }
 
     void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
@@ -232,7 +232,7 @@ private:
 
 // untested yet
 class OSIMSIMULATION_API ArrowGeometry : public LineGeometry
-{	
+{   
     OpenSim_DECLARE_CONCRETE_OBJECT(ArrowGeometry, LineGeometry);
 public:
     // constructor that takes startPoint, direction vector and length
@@ -250,7 +250,7 @@ public:
         LineGeometry::setPoints(point1, point2);
     }
     // destructor
-	virtual ~ArrowGeometry() {}
+    virtual ~ArrowGeometry() {}
 
     void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 };
@@ -261,40 +261,40 @@ public:
  * revisited when wrapping is re-done.
  */
 class OSIMSIMULATION_API AnalyticGeometry : public Geometry
-{	 
+{    
     OpenSim_DECLARE_ABSTRACT_OBJECT(AnalyticGeometry, Geometry);
-	// Amended with a quadrants array to support pieces of analytic geometry (for wrapping)
+    // Amended with a quadrants array to support pieces of analytic geometry (for wrapping)
     OpenSim_DECLARE_LIST_PROPERTY(quadrants, std::string,
         "Quadrants to use: combination of +X -X +Y -Y +Z -Z space separated."); 
 private:
-	bool					_bounds[6];		//-X, +X, -Y, +Y, -Z, +Z
-	bool					_piece;
+    bool                    _bounds[6];     //-X, +X, -Y, +Y, -Z, +Z
+    bool                    _piece;
 public:
-	AnalyticGeometry():
-		_piece(false)
-	{
+    AnalyticGeometry():
+        _piece(false)
+    {
         constructProperties();
-		for(int i=0; i<6; i++) _bounds[i]=true;
-	}
-	virtual ~AnalyticGeometry() {}
-	void setQuadrants(const bool quadrants[6])
-	{
-		_piece=false;
-		for(int i=0; i<6; i++){
-			_bounds[i]=quadrants[i];
-			_piece = _piece || (!quadrants[i]);
-		}
-	}
-	void getQuadrants(bool quadrants[6])
-	{
-		for(int i=0; i<6; i++){
-			quadrants[i]=_bounds[i];
-		}
-	}
-	const bool isPiece() const
-	{
-		return _piece;
-	}
+        for(int i=0; i<6; i++) _bounds[i]=true;
+    }
+    virtual ~AnalyticGeometry() {}
+    void setQuadrants(const bool quadrants[6])
+    {
+        _piece=false;
+        for(int i=0; i<6; i++){
+            _bounds[i]=quadrants[i];
+            _piece = _piece || (!quadrants[i]);
+        }
+    }
+    void getQuadrants(bool quadrants[6])
+    {
+        for(int i=0; i<6; i++){
+            quadrants[i]=_bounds[i];
+        }
+    }
+    const bool isPiece() const
+    {
+        return _piece;
+    }
 private:
     void constructProperties() {
         constructProperty_quadrants();
@@ -311,30 +311,30 @@ public:
         "Radius of sphere, defaults to 1.0"); 
     // Default constructor, creates a sphere of radius 1.0
     Sphere() :
-	AnalyticGeometry()
-	{
+    AnalyticGeometry()
+    {
         constructProperties();
     }
     // Another constructor that takes in a specified radius
-	Sphere(double radius):
-		AnalyticGeometry()
-		{
+    Sphere(double radius):
+        AnalyticGeometry()
+        {
         constructProperties();
         upd_radius() = radius;
-		}
+        }
     // destructor
-	~Sphere() {}
+    ~Sphere() {}
     // Scripting friendly method to set radius
-	void setSphereRadius(double radius)
-	{
+    void setSphereRadius(double radius)
+    {
         upd_radius() = radius;
-	}
+    }
     void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
     void constructProperties(){
         constructProperty_radius(1.0);
     }
-};	// Sphere
+};  // Sphere
 
 /**
 * A class to represent an Ellipsoid geometry.
@@ -346,22 +346,22 @@ public:
     OpenSim_DECLARE_PROPERTY(radii, SimTK::Vec3, "Radii of Ellipsoid."); 
     // Default constructor, creates an Ellipsoid of radii 0.5, 1., 2.
     Ellipsoid() :
-	AnalyticGeometry()
-	{
+    AnalyticGeometry()
+    {
         constructProperties();
     }
     // Constructor that takes in three radii
-	Ellipsoid(double radius1, double radius2, double radius3):
-		AnalyticGeometry(){
+    Ellipsoid(double radius1, double radius2, double radius3):
+        AnalyticGeometry(){
         constructProperties();
         setEllipsoidParams(radius1, radius2, radius3);
-	}
+    }
     // destructor
-	~Ellipsoid() {}
+    ~Ellipsoid() {}
     // Scripting friendly interface to set radii
-	void setEllipsoidParams(double radius1, double radius2, double radius3)
-	{
-		//assert(_analyticType==Sphere);
+    void setEllipsoidParams(double radius1, double radius2, double radius3)
+    {
+        //assert(_analyticType==Sphere);
         upd_radii()[0] = radius1;
         upd_radii()[1] = radius2;
         upd_radii()[2] = radius3;
@@ -386,26 +386,26 @@ public:
     OpenSim_DECLARE_PROPERTY(half_height, double, "Half-Height of cylinder.");
     // Default constructor
     Cylinder() :
-	AnalyticGeometry()
-	{
+    AnalyticGeometry()
+    {
         constructProperties();
     }
     // Convenience constructor that takes radius and half-height
-	Cylinder(const double radius, const double hheight):
-		AnalyticGeometry()
-		{
+    Cylinder(const double radius, const double hheight):
+        AnalyticGeometry()
+        {
         constructProperties();
         upd_radius() = radius;
         upd_half_height() = hheight;
-		}
+        }
     // destructor
-	~Cylinder() {}
+    ~Cylinder() {}
     // Convenient way to get the two parameters that define the cylinder
-	void getCylinderParams(SimTK::Vec2& params) const
-	{
+    void getCylinderParams(SimTK::Vec2& params) const
+    {
         params[0] = get_radius();
         params[1] = get_half_height();
-	}
+    }
     void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
     void constructProperties() {
@@ -424,22 +424,22 @@ public:
     OpenSim_DECLARE_PROPERTY(cross_section, double, "Cross section radius");
     OpenSim_DECLARE_PROPERTY(ring_radius, double, "Radius of the torus ring.");
 public:
-	Torus():
-		AnalyticGeometry()
-		{}
-	Torus(const double ringRadius, const double crossSectionRadius):
-		AnalyticGeometry()
-		{
-			upd_ring_radius()=ringRadius;
-			upd_cross_section()=crossSectionRadius;
-		}
-	virtual ~Torus() {}
-	void getTorusParams(double params[]) const
-	{
-		//assert(_analyticType==Torus);
+    Torus():
+        AnalyticGeometry()
+        {}
+    Torus(const double ringRadius, const double crossSectionRadius):
+        AnalyticGeometry()
+        {
+            upd_ring_radius()=ringRadius;
+            upd_cross_section()=crossSectionRadius;
+        }
+    virtual ~Torus() {}
+    void getTorusParams(double params[]) const
+    {
+        //assert(_analyticType==Torus);
         params[0] = get_ring_radius();
-		params[1] = get_cross_section();
-	}
+        params[1] = get_cross_section();
+    }
     void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override {};
 };
 /**
@@ -499,9 +499,9 @@ public:
     // destructor
     virtual ~Mesh() {};
     const std::string&  getGeometryFilename() const
-	{
-		return get_mesh_file();
-	};
+    {
+        return get_mesh_file();
+    };
     void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 
 };

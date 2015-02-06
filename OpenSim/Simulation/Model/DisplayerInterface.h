@@ -72,7 +72,7 @@ public:
     //Ddefault destructor 
     virtual ~DisplayerInterface() {};
 //=============================================================================
-};	// END of class DisplayerInterface
+};  // END of class DisplayerInterface
 //=============================================================================
 
 /**
