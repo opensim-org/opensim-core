@@ -36,7 +36,7 @@ endif()
 # ------------
 list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
     "@CMAKE_INSTALL_PREFIX@/sdk/include"
-    "@CMAKE_INSTALL_PREFIX@/sdk/include/Vendors/Lepton/include"
+    "@CMAKE_INSTALL_PREFIX@/sdk/include/Vendors/lepton/include"
     )
 
 if(@OPENSIM_COPY_SIMBODY@)
