@@ -86,22 +86,22 @@ private:
 
 int main()
 {
-	try {
-		LoadOpenSimLibrary("osimActuators");
+    try {
+        LoadOpenSimLibrary("osimActuators");
         testVisModel("BuiltinGeometry.osim");
-	}
-	catch (const OpenSim::Exception& e) {
+    }
+    catch (const OpenSim::Exception& e) {
         e.print(cerr);
         return 1;
     }
     cout << "Done" << endl;
-	return 0;
+    return 0;
 }
 
 void testVisModel(string fileName)
 {
 
-	Model* model = new Model(fileName, true);
+    Model* model = new Model(fileName, true);
     SimTK::State& si = model->initSystem();
     ModelDisplayHints mdh; // default
     SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
@@ -124,6 +124,6 @@ void testVisModel(string fileName)
     cout << "From File " << endl << "=====" << endl;
     cout << fromFile << endl;
     int same = fromFile.compare(fromModel);
-	delete model;
+    delete model;
     // disable test for now for refactoring ASSERT(same == 0);
 }

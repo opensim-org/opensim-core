@@ -197,10 +197,10 @@ void ConstantDistanceConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, i
     Super::updateFromXMLNode(aNode, versionNumber);
 }// Visual support ConstantDistanceConstraint drawing in SimTK visualizer.
 void ConstantDistanceConstraint::generateDecorations(
-    bool 									    fixed,
-    const ModelDisplayHints&				    hints,
-    const SimTK::State&						    state,
-    SimTK::Array_<SimTK::DecorativeGeometry>&	appendToThis) const
+    bool                                        fixed,
+    const ModelDisplayHints&                    hints,
+    const SimTK::State&                         state,
+    SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
 {
     Super::generateDecorations(fixed, hints, state, appendToThis);
     if (fixed) return;

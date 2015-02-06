@@ -37,8 +37,8 @@ ContactSphere::ContactSphere(double radius, const SimTK::Vec3& location, Body& b
     ContactGeometry(location, SimTK::Vec3(0.0), body),
     _radius(_radiusProp.getValueDbl())
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
     _radius = radius;
 }
 
@@ -46,8 +46,8 @@ ContactSphere::ContactSphere(double radius, const SimTK::Vec3& location, Body& b
     ContactGeometry(location, SimTK::Vec3(0.0), body),
     _radius(_radiusProp.getValueDbl())
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
     _radius = radius;
     setName(name);
 }
@@ -56,20 +56,20 @@ ContactSphere::ContactSphere(const ContactSphere& geom) :
     ContactGeometry(geom),
     _radius(_radiusProp.getValueDbl())
 {
-	setNull();
-	setupProperties();
-	_radius = geom._radius;
+    setNull();
+    setupProperties();
+    _radius = geom._radius;
 }
 
 void ContactSphere::setNull()
 {
-	setAuthors("Peter Eastman");
+    setAuthors("Peter Eastman");
 }
 
 void ContactSphere::setupProperties()
 {
-	_radiusProp.setName("radius");
-	_propertySet.append(&_radiusProp);
+    _radiusProp.setName("radius");
+    _propertySet.append(&_radiusProp);
 }
 
 

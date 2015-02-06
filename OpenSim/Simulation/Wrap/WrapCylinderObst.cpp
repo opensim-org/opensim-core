@@ -41,7 +41,7 @@ static const double TwoPi = 2.0*SimTK::Pi;
 static const double max_wrap_pts_circle_ang = (5.0/360.0)*TwoPi;
 
 // The following variables could be used for speedy wrap_pts definitions (NOT CURRENTLY USED)
-static const int num_circle_wrap_pts = 36;	// Number of circle points in 360 degrees
+static const int num_circle_wrap_pts = 36;  // Number of circle points in 360 degrees
 static double circle_wrap_pts_sin[num_circle_wrap_pts];
 static double circle_wrap_pts_cos[num_circle_wrap_pts];
 static bool circle_wrap_pts_inited = false;
@@ -59,8 +59,8 @@ _radius(_radiusProp.getValueDbl()),
 _wrapDirectionName(_wrapDirectionNameProp.getValueStr()),
 _length(_lengthProp.getValueDbl())
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -83,9 +83,9 @@ _radius(_radiusProp.getValueDbl()),
 _wrapDirectionName(_wrapDirectionNameProp.getValueStr()),
 _length(_lengthProp.getValueDbl())
 {
-	setNull();
-	setupProperties();
-	copyData(aWrapCylinderObst);
+    setNull();
+    setupProperties();
+    copyData(aWrapCylinderObst);
 }
 
 //=============================================================================
@@ -97,18 +97,18 @@ _length(_lengthProp.getValueDbl())
 */
 void WrapCylinderObst::setNull()
 {
-	_wrapDirection = righthand;
-	if(!circle_wrap_pts_inited) initCircleWrapPts();
+    _wrapDirection = righthand;
+    if(!circle_wrap_pts_inited) initCircleWrapPts();
 }
 
 /** Initialize static data variables used for speedy definition of wrap_pts (for graphics mainly) */
 void WrapCylinderObst::initCircleWrapPts()
-{	int i;	double q;
-	for(i=0; i<num_circle_wrap_pts; i++) {
-		q = TwoPi*(double)(i)/(double)(num_circle_wrap_pts);
-		circle_wrap_pts_sin[i] = sin(q);
-		circle_wrap_pts_cos[i] = cos(q);
-	}	circle_wrap_pts_inited = true;
+{   int i;  double q;
+    for(i=0; i<num_circle_wrap_pts; i++) {
+        q = TwoPi*(double)(i)/(double)(num_circle_wrap_pts);
+        circle_wrap_pts_sin[i] = sin(q);
+        circle_wrap_pts_cos[i] = cos(q);
+    }   circle_wrap_pts_inited = true;
 }
 
 //_____________________________________________________________________________
@@ -117,20 +117,20 @@ void WrapCylinderObst::initCircleWrapPts()
 */
 void WrapCylinderObst::setupProperties()
 {
-	// BASE CLASS
-	WrapObject::setupProperties();
+    // BASE CLASS
+    WrapObject::setupProperties();
 
-	_radiusProp.setName("radius");
-	_radiusProp.setValue(-1.0);
-	_propertySet.append(&_radiusProp);
+    _radiusProp.setName("radius");
+    _radiusProp.setValue(-1.0);
+    _propertySet.append(&_radiusProp);
 
-	_wrapDirectionNameProp.setName("wrapDirection");
-	_wrapDirectionNameProp.setValue("Unassigned");
-	_propertySet.append(&_wrapDirectionNameProp);
+    _wrapDirectionNameProp.setName("wrapDirection");
+    _wrapDirectionNameProp.setValue("Unassigned");
+    _propertySet.append(&_wrapDirectionNameProp);
 
-	_lengthProp.setName("length");
-	_lengthProp.setValue(1.0);
-	_propertySet.append(&_lengthProp);
+    _lengthProp.setName("length");
+    _lengthProp.setValue(1.0);
+    _propertySet.append(&_lengthProp);
 }
 
 //_____________________________________________________________________________
@@ -142,31 +142,31 @@ void WrapCylinderObst::setupProperties()
 */
 void WrapCylinderObst::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 {
-	// Base class
-	Super::connectToModelAndBody(aModel, aBody);
+    // Base class
+    Super::connectToModelAndBody(aModel, aBody);
 
-	// maybe set a parent pointer, _body = aBody;
-	if (_radius < 0.0)
-	{
-		string errorMessage = "Error: radius for WrapCylinderObst " + getName() + " was either not specified, or is negative.";
-		throw Exception(errorMessage);
-	}
+    // maybe set a parent pointer, _body = aBody;
+    if (_radius < 0.0)
+    {
+        string errorMessage = "Error: radius for WrapCylinderObst " + getName() + " was either not specified, or is negative.";
+        throw Exception(errorMessage);
+    }
 /*
-	Cylinder* cyl = new Cylinder(_radius, _length);
-	setGeometryQuadrants(cyl);
+    Cylinder* cyl = new Cylinder(_radius, _length);
+    setGeometryQuadrants(cyl);
 */
-	if (_wrapDirectionName == "righthand" || _wrapDirectionName == "right" || _wrapDirectionName == "righthanded" || _wrapDirectionName == "Righthand" || _wrapDirectionName == "Right" || _wrapDirectionName == "Righthanded")
-		_wrapDirection = righthand;
-	else
-	if (_wrapDirectionName == "lefthand"  || _wrapDirectionName == "left"  || _wrapDirectionName == "lefthanded"  || _wrapDirectionName == "Lefthand"  || _wrapDirectionName == "Left"  || _wrapDirectionName == "Lefthanded")
-		_wrapDirection = lefthand;
-	else
-	if (_wrapDirectionName == "Unassigned")  // wrapDirection was not specified in obstacle object definition; use default
-		{ _wrapDirection = righthand;	_wrapDirectionName = "righthand";	}
-	else {  // wrapDirection was specified incorrectly in obstacle object definition; throw an exception
-		string errorMessage = "Error: wrapDirection for wrap obstacle " + getName() + " was specified incorrectly.  Use \"righthand\" or \"lefthand\".";
-		throw Exception(errorMessage);
-	}
+    if (_wrapDirectionName == "righthand" || _wrapDirectionName == "right" || _wrapDirectionName == "righthanded" || _wrapDirectionName == "Righthand" || _wrapDirectionName == "Right" || _wrapDirectionName == "Righthanded")
+        _wrapDirection = righthand;
+    else
+    if (_wrapDirectionName == "lefthand"  || _wrapDirectionName == "left"  || _wrapDirectionName == "lefthanded"  || _wrapDirectionName == "Lefthand"  || _wrapDirectionName == "Left"  || _wrapDirectionName == "Lefthanded")
+        _wrapDirection = lefthand;
+    else
+    if (_wrapDirectionName == "Unassigned")  // wrapDirection was not specified in obstacle object definition; use default
+        { _wrapDirection = righthand;   _wrapDirectionName = "righthand";   }
+    else {  // wrapDirection was specified incorrectly in obstacle object definition; throw an exception
+        string errorMessage = "Error: wrapDirection for wrap obstacle " + getName() + " was specified incorrectly.  Use \"righthand\" or \"lefthand\".";
+        throw Exception(errorMessage);
+    }
 
 }
 
@@ -178,13 +178,13 @@ void WrapCylinderObst::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody
 */
 void WrapCylinderObst::copyData(const WrapCylinderObst& aWrapCylinderObst)
 {
-	// BASE CLASS
-	WrapObject::copyData(aWrapCylinderObst);
+    // BASE CLASS
+    WrapObject::copyData(aWrapCylinderObst);
 
-	_radius = aWrapCylinderObst._radius;
-	_length = aWrapCylinderObst._length;
-	_wrapDirectionName = aWrapCylinderObst._wrapDirectionName;
-	_wrapDirection = aWrapCylinderObst._wrapDirection;
+    _radius = aWrapCylinderObst._radius;
+    _length = aWrapCylinderObst._length;
+    _wrapDirectionName = aWrapCylinderObst._wrapDirectionName;
+    _wrapDirection = aWrapCylinderObst._wrapDirection;
 }
 
 //_____________________________________________________________________________
@@ -195,7 +195,7 @@ void WrapCylinderObst::copyData(const WrapCylinderObst& aWrapCylinderObst)
  */
 const char* WrapCylinderObst::getWrapTypeName() const
 {
-	return wrapTypeName;
+    return wrapTypeName;
 }
 
 //_____________________________________________________________________________
@@ -208,10 +208,10 @@ const char* WrapCylinderObst::getWrapTypeName() const
  */
 string WrapCylinderObst::getDimensionsString() const
 {
-	stringstream dimensions;
-	dimensions << "radius " << _radius << "\nheight " << _length;
+    stringstream dimensions;
+    dimensions << "radius " << _radius << "\nheight " << _length;
 
-	return dimensions.str();
+    return dimensions.str();
 }
 
 //=============================================================================
@@ -225,10 +225,10 @@ string WrapCylinderObst::getDimensionsString() const
 */
 WrapCylinderObst& WrapCylinderObst::operator=(const WrapCylinderObst& aWrapCylinderObst)
 {
-	// BASE CLASS
-	WrapObject::operator=(aWrapCylinderObst);
+    // BASE CLASS
+    WrapObject::operator=(aWrapCylinderObst);
 
-	return(*this);
+    return(*this);
 }
 
 //=============================================================================
@@ -246,58 +246,58 @@ WrapCylinderObst& WrapCylinderObst::operator=(const WrapCylinderObst& aWrapCylin
  * @return The status, as a WrapAction enum
  */
 int WrapCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-						const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
+                        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
-	SimTK::Vec3& aPointP = aPoint1;		double R=0.8*( _wrapDirection==righthand ? _radius : -_radius );
-	SimTK::Vec3& aPointS = aPoint2;		double Qx,Qy,Qz, Tx,Ty,Tz;
+    SimTK::Vec3& aPointP = aPoint1;     double R=0.8*( _wrapDirection==righthand ? _radius : -_radius );
+    SimTK::Vec3& aPointS = aPoint2;     double Qx,Qy,Qz, Tx,Ty,Tz;
 
-	// Initialize return values
-	aFlag = false;
-	aWrapResult.wrap_path_length = 0.0;
-	aWrapResult.wrap_pts.setSize(0);
-	
-	// Compute displacements of P and S from cylinder axis
-	double Px=aPointP[0], Py=aPointP[1], Pz=aPointP[2], dP=Px*Px+Py*Py, rootP=dP-R*R;
-	double Sx=aPointS[0], Sy=aPointS[1], Sz=aPointS[2], dS=Sx*Sx+Sy*Sy, rootS=dS-R*R;
+    // Initialize return values
+    aFlag = false;
+    aWrapResult.wrap_path_length = 0.0;
+    aWrapResult.wrap_pts.setSize(0);
+    
+    // Compute displacements of P and S from cylinder axis
+    double Px=aPointP[0], Py=aPointP[1], Pz=aPointP[2], dP=Px*Px+Py*Py, rootP=dP-R*R;
+    double Sx=aPointS[0], Sy=aPointS[1], Sz=aPointS[2], dS=Sx*Sx+Sy*Sy, rootS=dS-R*R;
 
-	// Check P and S against cylinder, and compute x and y components of wrap points Q and T
-	if( rootP<0.0 || rootS<0.0 ) return insideRadius;	// One of P or S lies within the cylinder
-	dP=R/dP;	rootP=sqrt(rootP);	Qx=(R*Px-rootP*Py)*dP;	Qy=(R*Py+rootP*Px)*dP;
-	dS=R/dS;	rootS=sqrt(rootS);	Tx=(R*Sx+rootS*Sy)*dS;	Ty=(R*Sy-rootS*Sx)*dS;
+    // Check P and S against cylinder, and compute x and y components of wrap points Q and T
+    if( rootP<0.0 || rootS<0.0 ) return insideRadius;   // One of P or S lies within the cylinder
+    dP=R/dP;    rootP=sqrt(rootP);  Qx=(R*Px-rootP*Py)*dP;  Qy=(R*Py+rootP*Px)*dP;
+    dS=R/dS;    rootS=sqrt(rootS);  Tx=(R*Sx+rootS*Sy)*dS;  Ty=(R*Sy-rootS*Sx)*dS;
 
-	// Apply the 180-degree wrapping rule to see if contact is appropriate (i.e. wrap > 180 = no contact)
-	if( R*(Qx*Ty-Qy*Tx) < 0.0 ) return noWrap;
+    // Apply the 180-degree wrapping rule to see if contact is appropriate (i.e. wrap > 180 = no contact)
+    if( R*(Qx*Ty-Qy*Tx) < 0.0 ) return noWrap;
 
-	// Compute respective wrapping segment lengths
-	double PQ = sqrt( (Qx-Px)*(Qx-Px) + (Qy-Py)*(Qy-Py) );
-	double TS = sqrt( (Tx-Sx)*(Tx-Sx) + (Ty-Sy)*(Ty-Sy) );
-	double QtoTang = acos( 1.0 - 0.5*( (Qx-Tx)*(Qx-Tx) + (Qy-Ty)*(Qy-Ty) )/(R*R) );
-	double QT = R*QtoTang;
-	if(QT<0.0) QT=-QT;
-	
-	// Assign z-axis components of wrap points Q and T
-	Qz = Pz + (Sz-Pz)*(PQ) / (PQ+TS+QT);
-	Tz = Sz + (Pz-Sz)*(TS) / (PQ+TS+QT);
-	
-	// Register results and return
-	aFlag = true;
-	aWrapResult.wrap_path_length = QT;	// PQ + TS + QT;
-	aWrapResult.r1[0]=Qx;  aWrapResult.r1[1]=Qy;  aWrapResult.r1[2]=Qz;  
-	aWrapResult.r2[0]=Tx;  aWrapResult.r2[1]=Ty;  aWrapResult.r2[2]=Tz;
-	
-	// Generate wrap_pts sequence of points tracing out wrapping path
-	aWrapResult.wrap_pts.append(aWrapResult.r1);
-	double Qang=atan2(Qy,Qx);				// Angle of point Q
-	int i, n=1+ (int)((QtoTang>=0?QtoTang:-QtoTang)/max_wrap_pts_circle_ang);	// Number of angle steps from Q to T angles
-	double angDelt=(QtoTang)/(double)(n);	// Delta angle for n steps from Q to T angles
-	for(i=0;i<=n;i++) {
-		double ang = Qang + i*angDelt;		// Angle ranging from that of Q to that of T
-		SimTK::Vec3 aPointi( R*cos(ang), R*sin(ang), Qz+(Tz-Qz)*(double)(i)/(double)(n) );
-		aWrapResult.wrap_pts.append(aPointi);
-	}
-	aWrapResult.wrap_pts.append(aWrapResult.r2);
+    // Compute respective wrapping segment lengths
+    double PQ = sqrt( (Qx-Px)*(Qx-Px) + (Qy-Py)*(Qy-Py) );
+    double TS = sqrt( (Tx-Sx)*(Tx-Sx) + (Ty-Sy)*(Ty-Sy) );
+    double QtoTang = acos( 1.0 - 0.5*( (Qx-Tx)*(Qx-Tx) + (Qy-Ty)*(Qy-Ty) )/(R*R) );
+    double QT = R*QtoTang;
+    if(QT<0.0) QT=-QT;
+    
+    // Assign z-axis components of wrap points Q and T
+    Qz = Pz + (Sz-Pz)*(PQ) / (PQ+TS+QT);
+    Tz = Sz + (Pz-Sz)*(TS) / (PQ+TS+QT);
+    
+    // Register results and return
+    aFlag = true;
+    aWrapResult.wrap_path_length = QT;  // PQ + TS + QT;
+    aWrapResult.r1[0]=Qx;  aWrapResult.r1[1]=Qy;  aWrapResult.r1[2]=Qz;  
+    aWrapResult.r2[0]=Tx;  aWrapResult.r2[1]=Ty;  aWrapResult.r2[2]=Tz;
+    
+    // Generate wrap_pts sequence of points tracing out wrapping path
+    aWrapResult.wrap_pts.append(aWrapResult.r1);
+    double Qang=atan2(Qy,Qx);               // Angle of point Q
+    int i, n=1+ (int)((QtoTang>=0?QtoTang:-QtoTang)/max_wrap_pts_circle_ang);   // Number of angle steps from Q to T angles
+    double angDelt=(QtoTang)/(double)(n);   // Delta angle for n steps from Q to T angles
+    for(i=0;i<=n;i++) {
+        double ang = Qang + i*angDelt;      // Angle ranging from that of Q to that of T
+        SimTK::Vec3 aPointi( R*cos(ang), R*sin(ang), Qz+(Tz-Qz)*(double)(i)/(double)(n) );
+        aWrapResult.wrap_pts.append(aPointi);
+    }
+    aWrapResult.wrap_pts.append(aWrapResult.r2);
 
-	return wrapped;
+    return wrapped;
 }
 
 

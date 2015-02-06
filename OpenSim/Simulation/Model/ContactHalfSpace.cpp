@@ -56,13 +56,13 @@ ContactHalfSpace::ContactHalfSpace(const ContactHalfSpace& geom) :
 
 void ContactHalfSpace::setNull()
 {
-	setAuthors("Peter Eastman");
+    setAuthors("Peter Eastman");
 }
 
 
 SimTK::ContactGeometry ContactHalfSpace::createSimTKContactGeometry()
 {
-	return SimTK::ContactGeometry::HalfSpace();
+    return SimTK::ContactGeometry::HalfSpace();
 }
 
 } // end of namespace OpenSim
