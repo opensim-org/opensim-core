@@ -28,7 +28,7 @@ endif()
 
 list(APPEND @CMAKE_PROJECT_NAME@_LIB_DIR "@CMAKE_INSTALL_PREFIX@/${_OPENSIM_LIB_RELPATH}")
 
-if(NOT WIN32)
+if(NOT @OPENSIM_COPY_SIMBODY@)
     list(APPEND @CMAKE_PROJECT_NAME@_LIB_DIR "@Simbody_LIB_DIR@")
 endif()
 
@@ -39,11 +39,17 @@ list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
     "@CMAKE_INSTALL_PREFIX@/sdk/include/Vendors/Lepton/include"
     )
 
-if(WIN32)
+if(@OPENSIM_COPY_SIMBODY@)
     # Simbody headers have been copied to OpenSim.
+    if(WIN32)
+        set(_SIMBODY_INCLUDE_RELPATH "include")
+    else()
+        set(_SIMBODY_INCLUDE_RELPATH "simbody")
+    endif()
     list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
-        "@CMAKE_INSTALL_PREFIX@/sdk/include/SimTK/include")
+        "@CMAKE_INSTALL_PREFIX@/sdk/include/SimTK/${_SIMBODY_INCLUDE_RELPATH}")
 else()
+    # Refer to Simbody's own headers.
     list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS "@Simbody_INCLUDE_DIR@")
 endif()
 
