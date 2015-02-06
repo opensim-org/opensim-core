@@ -50,40 +50,6 @@ SET(EXECUTABLE_OUTPUT_PATH ${BUILD_BINARY_DIR})
 SET(LIBRARY_OUTPUT_PATH ${BUILD_BINARY_DIR})
 
 
-# Build using namespace.
-# ----------------------
-IF(WIN32)
-    # Use this to generate a private set of libraries whose names
-    # won't conflict with installed versions.
-    SET(BUILD_USING_NAMESPACE "" CACHE STRING
-        "All library names will be prefixed with 'xxx_' if this is set to xxx. Only used on Windows.")
-
-    SET(NameSpace)
-    IF(BUILD_USING_NAMESPACE)
-        SET(NameSpace "${BUILD_USING_NAMESPACE}_")
-    ENDIF(BUILD_USING_NAMESPACE)
-
-    #
-    # These are the names of all the libraries we depend on. These are
-    # target names so can be used to specify dependencies of one library
-    # on another. (In Debug mode the actual targets will have "_d" appended.)
-    #
-
-    SET(SimTKSIMBODY_LIBRARY_NAME ${NameSpace}SimTKsimbody CACHE STRING
-        "Base name of the library being built; can't be changed here; see BUILD_USING_NAMESPACE variable."
-        FORCE)
-    SET(SimTKMATH_LIBRARY_NAME ${NameSpace}SimTKmath CACHE STRING
-        "Base name of the library being built; can't be changed here; see BUILD_USING_NAMESPACE variable."
-        FORCE)
-    SET(SimTKCOMMON_LIBRARY_NAME ${NameSpace}SimTKcommon CACHE STRING
-        "Base name of the library being built; can't be changed here; see BUILD_USING_NAMESPACE variable."
-        FORCE)
-    MARK_AS_ADVANCED( SimTKSIMBODY_LIBRARY_NAME )
-    MARK_AS_ADVANCED( SimTKMATH_LIBRARY_NAME )
-    MARK_AS_ADVANCED( SimTKCOMMON_LIBRARY_NAME )
-
-ENDIF()
-
 # Specify number of cores to run for build
 SET(PROCESSOR_COUNT 8 CACHE STRING "Number of processors in the CPU")
 MARK_AS_ADVANCED(PROCESSOR_COUNT)
@@ -485,16 +451,6 @@ IF(WIN32)
 ELSE(WIN32)
     SET(CMAKE_DEBUG_POSTFIX "_d" CACHE STRING "Suffix for debug libraries")
 ENDIF(WIN32)
-
-
-SET(SIMTK_COMMON_LIB debug     ${SimTKCOMMON_LIBRARY_NAME}${CMAKE_DEBUG_POSTFIX}
-                     optimized ${SimTKCOMMON_LIBRARY_NAME})
-SET(SIMTK_MATH_LIB debug     ${SimTKMATH_LIBRARY_NAME}${CMAKE_DEBUG_POSTFIX}
-                   optimized ${SimTKMATH_LIBRARY_NAME})
-SET(SIMTK_SIMBODY_LIB debug     ${SimTKSIMBODY_LIBRARY_NAME}${CMAKE_DEBUG_POSTFIX}
-                      optimized ${SimTKSIMBODY_LIBRARY_NAME})
-
-SET(SIMTK_ALL_LIBS ${SIMTK_COMMON_LIB} ${SIMTK_MATH_LIB} ${SIMTK_SIMBODY_LIB})
 
 
 ## The following are required to uses Dart and the Cdash dashboard per Jesse

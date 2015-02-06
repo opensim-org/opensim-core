@@ -7,7 +7,7 @@ LINK_LIBRARIES( debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
         debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators
         debug osimTools${CMAKE_DEBUG_POSTFIX} optimized osimTools
         debug osimAnalyses${CMAKE_DEBUG_POSTFIX} optimized osimAnalyses
-        ${SIMTK_ALL_LIBS}
+        ${Simbody_LIBRARIES}
         )
 
 ADD_EXECUTABLE(testID testID.cpp)
