@@ -62,7 +62,7 @@ MARK_AS_ADVANCED(PROCESSOR_COUNT)
 SET(SIMBODY_HOME $ENV{SIMBODY_HOME} CACHE
     PATH "The location of the Simbody installation to use; you can change this. Set as empty to let CMake search for Simbody automatically.")
 
-STRING(OPENSIM_COPY_SIMBODY_MSG
+SET(OPENSIM_COPY_SIMBODY_MSG
     "Copy Simbody headers and libraries into the OpenSim "
     "installation. This way, you can treat OpenSim and Simbody as one package; "
     "and you only need to set environment variables "
