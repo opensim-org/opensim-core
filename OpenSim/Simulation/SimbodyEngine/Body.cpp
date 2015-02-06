@@ -558,7 +558,7 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
 // This private method creates a frame in the owner model document with passed in name and content relative to bodyName
 void Body::createFrameForXform(const SimTK::Xml::element_iterator& frameSetIter, const std::string& frameName, const SimTK::Vec6& localXform, const std::string& bodyName) const
 {
-    SimTK::Xml::Element frameNode("FixedFrame");
+    SimTK::Xml::Element frameNode("PhysicalOffsetFrame");
     frameNode.setAttributeValue("name", frameName);
     SimTK::Xml::Element translationNode("translation", localXform.getSubVec<3>(3));
     SimTK::Xml::Element orientationNode("rotation", localXform.getSubVec<3>(0));

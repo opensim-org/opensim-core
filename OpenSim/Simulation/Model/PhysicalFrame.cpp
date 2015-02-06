@@ -77,7 +77,7 @@ SimTK::Transform PhysicalFrame::
 
 SimTK::Transform PhysicalFrame::extendFindTransformInBaseFrame() const
 {
-    return Transform();
+    return SimTK::Transform();
 }
 
 void PhysicalFrame::extendConnectToModel(Model& aModel)

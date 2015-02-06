@@ -70,7 +70,7 @@ int main()
         Cylinder* cyl = new Cylinder();
 		//This cylinder.vtp geometry is 1 meter tall, 1 meter diameter.  Scale and shift it to look pretty
         cyl->set_scale_factors(linkageDimensions);
-        Frame* cyl1Frame = new FixedFrame(*linkage1, Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
+        Frame* cyl1Frame = new PhysicalOffsetFrame(*linkage1, Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
         cyl1Frame->setName("Cyl1_frame");
         osimModel.addFrame(cyl1Frame);
         cyl->set_frame_name("Cyl1_frame");
@@ -82,7 +82,7 @@ int main()
 		// Creat a second linkage body
 		OpenSim::Body* linkage2 = new OpenSim::Body(*linkage1);
 		linkage2->setName("linkage2");
-        Frame* cyl2Frame = new FixedFrame(*linkage2, Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
+        Frame* cyl2Frame = new PhysicalOffsetFrame(*linkage2, Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
         cyl2Frame->setName("Cyl2_frame");
         osimModel.addFrame(cyl2Frame);
         (linkage2->upd_GeometrySet(0)).set_frame_name("Cyl2_frame");

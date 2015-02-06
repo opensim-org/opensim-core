@@ -35,7 +35,7 @@ class Body;
 class Model;
 class ModelDisplayHints;
 class ModelComponent;
-class RigidFrame;
+class PhysicalFrame;
 //=============================================================================
 //=============================================================================
 /**
@@ -99,7 +99,7 @@ public:
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const;
 private:
-    void generateDecorationsInFrame(const OpenSim::RigidFrame& frame,
+    void generateDecorationsInFrame(const OpenSim::PhysicalFrame& frame,
         bool fixed,
         const OpenSim::ModelDisplayHints&                    hints,
         const SimTK::State&                         state,

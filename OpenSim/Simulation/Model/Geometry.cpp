@@ -28,7 +28,7 @@
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Component.h>
 #include "Frame.h"
-#include "RigidFrame.h"
+#include "PhysicalFrame.h"
 #include "Geometry.h"
 #include "Model.h"
 #include "ModelVisualizer.h"
@@ -43,7 +43,7 @@ using namespace SimTK;
  * Compute Transform of a Geometry w.r.t. passed in Frame
  * Both Frame(s) could be Bodies, state is assumed to be realized ro position
 */
-SimTK::Transform  Geometry::getTransform(const SimTK::State& state, const OpenSim::RigidFrame& frame) const {
+SimTK::Transform  Geometry::getTransform(const SimTK::State& state, const OpenSim::PhysicalFrame& frame) const {
     const OpenSim::Model& model = frame.getModel();
 
     const ModelComponent& owner = getOwnerModelComponent();

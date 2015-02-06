@@ -74,19 +74,19 @@ int main()
         Ground& ground = osimModel.updGround();
         // Create Frames to attach Geometry to
         // Left brick
-        OpenSim::FixedFrame* leftAnchorFrame = new FixedFrame(ground, Transform(Vec3(0, 0.05, 0.35)));
+        OpenSim::PhysicalFrame* leftAnchorFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(0, 0.05, 0.35)));
         leftAnchorFrame->setName("LeftAnchor");
         osimModel.addFrame(leftAnchorFrame);
         // Right brick
-        OpenSim::FixedFrame* rightAnchorFrame = new FixedFrame(ground, Transform(Vec3(0, 0.05, -0.35)));
+        OpenSim::PhysicalFrame* rightAnchorFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(0, 0.05, -0.35)));
         rightAnchorFrame->setName("RightAnchor");
         osimModel.addFrame(rightAnchorFrame);
         // Cylinder
-        OpenSim::FixedFrame* cylFrame = new FixedFrame(ground, Transform(Vec3(-.2, 0.0, 0.)));
+        OpenSim::PhysicalFrame* cylFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(-.2, 0.0, 0.)));
         cylFrame->setName("CylAnchor");
         osimModel.addFrame(cylFrame);
         // Ellipsoid
-        OpenSim::FixedFrame* ellipsoidFrame = new FixedFrame(ground, Transform(Vec3(-.6, 0.6, 0.)));
+        OpenSim::PhysicalFrame* ellipsoidFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(-.6, 0.6, 0.)));
         ellipsoidFrame->setName("EllipsoidAnchor");
         osimModel.addFrame(ellipsoidFrame);
 

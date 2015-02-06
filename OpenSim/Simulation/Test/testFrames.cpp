@@ -39,6 +39,7 @@ Tests Include:
 
 using namespace OpenSim;
 using namespace std;
+using SimTK::Transform;
 
 void testBody();
 void testPhysicalOffsetFrameOnBody();

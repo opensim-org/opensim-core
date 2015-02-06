@@ -26,7 +26,7 @@
 #include "Simbody.h"
 #include "DisplayerInterface.h"
 #include "ModelComponent.h"
-#include "RigidFrame.h"
+#include "PhysicalFrame.h"
 #include "ModelVisualizer.h"
 
 using namespace OpenSim;
@@ -43,14 +43,14 @@ void DefaultDisplayer::generateDecorations(const ModelComponent& mc,
     const SimTK::State&                         state,
     SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
 {
-    const OpenSim::RigidFrame* frm = dynamic_cast<const OpenSim::RigidFrame*>(&mc);
+    const OpenSim::PhysicalFrame* frm = dynamic_cast<const OpenSim::PhysicalFrame*>(&mc);
     if (frm != nullptr)
         generateDecorationsInFrame(*frm, fixed, hints, state, appendToThis);
     else
         generateDecorationsArbitraryFrame(mc, fixed, hints, state, appendToThis);
 }
 
-void DefaultDisplayer::generateDecorationsInFrame(const RigidFrame& frame,
+void DefaultDisplayer::generateDecorationsInFrame(const PhysicalFrame& frame,
     bool fixed,
     const ModelDisplayHints&                    hints,
     const SimTK::State&                         state,
@@ -106,9 +106,9 @@ void DefaultDisplayer::generateDecorationsArbitraryFrame(const ModelComponent& m
             const Vec3 netScale = geo.get_scale_factors();
             SimTK::Transform xformRelativeToBody;
             const std::string& frameName = geo.isFrameSpecified()?geo.get_frame_name():"ground";
-            ComponentList<RigidFrame> framesList = model.getComponentList<OpenSim::RigidFrame>();
-            const RigidFrame* frame=0;
-            for (const RigidFrame& frm : framesList) {
+            ComponentList<PhysicalFrame> framesList = model.getComponentList<OpenSim::PhysicalFrame>();
+            const PhysicalFrame* frame=0;
+            for (const PhysicalFrame& frm : framesList) {
                 if (frm.getName() == frameName){
                     frame = &frm;
                     break;

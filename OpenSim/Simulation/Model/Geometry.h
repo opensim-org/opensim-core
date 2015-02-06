@@ -62,7 +62,7 @@
 
 namespace OpenSim { 
 
-class RigidFrame;
+class PhysicalFrame;
 class Model;
 class Frame;
 class ModelComponent;
@@ -122,7 +122,7 @@ public:
     // Get Transform of this geometry relative to passed in frame, utilizing passed 
     // in state.
     SimTK::Transform getTransform(const SimTK::State& state, 
-        const OpenSim::RigidFrame& frame) const;
+        const OpenSim::PhysicalFrame& frame) const;
     // Manage Appearance or how the Geometry is rendered by moving Appearance down
     // from Geometry to DecorativeGeometry.
     void setDecorativeGeometryAppearance(SimTK::DecorativeGeometry& decoration) const {
