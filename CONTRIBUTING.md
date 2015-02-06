@@ -94,11 +94,11 @@ Common problems with header guards:
 1. They can interfere with user code, and
 2. They violate the C++ standard.
 
-OpenSim uses many very common class names, like “Object” and “Array”. These are likely to appear in other code libraries as well, so anyone who combines the OpenSim API with other libraries or their own code may have conflicts. A simple rule to avoid conflicts is for the header guards to be unique symbols, easily achieved by including the product name in them (that is, they should contain “OPENSIM”).
+OpenSim uses many very common class names, like `Object` and `Array`. These are likely to appear in other code libraries as well, so anyone who combines the OpenSim API with other libraries or their own code may have conflicts. A simple rule to avoid conflicts is for the header guards to be unique symbols, easily achieved by including the product name in them (that is, they should contain `OPENSIM`).
 
-As a reminder, the C++ standard prohibits user code from using identifiers that contain double underscore (“__”) or begin with an underscore followed by a capital letter (“_P”). Those symbols are reserved for the compiler and the std::library. Use of symbols like that means it is subject to conflict with the compiler, either now or in future releases or new platforms. Hopefully those conflicts would cause compiler errors, but that is not guaranteed.
+As a reminder, the C++ standard prohibits user code from using identifiers that contain double underscore (`__`) or begin with an underscore followed by a capital letter (`_P`). Those symbols are reserved for the compiler and the standard library (`std`). Use of symbols like that means it is subject to conflict with the compiler, either now or in future releases or new platforms. Hopefully those conflicts would cause compiler errors, but that is not guaranteed.
 
-One other minor point is that preprocessor macros should typically have very ugly names with LOTS_OF_CAPS to make it obvious that they are not ordinary identifiers, and to avoid conflicts with NiceUpperCamelCaseIdentifiers used for class names.
+One other minor point is that preprocessor macros should typically have very ugly names with `LOTS_OF_CAPS` to make it obvious that they are not ordinary identifiers, and to avoid conflicts with NiceUpperCamelCaseIdentifiers used for class names.
 
 ### Creating new OpenSim objects
 
@@ -148,7 +148,7 @@ If the “copy stuff” part consists only of assignments that work for self ass
 
 ### Documenting your code
 
-Doxygen only looks in your .h files; it does not generate documentation from .cpp files. Thus, comments in .cpp files don't need to follow doxygen formatting, and in fact they should not because it is confusing and makes it look like there is API documentation when there isn't. You should mostly use "//"-style comments in .cpp files, and be sure you are addressing your comments to the right audience -- no doxygen reader will ever see them.
+Doxygen only looks in your .h files; it does not generate documentation from .cpp files. Thus, comments in .cpp files don't need to follow doxygen formatting, and in fact they should not because it is confusing and makes it look like there is API documentation when there isn't. You should mostly use `//`-style comments in .cpp files, and be sure you are addressing your comments to the right audience -- no doxygen reader will ever see them.
 
 Read more about doxygen on this page: Guide to Building Doxygen
 
