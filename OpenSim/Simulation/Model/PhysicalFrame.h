@@ -48,7 +48,7 @@ class Body;
 */
 
 class OSIMSIMULATION_API PhysicalFrame : public Frame {
-    OpenSim_DECLARE_CONCRETE_OBJECT(PhysicalFrame, Frame);
+    OpenSim_DECLARE_ABSTRACT_OBJECT(PhysicalFrame, Frame);
 
     //==========================================================================
     // PUBLIC METHODS
@@ -111,6 +111,10 @@ public:
     ///@} 
 
 protected:
+    /** The transform X_GF for this PhysicalFrame, F, in ground, G. */
+    SimTK::Transform
+        calcGroundTransform(const SimTK::State& state) const override;
+
     /** @name Advanced: PhysicalFrame Devloper Interface
     These methods are intended for PhysicalFrame builders. */
     ///@{
@@ -130,18 +134,25 @@ protected:
 
     /** Extend how PhysicalFrame determines its Transform in the base Frame. */
     SimTK::Transform extendFindTransformInBaseFrame() const override;
-
     ///@}
 
-    /** The transform X_GF for this PhysicalFrame, F, in ground, G. */
-    SimTK::Transform
-        calcGroundTransform(const SimTK::State& state) const override;
+    /** @name Component Extension methods.
+    PhysicalFrame extension of Component interface. */
+    /**@{**/
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    /**@}**/
 
 private:
     /* ID for the underlying mobilized body in Simbody system.
     Only Joint can set, since it defines the mobilized body type and
     the connection to the parent body in the multibody tree. */
     mutable SimTK::MobilizedBodyIndex _mbIndex;
+
+    // Model is a friend because it creates the underlying mobilized body(ies)
+    // that implement a Joint and is the only component that can assign
+    // the MobilizedBodyIndex for this Body so it can communicate with its 
+    // counter-part in the underlying system
+    friend class Joint;
 
     //==========================================================================
 };  // END of class PhysicalFrame

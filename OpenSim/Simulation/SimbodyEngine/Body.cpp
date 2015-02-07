@@ -129,15 +129,6 @@ void Body::extendConnectToModel(Model& aModel)
     }
 }
 
-void Body::extendAddToSystem(SimTK::MultibodySystem& system) const
-{
-    Super::extendAddToSystem(system);
-    if(getName() == "ground"){
-        setMobilizedBodyIndex(SimTK::GroundIndex);
-    }
-}
-
-
 //=============================================================================
 // GET AND SET
 //=============================================================================

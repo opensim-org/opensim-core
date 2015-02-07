@@ -131,26 +131,24 @@ public:
     // Model component interface.
     void extendFinalizeFromProperties() override;
     void extendConnectToModel(Model& model) override;
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     // Underlying multibody tree building operations. Should only be called
     // by the connecting Joint
     Body* addSlave();
 
 private:
-
     /** Component Interface */
     void constructProperties();
-
-    /** Return the equivalent (internal) SimTK::Rigid::Body for this body.
-        Not valid until after extendAddToSystem on Body has be called.*/
-    const SimTK::Body::Rigid& getInternalRigidBody() const {
-        return _internalRigidBody;
-    }
 
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode,
         int versionNumber = -1) override;
+
+    /** Return the equivalent (internal) SimTK::Rigid::Body for this body.
+    Not valid until after extendAddToSystem on Body has be called.*/
+    const SimTK::Body::Rigid& getInternalRigidBody() const {
+        return _internalRigidBody;
+    }
 
     // mutable because fist get constructs tensor from properties
     mutable SimTK::Inertia _inertia;
@@ -164,11 +162,6 @@ private:
     // used to break loops.
     SimTK::Body::Rigid _internalRigidBody;
 
-    // Model is a friend because it creates the underlying mobilized body(ies)
-    // that implement a Joint and is the only component that can assign
-    // the MobilizedBodyIndex for this Body so it can communicate with its 
-    // counter-part in the underlying system
-    friend class Joint;
     // Have to be at the Model level to build the system topology. This
     // involves splitting bodies to satsify loop constraints. Only the Model,
     // therefore, can tell a Body if it must add slaves to implement a valid

@@ -140,7 +140,7 @@ void FreeJoint::extendInitStateFromProperties(SimTK::State& s) const
             coordinateSet.get(5).getDefaultValue());
 
         FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
-        getChildBody().getMobilizedBody().setQToFitTransform(s, Transform(r, t));
+        getChildFrame().getMobilizedBody().setQToFitTransform(s, Transform(r, t));
     }
 }
 
@@ -152,8 +152,8 @@ void FreeJoint::extendSetPropertiesFromState(const SimTK::State& state)
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-        Rotation r = getChildBody().getMobilizedBody().getMobilizerTransform(state).R();
-        Vec3 t = getChildBody().getMobilizedBody().getMobilizerTransform(state).p();
+        Rotation r = getChildFrame().getMobilizedBody().getMobilizerTransform(state).R();
+        Vec3 t = getChildFrame().getMobilizedBody().getMobilizerTransform(state).p();
 
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
         int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.

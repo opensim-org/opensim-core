@@ -72,3 +72,10 @@ SimTK::Transform PhysicalFrame::extendFindTransformInBaseFrame() const
     return Transform();
 }
 
+void PhysicalFrame::extendAddToSystem(SimTK::MultibodySystem& system) const
+{
+    Super::extendAddToSystem(system);
+    if (getName() == "ground"){
+        setMobilizedBodyIndex(SimTK::GroundIndex);
+    }
+}

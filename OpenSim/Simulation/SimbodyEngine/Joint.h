@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 // INCLUDE
 #include <OpenSim/Simulation/Model/ModelComponent.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Common/Function.h>
 
@@ -31,6 +32,7 @@ namespace OpenSim {
 
 class Model;
 class Body;
+class PhyscialFrame;
 class ScaleSet;
 
 /**
@@ -131,13 +133,13 @@ public:
 
         @param[in] name     the name associated with this joint (should be
                             unique from other joints in the same model)
-        @param[in] parent   the parent Body that joint connects to
+        @param[in] parent   the parent PhysicalFrame that joint connects to
         @param[in] locationInParent    Vec3 of the location of the joint in the
                                        parent body frame.
         @param[in] orientationInParent Vec3 of the XYZ body-fixed Euler angles
                                        of the joint frame orientation in the
                                        parent body frame.
-        @param[in] child    the child Body that joint connects to
+        @param[in] child    the child PhysicalFrame that joint connects to
         @param[in] locationInChild     Vec3 of the location of the joint in the
                                        child body frame.
         @param[in] orientationInChild  Vec3 of the XYZ body-fixed Euler angles
@@ -148,10 +150,10 @@ public:
                             Default is false (that is, forward).
         */
     Joint(const std::string &name,
-          const Body &parent,
+          const PhysicalFrame& parent,
           const SimTK::Vec3& locationInParent,
           const SimTK::Vec3& orientationInParent,
-          const OpenSim::Body& child,
+          const PhysicalFrame& child,
           const SimTK::Vec3& locationInChild,
           const SimTK::Vec3& orientationInChild,
           bool reverse = false);
@@ -160,44 +162,44 @@ public:
 
     // GET & SET
 
-    void setChildBodyName(const std::string& name);
-    const std::string& getChildBodyName() const;
+    void setChildFrameName(const std::string& name);
+    const std::string& getChildFrameName() const;
 
     /**
      * Set the child body that this joint connects.
      *
-     * @param child Body reference.
+     * @param child PhysicalFrame reference.
      */
-    void setChildBody(OpenSim::Body& child);
+    void setChildFrame(const PhysicalFrame& child);
 
     /**
-     * Get the child body that this joint connects to.
+     * Get the child joint frame.
      *
-     * @return const Body reference.
+     * @return const PhysicalFrame reference.
      */
-    const OpenSim::Body& getChildBody() const;
+    const PhysicalFrame& getChildFrame() const;
 
     void setLocationInChild(const SimTK::Vec3& aLocation);
     const SimTK::Vec3& getLocationInChild() const;
     void setOrientationInChild(const SimTK::Vec3& aOrientation);
     const SimTK::Vec3& getOrientationInChild() const;
 
-    // Relating to the parent body
-    void setParentBodyName(const std::string& aName);
-    const std::string& getParentBodyName() const;
+    // Relating to the parent joint frame
+    void setParentFrameName(const std::string& aName);
+    const std::string& getParentFrameName() const;
 
     /**
-    * Set the parent body that this joint connects.
+    * Set the parent frame that this joint connects.
     *
-    * @param parent Body.
+    * @param parent PhysicalFrame.
     */
-    void setParentBody(OpenSim::Body& parent);
+    void setParentFrame(const PhysicalFrame& parent);
     /**
-     * Get the parent body to which this joint attaches.
+     * Get the parent frame to which this joint attaches.
      *
-     * @return const ref to parent Body.
+     * @return const ref to parent PhysicalFrame.
      */
-    const OpenSim::Body& getParentBody() const;
+    const OpenSim::PhysicalFrame& getParentFrame() const;
 
     void setLocationInParent(const SimTK::Vec3& aLocation);
     const SimTK::Vec3& getLocationInParent() const;
@@ -325,21 +327,21 @@ protected:
         // preserved, the inboard must exist first.
         if (get_reverse()){
             inb = mbs.updMatterSubsystem().updMobilizedBody(
-                                               getMobilizedBodyIndex(getChildBody()) );
+                                               getMobilizedBodyIndex(getChildFrame()) );
             const SimTK::Transform* swap = inbX;
             inbX = outbX;
             outbX = swap;
 
             outb = &getParentInternalRigidBody();
             associatedBody = (_slaveBodyForParent) ? _slaveBodyForParent :
-                                                     &getParentBody();
+                                                     &getParentFrame();
         }
         else{
             inb = mbs.updMatterSubsystem().updMobilizedBody(
-                                               getMobilizedBodyIndex(getParentBody()) );
+                                               getMobilizedBodyIndex(getParentFrame()) );
 
             associatedBody = (_slaveBodyForChild) ? _slaveBodyForChild :
-                &getChildBody();
+                &getChildFrame();
         }
 
         int startingCoordinateIndex = 0;

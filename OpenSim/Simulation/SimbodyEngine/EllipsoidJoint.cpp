@@ -121,7 +121,7 @@ void EllipsoidJoint::scale(const ScaleSet& aScaleSet)
     // SCALING TO DO WITH THE PARENT BODY -----
     // Joint kinematics are scaled by the scale factors for the
     // parent body, so get those body's factors
-    const string& parentName = getParentBody().getName();
+    const string& parentName = getParentFrameName();
     for (int i=0; i<aScaleSet.getSize(); i++) {
         Scale& scale = aScaleSet.get(i);
         if (scale.getSegmentName()==parentName) {
@@ -165,7 +165,7 @@ void EllipsoidJoint::extendInitStateFromProperties(SimTK::State& s) const
                                          yangle, YAxis, zangle, ZAxis);
 
         EllipsoidJoint* mutableThis = const_cast<EllipsoidJoint*>(this);
-        getChildBody().getMobilizedBody().setQToFitRotation(s, r);
+        getChildFrame().getMobilizedBody().setQToFitRotation(s, r);
     }
 }
 
@@ -177,7 +177,7 @@ void EllipsoidJoint::extendSetPropertiesFromState(const SimTK::State& state)
     const SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
 
-        Rotation r = getChildBody().getMobilizedBody().getBodyRotation(state);
+        Rotation r = getChildFrame().getMobilizedBody().getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
 
         const CoordinateSet& coordinateSet = get_CoordinateSet();
@@ -211,12 +211,12 @@ void EllipsoidJoint::generateDecorations
         SimTK::DecorativeFrame parentFrame(dimension);
 
         // attach frame to body, translate and rotate it to the location of the joint
-        childFrame.setBodyId(getChildBody().getMobilizedBodyIndex());
+        childFrame.setBodyId(getChildFrame().getMobilizedBodyIndex());
         childFrame.setTransform(getChildTransform());
         childFrame.setColor(frame1color);
 
         // attach frame to parent, translate and rotate it to the location of the joint
-        parentFrame.setBodyId(getParentBody().getMobilizedBodyIndex());
+        parentFrame.setBodyId(getParentFrame().getMobilizedBodyIndex());
         parentFrame.setTransform(getParentTransform());
         parentFrame.setColor(frame2color);
 

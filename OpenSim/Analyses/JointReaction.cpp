@@ -294,9 +294,9 @@ void JointReaction::setupReactionList()
                 validJointFlag++;
                 listNotEmptyFlag++;
                 currentJoint.jointName = joint.getName();
-                const std::string& childName = joint.getChildBodyName();
+                const std::string& childName = joint.getChildFrameName();
                 int childIndex = bodySet.getIndex(childName, 0);
-                const std::string& parentName = joint.getParentBodyName();
+                const std::string& parentName = joint.getParentFrameName();
                 int parentIndex = bodySet.getIndex(parentName, 0);
 
                 /* set index that correponds to the appropriate index of the 
@@ -615,10 +615,9 @@ record(const SimTK::State& s)
         Vec3 moment = allMomentsVec[currentKey.reactionIndex];
         Body& expressedInBody = bodySet.get(currentKey.inFrameIndex);
         // find the point of application of the joint load on the child
-        Vec3 childLocation = joint.getLocationInChild();
+        const Vec3& childLocation = joint.getLocationInChild();
         // and find it's current location in the ground reference frame
-        Vec3 childLocationInGlobal(0,0,0);
-        _model->getSimbodyEngine().getPosition(s_analysis, joint.getChildBody(), childLocation,childLocationInGlobal);
+        Vec3 childLocationInGlobal = joint.getChildFrame().getGroundTransform(s_analysis)*childLocation;
         // set the point of application to the joint location in the child body
         Vec3 pointOfApplication(0,0,0);
         
@@ -628,12 +627,9 @@ record(const SimTK::State& s)
             /*Take reaction load from child and apply on parent*/
             force = -force;
             moment = -moment;
-            Vec3 parentLocation(0,0,0);
-            
-            parentLocation = joint.getLocationInParent();
-            Vec3 parentLocationInGlobal(0,0,0);
-            //_model->getSimbodyEngine().getPosition(s_analysis, joint.getBody(), childLocation,childLocationInGlobal);
-            _model->getSimbodyEngine().getPosition(s_analysis,joint.getParentBody(), parentLocation, parentLocationInGlobal);
+            const Vec3& parentLocation = joint.getLocationInParent();
+            Vec3 parentLocationInGlobal = joint.getParentFrame()
+                .getGroundTransform(s_analysis)*parentLocation;
 
             // define vector from the mobilizer location on the child to the location on the parent
             Vec3 translation = parentLocationInGlobal - childLocationInGlobal;
@@ -670,8 +666,7 @@ record(const SimTK::State& s)
     /* Write the reaction data to storage*/
     _storeReactionLoads.append(s.getTime(),_Loads.getSize(),&_Loads[0]);
 
-
-    return(0);
+    return 0;
 }
 //_____________________________________________________________________________
 /**

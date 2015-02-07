@@ -28,11 +28,6 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/ArrayPtrs.h>
-#include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyObjPtr.h>
-#include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
@@ -48,6 +43,7 @@
 #include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/FrameSet.h>
+#include <OpenSim/Simulation/Model/Ground.h>
 #include "Simbody.h"
 
 
@@ -783,6 +779,7 @@ public:
     const ContactGeometrySet& getContactGeometrySet() const { return get_ContactGeometrySet(); }
 
     Body& getGroundBody() const;
+    const PhysicalFrame& getGround() const;
 
 
     //--------------------------------------------------------------------------
@@ -953,7 +950,6 @@ private:
     // Set the values of all data members to an appropriate "null" value.
     void setNull();
 
-    void createGroundBodyIfNecessary();
     void setDefaultProperties();
     void createMultibodySystem();
 
@@ -1008,6 +1004,7 @@ private:
     // to an existing Body and should not be destructed.
     Body*           _groundBody;
 
+    Ground _ground;
     SimTK::MultibodyGraphMaker _multibodyTree;
 
     // This object just provides an alternate interface to the computational

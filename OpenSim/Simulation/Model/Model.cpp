@@ -96,7 +96,6 @@ Model::Model() :
 {
     constructProperties();
     setNull();  
-    createGroundBodyIfNecessary();
 }
 //_____________________________________________________________________________
 /**
@@ -524,12 +523,11 @@ void Model::extendFinalizeFromProperties()
         }
     }
 
-    //Adds ground
-    createGroundBodyIfNecessary();
-
     // clear all subcomponent designations since they will be specified here.
     // Note addBody and addJoint call addComponent.
     clearComponents();
+
+    addComponent(&_ground);
 
     // Update model components, not that Joints and Coordinates
     // belong to Bodies, alough model lists are assembled for convenience
@@ -577,15 +575,15 @@ void Model::extendFinalizeFromProperties()
             IO::TrimWhitespace(name);
 
             if ((name.empty()) || (name == "")){
-                name = js[i].getParentBodyName() + "_to_" + js[i].getChildBodyName();
+                name = js[i].getParentFrameName() + "_to_" + js[i].getChildFrameName();
             }
 
             addComponent(&js[i]);
             // Use joints to define the underlying multibody tree
             _multibodyTree.addJoint(name,
                 js[i].getConcreteClassName(),
-                js[i].getParentBodyName(),
-                js[i].getChildBodyName(),
+                js[i].getParentFrameName(),
+                js[i].getChildFrameName(),
                 false,
                 &js[i]);
         }
@@ -966,37 +964,6 @@ void Model::setup()
     //now connect the Model and all its subcomponents all up
     connect(*this);
 }
-
-/**
- * Create a ground body if necessary.
- */
-void Model::createGroundBodyIfNecessary()
-{
-    const std::string SimbodyGroundName = "ground";
-
-    // See if the ground body already exists.
-    // The ground body is assumed to have the name simbodyGroundName.
-    int size = getBodySet().getSize();
-    Body *ground=NULL;
-    for(int i=0; i<size; i++) {
-        Body& body = getBodySet().get(i);
-        if(body.getName() == SimbodyGroundName) {
-            ground = &body;
-            break;
-        }
-    }
-
-    if(ground==NULL) {
-        ground = new Body();
-        addBody(ground);
-    }
-    // Set member variables
-    ground->setName(SimbodyGroundName);
-    ground->set_mass(0.0);
-    ground->set_mass_center(Vec3(0.0));
-    _groundBody = ground;
-}
-
 
 //_____________________________________________________________________________
 /**
@@ -1511,7 +1478,7 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
 
     n = getNumBodies();
     aOStream<<"\nBODIES ("<<n<<")" << std::endl;
-    for(i=0;i<n;i++) aOStream<<"body["<<i<<"] = "<<getBodyName(i)<<std::endl;
+    for(i=0;i<n;i++) aOStream<<"body["<<i<<"] = "<<getFrameName(i)<<std::endl;
 
     n = getNQ();
     aOStream<<"\nGENERALIZED COORDINATES ("<<n<<")" << std::endl;
@@ -1756,6 +1723,10 @@ OpenSim::Body& Model::getGroundBody() const
     return *_groundBody;
 }
 
+const PhysicalFrame& Model::getGround() const
+{
+    return _ground;
+}
 
 //--------------------------------------------------------------------------
 // CONTROLS
