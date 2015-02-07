@@ -62,17 +62,14 @@ MARK_AS_ADVANCED(PROCESSOR_COUNT)
 SET(SIMBODY_HOME $ENV{SIMBODY_HOME} CACHE
     PATH "The location of the Simbody installation to use; you can change this. Set as empty to let CMake search for Simbody automatically.")
 
-SET(OPENSIM_COPY_SIMBODY_MSG
-    "Copy Simbody headers and libraries into the OpenSim "
-    "installation. This way, you can treat OpenSim and Simbody as one package; "
-    "and you only need to set environment variables "
-    "(e.g., PATH, LD_LIBRARY_PATH, DYLD_LIBRARY_PATH) for OpenSim. "
-    "On Windows, this also copies Simbody dll's and exe's into the OpenSim "
-    "build directory, so that you don't need to set PATH for building OpenSim; "
-    "this is done via the SimbodyFiles project. "
-    "If OFF, you likely must set those environment "
-    "variables for both OpenSim and Simbody.")
-OPTION(OPENSIM_COPY_SIMBODY "${OPENSIM_COPY_SIMBODY_MSG}" ON)
+OPTION(OPENSIM_COPY_SIMBODY "Copy Simbody headers and libraries into the
+OpenSim installation. This way, you can treat OpenSim and Simbody as one
+package, and you only need to set environment variables (e.g., PATH,
+LD_LIBRARY_PATH, DYLD_LIBRARY_PATH) for OpenSim.  On Windows, this also copies
+Simbody dll's and exe's into the OpenSim build directory, so that you don't
+need to set PATH to run OpenSim tests and examples; this is done via the
+SimbodyFiles project. If OFF, you likely must set those environment variables
+for both OpenSim and Simbody." ON)
 
 
 # Platform.
@@ -80,12 +77,12 @@ OPTION(OPENSIM_COPY_SIMBODY "${OPENSIM_COPY_SIMBODY_MSG}" ON)
 # Create a platform name useful for finding things in the Platform
 # directory.
 IF(WIN32)
-    IF(CMAKE_GENERATOR MATCHES  "Visual Studio 10")
+    IF(CMAKE_GENERATOR MATCHES "Visual Studio 10")
         #NOTE: VC12 (VS2013) does not require explicit link line to Psapi library
         #Specifying here so it will link for VC10
         link_libraries(Psapi)
         SET(VCVERSION VC10)
-    ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 10")
+    ENDIF()
     SET(Platform "Windows")
     SET(NATIVE_COPY_CMD copy)
 ELSEIF(APPLE)
