@@ -90,7 +90,7 @@ private:
  */
 Coordinate::Coordinate() 
 {
-    constructProperties();
+    constructInfrastructure();
 }
 
 //_____________________________________________________________________________
@@ -98,9 +98,9 @@ Coordinate::Coordinate()
  * Constructor.
  */
 Coordinate::Coordinate(const std::string &aName, MotionType aMotionType,
-        double defaultValue, double aRangeMin, double aRangeMax)
+        double defaultValue, double aRangeMin, double aRangeMax) :
+    Coordinate()
 {
-    constructProperties();
     setName(aName);
     setMotionType(aMotionType);
     setDefaultValue(defaultValue);
@@ -636,9 +636,9 @@ void Coordinate::setClamped(SimTK::State& s, bool aLocked) const
 void Coordinate::constructOutputs()
 {
     //return the coordinate value
-    constructOutput<double>("value", &Coordinate::getValue, Stage::Position);
+    constructOutput<double>("value", &Coordinate::getValue, Stage::Model);
     //return the speed value;
-    constructOutput<double>("speed", &Coordinate::getSpeedValue, Stage::Velocity);
+    constructOutput<double>("speed", &Coordinate::getSpeedValue, Stage::Model);
     //return the acceleration value;
     constructOutput<double>("acceleration", &Coordinate::getAccelerationValue,
                              Stage::Acceleration);

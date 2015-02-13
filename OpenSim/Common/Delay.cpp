@@ -26,7 +26,7 @@
 using namespace OpenSim;
 
 Delay::Delay() {
-    constructProperties();
+    constructInfrastructure();
 }
 
 void Delay::constructProperties() {
@@ -47,14 +47,18 @@ double Delay::getValue(const SimTK::State& s) const {
     return SimTK::Measure::Delay::getAs(measure).getValue(s);
 }
 
+void Delay::extendFinalizeFromProperties() {
+    SimTK_VALUECHECK_NONNEG_ALWAYS(get_delay(),
+            "delay", "Delay::extendFinalizeFromProperties()");
+}
 void Delay::extendAddToSystem(SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
 
     auto& sub = system.updDefaultSubsystem();
     const auto& input = *static_cast<const Input<double>*>(&getInput("input"));
     SimTK::Measure::Delay delayMeasure(sub,
-            InputMeasure<double>(sub, input),
-            get_delay());
+                                       InputMeasure<double>(sub, input),
+                                       get_delay());
     const_cast<Delay*>(this)->_delayMeasureIndex =
         delayMeasure.getSubsystemMeasureIndex();
         

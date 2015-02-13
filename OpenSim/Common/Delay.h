@@ -79,7 +79,7 @@ public:
     These are the serializable properties associated with a Delay. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(delay, double,
-            "The time (in seconds) by which the output should be delayed.");
+        "The duration (nonnegative, seconds) by which the output is delayed.");
     /**@}**/
 
     Delay();
@@ -93,6 +93,7 @@ private:
     void constructInputs() override;
     void constructOutputs() override;
 
+    void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     SimTK::MeasureIndex _delayMeasureIndex;

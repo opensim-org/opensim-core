@@ -284,19 +284,20 @@ private:
     mutable SimTK::ReferencePtr< const Output<T>  > connectee;
 }; // END class Input<T>
 
+
 /** A SimTK::Measure_ whose value is the value of an OpenSim::Input, and hose
- * dependsOn SimTK::Stage is the connectAt stage of the OpenSim::Input. Useful
- * for building OpenSim Components that use a SimTK's Measure_ internally.
- */
+* dependsOn SimTK::Stage is the connectAt stage of the OpenSim::Input. Useful
+* for building OpenSim Components that use a SimTK's Measure_ internally.
+*/
 template <class T>
 class InputMeasure : public SimTK::Measure_<T> {
 // TODO should this be a Measure_<T>::Result?
 public:
     SimTK_MEASURE_HANDLE_PREAMBLE(InputMeasure, SimTK::Measure_<T>);
 
-    InputMeasure(SimTK::Subsystem& sub, const OpenSim::Input<T> input)
-    :   SimTK::Measure_<T>(sub, new Implementation(input),
-                SimTK::AbstractMeasure::SetHandle()) {}
+    InputMeasure(SimTK::Subsystem& sub, const OpenSim::Input<T>& input)
+        :   SimTK::Measure_<T>(sub, new Implementation(input),
+            SimTK::AbstractMeasure::SetHandle()) {}
 
     SimTK_MEASURE_HANDLE_POSTSCRIPT(InputMeasure, SimTK::Measure_<T>);
 };
@@ -306,7 +307,7 @@ class InputMeasure<T>::Implementation :
         public SimTK::Measure_<T>::Implementation {
 public:
     Implementation(const OpenSim::Input<T>& input)
-    :   SimTK::Measure_<T>::Implementation(), m_input(input) {}
+        :   SimTK::Measure_<T>::Implementation(), m_input(input) {}
 
     Implementation* cloneVirtual() const {return new Implementation(*this);}
     int getNumTimeDerivativesVirtual() const {return 0;}
@@ -325,9 +326,8 @@ public:
     }
 
 private:
-    const OpenSim::Input<T> m_input;
+    const OpenSim::Input<T>& m_input;
 }; // END class InputMeasure<T>.
-
 
 } // end of namespace OpenSim
 
