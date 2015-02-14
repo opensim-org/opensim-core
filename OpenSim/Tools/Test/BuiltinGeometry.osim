@@ -11,37 +11,59 @@
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
                             <half_lengths>0.5 0.01 0.5</half_lengths>
-						</Brick>
+                            <connectors>
+                                <Connector_PhysicalFrame_ name="frame">
+                                    <!--Name of the component this Connector should be connected to.-->
+                                    <connected_to_name>ground</connected_to_name>
+                                </Connector_PhysicalFrame_>
+                            </connectors>
+                        </Brick>
 						<Brick>
 							<!--Scale factors in X, Y, Z directotions respectively.-->
 							<scale_factors>5 1 1</scale_factors>
-							<!--Name of the Frame that this Geometry is attached to.-->
-							<frame_name>LeftAnchor</frame_name>
 							<!--Half lengths in X, Y, Z respectively.-->
 							<half_lengths>0.05 0.05 0.05</half_lengths>
-						</Brick>
+                            <connectors>
+                                <Connector_PhysicalFrame_ name="frame">
+                                    <!--Name of the component this Connector should be connected to.-->
+                                    <connected_to_name>LeftAnchor</connected_to_name>
+                                </Connector_PhysicalFrame_>
+                            </connectors>
+                        </Brick>
 						<Brick>
 							<!--Scale factors in X, Y, Z directotions respectively.-->
 							<scale_factors>5 1 1</scale_factors>
-							<!--Name of the Frame that this Geometry is attached to.-->
-							<frame_name>RightAnchor</frame_name>
 							<!--Half lengths in X, Y, Z respectively.-->
 							<half_lengths>0.05 0.05 0.05</half_lengths>
-						</Brick>
+                            <connectors>
+                                <Connector_PhysicalFrame_ name="frame">
+                                    <!--Name of the component this Connector should be connected to.-->
+                                    <connected_to_name>RightAnchor</connected_to_name>
+                                </Connector_PhysicalFrame_>
+                            </connectors>
+                        </Brick>
 						<Cylinder>
-							<!--Name of the Frame that this Geometry is attached to.-->
-							<frame_name>CylAnchor</frame_name>
 							<!--Radius of cylinder.-->
 							<radius>0.2</radius>
 							<!--Half-Height of cylinder.-->
 							<half_height>0.3</half_height>
-						</Cylinder>
+                            <connectors>
+                                <Connector_PhysicalFrame_ name="frame">
+                                    <!--Name of the component this Connector should be connected to.-->
+                                    <connected_to_name>CylAnchor</connected_to_name>
+                                </Connector_PhysicalFrame_>
+                            </connectors>
+                        </Cylinder>
 						<Ellipsoid>
-							<!--Name of the Frame that this Geometry is attached to.-->
-							<frame_name>EllipsoidAnchor</frame_name>
 							<!--Radii of Ellipsoid.-->
 							<radii>0.2 0.7 0.5</radii>
-						</Ellipsoid>
+                            <connectors>
+                                <Connector_PhysicalFrame_ name="frame">
+                                    <!--Name of the component this Connector should be connected to.-->
+                                    <connected_to_name>EllipsoidAnchor</connected_to_name>
+                                </Connector_PhysicalFrame_>
+                            </connectors>
+                        </Ellipsoid>
 					</GeometrySet>
 					<!--The mass of the body (kg)-->
 					<mass>0</mass>
@@ -52,11 +74,15 @@
 					<!--Geometry that can be attached to the Model Component-->
 					<GeometrySet>
 						<Sphere>
-							<!--Name of the Frame that this Geometry is attached to.-->
-							<frame_name>block</frame_name>
 							<!--Radius of sphere.-->
 							<radius>0.1</radius>
-						</Sphere>
+                            <connectors>
+                                <Connector_PhysicalFrame_ name="frame">
+                                    <!--Name of the component this Connector should be connected to.-->
+                                    <connected_to_name>block</connected_to_name>
+                                </Connector_PhysicalFrame_>
+                            </connectors>
+                        </Sphere>
 					</GeometrySet>
 					<!--The mass of the body (kg)-->
 					<mass>20</mass>

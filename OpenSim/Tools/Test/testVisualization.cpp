@@ -110,7 +110,7 @@ void testVisModel(string fileName)
     model->generateDecorations(false, mdh, si, geometryToDisplay);
     cout << geometryToDisplay.size() << endl;
     DecorativeGeometryImplementationText dgiText;
-    for (int i = 0; i < geometryToDisplay.size(); i++)
+    for (unsigned i = 0; i < geometryToDisplay.size(); i++)
         geometryToDisplay[i].implementGeometry(dgiText);
 
     std::string baseName = fileName.substr(0, fileName.find_last_of('.'));

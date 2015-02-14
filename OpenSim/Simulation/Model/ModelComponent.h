@@ -46,13 +46,11 @@
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
-#include <OpenSim/Simulation/Model/DisplayerInterface.h>
 #include "Simbody.h"
 
 namespace OpenSim {
 
 class Model;
-class ModelDisplayHints;
 //==============================================================================
 //                            MODEL COMPONENT
 //==============================================================================
@@ -129,9 +127,9 @@ public:
     }
     /**
      * Adopt the passed in Geometry and add it to the visualization of 
-     * this ModelComponent.
+     * this ModelComponent as subcomponent.
      */
-    void adoptGeometry(OpenSim::Geometry* aGeometry);
+    virtual void adoptGeometry(OpenSim::Geometry* aGeometry);
 
     void extendFinalizeFromProperties();
 protected:
@@ -193,58 +191,6 @@ template <class T> friend class ModelComponentSet;
                             %ModelComponent should be connected. **/
     virtual void extendConnectToModel(Model& model) {};
 
-    /** Optional method for generating arbitrary display geometry that reflects
-    this %ModelComponent at the specified \a state. This will be called once to 
-    obtain ground- and body-fixed geometry (with \a fixed=\c true), and then 
-    once per frame (with \a fixed=\c false) to generate on-the-fly geometry such
-    as rubber band lines, force arrows, labels, or debugging aids.
-  
-    If you override this method, be sure to invoke the base class method first, 
-    using code like this:
-    @code
-    void MyComponent::generateDecorations
-       (bool                                        fixed, 
-        const ModelDisplayHints&                    hints,
-        const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
-    {
-        // invoke parent class method
-        Super::generateDecorations(fixed,hints,state,appendToThis); 
-        // ... your code goes here
-    }
-    @endcode
-
-    @param[in]      fixed   
-        If \c true, generate only geometry that is independent of time, 
-        configuration, and velocity. Otherwise generate only such dependent 
-        geometry.
-    @param[in]      hints   
-        See documentation for ModelDisplayHints; you may want to alter the 
-        geometry you generate depending on what you find there. For example, 
-        you can determine whether the user wants to see debug geometry.
-    @param[in]      state
-        The State for which geometry should be produced. See below for more
-        information.
-    @param[in,out]  appendToThis
-        %Array to which generated geometry should be \e appended via the
-        \c push_back() method.
-
-    When called with \a fixed=\c true only modeling options and parameters 
-    (Instance variables) should affect geometry; time, position, and velocity
-    should not. In that case OpenSim will already have realized the \a state
-    through Instance stage. When called with \a fixed=\c false, you may 
-    consult any relevant value in \a state. However, to avoid unnecessary
-    computation, OpenSim guarantees only that \a state will have been realized
-    through Position stage; if you need anything higher than that (reaction 
-    forces, for example) you should make sure the \a state is realized through 
-    Acceleration stage. **/
-    public:
-    virtual void generateDecorations
-       (bool                                        fixed, 
-        const ModelDisplayHints&                    hints,
-        const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const;
-
     // End of Model Component Basic Interface (protected virtuals).
     //@} 
 
@@ -276,19 +222,11 @@ private:
     void setNull() {
         _model = NULL;
     }
-public:    
-    void setDisplayDelegate(const OpenSim::DisplayerInterface& newDelegate) {
-        _displayDelegate = newDelegate;
-    }
 protected:
-    const OpenSim::DisplayerInterface& getDisplayDelegate() const {
-        return *_displayDelegate;
-    }
     /** The model this component belongs to. */
     // TODO: this should be private; all components should use getModel()
     // and updModel() to get access. This is just a reference; don't delete!
     SimTK::ReferencePtr<Model> _model;
-    SimTK::ClonePtr<OpenSim::DisplayerInterface> _displayDelegate;
 
 //==============================================================================
 };  // END of class ModelComponent

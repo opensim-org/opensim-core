@@ -86,10 +86,6 @@ public:
     // Scale factors
     OpenSim_DECLARE_PROPERTY(scale_factors, SimTK::Vec3,
         "Scale factors in X, Y, Z directions respectively.");
-    // Optional frame_name (optional since some objects already have default
-    // frames, e.g. Body, Frame
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(frame_name, std::string,
-        "Name of the Frame that this Geometry is attached to.");
     // Default display properiies e.g. Representation, color, texture, etc.
     OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
         "Default appearance for this Geometry");
@@ -109,20 +105,26 @@ public:
     // Default constructor, does nothing
     Geometry()
     {
+        setNull();
+        constructInfrastructure();
+
         constructProperty_scale_factors(SimTK::Vec3(1));
-        constructProperty_frame_name();
         constructProperty_Appearance(Appearance());
     }
     // Default destructor
     virtual ~Geometry() {}
-
+    // 
+    // Methods to support frame as a connection
+    void constructConnectors();
+    void setFrameName(const std::string& name);
+    const std::string& getFrameName() const;
+    const PhysicalFrame& Geometry::getFrame() const;
     //=============================================================================
     // METHODS
     //=============================================================================
-    // Get Transform of this geometry relative to passed in frame, utilizing passed 
-    // in state.
-    SimTK::Transform getTransform(const SimTK::State& state, 
-        const OpenSim::PhysicalFrame& frame) const;
+    // Compute Transform of this geometry relative to its base frame, utilizing passed 
+    // in state. both transform and body_id are set in passed in decorations
+    void setDecorativeGeometryTransform(SimTK::Array_<SimTK::DecorativeGeometry>& decorations, const SimTK::State& state) const;
     // Manage Appearance or how the Geometry is rendered by moving Appearance down
     // from Geometry to DecorativeGeometry.
     void setDecorativeGeometryAppearance(SimTK::DecorativeGeometry& decoration) const {
@@ -142,29 +144,27 @@ public:
     void setRepresentation(const Representation& rep) { upd_Appearance().set_representation(rep); };
     const Representation& getRepresentation() { return (const Representation&)get_Appearance().get_representation(); };
 
-    // set/get ModelComponent that owns this Geometry.
-    void setOwnerModelComponent(const OpenSim::ModelComponent& mc) {
-        _owner = mc;
-    }
-    const ModelComponent& getOwnerModelComponent() const {
-        return _owner.getRef();
-    }
     // Get name of Frame that this Geometry is attached to. This could 
     // either be a property, or owner ModelComponent if it's a type of frame
-    std::string getFrameName() const;
 
     // Has frame returns whether a Frame is specifid. If not "ground" will be assumed
-    bool isFrameSpecified() const {
-        return getProperty_frame_name().size() > 0;
-    }
+    bool isFrameSpecified() const;
 
     // Map this Geometry into a list of primitives aka SimTK::DecorativeGeometry 
     // and return it in the passed in Array.
     virtual void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>&) const {};
-
+    // Implement method from Component interface. Subclasses only need to implement createDecorativeGeometry
+    // setting Transforms and Appearance is handled by the base class Geometry to avoid duplication 
+    void generateDecorations
+        (bool                                       fixed,
+        const ModelDisplayHints&                    hints,
+        const SimTK::State&                         state,
+        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const override final;
 private:
-    SimTK::ReferencePtr<const OpenSim::ModelComponent> _owner;
-    //=========================================================================
+    void setNull()
+    {
+        setAuthors("Ayman Habib");
+    }    //=========================================================================
 };  // END of class Geometry
 
 /**
@@ -188,7 +188,7 @@ public:
         constructProperties();
         setPoints(aPoint1, aPoint2);
         std::string gnd("ground");
-        set_frame_name(gnd);
+        setFrameName(gnd);
     }
     // default constructor, creates line (0,0,0)-(1,1,1)
     LineGeometry():
@@ -218,7 +218,8 @@ public:
     {
         setPoints(SimTK::Vec3::updAs(aPoint1), SimTK::Vec3::updAs(aPoint2));
     }
-
+    // Virtual method to implemented differently by different Geometry concrete classes
+    // Setting Appearance, Transforms is handled at base Geometry class
     void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
     void constructProperties(){

@@ -104,9 +104,12 @@ public:
         Scale defaults to 1.0 but can be changed on the call line.
     */
     void addMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
-        SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
-
+    /// override default adoptGeometry to set Frame to this Body
+    void adoptGeometry(OpenSim::Geometry* geom) override
+    {
+        geom->setFrameName(getName());
+        Super::adoptGeometry(geom);
+    }
  protected:
 
     // Model component interface.

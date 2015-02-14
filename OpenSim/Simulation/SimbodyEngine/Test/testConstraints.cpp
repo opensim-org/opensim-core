@@ -994,7 +994,7 @@ void testRollingOnSurfaceConstraint()
     Ground& ground = osimModel->updGround();;
     Mesh* arrowGeom = new Mesh("arrow.vtp");
     arrowGeom->setColor(Vec3(1, 0, 0));
-    arrowGeom->set_frame_name("ground");
+    arrowGeom->setFrameName("ground");
     ground.adoptGeometry(arrowGeom);
 
     //OpenSim rod
@@ -1004,7 +1004,7 @@ void testRollingOnSurfaceConstraint()
     osimModel->addFrame(cylFrame);
     Mesh* cylGeom = new Mesh("cylinder.vtp");
     cylGeom->set_scale_factors(2 * halfRodLength*Vec3(0.1, 1, 0.1));
-    cylGeom->set_frame_name("comInRod");
+    cylGeom->setFrameName("comInRod");
     osim_rod->adoptGeometry(cylGeom);
 
     // create rod as a free joint

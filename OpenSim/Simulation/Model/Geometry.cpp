@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -39,52 +39,63 @@ using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
+
+void Geometry::constructConnectors()
+{
+    constructConnector<PhysicalFrame>("frame");
+}
+
+void Geometry::setFrameName(const std::string& name)
+{
+    updConnector<PhysicalFrame>("frame").set_connected_to_name(name);
+}
+const std::string& Geometry::getFrameName() const
+{
+    return getConnector<PhysicalFrame>("frame").get_connected_to_name();
+}
+
+const OpenSim::PhysicalFrame& Geometry::getFrame() const
+{
+    return getConnector<PhysicalFrame>("frame").getConnectee();
+}
+
+bool Geometry::isFrameSpecified() const {
+    return getConnector<OpenSim::PhysicalFrame>("frame").isConnected();
+}
+
+void Geometry::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
+{
+    if (!fixed) return; // serialized Geometry is assumed fixed
+    SimTK::Array_<SimTK::DecorativeGeometry> decos;
+    createDecorativeGeometry(decos);
+    if (decos.size() == 0) return;
+    setDecorativeGeometryTransform(decos, state);
+    for (unsigned i = 0; i < decos.size(); i++){
+        setDecorativeGeometryAppearance(decos[i]);
+        appendToThis.push_back(decos[i]);
+    }
+}
+
 /**
  * Compute Transform of a Geometry w.r.t. passed in Frame
- * Both Frame(s) could be Bodies, state is assumed to be realized ro position
+ * Both Frame(s) could be Bodies, state is assumed to be realized to position
 */
-SimTK::Transform  Geometry::getTransform(const SimTK::State& state, const OpenSim::PhysicalFrame& frame) const {
-    const OpenSim::Model& model = frame.getModel();
-
-    const ModelComponent& owner = getOwnerModelComponent();
-    std::string gFrameName;
-
-    // If owner is already a kind of frame then use owner otherwise get it from model
-    if (dynamic_cast<const Frame*>(&owner) && getProperty_frame_name().size()==0)
-        gFrameName = owner.getName();
-    else
-        gFrameName = get_frame_name();
-
-    ComponentList<Frame> framesList = model.getComponentList<Frame>();
-    if (gFrameName == frame.getName()) // Identity transform, no need to call Frame methods
-        return Transform();
-    
-    for (ComponentList<Frame>::const_iterator it = framesList.begin();
-        it != framesList.end();
-        ++it) {
-        if (it->getName() == gFrameName){
-            const OpenSim::Frame& gFrame = *it;
-            return gFrame.findTransformBetween(state, frame);
-        }
-
-    }
-    std::clog << "Geometry::getTransform given unknown Frame" << frame.getName() << std::endl;
-    return Transform();
-}
-
-std::string Geometry::getFrameName() const
+void Geometry::setDecorativeGeometryTransform(SimTK::Array_<SimTK::DecorativeGeometry>& decorations, const SimTK::State& state) const
 {
-    const ModelComponent& owner = getOwnerModelComponent();
-    // If owner is already a kind of frame then use owner otherwise get it from model
-    if (dynamic_cast<const Frame*>(&owner))
-        return owner.getName();
-    if (getProperty_frame_name().size() == 0) // No frame specified, assume ground
-        return "ground";
-    else
-        return get_frame_name();
-    
+    const PhysicalFrame& myFrame = getFrame();
+    const Frame& bFrame = myFrame.findBaseFrame();
+    const PhysicalFrame* bPhysicalFrame = dynamic_cast<const PhysicalFrame*>(&bFrame);
+    if (bPhysicalFrame == nullptr){
+        // throw exception something is wrong
+    }
+    const SimTK::MobilizedBodyIndex& idx = bPhysicalFrame->getMobilizedBodyIndex();
+    SimTK::Transform transformInBaseFrame = myFrame.findTransformInBaseFrame();
+    for (unsigned i = 0; i < decorations.size(); i++){
+        decorations[i].setBodyId(idx);
+        decorations[i].setTransform(transformInBaseFrame);
+    }
 }
-
 void Sphere::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
@@ -92,7 +103,6 @@ void Sphere::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& 
     deco.setScaleFactors(netScale);
     decoGeoms.push_back(deco);
 }
-
 
 void Cylinder::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
@@ -150,7 +160,7 @@ void Mesh::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& de
 
     // File is a .vtp or .obj. See if we can find it.
     Array_<string> attempts;
-    bool foundIt = false;// ModelVisualizer::findGeometryFile(file, isAbsolutePath, attempts);
+    bool foundIt = ModelVisualizer::findGeometryFile(getFrame().getModel(), file, isAbsolutePath, attempts);
 
     if (!foundIt) {
         std::clog << "ModelVisualizer couldn't find file '" << file

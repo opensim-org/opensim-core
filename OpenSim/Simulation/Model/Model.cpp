@@ -1014,10 +1014,10 @@ void Model::generateDecorations
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
 {
-    ComponentList<ModelComponent> allModelComps = getComponentList<ModelComponent>();
-    ComponentList<ModelComponent>::const_iterator iter = allModelComps.begin(); 
+    ComponentList<Component> allComps = getComponentList();
+    ComponentList<Component>::const_iterator iter = allComps.begin();
     iter++; // Skip Model itself
-    while (iter != allModelComps.end()){
+    while (iter != allComps.end()){
         //std::string cn = iter->getConcreteClassName();
         iter->generateDecorations(fixed, hints, state, appendToThis);
         iter++;

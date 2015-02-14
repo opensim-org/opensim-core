@@ -53,7 +53,7 @@
 
 namespace OpenSim {
 
-
+class ModelDisplayHints;
 //==============================================================================
 //                            OPENSIM COMPONENT
 //==============================================================================
@@ -255,6 +255,57 @@ public:
 
     // End of Component Structural Interface (public non-virtual).
     ///@} 
+
+    /** Optional method for generating arbitrary display geometry that reflects
+    this %Component at the specified \a state. This will be called once to 
+    obtain ground- and body-fixed geometry (with \a fixed=\c true), and then 
+    once per frame (with \a fixed=\c false) to generate on-the-fly geometry such
+    as rubber band lines, force arrows, labels, or debugging aids.
+  
+    If you override this method, be sure to invoke the base class method first, 
+    using code like this:
+    @code
+    void MyComponent::generateDecorations
+       (bool                                        fixed, 
+        const ModelDisplayHints&                    hints,
+        const SimTK::State&                         state,
+        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
+    {
+        // invoke parent class method
+        Super::generateDecorations(fixed,hints,state,appendToThis); 
+        // ... your code goes here
+    }
+    @endcode
+
+    @param[in]      fixed   
+        If \c true, generate only geometry that is independent of time, 
+        configuration, and velocity. Otherwise generate only such dependent 
+        geometry.
+    @param[in]      hints   
+        See documentation for ModelDisplayHints; you may want to alter the 
+        geometry you generate depending on what you find there. For example, 
+        you can determine whether the user wants to see debug geometry.
+    @param[in]      state
+        The State for which geometry should be produced. See below for more
+        information.
+    @param[in,out]  appendToThis
+        %Array to which generated geometry should be \e appended via the
+        \c push_back() method.
+
+    When called with \a fixed=\c true only modeling options and parameters 
+    (Instance variables) should affect geometry; time, position, and velocity
+    should not. In that case OpenSim will already have realized the \a state
+    through Instance stage. When called with \a fixed=\c false, you may 
+    consult any relevant value in \a state. However, to avoid unnecessary
+    computation, OpenSim guarantees only that \a state will have been realized
+    through Position stage; if you need anything higher than that (reaction 
+    forces, for example) you should make sure the \a state is realized through 
+    Acceleration stage. **/
+    virtual void generateDecorations
+            (bool                                       fixed,
+            const ModelDisplayHints&                    hints,
+            const SimTK::State&                         state,
+            SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const {};
 
     /**
      * Get the underlying MultibodySystem that this component is connected to.

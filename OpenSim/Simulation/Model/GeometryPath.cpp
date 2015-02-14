@@ -62,7 +62,6 @@ GeometryPath::GeometryPath() :
 {
     setNull();
     constructProperties();
-    _displayDelegate = new PathDisplayer();
  }
 
 //_____________________________________________________________________________
@@ -169,7 +168,40 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
     this->updateDisplayPath(state);
 
-    getDisplayDelegate().generateDecorations(*this, fixed, hints, state, appendToThis);
+    const Array<PathPoint*>& points = getCurrentDisplayPath(state);
+
+    if (points.getSize() == 0) { return; }
+
+    const PathPoint* lastPoint = points[0];
+    Vec3 lastLoc_B = lastPoint->getLocation();
+    MobilizedBodyIndex lastBody = lastPoint->getBody().getMobilizedBodyIndex();
+
+    if (hints.get_show_path_points())
+        DefaultGeometry::drawPathPoint(lastBody, lastLoc_B, getColor(state),
+        appendToThis);
+
+    const SimTK::SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
+    Vec3 lastPos = matter.getMobilizedBody(lastBody)
+        .getBodyTransform(state) * lastLoc_B;
+
+    for (int j = 1; j < points.getSize(); j++) {
+        const PathPoint* point = points[j];
+        const Vec3 loc_B = point->getLocation();
+        const MobilizedBodyIndex body = point->getBody().getMobilizedBodyIndex();
+
+        if (hints.get_show_path_points())
+            DefaultGeometry::drawPathPoint(body, loc_B, getColor(state),
+            appendToThis);
+
+        Vec3 pos = matter.getMobilizedBody(body).getBodyTransform(state)*loc_B;
+        // Line segments will be in ground frame
+        appendToThis.push_back(DecorativeLine(lastPos, pos)
+            .setLineThickness(4)
+            .setColor(getColor(state)).setBodyId(0).setIndexOnBody(j));
+
+        lastPos = pos;
+    }
+
 }
 
 //_____________________________________________________________________________

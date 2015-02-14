@@ -126,7 +126,7 @@ void Body::addMeshGeometry(const std::string& aGeometryFileName, const SimTK::Ve
 {
     Mesh* geom = new Mesh(aGeometryFileName);
     geom->set_scale_factors(scale);
-    geom->set_frame_name(getName());
+    geom->setFrameName(getName());
     adoptGeometry(geom);
 }
 
@@ -448,6 +448,7 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                         SimTK::Xml::Element scaleFactorsNode("scale_factors", localScaleStr.str());
                         meshNode.insertNodeAfter(meshNode.element_end(), scaleFactorsNode);
                         meshNode.insertNodeAfter(meshNode.element_end(), meshFileNode);
+                        XMLDocument::addConnector(meshNode, "Connector_PhysicalFrame_", "frame", bodyName);
                         geometrySetNode.insertNodeAfter(geometrySetNode.element_end(), meshNode);
                     }
                 }
@@ -496,23 +497,26 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
             }
             if (localXform.norm() > SimTK::Eps){
                 // Create a Frame
-/*
-                std::string frameName = bodyName + "_Frame_" + to_string(counter);
-                SimTK::Xml::Element frameNode("frame_name", frameName);
-                meshNode.insertNodeAfter(meshNode.element_end(), frameNode);
-                
-                SimTK::Xml::Element modelNode = bodyNode;
-                do {
-                    modelNode = modelNode.getParentElement();
-                    SimTK::String edump;
-                    modelNode.writeToString(edump);
-                } while (modelNode.getElementTag() != "Model" && !modelNode.isTopLevelNode());              
+                /*
+                                std::string frameName = bodyName + "_Frame_" + to_string(counter);
+                                SimTK::Xml::Element frameNode("frame_name", frameName);
+                                meshNode.insertNodeAfter(meshNode.element_end(), frameNode);
 
-                SimTK::Xml::element_iterator frameSetIter = modelNode.element_begin("FrameSet");
-                SimTK::Xml::element_iterator frameSetObjectsIter = frameSetIter->element_begin("objects");
-                createFrameForXform(frameSetObjectsIter, frameName, localXform, bodyName);
-                 */
+                                SimTK::Xml::Element modelNode = bodyNode;
+                                do {
+                                modelNode = modelNode.getParentElement();
+                                SimTK::String edump;
+                                modelNode.writeToString(edump);
+                                } while (modelNode.getElementTag() != "Model" && !modelNode.isTopLevelNode());
+
+                                SimTK::Xml::element_iterator frameSetIter = modelNode.element_begin("FrameSet");
+                                SimTK::Xml::element_iterator frameSetObjectsIter = frameSetIter->element_begin("objects");
+                                createFrameForXform(frameSetObjectsIter, frameName, localXform, bodyName);
+                                */
+                XMLDocument::addConnector(meshNode, "Connector_PhysicalFrame_", "frame", bodyName);
             }
+            else
+                XMLDocument::addConnector(meshNode, "Connector_PhysicalFrame_", "frame", bodyName);
             // scale_factor
             SimTK::Vec3 localScale(1.);
             SimTK::Xml::element_iterator localScaleIter = displayGeomIter->element_begin("scale_factors");
@@ -583,12 +587,4 @@ Body* Body::addSlave()
 	addComponent(slave);
 
 	return slave;
-}
-
-void Body::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
-    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
-{
-    Super::generateDecorations(fixed, hints, state, appendToThis);
-    if (!fixed) return;
-    getDisplayDelegate().generateDecorations(*this, fixed, hints, state, appendToThis);
 }
