@@ -28,13 +28,11 @@ using namespace OpenSim;
 
 // TODO SimTK_TEST exceptions give a message telling users to file a bug report
 // to Simbody.
-// TODO test delay must be nonnegative.
-// TODO remove old non-sub-component tests.
-// TODO templatize the Delay, create ScalarDelay.
 // TODO InputMeasure is not updated if depends-on-stage is Model.
 // TODO is the Delay stage Time at minimum? how can you delay a model quantity?
 // TODO should Delay hold onto the Measure::Delay handle, or onto the index?
 // TODO check up on Delay.h doxygen documentation.
+// TODO convert Ian Stavness' example to use this Delay component.
 Model createPendulumModel() {
     Model model;
     // The link rests along the x axis.
@@ -78,23 +76,31 @@ public:
     double getDelayedCoordinateValue(const State& s) {
         return _delay.getOutputValue<double>(s, "output");
     }
+    SimTK::Vec3 getDelayedCOMPositionValue(const State& s) {
+        return _comPositionDelay.getValue(s);
+    }
 
 private:
     void constructProperties() override {
-        constructProperty_delay(0.000);
+        constructProperty_delay(0.0);
     }
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
         _delay.set_delay(get_delay());
+        _comPositionDelay.set_delay(get_delay());
         addComponent(&_delay);
+        addComponent(&_comPositionDelay);
     }
     void extendConnectToModel(Model& model) override {
         Super::extendConnectToModel(model);
         const auto& coord = model.getCoordinateSet()[0];
         _delay.getInput("input").connect(coord.getOutput("value"));
+        _comPositionDelay.getInput("input").connect(
+                model.getOutput("com_position"));
     }
 
-    Delay _delay;
+    ScalarDelay _delay;
+    Delay<SimTK::Vec3> _comPositionDelay;
 };
 
 /// Allows some testing of Delay with different models.
@@ -111,6 +117,7 @@ void testDelaySimulation(Model& model) {
 
     // First simulate without controller delay.
     double finalCoordValue_noControllerDelay;
+    SimTK::Vec3 finalCOMValue_noControllerDelay;
     {
         State& s = model.initSystem();
         SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
@@ -121,12 +128,16 @@ void testDelaySimulation(Model& model) {
         s = ts.getState();
 
         finalCoordValue_noControllerDelay = coord.getValue(s);
+        finalCOMValue_noControllerDelay = model.calcMassCenterPosition(s);
     }
 
     // Simulate with controller delay and record expected delayed value.
     double expectedDelayedCoordValue;
     double actualDelayedCoordValue;
     double finalCoordValue_withControllerDelay;
+    SimTK::Vec3 expectedDelayedCOMValue;
+    SimTK::Vec3 actualDelayedCOMValue;
+    SimTK::Vec3 finalCOMValue_withControllerDelay;
     {
         controller->set_delay(delayTime);
         State& s = model.initSystem();
@@ -141,6 +152,7 @@ void testDelaySimulation(Model& model) {
         s = ts.getState();
 
         expectedDelayedCoordValue = coord.getValue(s);
+        expectedDelayedCOMValue = model.calcMassCenterPosition(s);
 
         // Simulate with controller delay to the finalTime.
         ts.stepTo(finalTime);
@@ -149,20 +161,23 @@ void testDelaySimulation(Model& model) {
         // Must realize in order to access delayed value.
         model.realizeTime(s);
         actualDelayedCoordValue = controller->getDelayedCoordinateValue(s);
+        actualDelayedCOMValue = controller->getDelayedCOMPositionValue(s);
         finalCoordValue_withControllerDelay = coord.getValue(s);
+        finalCOMValue_withControllerDelay = model.calcMassCenterPosition(s);
     }
 
     // Basic check on the Delay within the controller to see that the Delay
-    // itself is working as a subcomponent. Can only call this if there was
-    // a delay.
-    SimTK_TEST_EQ_TOL(expectedDelayedCoordValue,
-            actualDelayedCoordValue, tol);
+    // itself is working as a subcomponent.
+    SimTK_TEST_EQ_TOL(expectedDelayedCoordValue, actualDelayedCoordValue, tol);
+    SimTK_TEST_EQ_TOL(expectedDelayedCOMValue, actualDelayedCOMValue, tol);
 
-    // Make sure the final coordinate values are not the same with and
+    // Make sure the final coordinate value is not the same with vs.
     // without controller delay, to show that the controller delay had an
     // effect.
     SimTK_TEST_NOTEQ_TOL(finalCoordValue_noControllerDelay,
             finalCoordValue_withControllerDelay, tol);
+    SimTK_TEST_NOTEQ_TOL(finalCOMValue_noControllerDelay,
+            finalCOMValue_withControllerDelay, tol);
 }
 
 void testDelay() {
@@ -235,7 +250,7 @@ void testDelay() {
 }
 
 int main() {
-    SimTK_START_TEST("testOperators");
+    // TODO SimTK_START_TEST("testOperators");
         SimTK_SUBTEST(testDelay);
-    SimTK_END_TEST();
+    //SimTK_END_TEST();
 }

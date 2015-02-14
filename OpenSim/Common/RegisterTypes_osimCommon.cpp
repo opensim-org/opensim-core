@@ -92,7 +92,7 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::registerType( MultiplierFunction() );
     Object::registerType(PolynomialFunction());
 
-    Object::registerType(Delay());
+    Object::registerType(ScalarDelay());
 
     Object::registerType( DisplayGeometry() );
     Object::registerType( GeometrySet() );

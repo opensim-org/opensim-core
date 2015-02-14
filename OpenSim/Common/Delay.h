@@ -64,15 +64,19 @@ namespace OpenSim {
  *         addComponent(&_coordDelay);
  *     }
  *
- *     Delay _coordDelay;
+ *     ScalarDelay _coordDelay;
  * };
  * @endcode
  *
- * This class is implemented via a SimTK::Measure::Delay.
+ * @tparam T The type of the quantity to be delayed. Logical choices are a
+ * SimTK::Real or a SimTK::Vector.
+ *
+ * This class is implemented via a SimTK::Measure_<T>::Delay.
  *
  */
+template<typename T>
 class OSIMCOMMON_API Delay : public Component {
-OpenSim_DECLARE_CONCRETE_OBJECT(Delay, Component);
+OpenSim_DECLARE_CONCRETE_OBJECT_T(Delay, T, Component);
 public:
 
     /** @name Property declarations
@@ -85,7 +89,7 @@ public:
     Delay();
 
     /// Get the delayed value (the input's value at time t-delay).
-    double getValue(const SimTK::State& s) const;
+    T getValue(const SimTK::State& s) const;
 
 private:
 
@@ -98,6 +102,61 @@ private:
 
     SimTK::MeasureIndex _delayMeasureIndex;
 };
+
+template<class T>
+Delay<T>::Delay() {
+    constructInfrastructure();
+}
+
+template<class T>
+void Delay<T>::constructProperties() {
+    constructProperty_delay(0.0);
+}
+
+template<class T>
+void Delay<T>::constructInputs() {
+    constructInput<T>("input", SimTK::Stage::Time);
+}
+
+template<class T>
+void Delay<T>::constructOutputs() {
+    constructOutput<T>("output", &Delay::getValue, SimTK::Stage::Time);
+}
+
+template<class T>
+T Delay<T>::getValue(const SimTK::State& s) const {
+    const auto& subsys = getSystem().getDefaultSubsystem();
+    const auto& measure = subsys.getMeasure(_delayMeasureIndex);
+    return SimTK::Measure_<T>::Delay::getAs(measure).getValue(s);
+}
+
+template<class T>
+void Delay<T>::extendFinalizeFromProperties() {
+    SimTK_VALUECHECK_NONNEG_ALWAYS(get_delay(),
+            "delay", "Delay::extendFinalizeFromProperties()");
+    if (_delayMeasureIndex.isValid()) {
+        // If we've already initialized the system and we are only in this
+        // method because its properties were changed.
+        auto& subsys = updSystem().updDefaultSubsystem();
+        auto measure = subsys.getMeasure(_delayMeasureIndex);
+        auto& delayMeasure = SimTK::Measure_<T>::Delay::updAs(measure);
+        delayMeasure.setDelay(get_delay());
+    }
+}
+
+template<class T>
+void Delay<T>::extendAddToSystem(SimTK::MultibodySystem& system) const {
+    Super::extendAddToSystem(system);
+    auto& sub = system.updDefaultSubsystem();
+    const auto& input = *static_cast<const Input<T>*>(&getInput("input"));
+    typename SimTK::Measure_<T>::Delay delayMeasure(sub,
+                                                    InputMeasure<T>(sub, input),
+                                                    get_delay());
+    const_cast<Delay*>(this)->_delayMeasureIndex =
+        delayMeasure.getSubsystemMeasureIndex();
+}
+
+typedef Delay<SimTK::Real> ScalarDelay;
 
 } // namespace OpenSim
 
