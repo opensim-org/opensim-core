@@ -118,7 +118,7 @@ public:
     void constructConnectors();
     void setFrameName(const std::string& name);
     const std::string& getFrameName() const;
-    const PhysicalFrame& Geometry::getFrame() const;
+    const PhysicalFrame& getFrame() const;
     //=============================================================================
     // METHODS
     //=============================================================================
