@@ -71,13 +71,6 @@ public:
         } else {
             q = getModel().getCoordinateSet()[0].getValue(s);
         }
-        /* TODO
-        std::cout << "DEBUG computeControls " <<
-                "t =\t" << s.getTime() << "\t" <<
-                "delayed =\t" << _delay.getValue(s) << "\t" <<
-                "now =\t" << getModel().getCoordinateSet()[0].getValue(s) <<
-                std::endl;
-                */
         double u = -10 * q;
         getModel().getActuators()[0].addInControls(Vector(1, u), controls);
     }
@@ -104,136 +97,114 @@ private:
     Delay _delay;
 };
 
-void testDelay() {
+/// Allows some testing of Delay with different models.
+void testDelaySimulation(Model& model) {
 
     double finalTime = 1.35;
     double delayTime = 0.017;
     double tol = 1e-6; // integrator accuracy, test tolerance.
 
-    // Check convenience constructor for same basic behavior.
-    // ======================================================
-    /*
+    const Coordinate& coord = model.getCoordinateSet()[0];
+    std::string coordName = coord.getName();
+    auto* controller = dynamic_cast<PendulumController*>(
+            &model.updControllerSet()[0]);
+
+    // First simulate without controller delay.
+    double finalCoordValue_noControllerDelay;
     {
-        Model model2 = model;
-        Delay* delay2 = new Delay(coord.getOutput("value"), delayTime);
-        delay2->setName("delay2");
-        model2.addMiscModelComponent(delay2);
+        State& s = model.initSystem();
+        SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
+        integrator.setAccuracy(tol);
+        SimTK::TimeStepper ts(model.getSystem(), integrator);
+        ts.initialize(s);
+        ts.stepTo(finalTime);
+        s = ts.getState();
 
-        State& s2 = model2.initSystem();
-        Manager manager2(model2);
-        manager2.setInitialTime(0.0);
-        manager2.setFinalTime(finalTime);
-        manager2.integrate();
-
-        SimTK_TEST_EQ(expectedDelayedValue,
-                delay.getOutputValue<double>(s, "output"));
-    }
-    */
-
-    /*
-    // Check for same behavior upon copying a model containing the Delay.
-    // ==================================================================
-    {
-        Model model2 = model;
-        State& s2 = model2.initSystem();
-        Manager manager2(model2);
-        manager2.setInitialTime(0.0);
-        manager2.setFinalTime(finalTime);
-        manager2.integrate(s2);
-        const Delay* delay2 = dynamic_cast<const Delay*>(
-                &model2.getMiscModelComponentSet().get("delay"));
-        SimTK_TEST_EQ(expectedDelayedValue,
-                delay2->getOutputValue<double>(s2, "output"));
+        finalCoordValue_noControllerDelay = coord.getValue(s);
     }
 
-    // Check for same behavior upon serializing and deserializing.
-    // ===========================================================
+    // Simulate with controller delay and record expected delayed value.
+    double expectedDelayedCoordValue;
+    double actualDelayedCoordValue;
+    double finalCoordValue_withControllerDelay;
     {
-        std::string filename = "pendulum_for_delay_test.osim";
-        model.print(filename);
-        Model model2(filename);
-        State& s2 = model2.initSystem();
-        Manager manager2(model2);
-        manager2.setInitialTime(0.0);
-        manager2.setFinalTime(finalTime);
-        manager2.integrate(s2);
-        const Delay* delay2 = dynamic_cast<Delay*>(
-                &model2.getMiscModelComponentSet().get("delay"));
-        SimTK_TEST_EQ(expectedDelayedValue,
-                delay2->getOutputValue<double>(s2, "output"));
-    }
-    */
+        controller->set_delay(delayTime);
+        State& s = model.initSystem();
+        SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
+        integrator.setAccuracy(tol);
+        SimTK::TimeStepper ts(model.getSystem(), integrator);
+        ts.initialize(s);
 
-    // Check usage of Delay as a subcomponent.
-    // =======================================
+        // Stop early so we can record the true value of the delayed
+        // coordinate.
+        ts.stepTo(finalTime - delayTime);
+        s = ts.getState();
+
+        expectedDelayedCoordValue = coord.getValue(s);
+
+        // Simulate with controller delay to the finalTime.
+        ts.stepTo(finalTime);
+        s = ts.getState();
+
+        // Must realize in order to access delayed value.
+        model.realizeTime(s);
+        actualDelayedCoordValue = controller->getDelayedCoordinateValue(s);
+        finalCoordValue_withControllerDelay = coord.getValue(s);
+    }
+
+    // Basic check on the Delay within the controller to see that the Delay
+    // itself is working as a subcomponent. Can only call this if there was
+    // a delay.
+    SimTK_TEST_EQ_TOL(expectedDelayedCoordValue,
+            actualDelayedCoordValue, tol);
+
+    // Make sure the final coordinate values are not the same with and
+    // without controller delay, to show that the controller delay had an
+    // effect.
+    SimTK_TEST_NOTEQ_TOL(finalCoordValue_noControllerDelay,
+            finalCoordValue_withControllerDelay, tol);
+}
+
+void testDelay() {
+
+    // Test the use of the Delay within a controller.
+    // ==============================================
     {
-        // Add actuator and controller to model.
         Model model = createPendulumModel();
         const Coordinate& coord = model.getCoordinateSet()[0];
         std::string coordName = coord.getName();
 
+        // Add actuator.
         CoordinateActuator* act = new CoordinateActuator(coordName);
         act->setName("joint_0_actuator");
         model.addForce(act);
 
+        // Add controller.
         PendulumController* controller = new PendulumController();
         controller->addActuator(*act);
         model.addController(controller);
 
-        // First simulate without controller delay.
-        double finalCoordValue_noControllerDelay;
-        {
-            State& s = model.initSystem();
-            SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
-            integrator.setAccuracy(tol);
-            SimTK::TimeStepper ts(model.getSystem(), integrator);
-            ts.initialize(s);
-            ts.stepTo(finalTime);
-            s = ts.getState();
+        // Run test on original model.
+        testDelaySimulation(model);
 
-            finalCoordValue_noControllerDelay = coord.getValue(s);
+        /* TODO will not pass until input/output copying is fixed.
+        // Run same test after copying the model that contains the Delay.
+        // --------------------------------------------------------------
+        {
+            Model modelCopy = model;
+            testDelaySimulation(modelCopy);
         }
 
-        // Simulate with controller delay and record expected delayed value.
-        double expectedDelayedCoordValue;
-        double actualDelayedCoordValue;
-        double finalCoordValue_withControllerDelay;
+        // Run same test after serializing and deserializing the model.
+        // ------------------------------------------------------------
         {
-            controller->set_delay(delayTime);
-            State& s = model.initSystem();
-            SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
-            integrator.setAccuracy(tol);
-            SimTK::TimeStepper ts(model.getSystem(), integrator);
-            ts.initialize(s);
-
-            // Stop early so we can record the true value of the delayed
-            // coordinate.
-            ts.stepTo(finalTime - delayTime);
-            s = ts.getState();
-
-            expectedDelayedCoordValue = coord.getValue(s);
-
-            // Simulate with controller delay to the finalTime.
-            ts.stepTo(finalTime);
-            s = ts.getState();
-
-            // Must realize in order to access delayed value.
-            model.realizeTime(s);
-            actualDelayedCoordValue = controller->getDelayedCoordinateValue(s);
-            finalCoordValue_withControllerDelay = coord.getValue(s);
+            Object::registerType(PendulumController());
+            std::string filename = "pendulum_for_delay_test.osim";
+            model.print(filename);
+            Model modelDeserialized(filename);
+            testDelaySimulation(modelDeserialized);
         }
-
-        // Basic check on the Delay within the controller to see that the Delay
-        // itself is working as a subcomponent. Can only call this if there was
-        // a delay.
-        SimTK_TEST_EQ_TOL(expectedDelayedCoordValue,
-                          actualDelayedCoordValue, tol);
-
-        // Make sure the final coordinate values are not the same with and
-        // without controller delay, to show that the controller delay had an
-        // effect.
-        SimTK_TEST_NOTEQ_TOL(finalCoordValue_noControllerDelay,
-                             finalCoordValue_withControllerDelay, tol);
+        */
     }
     
     // Check for possible issues with requiredAt and dependsOn stages.
