@@ -71,11 +71,13 @@ public:
         } else {
             q = getModel().getCoordinateSet()[0].getValue(s);
         }
+        /* TODO
         std::cout << "DEBUG computeControls " <<
                 "t =\t" << s.getTime() << "\t" <<
                 "delayed =\t" << _delay.getValue(s) << "\t" <<
                 "now =\t" << getModel().getCoordinateSet()[0].getValue(s) <<
                 std::endl;
+                */
         double u = -10 * q;
         getModel().getActuators()[0].addInControls(Vector(1, u), controls);
     }
@@ -104,7 +106,7 @@ private:
 
 void testDelay() {
 
-    double finalTime = 1.0;
+    double finalTime = 1.35;
     double delayTime = 0.017;
     double tol = 1e-6; // integrator accuracy, test tolerance.
 
@@ -177,17 +179,17 @@ void testDelay() {
         PendulumController* controller = new PendulumController();
         controller->addActuator(*act);
         model.addController(controller);
-        controller->set_delay(delayTime); // TODO must must remove.
 
         // First simulate without controller delay.
         double finalCoordValue_noControllerDelay;
         {
-            State &s = model.initSystem();
-            SimTK::SemiExplicitEulerIntegrator integrator(model.getSystem(), 0.001);
+            State& s = model.initSystem();
+            SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
             integrator.setAccuracy(tol);
             SimTK::TimeStepper ts(model.getSystem(), integrator);
             ts.initialize(s);
             ts.stepTo(finalTime);
+            s = ts.getState();
 
             finalCoordValue_noControllerDelay = coord.getValue(s);
         }
@@ -198,7 +200,7 @@ void testDelay() {
         double finalCoordValue_withControllerDelay;
         {
             controller->set_delay(delayTime);
-            State &s = model.initSystem();
+            State& s = model.initSystem();
             SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
             integrator.setAccuracy(tol);
             SimTK::TimeStepper ts(model.getSystem(), integrator);
@@ -207,14 +209,16 @@ void testDelay() {
             // Stop early so we can record the true value of the delayed
             // coordinate.
             ts.stepTo(finalTime - delayTime);
+            s = ts.getState();
 
             expectedDelayedCoordValue = coord.getValue(s);
 
             // Simulate with controller delay to the finalTime.
             ts.stepTo(finalTime);
+            s = ts.getState();
 
             // Must realize in order to access delayed value.
-            model.realizeAcceleration(s);
+            model.realizeTime(s);
             actualDelayedCoordValue = controller->getDelayedCoordinateValue(s);
             finalCoordValue_withControllerDelay = coord.getValue(s);
         }
@@ -260,7 +264,7 @@ void testDelay() {
 }
 
 int main() {
-    //SimTK_START_TEST("testOperators");
+    SimTK_START_TEST("testOperators");
         SimTK_SUBTEST(testDelay);
-    //TODO SimTK_END_TEST();
+    SimTK_END_TEST();
 }
