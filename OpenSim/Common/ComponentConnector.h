@@ -309,18 +309,19 @@ public:
     Implementation(const OpenSim::Input<T>& input)
         :   SimTK::Measure_<T>::Implementation(), m_input(input) {}
 
-    Implementation* cloneVirtual() const {return new Implementation(*this);}
-    int getNumTimeDerivativesVirtual() const {return 0;}
-    SimTK::Stage getDependsOnStageVirtual(int order) const
+    Implementation* cloneVirtual() const override
+    {return new Implementation(*this);}
+    int getNumTimeDerivativesVirtual() const override {return 0;}
+    SimTK::Stage getDependsOnStageVirtual(int order) const override
     { return m_input.getConnectAtStage(); }
 
     // The meat of this class: return the Input's value.
     void calcCachedValueVirtual(const SimTK::State& s,
-                                int derivOrder, T& value) const
+            int derivOrder, T& value) const override
     {
         SimTK_ASSERT1_ALWAYS(derivOrder == 0,
                 "InputMeasure::Implementation::calcCachedValueVirtual(): "
-                "derivOrder %d seen but only 0 allowed.", derivOrder);
+                        "derivOrder %d seen but only 0 allowed.", derivOrder);
 
         value = m_input.getValue(s);
     }

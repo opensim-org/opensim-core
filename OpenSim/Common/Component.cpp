@@ -368,21 +368,6 @@ void Component::addStateVariable(Component::StateVariable*  stateVariable) const
     // state variable index will be invalid by default
     // upon allocation during realizeTopology the index will be set
     _namedStateVariableInfo[stateVariableName] = StateVariableInfo(stateVariable, order);
-
-    // If the StateVariable is not hidden, create an Output for this
-    // StateVariable's value. We do this with an AddedStateVariable since
-    // only AddedStateVariable's have a stage.
-    if(!stateVariable->isHidden()){
-        // StateVariable values are of type double. Also, StateVariable's
-        // always have a value after they've been created, and they don't
-        // depend on anything. So, their dependsOn Stage is Model.
-        const_cast<Component*>(this)->constructOutput<double>(
-                stateVariableName,
-                std::bind(&Component::StateVariable::getValue,
-                    stateVariable,
-                    std::placeholders::_1),
-                Stage::Model);
-    }
                 
     const AddedStateVariable* asv =
         dynamic_cast<const Component::AddedStateVariable *>(stateVariable);

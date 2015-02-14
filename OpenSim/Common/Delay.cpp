@@ -34,11 +34,11 @@ void Delay::constructProperties() {
 }
 
 void Delay::constructInputs() {
-    constructInput<double>("input", SimTK::Stage::Model);
+    constructInput<double>("input", SimTK::Stage::Time);
 }
 
 void Delay::constructOutputs() {
-    constructOutput<double>("output", &Delay::getValue, SimTK::Stage::Model);
+    constructOutput<double>("output", &Delay::getValue, SimTK::Stage::Time);
 }
 
 double Delay::getValue(const SimTK::State& s) const {
@@ -50,6 +50,14 @@ double Delay::getValue(const SimTK::State& s) const {
 void Delay::extendFinalizeFromProperties() {
     SimTK_VALUECHECK_NONNEG_ALWAYS(get_delay(),
             "delay", "Delay::extendFinalizeFromProperties()");
+    if (_delayMeasureIndex.isValid()) {
+        // If we've already initialized the system and we are only in this
+        // method because its properties were changed.
+        auto& subsys = updSystem().updDefaultSubsystem();
+        auto measure = subsys.getMeasure(_delayMeasureIndex);
+        auto& delayMeasure = SimTK::Measure::Delay::updAs(measure);
+        delayMeasure.setDelay(get_delay());
+    }
 }
 void Delay::extendAddToSystem(SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
