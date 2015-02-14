@@ -68,7 +68,7 @@ namespace OpenSim {
  * };
  * @endcode
  *
- * The implementation makes use of a SimTK::Measure::Delay.
+ * This class is implemented via a SimTK::Measure::Delay.
  *
  */
 class OSIMCOMMON_API Delay : public Component {
