@@ -1018,8 +1018,8 @@ void Model::generateDecorations
     ComponentList<Component>::const_iterator iter = allComps.begin();
     iter++; // Skip Model itself
     while (iter != allComps.end()){
-        std::string cn = iter->getConcreteClassName();
-        std::cout << cn << ":" << iter->getName() << std::endl;
+        //std::string cn = iter->getConcreteClassName();
+        //std::cout << cn << ":" << iter->getName() << std::endl;
         iter->generateDecorations(fixed, hints, state, appendToThis);
         iter++;
     }
