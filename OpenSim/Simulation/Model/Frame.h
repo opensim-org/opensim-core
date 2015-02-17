@@ -194,6 +194,15 @@ protected:
     /**@{**/
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendRealizeTopology(SimTK::State& s) const override;
+    void extendFinalizeFromProperties() override
+    {
+        Super::extendFinalizeFromProperties();
+        // This's a potential leak, wlil be fixed when FrameGeometry is turned into a Property
+        FrameGeometry* frm = new FrameGeometry(0.2);
+        frm->setFrameName(getName());
+        addComponent(frm);
+    }
+
     /**@}**/
 
 private:

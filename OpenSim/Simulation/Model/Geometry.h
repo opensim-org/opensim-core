@@ -510,21 +510,22 @@ public:
 /**
 * A class to represent Frame geometry. Knobs that can be changed
 * are in Appearance::Representation, size, thickness.
-*
+*/
 class OSIMSIMULATION_API FrameGeometry : public Geometry
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(FrameGeometry, Geometry);
 public:
     // Default constructor
-    FrameGeometry() :
+    FrameGeometry(double scale=1.0) :
         Geometry()
     {
+       set_scale_factors(SimTK::Vec3(scale));
     }
     // destructor
     virtual ~FrameGeometry() {};
     void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 
-};*/
+};
 }; //namespace
 //=============================================================================
 //=============================================================================

@@ -145,6 +145,14 @@ void Brick::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& d
     decoGeoms.push_back(deco);
 }
 
+void FrameGeometry::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+{
+    const Vec3 netScale = get_scale_factors();
+    DecorativeFrame deco(netScale.norm());
+    deco.setScaleFactors(netScale);
+    decoGeoms.push_back(deco);
+}
+
 void Mesh::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const std::string& file = get_mesh_file();

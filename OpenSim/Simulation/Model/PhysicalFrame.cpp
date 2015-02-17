@@ -125,3 +125,11 @@ void PhysicalFrame::scale(const SimTK::Vec3& aScaleFactors)
     // Update scale factors for displayer
     updDisplayer()->setScaleFactors(oldScaleFactors);
 }
+/*
+void PhysicalFrame::extendFinalizeFromProperties()
+{
+    //FrameGeometry* frame = new FrameGeometry(0.5);
+    //frame->setFrameName(getName());
+    //addComponent(frame);
+}
+*/
