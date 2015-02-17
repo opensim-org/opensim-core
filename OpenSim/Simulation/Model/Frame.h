@@ -197,10 +197,8 @@ protected:
     void extendFinalizeFromProperties() override
     {
         Super::extendFinalizeFromProperties();
-        // This's a potential leak, wlil be fixed when FrameGeometry is turned into a Property
-        FrameGeometry* frm = new FrameGeometry(0.2);
-        frm->setFrameName(getName());
-        addComponent(frm);
+        // HACK- Set frame name to self here instead of in constructor since name isn't available then.
+        upd_GeometrySet(0).setFrameName(getName());
     }
 
     /**@}**/

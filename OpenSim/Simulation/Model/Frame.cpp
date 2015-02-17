@@ -44,6 +44,9 @@ using SimTK::Vec3;
 Frame::Frame() : ModelComponent()
 {
     setAuthors("Matt DeMers, Ajay Seth");
+    FrameGeometry* frm = new FrameGeometry(0.2);
+    frm->setName("Frame");
+    append_GeometrySet(*frm);
 }
 
 
