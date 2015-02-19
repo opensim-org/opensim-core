@@ -86,34 +86,66 @@ public:
     RollingOnSurfaceConstraint();
     virtual ~RollingOnSurfaceConstraint();
 
-    //SET 
+    /** Set rolling body by its name */
     void setRollingBodyByName(const std::string& aBodyName);
+    /** Set surface body by its name */
     void setSurfaceBodyByName(const std::string& aBodyName);
 
-    // Methodthat makes this a unilateral constraint
-    std::vector<bool> unilateralConditionsSatisfied(const SimTK::State& state) override;
-
+    /**
+    * Get whether or not the RollingOnSurfaceConstraint is disabled.
+    * Simbody multibody system instance is realized every time the isDisabled
+    * changes, BUT multiple sets to the same value have no cost.
+    *
+    * @param isDisabled If true the constraint is disabled; if false the constraint is enabled.
+    */
     bool isDisabled(const SimTK::State& state) const override;
 
-    // Unilateral conditions are automatically satisfied if constraint is not disabled
+    /**
+    * Set whether or not the RollingOnSurfaceConstraint is disabled.
+    * Since the constraint is composed of multiple constraints, this method can
+    * disable all the constraints, but enabling is not guaranteed. For example, if
+    * the unilateral conditions are violated the constraint will be disabled.
+    *
+    * @param isDisabled If true the constraint is disabled.
+    */
     bool setDisabled(SimTK::State& state, bool isDisabled) override;
 
     // This method allows finer granularity over the subconstraints according to imposed behavior
     bool setDisabled(SimTK::State& state, bool isDisabled,
                      std::vector<bool> shouldBeOn);
 
-    // Set whether constraint is enabled or disabled but use cached values for unilateral conditions
-    // instead of automatic reevaluation
-    bool setDisabledWithCachedUnilateralConditions(bool isDisabled, 
-                                                   SimTK::State& state){
-        return setDisabled(state, isDisabled, _defaultUnilateralConditions);
-    }
-
+    /**
+    * Ask the RollingOnSurfaceConstraint for the forces it is imposing on the system.
+    * Simbody multibody system must be realized to at least Stage::Dynamics.
+    * Returns: the bodyForces on those bodies being constrained (constrainedBodies)
+    *              a SpatialVec (6 components) describing resulting torque and force
+    *          mobilityForces acting along constrained mobilities
+    *
+    * @param state  State of model
+    * @param bodyForcesInAncestor   Vector of SpatialVecs contain constraint forces
+    * @param mobilityForces     Vector of forces that act along the constrained
+    *                           mobilitities associated with this constraint
+    */
     void calcConstraintForces(const SimTK::State& state, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor,
         SimTK::Vector& mobilityForces) const override;
 
     void setContactPointForInducedAccelerations(const SimTK::State &s,
         SimTK::Vec3 point) override;
+
+    /** Test whether unilateral conditions are being satisfied.
+        Note: system must be realized to at least Stage::Dynamics */
+    std::vector<bool> unilateralConditionsSatisfied(const SimTK::State& state) override;
+
+
+    /** Set whether constraint is enabled or disabled but use cached values for 
+        unilateral conditions instead of automatic reevaluation */
+    bool setDisabledWithCachedUnilateralConditions(bool isDisabled,
+        SimTK::State& state){
+        return setDisabled(state, isDisabled, _defaultUnilateralConditions);
+    }
+
+
+
 
 
 protected:
@@ -133,8 +165,8 @@ protected:
      */
     void extendSetPropertiesFromState(const SimTK::State& state) override;
 
-
-
+    /** Updating XML formating to latest revision */
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
 
 private:
     void setNull();

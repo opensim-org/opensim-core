@@ -178,3 +178,22 @@ void PointOnLineConstraint::setPointOnFollower(Vec3 point)
 {
     set_point_on_follower(point);
 }
+
+void PointOnLineConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+{
+    int documentVersion = versionNumber;
+    if (documentVersion < XMLDocument::getLatestVersion()){
+        if (documentVersion<30500){
+            // replace old properties with latest use of Connectors
+            SimTK::Xml::element_iterator body1Element = aNode.element_begin("line_body");
+            SimTK::Xml::element_iterator body2Element = aNode.element_begin("follower_body");
+            std::string body1_name, body2_name;
+            body1Element->getValueAs<std::string>(body1_name);
+            body2Element->getValueAs<std::string>(body2_name);
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "line_body", body1_name);
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "follower_body", body2_name);
+        }
+    }
+
+    Super::updateFromXMLNode(aNode, versionNumber);
+}

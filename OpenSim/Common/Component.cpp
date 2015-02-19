@@ -174,17 +174,7 @@ void Component::connect(Component &root)
         AbstractConnector& connector = upd_connectors(ix);
         connector.disconnect();
 
-        const Component* connectTo = root.findComponent(connector.get_connected_to_name());
-        if (connectTo) {
-            connector.connect(*connectTo);
-            //cout << getConcreteClassName() << " '" << getName();
-            //cout << "' connected to: " << ci->get_connected_to_name() << endl;
-        }
-        else{
-            throw Exception(getConcreteClassName() + "::connect() Could not find component '"
-                + connector.get_connected_to_name() + "' to satisfy Connector<" +
-                connector.getConnectedToTypeName() + "> '" + connector.getName() + "'.\n");
-        }
+        connector.findAndConnect(root);
         //is connected or an exception was thrown
     }
 

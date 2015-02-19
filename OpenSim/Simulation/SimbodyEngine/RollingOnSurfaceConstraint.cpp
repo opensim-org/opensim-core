@@ -299,30 +299,12 @@ std::vector<bool> RollingOnSurfaceConstraint::unilateralConditionsSatisfied(cons
 //-----------------------------------------------------------------------------
 // DISABLE
 //-----------------------------------------------------------------------------
-
-//_____________________________________________________________________________
-/**
- * Get whether or not the RollingOnSurfaceConstraint is disabled.
- * Simbody multibody system instance is realized every time the isDisabled
- * changes, BUT multiple sets to the same value have no cost.
- *
- * @param isDisabled If true the constraint is disabled; if false the constraint is enabled.
- */
 bool RollingOnSurfaceConstraint::isDisabled(const SimTK::State &state) const
 {
     // The parent constraint in is the plane constraint, so check its value
     return updSystem().updMatterSubsystem().updConstraint(_indices[0]).isDisabled(state);
 }
 
-//_____________________________________________________________________________
-/**
- * Set whether or not the RollingOnSurfaceConstraint is disabled.
- * Since the constraint is composed of multiple constraints, this method can  
- * disable the constraints, but enabling is not guaranteed. For example, if
- * the unilateral conditions are violated the constraint will be disabled.
- *
- * @param isDisabled If true the constraint is disabled; if false the constraint is enabled.
- */
 bool RollingOnSurfaceConstraint::setDisabled(SimTK::State& state, bool isDisabled)
 {
     // All constraints treated the same as default behavior i.e. at initilization
@@ -336,7 +318,6 @@ bool RollingOnSurfaceConstraint::setDisabled(SimTK::State& state, bool isDisable
 
     return setDisabled(state, isDisabled, shouldBeOn);
 }
-
 
 bool RollingOnSurfaceConstraint::setDisabled(SimTK::State& state, bool isDisabled, std::vector<bool> shouldBeOn)
 {
@@ -371,18 +352,6 @@ bool RollingOnSurfaceConstraint::setDisabled(SimTK::State& state, bool isDisable
 // FORCES
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Ask the RollingOnSurfaceConstraint for the forces it is imposing on the system
- * Simbody multibody system must be realized to at least position
- * Returns: the bodyForces on those bodies being constrained (constrainedBodies)
- *              a SpatialVec (6 components) describing resulting torque and force
- *          mobilityForces acting along constrained mobilities  
- *
- * @param state State of model
- * @param bodyForcesInAncestor is a Vector of SpatialVecs contain constraint forces
- * @param mobilityForces is a Vector of forces that act along the constrained
- *         mobilitities associated with this constraint
- */
 void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor, 
                                       SimTK::Vector& mobilityForces) const
 {
@@ -422,4 +391,23 @@ void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state,
             mobilityForces += mfs;
         }
     }
+}
+
+void RollingOnSurfaceConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+{
+    int documentVersion = versionNumber;
+    if (documentVersion < XMLDocument::getLatestVersion()){
+        if (documentVersion<30500){
+            // replace old properties with latest use of Connectors
+            SimTK::Xml::element_iterator body1Element = aNode.element_begin("rolling_body");
+            SimTK::Xml::element_iterator body2Element = aNode.element_begin("surface_body");
+            std::string body1_name, body2_name;
+            body1Element->getValueAs<std::string>(body1_name);
+            body2Element->getValueAs<std::string>(body2_name);
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "rolling_body", body1_name);
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "surface_body", body2_name);
+        }
+    }
+
+    Super::updateFromXMLNode(aNode, versionNumber);
 }

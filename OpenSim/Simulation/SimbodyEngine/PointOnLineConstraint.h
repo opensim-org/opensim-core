@@ -77,6 +77,9 @@ protected:
     */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
+    /** Updating XML formating to latest revision */
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
+
 private:
     /** Construct PointConstraint's properties */
     void constructProperties() override;
