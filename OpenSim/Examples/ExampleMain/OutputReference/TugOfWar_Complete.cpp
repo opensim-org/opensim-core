@@ -71,7 +71,10 @@ int main()
 
         // GROUND BODY
         // Get a reference to the model's ground body
-        OpenSim::Body& ground = osimModel.getGroundBody();
+        OpenSim::Body& ground = *new OpenSim::Body("ground", SimTK::Infinity,
+            Vec3(0), Inertia());
+
+        osimModel.addBody(&ground);
 
         // Add display geometry to the ground to visualize in the Visualizer and GUI
         // add a checkered floor

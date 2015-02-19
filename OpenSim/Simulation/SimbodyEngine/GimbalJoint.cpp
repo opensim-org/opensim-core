@@ -58,12 +58,16 @@ GimbalJoint::GimbalJoint() : Joint()
 /**
  * Convenience Constructor.
  */
-GimbalJoint::GimbalJoint(const std::string &name, OpenSim::Body& parent, 
-                     Vec3 locationInParent, Vec3 orientationInParent,
-                     OpenSim::Body& body, Vec3 locationInBody, Vec3 orientationInBody, 
-                     bool reverse) :
+GimbalJoint::GimbalJoint(const std::string &name,
+    const PhysicalFrame& parent,
+    const SimTK::Vec3& locationInParent,
+    const SimTK::Vec3& orientationInParent,
+    const PhysicalFrame& child,
+    const SimTK::Vec3& locationInChild,
+    const SimTK::Vec3& orientationInChild,
+    bool reverse) :
             Joint(name, parent, locationInParent,orientationInParent,
-                    body, locationInBody, orientationInBody, reverse)
+                    child, locationInChild, orientationInChild, reverse)
 {
     setAuthors("Tim Dorn, Ajay Seth");
     constructCoordinates();

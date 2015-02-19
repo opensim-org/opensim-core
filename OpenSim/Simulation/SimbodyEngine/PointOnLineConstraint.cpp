@@ -28,7 +28,7 @@
 #include <math.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/Constant.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include "PointOnLineConstraint.h"
@@ -59,23 +59,27 @@ PointOnLineConstraint::PointOnLineConstraint() :
     Constraint()
 {
     setNull();
-    constructProperties();
+    constructInfrastructure();
 }
 
 //_____________________________________________________________________________
 /**
  * Convenience (API) constructor.
  */
-   PointOnLineConstraint::PointOnLineConstraint(OpenSim::Body& lineBody, Vec3 lineDirection, Vec3 pointOnLine,
-            OpenSim::Body& followerBody, Vec3 followerPoint) :
-    Constraint()
+PointOnLineConstraint::PointOnLineConstraint( const PhysicalFrame& lineBody,
+    const SimTK::Vec3& lineDirection, SimTK::Vec3 pointOnLine,
+    const PhysicalFrame& followerBody, const SimTK::Vec3& followerPoint) :
+        Constraint()
 {
     setNull();
-    constructProperties();
-    set_line_body(lineBody.getName());
+    constructInfrastructure();
+
+    setLineBodyByName(lineBody.getName());
+    setFollowerBodyByName(followerBody.getName());
+
     set_line_direction_vec(lineDirection);
     set_point_on_line(pointOnLine);
-    set_follower_body(followerBody.getName());
+
     set_point_on_follower(followerPoint);
 }
 
@@ -93,15 +97,9 @@ void PointOnLineConstraint::setNull()
     setAuthors("Samuel R. Hamner ");
 }
 
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
+
 void PointOnLineConstraint::constructProperties()
 {
-    // Line Body Name
-    constructProperty_line_body("");
-
     //Default location and orientation (rotation sequence)
     SimTK::Vec3 origin(0.0, 0.0, 0.0);
 
@@ -111,60 +109,38 @@ void PointOnLineConstraint::constructProperties()
     // Default Point On Line
     constructProperty_point_on_line(origin);
 
-    // Follower Body
-    constructProperty_follower_body("");
-
     // Point On Follower Body 
     constructProperty_point_on_follower(origin);
 }
 
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel OpenSim model containing this PointOnLineConstraint.
- */
-void PointOnLineConstraint::extendConnectToModel(Model& aModel)
+void PointOnLineConstraint::constructConnectors()
 {
-    Super::extendConnectToModel(aModel);
-
-    string errorMessage;
-    // Look up the two bodies being constrained together by name in the
-    // model and might as well keep a pointer to them
-    std::string lineBodyName = get_line_body();
-    std::string followerBodyName = get_follower_body();
-
-    if (!aModel.updBodySet().contains(lineBodyName)) {
-        errorMessage = "Invalid line body (" + lineBodyName + ") specified in Constraint " + getName();
-        throw (Exception(errorMessage.c_str()));
-    }
-    if (!aModel.updBodySet().contains(followerBodyName)) {
-        errorMessage = "Invalid follower body (" + followerBodyName + ") specified in Constraint " + getName();
-        throw (Exception(errorMessage.c_str()));
-    }
-    _lineBody = &aModel.updBodySet().get(lineBodyName);
-    _followerBody = &aModel.updBodySet().get(followerBodyName);
+    constructConnector<PhysicalFrame>("line_body");
+    constructConnector<PhysicalFrame>("follower_body");
 }
 
 void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
     // Get underlying mobilized bodies
-    SimTK::MobilizedBody& lb = _lineBody->updMobilizedBody();
-    SimTK::MobilizedBody& fb = _followerBody->updMobilizedBody();
+    // Get underlying mobilized bodies
+    const PhysicalFrame& fl =
+        getConnector<PhysicalFrame>("line_body").getConnectee();
+    const PhysicalFrame& ff =
+        getConnector<PhysicalFrame>("follower_body").getConnectee();
+
+    SimTK::MobilizedBody bl = fl.getMobilizedBody();
+    SimTK::MobilizedBody bf = ff.getMobilizedBody();
 
     // Normalize Line Direction
     SimTK::UnitVec3 normLineDirection(get_line_direction_vec().normalize());
 
     // Now create a Simbody Constraint::PointOnLine
-    //PointOnLine(MobilizedBody& lineBody_B, const UnitVec3& defaultLineDirection_B, const Vec3& defaultPointOnLine_B,
-    //           MobilizedBody& followerBody_F, const Vec3& defaultFollowerPoint_F);
-    SimTK::Constraint::PointOnLine simtkPointOnLine(lb, normLineDirection, get_point_on_line(), fb, get_point_on_follower());
+    SimTK::Constraint::PointOnLine simtkPointOnLine(bl, normLineDirection,
+        get_point_on_line(), bf, get_point_on_follower());
     
     // Beyond the const Component get the index so we can access the SimTK::Constraint later
-    PointOnLineConstraint* mutableThis = const_cast<PointOnLineConstraint *>(this);
-    mutableThis->_index = simtkPointOnLine.getConstraintIndex();
+    assignConstraintIndex(simtkPointOnLine.getConstraintIndex());
 }
 
 //=============================================================================
@@ -173,15 +149,17 @@ void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) co
 //_____________________________________________________________________________
 /**
  * Following methods set attributes of the point on line constraint */
-void PointOnLineConstraint::setLineBodyByName(std::string aBodyName)
+void PointOnLineConstraint::setLineBodyByName(const std::string& aBodyName)
 {
-    set_line_body(aBodyName);
+    updConnector<PhysicalFrame>("line_body").set_connected_to_name(aBodyName);
 }
 
-void PointOnLineConstraint::setFollowerBodyByName(std::string aBodyName)
+void PointOnLineConstraint::setFollowerBodyByName(const std::string& aBodyName)
 {
-    set_follower_body(aBodyName);
+    updConnector<PhysicalFrame>("follower_body").set_connected_to_name(aBodyName);
+
 }
+
 
 /** Set the line direction for the point on line constraint*/
 void PointOnLineConstraint::setLineDirection(Vec3 direction)

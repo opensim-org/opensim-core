@@ -67,9 +67,14 @@ public:
     // CONSTRUCTION
     FreeJoint();
     // Convenience Constructor
-    FreeJoint(const std::string &name, Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-          Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
-          /*bool useEulerAngles=true,*/ bool reverse=false);
+    FreeJoint(const std::string &name,
+        const PhysicalFrame& parent,
+        const SimTK::Vec3& locationInParent,
+        const SimTK::Vec3& orientationInParent,
+        const PhysicalFrame& child,
+        const SimTK::Vec3& locationInChild,
+        const SimTK::Vec3& orientationInChild,
+        bool reverse = false);
 
     virtual ~FreeJoint();
 

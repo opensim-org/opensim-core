@@ -24,13 +24,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <math.h>
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Common/Constant.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/Model.h>
-
 #include "RollingOnSurfaceConstraint.h"
 
 //=============================================================================
@@ -58,7 +51,7 @@ RollingOnSurfaceConstraint::RollingOnSurfaceConstraint() :
     UnilateralConstraint()
 {
     setNull();
-    constructProperties();
+    constructInfrastructure();
 }
 
 //=============================================================================
@@ -73,6 +66,8 @@ void RollingOnSurfaceConstraint::setNull()
 {
     setAuthors("Ajay Seth");
     _defaultUnilateralConditions = std::vector<bool>(4, false);
+    _rollingFrame.clear();
+    _surfaceFrame.clear();
 }
 
 //_____________________________________________________________________________
@@ -81,12 +76,6 @@ void RollingOnSurfaceConstraint::setNull()
  */
 void RollingOnSurfaceConstraint::constructProperties()
 {
-    // Body 1 name
-    constructProperty_rolling_body("");
-
-    // Body 2 name
-    constructProperty_surface_body("ground");
-
     // Surface parameters
     constructProperty_surface_normal(Vec3(0, 1.0, 0));
 
@@ -97,42 +86,24 @@ void RollingOnSurfaceConstraint::constructProperties()
     constructProperty_contact_radius(0.01);
 }
 
-//_____________________________________________________________________________
-/**
- * Perform some setup functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aEngine dynamics engine containing this RollingOnSurfaceConstraint.
- */
+void RollingOnSurfaceConstraint::constructConnectors()
+{
+    constructConnector<PhysicalFrame>("rolling_body");
+    constructConnector<PhysicalFrame>("surface_body");
+}
+
 void RollingOnSurfaceConstraint::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
-
-    string errorMessage;
-
-    std::string rollingBodyName = get_rolling_body();
-    std::string surfaceBodyName = get_surface_body();
-    
-        // Look up the two bodies being constrained together by name in the
-    // dynamics engine and might as well keep a pointer to them
-    _rollingBody = &_model->updBodySet().get(rollingBodyName);
-    _surfaceBody = &_model->updBodySet().get(surfaceBodyName);
-
-    if (!_rollingBody) {
-        errorMessage = "Invalid RollingBody (" + rollingBodyName + ") specified in Constraint " + getName();
-        throw (Exception(errorMessage.c_str()));
-    }
-    if (!_surfaceBody) {
-        errorMessage = "Invalid SurfaceBody (" + surfaceBodyName + ") specified in Constraint " + getName();
-        throw (Exception(errorMessage.c_str()));
-    }
+    _rollingFrame = &getConnector<PhysicalFrame>("rolling_body").getConnectee();
+    _surfaceFrame = &getConnector<PhysicalFrame>("surface_body").getConnectee();
 }
 
 void RollingOnSurfaceConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     // Get underlying mobilized bodies
-    SimTK::MobilizedBody& roller = _rollingBody->updMobilizedBody();
-    SimTK::MobilizedBody& surface = _surfaceBody->updMobilizedBody();
+    SimTK::MobilizedBody roller = _rollingFrame->getMobilizedBody();
+    SimTK::MobilizedBody surface = _surfaceFrame->getMobilizedBody();
     
     // Add a ficticious massless body to be the "Case" reference body coincident with surface for the no-slip constraint
     SimTK::MobilizedBody::Weld  cb(surface, SimTK::Body::Massless());
@@ -160,7 +131,7 @@ void RollingOnSurfaceConstraint::extendAddToSystem(SimTK::MultibodySystem& syste
     // the first "master" constraint, which dictates the behavior of the other constraints
     // For example, enabling and disabling. This enables a compound constraint to be treated
     // like a single constraint for the purpose of enabling/disabling and getting output
-    mutableThis->_index = _indices[0];
+    assignConstraintIndex(_indices[0]);
 }
 
 void RollingOnSurfaceConstraint::extendInitStateFromProperties(SimTK::State& state) const
@@ -169,7 +140,8 @@ void RollingOnSurfaceConstraint::extendInitStateFromProperties(SimTK::State& sta
 
     // All constraints treated the same as default behavior at initilization
     for(int i=0; i < _numConstraintEquations; i++){
-        SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_indices[i]);
+        SimTK::Constraint& simConstraint = 
+            updSystem().updMatterSubsystem().updConstraint(_indices[i]);
         // initialize the status of the constraint
         if(_defaultUnilateralConditions[i]){
             simConstraint.enable(state);
@@ -186,7 +158,8 @@ void RollingOnSurfaceConstraint::extendSetPropertiesFromState(const SimTK::State
 
     set_isDisabled(isDisabled(state));
     for(int i=0; i < _numConstraintEquations; i++){
-        SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_indices[i]);
+        SimTK::Constraint& simConstraint = 
+            updSystem().updMatterSubsystem().updConstraint(_indices[i]);
         // initialize the status of the constraint
         _defaultUnilateralConditions[i] = !simConstraint.isDisabled(state); 
     }
@@ -198,34 +171,37 @@ void RollingOnSurfaceConstraint::extendSetPropertiesFromState(const SimTK::State
 //_____________________________________________________________________________
 /**
  * Following methods set attributes of the weld constraint */
-void RollingOnSurfaceConstraint::setRollingBodyByName(std::string aBodyName)
+void RollingOnSurfaceConstraint::setRollingBodyByName(const std::string& aBodyName)
 {
-    set_rolling_body(aBodyName);
+    updConnector<PhysicalFrame>("rolling_body").set_connected_to_name(aBodyName);
 }
 
-void RollingOnSurfaceConstraint::setSurfaceBodyByName(std::string aBodyName)
+void RollingOnSurfaceConstraint::setSurfaceBodyByName(const std::string& aBodyName)
 {
-    set_surface_body(aBodyName);
+    updConnector<PhysicalFrame>("surface_body").set_connected_to_name(aBodyName);
 }
 
 /** Set the point of contact on the rolling body that will be in contact with the surface */
 void RollingOnSurfaceConstraint::setContactPointForInducedAccelerations(const SimTK::State &s, Vec3 point)
 {
     // Get the individual underlying constraints
-    SimTK::Constraint::PointInPlane &contactY = (SimTK::Constraint::PointInPlane &)_model->updMatterSubsystem().updConstraint(_indices[0]);
-    SimTK::Constraint::ConstantAngle &contactTorqueAboutY = (SimTK::Constraint::ConstantAngle &)_model->updMatterSubsystem().updConstraint(_indices[1]);
-    SimTK::Constraint::NoSlip1D &contactPointXdir = (SimTK::Constraint::NoSlip1D &)_model->updMatterSubsystem().updConstraint(_indices[2]);
-    SimTK::Constraint::NoSlip1D &contactPointZdir = (SimTK::Constraint::NoSlip1D &)_model->updMatterSubsystem().updConstraint(_indices[3]);
+    SimTK::Constraint::PointInPlane &contactY = (SimTK::Constraint::PointInPlane &)
+        updSystem().updMatterSubsystem().updConstraint(_indices[0]);
+    SimTK::Constraint::ConstantAngle &contactTorqueAboutY = (SimTK::Constraint::ConstantAngle &)
+        updSystem().updMatterSubsystem().updConstraint(_indices[1]);
+    SimTK::Constraint::NoSlip1D &contactPointXdir = (SimTK::Constraint::NoSlip1D &)
+        updSystem().updMatterSubsystem().updConstraint(_indices[2]);
+    SimTK::Constraint::NoSlip1D &contactPointZdir = (SimTK::Constraint::NoSlip1D &)
+        updSystem().updMatterSubsystem().updConstraint(_indices[3]);
 
     // The contact point coordinates in the surface body frame 
-    Vec3 spoint;
     Vec3 surfaceNormal = get_surface_normal();
 
     // make sure we are at the position stage
-    _model->getMultibodySystem().realize(s, SimTK::Stage::Position);
+    getSystem().realize(s, SimTK::Stage::Position);
 
     // For external forces we assume w.r.t. ground
-    _model->getSimbodyEngine().transformPosition(s, *_rollingBody, point, *_surfaceBody, spoint);
+    Vec3 spoint = _rollingFrame->findLocationInAnotherFrame(s, point, *_surfaceFrame);
 
     // The contact point coordinates in the surface body frame 
     contactY.setDefaultPlaneNormal(UnitVec3(surfaceNormal));
@@ -233,13 +209,14 @@ void RollingOnSurfaceConstraint::setContactPointForInducedAccelerations(const Si
     // And the point in the follower (roller) frame
     contactY.setDefaultFollowerPoint(point);
 
-    // Assume that torsion constraint is always normal to surface so find corresponding vector
-    // in the rolling body
-    Vec3 normalInRoller(0);
-    Vec3 baseAxisInRoller(0);
-    UnitVec3 surfaceBase = contactTorqueAboutY.getDefaultBaseAxis();
-    _model->getSimbodyEngine().transform(s, *_surfaceBody, surfaceNormal, *_rollingBody, normalInRoller);
-    _model->getSimbodyEngine().transform(s, *_surfaceBody, surfaceBase, *_rollingBody, baseAxisInRoller);
+    // Assume that torsion constraint is always normal to surface.
+    // Find corresponding vector in the rolling body
+    Vec3 normalInRoller = 
+        _surfaceFrame->expressVectorInAnotherFrame(s, surfaceNormal, *_rollingFrame);
+
+    const UnitVec3& surfaceBase = contactTorqueAboutY.getDefaultBaseAxis();
+    Vec3 baseAxisInRoller =
+        _surfaceFrame->expressVectorInAnotherFrame(s, surfaceBase, *_rollingFrame);
 
     contactTorqueAboutY.setDefaultFollowerAxis(UnitVec3(baseAxisInRoller%normalInRoller));
 
@@ -261,10 +238,10 @@ std::vector<bool> RollingOnSurfaceConstraint::unilateralConditionsSatisfied(cons
     double tangentialForce = 0;
 
     // Get the individual underlying constraints
-    SimTK::Constraint&contactY = _model->updMatterSubsystem().updConstraint(_indices[0]);
-    SimTK::Constraint&contactTorqueAboutY = _model->updMatterSubsystem().updConstraint( _indices[1]);
-    SimTK::Constraint&contactPointXdir = _model->updMatterSubsystem().updConstraint(_indices[2]);
-    SimTK::Constraint&contactPointZdir = _model->updMatterSubsystem().updConstraint(_indices[3]);
+    SimTK::Constraint&contactY = updSystem().updMatterSubsystem().updConstraint(_indices[0]);
+    SimTK::Constraint&contactTorqueAboutY = updSystem().updMatterSubsystem().updConstraint(_indices[1]);
+    SimTK::Constraint&contactPointXdir = updSystem().updMatterSubsystem().updConstraint(_indices[2]);
+    SimTK::Constraint&contactPointZdir = updSystem().updMatterSubsystem().updConstraint(_indices[3]);
 
     // Constraint conditions only matter if the constraint is enabled.
     if(!contactY.isDisabled(state)){
@@ -334,7 +311,7 @@ std::vector<bool> RollingOnSurfaceConstraint::unilateralConditionsSatisfied(cons
 bool RollingOnSurfaceConstraint::isDisabled(const SimTK::State &state) const
 {
     // The parent constraint in is the plane constraint, so check its value
-    return _model->updMatterSubsystem().updConstraint(_indices[0]).isDisabled(state);
+    return updSystem().updMatterSubsystem().updConstraint(_indices[0]).isDisabled(state);
 }
 
 //_____________________________________________________________________________
@@ -365,7 +342,7 @@ bool RollingOnSurfaceConstraint::setDisabled(SimTK::State& state, bool isDisable
 {
 
     for(int i=0; i < _numConstraintEquations; i++){
-        SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_indices[i]);
+        SimTK::Constraint& simConstraint = updSystem().updMatterSubsystem().updConstraint(_indices[i]);
         bool isConstraintOn = !simConstraint.isDisabled(state);
 
         // Check if we already have the correct enabling of the constraint then do nothing 
@@ -386,7 +363,7 @@ bool RollingOnSurfaceConstraint::setDisabled(SimTK::State& state, bool isDisable
 
     // Return whether or not constraint is in the state the caller wanted
     // The first constraint is the "master" so its state is what we care about
-    return isDisabled == _model->updMatterSubsystem().updConstraint(_indices[0]).isDisabled(state);
+    return isDisabled == updSystem().updMatterSubsystem().updConstraint(_indices[0]).isDisabled(state);
 }
 
 
@@ -414,7 +391,7 @@ void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state,
 
     for(int i=0; i < _numConstraintEquations; i++){
         
-        SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_indices[i]);
+        SimTK::Constraint& simConstraint = updSystem().updMatterSubsystem().updConstraint(_indices[i]);
         int ncb = simConstraint.getNumConstrainedBodies();
         int mp, mv, ma;
 
@@ -428,9 +405,9 @@ void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state,
             int anc = simConstraint.getAncestorMobilizedBody().getMobilizedBodyIndex();
             
             for(int j=0; j< ncb; j++){
-                if (_surfaceBody->getMobilizedBodyIndex() == simConstraint.getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex(j)).getMobilizedBodyIndex())
+                if (_surfaceFrame->getMobilizedBodyIndex() == simConstraint.getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex(j)).getMobilizedBodyIndex())
                     sbi = j;
-                if (_rollingBody->getMobilizedBodyIndex() == simConstraint.getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex(j)).getMobilizedBodyIndex())
+                if (_rollingFrame->getMobilizedBodyIndex() == simConstraint.getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex(j)).getMobilizedBodyIndex())
                     rbi = j;
             }
 

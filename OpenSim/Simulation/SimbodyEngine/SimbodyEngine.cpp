@@ -756,8 +756,9 @@ bool SimbodyEngine::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFi
         if (mass > 0.0)
         {
             double factor = aFinalMass / mass;
-            for (int i = 0; i < _model->getBodySet().getSize(); i++)
+            for (int i = 0; i < _model->getBodySet().getSize(); i++){
                 _model->getBodySet().get(i).scaleMass(factor);
+            }
             
             // recreate system and update state after updating masses
             s = _model->initSystem();

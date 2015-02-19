@@ -43,6 +43,12 @@ using namespace OpenSim;
 PhysicalFrame::PhysicalFrame() : Frame()
 {
     setAuthors("Matt DeMers, Ayman Habib, Ajay Seth");
+    constructProperties();
+}
+
+void PhysicalFrame::constructProperties()
+{
+    constructProperty_VisibleObject(VisibleObject());
 }
 
 const SimTK::MobilizedBody& PhysicalFrame::getMobilizedBody() const
@@ -78,4 +84,14 @@ void PhysicalFrame::extendAddToSystem(SimTK::MultibodySystem& system) const
     if (getName() == "ground"){
         setMobilizedBodyIndex(SimTK::GroundIndex);
     }
+}
+
+/*
+* Add display geometry to a PhysicalFrame.
+*
+* @param aGeometryFileName Geometry filename.
+*/
+void PhysicalFrame::addDisplayGeometry(const std::string &aGeometryFileName)
+{
+    updDisplayer()->setGeometryFileName(updDisplayer()->getNumGeometryFiles(), aGeometryFileName);
 }

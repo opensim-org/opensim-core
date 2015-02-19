@@ -25,10 +25,10 @@
 
 // INCLUDE
 #include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Common/VisibleObject.h>
+
 namespace OpenSim {
 
-class Model;
-class Body;
 //=============================================================================
 //=============================================================================
 /**
@@ -50,6 +50,16 @@ class Body;
 class OSIMSIMULATION_API PhysicalFrame : public Frame {
     OpenSim_DECLARE_ABSTRACT_OBJECT(PhysicalFrame, Frame);
 
+public:
+    //==============================================================================
+    // PROPERTIES
+    //==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with a PhysicalFrame. **/
+    /**@{**/
+    OpenSim_DECLARE_UNNAMED_PROPERTY(VisibleObject,
+        "For visualization in the Simbody visualizer or OpenSim GUI.");
+    /**@}**/
     //==========================================================================
     // PUBLIC METHODS
     //==========================================================================
@@ -110,6 +120,11 @@ public:
     // End of underlying MobilizedBody accessors.
     ///@} 
 
+    virtual void addDisplayGeometry(const std::string &aGeometryFileName);
+
+    const VisibleObject* getDisplayer() const { return &get_VisibleObject(); }
+    VisibleObject* updDisplayer() { return &upd_VisibleObject(); }
+
 protected:
     /** The transform X_GF for this PhysicalFrame, F, in ground, G. */
     SimTK::Transform
@@ -143,10 +158,20 @@ protected:
     /**@}**/
 
 private:
+
+    /* Component construction inteeface */
+    void constructProperties() override;
+
     /* ID for the underlying mobilized body in Simbody system.
     Only Joint can set, since it defines the mobilized body type and
     the connection to the parent body in the multibody tree. */
     mutable SimTK::MobilizedBodyIndex _mbIndex;
+
+    virtual const SimTK::Body& extractInternalRigidBody() const {
+        return _internalRigidBody;
+    }
+
+    SimTK::Body::Massless _internalRigidBody;
 
     // Model is a friend because it creates the underlying mobilized body(ies)
     // that implement a Joint and is the only component that can assign

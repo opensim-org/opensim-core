@@ -778,9 +778,13 @@ public:
     ContactGeometrySet& updContactGeometrySet() { return upd_ContactGeometrySet(); }
     const ContactGeometrySet& getContactGeometrySet() const { return get_ContactGeometrySet(); }
 
+    /** This method is DEPRECATED use get/updGround() */
     Body& getGroundBody() const;
-    const PhysicalFrame& getGround() const;
 
+    /** Get a const reference to the Ground reference frame */
+    const Ground& getGround() const;
+    /** Get a writeable reference to the Ground reference frame */
+    Ground& updGround();
 
     //--------------------------------------------------------------------------
     // FRAMES
@@ -1002,9 +1006,9 @@ private:
 
     // Body used for ground, the inertial frame. This is just a reference
     // to an existing Body and should not be destructed.
-    Body*           _groundBody;
+    SimTK::ReferencePtr<Body> _groundBody;
+    SimTK::ReferencePtr<Ground> _ground;
 
-    Ground _ground;
     SimTK::MultibodyGraphMaker _multibodyTree;
 
     // This object just provides an alternate interface to the computational

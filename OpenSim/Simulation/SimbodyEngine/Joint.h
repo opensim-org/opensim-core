@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan, Ajay Seth                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,15 +24,13 @@
  * -------------------------------------------------------------------------- */
 // INCLUDE
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Common/Function.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 namespace OpenSim {
 
 class Model;
-class Body;
-class PhyscialFrame;
 class ScaleSet;
 
 /**
@@ -291,7 +289,7 @@ protected:
     void setCoordinateModel(Coordinate *aCoord, Model *aModel) const {aCoord->_model = aModel;}
 
     /** Updating XML formating to latest revision */
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
 
     /** Calculate the equivalent spatial force, FB_G, acting on a mobilized body specified by index
        acting at its mobilizer frame B, expressed in ground.  */
@@ -299,8 +297,8 @@ protected:
 
     /** Return the equivalent (internal) SimTK::Rigid::Body for the parent/child
         OpenSim::Body. Not valid until after extendAddToSystem on the Body has been called.*/
-    const SimTK::Body::Rigid& getParentInternalRigidBody() const;
-    const SimTK::Body::Rigid& getChildInternalRigidBody() const;
+    const SimTK::Body& getParentInternalRigidBody() const;
+    const SimTK::Body& getChildInternalRigidBody() const;
 
 
     /** Utility method for creating the underlying MobilizedBody of the desired
@@ -321,26 +319,24 @@ protected:
         const SimTK::Body* outb = &getChildInternalRigidBody();
         const SimTK::Transform* inbX = &getParentTransform();
         const SimTK::Transform* outbX = &getChildTransform();
-        const Body* associatedBody = nullptr;
+        const PhysicalFrame* associatedFrame = nullptr;
         // if the joint is reversed then flip the underlying tree representation
         // of inboard and outboard bodies, although the joint direction will be
         // preserved, the inboard must exist first.
         if (get_reverse()){
-            inb = mbs.updMatterSubsystem().updMobilizedBody(
-                                               getMobilizedBodyIndex(getChildFrame()) );
+            inb = getChildFrame().getMobilizedBody();
             const SimTK::Transform* swap = inbX;
             inbX = outbX;
             outbX = swap;
 
             outb = &getParentInternalRigidBody();
-            associatedBody = (_slaveBodyForParent) ? _slaveBodyForParent :
+            associatedFrame = (_slaveBodyForParent) ? _slaveBodyForParent :
                                                      &getParentFrame();
         }
         else{
-            inb = mbs.updMatterSubsystem().updMobilizedBody(
-                                               getMobilizedBodyIndex(getParentFrame()) );
+            inb = getParentFrame().getMobilizedBody();
 
-            associatedBody = (_slaveBodyForChild) ? _slaveBodyForChild :
+            associatedFrame = (_slaveBodyForChild) ? _slaveBodyForChild :
                 &getChildFrame();
         }
 
@@ -348,7 +344,7 @@ protected:
         T simtkBody = createMobilizedBody<T>(inb, *inbX,
                                              *outb, *outbX,
                                              startingCoordinateIndex,
-                                             associatedBody);
+                                             associatedFrame);
 
         return simtkBody;
     }
@@ -390,7 +386,7 @@ protected:
                           const SimTK::Body& outboard,
                           const SimTK::Transform& outboardTransform,
                           int& startingCoordinateIndex,
-                          const OpenSim::Body* associatedBody=nullptr) const {
+                          const PhysicalFrame* associatedFrame=nullptr) const {
         // CREATE MOBILIZED BODY
         SimTK::MobilizedBody::Direction dir =
             SimTK::MobilizedBody::Direction(get_reverse());
@@ -404,7 +400,7 @@ protected:
                       getConcreteClassName().c_str());
 
         startingCoordinateIndex = assignSystemIndicesToBodyAndCoordinates(simtkBody,
-            associatedBody,
+            associatedFrame,
             getNumMobilities<T>(simtkBody),
             startingCoordinateIndex);
 
@@ -422,7 +418,7 @@ protected:
         an exception if the mobilized Body is neither the Joint's parent or child.*/
     int assignSystemIndicesToBodyAndCoordinates(
         const SimTK::MobilizedBody& mobod,
-        const OpenSim::Body* mobilized,
+        const OpenSim::PhysicalFrame* mobilized,
         const int& numMobilities,
         const int& startingCoordinateIndex) const;
 

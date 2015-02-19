@@ -234,8 +234,7 @@ void CoordinateCouplerConstraint::extendAddToSystem(SimTK::MultibodySystem& syst
                                                                 mob_bodies, mob_qs);
 
     // Beyond the const Component get the index so we can access the SimTK::Constraint later
-    CoordinateCouplerConstraint* mutableThis = const_cast<CoordinateCouplerConstraint *>(this);
-    mutableThis->_index = simtkCoordinateCoupler.getConstraintIndex();
+    assignConstraintIndex(simtkCoordinateCoupler.getConstraintIndex());
 }
 
 //=============================================================================

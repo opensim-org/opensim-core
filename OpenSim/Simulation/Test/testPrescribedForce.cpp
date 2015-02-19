@@ -103,7 +103,7 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     // Setup OpenSim model
     Model *osimModel = new Model;
     //OpenSim bodies
-    OpenSim::Body& ground = osimModel->getGroundBody();
+    const Ground& ground = osimModel->getGround();;
     OpenSim::Body ball;
     ball.setName("ball");
 

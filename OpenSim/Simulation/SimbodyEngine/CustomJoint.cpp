@@ -54,9 +54,9 @@ CustomJoint::CustomJoint() : Super()
 /**
  * Constructor with specified SpatialTransform.
  */
-CustomJoint::CustomJoint(const std::string &name, const OpenSim::Body &parent,
+CustomJoint::CustomJoint(const std::string& name, const PhysicalFrame& parent,
     const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-    const OpenSim::Body& child,
+    const PhysicalFrame& child,
     const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
     SpatialTransform& aSpatialTransform, bool reverse) :
         Super(name, parent, locationInParent, orientationInParent,
@@ -71,9 +71,9 @@ CustomJoint::CustomJoint(const std::string &name, const OpenSim::Body &parent,
 /**
  * Convenience Constructor; use default SpatialTransform.
  */
-CustomJoint::CustomJoint(const std::string &name, const OpenSim::Body &parent,
+CustomJoint::CustomJoint(const std::string &name, const PhysicalFrame& parent,
     const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-    const OpenSim::Body& child,
+    const PhysicalFrame& child,
     const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
     bool reverse) : 
         Super(name, parent, locationInParent,orientationInParent,

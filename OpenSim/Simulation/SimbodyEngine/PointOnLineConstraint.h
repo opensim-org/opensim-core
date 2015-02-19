@@ -1,5 +1,5 @@
-#ifndef __PointOnLineConstraint_h__
-#define __PointOnLineConstraint_h__
+#ifndef OPENSIM_POINT_ON_LINE_CONSTRAINT_H_
+#define OPENSIM_POINT_ON_LINE_CONSTRAINT_H_
 /* -------------------------------------------------------------------------- *
  *                     OpenSim:  PointOnLineConstraint.h                      *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
  * Author(s): Samuel R. Hamner                                                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,17 +23,13 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec.h>
 #include "Constraint.h"
-#include "Body.h"
 
 namespace OpenSim {
 
+class PhysicalFrame;
 //=============================================================================
 //=============================================================================
 /**
@@ -49,23 +45,13 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PointOnLineConstraint, Constraint);
 //=============================================================================
 // DATA
 //=============================================================================
-protected:
-
-    OpenSim_DECLARE_PROPERTY(line_body, std::string, "Specify the body on which the line is defined");
-
-    OpenSim_DECLARE_PROPERTY(line_direction_vec, SimTK::Vec3, "Direction of the line in line body specified in the line body frame.");
-
-    OpenSim_DECLARE_PROPERTY(point_on_line, SimTK::Vec3, "Specify the default point on the line in the line body frame.");
-    
-    OpenSim_DECLARE_PROPERTY(follower_body, std::string, "Specify the follower body constrained to the line.");
-
-    OpenSim_DECLARE_PROPERTY(point_on_follower, SimTK::Vec3, "Specify the  point on the follower bocy constrained to the line in the follower body reference frame.");
-
-    /** Line body */
-    Body *_lineBody;
-
-    /** Follower body */
-    Body *_followerBody;
+public:
+    OpenSim_DECLARE_PROPERTY(line_direction_vec, SimTK::Vec3,
+        "Direction of the line specifid in the line body frame.");
+    OpenSim_DECLARE_PROPERTY(point_on_line, SimTK::Vec3,
+        "The default point on the line specified in the line body frame.");
+    OpenSim_DECLARE_PROPERTY(point_on_follower, SimTK::Vec3,
+        "The point on (and specified in) the follower body constrained to the line.");
 
 //=============================================================================
 // METHODS
@@ -73,28 +59,31 @@ protected:
 public:
     // CONSTRUCTION
     PointOnLineConstraint();
-    PointOnLineConstraint(OpenSim::Body& lineBody, SimTK::Vec3 lineDirection, SimTK::Vec3 pointOnLine,
-        OpenSim::Body& followerBody, SimTK::Vec3 followerPoint);
+    PointOnLineConstraint(const PhysicalFrame& lineBody, const SimTK::Vec3& lineDirection, SimTK::Vec3 pointOnLine,
+        const PhysicalFrame& followerBody, const SimTK::Vec3& followerPoint);
+
     virtual ~PointOnLineConstraint();
 
     //SET 
-    void setLineBodyByName(std::string aBodyName);
-    void setFollowerBodyByName(std::string aBodyName);
+    void setLineBodyByName(const std::string& aBodyName);
+    void setFollowerBodyByName(const std::string& aBodyName);
     void setLineDirection(SimTK::Vec3 direction);
     void setPointOnLine(SimTK::Vec3 point);
     void setPointOnFollower(SimTK::Vec3 point);
 
 protected:
-    void extendConnectToModel(Model& aModel) override;
     /**
-     * Create a SimTK::Constraint::PointOnLine which implements this constraint.
-     */
+    * Extend Component Interface.
+    */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-
 private:
+    /** Construct PointConstraint's properties */
+    void constructProperties() override;
+    /** Construct PointConstraint's connectors */
+    void constructConnectors() override;
     void setNull();
-    void constructProperties();
+
 
 //=============================================================================
 };  // END of class PointOnLineConstraint
@@ -103,6 +92,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __PointOnLineConstraint_h__
+#endif // OPENSIM_POINT_ON_LINE_CONSTRAINT_H_
 
 

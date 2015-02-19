@@ -308,19 +308,19 @@ double calcLigamentLengthError(const SimTK::State &s, const Model &model)
     using namespace SimTK;
     double error = 0;
 
-    ConstantDistanceConstraint* constraint = dynamic_cast<ConstantDistanceConstraint*>(&model.getConstraintSet()[0]);
-    const BodySet& bodies = model.getBodySet();
+    ConstantDistanceConstraint* constraint =
+        dynamic_cast<ConstantDistanceConstraint*>(&model.getConstraintSet()[0]);
     
     if(constraint){
         Vec3 p1inB1, p2inB2, p1inG, p2inG;
         p1inB1 = constraint->get_location_body_1();
         p2inB2 = constraint->get_location_body_2();
 
-        const OpenSim::Body& b1 = bodies.get(constraint->get_body_1());
-        const OpenSim::Body& b2 = bodies.get(constraint->get_body_2());
+        const PhysicalFrame& b1 = constraint->getBody1();
+        const PhysicalFrame& b2 = constraint->getBody2();
 
-        model.getSimbodyEngine().getPosition(s, b1, p1inB1, p1inG);
-        model.getSimbodyEngine().getPosition(s, b2, p2inB2, p2inG);
+        p1inG = b1.getGroundTransform(s)*p1inB1;
+        p2inG = b2.getGroundTransform(s)*p2inB2;
 
         double length = (p2inG-p1inG).norm();
         error = length - constraint->get_constant_distance();

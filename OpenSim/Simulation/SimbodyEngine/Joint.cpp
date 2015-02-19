@@ -595,12 +595,17 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             XMLDocument::renameChildNode(aNode, "orientation", "orientation_in_child"); // direction_A -> direction
         }
     }
+    else {
+        // Handle any recent models that have the Joint connecting to Bodies instead
+        // of current use of PhyscialFrames
+        XMLDocument::renameChildNode(aNode, "Connector_Body_", "Connector_PhysicalFrame_");
+    }
     Super::updateFromXMLNode(aNode, versionNumber);
 }
 
 int Joint::assignSystemIndicesToBodyAndCoordinates(
     const SimTK::MobilizedBody& mobod,
-    const OpenSim::Body* mobilized,
+    const OpenSim::PhysicalFrame* mobilized,
     const int& numMobilities,
     const int& startingCoordinateIndex) const
 {
@@ -648,19 +653,23 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
 }
 
 /* Return the equivalent (internal) SimTK::Rigid::Body for a given parent OR
-child OpenSim::Body. Not guaranteed to be valid until after extendAddToSystem on
+child OpenSim::Body. Not guaranteed to be valid until after addToSystem on
 Body has be called  */
-const SimTK::Body::Rigid& Joint::getParentInternalRigidBody() const
+const SimTK::Body& Joint::getParentInternalRigidBody() const
 {
     if (_slaveBodyForParent){
-        return _slaveBodyForParent->getInternalRigidBody();
+        return _slaveBodyForParent->extractInternalRigidBody();
     }
-    return getParentFrame().getInternalRigidBody();
+
+    return static_cast<const PhysicalFrame&>(getParentFrame()
+        .findBaseFrame()).extractInternalRigidBody();
 }
-const SimTK::Body::Rigid& Joint::getChildInternalRigidBody() const
+const SimTK::Body& Joint::getChildInternalRigidBody() const
 {
     if (_slaveBodyForChild){
-        return _slaveBodyForChild->getInternalRigidBody();
+        return _slaveBodyForChild->extractInternalRigidBody();
     }
-    return getParentFrame().getInternalRigidBody();
+
+    return static_cast<const PhysicalFrame&>(getChildFrame()
+        .findBaseFrame()).extractInternalRigidBody();;
 }

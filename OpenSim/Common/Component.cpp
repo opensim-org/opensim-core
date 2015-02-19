@@ -175,7 +175,7 @@ void Component::connect(Component &root)
         connector.disconnect();
 
         const Component* connectTo = root.findComponent(connector.get_connected_to_name());
-        if (connectTo){
+        if (connectTo) {
             connector.connect(*connectTo);
             //cout << getConcreteClassName() << " '" << getName();
             //cout << "' connected to: " << ci->get_connected_to_name() << endl;
@@ -183,7 +183,7 @@ void Component::connect(Component &root)
         else{
             throw Exception(getConcreteClassName() + "::connect() Could not find component '"
                 + connector.get_connected_to_name() + "' to satisfy Connector<" +
-                connector.getConnectedToTypeName() + "> '" + connector.getName() + "'.");
+                connector.getConnectedToTypeName() + "> '" + connector.getName() + "'.\n");
         }
         //is connected or an exception was thrown
     }

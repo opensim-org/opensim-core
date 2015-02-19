@@ -25,7 +25,6 @@
 
 // INCLUDE
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
-#include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 
 namespace OpenSim {
@@ -63,8 +62,6 @@ public:
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(WrapObjectSet,
         "Set of wrap objects fixed to this body that GeometryPaths can wrap over.");
-    OpenSim_DECLARE_UNNAMED_PROPERTY(VisibleObject,
-        "For visualization in the Simbody visualizer or OpenSim GUI.");
     /**@}**/
 
 //=============================================================================
@@ -108,11 +105,6 @@ public:
     void scaleMass(double aScaleFactor);
     void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
 
-    virtual void addDisplayGeometry(const std::string &aGeometryFileName);
-
-    const VisibleObject* getDisplayer() const { return &get_VisibleObject(); }
-    VisibleObject* updDisplayer() { return &upd_VisibleObject(); }
-
     /** Get the named wrap object, if it exists.
     *
     * @param aName Name of the wrap object.
@@ -146,7 +138,7 @@ private:
 
     /** Return the equivalent (internal) SimTK::Rigid::Body for this body.
     Not valid until after extendAddToSystem on Body has be called.*/
-    const SimTK::Body::Rigid& getInternalRigidBody() const {
+    const SimTK::Body& extractInternalRigidBody() const override {
         return _internalRigidBody;
     }
 
@@ -167,6 +159,10 @@ private:
     // therefore, can tell a Body if it must add slaves to implement a valid
     // Multibody tree.
     friend class Model;
+
+    // Model is a friend because it creates the underlying RigidBody
+    // mass properties are set by the 
+    friend class Joint;
 
 //=============================================================================
 };  // END of class Body

@@ -75,7 +75,6 @@ void Body::constructProperties()
     constructProperty_mass_center(SimTK::Vec3(0));
     constructProperty_inertia(SimTK::Vec6(0));
     constructProperty_WrapObjectSet(WrapObjectSet());
-    constructProperty_VisibleObject(VisibleObject());
 }
 
 
@@ -133,15 +132,7 @@ void Body::extendConnectToModel(Model& aModel)
 // GET AND SET
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Add display geometry to body.
- *
- * @param aGeometryFileName Geometry filename.
- */
-void Body::addDisplayGeometry(const std::string &aGeometryFileName)
-{
-    updDisplayer()->setGeometryFileName(updDisplayer()->getNumGeometryFiles(), aGeometryFileName);
-}
+
 
 
 //_____________________________________________________________________________

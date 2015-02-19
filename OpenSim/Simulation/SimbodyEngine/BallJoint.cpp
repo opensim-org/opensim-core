@@ -58,7 +58,7 @@ BallJoint::BallJoint() : Joint()
 /**
  * Convenience Constructor.
  */
-BallJoint::BallJoint(const std::string &name, const OpenSim::Body& parent, 
+BallJoint::BallJoint(const std::string &name, const PhysicalFrame& parent, 
                      const Vec3& locationInParent, const Vec3& orientationInParent,
                      const OpenSim::Body& body,
                      const Vec3& locationInBody, const Vec3& orientationInBody, 

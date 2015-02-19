@@ -75,16 +75,16 @@ public:
     CustomJoint();
 
     /** Construct joint with supplied coordinates and transform axes */
-    CustomJoint(const std::string &name, const Body& parent,
+    CustomJoint(const std::string &name, const PhysicalFrame& parent,
             const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-            const Body& child,
+            const PhysicalFrame& child,
             const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
             SpatialTransform& aSpatialTransform, bool reverse=false);
 
     // Construct joint with default (empty) coordinates and axes
-    CustomJoint(const std::string &name, const Body& parent,
+    CustomJoint(const std::string &name, const PhysicalFrame& parent,
             const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-            const Body& child,
+            const PhysicalFrame& child,
             const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
             bool reverse = false);
 
