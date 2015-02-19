@@ -156,6 +156,7 @@ void FrameGeometry::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeom
 void Mesh::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const std::string& file = get_mesh_file();
+#if 0
     bool isAbsolutePath; string directory, fileName, extension;
     SimTK::Pathname::deconstructPathname(file,
         isAbsolutePath, directory, fileName, extension);
@@ -200,8 +201,8 @@ void Mesh::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& de
             << e.what() << "\n";
         return;
     }
-
-    DecorativeMesh dmesh(pmesh);
+#endif
+    DecorativeMeshFile dmesh(file);
     dmesh.setScaleFactors(get_scale_factors());
     decoGeoms.push_back(dmesh);
 }
