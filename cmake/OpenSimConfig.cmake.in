@@ -16,7 +16,10 @@
 # Adapted from SimbodyConfig.cmake
 #
 
-list(APPEND @CMAKE_PROJECT_NAME@_ROOT_DIR "@CMAKE_INSTALL_PREFIX@")
+# To make the OpenSim installation relocatable:
+@PACKAGE_INIT@
+
+set_and_check(@CMAKE_PROJECT_NAME@_ROOT_DIR "@PACKAGE_CMAKE_INSTALL_PREFIX@")
 
 # LIB_DIR
 # -------
@@ -26,7 +29,8 @@ else()
     set(_OPENSIM_LIB_RELPATH "lib")
 endif()
 
-list(APPEND @CMAKE_PROJECT_NAME@_LIB_DIR "@CMAKE_INSTALL_PREFIX@/${_OPENSIM_LIB_RELPATH}")
+set_and_check(@CMAKE_PROJECT_NAME@_LIB_DIR
+    "@PACKAGE_CMAKE_INSTALL_PREFIX@/${_OPENSIM_LIB_RELPATH}")
 
 if(NOT @OPENSIM_COPY_SIMBODY@)
     list(APPEND @CMAKE_PROJECT_NAME@_LIB_DIR "@Simbody_LIB_DIR@")
@@ -35,8 +39,8 @@ endif()
 # INCLUDE_DIRS
 # ------------
 list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
-    "@CMAKE_INSTALL_PREFIX@/sdk/include"
-    "@CMAKE_INSTALL_PREFIX@/sdk/include/Vendors/lepton/include"
+    "@PACKAGE_CMAKE_INSTALL_PREFIX@/sdk/include"
+    "@PACKAGE_CMAKE_INSTALL_PREFIX@/sdk/include/Vendors/lepton/include"
     )
 
 if(@OPENSIM_COPY_SIMBODY@)
@@ -47,7 +51,7 @@ if(@OPENSIM_COPY_SIMBODY@)
         set(_SIMBODY_INCLUDE_RELPATH "simbody")
     endif()
     list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
-        "@CMAKE_INSTALL_PREFIX@/sdk/include/SimTK/${_SIMBODY_INCLUDE_RELPATH}")
+        "@PACKAGE_CMAKE_INSTALL_PREFIX@/sdk/include/SimTK/${_SIMBODY_INCLUDE_RELPATH}")
 else()
     # Refer to Simbody's own headers.
     list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS "@Simbody_INCLUDE_DIR@")
@@ -55,8 +59,10 @@ endif()
 
 # LIBRARIES
 # ---------
-include("@CMAKE_INSTALL_PREFIX@/@OPENSIM_INSTALL_CMAKE_DIR@/@CMAKE_PROJECT_NAME@Targets.cmake")
+include("@PACKAGE_OPENSIM_INSTALL_CMAKE_DIR@/@CMAKE_PROJECT_NAME@Targets.cmake")
 
 # The osimTools target uses all the other targets.
 # This makes a distinction between release and debug libraries.
 list(APPEND @CMAKE_PROJECT_NAME@_LIBRARIES osimTools)
+
+check_required_components(OpenSim)
