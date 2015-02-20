@@ -98,7 +98,7 @@ private:
 };  // END class AbstractOutput
 
 template<class T>
-class  Output : public AbstractOutput {
+class Output : public AbstractOutput {
 public:
     //default construct output function pointer and result container
     Output() : AbstractOutput(), _outputFcn(nullptr) {}   
@@ -127,8 +127,8 @@ public:
     //--------------------------------------------------------------------------
     // OUTPUT VALUE
     //--------------------------------------------------------------------------
-    /** return the Value of this ouput if the state is appropriately realized   
-        to a stage at our beyond the dependsOnStage, otherwise expect an
+    /** Return the Value of this output if the state is appropriately realized   
+        to a stage at or beyond the dependsOnStage, otherwise expect an
         Exception. */
     const T& getValue(const SimTK::State& state) const {
         _result = SimTK::NaN;
