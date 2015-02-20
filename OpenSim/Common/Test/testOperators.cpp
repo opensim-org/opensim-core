@@ -33,6 +33,9 @@ using namespace OpenSim;
 // TODO should Delay hold onto the Measure::Delay handle, or onto the index?
 // TODO check up on Delay.h doxygen documentation.
 // TODO convert Ian Stavness' example to use this Delay component.
+// TODO changes to Coordinate properties.
+// TODO Test VectorDelay.
+// TODO write stage test.
 Model createPendulumModel() {
     Model model;
     // The link rests along the x axis.
@@ -178,9 +181,20 @@ void testDelaySimulation(Model& model) {
             finalCoordValue_withControllerDelay, tol);
     SimTK_TEST_NOTEQ_TOL(finalCOMValue_noControllerDelay,
             finalCOMValue_withControllerDelay, tol);
+
+    // Regression. Since above we are only checking if the controller with
+    // delay and the controller without delay produce different results,
+    // the above test is not sufficient to check if behavior changes.
+    SimTK_TEST_EQ_TOL(finalCoordValue_noControllerDelay, -0.245182, tol);
+    SimTK_TEST_EQ_TOL(finalCoordValue_withControllerDelay, -0.171928, tol);
+    SimTK_TEST_EQ_TOL(finalCOMValue_noControllerDelay,
+                      Vec3(0.970093, -0.242733, 0.0), tol);
+    SimTK_TEST_EQ_TOL(finalCOMValue_withControllerDelay,
+                      Vec3(0.985257, -0.171082, 0.0), tol);
 }
 
 void testDelay() {
+    Object::registerType(Delay<SimTK::Vec3>());
 
     // Test the use of the Delay within a controller.
     // ==============================================
