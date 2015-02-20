@@ -318,9 +318,13 @@ int WrapObject::wrapPathSegment(const SimTK::State& s, PathPoint& aPoint1, PathP
 
     // Convert the path points from the frames of the bodies they are attached
     // to to the frame of the wrap object's body
-    _model->getSimbodyEngine().transformPosition(s, aPoint1.getBody(), aPoint1.getLocation(), getBody(), pt1);
-
-    _model->getSimbodyEngine().transformPosition(s, aPoint2.getBody(), aPoint2.getLocation(), getBody(), pt2);
+    //_model->getSimbodyEngine().transformPosition(s, aPoint1.getBody(), aPoint1.getLocation(), getBody(), pt1);
+    pt1 = aPoint1.getBody()
+        .findLocationInAnotherFrame(s, aPoint1.getLocation(), getBody());
+    
+    //_model->getSimbodyEngine().transformPosition(s, aPoint2.getBody(), aPoint2.getLocation(), getBody(), pt2);
+    pt2 = aPoint2.getBody()
+        .findLocationInAnotherFrame(s, aPoint2.getLocation(), getBody());
 
     // Convert the path points from the frame of the wrap object's body
     // into the frame of the wrap object

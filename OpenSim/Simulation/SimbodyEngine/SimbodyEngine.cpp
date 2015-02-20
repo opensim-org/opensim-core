@@ -526,8 +526,8 @@ transformPosition(const SimTK::State& s, const OpenSim::Body& aBodyFrom,
  * @return the distance between aPoint1 and aPoint2
  */
 double SimbodyEngine::
-calcDistance(const SimTK::State& s, const OpenSim::Body& aBody1,
-        const Vec3& aPoint1, const OpenSim::Body& aBody2, const Vec3& aPoint2)
+calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1,
+const Vec3& aPoint1, const PhysicalFrame& aBody2, const Vec3& aPoint2)
     const
 {
     return aBody1.getMobilizedBody().calcStationToStationDistance(s, aPoint1,

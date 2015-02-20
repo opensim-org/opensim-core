@@ -27,6 +27,7 @@
 #include "PathPoint.h"
 #include "BodySet.h"
 #include "Model.h"
+#include <OpenSim/Common/Geometry.h>
 #include "GeometryPath.h"
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h> 
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
@@ -38,7 +39,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-Geometry *PathPoint::_defaultGeometry= AnalyticSphere::createSphere(0.005);
+Geometry* PathPoint::_defaultGeometry= AnalyticSphere::createSphere(0.005);
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -193,7 +194,7 @@ PathPoint& PathPoint::operator=(const PathPoint &aPoint)
  *
  * @param aBody Reference to the body.
  */
-void PathPoint::setBody(Body& aBody)
+void PathPoint::setBody(PhysicalFrame& aBody)
 {
     if (&aBody == _body)
         return;
@@ -211,16 +212,26 @@ void PathPoint::setBody(Body& aBody)
  * @param s State.
  * @param aBody Reference to the body.
  */
-void PathPoint::changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody)
+void PathPoint::changeBodyPreserveLocation(const SimTK::State& s, PhysicalFrame& aBody)
 {
-    if (&aBody == _body || !_body)
+    if (!_body){
+        throw Exception("PathPoint::changeBodyPreserveLocation attempted to "
+            " change the body on PathPoint which was not assigned to a body.");
+    }
+    // if it is already assigned to aBody, do nothing
+    if (_body == &aBody )
         return;
 
     // Preserve location means to switch bodies without changing
     // the location of the point in the inertial reference frame.
-    aBody.getModel().getSimbodyEngine().transformPosition(s, *_body, _location, aBody, _location);
+    //aBody.getModel().getSimbodyEngine().transformPosition(s, *_body, _location, aBody, _location);
 
+    _location = _body->findLocationInAnotherFrame(s, _location, aBody);
     _bodyName = aBody.getName();
+
+    // now assign this point's body to point to aBody
+    _body = &aBody;
+
     connectToModelAndPath(aBody.getModel(), *getPath());
 }
 

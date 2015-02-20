@@ -279,8 +279,8 @@ getPointForceDirections(const SimTK::State& s,
     int i;
     PathPoint* start;
     PathPoint* end;
-    const OpenSim::Body* startBody;
-    const OpenSim::Body* endBody;
+    const OpenSim::PhysicalFrame* startBody;
+    const OpenSim::PhysicalFrame* endBody;
     const Array<PathPoint*>& currentPath = getCurrentPath(s);
 
     int np = currentPath.getSize();
@@ -292,7 +292,7 @@ getPointForceDirections(const SimTK::State& s,
     for (i = 0; i < np; i++) {
         PointForceDirection *pfd = 
             new PointForceDirection(currentPath[i]->getLocation(), 
-                                    currentPath[i]->getBody(), Vec3(0));
+                                    *(OpenSim::Body*)&(currentPath[i]->getBody()), Vec3(0));
         rPFDs->append(pfd);
     }
 
@@ -308,8 +308,11 @@ getPointForceDirections(const SimTK::State& s,
             Vec3 direction(0);
 
             // Find the positions of start and end in the inertial frame.
-            engine.getPosition(s, start->getBody(), start->getLocation(), posStart);
-            engine.getPosition(s, end->getBody(), end->getLocation(), posEnd);
+            //engine.getPosition(s, start->getBody(), start->getLocation(), posStart);
+            posStart = start->getBody().getGroundTransform(s)*start->getLocation();
+            
+            //engine.getPosition(s, end->getBody(), end->getLocation(), posEnd);
+            posEnd = end->getBody().getGroundTransform(s)*end->getLocation();
 
             // Form a vector from start to end, in the inertial frame.
             direction = (posEnd - posStart);
@@ -513,12 +516,14 @@ void GeometryPath::updateGeometryLocations(const SimTK::State& s) const
         PathPoint* nextPoint =currentDisplayPath.get(i);
         // xform point to global frame
         const Vec3& location=nextPoint->getLocation();
-        const OpenSim::Body& body = nextPoint->getBody();
+        const PhysicalFrame& body = nextPoint->getBody();
         if (i > 0){
             previousPointGlobalLocation = globalLocation;
         }
-        _model->getSimbodyEngine().transformPosition(s, body, location, 
-                                                     globalLocation);
+        //_model->getSimbodyEngine().transformPosition(s, body, location, 
+        //                                             globalLocation);
+        globalLocation = body.getGroundTransform(s)*location;
+        
         // Make a segment between globalLocation, previousPointGlobalLocation.
         if (i > 0){
             // Geometry will be deleted when the object is deleted.
@@ -622,7 +627,7 @@ double GeometryPath::getPreScaleLength( const SimTK::State& s) const {
  * @return Pointer to the newly created path point.
  */
 PathPoint* GeometryPath::
-addPathPoint(const SimTK::State& s, int aIndex, OpenSim::Body& aBody)
+addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& aBody)
 {
     PathPoint* newPoint = new PathPoint();
     newPoint->setBody(aBody);
@@ -653,7 +658,7 @@ addPathPoint(const SimTK::State& s, int aIndex, OpenSim::Body& aBody)
 
 PathPoint* GeometryPath::
 appendNewPathPoint(const std::string& proposedName, 
-                   OpenSim::Body& aBody, const SimTK::Vec3& aPositionOnBody)
+                   PhysicalFrame& aBody, const SimTK::Vec3& aPositionOnBody)
 {
     PathPoint* newPoint = new PathPoint();
     newPoint->setBody(aBody);
@@ -676,7 +681,7 @@ appendNewPathPoint(const std::string& proposedName,
  */
 void GeometryPath::
 placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, int aIndex, 
-                  const OpenSim::Body& aBody)
+                  const PhysicalFrame& aBody)
 {
     // The location of the point is determined by moving a 'distance' from 'base' 
     // along a vector from 'start' to 'end.' 'base' is the existing path point 
@@ -705,15 +710,22 @@ placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, int aIndex,
             base = start;
             distance = 0.5;
         }
-        const Vec3& startPt = get_PathPointSet().get(start).getLocation();
-        const Vec3& endPt = get_PathPointSet().get(end).getLocation();
-        const Vec3& basePt = get_PathPointSet().get(base).getLocation();
-        Vec3 startPt2(0.0);
-        Vec3 endPt2(0.0);
-        getModel().getSimbodyEngine().transformPosition
-           (s, get_PathPointSet().get(start).getBody(), startPt, aBody, startPt2);
-        getModel().getSimbodyEngine().transformPosition
-           (s, get_PathPointSet().get(end).getBody(), endPt, aBody, endPt2);
+
+        const Vec3& startPt = get_PathPointSet()[start].getLocation();
+        const Vec3& endPt = get_PathPointSet()[end].getLocation();
+        const Vec3& basePt = get_PathPointSet()[base].getLocation();
+
+        //getModel().getSimbodyEngine().transformPosition
+        //   (s, get_PathPointSet()[start].getBody(), startPt, aBody, startPt2);
+        Vec3 startPt2 = get_PathPointSet()[start].getBody()
+            .findLocationInAnotherFrame(s, startPt, aBody);
+
+        //getModel().getSimbodyEngine().transformPosition
+        //   (s, get_PathPointSet()[end].getBody(), endPt, aBody, endPt2);
+
+        Vec3 endPt2 = get_PathPointSet()[end].getBody()
+            .findLocationInAnotherFrame(s, endPt, aBody);
+
         aOffset = basePt + distance * (endPt2 - startPt2);
     } else if (get_PathPointSet().getSize() == 1){
         int foo = 0;
@@ -1028,24 +1040,41 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
         end   = currentPath[i+1];
 
         // Find the positions and velocities in the inertial frame.
-        engine.getPosition(s, start->getBody(), start->getLocation(), 
-            posStartInertial);
-        engine.getPosition(s, end->getBody(), end->getLocation(), 
-            posEndInertial);
-        engine.getVelocity(s, start->getBody(), start->getLocation(), 
-            velStartInertial);
-        engine.getVelocity(s, end->getBody(), end->getLocation(), 
-            velEndInertial);
+        //engine.getPosition(s, start->getBody(), start->getLocation(), 
+        //    posStartInertial);
+        posStartInertial =
+            start->getBody().getGroundTransform(s)*start->getLocation();
+
+        //engine.getPosition(s, end->getBody(), end->getLocation(), 
+        //    posEndInertial);
+        posEndInertial =
+            end->getBody().getGroundTransform(s)*end->getLocation();
+
+        //engine.getVelocity(s, start->getBody(), start->getLocation(), 
+        //    velStartInertial);
+        velStartInertial = start->getBody().getMobilizedBody()
+            .findStationVelocityInGround(s, start->getLocation());
+
+        //engine.getVelocity(s, end->getBody(), end->getLocation(), 
+        //    velEndInertial);
+        velEndInertial = end->getBody().getMobilizedBody()
+            .findStationVelocityInGround(s, end->getLocation());
 
         // The points might be moving in their local bodies' reference frames
         // (MovingPathPoints and possibly PathWrapPoints) so find their
         // local velocities and transform them to the inertial frame.
         start->getVelocity(s, velStartLocal);
         end->getVelocity(s, velEndLocal);
-        engine.transform(s, start->getBody(), velStartLocal, 
-                            engine.getGroundBody(), velStartMoving);
-        engine.transform(s, end->getBody(), velEndLocal, 
-                            engine.getGroundBody(), velEndMoving);
+
+        //engine.transform(s, start->getBody(), velStartLocal, 
+        //                    engine.getGroundBody(), velStartMoving);
+        velStartMoving = start->getBody()
+            .expressVectorInAnotherFrame(s, velStartLocal, getModel().getGround());
+
+        //engine.transform(s, end->getBody(), velEndLocal, 
+        //                    engine.getGroundBody(), velEndMoving);
+        velEndMoving = end->getBody()
+            .expressVectorInAnotherFrame(s, velEndLocal, getModel().getGround());
 
         // Calculate the relative positions and velocities.
         posRelative = posEndInertial - posStartInertial;
