@@ -26,8 +26,6 @@
 using namespace SimTK;
 using namespace OpenSim;
 
-// TODO SimTK_TEST exceptions give a message telling users to file a bug report
-// to Simbody.
 Model createPendulumModel() {
     Model model;
     // The link rests along the x axis.
@@ -417,7 +415,7 @@ void testDelay() {
 }
 
 int main() {
-    // TODO SimTK_START_TEST("testOperators");
+    SimTK_START_TEST("testOperators");
         SimTK_SUBTEST(testDelay);
-    //SimTK_END_TEST();
+    SimTK_END_TEST();
 }
