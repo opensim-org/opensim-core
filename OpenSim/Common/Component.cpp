@@ -63,34 +63,40 @@ public:
 
     // Implementations of Measure_<T>::Implementation virtual methods.
 
-    Implementation* cloneVirtual() const FINAL_11
+    Implementation* cloneVirtual() const override final
     {   return new Implementation(*this); }
 
-    int getNumTimeDerivativesVirtual() const FINAL_11 {return 0;}
-    SimTK::Stage getDependsOnStageVirtual(int order) const FINAL_11
+    int getNumTimeDerivativesVirtual() const override final {return 0;}
+    SimTK::Stage getDependsOnStageVirtual(int order) const override final
     {   return SimTK::Stage::Empty; }
        
     const T& getUncachedValueVirtual
-       (const SimTK::State& s, int derivOrder) const FINAL_11
+       (const SimTK::State& s, int derivOrder) const override final
     {   return this->getValueZero(); }
 
-    void realizeMeasureTopologyVirtual(SimTK::State& s) const FINAL_11
+    void realizeMeasureTopologyVirtual(SimTK::State& s) const override final
     {   _Component.extendRealizeTopology(s); }
-    void realizeMeasureModelVirtual(SimTK::State& s) const FINAL_11
+    void realizeMeasureModelVirtual(SimTK::State& s) const override final
     {   _Component.extendRealizeModel(s); }
-    void realizeMeasureInstanceVirtual(const SimTK::State& s) const FINAL_11
+    void realizeMeasureInstanceVirtual(const SimTK::State& s)
+        const override final
     {   _Component.extendRealizeInstance(s); }
-    void realizeMeasureTimeVirtual(const SimTK::State& s) const FINAL_11
+    void realizeMeasureTimeVirtual(const SimTK::State& s) const override final
     {   _Component.extendRealizeTime(s); }
-    void realizeMeasurePositionVirtual(const SimTK::State& s) const FINAL_11
+    void realizeMeasurePositionVirtual(const SimTK::State& s)
+        const override final
     {   _Component.extendRealizePosition(s); }
-    void realizeMeasureVelocityVirtual(const SimTK::State& s) const FINAL_11
+    void realizeMeasureVelocityVirtual(const SimTK::State& s)
+        const override final
     {   _Component.extendRealizeVelocity(s); }
-    void realizeMeasureDynamicsVirtual(const SimTK::State& s) const FINAL_11
+    void realizeMeasureDynamicsVirtual(const SimTK::State& s)
+        const override final
     {   _Component.extendRealizeDynamics(s); }
-    void realizeMeasureAccelerationVirtual(const SimTK::State& s) const FINAL_11
+    void realizeMeasureAccelerationVirtual(const SimTK::State& s)
+        const override final
     {   _Component.extendRealizeAcceleration(s); }
-    void realizeMeasureReportVirtual(const SimTK::State& s) const FINAL_11
+    void realizeMeasureReportVirtual(const SimTK::State& s)
+        const override final
     {   _Component.extendRealizeReport(s); }
 
 private:

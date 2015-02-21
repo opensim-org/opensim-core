@@ -75,17 +75,17 @@ public:
     PropertyObjArray* clone() const override
     {   return new PropertyObjArray<T>(*this); }
 
-    virtual int getNumValues() const override {return getArraySize();}
-    virtual bool isObjectProperty() const override {return true;}
-    virtual bool isAcceptableObjectTag
+    int getNumValues() const override {return getArraySize();}
+    bool isObjectProperty() const override {return true;}
+    bool isAcceptableObjectTag
         (const std::string& objectTypeTag) const override {return true;}
-    virtual const Object& getValueAsObject(int index) const override
+    const Object& getValueAsObject(int index) const override
     {  return *getValueObjPtr(index); }
-    virtual Object& updValueAsObject(int index) override
+    Object& updValueAsObject(int index) override
     {
         return const_cast<Object&>(*getValueObjPtr(index));
     }
-    virtual void setValueAsObject(const Object& obj, int index) override
+    void setValueAsObject(const Object& obj, int index) override
     {   _array.set(index, dynamic_cast<T*>(obj.clone())); }
 
     //--------------------------------------------------------------------------
@@ -102,30 +102,32 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
 public:
-    virtual bool isValidObject(const Object *obj) const { return dynamic_cast<const T*>(obj)!=0; }
+    bool isValidObject(const Object *obj) const override
+    { return dynamic_cast<const T*>(obj)!=0; }
     // TYPE
-    virtual std::string getTypeName() const override
+    std::string getTypeName() const override
     {   return T::getClassName(); }
     // VALUE as String
-    virtual std::string toString() const {return "(Array of objects)";}
+    std::string toString() const override
+    {return "(Array of objects)";}
     // SIZE
-    virtual int getArraySize() const { return _array.getSize(); }
+    int getArraySize() const override { return _array.getSize(); }
     // VALUE
-    virtual const Object* getValueObjPtr(int index) const override { return (Object*)_array.get(index); }
-    virtual void appendValue(Object *obj) { 
+    const Object* getValueObjPtr(int index) const override { return (Object*)_array.get(index); }
+    void appendValue(Object *obj) override { 
         if(!isValidObject(obj)) 
             throw Exception("PropertyObjArray: ERR- Attempting to append invalid object of type "
             + obj->getConcreteClassName(), __FILE__,__LINE__);
         _array.append(static_cast<T*>(obj));
     }
-    virtual void clearObjArray() { _array.setSize(0); }
+    void clearObjArray() override { _array.setSize(0); }
 
     // Other members (not in Property base class)
     void setValue(const ArrayPtrs<T> &aArray) { _array = aArray; }
     ArrayPtrs<T>& getValueObjArray() { return _array; }
 #ifndef SWIG
     const ArrayPtrs<T>& getValueObjArray() const { return _array; }
-    virtual bool operator==(const Property_Deprecated& aProperty) const {
+    bool operator==(const Property_Deprecated& aProperty) const override {
         // base class
         bool equal=(Property_Deprecated::operator==(aProperty));
         if (equal) {
