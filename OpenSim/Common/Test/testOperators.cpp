@@ -53,12 +53,10 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PendulumController, Controller);
 public:
     OpenSim_DECLARE_PROPERTY(delay, double,
             "Use a delayed coordinate value. Default: 0, for no delay.");
-    // To demonstrate that the Delays also function as properties.
-    OpenSim_DECLARE_PROPERTY(vector_coordinate_delay, VectorDelay,
-            "Delay property overwritten by this class' delay property.");
     PendulumController() {
         constructInfrastructure();
         _delay.setName("coordinate_delay");
+        _vectorDelay.setName("vector_coordinate_delay");
         _comVelocityDelay.setName("com_velocity_delay");
     }
     PendulumController(double delay) : PendulumController() {
@@ -82,7 +80,7 @@ public:
         return _delay.getOutputValue<double>(s, "output");
     }
     Vector getDelayedCoordValueVector(const SimTK::State& s) const {
-        return get_vector_coordinate_delay().getValue(s);
+        return _vectorDelay.getValue(s);
     }
     SimTK::Vec3 getDelayedCOMVelocityValue(const State& s) const {
         return _comVelocityDelay.getValue(s);
@@ -91,7 +89,6 @@ public:
 private:
     void constructProperties() override {
         constructProperty_delay(0.0);
-        constructProperty_vector_coordinate_delay(VectorDelay());
     }
     void constructInputs() override {
         constructInput<double>("coord_value", SimTK::Stage::Position);
@@ -104,10 +101,10 @@ private:
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
         _delay.set_delay(get_delay());
-        upd_vector_coordinate_delay().set_delay(get_delay());
+        _vectorDelay.set_delay(get_delay());
         _comVelocityDelay.set_delay(get_delay());
         addComponent(&_delay);
-        addComponent(&upd_vector_coordinate_delay());
+        addComponent(&_vectorDelay);
         addComponent(&_comVelocityDelay);
     }
     void extendConnectToModel(Model& model) override {
@@ -115,13 +112,13 @@ private:
         const auto& coord = model.getCoordinateSet()[0];
         getInput("coord_value").connect(coord.getOutput("value"));
         _delay.getInput("input").connect(coord.getOutput("value"));
-        get_vector_coordinate_delay().getInput("input").connect(
-                getOutput("coord_value_vector"));
+        _vectorDelay.getInput("input").connect(getOutput("coord_value_vector"));
         _comVelocityDelay.getInput("input").connect(
                 model.getOutput("com_velocity"));
     }
 
     ScalarDelay _delay;
+    VectorDelay _vectorDelay;
     Delay<SimTK::Vec3> _comVelocityDelay;
 };
 
