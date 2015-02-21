@@ -1227,7 +1227,12 @@ template <class T> friend class ComponentMeasure;
                 Output<T>(name, outputFunction, dependsOn));
     }
 
-    /** Construct an Output for a StateVariable.
+    /** Construct an Output for a StateVariable. While this method is a
+     * convenient way to construct an Output for a StateVariable, it is
+     * inefficient because it uses a string lookup. To create a more efficient
+     * Output, create a member variable that returns the state variable
+     * directly; see the implementations of Coordinate::getValue() or
+     * Muscle::getActivation() for examples.
      *
      * @param name Name of the output, which must be the same as the name of
      * the corresponding state variable.
@@ -1235,11 +1240,12 @@ template <class T> friend class ComponentMeasure;
     void constructOutputForStateVariable(const std::string& name);
     
     /**
-     * Add another Component as a subcomponent of this Component.
-     * Component methods (e.g. addToSystem(), initStateFromProperties(), ...) are 
-     * therefore invoked on subcomponents when called on this Component. Realization is 
-     * also performed automatically on subcomponents. This Component does not take 
-     * ownership of designated subcomponents and does not destroy them when the Component.
+     * Add another Component as a subcomponent of this Component.  Component
+     * methods (e.g. addToSystem(), initStateFromProperties(), ...) are
+     * therefore invoked on subcomponents when called on this Component.
+     * Realization is also performed automatically on subcomponents. This
+     * Component does not take ownership of designated subcomponents and does
+     * not destroy them when the Component.
      */
     void addComponent(Component *aComponent);
 
@@ -1273,9 +1279,13 @@ template <class T> friend class ComponentMeasure;
     indices are automatically determined using this interface. As an advanced
     option you may choose to hide the state variable from being accessed outside
     of this component, in which case it is considered to be "hidden". 
-    You may also want to create an Output for this state variable using
-    constructOutputForStateVariable(); Reporters should use this Output to get
-    the StateVariable's value (instead of using getStateVariableValue()).
+    You may also want to create an Output for this state variable; see
+    constructOutputForStateVariable() for more information. Reporters should
+    use such an Output to get the StateVariable's value (instead of using
+    getStateVariableValue()).
+
+    @see constructOutputForStateVariable()
+
     @param[in] stateVariableName     string value to access variable by name
     @param[in] invalidatesStage      the system realization stage that is
                                      invalidated when variable value is changed
@@ -1293,10 +1303,13 @@ template <class T> friend class ComponentMeasure;
     add/expose state variables that are allocated by underlying Simbody
     components and specify how the state variable value is accessed by
     implementing a concrete StateVariable and adding it to the component using
-    this method. You may also want to create an Output for this state variable
-    using constructOutputForStateVariable(); Reporters should use this Output
-    to get the StateVariable's value (instead of using
+    this method.
+    You may also want to create an Output for this state variable; see
+    constructOutputForStateVariable() for more information. Reporters should
+    use such an Output to get the StateVariable's value (instead of using
     getStateVariableValue()).
+
+    @see constructOutputForStateVariable()
     */
     void addStateVariable(Component::StateVariable*  stateVariable) const;
 
