@@ -46,6 +46,8 @@ Model createPendulumModel() {
 /** Simple proportional controller whose output is a gain times a
  * coordinate value.
  * There is an option to delay the value of the coordinate.
+ * We've tacked on a bunch of other miscellaneous stuff solely for testing
+ * the Delay component.
  */
 class PendulumController : public Controller {
 OpenSim_DECLARE_CONCRETE_OBJECT(PendulumController, Controller);
@@ -56,7 +58,7 @@ public:
         constructInfrastructure();
         _delay.setName("coordinate_delay");
         _vectorDelay.setName("vector_coordinate_delay");
-        _comPositionDelay.setName("com_position_delay");
+        _comVelocityDelay.setName("com_velocity_delay");
     }
     PendulumController(double delay) : PendulumController() {
         set_delay(delay);
@@ -81,8 +83,8 @@ public:
     Vector getDelayedCoordValueVector(const SimTK::State& s) const {
         return _vectorDelay.getValue(s);
     }
-    SimTK::Vec3 getDelayedCOMPositionValue(const State& s) const {
-        return _comPositionDelay.getValue(s);
+    SimTK::Vec3 getDelayedCOMVelocityValue(const State& s) const {
+        return _comVelocityDelay.getValue(s);
     }
 
 private:
@@ -101,10 +103,10 @@ private:
         Super::extendFinalizeFromProperties();
         _delay.set_delay(get_delay());
         _vectorDelay.set_delay(get_delay());
-        _comPositionDelay.set_delay(get_delay());
+        _comVelocityDelay.set_delay(get_delay());
         addComponent(&_delay);
         addComponent(&_vectorDelay);
-        addComponent(&_comPositionDelay);
+        addComponent(&_comVelocityDelay);
     }
     void extendConnectToModel(Model& model) override {
         Super::extendConnectToModel(model);
@@ -112,13 +114,13 @@ private:
         getInput("coord_value").connect(coord.getOutput("value"));
         _delay.getInput("input").connect(coord.getOutput("value"));
         _vectorDelay.getInput("input").connect(getOutput("coord_value_vector"));
-        _comPositionDelay.getInput("input").connect(
-                model.getOutput("com_position"));
+        _comVelocityDelay.getInput("input").connect(
+                model.getOutput("com_velocity"));
     }
 
     ScalarDelay _delay;
     VectorDelay _vectorDelay;
-    Delay<SimTK::Vec3> _comPositionDelay;
+    Delay<SimTK::Vec3> _comVelocityDelay;
 };
 
 /// Contains dummy outputs with different requiresAt stages so that we can
@@ -198,7 +200,7 @@ void testDelaySimulation(Model& model, double delayTime = 0.017,
         finalCoordValue_noControllerDelay = coord.getValue(s);
         finalCoordValueVector_noControllerDelay =
                 controller->getCoordValueVector(s);
-        finalCOMValue_noControllerDelay = model.calcMassCenterPosition(s);
+        finalCOMValue_noControllerDelay = model.calcMassCenterVelocity(s);
     }
 
     // Simulate with controller delay and record expected delayed value.
@@ -226,24 +228,24 @@ void testDelaySimulation(Model& model, double delayTime = 0.017,
 
         expectedDelayedCoordValue = coord.getValue(s);
         expectedDelayedCoordValueVector = controller->getCoordValueVector(s);
-        expectedDelayedCOMValue = model.calcMassCenterPosition(s);
+        expectedDelayedCOMValue = model.calcMassCenterVelocity(s);
 
         // Simulate with controller delay to the finalTime.
         ts.stepTo(finalTime);
         s = ts.getState();
 
         // Must realize in order to access delayed value.
-        model.realizeTime(s);
+        model.realizeTime(s); // TODO should this be Velocity?
 
         actualDelayedCoordValue = controller->getDelayedCoordinateValue(s);
         actualDelayedCoordValueVector =
                 controller->getDelayedCoordValueVector(s);
-        actualDelayedCOMValue = controller->getDelayedCOMPositionValue(s);
+        actualDelayedCOMValue = controller->getDelayedCOMVelocityValue(s);
 
         finalCoordValue_withControllerDelay = coord.getValue(s);
         finalCoordValueVector_withControllerDelay =
                 controller->getCoordValueVector(s);
-        finalCOMValue_withControllerDelay = model.calcMassCenterPosition(s);
+        finalCOMValue_withControllerDelay = model.calcMassCenterVelocity(s);
     }
 
     // Basic check on the Delay within the controller to see that the Delay
@@ -267,15 +269,15 @@ void testDelaySimulation(Model& model, double delayTime = 0.017,
     // delay and the controller without delay produce different results,
     // the above test is not sufficient to check if behavior changes.
     if (testRegression) {
-        // The testRegression argumenet is a hacky way to only test regression
+        // The testRegression argument is a hacky way to only test regression
         // with the default delayTime, since these hardcoded numbers were
         // obtained with the default delayTime (0.017 s).
         SimTK_TEST_EQ_TOL(finalCoordValue_noControllerDelay, -0.245182, tol);
         SimTK_TEST_EQ_TOL(finalCoordValue_withControllerDelay, -0.171928, tol);
         SimTK_TEST_EQ_TOL(finalCOMValue_noControllerDelay,
-                Vec3(0.970093, -0.242733, 0.0), tol);
+                Vec3(0.495057698, 1.97852341, 0.0), tol);
         SimTK_TEST_EQ_TOL(finalCOMValue_withControllerDelay,
-                Vec3(0.985257, -0.171082, 0.0), tol);
+                Vec3(0.392224361, 2.2588064, 0.0), tol);
     }
 }
 
