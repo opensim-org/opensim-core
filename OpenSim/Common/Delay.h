@@ -33,43 +33,51 @@ namespace OpenSim {
  * A Delay can be used to model the delay in neural reflex circuits.
  *
  * For times prior to the start of a simulation this Component behaves as
- * though the source value had been constant at its initial value.
+ * though the input value had been constant at its initial value.
+ *
+ * @tparam T The type of the quantity to be delayed. Common choices are a
+ * SimTK::Real (see ScalarDelay) or a SimTK::Vector (see VectorDelay).
+ *
+ * @see ScalarDelay, VectorDelay
+ *
  *
  * This Component has a single input named "input" and a single output named
  * "output". The typical way to use this Component is as a subcomponent in
  * another component. Here is a basic example in which a controller specifies
  * the control signal for a single actuator using the delayed value of a
  * coordinate:
- *
  * @code
  * using namespace OpenSim;
  * using namespace SimTK;
  * class MyController : Controller {
  * OpenSim_DECLARE_CONCRETE_OBJECT(MyController, Controller);
  * public:
+ *     OpenSim_DECLARE_PROPERTY(delay, double, "Duration of delay (seconds).");
+ *     MyController() { constructProperties(); }
  *     void computeControls(const State& s, Vector &controls) const override {
- *         double q = _coordDelay.getOutput<double>(s, "output");
+ *         double q = _coordDelay.getValue(s);
  *         // Delayed negative feedback control law.
  *         double u = -10 * q;
  *         getModel().getActuatorSet()[0].addInControls(Vector(1, u), controls);
  *     }
  * private:
+ *     void constructProperties() {
+ *          constructProperty_delay(0.01); // 10 milliseconds
+ *     }
+ *     void extendFinalizeFromProperties() override {
+ *         _coordDelay.set_delay(get_delay());
+ *         addComponent(&_coordDelay);
+ *     }
  *     void extendConnectToModel(Model& model) override {
  *         Super::extendConnectToModel(model);
  *         const auto& coord = model.getCoordinateSet()[0];
  *         // Set the input for the Delay component.
  *         _coordDelay.getInput("input").connect(coord.getOutput("value"));
- *         _coordDelay.set_delay(0.01); // delay by 10 milliseconds.
- *         // Set the Delay as a subcomponent.
- *         addComponent(&_coordDelay);
  *     }
  *
  *     ScalarDelay _coordDelay;
  * };
  * @endcode
- *
- * @tparam T The type of the quantity to be delayed. Logical choices are a
- * SimTK::Real or a SimTK::Vector.
  *
  * This class is implemented via a SimTK::Measure_<T>::Delay.
  *
@@ -87,6 +95,9 @@ public:
     /**@}**/
 
     Delay();
+
+    // Convenience constructor that sets the delay property.
+    explicit Delay(double delay);
 
     /// Get the delayed value (the input's value at time t-delay).
     T getValue(const SimTK::State& s) const;
@@ -109,17 +120,25 @@ Delay<T>::Delay() {
 }
 
 template<class T>
+Delay<T>::Delay(double delay) : Delay() {
+    set_delay(delay);
+}
+
+template<class T>
 void Delay<T>::constructProperties() {
     constructProperty_delay(0.0);
 }
 
 template<class T>
 void Delay<T>::constructInputs() {
+    // TODO the requiredAt Stage should be the same as this Delay's output dependsOn stage.
     constructInput<T>("input", SimTK::Stage::Time);
 }
 
 template<class T>
 void Delay<T>::constructOutputs() {
+    // TODO the depensdOn stage should be the dependsOn stage of the output
+    // that is wired to this Delay's input.
     constructOutput<T>("output", &Delay::getValue, SimTK::Stage::Time);
 }
 
@@ -132,16 +151,9 @@ T Delay<T>::getValue(const SimTK::State& s) const {
 
 template<class T>
 void Delay<T>::extendFinalizeFromProperties() {
+    Super::extendFinalizeFromProperties();
     SimTK_VALUECHECK_NONNEG_ALWAYS(get_delay(),
             "delay", "Delay::extendFinalizeFromProperties()");
-    if (_delayMeasureIndex.isValid()) {
-        // If we've already initialized the system and we are only in this
-        // method because its properties were changed.
-        auto& subsys = updSystem().updDefaultSubsystem();
-        auto measure = subsys.getMeasure(_delayMeasureIndex);
-        auto& delayMeasure = SimTK::Measure_<T>::Delay::updAs(measure);
-        delayMeasure.setDelay(get_delay());
-    }
 }
 
 template<class T>
@@ -157,6 +169,7 @@ void Delay<T>::extendAddToSystem(SimTK::MultibodySystem& system) const {
 }
 
 typedef Delay<SimTK::Real> ScalarDelay;
+typedef Delay<SimTK::Vector> VectorDelay;
 
 } // namespace OpenSim
 

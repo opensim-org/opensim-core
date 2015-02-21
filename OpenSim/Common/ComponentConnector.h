@@ -285,13 +285,13 @@ private:
 }; // END class Input<T>
 
 
-/** A SimTK::Measure_ whose value is the value of an OpenSim::Input, and hose
-* dependsOn SimTK::Stage is the connectAt stage of the OpenSim::Input. Useful
-* for building OpenSim Components that use a SimTK's Measure_ internally.
+/** A SimTK::Measure_ whose value is the value of an OpenSim::Input, and whose
+* dependsOn SimTK::Stage is the connectAt stage of the OpenSim::Input. This
+* Measure is useful for building OpenSim Components that use
+* a SimTK::Measure_ internally.
 */
 template <class T>
 class InputMeasure : public SimTK::Measure_<T> {
-// TODO should this be a Measure_<T>::Result?
 public:
     SimTK_MEASURE_HANDLE_PREAMBLE(InputMeasure, SimTK::Measure_<T>);
 
