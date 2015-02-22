@@ -30,8 +30,8 @@
 #ifdef SWIG
 #undef override
 #define override
-#undef FINAL_11
-#define FINAL_11
+#undef final
+#define final
 #endif
 
 namespace OpenSim {
@@ -342,7 +342,7 @@ public:
 
     /** Use TypeHelper's getTypeName() to satisfy this pure virtual. **/
     // See below for implementation.
-    std::string getTypeName() const FINAL_11;
+    std::string getTypeName() const override final;
 
     /** Get a const reference to one of the values in the value list. This will
     throw an exception if the index does not refer to an already-existing
@@ -706,10 +706,10 @@ public:
 
     // Default destructor, copy constructor, copy assignment.
 
-    SimpleProperty* clone() const FINAL_11 
+    SimpleProperty* clone() const override final 
     {   return new SimpleProperty(*this); }
    
-    std::string toString() const                        FINAL_11 {
+    std::string toString() const override final {
         std::stringstream out;
         if (!this->isOneValueProperty()) out << "(";
         writeSimplePropertyToStream(out);
@@ -717,15 +717,15 @@ public:
         return out.str();
     }
 
-    bool isUnnamedProperty() const FINAL_11 {return false;}
-    bool isObjectProperty() const FINAL_11 {return false;}
-    bool isAcceptableObjectTag(const std::string&) const FINAL_11 
+    bool isUnnamedProperty() const override final {return false;}
+    bool isObjectProperty() const override final {return false;}
+    bool isAcceptableObjectTag(const std::string&) const override final 
     {   return false; }
 
-    int getNumValues() const FINAL_11 {return values.size(); }
-    void clearValues() FINAL_11 {values.clear();}
+    int getNumValues() const override final {return values.size(); }
+    void clearValues() override final {values.clear();}
 
-    bool isEqualTo(const AbstractProperty& other) const FINAL_11 {
+    bool isEqualTo(const AbstractProperty& other) const override final {
         // Check here rather than in base class because the old
         // Property_Deprecated implementation can't copy this flag right.
         if (this->getValueIsDefault() != other.getValueIsDefault())
@@ -743,7 +743,7 @@ public:
     // into elements of type T.
     void readFromXMLElement
        (SimTK::Xml::Element& propertyElement,
-        int                  versionNumber) FINAL_11 {
+        int                  versionNumber) override final {
         std::istringstream valstream(propertyElement.getValue());
         if (!readSimplePropertyFromStream(valstream)) {
             std::cerr << "Failed to read " << SimTK::NiceTypeName<T>::name()
@@ -773,26 +773,26 @@ public:
     // using an unformatted write to produce a series of blank-separated 
     // tokens.
     void writeToXMLElement
-       (SimTK::Xml::Element& propertyElement) const FINAL_11 {
+       (SimTK::Xml::Element& propertyElement) const override final {
         std::ostringstream valstream;
         writeSimplePropertyToStream(valstream);
         propertyElement.setValue(valstream.str()); 
     } 
 
 
-    const Object& getValueAsObject(int index=-1) const FINAL_11 {
+    const Object& getValueAsObject(int index=-1) const override final {
         throw OpenSim::Exception(
                 "SimpleProperty<T>::getValueAsObject(): property " 
                 + this->getName() + " is not an Object property."); 
     }
 
-    Object& updValueAsObject(int index=-1) FINAL_11 {
+    Object& updValueAsObject(int index=-1) override final {
         throw OpenSim::Exception(
                 "SimpleProperty<T>::updValueAsObject(): property " 
                 + this->getName() + " is not an Object property."); 
     }
 
-    void setValueAsObject(const Object& obj, int index=-1) FINAL_11 {
+    void setValueAsObject(const Object& obj, int index=-1) override final {
         throw OpenSim::Exception(
                 "SimpleProperty<T>::setValueAsObject(): property " 
                 + this->getName() + " is not an Object property."); 
@@ -824,17 +824,17 @@ public:
 private:
     // This is the Property<T> interface implementation.
     // Base class checks the index.
-    const T& getValueVirtual(int index) const   FINAL_11 
+    const T& getValueVirtual(int index) const   override final 
     {   return values[index]; }
-    T& updValueVirtual(int index)               FINAL_11 
+    T& updValueVirtual(int index)               override final 
     {   return values[index]; }
-    void setValueVirtual(int index, const T& value) FINAL_11
+    void setValueVirtual(int index, const T& value) override final
     {   values[index] = value; }
-    int appendValueVirtual(const T& value)     FINAL_11
+    int appendValueVirtual(const T& value)     override final
     {   values.push_back(value); return values.size()-1; }
     // Adopting a simple property just means we have to delete the one that
     // gets passed in because the caller thinks we took over ownership.
-    int adoptAndAppendValueVirtual(T* valuep)     FINAL_11
+    int adoptAndAppendValueVirtual(T* valuep)     override final
     {   values.push_back(*valuep); // make a copy
         delete valuep; // throw out the old one
         return values.size()-1; }
@@ -951,34 +951,35 @@ public:
     const std::string& getObjectClassName() const {return objectClassName;}
 
 
-    ObjectProperty* clone() const FINAL_11 
+    ObjectProperty* clone() const override final 
     {   return new ObjectProperty(*this); }
 
     // Implementation of these methods must be deferred until Object has been
     // declared; see Object.h.
-    std::string toString() const FINAL_11;
-    bool isAcceptableObjectTag(const std::string& objectTypeTag) const FINAL_11;
-    bool isEqualTo(const AbstractProperty& other) const FINAL_11;
+    std::string toString() const override final;
+    bool isAcceptableObjectTag(const std::string& objectTypeTag) const override
+        final;
+    bool isEqualTo(const AbstractProperty& other) const override final;
     void readFromXMLElement
        (SimTK::Xml::Element& propertyElement,
-        int                  versionNumber) FINAL_11;
+        int                  versionNumber) override final;
     void writeToXMLElement
-       (SimTK::Xml::Element& propertyElement) const FINAL_11;
-    void setValueAsObject(const Object& obj, int index=-1) FINAL_11;
+       (SimTK::Xml::Element& propertyElement) const override final;
+    void setValueAsObject(const Object& obj, int index=-1) override final;
 
-    bool isUnnamedProperty() const FINAL_11 {return isUnnamed;}
-    bool isObjectProperty() const FINAL_11 {return true;}
+    bool isUnnamedProperty() const override final {return isUnnamed;}
+    bool isObjectProperty() const override final {return true;}
 
-    int getNumValues() const FINAL_11 {return objects.size();}
-    void clearValues() FINAL_11 {objects.clear();}
+    int getNumValues() const override final {return objects.size();}
+    void clearValues() override final {objects.clear();}
 
-    const Object& getValueAsObject(int index=-1) const FINAL_11 {
+    const Object& getValueAsObject(int index=-1) const override final {
         if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
             index = 0;
         return *objects[index];
     }
 
-    Object& updValueAsObject(int index=-1) FINAL_11 {
+    Object& updValueAsObject(int index=-1) override final {
         if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
             index = 0;
         return *objects[index];
@@ -1004,18 +1005,18 @@ public:
     }
 private:
     // Base class checks the index.
-    const T& getValueVirtual(int index) const   FINAL_11 
+    const T& getValueVirtual(int index) const override final 
     {   return *objects[index]; }
-    T& updValueVirtual(int index)               FINAL_11 
+    T& updValueVirtual(int index) override final 
     {   return *objects[index]; }
-    void setValueVirtual(int index, const T& obj) FINAL_11
+    void setValueVirtual(int index, const T& obj) override final
     {   objects[index].clear();
         objects[index] = obj; }
-    int appendValueVirtual(const T& obj)        FINAL_11
+    int appendValueVirtual(const T& obj) override final
     {   objects.push_back();        // add empty element
         objects.back() = obj;       // insert a copy
         return objects.size()-1; }
-    int adoptAndAppendValueVirtual(T* objp)         FINAL_11
+    int adoptAndAppendValueVirtual(T* objp) override final
     {   objects.push_back();        // add empty element
         objects.back().reset(objp); // take over ownership
         return objects.size()-1; }

@@ -96,8 +96,8 @@ int main() {
     viz.setBackgroundColor(Vec3(1, 1, 1));
     // Ellipsoids: 0.5 m radius along y axis, centered 0.5 m up along y axis.
     DecorativeEllipsoid geom(Vec3(0.1, 0.5, 0.1)); Vec3 center(0, 0.5, 0);
-    viz.addDecoration(link1->getIndex(), Transform(center), geom);
-    viz.addDecoration(link2->getIndex(), Transform(center), geom);
+    viz.addDecoration(link1->getMobilizedBodyIndex(), Transform(center), geom);
+    viz.addDecoration(link2->getMobilizedBodyIndex(), Transform(center), geom);
 #endif
 
     // Simulate.

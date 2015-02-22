@@ -78,7 +78,7 @@ public:
     //--------------------------------------------------------------------------
 public:
     // TYPE
-    virtual std::string getTypeName() const override;
+    std::string getTypeName() const override;
     // VALUE
     virtual void setValue(bool aValue);
     virtual bool& getValueBool();

@@ -74,8 +74,8 @@ int main() {
     viz.setBackgroundColor(Vec3(1, 1, 1));
     // Ellipsoids: 0.5 m radius along y axis, centered 0.5 m up along y axis.
     DecorativeEllipsoid geom(Vec3(0.1, 0.5, 0.1)); Vec3 center(0, 0.5, 0);
-    viz.addDecoration(link1->getIndex(), Transform(center), geom);
-    viz.addDecoration(link2->getIndex(), Transform(center), geom);
+    viz.addDecoration(link1->getMobilizedBodyIndex(), Transform(center), geom);
+    viz.addDecoration(link2->getMobilizedBodyIndex(), Transform(center), geom);
 
     // Simulate.
     RungeKuttaMersonIntegrator integrator(model.getSystem());
@@ -109,7 +109,7 @@ On Windows using Visual Studio
 
 * **operating system**: Windows 7 or 8.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.6
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8
 * **compiler / IDE**: Visual Studio 2013. We recommended either:
     * *Visual Studio Express 2013 for Windows Desktop*, which is free, or
     * *Visual Studio Professional 2013* through
@@ -227,7 +227,7 @@ On Mac using Xcode
 
 * **operating system**: OS X 10.8 or later.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.6
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8
 * **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 5, through
   the Mac App Store.
 * **physics engine**:
@@ -351,8 +351,10 @@ line below, we show the corresponding package.
 
 * **operating system**: Ubuntu 13.10 or later.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.6;
-  `cmake-gui`.
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8;
+  `cmake-gui`. Ubuntu 12.04 only has 2.8.6 available; download from the website
+  or from this [third party
+  PPA](https://launchpad.net/~robotology/+archive/ubuntu/ppa).
 * **compiler**: [gcc](http://gcc.gnu.org) >= 4.8; `g++-4.8`, or
       [Clang](http://clang.llvm.org) >= 3.4; `clang-3.4`.
 * **physics engine**:

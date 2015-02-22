@@ -238,7 +238,7 @@ public:
 // Public Computations
 //==============================================================================
     //Ajay: this is old. Can I stop calling it?
-    virtual double computeActuation(const SimTK::State& s) const override;
+    double computeActuation(const SimTK::State& s) const override;
 
 
     /** Compute initial fiber length (velocity) such that muscle fiber and 
@@ -264,8 +264,9 @@ public:
                                             double fiberLength, 
                                             double fiberVelocity) const; 
 
-    virtual double calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
-                                             double aActivation) const FINAL_11;
+    double calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
+                                             double aActivation)
+        const override final;
     ///@endcond
 
 protected:
