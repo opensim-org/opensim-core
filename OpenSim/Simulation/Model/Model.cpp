@@ -94,7 +94,7 @@ Model::Model() :
     _system(NULL),
     _workingState()
 {
-    constructProperties();
+    constructInfrastructure();
     setNull();  
 }
 //_____________________________________________________________________________
@@ -111,7 +111,7 @@ Model::Model(const string &aFileName, const bool finalize) :
     _system(NULL),
     _workingState()
 {   
-    constructProperties();
+    constructInfrastructure();
     setNull();
     updateFromXMLDocument();
 

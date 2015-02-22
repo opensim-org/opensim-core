@@ -83,15 +83,15 @@ public:
         delete _value; 
     }
 
-    virtual int getNumValues() const override {return _value?1:0;}
-    virtual bool isObjectProperty() const override {return true;}
-    virtual bool isAcceptableObjectTag
+    int getNumValues() const override {return _value?1:0;}
+    bool isObjectProperty() const override {return true;}
+    bool isAcceptableObjectTag
         (const std::string& objectTypeTag) const override {return true;}
-    virtual const Object& getValueAsObject(int index=-1) const override
+    const Object& getValueAsObject(int index=-1) const override
     {   assert(index <= 0); return *_value; }
-    virtual Object& updValueAsObject(int index=-1) override
+    Object& updValueAsObject(int index=-1) override
     {   assert(index <= 0); return *_value; }
-    virtual void setValueAsObject(const Object& obj, int index=-1) override
+    void setValueAsObject(const Object& obj, int index=-1) override
     {   assert(index <= 0); setValue(obj.clone()); }
 
     //--------------------------------------------------------------------------
@@ -119,7 +119,7 @@ public:
     //--------------------------------------------------------------------------
 public:
     // TYPE
-    virtual std::string getTypeName() const override
+    std::string getTypeName() const override
     {   return T::getClassName(); }
     // VALUE
     virtual bool isValidObject(const Object *aValue) const { return dynamic_cast<const T*>(aValue)!=0; }
