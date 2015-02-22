@@ -51,7 +51,7 @@ int main()
         // GROUND BODY
 
         // Get a reference to the model's ground body
-        OpenSim::Body& ground = osimModel.getGroundBody();
+        Ground& ground = osimModel.updGround();
 
         // Add display geometry to the ground to visualize in the GUI
         ground.addDisplayGeometry("ground.vtp");

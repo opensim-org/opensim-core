@@ -23,17 +23,13 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <iostream>
-#include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/VisibleObject.h>
+#include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyStr.h>
-#include "SimTKsimbody.h"
 
 #ifdef SWIG
     #ifdef OSIMSIMULATION_API
@@ -50,6 +46,8 @@ class PathPoint;
 class PathWrap;
 class WrapResult;
 class Model;
+class PhysicalFrame;
+class AnalyticGeometry;
 
 //=============================================================================
 //=============================================================================
@@ -108,7 +106,7 @@ protected:
     int _wrapAxis;
     int _wrapSign;
 
-    Body* _body;
+    SimTK::ReferencePtr<PhysicalFrame> _body;
 
     SimTK::Transform _pose;
     const Model* _model;
@@ -138,9 +136,9 @@ public:
    void copyData(const WrapObject& aWrapObject);
 
     virtual void scale(const SimTK::Vec3& aScaleFactors);
-    virtual void connectToModelAndBody(Model& aModel, Body& aBody);
+    virtual void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody);
 
-    Body& getBody() const { return *_body; }
+    PhysicalFrame& getBody() const { return *_body; }
     const double* getXYZBodyRotation() const { return &_xyzBodyRotation[0]; }
     const double* getTranslation() const { return &_translation[0]; }
     bool getActive() const { return _active; }

@@ -241,12 +241,12 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
         return NULL;
     }
 
-    if (exForce.getPointExpressedInBodyName() != getModel().getGroundBody().getName()){
+    if (exForce.getPointExpressedInBodyName() != getModel().getGround().getName()){
         cout << "ExternalLoads: WARNING ExternalForce '"<< exForce.getName() <<"' is not expressed in ground and will not be transformed." << endl;
         return NULL;
     }
 
-    if (exForce.getAppliedToBodyName() == getModel().getGroundBody().getName()){
+    if (exForce.getAppliedToBodyName() == getModel().getGround().getName()){
         cout << "ExternalLoads: WARNING ExternalForce '"<< exForce.getName() <<"' is applied to a point on ground and will not be transformed." << endl;
         return NULL;
     }
@@ -317,7 +317,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
     SimTK::State& s = updModel().updWorkingState();
 
     // get from (ground) and to (applied) bodies 
-    const Body& ground = getModel().getGroundBody();
+    const Ground& ground = getModel().getGround();
     const Body& appliedToBody = getModel().getBodySet().get(exForce.getAppliedToBodyName());
 
     /*std::map<int, int>      coordinatesToColumns;

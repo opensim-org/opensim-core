@@ -211,7 +211,7 @@ void DefaultGeometry::generateDecorations
         const ContactGeometrySet& contactGeometries = _model.getContactGeometrySet();
 
         for (int i = 0; i < contactGeometries.getSize(); i++) {
-            const OpenSim::Body& body = contactGeometries.get(i).getBody();
+            const PhysicalFrame& body = contactGeometries.get(i).getBody();
             const Transform& X_GB = 
                 matter.getMobilizedBody(body.getMobilizedBodyIndex()).getBodyTransform(state);
             const string type = contactGeometries.get(i).getConcreteClassName();

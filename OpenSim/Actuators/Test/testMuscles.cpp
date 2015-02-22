@@ -232,7 +232,7 @@ void simulateMuscle(
     *aMuscle = aMuscModel;
 
     // Get a reference to the model's ground body
-    Body& ground = model.getGroundBody();
+    Ground& ground = model.updGround();
     ground.addDisplayGeometry("box.vtp");
     ground.updDisplayer()
         ->setScaleFactors(Vec3(anchorWidth, anchorWidth, 2*anchorWidth));

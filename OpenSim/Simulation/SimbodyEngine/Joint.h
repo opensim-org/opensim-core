@@ -376,8 +376,8 @@ protected:
                                  to assign mobility indices to the Joint's
                                  coordinates. It is incremented by the number of
                                  mobilities of the MobilizedBody created
-    @param[in] associatedBody    (optional) the Body associated with the
-                                 MobilizeBody. The MobilizedBody index is
+    @param[in] physicalFrame     (optional) the PhysicalFrame associated with
+                                 the MobilizeBody. The MobilizedBody index is
                                  assigned to the associated Body.
     */
     template <typename T>
@@ -386,7 +386,7 @@ protected:
                           const SimTK::Body& outboard,
                           const SimTK::Transform& outboardTransform,
                           int& startingCoordinateIndex,
-                          const PhysicalFrame* associatedFrame=nullptr) const {
+                          const PhysicalFrame* physicalFrame = nullptr) const {
         // CREATE MOBILIZED BODY
         SimTK::MobilizedBody::Direction dir =
             SimTK::MobilizedBody::Direction(get_reverse());
@@ -400,7 +400,7 @@ protected:
                       getConcreteClassName().c_str());
 
         startingCoordinateIndex = assignSystemIndicesToBodyAndCoordinates(simtkBody,
-            associatedFrame,
+            physicalFrame,
             getNumMobilities<T>(simtkBody),
             startingCoordinateIndex);
 

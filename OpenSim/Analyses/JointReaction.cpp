@@ -595,7 +595,7 @@ record(const SimTK::State& s)
     //// BodySet and JointSet and ground body index
     const BodySet& bodySet = _model->getBodySet();
     const JointSet& jointSet = _model->getJointSet();
-    Body &ground = _model->getSimbodyEngine().getGroundBody();
+    const Ground &ground = _model->getGround();
     int groundIndex = bodySet.getIndex(ground.getName());
 
     /* Calculate All joint reaction forces and moments.

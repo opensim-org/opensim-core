@@ -416,8 +416,12 @@ void testStationOnFrame()
 
         SimTK::Vec3 comInGround = 
             myStation->findLocationInFrame(s, pendulum->getGround());
+        SimTK::Vec3 comInGround2 = myStation->getGroundLocation(s);
         SimTK::Vec3 comBySimbody = 
             rod1.getMobilizedBody().findStationLocationInGround(s, com);
+
+        ASSERT_EQUAL(comInGround, comInGround2, tolerance, __FILE__, __LINE__,
+            "testStationOnFrame(): failed to resolve station position in ground.");
         ASSERT_EQUAL(comInGround, comBySimbody, tolerance, __FILE__, __LINE__,
             "testStationOnFrame(): failed to resolve station position in ground.");
     }

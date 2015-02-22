@@ -27,6 +27,7 @@
 #include "PhysicalFrame.h"
 #include "Model.h"
 
+
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -49,6 +50,7 @@ PhysicalFrame::PhysicalFrame() : Frame()
 void PhysicalFrame::constructProperties()
 {
     constructProperty_VisibleObject(VisibleObject());
+    constructProperty_WrapObjectSet(WrapObjectSet());
 }
 
 const SimTK::MobilizedBody& PhysicalFrame::getMobilizedBody() const
@@ -78,20 +80,32 @@ SimTK::Transform PhysicalFrame::extendFindTransformInBaseFrame() const
     return Transform();
 }
 
-void PhysicalFrame::extendAddToSystem(SimTK::MultibodySystem& system) const
+void PhysicalFrame::extendConnectToModel(Model& aModel)
 {
-    Super::extendAddToSystem(system);
-    if (getName() == "ground"){
-        setMobilizedBodyIndex(SimTK::GroundIndex);
-    }
+    Super::extendConnectToModel(aModel);
+
+    for (int i = 0; i < get_WrapObjectSet().getSize(); i++)
+        get_WrapObjectSet().get(i).connectToModelAndBody(aModel, *this);
 }
 
-/*
-* Add display geometry to a PhysicalFrame.
-*
-* @param aGeometryFileName Geometry filename.
-*/
+
 void PhysicalFrame::addDisplayGeometry(const std::string &aGeometryFileName)
 {
     updDisplayer()->setGeometryFileName(updDisplayer()->getNumGeometryFiles(), aGeometryFileName);
+}
+
+
+const WrapObject* PhysicalFrame::getWrapObject(const string& aName) const
+{
+    int i;
+
+    for (i = 0; i < get_WrapObjectSet().getSize(); i++) {
+        if (aName == get_WrapObjectSet()[i].getName())
+            return &get_WrapObjectSet()[i];
+    }
+    return nullptr;
+}
+
+void PhysicalFrame::addWrapObject(WrapObject* wrap) {
+    upd_WrapObjectSet().adoptAndAppend(wrap);
 }

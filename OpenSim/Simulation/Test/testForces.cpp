@@ -262,7 +262,7 @@ void testExpressionBasedPointToPointForce()
     Model *model = new Model;
     model->setName("ExpressionBasedPointToPointForce");
     //OpenSim bodies
-    OpenSim::Body& ground = model->getGroundBody();
+    const Ground& ground = model->getGround();
     OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(ball_radius));
     ball.addDisplayGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
@@ -497,7 +497,7 @@ void testSpringMass()
 
     osimModel->setGravity(gravity_vec);
 
-    PointToPointSpring spring(osimModel->getGroundBody(), 
+    PointToPointSpring spring(osimModel->updGround(), 
         Vec3(0.,restlength,0.), 
         ball, 
         Vec3(0.), 
@@ -1214,7 +1214,7 @@ void testExternalForce()
     Model model;
     model.setName("ExternalForceTest");
     //OpenSim bodies
-    OpenSim::Body& ground = model.getGroundBody();
+    const Ground& ground = model.getGround();
     OpenSim::Body tower("tower", mass, Vec3(0), mass*SimTK::Inertia::brick(0.1, 1.0, 0.2));
     tower.addDisplayGeometry("box.vtp");
     tower.scale(Vec3(0.1, 1.0, 0.2));

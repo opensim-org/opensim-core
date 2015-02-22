@@ -61,7 +61,7 @@ const SimTK::Vec3& Point::getGroundLocation(const SimTK::State& s) const
     if (!getSystem().getDefaultSubsystem().
         isCacheValueRealized(s, groundLocationIndex)){
         //cache is not valid so calculate the transform
-        SimTK::Value<SimTK::Transform>::downcast(
+        SimTK::Value<SimTK::Vec3>::downcast(
             getSystem().getDefaultSubsystem().
             updCacheEntry(s, groundLocationIndex)).upd()
                 = calcGroundLocation(s);

@@ -170,9 +170,9 @@ void PointToPointActuator::computeForce(const SimTK::State& s,
     {
         pointA_inGround = pointA;
         pointB_inGround = pointB;
-        engine.transformPosition(s, engine.getGroundBody(), pointA_inGround, 
+        engine.transformPosition(s, getModel().getGround(), pointA_inGround, 
                                  *_bodyA, pointA_inBodyA);
-        engine.transformPosition(s, engine.getGroundBody(), pointB_inGround, 
+        engine.transformPosition(s, getModel().getGround(), pointB_inGround, 
                                  *_bodyB, pointB_inBodyB);
     }
     else
@@ -180,9 +180,9 @@ void PointToPointActuator::computeForce(const SimTK::State& s,
         pointA_inBodyA = pointA;
         pointB_inBodyB = pointB;
         engine.transformPosition(s, *_bodyA, pointA_inBodyA, 
-                                 engine.getGroundBody(), pointA_inGround);
+                                 getModel().getGround(), pointA_inGround);
         engine.transformPosition(s, *_bodyB, pointB_inBodyB, 
-                                 engine.getGroundBody(), pointB_inGround);
+                                 getModel().getGround(), pointB_inGround);
     }
 
     // Find the direction along which the actuator applies its force.

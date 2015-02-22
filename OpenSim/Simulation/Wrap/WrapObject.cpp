@@ -143,15 +143,7 @@ void WrapObject::constructProperties()
     constructProperty_color(defaultColor);
 }
 
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aEngine dynamics engine containing this wrap object.
- * @param aBody body containing this wrap object.
- */
-void WrapObject::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
+void WrapObject::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 {
    _body = &aBody;
    _model = &aModel;

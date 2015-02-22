@@ -25,7 +25,6 @@
 
 
 // INCLUDE
-#include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Property.h>
 #include "Force.h"
@@ -141,6 +140,9 @@ private:
     void setNull();
     void constructProperties();
 
+    // Temporary solution until implemented with Connectors
+    SimTK::ReferencePtr<const PhysicalFrame> _body1;
+    SimTK::ReferencePtr<const PhysicalFrame> _body2;
 //==============================================================================
 };  // END of class BushingForce
 //==============================================================================

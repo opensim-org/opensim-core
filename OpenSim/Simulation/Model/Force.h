@@ -31,7 +31,7 @@
 namespace OpenSim {
 
 class Model;
-class Body;
+class PhysicalFrame;
 class Coordinate;
 class ForceAdapter;
 
@@ -185,7 +185,7 @@ protected:
      *                      is added
      */
     void applyForceToPoint(const SimTK::State&                state, 
-                           const OpenSim::Body&               body, 
+                           const PhysicalFrame&               body, 
                            const SimTK::Vec3&                 point,
                            const SimTK::Vec3&                 force, 
                            SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
@@ -203,7 +203,7 @@ protected:
      *                      is added
      */
     void applyTorque(const SimTK::State&                state, 
-                     const OpenSim::Body&               body,
+                     const PhysicalFrame&               body,
                      const SimTK::Vec3&                 torque, 
                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
     /**

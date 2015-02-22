@@ -255,7 +255,7 @@ int main()
     try {
         //Register new Joint types for testing 
         Object::registerType(CompoundJoint());
-/*
+
         // model connect should create a FreeJoint for bodies that are not
         // connected by a Joint.
         testAddedFreeJointForBodyWithoutJoint();
@@ -266,7 +266,7 @@ int main()
 
         // test that kinematic loops are broken to form a tree with constraints
         testAutomaticLoopJointBreaker();
-
+        
         // Compare behavior of a double pendulum with OpenSim pin hip and pin knee
         testPinJoint();
         // Compare behavior of a two body pendulum with OpenSim pin hip and slider knee
@@ -296,7 +296,7 @@ int main()
         testCustomWithMultidimFunction();
         // Compare custom implmentation of Gimbal to a Compund (multi-mobilizer) Joint version
         testCustomVsCompoundJoint();
-*/
+
         testEquivalentBodyForceFromGeneralizedForce();
 
     }
@@ -319,10 +319,10 @@ int initTestStates(SimTK::Vector &qi, SimTK::Vector &ui)
     Random::Uniform randomSpeed(-1.0, 1.0);
 
     // Provide initial states as random angles and speeds for OpenSim and Simbody models
-    for(int i = 0; i<qi.size(); i++)
+    for (int i = 0; i < qi.size(); i++)
         qi[i] = randomAngle.getValue();
 
-    for(int i = 0; i<ui.size(); i++)
+    for (int i = 0; i < ui.size(); i++)
         ui[i] = randomSpeed.getValue();
     
     return qi.size();
@@ -422,7 +422,8 @@ void compareSimulationStates(const SimTK::Vector &q_sb, const SimTK::Vector &u_s
     ASSERT(uerrnorm <= 100 * integ_accuracy, __FILE__, __LINE__, errorMessagePrefix + errorMessage2.str());
 }
 
-void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state, Model *osimModel, SimTK::State &osim_state, string errorMessagePrefix = "")
+void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state, 
+    Model *osimModel, SimTK::State &osim_state, string errorMessagePrefix = "")
 {
     using namespace SimTK;
 
@@ -434,11 +435,17 @@ void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state, Mod
 
     // Push down to OpenSim "state"
     osim_state.updY() = state.getY();
-
     Vector delta = osim_state.updY() - state.getY();
     double errnorm = delta.norm();
-    cout << "osim_state - sb_state: " << delta;
+    cout << "osim_state - sb_state: " << delta << endl;
 
+    /* Debugging Info 
+    system.realize(state, Stage::Acceleration);
+    osimModel->getSystem().realize(osim_state, Stage::Acceleration);
+
+    state.getUDot().dump("Simbody UDot");
+    osim_state.getUDot().dump("OpenSim UDot");
+    */
 
     //==========================================================================================================
     // Integrate Simbody system
@@ -1160,7 +1167,7 @@ void testPinJoint()
     // Setup OpenSim model
     Model *osimModel = new Model;
     //OpenSim bodies
-    const Ground& ground = osimModel->getGround();;
+    const Ground& ground = osimModel->getGround();
 
     //OpenSim thigh
     OpenSim::Body osim_thigh("thigh", femurMass, femurCOM, femurInertiaAboutCOM);
@@ -1185,8 +1192,7 @@ void testPinJoint()
 
     // create pin knee joint
     PinJoint knee("knee", osim_thigh, kneeInFemur, oInP, osim_shank, kneeInTibia, oInB);
-    int first = 0;
-    knee.getCoordinateSet().get(first).setName("knee_q");
+    knee.getCoordinateSet()[0].setName("knee_q");
 
     // Add the shank body which now also contains the knee joint to the model
     osimModel->addBody(&osim_shank);
@@ -1753,6 +1759,11 @@ void testAddedFreeJointForBodyWithoutJoint()
 {
     using namespace OpenSim;
 
+    cout << endl;
+    cout << "==========================================================" << endl;
+    cout << " A Body without a Joint should get a Free (6dof) Joint    " << endl;
+    cout << "==========================================================" << endl;
+
     Model model;
     SimTK::Inertia inertia(SimTK::Inertia::brick(SimTK::Vec3(0.5, 0.15, 0.2)));
     Body* block = new Body("block", 1.0, SimTK::Vec3(0.0), inertia);
@@ -1767,6 +1778,12 @@ void testAddedFreeJointForBodyWithoutJoint()
 void testAutomaticJointReversal()
 {
     using namespace OpenSim;
+
+    cout << endl;
+    cout << "==========================================================" << endl;
+    cout << " Test Joint Reversal against not reversed with contraints    " << endl;
+    cout << "==========================================================" << endl;
+
 
     //==========================================================================================================
     // Setup new OpenSim model

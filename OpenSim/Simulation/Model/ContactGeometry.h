@@ -46,7 +46,7 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(ContactGeometry, ModelComponent);
 // DATA
 //=============================================================================
 protected:
-    Body* _body;
+    SimTK::ReferencePtr<PhysicalFrame> _body;
     VisibleObject   _displayer;
 
 //=============================================================================
@@ -67,7 +67,7 @@ public:
      * @param orientation  the orientation of the geometry within the Body it is attached to
      * @param body         the Body this geometry is attached to
      */
-    ContactGeometry(const SimTK::Vec3& location, const SimTK::Vec3& orientation, OpenSim::Body& body);
+    ContactGeometry(const SimTK::Vec3& location, const SimTK::Vec3& orientation, PhysicalFrame& body);
 
 
     /** Body name.  **/
@@ -112,16 +112,16 @@ public:
     /**
      * Get the Body this geometry is attached to.
      */
-    const OpenSim::Body& getBody() const;
+    const PhysicalFrame& getBody() const;
 #endif
     /**
-     * Get the Body this geometry is attached to.
+     * Get writeable Body this geometry is attached to.
      */
-    OpenSim::Body& getBody();
+    OpenSim::PhysicalFrame& updBody();
     /**
      * Set the Body this geometry is attached to.
      */
-    void setBody(OpenSim::Body& body);
+    void setBody(PhysicalFrame& body);
     /**
      * Get the name of the Body this geometry is attached to.
      */

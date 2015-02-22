@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Ayman Habib, Matt DeMers                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,13 +25,11 @@
 
 // INCLUDE
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
-#include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 
 namespace OpenSim {
 
 class Model;
-class WrapObject;
-class WrapObjectSet;
+
 //=============================================================================
 //=============================================================================
 /**
@@ -58,10 +56,8 @@ public:
         "The location (Vec3) of the mass center in the body frame.");
 
     OpenSim_DECLARE_PROPERTY(inertia, SimTK::Vec6, 
-        "The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.");
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(WrapObjectSet,
-        "Set of wrap objects fixed to this body that GeometryPaths can wrap over.");
+        "The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] "
+        "measured about the mass_center and not the body origin.");
     /**@}**/
 
 //=============================================================================
@@ -104,19 +100,6 @@ public:
     void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true);
     void scaleMass(double aScaleFactor);
     void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
-
-    /** Get the named wrap object, if it exists.
-    *
-    * @param aName Name of the wrap object.
-    * @return const Pointer to the wrap object.
-    */
-    const WrapObject* getWrapObject(const std::string& aName) const;
-    const WrapObjectSet& getWrapObjectSet() const { return get_WrapObjectSet(); }
-
-    /** Add a wrap object to the Body. Note that the Body takes ownership of
-     * the WrapObject.
-     */
-    void addWrapObject(WrapObject* wrapObject);
 
  protected:
 

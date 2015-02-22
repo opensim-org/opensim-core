@@ -778,9 +778,6 @@ public:
     ContactGeometrySet& updContactGeometrySet() { return upd_ContactGeometrySet(); }
     const ContactGeometrySet& getContactGeometrySet() const { return get_ContactGeometrySet(); }
 
-    /** This method is DEPRECATED use get/updGround() */
-    Body& getGroundBody() const;
-
     /** Get a const reference to the Ground reference frame */
     const Ground& getGround() const;
     /** Get a writeable reference to the Ground reference frame */
@@ -1004,10 +1001,8 @@ private:
     // Set containing the generalized coordinates in this model.
     CoordinateSet   _coordinateSet;
 
-    // Body used for ground, the inertial frame. This is just a reference
-    // to an existing Body and should not be destructed.
-    SimTK::ReferencePtr<Body> _groundBody;
-    SimTK::ReferencePtr<Ground> _ground;
+    // The ground reference frame
+    Ground _ground;
 
     SimTK::MultibodyGraphMaker _multibodyTree;
 

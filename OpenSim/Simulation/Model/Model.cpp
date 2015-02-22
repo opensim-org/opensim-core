@@ -202,7 +202,7 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 }
             }
     // Call base class now assuming _node has been corrected for current version
-    Object::updateFromXMLNode(aNode, versionNumber);
+    Super::updateFromXMLNode(aNode, versionNumber);
 
     setDefaultProperties();
 }
@@ -220,7 +220,6 @@ void Model::setNull()
     _useVisualizer = false;
     _displayHints.clear();
     _allControllersEnabled = true;
-    _groundBody = NULL;
 
     _system = NULL;
     _matter = NULL;
@@ -501,21 +500,6 @@ void Model::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    //Backward compatibility with models that have a ground body
-    int bx = updBodySet().getIndex("ground");
-    if (bx >= 0){
-        _groundBody = &updBodySet()[bx];
-    }
-    else {
-        _groundBody = new Body("ground", SimTK::Infinity, Vec3(0), Inertia());
-        updBodySet().insert(0, _groundBody);
-    }
-
-    // In any case Frame set at a minimum contains a proper Ground frame.
-    FrameSet& fs = updFrameSet();
-    if (!fs.contains("ground"))
-        fs.insert(0, new Ground());
-
     // building the system for the first time, need to tell
     // multibodyTree builder what joints are available
     _multibodyTree.clearGraph();
@@ -542,21 +526,29 @@ void Model::extendFinalizeFromProperties()
     // Note addBody and addJoint call addComponent.
     clearComponents();
 
+    // The Ground frame is a subcomponent of the model.
+    addComponent(&_ground);
+
     // Construct a multibody tree according to the PhysicalFrames in the
     // the OpenSim model, which include Ground and Bodies
-    _multibodyTree.addBody(fs[0].getName(), 0, false, &fs[0]);
-    addComponent(&fs[0]);
+    _multibodyTree.addBody(_ground.getName(), 0, false, &_ground);
+
     if(getBodySet().getSize()>0)
     {
-        BodySet &bs = updBodySet();
-        int nb = bs.getSize();
-        for (int i = 0; i<nb; ++i){
+        BodySet& bs = updBodySet();
+        for (int i = 0; i<bs.getSize(); ++i){
+            //handle deprecated models with ground as a Body
+            if (bs[i].getName() == "ground"){
+                VisibleObject* displayer = _ground.updDisplayer();
+                *displayer = *bs[i].getDisplayer();
+                _ground.upd_WrapObjectSet() = bs[i].get_WrapObjectSet();
+                // remove and then decrement the counter
+                bs.remove(i--);
+                continue;
+            }
+            // add the Body to the list of subcomponents for this Model
             addComponent(&bs[i]);
 
-            //handle deprecated models with ground as a Body
-            if (bs[i].getName() == "ground")
-                continue;
-            
             _multibodyTree.addBody(bs[i].getName(), 
                                    bs[i].getMass(), 
                                    false, 
@@ -591,8 +583,9 @@ void Model::extendFinalizeFromProperties()
     }
 
     // Now add the remaining frame (non-Ground, which is frame[0])
+    FrameSet& fs = updFrameSet();
     int nf = fs.getSize();
-    for (int i = 1; i<nf; ++i){
+    for (int i = 0; i<nf; ++i){
             addComponent(&fs[i]);
     }
 
@@ -1727,24 +1720,14 @@ const JointSet& Model::getJointSet() const
     return get_JointSet();
 }
 
-/**
- * Get the body that is being used as ground.
- *
- * @return Pointer to the ground body.
- */
-OpenSim::Body& Model::getGroundBody() const
-{
-    return *_groundBody;
-}
-
 const Ground& Model::getGround() const
 {
-    return static_cast<const Ground&>(getFrameSet()[0]);
+    return _ground;
 }
 
 Ground& Model::updGround()
 {
-    return static_cast<Ground&>(updFrameSet()[0]);
+    return _ground;
 }
 
 //--------------------------------------------------------------------------

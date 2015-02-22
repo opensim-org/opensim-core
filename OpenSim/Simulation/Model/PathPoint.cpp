@@ -138,15 +138,18 @@ void PathPoint::setupProperties()
 
 //_____________________________________________________________________________
 /**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel model containing this PathPoint.
+ * TODO: All Points should be Components that use Connectors
+ * and extendConnect(). This must go away! -aseth
  */
 void PathPoint::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
 {
     _path = &aPath;
     _model  = &aModel;
+
+    if (_bodyName == aModel.getGround().getName()){
+        _body = &const_cast<Model*>(&aModel)->updGround();
+        return;
+    }
 
     // Look up the body by name in the kinematics engine and
     // store a pointer to it.
@@ -156,8 +159,8 @@ void PathPoint::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
         throw Exception(errorMessage);
     }
     _body = &const_cast<Model*>(&aModel)->updBodySet().get(_bodyName);
-
 }
+
 //_____________________________________________________________________________
 /**
  * Update geometry of the muscle point.

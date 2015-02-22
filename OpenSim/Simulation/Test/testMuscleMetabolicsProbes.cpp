@@ -365,7 +365,7 @@ void generateUmbergerMuscleData(const std::string& muscleName,
     // Create OpenSim model.
     Model model;
     model.setName("testModel_"+muscleName);
-    OpenSim::Body& ground = model.getGroundBody();
+    Ground& ground = model.updGround();
 
     // Create block. The length and velocity of the muscle will be specified, so
     // the properties of the block are irrelevant.
@@ -662,7 +662,7 @@ void testProbesUsingMillardMuscleSimulation()
     //--------------------------------------------------------------------------
     Model model;
     model.setName("testModel_metabolics");
-    OpenSim::Body& ground = model.getGroundBody();
+    Ground& ground = model.updGround();
 
     // Create block.
     const double blockMass       = 1.0;

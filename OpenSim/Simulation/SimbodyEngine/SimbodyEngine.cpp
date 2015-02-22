@@ -172,19 +172,6 @@ void SimbodyEngine::getUnlockedCoordinates(const SimTK::State &s, CoordinateSet&
 }
 
 
-//--------------------------------------------------------------------------
-// BODY INFORMATION
-//--------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the body that is being used as ground.
- *
- * @return Pointer to the ground body.
- */
-OpenSim::Body& SimbodyEngine::getGroundBody() const
-{
-    return _model->getGroundBody();
-}
 
 //--------------------------------------------------------------------------
 // KINEMATICS
@@ -201,7 +188,7 @@ OpenSim::Body& SimbodyEngine::getGroundBody() const
  * @param rPos Position of the point in the inertial frame.
  */
 void SimbodyEngine::getPosition(const SimTK::State& s,
-        const OpenSim::Body& aBody, const Vec3& aPoint, Vec3& rPos) const
+        const PhysicalFrame& aBody, const Vec3& aPoint, Vec3& rPos) const
 {
     rPos = aBody.getMobilizedBody().findStationLocationInGround(s, aPoint);
 }
@@ -218,7 +205,7 @@ void SimbodyEngine::getPosition(const SimTK::State& s,
  * @param rVel Velocity of the point in the inertial frame.
  */
 void SimbodyEngine::getVelocity(const SimTK::State& s,
-        const OpenSim::Body& aBody, const Vec3& aPoint, Vec3& rVel) const
+        const PhysicalFrame& aBody, const Vec3& aPoint, Vec3& rVel) const
 {
     rVel = aBody.getMobilizedBody().findStationVelocityInGround(s, aPoint);
 }
@@ -238,7 +225,7 @@ void SimbodyEngine::getVelocity(const SimTK::State& s,
  * @see computeAccelerations()
  */
 void SimbodyEngine::getAcceleration(const SimTK::State& s,
-        const OpenSim::Body& aBody, const Vec3& aPoint, Vec3& rAcc) const
+        const PhysicalFrame& aBody, const Vec3& aPoint, Vec3& rAcc) const
 {
     rAcc = aBody.getMobilizedBody().findStationAccelerationInGround(s, aPoint);
 }
@@ -251,7 +238,7 @@ void SimbodyEngine::getAcceleration(const SimTK::State& s,
  * @param rDirCos Orientation of the body with respect to the ground frame.
  */
 void SimbodyEngine::getDirectionCosines(const SimTK::State& s,
-        const OpenSim::Body& aBody, double rDirCos[3][3]) const
+        const PhysicalFrame& aBody, double rDirCos[3][3]) const
 {
     Mat33::updAs(&rDirCos[0][0]) =
         aBody.getMobilizedBody().getBodyRotation(s).asMat33();
@@ -265,7 +252,7 @@ void SimbodyEngine::getDirectionCosines(const SimTK::State& s,
  * @param rDirCos Orientation of the body with respect to the ground frame.
  */
 void SimbodyEngine::getDirectionCosines(const SimTK::State& s,
-        const OpenSim::Body& aBody, double *rDirCos) const
+        const PhysicalFrame& aBody, double *rDirCos) const
 {
     Mat33::updAs(rDirCos) =
         aBody.getMobilizedBody().getBodyRotation(s).asMat33();
@@ -279,7 +266,7 @@ void SimbodyEngine::getDirectionCosines(const SimTK::State& s,
  * @param rAngVel Angular velocity of the body.
  */
 void SimbodyEngine::getAngularVelocity(const SimTK::State& s,
-        const OpenSim::Body& aBody, Vec3& rAngVel) const
+        const PhysicalFrame& aBody, Vec3& rAngVel) const
 {
     rAngVel = aBody.getMobilizedBody().getBodyAngularVelocity(s);
 }
@@ -292,7 +279,7 @@ void SimbodyEngine::getAngularVelocity(const SimTK::State& s,
  * @param rAngVel Angular velocity of the body.
  */
 void SimbodyEngine::getAngularVelocityBodyLocal(const SimTK::State& s,
-        const OpenSim::Body& aBody, Vec3& rAngVel) const
+        const PhysicalFrame& aBody, Vec3& rAngVel) const
 {
     rAngVel = aBody.getMobilizedBody().getBodyAngularVelocity(s);
 }
@@ -306,7 +293,7 @@ void SimbodyEngine::getAngularVelocityBodyLocal(const SimTK::State& s,
  * @param rAngAcc Angular acceleration of the body.
  */
 void SimbodyEngine::getAngularAcceleration(const SimTK::State& s,
-        const OpenSim::Body& aBody, Vec3& rAngAcc) const
+        const PhysicalFrame& aBody, Vec3& rAngAcc) const
 {
     rAngAcc = aBody.getMobilizedBody().getBodyAngularAcceleration(s);
 }
@@ -319,7 +306,7 @@ void SimbodyEngine::getAngularAcceleration(const SimTK::State& s,
  * @param rAngAcc Angular acceleration of the body.
  */
 void SimbodyEngine::getAngularAccelerationBodyLocal(const SimTK::State& s,
-        const OpenSim::Body &aBody, Vec3& rAngAcc) const
+        const PhysicalFrame &aBody, Vec3& rAngAcc) const
 {
     rAngAcc = aBody.getMobilizedBody().getBodyAngularAcceleration(s);
 }
@@ -332,7 +319,7 @@ void SimbodyEngine::getAngularAccelerationBodyLocal(const SimTK::State& s,
  * @return Transform from inertial frame to body
  */
 SimTK::Transform SimbodyEngine::getTransform(const SimTK::State& s,
-        const OpenSim::Body& aBody) const
+        const PhysicalFrame& aBody) const
 {
     return aBody.getMobilizedBody().getBodyTransform(s);
 }
@@ -402,7 +389,7 @@ void SimbodyEngine::computeReactions(const SimTK::State& s, Vector_<Vec3>& rForc
  * @param aBodyTo the body the vector will be transformed into
  * @param rPos the vector in the aBodyTo frame is returned here
  */
-void SimbodyEngine::transform(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const double aVec[3], const OpenSim::Body &aBodyTo, double rVec[3]) const
+void SimbodyEngine::transform(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aVec[3], const PhysicalFrame &aBodyTo, double rVec[3]) const
 {
     if(&aBodyFrom == &aBodyTo) { for(int i=0; i<3; i++) { rVec[i]=aVec[i]; } return; }
     const Body* bFrom = (const Body*)&aBodyFrom;
@@ -421,7 +408,7 @@ void SimbodyEngine::transform(const SimTK::State& s, const OpenSim::Body &aBodyF
  * @param aBodyTo the body the vector will be transformed into
  * @param rPos the vector in the aBodyTo frame is returned here
  */
-void SimbodyEngine::transform(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const Vec3& aVec, const OpenSim::Body &aBodyTo, Vec3& rVec) const
+void SimbodyEngine::transform(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const Vec3& aVec, const PhysicalFrame &aBodyTo, Vec3& rVec) const
 {
     if(&aBodyFrom == &aBodyTo) { rVec=aVec; return; }   
 
@@ -441,8 +428,8 @@ void SimbodyEngine::transform(const SimTK::State& s, const OpenSim::Body &aBodyF
  * @param rPos the XYZ coordinates of the point in the aBodyTo frame are returned here
  */
 void SimbodyEngine::
-transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const
-        double aPos[3], const OpenSim::Body &aBodyTo, double rPos[3]) const
+transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const
+        double aPos[3], const PhysicalFrame &aBodyTo, double rPos[3]) const
 {
     if(&aBodyFrom == &aBodyTo) {
        for (int i=0; i<3; i++) rPos[i] = aPos[i];
@@ -466,8 +453,8 @@ transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const
  * @param rPos the XYZ coordinates of the point in the aBodyTo frame are returned here
  */
 void SimbodyEngine::
-transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const
-        Vec3& aPos, const OpenSim::Body &aBodyTo, Vec3& rPos) const
+transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const
+        Vec3& aPos, const PhysicalFrame &aBodyTo, Vec3& rPos) const
 {
     if(&aBodyFrom == &aBodyTo) {
        for (int i=0; i<3; i++) rPos[i] = aPos[i];
@@ -488,7 +475,7 @@ transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const
  * @param aPos the XYZ coordinates of the point
  * @param rPos the XYZ coordinates of the point in the ground frame are returned here
  */
-void SimbodyEngine::transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const double aPos[3], double rPos[3]) const
+void SimbodyEngine::transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aPos[3], double rPos[3]) const
 {
     const Body* bFrom = (const Body*)&aBodyFrom;
 
@@ -508,7 +495,7 @@ void SimbodyEngine::transformPosition(const SimTK::State& s, const OpenSim::Body
  * @param rPos the XYZ coordinates of the point in the ground frame are returned here
  */
 void SimbodyEngine::
-transformPosition(const SimTK::State& s, const OpenSim::Body& aBodyFrom,
+transformPosition(const SimTK::State& s, const PhysicalFrame& aBodyFrom,
         const Vec3& aPos, Vec3& rPos) const
 {
     _model->getMultibodySystem().realize(s, SimTK::Stage::Position);
@@ -544,8 +531,8 @@ const Vec3& aPoint1, const PhysicalFrame& aBody2, const Vec3& aPoint2)
  * @param aPoint2 the XYZ coordinates of the second point
  * @return the distance between aPoint1 and aPoint2
  */
-double SimbodyEngine::calcDistance(const SimTK::State& s, const OpenSim::Body&
-        aBody1, const double aPoint1[3], const OpenSim::Body& aBody2, const
+double SimbodyEngine::calcDistance(const SimTK::State& s, const PhysicalFrame&
+        aBody1, const double aPoint1[3], const PhysicalFrame& aBody2, const
         double aPoint2[3]) const
 {
     return aBody1.getMobilizedBody().calcStationToStationDistance(s,
@@ -696,7 +683,7 @@ void SimbodyEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2,
 //--- Private Utility Methods Below Here ---
 
 
-void SimbodyEngine::formEulerTransform(const SimTK::State& s, const OpenSim::Body &aBody, double *rE) const
+void SimbodyEngine::formEulerTransform(const SimTK::State& s, const PhysicalFrame &aBody, double *rE) const
 {
     if (&aBody && rE)
     {

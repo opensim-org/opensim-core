@@ -78,8 +78,7 @@ public:
     Model* _model;
 
 protected:
-    /** Body used for ground, the inertial frame. */
-    Body *_groundBody;
+
 
 //=============================================================================
 // METHODS
@@ -125,23 +124,18 @@ public:
 #endif
 
     //--------------------------------------------------------------------------
-    // BODY INFORMATION
-    //--------------------------------------------------------------------------
-    Body& getGroundBody() const;
-
-    //--------------------------------------------------------------------------
     // KINEMATICS
     //--------------------------------------------------------------------------
-    void getPosition(const SimTK::State& s, const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rPos) const;
-    void getVelocity(const SimTK::State& s, const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rVel) const;
-    void getAcceleration(const SimTK::State& s, const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rAcc) const;
-    void getDirectionCosines(const SimTK::State& s, const OpenSim::Body &aBody, double rDirCos[3][3]) const;
-    void getDirectionCosines(const SimTK::State& s, const OpenSim::Body &aBody, double *rDirCos) const;
-    void getAngularVelocity(const SimTK::State& s, const OpenSim::Body &aBody, SimTK::Vec3& rAngVel) const;
-    void getAngularVelocityBodyLocal(const SimTK::State& s, const OpenSim::Body &aBody, SimTK::Vec3& rAngVel) const;
-    void getAngularAcceleration(const SimTK::State& s, const OpenSim::Body &aBody, SimTK::Vec3& rAngAcc) const;
-    void getAngularAccelerationBodyLocal(const SimTK::State& s, const OpenSim::Body &aBody, SimTK::Vec3& rAngAcc) const;
-    SimTK::Transform getTransform(const SimTK::State& s, const OpenSim::Body &aBody) const;
+    void getPosition(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rPos) const;
+    void getVelocity(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rVel) const;
+    void getAcceleration(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rAcc) const;
+    void getDirectionCosines(const SimTK::State& s, const PhysicalFrame &aBody, double rDirCos[3][3]) const;
+    void getDirectionCosines(const SimTK::State& s, const PhysicalFrame &aBody, double *rDirCos) const;
+    void getAngularVelocity(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngVel) const;
+    void getAngularVelocityBodyLocal(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngVel) const;
+    void getAngularAcceleration(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngAcc) const;
+    void getAngularAccelerationBodyLocal(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngAcc) const;
+    SimTK::Transform getTransform(const SimTK::State& s, const PhysicalFrame &aBody) const;
 
     //--------------------------------------------------------------------------
     // LOAD ACCESS AND COMPUTATION
@@ -157,27 +151,27 @@ public:
     //--------------------------------------------------------------------------
     // EQUATIONS OF MOTION
     //--------------------------------------------------------------------------
-    void formEulerTransform(const SimTK::State& s, const OpenSim::Body &aBody, double *rE) const;
+    void formEulerTransform(const SimTK::State& s, const PhysicalFrame &aBody, double *rE) const;
 
     //unimplemented virtual void formMassMatrix(double *rI) {};
-    //unimplemented virtual void formJacobianTranslation(const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, double *rJ, const OpenSim::Body *aRefBody=NULL) const {};
-    //unimplemented virtual void formJacobianOrientation(const OpenSim::Body &aBody, double *rJ0, const OpenSim::Body *aRefBody=NULL) const {};
-    //unimplemented virtual void formJacobianEuler(const OpenSim::Body &aBody, double *rJE, const OpenSim::Body *aRefBody=NULL) const {};
+    //unimplemented virtual void formJacobianTranslation(const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, double *rJ, const PhysicalFrame *aRefBody=NULL) const {};
+    //unimplemented virtual void formJacobianOrientation(const PhysicalFrame &aBody, double *rJ0, const PhysicalFrame *aRefBody=NULL) const {};
+    //unimplemented virtual void formJacobianEuler(const PhysicalFrame &aBody, double *rJE, const PhysicalFrame *aRefBody=NULL) const {};
 
     //--------------------------------------------------------------------------
     // UTILITY
     //--------------------------------------------------------------------------
-    void transform(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const double aVec[3], const OpenSim::Body &aBodyTo, double rVec[3]) const;
-    void transform(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const SimTK::Vec3& aVec, const OpenSim::Body &aBodyTo, SimTK::Vec3& rVec) const;
-    void transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const double aPos[3], const OpenSim::Body &aBodyTo, double rPos[3]) const;
-    void transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const SimTK::Vec3& aPos, const OpenSim::Body &aBodyTo, SimTK::Vec3& rPos) const;
-    void transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const double aPos[3], double rPos[3]) const;
-    void transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const SimTK::Vec3& aPos, SimTK::Vec3& rPos) const;
+    void transform(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aVec[3], const PhysicalFrame &aBodyTo, double rVec[3]) const;
+    void transform(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const SimTK::Vec3& aVec, const PhysicalFrame &aBodyTo, SimTK::Vec3& rVec) const;
+    void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aPos[3], const PhysicalFrame &aBodyTo, double rPos[3]) const;
+    void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const SimTK::Vec3& aPos, const PhysicalFrame &aBodyTo, SimTK::Vec3& rPos) const;
+    void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aPos[3], double rPos[3]) const;
+    void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const SimTK::Vec3& aPos, SimTK::Vec3& rPos) const;
 
     double calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1,
         const SimTK::Vec3& aPoint1, const PhysicalFrame& aBody2, const SimTK::Vec3& aPoint2) const;
-    double calcDistance(const SimTK::State& s, const OpenSim::Body& aBody1, 
-        const double aPoint1[3], const OpenSim::Body& aBody2, const double aPoint2[3]) const;
+    double calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1, 
+        const double aPoint1[3], const PhysicalFrame& aBody2, const double aPoint2[3]) const;
 
 
     void convertRadiansToDegrees(Storage &rStorage) const;

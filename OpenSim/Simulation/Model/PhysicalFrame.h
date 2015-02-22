@@ -25,9 +25,13 @@
 
 // INCLUDE
 #include <OpenSim/Simulation/Model/Frame.h>
+
+// TODO remove these when corresponding properties are removed
+#include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 #include <OpenSim/Common/VisibleObject.h>
 
 namespace OpenSim {
+
 
 //=============================================================================
 //=============================================================================
@@ -55,10 +59,22 @@ public:
     // PROPERTIES
     //==============================================================================
     /** @name Property declarations
-    These are the serializable properties associated with a PhysicalFrame. **/
+    These are the serializable properties associated with a PhysicalFrame.
+    NOTE: Thes properties used to be members of Body and were moved up the hierarchy
+    with the introduction of Frames.
+
+    TODO: Both VisibleObject and the WrapObjectSet should NOT be properties
+    of the PhysicalFrame. This is an itermediate solution as we integrate Frames 
+    use into the OpenSim API. These properties should be their own components with
+    Connectors to the PhysicalFrames they attach to. This must be addressed prior
+    to OpenSim 4.0 release. - aseth */
     /**@{**/
     OpenSim_DECLARE_UNNAMED_PROPERTY(VisibleObject,
         "For visualization in the Simbody visualizer or OpenSim GUI.");
+
+    OpenSim_DECLARE_UNNAMED_PROPERTY(WrapObjectSet,
+        "Set of wrap objects fixed to this body that GeometryPaths can wrap over.");
+
     /**@}**/
     //==========================================================================
     // PUBLIC METHODS
@@ -120,10 +136,29 @@ public:
     // End of underlying MobilizedBody accessors.
     ///@} 
 
+
+    /** @name DEPRECATED API
+    ///@{
+    /** Deprecated methods for inermediate integration of Frames */
     virtual void addDisplayGeometry(const std::string &aGeometryFileName);
 
     const VisibleObject* getDisplayer() const { return &get_VisibleObject(); }
     VisibleObject* updDisplayer() { return &upd_VisibleObject(); }
+
+    /** Get the named wrap object, if it exists.
+    *
+    * @param aName Name of the wrap object.
+    * @return const Pointer to the wrap object.
+    */
+    const WrapObject* getWrapObject(const std::string& aName) const;
+    const WrapObjectSet& getWrapObjectSet() const { return get_WrapObjectSet(); }
+
+    /** Add a wrap object to the Body. Note that the Body takes ownership of
+    * the WrapObject.
+    */
+    void addWrapObject(WrapObject* wrapObject);
+    ///@} 
+
 
 protected:
     /** The transform X_GF for this PhysicalFrame, F, in ground, G. */
@@ -154,7 +189,7 @@ protected:
     /** @name Component Extension methods.
     PhysicalFrame extension of Component interface. */
     /**@{**/
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    void extendConnectToModel(Model& aModel) override;
     /**@}**/
 
 private:
