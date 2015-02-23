@@ -200,6 +200,8 @@ protected:
     void extendConnectToModel(Model& aModel) override;
     /**@}**/
 
+    void extendConnectToModel(Model& model) override;
+
 private:
 
     /* Component construction interface */

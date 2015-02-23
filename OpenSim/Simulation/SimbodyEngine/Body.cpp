@@ -65,6 +65,7 @@ Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,
     set_mass(aMass);
     set_mass_center(aMassCenter);
     setInertia(aInertia);
+    upd_GeometrySet(0).setFrameName(aName);
 }
 
 //_____________________________________________________________________________
@@ -126,7 +127,8 @@ void Body::addMeshGeometry(const std::string& aGeometryFileName, const SimTK::Ve
 {
     Mesh* geom = new Mesh(aGeometryFileName);
     geom->set_scale_factors(scale);
-    geom->setFrameName(getName());
+    if (geom->getFrameName() == "")
+        geom->setFrameName(getName());
     adoptGeometry(geom);
 }
 
@@ -464,6 +466,14 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                         convertDisplayGeometryToGeometryXML(aNode, outerScaleFactors, outerTransform, *geomSetIter);
                     }
                 }
+                // Regardless add a node for FrameGeometry to control the display of BodyFrame
+                std::string bodyName = aNode.getRequiredAttribute("name").getValue();
+                SimTK::Xml::Element bodyFrameNode("FrameGeometry");
+                XMLDocument::addConnector(bodyFrameNode, "Connector_PhysicalFrame_", "frame", bodyName);
+                SimTK::Xml::element_iterator geomSetIter = aNode.element_begin("GeometrySet");
+                if (geomSetIter != aNode.element_end()){
+                    geomSetIter->insertNodeAfter(geomSetIter->node_end(), bodyFrameNode);
+                }
             }
         }
     }
@@ -503,23 +513,32 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
             }
             if (localXform.norm() > SimTK::Eps){
                 // Create a Frame
-                /*
-                                std::string frameName = bodyName + "_Frame_" + to_string(counter);
-                                SimTK::Xml::Element frameNode("frame_name", frameName);
-                                meshNode.insertNodeAfter(meshNode.element_end(), frameNode);
+                std::string frameName = bodyName + "_Frame_" + to_string(counter);
+                SimTK::Xml::Element frameNode("frame_name", frameName);
+                meshNode.insertNodeAfter(meshNode.element_end(), frameNode);
 
-                                SimTK::Xml::Element modelNode = bodyNode;
-                                do {
-                                modelNode = modelNode.getParentElement();
-                                SimTK::String edump;
-                                modelNode.writeToString(edump);
-                                } while (modelNode.getElementTag() != "Model" && !modelNode.isTopLevelNode());
+                SimTK::Xml::Element modelNode = bodyNode;
+                do {
+                modelNode = modelNode.getParentElement();
+                SimTK::String edump;
+                modelNode.writeToString(edump);
+                } while (modelNode.getElementTag() != "Model" && !modelNode.isTopLevelNode());
 
-                                SimTK::Xml::element_iterator frameSetIter = modelNode.element_begin("FrameSet");
-                                SimTK::Xml::element_iterator frameSetObjectsIter = frameSetIter->element_begin("objects");
-                                createFrameForXform(frameSetObjectsIter, frameName, localXform, bodyName);
-                                */
-                XMLDocument::addConnector(meshNode, "Connector_PhysicalFrame_", "frame", bodyName);
+                SimTK::Xml::element_iterator frameSetIter = modelNode.element_begin("FrameSet");
+                SimTK::Xml::element_iterator frameSetObjectsIter;
+                if (frameSetIter != modelNode.element_end()){
+                    frameSetObjectsIter = frameSetIter->element_begin("objects");
+                }
+                else {
+                    SimTK::Xml::Element frameSetNode("FrameSet");
+                    modelNode.insertNodeAfter(modelNode.element_end(), frameSetNode);
+                    SimTK::Xml::Element frameSetObjectsNode("objects");
+                    frameSetNode.insertNodeAfter(frameSetNode.element_end(), frameSetObjectsNode);
+                    frameSetObjectsIter = frameSetNode.element_begin("objects");
+                }
+                createFrameForXform(frameSetObjectsIter, frameName, localXform, bodyName);
+                                
+                XMLDocument::addConnector(meshNode, "Connector_PhysicalFrame_", "frame", frameName);
             }
             else
                 XMLDocument::addConnector(meshNode, "Connector_PhysicalFrame_", "frame", bodyName);
@@ -570,11 +589,17 @@ void Body::createFrameForXform(const SimTK::Xml::element_iterator& frameSetIter,
 {
     SimTK::Xml::Element frameNode("PhysicalOffsetFrame");
     frameNode.setAttributeValue("name", frameName);
-    SimTK::Xml::Element translationNode("translation", localXform.getSubVec<3>(3));
-    SimTK::Xml::Element orientationNode("rotation", localXform.getSubVec<3>(0));
+    stringstream ss;
+    ss << localXform[3] << " " << localXform[4] << " " << localXform[5];
+    SimTK::Xml::Element translationNode("translation", ss.str());
+    ss.clear();
+    ss << localXform[0] << " " << localXform[1] << " " << localXform[2];
+    SimTK::Xml::Element orientationNode("rotation", ss.str());
     frameNode.insertNodeAfter(frameNode.element_end(), translationNode);
     frameNode.insertNodeAfter(frameNode.element_end(), orientationNode);
     frameSetIter->insertNodeAfter(frameSetIter->element_end(), frameNode);
+    XMLDocument::addConnector(frameNode, "Connector_PhysicalFrame_", "parent", bodyName);
+
 }
 
 Body* Body::addSlave()

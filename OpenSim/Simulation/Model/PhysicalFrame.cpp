@@ -74,6 +74,13 @@ SimTK::Transform PhysicalFrame::
     return getMobilizedBody().getBodyTransform(s);
 }
 
+void PhysicalFrame::extendConnectToModel(Model& model)
+{
+    if (upd_GeometrySet(0).getFrameName() == "")
+        upd_GeometrySet(0).setFrameName(getName());
+    Super::extendConnectToModel(model);
+}
+
 
 SimTK::Transform PhysicalFrame::extendFindTransformInBaseFrame() const
 {
