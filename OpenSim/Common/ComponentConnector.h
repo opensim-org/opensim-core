@@ -36,6 +36,7 @@
 
 // INCLUDES
 #include "OpenSim/Common/ComponentOutput.h"
+#include "OpenSim/Common/ComponentList.h"
 
 namespace OpenSim {
 
