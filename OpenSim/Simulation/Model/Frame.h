@@ -194,12 +194,7 @@ protected:
     /**@{**/
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendRealizeTopology(SimTK::State& s) const override;
-    void extendFinalizeFromProperties() override
-    {
-        Super::extendFinalizeFromProperties();
-        // HACK- Set frame name to self here instead of in constructor since name isn't available then.
-        upd_GeometrySet(0).setFrameName(getName());
-    }
+    //void extendFinalizeFromProperties() override;
 
     /**@}**/
 
