@@ -796,10 +796,6 @@ void Model::extendConnectToModel(Model &model)
     // TODO: Get rid of the SimbodyEngine
     updSimbodyEngine().connectSimbodyEngineToModel(*this);
 
-    //Analyses are not Components so add them after legit 
-    //Components have been wired-up correctly.
-    updAnalysisSet().setModel(*this);
-
     // Connections are properties so we need to mark these changes as final.
     setObjectIsUpToDateWithProperties();
 }
@@ -810,6 +806,10 @@ void Model::extendConnectToModel(Model &model)
 void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Model *mutableThis = const_cast<Model *>(this);
+
+    //Analyses are not Components so add them after legit 
+    //Components have been wired-up correctly.
+    mutableThis->updAnalysisSet().setModel(*mutableThis);
 
     // Reset the vector of all controls' defaults
     mutableThis->_defaultControls.resize(0);

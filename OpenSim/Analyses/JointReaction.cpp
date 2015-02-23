@@ -241,12 +241,7 @@ void JointReaction::setupReactionList()
 
     /* get the joint set and  body set from the dynamics engine model*/
     const JointSet& jointSet = _model->getJointSet();
-    const BodySet& bodySet = _model->getBodySet();
     int numJoints = jointSet.getSize();
-    int numBodies = bodySet.getSize();
-
-    /* get the ground body index in the body set*/
-    int groundIndex = bodySet.getIndex("ground", 0);
 
     /* check if jointNames is specified to "ALL".  if yes, setup to 
     *  compute reactions loads for all joints*/
@@ -284,78 +279,52 @@ void JointReaction::setupReactionList()
     *  reactionIndex, onBodyIndex, and inFrameIndex of each JointReactionKey */
 
     _reactionList.setSize(0);
-    int listNotEmptyFlag = 0;
-    for (int i=0; i<_jointNames.getSize();i++) {
-        JointReactionKey currentJoint;
-        int validJointFlag = 0;
-        for (int j=0; j<numJoints; j++) {
-            Joint& joint = jointSet.get(j);
-            if (_jointNames.get(i) == joint.getName()) {
-                validJointFlag++;
-                listNotEmptyFlag++;
-                currentJoint.jointName = joint.getName();
-                const std::string& childName = joint.getChildFrameName();
-                int childIndex = bodySet.getIndex(childName, 0);
-                const std::string& parentName = joint.getParentFrameName();
-                int parentIndex = bodySet.getIndex(parentName, 0);
+    int index = -1;
+    for (int i = 0; i < _jointNames.getSize(); i++) {
+        JointReactionKey currentKey;
+        index = jointSet.getIndex(_jointNames[i], index + 1);
+        if (index > -1) { // found the Joint in the model
+            // Add joint to JointReactionKey 
+            const Joint& joint = jointSet[index];
+            currentKey.jointIndex = index;
+            currentKey.joint = &joint;
 
-                /* set index that correponds to the appropriate index of the 
-                *  computeReactions arguements forcesVec and momentsVec.*/
-                currentJoint.reactionIndex = childIndex;
-
-                /* set the onBodyIndex to either the parent or child body*/
-                std::string whichBody ="child";
-                if (_onBody.getSize() == 1) {
-                    whichBody = _onBody[0];
-                    }
-                else whichBody = _onBody[i];
-                
-                //convert whichBody to lower case
-                std::transform(whichBody.begin(),whichBody.end(),whichBody.begin(),::tolower);
-
-                if (whichBody == "parent") {
-                    currentJoint.onBodyIndex = parentIndex;}
-                else if(whichBody == "child") {currentJoint.onBodyIndex = childIndex;}
-                else {
-                    currentJoint.onBodyIndex = childIndex;
-                    cout << "\nWARNING:  " << whichBody << " is not a valid choice for apply_on_body";
-                    cout << "\nSetting to apply " << currentJoint.jointName << " load to the child body.\n";}
-
-                /* set the inFrameIndex to either the ground, child, or parent*/
-                std::string whichFrame = "ground";
-                if (_inFrame.getSize() == 1) {
-                    whichFrame = _inFrame[0];}
-                else whichFrame = _inFrame[i];
-
-                // convert to lower case
-                std::transform(whichFrame.begin(),whichFrame.end(),whichFrame.begin(),::tolower);
-
-
-                if (whichFrame == "child") {
-                    currentJoint.inFrameIndex = childIndex;}
-                else if (whichFrame == "parent") {
-                    currentJoint.inFrameIndex = parentIndex;}
-                else if (whichFrame == "ground") {currentJoint.inFrameIndex = groundIndex;}
-                else {
-                    currentJoint.inFrameIndex = groundIndex;
-                    cout << "\nWARNING:  " << whichFrame << " is not a valid choice for express_in_frame";
-                    cout << "\nSetting to express " << currentJoint.jointName << " load in the ground frame.\n";}
-
-                _reactionList.append(currentJoint);
-                break;
+            // Want joint reaction applied to child or parent?
+            std::string appliedOnName = "child";
+            if (_onBody.size()){
+                appliedOnName = (i < _onBody.size()) ? _onBody[i] : _onBody[0];
             }
+
+            // convert to lowercase
+            std::transform(appliedOnName.begin(), appliedOnName.end(),
+                appliedOnName.begin(), ::tolower);
+            // determine if user wants reaction on child or parent
+            currentKey.isAppliedOnChild = (appliedOnName == "child");
+            currentKey.appliedOnBody = currentKey.isAppliedOnChild ?
+                &joint.getChildFrame() : &joint.getParentFrame();
+
+            std::string expressedIn = "ground";
+            if (_inFrame.size()) {
+                expressedIn = (i < _inFrame.size()) ? _inFrame[i] : _inFrame[0];
+            }
+            // convert to lowercase
+            std::transform(expressedIn.begin(), expressedIn.end(),
+                expressedIn.begin(), ::tolower);
+            if (expressedIn == "child"){
+                currentKey.expressedInFrame = &joint.getChildFrame();
+            }
+            else if (expressedIn == "parent"){
+                currentKey.expressedInFrame = &joint.getParentFrame();
+            }
+            else{ //if not child or parent use ground
+                currentKey.expressedInFrame = &_model->getGround();
+            }
+            _reactionList.append(currentKey);
         }
-        if(validJointFlag == 0) {
-            cout << "\nWARNING: " << _jointNames.get(i) << " is not a valid joint.  Ignoring this entry.\n";
+        else {
+            cout << "\nWARNING: " << _jointNames[i] << " is not a valid joint. "
+                "Ignoring this entry.\n";
         }
-        
-    }
-    if(listNotEmptyFlag ==0) {
-        cout << "\nWARNING: No valid joint names were found.\n"
-            << "Setting up _reactionList to include all joints in the model.\n";
-        _jointNames.setSize(1);
-        _jointNames[0] = "ALL";
-        setupReactionList();
     }
 }
     
@@ -399,15 +368,13 @@ constructColumnLabels()
     Array<string> labels;
     labels.append("time");
 
-    const BodySet& bodySet = _model->getBodySet();
-    int numBodies = bodySet.getSize();
     int numOutputJoints = _reactionList.getSize();
     //  For each joint listed in _reactionList, append 3 column labels for forces
     //  and 3 column labels for moments.
-    for(int i=0; i<numOutputJoints; i++) {
-        std::string jointName = _reactionList.get(i).jointName;
-        std::string onBodyName = bodySet.get(_reactionList.get(i).onBodyIndex).getName();
-        std::string inFrameName = bodySet.get(_reactionList.get(i).inFrameIndex).getName();
+    for(int i=0; i<numOutputJoints; ++i) {
+        std::string jointName = _reactionList[i].joint->getName();
+        std::string onBodyName = _reactionList[i].appliedOnBody->getName();
+        std::string inFrameName = _reactionList[i].expressedInFrame->getName();
         std::string labelRoot = jointName + "_on_" + onBodyName + "_in_" + inFrameName;
         labels.append(labelRoot + "_fx");
         labels.append(labelRoot + "_fy");
@@ -430,8 +397,7 @@ constructColumnLabels()
  * If called, this method sets _storeActuation to the
  * forces data in _forcesFileName
  */
-void JointReaction::
-loadForcesFromFile()
+void JointReaction::loadForcesFromFile()
 {
     delete _storeActuation; _storeActuation = NULL;
     // check if the forces storage file name is valid and, if so, load the file into storage
@@ -584,19 +550,13 @@ record(const SimTK::State& s)
         }
     }
     // VARIABLES
-    int numBodies = _model->getNumBodies();
+    const Ground& ground = _model->getGround();
+    int numJoints = _model->getNumJoints();
 
     /** define 2 variable length vectors of Vec3 vectors to contain calculated  
     *   forces and moments for all the bodies in the model */
-    Vector_<Vec3> allForcesVec(numBodies);
-    Vector_<Vec3> allMomentsVec(numBodies);
-    double Mass = 0.0;
-
-    //// BodySet and JointSet and ground body index
-    const BodySet& bodySet = _model->getBodySet();
-    const JointSet& jointSet = _model->getJointSet();
-    const Ground &ground = _model->getGround();
-    int groundIndex = bodySet.getIndex(ground.getName());
+    Vector_<Vec3> allForcesVec(numJoints);
+    Vector_<Vec3> allMomentsVec(numJoints);
 
     /* Calculate All joint reaction forces and moments.
     *  Applied to child bodies, expressed in ground frame.  
@@ -610,10 +570,11 @@ record(const SimTK::State& s)
     Vector_<Vec3> forcesVec(numOutputJoints), momentsVec(numOutputJoints), pointsVec(numOutputJoints);
     for(int i=0; i<numOutputJoints; i++) {
         JointReactionKey currentKey = _reactionList[i];
-        const Joint& joint = jointSet.get(currentKey.jointName);
-        Vec3 force = allForcesVec[currentKey.reactionIndex];
-        Vec3 moment = allMomentsVec[currentKey.reactionIndex];
-        Body& expressedInBody = bodySet.get(currentKey.inFrameIndex);
+        const Joint& joint = *currentKey.joint;
+        Vec3 force = allForcesVec[currentKey.jointIndex];
+        Vec3 moment = allMomentsVec[currentKey.jointIndex];
+        const PhysicalFrame& expressedInBody = *currentKey.expressedInFrame;
+        
         // find the point of application of the joint load on the child
         const Vec3& childLocation = joint.getLocationInChild();
         // and find it's current location in the ground reference frame
@@ -623,7 +584,7 @@ record(const SimTK::State& s)
         
         // check if the load on the child needs to be converted to an equivalent
         // load on the parent body.
-        if(currentKey.onBodyIndex != currentKey.reactionIndex){
+        if(!currentKey.isAppliedOnChild){
             /*Take reaction load from child and apply on parent*/
             force = -force;
             moment = -moment;
@@ -644,7 +605,8 @@ record(const SimTK::State& s)
             pointOfApplication = childLocationInGlobal;
         }
         /* express loads in the desired reference frame*/
-        _model->getSimbodyEngine().transform(s_analysis,ground,force,expressedInBody,force);
+        _model->getSimbodyEngine()
+            .transform(s_analysis, ground, force, expressedInBody, force);
         _model->getSimbodyEngine().transform(s_analysis,ground,moment,expressedInBody,moment);
         _model->getSimbodyEngine().transformPosition(s_analysis,ground,pointOfApplication,expressedInBody,pointOfApplication);
 

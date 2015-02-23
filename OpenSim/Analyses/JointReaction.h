@@ -45,6 +45,7 @@
 namespace OpenSim { 
 
 class Model;
+class Joint;
 
 
 /**
@@ -71,17 +72,18 @@ private:
      *  of each analysed joint.*/
     struct JointReactionKey
     {
-        /* name of the joint*/
-        std::string jointName;
-        /* index coresponding to the location of the desrired reaction load 
-        *  in the results of computeReactions()*/
-        int reactionIndex;
-        /* body set index of the parent or child body to which the joint
-        *  reaction is applied*/
-        int onBodyIndex;
-        /* body set index of the parent, child, or ground body in which the 
-        *  joint reaction is expressed*/
-        int inFrameIndex;
+        /* The index of teh joint to be reported on in the Model's JointSet.
+           This corresponds to the index in the Vector of reaction forces/moments
+           returned by the SimbodyEngine::computeReactions() method. */
+        int jointIndex;
+        /* Joint reference*/
+        const Joint* joint;
+        /* The body upon which the force is applied */
+        const PhysicalFrame* appliedOnBody;
+        /* Is the applied on Body the child of child or the parent?*/
+        bool isAppliedOnChild;
+        /* The reference Frame in which the force should be expressed */
+        const PhysicalFrame* expressedInFrame;
     };
 
 protected:
