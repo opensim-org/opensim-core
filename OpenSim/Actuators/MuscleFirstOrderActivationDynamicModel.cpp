@@ -67,18 +67,6 @@ void MuscleFirstOrderActivationDynamicModel::constructProperties()
     constructProperty_minimum_activation(0.01);
 }
 
-void MuscleFirstOrderActivationDynamicModel::ensureModelUpToDate()
-{
-    if(!isObjectUpToDateWithProperties()) {
-        extendFinalizeFromProperties();
-    }
-
-    // The name is not counted as a property but it can change, so it must be
-    // updated as well.
-    std::string name = getName();
-    setName(name);
-}
-
 //==============================================================================
 // SERVICES
 //==============================================================================

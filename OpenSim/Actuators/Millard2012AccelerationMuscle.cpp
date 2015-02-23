@@ -198,7 +198,7 @@ void Millard2012AccelerationMuscle::buildMuscle()
     fcphi.setName(tmp);
 
      //Ensure all sub objects are up to date with properties;
-    actMdl.ensureModelUpToDate();
+    actMdl.finalizeFromProperties();
     m_penMdl.ensureModelUpToDate();
 
     falCurve.ensureCurveUpToDate();

@@ -128,7 +128,7 @@ void Thelen2003Muscle::buildMuscle(){
     penMdl = tmp2;   
 
     //Ensure all sub objects are up to date with properties.
-    actMdl.ensureModelUpToDate();
+    actMdl.finalizeFromProperties();
     penMdl.ensureModelUpToDate();
 
     setObjectIsUpToDateWithProperties();

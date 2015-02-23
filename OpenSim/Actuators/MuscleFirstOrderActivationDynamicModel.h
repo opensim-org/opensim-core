@@ -110,8 +110,6 @@ public:
                                            double minActivation,
                                            const std::string& muscleName);
 
-    void ensureModelUpToDate();
-
     /**
     @returns Activation clamped to the range [minActivation, 1.0].
     */
