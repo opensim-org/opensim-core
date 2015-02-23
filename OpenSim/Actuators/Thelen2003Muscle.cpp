@@ -172,7 +172,7 @@ double Thelen2003Muscle::getDeactivationTimeConstant() const
 {   return get_deactivation_time_constant(); }
 
 double Thelen2003Muscle::getMinimumActivation() const 
-{   return actMdl.getMinimumActivation(); }
+{   return actMdl.get_minimum_activation(); }
 
 
 double Thelen2003Muscle::getFmaxTendonStrain() const 
@@ -327,7 +327,7 @@ bool Thelen2003Muscle::
 bool Thelen2003Muscle::setMinimumActivation(double aActivationMinValue)
 {
     if(aActivationMinValue > 0.001){        
-        actMdl.setMinimumActivation(aActivationMinValue);     
+        actMdl.set_minimum_activation(aActivationMinValue);     
         ensureMuscleUpToDate();
         return true;
     }else{

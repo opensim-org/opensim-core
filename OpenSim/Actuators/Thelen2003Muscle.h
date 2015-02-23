@@ -312,7 +312,7 @@ private:
     //=====================================================================
     //bool initializedModel;
 
-    double activation_minimum_value;
+    //double activation_minimum_value;
     //Activation Dynamics
     MuscleFirstOrderActivationDynamicModel actMdl;
 

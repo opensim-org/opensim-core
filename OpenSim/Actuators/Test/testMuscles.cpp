@@ -823,8 +823,8 @@ void testMillard2012AccelerationMuscle()
     muscle.setMass(muscle.getMass()*10);
 
     MuscleFirstOrderActivationDynamicModel actMdl = muscle.getActivationModel();
-    actMdl.setActivationTimeConstant(Activation0);
-    actMdl.setDeactivationTimeConstant(Deactivation0);
+    actMdl.set_activation_time_constant(Activation0);
+    actMdl.set_deactivation_time_constant(Deactivation0);
     muscle.setActivationModel(actMdl);
 
     double x0 = 0;

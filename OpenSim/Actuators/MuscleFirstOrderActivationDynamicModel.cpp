@@ -34,7 +34,7 @@ MuscleFirstOrderActivationDynamicModel::MuscleFirstOrderActivationDynamicModel()
     setNull();
     constructProperties();
     setName("default_MuscleFirstOrderActivationDynamicModel");
-    buildModel();
+    extendFinalizeFromProperties();
 }
 
 MuscleFirstOrderActivationDynamicModel::
@@ -49,24 +49,10 @@ MuscleFirstOrderActivationDynamicModel(double tauActivation,
     std::string name = muscleName + "_activation";
     setName(name);
 
-    SimTK_ERRCHK1_ALWAYS(tauActivation>SimTK::SignificantReal
-                         && tauDeactivation>SimTK::SignificantReal,
-        "MuscleFirstOrderActivationDynamicModel::"
-        "MuscleFirstOrderActivationDynamicModel", "%s: Activation and "
-        "deactivation time constants must be greater than 0",
-        name.c_str());
-
-    SimTK_ERRCHK1_ALWAYS(minActivation >= 0
-                         && minActivation < 1.0-SimTK::SignificantReal,
-        "MuscleFirstOrderActivationDynamicModel::"
-        "MuscleFirstOrderActivationDynamicModel",
-        "%s: Minimum activation must be in the range [0,1)",
-        name.c_str());
-
     set_activation_time_constant(tauActivation);
     set_deactivation_time_constant(tauDeactivation);
     set_minimum_activation(minActivation);
-    buildModel();
+    extendFinalizeFromProperties();
 }
 
 void MuscleFirstOrderActivationDynamicModel::setNull()
@@ -81,15 +67,10 @@ void MuscleFirstOrderActivationDynamicModel::constructProperties()
     constructProperty_minimum_activation(0.01);
 }
 
-void MuscleFirstOrderActivationDynamicModel::buildModel()
-{
-    setObjectIsUpToDateWithProperties();
-}
-
 void MuscleFirstOrderActivationDynamicModel::ensureModelUpToDate()
 {
     if(!isObjectUpToDateWithProperties()) {
-        buildModel();
+        extendFinalizeFromProperties();
     }
 
     // The name is not counted as a property but it can change, so it must be
@@ -99,60 +80,12 @@ void MuscleFirstOrderActivationDynamicModel::ensureModelUpToDate()
 }
 
 //==============================================================================
-// GET AND SET METHODS
-//==============================================================================
-double MuscleFirstOrderActivationDynamicModel::getActivationTimeConstant() const
-{   return get_activation_time_constant(); }
-double MuscleFirstOrderActivationDynamicModel::
-getDeactivationTimeConstant() const
-{   return get_deactivation_time_constant(); }
-double MuscleFirstOrderActivationDynamicModel::getMinimumActivation() const
-{   return get_minimum_activation(); }
-double MuscleFirstOrderActivationDynamicModel::getMaximumActivation() const
-{   return 1.0; }
-
-bool MuscleFirstOrderActivationDynamicModel::
-setActivationTimeConstant(double activationTimeConstant)
-{
-    if(activationTimeConstant > SimTK::SignificantReal) {
-        set_activation_time_constant(activationTimeConstant);
-        buildModel();
-        return true;
-    }
-    return false;
-}
-
-bool MuscleFirstOrderActivationDynamicModel::
-setDeactivationTimeConstant(double deactivationTimeConstant)
-{
-    if(deactivationTimeConstant > SimTK::SignificantReal) {
-        set_deactivation_time_constant(deactivationTimeConstant);
-        buildModel();
-        return true;
-    }
-    return false;
-}
-
-bool MuscleFirstOrderActivationDynamicModel::
-setMinimumActivation(double minimumActivation)
-{
-    if(minimumActivation >= 0
-       && minimumActivation < 1.0-SimTK::SignificantReal) {
-
-        set_minimum_activation(minimumActivation);
-        buildModel();
-        return true;
-    }
-    return false;
-}
-
-//==============================================================================
 // SERVICES
 //==============================================================================
 double MuscleFirstOrderActivationDynamicModel::
 clampActivation(double activation) const
 {
-    return clamp(getMinimumActivation(), activation, 1.0);
+    return clamp(get_minimum_activation(), activation, 1.0);
 }
 
 double MuscleFirstOrderActivationDynamicModel::
@@ -160,14 +93,38 @@ calcDerivative(double activation, double excitation) const
 {
     // This model respects a lower bound on activation while preserving the
     // expected steady-state value.
-    double clampedExcitation = clamp(getMinimumActivation(), excitation, 1.0);
-    double clampedActivation = clamp(getMinimumActivation(), activation, 1.0);
+    double clampedExcitation = clamp(get_minimum_activation(), excitation, 1.0);
+    double clampedActivation = clamp(get_minimum_activation(), activation, 1.0);
     double tau = SimTK::NaN;
 
     if(clampedExcitation > clampedActivation) {
-        tau = getActivationTimeConstant() * (0.5 + 1.5*clampedActivation);
+        tau = get_activation_time_constant() * (0.5 + 1.5*clampedActivation);
     } else {
-        tau = getDeactivationTimeConstant() / (0.5 + 1.5*clampedActivation);
+        tau = get_deactivation_time_constant() / (0.5 + 1.5*clampedActivation);
     }
     return (clampedExcitation - clampedActivation) / tau;
+}
+
+//==============================================================================
+// COMPONENT INTERFACE
+//==============================================================================
+void MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties()
+{
+    Super::extendFinalizeFromProperties();
+
+    // Ensure property values are within appropriate ranges.
+    SimTK_ERRCHK1_ALWAYS(get_activation_time_constant() >= SimTK::SignificantReal,
+        "MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties",
+        "%s: Activation time constant can be no smaller than SimTK::SignificantReal",
+        getName());
+    SimTK_ERRCHK1_ALWAYS(get_deactivation_time_constant() >= SimTK::SignificantReal,
+        "MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties",
+        "%s: Deactivation time constant can be no smaller than SimTK::SignificantReal",
+        getName());
+    SimTK_ERRCHK1_ALWAYS(get_minimum_activation() >= 0.0
+        && get_minimum_activation() <= 1.0-SimTK::SignificantReal,
+        "MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties",
+        "%s: Minimum activation must be in the range [0,1)", getName());
+
+    setObjectIsUpToDateWithProperties();
 }

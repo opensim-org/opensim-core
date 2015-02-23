@@ -81,8 +81,8 @@ void Millard2012AccelerationMuscle::constructProperties()
 
         MuscleFirstOrderActivationDynamicModel defaultActMdl = 
             MuscleFirstOrderActivationDynamicModel();
-        double tauAct = defaultActMdl.getActivationTimeConstant();
-        double tauDact= defaultActMdl.getDeactivationTimeConstant();
+        double tauAct = defaultActMdl.get_activation_time_constant();
+        double tauDact= defaultActMdl.get_deactivation_time_constant();
 
     //Ensure the minimum allowed activation is 0.     
     constructProperty_MuscleFirstOrderActivationDynamicModel(

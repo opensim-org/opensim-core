@@ -100,9 +100,9 @@ int main(int argc, char* argv[])
             MuscleFirstOrderActivationDynamicModel actMdl;
 
             MuscleFirstOrderActivationDynamicModel actMdl2;
-            actMdl2.setActivationTimeConstant(2*tauA);
-            actMdl2.setDeactivationTimeConstant(2*tauD);
-            actMdl2.setMinimumActivation(2*amin);
+            actMdl2.set_activation_time_constant(2*tauA);
+            actMdl2.set_deactivation_time_constant(2*tauD);
+            actMdl2.set_minimum_activation(2*amin);
 
             cout << endl;
             cout<<"*****************************************************"<<endl;
@@ -266,7 +266,7 @@ int main(int argc, char* argv[])
 
             //Generate a range of activation values
             actV.resize(100);
-            amin = actMdl.getMinimumActivation();
+            amin = actMdl.get_minimum_activation();
             for(int i=0; i<actV.size(); i++){
                 actV(i) = (1-amin)*((double)i)/((double)actV.size()-1.0) + amin;
             }
