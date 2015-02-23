@@ -35,12 +35,11 @@
  */
 
 // INCLUDES
+#include "OpenSim/Common/Component.h"
 #include "OpenSim/Common/ComponentOutput.h"
 #include "OpenSim/Common/ComponentList.h"
 
 namespace OpenSim {
-
-class Component;
 
 //=============================================================================
 //                        OPENSIM COMPONENT CONNECTOR
