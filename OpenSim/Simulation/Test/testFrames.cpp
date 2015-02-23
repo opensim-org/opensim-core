@@ -357,8 +357,8 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(5, i, 0, __FILE__, __LINE__,
-        "testFilterByFrameType failed to find the 4 Frames in the model.");
+    ASSERT_EQUAL(7, i, 0, __FILE__, __LINE__,
+        "testFilterByFrameType failed to find the 7 Frames in the model.");
 
     i = 0;
     std::cout << "\nList all PhysicalFrames in the model." << std::endl;
@@ -366,8 +366,8 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(4, i, 0, __FILE__, __LINE__,
-        "testFilterByFrameType failed to find 4 PhysicalFrames.");
+    ASSERT_EQUAL(6, i, 0, __FILE__, __LINE__,
+        "testFilterByFrameType failed to find 6 PhysicalFrames.");
 
     i = 0;
     std::cout << "\nList all Bodies in the model." << std::endl;
@@ -387,8 +387,8 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(1, i, 0, __FILE__, __LINE__,
-        "testFilterByFrameType failed to find the 1 PhyscicalOffsetFrame in the model.");
+    ASSERT_EQUAL(3, i, 0, __FILE__, __LINE__,
+        "testFilterByFrameType failed to find the 3 PhyscicalOffsetFrame in the model.");
 }
 
 
