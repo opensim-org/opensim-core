@@ -34,7 +34,6 @@ MuscleFirstOrderActivationDynamicModel::MuscleFirstOrderActivationDynamicModel()
     setNull();
     constructProperties();
     setName("default_MuscleFirstOrderActivationDynamicModel");
-    extendFinalizeFromProperties();
 }
 
 MuscleFirstOrderActivationDynamicModel::
@@ -52,7 +51,6 @@ MuscleFirstOrderActivationDynamicModel(double tauActivation,
     set_activation_time_constant(tauActivation);
     set_deactivation_time_constant(tauDeactivation);
     set_minimum_activation(minActivation);
-    extendFinalizeFromProperties();
 }
 
 void MuscleFirstOrderActivationDynamicModel::setNull()
@@ -104,15 +102,15 @@ void MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties()
     SimTK_ERRCHK1_ALWAYS(get_activation_time_constant() >= SimTK::SignificantReal,
         "MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties",
         "%s: Activation time constant can be no smaller than SimTK::SignificantReal",
-        getName());
+        getName().c_str());
     SimTK_ERRCHK1_ALWAYS(get_deactivation_time_constant() >= SimTK::SignificantReal,
         "MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties",
         "%s: Deactivation time constant can be no smaller than SimTK::SignificantReal",
-        getName());
+        getName().c_str());
     SimTK_ERRCHK1_ALWAYS(get_minimum_activation() >= 0.0
         && get_minimum_activation() <= 1.0-SimTK::SignificantReal,
         "MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties",
-        "%s: Minimum activation must be in the range [0,1)", getName());
+        "%s: Minimum activation must be in the range [0,1)", getName().c_str());
 
     setObjectIsUpToDateWithProperties();
 }

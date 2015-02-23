@@ -48,7 +48,7 @@ Thelen2003Muscle::Thelen2003Muscle()
 {    
     setNull();
     constructInfrastructure();
-    ensureMuscleUpToDate();
+    buildMuscle();  //TODO: remove this when pennation model is a subcomponent.
 }
 
 //_____________________________________________________________________________
@@ -69,23 +69,58 @@ Thelen2003Muscle(const std::string& aName,  double aMaxIsometricForce,
     setTendonSlackLength(aTendonSlackLength);
     setPennationAngleAtOptimalFiberLength(aPennationAngle);
 
-    ensureMuscleUpToDate();
+    buildMuscle();  //TODO: remove this when pennation model is a subcomponent.
 
 }
+
+//==============================================================================
+// Component Interface
+//==============================================================================
+void Thelen2003Muscle::extendFinalizeFromProperties()
+{
+    Super::extendFinalizeFromProperties();
+
+    MuscleFirstOrderActivationDynamicModel& actMdl = 
+        upd_MuscleFirstOrderActivationDynamicModel();
+    addComponent(&actMdl);
+
+    SimTK_ERRCHK1_ALWAYS(get_FmaxTendonStrain() > 0,
+        "Thelen2003Muscle::extendFinalizeFromProperties",
+        "%s: Tendon strain at maximum isometric force must be positive",
+        getName().c_str());
+    SimTK_ERRCHK1_ALWAYS(get_FmaxMuscleStrain() > 0,
+        "Thelen2003Muscle::extendFinalizeFromProperties",
+        "%s: Passive muscle strain at maximum isometric force must be positive",
+        getName().c_str());
+    SimTK_ERRCHK1_ALWAYS(get_KshapeActive() > 0,
+        "Thelen2003Muscle::extendFinalizeFromProperties",
+        "%s: Shape factor for active muscle f-l relationship must be positive",
+        getName().c_str());
+    SimTK_ERRCHK1_ALWAYS(get_KshapePassive() > 0,
+        "Thelen2003Muscle::extendFinalizeFromProperties",
+        "%s: Shape factor for passive muscle f-l relationship must be positive",
+        getName().c_str());
+    SimTK_ERRCHK1_ALWAYS(get_Af() > 0,
+        "Thelen2003Muscle::extendFinalizeFromProperties",
+        "%s: Force-velocity shape factor must be positive",
+        getName().c_str());
+    SimTK_ERRCHK1_ALWAYS(get_Flen() > 1.0,
+        "Thelen2003Muscle::extendFinalizeFromProperties",
+        "%s: Maximum normalized lengthening force must be greater than 1.0",
+        getName().c_str());
+    SimTK_ERRCHK1_ALWAYS(get_FvExtrapolationThreshold() > 1.0/get_Flen(),
+        "Thelen2003Muscle::extendFinalizeFromProperties",
+        "%s: F-v threshold must be greater than 1.0/Flen",
+        getName().c_str());
+}
+
 //====================================================================
 // Model Component Interface
 //====================================================================
 void Thelen2003Muscle::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
-    ensureMuscleUpToDate();
-}
-
-void Thelen2003Muscle::ensureMuscleUpToDate()
-{
-    if(isObjectUpToDateWithProperties()==false){
-        buildMuscle();
-    }
+    buildMuscle();  //TODO: remove this when pennation model is a subcomponent.
 }
 
 void Thelen2003Muscle::extendInitStateFromProperties(SimTK::State& s) const
@@ -97,26 +132,12 @@ void Thelen2003Muscle::
     extendSetPropertiesFromState(const SimTK::State& s)
 {
     Super::extendSetPropertiesFromState(s);      
-    ensureMuscleUpToDate();
+    buildMuscle();  //TODO: remove this when pennation model is a subcomponent.
       
 }
 
-void Thelen2003Muscle::buildMuscle(){
-    std::string caller(getName());
-    caller.append("_Thelen2003Muscle::buildMuscle");
-
-    //Appropriately set the properties of the activation model
-    double activationTimeConstant  = getActivationTimeConstant();
-    double deactivationTimeConstant= getDeactivationTimeConstant();
-    double activationMinValue      = getMinimumActivation();
-
-
-    MuscleFirstOrderActivationDynamicModel tmp1(activationTimeConstant, 
-                                                deactivationTimeConstant, 
-                                                activationMinValue, 
-                                                caller);
-    actMdl = tmp1; 
-
+void Thelen2003Muscle::buildMuscle()
+{
     //Appropriately set the properties of the pennation model    
     double optimalFiberLength = getOptimalFiberLength();
     double pennationAngle     = getPennationAngleAtOptimalFiberLength();
@@ -128,10 +149,8 @@ void Thelen2003Muscle::buildMuscle(){
     penMdl = tmp2;   
 
     //Ensure all sub objects are up to date with properties.
-    actMdl.finalizeFromProperties();
+    //upd_MuscleFirstOrderActivationDynamicModel().finalizeFromProperties();
     penMdl.ensureModelUpToDate();
-
-    setObjectIsUpToDateWithProperties();
 }
 //_____________________________________________________________________________
 // Set the data members of this muscle to their null values.
@@ -145,61 +164,44 @@ void Thelen2003Muscle::setNull()
 
 //_____________________________________________________________________________
 /**
- * Populate this objects properties
+ * Populate this object's properties
  */
 void Thelen2003Muscle::constructProperties()
 {
-    constructProperty_activation_time_constant(0.015);
-    constructProperty_deactivation_time_constant(0.050);
+    constructProperty_MuscleFirstOrderActivationDynamicModel(
+        MuscleFirstOrderActivationDynamicModel());
+    setActivationTimeConstant(0.015);
+    setDeactivationTimeConstant(0.050);
+
     constructProperty_FmaxTendonStrain(0.04); // was 0.033
     constructProperty_FmaxMuscleStrain(0.6);
     constructProperty_KshapeActive(0.45);   
     constructProperty_KshapePassive(5.0);   
     constructProperty_Af(0.25); 
     constructProperty_Flen(1.4);    //was 1.8, 
-    constructProperty_fv_linear_extrap_threshold(0.95);
+    constructProperty_FvExtrapolationThreshold(0.95);
     //acos(0.05) = 84.26 degrees    
 }
 
 //=============================================================================
 // GET
 //=============================================================================
-
 double Thelen2003Muscle::getActivationTimeConstant() const 
-{   return get_activation_time_constant(); }
+{   return get_MuscleFirstOrderActivationDynamicModel().
+           get_activation_time_constant(); }
 
 double Thelen2003Muscle::getDeactivationTimeConstant() const 
-{   return get_deactivation_time_constant(); }
+{   return get_MuscleFirstOrderActivationDynamicModel().
+           get_deactivation_time_constant(); }
 
 double Thelen2003Muscle::getMinimumActivation() const 
-{   return actMdl.get_minimum_activation(); }
-
-
-double Thelen2003Muscle::getFmaxTendonStrain() const 
-{   return get_FmaxTendonStrain(); }
-
-double Thelen2003Muscle::getFmaxMuscleStrain()  const 
-{   return get_FmaxMuscleStrain(); }
-
-double Thelen2003Muscle::getKshapeActive()  const 
-{   return get_KshapeActive(); }
-
-double Thelen2003Muscle::getKshapePassive() const 
-{   return get_KshapePassive(); }
-
-double Thelen2003Muscle::getAf() const 
-{   return get_Af(); }
-
-double Thelen2003Muscle::getFlen() const 
-{   return get_Flen(); }
-
-double Thelen2003Muscle::getForceVelocityExtrapolationThreshold() const 
-{   return get_fv_linear_extrap_threshold(); }
+{   return get_MuscleFirstOrderActivationDynamicModel().
+           get_minimum_activation(); }
 
 const MuscleFirstOrderActivationDynamicModel& Thelen2003Muscle::
     getActivationModel() const
 {    
-    return actMdl;
+    return get_MuscleFirstOrderActivationDynamicModel();
 }
 
 const MuscleFixedWidthPennationModel& Thelen2003Muscle::
@@ -216,124 +218,22 @@ double Thelen2003Muscle::getMaximumPennationAngle() const
 //=============================================================================
 // SET
 //=============================================================================
-
-bool Thelen2003Muscle::setActivationTimeConstant(double aActTimeConstant)
+void Thelen2003Muscle::setActivationTimeConstant(double actTimeConstant)
 {
-    if(aActTimeConstant > 0){
-        set_activation_time_constant(aActTimeConstant);    
-        ensureMuscleUpToDate();
-        return true;
-    }
-    return false;
+    upd_MuscleFirstOrderActivationDynamicModel().
+        set_activation_time_constant(actTimeConstant);
 }
 
-bool Thelen2003Muscle::setDeactivationTimeConstant(double aDeActTimeConstant)
+void Thelen2003Muscle::setDeactivationTimeConstant(double deactTimeConstant)
 {
-    if(aDeActTimeConstant > 0){
-        set_deactivation_time_constant(aDeActTimeConstant);       
-        ensureMuscleUpToDate();
-        return true;
-    }
-    return false;
+    upd_MuscleFirstOrderActivationDynamicModel().
+        set_deactivation_time_constant(deactTimeConstant);
 }
 
-bool Thelen2003Muscle::setFmaxTendonStrain(double aFmaxTendonStrain)
+void Thelen2003Muscle::setMinimumActivation(double minimumActivation)
 {
-    if(aFmaxTendonStrain > 0){
-        set_FmaxTendonStrain(aFmaxTendonStrain);
-        ensureMuscleUpToDate();
-        return true;
-    }
-    return false;
-}
-
-bool Thelen2003Muscle::setFmaxFiberStrain(double aFmaxMuscleStrain)
-{
-    if(aFmaxMuscleStrain > 0){
-        set_FmaxMuscleStrain(aFmaxMuscleStrain);
-        ensureMuscleUpToDate();
-        return true;
-    }
-    return false;
-}
-
-bool Thelen2003Muscle::setKshapeActive(double aKShapeActive)
-{
-    if(aKShapeActive > 0){
-        set_KshapeActive(aKShapeActive);
-        ensureMuscleUpToDate();
-        return true; 
-    }
-    return false;
-}
-
-bool Thelen2003Muscle::setKshapePassive(double aKshapePassive)
-{
-    if(aKshapePassive > 0){
-        set_KshapePassive(aKshapePassive);
-        ensureMuscleUpToDate();
-        return true;
-    }
-    return false;
-}
-
-
-bool Thelen2003Muscle::setAf(double aAf)
-{
-    if(aAf > 0){
-        set_Af(aAf);
-        ensureMuscleUpToDate();
-        return true;
-    }
-    return false;
-}
-
-bool Thelen2003Muscle::setFlen(double aFlen)
-{
-    if(aFlen > 1.0){
-        set_Flen(aFlen);
-        ensureMuscleUpToDate();
-        return true;
-    }
-    return false;
-}
-  
-
-
-bool Thelen2003Muscle::
-                 setForceVelocityExtrapolationThreshold(double aFvThresh)
-{
-    if(aFvThresh > 1.0/getFlen()){
-        set_fv_linear_extrap_threshold(aFvThresh);
-        ensureMuscleUpToDate();
-        return true;
-    }
-    return false;
-}
-
-/*bool Thelen2003Muscle::
-    setMaximumPennationAngle(double maxPennationAngle) 
-{
-    if(maxPennationAngle > 0.0 &&
-       maxPennationAngle < acos(0.001)){    
-           penMdl.setMaximumPennationAngle(maxPennationAngle);
-           ensureMuscleUpToDate();
-           return true;
-    }
-
-    return false;
-}*/
-
-bool Thelen2003Muscle::setMinimumActivation(double aActivationMinValue)
-{
-    if(aActivationMinValue > 0.001){        
-        actMdl.set_minimum_activation(aActivationMinValue);     
-        ensureMuscleUpToDate();
-        return true;
-    }else{
-        return false;
-    }
-
+    upd_MuscleFirstOrderActivationDynamicModel().
+        set_minimum_activation(minimumActivation);
 }
 
 //==============================================================================
@@ -395,8 +295,9 @@ double Thelen2003Muscle::
     //If the fiber is in a legal range, compute the force its generating
     if(fiberLength > penMdl.getMinimumFiberLength()){
 
-        //Clamp activation to a legal range        
-        double clampedActivation = actMdl.clampActivation(activation);
+        //Clamp activation to a legal range
+        double clampedActivation = get_MuscleFirstOrderActivationDynamicModel()
+                                   .clampActivation(activation);
 
         //Normalize fiber length and velocity
         double normFiberLength    = clampedFiberLength/getOptimalFiberLength();
@@ -682,8 +583,8 @@ void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s,
         //1. Get fiber/tendon kinematic information
 
         //clamp activation to a legal range
-        double a = actMdl.clampActivation(
-                                getStateVariableValue(s, STATE_ACTIVATION_NAME));
+        double a = get_MuscleFirstOrderActivationDynamicModel()
+            .clampActivation(getStateVariableValue(s, STATE_ACTIVATION_NAME));
    
 
         double lce  = mli.fiberLength;   
@@ -826,8 +727,8 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
         //=========================================================================
 
         //1. Get fiber/tendon kinematic information
-        double a    = actMdl.clampActivation(
-                                getStateVariableValue(s, STATE_ACTIVATION_NAME));
+        double a = get_MuscleFirstOrderActivationDynamicModel()
+            .clampActivation(getStateVariableValue(s, STATE_ACTIVATION_NAME));
 
         double lce      = mli.fiberLength;
         double fiberStateClamped = mvi.userDefinedVelocityExtras[1];
@@ -987,7 +888,8 @@ double Thelen2003Muscle::calcActivationRate(const SimTK::State& s) const
 {    
     double excitation = getExcitation(s);
     double activation = getActivation(s);
-    double dadt = actMdl.calcDerivative(activation,excitation);
+    double dadt = get_MuscleFirstOrderActivationDynamicModel()
+                  .calcDerivative(activation,excitation);
     return dadt;
 }  
 
@@ -1341,7 +1243,7 @@ double Thelen2003Muscle::calcDFseDtl(double tl, double fiso, double tsl) const
 void Thelen2003Muscle::printCurveToCSVFile(const CurveType ctype, 
                                            const std::string&path)
 {
-    ensureMuscleUpToDate();
+    //ensureMuscleUpToDate();
     /*
         //Only compute up to the 2nd derivative
     SimTK::Matrix results = calcSampledMuscleCurve(2);
@@ -1578,7 +1480,7 @@ void Thelen2003Muscle::
 double Thelen2003Muscle::calcfse(const double tlN) const 
 {
     double x = tlN-1;
-    double e0 = getFmaxTendonStrain();
+    double e0 = get_FmaxTendonStrain();
     
     /*The paper reports etoe = 0.609e0, however, this is a severely rounded off
         The exact answer, to SimTK::Eps is   
@@ -1609,7 +1511,7 @@ double Thelen2003Muscle::calcfse(const double tlN) const
 
 double Thelen2003Muscle::calcDfseDtlN(const double tlN) const {
     double x = tlN-1;
-    double e0 = getFmaxTendonStrain();
+    double e0 = get_FmaxTendonStrain();
     
     /*The paper reports etoe = 0.609e0, however, this is a severely rounded off
     result of the exact answer:    
@@ -1647,7 +1549,7 @@ double Thelen2003Muscle::calcfsefisoPE(double tendonStrain) const
 {
 
     double tendon_strain =  tendonStrain;
-    double fmaxTendonStrain = getFmaxTendonStrain();       
+    double fmaxTendonStrain = get_FmaxTendonStrain();       
 
     //Future optimization opportunity: precompute kToe, fToe, eToe and klin
     //when the muscle is initialized. Store these values rather than 
@@ -1722,13 +1624,13 @@ double Thelen2003Muscle::calcfsefisoPE(double tendonStrain) const
 //
 //==============================================================================
 double Thelen2003Muscle::calcfal(const double lceN) const{       
-    double kShapeActive = getKshapeActive();   
+    double kShapeActive = get_KshapeActive();   
     double x=(lceN-1.)*(lceN-1.);
     double fal = exp(-x/kShapeActive);
     return fal;
 }
 double Thelen2003Muscle::calcDfalDlceN(const double lceN) const {
-    double kShapeActive = getKshapeActive();   
+    double kShapeActive = get_KshapeActive();   
     double t1 = lceN - 0.10e1;
     double t2 = 0.1e1 / kShapeActive;
     double t4 = t1 * t1;
@@ -1744,8 +1646,8 @@ double Thelen2003Muscle::calcDfalDlceN(const double lceN) const {
 //=============================================================================
 double Thelen2003Muscle::calcfpe(const double lceN) const {
     double fpe = 0;
-    double e0 = getFmaxMuscleStrain();
-    double kpe = getKshapePassive();
+    double e0 = get_FmaxMuscleStrain();
+    double kpe = get_KshapePassive();
 
     //Compute the passive force developed by the muscle
     if(lceN > 1.0){
@@ -1758,8 +1660,8 @@ double Thelen2003Muscle::calcfpe(const double lceN) const {
 
 double Thelen2003Muscle::calcDfpeDlceN(const double lceN) const {
     double dfpe_d_lceN = 0;
-    double e0 = getFmaxMuscleStrain();
-    double kpe = getKshapePassive();
+    double e0 = get_FmaxMuscleStrain();
+    double kpe = get_KshapePassive();
 
     if(lceN > 1.0){
         double t1 = 0.1e1 / e0;
@@ -1772,8 +1674,8 @@ double Thelen2003Muscle::calcDfpeDlceN(const double lceN) const {
 
 double Thelen2003Muscle::calcfpefisoPE(double lceN) const
 {
-    double fmaxMuscleStrain = getFmaxMuscleStrain();
-    double kShapePassive = getKshapePassive();
+    double fmaxMuscleStrain = get_FmaxMuscleStrain();
+    double kShapePassive = get_KshapePassive();
 
     double musclePE = 0.0;
     //Compute the potential energy stored in the muscle
@@ -1816,12 +1718,12 @@ double Thelen2003Muscle::calcdlceN(double act,double fal,double actFalFv) const
     //The variable names have all been switched to closely match 
     //with the notation in Thelen 2003.
     double dlceN = 0.0;      //contractile element velocity    
-    double af   = getAf();
+    double af   = get_Af();
 
     double a    = act;
     double afl  = a*fal; //afl = a*fl
     double Fm   = actFalFv;     //Fm = a*fl*fv    
-    double flen = getFlen();
+    double flen = get_Flen();
     double Fmlen_afl = flen*afl;
 
     double dlcedFm = 0.0; //partial deriviative of contactile element
@@ -1833,7 +1735,7 @@ double Thelen2003Muscle::calcdlceN(double act,double fal,double actFalFv) const
     double Fm_asyC = 0;           //Concentric contraction asymptote
     double Fm_asyE = afl*flen;    
                                 //Eccentric contraction asymptote
-    double asyE_thresh = getForceVelocityExtrapolationThreshold();
+    double asyE_thresh = get_FvExtrapolationThreshold();
 
     //If fv is in the appropriate region, use 
     //Thelen 2003 Eqns 6 & 7 to compute dlceN
@@ -1901,12 +1803,12 @@ double Thelen2003Muscle::calcDdlceDaFalFv(double aAct,
     //The variable names have all been switched to closely match with 
     //the notation in Thelen 2003.
     double dlceN = 0.0;      //contractile element velocity    
-    double af   = getAf();
+    double af   = get_Af();
 
     double a    = aAct;
     double afl  = aAct*aFal;  //afl = a*fl
     double Fm   = aFalFv;    //Fm = a*fl*fv    
-    double flen = getFlen();
+    double flen = get_Flen();
     double Fmlen_afl = flen*aAct*aFal;
 
     double dlcedFm = 0.0; //partial derivative of contractile element 
@@ -1918,7 +1820,7 @@ double Thelen2003Muscle::calcDdlceDaFalFv(double aAct,
     double Fm_asyC = 0;           //Concentric contraction asymptote
     double Fm_asyE = aAct*aFal*flen;    
                                 //Eccentric contraction asymptote
-    double asyE_thresh = getForceVelocityExtrapolationThreshold();
+    double asyE_thresh = get_FvExtrapolationThreshold();
 
     //If fv is in the appropriate region, use 
     //Thelen 2003 Eqns 6 & 7 to compute dlceN
