@@ -138,19 +138,24 @@ void Thelen2003Muscle::
 
 void Thelen2003Muscle::buildMuscle()
 {
-    //Appropriately set the properties of the pennation model    
-    double optimalFiberLength = getOptimalFiberLength();
-    double pennationAngle     = getPennationAngleAtOptimalFiberLength();
+    if (!isObjectUpToDateWithProperties()) {
 
-    MuscleFixedWidthPennationModel tmp2( optimalFiberLength,
+        //Appropriately set the properties of the pennation model
+        double optimalFiberLength = getOptimalFiberLength();
+        double pennationAngle     = getPennationAngleAtOptimalFiberLength();
+
+        MuscleFixedWidthPennationModel tmp2( optimalFiberLength,
                                         pennationAngle, 
                                         acos(0.1));
 
-    penMdl = tmp2;   
+        penMdl = tmp2;   
 
-    //Ensure all sub objects are up to date with properties.
-    //upd_MuscleFirstOrderActivationDynamicModel().finalizeFromProperties();
-    penMdl.ensureModelUpToDate();
+        //Ensure all sub objects are up to date with properties.
+        //upd_MuscleFirstOrderActivationDynamicModel().finalizeFromProperties();
+        penMdl.ensureModelUpToDate();
+
+        setObjectIsUpToDateWithProperties();
+    }
 }
 //_____________________________________________________________________________
 // Set the data members of this muscle to their null values.
