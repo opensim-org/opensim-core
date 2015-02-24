@@ -44,7 +44,7 @@ template <typename T> class ComponentListIterator;
  flexible than filtering based on Type only. To write your custom filter, 
  extend this class and implement the isMatch() and clone() methods.
 */
-class ComponentFilter {
+class OSIMCOMMON_API ComponentFilter {
 protected:
     /** Default constructor of ComponentFilter, does nothing.  
     For use by derived classes only. */
@@ -159,7 +159,8 @@ for (const GeometryPath& gpath : geomPathList) {
 @endcode
 */
 template <typename T>
-class ComponentListIterator : public std::iterator<std::forward_iterator_tag, OpenSim::Component>{
+class OSIMCOMMON_API ComponentListIterator :
+    public std::iterator<std::forward_iterator_tag, OpenSim::Component> {
     friend class ComponentList<T>;
 public:
     /// Check that the component under the cuurent iterator is same 
