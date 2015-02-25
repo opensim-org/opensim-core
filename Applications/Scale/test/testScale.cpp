@@ -129,8 +129,8 @@ void scaleGait2354()
     // Compare ScaleSet
     ScaleSet stdScaleSet = ScaleSet(setupFilePath+"std_subject01_scaleSet_applied.xml");
 
-    // We used to compute a scale factor the ground body, which does not make phyisical sense.
-    // Things connected to ground can be scaled, including their locations.
+    // We used to compute a scale factor for the ground body, which does not make physical sense.
+    // Things connected to ground can be scaled, including their locations, but not the frame itself.
     // Now that ground is its own frame it does not go through the body scale mill.
     // We must remove it from the stdScaleSet.
     if (stdScaleSet[0].getSegmentName() == "ground"){
@@ -185,8 +185,8 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
 
     // Compare ScaleSet
     ScaleSet stdScaleSet = ScaleSet(setupFilePath+"std_subject01_scaleSet_applied.xml");
-    // We used to compute a scale factor the ground body, which does not make phyisical sense.
-    // Things connected to ground can be scaled, including their locations.
+    // We used to compute a scale factor for the ground body, which does not make physical sense.
+    // Things connected to ground can be scaled, including their locations, but not the frame itself.
     // Now that ground is its own frame it does not go through the body scale mill.
     // We must remove it from the stdScaleSet.
     if (stdScaleSet[0].getSegmentName() == "ground"){
