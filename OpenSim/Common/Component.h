@@ -300,6 +300,20 @@ public:
     const Component& getComponent(const std::string& name) const;
     Component& updComponent(const std::string& name) const;
 
+    template <class C>
+    const C& getComponent(const std::string& name) const {
+        ComponentList<C> compsList = getComponentList<C>();
+        for (const C& comp : compsList) {
+            if (comp.getName() == name){
+                return comp;
+            }
+        }
+        std::stringstream msg;
+        msg << getConcreteClassName() + ": ERR- Cannot find '" << name
+            << "' of type " << compsList.begin()->getConcreteClassName() << ".";
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
+
     /**
      * Get the number of "Continuous" state variables maintained by the Component
      * and its subcomponents
@@ -1728,7 +1742,8 @@ ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
         _node = _node->_nextComponent.get();
     advanceToNextValidComponent(); // make sure we have a _node of type T after advancing
     return *this;
-};
+}
+
 /// Internal method to advance iterator to next valid component.
 template <typename T>
 void ComponentListIterator<T>::advanceToNextValidComponent() {
@@ -1747,6 +1762,20 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
     }
     return;
 }
+
+
+template<class C>
+void Connector<C>::findAndConnect(const Component& root) {
+    const C& comp = root.getComponent<C>(get_connected_to_name());
+    connectee = comp;
+}
+/*
+template <>
+void Connector<Object>::findAndConnect(const Component& root) {
+    throw Exception(getConcreteClassName() + " '" + getName() + "' cannot find " +
+        "Object '" + get_connected_to_name() + "'.");
+}
+*/
 
 } // end of namespace OpenSim
 

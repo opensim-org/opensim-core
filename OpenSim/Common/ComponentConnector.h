@@ -184,21 +184,7 @@ public:
     }
 
     /** Connect this Connector given its connect_to_name property  */
-    void findAndConnect(const Component& root) override {
-        ComponentList<T> compsList = root.getComponentList<T>();
-        for (const T& comp : compsList) {
-            if (comp.getName() == get_connected_to_name()){
-                connectee = comp;
-                return;
-            }
-        }
-        throw Exception(getConcreteClassName() + 
-            "::connect() Could not find component '"
-            + get_connected_to_name() + "' to satisfy Connector<" +
-            getConnectedToTypeName() + "> '" + getName() + "' " +
-            "as a subcomponent of " + root.getName()+ ".");
-    }
-
+    void findAndConnect(const Component& root) override;
 
     void disconnect() override {
         connectee.clear();

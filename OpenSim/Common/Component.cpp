@@ -179,9 +179,16 @@ void Component::connect(Component &root)
     for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
         AbstractConnector& connector = upd_connectors(ix);
         connector.disconnect();
-
-        connector.findAndConnect(root);
-        //is connected or an exception was thrown
+        try{
+            connector.findAndConnect(root);
+        }
+        catch (...) {
+            throw Exception(getConcreteClassName() +
+                "::connect() Could not find component '"
+                + connector.get_connected_to_name() + "' to satisfy Connector<" +
+                connector.getConnectedToTypeName() + "> '" + getName() + "' " +
+                "as a subcomponent of " + root.getName() + ".");
+        }
     }
 
     // Allow derived Components to handle/check their connections
