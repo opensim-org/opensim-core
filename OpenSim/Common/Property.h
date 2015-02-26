@@ -1162,11 +1162,9 @@ A data member is also created but is intended for internal use only:
     void constructProperty_##name(const T& initValue)                       \
     {   PropertyIndex_##name = addProperty<T>(#name,comment,initValue); }   \
     /** @endcond **/                                                        \
-    /** @{ */                                                               \
     /** comment */                                                          \
     const T& get_##name() const                                             \
     {   return getProperty_##name().getValue(); }                           \
-    /** @} */                                                               \
     /** @cond **/                                                           \
     T& upd_##name()                                                         \
     {   return updProperty_##name().updValue(); }                           \
@@ -1185,11 +1183,9 @@ initialized with an object of type T.
     void constructProperty_##T(const T& initValue)                          \
     {   PropertyIndex_##T = addProperty<T>("", comment, initValue); }       \
     /** @endcond **/                                                        \
-    /** @{ */                                                               \
     /** comment */                                                          \
     const T& get_##T() const                                                \
     {   return getProperty_##T().getValue(); }                              \
-    /** @} */                                                               \
     /** @cond **/                                                           \
     T& upd_##T()                                                            \
     {   return updProperty_##T().updValue(); }                              \
@@ -1211,11 +1207,9 @@ value of type T.
     {   PropertyIndex_##name = addOptionalProperty<T>(#name, comment,       \
                                                       initValue); }         \
     /** @endcond **/                                                        \
-    /** @{ */                                                               \
     /** comment */                                                          \
     const T& get_##name() const                                             \
     {   return getProperty_##name().getValue(); }                           \
-    /** @} */                                                               \
     /** @cond **/                                                           \
     T& upd_##name()                                                         \
     {   return updProperty_##name().updValue(); }                           \
@@ -1233,11 +1227,9 @@ supports a %size() method and operator[] element selection.
 @see OpenSim_DECLARE_LIST_PROPERTY_RANGE()
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY(name, T, comment)                     \
-    /** @{ */                                                               \
     /** comment */                                                          \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
                                          0, std::numeric_limits<int>::max())\
-    /** @} */                                                               \
     /** @cond **/                                                           \
     void constructProperty_##name()                                         \
     {   PropertyIndex_##name = addListProperty<T>                           \
@@ -1252,11 +1244,9 @@ the right number of elements, using any Container that supports a %size()
 method and operator[] element selection.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_SIZE(name, T, listSize, comment)      \
-    /** @{ */                                                               \
     /** comment */                                                          \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
-                                         (listSize), (listSize))            \
-    /** @} */
+                                         (listSize), (listSize))
 
 /** Declare a property of the given \a name containing a list of values of 
 the given type T, with the number of values required to be at least 
@@ -1266,11 +1256,9 @@ using any Container that supports a %size() method and operator[] element
 selection.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(name, T, minSize, comment)    \
-    /** @{ */                                                               \
     /** comment */                                                          \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
-                                (minSize), std::numeric_limits<int>::max()) \
-    /** @} */
+                                (minSize), std::numeric_limits<int>::max())
 
 /** Declare a property of the given \a name containing a list of values of 
 the given type T, with the number of values in the list restricted to be
@@ -1280,10 +1268,8 @@ no more than \a maxSize elements, using any Container that supports a %size()
 method and operator[] element selection.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_ATMOST(name, T, maxSize, comment)     \
-    /** @{ */                                                               \
     /** comment */                                                          \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment, 0, (maxSize))    \
-    /** @} */                                                               \
     /** @cond **/                                                           \
     void constructProperty_##name()                                         \
     {   PropertyIndex_##name = addListProperty<T>(#name, comment,           \
@@ -1299,11 +1285,9 @@ OpenSim_DECLARE_PROPERTY_ATMOST() rather than this macro.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_RANGE(name, T, minSize, maxSize,      \
                                             comment)                        \
-    /** @{ */                                                               \
     /** comment */                                                          \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
-                                        (minSize), (maxSize))               \
-    /** @} */
+                                        (minSize), (maxSize))
 
 } //namespace
 //=============================================================================
