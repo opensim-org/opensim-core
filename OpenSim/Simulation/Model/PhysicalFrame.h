@@ -136,8 +136,9 @@ public:
     // End of underlying MobilizedBody accessors.
     ///@} 
 
+    /** @name DEPRECATED API 
+    These methods will go away when Geometry are treated as proper Components. */
 
-    /** @name DEPRECATED API
     ///@{
     /** Deprecated methods for inermediate integration of Frames */
     virtual void addDisplayGeometry(const std::string &aGeometryFileName);

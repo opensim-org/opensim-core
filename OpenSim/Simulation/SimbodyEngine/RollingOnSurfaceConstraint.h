@@ -96,7 +96,7 @@ public:
     * Simbody multibody system instance is realized every time the isDisabled
     * changes, BUT multiple sets to the same value have no cost.
     *
-    * @param isDisabled If true the constraint is disabled; if false the constraint is enabled.
+    * @param state  the state of the system that includes the constraint status
     */
     bool isDisabled(const SimTK::State& state) const override;
 
@@ -106,7 +106,8 @@ public:
     * disable all the constraints, but enabling is not guaranteed. For example, if
     * the unilateral conditions are violated the constraint will be disabled.
     *
-    * @param isDisabled If true the constraint is disabled.
+    * @param state      the state to set whether the constraint is disabled or not.
+    * @param isDisabled if true the constraint is disabled.
     */
     bool setDisabled(SimTK::State& state, bool isDisabled) override;
 

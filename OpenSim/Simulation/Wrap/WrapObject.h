@@ -156,8 +156,9 @@ public:
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const = 0;
 #endif
     // Visible Object Support
-    virtual VisibleObject* getDisplayer() const { return &_displayer; };
-    virtual void updateGeometry() {};
+    const VisibleObject* getDisplayer() const override { return &_displayer; }
+    VisibleObject* updDisplayer() override { return &_displayer; }
+    virtual void updateGeometry() {}
 
 protected:
     void setupProperties();

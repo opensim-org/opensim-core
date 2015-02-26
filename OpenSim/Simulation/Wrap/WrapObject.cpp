@@ -155,7 +155,7 @@ void WrapObject::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
     _pose.set(rot, _translation);
 
     // Object is visible (has displayer) and depends on body it's attached to.
-    _body->updDisplayer()->addDependent(getDisplayer());
+    _body->updDisplayer()->addDependent(updDisplayer());
     _displayer.setTransform(_pose);
     _displayer.setOwner(this);
 }
