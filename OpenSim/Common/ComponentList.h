@@ -32,7 +32,7 @@ namespace OpenSim {
 
 class Component;
 
-template <typename T> class OSIMCOMMON_API ComponentListIterator;
+template <typename T> class ComponentListIterator;
 //==============================================================================
 //                            OPENSIM ComponentList
 //==============================================================================

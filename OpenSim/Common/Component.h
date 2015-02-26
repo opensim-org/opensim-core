@@ -53,7 +53,7 @@
 
 namespace OpenSim {
 
-template <typename T> class OSIMCOMMON_API ComponentListIterator;
+template <typename T> class ComponentListIterator;
 
 //==============================================================================
 //                            OPENSIM COMPONENT
