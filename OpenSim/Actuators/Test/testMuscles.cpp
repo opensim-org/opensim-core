@@ -769,6 +769,67 @@ void testThelen2003Muscle()
         CorrectnessTest,
         CorrectnessTestTolerance,
         false);
+
+    // Test property bounds.
+    {
+        Thelen2003Muscle musc;
+        musc.set_FmaxTendonStrain(-0.03);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+    {
+        Thelen2003Muscle musc;
+        musc.set_FmaxMuscleStrain(-0.05);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+    {
+        Thelen2003Muscle musc;
+        musc.set_KshapeActive(-0.15);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+    {
+        Thelen2003Muscle musc;
+        musc.set_KshapePassive(-0.51);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+    {
+        Thelen2003Muscle musc;
+        musc.set_Af(-0.13);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+    {
+        Thelen2003Muscle musc;
+        musc.set_Flen(1.0);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+    {
+        Thelen2003Muscle musc;
+        musc.set_Flen(1.3);
+        musc.finalizeFromProperties();
+    }
+    {
+        Thelen2003Muscle musc;
+        musc.set_FvExtrapolationThreshold(1.0 / 1.4);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+
+        musc.set_FvExtrapolationThreshold(1.007);
+        musc.finalizeFromProperties();
+
+        musc.set_Flen(3.0);
+
+        musc.set_FvExtrapolationThreshold(1.0 / 3.0);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+
+        musc.set_FvExtrapolationThreshold(1.001 / 3.0);
+        musc.finalizeFromProperties();
+    }
 }
 
 
