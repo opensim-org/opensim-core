@@ -24,6 +24,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <OpenSim/Common/osimCommonDLL.h>
 #include "Component.h"
 
 #include <iterator>
@@ -48,7 +49,7 @@ for (const GeometryPath& gpath : geomPathList) {
 @endcode
 */
 template <typename T>
-class OSIMCOMMON_API ComponentListIterator :
+class ComponentListIterator :
     public std::iterator<std::forward_iterator_tag, OpenSim::Component> {
     friend class ComponentList<T>;
 public:

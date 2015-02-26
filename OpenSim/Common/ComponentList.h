@@ -43,7 +43,7 @@ template <typename T> class ComponentListIterator;
  flexible than filtering based on Type only. To write your custom filter, 
  extend this class and implement the isMatch() and clone() methods.
 */
-class OSIMCOMMON_API ComponentFilter {
+class ComponentFilter {
 protected:
     /** Default constructor of ComponentFilter, does nothing.  
     For use by derived classes only. */
@@ -61,7 +61,7 @@ public:
 /**
  ComponentFilterMatchAll is a trivial Filter that matches all components.
 */
-class OSIMCOMMON_API ComponentFilterMatchAll : public ComponentFilter {
+class ComponentFilterMatchAll : public ComponentFilter {
 public:
     /** Construct a ComponentFilter that selects all Components. */
     ComponentFilterMatchAll() {}
@@ -87,7 +87,7 @@ public:
  The traversal order is wired at the end of initSystem().
 */
 template <typename T>
-class OSIMCOMMON_API ComponentList {
+class ComponentList {
 public:
     /** A const forward iterator for iterating through ComponentList<T>.
     The const indicates that the iterator provides only 
