@@ -48,7 +48,10 @@ Thelen2003Muscle::Thelen2003Muscle()
 {    
     setNull();
     constructInfrastructure();
-    buildMuscle();  //TODO: remove this when pennation model is a subcomponent.
+
+    // TODO: Remove this once MuscleFixedWidthPennationModel has been made into
+    //       a property.
+    buildMuscle();
 }
 
 //_____________________________________________________________________________
@@ -69,7 +72,9 @@ Thelen2003Muscle(const std::string& aName,  double aMaxIsometricForce,
     setTendonSlackLength(aTendonSlackLength);
     setPennationAngleAtOptimalFiberLength(aPennationAngle);
 
-    buildMuscle();  //TODO: remove this when pennation model is a subcomponent.
+    // TODO: Remove this once MuscleFixedWidthPennationModel has been made into
+    //       a property.
+    buildMuscle();
 
 }
 
@@ -120,7 +125,10 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
 void Thelen2003Muscle::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
-    buildMuscle();  //TODO: remove this when pennation model is a subcomponent.
+
+    // TODO: Remove this once MuscleFixedWidthPennationModel has been made into
+    //       a property.
+    buildMuscle();
 }
 
 void Thelen2003Muscle::extendInitStateFromProperties(SimTK::State& s) const
@@ -131,26 +139,33 @@ void Thelen2003Muscle::extendInitStateFromProperties(SimTK::State& s) const
 void Thelen2003Muscle::
     extendSetPropertiesFromState(const SimTK::State& s)
 {
-    Super::extendSetPropertiesFromState(s);      
-    buildMuscle();  //TODO: remove this when pennation model is a subcomponent.
-      
+    Super::extendSetPropertiesFromState(s);
+
+    // TODO: Remove this once MuscleFixedWidthPennationModel has been made into
+    //       a property.
+    buildMuscle();
 }
 
 void Thelen2003Muscle::buildMuscle()
 {
-    //Appropriately set the properties of the pennation model    
-    double optimalFiberLength = getOptimalFiberLength();
-    double pennationAngle     = getPennationAngleAtOptimalFiberLength();
+    if (!isObjectUpToDateWithProperties()) {
 
-    MuscleFixedWidthPennationModel tmp2( optimalFiberLength,
+        //Appropriately set the properties of the pennation model
+        double optimalFiberLength = getOptimalFiberLength();
+        double pennationAngle     = getPennationAngleAtOptimalFiberLength();
+
+        MuscleFixedWidthPennationModel tmp2( optimalFiberLength,
                                         pennationAngle, 
                                         acos(0.1));
 
-    penMdl = tmp2;   
+        penMdl = tmp2;   
 
-    //Ensure all sub objects are up to date with properties.
-    //upd_MuscleFirstOrderActivationDynamicModel().finalizeFromProperties();
-    penMdl.ensureModelUpToDate();
+        //Ensure all sub objects are up to date with properties.
+        //upd_MuscleFirstOrderActivationDynamicModel().finalizeFromProperties();
+        penMdl.ensureModelUpToDate();
+
+        setObjectIsUpToDateWithProperties();
+    }
 }
 //_____________________________________________________________________________
 // Set the data members of this muscle to their null values.
