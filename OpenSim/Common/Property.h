@@ -180,7 +180,7 @@ list length:
 Here is an example of an object declaring two properties, including our
 convention of documenting the property declarations in their own Doxygen
 group entitled "Property declarations". **/
-///@verbatim
+///@code
 ///  class ActuatorWorkMeter : public ModelComponent {
 ///  OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorWorkMeter, ModelComponent);
 ///  public:
@@ -200,7 +200,7 @@ group entitled "Property declarations". **/
 ///  //=======================================================================
 ///      ...
 ///  };
-///@endverbatim
+///@endcode
 /**
 <h3>How to construct properties in your constructors</h3>
 
