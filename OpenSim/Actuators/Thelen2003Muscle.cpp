@@ -89,34 +89,22 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
         upd_MuscleFirstOrderActivationDynamicModel();
     addComponent(&actMdl);
 
-    SimTK_ERRCHK1_ALWAYS(get_FmaxTendonStrain() > 0,
-        "Thelen2003Muscle::extendFinalizeFromProperties",
-        "%s: Tendon strain at maximum isometric force must be positive",
-        getName().c_str());
-    SimTK_ERRCHK1_ALWAYS(get_FmaxMuscleStrain() > 0,
-        "Thelen2003Muscle::extendFinalizeFromProperties",
-        "%s: Passive muscle strain at maximum isometric force must be positive",
-        getName().c_str());
-    SimTK_ERRCHK1_ALWAYS(get_KshapeActive() > 0,
-        "Thelen2003Muscle::extendFinalizeFromProperties",
-        "%s: Shape factor for active muscle f-l relationship must be positive",
-        getName().c_str());
-    SimTK_ERRCHK1_ALWAYS(get_KshapePassive() > 0,
-        "Thelen2003Muscle::extendFinalizeFromProperties",
-        "%s: Shape factor for passive muscle f-l relationship must be positive",
-        getName().c_str());
-    SimTK_ERRCHK1_ALWAYS(get_Af() > 0,
-        "Thelen2003Muscle::extendFinalizeFromProperties",
-        "%s: Force-velocity shape factor must be positive",
-        getName().c_str());
-    SimTK_ERRCHK1_ALWAYS(get_Flen() > 1.0,
-        "Thelen2003Muscle::extendFinalizeFromProperties",
-        "%s: Maximum normalized lengthening force must be greater than 1.0",
-        getName().c_str());
-    SimTK_ERRCHK1_ALWAYS(get_FvExtrapolationThreshold() > 1.0/get_Flen(),
-        "Thelen2003Muscle::extendFinalizeFromProperties",
-        "%s: F-v threshold must be greater than 1.0/Flen",
-        getName().c_str());
+    std::string errorLocation = getName() + 
+        " Thelen2003Muscle::extendFinalizeFromProperties";
+
+    SimTK_VALUECHECK_NONNEG_ALWAYS(get_FmaxTendonStrain(), "FmaxTendonStrain",
+        errorLocation.c_str());
+    SimTK_VALUECHECK_NONNEG_ALWAYS(get_FmaxMuscleStrain(), "FmaxMuscleStrain",
+        errorLocation.c_str());
+    SimTK_VALUECHECK_NONNEG_ALWAYS(get_KshapeActive(), "KshapeActive",
+        errorLocation.c_str());
+    SimTK_VALUECHECK_NONNEG_ALWAYS(get_KshapePassive(), "KshapePassive",
+        errorLocation.c_str());
+    SimTK_VALUECHECK_NONNEG_ALWAYS(get_Af(), "Af", errorLocation.c_str());
+    SimTK_VALUECHECK_ALWAYS(1.0, get_Flen(), SimTK::Infinity, "Flen",
+        errorLocation.c_str());
+    SimTK_VALUECHECK_ALWAYS(1.0/get_Flen(), get_fv_linear_extrap_threshold(),
+        SimTK::Infinity, "fv_linear_extrap_threshold", errorLocation.c_str());
 }
 
 //====================================================================
@@ -194,7 +182,7 @@ void Thelen2003Muscle::constructProperties()
     constructProperty_KshapePassive(5.0);   
     constructProperty_Af(0.25); 
     constructProperty_Flen(1.4);    //was 1.8, 
-    constructProperty_FvExtrapolationThreshold(0.95);
+    constructProperty_fv_linear_extrap_threshold(0.95);
     //acos(0.05) = 84.26 degrees    
 }
 
@@ -1750,7 +1738,7 @@ double Thelen2003Muscle::calcdlceN(double act,double fal,double actFalFv) const
     double Fm_asyC = 0;           //Concentric contraction asymptote
     double Fm_asyE = afl*flen;    
                                 //Eccentric contraction asymptote
-    double asyE_thresh = get_FvExtrapolationThreshold();
+    double asyE_thresh = get_fv_linear_extrap_threshold();
 
     //If fv is in the appropriate region, use 
     //Thelen 2003 Eqns 6 & 7 to compute dlceN
@@ -1835,7 +1823,7 @@ double Thelen2003Muscle::calcDdlceDaFalFv(double aAct,
     double Fm_asyC = 0;           //Concentric contraction asymptote
     double Fm_asyE = aAct*aFal*flen;    
                                 //Eccentric contraction asymptote
-    double asyE_thresh = get_FvExtrapolationThreshold();
+    double asyE_thresh = get_fv_linear_extrap_threshold();
 
     //If fv is in the appropriate region, use 
     //Thelen 2003 Eqns 6 & 7 to compute dlceN

@@ -138,7 +138,7 @@ public:
     OpenSim_DECLARE_PROPERTY(Flen, double,
         "maximum normalized lengthening force");
 
-    OpenSim_DECLARE_PROPERTY(FvExtrapolationThreshold, double,
+    OpenSim_DECLARE_PROPERTY(fv_linear_extrap_threshold, double,
         "fv threshold where linear extrapolation is used");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(MuscleFirstOrderActivationDynamicModel,
@@ -165,10 +165,19 @@ public:
 //==============================================================================
 // Get and Set Properties
 //==============================================================================
-    // Properties    
+    // Properties
+
+    /** @name Convenience methods
+    These are convenience methods that get and set properties of the activation
+    model. **/
+    /**@{**/
     double getActivationTimeConstant() const;
-    double getMinimumActivation() const;
+    void setActivationTimeConstant(double actTimeConstant);
     double getDeactivationTimeConstant() const;
+    void setDeactivationTimeConstant(double deactTimeConstant);
+    double getMinimumActivation() const;
+    void setMinimumActivation(double minimumActivation);
+    /**@}**/
 
     /**
      @returns the minimum fiber length, which is the maximum of two values:
@@ -183,10 +192,6 @@ public:
     @return the maximum pennation angle allowed by this muscle model (radians)
     */
     double getMaximumPennationAngle() const;
-
-    void setActivationTimeConstant(double actTimeConstant);   
-    void setDeactivationTimeConstant(double deactTimeConstant);
-    void setMinimumActivation(double minimumActivation);
 
     /**
    @returns the MuscleFirstOrderActivationDynamicModel 

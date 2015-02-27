@@ -98,19 +98,17 @@ void MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    // Ensure property values are within appropriate ranges.
-    SimTK_ERRCHK1_ALWAYS(get_activation_time_constant() >= SimTK::SignificantReal,
-        "MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties",
-        "%s: Activation time constant can be no smaller than SimTK::SignificantReal",
-        getName().c_str());
-    SimTK_ERRCHK1_ALWAYS(get_deactivation_time_constant() >= SimTK::SignificantReal,
-        "MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties",
-        "%s: Deactivation time constant can be no smaller than SimTK::SignificantReal",
-        getName().c_str());
-    SimTK_ERRCHK1_ALWAYS(get_minimum_activation() >= 0.0
-        && get_minimum_activation() <= 1.0-SimTK::SignificantReal,
-        "MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties",
-        "%s: Minimum activation must be in the range [0,1)", getName().c_str());
+    std::string errorLocation = getName() + 
+        " MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties";
 
-    setObjectIsUpToDateWithProperties();
+    // Ensure property values are within appropriate ranges.
+    SimTK_VALUECHECK_ALWAYS(SimTK::SignificantReal,
+        get_activation_time_constant(), SimTK::Infinity,
+        "activation_time_constant", errorLocation.c_str());
+    SimTK_VALUECHECK_ALWAYS(SimTK::SignificantReal,
+        get_deactivation_time_constant(), SimTK::Infinity,
+        "deactivation_time_constant", errorLocation.c_str());
+    SimTK_VALUECHECK_ALWAYS(0.0, get_deactivation_time_constant(),
+        1.0-SimTK::SignificantReal, "deactivation_time_constant",
+        errorLocation.c_str());
 }
