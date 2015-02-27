@@ -45,10 +45,12 @@ int main()
     // get all registered Components
     SimTK::Array_<Component*> availableComponents;
 
-    // starting with type Body
-    ArrayPtrs<Body> availableBodies;
-    Object::getRegisteredObjectsOfGivenType(availableBodies);
-    availableComponents.push_back(availableBodies[0]);
+    // starting with type Frame
+    ArrayPtrs<Frame> availableFrames;
+    Object::getRegisteredObjectsOfGivenType(availableFrames);
+    for (int i = 0; i < availableFrames.size(); ++i) {
+        availableComponents.push_back(availableFrames[i]);
+    }
 
     // then type Joint
     ArrayPtrs<Joint> availableJoints;
@@ -334,6 +336,8 @@ void addObjectAsComponentToModel(Object* instance, Model& model)
         model.addProbe(dynamic_cast<Probe*>(instance));
     else if (Object::isObjectTypeDerivedFrom< Joint >(className))
         model.addJoint(dynamic_cast<Joint*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Frame >(className))
+        model.addFrame(dynamic_cast<Frame*>(instance));
     else if (Object::isObjectTypeDerivedFrom< ModelComponent >(className))
         model.addModelComponent(dynamic_cast<ModelComponent*>(instance));
     else

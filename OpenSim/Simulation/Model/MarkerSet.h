@@ -24,14 +24,14 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Set.h>
+#include <OpenSim/Simulation/Model/ModelComponentSet.h>
 #include "Marker.h"
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+    #ifdef OSIMSIMULATION_API
+        #undef OSIMSIMULATION_API
+        #define OSIMSIMULATION_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -49,34 +49,35 @@ class Body;
  * @version 1.0
  */
 
-class OSIMSIMULATION_API MarkerSet : public Set<Marker> {
-OpenSim_DECLARE_CONCRETE_OBJECT(MarkerSet, Set<Marker>);
+class OSIMSIMULATION_API MarkerSet : public ModelComponentSet<Marker> {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MarkerSet, ModelComponentSet<Marker>);
 
 private:
-	void setNull();
+    void setNull();
 public:
-	MarkerSet();
-	MarkerSet(const std::string& aMarkersFileName) SWIG_DECLARE_EXCEPTION;
-	MarkerSet(const MarkerSet& aMarkerSet);
-	~MarkerSet(void);
+    MarkerSet();
+    MarkerSet(Model& aModel, const std::string& aMarkersFileName) SWIG_DECLARE_EXCEPTION;
+    MarkerSet(const MarkerSet& aMarkerSet);
+    ~MarkerSet(void);
 
-    void connectMarkersToModel(Model& aModel);
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	MarkerSet& operator=(const MarkerSet &aMarkerSet);
+    MarkerSet& operator=(const MarkerSet &aMarkerSet);
 #endif
-	//--------------------------------------------------------------------------
-	// UTILITIES
-	//--------------------------------------------------------------------------
-	void getMarkerNames(Array<std::string>& aMarkerNamesArray);
-	void scale(const ScaleSet& aScaleSet);
-	/** Add a prefix to marker names for all markers in the set**/
-	void addNamePrefix(const std::string& prefix);
-	Marker* addMarker( const std::string& aName, const double aOffset[3], OpenSim::Body& aBody);
+
+    //--------------------------------------------------------------------------
+    // UTILITIES
+    //--------------------------------------------------------------------------
+    void getMarkerNames(Array<std::string>& aMarkerNamesArray);
+    void scale(const ScaleSet& aScaleSet);
+    /** Add a prefix to marker names for all markers in the set**/
+    void addNamePrefix(const std::string& prefix);
+    Marker* addMarker( const std::string& aName, const SimTK::Vec3& aOffset, OpenSim::PhysicalFrame& aPhysicalFrame);
+
 //=============================================================================
-};	// END of class MarkerSet
+};  // END of class MarkerSet
 //=============================================================================
 //=============================================================================
 

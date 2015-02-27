@@ -53,57 +53,57 @@ class OSIMCOMMON_API PropertyObj : public Property_Deprecated
 // DATA
 //=============================================================================
 private:
-	/** Value. */
-	Object *_value;
+    /** Value. */
+    Object *_value;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	PropertyObj();
-	PropertyObj(const std::string &aName,const Object &aValue);
-	PropertyObj(const PropertyObj &aProperty);
+    PropertyObj();
+    PropertyObj(const std::string &aName,const Object &aValue);
+    PropertyObj(const PropertyObj &aProperty);
 
-	PropertyObj* clone() const override;
-	virtual ~PropertyObj();
+    PropertyObj* clone() const override;
+    virtual ~PropertyObj();
 
-    virtual bool isObjectProperty() const override {return true;}
-    virtual bool isAcceptableObjectTag
+    bool isObjectProperty() const override {return true;}
+    bool isAcceptableObjectTag
         (const std::string& objectTypeTag) const override {return true;}
-    virtual const Object& getValueAsObject(int index=-1) const override
+    const Object& getValueAsObject(int index=-1) const override
     {   assert(index <= 0); return getValueObj(); }
-    virtual Object& updValueAsObject(int index=-1) override
+    Object& updValueAsObject(int index=-1) override
     {   assert(index <= 0); return getValueObj(); }
-    virtual void setValueAsObject(const Object& obj, int index=-1) override
+    void setValueAsObject(const Object& obj, int index=-1) override
     {   assert(index <= 0); delete _value; _value=obj.clone(); }
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
-	PropertyObj& operator=(const PropertyObj &aProperty);
+    PropertyObj& operator=(const PropertyObj &aProperty);
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 public:
-	virtual bool isValidObject(const Object *obj) const { return true; } // TODO: make this class templated and do type checking
-	// TYPE
-	virtual std::string getTypeName() const override 
+    virtual bool isValidObject(const Object *obj) const { return true; } // TODO: make this class templated and do type checking
+    // TYPE
+    std::string getTypeName() const override 
     {   return "Object"; }
-	// VALUE
-	// Got rid of setValue(Obj) since it would be dangerous to do so given that users of
-	// PropertyObj would continue to hold a reference to the (deleted) object - Eran.
-	virtual Object& getValueObj();
-	virtual const Object& getValueObj() const;
-	// VALUE as String
-	virtual std::string toString() const;
+    // VALUE
+    // Got rid of setValue(Obj) since it would be dangerous to do so given that users of
+    // PropertyObj would continue to hold a reference to the (deleted) object - Eran.
+    virtual Object& getValueObj();
+    virtual const Object& getValueObj() const;
+    // VALUE as String
+    virtual std::string toString() const;
 
 //=============================================================================
-};	// END of class PropertyObj
+};  // END of class PropertyObj
 
 }; //namespace
 //=============================================================================

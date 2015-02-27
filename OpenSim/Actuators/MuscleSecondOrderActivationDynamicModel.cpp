@@ -92,7 +92,7 @@ MuscleSecondOrderActivationDynamicModel::
         
 void MuscleSecondOrderActivationDynamicModel::setNull()
 {
-	setAuthors("Matthew Millard");    
+    setAuthors("Matthew Millard");    
 }
 
 void MuscleSecondOrderActivationDynamicModel::constructProperties()

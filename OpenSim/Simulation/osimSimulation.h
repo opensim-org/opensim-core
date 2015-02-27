@@ -44,6 +44,7 @@
 #include "Model/Ligament.h"
 #include "Model/JointSet.h"
 #include "Model/Marker.h"
+#include "Model/Station.h"
 #include "Model/MarkerSet.h"
 #include "Model/PathPoint.h"
 #include "Model/PathPointSet.h"
@@ -65,6 +66,8 @@
 #include "Model/JointInternalPowerProbe.h"
 #include "Model/MuscleActiveFiberPowerProbe.h"
 #include "Model/Umberger2010MuscleMetabolicsProbe.h"
+#include "Model/Frame.h"
+#include "Model/PhysicalFrame.h"
 
 #include "Manager/Manager.h"
 
@@ -95,6 +98,7 @@
 #include "SimbodyEngine/EllipsoidJoint.h"
 #include "SimbodyEngine/BallJoint.h"
 #include "SimbodyEngine/PinJoint.h"
+#include "SimbodyEngine/PlanarJoint.h"
 #include "SimbodyEngine/SliderJoint.h"
 #include "SimbodyEngine/FreeJoint.h"
 #include "SimbodyEngine/CustomJoint.h"
@@ -107,7 +111,7 @@
 
 #include "MomentArmSolver.h"
 
-#include "RegisterTypes_osimSimulation.h"	// to expose RegisterTypes_osimSimulation
+#include "RegisterTypes_osimSimulation.h"   // to expose RegisterTypes_osimSimulation
 
 
 #endif // _osimSimulation_h_

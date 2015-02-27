@@ -52,11 +52,11 @@ public:
     These are the serializable properties associated with this class. Others
     are inherited from the superclass. **/
     /**@{**/
-	OpenSim_DECLARE_PROPERTY(contact_parameters, 
+    OpenSim_DECLARE_PROPERTY(contact_parameters, 
         HuntCrossleyForce::ContactParametersSet,
-		"Material properties.");
-	OpenSim_DECLARE_PROPERTY(transition_velocity, double,
-		"Slip velocity (creep) at which peak static friction occurs.");
+        "Material properties.");
+    OpenSim_DECLARE_PROPERTY(transition_velocity, double,
+        "Slip velocity (creep) at which peak static friction occurs.");
     /**@}**/
 
 //==============================================================================
@@ -96,32 +96,32 @@ public:
     void addGeometry(const std::string& name);
 
 
-	//-----------------------------------------------------------------------------
-	// Reporting
-	//-----------------------------------------------------------------------------
-	/** 
-	 * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
-	 */
-	virtual OpenSim::Array<std::string> getRecordLabels() const ;
-	/**
-	*  Provide the value(s) to be reported that correspond to the labels
-	*/
-	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
+    //-----------------------------------------------------------------------------
+    // Reporting
+    //-----------------------------------------------------------------------------
+    /** 
+     * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
+     */
+    virtual OpenSim::Array<std::string> getRecordLabels() const ;
+    /**
+    *  Provide the value(s) to be reported that correspond to the labels
+    */
+    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
 
 protected:
 
-	/**
-	 * Create a SimTK::Force which implements this Force.
-	 */
-	void addToSystem(SimTK::MultibodySystem& system) const;
+    /**
+     * Create a SimTK::Force which implements this Force.
+     */
+    void extendAddToSystem(SimTK::MultibodySystem& system) const;
 
 
 private:
     // INITIALIZATION
-	void constructProperties();
+    void constructProperties();
 
 //==============================================================================
-};	// END of class HuntCrossleyForce
+};  // END of class HuntCrossleyForce
 //==============================================================================
 //==============================================================================
 #ifndef SWIG
@@ -138,18 +138,18 @@ public:
     These are the serializable properties associated with this class. Others
     are inherited from the superclass. **/
     /**@{**/
-	OpenSim_DECLARE_LIST_PROPERTY(geometry, std::string,
-		"Names of geometry objects affected by these parameters.");
-	OpenSim_DECLARE_PROPERTY(stiffness, double,
-		"");
-	OpenSim_DECLARE_PROPERTY(dissipation, double,
-		"");
-	OpenSim_DECLARE_PROPERTY(static_friction, double,
-		"");
-	OpenSim_DECLARE_PROPERTY(dynamic_friction, double,
-		"");
-	OpenSim_DECLARE_PROPERTY(viscous_friction, double,
-		"");
+    OpenSim_DECLARE_LIST_PROPERTY(geometry, std::string,
+        "Names of geometry objects affected by these parameters.");
+    OpenSim_DECLARE_PROPERTY(stiffness, double,
+        "");
+    OpenSim_DECLARE_PROPERTY(dissipation, double,
+        "");
+    OpenSim_DECLARE_PROPERTY(static_friction, double,
+        "");
+    OpenSim_DECLARE_PROPERTY(dynamic_friction, double,
+        "");
+    OpenSim_DECLARE_PROPERTY(viscous_friction, double,
+        "");
     /**@}**/
 
 //==============================================================================
@@ -188,10 +188,10 @@ OpenSim_DECLARE_CONCRETE_OBJECT(HuntCrossleyForce::ContactParametersSet,
                                 Set<HuntCrossleyForce::ContactParameters>);
 
 public:
-	ContactParametersSet();
+    ContactParametersSet();
 
 private:
-	void setNull();
+    void setNull();
 };
 
 #endif

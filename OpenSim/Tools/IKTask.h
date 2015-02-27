@@ -41,31 +41,31 @@ class OSIMTOOLS_API IKTask : public Object {
 OpenSim_DECLARE_ABSTRACT_OBJECT(IKTask, Object);
 
 protected:
-	// whether or not this task will be used
-	PropertyBool _applyProp;
-	bool &_apply;
+    // whether or not this task will be used
+    PropertyBool _applyProp;
+    bool &_apply;
 
-	PropertyDbl _weightProp;
-	double &_weight;
+    PropertyDbl _weightProp;
+    double &_weight;
 
 public:
-	IKTask();
-	IKTask(const IKTask &aIKTask);
+    IKTask();
+    IKTask(const IKTask &aIKTask);
 
 #ifndef SWIG
-	IKTask& operator=(const IKTask &aIKTask);
+    IKTask& operator=(const IKTask &aIKTask);
 #endif
 
-	bool getApply() const { return _apply; }
-	void setApply(bool aApply) { _apply = aApply; }
+    bool getApply() const { return _apply; }
+    void setApply(bool aApply) { _apply = aApply; }
 
-	double getWeight() { return _weight; }
-	void setWeight(double weight) { _weight = weight; }
+    double getWeight() { return _weight; }
+    void setWeight(double weight) { _weight = weight; }
 
 private:
-	void setupProperties();
+    void setupProperties();
 //=============================================================================
-};	// END of class IKTask
+};  // END of class IKTask
 //=============================================================================
 //=============================================================================
 

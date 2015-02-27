@@ -46,17 +46,17 @@ class OSIMCOMMON_API ScaleSet : public Set<Scale> {
 OpenSim_DECLARE_CONCRETE_OBJECT(ScaleSet, Set<Scale>);
 
 private:
-	void setNull();
+    void setNull();
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	ScaleSet();
-	ScaleSet(const std::string& scalesFileName);
-	~ScaleSet(void);
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    ScaleSet();
+    ScaleSet(const std::string& scalesFileName);
+    ~ScaleSet(void);
 
 #ifndef SWIG
-	ScaleSet& operator=(const ScaleSet &aScaleSet);
+    ScaleSet& operator=(const ScaleSet &aScaleSet);
 #endif
 };
 

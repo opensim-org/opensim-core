@@ -250,17 +250,15 @@ OPTIMIZE_OUTPUT_VHDL   = NO
 
 EXTENSION_MAPPING      = 
 
-# Doxygen 1.8.3.1 supports the markdown language, which cause problems
-# for OpenSim's doxygen documentation. Disabling here in case a newer
-# version of doxygen is used (sherm 20130418).
 # If MARKDOWN_SUPPORT is enabled (the default) then doxygen pre-processes all
 # comments according to the Markdown format, which allows for more readable
 # documentation. See http://daringfireball.net/projects/markdown/ for details.
 # The output of markdown processing is further processed by doxygen, so you
 # can mix doxygen, HTML, and XML commands with Markdown formatting.
 # Disable only in case of backward compatibilities issues.
+# (sherm 20141224) Markdown requires doxygen >= 1.8.6.
 
-MARKDOWN_SUPPORT       = NO
+MARKDOWN_SUPPORT       = YES
 
 # If you use STL classes (i.e. std::string, std::vector, etc.) but do not want 
 # to include (a tag file for) the STL sources as input, then you should 
@@ -439,7 +437,7 @@ HIDE_SCOPE_NAMES       = NO
 # will put a list of the files that are included by a file in the documentation 
 # of that file.
 
-SHOW_INCLUDE_FILES     = YES
+SHOW_INCLUDE_FILES     = NO
 
 # If the FORCE_LOCAL_INCLUDES tag is set to YES then Doxygen 
 # will list include files with double quotes in the documentation 

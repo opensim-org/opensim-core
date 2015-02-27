@@ -33,62 +33,65 @@ void testCopyModel(string fileName);
 
 int main()
 {
-	try {
-		LoadOpenSimLibrary("osimActuators");
-		testCopyModel("arm26.osim");
-		testCopyModel("Neck3dof_point_constraint.osim");
-	}
-	catch (const Exception& e) {
+    try {
+        LoadOpenSimLibrary("osimActuators");
+        testCopyModel("arm26.osim");
+        testCopyModel("Neck3dof_point_constraint.osim");
+    }
+    catch (const Exception& e) {
         e.print(cerr);
         return 1;
     }
     cout << "Done" << endl;
-	return 0;
+    return 0;
 }
 
 void testCopyModel(string fileName)
 {
-	size_t mem1 = getCurrentRSS( );
-	cout << "Memory use BEFORE load, copy and init: " << mem1/1024 << "KB" << endl;
+    size_t mem1 = getCurrentRSS( );
+    cout << "Memory use BEFORE load, copy and init: " << mem1/1024 << "KB" << endl;
 
-	Model *test = nullptr;
-	for (int i = 0; i < 1000; ++i){
-		test = new Model();
-		delete test;
-	}
-	
-	
-	Model* model = new Model(fileName, false);
-	//model->print("clone_" + fileName);
+    Model *test = nullptr;
+    for (int i = 0; i < 1000; ++i){
+        test = new Model();
+        delete test;
+    }
+    
+    
+    Model* model = new Model(fileName, false);
+    //model->print("clone_" + fileName);
 
-	//SimTK::State& defaultState = model->initSystem();
-	
-	Model* modelCopy = new Model(*model);
-	// At this point properties should all match. assert that
-	ASSERT(*model==*modelCopy);
+    //SimTK::State& defaultState = model->initSystem();
+    
+    Model* modelCopy = new Model(*model);
+    // At this point properties should all match. assert that
+    ASSERT(*model==*modelCopy);
+    ASSERT(model->getActuators().getSize() == modelCopy->getActuators().getSize());
 
-	//SimTK::State& defaultStateOfCopy = modelCopy->initSystem();
-	// Compare state
-	//defaultState.getY().dump("defaultState:Y");
-	//ASSERT ((defaultState.getY()-defaultStateOfCopy.getY()).norm() < 1e-7);
+    //SimTK::State& defaultStateOfCopy = modelCopy->initSystem();
+    // Compare state
+    //defaultState.getY().dump("defaultState:Y");
+    //ASSERT ((defaultState.getY()-defaultStateOfCopy.getY()).norm() < 1e-7);
 
-	//  Now delete original model and make sure copy can stand
-	Model *cloneModel = modelCopy->clone();
+    //  Now delete original model and make sure copy can stand
+    Model *cloneModel = modelCopy->clone();
     ASSERT(*model == *cloneModel);
-	// Compare state again
-	
-	//SimTK::State& defaultStateOfCopy2 = newModel->initSystem();
-	// Compare state
-	//ASSERT ((defaultState.getY()-defaultStateOfCopy2.getY()).norm() < 1e-7);
-	//ASSERT ((defaultState.getZ()-defaultStateOfCopy2.getZ()).norm() < 1e-7);
+    ASSERT(model->getActuators().getSize() == cloneModel->getActuators().getSize());
 
-	delete model;
-	delete modelCopy;
+    // Compare state again
+    
+    //SimTK::State& defaultStateOfCopy2 = newModel->initSystem();
+    // Compare state
+    //ASSERT ((defaultState.getY()-defaultStateOfCopy2.getY()).norm() < 1e-7);
+    //ASSERT ((defaultState.getZ()-defaultStateOfCopy2.getZ()).norm() < 1e-7);
+
+    delete model;
+    delete modelCopy;
     delete cloneModel;
 
-	size_t mem2 = getCurrentRSS( );
-	int64_t delta = mem2-mem1;
+    size_t mem2 = getCurrentRSS( );
+    int64_t delta = mem2-mem1;
 
-	cout << "Memory change AFTER copy and init and delete:  " 
-		 << double(delta)/mem1*100 << "%." << endl;
+    cout << "Memory change AFTER copy and init and delete:  " 
+         << double(delta)/mem1*100 << "%." << endl;
 }

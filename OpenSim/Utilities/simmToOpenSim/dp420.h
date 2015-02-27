@@ -171,7 +171,7 @@ typedef struct
    dpBoolean function_active;
    dpBoolean output;
    double torque;
-	double pd_stiffness;
+    double pd_stiffness;
 } dp420QStruct;
 
 
@@ -219,7 +219,7 @@ typedef struct
    double gravity[3];
    dpSimmModelID simmModel;
    int enforce_constraints;    /* enforce constraint objects while integrating? */
-	int newInverseSimulation;   /* new-style inverse with corrective torques? */
+    int newInverseSimulation;   /* new-style inverse with corrective torques? */
 } dp420ModelStruct;
 
 #endif /*DP420_H*/

@@ -6,14 +6,18 @@ matrix:
     - compiler: clang
       env: BUILD_WRAPPING=on NPROC=8
     - compiler: gcc
-      env: BUILD_WRAPPING=off NPROC=2
+      env: BUILD_WRAPPING=off NPROC=3
 
 env:
   global:
-    # The python tests look for this environment variable.
-    - OPENSIM_HOME=$TRAVIS_BUILD_DIR/opensim-install SWIG=swig-2.0.10
+    # The python tests look for OPENSIM_HOME.
+    - OPENSIM_HOME=~/opensim-install SWIG=swig-2.0.10
 
 before_install:
+  ## Install CMake 2.8.8 (for CMakePackageConfigHelpers).
+  - sudo add-apt-repository ppa:kalakris/cmake -y
+  - sudo apt-get update -qq
+  - sudo apt-get install cmake
   ## Get Simbody and its dependencies.
   - sudo apt-get update -qq
   - sudo apt-get install -qq liblapack-dev
@@ -28,36 +32,34 @@ before_install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
   # Clone Simbody into the Simbody directory. Don't need its history, and
   # only need the master branch.
-  - git clone https://github.com/simbody/simbody.git simbody-source --depth 1 --branch master
-  - cd simbody-source
-  # Configure Simbody.
-  - cmake . -DBUILD_VISUALIZER=off -DBUILD_EXAMPLES=off -DSIMBODY_STANDARD_11=on -DCMAKE_INSTALL_PREFIX=../simbody-install
+  - git clone https://github.com/simbody/simbody.git ~/simbody-source --depth 1 --branch master
+  - cd ~/simbody-source
+  # Configure Simbody. No matter how we're compiling OpenSim,
+  # compile Simbody with clang for a faster build (allows us to use 8 procs).
+  - cmake . -DBUILD_VISUALIZER=off -DBUILD_EXAMPLES=off -DCMAKE_INSTALL_PREFIX=~/simbody-install -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
   # Build Simbody.
   - make -j8
   # Test Simbody.
   - ctest -j8 --output-on-failure
   # Install Simbody.
   - make -j8 install
-  # Go back to the directory containing OpenSim.
-  - cd ../
 
   ## Install SWIG to build Java/python wrapping.
-  - wget http://sourceforge.net/projects/swig/files/swig/$SWIG/$SWIG.tar.gz/download
-  - mv download $SWIG.tar.gz
-  - tar xzf $SWIG.tar.gz
-  - cd $SWIG
+  - mkdir ~/swig-source && cd ~/swig-source
+  - wget http://prdownloads.sourceforge.net/swig/$SWIG.tar.gz
+  - tar xzf $SWIG.tar.gz && cd $SWIG
   - ./configure && make && sudo make -j8 install
-  # Go back to the directory containing OpenSim.
-  - cd ../
-  
+
   ## Detect if we should check memory leaks with valgrind.
+  - cd $TRAVIS_BUILD_DIR
   - git log --format=%B --no-merges -n 1 | grep '\[ci valgrind\]'; export RUN_VALGRIND=$?; true
   - if [ $RUN_VALGRIND = "0" ]; then sudo apt-get install -qq valgrind; fi
   - if [ $RUN_VALGRIND = "0" ]; then export CTEST_FLAGS="-D ExperimentalMemCheck"; fi
 
 install:
+  - mkdir ~/opensim-core-build && cd ~/opensim-core-build
   # Configure OpenSim.
-  - cmake . -DBUILD_JAVA_WRAPPING=$BUILD_WRAPPING -DBUILD_PYTHON_WRAPPING=$BUILD_WRAPPING -DSIMBODY_HOME=simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME
+  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$BUILD_WRAPPING -DBUILD_PYTHON_WRAPPING=$BUILD_WRAPPING -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME
   # Build OpenSim.
   - make -j$NPROC
 
@@ -71,15 +73,26 @@ script:
   ## Test python wrapping.
   # Install OpenSim. Suppress output.
   - if [ "$BUILD_WRAPPING" = "on" ]; then make -j8 install > /dev/null; fi
+  # Add OpenSim libraries to library path.
+  - if [ "$BUILD_WRAPPING" = "on" ]; then echo "$OPENSIM_HOME/lib" | sudo tee /etc/ld.so.conf.d/opensim.conf; fi
+  - if [ "$BUILD_WRAPPING" = "on" ]; then sudo ldconfig; fi
   # For python tests, we need to copy over some model files.
   # This is temporary; in the future, we will use the opensim-models repo.
   - if [ "$BUILD_WRAPPING" = "on" ]; then mkdir -p $OPENSIM_HOME/Models/Arm26 && cp OpenSim/Tools/Test/arm26.osim "$_"; fi
   - if [ "$BUILD_WRAPPING" = "on" ]; then mkdir -p $OPENSIM_HOME/Models/Gait10dof18musc && cp Applications/CMC/test/gait10dof18musc_subject01.osim "$_/gait10dof18musc.osim"; fi
   # Go to the python wrapping package directory.
-  - if [ "$BUILD_WRAPPING" = "on" ]; then cd opensim-install/sdk/python; fi
-  - if [ "$BUILD_WRAPPING" = "on" ]; then echo "$TRAVIS_BUILD_DIR/opensim-install/lib" | sudo tee /etc/ld.so.conf.d/opensim.conf; fi
-  - if [ "$BUILD_WRAPPING" = "on" ]; then sudo ldconfig; fi
+  - if [ "$BUILD_WRAPPING" = "on" ]; then cd $OPENSIM_HOME/sdk/python; fi
   # Get a python package with which to run the tests.
   - if [ "$BUILD_WRAPPING" = "on" ]; then sudo apt-get install python-nose; fi
   # Run the python tests, verbosely.
   - if [ "$BUILD_WRAPPING" = "on" ]; then nosetests -v; fi
+
+  ## Ensure that there are no tabs in source code.
+  - cd $TRAVIS_BUILD_DIR
+  # GREP returns 0 (true) if there are any matches, and
+  # we don't want any matches. If there are matches,
+  # print a helpful message, and make the test fail by using "false".
+  # The GREP command here checks for any tab characters in the the files
+  # that match the specified pattern. GREP does not pick up explicit tabs
+  # (e.g., literally a \t in a source file).
+  - if grep --recursive --include={CMakeLists.txt,*.cpp,*.c,*.h} -P "\t" . ; then echo "Tabs found in the lines shown above. See CONTRIBUTING.md about tabs."; false; fi

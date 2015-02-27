@@ -44,22 +44,22 @@
 
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
 static char* weoptions[] = {
-	"wrap object>",
-	"segment>",
-	"muscles>",
-	"save all",
-	"restore all",
-	"delete",
-	"+","-",
-	"clear",
-	"reset"
+    "wrap object>",
+    "segment>",
+    "muscles>",
+    "save all",
+    "restore all",
+    "delete",
+    "+","-",
+    "clear",
+    "reset"
 };
 
 static char* weform[] = {
-	"object name",
-	"radius  x","y","z",
-	"x","y","z",
-	"x","y","z"
+    "object name",
+    "radius  x","y","z",
+    "x","y","z",
+    "x","y","z"
 };
 static char* wrap_type_panelstr[]      = { "sphere", "cylinder", "ellipsoid", "torus" };
 static char* wrap_method_panelstr[]    = { "hybrid", "midpoint", "axial" };
@@ -105,7 +105,7 @@ void makewrapeditormenus(void)
    CheckBoxPanel* check;
 
    /* make the plot popup menu */
-	//TODO5.0: why is this here????????
+    //TODO5.0: why is this here????????
    root.plotmenu = glueCreateMenu("Plots");
 
    glutAddMenuEntry("new", 1);
@@ -267,7 +267,7 @@ void makewrapeditormenus(void)
    thumb_thickness = 50;  /* is changed during every redraw */
 
    make_slider(&we->win_slider,vertical_slider,bbox,thumb_thickness,
-	       (double)we->canvas_height,0.0,(double)we->canvas_height,10.0,NULL,NULL);
+           (double)we->canvas_height,0.0,(double)we->canvas_height,10.0,NULL,NULL);
 
 }
 
@@ -284,55 +284,55 @@ static void setwemenus(void)
    ms = &we->optionsmenu;
 
    SET_BOX1221(ms->option[WE_WRAP_OBJECT].box,
-	       -85,ms->option[WE_WRAP_OBJECT].box.x1+110,
-	       5,ms->option[WE_WRAP_OBJECT].box.y2-MENU_ITEM_HEIGHT);
+           -85,ms->option[WE_WRAP_OBJECT].box.x1+110,
+           5,ms->option[WE_WRAP_OBJECT].box.y2-MENU_ITEM_HEIGHT);
 
    SET_BOX1221(ms->option[WE_CHOOSE_SEGMENT].box,ms->option[WE_WRAP_OBJECT].box.x1,
-	       ms->option[WE_WRAP_OBJECT].box.x2,ms->option[WE_WRAP_OBJECT].box.y1,
-	       ms->option[WE_CHOOSE_SEGMENT].box.y2-MENU_ITEM_HEIGHT);
+           ms->option[WE_WRAP_OBJECT].box.x2,ms->option[WE_WRAP_OBJECT].box.y1,
+           ms->option[WE_CHOOSE_SEGMENT].box.y2-MENU_ITEM_HEIGHT);
 
    SET_BOX1221(ms->option[WE_MUSCLEGROUPS].box,ms->option[WE_WRAP_OBJECT].box.x1,
-	       ms->option[WE_WRAP_OBJECT].box.x2,ms->option[WE_CHOOSE_SEGMENT].box.y1,
-	       ms->option[WE_MUSCLEGROUPS].box.y2-MENU_ITEM_HEIGHT);
+           ms->option[WE_WRAP_OBJECT].box.x2,ms->option[WE_CHOOSE_SEGMENT].box.y1,
+           ms->option[WE_MUSCLEGROUPS].box.y2-MENU_ITEM_HEIGHT);
 
    SET_BOX1221(ms->option[WE_SAVE_ALL].box,ms->option[WE_WRAP_OBJECT].box.x1,
-	       ms->option[WE_WRAP_OBJECT].box.x2,
-	       ms->option[WE_MUSCLEGROUPS].box.y1 - 10,
-	       ms->option[WE_SAVE_ALL].box.y2-MENU_ITEM_HEIGHT);
+           ms->option[WE_WRAP_OBJECT].box.x2,
+           ms->option[WE_MUSCLEGROUPS].box.y1 - 10,
+           ms->option[WE_SAVE_ALL].box.y2-MENU_ITEM_HEIGHT);
 
    SET_BOX1221(ms->option[WE_RESTORE_ALL].box,ms->option[WE_WRAP_OBJECT].box.x1,
-	       ms->option[WE_WRAP_OBJECT].box.x2,
-	       ms->option[WE_SAVE_ALL].box.y1 - 5,
-	       ms->option[WE_RESTORE_ALL].box.y2-MENU_ITEM_HEIGHT);
+           ms->option[WE_WRAP_OBJECT].box.x2,
+           ms->option[WE_SAVE_ALL].box.y1 - 5,
+           ms->option[WE_RESTORE_ALL].box.y2-MENU_ITEM_HEIGHT);
 
    SET_BOX1221(ms->option[WE_DELETE_OBJECT].box,ms->option[WE_WRAP_OBJECT].box.x1,
-	       ms->option[WE_WRAP_OBJECT].box.x2,
-	       ms->option[WE_RESTORE_ALL].box.y1 - 5,
-	       ms->option[WE_DELETE_OBJECT].box.y2-MENU_ITEM_HEIGHT);
+           ms->option[WE_WRAP_OBJECT].box.x2,
+           ms->option[WE_RESTORE_ALL].box.y1 - 5,
+           ms->option[WE_DELETE_OBJECT].box.y2-MENU_ITEM_HEIGHT);
 
    SET_BOX1221(ms->option[WE_APPLY_POS_XFORM].box,
            ms->option[WE_WRAP_OBJECT].box.x1 + 38,
-	       ms->option[WE_APPLY_POS_XFORM].box.x1 + 30,
-	       ms->option[WE_DELETE_OBJECT].box.y1 - 143,
-	       ms->option[WE_APPLY_POS_XFORM].box.y2 - MENU_ITEM_HEIGHT);
+           ms->option[WE_APPLY_POS_XFORM].box.x1 + 30,
+           ms->option[WE_DELETE_OBJECT].box.y1 - 143,
+           ms->option[WE_APPLY_POS_XFORM].box.y2 - MENU_ITEM_HEIGHT);
 
    SET_BOX1221(ms->option[WE_APPLY_NEG_XFORM].box,
            ms->option[WE_APPLY_POS_XFORM].box.x2,
-	       ms->option[WE_APPLY_NEG_XFORM].box.x1 + 30,
-	       ms->option[WE_APPLY_POS_XFORM].box.y2,
-	       ms->option[WE_APPLY_NEG_XFORM].box.y2 - MENU_ITEM_HEIGHT);
+           ms->option[WE_APPLY_NEG_XFORM].box.x1 + 30,
+           ms->option[WE_APPLY_POS_XFORM].box.y2,
+           ms->option[WE_APPLY_NEG_XFORM].box.y2 - MENU_ITEM_HEIGHT);
 
    SET_BOX1221(ms->option[WE_CLEAR_XFORM].box,
            ms->option[WE_APPLY_NEG_XFORM].box.x2 + 5,
-	       ms->option[WE_CLEAR_XFORM].box.x1 + 60,
-	       ms->option[WE_APPLY_NEG_XFORM].box.y2,
-	       ms->option[WE_CLEAR_XFORM].box.y2 - MENU_ITEM_HEIGHT);
+           ms->option[WE_CLEAR_XFORM].box.x1 + 60,
+           ms->option[WE_APPLY_NEG_XFORM].box.y2,
+           ms->option[WE_CLEAR_XFORM].box.y2 - MENU_ITEM_HEIGHT);
 
    SET_BOX1221(ms->option[WE_IDENTITY_XFORM].box,
            ms->option[WE_CLEAR_XFORM].box.x2 + 230,
-	       ms->option[WE_IDENTITY_XFORM].box.x1 + 75,
-	       ms->option[WE_CLEAR_XFORM].box.y1 - 10,
-	       ms->option[WE_IDENTITY_XFORM].box.y2 - MENU_ITEM_HEIGHT);
+           ms->option[WE_IDENTITY_XFORM].box.x1 + 75,
+           ms->option[WE_CLEAR_XFORM].box.y1 - 10,
+           ms->option[WE_IDENTITY_XFORM].box.y2 - MENU_ITEM_HEIGHT);
 
    /* Set the positions of the options form boxes */
    form = &we->optionsform;
@@ -599,15 +599,15 @@ void we_entervalue(SimmEvent se)
          break;
 
       default:
-	      rd = get_double(form, se, &tfa);
-	      if (rd == DOUBLE_NOT_DONE)
-	         return;
-	     
-	     if (rd != KEEPOLDDOUBLE && wo)
-	     {
-	        switch (we->selected_item)
-	        {
-	           case WE_RADIUS_X:
+          rd = get_double(form, se, &tfa);
+          if (rd == DOUBLE_NOT_DONE)
+             return;
+         
+         if (rd != KEEPOLDDOUBLE && wo)
+         {
+            switch (we->selected_item)
+            {
+               case WE_RADIUS_X:
                  if (rd > 0.0)
                  {
                     wo->radius[0] = rd;
@@ -618,9 +618,9 @@ void we_entervalue(SimmEvent se)
                  {
                     error(none, "Value must be greater than zero.");
                  }
-	              break;
-	           
-	           case WE_RADIUS_Y:
+                  break;
+               
+               case WE_RADIUS_Y:
                  if (rd > 0.0)
                  {
                     wo->radius[1] = rd;
@@ -633,9 +633,9 @@ void we_entervalue(SimmEvent se)
                  {
                     error(none, "Value must be greater than zero.");
                  }
-	              break;
-	           
-	           case WE_RADIUS_Z:
+                  break;
+               
+               case WE_RADIUS_Z:
                  if (rd > 0.0)
                  {
                     wo->radius[2] = rd;
@@ -646,19 +646,19 @@ void we_entervalue(SimmEvent se)
                  {
                     error(none, "Value must be greater than zero.");
                  }
-	              break;
-	           
-	           case WE_TRANSLATE_X: weop->translate.xyz[0] = rd; break;
-	           case WE_TRANSLATE_Y: weop->translate.xyz[1] = rd; break;
-	           case WE_TRANSLATE_Z: weop->translate.xyz[2] = rd; break;
-	           
-	           case WE_ROTATE_X: weop->rotate.xyz[0] = rd; break;
-	           case WE_ROTATE_Y: weop->rotate.xyz[1] = rd; break;
-	           case WE_ROTATE_Z: weop->rotate.xyz[2] = rd; break;
-	        }
-	        
-	     }
-	     break;
+                  break;
+               
+               case WE_TRANSLATE_X: weop->translate.xyz[0] = rd; break;
+               case WE_TRANSLATE_Y: weop->translate.xyz[1] = rd; break;
+               case WE_TRANSLATE_Z: weop->translate.xyz[2] = rd; break;
+               
+               case WE_ROTATE_X: weop->rotate.xyz[0] = rd; break;
+               case WE_ROTATE_Y: weop->rotate.xyz[1] = rd; break;
+               case WE_ROTATE_Z: weop->rotate.xyz[2] = rd; break;
+            }
+            
+         }
+         break;
    }
 
    if (tfa == goto_previous_field || tfa == goto_next_field)
@@ -692,7 +692,7 @@ public void draw_we_help_window(WindowParams* win_parameters, WinUnion* win_stru
 
 
 public void we_help_input(WindowParams* win_parameters, WinUnion* win_struct,
-			  SimmEvent se)
+              SimmEvent se)
 {
    if (se.field1 == window_shut)
    {
@@ -705,7 +705,7 @@ public void we_help_input(WindowParams* win_parameters, WinUnion* win_struct,
       return;
 
    if (check_slider(&we->help.sl,se,
-		    move_we_help_text,DUMMY_INT) == yes)
+            move_we_help_text,DUMMY_INT) == yes)
       draw_help_window(&we->help);
 }
 
@@ -1280,12 +1280,12 @@ void enable_debug_shapes (SBoolean state)
    add_debug_point - add a point for debugging display.
 ---------------------------------------------------------------------------- */
 void add_debug_point (
-	dpWrapObject* wo,
-	double factor,
-	double pt[],
-	float radius,
-	const char* name,
-	const float* color)
+    dpWrapObject* wo,
+    double factor,
+    double pt[],
+    float radius,
+    const char* name,
+    const float* color)
 {
    int i = wo->num_debug_glyphs;
 
@@ -1311,14 +1311,14 @@ void add_debug_point (
    add_debug_line - add a line segment for debugging display.
 ---------------------------------------------------------------------------- */
 void add_debug_line (
-	dpWrapObject* wo,
-	double factor,
-	double pt1[],
-	double pt2[],
-	float lineWidth,
-	const char* name1,
-	const char* name2,
-	const float* color)
+    dpWrapObject* wo,
+    double factor,
+    double pt1[],
+    double pt2[],
+    float lineWidth,
+    const char* name1,
+    const char* name2,
+    const float* color)
 {
    int i = wo->num_debug_glyphs;
 

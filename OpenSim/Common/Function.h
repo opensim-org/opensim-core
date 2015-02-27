@@ -49,9 +49,9 @@ namespace OpenSim {
  * A function is a relation between independent variables and a dependent
  * value such that for any particular set of independent variables there is
  * only one unique dependent value.  Values of the function and its derivatives
- * are obtained by calling the evaluate() method.  The curve may or may not
- * be finite or diferentiable; the evaluate method returns values between
- * - %SimTK::Infinity and %SimTK::Infinity, or it returns SimTK::NaN
+ * are obtained by calling the calcValue() method.  The curve may or may not
+ * be finite or diferentiable; the calcValue() method returns values between
+ * <tt>-SimTK::Infinity</tt> and <tt>SimTK::Infinity</tt>, or it returns <tt>SimTK::NaN</tt>
  * (not a number) if the curve is not defined.
  * Currently, functions of up to 3 variables (x,y,z) are supported.
  *
@@ -71,36 +71,36 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	Function();
-	Function(const Function &aFunction);
-	virtual ~Function();
-	virtual void init(Function* aFunction) { }
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    Function();
+    Function(const Function &aFunction);
+    virtual ~Function();
+    virtual void init(Function* aFunction) { }
 
 private:
-	void setNull();
+    void setNull();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	Function& operator=(const Function &aFunction);
+    Function& operator=(const Function &aFunction);
 #endif
-	//--------------------------------------------------------------------------
-	// SET AND GET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // SET AND GET
+    //--------------------------------------------------------------------------
 public:
-	//--------------------------------------------------------------------------
-	// UTILITY
-	//--------------------------------------------------------------------------
-	static Function* makeFunctionOfType(Function* aFunction, const std::string& aNewTypeName);
+    //--------------------------------------------------------------------------
+    // UTILITY
+    //--------------------------------------------------------------------------
+    static Function* makeFunctionOfType(Function* aFunction, const std::string& aNewTypeName);
 
-	//--------------------------------------------------------------------------
-	// EVALUATE
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // EVALUATE
+    //--------------------------------------------------------------------------
     /**
      * Calculate the value of this function at a particular point.
      * 
@@ -127,21 +127,21 @@ public:
      * Get the maximum derivative order this Function object can calculate.
      */
     virtual int getMaxDerivativeOrder() const;
-	/**
-	 * Return a SimTK::Function that can be used natively by the
-	 * underlying SimTK::System and its elements.
-	 */
+    /**
+     * Return a SimTK::Function that can be used natively by the
+     * underlying SimTK::System and its elements.
+     */
     virtual SimTK::Function* createSimTKFunction() const = 0;
 
 protected:
     /**
      * This should be called whenever this object has been modified.  It clears 
-	 * the internal SimTK::Function object used to evaluate it.
+     * the internal SimTK::Function object used to evaluate it.
      */
     void resetFunction();
 
 //=============================================================================
-};	// END class Function
+};  // END class Function
 
 }; //namespace
 //=============================================================================

@@ -1,5 +1,5 @@
-#ifndef __Marker_h__
-#define __Marker_h__
+#ifndef OPENSIM_MARKER_H_
+#define OPENSIM_MARKER_H_
 /* -------------------------------------------------------------------------- *
  *                             OpenSim:  Marker.h                             *
  * -------------------------------------------------------------------------- *
@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Peter Loan, Ayman Habib                                         *
+ * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Author(s): Ayman Habib, Peter Loan                                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -28,15 +28,7 @@
 #include <iostream>
 #include <math.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/VisibleObject.h>
-#include <OpenSim/Common/Geometry.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include "Station.h"
 #include "SimTKcommon.h"
 
 namespace OpenSim {
@@ -49,106 +41,47 @@ class VisibleObject;
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a SIMM [mocap] marker.
+ * A class implementing a Mocap marker.
  *
- * @author Peter Loan
- * @version 1.0
+ * @author Ayman Habib, Peter Loan
+ * @version 2.0
  */
-class OSIMSIMULATION_API Marker : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(Marker, Object);
+class OSIMSIMULATION_API Marker : public Station {
+    OpenSim_DECLARE_CONCRETE_OBJECT(Marker, Station);
 
 class Body;
 
 //=============================================================================
-// DATA
-//=============================================================================
-private:
-
-protected:
-    const Model* _model;
-
-	PropertyDblVec3 _offsetProp;
-	SimTK::Vec3 &_offset;
-
-	PropertyBool _fixedProp;
-	bool &_fixed;
-
-	// The bodyName property is used only for markers that are part of a
-	// MarkerSet, not for ones that are part of a model.
-	PropertyStr _bodyNameProp;
-	std::string &_bodyName;
-
-	// Body that the marker is attached to
-	OpenSim::Body* _body;
-
-	// Support for Display
-	VisibleObject _displayer;
-
-	/** A temporary kluge until the default mechanism is working */
-	static Geometry *_defaultGeometry;
-	bool _virtual;
-
-//=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	Marker();
-	Marker(const Marker &aMarker);
-	virtual ~Marker();
+    Marker();
+    virtual ~Marker();
 
-    static void deleteMarker(Marker* aMarker) { if (aMarker) delete aMarker; }
+    const std::string& getFrameName() const;
 
-#ifndef SWIG
-	Marker& operator=(const Marker &aMarker);
-#endif
-	void copyData(const Marker &aMarker);
+    void setFrameName(const std::string& aName);
+    void changeFrame(const OpenSim::PhysicalFrame& aPhysicalFrame );
+    void changeFramePreserveLocation(const SimTK::State& s, OpenSim::PhysicalFrame& aPhysicalFrame );
+    void scale(const SimTK::Vec3& aScaleFactors);
 
-	virtual void updateFromMarker(const Marker &aMarker);
-	virtual void getOffset(SimTK::Vec3& rOffset) const;
-	virtual const SimTK::Vec3& getOffset() const { return _offset; }
-	virtual void getOffset(double rOffset[]) const;
-	virtual bool setOffset(const SimTK::Vec3& aOffset);
-	virtual bool setOffset(const double aOffset[3]);
-	virtual bool getOffsetUseDefault() const { return _offsetProp.getValueIsDefault(); }
-	virtual bool getFixed() const { return _fixed; }
-	virtual bool setFixed(bool aFixed);
-	virtual bool getFixedUseDefault() const { return _fixedProp.getValueIsDefault(); }
-	virtual const std::string& getBodyName() const;
-	virtual bool setBodyName(const std::string& aName);
-	virtual bool getBodyNameUseDefault() const { return _bodyNameProp.getValueIsDefault(); }
-	virtual bool setBodyNameUseDefault(bool aValue);
-	virtual OpenSim::Body& getBody() const { return *_body; }
-	virtual void changeBody( OpenSim::Body& aBody );
-	virtual void changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody );
-	virtual void scale(const SimTK::Vec3& aScaleFactors);
-	virtual void connectMarkerToModel(const Model& aModel);
-	virtual void updateGeometry();
+    /** Override of the default implementation to account for versioning. */
+    void updateFromXMLNode(SimTK::Xml::Element& aNode,
+        int versionNumber = -1) override;
 
-	virtual const VisibleObject* getDisplayer() const { return &_displayer; }
-	virtual VisibleObject*	updDisplayer() { return &_displayer; };
-
-	virtual void removeSelfFromDisplay();
-	const bool isVirtual()
-	{
-		return _virtual;
-	}
-	void setVirtual(bool aTrueFalse)
-	{
-		_virtual=aTrueFalse;
-	}
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 //=============================================================================
-};	// END of class Marker
+};  // END of class Marker
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __Marker_h__
+#endif // OPENSIM_MARKER_H_
 
 

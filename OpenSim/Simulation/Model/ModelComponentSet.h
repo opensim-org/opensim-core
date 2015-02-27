@@ -30,10 +30,10 @@
 #include "ModelComponent.h"
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+    #ifdef OSIMSIMULATION_API
+        #undef OSIMSIMULATION_API
+        #define OSIMSIMULATION_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -98,14 +98,14 @@ public:
      */
     const Model& getModel() const
     {
-		if (_model){
-			return *this->_model;
-		}
-		else{
-			std::string msg = getClassName();
-			msg += "::getModel() - has no associated Model (nullptr)";
-			throw Exception(msg);
-		}
+        if (_model){
+            return *this->_model;
+        }
+        else{
+            std::string msg = getClassName();
+            msg += "::getModel() - has no associated Model (nullptr)";
+            throw Exception(msg);
+        }
     }
     /**
      * Get a modifiable reference to the Model this set is part of.
@@ -115,7 +115,7 @@ public:
         return *this->_model;
     }
 
-	void setModel(Model& model) { _model = &model; }
+    void setModel(Model& model) { _model = &model; }
 
 #endif
 
@@ -153,18 +153,8 @@ public:
         _model = &model;
         for (int i = 0; i < Set<T>::getSize(); i++){
             static_cast<ModelComponent&>(Set<T>::get(i)).connectToModel(model);
-		}
-		Set<T>::setupGroups(); // make sure group members are populated
-    }
-
-    /**
-     * Invoke addToSystem() on each element of the Set.
-     * @see ModelComponent::addToSystem()
-     */
-    virtual void invokeAddToSystem(SimTK::MultibodySystem& system) const
-    {
-        for (int i = 0; i < Set<T>::getSize(); i++)
-            static_cast<const ModelComponent&>(Set<T>::get(i)).addToSystem(system);
+        }
+        Set<T>::setupGroups(); // make sure group members are populated
     }
 
     /**
@@ -205,7 +195,7 @@ public:
 
 
 //=============================================================================
-};	// END of class ModelComponentSet
+};  // END of class ModelComponentSet
 //=============================================================================
 //=============================================================================
 

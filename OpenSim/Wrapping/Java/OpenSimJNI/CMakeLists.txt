@@ -1,7 +1,7 @@
 SET(KIT JavaJNI)
 SET(UKIT JAVAJNI)
 
-IF(BUILD_JAVA_WRAPPING)	
+IF(BUILD_JAVA_WRAPPING) 
 
 INCLUDE(${CMAKE_ROOT}/Modules/FindJava.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/FindJNI.cmake)
@@ -33,8 +33,6 @@ SET(SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR
 EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E make_directory
     ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR})
 
-SET(SimTK_INCLUDE_PATH ${SIMTK_INCLUDE_DIR})
-
 ADD_CUSTOM_COMMAND(
     OUTPUT "${swig_generated_file_fullname}" "${swig_generated_header_fullname}"
     COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
@@ -42,7 +40,7 @@ ADD_CUSTOM_COMMAND(
         -I${OpenSim_SOURCE_DIR}
         -I${Simbody_INCLUDE_DIR}
         -I${OpenSim_SOURCE_DIR}/OpenSim/Wrapping
-    	-o ${swig_generated_file_fullname}
+        -o ${swig_generated_file_fullname}
         -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
         ${swig_interface_file_fullname}
     DEPENDS "${swig_interface_file_fullname}")
@@ -62,9 +60,9 @@ SET(SOURCE_FILES "${swig_generated_file_fullname}" OpenSimContext.cpp)
 SET(INCLUDE_FILES "${swig_generated_header_fullname}" OpenSimContext.h)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-					${OpenSim_SOURCE_DIR}/Vendors 
-					${JAVA_INCLUDE_PATH}
-					${JAVA_INCLUDE_PATH2}
+                    ${OpenSim_SOURCE_DIR}/Vendors 
+                    ${JAVA_INCLUDE_PATH}
+                    ${JAVA_INCLUDE_PATH2}
 )
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
@@ -101,7 +99,7 @@ INSTALL(DIRECTORY ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}/
     DESTINATION sdk/Java/${SWIG_JAVA_PACKAGE_PATH})
 
 IF(BUILD_TESTING)
-	SUBDIRS(Test)
+    SUBDIRS(Test)
 ENDIF(BUILD_TESTING)
 
 

@@ -39,13 +39,13 @@ using namespace OpenSim;
  * Default constructor.
  */
 SliderJoint::SliderJoint() :
-	Joint()
+    Joint()
 {
-	setAuthors("Ajay Seth");
-	constructCoordinates();
+    setAuthors("Ajay Seth");
+    constructCoordinates();
 
-	const CoordinateSet& coordinateSet = get_CoordinateSet();
-	coordinateSet[0].setMotionType(Coordinate::Translational);
+    const CoordinateSet& coordinateSet = get_CoordinateSet();
+    coordinateSet[0].setMotionType(Coordinate::Translational);
 }
 
 //_____________________________________________________________________________
@@ -53,18 +53,18 @@ SliderJoint::SliderJoint() :
  * Convenience Constructor.
  */
 SliderJoint::SliderJoint(const std::string &name, const Body& parent,
-	const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-	const Body& child,
-	const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-	bool reverse) :
-		Super(name, parent, locationInParent, orientationInParent,
-			child, locationInchild, orientationInChild, reverse)
+    const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+    const Body& child,
+    const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
+    bool reverse) :
+        Super(name, parent, locationInParent, orientationInParent,
+            child, locationInchild, orientationInChild, reverse)
 {
-	setAuthors("Ajay Seth");
-	constructCoordinates();
+    setAuthors("Ajay Seth");
+    constructCoordinates();
 
-	const CoordinateSet& coordinateSet = get_CoordinateSet();
-	coordinateSet[0].setMotionType(Coordinate::Translational);
+    const CoordinateSet& coordinateSet = get_CoordinateSet();
+    coordinateSet[0].setMotionType(Coordinate::Translational);
 }
 
 //=============================================================================
@@ -76,11 +76,7 @@ SliderJoint::SliderJoint(const std::string &name, const Body& parent,
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void SliderJoint::addToSystem(SimTK::MultibodySystem& system) const
+void SliderJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<SimTK::MobilizedBody::Slider>(system);
-
-    // TODO: Joints require super class to be called last.
-    Super::addToSystem(system);
+    createMobilizedBody<SimTK::MobilizedBody::Slider>(system);
 }
-

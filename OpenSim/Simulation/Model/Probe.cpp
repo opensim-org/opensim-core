@@ -129,18 +129,18 @@ void Probe::constructOutputs()
 /**
  * Create an underlying OpenSim::Probe
  */
-void Probe::connectToModel(Model& model)
+void Probe::extendConnectToModel(Model& model)
 {
-    Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 }
 
 //_____________________________________________________________________________
 /**
  * Create the underlying system component(s).
  */
-void Probe::addToSystem(MultibodySystem& system) const
+void Probe::extendAddToSystem(MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     if (isDisabled())
         return;
@@ -157,7 +157,7 @@ void Probe::addToSystem(MultibodySystem& system) const
     // save for when we can directly operate on Vector SimTK::Measures
     //ProbeMeasure<SimTK::Vector> beforeOperationValueVector(system, *this);
 
-	int npi = getNumProbeInputs();
+    int npi = getNumProbeInputs();
     SimTK::Array_<ProbeMeasure<double> > beforeOperationValues;
     mutableThis->afterOperationValues.resize(npi);
 
@@ -165,8 +165,6 @@ void Probe::addToSystem(MultibodySystem& system) const
         ProbeMeasure<double> tmpPM(system, *this, i); 
         beforeOperationValues.push_back(tmpPM);
     }
-
-
 
     // Assign the correct (operation) Measure subclass to the operand
     // ==============================================================
@@ -179,8 +177,6 @@ void Probe::addToSystem(MultibodySystem& system) const
             mutableThis->afterOperationValues[i] = beforeOperationValues[i];   
         }
     }
-
-
     // ---------------------------------------------------------------------
     // Integrate the probe value
     // ---------------------------------------------------------------------
@@ -224,8 +220,6 @@ void Probe::addToSystem(MultibodySystem& system) const
                 system, beforeOperationValues[i]);
         }
     }
-
-
     // ---------------------------------------------------------------------
     // Get the minimum of the probe value
     // ---------------------------------------------------------------------
@@ -235,8 +229,6 @@ void Probe::addToSystem(MultibodySystem& system) const
                 system, beforeOperationValues[i]);
         }
     }
-
-
     // ---------------------------------------------------------------------
     // Get the absolute minimum of the probe value
     // ---------------------------------------------------------------------
@@ -246,8 +238,6 @@ void Probe::addToSystem(MultibodySystem& system) const
                 system, beforeOperationValues[i]);
         }
     }
-    	
-
     // ---------------------------------------------------------------------
     // Get the maximum of the probe value
     // ---------------------------------------------------------------------
@@ -258,7 +248,6 @@ void Probe::addToSystem(MultibodySystem& system) const
         }
     }
 
-
     // ---------------------------------------------------------------------
     // Get the absolute maximum of the probe value
     // ---------------------------------------------------------------------
@@ -268,7 +257,6 @@ void Probe::addToSystem(MultibodySystem& system) const
                 system, beforeOperationValues[i]);
         }
     }
-
 
     // ---------------------------------------------------------------------
     // Throw exception (invalid operation)
@@ -281,7 +269,6 @@ void Probe::addToSystem(MultibodySystem& system) const
             "'minimum', 'minabs', 'maximum', 'maxabs'." << endl;
         throw (Exception(errorMessage.str()));
     }
-
 }
 
 
@@ -353,12 +340,12 @@ string Probe::getOperation() const
  */
 Vector Probe::getInitialConditions() const
 {
-	int size = getProperty_initial_conditions_for_integration().size();
-	Vector v(size);
-	for(int i = 0; i < size ; i++)
-	{
-		v[i] = get_initial_conditions_for_integration(i);
-	}
+    int size = getProperty_initial_conditions_for_integration().size();
+    Vector v(size);
+    for(int i = 0; i < size ; i++)
+    {
+        v[i] = get_initial_conditions_for_integration(i);
+    }
     return v;
 }
 

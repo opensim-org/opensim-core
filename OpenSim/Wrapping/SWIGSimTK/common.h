@@ -122,23 +122,23 @@ or any other Index type to an argument expecting a certain Index type. **/
     #if defined(__cplusplus)
         #include <cstdio>
         #define SimTK_DEBUG(s) std::printf("DBG: " s)
-        #define SimTK_DEBUG1(s,a1) std::printf("DBG: " s,a1)	
-        #define SimTK_DEBUG2(s,a1,a2) std::printf("DBG: " s,a1,a2)	
-        #define SimTK_DEBUG3(s,a1,a2,a3) std::printf("DBG: " s,a1,a2,a3)	
+        #define SimTK_DEBUG1(s,a1) std::printf("DBG: " s,a1)    
+        #define SimTK_DEBUG2(s,a1,a2) std::printf("DBG: " s,a1,a2)  
+        #define SimTK_DEBUG3(s,a1,a2,a3) std::printf("DBG: " s,a1,a2,a3)    
         #define SimTK_DEBUG4(s,a1,a2,a3,a4) std::printf("DBG: " s,a1,a2,a3,a4)
     #else
         #include <stdio.h>
         #define SimTK_DEBUG(s) printf("DBG: " s)
-        #define SimTK_DEBUG1(s,a1) printf("DBG: " s,a1)	
-        #define SimTK_DEBUG2(s,a1,a2) printf("DBG: " s,a1,a2)	
-        #define SimTK_DEBUG3(s,a1,a2,a3) printf("DBG: " s,a1,a2,a3)	
+        #define SimTK_DEBUG1(s,a1) printf("DBG: " s,a1) 
+        #define SimTK_DEBUG2(s,a1,a2) printf("DBG: " s,a1,a2)   
+        #define SimTK_DEBUG3(s,a1,a2,a3) printf("DBG: " s,a1,a2,a3) 
         #define SimTK_DEBUG4(s,a1,a2,a3,a4) printf("DBG: " s,a1,a2,a3,a4)
     #endif
 #else
     #define SimTK_DEBUG(s)
     #define SimTK_DEBUG1(s,a1)
     #define SimTK_DEBUG2(s,a1,a2)
-    #define SimTK_DEBUG3(s,a1,a2,a3)	
+    #define SimTK_DEBUG3(s,a1,a2,a3)    
     #define SimTK_DEBUG4(s,a1,a2,a3,a4)
 #endif
 
@@ -180,23 +180,23 @@ or any other Index type to an argument expecting a certain Index type. **/
     #else
         #define SimTK_SimTKCOMMON_EXPORT __declspec(dllimport) /*i.e., a client of a shared library*/
     #endif
-	/* VC++ tries to be secure by leaving bounds checking on for STL containers
-	 * even in Release mode. This macro exists to disable that feature and can
-	 * result in a considerable speedup.
-	 * CAUTION: every linked-together compilation unit must have this set the same
-	 * way. Everyone who properly includes this file first is fine; but as of this
-	 * writing Simmath's IpOpt doesn't do so.
+    /* VC++ tries to be secure by leaving bounds checking on for STL containers
+     * even in Release mode. This macro exists to disable that feature and can
+     * result in a considerable speedup.
+     * CAUTION: every linked-together compilation unit must have this set the same
+     * way. Everyone who properly includes this file first is fine; but as of this
+     * writing Simmath's IpOpt doesn't do so.
      * NOTE: Microsoft corrected this problem with VC10 -- the feature is 
      * disabled by default in that compiler and later.
      */
-	/* (sherm 081204 disabling for now: doesn't work on VC++ 8 and is 
-	 * tricky on VC++ 9 because all libraries, including 3rd party, must
-	 * be built the same way). Better to use the SimTK::Array_<T> class in
+    /* (sherm 081204 disabling for now: doesn't work on VC++ 8 and is 
+     * tricky on VC++ 9 because all libraries, including 3rd party, must
+     * be built the same way). Better to use the SimTK::Array_<T> class in
      * place of the std::vector<T> class to get better performance.
-	 #ifdef NDEBUG
-	 	#undef _SECURE_SCL
-	 	#define _SECURE_SCL 0
-	 #endif
+     #ifdef NDEBUG
+        #undef _SECURE_SCL
+        #define _SECURE_SCL 0
+     #endif
      */
 #else
     #define SimTK_SimTKCOMMON_EXPORT // Linux, Mac
@@ -238,42 +238,16 @@ extern "C" {
 /* Transition macros for C++11 support. VC10 and VC11 have partial support for
 C++11, early VC's do not. Currently we're assuming no support from gcc. */
 #ifndef SWIG
-    #if _MSC_VER>=1700 /* VC11 or higher */
-        #define override  override
-        #define FINAL_11     final
-    #elif _MSC_VER==1600 /* VC10 */
-        #define override  override
-        #define FINAL_11     sealed
-    #else /* gcc or earlier VC */
-        #define override
-        #define FINAL_11
-    #endif
+    #define OVERRIDE_11 override
+    #define FINAL_11 final
 #else /* Swigging */
-    #define override
+    // TODO Remove when moving to SWIG 3.
+    #define OVERRIDE_11  
     #define FINAL_11
-#endif
-
-
-/* Currently (Microsoft VC++ 9) these C99-compatible floating point functions 
-are missing. We'll create them here and install them into namespace std.
-TODO: This should be removed when these are available. */
-#ifdef _MSC_VER
-namespace std {
-inline bool isfinite(float f) {return _finite(f) != 0;}
-inline bool isfinite(double d) {return _finite(d) != 0;}
-inline bool isfinite(long double l) {return _finite(l) != 0;}
-inline bool isnan(float f) {return _isnan(f) != 0;}
-inline bool isnan(double d) {return _isnan(d) != 0;}
-inline bool isnan(long double l) {return _isnan(l) != 0;}
-inline bool isinf(float f) {return std::abs(f)==std::numeric_limits<float>::infinity();}
-inline bool isinf(double d) {return std::abs(d)==std::numeric_limits<double>::infinity();}
-inline bool isinf(long double l) {return std::abs(l)==std::numeric_limits<double>::infinity();}
-inline bool signbit(float f) {return (*reinterpret_cast<unsigned*>(&f) & 0x80000000U) != 0;}
-inline bool signbit(double d) {return (*reinterpret_cast<unsigned long long*>(&d)
-                               & 0x8000000000000000ULL) != 0;}
-inline bool signbit(long double l) {return (*reinterpret_cast<unsigned long long*>(&l)
-                                    & 0x8000000000000000ULL) != 0;}
-}
+    #undef override
+    #define override
+    #undef final
+    #define final
 #endif
 
 
@@ -528,8 +502,8 @@ type. **/
     static const Derived& downcast(const Parent& p)             \
         { return SimTK_DYNAMIC_CAST_DEBUG<const Derived&>(p); } \
     static Derived& updDowncast(Parent& p)                      \
-        { return SimTK_DYNAMIC_CAST_DEBUG<Derived&>(p); }	    \
-	static Derived& downcast(Parent& p)                         \
+        { return SimTK_DYNAMIC_CAST_DEBUG<Derived&>(p); }       \
+    static Derived& downcast(Parent& p)                         \
         { return SimTK_DYNAMIC_CAST_DEBUG<Derived&>(p); }
 
 /** This is like SimTK_DOWNCAST except it allows for an intermediate "helper" 
@@ -539,9 +513,9 @@ class between Derived and Parent. **/
         { return Helper::isA(p); }                                      \
     static const Derived& downcast(const Parent& p)                     \
         { return static_cast<const Derived&>(Helper::downcast(p)); }    \
-    static Derived& updDowncast(Parent& p)							    \
-        { return static_cast<Derived&>(Helper::downcast(p)); }		    \
-	static Derived& downcast(Parent& p)                                 \
+    static Derived& updDowncast(Parent& p)                              \
+        { return static_cast<Derived&>(Helper::downcast(p)); }          \
+    static Derived& downcast(Parent& p)                                 \
         { return static_cast<Derived&>(Helper::downcast(p)); }
 
 

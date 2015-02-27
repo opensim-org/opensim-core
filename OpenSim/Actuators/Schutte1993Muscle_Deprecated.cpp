@@ -44,7 +44,7 @@ using namespace OpenSim;
  */
 Schutte1993Muscle_Deprecated::Schutte1993Muscle_Deprecated()
 {
-	constructProperties();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -56,12 +56,12 @@ Schutte1993Muscle_Deprecated::Schutte1993Muscle_Deprecated
     double aOptimalFiberLength, double aTendonSlackLength,
     double aPennationAngle)
 {
-	constructProperties();
-	setName(aName);
-	setMaxIsometricForce(aMaxIsometricForce);
-	setOptimalFiberLength(aOptimalFiberLength);
-	setTendonSlackLength(aTendonSlackLength);
-	setPennationAngleAtOptimalFiberLength(aPennationAngle);
+    constructProperties();
+    setName(aName);
+    setMaxIsometricForce(aMaxIsometricForce);
+    setOptimalFiberLength(aOptimalFiberLength);
+    setTendonSlackLength(aTendonSlackLength);
+    setPennationAngleAtOptimalFiberLength(aPennationAngle);
 }
 
 
@@ -72,34 +72,34 @@ Schutte1993Muscle_Deprecated::Schutte1993Muscle_Deprecated
 // Allocate and initialize properties.
 void Schutte1993Muscle_Deprecated::constructProperties()
 {
-	constructProperty_time_scale(0.1);
-	constructProperty_activation1(7.667);
-	constructProperty_activation2(1.459854);
-	constructProperty_damping(0.1);
+    constructProperty_time_scale(0.1);
+    constructProperty_activation1(7.667);
+    constructProperty_activation2(1.459854);
+    constructProperty_damping(0.1);
 
-	int tendonForceLengthCurvePoints = 17;
-	double tendonForceLengthCurveX[] = {-10.00000000, -0.00200000, -0.00100000,  0.00000000,  0.00131000,  0.00281000,  0.00431000,  0.00581000,  0.00731000,  0.00881000,  0.01030000,  0.01180000,  0.01230000,  9.20000000,  9.20100000,  9.20200000, 20.00000000};
-	double tendonForceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.01080000,  0.02570000,  0.04350000,  0.06520000,  0.09150000,  0.12300000,  0.16100000,  0.20800000,  0.22700000,  345.00000000,  345.00000000,  345.00000000,  345.00000000};
-	SimmSpline tendonForceLengthCurve
+    int tendonForceLengthCurvePoints = 17;
+    double tendonForceLengthCurveX[] = {-10.00000000, -0.00200000, -0.00100000,  0.00000000,  0.00131000,  0.00281000,  0.00431000,  0.00581000,  0.00731000,  0.00881000,  0.01030000,  0.01180000,  0.01230000,  9.20000000,  9.20100000,  9.20200000, 20.00000000};
+    double tendonForceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.01080000,  0.02570000,  0.04350000,  0.06520000,  0.09150000,  0.12300000,  0.16100000,  0.20800000,  0.22700000,  345.00000000,  345.00000000,  345.00000000,  345.00000000};
+    SimmSpline tendonForceLengthCurve
        (tendonForceLengthCurvePoints, tendonForceLengthCurveX, 
         tendonForceLengthCurveY);
-	constructProperty_tendon_force_length_curve(tendonForceLengthCurve);
+    constructProperty_tendon_force_length_curve(tendonForceLengthCurve);
 
-	int activeForceLengthCurvePoints = 21;
-	double activeForceLengthCurveX[] = {-5.30769200, -4.30769200, -1.92307700, -0.88461500, -0.26923100,  0.23076900,  0.46153800,  0.52725000,  0.62875000,  0.71875000,  0.86125000,  1.04500000,  1.21750000,  1.43875000,  1.50000000,  1.61538500,  2.00000000,  2.96153800,  3.69230800,  5.46153800,  9.90190200};
-	double activeForceLengthCurveY[] = {0.01218800,  0.02189900,  0.03646600,  0.05249300,  0.07531200,  0.11415800,  0.15785900,  0.22666700,  0.63666700,  0.85666700,  0.95000000,  0.99333300,  0.77000000,  0.24666700,  0.19382100,  0.13325200,  0.07268300,  0.04441700,  0.03634100,  0.02189900,  0.00733200};
-	SimmSpline activeForceLengthCurve
+    int activeForceLengthCurvePoints = 21;
+    double activeForceLengthCurveX[] = {-5.30769200, -4.30769200, -1.92307700, -0.88461500, -0.26923100,  0.23076900,  0.46153800,  0.52725000,  0.62875000,  0.71875000,  0.86125000,  1.04500000,  1.21750000,  1.43875000,  1.50000000,  1.61538500,  2.00000000,  2.96153800,  3.69230800,  5.46153800,  9.90190200};
+    double activeForceLengthCurveY[] = {0.01218800,  0.02189900,  0.03646600,  0.05249300,  0.07531200,  0.11415800,  0.15785900,  0.22666700,  0.63666700,  0.85666700,  0.95000000,  0.99333300,  0.77000000,  0.24666700,  0.19382100,  0.13325200,  0.07268300,  0.04441700,  0.03634100,  0.02189900,  0.00733200};
+    SimmSpline activeForceLengthCurve
        (activeForceLengthCurvePoints, activeForceLengthCurveX, 
         activeForceLengthCurveY);
-	constructProperty_active_force_length_curve(activeForceLengthCurve);
+    constructProperty_active_force_length_curve(activeForceLengthCurve);
 
-	int passiveForceLengthCurvePoints = 13;
-	double passiveForceLengthCurveX[] = {-5.00000000,  0.99800000,  0.99900000,  1.00000000,  1.10000000,  1.20000000,  1.30000000,  1.40000000,  1.50000000,  1.60000000,  1.60100000,  1.60200000,  5.00000000};
-	double passiveForceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.03500000,  0.12000000,  0.26000000,  0.55000000,  1.17000000,  2.00000000,  2.00000000,  2.00000000,  2.00000000};
-	SimmSpline passiveForceLengthCurve
+    int passiveForceLengthCurvePoints = 13;
+    double passiveForceLengthCurveX[] = {-5.00000000,  0.99800000,  0.99900000,  1.00000000,  1.10000000,  1.20000000,  1.30000000,  1.40000000,  1.50000000,  1.60000000,  1.60100000,  1.60200000,  5.00000000};
+    double passiveForceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.03500000,  0.12000000,  0.26000000,  0.55000000,  1.17000000,  2.00000000,  2.00000000,  2.00000000,  2.00000000};
+    SimmSpline passiveForceLengthCurve
        (passiveForceLengthCurvePoints, passiveForceLengthCurveX, 
         passiveForceLengthCurveY);
-	constructProperty_passive_force_length_curve(passiveForceLengthCurve);
+    constructProperty_passive_force_length_curve(passiveForceLengthCurve);
 }
 
 //_____________________________________________________________________________
@@ -109,14 +109,10 @@ void Schutte1993Muscle_Deprecated::constructProperties()
  *
  * @param aModel model containing this Schutte1993Muscle_Deprecated.
  */
-void Schutte1993Muscle_Deprecated::connectToModel(Model& aModel)
+void Schutte1993Muscle_Deprecated::extendConnectToModel(Model& aModel)
 {
-	// Base class
-	Super::connectToModel(aModel);
-
-	// _model will be NULL when objects are being registered.
-	if (!_model)
-		return;
+    // Base class
+    Super::extendConnectToModel(aModel);
 }
 
 
@@ -135,8 +131,8 @@ void Schutte1993Muscle_Deprecated::connectToModel(Model& aModel)
  */
 bool Schutte1993Muscle_Deprecated::setTimeScale(double aTimeScale)
 {
-	set_time_scale(aTimeScale);
-	return true;
+    set_time_scale(aTimeScale);
+    return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -151,8 +147,8 @@ bool Schutte1993Muscle_Deprecated::setTimeScale(double aTimeScale)
  */
 bool Schutte1993Muscle_Deprecated::setActivation1(double aActivation1)
 {
-	set_activation1(aActivation1);
-	return true;
+    set_activation1(aActivation1);
+    return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -167,8 +163,8 @@ bool Schutte1993Muscle_Deprecated::setActivation1(double aActivation1)
  */
 bool Schutte1993Muscle_Deprecated::setActivation2(double aActivation2)
 {
-	set_activation2(aActivation2);
-	return true;
+    set_activation2(aActivation2);
+    return true;
 }
 
 
@@ -185,8 +181,8 @@ bool Schutte1993Muscle_Deprecated::setActivation2(double aActivation2)
  */
 bool Schutte1993Muscle_Deprecated::setDamping(double aDamping)
 {
-	set_damping(aDamping);
-	return true;
+    set_damping(aDamping);
+    return true;
 }
 
 
@@ -205,36 +201,36 @@ double Schutte1993Muscle_Deprecated::computeActuation(const SimTK::State& s) con
     double activationDeriv;
     double fiberLengthDeriv;
 
-	double norm_tendon_length, ca;
-	double norm_muscle_tendon_length, pennation_angle;
-	double excitation = getExcitation(s);
+    double norm_tendon_length, ca;
+    double norm_muscle_tendon_length, pennation_angle;
+    double excitation = getExcitation(s);
 
-	/* Normalize the muscle states */
-	double activation = getActivation(s);
-	double normFiberLength = getFiberLength(s) / _optimalFiberLength;
+    /* Normalize the muscle states */
+    double activation = getActivation(s);
+    double normFiberLength = getFiberLength(s) / _optimalFiberLength;
 
-	/* Compute normalized muscle state derivatives */
-	if (excitation >= activation) 
+    /* Compute normalized muscle state derivatives */
+    if (excitation >= activation) 
        activationDeriv = (excitation - activation) * (get_activation1() * excitation + get_activation2());
-	else
+    else
       activationDeriv = (excitation - activation) * get_activation2();
 
-	pennation_angle = calcPennation(normFiberLength, 1.0, _pennationAngleAtOptimal);
-	ca = cos(pennation_angle);
-	norm_muscle_tendon_length = getLength(s) / _optimalFiberLength;
-	norm_tendon_length = norm_muscle_tendon_length - normFiberLength * ca;
+    pennation_angle = calcPennation(normFiberLength, 1.0, _pennationAngleAtOptimal);
+    ca = cos(pennation_angle);
+    norm_muscle_tendon_length = getLength(s) / _optimalFiberLength;
+    norm_tendon_length = norm_muscle_tendon_length - normFiberLength * ca;
 
-	tendonForce = calcTendonForce(s,norm_tendon_length);
-	passiveForce =  calcNonzeroPassiveForce(s,normFiberLength, 0.0);
-	activeForce = getActiveForceLengthCurve().calcValue(SimTK::Vector(1, normFiberLength) );
-	if (activeForce < 0.0) activeForce = 0.0;
+    tendonForce = calcTendonForce(s,norm_tendon_length);
+    passiveForce =  calcNonzeroPassiveForce(s,normFiberLength, 0.0);
+    activeForce = getActiveForceLengthCurve().calcValue(SimTK::Vector(1, normFiberLength) );
+    if (activeForce < 0.0) activeForce = 0.0;
 
    /* If pennation equals 90 degrees, fiber length equals muscle width and fiber
     * velocity goes to zero.  Pennation will stay at 90 until tendon starts to
     * pull, then "stiff tendon" approximation is used to calculate approximate
     * fiber velocity.
     */
-	if (EQUAL_WITHIN_ERROR(ca, 0.0)) {
+    if (EQUAL_WITHIN_ERROR(ca, 0.0)) {
       if (EQUAL_WITHIN_ERROR(tendonForce, 0.0)) {
          fiberLengthDeriv = 0.0;;
       } else {
@@ -245,22 +241,22 @@ double Schutte1993Muscle_Deprecated::computeActuation(const SimTK::State& s) con
          double new_ca = cos(new_pennation_angle);
          fiberLengthDeriv = getLengtheningSpeed(s) * get_time_scale() / _optimalFiberLength * new_ca;
       }
-	} else {
+    } else {
       double velocity_dependent_force = tendonForce / ca - passiveForce;
-	  if (velocity_dependent_force < 0.0) velocity_dependent_force = 0.0;
+      if (velocity_dependent_force < 0.0) velocity_dependent_force = 0.0;
       fiberLengthDeriv  = calcFiberVelocity(s,activation, activeForce, velocity_dependent_force);
-	}
+    }
 
-	/* Un-normalize the muscle state derivatives and forces. */
-	setActivationDeriv(s,  activationDeriv / get_time_scale());
-	setFiberLengthDeriv(s, fiberLengthDeriv * _optimalFiberLength / get_time_scale());
+    /* Un-normalize the muscle state derivatives and forces. */
+    setActivationDeriv(s,  activationDeriv / get_time_scale());
+    setFiberLengthDeriv(s, fiberLengthDeriv * _optimalFiberLength / get_time_scale());
 
-	tendonForce = tendonForce * _maxIsometricForce;
-	setForce(s, tendonForce);
-	setTendonForce(s, tendonForce);
-	setPassiveForce(s, passiveForce * _maxIsometricForce);
+    tendonForce = tendonForce * _maxIsometricForce;
+    setActuation(s, tendonForce);
+    setTendonForce(s, tendonForce);
+    setPassiveForce(s, passiveForce * _maxIsometricForce);
 
-	return( tendonForce );
+    return( tendonForce );
 }
 
 //=============================================================================
@@ -274,7 +270,7 @@ double Schutte1993Muscle_Deprecated::computeActuation(const SimTK::State& s) con
  */
 const Function& Schutte1993Muscle_Deprecated::getActiveForceLengthCurve() const
 {
-	return get_active_force_length_curve();
+    return get_active_force_length_curve();
 }
 
 //_____________________________________________________________________________
@@ -287,8 +283,8 @@ const Function& Schutte1993Muscle_Deprecated::getActiveForceLengthCurve() const
 bool Schutte1993Muscle_Deprecated::
 setActiveForceLengthCurve(const Function& aActiveForceLengthCurve)
 {
-	set_active_force_length_curve(aActiveForceLengthCurve);
-	return true;
+    set_active_force_length_curve(aActiveForceLengthCurve);
+    return true;
 }
 
 //_____________________________________________________________________________
@@ -299,7 +295,7 @@ setActiveForceLengthCurve(const Function& aActiveForceLengthCurve)
  */
 const Function& Schutte1993Muscle_Deprecated::getPassiveForceLengthCurve() const
 {
-	return get_passive_force_length_curve();
+    return get_passive_force_length_curve();
 }
 
 //_____________________________________________________________________________
@@ -312,8 +308,8 @@ const Function& Schutte1993Muscle_Deprecated::getPassiveForceLengthCurve() const
 bool Schutte1993Muscle_Deprecated::
 setPassiveForceLengthCurve(const Function& aPassiveForceLengthCurve)
 {
-	set_passive_force_length_curve(aPassiveForceLengthCurve);
-	return true;
+    set_passive_force_length_curve(aPassiveForceLengthCurve);
+    return true;
 }
 
 //_____________________________________________________________________________
@@ -324,7 +320,7 @@ setPassiveForceLengthCurve(const Function& aPassiveForceLengthCurve)
  */
 const Function& Schutte1993Muscle_Deprecated::getTendonForceLengthCurve() const
 {
-	return get_tendon_force_length_curve();
+    return get_tendon_force_length_curve();
 }
 
 //_____________________________________________________________________________
@@ -337,8 +333,8 @@ const Function& Schutte1993Muscle_Deprecated::getTendonForceLengthCurve() const
 bool Schutte1993Muscle_Deprecated::
 setTendonForceLengthCurve(const Function& aTendonForceLengthCurve)
 {
-	set_tendon_force_length_curve(aTendonForceLengthCurve);
-	return true;
+    set_tendon_force_length_curve(aTendonForceLengthCurve);
+    return true;
 }
 
 //_____________________________________________________________________________
@@ -382,9 +378,9 @@ double Schutte1993Muscle_Deprecated::calcNonzeroPassiveForce(const SimTK::State&
 {
    double flcomponent =   0.0;
    if (getProperty_passive_force_length_curve().getValueIsDefault())
-	   flcomponent = exp(8.0*(aNormFiberLength - 1.0)) / exp(4.0);
+       flcomponent = exp(8.0*(aNormFiberLength - 1.0)) / exp(4.0);
    else
-	   flcomponent = getPassiveForceLengthCurve().calcValue(SimTK::Vector(1, aNormFiberLength) );
+       flcomponent = getPassiveForceLengthCurve().calcValue(SimTK::Vector(1, aNormFiberLength) );
    return flcomponent + get_damping() * aNormFiberVelocity;
 }
 
@@ -404,30 +400,30 @@ double Schutte1993Muscle_Deprecated::calcNonzeroPassiveForce(const SimTK::State&
  */
 double Schutte1993Muscle_Deprecated::calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const
 {
-	double b, c, fiber_velocity;
-	double kv = 0.15, slope_k = 0.13, fmax = 1.4;
+    double b, c, fiber_velocity;
+    double kv = 0.15, slope_k = 0.13, fmax = 1.4;
 
    if (aVelocityDependentForce < -get_damping())
-	{
+    {
       fiber_velocity = aVelocityDependentForce / get_damping();
-	}
+    }
    else if (aVelocityDependentForce < aActivation * aActiveForce)
    {
       c = kv * (aVelocityDependentForce - aActivation * aActiveForce) / get_damping();
       b = -kv * (aVelocityDependentForce / kv + aActivation * aActiveForce +
-			get_damping()) / get_damping();
+            get_damping()) / get_damping();
       fiber_velocity = (-b - sqrt(b * b - 4 * c)) / 2.0;
    }
    else
    {
       c = -(slope_k * kv / ((get_damping() * (kv + 1)))) *
-	      (aVelocityDependentForce - aActivation * aActiveForce);
+          (aVelocityDependentForce - aActivation * aActiveForce);
       b = -(aVelocityDependentForce / get_damping()
-			-fmax * aActivation * aActiveForce / get_damping() - slope_k * kv / (kv + 1));
-		fiber_velocity = (-b + sqrt(b * b - 4 * c)) / 2.0;
-	}
+            -fmax * aActivation * aActiveForce / get_damping() - slope_k * kv / (kv + 1));
+        fiber_velocity = (-b + sqrt(b * b - 4 * c)) / 2.0;
+    }
 
-	return fiber_velocity;
+    return fiber_velocity;
 }
 
 //_____________________________________________________________________________
@@ -456,14 +452,14 @@ double Schutte1993Muscle_Deprecated::computeIsometricForce(SimTK::State& s, doub
    double passiveForce, activeForce, tendonForce, fiberLength;
 
    if (_optimalFiberLength < ROUNDOFF_ERROR) {
-      setStateVariable(s, STATE_FIBER_LENGTH_NAME, 0.0);
-		setPassiveForce(s, 0.0);
-      setForce(s, 0.0);
+      setStateVariableValue(s, STATE_FIBER_LENGTH_NAME, 0.0);
+      setPassiveForce(s, 0.0);
+      setActuation(s, 0.0);
       setTendonForce(s, 0.0);
       return 0.0;
    }
  
-	length = getLength(s);
+    length = getLength(s);
 
    // Make first guess of fiber and tendon lengths. Make fiber length equal to
    // optimal_fiber_length so that you start in the middle of the active+passive
@@ -482,22 +478,22 @@ double Schutte1993Muscle_Deprecated::computeIsometricForce(SimTK::State& s, doub
       cos_factor = cos(atan(muscle_width / length));
       fiberLength = length / cos_factor;
 
-		activeForce =  getActiveForceLengthCurve().calcValue(SimTK::Vector(1, fiberLength / _optimalFiberLength)) * aActivation * _maxIsometricForce;
+        activeForce =  getActiveForceLengthCurve().calcValue(SimTK::Vector(1, fiberLength / _optimalFiberLength)) * aActivation * _maxIsometricForce;
        if (activeForce < 0.0) activeForce = 0.0;
 
-		passiveForce = calcNonzeroPassiveForce(s, fiberLength / _optimalFiberLength, 0.0) * _maxIsometricForce;
+        passiveForce = calcNonzeroPassiveForce(s, fiberLength / _optimalFiberLength, 0.0) * _maxIsometricForce;
 
         setPassiveForce(s, passiveForce );
-		setStateVariable(s, STATE_FIBER_LENGTH_NAME,  fiberLength);
-		tendonForce = (activeForce + passiveForce) * cos_factor;
-		setForce(s, tendonForce);
-		setTendonForce(s, tendonForce);
+        setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  fiberLength);
+        tendonForce = (activeForce + passiveForce) * cos_factor;
+        setActuation(s, tendonForce);
+        setTendonForce(s, tendonForce);
       return tendonForce;
    } else if (length < _tendonSlackLength) {
-		setStateVariable(s, STATE_FIBER_LENGTH_NAME,  muscle_width);
-		setPassiveForce(s, 0.0);
-      setForce(s, 0.0);
-      setTendonForce(s, 0.0);
+        setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  muscle_width);
+        setPassiveForce(s, 0.0);
+        setActuation(s, 0.0);
+        setTendonForce(s, 0.0);
       return 0.0;
    } else {
       fiberLength = _optimalFiberLength;
@@ -522,10 +518,10 @@ double Schutte1993Muscle_Deprecated::computeIsometricForce(SimTK::State& s, doub
    // ERROR_LIMIT of each other), stop; else change the length guesses based
    // on the error and try again.
    for (i = 0; i < MAX_ITERATIONS; i++) {
-		activeForce = getActiveForceLengthCurve().calcValue(SimTK::Vector(1, fiberLength / _optimalFiberLength)) * aActivation;
+        activeForce = getActiveForceLengthCurve().calcValue(SimTK::Vector(1, fiberLength / _optimalFiberLength)) * aActivation;
       if (activeForce < 0.0) activeForce = 0.0;
 
-		passiveForce = calcNonzeroPassiveForce(s, fiberLength / _optimalFiberLength, 0.0);
+        passiveForce = calcNonzeroPassiveForce(s, fiberLength / _optimalFiberLength, 0.0);
       if (passiveForce < 0.0) passiveForce = 0.0;
 
       fiber_force = (activeForce + passiveForce ) * _maxIsometricForce * cos_factor;
@@ -535,8 +531,8 @@ double Schutte1993Muscle_Deprecated::computeIsometricForce(SimTK::State& s, doub
          tendon_force = 0.0;
       else
          tendon_force = getTendonForceLengthCurve().calcValue(SimTK::Vector(1, tendon_strain)) * _maxIsometricForce;
-		setForce(s, tendon_force);
-		setTendonForce(s, tendon_force);
+         setActuation(s, tendon_force);
+         setTendonForce(s, tendon_force);
 
       old_error_force = error_force;
  
@@ -563,27 +559,27 @@ double Schutte1993Muscle_Deprecated::computeIsometricForce(SimTK::State& s, doub
          // to get force = (_activeForce+_passiveForce) from the tendon as well.
          // We hope this will happen by setting the tendon stiffness to
          // (_activeForce+_passiveForce) times its maximum stiffness.
-			double tendon_elastic_modulus = 1200.0;
-			double tendon_max_stress = 32.0;
+            double tendon_elastic_modulus = 1200.0;
+            double tendon_max_stress = 32.0;
 
          tendon_stiffness = getTendonForceLengthCurve().calcValue(SimTK::Vector(1, tendon_strain)) *
-				_maxIsometricForce / _tendonSlackLength;
+                _maxIsometricForce / _tendonSlackLength;
 
          min_tendon_stiffness = (activeForce + passiveForce) *
-	         tendon_elastic_modulus * _maxIsometricForce /
-	         (tendon_max_stress * _tendonSlackLength);
+             tendon_elastic_modulus * _maxIsometricForce /
+             (tendon_max_stress * _tendonSlackLength);
 
          if (tendon_stiffness < min_tendon_stiffness)
             tendon_stiffness = min_tendon_stiffness;
 
          fiber_stiffness = _maxIsometricForce / _optimalFiberLength *
-			 (getActiveForceLengthCurve().calcValue(SimTK::Vector(1, fiberLength / _optimalFiberLength))  +
+             (getActiveForceLengthCurve().calcValue(SimTK::Vector(1, fiberLength / _optimalFiberLength))  +
             calcNonzeroPassiveForce(s, fiberLength / _optimalFiberLength, 0.0));
 
          // determine how much the fiber and tendon lengths have to
          // change to make the error_force zero. But don't let the
-	      // length change exceed half the optimal fiber length because
-	      // that's too big a change to make all at once.
+          // length change exceed half the optimal fiber length because
+          // that's too big a change to make all at once.
          length_change = fabs(error_force/(fiber_stiffness / cos_factor + tendon_stiffness));
 
          if (fabs(length_change / _optimalFiberLength) > 0.5)
@@ -615,18 +611,18 @@ double Schutte1993Muscle_Deprecated::computeIsometricForce(SimTK::State& s, doub
       }
    }
 
-   setStateVariable(s, STATE_FIBER_LENGTH_NAME,  fiberLength);
+   setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  fiberLength);
    setPassiveForce(s, passiveForce * _maxIsometricForce);
 
-	return tendon_force;
+    return tendon_force;
 }
 
 // Satisdfy the ActivationFiberLengthMuscle_Deprecated interface
 double Schutte1993Muscle_Deprecated::calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const
 {
-	return calcNonzeroPassiveForce(s,aNormFiberLength, 0.0);
+    return calcNonzeroPassiveForce(s,aNormFiberLength, 0.0);
 }
 double Schutte1993Muscle_Deprecated::calcActiveForce(const SimTK::State& s, double aNormFiberLength) const
 {
-	return getActiveForceLengthCurve().calcValue(SimTK::Vector(1, aNormFiberLength) );
+    return getActiveForceLengthCurve().calcValue(SimTK::Vector(1, aNormFiberLength) );
 }

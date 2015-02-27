@@ -102,15 +102,15 @@ public:
     transition from 0 to K. The transition parameter (dq) defines how far
     beyond the limit the stiffness becomes purely linear. The integrator will
     like smoother (i.e. larger transition regions).
-    @param[in]	coordName   Coordinate whose range is to be limited.
-    @param[in]	q_upper	    Coordinate's upper limit value.
-    @param[in]	q_lower	    Coordinate's lower limit value.
-    @param[in]	K_upper	    Upper limit stiffness when coordinate > q_upper
-    @param[in]	K_lower	    Lower limit stiffness when coordinate < q_lower
-    @param[in]	damping	    Damping factor when coordinate is beyond the limits
-    @param[in]	dq		    Transition region (displacement) for force to be
+    @param[in]  coordName   Coordinate whose range is to be limited.
+    @param[in]  q_upper     Coordinate's upper limit value.
+    @param[in]  q_lower     Coordinate's lower limit value.
+    @param[in]  K_upper     Upper limit stiffness when coordinate > q_upper
+    @param[in]  K_lower     Lower limit stiffness when coordinate < q_lower
+    @param[in]  damping     Damping factor when coordinate is beyond the limits
+    @param[in]  dq          Transition region (displacement) for force to be
                             engaged.
-    @param[in]	computeDissipationEnergy  
+    @param[in]  computeDissipationEnergy  
                             Whether to compute dissipated energy (false).
     **/
     CoordinateLimitForce(const std::string& coordName, double q_upper,
@@ -119,7 +119,7 @@ public:
 
     //use compiler default copy constructor and assignment operator
 
-	/** Destructor */
+    /** Destructor */
     ~CoordinateLimitForce();
 
 
@@ -214,9 +214,9 @@ protected:
     //--------------------------------------------------------------------------
     /** Setup this CoordinateLimitForce as part of the model.
         This were the existence of the coordinate to limit is checked. */ 
-    void connectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
     /** Create the underlying Force that is part of the multibodysystem. */
-    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     //--------------------------------------------------------------------------
     // Force Interface
@@ -257,7 +257,7 @@ private:
     SimTK::ReferencePtr<Coordinate> _coord;
 
 //=============================================================================
-};	// END of class CoordinateLimitForce
+};  // END of class CoordinateLimitForce
 
 }; //namespace
 //=============================================================================
