@@ -63,25 +63,25 @@ int main(int argc, char* argv[])
             MuscleFirstOrderActivationDynamicModel actMdl;
             actMdl.set_activation_time_constant(-0.32);
             SimTK_TEST_MUST_THROW_EXC(actMdl.finalizeFromProperties(),
-                    SimTK::Exception::ErrorCheck);
+                    SimTK::Exception::ValueOutOfRange);
         }
         {
             MuscleFirstOrderActivationDynamicModel actMdl;
             actMdl.set_deactivation_time_constant(-0.81);
             SimTK_TEST_MUST_THROW_EXC(actMdl.finalizeFromProperties(),
-                    SimTK::Exception::ErrorCheck);
+                    SimTK::Exception::ValueOutOfRange);
         }
         {
             MuscleFirstOrderActivationDynamicModel actMdl;
             actMdl.set_minimum_activation(-0.05);
             SimTK_TEST_MUST_THROW_EXC(actMdl.finalizeFromProperties(),
-                    SimTK::Exception::ErrorCheck);
+                    SimTK::Exception::ValueOutOfRange);
         }
         {
             MuscleFirstOrderActivationDynamicModel actMdl;
             actMdl.set_minimum_activation(1.0);
             SimTK_TEST_MUST_THROW_EXC(actMdl.finalizeFromProperties(),
-                    SimTK::Exception::ErrorCheck);
+                    SimTK::Exception::ValueOutOfRange);
         }
 
         /*

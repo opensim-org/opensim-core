@@ -103,8 +103,10 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
     SimTK_VALUECHECK_NONNEG_ALWAYS(get_Af(), "Af", errorLocation.c_str());
     SimTK_VALUECHECK_ALWAYS(1.0, get_Flen(), SimTK::Infinity, "Flen",
         errorLocation.c_str());
-    SimTK_VALUECHECK_ALWAYS(1.0/get_Flen(), get_fv_linear_extrap_threshold(),
-        SimTK::Infinity, "fv_linear_extrap_threshold", errorLocation.c_str());
+    SimTK_ERRCHK1_ALWAYS(get_fv_linear_extrap_threshold() > 1.0/get_Flen(),
+        "Thelen2003::extendFinalizeFromProperties",
+        "%s: F-v extrapolation threshold must be greater than 1.0/Flen",
+        getName().c_str());
 }
 
 //====================================================================

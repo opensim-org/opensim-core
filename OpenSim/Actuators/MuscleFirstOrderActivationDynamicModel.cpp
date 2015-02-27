@@ -108,7 +108,7 @@ void MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties()
     SimTK_VALUECHECK_ALWAYS(SimTK::SignificantReal,
         get_deactivation_time_constant(), SimTK::Infinity,
         "deactivation_time_constant", errorLocation.c_str());
-    SimTK_VALUECHECK_ALWAYS(0.0, get_deactivation_time_constant(),
-        1.0-SimTK::SignificantReal, "deactivation_time_constant",
+    SimTK_VALUECHECK_ALWAYS(0.0, get_minimum_activation(),
+        1.0-SimTK::SignificantReal, "minimum_activation",
         errorLocation.c_str());
 }
