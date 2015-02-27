@@ -1104,8 +1104,10 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
 // used by all DECLARE_PROPERTY macro variants.
 #define OpenSim_DECLARE_PROPERTY_HELPER(name, T)                            \
     OpenSim_DECLARE_PROPERTY_HELPER_PROPERTY_MEMBERS(name, T)               \
+    /** @cond **/                                                           \
     void copyProperty_##name(const Self& source)                            \
     {   PropertyIndex_##name = source.PropertyIndex_##name; }               \
+    /** @endcond **/                                                        \
     const T& get_##name(int i) const                                        \
     {   return this->template getProperty<T>(PropertyIndex_##name)[i]; }    \
     /** @cond **/                                                           \
@@ -1160,7 +1162,13 @@ A data member is also created but is intended for internal use only:
             this->template addProperty<T>(#name,comment,initValue);         \
     }                                                                       \
     /** @endcond **/                                                        \
-    /** comment */                                                          \
+    /** Required property of type T##: comment                           */ \
+    /** Some other methods associated with this property are:            */ \
+    /**   <b>upd_##name##()</b>,                                         */ \
+    /**   <b>set_##name##()</b>.                                         */ \
+    /** This property appears in XML files under                         */ \
+    /** the tag <b>\<##name##\></b>.                                     */ \
+    /** @see Property, #OpenSim_DECLARE_PROPERTY                         */ \
     const T& get_##name() const                                             \
     {   return this->getProperty_##name().getValue(); }                     \
     /** @cond **/                                                           \
@@ -1182,7 +1190,14 @@ initialized with an object of type T.
     {   PropertyIndex_##T =                                                 \
             this->template addProperty<T>("", comment, initValue); }        \
     /** @endcond **/                                                        \
-    /** comment */                                                          \
+    /** Unnamed property of type T##: comment                            */ \
+    /** This is a unnamed property of type T##.                          */ \
+    /** Some other methods associated with this property are:            */ \
+    /**   <b>upd_##T##()</b>,                                            */ \
+    /**   <b>set_##T##()</b>.                                            */ \
+    /** This property appears in XML files under                         */ \
+    /** the tag <b>\<##T##\></b>.                                        */ \
+    /** @see Property, #OpenSim_DECLARE_UNNAMED_PROPERTY                 */ \
     const T& get_##T() const                                                \
     {   return this->getProperty_##T().getValue(); }                        \
     /** @cond **/                                                           \
@@ -1208,7 +1223,14 @@ value of type T.
             this->template addOptionalProperty<T>(#name, comment,           \
                                                   initValue); }             \
     /** @endcond **/                                                        \
-    /** comment */                                                          \
+    /** Optional property of type T##: comment                           */ \
+    /** This is an optional property of type T##.                        */ \
+    /** Some other methods associated with this property are:            */ \
+    /**   <b>upd_##name##()</b>,                                         */ \
+    /**   <b>set_##name##()</b>,                                         */ \
+    /** This property appears in XML files under                         */ \
+    /** the tag <b>\<##name##\></b>.                                     */ \
+    /** @see Property, #OpenSim_DECLARE_OPTIONAL_PROPERTY                */ \
     const T& get_##name() const                                             \
     {   return this->getProperty_##name().getValue(); }                     \
     /** @cond **/                                                           \
@@ -1228,7 +1250,15 @@ supports a %size() method and operator[] element selection.
 @see OpenSim_DECLARE_LIST_PROPERTY_RANGE()
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY(name, T, comment)                     \
-    /** comment */                                                          \
+    /** comment                                                          */ \
+    /** This is a list property of type T##.                             */ \
+    /** Some other methods associated with this property are:            */ \
+    /**   <b>upd_##name##()</b>,                                         */ \
+    /**   <b>set_##name##()</b>,                                         */ \
+    /**   <b>append_##name##()</b>,                                      */ \
+    /** This property appears in XML files under                         */ \
+    /** the tag <b>\<##name##\></b>.                                     */ \
+    /** @see Property, #OpenSim_DECLARE_LIST_PROPERTY                    */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
                                          0, std::numeric_limits<int>::max())\
     /** @cond **/                                                           \
@@ -1245,7 +1275,16 @@ the right number of elements, using any Container that supports a %size()
 method and operator[] element selection.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_SIZE(name, T, listSize, comment)      \
-    /** comment */                                                          \
+    /** comment                                                          */ \
+    /** This is a list property of type T##,                             */ \
+    /** with exactly listSize values.                                    */ \
+    /** Some other methods associated with this property are:            */ \
+    /**   <b>upd_##name##()</b>,                                         */ \
+    /**   <b>set_##name##()</b>,                                         */ \
+    /**   <b>append_##name##()</b>,                                      */ \
+    /** This property appears in XML files under                         */ \
+    /** the tag <b>\<##name##\></b>.                                     */ \
+    /** @see Property, #OpenSim_DECLARE_LIST_PROPERTY_SIZE               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
                                          (listSize), (listSize))
 
@@ -1257,7 +1296,16 @@ using any Container that supports a %size() method and operator[] element
 selection.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(name, T, minSize, comment)    \
-    /** comment */                                                          \
+    /** comment                                                          */ \
+    /** This is a list property of type T##,                             */ \
+    /** with at least minSize values.                                    */ \
+    /** Some other methods associated with this property are:            */ \
+    /**   <b>upd_##name##()</b>,                                         */ \
+    /**   <b>set_##name##()</b>,                                         */ \
+    /**   <b>append_##name##()</b>,                                      */ \
+    /** This property appears in XML files under                         */ \
+    /** the tag <b>\<##name##\></b>.                                     */ \
+    /** @see Property, #OpenSim_DECLARE_LIST_PROPERTY_ATLEAST            */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
                                 (minSize), std::numeric_limits<int>::max())
 
@@ -1269,7 +1317,15 @@ no more than \a maxSize elements, using any Container that supports a %size()
 method and operator[] element selection.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_ATMOST(name, T, maxSize, comment)     \
-    /** comment */                                                          \
+    /** comment                                                          */ \
+    /** This is a list property of type T##, with at most minSize values.*/ \
+    /** Some other methods associated with this property are:            */ \
+    /**   <b>upd_##name##()</b>,                                         */ \
+    /**   <b>set_##name##()</b>,                                         */ \
+    /**   <b>append_##name##()</b>,                                      */ \
+    /** This property appears in XML files under                         */ \
+    /** the tag <b>\<##name##\></b>.                                     */ \
+    /** @see Property, #OpenSim_DECLARE_LIST_PROPERTY_ATMOST             */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment, 0, (maxSize))    \
     /** @cond **/                                                           \
     void constructProperty_##name()                                         \
@@ -1286,7 +1342,16 @@ OpenSim_DECLARE_PROPERTY_ATMOST() rather than this macro.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_RANGE(name, T, minSize, maxSize,      \
                                             comment)                        \
-    /** comment */                                                          \
+    /** comment                                                          */ \
+    /** This is a list property of type T##, with                        */ \
+    /** minSize to maxSize values.                                       */ \
+    /** Some other methods associated with this property are:            */ \
+    /**   <b>upd_##name##()</b>,                                         */ \
+    /**   <b>set_##name##()</b>,                                         */ \
+    /**   <b>append_##name##()</b>,                                      */ \
+    /** This property appears in XML files under                         */ \
+    /** the tag <b>\<##name##\></b>.                                     */ \
+    /** @see Property, #OpenSim_DECLARE_LIST_PROPERTY_RANGE              */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
                                         (minSize), (maxSize))
 
