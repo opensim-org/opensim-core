@@ -140,14 +140,14 @@ int main()
             countSkipComponent++;
         }
 
-        ASSERT(numComponents == 23); 
+        ASSERT(numComponents == 29); 
         ASSERT(numBodies == model.getNumBodies());
         ASSERT(numBodiesPost == numBodies);
         ASSERT(numMuscles == model.getMuscles().getSize());
         ASSERT(numJointsWithStateVariables == 2);
         ASSERT(numModelComponentsWithStateVariables == 11);
         ASSERT(numJntComponents == 2);
-        ASSERT(countSkipComponent == 12);
+        ASSERT(countSkipComponent == 15);
     }
     catch (Exception &ex) {
         ex.print(std::cout);

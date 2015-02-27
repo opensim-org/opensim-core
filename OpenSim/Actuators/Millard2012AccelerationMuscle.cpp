@@ -81,8 +81,8 @@ void Millard2012AccelerationMuscle::constructProperties()
 
         MuscleFirstOrderActivationDynamicModel defaultActMdl = 
             MuscleFirstOrderActivationDynamicModel();
-        double tauAct = defaultActMdl.getActivationTimeConstant();
-        double tauDact= defaultActMdl.getDeactivationTimeConstant();
+        double tauAct = defaultActMdl.get_activation_time_constant();
+        double tauDact= defaultActMdl.get_deactivation_time_constant();
 
     //Ensure the minimum allowed activation is 0.     
     constructProperty_MuscleFirstOrderActivationDynamicModel(
@@ -198,7 +198,8 @@ void Millard2012AccelerationMuscle::buildMuscle()
     fcphi.setName(tmp);
 
      //Ensure all sub objects are up to date with properties;
-    actMdl.ensureModelUpToDate();
+    actMdl.finalizeFromProperties(); //TODO: Remove this once the activation
+                                     //model has been made into a property.
     m_penMdl.ensureModelUpToDate();
 
     falCurve.ensureCurveUpToDate();
@@ -227,6 +228,9 @@ Millard2012AccelerationMuscle::Millard2012AccelerationMuscle()
 {    
     setNull();
     constructInfrastructure();
+
+    // TODO: Remove this once MuscleFirstOrderActivationDynamicModel and
+    //       MuscleFixedWidthPennationModel have been made into properties.
     finalizeFromProperties();
 }
 
@@ -244,6 +248,8 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
     setTendonSlackLength(aTendonSlackLength);
     setPennationAngleAtOptimalFiberLength(aPennationAngle);
 
+    // TODO: Remove this once MuscleFirstOrderActivationDynamicModel and
+    //       MuscleFixedWidthPennationModel have been made into properties.
     finalizeFromProperties();
 }
 
