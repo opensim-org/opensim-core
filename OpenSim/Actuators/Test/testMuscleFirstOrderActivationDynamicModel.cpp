@@ -61,19 +61,19 @@ int main(int argc, char* argv[])
         // Test property bounds.
         {
             MuscleFirstOrderActivationDynamicModel actMdl;
-            actMdl.set_activation_time_constant(-0.32);
+            actMdl.set_activation_time_constant(0.0);
             SimTK_TEST_MUST_THROW_EXC(actMdl.finalizeFromProperties(),
-                    SimTK::Exception::ValueOutOfRange);
+                    SimTK::Exception::ErrorCheck);
         }
         {
             MuscleFirstOrderActivationDynamicModel actMdl;
-            actMdl.set_deactivation_time_constant(-0.81);
+            actMdl.set_deactivation_time_constant(0.0);
             SimTK_TEST_MUST_THROW_EXC(actMdl.finalizeFromProperties(),
-                    SimTK::Exception::ValueOutOfRange);
+                    SimTK::Exception::ErrorCheck);
         }
         {
             MuscleFirstOrderActivationDynamicModel actMdl;
-            actMdl.set_minimum_activation(-0.05);
+            actMdl.set_minimum_activation(-SimTK::SignificantReal);
             SimTK_TEST_MUST_THROW_EXC(actMdl.finalizeFromProperties(),
                     SimTK::Exception::ValueOutOfRange);
         }

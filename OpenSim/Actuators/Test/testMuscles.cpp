@@ -773,46 +773,46 @@ void testThelen2003Muscle()
     // Test property bounds.
     {
         Thelen2003Muscle musc;
-        musc.set_FmaxTendonStrain(-0.03);
-        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
-                SimTK::Exception::ValueWasNegative);
-
         musc.set_FmaxTendonStrain(0.0);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+
+        musc.set_FmaxTendonStrain(0.1);
         musc.finalizeFromProperties();
     }
     {
         Thelen2003Muscle musc;
-        musc.set_FmaxMuscleStrain(-0.05);
+        musc.set_FmaxMuscleStrain(0.0);
         SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
-                SimTK::Exception::ValueWasNegative);
+                SimTK::Exception::ErrorCheck);
     }
     {
         Thelen2003Muscle musc;
-        musc.set_KshapeActive(-0.15);
+        musc.set_KshapeActive(0.0);
         SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
-                SimTK::Exception::ValueWasNegative);
+                SimTK::Exception::ErrorCheck);
     }
     {
         Thelen2003Muscle musc;
-        musc.set_KshapePassive(-0.51);
+        musc.set_KshapePassive(0.0);
         SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
-                SimTK::Exception::ValueWasNegative);
+                SimTK::Exception::ErrorCheck);
     }
     {
         Thelen2003Muscle musc;
-        musc.set_Af(-0.13);
+        musc.set_Af(0.0);
         SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
-                SimTK::Exception::ValueWasNegative);
+                SimTK::Exception::ErrorCheck);
     }
     {
         Thelen2003Muscle musc;
+        musc.set_Flen(1.001);
         musc.set_fv_linear_extrap_threshold(5.0);
-        musc.set_Flen(1.0);
         musc.finalizeFromProperties();
 
-        musc.set_Flen(0.8);
+        musc.set_Flen(1.0);
         SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
-                SimTK::Exception::ValueOutOfRange);
+                SimTK::Exception::ErrorCheck);
     }
     {
         Thelen2003Muscle musc;

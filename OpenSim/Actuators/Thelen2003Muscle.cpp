@@ -89,20 +89,24 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
         upd_MuscleFirstOrderActivationDynamicModel();
     addComponent(&actMdl);
 
-    std::string errorLocation = getName() + 
-        " Thelen2003Muscle::extendFinalizeFromProperties";
-
-    SimTK_VALUECHECK_NONNEG_ALWAYS(get_FmaxTendonStrain(), "FmaxTendonStrain",
-        errorLocation.c_str());
-    SimTK_VALUECHECK_NONNEG_ALWAYS(get_FmaxMuscleStrain(), "FmaxMuscleStrain",
-        errorLocation.c_str());
-    SimTK_VALUECHECK_NONNEG_ALWAYS(get_KshapeActive(), "KshapeActive",
-        errorLocation.c_str());
-    SimTK_VALUECHECK_NONNEG_ALWAYS(get_KshapePassive(), "KshapePassive",
-        errorLocation.c_str());
-    SimTK_VALUECHECK_NONNEG_ALWAYS(get_Af(), "Af", errorLocation.c_str());
-    SimTK_VALUECHECK_ALWAYS(1.0, get_Flen(), SimTK::Infinity, "Flen",
-        errorLocation.c_str());
+    SimTK_ERRCHK1_ALWAYS(get_FmaxTendonStrain() > 0,
+        "Thelen2003Muscle::extendFinalizeFromProperties",
+        "%s: FmaxTendonStrain must be greater than zero", getName().c_str());
+    SimTK_ERRCHK1_ALWAYS(get_FmaxMuscleStrain() > 0,
+        "Thelen2003Muscle::extendFinalizeFromProperties",
+        "%s: FmaxMuscleStrain must be greater than zero", getName().c_str());
+    SimTK_ERRCHK1_ALWAYS(get_KshapeActive() > 0,
+        "Thelen2003Muscle::extendFinalizeFromProperties",
+        "%s: KshapeActive must be greater than zero", getName().c_str());
+    SimTK_ERRCHK1_ALWAYS(get_KshapePassive() > 0,
+        "Thelen2003Muscle::extendFinalizeFromProperties",
+        "%s: KshapePassive must be greater than zero", getName().c_str());
+    SimTK_ERRCHK1_ALWAYS(get_Af() > 0,
+        "Thelen2003Muscle::extendFinalizeFromProperties",
+        "%s: Af must be greater than zero", getName().c_str());
+    SimTK_ERRCHK1_ALWAYS(get_Flen() > 1.0,
+        "Thelen2003Muscle::extendFinalizeFromProperties",
+        "%s: Flen must be greater than 1.0", getName().c_str());
     SimTK_ERRCHK1_ALWAYS(get_fv_linear_extrap_threshold() > 1.0/get_Flen(),
         "Thelen2003::extendFinalizeFromProperties",
         "%s: F-v extrapolation threshold must be greater than 1.0/Flen",

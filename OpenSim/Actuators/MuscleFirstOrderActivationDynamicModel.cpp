@@ -102,12 +102,14 @@ void MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties()
         " MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties";
 
     // Ensure property values are within appropriate ranges.
-    SimTK_VALUECHECK_ALWAYS(SimTK::SignificantReal,
-        get_activation_time_constant(), SimTK::Infinity,
-        "activation_time_constant", errorLocation.c_str());
-    SimTK_VALUECHECK_ALWAYS(SimTK::SignificantReal,
-        get_deactivation_time_constant(), SimTK::Infinity,
-        "deactivation_time_constant", errorLocation.c_str());
+    SimTK_ERRCHK1_ALWAYS(get_activation_time_constant() > SimTK::SignificantReal,
+        "MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties",
+        "%s: Activation time constant must be greater than zero",
+        getName().c_str());
+    SimTK_ERRCHK1_ALWAYS(get_deactivation_time_constant() > SimTK::SignificantReal,
+        "MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties",
+        "%s: Deactivation time constant must be greater than zero",
+        getName().c_str());
     SimTK_VALUECHECK_ALWAYS(0.0, get_minimum_activation(),
         1.0-SimTK::SignificantReal, "minimum_activation",
         errorLocation.c_str());
