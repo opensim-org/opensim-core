@@ -1191,7 +1191,6 @@ initialized with an object of type T.
             this->template addProperty<T>("", comment, initValue); }        \
     /** @endcond **/                                                        \
     /** Unnamed property of type T##: comment                            */ \
-    /** This is a unnamed property of type T##.                          */ \
     /** Some other methods associated with this property are:            */ \
     /**   <b>upd_##T##()</b>,                                            */ \
     /**   <b>set_##T##()</b>.                                            */ \
@@ -1224,7 +1223,6 @@ value of type T.
                                                   initValue); }             \
     /** @endcond **/                                                        \
     /** Optional property of type T##: comment                           */ \
-    /** This is an optional property of type T##.                        */ \
     /** Some other methods associated with this property are:            */ \
     /**   <b>upd_##name##()</b>,                                         */ \
     /**   <b>set_##name##()</b>,                                         */ \
@@ -1250,8 +1248,7 @@ supports a %size() method and operator[] element selection.
 @see OpenSim_DECLARE_LIST_PROPERTY_RANGE()
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY(name, T, comment)                     \
-    /** comment                                                          */ \
-    /** This is a list property of type T##.                             */ \
+    /** List property of type T##: comment                               */ \
     /** Some other methods associated with this property are:            */ \
     /**   <b>upd_##name##()</b>,                                         */ \
     /**   <b>set_##name##()</b>,                                         */ \
@@ -1275,9 +1272,7 @@ the right number of elements, using any Container that supports a %size()
 method and operator[] element selection.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_SIZE(name, T, listSize, comment)      \
-    /** comment                                                          */ \
-    /** This is a list property of type T##,                             */ \
-    /** with exactly listSize values.                                    */ \
+    /** List property of type T with exactly listSize values: comment    */ \
     /** Some other methods associated with this property are:            */ \
     /**   <b>upd_##name##()</b>,                                         */ \
     /**   <b>set_##name##()</b>,                                         */ \
@@ -1296,9 +1291,7 @@ using any Container that supports a %size() method and operator[] element
 selection.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(name, T, minSize, comment)    \
-    /** comment                                                          */ \
-    /** This is a list property of type T##,                             */ \
-    /** with at least minSize values.                                    */ \
+    /** List property of type T with at least minSize values: comment    */ \
     /** Some other methods associated with this property are:            */ \
     /**   <b>upd_##name##()</b>,                                         */ \
     /**   <b>set_##name##()</b>,                                         */ \
@@ -1317,8 +1310,7 @@ no more than \a maxSize elements, using any Container that supports a %size()
 method and operator[] element selection.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_ATMOST(name, T, maxSize, comment)     \
-    /** comment                                                          */ \
-    /** This is a list property of type T##, with at most minSize values.*/ \
+    /** List property of type T with at most maxSize values: comment     */ \
     /** Some other methods associated with this property are:            */ \
     /**   <b>upd_##name##()</b>,                                         */ \
     /**   <b>set_##name##()</b>,                                         */ \
@@ -1342,7 +1334,7 @@ OpenSim_DECLARE_PROPERTY_ATMOST() rather than this macro.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_RANGE(name, T, minSize, maxSize,      \
                                             comment)                        \
-    /** comment                                                          */ \
+    /** List property of type T with minSize to maxSize values: comment  */ \
     /** This is a list property of type T##, with                        */ \
     /** minSize to maxSize values.                                       */ \
     /** Some other methods associated with this property are:            */ \
