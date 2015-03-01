@@ -156,7 +156,10 @@ void Thelen2003Muscle::buildMuscle()
 
         //Ensure all sub objects are up to date with properties.
         //upd_MuscleFirstOrderActivationDynamicModel().finalizeFromProperties();
-        penMdl.ensureModelUpToDate();
+        //penMdl.ensureModelUpToDate();
+        // TODO: Remove this once MuscleFixedWidthPennationModel has been made
+        //       into a property.
+        penMdl.finalizeFromProperties();
 
         setObjectIsUpToDateWithProperties();
     }

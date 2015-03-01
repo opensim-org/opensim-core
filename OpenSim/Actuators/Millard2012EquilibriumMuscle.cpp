@@ -144,7 +144,10 @@ void Millard2012EquilibriumMuscle::buildMuscle()
                                                eccCurviness);
 
         // Ensure all sub-objects are up-to-date
-        penMdl.ensureModelUpToDate();
+        // TODO: Remove this once MuscleFixedWidthPennationModel has been made
+        //       into a property.
+        penMdl.finalizeFromProperties();
+
         falCurve.ensureCurveUpToDate();
         fvCurve.ensureCurveUpToDate();
         fvInvCurve.ensureCurveUpToDate();

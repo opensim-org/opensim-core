@@ -200,7 +200,9 @@ void Millard2012AccelerationMuscle::buildMuscle()
      //Ensure all sub objects are up to date with properties;
     actMdl.finalizeFromProperties(); //TODO: Remove this once the activation
                                      //model has been made into a property.
-    m_penMdl.ensureModelUpToDate();
+    // TODO: Remove this once MuscleFixedWidthPennationModel has been made into
+    //       a property.
+    m_penMdl.finalizeFromProperties();
 
     falCurve.ensureCurveUpToDate();
     fvCurve.ensureCurveUpToDate();

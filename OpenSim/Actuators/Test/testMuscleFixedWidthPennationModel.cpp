@@ -326,6 +326,7 @@ int main(int argc, char* argv[])
         MuscleFixedWidthPennationModel fibKin(  optFibLen, 
                                                 optPenAng,
                                                 SimTK::Pi/2.0 - SimTK::SignificantReal);
+        fibKin.finalizeFromProperties();
 
         MuscleFixedWidthPennationModel fibKin2( optFibLen*2, 
                                                 optPenAng,
@@ -795,13 +796,26 @@ int main(int argc, char* argv[])
         cout << "**************************************************" << endl;
         cout << "TEST: Exception Handling" << endl;
 
-        //constructor
-        SimTK_TEST_MUST_THROW(MuscleFixedWidthPennationModel fibKinEX = 
-            MuscleFixedWidthPennationModel(0, optPenAng, SimTK::Pi/2.0));
-        SimTK_TEST_MUST_THROW(MuscleFixedWidthPennationModel fibKinEX = 
-            MuscleFixedWidthPennationModel(optFibLen, -0.01, SimTK::Pi/2.0));
-        SimTK_TEST_MUST_THROW(MuscleFixedWidthPennationModel fibKinEX = 
-            MuscleFixedWidthPennationModel(optFibLen, SimTK::Pi/2, SimTK::Pi/2.0));
+        // Test property bounds.
+        {
+            MuscleFixedWidthPennationModel fibKinEX;
+            fibKinEX.set_optimal_fiber_length(0.0);
+            SimTK_TEST_MUST_THROW_EXC(fibKinEX.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+        }
+        {
+            MuscleFixedWidthPennationModel fibKinEX;
+            fibKinEX.set_optimal_pennation_angle(SimTK::Pi/2.0);
+            SimTK_TEST_MUST_THROW_EXC(fibKinEX.finalizeFromProperties(),
+                SimTK::Exception::ValueOutOfRange);
+        }
+        {
+            MuscleFixedWidthPennationModel fibKinEX;
+            fibKinEX.set_maximum_pennation_angle(SimTK::Pi/2.0
+                                                 + SimTK::SignificantReal);
+            SimTK_TEST_MUST_THROW_EXC(fibKinEX.finalizeFromProperties(),
+                SimTK::Exception::ValueOutOfRange);
+        }
 
         //Unset properties
         MuscleFixedWidthPennationModel fibKinDirty;

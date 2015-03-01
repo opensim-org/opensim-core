@@ -329,8 +329,6 @@ public:
                              double muscleVelocity,
                              double tendonVelocity) const;
 
-    void ensureModelUpToDate();
-
 protected:
     // Component interface.
     void extendFinalizeFromProperties() override;
@@ -338,8 +336,6 @@ protected:
 private:
     void setNull();
     void constructProperties();
-    void buildModel();
-    void ensurePropertiesSet() const;
 
     double m_parallelogramHeight;
     double m_maximumSinPennation;
