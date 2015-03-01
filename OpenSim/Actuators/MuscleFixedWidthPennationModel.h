@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 #include "Simbody.h"
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
-#include <OpenSim/Common/Object.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
 
 namespace OpenSim {
 /** This is a muscle modeling utility class containing kinematic equations that
@@ -91,8 +91,8 @@ namespace OpenSim {
 
     @author Matt Millard
 */
-class OSIMACTUATORS_API MuscleFixedWidthPennationModel: public Object{
-OpenSim_DECLARE_CONCRETE_OBJECT(MuscleFixedWidthPennationModel, Object);
+class OSIMACTUATORS_API MuscleFixedWidthPennationModel : public ModelComponent{
+OpenSim_DECLARE_CONCRETE_OBJECT(MuscleFixedWidthPennationModel, ModelComponent);
 
 public:
 //==============================================================================
@@ -125,24 +125,11 @@ public:
     /** @returns The height of the fixed-width paralleogram. */
     double getParallelogramHeight() const;
 
-    /** @returns The optimal fiber length. */
-    double getOptimalFiberLength() const;
-
     /** @returns The minimum possible fiber length. */
     double getMinimumFiberLength() const;
 
     /** @returns The minimum possible fiber length along the tendon. */
     double getMinimumFiberLengthAlongTendon() const;
-
-    /** @returns The optimal pennation angle (radians). */
-    double getOptimalPennationAngle() const;
-
-    /** @returns The maximum permissible pennation angle. */
-    double getMaximumPennationAngle() const;
-
-    bool setOptimalFiberLength(double aOptimalFiberLength);
-    bool setOptimalPennationAngle(double aOptimalPennationAngle);
-    bool setMaximumPennationAngle(double aMaximumPennationAngle);
 
     /** Enforces a lower bound on the fiber length to avoid a numerical
     singularity as the fiber length approaches zero. */
@@ -343,6 +330,10 @@ public:
                              double tendonVelocity) const;
 
     void ensureModelUpToDate();
+
+protected:
+    // Component interface.
+    void extendFinalizeFromProperties() override;
 
 private:
     void setNull();

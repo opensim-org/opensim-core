@@ -864,7 +864,7 @@ int main(int argc, char* argv[])
 
         double maxPenAngle = SimTK::Pi/2.0 * (7.0/8.0);
 
-        fibKin.setMaximumPennationAngle(maxPenAngle);
+        fibKin.set_maximum_pennation_angle(maxPenAngle);
 
         //printf("Clamped Angle %f, expected %f\n",
         //    fibKin.calcPennationAngle(0,caller),

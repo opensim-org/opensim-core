@@ -221,7 +221,7 @@ const MuscleFixedWidthPennationModel& Thelen2003Muscle::
 
 double Thelen2003Muscle::getMaximumPennationAngle() const
 {
-    return penMdl.getMaximumPennationAngle();
+    return penMdl.get_maximum_pennation_angle();
 }
 
 //=============================================================================
@@ -420,7 +420,7 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
             case 2: //Maximum number of iterations exceeded.
             {
                 setActuation(s,0.0);
-                setFiberLength(s,penMdl.getOptimalFiberLength());
+                setFiberLength(s,penMdl.get_optimal_fiber_length());
 
                 std::string muscleName = getName();
                 std::string fcnName = "\n\nWARNING: Thelen2003Muscle::"
@@ -444,7 +444,7 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
                         "        Whole muscle length : %f \n\n", 
                         muscleName.c_str(),
                         fcnName.c_str(), 
-                        penMdl.getOptimalFiberLength(),
+                        penMdl.get_optimal_fiber_length(),
                         abs(solnErr),
                         tol,
                         iterations,
@@ -465,7 +465,7 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
                         muscleName.c_str());
 
                 setActuation(s,0.0);
-                setFiberLength(s,penMdl.getOptimalFiberLength());
+                setFiberLength(s,penMdl.get_optimal_fiber_length());
         }
  
 
@@ -482,7 +482,7 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
              << endl;
 
         setActuation(s,0.0);
-        setFiberLength(s,penMdl.getOptimalFiberLength());
+        setFiberLength(s,penMdl.get_optimal_fiber_length());
 
     }
 }
