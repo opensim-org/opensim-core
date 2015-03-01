@@ -154,8 +154,9 @@ void Millard2012AccelerationMuscle::buildMuscle()
     caller.append(".buildMuscle()");
 
 
-    m_penMdl = MuscleFixedWidthPennationModel(optFibLen, optPenAng,
-                    SimTK::Pi/2.0-SimTK::SignificantReal);
+    m_penMdl = MuscleFixedWidthPennationModel(  optFibLen,
+                                                optPenAng, 
+                                                SimTK::Pi/2.0);
    
     std::string aName = getName();
 

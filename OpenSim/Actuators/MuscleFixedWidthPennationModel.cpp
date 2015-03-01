@@ -146,12 +146,10 @@ void MuscleFixedWidthPennationModel::extendFinalizeFromProperties()
         "MuscleFixedWidthPennationModel::extendFinalizeFromProperties",
         "%s: Optimal fiber length must be greater than zero",
         getName().c_str());
-    SimTK_VALUECHECK_ALWAYS(0.0, get_optimal_pennation_angle(),
-        SimTK::Pi/2.0-SimTK::SignificantReal, "optimal_pennation_angle",
-        errorLocation.c_str());
-    SimTK_VALUECHECK_ALWAYS(0.0, get_maximum_pennation_angle(),
-        SimTK::Pi/2.0-SimTK::SignificantReal, "maximum_pennation_angle",
-        errorLocation.c_str());
+    SimTK_VALUECHECK_ALWAYS(0.0, get_optimal_pennation_angle(), SimTK::Pi/2.0,
+        "optimal_pennation_angle", errorLocation.c_str());
+    SimTK_VALUECHECK_ALWAYS(0.0, get_maximum_pennation_angle(), SimTK::Pi/2.0,
+        "maximum_pennation_angle", errorLocation.c_str());
 }
 
 //==============================================================================

@@ -325,7 +325,7 @@ int main(int argc, char* argv[])
 
         MuscleFixedWidthPennationModel fibKin(  optFibLen, 
                                                 optPenAng,
-                                                SimTK::Pi/2.0);
+                                                SimTK::Pi/2.0 - SimTK::SignificantReal);
 
         MuscleFixedWidthPennationModel fibKin2( optFibLen*2, 
                                                 optPenAng,
