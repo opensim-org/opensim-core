@@ -101,10 +101,6 @@ public:
     /** @name Property declarations
         These are the serializable properties associated with this class. **/
     /**@{**/
-    OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,
-        "Optimal length of the muscle fibers (meters)");
-    OpenSim_DECLARE_PROPERTY(optimal_pennation_angle, double,
-        "Angle between tendon and fibers at optimal fiber length (radians)");
     OpenSim_DECLARE_PROPERTY(maximum_pennation_angle, double,
         "Maximum pennation angle (radians)");
     /**@}**/
@@ -336,6 +332,10 @@ protected:
 private:
     void setNull();
     void constructProperties();
+
+    // Two properties of Muscle are stored here.
+    double m_optimalFiberLength;
+    double m_pennationAngleAtOptimal;
 
     double m_parallelogramHeight;
     double m_maximumSinPennation;

@@ -461,7 +461,7 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
             case 2: //maximum number of iterations reached
             {
                 setActuation(s, 0.0);
-                setFiberLength(s,penMdl.get_optimal_fiber_length());
+                setFiberLength(s, get_optimal_fiber_length());
 
                 char msgBuffer[1000];
                 int n = sprintf(msgBuffer,
@@ -479,7 +479,7 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
                     "   Activation:      %f\n"
                     "   Actuator length: %f\n\n",
                     getName().c_str(),
-                    penMdl.get_optimal_fiber_length(),
+                    get_optimal_fiber_length(),
                     abs(solnErr), tol,
                     iterations, maxIter,
                     clampedActivation,
@@ -495,7 +495,7 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
                        "optimal fiber length.",
                        getName().c_str());
                 setActuation(s, 0.0);
-                setFiberLength(s,penMdl.get_optimal_fiber_length());
+                setFiberLength(s, get_optimal_fiber_length());
         }
 
     } catch (const std::exception& e) {
@@ -574,7 +574,7 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
             case 2: //maximum number of iterations reached
             {
                 setActuation(s, 0.0);
-                setFiberLength(s,penMdl.get_optimal_fiber_length());
+                setFiberLength(s, get_optimal_fiber_length());
 
                 char msgBuffer[1000];
                 int n = sprintf(msgBuffer,
@@ -592,7 +592,7 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
                     "   Activation:      %f\n"
                     "   Actuator length: %f\n\n",
                     getName().c_str(),
-                    penMdl.get_optimal_fiber_length(),
+                    get_optimal_fiber_length(),
                     abs(solnErr), tol,
                     iterations, maxIter,
                     activation,
@@ -608,7 +608,7 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
                        "optimal fiber length.",
                        getName().c_str());
                 setActuation(s, 0.0);
-                setFiberLength(s,penMdl.get_optimal_fiber_length());
+                setFiberLength(s, get_optimal_fiber_length());
         }
 
     } catch (const std::exception& e) {

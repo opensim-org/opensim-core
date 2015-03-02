@@ -764,7 +764,7 @@ void Millard2012AccelerationMuscle::
             case 2: //Maximum number of iterations exceeded.
             {
                 setActuation(s, 0.0);
-                setFiberLength(s,m_penMdl.get_optimal_fiber_length());
+                setFiberLength(s, get_optimal_fiber_length());
                 setFiberVelocity(s,0.0);
 
                 std::string muscleName = getName();
@@ -789,7 +789,7 @@ void Millard2012AccelerationMuscle::
                         "        Whole muscle length : %f \n\n", 
                         muscleName.c_str(),
                         fcnName.c_str(), 
-                        m_penMdl.get_optimal_fiber_length(),
+                        get_optimal_fiber_length(),
                         abs(solnErr),
                         tol,
                         iterations,
@@ -811,7 +811,7 @@ void Millard2012AccelerationMuscle::
                         muscleName.c_str());
 
                 setActuation(s, 0.0);
-                setFiberLength(s,m_penMdl.get_optimal_fiber_length());
+                setFiberLength(s, get_optimal_fiber_length());
                 setFiberVelocity(s,0.0);
         }
     }catch (const std::exception& e) { 
