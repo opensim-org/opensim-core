@@ -118,6 +118,12 @@ public:
                                    double optimalPennationAngle,
                                    double maximumPennationAngle);
 
+    /** @returns The optimal fiber length. */
+    double getOptimalFiberLength() const;
+
+    /** @returns The pennation angle at optimal fiber length. */
+    double getPennationAngleAtOptimal() const;
+
     /** @returns The height of the fixed-width paralleogram. */
     double getParallelogramHeight() const;
 

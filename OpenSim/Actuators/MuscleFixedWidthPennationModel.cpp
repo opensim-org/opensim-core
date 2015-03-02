@@ -63,6 +63,10 @@ MuscleFixedWidthPennationModel(double optimalFiberLength,
     set_maximum_pennation_angle(maximumPennationAngle);
 }
 
+double MuscleFixedWidthPennationModel::getOptimalFiberLength() const
+{   return m_optimalFiberLength; }
+double MuscleFixedWidthPennationModel::getPennationAngleAtOptimal() const
+{   return m_pennationAngleAtOptimal; }
 double MuscleFixedWidthPennationModel::getParallelogramHeight() const
 {   return m_parallelogramHeight; }
 double MuscleFixedWidthPennationModel::getMinimumFiberLength() const

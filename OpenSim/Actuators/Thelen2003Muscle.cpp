@@ -109,10 +109,15 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
 
     // Ensure optimal fiber length and pennation angle at optimal fiber length
     // are up to date in the pennation model.
-    MuscleFixedWidthPennationModel tempPennMdl(getOptimalFiberLength(),
-        getPennationAngleAtOptimalFiberLength(),
-        pennMdl.get_maximum_pennation_angle());
-    pennMdl = tempPennMdl;
+    if (pennMdl.getOptimalFiberLength() != getOptimalFiberLength() ||
+        pennMdl.getPennationAngleAtOptimal() !=
+        getPennationAngleAtOptimalFiberLength())
+    {
+        MuscleFixedWidthPennationModel tempPennMdl(getOptimalFiberLength(),
+            getPennationAngleAtOptimalFiberLength(),
+            pennMdl.get_maximum_pennation_angle());
+        pennMdl = tempPennMdl;
+    }
 }
 
 //====================================================================
