@@ -794,9 +794,6 @@ void Model::extendConnectToModel(Model &model)
     //Analyses are not Components so add them after legit 
     //Components have been wired-up correctly.
     updAnalysisSet().setModel(*this);
-
-    // Connections are properties so we need to mark these changes as final.
-    setObjectIsUpToDateWithProperties();
 }
 
 
