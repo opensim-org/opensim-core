@@ -154,6 +154,10 @@ void Thelen2003Muscle::constructProperties()
 
     constructProperty_MuscleFixedWidthPennationModel(
         MuscleFixedWidthPennationModel());
+    upd_MuscleFixedWidthPennationModel()
+        .set_optimal_fiber_length(getOptimalFiberLength());
+    upd_MuscleFixedWidthPennationModel()
+        .set_pennation_angle_at_optimal(getPennationAngleAtOptimalFiberLength());
     setMaximumPennationAngle(acos(0.1));
 
     constructProperty_FmaxTendonStrain(0.04); // was 0.033
