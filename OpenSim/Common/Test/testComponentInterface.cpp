@@ -304,6 +304,8 @@ private:
         constructOutput<double>("PotentialEnergy",
         std::bind(&Bar::getPotentialEnergy, this, std::placeholders::_1),
         SimTK::Stage::Velocity);
+        constructOutputForStateVariable("fiberLength");
+        constructOutputForStateVariable("activation");
     }
 
     // keep track of the force added by the component
