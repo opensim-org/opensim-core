@@ -24,6 +24,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "Object.h"
+#include "Component.h"
+#include "ComponentList.h"
+#include "ComponentListIterator.h"
+
 #include "VisibleObject.h"
 #include "RegisterTypes_osimCommon.h"
 #include "FunctionSet.h"

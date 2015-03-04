@@ -22,6 +22,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include <iostream>
+#include <OpenSim/Common/ComponentListIterator.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>

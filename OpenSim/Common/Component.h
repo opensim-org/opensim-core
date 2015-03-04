@@ -43,9 +43,9 @@
 
 // INCLUDES
 #include <OpenSim/Common/osimCommonDLL.h>
-#include "OpenSim/Common/Object.h"
-#include "OpenSim/Common/ComponentConnector.h"
-#include "OpenSim/Common/ComponentOutput.h"
+#include "Object.h"
+#include "ComponentConnector.h"
+#include "ComponentOutput.h"
 #include "ComponentList.h"
 #include "Simbody.h"
 #include <functional>
@@ -53,6 +53,7 @@
 
 namespace OpenSim {
 
+template <typename T> class ComponentListIterator;
 
 //==============================================================================
 //                            OPENSIM COMPONENT
@@ -1735,46 +1736,6 @@ private:
 //==============================================================================
 };  // END of class Component
 //==============================================================================
-//==============================================================================
-//==============================================================================
-// Implement methods for ComponentListIterator
-/// ComponentListIterator<T> pre-increment operator, advances the iterator to
-/// the next valid entry.
-template <typename T>
-ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
-    if (_node==nullptr)
-        return *this;
-    // If _node has children then successor is first child
-    // move _node to point to it
-    if (_node->_components.size() > 0)
-        _node = _node->_components[0];
-    // If processing a subtree under _root we stop when our successor is the same
-    // as the successor of _root as this indicates we're leaving the _root's subtree.
-    else if (_node->_nextComponent.get() == _root._nextComponent.get())
-        _node = nullptr;
-    else // move on to the next component we computed earlier for the full tree
-        _node = _node->_nextComponent.get();
-    advanceToNextValidComponent(); // make sure we have a _node of type T after advancing
-    return *this;
-};
-/// Internal method to advance iterator to next valid component.
-template <typename T>
-void ComponentListIterator<T>::advanceToNextValidComponent() {
-    // Advance _node to next valid (of type T) if needed
-    // Similar logic to operator++ but applies _filter->isMatch()
-    while (_node != nullptr && (dynamic_cast<const T*>(_node) == nullptr || !_filter.isMatch(*_node))){
-        if (_node->_components.size() > 0)
-            _node = _node->_components[0];
-        else {
-            if (_node->_nextComponent.get() == _root._nextComponent.get()){ // end of subtree under _root
-                _node = nullptr;
-                continue;
-            }
-            _node = _node->_nextComponent;
-        }
-    }
-    return;
-}
 
 } // end of namespace OpenSim
 

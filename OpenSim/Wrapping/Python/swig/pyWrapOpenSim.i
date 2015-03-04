@@ -557,6 +557,7 @@ namespace SimTK {
 %include <OpenSim/Common/ComponentConnector.h>
 %include <OpenSim/Common/Component.h>
 %include <OpenSim/Common/ComponentList.h>
+%include <OpenSim/Common/ComponentListIterator.h>
 
 %template(ComponentList_Muscles) OpenSim::ComponentList<OpenSim::Muscle>;
 %template(MuscleIterator) OpenSim::ComponentListIterator<OpenSim::Muscle>;

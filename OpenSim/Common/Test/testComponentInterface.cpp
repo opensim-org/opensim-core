@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentListIterator.h>
 
 using namespace OpenSim;
 using namespace std;
