@@ -122,16 +122,71 @@ FUNCTION(OPENSIM_ADD_LIBRARY)
     # --------
     ENABLE_TESTING()
 
-    IF(EXECUTABLE_OUTPUT_PATH)
-        SET(TEST_PATH ${EXECUTABLE_OUTPUT_PATH})
-    ELSE()
-        SET(TEST_PATH .)
-    ENDIF()
-
     IF(BUILD_TESTING)
         FOREACH(OSIMADDLIB_TESTDIR ${OSIMADDLIB_TESTDIRS})
             SUBDIRS("${OSIMADDLIB_TESTDIR}")
         ENDFOREACH()
+    ENDIF()
+
+ENDFUNCTION()
+
+
+# Create test targets for this directory.
+# TESTPROGRAMS: Names of test CPP files. One test will be created for each cpp
+#   of these files.
+# DATAFILES: Files necessary to run the test. These will be copied into the
+#   corresponding build directory.
+# LINKLIBS: Arguments to TARGET_LINK_LIBRARIES.
+# SOURCES: Extra source files for the exectuable.
+#
+# Here's an example:
+#   FILE(GLOB TEST_PROGRAMS "test*.cpp")
+#   FILE(GLOB DATA_FILES *.osim *.xml *.sto *.mot)
+#   OPENSIM_ADD_TESTS(
+#       TESTPROGRAMS ${TEST_ROGRAMS}
+#       DATAFILES ${DATA_FILES}
+#       LINKLIBS osimCommon osimSimulation osimAnalyses
+#       )
+FUNCTION(OPENSIM_ADD_TESTS)
+
+    IF(BUILD_TESTING)
+
+        # Parse arguments.
+        # ----------------
+        # http://www.cmake.org/cmake/help/v2.8.9/cmake.html#module:CMakeParseArguments
+        SET(options)
+        SET(oneValueArgs)
+        SET(multiValueArgs TESTPROGRAMS DATAFILES LINKLIBS SOURCES)
+        CMAKE_PARSE_ARGUMENTS(
+            OSIMADDTESTS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+        # Make test targets.
+        FOREACH(test_program ${OSIMADDTESTS_TESTPROGRAMS})
+            # NAME_WE stands for "name without extension"
+            GET_FILENAME_COMPONENT(TEST_NAME ${test_program} NAME_WE)
+
+            ADD_EXECUTABLE(${TEST_NAME} ${test_program}
+                ${OSIIMADDTESTS_SOURCES})
+            TARGET_LINK_LIBRARIES(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
+            ADD_TEST(${TEST_NAME} ${EXECUTABLE_OUTPUT_PATH}/${TEST_NAME})
+            SET_TARGET_PROPERTIES(${TEST_NAME} PROPERTIES
+                PROJECT_LABEL "Tests - ${TEST_NAME}")
+
+        ENDFOREACH()
+
+        # Copy data files to build directory.
+        FOREACH(data_file ${OSIMADDTESTS_DATAFILES})
+            # This command re-copies the data files if they are modified;
+            # custom commands don't do this.
+            CONFIGURE_FILE("${data_file}" "${CMAKE_CURRENT_BINARY_DIR}"
+                COPYONLY)
+        ENDFOREACH()
+
+        #IF (UNIX)
+        #  ADD_DEFINITIONS(-fprofile-arcs -ftest-coverage)
+        #  LINK_LIBRARIES(gcov)
+        #ENDIF (UNIX)
+
     ENDIF()
 
 ENDFUNCTION()
