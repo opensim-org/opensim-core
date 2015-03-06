@@ -796,8 +796,6 @@ void Model::extendConnectToModel(Model &model)
     // TODO: Get rid of the SimbodyEngine
     updSimbodyEngine().connectSimbodyEngineToModel(*this);
 
-    // Connections are properties so we need to mark these changes as final.
-    setObjectIsUpToDateWithProperties();
 }
 
 

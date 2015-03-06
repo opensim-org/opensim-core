@@ -145,16 +145,6 @@ SET(BUILD_PLATFORM "${PLATFORM_NAME}:${PLATFORM_ABI}" CACHE STRING
     "This is the platform and ABI we're building for. Not changeable here; use a different CMake generator instead."
     FORCE)
 
-#######################################################################
-# Allow build of binaries on Leopard that work on Tiger
-# Plus, -m32 is required for building on Snow Leopard, until we have a 64-bit Mac Lapack
-IF( APPLE )
-    SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.8 -m32" )
-    SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.8 -m32" )
-   SET( LIB64  )
-   SET(ARCH64 OFF) 
-ENDIF( APPLE )
-
 IF(NOT MSVC AND NOT XCODE AND NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release build" FORCE)
 ENDIF()

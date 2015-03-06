@@ -1,5 +1,5 @@
-#ifndef _osimCommonDLL_h_
-#define _osimCommonDLL_h_
+#ifndef OPENSIM_COMMON_DLL_H_
+#define OPENSIM_COMMON_DLL_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  osimCommonDLL.h                          *
  * -------------------------------------------------------------------------- *
@@ -23,18 +23,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
- */
-
-
-
 // IMPORT AND EXPORT
 // UNIX
 #ifndef WIN32
-
     #define OSIMCOMMON_API
-
 
 // WINDOWS
 #else
@@ -50,6 +42,4 @@
 
 #endif
 
-
-
-#endif // __osimCommonDLL_h__
+#endif // OPENSIM_COMMON_DLL_H_
