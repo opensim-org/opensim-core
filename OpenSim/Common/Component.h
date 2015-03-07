@@ -1797,13 +1797,6 @@ void Connector<C>::findAndConnect(const Component& root) {
     const C& comp = root.getComponent<C>(get_connected_to_name());
     connectee = comp;
 }
-/*
-template <>
-void Connector<Object>::findAndConnect(const Component& root) {
-    throw Exception(getConcreteClassName() + " '" + getName() + "' cannot find " +
-        "Object '" + get_connected_to_name() + "'.");
-}
-*/
 
 } // end of namespace OpenSim
 
