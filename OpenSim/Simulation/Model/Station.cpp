@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
- * Author(s): Ayman Habib, Ajay Seth                                          *
+ * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -40,17 +40,11 @@ using SimTK::Vec3;
 /**
  * Default constructor.
  */
-Station::Station() : Super()
+Station::Station() :
+   ModelComponent()
 {
     setNull();
     constructInfrastructure();
-}
-
-Station::Station(const SimTK::Vec3& location) : Super()
-{
-    setNull();
-    constructInfrastructure();
-    set_location(location);
 }
 
 //_____________________________________________________________________________
@@ -113,12 +107,8 @@ void Station::setReferenceFrame(const OpenSim::PhysicalFrame& aFrame)
 SimTK::Vec3 Station::findLocationInFrame(const SimTK::State& s,
         const OpenSim::Frame& aFrame) const
 {
-    // transform location from the station's frame to the other frame
-    return getReferenceFrame().findLocationInAnotherFrame(s, 
-                                                get_location(), aFrame);
-}
-
-SimTK::Vec3 Station::calcGroundLocation(const SimTK::State& s) const
-{
-    return getReferenceFrame().getGroundTransform(s)*get_location();
+    // Get the transform from the station's frame to the other frame
+    SimTK::Vec3 currentLocation = get_location();
+    return getReferenceFrame().findLocationInAnotherFrame(s, currentLocation,
+            aFrame);
 }
