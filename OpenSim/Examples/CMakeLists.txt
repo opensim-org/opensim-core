@@ -15,6 +15,9 @@ INSTALL(DIRECTORY SimpleOptimizationExample DESTINATION sdk/APIExamples PATTERN 
 INSTALL(DIRECTORY SymbolicExpressionReporter DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)
 ADD_SUBDIRECTORY(SymbolicExpressionReporter)
 
+# added by stanev to build PNS
+ADD_SUBDIRECTORY(PeripheralNervousSystem)
+
 ELSEIF (BUILD_API_EXAMPLES)
 ADD_SUBDIRECTORY(ControllerExample)
 ADD_SUBDIRECTORY(ExampleMain)
@@ -22,6 +25,7 @@ ADD_SUBDIRECTORY(OptimizationExample_Arm26)
 ADD_SUBDIRECTORY(CustomActuatorExample)
 ADD_SUBDIRECTORY(MuscleExample)
 ADD_SUBDIRECTORY(checkEnvironment)
+ADD_SUBDIRECTORY(PeripheralNervousSystem)
 
 ENDIF (BUILD_API_EXAMPLES)
 

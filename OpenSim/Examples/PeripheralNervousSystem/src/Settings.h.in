@@ -1,0 +1,7 @@
+#ifndef SETTINGS_H
+#define SETTINGS_H
+
+#define BASE_DIR "@BASE_DIR@"
+#define INI_FILE "@INI_PATH@"
+
+#endif
