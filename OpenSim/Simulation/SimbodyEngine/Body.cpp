@@ -469,6 +469,7 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 // Regardless add a node for FrameGeometry to control the display of BodyFrame
                 std::string bodyName = aNode.getRequiredAttribute("name").getValue();
                 SimTK::Xml::Element bodyFrameNode("FrameGeometry");
+                bodyFrameNode.setAttributeValue("name", bodyName + "_body_frame");
                 XMLDocument::addConnector(bodyFrameNode, "Connector_PhysicalFrame_", "frame", bodyName);
                 SimTK::Xml::element_iterator geomSetIter = aNode.element_begin("GeometrySet");
                 if (geomSetIter != aNode.element_end()){
