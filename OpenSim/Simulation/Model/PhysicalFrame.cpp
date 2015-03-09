@@ -109,3 +109,19 @@ const WrapObject* PhysicalFrame::getWrapObject(const string& aName) const
 void PhysicalFrame::addWrapObject(WrapObject* wrap) {
     upd_WrapObjectSet().adoptAndAppend(wrap);
 }
+
+void PhysicalFrame::scale(const SimTK::Vec3& aScaleFactors)
+{
+    // Base class, to scale wrap objects
+    for (int i = 0; i< get_WrapObjectSet().getSize(); i++)
+        upd_WrapObjectSet().get(i).scale(aScaleFactors);
+
+    SimTK::Vec3 oldScaleFactors;
+    getDisplayer()->getScaleFactors(oldScaleFactors);
+
+    for (int i = 0; i<3; i++) {
+        oldScaleFactors[i] *= aScaleFactors[i];
+    }
+    // Update scale factors for displayer
+    updDisplayer()->setScaleFactors(oldScaleFactors);
+}

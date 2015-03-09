@@ -192,22 +192,12 @@ void Body::setInertia(const SimTK::Inertia& inertia)
  */
 void Body::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
 {
-   // Base class, to scale wrap objects
-    for (int i=0; i< get_WrapObjectSet().getSize(); i++)
-        upd_WrapObjectSet().get(i).scale(aScaleFactors);
-
-    SimTK::Vec3 oldScaleFactors;
-    getDisplayer()->getScaleFactors(oldScaleFactors);
-
+    Super::scale(aScaleFactors);
     for(int i=0; i<3; i++) {
         upd_mass_center()[i] *= aScaleFactors[i];
-        oldScaleFactors[i] *= aScaleFactors[i];
     }
-    // Update scale factors for displayer
-    updDisplayer()->setScaleFactors(oldScaleFactors);
 
-    if (getName() != "ground")  // The following throws an exception if applied to ground.
-        scaleInertialProperties(aScaleFactors, aScaleMass);
+    scaleInertialProperties(aScaleFactors, aScaleMass);
 }
 
 //_____________________________________________________________________________

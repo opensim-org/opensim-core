@@ -134,7 +134,12 @@ public:
     SimTK::MobilizedBody& updMobilizedBody();
 
     // End of underlying MobilizedBody accessors.
-    ///@} 
+    ///@}
+
+    /** Scale PhysicalFrame related dimensions according to predetermined 
+        ScaleFactors */
+    void scale(const SimTK::Vec3& aScaleFactors);
+    void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
 
     /** @name DEPRECATED API 
     These methods will go away when Geometry are treated as proper Components. */
