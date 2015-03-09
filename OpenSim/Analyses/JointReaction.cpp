@@ -280,7 +280,7 @@ void JointReaction::setupReactionList()
 
     _reactionList.setSize(0);
     int index = -1;
-    for (int i = 0; i < _jointNames.getSize(); i++) {
+    for (int i = 0; i < _jointNames.getSize(); ++i) {
         JointReactionKey currentKey;
         index = jointSet.getIndex(_jointNames[i], index + 1);
         if (index > -1) { // found the Joint in the model

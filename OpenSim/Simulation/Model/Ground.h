@@ -30,7 +30,7 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
-* Ground is a PhysicalFrame in which all Frames (transforms) and Point 
+* Ground is a PhysicalFrame in which all Frames (transforms) and Points 
 * (locations) can be expressed. As a PhysicalFrame it supports physical 
 * connections (e.g. Joints, Constraints) and forces can be applied to it.
 *
@@ -45,7 +45,7 @@ public:
     virtual ~Ground() {}
 
 protected:
-    /** The transform X_GF for this Ground, F, in ground, G. */
+    /** The transform X_GF is the identity transform since this frame is Ground.*/
     SimTK::Transform
         calcGroundTransform(const SimTK::State& state) const override final;
 

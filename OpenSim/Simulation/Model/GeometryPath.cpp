@@ -715,13 +715,8 @@ placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, int aIndex,
         const Vec3& endPt = get_PathPointSet()[end].getLocation();
         const Vec3& basePt = get_PathPointSet()[base].getLocation();
 
-        //getModel().getSimbodyEngine().transformPosition
-        //   (s, get_PathPointSet()[start].getBody(), startPt, aBody, startPt2);
         Vec3 startPt2 = get_PathPointSet()[start].getBody()
             .findLocationInAnotherFrame(s, startPt, aBody);
-
-        //getModel().getSimbodyEngine().transformPosition
-        //   (s, get_PathPointSet()[end].getBody(), endPt, aBody, endPt2);
 
         Vec3 endPt2 = get_PathPointSet()[end].getBody()
             .findLocationInAnotherFrame(s, endPt, aBody);
@@ -1040,23 +1035,15 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
         end   = currentPath[i+1];
 
         // Find the positions and velocities in the inertial frame.
-        //engine.getPosition(s, start->getBody(), start->getLocation(), 
-        //    posStartInertial);
         posStartInertial =
             start->getBody().getGroundTransform(s)*start->getLocation();
 
-        //engine.getPosition(s, end->getBody(), end->getLocation(), 
-        //    posEndInertial);
         posEndInertial =
             end->getBody().getGroundTransform(s)*end->getLocation();
 
-        //engine.getVelocity(s, start->getBody(), start->getLocation(), 
-        //    velStartInertial);
         velStartInertial = start->getBody().getMobilizedBody()
             .findStationVelocityInGround(s, start->getLocation());
 
-        //engine.getVelocity(s, end->getBody(), end->getLocation(), 
-        //    velEndInertial);
         velEndInertial = end->getBody().getMobilizedBody()
             .findStationVelocityInGround(s, end->getLocation());
 
@@ -1066,13 +1053,9 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
         start->getVelocity(s, velStartLocal);
         end->getVelocity(s, velEndLocal);
 
-        //engine.transform(s, start->getBody(), velStartLocal, 
-        //                    engine.getGroundBody(), velStartMoving);
         velStartMoving = start->getBody()
             .expressVectorInAnotherFrame(s, velStartLocal, getModel().getGround());
 
-        //engine.transform(s, end->getBody(), velEndLocal, 
-        //                    engine.getGroundBody(), velEndMoving);
         velEndMoving = end->getBody()
             .expressVectorInAnotherFrame(s, velEndLocal, getModel().getGround());
 
