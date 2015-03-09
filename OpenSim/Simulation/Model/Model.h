@@ -128,6 +128,9 @@ public:
     "at locations measured to five significant digits while the model lacks dofs "
     "to change stance width, in which case it cannot achieve 1e-9 accuracy." );
 
+    OpenSim_DECLARE_PROPERTY(ground, Ground,
+        "The model's ground reference frame.");
+
     OpenSim_DECLARE_PROPERTY(gravity,SimTK::Vec3,
         "Acceleration due to gravity, expressed in ground.");
 
@@ -1000,9 +1003,6 @@ private:
 
     // Set containing the generalized coordinates in this model.
     CoordinateSet   _coordinateSet;
-
-    // The ground reference frame
-    Ground _ground;
 
     SimTK::MultibodyGraphMaker _multibodyTree;
 

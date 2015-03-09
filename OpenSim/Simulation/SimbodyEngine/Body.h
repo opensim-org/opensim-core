@@ -99,7 +99,6 @@ public:
     void scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass = false);
     void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true);
     void scaleMass(double aScaleFactor);
-    void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
 
  protected:
 

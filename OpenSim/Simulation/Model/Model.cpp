@@ -239,6 +239,8 @@ void Model::constructProperties()
 {
     constructProperty_assembly_accuracy(1e-9);
 
+    constructProperty_ground(Ground());
+
     constructProperty_gravity(SimTK::Vec3(0.0, -9.80665, 0.0));
 
     constructProperty_credits("Frank Anderson, Peter Loan, Ayman Habib, Ajay Seth, Michael Sherman");
@@ -525,12 +527,13 @@ void Model::extendFinalizeFromProperties()
     // Note addBody and addJoint call addComponent.
     clearComponents();
 
+    Ground& ground = updGround();
     // The Ground frame is a subcomponent of the model.
-    addComponent(&_ground);
+    addComponent(&ground);
 
     // Construct a multibody tree according to the PhysicalFrames in the
     // OpenSim model, which include Ground and Bodies
-    _multibodyTree.addBody(_ground.getName(), 0, false, &_ground);
+    _multibodyTree.addBody(ground.getName(), 0, false, &ground);
 
     if(getBodySet().getSize()>0)
     {
@@ -538,9 +541,9 @@ void Model::extendFinalizeFromProperties()
         for (int i = 0; i<bs.getSize(); ++i){
             //handle deprecated models with ground as a Body
             if (bs[i].getName() == "ground"){
-                VisibleObject* displayer = _ground.updDisplayer();
+                VisibleObject* displayer = ground.updDisplayer();
                 *displayer = *bs[i].getDisplayer();
-                _ground.upd_WrapObjectSet() = bs[i].get_WrapObjectSet();
+                ground.upd_WrapObjectSet() = bs[i].get_WrapObjectSet();
                 // remove and then decrement the counter
                 bs.remove(i--);
                 continue;
@@ -1717,12 +1720,12 @@ const JointSet& Model::getJointSet() const
 
 const Ground& Model::getGround() const
 {
-    return _ground;
+    return get_ground();
 }
 
 Ground& Model::updGround()
 {
-    return _ground;
+    return upd_ground();
 }
 
 //--------------------------------------------------------------------------

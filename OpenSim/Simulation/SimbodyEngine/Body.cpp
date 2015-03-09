@@ -373,15 +373,6 @@ SimTK::MassProperties Body::getMassProperties() const
 //=============================================================================
 // I/O
 //=============================================================================
-void Body::getScaleFactors(SimTK::Vec3& scales) const
-{
-
-    SimTK::Vec3 scaleFactors;
-    get_VisibleObject().getScaleFactors(scaleFactors);
-
-    scales = scaleFactors;
-
-}
 
 void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {

@@ -139,7 +139,6 @@ public:
     /** Scale PhysicalFrame related dimensions according to predetermined 
         ScaleFactors */
     void scale(const SimTK::Vec3& aScaleFactors);
-    void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
 
     /** @name DEPRECATED API 
     TODO: These methods will go away when Geometry are treated as proper
