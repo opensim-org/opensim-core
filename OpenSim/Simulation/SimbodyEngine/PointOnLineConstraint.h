@@ -47,7 +47,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PointOnLineConstraint, Constraint);
 //=============================================================================
 public:
     OpenSim_DECLARE_PROPERTY(line_direction_vec, SimTK::Vec3,
-        "Direction of the line specifid in the line body frame.");
+        "Direction of the line specified in the line body frame.");
     OpenSim_DECLARE_PROPERTY(point_on_line, SimTK::Vec3,
         "The default point on the line specified in the line body frame.");
     OpenSim_DECLARE_PROPERTY(point_on_follower, SimTK::Vec3,

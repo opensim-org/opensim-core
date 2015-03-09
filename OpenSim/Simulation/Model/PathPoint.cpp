@@ -227,8 +227,6 @@ void PathPoint::changeBodyPreserveLocation(const SimTK::State& s, PhysicalFrame&
 
     // Preserve location means to switch bodies without changing
     // the location of the point in the inertial reference frame.
-    //aBody.getModel().getSimbodyEngine().transformPosition(s, *_body, _location, aBody, _location);
-
     _location = _body->findLocationInAnotherFrame(s, _location, aBody);
     _bodyName = aBody.getName();
 

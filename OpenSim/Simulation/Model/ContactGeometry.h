@@ -115,7 +115,7 @@ public:
     const PhysicalFrame& getBody() const;
 #endif
     /**
-     * Get writeable Body this geometry is attached to.
+     * Get a writeable reference to the Body this geometry is attached to.
      */
     OpenSim::PhysicalFrame& updBody();
     /**

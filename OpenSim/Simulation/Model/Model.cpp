@@ -529,7 +529,7 @@ void Model::extendFinalizeFromProperties()
     addComponent(&_ground);
 
     // Construct a multibody tree according to the PhysicalFrames in the
-    // the OpenSim model, which include Ground and Bodies
+    // OpenSim model, which include Ground and Bodies
     _multibodyTree.addBody(_ground.getName(), 0, false, &_ground);
 
     if(getBodySet().getSize()>0)
@@ -581,7 +581,6 @@ void Model::extendFinalizeFromProperties()
         }
     }
 
-    // Now add the remaining frame (non-Ground, which is frame[0])
     FrameSet& fs = updFrameSet();
     int nf = fs.getSize();
     for (int i = 0; i<nf; ++i){
@@ -795,7 +794,6 @@ void Model::extendConnectToModel(Model &model)
 
     // TODO: Get rid of the SimbodyEngine
     updSimbodyEngine().connectSimbodyEngineToModel(*this);
-
 }
 
 

@@ -120,7 +120,7 @@ private:
         int versionNumber = -1) override;
 
     /** Return the equivalent (internal) SimTK::Rigid::Body for this body.
-    Not valid until after extendAddToSystem on Body has be called.*/
+    Not valid until after extendAddToSystem on Body has been called.*/
     const SimTK::Body& extractInternalRigidBody() const override {
         return _internalRigidBody;
     }
@@ -143,8 +143,8 @@ private:
     // Multibody tree.
     friend class Model;
 
-    // Model is a friend because it creates the underlying RigidBody
-    // mass properties are set by the 
+    // Joint is a friend because it creates the underlying RigidBody
+    // and sets its mass properties.
     friend class Joint;
 
 //=============================================================================

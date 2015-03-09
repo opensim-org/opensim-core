@@ -60,8 +60,8 @@ public:
     //==============================================================================
     /** @name Property declarations
     These are the serializable properties associated with a PhysicalFrame.
-    NOTE: Thes properties used to be members of Body and were moved up the hierarchy
-    with the introduction of Frames.
+    NOTE: These properties used to be members of Body and were moved up in the
+    hierarchy with the introduction of Frames.
 
     TODO: Both VisibleObject and the WrapObjectSet should NOT be properties
     of the PhysicalFrame. This is an itermediate solution as we integrate Frames 
@@ -142,7 +142,8 @@ public:
     void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
 
     /** @name DEPRECATED API 
-    These methods will go away when Geometry are treated as proper Components. */
+    TODO: These methods will go away when Geometry are treated as proper
+    Components. */
 
     ///@{
     /** Deprecated methods for inermediate integration of Frames */
@@ -200,7 +201,7 @@ protected:
 
 private:
 
-    /* Component construction inteeface */
+    /* Component construction interface */
     void constructProperties() override;
 
     /* ID for the underlying mobilized body in Simbody system.
