@@ -114,7 +114,8 @@ void Millard2012EquilibriumMuscle::buildMuscle()
             if(falCurve.getMinValue() < 0.1) {
                 falCurve.setMinValue(0.1);
             }
-            if(cos(penMdl.get_maximum_pennation_angle()) < SimTK::SignificantReal)
+            if(cos(penMdl.get_maximum_pennation_angle())
+                < SimTK::SignificantReal)
             {
                 penMdl.set_maximum_pennation_angle(maxPennationAngle);
             }

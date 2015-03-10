@@ -131,10 +131,6 @@ public:
     /** @returns The minimum possible fiber length along the tendon. */
     double getMinimumFiberLengthAlongTendon() const;
 
-    /** Enforces a lower bound on the fiber length to avoid a numerical
-    singularity as the fiber length approaches zero. */
-    double clampFiberLength(double fiberLength) const;
-
     /** Calculates the pennation angle (the orientation of the parallelogram)
     given the fiber length. */
     double calcPennationAngle(double fiberLength) const;
@@ -342,6 +338,14 @@ private:
     double m_minimumFiberLength;
     double m_minimumFiberLengthAlongTendon;
 
+    // Enforces a lower bound on the fiber length to avoid a numerical
+    // singularity as the fiber length approaches zero.
+    double clampFiberLength(double fiberLength) const;
+
+    // These classes are friends because they call clampFiberLength().
+    friend class Thelen2003Muscle;
+    friend class Millard2012EquilibriumMuscle;
+    friend class Millard2012AccelerationMuscle;
 };
 
 }

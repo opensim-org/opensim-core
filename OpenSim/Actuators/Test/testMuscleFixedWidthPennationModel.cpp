@@ -798,26 +798,34 @@ int main(int argc, char* argv[])
 
         // Test property bounds.
         {
-            // TODO: Uncomment and refine when MuscleFixedWidthPennationModel is
-            //       a property of Thelen2003Muscle.
-            //Thelen2003Muscle mcl;
-            //mcl.set_optimal_fiber_length(0.0);
-            //SimTK_TEST_MUST_THROW_EXC(mcl.get_MuscleFixedWidthPennationModel.finalizeFromProperties(),
-            //    SimTK::Exception::ErrorCheck);
+            MuscleFixedWidthPennationModel mfwpm;
+            mfwpm.set_optimal_fiber_length(0.0);
+            SimTK_TEST_MUST_THROW_EXC(mfwpm.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
         }
         {
-            // TODO: Uncomment and refine when MuscleFixedWidthPennationModel is
-            //       a property of Thelen2003Muscle.
-            //MuscleFixedWidthPennationModel fibKinEX;
-            //fibKinEX.set_optimal_pennation_angle(SimTK::Pi/2.0);
-            //SimTK_TEST_MUST_THROW_EXC(fibKinEX.finalizeFromProperties(),
-            //    SimTK::Exception::ValueOutOfRange);
+            MuscleFixedWidthPennationModel mfwpm;
+            mfwpm.set_pennation_angle_at_optimal(-SimTK::SignificantReal);
+            SimTK_TEST_MUST_THROW_EXC(mfwpm.finalizeFromProperties(),
+                SimTK::Exception::ValueOutOfRange);
         }
         {
-            MuscleFixedWidthPennationModel fibKinEX;
-            fibKinEX.set_maximum_pennation_angle(SimTK::Pi/2.0
-                                                 + SimTK::SignificantReal);
-            SimTK_TEST_MUST_THROW_EXC(fibKinEX.finalizeFromProperties(),
+            MuscleFixedWidthPennationModel mfwpm;
+            mfwpm.set_pennation_angle_at_optimal(SimTK::Pi/2.0);
+            SimTK_TEST_MUST_THROW_EXC(mfwpm.finalizeFromProperties(),
+                SimTK::Exception::ValueOutOfRange);
+        }
+        {
+            MuscleFixedWidthPennationModel mfwpm;
+            mfwpm.set_maximum_pennation_angle(-SimTK::SignificantReal);
+            SimTK_TEST_MUST_THROW_EXC(mfwpm.finalizeFromProperties(),
+                SimTK::Exception::ValueOutOfRange);
+        }
+        {
+            MuscleFixedWidthPennationModel mfwpm;
+            mfwpm.set_maximum_pennation_angle(SimTK::Pi/2.0
+                                              + SimTK::SignificantReal);
+            SimTK_TEST_MUST_THROW_EXC(mfwpm.finalizeFromProperties(),
                 SimTK::Exception::ValueOutOfRange);
         }
 
