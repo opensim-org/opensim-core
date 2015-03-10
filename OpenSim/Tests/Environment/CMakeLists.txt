@@ -1,19 +1,10 @@
-cmake_minimum_required(VERSION 2.6)
 
 SET(TEST_ENVIRONMENT checkEnvironment)       
-         
-INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}        
-                 ${OpenSim_SOURCE_DIR}/Vendors)          
  
-ADD_EXECUTABLE(${TEST_ENVIRONMENT} ${OpenSim_SOURCE_DIR}/OpenSim/Examples/checkEnvironment/test.cpp)         
-TARGET_LINK_LIBRARIES(${TEST_ENVIRONMENT}        
-       debug osimSimulation${CMAKE_DEBUG_POSTFIX}    optimized osimSimulation        
-       debug osimActuators${CMAKE_DEBUG_POSTFIX}     optimized osimActuators         
-       debug osimCommon${CMAKE_DEBUG_POSTFIX}        optimized osimCommon        
-       debug osimAnalyses${CMAKE_DEBUG_POSTFIX}      optimized osimAnalyses          
-       debug osimTools${CMAKE_DEBUG_POSTFIX}         optimized osimTools         
-       ${SIMTK_ALL_LIBS}         
-)        
+ADD_EXECUTABLE(${TEST_ENVIRONMENT}
+    ${OpenSim_SOURCE_DIR}/OpenSim/Examples/checkEnvironment/test.cpp)         
+TARGET_LINK_LIBRARIES(${TEST_ENVIRONMENT} osimTools)
+
 SET_TARGET_PROPERTIES(${TEST_ENVIRONMENT}        
        PROPERTIES        
        PROJECT_LABEL "Utilities - ${TEST_ENVIRONMENT}"       
