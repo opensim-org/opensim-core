@@ -160,6 +160,14 @@ FUNCTION(OPENSIM_ADD_TESTS)
         CMAKE_PARSE_ARGUMENTS(
             OSIMADDTESTS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
+        # If EXECUTABLE_OUTPUT_PATH is set, then that's where the tests will be
+        # located. Otherwise, they are located in the current binary directory.
+        IF(EXECUTABLE_OUTPUT_PATH)
+            SET(TEST_PATH "${EXECUTABLE_OUTPUT_PATH}")
+        ELSE()
+            SET(TEST_PATH "${CMAKE_CURRENT_BINARY_DIR}")
+        ENDIF()
+
         # Make test targets.
         FOREACH(test_program ${OSIMADDTESTS_TESTPROGRAMS})
             # NAME_WE stands for "name without extension"
@@ -168,7 +176,7 @@ FUNCTION(OPENSIM_ADD_TESTS)
             ADD_EXECUTABLE(${TEST_NAME} ${test_program}
                 ${OSIIMADDTESTS_SOURCES})
             TARGET_LINK_LIBRARIES(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
-            ADD_TEST(${TEST_NAME} ${EXECUTABLE_OUTPUT_PATH}/${TEST_NAME})
+            ADD_TEST(${TEST_NAME} ${TEST_PATH}/${TEST_NAME})
             SET_TARGET_PROPERTIES(${TEST_NAME} PROPERTIES
                 PROJECT_LABEL "Tests - ${TEST_NAME}")
 
