@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 #include "Simbody.h"
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
-#include <OpenSim/Common/Object.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
 
 namespace OpenSim {
 /** This is a muscle modeling utility class containing kinematic equations that
@@ -91,8 +91,8 @@ namespace OpenSim {
 
     @author Matt Millard
 */
-class OSIMACTUATORS_API MuscleFixedWidthPennationModel: public Object{
-OpenSim_DECLARE_CONCRETE_OBJECT(MuscleFixedWidthPennationModel, Object);
+class OSIMACTUATORS_API MuscleFixedWidthPennationModel : public ModelComponent{
+OpenSim_DECLARE_CONCRETE_OBJECT(MuscleFixedWidthPennationModel, ModelComponent);
 
 public:
 //==============================================================================
@@ -102,9 +102,9 @@ public:
         These are the serializable properties associated with this class. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,
-        "Optimal length of the muscle fibers (meters)");
-    OpenSim_DECLARE_PROPERTY(optimal_pennation_angle, double,
-        "Angle between tendon and fibers at optimal fiber length (radians)");
+        "Optimal length of the muscle fibers (overridden when this is a subcomponent of Muscle)");
+    OpenSim_DECLARE_PROPERTY(pennation_angle_at_optimal, double,
+        "Angle between tendon and fibers at optimal fiber length expressed in radians (overridden when this is a subcomponent of Muscle)");
     OpenSim_DECLARE_PROPERTY(maximum_pennation_angle, double,
         "Maximum pennation angle (radians)");
     /**@}**/
@@ -125,28 +125,11 @@ public:
     /** @returns The height of the fixed-width paralleogram. */
     double getParallelogramHeight() const;
 
-    /** @returns The optimal fiber length. */
-    double getOptimalFiberLength() const;
-
     /** @returns The minimum possible fiber length. */
     double getMinimumFiberLength() const;
 
     /** @returns The minimum possible fiber length along the tendon. */
     double getMinimumFiberLengthAlongTendon() const;
-
-    /** @returns The optimal pennation angle (radians). */
-    double getOptimalPennationAngle() const;
-
-    /** @returns The maximum permissible pennation angle. */
-    double getMaximumPennationAngle() const;
-
-    bool setOptimalFiberLength(double aOptimalFiberLength);
-    bool setOptimalPennationAngle(double aOptimalPennationAngle);
-    bool setMaximumPennationAngle(double aMaximumPennationAngle);
-
-    /** Enforces a lower bound on the fiber length to avoid a numerical
-    singularity as the fiber length approaches zero. */
-    double clampFiberLength(double fiberLength) const;
 
     /** Calculates the pennation angle (the orientation of the parallelogram)
     given the fiber length. */
@@ -342,19 +325,27 @@ public:
                              double muscleVelocity,
                              double tendonVelocity) const;
 
-    void ensureModelUpToDate();
+protected:
+    // Component interface.
+    void extendFinalizeFromProperties() override;
 
 private:
     void setNull();
     void constructProperties();
-    void buildModel();
-    void ensurePropertiesSet() const;
 
     double m_parallelogramHeight;
     double m_maximumSinPennation;
     double m_minimumFiberLength;
     double m_minimumFiberLengthAlongTendon;
 
+    // Enforces a lower bound on the fiber length to avoid a numerical
+    // singularity as the fiber length approaches zero.
+    double clampFiberLength(double fiberLength) const;
+
+    // These classes are friends because they call clampFiberLength().
+    friend class Thelen2003Muscle;
+    friend class Millard2012EquilibriumMuscle;
+    friend class Millard2012AccelerationMuscle;
 };
 
 }

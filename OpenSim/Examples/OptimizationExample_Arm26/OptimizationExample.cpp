@@ -160,7 +160,7 @@ int main()
         //Optimizer opt(sys, InteriorPoint);
 
         // Specify settings for the optimizer
-        opt.setConvergenceTolerance(0.1);
+        opt.setConvergenceTolerance(0.11);
         opt.useNumericalGradient(true, 1e-5);
         opt.setMaxIterations(100);
         opt.setLimitedMemoryHistory(500);
