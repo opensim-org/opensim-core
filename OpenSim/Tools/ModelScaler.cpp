@@ -236,18 +236,19 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, doub
 
     cout << endl << "Step 2: Scaling generic model" << endl;
 
-    const BodySet& bodySet = aModel->getBodySet();
+    ComponentList<PhysicalFrame> segments
+        = aModel->getComponentList<PhysicalFrame>();
+    ComponentList<PhysicalFrame>::const_iterator it = segments.begin();
 
-    /* Make a scale set with an Scale for each body.
+    /* Make a scale set with a Scale for each physical frame.
      * Initialize all factors to 1.0.
      */
-    for (i = 0; i < bodySet.getSize(); i++)
-    {
-        Scale* bodyScale = new Scale();
-        bodyScale->setSegmentName(bodySet.get(i).getName());
-        bodyScale->setScaleFactors(unity);
-        bodyScale->setApply(true);
-        theScaleSet.adoptAndAppend(bodyScale);
+    for (; it != segments.end(); ++it) {
+        Scale* segmentScale = new Scale();
+        segmentScale->setSegmentName(it->getName());
+        segmentScale->setScaleFactors(unity);
+        segmentScale->setApply(true);
+        theScaleSet.adoptAndAppend(segmentScale);
     }
 
     SimTK::State& s = aModel->initSystem();

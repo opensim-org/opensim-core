@@ -110,23 +110,14 @@ void BushingForce::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel); // base class first
 
-    string errorMessage;
+    // Look up the two bodies being connected by bushing by name in the
+    // model. TODO: use Connectors
     const string& body1Name = get_body_1(); // error if unspecified
     const string& body2Name = get_body_2();
-
-
-    // Look up the two bodies being connected by bushing by name in the
-    // model. TODO: keep a pointer to them?
-    if (!aModel.updBodySet().contains(body1Name)) {
-        errorMessage = "Invalid bushing body1 (" + body1Name 
-                        + ") specified in Force " + getName();
-        throw OpenSim::Exception(errorMessage);
-    }
-    if (!aModel.updBodySet().contains(body2Name)) {
-        errorMessage = "Invalid bushing body2 (" + body2Name 
-                        + ") specified in Force " + getName();
-        throw OpenSim::Exception(errorMessage);
-    }
+    _body1 = 
+        static_cast<const PhysicalFrame*>(&getModel().getComponent(body1Name));
+    _body2 =
+        static_cast<const PhysicalFrame*>(&getModel().getComponent(body2Name));
 }
 
 void BushingForce::extendAddToSystem(SimTK::MultibodySystem& system) const
@@ -144,12 +135,9 @@ void BushingForce::extendAddToSystem(SimTK::MultibodySystem& system) const
     const SimTK::Vec3& rotDamping           = get_rotational_damping();
     const SimTK::Vec3& transDamping         = get_translational_damping();
 
-    Body& body1 = _model->updBodySet().get(body1Name);
-    Body& body2 = _model->updBodySet().get(body2Name);
-
     // Get underlying mobilized bodies
-    const SimTK::MobilizedBody& b1 = body1.getMobilizedBody();
-    const SimTK::MobilizedBody& b2 = body2.getMobilizedBody();
+    const SimTK::MobilizedBody& b1 = _body1->getMobilizedBody();
+    const SimTK::MobilizedBody& b2 = _body2->getMobilizedBody();
     // Build the transforms
     SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(orientationInBody1);
     SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(orientationInBody2);
@@ -257,13 +245,13 @@ getRecordValues(const SimTK::State& state) const
 
     //get the net force added to the system contributed by the bushing
     simtkSpring.calcForceContribution(state, bodyForces, particleForces, mobilityForces);
-    SimTK::Vec3 forces = bodyForces(_model->getBodySet().get(body1Name).getMobilizedBodyIndex())[1];
-    SimTK::Vec3 torques = bodyForces(_model->getBodySet().get(body1Name).getMobilizedBodyIndex())[0];
+    SimTK::Vec3 forces = bodyForces(_body1->getMobilizedBodyIndex())[1];
+    SimTK::Vec3 torques = bodyForces(_body1->getMobilizedBodyIndex())[0];
     values.append(3, &forces[0]);
     values.append(3, &torques[0]);
 
-    forces = bodyForces(_model->getBodySet().get(body2Name).getMobilizedBodyIndex())[1];
-    torques = bodyForces(_model->getBodySet().get(body2Name).getMobilizedBodyIndex())[0];
+    forces = bodyForces(_body2->getMobilizedBodyIndex())[1];
+    torques = bodyForces(_body2->getMobilizedBodyIndex())[0];
 
     values.append(3, &forces[0]);
     values.append(3, &torques[0]);

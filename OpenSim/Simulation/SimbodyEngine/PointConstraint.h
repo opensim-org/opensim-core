@@ -1,5 +1,5 @@
-#ifndef __PointConstraint_h__
-#define __PointConstraint_h__
+#ifndef OPENSIM_POINT_CONSTRAINT_H_
+#define OPENSIM_POINT_CONSTRAINT_H_
 /* -------------------------------------------------------------------------- *
  *                        OpenSim:  PointConstraint.h                         *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,21 +23,22 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
 #include "Constraint.h"
-#include "Body.h"
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 namespace OpenSim {
 
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Point Constraint.  The underlying Constraint in Simbody
- * is a Constraint::Point
+ * A class implementing a Point Constraint. The constraint keeps two points,
+ * one on each of two separate PhysicalFrames, coincident and free to rotate
+ * about that point.
+ *
+ * The underlying SimTK::Constraint in Simbody is a Constraint::Point
  *
  * @author Ajay Seth
- * @version 1.0
  */
 class OSIMSIMULATION_API PointConstraint : public Constraint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PointConstraint, Constraint);
@@ -47,21 +48,10 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PointConstraint, Constraint);
 //=============================================================================
 public:
     /** Properties */
-    OpenSim_DECLARE_PROPERTY(body_1, std::string,
-        "Specify first of two bodies connected together by the constraint.");
-    OpenSim_DECLARE_PROPERTY(body_2, std::string,
-        "Specify second of two bodies connected together by the constraint.");
     OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
         "Location of the point in first body specified in body1 reference frame.");
     OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
         "Location of the point in second body specified in body2 reference frame.");
-
-protected:
-    /** First body point constraint joins. */
-    Body *_body1;
-
-    /** Second body point constraint joins. */
-    Body *_body2;
 
 //=============================================================================
 // METHODS
@@ -69,14 +59,22 @@ protected:
 public:
     // CONSTRUCTION
     PointConstraint();
-    PointConstraint(const OpenSim::Body& body1, const SimTK::Vec3& locationBody1,
-                    const OpenSim::Body& body2, const SimTK::Vec3& locationBody2);
+    /**
+    * Convenience Constructor.
+    *
+    * @param body1          first PhysicalFrame connected by the constraint
+    * @param locationBody1  point fixed on body1 where the contraint is applied
+    * @param body2          second PhysicalFrame connected by the constraint
+    * @param locationBody2: point fixed on body2 where the constraint is applied
+    */
+    PointConstraint(const PhysicalFrame& body1, const SimTK::Vec3& locationBody1,
+                    const PhysicalFrame& body2, const SimTK::Vec3& locationBody2);
     virtual ~PointConstraint();
 
     //SET 
-    void setBody1ByName(std::string aBodyName);
+    void setBody1ByName(const std::string& aBodyName);
     void setBody1PointLocation(SimTK::Vec3 location);
-    void setBody2ByName(std::string aBodyName);
+    void setBody2ByName(const std::string& aBodyName);
     void setBody2PointLocation(SimTK::Vec3 location);
 
     /** Method to set point location of contact during an induced acceleration analysis */
@@ -84,15 +82,22 @@ public:
 
 
 protected:
-    void extendConnectToModel(Model& aModel) override;
     /**
-     * Create a SimTK::Constraint::Ball which implements this Point constraint.
+     * Extend Component Interface.
      */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
+    /** Updating XML formating to latest revision */
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
+
 private:
+    /** Construct PointConstraint's properties */
+    void constructProperties() override;
+    /** Construct PointConstraint's connectors */
+    void constructConnectors() override;
+
     void setNull();
-    void constructProperties();
+
 
 //=============================================================================
 };  // END of class PointConstraint
@@ -101,6 +106,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __PointConstraint_h__
+#endif // OPENSIM_POINT_CONSTRAINT_H_
 
 

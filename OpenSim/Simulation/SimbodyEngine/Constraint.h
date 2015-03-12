@@ -98,12 +98,17 @@ protected:
     void extendInitStateFromProperties(SimTK::State& state) const override;
     void extendSetPropertiesFromState(const SimTK::State& state) override;
 
-    /** ID for the constraint in Simbody. */
-    SimTK::ConstraintIndex _index;
+    /** Helper method to assign the underlying SimTK::Constraint index */
+    void assignConstraintIndex(SimTK::ConstraintIndex ix) const {
+        _index = ix;
+     }
 
 private:
     void setNull();
     void constructProperties();
+
+    /** ID for the constraint in Simbody. */
+    mutable SimTK::ConstraintIndex _index;
 
     friend class SimbodyEngine;
 

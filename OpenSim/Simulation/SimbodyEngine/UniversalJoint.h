@@ -64,9 +64,14 @@ public:
     // CONSTRUCTION
     UniversalJoint();
     // Convenience constructor
-    UniversalJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-                    OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
-                    bool reverse=false);
+    UniversalJoint(const std::string &name,
+        const PhysicalFrame& parent,
+        const SimTK::Vec3& locationInParent,
+        const SimTK::Vec3& orientationInParent,
+        const PhysicalFrame& child,
+        const SimTK::Vec3& locationInChild,
+        const SimTK::Vec3& orientationInChild,
+        bool reverse = false);
     virtual ~UniversalJoint();
 
     int numCoordinates() const override { return _numMobilities; }

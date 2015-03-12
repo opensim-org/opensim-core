@@ -26,7 +26,7 @@
 //=============================================================================
 #include "Joint.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Common/ScaleSet.h>
 
 //=============================================================================
@@ -60,9 +60,9 @@ Joint::Joint() : Super()
  * API constructor.
  */
 Joint::Joint(const std::string &name, 
-    const OpenSim::Body& parent, 
+    const PhysicalFrame& parent, 
     const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-    const OpenSim::Body& child, 
+    const PhysicalFrame& child, 
     const SimTK::Vec3& locationInChild, const SimTK::Vec3& orientationInChild, 
     bool reverse) : Super()
 {
@@ -75,8 +75,8 @@ Joint::Joint(const std::string &name,
     set_orientation_in_child(orientationInChild);
     set_reverse(reverse);
 
-    updConnector<Body>("parent_body").set_connected_to_name(parent.getName());
-    updConnector<Body>("child_body").set_connected_to_name(child.getName());
+    updConnector<PhysicalFrame>("parent_body").set_connected_to_name(parent.getName());
+    updConnector<PhysicalFrame>("child_body").set_connected_to_name(child.getName());
 
     setName(name);
 }
@@ -122,26 +122,26 @@ void Joint::constructProperties()
 
 void Joint::constructConnectors()
 {
-    constructConnector<Body>("parent_body");
-    constructConnector<Body>("child_body");
+    constructConnector<PhysicalFrame>("parent_body");
+    constructConnector<PhysicalFrame>("child_body");
 }
 
-void Joint::setParentBodyName(const std::string& name)
+void Joint::setParentFrameName(const std::string& name)
 {
-    updConnector<Body>("parent_body").set_connected_to_name(name);
+    updConnector<PhysicalFrame>("parent_body").set_connected_to_name(name);
 }
-const std::string& Joint::getParentBodyName() const
+const std::string& Joint::getParentFrameName() const
 {
-    return getConnector<Body>("parent_body").get_connected_to_name();
+    return getConnector<PhysicalFrame>("parent_body").get_connected_to_name();
 }
 
-void Joint::setChildBodyName(const std::string& name)
+void Joint::setChildFrameName(const std::string& name)
 {
-    updConnector<Body>("child_body").set_connected_to_name(name);
+    updConnector<PhysicalFrame>("child_body").set_connected_to_name(name);
 }
-const std::string& Joint::getChildBodyName() const
+const std::string& Joint::getChildFrameName() const
 {
-    return getConnector<Body>("child_body").get_connected_to_name();
+    return getConnector<PhysicalFrame>("child_body").get_connected_to_name();
 }
 
 void Joint::extendFinalizeFromProperties()
@@ -196,14 +196,14 @@ void Joint::extendFinalizeFromProperties()
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 
-void Joint::setChildBody(OpenSim::Body& body)
+void Joint::setChildFrame(const PhysicalFrame& body)
 {
-    updConnector<Body>("child_body").connect(body);
+    updConnector<PhysicalFrame>("child_body").connect(body);
 }
 
-const OpenSim::Body& Joint::getChildBody() const
+const PhysicalFrame& Joint::getChildFrame() const
 {
-    return getConnector<Body>("child_body").getConnectee();
+    return getConnector<PhysicalFrame>("child_body").getConnectee();
 }
 
 //-----------------------------------------------------------------------------
@@ -240,17 +240,17 @@ const SimTK::Vec3& Joint::getOrientationInChild() const
 /**
  * Set the parent body to which this joint attaches.
  *
- * @param aParentBody Parent body to which this joint attaches.
+ * @param body Parent body to which this joint attaches.
  */
-void Joint::setParentBody(OpenSim::Body& body)
+void Joint::setParentFrame(const PhysicalFrame& body)
 {
-    updConnector<Body>("parent_body").connect(body);
+    updConnector<PhysicalFrame>("parent_body").connect(body);
 }
 //_____________________________________________________________________________
 
-const OpenSim::Body& Joint::getParentBody() const
+const OpenSim::PhysicalFrame& Joint::getParentFrame() const
 {
-    return getConnector<Body>("parent_body").getConnectee();
+    return getConnector<PhysicalFrame>("parent_body").getConnectee();
 }
 
 //-----------------------------------------------------------------------------
@@ -310,8 +310,8 @@ void Joint::scale(const ScaleSet& scaleSet)
     // SCALING TO DO WITH THE PARENT BODY -----
     // Joint kinematics are scaled by the scale factors for the
     // parent body, so get those body's factors
-    const string& parentName = getParentBody().getName();
-    const string& bodyName = getChildBody().getName();
+    const string& parentName = getParentFrame().getName();
+    const string& bodyName = getChildFrame().getName();
     // Get scale factors
     bool found_p = false;
     bool found_b = false; 
@@ -365,7 +365,7 @@ const SimTK::MobilizedBodyIndex Joint::
 
 void Joint::setChildMobilizedBodyIndex(const SimTK::MobilizedBodyIndex index) const
 { 
-    getChildBody().setMobilizedBodyIndex(index);
+    getChildFrame().setMobilizedBodyIndex(index);
 }
 
 
@@ -374,8 +374,8 @@ void Joint::extendAddToSystem(SimTK::MultibodySystem& system) const
     Super::extendAddToSystem(system);
     /* TODO: Useful to include through debug message/log in the future
     cout << getConcreteClassName() << ":'" << getName() << "' connects parent '";
-    cout << getParentBodyName() << "'[" << getParentBody().getIndex() << "] and child '";
-    cout << getChildBodyName() << "'[" << getChildBody().getIndex() << "]" << endl;
+    cout << getParentFrameName() << "'[" << getParentFrame().getIndex() << "] and child '";
+    cout << getChildFrameName() << "'[" << getChildFrame().getIndex() << "]" << endl;
      */
 }
 
@@ -412,7 +412,7 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s, const
         throw Exception("Joint::calcEquivalentSpatialForce(): input mobilityForces does not match model's mobilities");
     }
 
-    const SimTK::MobilizedBodyIndex &mbx = getChildBody().getMobilizedBodyIndex();
+    const SimTK::MobilizedBodyIndex &mbx = getChildFrame().getMobilizedBodyIndex();
     // build a unique list of underlying MobilizedBodies that are involved
     // with this Joint in addition to and not including that of the child body
 
@@ -595,12 +595,17 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             XMLDocument::renameChildNode(aNode, "orientation", "orientation_in_child"); // direction_A -> direction
         }
     }
+    else {
+        // Handle any recent models that have the Joint connecting to Bodies instead
+        // of current use of PhyscialFrames
+        XMLDocument::renameChildNode(aNode, "Connector_Body_", "Connector_PhysicalFrame_");
+    }
     Super::updateFromXMLNode(aNode, versionNumber);
 }
 
 int Joint::assignSystemIndicesToBodyAndCoordinates(
     const SimTK::MobilizedBody& mobod,
-    const OpenSim::Body* mobilized,
+    const OpenSim::PhysicalFrame* mobilized,
     const int& numMobilities,
     const int& startingCoordinateIndex) const
 {
@@ -610,8 +615,8 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
         // Index can only be assigned to a parent or child body connected by this
         // Joint
 
-        SimTK_ASSERT3( ( (mobilized == &getParentBody()) || 
-                         (mobilized == &getChildBody()) ||
+        SimTK_ASSERT3( ( (mobilized == &getParentFrame()) || 
+                         (mobilized == &getChildFrame()) ||
                          (mobilized == _slaveBodyForParent) ||
                          (mobilized == _slaveBodyForChild) ),
             "%s::'%s' - Cannot assign underlying system index to a Body '%s', "
@@ -648,19 +653,23 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
 }
 
 /* Return the equivalent (internal) SimTK::Rigid::Body for a given parent OR
-child OpenSim::Body. Not guaranteed to be valid until after extendAddToSystem on
+child OpenSim::Body. Not guaranteed to be valid until after addToSystem on
 Body has be called  */
-const SimTK::Body::Rigid& Joint::getParentInternalRigidBody() const
+const SimTK::Body& Joint::getParentInternalRigidBody() const
 {
     if (_slaveBodyForParent){
-        return _slaveBodyForParent->getInternalRigidBody();
+        return _slaveBodyForParent->extractInternalRigidBody();
     }
-    return getParentBody().getInternalRigidBody();
+
+    return static_cast<const PhysicalFrame&>(getParentFrame()
+        .findBaseFrame()).extractInternalRigidBody();
 }
-const SimTK::Body::Rigid& Joint::getChildInternalRigidBody() const
+const SimTK::Body& Joint::getChildInternalRigidBody() const
 {
     if (_slaveBodyForChild){
-        return _slaveBodyForChild->getInternalRigidBody();
+        return _slaveBodyForChild->extractInternalRigidBody();
     }
-    return getChildBody().getInternalRigidBody();
+
+    return static_cast<const PhysicalFrame&>(getChildFrame()
+        .findBaseFrame()).extractInternalRigidBody();;
 }

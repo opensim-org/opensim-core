@@ -94,9 +94,8 @@ Model::Model() :
     _system(NULL),
     _workingState()
 {
-    constructInfrastructure();
-    setNull();  
-    createGroundBodyIfNecessary();
+    constructInfrastructure();    setNull();
+    finalizeFromProperties();
 }
 //_____________________________________________________________________________
 /**
@@ -177,7 +176,7 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 jointSetElement.insertNodeBefore(jointSetElement.element_begin(), jointObjects);
                 SimTK::Xml::element_iterator bodySetNode = aNode.element_begin("BodySet");
                 aNode.insertNodeAfter(bodySetNode, jointSetElement);
-                // Now cycle thru Bodies and move their Joint nodes under JointSet
+                // Cycle through Bodies and move their Joint nodes under the Model's JointSet
                 SimTK::Xml::element_iterator  objects_node = bodySetNode->element_begin("objects");
                 SimTK::Xml::element_iterator bodyIter= objects_node->element_begin("Body"); 
                 for (; bodyIter != objects_node->element_end(); ++bodyIter) {
@@ -192,8 +191,8 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                         SimTK::String parent_name="ground";
                         parentBodyElement->getValueAs<SimTK::String>(parent_name);
                         //cout << "Processing Joint " << concreteJointNode->getElementTag() << "Parent body " << parent_name << std::endl;
-                        XMLDocument::addConnector(*concreteJointNode, "Connector_Body_", "parent_body", parent_name);
-                        XMLDocument::addConnector(*concreteJointNode, "Connector_Body_", "child_body", body_name);
+                        XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "parent_body", parent_name);
+                        XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "child_body", body_name);
                         concreteJointNode->eraseNode(parentBodyElement);
                         jointObjects.insertNodeAfter(jointObjects.node_end(), *concreteJointNode);
                         detach_joint_node.clearOrphan();
@@ -202,7 +201,7 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 }
             }
     // Call base class now assuming _node has been corrected for current version
-    Object::updateFromXMLNode(aNode, versionNumber);
+    Super::updateFromXMLNode(aNode, versionNumber);
 
     setDefaultProperties();
 }
@@ -217,11 +216,9 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
  */
 void Model::setNull()
 {
-    
     _useVisualizer = false;
     _displayHints.clear();
     _allControllersEnabled = true;
-    _groundBody = NULL;
 
     _system = NULL;
     _matter = NULL;
@@ -241,6 +238,8 @@ void Model::setNull()
 void Model::constructProperties()
 {
     constructProperty_assembly_accuracy(1e-9);
+
+    constructProperty_ground(Ground());
 
     constructProperty_gravity(SimTK::Vec3(0.0, -9.80665, 0.0));
 
@@ -524,21 +523,34 @@ void Model::extendFinalizeFromProperties()
         }
     }
 
-    //Adds ground
-    createGroundBodyIfNecessary();
-
     // clear all subcomponent designations since they will be specified here.
     // Note addBody and addJoint call addComponent.
     clearComponents();
 
-    // Update model components, not that Joints and Coordinates
-    // belong to Bodies, alough model lists are assembled for convenience
+    Ground& ground = updGround();
+    // The Ground frame is a subcomponent of the model.
+    addComponent(&ground);
+
+    // Construct a multibody tree according to the PhysicalFrames in the
+    // OpenSim model, which include Ground and Bodies
+    _multibodyTree.addBody(ground.getName(), 0, false, &ground);
+
     if(getBodySet().getSize()>0)
     {
-        BodySet &bs = updBodySet();
-        int nb = bs.getSize();
-        for (int i = 0; i<nb; ++i){
+        BodySet& bs = updBodySet();
+        for (int i = 0; i<bs.getSize(); ++i){
+            //handle deprecated models with ground as a Body
+            if (bs[i].getName() == "ground"){
+                VisibleObject* displayer = ground.updDisplayer();
+                *displayer = *bs[i].getDisplayer();
+                ground.upd_WrapObjectSet() = bs[i].get_WrapObjectSet();
+                // remove and then decrement the counter
+                bs.remove(i--);
+                continue;
+            }
+            // add the Body to the list of subcomponents for this Model
             addComponent(&bs[i]);
+
             _multibodyTree.addBody(bs[i].getName(), 
                                    bs[i].getMass(), 
                                    false, 
@@ -546,30 +558,11 @@ void Model::extendFinalizeFromProperties()
         }
     }
 
-    if (getFrameSet().getSize() > 0)
-    {
-        FrameSet& fs = updFrameSet();
-        int nf = fs.getSize();
-        for (int i = 0; i<nf; ++i)
-            addComponent(&fs[i]);
 
-    }
-
-    if (getMarkerSet().getSize() > 0)
-    {
-        MarkerSet& ms = updMarkerSet();
-        int nf = ms.getSize();
-        for (int i = 0; i<nf; ++i)
-            addComponent(&ms[i]);
-    }
-
-    // Populate lists of model joints and coordinates according to the Bodies
-    // setup here who own the Joints which in turn own the model's Coordinates
-    // this list of Coordinates is now available for setting up constraints and forces
-
+    // Complete multibody tree description by indicating how "bodies" are
+    // connected by joints.
     if(getJointSet().getSize()>0)
     {
-
         JointSet &js = updJointSet();
         int nj = js.getSize();
         for (int i = 0; i<nj; ++i){
@@ -577,20 +570,26 @@ void Model::extendFinalizeFromProperties()
             IO::TrimWhitespace(name);
 
             if ((name.empty()) || (name == "")){
-                name = js[i].getParentBodyName() + "_to_" + js[i].getChildBodyName();
+                name = js[i].getParentFrameName() + "_to_" + js[i].getChildFrameName();
             }
 
             addComponent(&js[i]);
             // Use joints to define the underlying multibody tree
             _multibodyTree.addJoint(name,
                 js[i].getConcreteClassName(),
-                js[i].getParentBodyName(),
-                js[i].getChildBodyName(),
+                js[i].getParentFrameName(),
+                js[i].getChildFrameName(),
                 false,
                 &js[i]);
         }
     }
-        
+
+    FrameSet& fs = updFrameSet();
+    int nf = fs.getSize();
+    for (int i = 0; i<nf; ++i){
+            addComponent(&fs[i]);
+    }
+
     if(getConstraintSet().getSize()>0)
     {
         ConstraintSet &cs = updConstraintSet();
@@ -636,6 +635,14 @@ void Model::extendFinalizeFromProperties()
         for (int i = 0; i<np; ++i){
             addComponent(&ps[i]);
         }
+    }
+
+    if (getMarkerSet().getSize() > 0)
+    {
+        MarkerSet& ms = updMarkerSet();
+        int nf = ms.getSize();
+        for (int i = 0; i<nf; ++i)
+            addComponent(&ms[i]);
     }
 
     if (getValidationLog().size() > 0) {
@@ -709,7 +716,7 @@ void Model::extendConnectToModel(Model &model)
             Body* ground = static_cast<Body*>(mob.getInboardBodyRef());
 
             // Verify that this is an orphan and it was assigned to ground
-            assert(ground == &getGroundBody());
+            assert(*ground == getGround());
 
             std::string jname = "free_" + child->getName();
             SimTK::Vec3 zeroVec(0.0);
@@ -790,10 +797,6 @@ void Model::extendConnectToModel(Model &model)
 
     // TODO: Get rid of the SimbodyEngine
     updSimbodyEngine().connectSimbodyEngineToModel(*this);
-
-    //Analyses are not Components so add them after legit 
-    //Components have been wired-up correctly.
-    updAnalysisSet().setModel(*this);
 }
 
 
@@ -802,6 +805,10 @@ void Model::extendConnectToModel(Model &model)
 void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Model *mutableThis = const_cast<Model *>(this);
+
+    //Analyses are not Components so add them after legit 
+    //Components have been wired-up correctly.
+    mutableThis->updAnalysisSet().setModel(*mutableThis);
 
     // Reset the vector of all controls' defaults
     mutableThis->_defaultControls.resize(0);
@@ -963,37 +970,6 @@ void Model::setup()
     //now connect the Model and all its subcomponents all up
     connect(*this);
 }
-
-/**
- * Create a ground body if necessary.
- */
-void Model::createGroundBodyIfNecessary()
-{
-    const std::string SimbodyGroundName = "ground";
-
-    // See if the ground body already exists.
-    // The ground body is assumed to have the name simbodyGroundName.
-    int size = getBodySet().getSize();
-    Body *ground=NULL;
-    for(int i=0; i<size; i++) {
-        Body& body = getBodySet().get(i);
-        if(body.getName() == SimbodyGroundName) {
-            ground = &body;
-            break;
-        }
-    }
-
-    if(ground==NULL) {
-        ground = new Body();
-        addBody(ground);
-    }
-    // Set member variables
-    ground->setName(SimbodyGroundName);
-    ground->set_mass(0.0);
-    ground->set_mass_center(Vec3(0.0));
-    _groundBody = ground;
-}
-
 
 //_____________________________________________________________________________
 /**
@@ -1508,7 +1484,7 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
 
     n = getNumBodies();
     aOStream<<"\nBODIES ("<<n<<")" << std::endl;
-    for(i=0;i<n;i++) aOStream<<"body["<<i<<"] = "<<getBodyName(i)<<std::endl;
+    for(i=0;i<n;i++) aOStream<<"body["<<i<<"] = "<<getFrameName(i)<<std::endl;
 
     n = getNQ();
     aOStream<<"\nGENERALIZED COORDINATES ("<<n<<")" << std::endl;
@@ -1742,17 +1718,15 @@ const JointSet& Model::getJointSet() const
     return get_JointSet();
 }
 
-/**
- * Get the body that is being used as ground.
- *
- * @return Pointer to the ground body.
- */
-OpenSim::Body& Model::getGroundBody() const
+const Ground& Model::getGround() const
 {
-    assert(_groundBody);
-    return *_groundBody;
+    return get_ground();
 }
 
+Ground& Model::updGround()
+{
+    return upd_ground();
+}
 
 //--------------------------------------------------------------------------
 // CONTROLS
