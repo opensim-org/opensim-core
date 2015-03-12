@@ -45,11 +45,16 @@ PhysicalFrame::PhysicalFrame() : Frame()
 {
     setAuthors("Matt DeMers, Ayman Habib, Ajay Seth");
     constructProperties();
+    FrameGeometry* frm = new FrameGeometry(0.2);
+    frm->setName("frame_geometry");
+    frm->set_display_radius(.004);
+    frm->setRepresentation(Geometry::Hide);
+    append_GeometrySet(*frm);
+
 }
 
 void PhysicalFrame::constructProperties()
 {
-    constructProperty_VisibleObject(VisibleObject());
     constructProperty_WrapObjectSet(WrapObjectSet());
 }
 
@@ -76,6 +81,7 @@ SimTK::Transform PhysicalFrame::
 
 void PhysicalFrame::extendConnectToModel(Model& model)
 {
+    // Better use name search or more robust method
     if (upd_GeometrySet(0).getFrameName() == "")
         upd_GeometrySet(0).setFrameName(getName());
     Super::extendConnectToModel(model);

@@ -90,7 +90,7 @@ public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
         "Default appearance for this Geometry");
 
-    enum Representation {
+    enum DisplayPreference {
         Hide = 0,
         DrawPoints = 1, ///< Use a cloud of points.
         DrawWireframe = 2, ///< Use a line drawing.
@@ -141,8 +141,8 @@ public:
     const double getOpacity() { return get_Appearance().get_opacity(); };
 
     // Convenient access to Appearance constituents: /representation
-    void setRepresentation(const Representation& rep) { upd_Appearance().set_representation(rep); };
-    const Representation& getRepresentation() { return (const Representation&)get_Appearance().get_representation(); };
+    void setRepresentation(const DisplayPreference& rep) { upd_Appearance().set_representation(rep); };
+    const DisplayPreference& getRepresentation() { return (const DisplayPreference&)get_Appearance().get_representation(); };
 
     // Get name of Frame that this Geometry is attached to. This could 
     // either be a property, or owner ModelComponent if it's a type of frame
@@ -515,16 +515,22 @@ class OSIMSIMULATION_API FrameGeometry : public Geometry
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(FrameGeometry, Geometry);
 public:
+    OpenSim_DECLARE_PROPERTY(display_radius, double,
+        "The radius of the shape used to display the frame.");
     // Default constructor
     FrameGeometry(double scale=1.0) :
         Geometry()
     {
+       constructInfrastructure();
        set_scale_factors(SimTK::Vec3(scale));
     }
     // destructor
     virtual ~FrameGeometry() {};
     void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
-
+private:
+    void constructInfrastructure() {
+        constructProperty_display_radius(.005);
+    }
 };
 }; //namespace
 //=============================================================================

@@ -65,6 +65,7 @@ Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,
     set_mass(aMass);
     set_mass_center(aMassCenter);
     setInertia(aInertia);
+    // Better use name search or more robust method
     upd_GeometrySet(0).setFrameName(aName);
 }
 
@@ -110,6 +111,9 @@ void Body::extendConnectToModel(Model& aModel)
         // and the slaves
         for (int i = 0; i < nslaves; ++i){
             _slaves[i]->_internalRigidBody = SimTK::Body::Rigid(slaveMassProps);
+            _slaves[i]->setInertia(slaveMassProps.getUnitInertia());
+            _slaves[i]->setMass(slaveMassProps.getMass());
+            _slaves[i]->setMassCenter(slaveMassProps.getMassCenter());
         }
     }
 }

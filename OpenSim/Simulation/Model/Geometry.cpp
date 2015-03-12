@@ -148,7 +148,8 @@ void Brick::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& d
 void FrameGeometry::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
-    DecorativeFrame deco(netScale.norm());
+    DecorativeFrame deco(1.0);
+    deco.setLineThickness(get_display_radius());
     deco.setScaleFactors(netScale);
     decoGeoms.push_back(deco);
 }

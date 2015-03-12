@@ -194,8 +194,6 @@ protected:
     /**@{**/
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendRealizeTopology(SimTK::State& s) const override;
-    //void extendFinalizeFromProperties() override;
-
     /**@}**/
 
 private:

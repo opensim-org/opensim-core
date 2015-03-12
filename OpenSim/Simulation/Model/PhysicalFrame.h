@@ -165,9 +165,6 @@ public:
     void addWrapObject(WrapObject* wrapObject);
     ///@} 
 
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
-        SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const;
-
 protected:
     /** The transform X_GF for this PhysicalFrame, F, in ground, G. */
     SimTK::Transform
