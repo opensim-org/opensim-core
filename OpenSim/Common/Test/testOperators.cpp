@@ -31,7 +31,7 @@ Model createPendulumModel() {
     // The link rests along the x axis.
     auto* body = new OpenSim::Body("body", 1, Vec3(1, 0, 0), Inertia(0));
     PinJoint* joint = new PinJoint("joint",
-            model.getGroundBody(), Vec3(0), Vec3(0),
+            model.getGround(), Vec3(0), Vec3(0),
             *body, Vec3(0), Vec3(0));
 
     model.addBody(body);
