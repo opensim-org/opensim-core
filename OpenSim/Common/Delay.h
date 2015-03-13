@@ -81,6 +81,8 @@ namespace OpenSim {
  *
  * This class is implemented via a SimTK::Measure_<T>::Delay.
  *
+ * @ingroup operators
+ *
  */
 template<typename T>
 class OSIMCOMMON_API Delay : public Component {
@@ -94,9 +96,10 @@ public:
         "The duration (nonnegative, seconds) by which the output is delayed.");
     /**@}**/
 
+    /// Default constructor.
     Delay();
 
-    // Convenience constructor that sets the delay property.
+    /// Convenience constructor that sets the delay property.
     explicit Delay(double delay);
 
     /// Get the delayed value (the input's value at time t-delay).
