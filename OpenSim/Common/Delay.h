@@ -85,7 +85,7 @@ namespace OpenSim {
  *
  */
 template<typename T>
-class OSIMCOMMON_API Delay : public Component {
+class Delay : public Component {
 OpenSim_DECLARE_CONCRETE_OBJECT_T(Delay, T, Component);
 public:
 
