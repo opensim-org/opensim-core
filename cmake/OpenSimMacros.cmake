@@ -1,6 +1,8 @@
 include(CMakeParseArguments)
 
 # Create an OpenSim API library. Here are the arguments:
+# VENDORLIB: If this is a vendor library, specify "VENDORLIB" as the first
+#   argument. Otherwise, omit.
 # KIT: Name of the library (e.g., Common).
 # AUTHORS: A string listing authors of the library.
 # LINKLIBS: List of libraries (targets) to link against.
@@ -29,7 +31,7 @@ FUNCTION(OPENSIM_ADD_LIBRARY)
     # Parse arguments.
     # ----------------
     # http://www.cmake.org/cmake/help/v2.8.9/cmake.html#module:CMakeParseArguments
-    SET(options "")
+    SET(options VENDORLIB)
     SET(oneValueArgs KIT AUTHORS)
     SET(multiValueArgs LINKLIBS INCLUDES SOURCES TESTDIRS INCLUDEDIRS)
     CMAKE_PARSE_ARGUMENTS(
@@ -57,7 +59,7 @@ FUNCTION(OPENSIM_ADD_LIBRARY)
     # ----------------
     # These next few lines are the most important:
     # Specify the directories in OpenSim that contain header files.
-    INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}/Vendors ${OpenSim_SOURCE_DIR})
+    INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR})
 
     # Create the library using the provided source and include files.
     ADD_LIBRARY(${OSIMADDLIB_LIBRARY_NAME} SHARED
@@ -67,10 +69,15 @@ FUNCTION(OPENSIM_ADD_LIBRARY)
     TARGET_LINK_LIBRARIES(${OSIMADDLIB_LIBRARY_NAME} ${OSIMADDLIB_LINKLIBS})
 
     # This is for exporting classes on Windows.
-    SET(EXPORT_MACRO OSIM${OSIMADDLIB_UKIT}_EXPORTS)
+    IF(OSIMADDLIB_VENDORLIB)
+        SET(OSIMADDLIB_PROJECT_LABEL
+            "Vendor Libraries - ${OSIMADDLIB_LIBRARY_NAME}")
+    ELSE()
+        SET(OSIMADDLIB_PROJECT_LABEL "Libraries - ${OSIMADDLIB_LIBRARY_NAME}")
+    ENDIF()
     SET_TARGET_PROPERTIES(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES
-       DEFINE_SYMBOL ${EXPORT_MACRO}
-       PROJECT_LABEL "Libraries - ${OSIMADDLIB_LIBRARY_NAME}"
+       DEFINE_SYMBOL OSIM${OSIMADDLIB_UKIT}_EXPORTS
+       PROJECT_LABEL "${OSIMADDLIB_PROJECT_LABEL}"
     )
 
 
@@ -93,15 +100,21 @@ FUNCTION(OPENSIM_ADD_LIBRARY)
 
     # Install headers.
     # ----------------
+    SET(_INCLUDE_PREFIX sdk/include)
+    IF(OSIMADDLIB_VENDORLIB)
+        SET(_INCLUDE_PREFIX ${_INCLUDE_PREFIX}/Vendors)
+    ELSE()
+        SET(_INCLUDE_PREFIX ${_INCLUDE_PREFIX}/OpenSim)
+    ENDIF()
     IF(OSIMADDLIB_INCLUDEDIRS)
         FOREACH(dir ${OSIMADDLIB_INCLUDEDIRS})
             FILE(GLOB HEADERS ${dir}/*.h) # returns full pathnames
             INSTALL(FILES ${HEADERS}
-                DESTINATION sdk/include/OpenSim/${OSIMADDLIB_KIT}/${dir})
+                DESTINATION ${_INCLUDE_PREFIX}/${OSIMADDLIB_KIT}/${dir})
         ENDFOREACH(dir)
     ELSE()
         INSTALL(FILES ${OSIMADDLIB_INCLUDES}
-            DESTINATION sdk/include/OpenSim/${OSIMADDLIB_KIT})
+            DESTINATION ${_INCLUDE_PREFIX}/${OSIMADDLIB_KIT})
     ENDIF()
 
 

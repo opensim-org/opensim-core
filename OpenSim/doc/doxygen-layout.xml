@@ -66,25 +66,8 @@
     <collaborationgraph visible="$COLLABORATION_GRAPH"/>
     <allmemberslink visible="yes"/>
     <memberdecl>
-      <publicmethods title=""/>
-    </memberdecl>
-   
-    <detaileddescription title="Detailed Description "/>
-    <memberdef>
-      <constructors title=""/>
-      <typedefs title=""/>
-      <functions title=""/>
-      <!-- <enums title=""/>
-      
-      
-      <related title=""/>
-      <variables title=""/>
-      <properties title=""/>
-      <events title=""/> -->
-    </memberdef>
-
-    <!-- <memberdecl>
       <nestedclasses visible="yes" title=""/>
+      <publicmethods title=""/>
       <publictypes title=""/>
       <publicslots title=""/>
       <signals title=""/>
@@ -113,7 +96,22 @@
       <friends title=""/>
       <related title="" subtitle=""/>
       <membergroups visible="yes"/>
-    </memberdecl> -->
+    </memberdecl>
+   
+    <detaileddescription title="Detailed Description "/>
+    <memberdef>
+      <inlineclasses title=""/>
+      <typedefs title=""/>
+      <enums title=""/>
+      <services title=""/>
+      <interfaces title=""/>
+      <constructors title=""/>
+      <functions title=""/>
+      <related title=""/>
+      <variables title=""/>
+      <properties title=""/>
+      <events title=""/>
+    </memberdef>
     
     <usedfiles visible="$SHOW_USED_FILES"/>
     <authorsection visible="yes"/>

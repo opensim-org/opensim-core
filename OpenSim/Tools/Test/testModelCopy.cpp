@@ -66,6 +66,7 @@ void testCopyModel(string fileName)
     Model* modelCopy = new Model(*model);
     // At this point properties should all match. assert that
     ASSERT(*model==*modelCopy);
+    ASSERT(model->getActuators().getSize() == modelCopy->getActuators().getSize());
 
     //SimTK::State& defaultStateOfCopy = modelCopy->initSystem();
     // Compare state
@@ -75,6 +76,8 @@ void testCopyModel(string fileName)
     //  Now delete original model and make sure copy can stand
     Model *cloneModel = modelCopy->clone();
     ASSERT(*model == *cloneModel);
+    ASSERT(model->getActuators().getSize() == cloneModel->getActuators().getSize());
+
     // Compare state again
     
     //SimTK::State& defaultStateOfCopy2 = newModel->initSystem();

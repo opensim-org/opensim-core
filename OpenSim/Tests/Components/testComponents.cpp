@@ -45,13 +45,12 @@ int main()
     // get all registered Components
     SimTK::Array_<Component*> availableComponents;
 
-    // starting with type Body
-    ArrayPtrs<Body> availableBodies;
-    Object::getRegisteredObjectsOfGivenType(availableBodies);
-    for (int i = 0; i < availableBodies.size(); ++i) {
-        availableComponents.push_back(availableBodies[i]);
+    // starting with type Frame
+    ArrayPtrs<Frame> availableFrames;
+    Object::getRegisteredObjectsOfGivenType(availableFrames);
+    for (int i = 0; i < availableFrames.size(); ++i) {
+        availableComponents.push_back(availableFrames[i]);
     }
-
 
     // then type Joint
     ArrayPtrs<Joint> availableJoints;
@@ -61,7 +60,6 @@ int main()
     }
 
     // continue with Constraint, Actuator, Frame, ...
-
     //Example of an updated force that passes
     ArrayPtrs<PointToPointSpring> availablePointToPointSpring;
     Object::getRegisteredObjectsOfGivenType(availablePointToPointSpring);
@@ -175,10 +173,18 @@ void testComponent(const Component& instanceToTest)
     int nc = instance->getNumConnectors();
     for (int i = 0; i < nc; ++i){
         AbstractConnector& connector = instance->updConnector(i);
-        cout << "Connector '" << connector.getName() << "' has dependency on: "
-            << connector.getConnectedToTypeName() << endl;
+        string dependencyTypeName = connector.getConnectedToTypeName();
+        cout << "Connector '" << connector.getName() << 
+            "' has dependency on: " << dependencyTypeName << endl;
         Object* dependency =
-            Object::newInstanceOfType(connector.getConnectedToTypeName());
+            Object::newInstanceOfType(dependencyTypeName);
+        
+        if (dependency == nullptr){
+            // Get a concrete instance of a PhysicalFrame, which is a Body
+            if (dependencyTypeName == "PhysicalFrame"){
+                dependency = Object::newInstanceOfType("Body");
+            }
+        }
         
         //give it some random values including a name
         randomize(dependency);

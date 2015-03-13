@@ -163,7 +163,7 @@ void MarkerSet::addNamePrefix(const string& prefix)
 /**
  * Create a new marker and add it to the set.
  */
-Marker* MarkerSet::addMarker(const string& aName, const SimTK::Vec3& aOffset, OpenSim::RigidFrame& aRigidFrame)
+Marker* MarkerSet::addMarker(const string& aName, const SimTK::Vec3& aOffset, OpenSim::PhysicalFrame& aPhysicalFrame)
 {
     // If a marker by this name already exists, do nothing.
     if (contains(aName))
@@ -174,8 +174,9 @@ Marker* MarkerSet::addMarker(const string& aName, const SimTK::Vec3& aOffset, Op
     m->setName(aName);
     m->set_location(aOffset);
     // Frame will be based on this name when marker is connected to Model.
-    m->setFrameName(aRigidFrame.getName()); 
-    aRigidFrame.updModel().addMarker(m);
+
+    m->setFrameName(aPhysicalFrame.getName()); 
+    aPhysicalFrame.updModel().addMarker(m);
 
     return m;
 }

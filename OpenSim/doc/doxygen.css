@@ -10,7 +10,7 @@ table {
 }
 
 pre, code {
-    font-family: Courier;
+    font-family: monospace;
 }
 
 p {
@@ -203,7 +203,7 @@ div.fragment {
 }
 
 div.line {
-	font-family: courier;
+	font-family: monospace;
     font-size: 11px;
     color: #717171;
 	min-height: 13px; 
@@ -650,7 +650,7 @@ dl.reflist dd {
 }       
         
 .params .paramdir {
-        font-family: "courier new",courier,monospace;
+        font-family: monospace;
         vertical-align: top;
 }
 

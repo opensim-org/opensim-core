@@ -65,7 +65,7 @@ public:
     // CONSTRUCTION
     BallJoint();
     // convenience constructor
-    BallJoint(const std::string &name, const OpenSim::Body& parent,
+    BallJoint(const std::string &name, const PhysicalFrame& parent,
         const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
         const OpenSim::Body& body,
         const SimTK::Vec3& locationInBody, const SimTK::Vec3& orientationInBody,

@@ -60,12 +60,16 @@ FreeJoint::FreeJoint() :
 /**
  * Convenience Constructor.
  */
-    FreeJoint::FreeJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-                    OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
-                    /*bool useEulerAngles,*/ bool reverse) :
-    Joint(name, parent, locationInParent,orientationInParent,
-            body, locationInBody, orientationInBody, reverse)
-    //_useEulerAngles(_useEulerAnglesProp.getValueBool())
+FreeJoint::FreeJoint(const std::string &name,
+    const PhysicalFrame& parent,
+    const SimTK::Vec3& locationInParent,
+    const SimTK::Vec3& orientationInParent,
+    const PhysicalFrame& child,
+    const SimTK::Vec3& locationInChild,
+    const SimTK::Vec3& orientationInChild,
+    bool reverse) :
+        Joint(name, parent, locationInParent, orientationInParent,
+            child, locationInChild, orientationInChild, reverse)
 {
     setNull();
     setName(name);
@@ -140,7 +144,7 @@ void FreeJoint::extendInitStateFromProperties(SimTK::State& s) const
             coordinateSet.get(5).getDefaultValue());
 
         FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
-        getChildBody().getMobilizedBody().setQToFitTransform(s, Transform(r, t));
+        getChildFrame().getMobilizedBody().setQToFitTransform(s, Transform(r, t));
     }
 }
 
@@ -152,8 +156,8 @@ void FreeJoint::extendSetPropertiesFromState(const SimTK::State& state)
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-        Rotation r = getChildBody().getMobilizedBody().getMobilizerTransform(state).R();
-        Vec3 t = getChildBody().getMobilizedBody().getMobilizerTransform(state).p();
+        Rotation r = getChildFrame().getMobilizedBody().getMobilizerTransform(state).R();
+        Vec3 t = getChildFrame().getMobilizedBody().getMobilizerTransform(state).p();
 
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
         int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.

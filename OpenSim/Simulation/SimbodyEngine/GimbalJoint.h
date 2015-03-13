@@ -60,9 +60,14 @@ public:
     // CONSTRUCTION
     GimbalJoint();
     // convenience constructor
-    GimbalJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-                OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
-                /*bool useEulerAngles=true,*/ bool reverse=false);
+    GimbalJoint(const std::string &name,
+        const PhysicalFrame& parent,
+        const SimTK::Vec3& locationInParent,
+        const SimTK::Vec3& orientationInParent,
+        const PhysicalFrame& child,
+        const SimTK::Vec3& locationInChild,
+        const SimTK::Vec3& orientationInChild,
+        bool reverse = false);
 
     virtual ~GimbalJoint();
 

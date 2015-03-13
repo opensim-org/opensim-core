@@ -451,7 +451,7 @@ record(const SimTK::State& s)
     double Mass = 0.0;
 
     // GROUND BODY
-    Body &ground = _model->getSimbodyEngine().getGroundBody();
+    const Ground &ground = _model->getGround();
 
     // POSITION
     BodySet& bs = _model->updBodySet();

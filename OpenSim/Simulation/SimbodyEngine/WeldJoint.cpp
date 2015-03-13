@@ -60,9 +60,9 @@ WeldJoint::WeldJoint() :
 /**
  * Convenience Constructor.
  */
-WeldJoint::WeldJoint(const std::string &name, const OpenSim::Body &parent,
+WeldJoint::WeldJoint(const std::string &name, const PhysicalFrame& parent,
     const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-    const OpenSim::Body& child,
+    const PhysicalFrame& child,
     const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
     bool reverse) :
         Super(name, parent, locationInParent,orientationInParent,
@@ -94,7 +94,7 @@ template <> SimTK::MobilizedBody::Weld Joint::createMobilizedBody<SimTK::Mobiliz
     const SimTK::Body& outboard,
     const SimTK::Transform& outboardTransform,
     int& startingCoorinateIndex,
-    const OpenSim::Body* associatedBod) const 
+    const PhysicalFrame* associatedBod) const 
 {
     // CREATE MOBILIZED BODY
     // Weld does not include reverse option since it has no coordinates to define

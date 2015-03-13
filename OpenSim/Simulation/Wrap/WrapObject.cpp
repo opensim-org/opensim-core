@@ -143,15 +143,7 @@ void WrapObject::constructProperties()
     constructProperty_color(defaultColor);
 }
 
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aEngine dynamics engine containing this wrap object.
- * @param aBody body containing this wrap object.
- */
-void WrapObject::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
+void WrapObject::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 {
    _body = &aBody;
    _model = &aModel;
@@ -163,7 +155,7 @@ void WrapObject::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
     _pose.set(rot, _translation);
 
     // Object is visible (has displayer) and depends on body it's attached to.
-    _body->updDisplayer()->addDependent(getDisplayer());
+    _body->updDisplayer()->addDependent(updDisplayer());
     _displayer.setTransform(_pose);
     _displayer.setOwner(this);
 }
@@ -318,9 +310,13 @@ int WrapObject::wrapPathSegment(const SimTK::State& s, PathPoint& aPoint1, PathP
 
     // Convert the path points from the frames of the bodies they are attached
     // to to the frame of the wrap object's body
-    _model->getSimbodyEngine().transformPosition(s, aPoint1.getBody(), aPoint1.getLocation(), getBody(), pt1);
-
-    _model->getSimbodyEngine().transformPosition(s, aPoint2.getBody(), aPoint2.getLocation(), getBody(), pt2);
+    //_model->getSimbodyEngine().transformPosition(s, aPoint1.getBody(), aPoint1.getLocation(), getBody(), pt1);
+    pt1 = aPoint1.getBody()
+        .findLocationInAnotherFrame(s, aPoint1.getLocation(), getBody());
+    
+    //_model->getSimbodyEngine().transformPosition(s, aPoint2.getBody(), aPoint2.getLocation(), getBody(), pt2);
+    pt2 = aPoint2.getBody()
+        .findLocationInAnotherFrame(s, aPoint2.getLocation(), getBody());
 
     // Convert the path points from the frame of the wrap object's body
     // into the frame of the wrap object

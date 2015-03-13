@@ -35,8 +35,9 @@
  */
 
 // INCLUDES
-#include "OpenSim/Common/Object.h"
+#include "OpenSim/Common/Component.h"
 #include "OpenSim/Common/ComponentOutput.h"
+#include "OpenSim/Common/ComponentList.h"
 
 namespace OpenSim {
 
@@ -120,6 +121,11 @@ public:
     /** Connect this Connector to the provided connectee object */
     virtual void connect(const Object& connectee) = 0;
 
+    /** Connect this Connector according to its connected_to_name property
+        given a root Component to search its subcomponents for the connect_to
+        Component. */
+    virtual void findAndConnect(const Component& root) = 0;
+
     /** Disconnect this Connector from the connectee object */
     virtual void disconnect() = 0;
 
@@ -162,7 +168,7 @@ public:
     const T& getConnectee() const { return connectee.getRef(); }
 
     /** Connect this Connector to the provided connectee object */
-    void connect(const Object& object) override{
+    void connect(const Object& object) override {
         const T* objT = dynamic_cast<const T*>(&object);
         if (objT) {
             connectee = *objT;
@@ -176,6 +182,9 @@ public:
             throw Exception(msg.str(), __FILE__, __LINE__);
         }
     }
+
+    /** Connect this Connector given its connect_to_name property  */
+    void findAndConnect(const Component& root) override;
 
     void disconnect() override {
         connectee.clear();
@@ -265,11 +274,16 @@ public:
         AbstractInput(name, connectAtStage) {}
 
     /** Connect this Input the from provided (Abstract)Output */
-    void connect(const AbstractOutput& output) const override{
+    void connect(const AbstractOutput& output) const override {
         // enable interaction through AbstractInterface
         Super::connect(output);
         // and value specific interface
         connectee = Output<T>::downcast(output);
+    }
+
+    /** Connect this Input given a root Component to search for
+        the Output according to the connect_to_name of this Input  */
+    void findAndConnect(const Component& root) override {
     }
 
     /**Get the value of this Input when it is connected. Redirects to connected

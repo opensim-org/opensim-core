@@ -164,7 +164,7 @@ void testExpressionBasedCoordinateForce()
     Model *osimModel = new Model;
     osimModel->setName("SpringMass");
     //OpenSim bodies
-    OpenSim::Body& ground = osimModel->getGroundBody();
+    const Ground& ground = osimModel->getGround();;
     OpenSim::Body ball("ball", mass ,Vec3(0),  mass*SimTK::Inertia::sphere(0.1));
     ball.addDisplayGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
@@ -262,7 +262,7 @@ void testExpressionBasedPointToPointForce()
     Model *model = new Model;
     model->setName("ExpressionBasedPointToPointForce");
     //OpenSim bodies
-    OpenSim::Body& ground = model->getGroundBody();
+    const Ground& ground = model->getGround();
     OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(ball_radius));
     ball.addDisplayGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
@@ -361,7 +361,7 @@ void testPathSpring()
     Model *osimModel = new Model;
     osimModel->setName("PathSpring");
     //OpenSim bodies
-    OpenSim::Body& ground = osimModel->getGroundBody();
+    const Ground& ground = osimModel->getGround();;
     OpenSim::Body pulleyBody("PulleyBody", mass ,Vec3(0),  mass*SimTK::Inertia::brick(0.1, 0.1, 0.1));
     OpenSim::Body block("block", mass ,Vec3(0),  mass*SimTK::Inertia::brick(0.2, 0.1, 0.1));
     block.addDisplayGeometry("box.vtp");
@@ -477,7 +477,7 @@ void testSpringMass()
     Model *osimModel = new Model;
     osimModel->setName("SpringMass");
     //OpenSim bodies
-    OpenSim::Body& ground = osimModel->getGroundBody();
+    const Ground& ground = osimModel->getGround();;
     OpenSim::Body ball("ball", mass ,Vec3(0),  mass*SimTK::Inertia::sphere(0.1));
     ball.addDisplayGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
@@ -497,7 +497,7 @@ void testSpringMass()
 
     osimModel->setGravity(gravity_vec);
 
-    PointToPointSpring spring(osimModel->getGroundBody(), 
+    PointToPointSpring spring(osimModel->updGround(), 
         Vec3(0.,restlength,0.), 
         ball, 
         Vec3(0.), 
@@ -578,7 +578,7 @@ void testBushingForce()
     Model *osimModel = new Model;
     osimModel->setName("BushingTest");
     //OpenSim bodies
-    OpenSim::Body& ground = osimModel->getGroundBody();
+    const Ground& ground = osimModel->getGround();;
     OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
     ball.addDisplayGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
@@ -683,7 +683,7 @@ void testFunctionBasedBushingForce()
     Model *osimModel = new Model;
     osimModel->setName("FunctionBasedBushingTest");
     //OpenSim bodies
-    OpenSim::Body& ground = osimModel->getGroundBody();
+    const Ground& ground = osimModel->getGround();;
     OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
     ball.addDisplayGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
@@ -937,7 +937,7 @@ void testCoordinateLimitForce()
     Model *osimModel = new Model;
     osimModel->setName("CoordinateLimitForceTest");
     //OpenSim bodies
-    OpenSim::Body& ground = osimModel->getGroundBody();
+    const Ground& ground = osimModel->getGround();;
     OpenSim::Body ball("ball", mass ,Vec3(0),  mass*SimTK::Inertia::sphere(0.1));
     ball.addDisplayGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
@@ -1085,7 +1085,7 @@ void testCoordinateLimitForceRotational()
     Model *osimModel = new Model;
     osimModel->setName("RotationalCoordinateLimitForceTest");
     //OpenSim bodies
-    OpenSim::Body& ground = osimModel->getGroundBody();
+    const Ground& ground = osimModel->getGround();;
     OpenSim::Body block("block", mass ,Vec3(0),  mass*SimTK::Inertia::brick(edge,edge,edge));
     block.addDisplayGeometry("box.vtp");
     block.scale(Vec3(edge), false);
@@ -1214,7 +1214,7 @@ void testExternalForce()
     Model model;
     model.setName("ExternalForceTest");
     //OpenSim bodies
-    OpenSim::Body& ground = model.getGroundBody();
+    const Ground& ground = model.getGround();
     OpenSim::Body tower("tower", mass, Vec3(0), mass*SimTK::Inertia::brick(0.1, 1.0, 0.2));
     tower.addDisplayGeometry("box.vtp");
     tower.scale(Vec3(0.1, 1.0, 0.2));

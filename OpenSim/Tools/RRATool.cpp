@@ -241,7 +241,7 @@ void RRATool::setupProperties()
 
 
     comment = "Preferred optimizer algorithm (currently support \"ipopt\" or \"cfsqp\", "
-                 "the latter requiring the osimFSQP library.";
+                 "the latter requiring the osimCFSQP library.";
     _optimizerAlgorithmProp.setComment(comment);
     _optimizerAlgorithmProp.setName("optimizer_algorithm");
     _propertySet.append( &_optimizerAlgorithmProp );

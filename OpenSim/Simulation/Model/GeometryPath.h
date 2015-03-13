@@ -98,9 +98,9 @@ public:
     //--------------------------------------------------------------------------
     // UTILITY
     //--------------------------------------------------------------------------
-    PathPoint* addPathPoint(const SimTK::State& s, int aIndex, OpenSim::Body& aBody);
+    PathPoint* addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& aBody);
     PathPoint* appendNewPathPoint(const std::string& proposedName, 
-                                OpenSim::Body& aBody, const SimTK::Vec3& aPositionOnBody);
+        PhysicalFrame& aBody, const SimTK::Vec3& aPositionOnBody);
     bool canDeletePathPoint( int aIndex);
     bool deletePathPoint(const SimTK::State& s, int aIndex);
     
@@ -226,7 +226,7 @@ private:
     void updateGeometryLocations(const SimTK::State& s) const;
     void namePathPoints(int aStartingIndex);
     void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, 
-                           int aIndex, const OpenSim::Body& aBody);
+                           int aIndex, const PhysicalFrame& aBody);
 
 //=============================================================================
 };  // END of class GeometryPath

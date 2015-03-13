@@ -66,7 +66,7 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 {
   try {
 
-    Object::registerType(Connector<Object>());
+    Object::registerType(Connector<Component>());
 
     // Register commonly used Inputs for de/serialization
     Object::registerType(Input<double>());

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan, Ajay Seth                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,12 +25,12 @@
 // INCLUDE
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Common/Function.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 namespace OpenSim {
 
 class Model;
-class Body;
 class ScaleSet;
 
 /**
@@ -131,13 +131,13 @@ public:
 
         @param[in] name     the name associated with this joint (should be
                             unique from other joints in the same model)
-        @param[in] parent   the parent Body that joint connects to
+        @param[in] parent   the parent PhysicalFrame that joint connects to
         @param[in] locationInParent    Vec3 of the location of the joint in the
                                        parent body frame.
         @param[in] orientationInParent Vec3 of the XYZ body-fixed Euler angles
                                        of the joint frame orientation in the
                                        parent body frame.
-        @param[in] child    the child Body that joint connects to
+        @param[in] child    the child PhysicalFrame that joint connects to
         @param[in] locationInChild     Vec3 of the location of the joint in the
                                        child body frame.
         @param[in] orientationInChild  Vec3 of the XYZ body-fixed Euler angles
@@ -148,10 +148,10 @@ public:
                             Default is false (that is, forward).
         */
     Joint(const std::string &name,
-          const Body &parent,
+          const PhysicalFrame& parent,
           const SimTK::Vec3& locationInParent,
           const SimTK::Vec3& orientationInParent,
-          const OpenSim::Body& child,
+          const PhysicalFrame& child,
           const SimTK::Vec3& locationInChild,
           const SimTK::Vec3& orientationInChild,
           bool reverse = false);
@@ -160,44 +160,44 @@ public:
 
     // GET & SET
 
-    void setChildBodyName(const std::string& name);
-    const std::string& getChildBodyName() const;
+    void setChildFrameName(const std::string& name);
+    const std::string& getChildFrameName() const;
 
     /**
      * Set the child body that this joint connects.
      *
-     * @param child Body reference.
+     * @param child PhysicalFrame reference.
      */
-    void setChildBody(OpenSim::Body& child);
+    void setChildFrame(const PhysicalFrame& child);
 
     /**
-     * Get the child body that this joint connects to.
+     * Get the child joint frame.
      *
-     * @return const Body reference.
+     * @return const PhysicalFrame reference.
      */
-    const OpenSim::Body& getChildBody() const;
+    const PhysicalFrame& getChildFrame() const;
 
     void setLocationInChild(const SimTK::Vec3& aLocation);
     const SimTK::Vec3& getLocationInChild() const;
     void setOrientationInChild(const SimTK::Vec3& aOrientation);
     const SimTK::Vec3& getOrientationInChild() const;
 
-    // Relating to the parent body
-    void setParentBodyName(const std::string& aName);
-    const std::string& getParentBodyName() const;
+    // Relating to the parent joint frame
+    void setParentFrameName(const std::string& aName);
+    const std::string& getParentFrameName() const;
 
     /**
-    * Set the parent body that this joint connects.
+    * Set the parent frame that this joint connects.
     *
-    * @param parent Body.
+    * @param parent PhysicalFrame.
     */
-    void setParentBody(OpenSim::Body& parent);
+    void setParentFrame(const PhysicalFrame& parent);
     /**
-     * Get the parent body to which this joint attaches.
+     * Get the parent frame to which this joint attaches.
      *
-     * @return const ref to parent Body.
+     * @return const ref to parent PhysicalFrame.
      */
-    const OpenSim::Body& getParentBody() const;
+    const OpenSim::PhysicalFrame& getParentFrame() const;
 
     void setLocationInParent(const SimTK::Vec3& aLocation);
     const SimTK::Vec3& getLocationInParent() const;
@@ -289,7 +289,7 @@ protected:
     void setCoordinateModel(Coordinate *aCoord, Model *aModel) const {aCoord->_model = aModel;}
 
     /** Updating XML formating to latest revision */
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
 
     /** Calculate the equivalent spatial force, FB_G, acting on a mobilized body specified by index
        acting at its mobilizer frame B, expressed in ground.  */
@@ -297,8 +297,8 @@ protected:
 
     /** Return the equivalent (internal) SimTK::Rigid::Body for the parent/child
         OpenSim::Body. Not valid until after extendAddToSystem on the Body has been called.*/
-    const SimTK::Body::Rigid& getParentInternalRigidBody() const;
-    const SimTK::Body::Rigid& getChildInternalRigidBody() const;
+    const SimTK::Body& getParentInternalRigidBody() const;
+    const SimTK::Body& getChildInternalRigidBody() const;
 
 
     /** Utility method for creating the underlying MobilizedBody of the desired
@@ -319,34 +319,32 @@ protected:
         const SimTK::Body* outb = &getChildInternalRigidBody();
         const SimTK::Transform* inbX = &getParentTransform();
         const SimTK::Transform* outbX = &getChildTransform();
-        const Body* associatedBody = nullptr;
+        const PhysicalFrame* associatedFrame = nullptr;
         // if the joint is reversed then flip the underlying tree representation
         // of inboard and outboard bodies, although the joint direction will be
         // preserved, the inboard must exist first.
         if (get_reverse()){
-            inb = mbs.updMatterSubsystem().updMobilizedBody(
-                                               getMobilizedBodyIndex(getChildBody()) );
+            inb = getChildFrame().getMobilizedBody();
             const SimTK::Transform* swap = inbX;
             inbX = outbX;
             outbX = swap;
 
             outb = &getParentInternalRigidBody();
-            associatedBody = (_slaveBodyForParent) ? _slaveBodyForParent :
-                                                     &getParentBody();
+            associatedFrame = (_slaveBodyForParent) ? _slaveBodyForParent :
+                                                     &getParentFrame();
         }
         else{
-            inb = mbs.updMatterSubsystem().updMobilizedBody(
-                                               getMobilizedBodyIndex(getParentBody()) );
+            inb = getParentFrame().getMobilizedBody();
 
-            associatedBody = (_slaveBodyForChild) ? _slaveBodyForChild :
-                &getChildBody();
+            associatedFrame = (_slaveBodyForChild) ? _slaveBodyForChild :
+                &getChildFrame();
         }
 
         int startingCoordinateIndex = 0;
         T simtkBody = createMobilizedBody<T>(inb, *inbX,
                                              *outb, *outbX,
                                              startingCoordinateIndex,
-                                             associatedBody);
+                                             associatedFrame);
 
         return simtkBody;
     }
@@ -378,8 +376,8 @@ protected:
                                  to assign mobility indices to the Joint's
                                  coordinates. It is incremented by the number of
                                  mobilities of the MobilizedBody created
-    @param[in] associatedBody    (optional) the Body associated with the
-                                 MobilizeBody. The MobilizedBody index is
+    @param[in] physicalFrame     (optional) the PhysicalFrame associated with
+                                 the MobilizeBody. The MobilizedBody index is
                                  assigned to the associated Body.
     */
     template <typename T>
@@ -388,7 +386,7 @@ protected:
                           const SimTK::Body& outboard,
                           const SimTK::Transform& outboardTransform,
                           int& startingCoordinateIndex,
-                          const OpenSim::Body* associatedBody=nullptr) const {
+                          const PhysicalFrame* physicalFrame = nullptr) const {
         // CREATE MOBILIZED BODY
         SimTK::MobilizedBody::Direction dir =
             SimTK::MobilizedBody::Direction(get_reverse());
@@ -402,7 +400,7 @@ protected:
                       getConcreteClassName().c_str());
 
         startingCoordinateIndex = assignSystemIndicesToBodyAndCoordinates(simtkBody,
-            associatedBody,
+            physicalFrame,
             getNumMobilities<T>(simtkBody),
             startingCoordinateIndex);
 
@@ -420,7 +418,7 @@ protected:
         an exception if the mobilized Body is neither the Joint's parent or child.*/
     int assignSystemIndicesToBodyAndCoordinates(
         const SimTK::MobilizedBody& mobod,
-        const OpenSim::Body* mobilized,
+        const OpenSim::PhysicalFrame* mobilized,
         const int& numMobilities,
         const int& startingCoordinateIndex) const;
 
