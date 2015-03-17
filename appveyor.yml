@@ -51,7 +51,7 @@ build_script:
   # Configure.
   - cmake .. -G"Visual Studio 12 Win64" -DSIMBODY_HOME=C:\simbody # TODO -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON -DSWIG_EXECUTABLE=C:\swigwin-3.0.2\swig.exe # TODO -DBUILD_SIMM_TRANSLATOR=ON
   # Build.
-  - MSBuild OpenSim.sln /target:ALL_BUILD /p:Configuration=Release /maxcpucount:4 /verbosity:quiet
+  - MSBuild OpenSim.sln /target:ALL_BUILD /p:Configuration=RelWithDebInfo /maxcpucount:4 /verbosity:quiet
 
 test_script:
-  - ctest --parallel 4 --build-config Release --output-on-failure
+  - ctest --parallel 4 --build-config RelWithDebInfo --output-on-failure
