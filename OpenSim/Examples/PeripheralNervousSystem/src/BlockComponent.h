@@ -5,8 +5,6 @@
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
-#include "ComponentInput.h"
-
 namespace OpenSim {
 
 /** 
@@ -26,6 +24,8 @@ public:
 		"Type of the transfer function");
 
 	static const std::string CACHE_OUTPUT;
+	static const std::string INPUT;
+	static const std::string OUTPUT;
 
 	BlockComponent();
 
@@ -48,50 +48,12 @@ public:
 	void setType(std::string t);
 
 	/**
-	* Getter and setter for the array of excitatory components.
-	*/
-	OpenSim::Array<std::string> getExcitatory() const;
-	void setExcitatory(OpenSim::Array<std::string> &e);
-
-	/**
-	* Getter and setter for the array of inhibitory components.
-	*/
-	OpenSim::Array<std::string> getInhibitory() const;
-	void setInhibitory(OpenSim::Array<std::string> &i);
-
-	/************************************************************************/
-	/* Interface                                                            */
-	/************************************************************************/
-
-	/**
-	* Gets the transfer function input.
-	*/
-	double getInput(const SimTK::State& s, bool delayed = true) const;
-
-	/**
-	* Sets the transfer function input and if desirable invalidates the output 
-	* cache.
-	*/
-	void setInput(const SimTK::State& s, const double x,
-		bool toInvalidate = false) const;
-
-	/**
 	* Gets the transfer function output from the cache variable.
 	*/
-	double getOutput(const SimTK::State& s) const;
-	
+	double getComponentOutput(const SimTK::State& s) const;
 
 protected:
 
-	/**
-	 *	Input handler with delay buffer and event trigger.
-	 */
-	ComponentInput* m_input;	
-
-	/**
-	* Array of excitatory and inhibitory components
-	*/
-	OpenSim::Array<std::string> m_excitatory, m_inhibitory;
 
 	/************************************************************************/
 	/* Must be implemented by subclass                                      */
@@ -119,15 +81,26 @@ protected:
 	*/
 	virtual void constructProperties();
 
-	/************************************************************************/
-	/* Implemented                                                          */
-	/************************************************************************/
+	/**
+	* Initializes input output connectors.
+	*/
+	virtual void constructInputOutput() const = 0;
+
+	
+
+private:
+	/**
+	*	Contains the non-delayed input.
+	*/
+	mutable SimTK::Measure_<double>::Constant m_buffer;
 
 	/**
-	* Computes the total contribution of all excitatory and inhibitory
-	* components to the input. Used if a component has many input signals.
+	*	Contains the delayed input.
 	*/
-	double computeExcitatoryInhibitoryCommand(const SimTK::State& s) const;
+	SimTK::Measure_<double>::Delay m_delay_buffer;
+
+	
+
 
 
 }; // end of class

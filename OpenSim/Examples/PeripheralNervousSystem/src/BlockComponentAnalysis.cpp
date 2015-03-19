@@ -164,8 +164,10 @@ int BlockComponentAnalysis::record(const SimTK::State& s)
 	ComponentSet& component_set = _model->updMiscModelComponentSet();
 	for (int i = 0; i<component_set.getSize(); i++)
 	{
-		data.append(((BlockComponent&) component_set[i]).getInput(s, false));
-		data.append(((BlockComponent&) component_set[i]).getOutput(s));
+		data.append(((BlockComponent&) component_set[i]).
+			getInputValue<double>(s, BlockComponent::INPUT));
+		data.append(((BlockComponent&) component_set[i]).
+			getOutputValue<double>(s, BlockComponent::OUTPUT));
 	}
 
 	m_storage.append(s.getTime(), data.size(), &data[0]);

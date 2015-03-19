@@ -15,6 +15,7 @@ GolgiTendon::GolgiTendon()
 {
 	setNull();
 	constructProperties();
+	constructInputOutput();
 	setName("default_GolgiTendon");
 }
 
@@ -23,6 +24,7 @@ GolgiTendon::GolgiTendon(const string& name)
 {
 	setNull();
 	constructProperties();
+	constructInputOutput();
 }
 
 GolgiTendon::~GolgiTendon()
@@ -36,7 +38,7 @@ GolgiTendon::~GolgiTendon()
 
 void GolgiTendon::computeStateVariableDerivatives(const State& s) const
 {
-	double u = getInput(s);
+	double u = getInputValue<double>(s, BlockComponent::INPUT);
 
 	Vector xdot(getNumStateVariables());
 	Vector x = getTransferFunctionState(s);
@@ -61,7 +63,7 @@ void GolgiTendon::extendAddToSystem(MultibodySystem& system) const
 
 void GolgiTendon::calculateOutput(const State& s, double& data) const
 {
-	const double u = getInput(s);
+	double u = getInputValue<double>(s, BlockComponent::INPUT);
 
 	Vector x = getTransferFunctionState(s);
 
@@ -84,6 +86,15 @@ void GolgiTendon::constructProperties()
 	set_gain(25);
 	set_delay(40E-3);
 	set_type("GTO");
+}
+
+void GolgiTendon::constructInputOutput() const
+{
+	GolgiTendon* self = const_cast<GolgiTendon *>(this);
+
+	self->constructInput<double>(BlockComponent::INPUT, Stage::Dynamics);
+	self->constructOutput<double>(BlockComponent::OUTPUT, 
+		&BlockComponent::getComponentOutput);
 }
 
 Vector GolgiTendon::getTransferFunctionState(const State& s) const

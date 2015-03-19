@@ -30,17 +30,19 @@ public:
 protected:
 
 	virtual void computeStateVariableDerivatives(const SimTK::State& s)
-		const OVERRIDE_11;
+		const override;
 	
 	virtual void extendAddToSystem(SimTK::MultibodySystem& system) 
-		const OVERRIDE_11;
+		const override;
 
 	virtual void calculateOutput(const SimTK::State& s, double& data)
-		const OVERRIDE_11;
+		const override;
 
-	virtual void setNull() OVERRIDE_11;
+	virtual void setNull() override;
 
-	virtual void constructProperties() OVERRIDE_11;
+	virtual void constructProperties() override;
+
+	virtual void constructInputOutput() const override;
 
 private:
 	

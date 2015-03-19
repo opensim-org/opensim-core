@@ -7,7 +7,9 @@ using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
-const string BlockComponent::CACHE_OUTPUT = "component_output";
+const string BlockComponent::CACHE_OUTPUT = "cache_output";
+const string BlockComponent::INPUT = "component_input";
+const string BlockComponent::OUTPUT = "component_output";
 
 
 BlockComponent::BlockComponent()
@@ -26,7 +28,7 @@ BlockComponent::BlockComponent(const string& name)
 
 BlockComponent::~BlockComponent()
 {
-	//no need to delete m_input
+	
 }
 
 /************************************************************************/
@@ -51,7 +53,9 @@ double BlockComponent::getDelay() const
 void BlockComponent::setDelay(double d)
 {
 	set_delay(d);
-	m_input->setDelay(d);
+
+	BlockComponent* self = const_cast<BlockComponent *>(this);
+	self->m_delay_buffer.setDelay(d);
 }
 
 string BlockComponent::getType() const
@@ -64,48 +68,11 @@ void BlockComponent::setType(std::string t)
 	set_type(t);
 }
 
-Array<string> BlockComponent::getExcitatory() const
-{
-	return m_excitatory;
-}
-
-void BlockComponent::setExcitatory(Array<string> &e)
-{
-	m_excitatory = e;
-}
-
-Array<string> BlockComponent::getInhibitory() const
-{
-	return m_inhibitory;
-}
-	
-void BlockComponent::setInhibitory(Array<string> &i)
-{
-	m_inhibitory = i;
-}
-
 /************************************************************************/
 /* Interface                                                            */
 /************************************************************************/
 
-double BlockComponent::getInput(const State& s, bool delayed) const
-{
-	return m_input->getInput(s, delayed);
-}
-
-
-void BlockComponent::setInput(const State& s, const double x,
-	bool toInvalidate) const
-{
-	m_input->setInput(s, x);
-
-	if (toInvalidate)
-	{
-		markCacheVariableInvalid(s, CACHE_OUTPUT);
-	}
-}
-
-double BlockComponent::getOutput(const State& s) const
+double BlockComponent::getComponentOutput(const State& s) const
 {
 	if (!isCacheVariableValid(s, CACHE_OUTPUT))
 	{
@@ -114,7 +81,9 @@ double BlockComponent::getOutput(const State& s) const
 		calculateOutput(s, value);
 		markCacheVariableValid(s, CACHE_OUTPUT);
 
-		return value;
+		m_buffer.setValue(value);
+
+		return m_delay_buffer.getValue(s);
 	}
 	return getCacheVariableValue<double>(s, CACHE_OUTPUT);
 }
@@ -127,13 +96,17 @@ void BlockComponent::extendAddToSystem(MultibodySystem& system) const
 {
 	Super::extendAddToSystem(system);
 
-	BlockComponent* self = const_cast<BlockComponent *>(this);
-
 	double value = 0;
 	addCacheVariable(CACHE_OUTPUT, value, Stage::Dynamics);
 
-	self->m_input = new ComponentInput(_model, getName(), get_delay());
-	_model->updDefaultSubsystem().addEventHandler(m_input);
+	
+	m_buffer = Measure_<double>::Constant(
+		_model->updDefaultSubsystem(), 0);
+
+	BlockComponent* self = const_cast<BlockComponent *>(this);
+	self->m_delay_buffer = Measure_<double>::Delay(
+		_model->updDefaultSubsystem(), m_buffer, getDelay());
+	self->m_delay_buffer.setDefaultValue(0);
 }
 
 void BlockComponent::setNull()
@@ -147,37 +120,5 @@ void BlockComponent::constructProperties()
 	constructProperty_delay(0);
 	constructProperty_type("TF");
 }
-
-/************************************************************************/
-/* Implemented                                                          */
-/************************************************************************/
-
-double BlockComponent::computeExcitatoryInhibitoryCommand(
-	const State& s) const
-{
-	ComponentSet& component_set = _model->updMiscModelComponentSet();
-	double feedback = 0;
-
-	//cout << "Time: " << s.getTime() << " " <<getName() << endl;
-
-	for(int i = 0;i < m_excitatory.getSize();++i)
-	{
-		BlockComponent& component = 
-			(BlockComponent&) component_set.get(m_excitatory[i]);
-
-		feedback += component.getOutput(s);
-	}
-
-	for(int i = 0;i < m_inhibitory.getSize();++i)
-	{
-		BlockComponent& component = 
-			(BlockComponent&) component_set.get(m_inhibitory[i]);
-
-		feedback -= component.getOutput(s);
-	}
-
-	return feedback;
-}
-
 
 

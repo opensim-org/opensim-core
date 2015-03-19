@@ -87,9 +87,9 @@ void test_GTO()
 	model.buildSystem();//called to finalized
 
 	model.updDefaultSubsystem().addEventHandler(
-		new StepEvent(2, 1.0, &model, gto1->getName()));
+		new StepEvent(2, 1.0, &model, gto1->getName(), BlockComponent::INPUT));
 	model.updDefaultSubsystem().addEventHandler(
-		new StepEvent(1, 0.5, &model, gto2->getName()));
+		new StepEvent(1, 0.5, &model, gto2->getName(), BlockComponent::INPUT));
 
 	State& state = model.initializeState();
 
