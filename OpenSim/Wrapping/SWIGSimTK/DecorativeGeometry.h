@@ -9,7 +9,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org/home/simbody.  *
  *                                                                            *
- * Portions copyright (c) 2005-13 Stanford University and the Authors.        *
+ * Portions copyright (c) 2005-15 Stanford University and the Authors.        *
  * Authors: Michael Sherman                                                   *
  * Contributors: Jack Middleton, Peter Eastman, Ayman Habib                   *
  *                                                                            *
@@ -91,11 +91,10 @@ DecorativeGeometry() : rep(0) { }
 /** Copy construction is deep; the source object will be cloned to create an
 independent copy. **/
 DecorativeGeometry(const DecorativeGeometry& source);
-#ifndef SWIG
 /** Copy assignment is deep; the handle will be cleared if necessary and then
 the source object will be cloned to create an independent copy. **/
 DecorativeGeometry& operator=(const DecorativeGeometry& source);
-#endif
+
 /** Drawing modes. **/
 enum Representation {
     DrawPoints    =  1, ///< Use a cloud of points.
@@ -122,7 +121,8 @@ an index that can identify this particular piece of geometry. As an alternative,
 or addition, see setUserRef(). In any case the \a index is simply stored with 
 the object and returned if you ask for it. If you don't set it the value 
 is -1. The \a index is copied if you copy the %DecorativeGeometry object. Be
-sure to change it afterwards if that is not the correct index for the copy. **/
+sure to change it afterwards if that is not the correct index for the copy. 
+Simbody sets this index when %DecorativeGeometry is added to a Body. **/
 DecorativeGeometry& setIndexOnBody(int index);
 
 /** Use this method to store an arbitrary reference pointer with this 
@@ -231,7 +231,7 @@ Real getLineThickness() const;
     
 /** Set whether the geometry acts as a billboard, always rotating to face the 
 camera. The default is typically no except for text. If you want 3D text that
-moves with your model, set this to true. Here 0 means false, 1 means true,
+moves with your model, set this to false. Here 0 means false, 1 means true,
 and -1 means "use default". **/
 DecorativeGeometry& setFaceCamera(int shouldFace);
 /** Get whether the geometry acts as a billboard, always rotating to face the 
@@ -247,7 +247,7 @@ DecorativeGeometry& setRepresentation(const Representation&);
 Representation getRepresentation() const;
 
 void implementGeometry(DecorativeGeometryImplementation&) const;
-#ifndef SWIG
+
 // Bookkeeping below here -- internal use only. Don't look below or you will
 // turn into a pillar of salt.
 bool isOwnerHandle() const;
@@ -256,7 +256,6 @@ explicit DecorativeGeometry(class DecorativeGeometryRep* r) : rep(r) { }
 bool hasRep() const {return rep!=0;}
 const DecorativeGeometryRep& getRep() const {assert(rep); return *rep;}
 DecorativeGeometryRep&       updRep()       {assert(rep); return *rep;}
-#endif
 protected:
 DecorativeGeometryRep* rep;
 };
@@ -328,8 +327,9 @@ public:
 
     const Vec3& getPoint1() const;
     const Vec3& getPoint2() const;
-
+#ifndef SWIG
     SimTK_PIMPL_DOWNCAST(DecorativeLine, DecorativeGeometry);
+#endif
 private:
     class DecorativeLineRep& updRep();
     const DecorativeLineRep& getRep() const;
@@ -540,6 +540,7 @@ public:
     DecorativeText& setColor(const Vec3& rgb) {DecorativeGeometry::setColor(rgb);       return *this;}
     DecorativeText& setOpacity(Real o)        {DecorativeGeometry::setOpacity(o);       return *this;}
     DecorativeText& setLineThickness(Real t)  {DecorativeGeometry::setLineThickness(t); return *this;}
+    DecorativeText& setFaceCamera(int yn)     {DecorativeGeometry::setFaceCamera(yn);   return *this;}
     DecorativeText& setRepresentation(const Representation& r) 
     {   DecorativeGeometry::setRepresentation(r); return *this; }
 #ifndef SWIG
@@ -556,6 +557,7 @@ class SimTK_SimTKCOMMON_EXPORT DecorativeMesh : public DecorativeGeometry {
 public:
     explicit DecorativeMesh(const PolygonalMesh& mesh);
     const PolygonalMesh& getMesh() const;
+
     // Retain the derived type when setting generic geometry options.
     DecorativeMesh& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
     DecorativeMesh& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
@@ -577,8 +579,8 @@ private:
 };
 
 
-/** This defines a displayable mesh by referencing a file name containing the mesh. If format is not supported
-  by visualizer it will be ignored. **/
+/** This defines a displayable mesh by referencing a file name containing the 
+mesh. If format is not supported by visualizer it will be ignored. . **/
 class SimTK_SimTKCOMMON_EXPORT DecorativeMeshFile : public DecorativeGeometry {
 public:
     explicit DecorativeMeshFile(const std::string& meshFileName);
@@ -602,6 +604,86 @@ public:
 private:
     class DecorativeMeshFileRep& updRep();
     const DecorativeMeshFileRep& getRep() const;
+};
+
+
+/** This defines a displayable torus, the torus is centered at the
+origin with the axial direction aligned to the z-axis. It is defined by
+a torusRadius (radius of the circular centerline of the torus, measured
+from the origin), and a tubeRadius (radius of the torus cross-section:
+perpendicular distance from the circular centerline to the surface). **/
+class SimTK_SimTKCOMMON_EXPORT DecorativeTorus : public DecorativeGeometry {
+public:
+    explicit DecorativeTorus(Real torusR=1, Real tubeR=0.1);
+
+    DecorativeTorus& setTorusRadius(Real);
+    DecorativeTorus& setTubeRadius(Real);
+    Real getTorusRadius() const;
+    Real getTubeRadius() const;
+
+    // Retain the derived type when setting generic geometry options.
+    DecorativeTorus& setBodyId(int b)          { DecorativeGeometry::setBodyId(b);        return *this; }
+    DecorativeTorus& setIndexOnBody(int x)     { DecorativeGeometry::setIndexOnBody(x);   return *this; }
+    DecorativeTorus& setUserRef(void* p)       { DecorativeGeometry::setUserRef(p);       return *this; }
+    DecorativeTorus& setTransform(const Transform& X_BD) { DecorativeGeometry::setTransform(X_BD); return *this; }
+    DecorativeTorus& setResolution(Real r)     { DecorativeGeometry::setResolution(r);    return *this; }
+    DecorativeTorus& setScaleFactors(const Vec3& s) { DecorativeGeometry::setScaleFactors(s); return *this; }
+    DecorativeTorus& setColor(const Vec3& rgb) { DecorativeGeometry::setColor(rgb);       return *this; }
+    DecorativeTorus& setOpacity(Real o)        { DecorativeGeometry::setOpacity(o);       return *this; }
+    DecorativeTorus& setLineThickness(Real t)  { DecorativeGeometry::setLineThickness(t); return *this; }
+    DecorativeTorus& setRepresentation(const Representation& r)
+    {
+        DecorativeGeometry::setRepresentation(r); return *this;
+    }
+#ifndef SWIG
+    SimTK_PIMPL_DOWNCAST(DecorativeTorus, DecorativeGeometry);
+#endif
+private:
+    class DecorativeTorusRep& updRep();
+    const DecorativeTorusRep& getRep() const;
+};
+
+
+/** An arrow with origin point, direction and length. Note that the actual 
+placement can be changed by the parent class transform & scale; here we are 
+just generating the initial arrow in the geometry object's local frame.
+
+There is a default constructor for this object but it is not much
+use unless followed by point, direction and length specifications. By default 
+we produce an arrow going from (0,0,0) in direction (0,1,0) of length 1 just 
+so it will show up if you forget to set it to something meaningful. Having a 
+default constructor allows us to have arrays of these objects. **/
+class SimTK_SimTKCOMMON_EXPORT DecorativeArrow : public DecorativeGeometry {
+public:
+    explicit DecorativeArrow(const Vec3& p1 = Vec3(0), const UnitVec3& dir = UnitVec3(1), Real length = 1.0); // Arrow 
+    const Vec3& getOrigin() const;
+    const UnitVec3& getDirection() const;
+    const Real& getLength() const;
+
+    DecorativeArrow& setOrigin(const Vec3& origin);
+    DecorativeArrow& setDirection(const UnitVec3& direction);
+    DecorativeArrow& setLength(const Real& length);
+
+    // Retain the derived type when setting generic geometry options.
+    DecorativeArrow& setBodyId(int b)          { DecorativeGeometry::setBodyId(b);        return *this; }
+    DecorativeArrow& setIndexOnBody(int x)     { DecorativeGeometry::setIndexOnBody(x);   return *this; }
+    DecorativeArrow& setUserRef(void* p)       { DecorativeGeometry::setUserRef(p);       return *this; }
+    DecorativeArrow& setTransform(const Transform& X_BD) { DecorativeGeometry::setTransform(X_BD); return *this; }
+    DecorativeArrow& setResolution(Real r)     { DecorativeGeometry::setResolution(r);    return *this; }
+    DecorativeArrow& setScaleFactors(const Vec3& s) { DecorativeGeometry::setScaleFactors(s); return *this; }
+    DecorativeArrow& setColor(const Vec3& rgb) { DecorativeGeometry::setColor(rgb);       return *this; }
+    DecorativeArrow& setOpacity(Real o)        { DecorativeGeometry::setOpacity(o);       return *this; }
+    DecorativeArrow& setLineThickness(Real t)  { DecorativeGeometry::setLineThickness(t); return *this; }
+    DecorativeArrow& setRepresentation(const Representation& r)
+    {
+        DecorativeGeometry::setRepresentation(r); return *this;
+    }
+#ifndef SWIG
+    SimTK_PIMPL_DOWNCAST(DecorativeArrow, DecorativeGeometry);
+#endif
+private:
+    class DecorativeArrowRep& updRep();
+    const DecorativeArrowRep& getRep() const;
 };
 
 /** This defines a single DecorativeGeometry object that is composed of a
@@ -669,7 +751,9 @@ public:
     virtual void implementFrameGeometry(    const DecorativeFrame&)    = 0;
     virtual void implementTextGeometry(     const DecorativeText&)     = 0;
     virtual void implementMeshGeometry(     const DecorativeMesh&)     = 0;
-    virtual void implementMeshFileGeometry(     const DecorativeMeshFile&)     = 0;
+    virtual void implementMeshFileGeometry( const DecorativeMeshFile&) = 0;
+    virtual void implementTorusGeometry(    const DecorativeTorus&)    = 0;
+    virtual void implementArrowGeometry(    const DecorativeArrow&)    = 0;
 };
 
 } // namespace SimTK
