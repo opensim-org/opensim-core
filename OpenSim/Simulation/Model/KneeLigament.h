@@ -45,21 +45,43 @@ class GeometryPath;
 //=============================================================================
 //=============================================================================
 /**
-A class implementing a knee ligament. The force strain function is given by:
-	
+A class implementing a knee ligament. The ligament is described by three
+parameters, rest length \f$ l_0 \f$, the stiffness \f$ k \f$ and toe region
+\f$ e_l \f$.
+
+The strain is given by:
+
 \f[
-f(e) =
-\begin{cases}
-0 & \text{if } e \leq 0 \\
-\frac{1}{4} \cdot \frac{e^2}{e_l}      & \text{if } e \leq 2 \cdot e_l\\
-k \cdot (e - e_l) & \text{otherwise}
-\end{cases}
+e = (l -l_0) / l_0
 \f]
 
-where, \f$k\f$ is the stiffness of the ligament, \f$e\f$ is the strain 
-(\f$(l -l0) / l0\f$) and \f$e_l\f$ is the strain related to where it changes from 
-non-linear to linear region.
- */
+where \f$ l_0 \f$ is the resting length of the ligament
+
+The force strain function is given by:
+
+\f[
+f(e) = 0, e \leq 0 
+\f]
+
+\f[
+f(e) = \frac{1}{4} \cdot \frac{e^2}{e_l}, e \leq 2 \cdot e_l
+\f]
+
+\f[
+f(e) = k \cdot (e - e_l), e > 2 \cdot e_l
+\f]
+
+where, \f$ k \f$ is the stiffness of the ligament and \f$ e_l \f$ is the limit 
+at which the ligament moves from the non-linear region to linear region.
+
+Sometime we define the reference length \f$ l_r \f$ and the reference strain
+\f$ e_r \f$, so the rest length is given by:
+
+\f[
+l_0 = l_r / (e_r + 1)
+\f]
+
+*/
 class OSIMSIMULATION_API KneeLigament : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(KneeLigament, Force);
 public:
