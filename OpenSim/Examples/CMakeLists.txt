@@ -14,6 +14,7 @@ INSTALL(DIRECTORY checkEnvironment DESTINATION sdk/APIExamples PATTERN ".svn" EX
 INSTALL(DIRECTORY SimpleOptimizationExample DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)
 INSTALL(DIRECTORY SymbolicExpressionReporter DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)
 ADD_SUBDIRECTORY(SymbolicExpressionReporter)
+ADD_SUBDIRECTORY(EventTriggeredDelay)
 
 ELSEIF (BUILD_API_EXAMPLES)
 ADD_SUBDIRECTORY(ControllerExample)
