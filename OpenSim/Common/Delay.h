@@ -58,13 +58,15 @@ namespace OpenSim {
  *         double q = _coordDelay.getValue(s);
  *         // Delayed negative feedback control law.
  *         double u = -10 * q;
- *         getModel().getActuatorSet()[0].addInControls(Vector(1, u), controls);
+ *         getModel().getActuatorSet().get("my_actuator").addInControls(
+ *             Vector(1, u), controls);
  *     }
  * private:
  *     void constructProperties() {
  *          constructProperty_delay(0.01); // 10 milliseconds
  *     }
  *     void extendFinalizeFromProperties() override {
+ *         Super::extendFinalizeFromProperties();
  *         _coordDelay.set_delay(get_delay());
  *         addComponent(&_coordDelay);
  *     }
@@ -114,7 +116,7 @@ private:
     void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-    SimTK::MeasureIndex _delayMeasureIndex;
+    SimTK::Measure_<T> _delayMeasure;
 };
 
 template<class T>
@@ -147,9 +149,7 @@ void Delay<T>::constructOutputs() {
 
 template<class T>
 T Delay<T>::getValue(const SimTK::State& s) const {
-    const auto& subsys = getSystem().getDefaultSubsystem();
-    const auto& measure = subsys.getMeasure(_delayMeasureIndex);
-    return SimTK::Measure_<T>::Delay::getAs(measure).getValue(s);
+    return _delayMeasure.getValue(s);
 }
 
 template<class T>
@@ -164,11 +164,10 @@ void Delay<T>::extendAddToSystem(SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
     auto& sub = system.updDefaultSubsystem();
     const auto& input = *static_cast<const Input<T>*>(&getInput("input"));
-    typename SimTK::Measure_<T>::Delay delayMeasure(sub,
-                                                    InputMeasure<T>(sub, input),
-                                                    get_delay());
-    const_cast<Delay*>(this)->_delayMeasureIndex =
-        delayMeasure.getSubsystemMeasureIndex();
+    const_cast<Delay*>(this)->_delayMeasure =
+            typename SimTK::Measure_<T>::Delay(sub,
+                                               InputMeasure<T>(sub, input),
+                                               get_delay());
 }
 
 typedef Delay<SimTK::Real> ScalarDelay;
