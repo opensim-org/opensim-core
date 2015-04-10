@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                OpenSim:  testOperators.cpp                                 *
+ *                    OpenSim:  testDelay.cpp                                 *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -172,10 +172,10 @@ private:
 
 /// Allows some testing of Delay with different models.
 void testDelaySimulation(Model& model, double delayTime = 0.017,
-        bool testRegression = true) {
+        bool testRegression = true, double minStepSize = SimTK::NaN,
+        /* integrator accuracy, test tolerance */ double tol=1e-6) {
 
     double finalTime = 1.35;
-    double tol = 1e-6; // integrator accuracy, test tolerance.
 
     const Coordinate& coord = model.getCoordinateSet()[0];
     auto* controller = dynamic_cast<PendulumController*>(
@@ -189,6 +189,9 @@ void testDelaySimulation(Model& model, double delayTime = 0.017,
         State& s = model.initSystem();
         SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
         integrator.setAccuracy(tol);
+        if (!SimTK::isNaN(minStepSize)) {
+            integrator.setMinimumStepSize(minStepSize);
+        }
         SimTK::TimeStepper ts(model.getSystem(), integrator);
         ts.initialize(s);
         ts.stepTo(finalTime);
@@ -305,8 +308,35 @@ void testDelay() {
 
         // Run test on original model using a different delay time,
         // to ensure that the Delay component is able to modify the
-        // Measure::Delay properly if a propery changes.
+        // Measure::Delay properly if a property changes.
         testDelaySimulation(model, 0.020, false);
+
+        // Test a really small delay duration (the default accuracy).
+        testDelaySimulation(model, 1e-6, false);
+
+        // Show that accuracy equal to delay yields correct results.
+        testDelaySimulation(model, 0.0001, false, SimTK::NaN, 0.0001);
+
+        /*
+         The two exception tests below were used to understand the interaction
+         between delay duration and integrator accuracy and min step size.
+         They are not too useful as actual tests though.
+        // Show that accuracy less tight than delay yields incorrect results,
+        // even at the looser testing tolerance (= accuracy).
+        SimTK_TEST_MUST_THROW_EXC(
+            testDelaySimulation(model, 0.0001, false, SimTK::NaN, 0.0005),
+            SimTK::Exception::Assert);
+
+        // Test a delay duration that is shorter than a time step.
+        // This shows that having a time step smaller than the delay
+        // is not sufficient; integrator accuracy is what's important.
+        SimTK_TEST_MUST_THROW_EXC(
+            testDelaySimulation(model, 0.0001, false, 0.00005),
+            SimTK::Exception::Assert);
+        */
+
+        // Test using a delay of 0.
+        // TODO doesn't work testDelaySimulation(model, 0.0, false);
 
         /* TODO will not pass until input/output copying is fixed.
         // Run same test after copying the model that contains the Delay.

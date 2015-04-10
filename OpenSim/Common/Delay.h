@@ -35,6 +35,13 @@ namespace OpenSim {
  * For times prior to the start of a simulation this Component behaves as
  * though the input value had been constant at its initial value.
  *
+ * @note The output will be incorrect if the delay is smaller than the
+ * integrator's accuracy setting. Make sure that the integrator's accuracy
+ * is tighter than your delay duration (e.g., accuracy of 1e-3 or less for a
+ * delay of 1e-3 seconds).
+ * Also, a delay of 0 currently does not produce the correct behavior;
+ * this is a known bug.
+ *
  * @tparam T The type of the quantity to be delayed. Common choices are a
  * SimTK::Real (see ScalarDelay) or a SimTK::Vector (see VectorDelay).
  *
@@ -116,7 +123,7 @@ private:
     void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-    SimTK::Measure_<T> _delayMeasure;
+    typename SimTK::Measure_<T>::Delay _delayMeasure;
 };
 
 template<class T>
