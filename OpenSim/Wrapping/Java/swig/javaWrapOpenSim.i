@@ -357,6 +357,15 @@ public:
 %extend SimTK::DecorativeFrame {
      SimTK::DecorativeFrame* clone() { return new SimTK::DecorativeFrame(*self); }
 }
+%extend SimTK::DecorativeArrow {
+     SimTK::DecorativeArrow* clone() { return new SimTK::DecorativeArrow(*self); }
+}
+%extend SimTK::DecorativeTorus {
+     SimTK::DecorativeTorus* clone() { return new SimTK::DecorativeTorus(*self); }
+}
+%extend SimTK::DecorativeCone {
+     SimTK::DecorativeCone* clone() { return new SimTK::DecorativeCone(*self); }
+}
 %javamethodmodifiers OpenSim::Model::addModelComponent "private";
 %javamethodmodifiers OpenSim::Model::addBody "private";
 %javamethodmodifiers OpenSim::Model::addConstraint "private";

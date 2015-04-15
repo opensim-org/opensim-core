@@ -67,8 +67,18 @@ class DecorativeGeometryImplementationText : public SimTK::DecorativeGeometryImp
         printout << "DecorativeMesh:" << dp.getMesh().getNumFaces() << " " << dp.getMesh().getNumVertices() << printCommonProps(dp) << std::endl;
     };
     void implementMeshFileGeometry(const DecorativeMeshFile& dp){
-        printout << "DecorativeMeshFile:" << dp.getMeshFile() << printCommonProps(dp) << std::endl;
+        printout << "DecorativeMeshFile:" << dp.getMeshFile() << " " << printCommonProps(dp) << std::endl;
     };
+    void implementArrowGeometry(const DecorativeArrow& dp){
+        printout << "DecorativeArrow:" << dp.getStartPoint() << dp.getEndPoint() << dp.getTipLength() << printCommonProps(dp) << std::endl;
+    };
+    void implementTorusGeometry(const DecorativeTorus& dp){
+        printout << "DecorativeTorus:" << dp.getTorusRadius() << dp.getTubeRadius() << printCommonProps(dp) << std::endl;
+    };
+    void implementConeGeometry(const DecorativeCone& dp){
+        printout << "DecorativeTorus:" << dp.getBaseRadius() << dp.getDirection() << dp.getHeight() << printCommonProps(dp) << std::endl;
+    };
+
 public:
     std::string getAsString() {
         return printout.str();

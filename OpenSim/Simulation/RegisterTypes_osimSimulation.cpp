@@ -174,9 +174,11 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( Cylinder());
     Object::registerType( Ellipsoid());
     Object::registerType( Mesh());
+    Object::registerType( Torus());
+    Object::registerType( Cone());
     Object::registerType( LineGeometry());
     Object::registerType( FrameGeometry());
-    Object::registerType( ArrowGeometry());
+    Object::registerType( Arrow());
     Object::registerType( GeometryPath());
 
     Object::registerType( ControlSet() );

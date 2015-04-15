@@ -228,32 +228,41 @@ private:
     }
 };
 /**
-* ArrowGeometry is a class used to abstract an arrow.
+* Arrow is a class used to abstract an arrow.
 */
-
-// untested yet
-class OSIMSIMULATION_API ArrowGeometry : public LineGeometry
+class OSIMSIMULATION_API Arrow : public Geometry
 {   
-    OpenSim_DECLARE_CONCRETE_OBJECT(ArrowGeometry, LineGeometry);
+    OpenSim_DECLARE_CONCRETE_OBJECT(Arrow, Geometry);
 public:
+    // Property start_point
+    OpenSim_DECLARE_PROPERTY(start_point, SimTK::Vec3,
+        "Arrow start point.");
+    OpenSim_DECLARE_PROPERTY(direction, SimTK::Vec3, 
+        "direction of Arrow");
+    OpenSim_DECLARE_PROPERTY(length, double, "length of Arrow");
     // constructor that takes startPoint, direction vector and length
-    ArrowGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aUnitDirTo, double aLength) :
-        LineGeometry()
+    Arrow(SimTK::Vec3& aPoint1, SimTK::UnitVec3& aUnitDir, double aLength) 
     {
-        SimTK::Vec3 point2 = aPoint1 + aLength* aUnitDirTo;
-        LineGeometry::setPoints(aPoint1, point2);
+        constructProperties();
+        updProperty_start_point() = aPoint1;
+        updProperty_direction() = aUnitDir;
+        updProperty_length() = aLength;
     }
     // constructor that takes startPoint, direction vector and length
-    ArrowGeometry() :
-        LineGeometry()
+    Arrow() 
     {
-        SimTK::Vec3 point1(0.), point2(1.);
-        LineGeometry::setPoints(point1, point2);
+        constructProperties();
     }
     // destructor
-    virtual ~ArrowGeometry() {}
+    virtual ~Arrow() {}
 
     void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
+private:
+    void constructProperties(){
+        constructProperty_start_point(SimTK::Vec3(0));
+        constructProperty_direction(SimTK::Vec3(1));
+        constructProperty_length(1.0);
+    }
 };
 
 
@@ -414,6 +423,51 @@ private:
         constructProperty_half_height(0.5);
     }
 };
+
+
+
+/**
+* A class to represent a Cone geometry.
+*/
+
+class OSIMSIMULATION_API Cone : public AnalyticGeometry
+{
+    OpenSim_DECLARE_CONCRETE_OBJECT(Cone, AnalyticGeometry);
+public:
+    OpenSim_DECLARE_PROPERTY(origin, SimTK::Vec3, "origin of cone base");
+    OpenSim_DECLARE_PROPERTY(direction, SimTK::Vec3, "direction of cone axis.");
+    OpenSim_DECLARE_PROPERTY(base_radius, double, "Base radius of cone.");
+    OpenSim_DECLARE_PROPERTY(height, double, "Height of cone.");
+    // Default constructor
+    Cone() :
+        AnalyticGeometry()
+    {
+        constructProperties();
+    }
+    // Convenience constructor that takes radius and half-height
+    Cone(const SimTK::Vec3& o, const SimTK::UnitVec3& dir,
+        double height, double base) :
+        AnalyticGeometry()
+    {
+        constructProperties();
+        upd_origin() = o;
+        upd_direction() = SimTK::Vec3(dir);
+        upd_base_radius() = base;
+        upd_height() = height;
+    }
+    // destructor
+    ~Cone() {}
+
+    void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
+private:
+    void constructProperties() {
+        constructProperty_origin(SimTK::Vec3(0));
+        constructProperty_direction(SimTK::UnitVec3(1));
+        constructProperty_base_radius(0.5);
+        constructProperty_height(1.0);
+    }
+};
+
 /**
 * A class to represent Torus geometry.
 */

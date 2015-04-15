@@ -112,6 +112,14 @@ void Cylinder::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>
     decoGeoms.push_back(deco);
 }
 
+void Cone::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+{
+    const Vec3 netScale = get_scale_factors();
+    DecorativeCone deco(get_origin(), SimTK::UnitVec3(get_direction()), get_height(), get_base_radius());
+    deco.setScaleFactors(netScale);
+    decoGeoms.push_back(deco);
+}
+
 void LineGeometry::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
@@ -120,13 +128,15 @@ void LineGeometry::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeome
     decoGeoms.push_back(deco);
 }
 
-void ArrowGeometry::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+
+void Arrow::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    LineGeometry::createDecorativeGeometry(decoGeoms);
-    // Add Brick at the top
-    DecorativeBrick tip(Vec3(.005));
-    tip.setTransform(SimTK::Transform(get_end_point()));
-    decoGeoms.push_back(tip);
+    const Vec3 netScale = get_scale_factors();
+    SimTK::Vec3 endPt(get_length()*get_direction());
+    DecorativeArrow deco(SimTK::Vec3(0), endPt);
+    deco.setLineThickness(0.05);
+    deco.setScaleFactors(netScale);
+    decoGeoms.push_back(deco);
 }
 
 void Ellipsoid::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
