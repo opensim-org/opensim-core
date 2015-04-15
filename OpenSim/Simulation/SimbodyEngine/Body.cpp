@@ -475,6 +475,11 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 SimTK::Xml::Element bodyFrameNode("FrameGeometry");
                 bodyFrameNode.setAttributeValue("name", bodyName + "_body_frame");
                 XMLDocument::addConnector(bodyFrameNode, "Connector_PhysicalFrame_", "frame", bodyName);
+                SimTK::Xml::Element appearanceNode("Appearance");
+                SimTK::Xml::Element frameRepresentation("representation");
+                frameRepresentation.setValue("0");
+                appearanceNode.insertNodeAfter(appearanceNode.element_end(), frameRepresentation);
+                bodyFrameNode.insertNodeAfter(bodyFrameNode.element_end(), appearanceNode);
                 SimTK::Xml::element_iterator geomSetIter = aNode.element_begin("GeometrySet");
                 if (geomSetIter != aNode.element_end()){
                     geomSetIter->insertNodeAfter(geomSetIter->node_end(), bodyFrameNode);
