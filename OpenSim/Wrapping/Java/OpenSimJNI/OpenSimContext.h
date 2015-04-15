@@ -259,17 +259,11 @@ in Java data types
 
 class AnalysisWrapper : public Analysis {
 OpenSim_DECLARE_CONCRETE_OBJECT(AnalysisWrapper, Analysis);
-    double  simulationTime;
 public:
     AnalysisWrapper(Model *aModel=0):
       Analysis(aModel){
-        simulationTime = -1.0;
     }
-
-    double getSimulationTime() {
-        return simulationTime;
-    }
-
+    virtual ~AnalysisWrapper() {}
 }; // Class AnalysisWrapper
 
 
