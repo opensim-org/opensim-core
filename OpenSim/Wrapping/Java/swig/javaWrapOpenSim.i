@@ -811,6 +811,7 @@ namespace SimTK {
 
 // osimSimulation
 %include <OpenSim/Simulation/osimSimulationDLL.h>
+
 %include <OpenSim/Simulation/Model/Appearance.h>
 %include <OpenSim/Simulation/Model/Geometry.h>
 %include <OpenSim/Simulation/Model/ModelComponent.h>
@@ -833,6 +834,7 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 %template(SetFrames) OpenSim::Set<OpenSim::Frame>;
 %template(ModelComponentSetFrames) OpenSim::ModelComponentSet<OpenSim::Frame>;
+%include <OpenSim/Simulation/Model/FrameSet.h>
 
 %include <OpenSim/Simulation/Model/Force.h>
 %template(SetForces) OpenSim::Set<OpenSim::Force>;
