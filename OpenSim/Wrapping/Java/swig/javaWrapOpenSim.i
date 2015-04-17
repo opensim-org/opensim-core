@@ -641,7 +641,6 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 
 %include <SimTKcommon/Constants.h>
 %include <SWIGSimTK/Vec.h>
-%include <SimTKcommon/SmallMatrix.h>
 // Vec3
 namespace SimTK {
 %template(Vec2) Vec<2>;
