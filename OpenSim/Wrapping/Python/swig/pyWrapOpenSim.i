@@ -1,6 +1,6 @@
 %module(directors="1") opensim
 %module opensim
-#pragma SWIG nowarn=822,451,503,516,325
+#pragma SWIG nowarn=822,451,503,516,325,401
 
 /*
 For consistency with the rest of the API, we use camel-case for variable names.
@@ -49,7 +49,7 @@ own project.
 #include <OpenSim/Common/FunctionSet.h>
 
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
-
+#include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
 #include <OpenSim/Simulation/Model/ComponentSet.h>
@@ -172,6 +172,7 @@ own project.
 #include <OpenSim/Simulation/Model/PathPointSet.h>
 #include <OpenSim/Simulation/Model/ConditionalPathPoint.h>
 #include <OpenSim/Simulation/Model/MovingPathPoint.h>
+#include <OpenSim/Simulation/Model/PointForceDirection.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/Ligament.h>
 
@@ -425,6 +426,9 @@ JOINT_ADOPT_HELPER(PlanarJoint);
 
 %include "numpy.i"
 
+%include "std_vector.i"
+%template(StdVecInt) std::vector<int>;
+
 %init %{
 import_array();
 %}
@@ -440,13 +444,22 @@ import_array();
 %include <SimTKcommon/SmallMatrix.h>
 // Vec3
 namespace SimTK {
+%template(Vec2) Vec<2>;
 %template(Vec3) Vec<3>;
+%template(Vec4) Vec<4>;
+%template(Vec6) Vec<6>;
 }
 // Mat33
 %include <SWIGSimTK/Mat.h>
 namespace SimTK {
 %template(Mat33) Mat<3, 3>;
 }
+%include <SWIGSimTK/CoordinateAxis.h>
+%include <SWIGSimTK/UnitVec.h>
+namespace SimTK {
+%template(UnitVec3)  SimTK::UnitVec<double,1>;
+}
+
 // Vector and Matrix
 %include <SWIGSimTK/BigMatrix.h>
 namespace SimTK {
@@ -461,6 +474,13 @@ namespace SimTK {
 %template(SpatialVec) Vec<2,   Vec3>;
 %template(VectorOfSpatialVec) Vector_<SpatialVec>;
 %template(VectorOfVec3) Vector_<Vec3>;
+}
+
+
+%include <SWIGSimTK/Rotation.h>
+namespace SimTK {
+%template(Rotation) SimTK::Rotation_<double>;
+%template(InverseRotation) SimTK::InverseRotation_<double>;
 }
 // Transform
 %include <SWIGSimTK/Transform.h>
@@ -555,6 +575,9 @@ namespace SimTK {
 %template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
 %template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
 
+%template(FramesList) OpenSim::ComponentList<OpenSim::Frame>;
+%template(FrameIterator) OpenSim::ComponentListIterator<OpenSim::Frame>;
+
 %template(BodiesList) OpenSim::ComponentList<OpenSim::Body>;
 %template(BodyIterator) OpenSim::ComponentListIterator<OpenSim::Body>;
 
@@ -569,6 +592,7 @@ namespace SimTK {
 
 %include <OpenSim/Common/Component.h>
 
+%template(getFramesList) OpenSim::Component::getComponentList<OpenSim::Frame>;
 %template(getBodiesList) OpenSim::Component::getComponentList<OpenSim::Body>;
 %template(getMusclesList) OpenSim::Component::getComponentList<OpenSim::Muscle>;
 %template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
@@ -578,6 +602,7 @@ namespace SimTK {
 %include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
 %include <OpenSim/Common/ScaleSet.h>
+%include <OpenSim/Common/MarkerFrame.h>
 %include <OpenSim/Common/MarkerData.h>
 
 // osimSimulation
@@ -599,8 +624,12 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/Frame.h>
 %include <OpenSim/Simulation/Model/PhysicalFrame.h>
 %include <OpenSim/Simulation/Model/Ground.h>
+%include <OpenSim/Simulation/Model/OffsetFrame.h>
+%template(PhysicalFrameWithOffset)   OpenSim::OffsetFrame<OpenSim::PhysicalFrame>; 
+%include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 %template(SetFrames) OpenSim::Set<OpenSim::Frame>;
 %template(ModelComponentSetFrames) OpenSim::ModelComponentSet<OpenSim::Frame>;
+%include <OpenSim/Simulation/Model/FrameSet.h>
 
 %include <OpenSim/Simulation/Model/Force.h>
 %template(SetForces) OpenSim::Set<OpenSim::Force>;
@@ -736,6 +765,10 @@ namespace SimTK {
 %template(SetPathPoint) OpenSim::Set<OpenSim::PathPoint>;
 %template(ArrayPathPoint) OpenSim::Array<OpenSim::PathPoint*>;
 %include <OpenSim/Simulation/Model/PathPointSet.h>
+
+%include <OpenSim/Simulation/Model/PointForceDirection.h>
+%template(ArrayPointForceDirection) OpenSim::Array<OpenSim::PointForceDirection*>;
+
 %include <OpenSim/Simulation/Model/GeometryPath.h>
 %include <OpenSim/Simulation/Model/Ligament.h>
 %include <OpenSim/Simulation/Model/PathActuator.h>
@@ -743,6 +776,8 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 %include <OpenSim/Simulation/Model/PointToPointSpring.h>
 %include <OpenSim/Simulation/Model/ExpressionBasedPointToPointForce.h>
+%include <OpenSim/Simulation/Model/ExpressionBasedCoordinateForce.h>
+
 %include <OpenSim/Simulation/Model/PathSpring.h>
 %include <OpenSim/Simulation/Model/BushingForce.h>
 %include <OpenSim/Simulation/Model/FunctionBasedBushingForce.h>
@@ -782,6 +817,8 @@ namespace SimTK {
 %include <OpenSim/Actuators/ForceVelocityInverseCurve.h>
 %include <OpenSim/Actuators/TendonForceLengthCurve.h>
 %include <OpenSim/Actuators/ClutchedPathSpring.h>
+%include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
+%include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 
 %include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 %include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>
@@ -873,6 +910,12 @@ SET_ADOPT_HELPER(Control);
         aProbe._markAdopted()
         return super(ProbeSet, self).adoptAndAppend(aProbe)
 %}
+};
 
-
+%extend OpenSim::FrameSet {
+%pythoncode %{
+    def adoptAndAppend(self, aFrame):
+        aFrame._markAdopted()
+        return super(FrameSet, self).adoptAndAppend(aFrame)
+%}
 };
