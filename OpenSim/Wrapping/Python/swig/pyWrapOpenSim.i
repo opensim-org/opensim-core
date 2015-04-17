@@ -61,6 +61,8 @@ own project.
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/Ground.h>
+#include <OpenSim/Simulation/Model/OffsetFrame.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
@@ -91,8 +93,6 @@ own project.
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
-
 #include <OpenSim/Simulation/Control/Control.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Control/ControlConstant.h>
@@ -190,6 +190,7 @@ own project.
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 #include <OpenSim/Simulation/Model/ExpressionBasedPointToPointForce.h>
+#include <OpenSim/Simulation/Model/ExpressionBasedCoordinateForce.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
 #include <OpenSim/Simulation/Model/PathSpring.h>
 #include <OpenSim/Simulation/Model/BushingForce.h>
@@ -313,6 +314,9 @@ MODEL_ADOPT_HELPER(ContactGeometry);
 MODEL_ADOPT_HELPER(Analysis);
 MODEL_ADOPT_HELPER(Force);
 MODEL_ADOPT_HELPER(Controller);
+
+// Make sure clone does not leak memory
+%newobject *::clone; 
 
 // Would prefer to modify the Joint abstract class constructor,
 // but the proxy classes don't even call it.
@@ -487,6 +491,7 @@ namespace SimTK {
 %template(Transform) SimTK::Transform_<double>;
 }
 
+//
 %include <SWIGSimTK/MassProperties.h>
 namespace SimTK {
 %template(Inertia) SimTK::Inertia_<double>;
