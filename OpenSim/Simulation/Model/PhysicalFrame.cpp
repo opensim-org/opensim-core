@@ -79,15 +79,6 @@ SimTK::Transform PhysicalFrame::
     return getMobilizedBody().getBodyTransform(s);
 }
 
-void PhysicalFrame::extendConnectToModel(Model& model)
-{
-    // Better use name search or more robust method
-    if (upd_GeometrySet(0).getFrameName() == "")
-        upd_GeometrySet(0).setFrameName(getName());
-    Super::extendConnectToModel(model);
-}
-
-
 SimTK::Transform PhysicalFrame::extendFindTransformInBaseFrame() const
 {
     return SimTK::Transform();
@@ -97,16 +88,13 @@ void PhysicalFrame::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
 
+    // Better use name search or more robust method
+    if (upd_GeometrySet(0).getFrameName() == "")
+        upd_GeometrySet(0).setFrameName(getName());
+
     for (int i = 0; i < get_WrapObjectSet().getSize(); i++)
         get_WrapObjectSet().get(i).connectToModelAndBody(aModel, *this);
 }
-
-
-void PhysicalFrame::addDisplayGeometry(const std::string &aGeometryFileName)
-{
-    updDisplayer()->setGeometryFileName(updDisplayer()->getNumGeometryFiles(), aGeometryFileName);
-}
-
 
 const WrapObject* PhysicalFrame::getWrapObject(const string& aName) const
 {
@@ -130,13 +118,13 @@ void PhysicalFrame::scale(const SimTK::Vec3& aScaleFactors)
         upd_WrapObjectSet().get(i).scale(aScaleFactors);
 
     SimTK::Vec3 oldScaleFactors;
-    getDisplayer()->getScaleFactors(oldScaleFactors);
+    //NewGeometry getDisplayer()->getScaleFactors(oldScaleFactors);
 
     for (int i = 0; i<3; i++) {
         oldScaleFactors[i] *= aScaleFactors[i];
     }
     // Update scale factors for displayer
-    updDisplayer()->setScaleFactors(oldScaleFactors);
+    //NewGeometry updDisplayer()->setScaleFactors(oldScaleFactors);
 }
 /*
 void PhysicalFrame::extendFinalizeFromProperties()
@@ -146,3 +134,10 @@ void PhysicalFrame::extendFinalizeFromProperties()
     //addComponent(frame);
 }
 */
+
+void PhysicalFrame::addMeshGeometry(const std::string& aGeometryFileName, const SimTK::Vec3 scale)
+{
+    Mesh* geom = new Mesh(aGeometryFileName);
+    geom->set_scale_factors(scale);
+    adoptGeometry(geom);
+}

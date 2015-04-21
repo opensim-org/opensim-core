@@ -43,6 +43,7 @@ Ground::Ground() : PhysicalFrame()
 {
     setName("ground");
     setAuthors("Ajay Seth");
+    upd_GeometrySet(0).setFrameName("ground");
 }
 
 /*
@@ -59,12 +60,4 @@ void Ground::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
     setMobilizedBodyIndex(SimTK::GroundIndex);
-}
-
-void RigidFrame::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
-    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
-{
-    //Super::generateDecorations(fixed, hints, state, appendToThis);
-    if (!fixed || !hints.get_show_frames()) return;
-    getDisplayDelegate().generateDecorations(*this, fixed, hints, state, appendToThis);
 }

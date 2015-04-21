@@ -540,8 +540,8 @@ void Model::extendFinalizeFromProperties()
         for (int i = 0; i<bs.getSize(); ++i){
             //handle deprecated models with ground as a Body
             if (bs[i].getName() == "ground"){
-                VisibleObject* displayer = ground.updDisplayer();
-                *displayer = *bs[i].getDisplayer();
+                //NewGeometry VisibleObject* displayer = ground.updDisplayer();
+                //NewGeometry *displayer = *bs[i].getDisplayer();
                 ground.upd_WrapObjectSet() = bs[i].get_WrapObjectSet();
                 // remove and then decrement the counter
                 bs.remove(i--);

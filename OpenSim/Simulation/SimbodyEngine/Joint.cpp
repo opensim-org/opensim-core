@@ -359,12 +359,12 @@ void Joint::generateDecorations(bool fixed, const ModelDisplayHints& hints, cons
     SimTK::DecorativeFrame parentFrame(dimension);
 
     // attach frame to body, translate and rotate it to the location of the joint
-    childFrame.setBodyId(getChildBody().getMobilizedBodyIndex());
+    childFrame.setBodyId(getChildFrame().getMobilizedBodyIndex());
     childFrame.setTransform(getChildTransform());
     childFrame.setColor(frame1color);
 
     // attach frame to parent, translate and rotate it to the location of the joint
-    parentFrame.setBodyId(getParentBody().getMobilizedBodyIndex());
+    parentFrame.setBodyId(getParentFrame().getMobilizedBodyIndex());
     parentFrame.setTransform(getParentTransform());
     parentFrame.setColor(frame2color);
     
