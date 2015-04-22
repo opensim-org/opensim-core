@@ -119,9 +119,13 @@ int main()
 {
     try {
         std::clock_t startTime = std::clock();  
+
+        // Use Millard2012Equilibrium muscles with rigid tendons for better
+        // performance.
+        Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
     
-        // Create a new OpenSim model
-        // Similar to arm26 model but without wrapping surfaces for better performance
+        // Create a new OpenSim model. This model is similar to the arm26 model,
+        // but without wrapping surfaces for better performance.
         Model osimModel("Arm26_Optimize.osim");
         
         // Initialize the system and get the state representing the state system
@@ -131,10 +135,11 @@ int main()
         const CoordinateSet& coords = osimModel.getCoordinateSet();
         coords.get("r_shoulder_elev").setValue(si, -1.57079633);
 
-        // Set the initial muscle activations 
+        // Set the initial muscle activations and make all tendons rigid.
         const Set<Muscle> &muscleSet = osimModel.getMuscles();
-        for(int i=0; i< muscleSet.getSize(); i++ ){
+        for(int i=0; i<muscleSet.getSize(); ++i) {
             muscleSet[i].setActivation(si, 0.01);
+            muscleSet[i].setIgnoreTendonCompliance(si, true);
         }
     
         // Make sure the muscles states are in equilibrium
@@ -160,7 +165,7 @@ int main()
         //Optimizer opt(sys, InteriorPoint);
 
         // Specify settings for the optimizer
-        opt.setConvergenceTolerance(0.11);
+        opt.setConvergenceTolerance(0.1);
         opt.useNumericalGradient(true, 1e-5);
         opt.setMaxIterations(100);
         opt.setLimitedMemoryHistory(500);
