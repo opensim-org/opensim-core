@@ -139,5 +139,6 @@ void PhysicalFrame::addMeshGeometry(const std::string& aGeometryFileName, const 
 {
     Mesh* geom = new Mesh(aGeometryFileName);
     geom->set_scale_factors(scale);
+    geom->setFrameName(getName());
     adoptGeometry(geom);
 }
