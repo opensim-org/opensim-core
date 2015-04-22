@@ -180,7 +180,9 @@ void Component::connect(Component &root)
         AbstractConnector& connector = upd_connectors(ix);
         connector.disconnect();
         try{
-            connector.findAndConnect(root);
+            const Component* connectTo = root.findComponent(connector.get_connected_to_name());
+            connector.connect(*connectTo);
+            //connector.findAndConnect(root);
         }
         catch (...) {
             throw Exception(getConcreteClassName() +
