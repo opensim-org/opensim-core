@@ -158,14 +158,14 @@
 				<FreeJoint name="blockToGround">
 					<!--List of connectors (structural dependencies) that this component has.-->
 					<connectors>
-						<Connector_Body_ name="parent_body">
+                        <Connector_PhysicalFrame_ name="parent_body">
 							<!--Name of the component this Connector should be connected to.-->
 							<connected_to_name>ground</connected_to_name>
-						</Connector_Body_>
-						<Connector_Body_ name="child_body">
+						</Connector_PhysicalFrame_>
+                        <Connector_PhysicalFrame_ name="child_body">
 							<!--Name of the component this Connector should be connected to.-->
 							<connected_to_name>block</connected_to_name>
-						</Connector_Body_>
+						</Connector_PhysicalFrame_>
 					</connectors>
 					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
 					<location_in_parent>0 0.05 0</location_in_parent>
@@ -266,9 +266,16 @@
 			<objects>
 				<ConstantDistanceConstraint>
 					<!--Specify first of two bodies connected together by the constraint.-->
-					<body_1>ground</body_1>
-					<!--Specify second of two bodies connected together by the constraint.-->
-					<body_2>block</body_2>
+                    <connectors>
+                        <Connector_PhysicalFrame_ name="body_1">
+                            <!--Name of the component this Connector should be connected to.-->
+                            <connected_to_name>ground</connected_to_name>
+                        </Connector_PhysicalFrame_>
+                        <Connector_PhysicalFrame_ name="body_2">
+                            <!--Name of the component this Connector should be connected to.-->
+                            <connected_to_name>block</connected_to_name>
+                        </Connector_PhysicalFrame_>
+                    </connectors>
 					<!--Location of the point in first body specified in body1 reference frame.-->
 					<location_body_1>0 0.05 0</location_body_1>
 					<!--Location of the point in second body specified in body2 reference frame.-->
