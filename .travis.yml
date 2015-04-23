@@ -3,6 +3,7 @@
 # To learn about this file, go to http://docs.travis-ci.com/user/languages/c/
 language: cpp
 
+# Use container-based infrastructure to allow caching (for ccache).
 sudo: false
 
 matrix:
