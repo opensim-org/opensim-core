@@ -154,6 +154,9 @@ int main()
         
         /* Define initial values and bounds for the controls to optimize */
         Vector controls(numControls, 0.01);
+        controls[3] = 0.99;
+        controls[4] = 0.99;
+        controls[5] = 0.99;
         Vector lower_bounds(numControls, 0.01);
         Vector upper_bounds(numControls, 0.99);
 
