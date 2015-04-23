@@ -34,10 +34,16 @@ using namespace OpenSim;
 using namespace std;
 
 #define ARM26_DESIGN_SPACE_DIM 6
-#define REF_MAX_VEL 5.00
+#define REF_MAX_VEL 4.5
 
-// Reference solution used for testing.  
-const static double refControls[ARM26_DESIGN_SPACE_DIM] = {0.01, 0.01, 0.01, 0.99, 0.99, 0.948937};
+// Reference solution used for testing.
+// This is the result when Thelen2003 muscles are used.
+//const static double refControls[ARM26_DESIGN_SPACE_DIM]
+//                    = {0.01, 0.01, 0.01, 0.99, 0.99, 0.948937};
+// This is the result when Millard2012Equilibrium muscles are used with rigid
+// tendons.
+const static double refControls[ARM26_DESIGN_SPACE_DIM]
+                    = {0.0525133, 0.01, 0.01, 0.606306, 0.99, 0.136519};
 
  
 int main()
