@@ -821,6 +821,7 @@ void Component::addComponent(Component *aComponent)
             std::find(_components.begin(), _components.end(), aComponent);
         if ( it == _components.end() ){
             _components.push_back(aComponent);
+            std::cout << "Adding component " << aComponent->getName() << " as subcomponent of " << getName() << std::endl;
         }
         else{
             std::string msg = "ERROR- " +getConcreteClassName()+"::addComponent() '"
