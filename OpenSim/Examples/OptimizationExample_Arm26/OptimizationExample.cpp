@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Samuel R. Hamner, Ajay Seth                                                *
+ * Author(s): Samuel R. Hamner, Ajay Seth                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -81,23 +81,21 @@ class ExampleOptimizationSystem : public OptimizerSystem {
         Vec3 massCenter = osimModel.getBodySet().get("r_ulna_radius_hand").getMassCenter();
         Vec3 velocity;
         osimModel.getMultibodySystem().realize(s, Stage::Velocity);
-        osimModel.getSimbodyEngine().getVelocity(s, osimModel.getBodySet().get("r_ulna_radius_hand"), massCenter, velocity);
+        osimModel.getSimbodyEngine().getVelocity(s, osimModel.getBodySet()
+            .get("r_ulna_radius_hand"), massCenter, velocity);
         
         f = -velocity[0];
         stepCount++;
         
-        // Store and print the  results of the first step.
-        if( stepCount == 1){ 
-            p_manager->getStateStorage().print("Arm26_noActivation_states.sto");
-        }
         // Use an if statement to only store and print the results of an 
         //  optimization step if it is better than a previous result.
-        else if( f < bestSoFar){
+        if(f < bestSoFar) {
             bestSoFar = f;
-            cout << "\nobjective evaluation #: " << stepCount << "  controls = " << newControls <<  " bestSoFar = " << f << std::endl;
-        }           
+            cout << "\nobjective evaluation #: " << stepCount << "  controls = "
+                 << newControls <<  " bestSoFar = " << f << std::endl;
+        }
 
-      return(0);
+      return 0;
 
    }    
 
@@ -131,7 +129,7 @@ int main()
         // Initialize the system and get the state representing the state system
         State& si = osimModel.initSystem();
 
-        // initialize the starting shoulder angle
+        // Initialize the starting shoulder angle.
         const CoordinateSet& coords = osimModel.getCoordinateSet();
         coords.get("r_shoulder_elev").setValue(si, -1.57079633);
 
@@ -157,6 +155,7 @@ int main()
         controls[3] = 0.99;
         controls[4] = 0.99;
         controls[5] = 0.99;
+
         Vector lower_bounds(numControls, 0.01);
         Vector upper_bounds(numControls, 0.99);
 
@@ -172,7 +171,7 @@ int main()
         opt.useNumericalGradient(true, 1e-5);
         opt.setMaxIterations(100);
         opt.setLimitedMemoryHistory(500);
-            
+
         // Optimize it!
         f = opt.optimize(controls);
             
@@ -190,11 +189,23 @@ int main()
         // Dump out optimization results to a text file for testing
         ofstream ofile; 
         ofile.open("Arm26_optimization_result"); 
-        for(int i=0; i<actuators.getSize(); ++i){
+        for(int i=0; i<actuators.getSize(); ++i)
             ofile << controls[i] << endl;
-    }
         ofile << -f <<endl;
         ofile.close(); 
+
+        // Re-run simulation with optimal controls.
+        RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
+        integrator.setAccuracy(1.0e-7);
+        Manager manager(osimModel, integrator);
+        osimModel.updDefaultControls() = controls;
+
+        // Integrate from initial time to final time.
+        manager.setInitialTime(initialTime);
+        manager.setFinalTime(finalTime);
+        osimModel.getMultibodySystem().realize(si, Stage::Acceleration);
+        manager.integrate(si);
+        manager.getStateStorage().print("Arm26_optimized_states.sto");
     }
     catch (const std::exception& ex)
     {

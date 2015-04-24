@@ -49,11 +49,11 @@ const static double refControls[ARM26_DESIGN_SPACE_DIM]
 int main()
 {
     try {
-        Storage result("Arm26_noActivation_states.sto"),
-                standard("std_Arm26_noActivation_states.sto");
+        Storage result("Arm26_optimized_states.sto"),
+                standard("std_Arm26_optimized_states.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result, standard, Array<double>(0.01, 16),
-            __FILE__, __LINE__, "Arm26 no activation states failed");
-        cout << "Arm26 no activation states passed\n";
+            __FILE__, __LINE__, "Arm26 states failed comparison test");
+        cout << "Arm26 states comparison test passed\n";
 
         // Ensure the optimization result acheived a velocity of at least
         // REF_MAX_VEL, and that the control values are within either 20% of the
