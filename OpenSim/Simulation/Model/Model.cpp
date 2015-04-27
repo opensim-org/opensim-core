@@ -200,6 +200,41 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                     bodyIter->eraseNode(joint_node);
                 }
             }
+            if (versionNumber < 30503){ // Find ground Bodyand make it into Ground
+                SimTK::Xml::element_iterator bodySetNode = aNode.element_begin("BodySet");
+                // Cycle through Bodies and move their Joint nodes under the Model's JointSet
+                SimTK::Xml::element_iterator  objects_node = bodySetNode->element_begin("objects");
+                SimTK::Xml::element_iterator bodyIter = objects_node->element_begin("Body");
+                // Look for Ground
+                for (; bodyIter != objects_node->element_end(); ++bodyIter) {
+                    std::string body_name = bodyIter->getOptionalAttributeValue("name");
+                    //cout << "Processing body " << body_name << std::endl;
+                    //SimTK::String dump;
+                    //bodyIter->writeToString(dump);
+                    //int x = 0;
+                    // Move <GeometrySet> from under "Ground" to the top level Ground node if any
+                    if (body_name == "ground"){
+                        // Creat Ground directly under aNode if not there already
+                        SimTK::Xml::element_iterator gndIter = aNode.element_begin("Ground");
+                        if (gndIter == aNode.element_end()){
+                            aNode.insertNodeAfter(aNode.element_end(), SimTK::Xml::Element("Ground"));
+                            gndIter = aNode.element_begin("Ground");
+                            gndIter->setAttributeValue("name", "ground");
+                        }
+                        SimTK::Xml::element_iterator geomIter = bodyIter->element_begin("GeometrySet");
+                        if (geomIter != bodyIter->element_end()){ // Actual Geometry was found
+                            gndIter->insertNodeAfter(gndIter->node_end(), bodyIter->removeNode(geomIter));
+                        }
+                        SimTK::Xml::element_iterator wrapIter = bodyIter->element_begin("WrapObjectSet");
+                        if (wrapIter != bodyIter->element_end()){ // Actual WrapObjectSet was found
+                            gndIter->insertNodeAfter(gndIter->node_end(), bodyIter->removeNode(wrapIter));
+                        }
+                        // Remove "ground" Body altogether
+                        objects_node->removeNode(bodyIter);
+                        break;
+                    }
+                }
+            }
     // Call base class now assuming _node has been corrected for current version
     Super::updateFromXMLNode(aNode, versionNumber);
 
