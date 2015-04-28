@@ -33,6 +33,8 @@ using namespace SimTK;
 
 void testVisModel(string fileName);
 
+// Implmenetation of DecorativeGeometryImplementation that prints the representation to 
+// a StringStream for comparison
 class DecorativeGeometryImplementationText : public SimTK::DecorativeGeometryImplementation
 {
 
@@ -113,7 +115,7 @@ void testVisModel(string fileName)
 
     Model* model = new Model(fileName, true);
     SimTK::State& si = model->initSystem();
-    ModelDisplayHints mdh; // default
+    ModelDisplayHints mdh; 
     SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
     model->generateDecorations(true, mdh, si, geometryToDisplay);
     cout << geometryToDisplay.size() << endl;
