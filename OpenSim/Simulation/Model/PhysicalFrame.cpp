@@ -45,11 +45,11 @@ PhysicalFrame::PhysicalFrame() : Frame()
 {
     setAuthors("Matt DeMers, Ayman Habib, Ajay Seth");
     constructProperties();
-    FrameGeometry* frm = new FrameGeometry(0.2);
-    frm->setName("frame_geometry");
-    frm->set_display_radius(.004);
-    frm->setRepresentation(Geometry::Hide);
-    append_GeometrySet(*frm);
+    FrameGeometry frm(0.2);
+    frm.setName("frame_geometry");
+    frm.set_display_radius(.004);
+    frm.setRepresentation(Geometry::Hide);
+    append_GeometrySet(frm);
 
 }
 
