@@ -95,33 +95,33 @@ int main()
         // add a checkered floor
         ground.addMeshGeometry("checkered_floor.vtp");
         // add anchors for the muscles to be fixed to
-        Geometry* leftAnchorGeometry = new Brick(SimTK::Vec3(0.05, 0.05, 0.05));
-        leftAnchorGeometry->setColor(SimTK::Vec3(0.0, 1.0, 0.0));
-        Geometry* rightAnchorGeometry = new Brick(SimTK::Vec3(0.05, 0.05, 0.05));
-        rightAnchorGeometry->setColor(SimTK::Vec3(1.0, 1.0, 0.0));
-        rightAnchorGeometry->setOpacity(0.5);
+        Brick leftAnchorGeometry(SimTK::Vec3(0.05, 0.05, 0.05));
+        leftAnchorGeometry.setColor(SimTK::Vec3(0.0, 1.0, 0.0));
+        Brick rightAnchorGeometry(SimTK::Vec3(0.05, 0.05, 0.05));
+        rightAnchorGeometry.setColor(SimTK::Vec3(1.0, 1.0, 0.0));
+        rightAnchorGeometry.setOpacity(0.5);
 
         // block is 0.1 by 0.1 by 0.1m cube and centered at origin. 
         // transform anchors to be placed at the two extremes of the sliding block (to come)
 
         // scale the anchors
-        leftAnchorGeometry->set_scale_factors(Vec3(5, 1, 1));
-        rightAnchorGeometry->set_scale_factors(Vec3(5, 1, 1));
+        leftAnchorGeometry.set_scale_factors(Vec3(5, 1, 1));
+        rightAnchorGeometry.set_scale_factors(Vec3(5, 1, 1));
         // reposition the anchors
-        leftAnchorGeometry->setFrameName(leftAnchorFrame->getName());
-        ground.adoptGeometry(leftAnchorGeometry);
-        rightAnchorGeometry->setFrameName(rightAnchorFrame->getName());
-        ground.adoptGeometry(rightAnchorGeometry);
+        leftAnchorGeometry.setFrameName(leftAnchorFrame->getName());
+        ground.addGeometry(leftAnchorGeometry);
+        rightAnchorGeometry.setFrameName(rightAnchorFrame->getName());
+        ground.addGeometry(rightAnchorGeometry);
         
-        Geometry* cylGeometry = new Cylinder(0.2, .3);
-        cylGeometry->setFrameName("CylAnchor");
-        cylGeometry->setRepresentation(Geometry::DrawWireframe);
-        ground.adoptGeometry(cylGeometry);
+        Cylinder cylGeometry(0.2, .3);
+        cylGeometry.setFrameName("CylAnchor");
+        cylGeometry.setRepresentation(Geometry::DrawWireframe);
+        ground.addGeometry(cylGeometry);
 
-        Geometry* ellipsoidGeometry = new Ellipsoid(0.2, .7, .5);
-        ellipsoidGeometry->setColor(SimTK::Vec3(1.0, .5, 0.1));
-        ellipsoidGeometry->setFrameName("EllipsoidAnchor");
-        ground.adoptGeometry(ellipsoidGeometry);
+        Ellipsoid ellipsoidGeometry(0.2, .7, .5);
+        ellipsoidGeometry.setColor(SimTK::Vec3(1.0, .5, 0.1));
+        ellipsoidGeometry.setFrameName("EllipsoidAnchor");
+        ground.addGeometry(ellipsoidGeometry);
         
         // BLOCK BODY
         Vec3 blockMassCenter(0);
@@ -133,9 +133,9 @@ int main()
         // Add display geometry to the block to visualize in the GUI
         block->addMeshGeometry("block.vtp");
         
-        Geometry* sphereGeometry = new Sphere(0.1);
-        sphereGeometry->setFrameName(block->getName());
-        block->adoptGeometry(sphereGeometry);
+        Sphere sphereGeometry(0.1);
+        sphereGeometry.setFrameName(block->getName());
+        block->addGeometry(sphereGeometry);
         
         // FREE JOINT
 

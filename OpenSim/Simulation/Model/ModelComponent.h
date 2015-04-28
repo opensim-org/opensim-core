@@ -126,10 +126,10 @@ public:
         return getProperty_GeometrySet().size();
     }
     /**
-     * Adopt the passed in Geometry and add it to the visualization of 
+     * Copy the passed in Geometry and add the copy to the visualization of 
      * this ModelComponent as subcomponent.
      */
-    virtual void adoptGeometry(OpenSim::Geometry* aGeometry);
+    virtual void addGeometry(OpenSim::Geometry& aGeometry);
 
     void extendFinalizeFromProperties();
 protected:

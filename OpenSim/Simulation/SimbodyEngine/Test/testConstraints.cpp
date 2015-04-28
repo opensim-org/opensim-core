@@ -992,20 +992,20 @@ void testRollingOnSurfaceConstraint()
 
     //OpenSim bodies
     Ground& ground = osimModel->updGround();;
-    Mesh* arrowGeom = new Mesh("arrow.vtp");
-    arrowGeom->setColor(Vec3(1, 0, 0));
-    arrowGeom->setFrameName("ground");
-    ground.adoptGeometry(arrowGeom);
+    Mesh arrowGeom("arrow.vtp");
+    arrowGeom.setColor(Vec3(1, 0, 0));
+    arrowGeom.setFrameName("ground");
+    ground.addGeometry(arrowGeom);
 
     //OpenSim rod
     auto osim_rod = new OpenSim::Body("rod", mass, comInRod, inertiaAboutCom);
     OpenSim::PhysicalOffsetFrame* cylFrame = new PhysicalOffsetFrame(*osim_rod, Transform(comInRod));
     cylFrame->setName("comInRod");
     osimModel->addFrame(cylFrame);
-    Mesh* cylGeom = new Mesh("cylinder.vtp");
-    cylGeom->set_scale_factors(2 * halfRodLength*Vec3(0.1, 1, 0.1));
-    cylGeom->setFrameName("comInRod");
-    osim_rod->adoptGeometry(cylGeom);
+    Mesh cylGeom("cylinder.vtp");
+    cylGeom.set_scale_factors(2 * halfRodLength*Vec3(0.1, 1, 0.1));
+    cylGeom.setFrameName("comInRod");
+    osim_rod->addGeometry(cylGeom);
 
     // create rod as a free joint
     auto rodJoint = new PlanarJoint("rodToGround", ground, Vec3(0), Vec3(0),

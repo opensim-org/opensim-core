@@ -67,16 +67,16 @@ int main()
         OpenSim::Body* linkage1 = new OpenSim::Body("linkage1", linkageMass, linkageMassCenter, linkageMass*linkageInertia);
         
         // Graphical representation
-        Cylinder* cyl = new Cylinder();
+        Cylinder cyl;
         //This cylinder.vtp geometry is 1 meter tall, 1 meter diameter.  Scale and shift it to look pretty
-        cyl->set_scale_factors(linkageDimensions);
+        cyl.set_scale_factors(linkageDimensions);
         Frame* cyl1Frame = new PhysicalOffsetFrame(*linkage1, Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
         cyl1Frame->setName("Cyl1_frame");
         osimModel.addFrame(cyl1Frame);
-        cyl->setFrameName("Cyl1_frame");
-        linkage1->adoptGeometry(cyl);
+        cyl.setFrameName("Cyl1_frame");
+        linkage1->addGeometry(cyl);
 
-        linkage1->adoptGeometry(new Sphere(0.1));
+        linkage1->addGeometry(Sphere(0.1));
         //This sphere.vtp is 1 meter in diameter.  Scale it.
         
         // Creat a second linkage body
@@ -91,7 +91,7 @@ int main()
         Vec3 blockMassCenter(0);
         Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
         OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
-        block->adoptGeometry(new Brick(SimTK::Vec3(0.05, 0.05, 0.05)));
+        block->addGeometry(Brick(SimTK::Vec3(0.05, 0.05, 0.05)));
         //This block.vtp is 0.1x0.1x0.1 meters.  scale its appearance
         //block->updDisplayer()->updGeometrySet()[0].setScaleFactors(Vec3(2.0));
 

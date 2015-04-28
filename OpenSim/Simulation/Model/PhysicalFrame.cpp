@@ -137,8 +137,8 @@ void PhysicalFrame::extendFinalizeFromProperties()
 
 void PhysicalFrame::addMeshGeometry(const std::string& aGeometryFileName, const SimTK::Vec3 scale)
 {
-    Mesh* geom = new Mesh(aGeometryFileName);
-    geom->set_scale_factors(scale);
-    geom->setFrameName(getName());
-    adoptGeometry(geom);
+    Mesh geom(aGeometryFileName);
+    geom.set_scale_factors(scale);
+    geom.setFrameName(getName());
+    addGeometry(geom);
 }
