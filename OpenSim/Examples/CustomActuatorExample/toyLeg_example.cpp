@@ -91,7 +91,8 @@ int main()
         Vec3 blockMassCenter(0);
         Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
         OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
-        block->addGeometry(Brick(SimTK::Vec3(0.05, 0.05, 0.05)));
+        Brick brick(SimTK::Vec3(0.05, 0.05, 0.05));
+        block->addGeometry(brick);
         //This block.vtp is 0.1x0.1x0.1 meters.  scale its appearance
         //block->updDisplayer()->updGeometrySet()[0].setScaleFactors(Vec3(2.0));
 
