@@ -68,7 +68,6 @@ int main()
         
         // Graphical representation
         Cylinder cyl;
-        //This cylinder.vtp geometry is 1 meter tall, 1 meter diameter.  Scale and shift it to look pretty
         cyl.set_scale_factors(linkageDimensions);
         Frame* cyl1Frame = new PhysicalOffsetFrame(*linkage1, Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
         cyl1Frame->setName("Cyl1_frame");
@@ -78,8 +77,7 @@ int main()
 
         Sphere sphere(0.1);
         linkage1->addGeometry(sphere);
-        //This sphere.vtp is 1 meter in diameter.  Scale it.
-        
+         
         // Creat a second linkage body
         OpenSim::Body* linkage2 = new OpenSim::Body(*linkage1);
         linkage2->setName("linkage2");
@@ -94,11 +92,8 @@ int main()
         OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
         Brick brick(SimTK::Vec3(0.05, 0.05, 0.05));
         block->addGeometry(brick);
-        //This block.vtp is 0.1x0.1x0.1 meters.  scale its appearance
-        //block->updDisplayer()->updGeometrySet()[0].setScaleFactors(Vec3(2.0));
 
         // Create 1 degree-of-freedom pin joints between the bodies to creat a kinematic chain from ground through the block
-        
         Vec3 orientationInGround(0), locationInGround(0), locationInParent(0.0, linkageLength, 0.0), orientationInChild(0), locationInChild(0);
 
         PinJoint *ankle = new PinJoint("ankle", ground, locationInGround, orientationInGround, *linkage1, 
