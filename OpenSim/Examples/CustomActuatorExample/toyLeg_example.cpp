@@ -76,7 +76,8 @@ int main()
         cyl.setFrameName("Cyl1_frame");
         linkage1->addGeometry(cyl);
 
-        linkage1->addGeometry(Sphere(0.1));
+        Sphere sphere(0.1);
+        linkage1->addGeometry(sphere);
         //This sphere.vtp is 1 meter in diameter.  Scale it.
         
         // Creat a second linkage body
