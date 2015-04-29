@@ -31,8 +31,6 @@
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 
-#include "AppearanceMap.h"
-
 namespace OpenSim {
 
 class Body;
@@ -42,7 +40,10 @@ class Model;
 //=============================================================================
 //=============================================================================
 /**
- * A class that holds the Display Attributes (ModelDisplay) of a full Model displayed in Visualizer
+ * A class that holds the Display Attributes (ModelDisplay) of a full Model 
+ * displayed in Visualizer. Initially these are serializable ModelDisplayHints 
+ * but in the future can be expanded to include search paths for Geometry, Texture
+ * Renderer preferences, lights, cameras etc.
  *
  * @author Ayman Habib
  * @version 1.0
@@ -59,9 +60,6 @@ public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(ModelDisplayHints,
         "Model display preferences");
 
-    OpenSim_DECLARE_UNNAMED_PROPERTY(AppearanceMap,
-        "Specific object display attributes");
-
     /**@}**/
 
     //--------------------------------------------------------------------------
@@ -75,7 +73,6 @@ public:
 
 private:
     void constructProperties() {
-        constructProperty_AppearanceMap(AppearanceMap());
         constructProperty_ModelDisplayHints(ModelDisplayHints());
     }
 //=============================================================================

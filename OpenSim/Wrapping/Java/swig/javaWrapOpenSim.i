@@ -827,6 +827,11 @@ namespace SimTK {
 %include <OpenSim/Simulation/MomentArmSolver.h>
 
 %include <OpenSim/Simulation/Model/Frame.h>
+// Followig thee lines hacked in out of order to work around WrapObjects use in PhysicalFrame
+%include <OpenSim/Simulation/Wrap/WrapObject.h>
+%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
+%include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+
 %include <OpenSim/Simulation/Model/PhysicalFrame.h>
 %include <OpenSim/Simulation/Model/Ground.h>
 %include <OpenSim/Simulation/Model/OffsetFrame.h>
@@ -888,13 +893,13 @@ namespace SimTK {
 %template(ModelComponentSetMarkers) OpenSim::ModelComponentSet<OpenSim::Marker>;
 %include <OpenSim/Simulation/Model/MarkerSet.h>
 
-%include <OpenSim/Simulation/Wrap/WrapObject.h>
+//%include <OpenSim/Simulation/Wrap/WrapObject.h>
 %include <OpenSim/Simulation/Wrap/WrapSphere.h>
 %include <OpenSim/Simulation/Wrap/WrapCylinder.h>
 %include <OpenSim/Simulation/Wrap/WrapTorus.h>
 %include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
-%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
-%include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+//%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
+//%include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 %include <OpenSim/Simulation/Wrap/PathWrap.h>
 %template(SetPathWrap) OpenSim::Set<OpenSim::PathWrap>;
 %include <OpenSim/Simulation/Wrap/PathWrapSet.h>
@@ -958,7 +963,6 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.h>
 %include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
 %include <OpenSim/Simulation/Model/ModelDisplayHints.h>
-%include <OpenSim/Simulation/Model/AppearanceMap.h>
 %include <OpenSim/Simulation/Model/ModelDisplay.h>
 %include <OpenSim/Simulation/Model/ModelVisualizer.h>
 %include <OpenSim/Simulation/Model/Model.h>

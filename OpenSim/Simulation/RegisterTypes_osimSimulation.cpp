@@ -77,7 +77,6 @@
 #include "Model/Umberger2010MuscleMetabolicsProbe.h"
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
 #include "Model/Appearance.h"
-#include "Model/AppearanceMap.h"
 #include "Model/Geometry.h"
 #include "Model/ModelDisplay.h"
 
@@ -166,7 +165,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( BaseAppearance());
     Object::registerType( Appearance());
     Object::registerType( LineAppearance());
-    Object::registerType( AppearanceMap());
     Object::registerType( ModelDisplay());
 
     Object::registerType( Brick());
