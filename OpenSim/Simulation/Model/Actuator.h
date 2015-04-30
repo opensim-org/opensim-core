@@ -156,11 +156,8 @@ public:
 
     // default destructor, copy constructor, copy assignment
 
-    // Convenience method to set controls given scalar (double) valued control 
-    // TODO remove
-    //virtual void setControl(const SimTK::State &s, double control) const;
-
-    /** Convenience method to get control given scalar (double) valued control */
+    /** Convenience method to get control given scalar (double) valued control
+     */
     virtual double getControl(const SimTK::State& s ) const;
 
     //Model building
