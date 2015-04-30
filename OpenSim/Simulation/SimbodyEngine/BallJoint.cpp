@@ -58,7 +58,7 @@ BallJoint::BallJoint() : Joint()
 /**
  * Convenience Constructor.
  */
-BallJoint::BallJoint(const std::string &name, const OpenSim::Body& parent, 
+BallJoint::BallJoint(const std::string &name, const PhysicalFrame& parent, 
                      const Vec3& locationInParent, const Vec3& orientationInParent,
                      const OpenSim::Body& body,
                      const Vec3& locationInBody, const Vec3& orientationInBody, 
@@ -96,7 +96,7 @@ void BallJoint::extendInitStateFromProperties(SimTK::State& s) const
     double zangle = coordinateSet[2].getDefaultValue();
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
     BallJoint* mutableThis = const_cast<BallJoint*>(this);
-    getChildBody().getMobilizedBody().setQToFitRotation(s, r);
+    getChildFrame().getMobilizedBody().setQToFitRotation(s, r);
 }
 
 void BallJoint::extendSetPropertiesFromState(const SimTK::State& state)
@@ -107,7 +107,7 @@ void BallJoint::extendSetPropertiesFromState(const SimTK::State& state)
     const MultibodySystem&        system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-        Rotation r = getChildBody().getMobilizedBody().getBodyRotation(state);
+        Rotation r = getChildFrame().getMobilizedBody().getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
     
         const CoordinateSet& coordinateSet = get_CoordinateSet();

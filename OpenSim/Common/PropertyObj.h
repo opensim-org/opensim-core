@@ -70,14 +70,14 @@ public:
     PropertyObj* clone() const override;
     virtual ~PropertyObj();
 
-    virtual bool isObjectProperty() const override {return true;}
-    virtual bool isAcceptableObjectTag
+    bool isObjectProperty() const override {return true;}
+    bool isAcceptableObjectTag
         (const std::string& objectTypeTag) const override {return true;}
-    virtual const Object& getValueAsObject(int index=-1) const override
+    const Object& getValueAsObject(int index=-1) const override
     {   assert(index <= 0); return getValueObj(); }
-    virtual Object& updValueAsObject(int index=-1) override
+    Object& updValueAsObject(int index=-1) override
     {   assert(index <= 0); return getValueObj(); }
-    virtual void setValueAsObject(const Object& obj, int index=-1) override
+    void setValueAsObject(const Object& obj, int index=-1) override
     {   assert(index <= 0); delete _value; _value=obj.clone(); }
 
     //--------------------------------------------------------------------------
@@ -92,7 +92,7 @@ public:
 public:
     virtual bool isValidObject(const Object *obj) const { return true; } // TODO: make this class templated and do type checking
     // TYPE
-    virtual std::string getTypeName() const override 
+    std::string getTypeName() const override 
     {   return "Object"; }
     // VALUE
     // Got rid of setValue(Obj) since it would be dangerous to do so given that users of

@@ -149,22 +149,15 @@ void ExpressionBasedPointToPointForce::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model); // Let base class connect first.
 
-    string errorMessage;
-
+    // Look up the two bodies being connected by bushing by name in the
+    // model. TODO: use Connectors
     const string& body1Name = getBody1Name();
     const string& body2Name = getBody2Name();
 
-    // Look up the two bodies being connected together by name in the model
-    if (!model.updBodySet().contains(body1Name)) {
-        errorMessage = "Invalid body1 (" + body1Name + ") specified for Spring "
-                        + getName();
-        throw (Exception(errorMessage));
-    }
-    if (!model.updBodySet().contains(body2Name)) {
-        errorMessage = "Invalid body2 (" + body2Name + ") specified for Spring "
-                        + getName();
-        throw (Exception(errorMessage));
-    }
+    _body1 =
+        static_cast<const PhysicalFrame*>(&getModel().getComponent(body1Name));
+    _body2 =
+        static_cast<const PhysicalFrame*>(&getModel().getComponent(body2Name));
 
     if(getName() == "")
         setName("expressionP2PForce_"+body1Name+"To"+body2Name);
@@ -185,9 +178,6 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);    // Base class first.
 
-    Body& body1 = _model->updBodySet().get(getBody1Name());
-    Body& body2 = _model->updBodySet().get(getBody2Name());
-
     addCacheVariable<double>("force_magnitude", 0.0, SimTK::Stage::Velocity);
 
     // Beyond the const Component get access to underlying SimTK elements
@@ -195,8 +185,8 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
         const_cast<ExpressionBasedPointToPointForce *>(this);
 
     // Get underlying mobilized bodies
-    mutableThis->_b1 = &body1.getMobilizedBody();
-    mutableThis->_b2 = &body2.getMobilizedBody();
+    mutableThis->_b1 = _body1->getMobilizedBody();
+    mutableThis->_b2 = _body2->getMobilizedBody();
 }
 
 //=============================================================================
@@ -285,24 +275,22 @@ getRecordValues(const SimTK::State& state) const
     SimTK::Vector_<SimTK::Vec3> particleForces(0);
     SimTK::Vector mobilityForces(0);
 
-    const Body& body1 = _model->getBodySet().get(getBody1Name());
-    const Body& body2 = _model->getBodySet().get(getBody2Name());
 
     //get the net force added to the system contributed by the Spring
     _model->getForceSubsystem().getForce(_index)
         .calcForceContribution(state, bodyForces, particleForces, mobilityForces);
     
-    SimTK::Vec3 forces = bodyForces(body1.getMobilizedBodyIndex())[1];
+    SimTK::Vec3 forces = bodyForces(_body1->getMobilizedBodyIndex())[1];
     values.append(3, &forces[0]);
 
     SimTK::Vec3 gpoint(0);
-    _model->getSimbodyEngine().getPosition(state, body1, getPoint1(), gpoint);
+    _model->getSimbodyEngine().getPosition(state, *_body1, getPoint1(), gpoint);
     values.append(3, &gpoint[0]);
 
-    forces = bodyForces(body2.getMobilizedBodyIndex())[1];
+    forces = bodyForces(_body2->getMobilizedBodyIndex())[1];
     values.append(3, &forces[0]);
 
-    _model->getSimbodyEngine().getPosition(state, body2, getPoint2(), gpoint);
+    _model->getSimbodyEngine().getPosition(state, *_body2, getPoint2(), gpoint);
     values.append(3, &gpoint[0]);
 
     return values;

@@ -81,8 +81,8 @@ void Millard2012AccelerationMuscle::constructProperties()
 
         MuscleFirstOrderActivationDynamicModel defaultActMdl = 
             MuscleFirstOrderActivationDynamicModel();
-        double tauAct = defaultActMdl.getActivationTimeConstant();
-        double tauDact= defaultActMdl.getDeactivationTimeConstant();
+        double tauAct = defaultActMdl.get_activation_time_constant();
+        double tauDact= defaultActMdl.get_deactivation_time_constant();
 
     //Ensure the minimum allowed activation is 0.     
     constructProperty_MuscleFirstOrderActivationDynamicModel(
@@ -198,8 +198,11 @@ void Millard2012AccelerationMuscle::buildMuscle()
     fcphi.setName(tmp);
 
      //Ensure all sub objects are up to date with properties;
-    actMdl.ensureModelUpToDate();
-    m_penMdl.ensureModelUpToDate();
+    actMdl.finalizeFromProperties(); //TODO: Remove this once the activation
+                                     //model has been made into a property.
+    // TODO: Remove this once MuscleFixedWidthPennationModel has been made into
+    //       a property.
+    m_penMdl.finalizeFromProperties();
 
     falCurve.ensureCurveUpToDate();
     fvCurve.ensureCurveUpToDate();
@@ -227,6 +230,9 @@ Millard2012AccelerationMuscle::Millard2012AccelerationMuscle()
 {    
     setNull();
     constructInfrastructure();
+
+    // TODO: Remove this once MuscleFirstOrderActivationDynamicModel and
+    //       MuscleFixedWidthPennationModel have been made into properties.
     finalizeFromProperties();
 }
 
@@ -244,6 +250,8 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
     setTendonSlackLength(aTendonSlackLength);
     setPennationAngleAtOptimalFiberLength(aPennationAngle);
 
+    // TODO: Remove this once MuscleFirstOrderActivationDynamicModel and
+    //       MuscleFixedWidthPennationModel have been made into properties.
     finalizeFromProperties();
 }
 
@@ -703,13 +711,7 @@ void Millard2012AccelerationMuscle::
         "Millard2012AccelerationMuscle: Muscle is not"
         " to date with properties");
 
-        //Initialize the fiber length
-        setFiberLength(s, getOptimalFiberLength());
-        //Initialize the fiber velocity
-        setFiberVelocity(s, getDefaultFiberVelocity());
-        //Initialize activation to the users desired setting
-        setActivation(s,getActivation(s));
-
+        //Initial fiber length, fiber velocity, activation from input State s
         _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
         //Compute an initial muscle state that develops the desired force and
@@ -762,7 +764,7 @@ void Millard2012AccelerationMuscle::
             case 2: //Maximum number of iterations exceeded.
             {
                 setActuation(s, 0.0);
-                setFiberLength(s,m_penMdl.getOptimalFiberLength());
+                setFiberLength(s, get_optimal_fiber_length());
                 setFiberVelocity(s,0.0);
 
                 std::string muscleName = getName();
@@ -787,7 +789,7 @@ void Millard2012AccelerationMuscle::
                         "        Whole muscle length : %f \n\n", 
                         muscleName.c_str(),
                         fcnName.c_str(), 
-                        m_penMdl.getOptimalFiberLength(),
+                        get_optimal_fiber_length(),
                         abs(solnErr),
                         tol,
                         iterations,
@@ -809,7 +811,7 @@ void Millard2012AccelerationMuscle::
                         muscleName.c_str());
 
                 setActuation(s, 0.0);
-                setFiberLength(s,m_penMdl.getOptimalFiberLength());
+                setFiberLength(s, get_optimal_fiber_length());
                 setFiberVelocity(s,0.0);
         }
     }catch (const std::exception& e) { 

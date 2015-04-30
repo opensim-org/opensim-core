@@ -25,13 +25,7 @@
 
 
 // INCLUDE
-#include <assert.h>
-#include <iostream>
-#include <string>
-#include <math.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Array.h>
-#include <OpenSim/Common/Geometry.h>
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyDblVec.h>
@@ -46,8 +40,9 @@
 
 namespace OpenSim {
 
-class Body;
+class PhysicalFrame;
 class Model;
+class Geometry;
 class GeometryPath;
 class SimbodyEngine;
 class WrapObject;
@@ -81,12 +76,12 @@ protected:
     // Support for Display
     VisibleObject _displayer;
 
-    /* const*/ OpenSim::Body *_body; // Not const anymore since the body's displayer is not const
+    /* const*/ PhysicalFrame* _body; // Not const anymore since the body's displayer is not const
 
     GeometryPath* _path; // the path that owns this location point
 
     /** A temporary kluge until the default mechanism is working */
-    static Geometry *_defaultGeometry;
+    static Geometry* _defaultGeometry;
 
 //=============================================================================
 // METHODS
@@ -119,10 +114,10 @@ public:
     void setLocation( const SimTK::State& s, double pt[]){ // A variant that uses basic types for use by GUI
         setLocation(s,SimTK::Vec3::updAs(pt));
     }
-    void setBody(OpenSim::Body& aBody);
-    void changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody);
+    void setBody(PhysicalFrame& aBody);
+    void changeBodyPreserveLocation(const SimTK::State& s, PhysicalFrame& aBody);
 
-    OpenSim::Body& getBody() const { return *_body; }
+    PhysicalFrame& getBody() const { return *_body; }
     const std::string& getBodyName() const { return _bodyName; }
     GeometryPath* getPath() const { return _path; }
 

@@ -114,9 +114,10 @@ void Millard2012EquilibriumMuscle::buildMuscle()
             if(falCurve.getMinValue() < 0.1) {
                 falCurve.setMinValue(0.1);
             }
-            if(cos(penMdl.getMaximumPennationAngle()) < SimTK::SignificantReal)
+            if(cos(penMdl.get_maximum_pennation_angle())
+                < SimTK::SignificantReal)
             {
-                penMdl.setMaximumPennationAngle(maxPennationAngle);
+                penMdl.set_maximum_pennation_angle(maxPennationAngle);
             }
             if(conSlopeAtVmax < 0.1 || eccSlopeAtVmax < 0.1) {
                 fvCurve.setCurveShape(0.1, conSlopeNearVmax, isometricSlope,
@@ -144,7 +145,10 @@ void Millard2012EquilibriumMuscle::buildMuscle()
                                                eccCurviness);
 
         // Ensure all sub-objects are up-to-date
-        penMdl.ensureModelUpToDate();
+        // TODO: Remove this once MuscleFixedWidthPennationModel has been made
+        //       into a property.
+        penMdl.finalizeFromProperties();
+
         falCurve.ensureCurveUpToDate();
         fvCurve.ensureCurveUpToDate();
         fvInvCurve.ensureCurveUpToDate();
@@ -243,7 +247,7 @@ getPennationModel() const
 {   return penMdl; }
 
 double Millard2012EquilibriumMuscle::getMaximumPennationAngle() const
-{   return penMdl.getMaximumPennationAngle(); }
+{   return penMdl.get_maximum_pennation_angle(); }
 double Millard2012EquilibriumMuscle::getMinimumFiberLength() const
 {   return m_minimumFiberLength; }
 double Millard2012EquilibriumMuscle::getMinimumFiberLengthAlongTendon() const
@@ -458,7 +462,7 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
             case 2: //maximum number of iterations reached
             {
                 setActuation(s, 0.0);
-                setFiberLength(s,penMdl.getOptimalFiberLength());
+                setFiberLength(s, get_optimal_fiber_length());
 
                 char msgBuffer[1000];
                 int n = sprintf(msgBuffer,
@@ -476,7 +480,7 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
                     "   Activation:      %f\n"
                     "   Actuator length: %f\n\n",
                     getName().c_str(),
-                    penMdl.getOptimalFiberLength(),
+                    get_optimal_fiber_length(),
                     abs(solnErr), tol,
                     iterations, maxIter,
                     clampedActivation,
@@ -492,7 +496,7 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
                        "optimal fiber length.",
                        getName().c_str());
                 setActuation(s, 0.0);
-                setFiberLength(s,penMdl.getOptimalFiberLength());
+                setFiberLength(s, get_optimal_fiber_length());
         }
 
     } catch (const std::exception& e) {
@@ -517,12 +521,7 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
 
     // Elastic tendon initialization routine.
     try {
-        // Initialize activation as specified by the user.
-        double clampedActivation = clampActivation(get_default_activation());
-        setActivation(s,clampedActivation);
-
-        // Initialize the multibody system to the initial state vector.
-        setFiberLength(s, getOptimalFiberLength());
+        // Initialize activation and fiber length provided by the State s
         _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
         // Compute the fiber length where the fiber and tendon are in static
@@ -543,8 +542,10 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
         double pathLength = getLength(s);
         double pathLengtheningSpeed = 0.0;
 
+        double activation = getActivation(s);
+
         SimTK::Vector soln;
-        soln = estimateMuscleFiberState(clampedActivation, pathLength,
+        soln = estimateMuscleFiberState(activation, pathLength,
                                         pathLengtheningSpeed, tol, maxIter,
                                         true);
         flag_status   = (int)soln[0];
@@ -574,7 +575,7 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
             case 2: //maximum number of iterations reached
             {
                 setActuation(s, 0.0);
-                setFiberLength(s,penMdl.getOptimalFiberLength());
+                setFiberLength(s, get_optimal_fiber_length());
 
                 char msgBuffer[1000];
                 int n = sprintf(msgBuffer,
@@ -592,10 +593,10 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
                     "   Activation:      %f\n"
                     "   Actuator length: %f\n\n",
                     getName().c_str(),
-                    penMdl.getOptimalFiberLength(),
+                    get_optimal_fiber_length(),
                     abs(solnErr), tol,
                     iterations, maxIter,
-                    clampedActivation,
+                    activation,
                     fiberLength);
 
                     cerr << msgBuffer << endl;
@@ -608,7 +609,7 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
                        "optimal fiber length.",
                        getName().c_str());
                 setActuation(s, 0.0);
-                setFiberLength(s,penMdl.getOptimalFiberLength());
+                setFiberLength(s, get_optimal_fiber_length());
         }
 
     } catch (const std::exception& e) {

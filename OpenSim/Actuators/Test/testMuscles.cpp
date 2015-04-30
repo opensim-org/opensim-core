@@ -232,7 +232,7 @@ void simulateMuscle(
     *aMuscle = aMuscModel;
 
     // Get a reference to the model's ground body
-    Body& ground = model.getGroundBody();
+    Ground& ground = model.updGround();
     ground.addDisplayGeometry("box.vtp");
     ground.updDisplayer()
         ->setScaleFactors(Vec3(anchorWidth, anchorWidth, 2*anchorWidth));
@@ -769,6 +769,74 @@ void testThelen2003Muscle()
         CorrectnessTest,
         CorrectnessTestTolerance,
         false);
+
+    // Test property bounds.
+    {
+        Thelen2003Muscle musc;
+        musc.set_FmaxTendonStrain(0.0);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+
+        musc.set_FmaxTendonStrain(0.1);
+        musc.finalizeFromProperties();
+    }
+    {
+        Thelen2003Muscle musc;
+        musc.set_FmaxMuscleStrain(0.0);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+    {
+        Thelen2003Muscle musc;
+        musc.set_KshapeActive(0.0);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+    {
+        Thelen2003Muscle musc;
+        musc.set_KshapePassive(0.0);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+    {
+        Thelen2003Muscle musc;
+        musc.set_Af(0.0);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+    {
+        Thelen2003Muscle musc;
+        musc.set_Flen(1.001);
+        musc.set_fv_linear_extrap_threshold(5.0);
+        musc.finalizeFromProperties();
+
+        musc.set_Flen(1.0);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+    {
+        Thelen2003Muscle musc;
+        musc.set_Flen(1.3);
+        musc.finalizeFromProperties();
+    }
+    {
+        Thelen2003Muscle musc;
+        musc.set_fv_linear_extrap_threshold(1.0 / 1.4);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+
+        musc.set_fv_linear_extrap_threshold(1.007);
+        musc.finalizeFromProperties();
+
+        musc.set_Flen(3.0);
+
+        musc.set_fv_linear_extrap_threshold(1.0 / 3.0);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+
+        musc.set_fv_linear_extrap_threshold(1.001 / 3.0);
+        musc.finalizeFromProperties();
+    }
 }
 
 
@@ -823,8 +891,8 @@ void testMillard2012AccelerationMuscle()
     muscle.setMass(muscle.getMass()*10);
 
     MuscleFirstOrderActivationDynamicModel actMdl = muscle.getActivationModel();
-    actMdl.setActivationTimeConstant(Activation0);
-    actMdl.setDeactivationTimeConstant(Deactivation0);
+    actMdl.set_activation_time_constant(Activation0);
+    actMdl.set_deactivation_time_constant(Deactivation0);
     muscle.setActivationModel(actMdl);
 
     double x0 = 0;

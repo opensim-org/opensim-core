@@ -25,22 +25,15 @@
 // INCLUDES
 //=============================================================================
 #include "PointToPointSpring.h"
-#include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 using namespace OpenSim;
 using namespace std;
 
-
-//=============================================================================
-// STATICS
-//=============================================================================
-
-
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
-
 //_____________________________________________________________________________
 //Default constructor.
 PointToPointSpring::PointToPointSpring()
@@ -50,9 +43,10 @@ PointToPointSpring::PointToPointSpring()
 }
 //_____________________________________________________________________________
 // Convenience constructor for API users.
-PointToPointSpring::PointToPointSpring(const Body& body1, SimTK::Vec3 point1, 
-                                       const Body& body2, SimTK::Vec3 point2,
-                                       double stiffness, double restlength )
+PointToPointSpring::
+    PointToPointSpring(const PhysicalFrame& body1, SimTK::Vec3 point1, 
+                       const PhysicalFrame& body2, SimTK::Vec3 point2,
+                       double stiffness, double restlength )
 {
     setNull();
     constructInfrastructure();
@@ -70,8 +64,8 @@ PointToPointSpring::PointToPointSpring(const Body& body1, SimTK::Vec3 point1,
 
 void PointToPointSpring::constructConnectors()
 {
-    constructConnector<Body>("body1");
-    constructConnector<Body>("body2");
+    constructConnector<PhysicalFrame>("body1");
+    constructConnector<PhysicalFrame>("body2");
 }
 
 //=============================================================================
@@ -101,24 +95,24 @@ void PointToPointSpring::constructProperties()
     constructProperty_rest_length(0.0);
 }
 
-void PointToPointSpring::setBody1(const Body& body)
+void PointToPointSpring::setBody1(const PhysicalFrame& body)
 {
-    updConnector<Body>("body1").connect(body);
+    updConnector<PhysicalFrame>("body1").connect(body);
 }
 
-void PointToPointSpring::setBody2(const Body& body)
+void PointToPointSpring::setBody2(const PhysicalFrame& body)
 {
-    updConnector<Body>("body2").connect(body);
+    updConnector<PhysicalFrame>("body2").connect(body);
 }
 
-const Body& PointToPointSpring::getBody1() const
+const PhysicalFrame& PointToPointSpring::getBody1() const
 {
-    return getConnector<Body>("body1").getConnectee();
+    return getConnector<PhysicalFrame>("body1").getConnectee();
 }
 
-const Body& PointToPointSpring::getBody2() const
+const PhysicalFrame& PointToPointSpring::getBody2() const
 {
-    return getConnector<Body>("body2").getConnectee();
+    return getConnector<PhysicalFrame>("body2").getConnectee();
 }
 
 
@@ -134,12 +128,11 @@ VisibleObject* PointToPointSpring::getDisplayer() const
 void PointToPointSpring::updateDisplayer(const SimTK::State& s)
 {
     SimTK::Vec3 globalLocation1, globalLocation2;
-    const OpenSim::Body& body1 = getBody1();
-    const OpenSim::Body& body2 = getBody2();
-    _model->getSimbodyEngine().transformPosition(s, body1, getPoint1(), 
-                                                 globalLocation1);
-    _model->getSimbodyEngine().transformPosition(s, body2, getPoint2(),
-                                                 globalLocation2);
+    const PhysicalFrame& body1 = getBody1();
+    const PhysicalFrame& body2 = getBody2();
+
+    globalLocation1 = body1.getGroundTransform(s)*getPoint1();
+    globalLocation2 = body2.getGroundTransform(s)*getPoint2();
 
     if (_displayer.countGeometry()==0){
         Geometry *g = new LineGeometry();
@@ -178,8 +171,8 @@ void PointToPointSpring::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
 
-    const Body& body1 = getBody1();
-    const Body& body2 = getBody2();
+    const PhysicalFrame& body1 = getBody1();
+    const PhysicalFrame& body2 = getBody2();
 
     // Get underlying mobilized bodies
     const SimTK::MobilizedBody& b1 = body1.getMobilizedBody();
@@ -239,8 +232,8 @@ getRecordValues(const SimTK::State& state) const
     SimTK::Vector_<SimTK::Vec3> particleForces(0);
     SimTK::Vector mobilityForces(0);
 
-    const Body& body1 = getBody1();
-    const Body& body2 = getBody2();
+    const PhysicalFrame& body1 = getBody1();
+    const PhysicalFrame& body2 = getBody2();
 
     //get the net force added to the system contributed by the Spring
     simtkSpring.calcForceContribution(state, bodyForces, particleForces, 

@@ -241,7 +241,7 @@ void RRATool::setupProperties()
 
 
     comment = "Preferred optimizer algorithm (currently support \"ipopt\" or \"cfsqp\", "
-                 "the latter requiring the osimFSQP library.";
+                 "the latter requiring the osimCFSQP library.";
     _optimizerAlgorithmProp.setComment(comment);
     _optimizerAlgorithmProp.setName("optimizer_algorithm");
     _propertySet.append( &_optimizerAlgorithmProp );
@@ -748,8 +748,8 @@ bool RRATool::run()
         cout<<"Computing initial values for muscles states (activation, length)\n";
         time(&startTime);
         localTime = localtime(&startTime);
-        cout<<"Start time = "<<asctime(localTime);
-        cout<<"\n================================================================\n";
+        cout<<"Start time = "<<asctime(localTime)<<endl;
+        cout<<"================================================================\n";
         try {
         controller->computeInitialStates(s,_ti);
         }
@@ -769,17 +769,17 @@ bool RRATool::run()
         cout<<endl;
         // copy the final states from the last integration 
         s.updY() = cmcActSubsystem.getCompleteState().getY();
-        cout<<"-----------------------------------------------------------------\n";
+        cout<<"----------------------------------------------------------------\n";
         cout<<"Finished computing initial states:\n";
-        cout<<"-----------------------------------------------------------------\n";
-        cout<<"=================================================================\n";
+        cout<<"----------------------------------------------------------------\n";
+        cout<<"================================================================\n";
         localTime = localtime(&startTime);
         cout<<"Start time   = "<<asctime(localTime);
         localTime = localtime(&finishTime);
         cout<<"Finish time  = "<<asctime(localTime);
         elapsedTime = difftime(finishTime,startTime);
         cout<<"Elapsed time = "<<elapsedTime<<" seconds.\n";
-        cout<<"=================================================================\n";
+        cout<<"================================================================\n";
     } else {
         cmcActSubsystem.setCompleteState( s );
         actuatorSystemState.updTime() = _ti; 
@@ -837,7 +837,7 @@ bool RRATool::run()
     if( _verbose ){
       std::cout << "states= " << s.getY() << std::endl;
     }
-    cout<<"=================================================================\n";
+    cout<<"================================================================\n";
     localTime = localtime(&startTime);
     cout<<"Start time   = "<<asctime(localTime);
     localTime = localtime(&finishTime);
@@ -870,9 +870,9 @@ bool RRATool::run()
         adjQMsg << "*                   Final Average Residuals                *" << endl;
         adjQMsg << "************************************************************" << endl;
         adjQMsg << "* After "<<_adjustedCOMBody<<" COM and Kinematics adjustments:"<< endl;
-        adjQMsg <<  "*  FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
-        adjQMsg <<  "*  MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl;
-        adjQMsg <<  "************************************************************\n" << endl;
+        adjQMsg << "*  FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
+        adjQMsg << "*  MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl;
+        adjQMsg << "************************************************************\n" << endl;
 
         // Write the average residuals (DC offsets) out to a file
         ofstream residualFile((getResultsDir() + "/" + getName() + "_avgResiduals.txt").c_str());

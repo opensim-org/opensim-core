@@ -345,10 +345,9 @@ OpenSim::Array<double> ElasticFoundationForce::getRecordValues(const SimTK::Stat
         for (int j = 0; j < params.getGeometry().size(); ++j)
         {
             ContactGeometry& geom = _model->updContactGeometrySet().get(params.getGeometry()[j]);
-            std::string bodyName = geom.getBodyName();
     
-            SimTK::Vec3 forces = bodyForces(_model->getBodySet().get(bodyName).getMobilizedBodyIndex())[1];
-            SimTK::Vec3 torques = bodyForces(_model->getBodySet().get(bodyName).getMobilizedBodyIndex())[0];
+            SimTK::Vec3 forces = bodyForces(geom.getBody().getMobilizedBodyIndex())[1];
+            SimTK::Vec3 torques = bodyForces(geom.getBody().getMobilizedBodyIndex())[0];
 
             values.append(3, &forces[0]);
             values.append(3, &torques[0]);

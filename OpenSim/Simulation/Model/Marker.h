@@ -62,9 +62,10 @@ public:
     virtual ~Marker();
 
     const std::string& getFrameName() const;
+
     void setFrameName(const std::string& aName);
-    void changeFrame(const OpenSim::RigidFrame& aRigidFrame );
-    void changeFramePreserveLocation(const SimTK::State& s, OpenSim::RigidFrame& aRigidFrame );
+    void changeFrame(const OpenSim::PhysicalFrame& aPhysicalFrame );
+    void changeFramePreserveLocation(const SimTK::State& s, OpenSim::PhysicalFrame& aPhysicalFrame );
     void scale(const SimTK::Vec3& aScaleFactors);
 
     /** Override of the default implementation to account for versioning. */

@@ -300,6 +300,20 @@ public:
     const Component& getComponent(const std::string& name) const;
     Component& updComponent(const std::string& name) const;
 
+    template <class C>
+    const C& getComponent(const std::string& name) const {
+        ComponentList<C> compsList = getComponentList<C>();
+        for (const C& comp : compsList) {
+            if (comp.getName() == name){
+                return comp;
+            }
+        }
+        std::stringstream msg;
+        msg << getConcreteClassName() + ": ERR- Cannot find '" << name
+            << "' of type " << compsList.begin()->getConcreteClassName() << ".";
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
+
     /**
      * Get the number of "Continuous" state variables maintained by the Component
      * and its subcomponents
@@ -872,10 +886,12 @@ template <class T> friend class ComponentMeasure;
     /** Perform any time invariant calculation, data structure initializations or
     other component configuration based on its properties necessary to form a  
     functioning, yet not connected component. It also marks the Component
-    as up-to-date with its properties when compete.
+    as up-to-date with its properties when complete. Do not perform any
+    configuration that depends on the SimTK::MultibodySystem; it is not
+    available at this point.
 
-    If you override this method, be sure to invoke the base class method LAST,
-        using code like this :
+    If you override this method, be sure to invoke the base class method first,
+    using code like this :
         @code
         void MyComponent::extendFinalizeFromProperties() {
             Super::extendFinalizeFromProperties(); // invoke parent class method
@@ -1182,6 +1198,8 @@ template <class T> friend class ComponentMeasure;
         constructOutput<SimTK::Vec3>("force", &MyComponent::calcForce,
                 SimTK::Stage::Velocity);
         @endcode
+
+       @see constructOutputForStateVariable()
      */
 #ifndef SWIG // SWIG can't parse the const at the end of the second argument.
     template <typename T, typename Class>
@@ -1214,6 +1232,8 @@ template <class T> friend class ComponentMeasure;
                std::placeholders::_1, "ankle"),
                SimTK::Stage::Position);
        @endcode
+
+      @see constructOutputForStateVariable()
     */
     template <typename T>
     void constructOutput(const std::string& name, 
@@ -1222,13 +1242,26 @@ template <class T> friend class ComponentMeasure;
         _outputsTable[name] = std::unique_ptr<const AbstractOutput>(new
                 Output<T>(name, outputFunction, dependsOn));
     }
+
+    /** Construct an Output for a StateVariable. While this method is a
+     * convenient way to construct an Output for a StateVariable, it is
+     * inefficient because it uses a string lookup. To create a more efficient
+     * Output, create a member variable that returns the state variable
+     * directly; see the implementations of Coordinate::getValue() or
+     * Muscle::getActivation() for examples.
+     *
+     * @param name Name of the output, which must be the same as the name of
+     * the corresponding state variable.
+     */
+    void constructOutputForStateVariable(const std::string& name);
     
     /**
-     * Add another Component as a subcomponent of this Component.
-     * Component methods (e.g. addToSystem(), initStateFromProperties(), ...) are 
-     * therefore invoked on subcomponents when called on this Component. Realization is 
-     * also performed automatically on subcomponents. This Component does not take 
-     * ownership of designated subcomponents and does not destroy them when the Component.
+     * Add another Component as a subcomponent of this Component.  Component
+     * methods (e.g. addToSystem(), initStateFromProperties(), ...) are
+     * therefore invoked on subcomponents when called on this Component.
+     * Realization is also performed automatically on subcomponents. This
+     * Component does not take ownership of designated subcomponents and does
+     * not destroy them when the Component.
      */
     void addComponent(Component *aComponent);
 
@@ -1262,6 +1295,13 @@ template <class T> friend class ComponentMeasure;
     indices are automatically determined using this interface. As an advanced
     option you may choose to hide the state variable from being accessed outside
     of this component, in which case it is considered to be "hidden". 
+    You may also want to create an Output for this state variable; see
+    constructOutputForStateVariable() for more information. Reporters should
+    use such an Output to get the StateVariable's value (instead of using
+    getStateVariableValue()).
+
+    @see constructOutputForStateVariable()
+
     @param[in] stateVariableName     string value to access variable by name
     @param[in] invalidatesStage      the system realization stage that is
                                      invalidated when variable value is changed
@@ -1279,10 +1319,14 @@ template <class T> friend class ComponentMeasure;
     add/expose state variables that are allocated by underlying Simbody
     components and specify how the state variable value is accessed by
     implementing a concrete StateVariable and adding it to the component using
-    this method. If the StateVariable is NOT hidden, this also creates an
-    Output in this Component with the same name as the StateVariable. Reporters
-    should use this Output to get the StateVariable's value (instead of using
-    getStateVariableValue()). */
+    this method.
+    You may also want to create an Output for this state variable; see
+    constructOutputForStateVariable() for more information. Reporters should
+    use such an Output to get the StateVariable's value (instead of using
+    getStateVariableValue()).
+
+    @see constructOutputForStateVariable()
+    */
     void addStateVariable(Component::StateVariable*  stateVariable) const;
 
     /** Add a system discrete variable belonging to this Component, give
@@ -1726,7 +1770,8 @@ ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
         _node = _node->_nextComponent.get();
     advanceToNextValidComponent(); // make sure we have a _node of type T after advancing
     return *this;
-};
+}
+
 /// Internal method to advance iterator to next valid component.
 template <typename T>
 void ComponentListIterator<T>::advanceToNextValidComponent() {
@@ -1744,6 +1789,13 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
         }
     }
     return;
+}
+
+
+template<class C>
+void Connector<C>::findAndConnect(const Component& root) {
+    const C& comp = root.getComponent<C>(get_connected_to_name());
+    connectee = comp;
 }
 
 } // end of namespace OpenSim

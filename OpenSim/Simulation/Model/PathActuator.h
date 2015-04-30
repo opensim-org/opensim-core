@@ -95,7 +95,7 @@ public:
     // Convenience method to add PathPoints
      /** Note that this function does not maintain the State and so should be used only
         before a valid State is created */
-     void addNewPathPoint( const std::string& proposedName, OpenSim::Body& aBody, 
+    void addNewPathPoint(const std::string& proposedName, PhysicalFrame& aBody,
                            const SimTK::Vec3& aPositionOnBody);
 
     //--------------------------------------------------------------------------

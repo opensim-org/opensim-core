@@ -28,6 +28,7 @@
 namespace OpenSim {
 
 class Model;
+class Body;
 class Storage;
 class Function;
 
@@ -233,13 +234,13 @@ private:
 //==============================================================================
 
     /** Pointer to the body that force is applied to */
-    SimTK::ReferencePtr<const Body> _appliedToBody;
+    SimTK::ReferencePtr<const PhysicalFrame> _appliedToBody;
 
     /** Pointer to the body that force is expressed in */
-    SimTK::ReferencePtr<const Body> _forceExpressedInBody;
+    SimTK::ReferencePtr<const PhysicalFrame> _forceExpressedInBody;
 
     /** Pointer to the body that point is expressed in */
-    SimTK::ReferencePtr<const Body> _pointExpressedInBody;
+    SimTK::ReferencePtr<const PhysicalFrame> _pointExpressedInBody;
 
     /** Pointer to the data source owned by the caller/creator of this force. 
         Note that it is not a RefPtr because we want to point to the same data

@@ -532,7 +532,7 @@ record(const SimTK::State& s)
     // POSITION
     de.getPosition(s, *_body,_point,vec);
     if(_relativeToBody){
-        de.transformPosition(s, de.getGroundBody(), vec, *_relativeToBody, vec);
+        de.transformPosition(s, _model->getGround(), vec, *_relativeToBody, vec);
     }
 
     _pStore->append(time, vec);
@@ -540,7 +540,7 @@ record(const SimTK::State& s)
     // VELOCITY
     de.getVelocity(s, *_body,_point,vec);
     if(_relativeToBody){
-        de.transform(s, de.getGroundBody(), vec, *_relativeToBody, vec);
+        de.transform(s, _model->getGround(), vec, *_relativeToBody, vec);
     }
 
     _vStore->append(time, vec);
@@ -549,7 +549,7 @@ record(const SimTK::State& s)
     _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
     de.getAcceleration(s, *_body,_point,vec);
     if(_relativeToBody){
-        de.transform(s, de.getGroundBody(), vec, *_relativeToBody, vec);
+        de.transform(s, _model->getGround(), vec, *_relativeToBody, vec);
     }
 
     _aStore->append(time, vec);

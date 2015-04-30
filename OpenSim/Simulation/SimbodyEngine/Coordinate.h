@@ -27,6 +27,7 @@
 
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 
 class ModifiableConstant;
@@ -136,7 +137,9 @@ public:
     /** get the speed value of the Coordinate from the state */
     double getSpeedValue(const SimTK::State& s) const;
     void setSpeedValue(SimTK::State& s, double aValue) const;
-    const std::string  getSpeedName() const;
+    /** return the name (label) used to identify the Coordinate's speed
+        state variable. Returns the string "<coordinate_name>/speed" */
+    const std::string& getSpeedName() const;
 
     /** get the default value for this coordinate. This is the value 
         used if no value has been set prior to a simulation. */
@@ -286,19 +289,23 @@ private:
     SimTK::ConstraintIndex _lockedConstraintIndex;
     SimTK::ConstraintIndex _clampedConstraintIndex;
 
-    /** MobilizedBodyIndex of the body which this coordinate serves.  */
+    /* MobilizedBodyIndex of the body which this coordinate serves.  */
     SimTK::MobilizedBodyIndex _bodyIndex;
 
-    /** Mobilizer Q (i.e. genearlized coordinate) index for this Coordinate. */
+    /* Mobilizer Q (i.e. genearlized coordinate) index for this Coordinate. */
     SimTK::MobilizerQIndex _mobilizerQIndex;
 
-    /** Motion type (translational, rotational or combination). */
+    /* Motion type (translational, rotational or combination). */
     MotionType _motionType;
 
-    /** The OpenSim::Joint that owns this coordinate. */
+    /* Label for the related state that is the generalized speed of
+       thiss coordinated. */
+    std::string _speedName;
+
+    /* The OpenSim::Joint that owns this coordinate. */
     SimTK::ReferencePtr<const Joint> _joint;
 
-    /** SimTK function used to lock the joint at a fixed value */
+    /* SimTK function used to lock the joint at a fixed value */
     mutable SimTK::ReferencePtr<ModifiableConstant> _lockFunction;
 
     mutable bool _lockedWarningGiven;

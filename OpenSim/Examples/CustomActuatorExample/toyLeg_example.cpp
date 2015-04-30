@@ -54,7 +54,7 @@ int main()
         double Pi = SimTK::Pi;
             
         // Get the ground body
-        OpenSim::Body& ground = osimModel.getGroundBody();
+        Ground& ground = osimModel.updGround();
         ground.addDisplayGeometry("checkered_floor.vtp");
 
         // create linkage body

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,7 +26,6 @@
 //=============================================================================
 #include "Body.h"
 #include <OpenSim/Simulation/Model/Frame.h>
-#include "WeldConstraint.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
@@ -45,7 +44,7 @@ using SimTK::Vec3;
 /**
  * Default constructor.
  */
-Body::Body() : RigidFrame()
+Body::Body() : PhysicalFrame()
 {
     //_body = this;
     constructProperties();
@@ -56,7 +55,7 @@ Body::Body() : RigidFrame()
  * Constructor.
  */
 Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,const SimTK::Inertia& aInertia) :
-    RigidFrame()
+    PhysicalFrame()
 {
     constructProperties();
     setName(aName);
@@ -74,45 +73,24 @@ void Body::constructProperties()
     constructProperty_mass(SimTK::NaN);
     constructProperty_mass_center(SimTK::Vec3(0));
     constructProperty_inertia(SimTK::Vec6(0));
-    constructProperty_WrapObjectSet(WrapObjectSet());
-    constructProperty_VisibleObject(VisibleObject());
 }
 
 
 void Body::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
-
-    //TODO: Need a better design so ground body is not exposed in XML
-    //like every other body. One idea is to remove ground body altogether.
-    //Instead of using ground Body as a holder of geometry, a flat list of
-    //geometry could be associated with frames. A frame could be
-    //referenced by name and 'ground' could be an automatic keyword for
-    //connecting to the ground reference frame. -aseth
-
-    // do not evaluate mass properties for ground since they are irrelevant
-    if (SimTK::String(getName()).toLower() != "ground"){
-        const SimTK::MassProperties& massProps = getMassProperties();
-        _internalRigidBody = SimTK::Body::Rigid(massProps);
-    }
-    
-    _index.invalidate();
-    _mbTransform.setToZero();
+    const SimTK::MassProperties& massProps = getMassProperties();
+    _internalRigidBody = SimTK::Body::Rigid(massProps);
 }
 
 //_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
+/* Connect this Body to the Model it belongs to
  *
  * @param aModel OpenSim model containing this Body.
  */
 void Body::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
-
-    for(int i=0; i< get_WrapObjectSet().getSize(); i++)
-        get_WrapObjectSet().get(i).connectToModelAndBody(aModel, *this);
     
     int nslaves = (int)_slaves.size();
 
@@ -132,28 +110,11 @@ void Body::extendConnectToModel(Model& aModel)
     }
 }
 
-void Body::extendAddToSystem(SimTK::MultibodySystem& system) const
-{
-    if(getName() == "ground"){
-        Body * mutableThis = const_cast<Body *>(this);
-        mutableThis->_index = SimTK::GroundIndex;
-    }
-}
-
-
 //=============================================================================
 // GET AND SET
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Add display geometry to body.
- *
- * @param aGeometryFileName Geometry filename.
- */
-void Body::addDisplayGeometry(const std::string &aGeometryFileName)
-{
-    updDisplayer()->setGeometryFileName(updDisplayer()->getNumGeometryFiles(), aGeometryFileName);
-}
+
 
 
 //_____________________________________________________________________________
@@ -189,7 +150,7 @@ const SimTK::Inertia& Body::getInertia() const
                 cout << ex.what() << endl;
 
                 // get some aggregate value for the inertia based on exsiting values
-                double diag = Ivec.getSubVec<3>(0).norm()/sqrt(3);
+                double diag = Ivec.getSubVec<3>(0).norm()/sqrt(3.0);
 
                 // and then assume a spherical shape.
                 _inertia = SimTK::Inertia(Vec3(diag), Vec3(0));
@@ -231,22 +192,12 @@ void Body::setInertia(const SimTK::Inertia& inertia)
  */
 void Body::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
 {
-   // Base class, to scale wrap objects
-    for (int i=0; i< get_WrapObjectSet().getSize(); i++)
-        upd_WrapObjectSet().get(i).scale(aScaleFactors);
-
-    SimTK::Vec3 oldScaleFactors;
-    getDisplayer()->getScaleFactors(oldScaleFactors);
-
+    Super::scale(aScaleFactors);
     for(int i=0; i<3; i++) {
         upd_mass_center()[i] *= aScaleFactors[i];
-        oldScaleFactors[i] *= aScaleFactors[i];
     }
-    // Update scale factors for displayer
-    updDisplayer()->setScaleFactors(oldScaleFactors);
 
-    if (getName() != "ground")  // The following throws an exception if applied to ground.
-        scaleInertialProperties(aScaleFactors, aScaleMass);
+    scaleInertialProperties(aScaleFactors, aScaleMass);
 }
 
 //_____________________________________________________________________________
@@ -387,9 +338,6 @@ void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScale
  */
 void Body::scaleMass(double aScaleFactor)
 {
-    if (_index==0)  // The following throws an exception if applied to ground.
-        return;
-
     upd_mass() *= aScaleFactor;
     _inertia *= aScaleFactor;
     upd_inertia() *= aScaleFactor;
@@ -422,40 +370,9 @@ SimTK::MassProperties Body::getMassProperties() const
     }
 }
 
-//_____________________________________________________________________________
-/**
- * Get the named wrap object, if it exists.
- *
- * @param aName Name of the wrap object.
- * @return Pointer to the wrap object.
- */
-const WrapObject* Body::getWrapObject(const string& aName) const
-{
-    int i;
-
-    for (i = 0; i < get_WrapObjectSet().getSize(); i++) {
-        if (aName == get_WrapObjectSet()[i].getName())
-            return &get_WrapObjectSet()[i];
-    }
-    return nullptr;
-}
-
-void Body::addWrapObject(WrapObject* wrap) {
-    upd_WrapObjectSet().adoptAndAppend(wrap);
-}
-
 //=============================================================================
 // I/O
 //=============================================================================
-void Body::getScaleFactors(SimTK::Vec3& scales) const
-{
-
-    SimTK::Vec3 scaleFactors;
-    get_VisibleObject().getScaleFactors(scaleFactors);
-
-    scales = scaleFactors;
-
-}
 
 void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
