@@ -49,7 +49,7 @@ PhysicalFrame::PhysicalFrame() : Frame()
     frm.setName("frame_geometry");
     frm.set_display_radius(.004);
     frm.setRepresentation(Geometry::Hide);
-    append_GeometrySet(frm);
+    append_geometry(frm);
 
 }
 
@@ -89,8 +89,8 @@ void PhysicalFrame::extendConnectToModel(Model& aModel)
     Super::extendConnectToModel(aModel);
 
     // Better use name search or more robust method
-    if (upd_GeometrySet(0).getFrameName() == "")
-        upd_GeometrySet(0).setFrameName(getName());
+    if (upd_geometry(0).getFrameName() == "")
+        upd_geometry(0).setFrameName(getName());
 
     for (int i = 0; i < get_WrapObjectSet().getSize(); i++)
         get_WrapObjectSet().get(i).connectToModelAndBody(aModel, *this);

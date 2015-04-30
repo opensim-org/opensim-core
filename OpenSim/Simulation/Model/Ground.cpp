@@ -43,7 +43,7 @@ Ground::Ground() : PhysicalFrame()
 {
     setName("ground");
     setAuthors("Ajay Seth");
-    upd_GeometrySet(0).setFrameName("ground");
+    upd_geometry(0).setFrameName("ground");
 }
 
 /*

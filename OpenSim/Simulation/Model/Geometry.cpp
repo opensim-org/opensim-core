@@ -94,6 +94,7 @@ void Geometry::setDecorativeGeometryTransform(SimTK::Array_<SimTK::DecorativeGeo
     for (unsigned i = 0; i < decorations.size(); i++){
         decorations[i].setBodyId(idx);
         decorations[i].setTransform(transformInBaseFrame);
+        decorations[i].setIndexOnBody(i);
     }
 }
 void Sphere::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const

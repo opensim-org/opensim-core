@@ -223,6 +223,7 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                         }
                         SimTK::Xml::element_iterator geomIter = bodyIter->element_begin("GeometrySet");
                         if (geomIter != bodyIter->element_end()){ // Actual Geometry was found
+                            geomIter->setElementTag("geometry");
                             gndIter->insertNodeAfter(gndIter->node_end(), bodyIter->removeNode(geomIter));
                         }
                         SimTK::Xml::element_iterator wrapIter = bodyIter->element_begin("WrapObjectSet");

@@ -66,7 +66,7 @@ Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,
     set_mass_center(aMassCenter);
     setInertia(aInertia);
     // Better use name search or more robust method
-    upd_GeometrySet(0).setFrameName(aName);
+    upd_geometry(0).setFrameName(aName);
 }
 
 //_____________________________________________________________________________
@@ -446,7 +446,7 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                         geometryIter->getValueAs(oldGeometryFiles);
                     }
                     std::string bodyName = aNode.getRequiredAttribute("name").getValue();
-                    SimTK::Xml::Element geometrySetNode("GeometrySet");
+                    SimTK::Xml::Element geometrySetNode("geometry");
                     aNode.insertNodeAfter(aNode.element_end(), geometrySetNode);
                     // Create Mesh node for each item in oldGeometryFiles
                     for (unsigned ng = 0; ng < oldGeometryFiles.size(); ng++) {
@@ -468,6 +468,7 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                     SimTK::Xml::element_iterator geomSetIter = visObjElement.element_begin("GeometrySet");
                     if (geomSetIter != visObjElement.element_end()){
                         convertDisplayGeometryToGeometryXML(aNode, outerScaleFactors, outerTransform, *geomSetIter);
+                        geomSetIter->setElementTag("geometry");
                     }
                 }
                 // Regardless add a node for FrameGeometry to control the display of BodyFrame
@@ -480,10 +481,13 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 frameRepresentation.setValue("0");
                 appearanceNode.insertNodeAfter(appearanceNode.element_end(), frameRepresentation);
                 bodyFrameNode.insertNodeAfter(bodyFrameNode.element_end(), appearanceNode);
-                SimTK::Xml::element_iterator geomSetIter = aNode.element_begin("GeometrySet");
+                //SimTK::String log;
+                //aNode.writeToString(log);
+                //std::cout << log << std::endl;
+                SimTK::Xml::element_iterator geomSetIter = aNode.element_begin("geometry");
                 if (geomSetIter != aNode.element_end()){
                     geomSetIter->insertNodeAfter(geomSetIter->node_end(), bodyFrameNode);
-                }
+                 }
             }
         }
     }
@@ -499,7 +503,7 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
     SimTK::Xml::element_iterator objectsIter = geomSetElement.element_begin("objects");
 
     if (objectsIter != geomSetElement.element_end()){
-        SimTK::Xml::Element geometrySetNode("GeometrySet");
+        SimTK::Xml::Element geometrySetNode("geometry");
         bodyNode.insertNodeAfter(bodyNode.element_end(), geometrySetNode);
 
         SimTK::Xml::element_iterator displayGeomIter = objectsIter->element_begin("DisplayGeometry");

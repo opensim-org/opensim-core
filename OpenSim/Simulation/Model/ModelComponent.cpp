@@ -34,19 +34,19 @@ namespace OpenSim {
 //==============================================================================
 ModelComponent::ModelComponent() : _model(NULL) 
 {
-    constructProperty_GeometrySet();
+    constructProperty_geometry();
 }
 
 ModelComponent::ModelComponent(const std::string& fileName, bool updFromXMLNode)
 :   Component(fileName, updFromXMLNode), _model(NULL)
 {
-    constructProperty_GeometrySet();
+    constructProperty_geometry();
 }
 
 ModelComponent::ModelComponent(SimTK::Xml::Element& element) 
 :   Component(element), _model(NULL)
 {
-    constructProperty_GeometrySet();
+    constructProperty_geometry();
 }
 
 const Model& ModelComponent::getModel() const
@@ -82,10 +82,10 @@ void ModelComponent::extendConnect(Component &root)
 void ModelComponent::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
-    int geomSize = getProperty_GeometrySet().size();
+    int geomSize = getProperty_geometry().size();
     if (geomSize > 0){
         for (int i = 0; i < geomSize; ++i){
-            addComponent(&upd_GeometrySet(i));
+            addComponent(&upd_geometry(i));
         }
     }
 }
@@ -107,8 +107,8 @@ void ModelComponent::addGeometry(OpenSim::Geometry& geom) {
             ss << getName() << "_geom_" << index;
             std::string candidate = ss.str();
             bool exists = false;
-            for (int idx = 0; idx < getProperty_GeometrySet().size() && !exists; idx++){
-                if (get_GeometrySet(idx).getName() == candidate){
+            for (int idx = 0; idx < getProperty_geometry().size() && !exists; idx++){
+                if (get_geometry(idx).getName() == candidate){
                     exists = true;
                     break;
                 }
@@ -122,7 +122,7 @@ void ModelComponent::addGeometry(OpenSim::Geometry& geom) {
         }
         
     }
-    append_GeometrySet(geom);
+    append_geometry(geom);
     return;
 }
 

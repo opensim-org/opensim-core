@@ -87,7 +87,7 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(ModelComponent, Component);
 These are the serializable properties associated with this class. **/
 /**@{**/
 public:
-    OpenSim_DECLARE_LIST_PROPERTY(GeometrySet, Geometry,
+    OpenSim_DECLARE_LIST_PROPERTY(geometry, Geometry,
         "Geometry that can be attached to the Model Component");
 /**@}**/
 //==============================================================================
@@ -123,7 +123,7 @@ public:
      * maintained by the ModelComponent.
      */
     int getGeometrySize() const {
-        return getProperty_GeometrySet().size();
+        return getProperty_geometry().size();
     }
     /**
      * Copy the passed in Geometry and add the copy to the visualization of 
