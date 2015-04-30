@@ -47,7 +47,7 @@ namespace OpenSim {
  * independent variables the correct number of dependent variables is returned.
  * Values of the function and its derivatives
  * are obtained by calling the evaluate() method.  The curve may or may not
- * be finite or diferentiable; the evaluate method returns values between
+ * be finite or differentiable; the evaluate method returns values between
  * --SimTK::Infinity and SimTK::Infinity, or it returns SimTK::NaN 
  * (not a number) if the curve is not defined.
  * Currently, functions of up to 3 variables (x,y,z) are supported.
