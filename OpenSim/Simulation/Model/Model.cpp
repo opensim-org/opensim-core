@@ -1092,16 +1092,6 @@ void Model::equilibrateMuscles(SimTK::State& state)
         throw Exception("Model::equilibrateMuscles() "+errorMsg, __FILE__, __LINE__);
 }
 
-//_____________________________________________________________________________
-/**
- * Register the types used by this class.
-void Model::registerTypes()
-{
-    // now handled by RegisterTypes_osimSimulation()
-}
- */
-
-
 //=============================================================================
 // GRAVITY
 //=============================================================================
