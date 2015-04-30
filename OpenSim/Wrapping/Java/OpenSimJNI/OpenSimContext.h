@@ -104,9 +104,9 @@ public:
             _model->getMultibodySystem().realize( *_configState, stageBeforeRecreatingSystem );
         }
     // Transforms
-    void transformPosition(const Body& body, double offset[], double gOffset[]);
-    SimTK::Transform getTransform(const Body& body);
-    void transform(const Body& ground, double d[], Body& body, double dragVectorBody[]);
+    void transformPosition(const PhysicalFrame& body, double offset[], double gOffset[]);
+    SimTK::Transform getTransform(const PhysicalFrame& body);
+    void transform(const PhysicalFrame& ground, double d[], PhysicalFrame& body, double dragVectorBody[]);
     // Coordinates
     double getValue(const Coordinate& coord);
     bool getLocked(const Coordinate& coord);
@@ -147,14 +147,14 @@ public:
     void setXCoordinate(MovingPathPoint& mmp, Coordinate& newCoord);
     void setYCoordinate(MovingPathPoint& mmp, Coordinate& newCoord);
     void setZCoordinate(MovingPathPoint& mmp, Coordinate& newCoord);
-    void setBody(PathPoint& pathPoint, Body& newBody);
+    void setBody(PathPoint& pathPoint, PhysicalFrame& newBody);
     void setCoordinate(ConditionalPathPoint& via, Coordinate& newCoord);
     void setRangeMin(ConditionalPathPoint& via, double d);
     void setRangeMax(ConditionalPathPoint& via, double d);
     bool replacePathPoint(GeometryPath& p, PathPoint& mp, PathPoint& newPoint);
     void setLocation(PathPoint& mp, int i, double d);
     void setEndPoint(PathWrap& mw, int newEndPt);
-    void addPathPoint(GeometryPath& p, int menuChoice, Body& body);
+    void addPathPoint(GeometryPath& p, int menuChoice, PhysicalFrame& body);
     bool deletePathPoint(GeometryPath& p, int menuChoice);
     bool isActivePathPoint(PathPoint& mp) ; 
     // Muscle Wrapping
@@ -164,7 +164,7 @@ public:
     void moveDownPathWrap(GeometryPath& p, int num);
     void deletePathWrap(GeometryPath& p, int num);
     // Markers
-    void setBody(Marker& currentMarker, Body& newBody, bool  b);
+    void setBody(Marker& currentMarker, PhysicalFrame& newBody, bool  b);
     int replaceMarkerSet(Model& model, MarkerSet& aMarkerSet);
 
     void getCenterOfMassInGround(double com[3]) const {

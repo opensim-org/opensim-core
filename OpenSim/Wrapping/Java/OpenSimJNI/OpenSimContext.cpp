@@ -52,17 +52,17 @@ OpenSimContext::OpenSimContext( SimTK::State* s, Model* model ) :
 
 
 // Transforms
-void OpenSimContext::transformPosition(const Body& body, double* offset, double* gOffset) {
+void OpenSimContext::transformPosition(const PhysicalFrame& body, double* offset, double* gOffset) {
   _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
     _model->getSimbodyEngine().transformPosition(*_configState, body, offset, gOffset );
 }
 
-SimTK::Transform OpenSimContext::getTransform(const Body& body) { // Body Should be made const
+SimTK::Transform OpenSimContext::getTransform(const PhysicalFrame& body) { // Body Should be made const
    _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
      return _model->getSimbodyEngine().getTransform(*_configState, body );
 }
 
-void OpenSimContext::transform(const Body& ground, double* d, Body& body, double* dragVectorBody) {
+void OpenSimContext::transform(const PhysicalFrame& ground, double* d, PhysicalFrame& body, double* dragVectorBody) {
   _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
     _model->getSimbodyEngine().transform(*_configState, ground, SimTK::Vec3(d), body, SimTK::Vec3::updAs(dragVectorBody) );
     return;
@@ -184,7 +184,7 @@ void OpenSimContext::setZCoordinate(MovingPathPoint& mmp, Coordinate&  newCoord)
     return;
 }
 
-void OpenSimContext::setBody(PathPoint& pathPoint, Body&  newBody) {
+void OpenSimContext::setBody(PathPoint& pathPoint, PhysicalFrame&  newBody) {
    pathPoint.changeBodyPreserveLocation(*_configState, newBody);
    this->recreateSystemAfterSystemExists();
    realizeVelocity();
@@ -257,7 +257,7 @@ void OpenSimContext::setEndPoint(PathWrap& mw, int newEndPt) {
     return;
 }
 
-void OpenSimContext::addPathPoint(GeometryPath& p, int menuChoice, Body&  body) {
+void OpenSimContext::addPathPoint(GeometryPath& p, int menuChoice, PhysicalFrame&  body) {
     p.addPathPoint(*_configState, menuChoice, body );
   _configState->invalidateAll(SimTK::Stage::Position);
   _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
@@ -336,7 +336,7 @@ void OpenSimContext::deletePathWrap(GeometryPath& p, int num) {
 }
 
 // Markers
-void OpenSimContext::setBody(Marker& currentMarker, Body&  newBody, bool b) {
+void OpenSimContext::setBody(Marker& currentMarker, PhysicalFrame&  newBody, bool b) {
     if( b ) {
          currentMarker.changeFramePreserveLocation( *_configState, newBody );
     } else {
