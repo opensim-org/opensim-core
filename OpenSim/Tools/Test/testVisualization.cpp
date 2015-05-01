@@ -137,5 +137,5 @@ void testVisModel(string fileName)
     cout << fromFile << endl;
     int same = fromFile.compare(fromModel);
     delete model;
-    // disable test for now for refactoring ASSERT(same == 0);
+    ASSERT(same == 0);
 }
