@@ -1,7 +1,7 @@
 #ifndef OPENSIM_APPEARANCE_H_
 #define OPENSIM_APPEARANCE_H_
 /* -------------------------------------------------------------------------- *
- *                             OpenSim:  Appearance.h                             *
+ *                             OpenSim:  Appearance.h                         *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -41,6 +41,14 @@ class Model;
 /**
  * A class that holds the Display Attributes (Appearance) of an object displayed 
  * in the OpenSim Visualizer.
+ * 
+ * BaseAppearance contains Appearance properties that apply to all geometry.
+ * Geometry that have a surface so that it can be textured can use the subclass
+ * Appearance, while schematic line drawings (e.g. Arrows, Frames) can use 
+ * LineAppearance which offers thickness. 
+ *
+ * TODO: Add Resolution to Appearance from DecorativeGeometry and 
+ * utilize LineAppearance for Arrow, Line, and Frame (unused for now)
  *
  * @author Ayman Habib
  * @version 1.0
