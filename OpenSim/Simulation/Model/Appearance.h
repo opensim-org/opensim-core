@@ -39,7 +39,8 @@ class Model;
 //=============================================================================
 //=============================================================================
 /**
- * A class that holds the Display Attributes (Appearance) of an object displayed in GUI
+ * A class that holds the Display Attributes (Appearance) of an object displayed 
+ * in the OpenSim Visualizer.
  *
  * @author Ayman Habib
  * @version 1.0
@@ -47,9 +48,9 @@ class Model;
 class OSIMSIMULATION_API BaseAppearance : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(BaseAppearance, Object);
 public:
-    //==============================================================================
+    //==========================================================================
     // PROPERTIES
-    //==============================================================================
+    //==========================================================================
     /** @name Property declarations
     These are the serializable properties associated with Appearance. **/
     /**@{**/
@@ -76,16 +77,16 @@ private:
         constructProperty_opacity(1.0);
         constructProperty_representation(3);
     }
-    //=============================================================================
+    //==========================================================================
 };  // END of class BaseAppearance
 
 
 class OSIMSIMULATION_API Appearance : public BaseAppearance {
     OpenSim_DECLARE_CONCRETE_OBJECT(Appearance, BaseAppearance);
 public:
-    //==============================================================================
+    //==========================================================================
     // PROPERTIES
-    //==============================================================================
+    //==========================================================================
     /** @name Property declarations
     These are the serializable properties associated with Appearance. **/
     /**@{**/
@@ -118,10 +119,8 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with Appearance. **/
     /**@{**/
-    OpenSim_DECLARE_PROPERTY(radius, double,
+    OpenSim_DECLARE_PROPERTY(thickness, double,
         "The radius of the shape used to display the object. ");
-    OpenSim_DECLARE_PROPERTY(size, double,
-        "The length of the displayed line object. ");
     /**@}**/
 
     //--------------------------------------------------------------------------
@@ -135,8 +134,7 @@ public:
 
 private:
     void constructProperties() {
-        constructProperty_radius(.05);
-        constructProperty_size(1.0);
+        constructProperty_thickness(.05);
     }
     //=============================================================================
 };  // END of class LineAppearance

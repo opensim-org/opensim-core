@@ -59,10 +59,6 @@ const OpenSim::PhysicalFrame& Geometry::getFrame() const
     return getConnector<PhysicalFrame>("frame").getConnectee();
 }
 
-bool Geometry::isFrameSpecified() const {
-    return getConnector<OpenSim::PhysicalFrame>("frame").isConnected();
-}
-
 void Geometry::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
 {
