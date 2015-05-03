@@ -26,19 +26,150 @@
 #include <OpenSim/Common/CSVFileAdapter.h>
 
 using namespace OpenSim;
-using namespace std;
-using namespace SimTK;
 
 template <> struct Object_GetClassName<SimTK::Mat22>
 {
     static const std::string name() { return "Mat22"; }
 };
 
+
+//=============================================================================
+/**
+* StreamWriter is a concrete class defining an interface for writing
+* out the contents of a DataTable to a stream. It controls access to a stream.
+*
+* @author Ajay Seth
+*/
+template<typename DataType = SimTK::Real>
+class StreamWriter : public DataAdapter {
+    //    OpenSim_DECLARE_CONCRETE_OBJECT_T(StreamWriter, DataType, DataAdapter);
+
+public:
+    StreamWriter() : DataAdapter() {
+        setAccessMode(std::ios_base::out);
+    }
+
+    virtual ~StreamWriter() {}
+
+    StreamWriter(std::ostream& out) : _outputstream(&out) {
+        setAccessMode(std::ios_base::out);
+    }
+
+    StreamWriter* clone() const override { return new StreamWriter(*this); }
+
+protected:
+
+    bool extendOpenDataSource() override {
+        if (_outputstream.empty()){
+            std::cout << "StreamWriter::extendOpenDataSrouce() "
+                << "No output stream open.\n"
+                << " Assuming std::cout." << std::endl;
+            _outputstream = std::cout;
+        }
+        return true;
+    }
+
+    bool extendCloseDataSource() override {
+        if (_outputstream.empty()){
+            _outputstream.clear();
+        }
+        return true;
+    }
+
+    void extendPrepareForWriting(const AbstractDataTable& dt) override {
+        _outTable = &(DataTable_<DataType>::downcast(dt));
+        *_outputstream << dt.getDataTypeInfo().name() << "\n";
+        *_outputstream << dt.getColumnLabels() << "\n";
+    }
+
+    /** extend the writing capability of the DataAdapter to write out
+    the data to a std::ostream */
+    bool extendWrite() override {
+        for (size_t rix = 0; rix < _outTable->getNumRows(); ++rix) {
+            *_outputstream << _outTable->getRow(rix) << std::endl;
+        }
+        return true;
+    }
+
+private:
+    SimTK::ReferencePtr<std::ostream> _outputstream;
+    SimTK::ReferencePtr<const DataTable_<DataType> > _outTable;
+
+    //=============================================================================
+};  // END of class StreamWriter
+
+
+//=============================================================================
+/**
+* StreamReader is a concrete class defining an interface for reading in
+* the contents of a DataTable from a stream. It controls access to a stream.
+*
+* @author Ajay Seth
+*/
+template<typename DataType = SimTK::Real>
+class StreamReader : public DataAdapter {
+    //    OpenSim_DECLARE_CONCRETE_OBJECT_T(StreamReader, DataType, DataAdapter);
+
+public:
+    StreamReader() : DataAdapter() { setAccessMode(std::ios_base::out); }
+    virtual ~StreamReader() {}
+
+    StreamReader(std::istream& in) : _inputstream(&in) {
+        setAccessMode(std::ios_base::in);
+    }
+
+    StreamReader* clone() const override { return new StreamReader(*this); }
+
+    bool extendOpenDataSource() override {
+        if (_inputstream.empty()){
+            throw std::runtime_error(
+                "StreamReader::extendPrepareForReading(): "
+                "No input stream specified.\n"
+                "Assuming std::cin.");
+        }
+        return true;
+    }
+
+    bool extendCloseDataSource() override {
+        if (_inputstream.empty()){
+            _inputstream.clear();
+        }
+        return true;
+    }
+
+    void extendPrepareForReading(AbstractDataTable& dt) const override {
+        _inTable = &DataTable_<DataType>::downcast(dt);
+    }
+
+    /** extend the reading capability of the DataAdapter to write out
+    the data to a std::istream */
+    bool extendRead() const override {
+        std::string rowString;
+        std::getline(*_inputstream, rowString);
+        std::cout << "StreamReader::readNextRow() input stream contains:";
+        std::cout << rowString << std::endl;
+        RowVector_<DataType> row(int(_inTable->getNumCols()), DataType(0));
+        _inTable->appendRow(row);
+        return !_inputstream->eof();
+    }
+
+private:
+    SimTK::ReferencePtr<std::istream> _inputstream;
+    mutable SimTK::ReferencePtr<DataTable_<DataType> > _inTable;
+};
+
+//typedef StreamReader<SimTK::Real> RealReader;
+//typedef StreamReader<SimTK::Vec3> Vec3Reader;
+
+using namespace std;
+using namespace SimTK;
+
 int main() {
 
     try {
         DataAdapter::registerDataAdpater("streamWriter", 
             StreamWriter<SimTK::Real>());
+        DataAdapter::registerDataAdpater("csv", CSVFileReader());
 
         DataTable_<Vec3> markers(1,4);
         RowVector_<Vec3> r0(4, Vec3(1.0, 1.0, 1.0));
@@ -130,9 +261,9 @@ int main() {
         // throw and exception that the 
 //        ASSERT_THROW(OpenSim::Exception, DataAdapter::createAdapter("stream"));
 
-        DataAdapter* adapter = DataAdapter::createAdapter("streamWriter");
+        auto* adapter = DataAdapter::createAdapter("streamWriter");
         adapter->prepareForWriting(table);
-        adapter->writeOutTable(table);
+        adapter->write();
 
         // Write out contents to cout
         cout << endl;
@@ -140,14 +271,14 @@ int main() {
         std::stringstream iobuffer;
         StreamWriter<SimTK::Vec3>  markerWriter(iobuffer);
         markerWriter.prepareForWriting(markers);
-        markerWriter.writeOutTable(markers);
+        markerWriter.write();
         cout << iobuffer.str() << endl;
 
         StreamReader<> reader(iobuffer);
         DataTable readTable;
 
         reader.prepareForReading(readTable);
-        reader.readInTable(readTable);
+        reader.read();
         readTable.getNumRows();
         size_t nrows = readTable.getNumCols();
 
@@ -165,7 +296,7 @@ int main() {
 
         StreamWriter<Mat22>  matWriter(iobuffer);
         matWriter.prepareForWriting(matTable);
-        matWriter.writeOutTable(matTable);
+        matWriter.write();
         cout << iobuffer.str() << endl;
 
         TimeSeriesData tsd(table);
@@ -189,8 +320,7 @@ int main() {
         ASSERT(csvReader.isReadAccess() == true);
         DataTable csvTable;
         csvReader.prepareForReading(csvTable);
-        csvReader.readColumnLabels(csvTable);
-        csvReader.readInTable(csvTable);
+        csvReader.read();
 
         cout << endl;
         cout << "CSV Comments: " << csvTable.getMetaData() << endl;
@@ -198,8 +328,30 @@ int main() {
         cout << "CSV nrows = " << csvTable.getNumRows();
         cout << "    ncols = " << csvTable.getNumCols() << endl;
 
-        //Convert a DataTable to a TimeSeriesData table
-        TimeSeriesData tcsvData(csvTable);
+        DataTable csvTable2("dataTestFile.csv");
+        cout << "DataTable csvTable2('dataTestFile.csv')" << endl;
+        csvTable2.dumpToStream(cout);
+
+        // Try to read the table in again. Should throw an exception
+        // about no more lines to read from file.
+        ASSERT_THROW(std::exception, csvReader.read());
+        // If we set the file to be loaded it must close and open the new.
+        csvReader.setFilename("dataTestFile.csv");
+        // Should now fail because the reader needs a table to fill */
+        ASSERT_THROW(std::exception, csvReader.read());
+        csvReader.prepareForReading(csvTable);
+        csvReader.read(); 
+
+        cout << endl;
+        cout << "2nd read CSV nrows = " << csvTable.getNumRows();
+        cout << "    ncols = " << csvTable.getNumCols() << endl;
+        cout << csvTable << endl;
+
+        // Convert a DataTable to a TimeSeriesData table
+        // Should complain that time column is not sequential since
+        // we just read in the data into the cavTable twice!
+        ASSERT_THROW(std::exception, TimeSeriesData tcsvData(csvTable));
+        TimeSeriesData tcsvData(csvTable2);
         tcsvData.dumpToStream(cout);
     }
     catch (const std::exception& e) {

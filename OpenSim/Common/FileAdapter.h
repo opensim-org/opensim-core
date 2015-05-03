@@ -44,9 +44,15 @@ class FileAdapter : public DataAdapter {
 public:
     virtual ~FileAdapter() {}
 
-    std::ios_base::openmode getAccessMode() const { 
-        return defineAccessMode();
+    static FileAdapter* createAdapter(const std::string& idenitfier) {
+        return dynamic_cast<FileAdapter*>(DataAdapter::createAdapter(idenitfier));
     }
+
+    void setFilename(const std::string& filename) {
+        closeDataSource();
+        _filename = filename;
+    }
+    const std::string& getFilename() const { return _filename;  }
 
     /** Handy utility function for finding the file extension (the part after
     the dot) from a given file name. Returns an empty string if there is no
@@ -99,9 +105,6 @@ protected:
         _filename(filename) { 
             // handle path to the file
     }
-
-    virtual std::ios_base::openmode defineAccessMode() const = 0;
-
 
 private:
     // store the filename

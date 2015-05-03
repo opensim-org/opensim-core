@@ -22,33 +22,57 @@
  * -------------------------------------------------------------------------- */
 
 #include "DataAdapter.h"
+#include "DataTable.h"
 
 namespace OpenSim {
 
-bool DataAdapter::isReadAccess() const
+bool DataAdapter::hasDataAccess() const
 {
-    return _isReadAccess;
+    return _hasDataAccess;
 }
 
-bool DataAdapter::isWriteAccess() const
+void  DataAdapter::setHasDataAccess(bool hasAccess)
 {
-    return _isWriteAccess;
+    _hasDataAccess = hasAccess;
 }
 
-const XMLDocument& DataAdapter::getMetaData() const
+bool DataAdapter::openDataSource()
 {
-    return _metaData;
+    _hasDataAccess = extendOpenDataSource();
+    return _hasDataAccess;
 }
 
-XMLDocument& DataAdapter::updMetaData()
+bool DataAdapter::closeDataSource()
 {
-    return _metaData;
+    bool closed = extendCloseDataSource();
+    //closed successfully means no more access to the data
+    _hasDataAccess = !closed;
+    return closed;
 }
 
+std::ios_base::openmode DataAdapter::getAccessMode() const
+{
+    return _accessMode;
+}
+
+bool DataAdapter::isReadAccess() const {
+    auto val = getAccessMode() & std::ios_base::in;
+    bool ans = val ? true : false;
+    return ans; 
+}
+
+bool DataAdapter::isWriteAccess() const {
+    auto val = getAccessMode() & std::ios_base::out;
+    bool ans = val ? true : false;
+    return ans;
+}
 
 void DataAdapter::prepareForReading(AbstractDataTable& in)
 {
-    if (isReadAccess()){
+    if (!hasDataAccess()) {
+        openDataSource();
+    }
+    if (hasDataAccess() && isReadAccess()){
         extendPrepareForReading(in);
     }
     else {
@@ -59,7 +83,10 @@ void DataAdapter::prepareForReading(AbstractDataTable& in)
 
 void DataAdapter::prepareForWriting(const AbstractDataTable& out)
 {
-    if (isWriteAccess()){
+    if (!hasDataAccess()) {
+        openDataSource();
+    }
+    if (hasDataAccess() && isWriteAccess()){
         if (out.getNumCols() != out.getColumnLabels().size()){
             throw Exception("DataAdapter::prepareForWriting():\n"
                 "DataTable column labels inconsistent with the number of columns.");
@@ -72,67 +99,24 @@ void DataAdapter::prepareForWriting(const AbstractDataTable& out)
     }
 }
 
-void DataAdapter::readColumnLabels(AbstractDataTable& table) const
+bool DataAdapter::read() 
 {
-    if (isReadAccess()){
-        extendReadColumnLabels(table);
-    }
-    else {
-        throw Exception("DataAdapter::readColumnLabels()  "
-            "DataAdapter does not have read access.");
-    }
-}
-
-void DataAdapter::writeColumnLabels(const AbstractDataTable& table)
-{
-    if (isWriteAccess()){
-        extendWriteColumnLabels(table);
-    }
-    else {
-        throw Exception("DataAdapter::writeColumnLabels()  "
-            "DataAdapter does not have write access.");
-    }
-}
-
-
-void DataAdapter::readInTable(AbstractDataTable& in) const
-{
-    if (isReadAccess()){
-        size_t nrows = 0;
-        while (readNextRow(in)) { ++nrows; }
-        
-        if (nrows > 0)
-            return;
-
-        throw Exception(
-            "DataAdapter::readInTable() failed to read in DataTable." );
+    if (isReadAccess()) {
+        return extendRead();
     }
     throw Exception("DataAdapter does not support read access.");
 }
 
-void DataAdapter::writeOutTable(const AbstractDataTable& out)
+bool DataAdapter::write()
 {
     if (isWriteAccess()){
-        size_t nrow = 0;
-        size_t numTableRows = out.getNumRows();
-        for (nrow; nrow < numTableRows; ++nrow)
-            writeOutRow(out, nrow);
-        
-        if (nrow == numTableRows)
-            return;
-
-        throw Exception(
-            "DataAdapter::writeOutTable() failed to write the complete table.");
+        return extendWrite();
     }
     
     throw Exception("DataAdapter does not support write access.");
 }
 
-void DataAdapter::setReadAccess(bool read) { _isReadAccess = read; }
-
-void DataAdapter::setWriteAccess(bool write) { _isWriteAccess = write; }
-
-void DataAdapter::extendPrepareForReading(AbstractDataTable& in)
+void DataAdapter::extendPrepareForReading(AbstractDataTable& in) const
 {
     throw Exception("DataAdapter::extendPrepareForReading() "
         "is not implemented.");
@@ -144,30 +128,16 @@ void DataAdapter::extendPrepareForWriting(const AbstractDataTable& out)
         "is not implemented.");
 }
 
-bool DataAdapter::readNextRow(AbstractDataTable& in) const
+bool DataAdapter::extendRead() const
 {
-    throw Exception("DataAdapter::extendReadInRows() "
-        "is not implemented.");
+    throw Exception("DataAdapter::extendRead() is not implemented.");
     return false;
 }
 
-bool DataAdapter::writeOutRow(const AbstractDataTable& out, size_t rix)
+bool DataAdapter::extendWrite()
 {
-    throw Exception("DataAdapter::extendWriteOutRows() "
-        "is not implemented.");
+    throw Exception("DataAdapter::extendWrite() is not implemented.");
     return false;
-}
-
-void DataAdapter::extendReadColumnLabels(AbstractDataTable& dt) const
-{
-    throw Exception("DataAdapter::extendReadColumnLabels() "
-        "is not implemented.");
-}
-
-void DataAdapter::extendWriteColumnLabels(const AbstractDataTable& dt)
-{
-    throw Exception("DataAdapter::extendWriteolumnLabels() "
-        "is not implemented.");
 }
 
 /* static */
@@ -175,22 +145,29 @@ std::map<std::string, std::unique_ptr<DataAdapter>, std::less<std::string> >
 DataAdapter::_mapTypeNamesToAdapters;
 
 
-DataAdapter* DataAdapter::createAdapter(const std::string& idenitfier) {
-    std::map<std::string, std::unique_ptr<DataAdapter> >::const_iterator it
-        = _mapTypeNamesToAdapters.find(idenitfier);
+DataAdapter* DataAdapter::createAdapter(const std::string& identifier)
+{
+    auto it = _mapTypeNamesToAdapters.find(identifier);
     if (it != _mapTypeNamesToAdapters.end()){
         return it->second->clone();
     }
     throw Exception("DataAdapter::createAdapter() adapter with identifier '"
-        + idenitfier + "' could not be found.");
+        + identifier + "' could not be found.");
 }
 
-
 /* static */
-void DataAdapter::registerDataAdpater(const std::string& sourceTypeName,
-    const DataAdapter& adapter) {
-    _mapTypeNamesToAdapters[sourceTypeName] =
-        std::unique_ptr<DataAdapter>(adapter.clone());
+void DataAdapter::registerDataAdpater(const std::string& identifier,
+                                      const DataAdapter& adapter)
+{
+    auto it = _mapTypeNamesToAdapters.find(identifier);
+    if (it == _mapTypeNamesToAdapters.end()){
+        // add only if not previously registered
+        _mapTypeNamesToAdapters[identifier] =
+            std::unique_ptr<DataAdapter>(adapter.clone());
+        return;
+    }
+    throw Exception("DataAdapter::registerDataAdpater() adapter for '"
+        + identifier + "' already registered.");
 }
 
 

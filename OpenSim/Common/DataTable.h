@@ -29,10 +29,11 @@
 */
 #include "SimTKmath.h"
 #include "XMLDocument.h"
+#include "FileAdapter.h"
 #include "Array.h"
 #include <memory>
 #include <typeindex>
-#include <unordered_map>
+
 
 namespace OpenSim {
 
@@ -108,6 +109,23 @@ public:
         _data(int(nrows), int(ncols), val),
         _type(typeid(DataType)) {}
 
+    /** Convenience construction of a DataTable from a file name with type
+        identified by the file extension. E.g. `results.csv`, `stats.sto`, ...
+    @param[in] filename         the name of the data file to be accessed
+    */
+    DataTable_(const std::string& filename) :
+        _type(typeid(DataType)) {
+        std::string daId = FileAdapter::findExtension(filename);
+        auto* reader = FileAdapter::createAdapter(daId);
+        if (!reader){
+            throw Exception("DataTable() no adapter to read file '"
+                + filename + "' could be found.");
+        }
+        reader->setFilename(filename);
+        reader->prepareForReading(*this);
+        reader->read();
+        delete reader;
+    }
 
     DataTable_& operator=(const DataTable_& dt) {
         _metaData = dt.getMetaData();
@@ -135,6 +153,7 @@ public:
         return _columnLabels;
     }
     
+    /** Return true if the DataTable contains a column for the label. */
     bool hasColumn(const std::string& label) const override{
         return (_columnLabels.findIndex(label) >= 0);
     }
@@ -168,8 +187,6 @@ public:
         return _data(int(row), int(col));
     }
 
-
-
     /** Read-only access to the table as a Matrix */
     const SimTK::Matrix_<DataType>& getAsMatrix() const {
         return _data;
@@ -201,6 +218,9 @@ public:
     /** Dump the contents of table and strings to an output stream.
         Primarily used for debugging purposes.*/
     void dumpToStream(std::ostream &out) const override {
+        out << "DataTable of type: " << getDataTypeInfo().name() << endl;
+        out << getMetaData() << endl;
+        out << getColumnLabels() << endl;
         for (int i=0; i < getNumRows(); ++i){
             out << getRow(i) << std::endl;
         }
@@ -209,7 +229,7 @@ public:
     SimTK_DOWNCAST(DataTable_, AbstractDataTable);
 
 protected:
-
+    /** Satisfy AbstractDataTable to determines its numerical data type */
     const std::type_index& getDataTypeInfo() const override {
         return _type;
     }
@@ -219,18 +239,14 @@ protected:
         return _data;
     }
 
-
 private:
-
     // Amorphous data that cannot be put into a matrix.
     XMLDocument _metaData;
-
-    //The internal data model
+    // The internal data model for fast tabular access
     SimTK::Matrix_<DataType> _data;
-
-    //The column labels
+    // The column labels
     Array<std::string> _columnLabels;
-
+    // Numerical data type contained in the table
     const std::type_index _type;
 //=============================================================================
 };  // END of class DataTable_<T>

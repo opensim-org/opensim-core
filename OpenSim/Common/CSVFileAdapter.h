@@ -50,34 +50,48 @@ template<typename DataType = SimTK::Real>
 class CSVFileReader_ : public FileAdapter {
 
 public:
-    CSVFileReader_() : FileAdapter() {}
 
-    CSVFileReader_(const std::string& filename, const std::string& delim = ",",
+    CSVFileReader_(const std::string& filename = "", const std::string& delim = ",",
         const std::string& commentTag = "#") : FileAdapter(filename), 
             _delimiter(delim), _commentTag(commentTag) {
-        setReadAccess(true);
-        setWriteAccess(false);
-        p_inputStream = new std::ifstream(filename, getAccessMode());
-
-        if (!*p_inputStream) {
-            std::string msg("CSVFileReader_:: cannot access file '");
-            msg += filename + "' fore reading.";
-            throw Exception(msg);
-        }
+        // Reader can only read in data. No ability to write (trunc or append).
+        setAccessMode(std::ios_base::in);
     }
 
     CSVFileReader_* clone() const override { return new CSVFileReader_(*this); }
 
-    virtual ~CSVFileReader_() { delete p_inputStream.release(); }
+    virtual ~CSVFileReader_() { extendCloseDataSource(); }
 
 protected:
 
-    void extendPrepareForReading(AbstractDataTable& dt) override {
+    bool extendOpenDataSource() override {
+
+        p_inputStream = new std::ifstream(getFilename(), getAccessMode());
+        if (p_inputStream.empty()){
+            throw Exception(
+                "CSVFileReader::extendOpenDataSource(): "
+                "File '" +getFilename()+"' could not be accessed for reading.");
+        }
+        return true;
+    }
+
+    bool extendCloseDataSource() override {
+        if (p_inputStream.empty()){
+            // Reader created the stream to access the file and its
+            // responsibility to release and delete it.
+            delete p_inputStream.release();
+        }
+        _inTable.clear();
+        return true;
+    }
+
+    void extendPrepareForReading(AbstractDataTable& dt) const override {
+        _inTable = &DataTable_<DataType>::downcast(dt);
     }
 
     /** extend the reading capability of the DataAdapter to pull in
     the column labels for the data to be read in from a concrete source */
-    void extendReadColumnLabels(AbstractDataTable& dt) const override {
+    void readColumnLabels() const {
         // a line of data read in as a string
         std::string lineString;
         std::string commentString;
@@ -95,19 +109,38 @@ protected:
         }
 
         // Put file comments into the comments of the meta data for now
-        XMLDocument& meta = dt.updMetaData();
-        SimTK::Xml::Comment comments(commentString); 
+        XMLDocument& meta = _inTable->updMetaData();
+        SimTK::Xml::Comment comments(commentString);
         meta.insertTopLevelNodeBefore(meta.node_begin(), comments);
 
-        Array<std::string>& colLabels = dt.updColumnLabels();
+        Array<std::string> colLabels;
         FileAdapter::tokenize(lineString, *_delimiter.c_str(), colLabels);
+        _inTable->updColumnLabels() = colLabels;
+    }
+
+    bool extendRead() const override {
+        if (_inTable.empty()) {
+            throw Exception("CSVFileReader_::read() has no DataTable to populate.\n"
+                "Call prepareToRead(DataTable& table) to specify the "
+                "table for the read in data.");
+        }
+        readColumnLabels();
+        size_t nrows = 0;
+        while (readNextRow()) {
+            ++nrows;
+        }
+        return (nrows > 0);
     }
 
     /** extend the reading capability of the DataAdapter to read CSV rows */
-    bool readNextRow(AbstractDataTable& dt) const override {
+    bool readNextRow() const  {
         std::string lineString;
         std::getline(getDataStream(), lineString);
-        Array<std::string> valStrings("", 0, int(dt.getNumCols()));
+        if (lineString.size() == 0){
+            throw Exception("FileAdapter::readNextRow() "
+                "has no more rows to read");
+        }
+        Array<std::string> valStrings("", 0, int(_inTable->getNumCols()));
         FileAdapter::tokenize(lineString, *_delimiter.c_str(), valStrings);
 
         // read in line of strings MUST match number of columns
@@ -118,7 +151,7 @@ protected:
             std::istringstream(valStrings[i]) >> row[i];
         }
         
-        DataTable_<DataType>::downcast(dt).appendRow(row);
+        _inTable->appendRow(row);
         return !getDataStream().eof();
     }
 
@@ -126,12 +159,12 @@ protected:
     Check that it is connected first.  @see connectedToDataStream(). */
     std::istream& getDataStream() const { return *p_inputStream; }
 
-    std::ios_base::openmode defineAccessMode() const override {
-        return std::ios_base::in;
-    }
-
 private:
     SimTK::ReferencePtr<std::istream> p_inputStream;
+
+    // writeable reference to the DataTable being filled in 
+    // by the reader. No ownership taken. 
+    mutable SimTK::ReferencePtr<DataTable_<DataType> > _inTable;
 
     // Delimiter between elements
     const std::string _delimiter;
