@@ -140,7 +140,7 @@ int main()
             countSkipComponent++;
         }
 
-        ASSERT(numComponents == 68); 
+        ASSERT(numComponents == 74); 
         ASSERT(numBodies == model.getNumBodies());
         ASSERT(numBodiesPost == numBodies);
         ASSERT(numMuscles == model.getMuscles().getSize());

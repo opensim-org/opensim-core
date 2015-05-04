@@ -481,9 +481,6 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 frameRepresentation.setValue("0");
                 appearanceNode.insertNodeAfter(appearanceNode.element_end(), frameRepresentation);
                 bodyFrameNode.insertNodeAfter(bodyFrameNode.element_end(), appearanceNode);
-                //SimTK::String log;
-                //aNode.writeToString(log);
-                //std::cout << log << std::endl;
                 SimTK::Xml::element_iterator geomSetIter = aNode.element_begin("geometry");
                 if (geomSetIter != aNode.element_end()){
                     geomSetIter->insertNodeAfter(geomSetIter->node_end(), bodyFrameNode);

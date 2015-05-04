@@ -146,10 +146,10 @@ Model::~Model()
 void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     
-    if ( versionNumber < XMLDocument::getLatestVersion()){
-        cout << "Updating Model file from "<< versionNumber << " to latest format..." << endl;
+    if (versionNumber < XMLDocument::getLatestVersion()){
+        cout << "Updating Model file from " << versionNumber << " to latest format..." << endl;
         // Version has to be 1.6 or later, otherwise assert
-        if (versionNumber==10600){
+        if (versionNumber == 10600){
             // Get node for DynamicsEngine
             SimTK::Xml::element_iterator engIter = aNode.element_begin("DynamicsEngine");
             //Get node for SimbodyEngine
@@ -158,88 +158,51 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 // Move all Children of simbodyEngineNode to be children of _node
                 // we'll keep inserting before enginesNode then remove it;
                 SimTK::Array_<SimTK::Xml::Element> elts = simbodyEngIter->getAllElements();
-                while(elts.size()!=0){
+                while (elts.size() != 0){
                     // get first child and move it to Model
                     aNode.insertNodeAfter(aNode.element_end(), simbodyEngIter->removeNode(simbodyEngIter->element_begin()));
                     elts = simbodyEngIter->getAllElements();
-                    }
-                engIter->eraseNode(simbodyEngIter);
                 }
+                engIter->eraseNode(simbodyEngIter);
+            }
             // Now handling the rename of ActuatorSet to ForceSet
             XMLDocument::renameChildNode(aNode, "ActuatorSet", "ForceSet");
+        }
+        if (versionNumber < 30500) {
+            // Create JointSet node after BodySet under <OpenSimDocument>/<Model>
+            SimTK::Xml::Element jointSetElement("JointSet");
+            SimTK::Xml::Element jointObjects("objects");
+            jointSetElement.insertNodeBefore(jointSetElement.element_begin(), jointObjects);
+            SimTK::Xml::element_iterator bodySetNode = aNode.element_begin("BodySet");
+            aNode.insertNodeAfter(bodySetNode, jointSetElement);
+            // Cycle through Bodies and move their Joint nodes under the Model's JointSet
+            SimTK::Xml::element_iterator  objects_node = bodySetNode->element_begin("objects");
+            SimTK::Xml::element_iterator bodyIter = objects_node->element_begin("Body");
+            for (; bodyIter != objects_node->element_end(); ++bodyIter) {
+                std::string body_name = bodyIter->getOptionalAttributeValue("name");
+                //cout << "Processing body " <<  body_name << std::endl;
+                SimTK::Xml::element_iterator  joint_node = bodyIter->element_begin("Joint");
+                if (joint_node->element_begin() != joint_node->element_end()){
+                    SimTK::Xml::Element detach_joint_node = joint_node->clone();
+                    SimTK::Xml::element_iterator concreteJointNode = detach_joint_node.element_begin();
+                    detach_joint_node.removeNode(concreteJointNode);
+                    SimTK::Xml::element_iterator parentBodyElement = concreteJointNode->element_begin("parent_body");
+                    SimTK::String parent_name = "ground";
+                    parentBodyElement->getValueAs<SimTK::String>(parent_name);
+                    //cout << "Processing Joint " << concreteJointNode->getElementTag() << "Parent body " << parent_name << std::endl;
+                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "parent_body", parent_name);
+                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "child_body", body_name);
+                    concreteJointNode->eraseNode(parentBodyElement);
+                    jointObjects.insertNodeAfter(jointObjects.node_end(), *concreteJointNode);
+                    detach_joint_node.clearOrphan();
                 }
+                bodyIter->eraseNode(joint_node);
             }
-            if (versionNumber < 30500) {
-                // Create JointSet node after BodySet under <OpenSimDocument>/<Model>
-                SimTK::Xml::Element jointSetElement("JointSet");
-                SimTK::Xml::Element jointObjects("objects");
-                jointSetElement.insertNodeBefore(jointSetElement.element_begin(), jointObjects);
-                SimTK::Xml::element_iterator bodySetNode = aNode.element_begin("BodySet");
-                aNode.insertNodeAfter(bodySetNode, jointSetElement);
-                // Cycle through Bodies and move their Joint nodes under the Model's JointSet
-                SimTK::Xml::element_iterator  objects_node = bodySetNode->element_begin("objects");
-                SimTK::Xml::element_iterator bodyIter= objects_node->element_begin("Body"); 
-                for (; bodyIter != objects_node->element_end(); ++bodyIter) {
-                     std::string body_name = bodyIter->getOptionalAttributeValue("name");
-                    //cout << "Processing body " <<  body_name << std::endl;
-                    SimTK::Xml::element_iterator  joint_node =  bodyIter->element_begin("Joint");
-                    if (joint_node->element_begin()!= joint_node->element_end()){
-                        SimTK::Xml::Element detach_joint_node = joint_node->clone();
-                        SimTK::Xml::element_iterator concreteJointNode = detach_joint_node.element_begin();
-                        detach_joint_node.removeNode(concreteJointNode);
-                        SimTK::Xml::element_iterator parentBodyElement = concreteJointNode->element_begin("parent_body");
-                        SimTK::String parent_name="ground";
-                        parentBodyElement->getValueAs<SimTK::String>(parent_name);
-                        //cout << "Processing Joint " << concreteJointNode->getElementTag() << "Parent body " << parent_name << std::endl;
-                        XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "parent_body", parent_name);
-                        XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "child_body", body_name);
-                        concreteJointNode->eraseNode(parentBodyElement);
-                        jointObjects.insertNodeAfter(jointObjects.node_end(), *concreteJointNode);
-                        detach_joint_node.clearOrphan();
-                    }
-                    bodyIter->eraseNode(joint_node);
-                }
-            }
-            if (versionNumber < 30503){ // Find ground Bodyand make it into Ground
-                SimTK::Xml::element_iterator bodySetNode = aNode.element_begin("BodySet");
-                // Cycle through Bodies and move their Joint nodes under the Model's JointSet
-                SimTK::Xml::element_iterator  objects_node = bodySetNode->element_begin("objects");
-                SimTK::Xml::element_iterator bodyIter = objects_node->element_begin("Body");
-                // Look for Ground
-                for (; bodyIter != objects_node->element_end(); ++bodyIter) {
-                    std::string body_name = bodyIter->getOptionalAttributeValue("name");
-                    //cout << "Processing body " << body_name << std::endl;
-                    //SimTK::String dump;
-                    //bodyIter->writeToString(dump);
-                    //int x = 0;
-                    // Move <GeometrySet> from under "Ground" to the top level Ground node if any
-                    if (body_name == "ground"){
-                        // Creat Ground directly under aNode if not there already
-                        SimTK::Xml::element_iterator gndIter = aNode.element_begin("Ground");
-                        if (gndIter == aNode.element_end()){
-                            aNode.insertNodeAfter(aNode.element_end(), SimTK::Xml::Element("Ground"));
-                            gndIter = aNode.element_begin("Ground");
-                            gndIter->setAttributeValue("name", "ground");
-                        }
-                        SimTK::Xml::element_iterator geomIter = bodyIter->element_begin("GeometrySet");
-                        if (geomIter != bodyIter->element_end()){ // Actual Geometry was found
-                            geomIter->setElementTag("geometry");
-                            gndIter->insertNodeAfter(gndIter->node_end(), bodyIter->removeNode(geomIter));
-                        }
-                        SimTK::Xml::element_iterator wrapIter = bodyIter->element_begin("WrapObjectSet");
-                        if (wrapIter != bodyIter->element_end()){ // Actual WrapObjectSet was found
-                            gndIter->insertNodeAfter(gndIter->node_end(), bodyIter->removeNode(wrapIter));
-                        }
-                        // Remove "ground" Body altogether
-                        objects_node->removeNode(bodyIter);
-                        break;
-                    }
-                }
-            }
-    // Call base class now assuming _node has been corrected for current version
-    Super::updateFromXMLNode(aNode, versionNumber);
-
-    setDefaultProperties();
+        }
+    }
+     // Call base class now assuming _node has been corrected for current version
+     Super::updateFromXMLNode(aNode, versionNumber);
+     setDefaultProperties();
 }
 
 
@@ -576,9 +539,13 @@ void Model::extendFinalizeFromProperties()
         for (int i = 0; i<bs.getSize(); ++i){
             //handle deprecated models with ground as a Body
             if (bs[i].getName() == "ground"){
-                //NewGeometry VisibleObject* displayer = ground.updDisplayer();
-                //NewGeometry *displayer = *bs[i].getDisplayer();
                 ground.upd_WrapObjectSet() = bs[i].get_WrapObjectSet();
+                int geomSize = bs[i].getGeometrySize();
+                for (int g = 0; g < geomSize-1; ++g){ 
+                    // geomSize-1 since last geometry is a FrameGeometry for 
+                    // what used to be GroundBody. ground has one already
+                    ground.addGeometry(bs[i].upd_geometry(g));
+                }
                 // remove and then decrement the counter
                 bs.remove(i--);
                 continue;

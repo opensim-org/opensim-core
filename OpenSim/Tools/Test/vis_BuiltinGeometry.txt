@@ -28,7 +28,7 @@ DecorativeEllipsoid:~[0.2,0.7,0.5] bodyId:0 color:~[1,1,1] indexOnBody:0 Opacity
 [0,0,1,0]
 [0,0,0,1]
 
-DecorativeFrame:1 bodyId:1 color:~[1,1,1] indexOnBody:0 Opacity:1 Rep:0 Scale:~[0.2,0.2,0.2] Transform:
+DecorativeSphere:0.1 bodyId:1 color:~[1,1,1] indexOnBody:0 Opacity:1 Rep:3 Scale:~[1,1,1] Transform:
 [1,0,0,0]
 [0,1,0,0]
 [0,0,1,0]
