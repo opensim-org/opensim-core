@@ -46,7 +46,7 @@ PointToPointSpring::PointToPointSpring()
 PointToPointSpring::
     PointToPointSpring(const PhysicalFrame& body1, SimTK::Vec3 point1, 
                        const PhysicalFrame& body2, SimTK::Vec3 point2,
-                                       double stiffness, double restlength )
+                       double stiffness, double restlength )
 {
     setNull();
     constructInfrastructure();

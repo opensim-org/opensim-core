@@ -126,14 +126,6 @@ void PhysicalFrame::scale(const SimTK::Vec3& aScaleFactors)
     // Update scale factors for displayer
     //NewGeometry updDisplayer()->setScaleFactors(oldScaleFactors);
 }
-/*
-void PhysicalFrame::extendFinalizeFromProperties()
-{
-    //FrameGeometry* frame = new FrameGeometry(0.5);
-    //frame->setFrameName(getName());
-    //addComponent(frame);
-}
-*/
 
 void PhysicalFrame::addMeshGeometry(const std::string& aGeometryFileName, const SimTK::Vec3 scale)
 {
