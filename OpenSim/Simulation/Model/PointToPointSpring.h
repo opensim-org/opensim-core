@@ -76,12 +76,6 @@ public:
                         double stiffness, double restlength );
 
     // default destructor, copy constructor, copy assignment
-
-    //--------------------------------------------------------------------------
-    // Visible Object Support
-    //--------------------------------------------------------------------------
-    virtual void updateDisplayer(const SimTK::State& s);
-    virtual void updateGeometry(const SimTK::State& s);
     
     //-----------------------------------------------------------------------------
     // GET and SET Spring parameters
