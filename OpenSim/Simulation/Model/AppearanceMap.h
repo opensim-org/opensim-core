@@ -1,7 +1,7 @@
 #ifndef OPENSIM_APPEARANCE_MAP_H_
 #define OPENSIM_APPEARANCE_MAP_H_
 /* -------------------------------------------------------------------------- *
- *                             OpenSim:  AppearanceMap.h                             *
+ *                             OpenSim:  AppearanceMap.h                      *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,12 +25,12 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <math.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Object.h>
 #include "Appearance.h"
+#include <iostream>
+#include <cmath>
 
 namespace OpenSim {
 

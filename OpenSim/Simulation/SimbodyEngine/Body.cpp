@@ -84,8 +84,8 @@ void Body::constructProperties()
 void Body::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
-        const SimTK::MassProperties& massProps = getMassProperties();
-        _internalRigidBody = SimTK::Body::Rigid(massProps);
+    const SimTK::MassProperties& massProps = getMassProperties();
+    _internalRigidBody = SimTK::Body::Rigid(massProps);
 }
 
 //_____________________________________________________________________________

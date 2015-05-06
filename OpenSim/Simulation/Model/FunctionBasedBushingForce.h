@@ -218,11 +218,7 @@ private:
     // Create a SimTK::Force::LinearBushing which implements this
     // FunctionBasedBushingForce.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    //--------------------------------------------------------------------------
-    // Visible Object Support for Java Gui
-    //--------------------------------------------------------------------------
-    virtual void updateDisplayer(const SimTK::State& s);
-    virtual void updateGeometry(const SimTK::State& s);
+
     void setNull();
     void constructProperties();
 

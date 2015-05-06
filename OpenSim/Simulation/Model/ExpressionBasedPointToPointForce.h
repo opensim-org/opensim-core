@@ -157,13 +157,6 @@ public:
     */
     OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
-    //--------------------------------------------------------------------------
-    // Visible Object Support
-    //--------------------------------------------------------------------------
-    void updateDisplayer(const SimTK::State& s);
-    void updateGeometry(const SimTK::State& s);
-
-
 protected:
 
     //-----------------------------------------------------------------------------

@@ -75,7 +75,7 @@ protected:
    std::string &_bodyName;
 
 
-    /* const*/ PhysicalFrame* _body; // Not const anymore since the body's displayer is not const
+    const PhysicalFrame* _body; // Not const anymore since the body's displayer is not const
 
     GeometryPath* _path; // the path that owns this location point
 
@@ -110,10 +110,10 @@ public:
     void setLocation( const SimTK::State& s, double pt[]){ // A variant that uses basic types for use by GUI
         setLocation(s,SimTK::Vec3::updAs(pt));
     }
-    void setBody(PhysicalFrame& aBody);
+    void setBody(const PhysicalFrame& aBody);
     void changeBodyPreserveLocation(const SimTK::State& s, PhysicalFrame& aBody);
 
-    PhysicalFrame& getBody() const { return *_body; }
+    const PhysicalFrame& getBody() const { return *_body; }
     const std::string& getBodyName() const { return _bodyName; }
     GeometryPath* getPath() const { return _path; }
 

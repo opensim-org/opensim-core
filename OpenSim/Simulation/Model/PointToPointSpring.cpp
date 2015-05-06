@@ -46,7 +46,7 @@ PointToPointSpring::PointToPointSpring()
 PointToPointSpring::
     PointToPointSpring(const PhysicalFrame& body1, SimTK::Vec3 point1, 
                        const PhysicalFrame& body2, SimTK::Vec3 point2,
-                                       double stiffness, double restlength )
+                       double stiffness, double restlength )
 {
     setNull();
     constructInfrastructure();
@@ -113,34 +113,6 @@ const PhysicalFrame& PointToPointSpring::getBody1() const
 const PhysicalFrame& PointToPointSpring::getBody2() const
 {
     return getConnector<PhysicalFrame>("body2").getConnectee();
-}
-
-void PointToPointSpring::updateDisplayer(const SimTK::State& s)
-{
-    SimTK::Vec3 globalLocation1, globalLocation2;
-    const PhysicalFrame& body1 = getBody1();
-    const PhysicalFrame& body2 = getBody2();
-    /**
-    globalLocation1 = body1.getGroundTransform(s)*getPoint1();
-    globalLocation2 = body2.getGroundTransform(s)*getPoint2();
-
-    if (_displayer.countGeometry()==0){
-        Geometry *g = new LineGeometry();
-        g->setFixed(false);
-        _displayer.addGeometry(g);
-    }
-    ((LineGeometry *)_displayer.getGeometry(0))->
-        setPoints(globalLocation1, globalLocation2);*/
-}
-
-void PointToPointSpring::updateGeometry(const SimTK::State& s)
-{
-/*  if (_displayer.countGeometry()==0){
-        Geometry *g = new LineGeometry();
-        g->setFixed(false);
-        _displayer.addGeometry(g);
-    }*/
-    updateDisplayer(s);
 }
 
 //=============================================================================

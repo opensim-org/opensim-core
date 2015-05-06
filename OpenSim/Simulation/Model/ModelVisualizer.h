@@ -181,10 +181,10 @@ public:
     No attempt is made to validate the contents of the file or whether it
     has a supported extension; we're just looking for a file of the given
     name that exists and is readable. **/
-    static bool findGeometryFile(const Model& aModel,
+    bool findGeometryFile(const Model& aModel,
                           const std::string&          geoFile,
                           bool&                       isAbsolute,
-                          SimTK::Array_<std::string>& attempts);
+                          SimTK::Array_<std::string>& attempts) const;
     /**@}**/
 
 

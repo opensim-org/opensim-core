@@ -493,38 +493,8 @@ getRecordValues(const SimTK::State& state) const
 
 //_____________________________________________________________________________
 /**
- * Get the visible object used to represent the spring.
+ * Implement generateDecorations to make visuals to represent the spring.
  */
-
-
-void FunctionBasedBushingForce::updateDisplayer(const SimTK::State& s)
-{
-    SimTK::Vec3 globalLocation1, globalLocation2;
-    const OpenSim::Body& body1 = _model->getBodySet().get(get_body_1());
-    const OpenSim::Body& body2 = _model->getBodySet().get(get_body_2());
-    _model->getSimbodyEngine().transformPosition(s, body1, get_location_body_1(), 
-                                                 globalLocation1);
-    _model->getSimbodyEngine().transformPosition(s, body2, get_location_body_2(),
-                                                 globalLocation2);
-    /*
-    if (_displayer.countGeometry()==0){
-        Geometry *g = new LineGeometry();
-        g->setFixed(false);
-        _displayer.addGeometry(g);
-    }
-    ((LineGeometry *)_displayer.getGeometry(0))->
-        setPoints(globalLocation1, globalLocation2);*/
-}
-
-void FunctionBasedBushingForce::updateGeometry(const SimTK::State& s)
-{
-/*  if (_displayer.countGeometry()==0){
-        Geometry *g = new LineGeometry();
-        g->setFixed(false);
-        _displayer.addGeometry(g);
-    }*/
-    updateDisplayer(s);
-}
 
 void FunctionBasedBushingForce::generateDecorations
        (bool                                        fixed, 

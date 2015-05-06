@@ -195,7 +195,7 @@ PathPoint& PathPoint::operator=(const PathPoint &aPoint)
  *
  * @param aBody Reference to the body.
  */
-void PathPoint::setBody(PhysicalFrame& aBody)
+void PathPoint::setBody(const PhysicalFrame& aBody)
 {
     if (&aBody == _body)
         return;
