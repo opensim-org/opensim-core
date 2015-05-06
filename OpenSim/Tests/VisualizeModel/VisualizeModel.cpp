@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 
         std::string modelFile = std::string(argv[1]);
         Model osimModel(modelFile);
-        //osimModel.print("updated_" + modelFile);
+        osimModel.print("updated_" + modelFile);
         osimModel.setUseVisualizer(true);
         osimModel.updDisplayHints().set_show_frames(false);
         SimTK::State& si = osimModel.initSystem();
