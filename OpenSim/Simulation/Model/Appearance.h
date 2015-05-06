@@ -25,10 +25,8 @@
 
 
 // INCLUDE
-#include <iostream>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "SimTKcommon.h"
-#include <OpenSim/Common/Property.h>
+#include <OpenSim/Common/Object.h>
 
 namespace OpenSim {
 
@@ -67,7 +65,7 @@ public:
     OpenSim_DECLARE_PROPERTY(opacity, double,
         "The opacity (0-1) used to display the object. ");
     OpenSim_DECLARE_PROPERTY(representation, int,
-        "The representation (0:Hide, 1:Points, 2:Wire 2:Shaded) used to display the object. ");
+        "The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. ");
     /**@}**/
 
     //--------------------------------------------------------------------------
@@ -125,10 +123,10 @@ public:
     // PROPERTIES
     //==============================================================================
     /** @name Property declarations
-    These are the serializable properties associated with Appearance. **/
+    These are the serializable properties associated with LineAppearance. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(thickness, double,
-        "The radius of the shape used to display the object. ");
+        "The radius of the tube used to display the cooresponding lines. ");
     /**@}**/
 
     //--------------------------------------------------------------------------

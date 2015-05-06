@@ -88,7 +88,7 @@ These are the serializable properties associated with this class. **/
 /**@{**/
 public:
     OpenSim_DECLARE_LIST_PROPERTY(geometry, Geometry,
-        "Geometry that can be attached to the Model Component");
+        "List of Geometry that is attached to this Model Component.");
 /**@}**/
 //==============================================================================
 // METHODS
