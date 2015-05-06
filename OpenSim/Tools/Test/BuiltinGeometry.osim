@@ -63,10 +63,6 @@
                     </connectors>
                 </Ellipsoid>
             </geometry>
-            <!--The mass of the body (kg)-->
-            <mass>0</mass>
-            <!--The location (Vec3) of the mass center in the body frame.-->
-            <mass_center>0 0 0</mass_center>
         </Ground>
         <BodySet>
 			<objects>
