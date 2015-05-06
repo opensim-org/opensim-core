@@ -630,11 +630,11 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             XMLDocument::renameChildNode(aNode, "location", "location_in_child"); // body_B -> body
             XMLDocument::renameChildNode(aNode, "orientation", "orientation_in_child"); // direction_A -> direction
         }
-    }
-    else {
-        // Handle any recent models that have the Joint connecting to Bodies instead
-        // of current use of PhyscialFrames
-        XMLDocument::renameChildNode(aNode, "Connector_Body_", "Connector_PhysicalFrame_");
+        if (documentVersion < 30503){
+            // Handle any models that have the Joint connecting to Bodies instead
+            // of PhyscialFrames
+            XMLDocument::renameChildNode(aNode, "Connector_Body_", "Connector_PhysicalFrame_");
+        }
     }
     Super::updateFromXMLNode(aNode, versionNumber);
 }
