@@ -206,6 +206,10 @@ def test_markAdoptedSets():
     s.adoptAndAppend(o)
     del s
     del o
+    
+    s = osim.ForceSet()
+    o = osim.SpringGeneralizedForce()
+    s.append(o)
 
     # TODO 
     # s = osim.ProbeSet()
