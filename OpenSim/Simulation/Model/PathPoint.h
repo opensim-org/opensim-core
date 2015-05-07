@@ -75,7 +75,7 @@ protected:
    std::string &_bodyName;
 
 
-    const PhysicalFrame* _body; // Not const anymore since the body's displayer is not const
+    const PhysicalFrame* _body;
 
     GeometryPath* _path; // the path that owns this location point
 
