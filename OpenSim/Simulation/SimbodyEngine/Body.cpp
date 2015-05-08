@@ -460,7 +460,7 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                         SimTK::Xml::Element scaleFactorsNode("scale_factors", localScaleStr.str());
                         meshNode.insertNodeAfter(meshNode.element_end(), scaleFactorsNode);
                         meshNode.insertNodeAfter(meshNode.element_end(), meshFileNode);
-                        XMLDocument::addConnector(meshNode, "Connector_PhysicalFrame_", "frame", bodyName);
+                        XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", bodyName);
                         geometrySetNode.insertNodeAfter(geometrySetNode.element_end(), meshNode);
                     }
                 }
@@ -475,7 +475,7 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 std::string bodyName = aNode.getRequiredAttribute("name").getValue();
                 SimTK::Xml::Element bodyFrameNode("FrameGeometry");
                 bodyFrameNode.setAttributeValue("name", bodyName + "_body_frame");
-                XMLDocument::addConnector(bodyFrameNode, "Connector_PhysicalFrame_", "frame", bodyName);
+                XMLDocument::addConnector(bodyFrameNode, "Connector_Frame_", "frame", bodyName);
                 SimTK::Xml::Element appearanceNode("Appearance");
                 SimTK::Xml::Element frameRepresentation("representation");
                 frameRepresentation.setValue("0");
@@ -549,10 +549,10 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
                 }
                 createFrameForXform(frameSetObjectsIter, frameName, localXform, bodyName);
                                 
-                XMLDocument::addConnector(meshNode, "Connector_PhysicalFrame_", "frame", frameName);
+                XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", frameName);
             }
             else
-                XMLDocument::addConnector(meshNode, "Connector_PhysicalFrame_", "frame", bodyName);
+                XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", bodyName);
             // scale_factor
             SimTK::Vec3 localScale(1.);
             SimTK::Xml::element_iterator localScaleIter = displayGeomIter->element_begin("scale_factors");
@@ -609,7 +609,7 @@ void Body::createFrameForXform(const SimTK::Xml::element_iterator& frameSetIter,
     frameNode.insertNodeAfter(frameNode.element_end(), translationNode);
     frameNode.insertNodeAfter(frameNode.element_end(), orientationNode);
     frameSetIter->insertNodeAfter(frameSetIter->element_end(), frameNode);
-    XMLDocument::addConnector(frameNode, "Connector_PhysicalFrame_", "parent", bodyName);
+    XMLDocument::addConnector(frameNode, "Connector_Frame_", "parent", bodyName);
 
 }
 

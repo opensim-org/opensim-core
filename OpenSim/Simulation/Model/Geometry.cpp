@@ -42,21 +42,28 @@ using namespace SimTK;
 
 void Geometry::constructConnectors()
 {
-    constructConnector<PhysicalFrame>("frame");
+    constructConnector<Frame>("frame");
 }
 
 void Geometry::setFrameName(const std::string& name)
 {
-    updConnector<PhysicalFrame>("frame").set_connected_to_name(name);
-}
-const std::string& Geometry::getFrameName() const
-{
-    return getConnector<PhysicalFrame>("frame").get_connected_to_name();
+    updConnector<Frame>("frame").set_connected_to_name(name);
 }
 
-const OpenSim::PhysicalFrame& Geometry::getFrame() const
+void Geometry::setFrame(const Frame& frame)
 {
-    return getConnector<PhysicalFrame>("frame").getConnectee();
+    updConnector<Frame>("frame").set_connected_to_name(frame.getName());
+}
+
+
+const std::string& Geometry::getFrameName() const
+{
+    return getConnector<Frame>("frame").get_connected_to_name();
+}
+
+const OpenSim::Frame& Geometry::getFrame() const
+{
+    return getConnector<Frame>("frame").getConnectee();
 }
 
 void Geometry::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
@@ -79,11 +86,12 @@ void Geometry::generateDecorations(bool fixed, const ModelDisplayHints& hints, c
 */
 void Geometry::setDecorativeGeometryTransform(SimTK::Array_<SimTK::DecorativeGeometry>& decorations, const SimTK::State& state) const
 {
-    const PhysicalFrame& myFrame = getFrame();
+    const Frame& myFrame = getFrame();
     const Frame& bFrame = myFrame.findBaseFrame();
     const PhysicalFrame* bPhysicalFrame = dynamic_cast<const PhysicalFrame*>(&bFrame);
     if (bPhysicalFrame == nullptr){
         // throw exception something is wrong
+        throw (Exception("Frame for Geometry " + getName() + " is not attached to a PhysicalFrame."));
     }
     const SimTK::MobilizedBodyIndex& idx = bPhysicalFrame->getMobilizedBodyIndex();
     SimTK::Transform transformInBaseFrame = myFrame.findTransformInBaseFrame();

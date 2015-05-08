@@ -119,10 +119,10 @@ public:
      */
     Model& updModel();
     /**
-     * getGeometrySize returns the number of published Geometry objects 
+     * returns the number of published Geometry objects 
      * maintained by the ModelComponent.
      */
-    int getGeometrySize() const {
+    int getNumGeometry() const {
         return getProperty_geometry().size();
     }
     /**

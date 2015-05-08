@@ -540,7 +540,7 @@ void Model::extendFinalizeFromProperties()
             //handle deprecated models with ground as a Body
             if (bs[i].getName() == "ground"){
                 ground.upd_WrapObjectSet() = bs[i].get_WrapObjectSet();
-                int geomSize = bs[i].getGeometrySize();
+                int geomSize = bs[i].getNumGeometry();
                 for (int g = 0; g < geomSize-1; ++g){ 
                     // geomSize-1 since last geometry is a FrameGeometry for 
                     // what used to be GroundBody. ground has one already

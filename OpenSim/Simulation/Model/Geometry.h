@@ -90,18 +90,32 @@ public:
         constructProperty_scale_factors(SimTK::Vec3(1));
         constructProperty_Appearance(Appearance());
     }
+    /// Convenience constructor that takes a Frame
+    Geometry(const Frame& frame)
+    {
+        setNull();
+        constructInfrastructure();
+
+        constructProperty_scale_factors(SimTK::Vec3(1));
+        constructProperty_Appearance(Appearance());
+
+        setFrame(frame);
+    }
+
     /// Default destructor
     virtual ~Geometry() {}
     /** Interface methods to handle the Frame which the Geometry is attached to.
     **/
     /** Set the name of the Frame of attachment **/
     void setFrameName(const std::string& name);
+    /** Set the Frame of attachment **/
+    void setFrame(const Frame& frame);
     /** Return a reference to the name of the Frame to which
     this Geometry is attached (using a Connector). **/
     const std::string& getFrameName() const;
     /** Return a reference to the actual Frame to which this Geometry
     is attached. */
-    const PhysicalFrame& getFrame() const;
+    const Frame& getFrame() const;
     //==========================================================================
     // METHODS
     //==========================================================================

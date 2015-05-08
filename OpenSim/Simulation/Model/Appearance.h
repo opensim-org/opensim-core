@@ -126,7 +126,7 @@ public:
     These are the serializable properties associated with LineAppearance. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(thickness, double,
-        "The radius of the tube used to display the cooresponding lines. ");
+        "The thickness used to visualize a LineGeometry. ");
     /**@}**/
 
     //--------------------------------------------------------------------------
