@@ -38,12 +38,14 @@ void XXX::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
               if (versionNumber <= 20301){
 		// convert aNode XML from version 20301 or prior to the next version
 		……
-}
-if (versionNumber < 30500){
-	// Convert versions before 30500 
-}
-    }
-    // Call base class now assuming aNode has been corrected for current version
-    Super::updateFromXMLNode(aNode, versionNumber);
+              }
+              if (versionNumber < 30500){
+	       // Convert versions before 30500 
+              }
+        }
+        // At this point of the code aNode is on the latest XML format
+        // Call base class now assuming aNode has been corrected for current version
+        // This call will endup being made on Object which will do the actual population of Property values
+        Super::updateFromXMLNode(aNode, versionNumber);
 }
 ```
