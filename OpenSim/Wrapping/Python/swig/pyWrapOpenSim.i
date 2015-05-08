@@ -874,6 +874,7 @@ SET_ADOPT_HELPER(Control);
         aProbe._markAdopted()
         return super(ProbeSet, self).adoptAndAppend(aProbe)
 %}
+};
 
 // Attempt to solve segfault when calling ForceSet::append()
 // from scripting.
@@ -883,6 +884,4 @@ SET_ADOPT_HELPER(Control);
         aForce._markAdopted()
         return super(ModelComponentSetForces, self).adoptAndAppend(aForce)
 %}
-
-
 };
