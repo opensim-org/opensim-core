@@ -875,5 +875,14 @@ SET_ADOPT_HELPER(Control);
         return super(ProbeSet, self).adoptAndAppend(aProbe)
 %}
 
+// Attempt to solve segfault when calling ForceSet::append()
+// from scripting.
+%extend OpenSim::ModelComponentSetForces {
+%pythoncode %{
+    def adoptAndAppend(self, aForce):
+        aForce._markAdopted()
+        return super(ModelComponentSetForces, self).adoptAndAppend(aForce)
+%}
+
 
 };
