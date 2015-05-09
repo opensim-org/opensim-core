@@ -1,0 +1,33 @@
+# Doxyfile 1.6.1
+
+# This file describes the settings to be used by the documentation system
+# doxygen (www.doxygen.org) for a project
+#
+# All text after a hash (#) is considered a comment and will be ignored
+# The format is:
+#       TAG = value [value, ...]
+# For lists items can also be appended using:
+#       TAG += value [value, ...]
+# Values that contain spaces should be placed between quotes (" ")
+
+#---------------------------------------------------------------------------
+# Project related configuration options
+#---------------------------------------------------------------------------
+
+# Include configuration from the following doxyfile.
+@INCLUDE = "@CMAKE_CURRENT_BINARY_DIR@/doxyfile_shared"
+
+# The LAYOUT_FILE tag can be used to specify a layout file which will be parsed 
+# by doxygen. The layout file controls the global structure of the generated 
+# output files in an output format independent way. The create the layout file 
+# that represents doxygen's defaults, run doxygen with the -l option. 
+# You can optionally specify a file name after the option, if omitted 
+# DoxygenLayout.xml will be used as the name of the layout file.
+
+LAYOUT_FILE            = "@CMAKE_CURRENT_SOURCE_DIR@/doxygen-layout-user.xml" 
+
+# The HTML_OUTPUT tag is used to specify where the HTML docs will be put. 
+# If a relative path is entered the value of OUTPUT_DIRECTORY will be 
+# put in front of it. If left blank `html' will be used as the default path.
+
+HTML_OUTPUT            = html_user
