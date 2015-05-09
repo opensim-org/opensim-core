@@ -21,9 +21,9 @@ Deserialization of Objects and their Properties (primitives that are read-from/w
 Keep in mind that deserialization methods are practically called during the construction of the top level object/Model so typically you cannot rely on having any member variables or pointers populated unless done by default constructors, instead deserialization methods operate on the XML structure only. This helps isolate the backward compatibility code from the rest of the modeling/simulation or initialization functions.
 
 Deserialization works by making the following calls:
- 1. Parsing the XML files (done by the framework, only add a constructor from file if needed)
- 2. The framework finds an XML tag that corresponds to a subclass of OpenSim::Object, then
- 3. Object is instantiated from the registry of available types using a lookup based on the XML tag.
+ 1. A user constructs an object that is a subclass `OpenSim::Object ` by using a constructor that takes the filename of a .osim or .xml file (only some classes have such a constructor). The construction call sequence ends with calling `OpenSim::Object`'s constructor with the file name as argument. This constructor invokes code that parses the XML file.
+ 2. The parsing code looks for XML tags that correspond to names of subclasses of `OpenSim::Object`, when it finds one of the them it performs the next 2 steps.
+ 3. Object of the appropriate type is instantiated from the registry of available types using a lookup by the XML tag.
  4. The method `updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) ` is invoked on the object and is passed the XML element corresponding to the object along with the version number from the XML document/file. That’s exactly the hook to deserialization that developers can use to correct for deserialization changes by manipulating the passed in `aNode` to match what the latest code expects. 
 
 
