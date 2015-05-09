@@ -1446,6 +1446,7 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
     //int i;
 
     aOStream << "MODEL: " << getName() << std::endl;
+
     aOStream << std::endl;
     aOStream << "numStates = " << s.getNY() << std::endl;
     aOStream << "numCoordinates = " << getNumCoordinates() << std::endl;
@@ -1463,11 +1464,25 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
     const BodySet& bodySet = getBodySet();
     for(int i=0; i < bodySet.getSize(); i++) {
         const OpenSim::Body& body = bodySet.get(i);
-        aOStream << "body[" << i << "] = " << body.getName();
-        aOStream << " (mass: "<<body.get_mass()<<")";
+        std::string nameString =
+            "body[" + std::to_string(i) + "] = " + body.getName() + ". ";
+        std::string spaces(nameString.size(), ' ');
+        aOStream << nameString;
+        aOStream << "mass:                " << body.get_mass() << std::endl;
         const SimTK::Inertia& inertia = body.getInertia();
-        aOStream << " (inertia: [" << inertia.getMoments() << "  ";
-        aOStream << inertia.getProducts() << "])" << endl;
+        aOStream << spaces << "moments of inertia:  " << inertia.getMoments()
+            << std::endl;
+        aOStream << spaces << "products of inertia: " << inertia.getProducts()
+            << std::endl;
+    }
+
+    aOStream << "\nJOINTS (total: " << getNumJoints() << ")" << std::endl;
+    const JointSet& jointSet = getJointSet();
+    for (int i = 0; i < jointSet.getSize(); i++) {
+        const OpenSim::Joint& joint = get_JointSet().get(i);
+        aOStream << "joint[" << i << "] = " << joint.getName() << ".";
+        aOStream << " parent: " << joint.getParentFrameName() <<
+            " child: " << joint.getChildFrameName() << std::endl;
     }
 
     aOStream << "\nACTUATORS (total: " << getActuators().getSize() << ")" << std::endl;
