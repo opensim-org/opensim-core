@@ -1,13 +1,13 @@
 Guidelines for Developers of OpenSim-Core
 ===========================================
-OpenSim is a community resource that is housed in the OpenSim-Core repository.
+OpenSim is a community resource that is housed in the opensim-core repository.
 
 This specific document addresses issues that come up during development and maintenance of the OpenSim code base, that may not be relevant to end users because it's not in release code yet or of historical relevance only but would be 
 valuable to new developers or advanced users. For general contribution guidelines please consult [CONTRIBUTING.md](https://github.com/opensim-org/opensim-core/blob/master/CONTRIBUTING.md)
 
 Contents:
 
-- [Backward Compatibility](#backward-compatibility-of-file-formats)
+- [Backward Compatibility of File Formats](#backward-compatibility-of-file-formats)
 
 
 Backward Compatibility of File Formats
@@ -24,30 +24,30 @@ Deserialization works by making the following calls:
  1. A user constructs an object that is a subclass of `OpenSim::Object` by using a constructor that takes the file name of a .osim or .xml file (only some classes have such a constructor). The construction call sequence ends with calling `OpenSim::Object`'s constructor with the file name as an argument. This constructor invokes code that parses the XML file.
  2. The parsing code looks for XML tags that correspond to names of subclasses of `OpenSim::Object`; when it finds one of the them it performs the next 2 steps.
  3. An Object of the appropriate type is instantiated from the registry of available types using a lookup by the XML tag.
- 4. The method `updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) ` is invoked on the object and is passed the XML element corresponding to the object along with the version number from the XML document/file. That’s exactly the hook to deserialization that developers can use to correct for deserialization changes by manipulating the passed in `aNode` to match what the latest code expects. 
+ 4. The method `updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber) ` is invoked on the object and is passed the XML element corresponding to the object along with the version number from the XML document/file. That’s exactly the hook to deserialization that developers can use to correct for deserialization changes by manipulating the passed in `node` to match what the latest code expects. 
 
 
 If an object has never undergone format changes then it should not implement the method `updateFromXMLNode()` altogether.
 If the function needs to be implemented, it would have the following form:
 ```cpp
 
-void XXX::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+void XXX::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
 {
        // XMLDocument::getLatestVersion() is a number that changes with upgrades
        // Guarding with this condition makes sure that files already converted 
        // do not get penalized or converted again.
        if ( versionNumber < XMLDocument::getLatestVersion()) {
               if (versionNumber <= 20301) {
-		         // convert aNode from version 20301 or prior to the next version
+		         // convert node from version 20301 or prior to the next version
 		          ……
               }
               if (versionNumber < 30500) {
 	             // Convert versions before 30500 
               }
         }
-        // At this point of the code, aNode is on the latest XML format
-        // Call base class, now assuming aNode has been corrected for current version
+        // At this point of the code, node is on the latest XML format
+        // Call base class, now assuming node has been corrected for current version
         // This call will end up being made on Object, which will do the actual population of Property values
-        Super::updateFromXMLNode(aNode, versionNumber);
+        Super::updateFromXMLNode(node, versionNumber);
 }
 ```
