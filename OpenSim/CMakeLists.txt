@@ -13,6 +13,7 @@ ADD_DEFINITIONS(-DOSIM_SYS_INFO=${OPENSIM_SYSTEM_INFO}
 -DOSIM_COMPILER_INFO=${OPENSIM_COMPILER_INFO}
 -DOSIM_OS_NAME=${OPENSIM_OS_NAME})
 
-SUBDIRS(Common Simulation Actuators Analyses Utilities Tools Wrapping Examples Tests doc)
+SUBDIRS(Common Simulation Actuators Analyses Utilities Tools Wrapping Examples
+    Tests)
 
 INSTALL_FILES(/sdk/include/OpenSim .h OpenSim.h)
