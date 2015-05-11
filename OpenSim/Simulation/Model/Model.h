@@ -307,9 +307,9 @@ public:
 
     
     /** Convenience method that invokes buildSystem() and then 
-    initializeState(). A reference to the writable internally-
-    maintained model State is returned (note that this does not affect the 
-    system's default state (which is part of the model and hence read only). **/
+    initializeState(). This returns a reference to the writable internally-
+    maintained model State. Note that this does not affect the 
+    system's default state (which is part of the model and hence read-only). **/
     SimTK::State& initSystem() SWIG_DECLARE_EXCEPTION {
         buildSystem();
         return initializeState();
