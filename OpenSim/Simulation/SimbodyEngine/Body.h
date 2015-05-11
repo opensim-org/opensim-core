@@ -104,8 +104,6 @@ public:
         Scale defaults to 1.0 but can be changed on the call line.
     */
     void addMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
-    /// override default addGeometry to set Frame to this Body
-    void addGeometry(OpenSim::Geometry& geom) override;
  protected:
 
     // Model component interface.

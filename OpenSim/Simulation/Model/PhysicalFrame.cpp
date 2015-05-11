@@ -123,14 +123,8 @@ void PhysicalFrame::scale(const SimTK::Vec3& aScaleFactors)
     for (int i = 0; i<3; i++) {
         oldScaleFactors[i] *= aScaleFactors[i];
     }
+    // TODO: When we revamp scaling and solve the issue with where scale factors 
+    // are maintained, we need to fix this or remove it completely -Ayman 5/15
     // Update scale factors for displayer
     //NewGeometry updDisplayer()->setScaleFactors(oldScaleFactors);
-}
-
-void PhysicalFrame::addMeshGeometry(const std::string& aGeometryFileName, const SimTK::Vec3 scale)
-{
-    Mesh geom(aGeometryFileName);
-    geom.set_scale_factors(scale);
-    geom.setFrameName(getName());
-    addGeometry(geom);
 }

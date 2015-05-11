@@ -97,6 +97,7 @@ void ModelComponent::connectToModel(Model& model)
 }
 
 void ModelComponent::addGeometry(OpenSim::Geometry& geom) {
+    extendAddGeometry(geom);
     // Check that name exists and is unique as it's used to form PathName
     if (geom.getName().empty()){
         bool nameFound = false;

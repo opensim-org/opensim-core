@@ -136,13 +136,7 @@ public:
         ScaleFactors */
     void scale(const SimTK::Vec3& aScaleFactors);
 
-    /** Add a Mesh specified by file name to the list of Geometry owned by the ModelComponent.
-    Scale defaults to 1.0 but can be changed on the call line.
-    */
-    void addMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
-    /** @name DEPRECATED API
-    TODO: These methods will go away when Geometry are treated as proper
-    Components. */
+    /** @name DEPRECATED API */
 
     ///@{
     /** Deprecated methods for inermediate integration of Frames */

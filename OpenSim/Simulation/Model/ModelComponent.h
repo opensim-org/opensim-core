@@ -129,7 +129,7 @@ public:
      * Copy the passed in Geometry and add the copy to the visualization of 
      * this ModelComponent as subcomponent.
      */
-    virtual void addGeometry(OpenSim::Geometry& aGeometry);
+    void addGeometry(OpenSim::Geometry& aGeometry);
 
     void extendFinalizeFromProperties();
 protected:
@@ -190,6 +190,14 @@ template <class T> friend class ModelComponentSet;
     @param[in,out]  model   The Model currently being constructed to which this
                             %ModelComponent should be connected. **/
     virtual void extendConnectToModel(Model& model) {};
+
+    /** Perform initialization on the passed in Geometry before adding it to
+     the list of subcomponents and Properties of this ModelComponent. For 
+     example, Frames can set the frame name on the Geometry to themselves. 
+
+     @param[in,out]  geometry to be added to current ModelComponent   
+     **/
+    virtual void extendAddGeometry(OpenSim::Geometry& geometry) {};
 
     // End of Model Component Basic Interface (protected virtuals).
     //@} 
