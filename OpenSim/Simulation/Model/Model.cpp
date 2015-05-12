@@ -281,8 +281,8 @@ void Model::constructProperties()
     ProbeSet probeSet;
     constructProperty_ProbeSet(probeSet);
 
-    ModelDisplay md;
-    constructProperty_ModelDisplay(md);
+    ModelVisualPreferences md;
+    constructProperty_ModelVisualPreferences(md);
 }
 
 //------------------------------------------------------------------------------

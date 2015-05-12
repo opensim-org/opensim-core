@@ -44,7 +44,7 @@
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/FrameSet.h>
 #include <OpenSim/Simulation/Model/Ground.h>
-#include <OpenSim/Simulation/Model/ModelDisplay.h>
+#include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 #include "Simbody.h"
 
 
@@ -177,8 +177,8 @@ public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(FrameSet,
         "List of Frames that various objects can be anchored to or expressed in, Body frames are builtin and not included in this list.");
 
-    OpenSim_DECLARE_UNNAMED_PROPERTY(ModelDisplay,
-        "Display preferences for the model and for specific objects");
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ModelVisualPreferences,
+        "Visual preferences for this model.");
     /**@}**/
 
 //=============================================================================
@@ -237,11 +237,13 @@ public:
     /** Get read only access to the ModelDisplayHints object stored with this
     %Model. These should be checked whenever display geometry is being
     generated. **/
-    const ModelDisplayHints& getDisplayHints() const {return get_ModelDisplay().get_ModelDisplayHints();}
+    const ModelDisplayHints& getDisplayHints() const {
+        return get_ModelVisualPreferences().get_ModelDisplayHints();}
     /** Get writable access to the ModelDisplayHints object stored with this
     %Model. The GUI or ModelVisualizer can update these as a result of user
     requests, or an OpenSim API program can set them programmatically. **/
-    ModelDisplayHints& updDisplayHints() {return upd_ModelDisplay().upd_ModelDisplayHints();}
+    ModelDisplayHints& updDisplayHints() { 
+        return upd_ModelVisualPreferences().upd_ModelDisplayHints(); }
 
     /** Request or suppress visualization of this %Model. This flag is checked
     during initSystem() and if set causes the %Model to allocate a

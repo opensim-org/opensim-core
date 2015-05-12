@@ -78,7 +78,7 @@
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
 #include "Model/Appearance.h"
 #include "Model/Geometry.h"
-#include "Model/ModelDisplay.h"
+#include "Model/ModelVisualPreferences.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -165,7 +165,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( BaseAppearance());
     Object::registerType( Appearance());
     Object::registerType( LineAppearance());
-    Object::registerType( ModelDisplay());
+    Object::registerType( ModelVisualPreferences());
 
     Object::registerType( Brick());
     Object::registerType( Sphere());

@@ -1,7 +1,7 @@
-#ifndef OPENSIM_MODEL_DISPLAY_H_
-#define OPENSIM_MODEL_DISPLAY_H_
+#ifndef OPENSIM_MODEL_VISUAL_PREFERENCES_H_
+#define OPENSIM_MODEL_VISUAL_PREFERENCES_H_
 /* -------------------------------------------------------------------------- *
- *                             OpenSim:  ModelDisplay.h                       *
+ *                   OpenSim:  ModelVisualPreferences.h                       *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -40,22 +40,22 @@ class Model;
 //=============================================================================
 //=============================================================================
 /**
- * A class that holds the Display Attributes (ModelDisplay) of a full Model 
- * displayed in Visualizer. Initially these are serializable ModelDisplayHints 
- * but in the future can be expanded to include search paths for Geometry, Texture
- * Renderer preferences, lights, cameras etc.
- *
+ A class that holds the Visual Preferences of a full OpenSim Model 
+ displayed in Visualizer. Initially these are serializable ModelDisplayHints 
+ but in the future can be expanded to include search paths for Mesh files, 
+ Texture, Renderer preferences, lights, cameras etc. attached to Model.
+ 
  * @author Ayman Habib
  * @version 1.0
  */
-class OSIMSIMULATION_API ModelDisplay : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ModelDisplay, Object);
+class OSIMSIMULATION_API ModelVisualPreferences : public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ModelVisualPreferences, Object);
 public:
-    //==============================================================================
+    //==========================================================================
     // PROPERTIES
-    //==============================================================================
+    //==========================================================================
     /** @name Property declarations
-    These are the serializable properties associated with ModelDisplay. **/
+    These are the serializable properties of ModelVisualPreferences. **/
     /**@{**/
     OpenSim_DECLARE_UNNAMED_PROPERTY(ModelDisplayHints,
         "Model display preferences");
@@ -66,22 +66,22 @@ public:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    ModelDisplay() {
+    ModelVisualPreferences() {
         constructProperties();
     }
-    virtual ~ModelDisplay() {};
+    virtual ~ModelVisualPreferences() {};
 
 private:
     void constructProperties() {
         constructProperty_ModelDisplayHints(ModelDisplayHints());
     }
 //=============================================================================
-};  // END of class ModelDisplay
+};  // END of class ModelVisualPreferences
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // OPENSIM_APPEARANCE_H_
+#endif // OPENSIM_MODEL_VISUAL_PREFERENCES_H_
 
 
