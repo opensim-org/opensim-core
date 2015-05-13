@@ -115,6 +115,7 @@ void testBody()
 {
     cout << "Running testBody" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
+    pendulum->print("roundtrip_double_pendulum.osim");
 
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
     SimTK::State& s = pendulum->initSystem();

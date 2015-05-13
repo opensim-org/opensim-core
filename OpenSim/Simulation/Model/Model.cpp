@@ -970,6 +970,18 @@ void Model::setup()
     // clear existing interconnections and all state allocations
     disconnect();
 
+    initComponentTreeTraversal(*this);
+    // All components can be found as evident by the next iteration
+    ComponentList<Component> componentsList = getComponentList();
+    std::cout << "list begin: " << componentsList.begin()->getName() << std::endl;
+    int numComponents = 0;
+    for (ComponentList<Component>::const_iterator it = componentsList.begin();
+        it != componentsList.end();
+        ++it) {
+        std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getName() << std::endl;
+        numComponents++;
+    }
+
     //now connect the Model and all its subcomponents all up
     connect(*this);
 

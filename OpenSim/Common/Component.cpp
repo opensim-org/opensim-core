@@ -173,16 +173,16 @@ void Component::connect(Component &root)
 
     reset();
 
-    initComponentTreeTraversal(root);
+    //initComponentTreeTraversal(root);
 
     // rebuilding the connectors table, which was emptied by clearStateAllocations
     for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
         AbstractConnector& connector = upd_connectors(ix);
         connector.disconnect();
         try{
-            const Component* connectTo = root.findComponent(connector.get_connected_to_name());
-            connector.connect(*connectTo);
-            //connector.findAndConnect(root);
+            //const Component* connectTo = root.findComponent(connector.get_connected_to_name());
+            //connector.connect(*connectTo);
+            connector.findAndConnect(root);
         }
         catch (...) {
             throw Exception(getConcreteClassName() +

@@ -1554,6 +1554,7 @@ private:
             _connectorsTable[connector.getName()] = ix;
         }
     }
+protected:
     // Populate _nextComponent ReferencePtr with a pointer to the next Component in
     // tree pre-order traversal.
     void initComponentTreeTraversal(Component &root) {
@@ -1569,6 +1570,10 @@ private:
             }
             else
                 _components[i]->_nextComponent.reset(_components[i + 1]);
+        }
+        // recur to handle children of subcomponents
+        for (unsigned int i = 0; i < _components.size(); i++){
+            _components[i]->initComponentTreeTraversal(root);
         }
     }
 public:
