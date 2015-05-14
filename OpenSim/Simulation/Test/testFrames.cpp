@@ -115,7 +115,6 @@ void testBody()
 {
     cout << "Running testBody" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
-    pendulum->print("roundtrip_double_pendulum.osim");
 
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
     SimTK::State& s = pendulum->initSystem();
@@ -350,7 +349,7 @@ void testFilterByFrameType()
 
     // add OffsetFrame to the model
     pendulumWFrame->addFrame(anOffset);
-    pendulumWFrame->connect(*pendulumWFrame);
+    pendulumWFrame->initSystem();
 
     std::cout << "\nList all Frames in the model." << std::endl;
     int i = 0;
