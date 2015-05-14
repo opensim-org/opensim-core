@@ -602,7 +602,7 @@ void Body::createFrameForXform(const SimTK::Xml::element_iterator& frameSetIter,
     frameNode.insertNodeAfter(frameNode.element_end(), translationNode);
     frameNode.insertNodeAfter(frameNode.element_end(), orientationNode);
     frameSetIter->insertNodeAfter(frameSetIter->element_end(), frameNode);
-    XMLDocument::addConnector(frameNode, "Connector_Frame_", "parent", bodyName);
+    XMLDocument::addConnector(frameNode, "Connector_PhysicalFrame_", "parent", bodyName);
 
 }
 
