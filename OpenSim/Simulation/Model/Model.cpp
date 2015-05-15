@@ -967,9 +967,7 @@ void Model::setup()
 {
     finalizeFromProperties();
     
-    // clear existing interconnections and all state allocations
-    disconnect();
-
+    // initialize iterator to traverse all Components in Model
     initComponentTreeTraversal(*this);
     // All components can be found as evident by the next iteration
     ComponentList<Component> componentsList = getComponentList();
