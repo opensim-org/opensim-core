@@ -146,7 +146,7 @@ SET(BUILD_PLATFORM "${PLATFORM_NAME}:${PLATFORM_ABI}" CACHE STRING
     FORCE)
 
 IF(NOT MSVC AND NOT XCODE AND NOT CMAKE_BUILD_TYPE)
-    SET(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release build" FORCE)
+    SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Debug or Release build" FORCE)
 ENDIF()
 
 ## Choose the maximum level of x86 instruction set that the compiler is 
