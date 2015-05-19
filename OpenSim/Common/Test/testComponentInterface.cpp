@@ -59,10 +59,14 @@ public:
     void add(Component* comp) {
         // add it the property list of components that owns and serializes them
         updProperty_components().adoptAndAppendValue(comp);
+        addComponent(comp);
     }
 
     // Top level connection method for all encompassing Component
-    void connect() { Super::connect(*this); }
+    void connect() { 
+        initComponentTreeTraversal(*this);
+        Super::connect(*this);
+    }
     void buildUpSystem(MultibodySystem& system) { addToSystem(system); }
 
     const SimbodyMatterSubsystem& getMatterSubsystem() const { return *matter; }
@@ -552,7 +556,7 @@ int main() {
         bar2.updConnector<Foo>("parentFoo").set_connected_to_name("BigFoo");
         bar2.updConnector<Foo>("childFoo").set_connected_to_name("Foo");
 
-        world3.connect();
+        //world3.connect();
         world3.print("Compound_" + modelFile);
 
         MultibodySystem system3;
