@@ -1169,6 +1169,7 @@ A data member is also created but is intended for internal use only:
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##name##\></b>.                                     */ \
     /** @see Property, #OpenSim_DECLARE_PROPERTY                         */ \
+    Q_PROPERTY(T name)                                                      \
     const T& get_##name() const                                             \
     {   return this->getProperty_##name().getValue(); }                     \
     /** @cond **/                                                           \
@@ -1197,6 +1198,7 @@ initialized with an object of type T.
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##T##\></b>.                                        */ \
     /** @see Property, #OpenSim_DECLARE_UNNAMED_PROPERTY                 */ \
+    Q_PROPERTY(T T)                                                         \
     const T& get_##T() const                                                \
     {   return this->getProperty_##T().getValue(); }                        \
     /** @cond **/                                                           \
@@ -1229,6 +1231,7 @@ value of type T.
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##name##\></b>.                                     */ \
     /** @see Property, #OpenSim_DECLARE_OPTIONAL_PROPERTY                */ \
+    Q_PROPERTY(T name)                                                      \
     const T& get_##name() const                                             \
     {   return this->getProperty_##name().getValue(); }                     \
     /** @cond **/                                                           \
@@ -1256,6 +1259,7 @@ supports a %size() method and operator[] element selection.
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##name##\></b>.                                     */ \
     /** @see Property, #OpenSim_DECLARE_LIST_PROPERTY                    */ \
+    Q_PROPERTY(T name)                                                      \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
                                          0, std::numeric_limits<int>::max())\
     /** @cond **/                                                           \
@@ -1280,6 +1284,7 @@ method and operator[] element selection.
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##name##\></b>.                                     */ \
     /** @see Property, #OpenSim_DECLARE_LIST_PROPERTY_SIZE               */ \
+    Q_PROPERTY(T name)                                                      \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
                                          (listSize), (listSize))
 
@@ -1299,6 +1304,7 @@ selection.
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##name##\></b>.                                     */ \
     /** @see Property, #OpenSim_DECLARE_LIST_PROPERTY_ATLEAST            */ \
+    Q_PROPERTY(T name)                                                      \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
                                 (minSize), std::numeric_limits<int>::max())
 
@@ -1318,6 +1324,7 @@ method and operator[] element selection.
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##name##\></b>.                                     */ \
     /** @see Property, #OpenSim_DECLARE_LIST_PROPERTY_ATMOST             */ \
+    Q_PROPERTY(T name)                                                      \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment, 0, (maxSize))    \
     /** @cond **/                                                           \
     void constructProperty_##name()                                         \
@@ -1344,6 +1351,7 @@ OpenSim_DECLARE_PROPERTY_ATMOST() rather than this macro.
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##name##\></b>.                                     */ \
     /** @see Property, #OpenSim_DECLARE_LIST_PROPERTY_RANGE              */ \
+    Q_PROPERTY(T name)                                                      \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
                                         (minSize), (maxSize))
 
