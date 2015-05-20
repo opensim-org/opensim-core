@@ -983,6 +983,36 @@ template <class T> friend class ComponentMeasure;
     /** Invoke connect() on the (sub)components of this Component.*/
     void componentsConnect(Component& root) const;
 
+    /** Build a tree of Components from this component and its descendants. 
+    This method needs to be invoked after ALL calls to addComponent have been 
+    made, otherwise any newly added component will not be included in the tree 
+    and will not be found for iteration or for connection. Accordingly the 
+    method is called from Model::extendConnectToModel after all internal 
+    components due to Body splits, and welds have been performed.
+    
+    The implementation populates _nextComponent ReferencePtr with a pointer to 
+    the next Component in tree pre-order traversal.
+    */
+    void initComponentTreeTraversal(Component &root) {
+        // Going down the tree, node is followed by all its
+        // children in order, last child's successor is the parent's successor.
+        for (unsigned int i = 0; i < _components.size(); i++){
+            if (i == _components.size() - 1){
+                // use parent's sibling if any
+                if (this == &root) // only to be safe if root changes
+                    _components[i]->_nextComponent = nullptr;
+                else
+                    _components[i]->_nextComponent.reset(_nextComponent);
+            }
+            else
+                _components[i]->_nextComponent.reset(_components[i + 1]);
+        }
+        // recur to handle children of subcomponents
+        for (unsigned int i = 0; i < _components.size(); i++){
+            _components[i]->initComponentTreeTraversal(root);
+        }
+    }
+
     ///@cond
     /** Opportunity to remove connection related information. 
     If you override this method, be sure to invoke the base class method first,
@@ -1552,28 +1582,6 @@ private:
         for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
             AbstractConnector& connector = upd_connectors(ix);
             _connectorsTable[connector.getName()] = ix;
-        }
-    }
-protected:
-    // Populate _nextComponent ReferencePtr with a pointer to the next Component in
-    // tree pre-order traversal.
-    void initComponentTreeTraversal(Component &root) {
-        // Going down the tree, node is followed by all its
-        // children in order, last child's successor is the parent's successor.
-        for (unsigned int i = 0; i < _components.size(); i++){
-            if (i == _components.size() - 1){
-                // use parent's sibling if any
-                if (this == &root) // only to be safe if root changes
-                    _components[i]->_nextComponent = nullptr; 
-                else
-                    _components[i]->_nextComponent.reset(_nextComponent);
-            }
-            else
-                _components[i]->_nextComponent.reset(_components[i + 1]);
-        }
-        // recur to handle children of subcomponents
-        for (unsigned int i = 0; i < _components.size(); i++){
-            _components[i]->initComponentTreeTraversal(root);
         }
     }
 public:

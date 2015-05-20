@@ -178,8 +178,6 @@ void Component::connect(Component &root)
         AbstractConnector& connector = upd_connectors(ix);
         connector.disconnect();
         try{
-            //const Component* connectTo = root.findComponent(connector.get_connected_to_name());
-            //connector.connect(*connectTo);
             connector.findAndConnect(root);
         }
         catch (...) {
