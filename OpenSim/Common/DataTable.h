@@ -194,7 +194,13 @@ public:
 
     /** Append a row of data as a RowVector to the table. */
     void appendRow(const SimTK::RowVector_<DataType>& row) {
-        int ncols = _data.ncol() > row.size() ? _data.ncol() : row.size();
+        // ncols specified by the table unless it is zero, in which
+        // case allow the first row appended to dictate its size
+        int ncols = _data.ncol() == 0 ? row.size() : _data.ncol();
+        SimTK_ASSERT_ALWAYS(row.size() == ncols, "DataTable::appendRow() "
+            "row length does match number of columns.");
+        SimTK_ASSERT_ALWAYS(row.size() > 0, "DataTable::appendRow() "
+            "row is empty.");
         _data.resizeKeep(_data.nrow() + 1, ncols);
         _data[_data.nrow() - 1].updAsRowVector() = row;
     }

@@ -89,8 +89,8 @@ protected:
         _inTable = &DataTable_<DataType>::downcast(dt);
     }
 
-    /** extend the reading capability of the DataAdapter to pull in
-    the column labels for the data to be read in from a concrete source */
+    /** override the reading capability of the DataAdapter to pull in
+    the column labels from a concrete data source */
     void readColumnLabels() const {
         // a line of data read in as a string
         std::string lineString;

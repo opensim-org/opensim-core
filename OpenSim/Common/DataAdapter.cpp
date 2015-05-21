@@ -156,7 +156,7 @@ DataAdapter* DataAdapter::createAdapter(const std::string& identifier)
 }
 
 /* static */
-void DataAdapter::registerDataAdpater(const std::string& identifier,
+void DataAdapter::registerDataAdapter(const std::string& identifier,
                                       const DataAdapter& adapter)
 {
     auto it = _mapTypeNamesToAdapters.find(identifier);
@@ -166,7 +166,7 @@ void DataAdapter::registerDataAdpater(const std::string& identifier,
             std::unique_ptr<DataAdapter>(adapter.clone());
         return;
     }
-    throw Exception("DataAdapter::registerDataAdpater() adapter for '"
+    throw Exception("DataAdapter::registerDataAdapter() adapter for '"
         + identifier + "' already registered.");
 }
 

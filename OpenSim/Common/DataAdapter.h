@@ -89,7 +89,7 @@ public:
                write different file formats.
     @param[in] adapter the concrete DataAdapter required to process the type
                        (format) of the data for the source/sink.*/
-    static void registerDataAdpater(const std::string& identifier,
+    static void registerDataAdapter(const std::string& identifier,
         const DataAdapter& adapter);
 
     /** Convenience construction of a DataTable from a data source identified

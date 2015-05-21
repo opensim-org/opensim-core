@@ -37,12 +37,9 @@ template <> struct Object_GetClassName<SimTK::Mat22>
 /**
 * StreamWriter is a concrete class defining an interface for writing
 * out the contents of a DataTable to a stream. It controls access to a stream.
-*
-* @author Ajay Seth
 */
 template<typename DataType = SimTK::Real>
 class StreamWriter : public DataAdapter {
-    //    OpenSim_DECLARE_CONCRETE_OBJECT_T(StreamWriter, DataType, DataAdapter);
 
 public:
     StreamWriter() : DataAdapter() {
@@ -103,8 +100,6 @@ private:
 /**
 * StreamReader is a concrete class defining an interface for reading in
 * the contents of a DataTable from a stream. It controls access to a stream.
-*
-* @author Ajay Seth
 */
 template<typename DataType = SimTK::Real>
 class StreamReader : public DataAdapter {
@@ -141,8 +136,9 @@ public:
         _inTable = &DataTable_<DataType>::downcast(dt);
     }
 
-    /** extend the reading capability of the DataAdapter to write out
-    the data to a std::istream */
+    /** extend the reading capability of the DataAdapter to write out table
+        to a std::istream. Currently implementation is for demonstration only
+        and does not parse the row into valid values. */
     bool extendRead() const override {
         std::string rowString;
         std::getline(*_inputstream, rowString);
@@ -158,35 +154,43 @@ private:
     mutable SimTK::ReferencePtr<DataTable_<DataType> > _inTable;
 };
 
-//typedef StreamReader<SimTK::Real> RealReader;
-//typedef StreamReader<SimTK::Vec3> Vec3Reader;
-
 using namespace std;
 using namespace SimTK;
 
 int main() {
 
     try {
-        DataAdapter::registerDataAdpater("streamWriter", 
+        DataAdapter::registerDataAdapter("streamWriter",
             StreamWriter<SimTK::Real>());
-        DataAdapter::registerDataAdpater("csv", CSVFileReader());
+        DataAdapter::registerDataAdapter("csv", CSVFileReader());
 
+        // create a data table of Vec3's, which would be like marker data
         DataTable_<Vec3> markers(1,4);
         RowVector_<Vec3> r0(4, Vec3(1.0, 1.0, 1.0));
         RowVector_<Vec3> r1(4, Vec3(2.0, 2.0, 2.0));
         RowVector_<Vec3> r2(4, Vec3(3.0, 3.0, 3.0));
+        
         // Update the table by row
         markers.updRow(0) = r0;
-        // Append more rows.
+        // TODO updating the next row should throw an exception since markers
+        // should only have 1 row. Currently aborts in release. SimTK::Matrix
+        // checks in debug.
+        //ASSERT_THROW(std::exception, markers.updRow(1) = r1);
+
+        // Append more rows to grow the table.
         markers.appendRow(r1);
         markers.appendRow(r2);
+        cout << "HERE 2" << endl;
+        ASSERT_THROW(std::exception,
+             markers.appendRow(RowVector_<Vec3>(3, Vec3(4.0, 4.0, 4.0))) );
 
+        // create and update column labels for the table of marker data
         Array<string> labels;
         labels.append("mark1"); labels.append("mark2"); 
         labels.append("mark3"); labels.append("mark4");
-
         markers.updColumnLabels() = labels;
 
+        // demonstrate row and column access of the data table
         size_t nr = markers.getNumRows();
         size_t nc = markers.getNumCols();
 
@@ -202,13 +206,14 @@ int main() {
         cout << "Element(1,3) = " << markers.getElement(1, 3) << endl;
 
         cout << "Markers Table:" << endl;
+        // exercise DataTable's output operator
         cout << markers << endl;
 
+        // DataTable is our typical table of Real numbers
         DataTable table;
-        // Update the table by row
+        // Build up the table by row
         table.appendRow(RowVector(5, 0.1));
         table.appendRow(RowVector(5, 0.2));
-        // Grow the table by appending row
         table.appendRow(RowVector(5, 0.3));
 
         nr = table.getNumRows();
@@ -257,9 +262,9 @@ int main() {
         ASSERT(2*nr2 == nr3);
         cout << table << endl;
 
-        // If no adapter is registered with an identifier it should
-        // throw and exception that the 
-//        ASSERT_THROW(OpenSim::Exception, DataAdapter::createAdapter("stream"));
+        // If no adapter is registered with a given identifier, the base should
+        // throw an exception to that effect.
+        ASSERT_THROW(OpenSim::Exception, DataAdapter::createAdapter("stream"));
 
         auto* adapter = DataAdapter::createAdapter("streamWriter");
         adapter->prepareForWriting(table);
@@ -339,19 +344,23 @@ int main() {
         csvReader.setFilename("dataTestFile.csv");
         // Should now fail because the reader needs a table to fill */
         ASSERT_THROW(std::exception, csvReader.read());
-        csvReader.prepareForReading(csvTable);
+        
+        //prepare the reader for the given table
+        csvReader.prepareForReading(csvTable2);
         csvReader.read(); 
 
         cout << endl;
-        cout << "2nd read CSV nrows = " << csvTable.getNumRows();
-        cout << "    ncols = " << csvTable.getNumCols() << endl;
-        cout << csvTable << endl;
+        cout << "2nd read of CSV file: nrows = " << csvTable2.getNumRows();
+        cout << "    ncols = " << csvTable2.getNumCols() << endl;
+        cout << csvTable2 << endl;
 
         // Convert a DataTable to a TimeSeriesData table
         // Should complain that time column is not sequential since
-        // we just read in the data into the cavTable twice!
-        ASSERT_THROW(std::exception, TimeSeriesData tcsvData(csvTable));
-        TimeSeriesData tcsvData(csvTable2);
+        // we just read in the data into the csvTable twice!
+        ASSERT_THROW(std::exception, TimeSeriesData tcsvData(csvTable2));
+
+        // create a table of time series data from the csvTable
+        TimeSeriesData tcsvData(csvTable);
         tcsvData.dumpToStream(cout);
     }
     catch (const std::exception& e) {
