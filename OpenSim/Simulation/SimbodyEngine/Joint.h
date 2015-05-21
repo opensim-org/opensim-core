@@ -58,14 +58,18 @@ A Seth, M Sherman, P Eastman, S Delp; Nonlinear dynamics 62 (1), 291-303
 
 <b>C++ example</b>
 \code{.cpp}
-    \\ Define a Pin joint between ground and platform
-    PinJoint* platformToGround = new PinJoint("PlatformToGround", ground, locationInParent, orientationInParent, *platform, locationInChild, orientationInChild, false);
+    // Define a Pin joint between ground and platform.
+    PinJoint* platformToGround = new PinJoint("PlatformToGround",
+            ground, locationInParent, orientationInParent,
+            *platform, locationInChild, orientationInChild, false);
 \endcode
 
 <b>Python example</b>
 \code{.py}
-    ##Define a ball joint between blockA and blockB
-    abJoint  = osim.BallJoint('JointName',blockA,locInParent,oriInParent,blockB,locInChild,oriInChild, 0)
+    # Define a ball joint between blockA and blockB.
+    abJoint  = osim.BallJoint('JointName',
+            blockA, locInParent, oriInParent,
+            blockB, locInChild, oriInChild, False)
 \endcode
 
 @author Ajay Seth
