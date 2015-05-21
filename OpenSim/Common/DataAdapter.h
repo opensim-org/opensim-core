@@ -209,7 +209,7 @@ protected:
 
 private:
     bool _hasDataAccess{ false };
-    std::ios_base::openmode _accessMode{ 0 };
+    std::ios_base::openmode _accessMode{ !(std::ios_base::in | std::ios_base::out) };
 
     // Registry of known concrete DataAdapters keyed by unique string
     // identifier (could be filename, extension, port, etc...) 

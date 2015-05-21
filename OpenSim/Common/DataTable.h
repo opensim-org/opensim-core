@@ -224,9 +224,9 @@ public:
     /** Dump the contents of table and strings to an output stream.
         Primarily used for debugging purposes.*/
     void dumpToStream(std::ostream &out) const override {
-        out << "DataTable of type: " << getDataTypeInfo().name() << endl;
-        out << getMetaData() << endl;
-        out << getColumnLabels() << endl;
+        out << "DataTable of type: " << getDataTypeInfo().name() << std::endl;
+        out << getMetaData() << std::endl;
+        out << getColumnLabels() << std::endl;
         for (int i=0; i < getNumRows(); ++i){
             out << getRow(i) << std::endl;
         }

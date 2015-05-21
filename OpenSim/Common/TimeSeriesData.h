@@ -56,24 +56,25 @@ public:
     TimeSeriesData_<T>& operator = (const TimeSeriesData_&) = default;
 
     /** Copy construct TimeSeriesData from a generic DataTable */
-    TimeSeriesData_(const DataTable_& dt, const std::string& timeLabel = "time") : 
-                DataTable_(dt) {
+    TimeSeriesData_(const DataTable_<T>& dt, const std::string& timeLabel = "time") : 
+                DataTable_<T>(dt) {
         const TimeSeriesData_* tsd =
             dynamic_cast<const TimeSeriesData_<T>*>(&dt);
         if (tsd) {
             // source DataTable is already TimeSeriesData so make this a copy.
             *this = *tsd;
         }
-        else if (hasColumn(timeLabel)){
+        else if (this->hasColumn(timeLabel)){
             size_t c = dt.getColumnIndex(timeLabel);
             if (!isStrictlyIncreasing(dt.getColumn(c)))
                 throw Exception("TimeSeriesData: cannot construct "
                 "from a DataTable without a sequential time column.");
             _times = dt.getColumn(int(c));
-            updColumnLabels().remove(int(c));
+            this->updColumnLabels().remove(int(c));
             int nr = int(dt.getNumRows());
             int nc = int(dt.getNumCols() - 1);
-            updAsMatrix().resize(nr, nc) = dt.getAsMatrix().block(0, 1, nr, nc);
+            this->updAsMatrix().resize(nr, nc) = 
+                dt.getAsMatrix().block(0, 1, nr, nc);
         }
         else {
             throw Exception("TimeSeriesData: cannot construct "
@@ -106,7 +107,7 @@ public:
     size_t findRowIndexForTime(const SimTK::Real& time,
                                 TimeToIndexOption opt,
                                            size_t startIndex) const {
-        size_t nt = _times.getSize();
+        size_t nt = _times.size();
         SimTK_ASSERT_ALWAYS(startIndex < nt, 
             "TimeSeriesData_::findRowIndexForTime()"
             " supplied startIndex exceeds size of time data.");
@@ -133,7 +134,7 @@ public:
         switch (opt) {
         case After:
             return foundIndex;
-        case:Before :
+        case Before :
             return foundIndex - 1;
         case Nearest: {
             SimTK::Real dBefore = time - _times[foundIndex - 1];
@@ -147,20 +148,19 @@ public:
     }
 
     void dumpToStream(std::ostream &out) const override {
-        out << getTimeLabel() << getColumnLabels() << std::endl;
-        for (int i = 0; i < getNumRows(); ++i){
-            out << _times(i) << " " << getRow(i) << std::endl;
+        out << getTimeLabel() << this->getColumnLabels() << std::endl;
+        for (int i = 0; i < this->getNumRows(); ++i){
+            out << _times(i) << " " << this->getRow(i) << std::endl;
         }
     }
 
     std::string getTimeLabel() const { return "time"; }
 
-    SimTK_DOWNCAST(TimeSeriesData_, DataTable_);
+    SimTK_DOWNCAST(TimeSeriesData_, DataTable_<T>);
 
 protected:
-    /** Helper method to te check if a particular series (e.g. a column of 
-       a table is strictlyIncreasing, which for time, for example, must be
-       the case. */
+    /** Helper method to check if a particular series (e.g. a column of 
+       a table is strictly increasing, which for time must be the case. */
     bool isStrictlyIncreasing(const SimTK::Vector& series) const {
         size_t i = 1;
         size_t nt = series.size();
