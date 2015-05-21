@@ -36,7 +36,7 @@ int main() {
     // Joints that connect the bodies together.
     PinJoint* joint1 = new PinJoint("shoulder",
             // Parent body, location in parent, orientation in parent.
-            model.getGroundBody(), Vec3(0), Vec3(0),
+            model.getGround(), Vec3(0), Vec3(0),
             // Child body, location in child, orientation in child.
             *link1, Vec3(0, 1, 0), Vec3(0));
     PinJoint* joint2 = new PinJoint("elbow",
