@@ -1136,6 +1136,19 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
     {   updProperty_##name().setValue(value); }                             \
     /** @endcond **/
 
+
+// This is an empty macro that we use to exploit a feature in Doxygen in order
+// to nicely document OpenSim properties. See, Doxygen has support for Qt
+// "properties", which are slightly similar to our properties. Qt "properties"
+// are defined with the Q_PROPERTY() macro. In the code, this macro is empty
+// (as you can tell by...just looking at the macro).  But in the Doxyfile, we
+// tell Doxygen that this macro is defined as Q_PROPERTY(). This tricks Doxygen
+// into documenting *our* properties as if they were Qt properties.
+// The reason that we don't use Q_PROPERTY() directly is that we don't want to
+// prevent our users from potentially using OpenSim in conjunction with Qt.
+// You can see how this empty macro is used in some of the macros below.
+#define OpenSim_FAKE_Q_PROPERTY(T, name)
+
 /** Declare a required, single-value property of the given \a name and 
 type \a T, with an associated \a comment. The value list for this property will
 always contain exactly one element, and the property must be initialized at
@@ -1154,30 +1167,35 @@ A data member is also created but is intended for internal use only:
     property after it has been constructed
 
 @relates OpenSim::Property **/
-#define OpenSim_DECLARE_PROPERTY(name, T, comment)                          \
+#define OpenSim_DECLARE_PROPERTY(pname, T, comment)                         \
     /** @cond **/                                                           \
-    OpenSim_DECLARE_PROPERTY_HELPER(name,T)                                 \
-    void constructProperty_##name(const T& initValue) {                     \
-        PropertyIndex_##name =                                              \
-            this->template addProperty<T>(#name,comment,initValue);         \
+    OpenSim_DECLARE_PROPERTY_HELPER(pname,T)                                \
+    void constructProperty_##pname(const T& initValue) {                    \
+        PropertyIndex_##pname =                                             \
+            this->template addProperty<T>(#pname,comment,initValue);        \
     }                                                                       \
     /** @endcond **/                                                        \
-    /** Required property of type T##: comment                           */ \
-    /** Some other methods associated with this property are:            */ \
-    /**   <b>upd_##name##()</b>,                                         */ \
-    /**   <b>set_##name##()</b>.                                         */ \
+    /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
-    /** the tag <b>\<##name##\></b>.                                     */ \
-    /** @see Property, #OpenSim_DECLARE_PROPERTY                         */ \
-    Q_PROPERTY(T name)                                                      \
-    const T& get_##name() const                                             \
-    {   return this->getProperty_##name().getValue(); }                     \
-    /** @cond **/                                                           \
-    T& upd_##name()                                                         \
-    {   return this->updProperty_##name().updValue(); }                     \
-    void set_##name(const T& value)                                         \
-    {   updProperty_##name().setValue(value); }                             \
-    /** @endcond **/
+    /** the tag <b>\<##pname##\></b>.                                    */ \
+    /** This property was generated with                                 */ \
+    /** the #OpenSim_DECLARE_PROPERTY macro;                             */ \
+    /** see Property to learn about the property system.                 */ \
+    /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##()   */ \
+    /* This macro below is explained above.                              */ \
+    OpenSim_FAKE_Q_PROPERTY(T pname)                                        \
+    /** @name Property-related methods                                   */ \
+    /** @{                                                               */ \
+    /** Get the value of the <b> pname </b> property.                    */ \
+    const T& get_##pname() const                                            \
+    {   return this->getProperty_##pname().getValue(); }                    \
+    /** Get a writeable reference to the <b> pname </b> property.        */ \
+    T& upd_##pname()                                                        \
+    {   return this->updProperty_##pname().updValue(); }                    \
+    /** %Set the value of the <b> pname </b> property.                   */ \
+    void set_##pname(const T& value)                                        \
+    {   updProperty_##pname().setValue(value); }                            \
+    /** @}                                                               */
 
 /** Declare a required, unnamed property holding exactly one object of type
 T derived from %OpenSim's Object class and identified by that object's class 
@@ -1191,55 +1209,65 @@ initialized with an object of type T.
     {   PropertyIndex_##T =                                                 \
             this->template addProperty<T>("", comment, initValue); }        \
     /** @endcond **/                                                        \
-    /** Unnamed property of type T##: comment                            */ \
-    /** Some other methods associated with this property are:            */ \
-    /**   <b>upd_##T##()</b>,                                            */ \
-    /**   <b>set_##T##()</b>.                                            */ \
+    /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
-    /** the tag <b>\<##T##\></b>.                                        */ \
-    /** @see Property, #OpenSim_DECLARE_UNNAMED_PROPERTY                 */ \
-    Q_PROPERTY(T T)                                                         \
+    /** the tag <b>\<%##T##\></b>.                                       */ \
+    /** This property was generated with the                             */ \
+    /** #OpenSim_DECLARE_UNNAMED_PROPERTY macro;                         */ \
+    /** see Property to learn about the property system.                 */ \
+    /** @propmethods get_##T##(), upd_##T##(), set_##T##()               */ \
+    /* This macro below is explained above.                              */ \
+    OpenSim_FAKE_Q_PROPERTY(T T)                                            \
+    /** @name Property-related methods                                   */ \
+    /** @{                                                               */ \
+    /** Get the value of the <b> %##T </b> property.                     */ \
     const T& get_##T() const                                                \
     {   return this->getProperty_##T().getValue(); }                        \
-    /** @cond **/                                                           \
+    /** Get a writeable reference to the <b> %##T </b> property.         */ \
     T& upd_##T()                                                            \
     {   return this->updProperty_##T().updValue(); }                        \
+    /** %Set the value of the <b> %##T </b> property.                    */ \
     void set_##T(const T& value)                                            \
     {   updProperty_##T().setValue(value); }                                \
-    /** @endcond **/
+    /** @}                                                               */
 
 /** Declare a property of the given \a name containing an optional value of
 the given type T (that is, the value list can be of length 0 or 1 only).
 The property may be constructed as empty, or with initialization to a single
 value of type T.
 @relates OpenSim::Property **/
-#define OpenSim_DECLARE_OPTIONAL_PROPERTY(name, T, comment)                 \
+#define OpenSim_DECLARE_OPTIONAL_PROPERTY(pname, T, comment)                \
     /** @cond **/                                                           \
-    OpenSim_DECLARE_PROPERTY_HELPER(name,T)                                 \
-    void constructProperty_##name()                                         \
-    {   PropertyIndex_##name =                                              \
-            this->template addOptionalProperty<T>(#name, comment); }        \
-    void constructProperty_##name(const T& initValue)                       \
-    {   PropertyIndex_##name =                                              \
-            this->template addOptionalProperty<T>(#name, comment,           \
+    OpenSim_DECLARE_PROPERTY_HELPER(pname,T)                                \
+    void constructProperty_##pname()                                        \
+    {   PropertyIndex_##pname =                                             \
+            this->template addOptionalProperty<T>(#pname, comment); }       \
+    void constructProperty_##pname(const T& initValue)                      \
+    {   PropertyIndex_##pname =                                             \
+            this->template addOptionalProperty<T>(#pname, comment,          \
                                                   initValue); }             \
     /** @endcond **/                                                        \
-    /** Optional property of type T##: comment                           */ \
-    /** Some other methods associated with this property are:            */ \
-    /**   <b>upd_##name##()</b>,                                         */ \
-    /**   <b>set_##name##()</b>,                                         */ \
+    /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
-    /** the tag <b>\<##name##\></b>.                                     */ \
-    /** @see Property, #OpenSim_DECLARE_OPTIONAL_PROPERTY                */ \
-    Q_PROPERTY(T name)                                                      \
-    const T& get_##name() const                                             \
-    {   return this->getProperty_##name().getValue(); }                     \
-    /** @cond **/                                                           \
-    T& upd_##name()                                                         \
-    {   return this->updProperty_##name().updValue(); }                     \
-    void set_##name(const T& value)                                         \
-    {   updProperty_##name().setValue(value); }                             \
-    /** @endcond **/
+    /** the tag <b>\<##pname##\></b>.                                    */ \
+    /** This property was generated with                                 */ \
+    /** the #OpenSim_DECLARE_OPTIONAL_PROPERTY macro;                    */ \
+    /** see Property to learn about the property system.                 */ \
+    /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##()   */ \
+    /* This macro below is explained above.                              */ \
+    OpenSim_FAKE_Q_PROPERTY(T pname)                                        \
+    /** @name Property-related methods                                   */ \
+    /** @{                                                               */ \
+    /** Get the value of the <b> pname </b> property.                    */ \
+    const T& get_##pname() const                                            \
+    {   return this->getProperty_##pname().getValue(); }                    \
+    /** Get a writeable reference to the <b> pname </b> property.        */ \
+    T& upd_##pname()                                                        \
+    {   return this->updProperty_##pname().updValue(); }                    \
+    /** %Set the value of the <b> pname </b> property.                   */ \
+    void set_##pname(const T& value)                                        \
+    {   updProperty_##pname().setValue(value); }                            \
+    /** @}                                                               */
 
 /** Declare a property of the given \a name containing a variable-length
 list of values of the given type T. The property may be constructed as empty, 
