@@ -288,7 +288,7 @@ friend std::ostream& operator<<(std::ostream &aOut,const ArrayPtrs<T> &aArray)
             aOut << "NULL";
         } else {
             // The following line is having trouble compiling on IRIX.
-            aOut << *obj;
+            //aOut << *obj;
         }
     }
 
