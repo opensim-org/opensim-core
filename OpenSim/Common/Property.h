@@ -1108,16 +1108,18 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
     void copyProperty_##name(const Self& source)                            \
     {   PropertyIndex_##name = source.PropertyIndex_##name; }               \
     /** @endcond **/                                                        \
+    /** Get the value of the i-th element of the <b> name </b> property. */ \
     const T& get_##name(int i) const                                        \
     {   return this->template getProperty<T>(PropertyIndex_##name)[i]; }    \
-    /** @cond **/                                                           \
+    /** Get a writeable reference to the i-th element of the <b> name </b> property. */ \
     T& upd_##name(int i)                                                    \
     {   return this->template updProperty<T>(PropertyIndex_##name)[i]; }    \
+    /** %Set the value of the i-th element of <b> name </b> property.    */ \
     void set_##name(int i, const T& value)                                  \
     {   this->updProperty_##name().setValue(i,value); }                     \
+    /** Append an element to the <b> name </b> property.                 */ \
     int append_##name(const T& value)                                       \
-    {   return this->updProperty_##name().appendValue(value); }             \
-    /** @endcond **/
+    {   return this->updProperty_##name().appendValue(value); }
 
 // All of the list properties share a constructor and set method that take
 // a "template template" argument allowing initialization from any container
@@ -1149,7 +1151,7 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
 // You can see how this empty macro is used in some of the macros below.
 #define OpenSim_FAKE_Q_PROPERTY(T, name)
 
-/** Declare a required, single-value property of the given \a name and 
+/** Declare a required, single-value property of the given \a pname and 
 type \a T, with an associated \a comment. The value list for this property will
 always contain exactly one element, and the property must be initialized at
 construction. This macro, and the other similar macros, define several related 
@@ -1231,7 +1233,7 @@ initialized with an object of type T.
     {   updProperty_##T().setValue(value); }                                \
     /** @}                                                               */
 
-/** Declare a property of the given \a name containing an optional value of
+/** Declare a property of the given \a pname containing an optional value of
 the given type T (that is, the value list can be of length 0 or 1 only).
 The property may be constructed as empty, or with initialization to a single
 value of type T.
@@ -1269,7 +1271,7 @@ value of type T.
     {   updProperty_##pname().setValue(value); }                            \
     /** @}                                                               */
 
-/** Declare a property of the given \a name containing a variable-length
+/** Declare a property of the given \a pname containing a variable-length
 list of values of the given type T. The property may be constructed as empty, 
 or with initialization to a templatized Container\<T> for any Container that
 supports a %size() method and operator[] element selection.
@@ -1278,110 +1280,132 @@ supports a %size() method and operator[] element selection.
 @see OpenSim_DECLARE_LIST_PROPERTY_ATMOST()
 @see OpenSim_DECLARE_LIST_PROPERTY_RANGE()
 @relates OpenSim::Property **/
-#define OpenSim_DECLARE_LIST_PROPERTY(name, T, comment)                     \
-    /** List property of type T##: comment                               */ \
-    /** Some other methods associated with this property are:            */ \
-    /**   <b>upd_##name##()</b>,                                         */ \
-    /**   <b>set_##name##()</b>,                                         */ \
-    /**   <b>append_##name##()</b>,                                      */ \
+#define OpenSim_DECLARE_LIST_PROPERTY(pname, T, comment)                    \
+    /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
-    /** the tag <b>\<##name##\></b>.                                     */ \
-    /** @see Property, #OpenSim_DECLARE_LIST_PROPERTY                    */ \
-    Q_PROPERTY(T name)                                                      \
-    OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
+    /** the tag <b>\<##pname##\></b>.                                    */ \
+    /** This property holds a \a list of objects, and was generated with */ \
+    /** the #OpenSim_DECLARE_LIST_PROPERTY macro;                        */ \
+    /** see Property to learn about the property system.                 */ \
+    /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##(),  */ \
+    /**     append_##pname##()                                           */ \
+    /* This macro below is explained above.                              */ \
+    OpenSim_FAKE_Q_PROPERTY(T pname)                                        \
+    /** @name Property-related methods                                   */ \
+    /** @{                                                               */ \
+    OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
                                          0, std::numeric_limits<int>::max())\
     /** @cond **/                                                           \
-    void constructProperty_##name()                                         \
-    {   PropertyIndex_##name = this->template addListProperty<T>            \
-           (#name, comment, 0, std::numeric_limits<int>::max()); }          \
-    /** @endcond */
+    void constructProperty_##pname()                                        \
+    {   PropertyIndex_##pname = this->template addListProperty<T>           \
+           (#pname, comment, 0, std::numeric_limits<int>::max()); }         \
+    /** @endcond **/                                                        \
+    /** @}                                                               */
 
-/** Declare a property of the given \a name containing a list of values of 
+/** Declare a property of the given \a pname containing a list of values of 
 the given type T, with the number of values in the list restricted to be
 exactly \a listSize (> 0) elements, no more or less. A fixed-size property must 
 be initialized at construction, by providing a templatized Container\<T> with
 the right number of elements, using any Container that supports a %size() 
 method and operator[] element selection.
 @relates OpenSim::Property **/
-#define OpenSim_DECLARE_LIST_PROPERTY_SIZE(name, T, listSize, comment)      \
-    /** List property of type T with exactly listSize values: comment    */ \
-    /** Some other methods associated with this property are:            */ \
-    /**   <b>upd_##name##()</b>,                                         */ \
-    /**   <b>set_##name##()</b>,                                         */ \
-    /**   <b>append_##name##()</b>,                                      */ \
+#define OpenSim_DECLARE_LIST_PROPERTY_SIZE(pname, T, listSize, comment)     \
+    /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
-    /** the tag <b>\<##name##\></b>.                                     */ \
-    /** @see Property, #OpenSim_DECLARE_LIST_PROPERTY_SIZE               */ \
-    Q_PROPERTY(T name)                                                      \
-    OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
-                                         (listSize), (listSize))
+    /** the tag <b>\<##pname##\></b>.                                    */ \
+    /** This property holds a \a list of exactly listSize object(s),     */ \
+    /** and was generated with                                           */ \
+    /** the #OpenSim_DECLARE_LIST_PROPERTY_SIZE macro;                   */ \
+    /** see Property to learn about the property system.                 */ \
+    /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##()   */ \
+    /* This macro below is explained above.                              */ \
+    OpenSim_FAKE_Q_PROPERTY(T pname)                                        \
+    /** @name Property-related methods                                   */ \
+    /** @{                                                               */ \
+    OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
+                                         (listSize), (listSize))            \
+    /** @}                                                               */
 
-/** Declare a property of the given \a name containing a list of values of 
+/** Declare a property of the given \a pname containing a list of values of 
 the given type T, with the number of values required to be at least 
 \a minSize (> 0) elements. Such a property must be initialized at construction, 
 by providing a templatized Container\<T> with at least \a minSize elements, 
 using any Container that supports a %size() method and operator[] element 
 selection.
 @relates OpenSim::Property **/
-#define OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(name, T, minSize, comment)    \
-    /** List property of type T with at least minSize values: comment    */ \
-    /** Some other methods associated with this property are:            */ \
-    /**   <b>upd_##name##()</b>,                                         */ \
-    /**   <b>set_##name##()</b>,                                         */ \
-    /**   <b>append_##name##()</b>,                                      */ \
+#define OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(pname, T, minSize, comment)   \
+    /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
-    /** the tag <b>\<##name##\></b>.                                     */ \
-    /** @see Property, #OpenSim_DECLARE_LIST_PROPERTY_ATLEAST            */ \
-    Q_PROPERTY(T name)                                                      \
-    OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
-                                (minSize), std::numeric_limits<int>::max())
+    /** the tag <b>\<##pname##\></b>.                                    */ \
+    /** This property holds a \a list of minSize or more objects,        */ \
+    /** and was generated with                                           */ \
+    /** the #OpenSim_DECLARE_LIST_PROPERTY_ATLEAST macro;                */ \
+    /** see Property to learn about the property system.                 */ \
+    /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##(),  */ \
+    /**     append_##pname##()                                           */ \
+    /* This macro below is explained above.                              */ \
+    OpenSim_FAKE_Q_PROPERTY(T pname)                                        \
+    /** @name Property-related methods                                   */ \
+    /** @{                                                               */ \
+    OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
+                                (minSize), std::numeric_limits<int>::max()) \
+    /** @}                                                               */
 
-/** Declare a property of the given \a name containing a list of values of 
+/** Declare a property of the given \a pname containing a list of values of 
 the given type T, with the number of values in the list restricted to be
 no more than \a maxSize (> 0) elements.  This kind of property may optionally 
 be initialized at construction, by providing a templatized Container\<T> with 
 no more than \a maxSize elements, using any Container that supports a %size() 
 method and operator[] element selection.
 @relates OpenSim::Property **/
-#define OpenSim_DECLARE_LIST_PROPERTY_ATMOST(name, T, maxSize, comment)     \
-    /** List property of type T with at most maxSize values: comment     */ \
-    /** Some other methods associated with this property are:            */ \
-    /**   <b>upd_##name##()</b>,                                         */ \
-    /**   <b>set_##name##()</b>,                                         */ \
-    /**   <b>append_##name##()</b>,                                      */ \
+#define OpenSim_DECLARE_LIST_PROPERTY_ATMOST(pname, T, maxSize, comment)    \
+    /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
-    /** the tag <b>\<##name##\></b>.                                     */ \
-    /** @see Property, #OpenSim_DECLARE_LIST_PROPERTY_ATMOST             */ \
-    Q_PROPERTY(T name)                                                      \
-    OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment, 0, (maxSize))    \
+    /** the tag <b>\<##pname##\></b>.                                    */ \
+    /** This property holds a \a list of at most maxSize object(s),      */ \
+    /** and was generated with                                           */ \
+    /** the #OpenSim_DECLARE_LIST_PROPERTY_ATMOST macro;                 */ \
+    /** see Property to learn about the property system.                 */ \
+    /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##(),  */ \
+    /**     append_##pname##()                                           */ \
+    /* This macro below is explained above.                              */ \
+    OpenSim_FAKE_Q_PROPERTY(T pname)                                        \
+    /** @name Property-related methods                                   */ \
+    /** @{                                                               */ \
+    OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment, 0, (maxSize))   \
     /** @cond **/                                                           \
-    void constructProperty_##name()                                         \
-    {   PropertyIndex_##name = addListProperty<T>(#name, comment,           \
+    void constructProperty_##pname()                                        \
+    {   PropertyIndex_##pname = addListProperty<T>(#pname, comment,         \
                                                   0, (maxSize)); }          \
-    /** @endcond **/
+    /** @endcond **/                                                        \
+    /** @}                                                               */
 
-/** Declare a property of the given \a name containing a list of values of 
+/** Declare a property of the given \a pname containing a list of values of 
 the given type T, with the number of values in the list restricted to be
 in the range \a minSize (> 0) to \a maxSize (> \a minSize).  This kind of 
 property must be initialized with at least \a minSize values at construction. 
 If you want to allow zero elements, so that initialization is optional, use 
 OpenSim_DECLARE_PROPERTY_ATMOST() rather than this macro.
 @relates OpenSim::Property **/
-#define OpenSim_DECLARE_LIST_PROPERTY_RANGE(name, T, minSize, maxSize,      \
+#define OpenSim_DECLARE_LIST_PROPERTY_RANGE(pname, T, minSize, maxSize,     \
                                             comment)                        \
-    /** List property of type T with minSize to maxSize values: comment  */ \
-    /** This is a list property of type T##, with                        */ \
-    /** minSize to maxSize values.                                       */ \
-    /** Some other methods associated with this property are:            */ \
-    /**   <b>upd_##name##()</b>,                                         */ \
-    /**   <b>set_##name##()</b>,                                         */ \
-    /**   <b>append_##name##()</b>,                                      */ \
+    /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
-    /** the tag <b>\<##name##\></b>.                                     */ \
-    /** @see Property, #OpenSim_DECLARE_LIST_PROPERTY_RANGE              */ \
-    Q_PROPERTY(T name)                                                      \
-    OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
-                                        (minSize), (maxSize))
+    /** the tag <b>\<##pname##\></b>.                                    */ \
+    /** This property holds a \a list of between minSize and maxSize     */ \
+    /** objects,                                                         */ \
+    /** and was generated with                                           */ \
+    /** the #OpenSim_DECLARE_LIST_PROPERTY_RANGE macro;                  */ \
+    /** see Property to learn about the property system.                 */ \
+    /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##(),  */ \
+    /**     append_##pname##()                                           */ \
+    /* This macro below is explained above.                              */ \
+    OpenSim_FAKE_Q_PROPERTY(T pname)                                        \
+    /** @name Property-related methods                                   */ \
+    /** @{                                                               */ \
+    OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
+                                        (minSize), (maxSize))               \
+    /** @}                                                               */
 
 } //namespace
 //=============================================================================
