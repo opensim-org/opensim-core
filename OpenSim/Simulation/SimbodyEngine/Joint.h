@@ -69,7 +69,7 @@ A Seth, M Sherman, P Eastman, S Delp; Nonlinear dynamics 62 (1), 291-303
     # Define a ball joint between blockA and blockB.
     abJoint  = osim.BallJoint('JointName',
             blockA, locInParent, oriInParent,
-            blockB,locInChild,oriInChild, False)
+            blockB, locInChild, oriInChild, False)
 \endcode
 
 @author Ajay Seth
