@@ -144,7 +144,7 @@ public:
         std::getline(*_inputstream, rowString);
         std::cout << "StreamReader::readNextRow() input stream contains:";
         std::cout << rowString << std::endl;
-        RowVector_<DataType> row(int(_inTable->getNumCols()), DataType(0));
+        SimTK::RowVector_<DataType> row(int(_inTable->getNumCols()), DataType(0));
         _inTable->appendRow(row);
         return !_inputstream->eof();
     }

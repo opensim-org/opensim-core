@@ -145,7 +145,7 @@ protected:
 
         // read in line of strings MUST match number of columns
         //assert(valStrings.size() == dt.getNumCols());
-        RowVector_<DataType> row(int(valStrings.size()), DataType(SimTK::NaN));
+        SimTK::RowVector_<DataType> row(int(valStrings.size()), DataType(SimTK::NaN));
 
         for (int i = 0; i < row.size(); ++i){
             std::istringstream(valStrings[i]) >> row[i];
