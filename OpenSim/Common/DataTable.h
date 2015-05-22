@@ -39,10 +39,10 @@ namespace OpenSim {
 
 //=============================================================================
 /**
- * AbstractDataTable defines a container interface for in memory access to
- * numerical data as a table. A DataTable is independent of the data source used
- * to populate it. A concrete DataTable provides a random access to data
- * elements by row and/or column indices as well as column by label.
+ * AbstractDataTable defines a simple interface for in memory access to
+ * numerical data as a table. A DataTable is independent of the data source 
+ * used to populate it. A concrete DataTable provides fast access to data
+ * elements by row and/or column indices as well as columns by label.
  *
  * @author Ajay Seth
  */
@@ -109,8 +109,8 @@ public:
         _data(int(nrows), int(ncols), val),
         _type(typeid(DataType)) {}
 
-    /** Convenience construction of a DataTable from a file name with type
-        identified by the file extension. E.g. `results.csv`, `stats.sto`, ...
+    /** Convenience construction of a DataTable from a filename with its source
+        type identified by the file extension. E.g. `results.csv`, `states.sto`
     @param[in] filename         the name of the data file to be accessed
     */
     DataTable_(const std::string& filename) :
@@ -137,7 +137,6 @@ public:
     virtual AbstractDataTable* clone() const override {
         return new DataTable_(*this);
     }
-
 
     const XMLDocument& getMetaData() const override final { return _metaData; }
     XMLDocument& updMetaData() override final { return _metaData; }
@@ -181,7 +180,7 @@ public:
         return _data(int(col));
     }
 
-    /** Read-only access to an DataType element in the table by row and
+    /** Read-only access to an element of DataType in the table by row and
         column indices.*/
     const DataType& getElement(size_t row, size_t col) const {
         return _data(int(row), int(col));
@@ -206,7 +205,7 @@ public:
     }
 
     /** Append another data table's rows to this table. If the number of
-        columns are in compatible it will throw and exception. */
+        columns are incompatible it will throw and exception. */
     void appendDataTable(const DataTable_& table) {
         size_t nrows = table.getNumRows();
         if (getNumCols() != table.getNumCols()) {

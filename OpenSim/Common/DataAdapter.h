@@ -24,9 +24,8 @@
  * -------------------------------------------------------------------------- */
 
 /** @file
-* This file defines the abstract DataAdapter class, which is used by OpenSim
-* Data components to provide a consistent (DataTable) interface for creating
-* a DataTable in memory for other OpenSim components to consume.
+* This file defines the abstract DataAdapter class, which is used to access
+* Data sources and populate DataTables for consumption in OpenSim.
 */
 
 #include "osimCommonDLL.h"
