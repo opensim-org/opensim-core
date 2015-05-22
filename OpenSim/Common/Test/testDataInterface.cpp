@@ -25,13 +25,16 @@
 #include <OpenSim/Common/TimeSeriesData.h>
 #include <OpenSim/Common/CSVFileAdapter.h>
 
-using namespace OpenSim;
+namespace OpenSim {
 
 template <> struct Object_GetClassName<SimTK::Mat22>
 {
     static const std::string name() { return "Mat22"; }
 };
 
+} // OpenSim namespace
+
+using namespace OpenSim;
 
 //=============================================================================
 /**
