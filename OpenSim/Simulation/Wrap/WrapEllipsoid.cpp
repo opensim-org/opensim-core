@@ -120,7 +120,7 @@ void WrapEllipsoid::setupProperties()
 *
 * @param aModel 
 */
-void WrapEllipsoid::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
+void WrapEllipsoid::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 {
     // Base class
     WrapObject::connectToModelAndBody(aModel, aBody);

@@ -27,6 +27,7 @@
 #include "PathPoint.h"
 #include "BodySet.h"
 #include "Model.h"
+#include <OpenSim/Common/Geometry.h>
 #include "GeometryPath.h"
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h> 
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
@@ -38,7 +39,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-Geometry *PathPoint::_defaultGeometry= AnalyticSphere::createSphere(0.005);
+Geometry* PathPoint::_defaultGeometry= AnalyticSphere::createSphere(0.005);
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -137,15 +138,18 @@ void PathPoint::setupProperties()
 
 //_____________________________________________________________________________
 /**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel model containing this PathPoint.
+ * TODO: All Points should be Components that use Connectors
+ * and extendConnect(). This must go away! -aseth
  */
 void PathPoint::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
 {
     _path = &aPath;
     _model  = &aModel;
+
+    if (_bodyName == aModel.getGround().getName()){
+        _body = &const_cast<Model*>(&aModel)->updGround();
+        return;
+    }
 
     // Look up the body by name in the kinematics engine and
     // store a pointer to it.
@@ -155,8 +159,8 @@ void PathPoint::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
         throw Exception(errorMessage);
     }
     _body = &const_cast<Model*>(&aModel)->updBodySet().get(_bodyName);
-
 }
+
 //_____________________________________________________________________________
 /**
  * Update geometry of the muscle point.
@@ -193,7 +197,7 @@ PathPoint& PathPoint::operator=(const PathPoint &aPoint)
  *
  * @param aBody Reference to the body.
  */
-void PathPoint::setBody(Body& aBody)
+void PathPoint::setBody(PhysicalFrame& aBody)
 {
     if (&aBody == _body)
         return;
@@ -211,16 +215,24 @@ void PathPoint::setBody(Body& aBody)
  * @param s State.
  * @param aBody Reference to the body.
  */
-void PathPoint::changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody)
+void PathPoint::changeBodyPreserveLocation(const SimTK::State& s, PhysicalFrame& aBody)
 {
-    if (&aBody == _body || !_body)
+    if (!_body){
+        throw Exception("PathPoint::changeBodyPreserveLocation attempted to "
+            " change the body on PathPoint which was not assigned to a body.");
+    }
+    // if it is already assigned to aBody, do nothing
+    if (_body == &aBody )
         return;
 
     // Preserve location means to switch bodies without changing
     // the location of the point in the inertial reference frame.
-    aBody.getModel().getSimbodyEngine().transformPosition(s, *_body, _location, aBody, _location);
-
+    _location = _body->findLocationInAnotherFrame(s, _location, aBody);
     _bodyName = aBody.getName();
+
+    // now assign this point's body to point to aBody
+    _body = &aBody;
+
     connectToModelAndPath(aBody.getModel(), *getPath());
 }
 

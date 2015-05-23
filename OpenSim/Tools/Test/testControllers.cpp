@@ -77,7 +77,7 @@ void testControlSetControllerOnBlock()
     osimModel.setName("osimModel");
 
     // Get the ground body
-    OpenSim::Body& ground = osimModel.getGroundBody();
+    const Ground& ground = osimModel.getGround();
 
     // Create a 20 kg, 0.1 m^3 block body
     double blockMass = 20.0, blockSideLength = 0.1;
@@ -173,7 +173,7 @@ void testPrescribedControllerOnBlock(bool disabled)
     osimModel.setName("osimModel");
 
     // Get the ground body
-    OpenSim::Body& ground = osimModel.getGroundBody();
+    const Ground& ground = osimModel.getGround();
 
     // Create a 20 kg, 0.1 m^3 block body
     double blockMass = 20.0, blockSideLength = 0.1;
@@ -268,7 +268,7 @@ void testCorrectionControllerOnBlock()
     osimModel.setName("osimModel");
 
     // Get the ground body
-    OpenSim::Body& ground = osimModel.getGroundBody();
+    const Ground& ground = osimModel.getGround();
 
     // Create a 20 kg, 0.1 m^3 block body
     double blockMass = 20.0, blockSideLength = 0.1;

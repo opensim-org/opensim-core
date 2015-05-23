@@ -110,15 +110,6 @@ public:
 protected:
     /** how to display the bushing */
     VisibleObject _displayer;
-private:
-    // underlying SimTK system elements
-    // the mobilized bodies involved
-    const SimTK::MobilizedBody *_b1;
-    const SimTK::MobilizedBody *_b2;
-    // The bushing frames affixed to the mobilized bodies
-    SimTK::Transform _inb1;
-    SimTK::Transform _inb2;
-    
 
 public:
 //==============================================================================
@@ -236,6 +227,18 @@ private:
     virtual void updateGeometry(const SimTK::State& s);
     void setNull();
     void constructProperties();
+
+private:
+    // Temporary solution until implemented with Connectors
+    SimTK::ReferencePtr<const PhysicalFrame> _body1;
+    SimTK::ReferencePtr<const PhysicalFrame> _body2;
+    // underlying SimTK system elements
+    // the mobilized bodies involved
+    SimTK::ReferencePtr<const SimTK::MobilizedBody> _b1;
+    SimTK::ReferencePtr<const SimTK::MobilizedBody> _b2;
+    // The bushing frames affixed to the mobilized bodies
+    SimTK::Transform _inb1;
+    SimTK::Transform _inb2;
 
 //==============================================================================
 };  // END of class FunctionBasedBushingForce

@@ -104,7 +104,8 @@ public:
     /**
      * Calculate the value of this function at a particular point.
      * 
-     * @param x     the Vector of input arguments.  Its size must equal the value returned by getArgumentSize().
+     * @param x the Vector of input arguments.
+     *          its size must equal the value returned by getArgumentSize().
      */
     virtual double calcValue(const SimTK::Vector& x) const;
     /**

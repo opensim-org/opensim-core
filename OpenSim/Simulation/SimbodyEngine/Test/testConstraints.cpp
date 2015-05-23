@@ -44,6 +44,7 @@
 
 #include <OpenSim/Common/FunctionAdapter.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
@@ -357,7 +358,7 @@ void testPointConstraint()
     // Setup OpenSim model
     Model *osimModel = new Model;
     //OpenSim bodies
-    OpenSim::Body& ground = osimModel->getGroundBody();
+    const Ground& ground = osimModel->getGround();;
 
     //OpenSim foot
     OpenSim::Body osim_foot("foot", footMass.getMass(), footMass.getMassCenter(), footMass.getInertia());
@@ -437,7 +438,7 @@ void testConstantDistanceConstraint()
     // Setup OpenSim model
     Model *osimModel = new Model;
     //OpenSim bodies
-    OpenSim::Body& ground = osimModel->getGroundBody();
+    const Ground& ground = osimModel->getGround();;
 
     //OpenSim foot
     OpenSim::Body osim_foot("foot", footMass.getMass(), footMass.getMassCenter(), footMass.getInertia());
@@ -480,7 +481,7 @@ void testCoordinateLocking()
     // Setup OpenSim model
     Model *osimModel = new Model;
     //OpenSim bodies
-    OpenSim::Body& ground = osimModel->getGroundBody();
+    const Ground& ground = osimModel->getGround();;
 
     //OpenSim thigh
     OpenSim::Body osim_thigh("thigh", femurMass, femurCOM, femurInertiaAboutCOM);
@@ -602,7 +603,7 @@ void testWeldConstraint()
     // Setup OpenSim model
     Model *osimModel = new Model;
     //OpenSim bodies
-    OpenSim::Body& ground = osimModel->getGroundBody();
+    const Ground& ground = osimModel->getGround();;
 
     //OpenSim thigh
     OpenSim::Body osim_thigh("thigh", femurMass, femurCOM, femurInertiaAboutCOM);
@@ -695,7 +696,7 @@ void testPointOnLineConstraint()
     // Setup OpenSim model
     Model *osimModel = new Model;
     //OpenSim bodies
-    OpenSim::Body& ground = osimModel->getGroundBody();
+    const Ground& ground = osimModel->getGround();;
 
     //OpenSim foot
     OpenSim::Body osim_foot("foot", footMass.getMass(), footMass.getMassCenter(), footMass.getInertia());
@@ -814,7 +815,7 @@ void testCoordinateCouplerConstraint()
     // Setup OpenSim model
     Model *osimModel = new Model;
     //OpenSim bodies
-    OpenSim::Body& ground = osimModel->getGroundBody();
+    const Ground& ground = osimModel->getGround();;
     
     OpenSim::Body osim_thigh("thigh", femurMass, femurCOM, femurInertiaAboutCOM);
 
@@ -988,7 +989,7 @@ void testRollingOnSurfaceConstraint()
     osimModel->setGravity(gravity_vec);
 
     //OpenSim bodies
-    OpenSim::Body& ground = osimModel->getGroundBody();
+    Ground& ground = osimModel->updGround();;
     ground.addDisplayGeometry("arrow.vtp");
     ground.updDisplayer()->updGeometrySet()[0].setColor(Vec3(1, 0, 0));
 

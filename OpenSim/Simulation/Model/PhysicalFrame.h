@@ -25,10 +25,14 @@
 
 // INCLUDE
 #include <OpenSim/Simulation/Model/Frame.h>
+
+// TODO remove these when corresponding properties are removed
+#include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+#include <OpenSim/Common/VisibleObject.h>
+
 namespace OpenSim {
 
-class Model;
-class Body;
+
 //=============================================================================
 //=============================================================================
 /**
@@ -48,8 +52,30 @@ class Body;
 */
 
 class OSIMSIMULATION_API PhysicalFrame : public Frame {
-    OpenSim_DECLARE_CONCRETE_OBJECT(PhysicalFrame, Frame);
+    OpenSim_DECLARE_ABSTRACT_OBJECT(PhysicalFrame, Frame);
 
+public:
+    //==============================================================================
+    // PROPERTIES
+    //==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with a PhysicalFrame.
+    NOTE: These properties used to be members of Body and were moved up in the
+    hierarchy with the introduction of Frames.
+
+    TODO: Both VisibleObject and the WrapObjectSet should NOT be properties
+    of the PhysicalFrame. This is an itermediate solution as we integrate Frames 
+    use into the OpenSim API. These properties should be their own components with
+    Connectors to the PhysicalFrames they attach to. This must be addressed prior
+    to OpenSim 4.0 release. - aseth */
+    /**@{**/
+    OpenSim_DECLARE_UNNAMED_PROPERTY(VisibleObject,
+        "For visualization in the Simbody visualizer or OpenSim GUI.");
+
+    OpenSim_DECLARE_UNNAMED_PROPERTY(WrapObjectSet,
+        "Set of wrap objects fixed to this body that GeometryPaths can wrap over.");
+
+    /**@}**/
     //==========================================================================
     // PUBLIC METHODS
     //==========================================================================
@@ -108,9 +134,43 @@ public:
     SimTK::MobilizedBody& updMobilizedBody();
 
     // End of underlying MobilizedBody accessors.
+    ///@}
+
+    /** Scale PhysicalFrame related dimensions according to predetermined 
+        ScaleFactors */
+    void scale(const SimTK::Vec3& aScaleFactors);
+
+    /** @name DEPRECATED API 
+    TODO: These methods will go away when Geometry are treated as proper
+    Components. */
+
+    ///@{
+    /** Deprecated methods for inermediate integration of Frames */
+    virtual void addDisplayGeometry(const std::string &aGeometryFileName);
+
+    const VisibleObject* getDisplayer() const { return &get_VisibleObject(); }
+    VisibleObject* updDisplayer() { return &upd_VisibleObject(); }
+
+    /** Get the named wrap object, if it exists.
+    *
+    * @param aName Name of the wrap object.
+    * @return const Pointer to the wrap object.
+    */
+    const WrapObject* getWrapObject(const std::string& aName) const;
+    const WrapObjectSet& getWrapObjectSet() const { return get_WrapObjectSet(); }
+
+    /** Add a wrap object to the Body. Note that the Body takes ownership of
+    * the WrapObject.
+    */
+    void addWrapObject(WrapObject* wrapObject);
     ///@} 
 
+
 protected:
+    /** The transform X_GF for this PhysicalFrame, F, in ground, G. */
+    SimTK::Transform
+        calcGroundTransform(const SimTK::State& state) const override;
+
     /** @name Advanced: PhysicalFrame Devloper Interface
     These methods are intended for PhysicalFrame builders. */
     ///@{
@@ -130,18 +190,35 @@ protected:
 
     /** Extend how PhysicalFrame determines its Transform in the base Frame. */
     SimTK::Transform extendFindTransformInBaseFrame() const override;
-
     ///@}
 
-    /** The transform X_GF for this PhysicalFrame, F, in ground, G. */
-    SimTK::Transform
-        calcGroundTransform(const SimTK::State& state) const override;
+    /** @name Component Extension methods.
+    PhysicalFrame extension of Component interface. */
+    /**@{**/
+    void extendConnectToModel(Model& aModel) override;
+    /**@}**/
 
 private:
+
+    /* Component construction interface */
+    void constructProperties() override;
+
     /* ID for the underlying mobilized body in Simbody system.
     Only Joint can set, since it defines the mobilized body type and
     the connection to the parent body in the multibody tree. */
     mutable SimTK::MobilizedBodyIndex _mbIndex;
+
+    virtual const SimTK::Body& extractInternalRigidBody() const {
+        return _internalRigidBody;
+    }
+
+    SimTK::Body::Massless _internalRigidBody;
+
+    // Model is a friend because it creates the underlying mobilized body(ies)
+    // that implement a Joint and is the only component that can assign
+    // the MobilizedBodyIndex for this Body so it can communicate with its 
+    // counter-part in the underlying system
+    friend class Joint;
 
     //==========================================================================
 };  // END of class PhysicalFrame
