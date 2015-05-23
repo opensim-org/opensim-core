@@ -1142,14 +1142,15 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
 // This is an empty macro that we use to exploit a feature in Doxygen in order
 // to nicely document OpenSim properties. See, Doxygen has support for Qt
 // "properties", which are slightly similar to our properties. Qt "properties"
-// are defined with the Q_PROPERTY() macro. In the code, this macro is empty
-// (as you can tell by...just looking at the macro).  But in the Doxyfile, we
-// tell Doxygen that this macro is defined as Q_PROPERTY(). This tricks Doxygen
-// into documenting *our* properties as if they were Qt properties.
-// The reason that we don't use Q_PROPERTY() directly is that we don't want to
-// prevent our users from potentially using OpenSim in conjunction with Qt.
-// You can see how this empty macro is used in some of the macros below.
-#define OpenSim_FAKE_Q_PROPERTY(T, name)
+// are defined with the Q_PROPERTY() macro. In the code, the macro below is
+// empty (as you can tell by...just looking at the macro).  But in the
+// Doxyfile, we tell Doxygen that this macro is defined as Q_PROPERTY(). This
+// tricks Doxygen into documenting *our* properties as if they were Qt
+// properties.  The reason that we don't use Q_PROPERTY() directly is that we
+// don't want to prevent our users from potentially using OpenSim in
+// conjunction with Qt.  You can see how this empty macro is used in some of
+// the macros below.
+#define OpenSim_DOXYGEN_Q_PROPERTY(T, name)
 
 /** Declare a required, single-value property of the given \a pname and 
 type \a T, with an associated \a comment. The value list for this property will
@@ -1185,7 +1186,7 @@ A data member is also created but is intended for internal use only:
     /** see Property to learn about the property system.                 */ \
     /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##()   */ \
     /* This macro below is explained above.                              */ \
-    OpenSim_FAKE_Q_PROPERTY(T pname)                                        \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @name Property-related methods                                   */ \
     /** @{                                                               */ \
     /** Get the value of the <b> pname </b> property.                    */ \
@@ -1219,7 +1220,7 @@ initialized with an object of type T.
     /** see Property to learn about the property system.                 */ \
     /** @propmethods get_##T##(), upd_##T##(), set_##T##()               */ \
     /* This macro below is explained above.                              */ \
-    OpenSim_FAKE_Q_PROPERTY(T T)                                            \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, T)                                        \
     /** @name Property-related methods                                   */ \
     /** @{                                                               */ \
     /** Get the value of the <b> %##T </b> property.                     */ \
@@ -1257,7 +1258,7 @@ value of type T.
     /** see Property to learn about the property system.                 */ \
     /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##()   */ \
     /* This macro below is explained above.                              */ \
-    OpenSim_FAKE_Q_PROPERTY(T pname)                                        \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @name Property-related methods                                   */ \
     /** @{                                                               */ \
     /** Get the value of the <b> pname </b> property.                    */ \
@@ -1290,7 +1291,7 @@ supports a %size() method and operator[] element selection.
     /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##(),  */ \
     /**     append_##pname##()                                           */ \
     /* This macro below is explained above.                              */ \
-    OpenSim_FAKE_Q_PROPERTY(T pname)                                        \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @name Property-related methods                                   */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
@@ -1319,7 +1320,7 @@ method and operator[] element selection.
     /** see Property to learn about the property system.                 */ \
     /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##()   */ \
     /* This macro below is explained above.                              */ \
-    OpenSim_FAKE_Q_PROPERTY(T pname)                                        \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @name Property-related methods                                   */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
@@ -1344,7 +1345,7 @@ selection.
     /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##(),  */ \
     /**     append_##pname##()                                           */ \
     /* This macro below is explained above.                              */ \
-    OpenSim_FAKE_Q_PROPERTY(T pname)                                        \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @name Property-related methods                                   */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
@@ -1369,7 +1370,7 @@ method and operator[] element selection.
     /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##(),  */ \
     /**     append_##pname##()                                           */ \
     /* This macro below is explained above.                              */ \
-    OpenSim_FAKE_Q_PROPERTY(T pname)                                        \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @name Property-related methods                                   */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment, 0, (maxSize))   \
@@ -1400,7 +1401,7 @@ OpenSim_DECLARE_PROPERTY_ATMOST() rather than this macro.
     /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##(),  */ \
     /**     append_##pname##()                                           */ \
     /* This macro below is explained above.                              */ \
-    OpenSim_FAKE_Q_PROPERTY(T pname)                                        \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @name Property-related methods                                   */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
