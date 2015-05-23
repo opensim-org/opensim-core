@@ -1,5 +1,5 @@
-#ifndef _OpenSim_Doxygen_Main_h_
-#define _OpenSim_Doxygen_Main_h_
+#ifndef OPENSIM_DOXYGEN_MAIN_H_
+#define OPENSIM_DOXYGEN_MAIN_H_
 /* -------------------------------------------------------------------------- *
  *                     OpenSim:  OpenSimDoxygenMain.h                         *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -32,7 +32,7 @@ OpenSim source and it is not installed with OpenSim. **/
 
 \if user
 This documentation is for people who want to use the OpenSim application
-programming interface (API) with the C++, Java, MATLAB or Python languages.
+programming interface (API) with the MATLAB, Python, Java or C++ languages.
 Therefore, internal (public/private) methods are hidden from this
 documentation. If you want to extend the OpenSim library by writing your own
 C++ plugin or you want to contribute directly to the OpenSim library, see the
@@ -288,4 +288,4 @@ The following people have contributed to the OpenSim API:
 Frank C. Anderson, Allison S. Arnold, Scott L. Delp, Matt S. DeMers, Tim Dorn, Brian Garner, Saryn R. Goldberg, Eran Guendelman, Ayman Habib, Samuel R. Hamner, Jennifer L. Hicks, Katherine R. S. Holzbaur, Chand T. John, Cassidy Kelly, May Q. Liu, Peter Loan, Jack Middleton, Matthew Millard, Paul C. Mitiguy, Jeffrey A. Reinbolt, Ajay Seth, Michael A. Sherman, Darryl G. Thelen, Kevin Xu
 **/
 
-#endif // _OpenSim_Doxygen_Main_h_
+#endif // OPENSIM_DOXYGEN_MAIN_H_
