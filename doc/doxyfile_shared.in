@@ -38,7 +38,8 @@ PROJECT_NUMBER         = "@OPENSIM_VERSION@"
 # for a project that appears at the top of each page and should give viewer 
 # a quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = 
+# Specified in doxyfile_developer, doxyfile_user
+#PROJECT_BRIEF          = 
 
 # With the PROJECT_LOGO tag one can specify an logo or icon that is 
 # included in the documentation. The maximum height of the logo should not 
@@ -527,6 +528,7 @@ GENERATE_DEPRECATEDLIST= YES
 # The ENABLED_SECTIONS tag can be used to enable conditional 
 # documentation sections, marked by \if sectionname ... \endif.
 
+# Specified in doxyfile_developer, doxyfile_user
 ENABLED_SECTIONS       = 
 
 # The MAX_INITIALIZER_LINES tag determines the maximum number of lines 

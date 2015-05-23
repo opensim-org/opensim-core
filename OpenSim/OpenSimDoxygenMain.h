@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *                                                *
+ * Copyright (c) 2005-2012 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -30,10 +30,30 @@ OpenSim source and it is not installed with OpenSim. **/
 
 /** @mainpage  OpenSim 3.2 Documentation
 
+\if user
+This documentation is for people who want to use the OpenSim application
+programming interface (API) with the C++, Java, MATLAB or Python languages.
+Therefore, internal (public/private) methods are hidden from this
+documentation. If you want to extend the OpenSim library by writing your own
+C++ plugin or you want to contribute directly to the OpenSim library, see the
+\a developer API documentation.
+\endif
+
+\if developer
+This documentation is for people who want to extend the OpenSim library by, for
+example, writing a C++ plugin or creating new Components.  Therefore, this
+site contains documentation for protected methods that you might need to
+implement. If you simply want to make use of the API in MATLAB or Python, then
+check out the \a user API documentation.
+\endif
+
 \htmlonly
 <!-- ImageReady Slices -->
-The table below represents the conceptual heirarchy of OpenSim within SimTK. Each box represents a class utilized by the OpenSim API, and is built on top of (i.e., requires) the components underneath. 
-For example, you can click on the "Model Component" block to see a list of model components, such as body, constraint, or joint.
+The table below represents the conceptual heirarchy of OpenSim within SimTK.
+Each box represents a class utilized by the OpenSim API, and is built on top of
+(i.e., requires) the components underneath. 
+For example, you can click on the "Model Component" block to see a list of
+model components, such as body, constraint, or joint.
 
 <br/>
 <br/> <b>Click on any of the boxes to navigate to corresponding class description.</b>

@@ -17,6 +17,17 @@
 # Include configuration from the following doxyfile.
 @INCLUDE = "@CMAKE_CURRENT_BINARY_DIR@/doxyfile_shared"
 
+# Using the PROJECT_BRIEF tag one can provide an optional one line description 
+# for a project that appears at the top of each page and should give viewer 
+# a quick idea about the purpose of the project. Keep the description short.
+
+PROJECT_BRIEF          = "Application programming interace for users (MATLAB, Python, Java, C++)"
+
+# The ENABLED_SECTIONS tag can be used to enable conditional 
+# documentation sections, marked by \if sectionname ... \endif.
+
+ENABLED_SECTIONS       = user
+
 # The LAYOUT_FILE tag can be used to specify a layout file which will be parsed 
 # by doxygen. The layout file controls the global structure of the generated 
 # output files in an output format independent way. The create the layout file 
