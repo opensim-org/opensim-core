@@ -4,7 +4,7 @@ PROJECT (OpenSim)
 #    (1) Choose appropriate platform
 #    (2) Locate Simbody and its dependent libraries
 #    (3) Build OpenSim libraries and executables
-#    
+#
 #
 #----------------------------------------------------
 
@@ -41,7 +41,7 @@ INCLUDE(OpenSimMacros)
 # Build binary directory.
 # -----------------------
 SET(BUILD_BINARY_DIR ${CMAKE_BINARY_DIR}
-    CACHE PATH 
+    CACHE PATH
     "The OpenSim build (not the install) puts all the libraries and executables together here (with /Release, etc. appended on some platforms).")
 
 # Make everything go in the same binary directory. (These are CMake-defined
@@ -130,12 +130,12 @@ ENDIF()
 # In addition to the platform name we need to know the Application Binary
 # Interface (ABI) we're building for. Currently that is either x86, meaning
 # 32 bit Intel instruction set, or x64 for 64 bit Intel instruction set.
-# Kevin: Since Ubuntu 12 64bit libraries are in lib not lib64 (This in 
+# Kevin: Since Ubuntu 12 64bit libraries are in lib not lib64 (This in
 # response of Sherm's change on Simbody)
 
 IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
     SET(PLATFORM_ABI x64)
-    SET(ARCH64 ON) 
+    SET(ARCH64 ON)
     #    SET(LIB64 64) Ubuntu 12.05
 ELSE()
     SET(PLATFORM_ABI x86)
@@ -149,7 +149,7 @@ IF(NOT MSVC AND NOT XCODE AND NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Debug or Release build" FORCE)
 ENDIF()
 
-## Choose the maximum level of x86 instruction set that the compiler is 
+## Choose the maximum level of x86 instruction set that the compiler is
 ## allowed to use. Was using sse2 but changed to let the compilers choose. Most
 ## will probably use sse2 or later by default.
 ## On 64 bit MSVC, the default is sse2 and the argument
@@ -165,7 +165,7 @@ endif()
 
 ## This can be set to a different value by the person running CMake.
 SET(BUILD_INST_SET ""
-    CACHE STRING 
+    CACHE STRING
     "CPU instruction level compiler is permitted to use (default: let compiler decide).")
 MARK_AS_ADVANCED( BUILD_INST_SET )
 
@@ -205,37 +205,37 @@ IF(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     # 4.2.1 is not. To be safe for now we'll assume anything over 4.3
     # should have these disabled.
     if (GCC_VERSION VERSION_GREATER 4.3 OR GCC_VERSION VERSION_EQUAL 4.3)
-        SET(GCC_OPT_DISABLE 
+        SET(GCC_OPT_DISABLE
     "-fno-tree-vrp -fno-strict-aliasing -fno-guess-branch-probability")
     endif()
 
     # C++
-    SET(CMAKE_CXX_FLAGS_DEBUG          "-g ${GCC_INST_SET}" 
+    SET(CMAKE_CXX_FLAGS_DEBUG          "-g ${GCC_INST_SET}"
       CACHE STRING "g++ Debug build compile flags" FORCE)
-    SET(CMAKE_CXX_FLAGS_RELEASE        
-      "-DNDEBUG -O2 ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}" 
+    SET(CMAKE_CXX_FLAGS_RELEASE
+      "-DNDEBUG -O2 ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}"
       CACHE STRING "g++ Release build compile flags" FORCE)
-    SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO 
-      "-DNDEBUG -O2 -g ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}" 
+    SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO
+      "-DNDEBUG -O2 -g ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}"
       CACHE STRING "g++ RelWithDebInfo build compile flags" FORCE)
-    SET(CMAKE_CXX_FLAGS_MINSIZEREL     "-DNDEBUG -Os ${GCC_INST_SET}" 
+    SET(CMAKE_CXX_FLAGS_MINSIZEREL     "-DNDEBUG -Os ${GCC_INST_SET}"
       CACHE STRING "g++ MinSizeRel build compile flags" FORCE)
 
     # C
-    SET(CMAKE_C_FLAGS_DEBUG            "-g ${GCC_INST_SET}" 
+    SET(CMAKE_C_FLAGS_DEBUG            "-g ${GCC_INST_SET}"
       CACHE STRING "gcc Debug build compile flags" FORCE)
-    SET(CMAKE_C_FLAGS_RELEASE          
-      "-DNDEBUG -O2 ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}" 
+    SET(CMAKE_C_FLAGS_RELEASE
+      "-DNDEBUG -O2 ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}"
       CACHE STRING "gcc Release build compile flags" FORCE)
-    SET(CMAKE_C_FLAGS_RELWITHDEBINFO   
-      "-DNDEBUG -O2 -g ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}" 
+    SET(CMAKE_C_FLAGS_RELWITHDEBINFO
+      "-DNDEBUG -O2 -g ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}"
       CACHE STRING "gcc RelWithDebInfo build compile flags" FORCE)
-    SET(CMAKE_C_FLAGS_MINSIZEREL       "-DNDEBUG -Os ${GCC_INST_SET}" 
+    SET(CMAKE_C_FLAGS_MINSIZEREL       "-DNDEBUG -Os ${GCC_INST_SET}"
       CACHE STRING "gcc MinSizeRel build compile flags" FORCE)
 
 ENDIF()
 
-## When building in any of the Release modes, tell VC++ cl compiler to use intrinsics 
+## When building in any of the Release modes, tell VC++ cl compiler to use intrinsics
 ## (i.e. sqrt instruction rather than sqrt subroutine) with flag /Oi.
 
 IF(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
@@ -245,38 +245,38 @@ IF(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
     else()
         set(CL_INST_SET)
     endif()
-    
+
     set(BUILD_LIMIT_PARALLEL_COMPILES "" CACHE STRING
         "Set a maximum number of simultaneous compilations.")
     mark_as_advanced(BUILD_LIMIT_PARALLEL_COMPILES)
     set(mxcpu ${BUILD_LIMIT_PARALLEL_COMPILES}) # abbreviation
 
     ## C++
-    SET(CMAKE_CXX_FLAGS_DEBUG        
-    "/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /bigobj /GS- ${CL_INST_SET}" 
+    SET(CMAKE_CXX_FLAGS_DEBUG
+    "/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /bigobj /GS- ${CL_INST_SET}"
         CACHE STRING "VC++ Debug build compile flags" FORCE)
-    SET(CMAKE_CXX_FLAGS_RELEASE        
-    "/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /bigobj /GS- ${CL_INST_SET}" 
+    SET(CMAKE_CXX_FLAGS_RELEASE
+    "/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /bigobj /GS- ${CL_INST_SET}"
         CACHE STRING "VC++ Release build compile flags" FORCE)
-    SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO 
-    "/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /bigobj /GS- ${CL_INST_SET}" 
+    SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO
+    "/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /bigobj /GS- ${CL_INST_SET}"
         CACHE STRING "VC++ RelWithDebInfo build compile flags" FORCE)
-    SET(CMAKE_CXX_FLAGS_MINSIZEREL 
-    "/MP${mxcpu} /D NDEBUG /MD  /O1 /Ob1 /Oi /bigobj /GS- ${CL_INST_SET}" 
+    SET(CMAKE_CXX_FLAGS_MINSIZEREL
+    "/MP${mxcpu} /D NDEBUG /MD  /O1 /Ob1 /Oi /bigobj /GS- ${CL_INST_SET}"
         CACHE STRING "VC++ MinSizeRel build compile flags" FORCE)
 
     ## C
-    SET(CMAKE_C_FLAGS_DEBUG        
-    "/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /GS- ${CL_INST_SET}" 
+    SET(CMAKE_C_FLAGS_DEBUG
+    "/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /GS- ${CL_INST_SET}"
         CACHE STRING "VC++ Debug build compile flags" FORCE)
-    SET(CMAKE_C_FLAGS_RELEASE        
-    "/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /GS- ${CL_INST_SET}" 
+    SET(CMAKE_C_FLAGS_RELEASE
+    "/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /GS- ${CL_INST_SET}"
         CACHE STRING "VC++ Release build compile flags" FORCE)
-    SET(CMAKE_C_FLAGS_RELWITHDEBINFO 
-    "/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /GS- ${CL_INST_SET}" 
+    SET(CMAKE_C_FLAGS_RELWITHDEBINFO
+    "/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /GS- ${CL_INST_SET}"
         CACHE STRING "VC++ RelWithDebInfo build compile flags" FORCE)
-    SET(CMAKE_C_FLAGS_MINSIZEREL 
-    "/MP${mxcpu} /D NDEBUG /MD  /O1 /Ob1 /Oi /GS- ${CL_INST_SET}" 
+    SET(CMAKE_C_FLAGS_MINSIZEREL
+    "/MP${mxcpu} /D NDEBUG /MD  /O1 /Ob1 /Oi /GS- ${CL_INST_SET}"
         CACHE STRING "VC++ MinSizeRel build compile flags" FORCE)
 
 ENDIF()
@@ -287,11 +287,11 @@ MARK_AS_ADVANCED( BUILD_JAVA_WRAPPING )
 SET(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping and have SWIG and Python installed on your machine.)")
 MARK_AS_ADVANCED( BUILD_PYTHON_WRAPPING )
 
-# You can enable this advanced-variable feature to cause Visual Studio 
+# You can enable this advanced-variable feature to cause Visual Studio
 # or Makefiles to print the compile/link commands they are executing. Very
 # useful for debugging CMake stuff but messy and obscures errors and warnings
 # so should be off by default.
-SET(CMAKE_VERBOSE_MAKEFILE OFF CACHE BOOL 
+SET(CMAKE_VERBOSE_MAKEFILE OFF CACHE BOOL
     "Enable this for verbose build output.")
 
 IF(WIN32)
@@ -306,7 +306,7 @@ ENDIF(WIN32)
 ##      or  Linux
 ##
 ## Also translate ARCH64 to platform specific flags
-## 
+##
 ##################################################
 INCLUDE(InstallRequiredSystemLibraries)
 
@@ -314,14 +314,14 @@ IF(WIN32)
 ELSE(WIN32)
     SET(NameSpace "")   ## No renamed SimTK libraries except on Windows
     IF(APPLE)
-       IF(ARCH64) 
+       IF(ARCH64)
            SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.8" )
        ELSE (ARCH64)
            SET( CMAKE_CXX_FLAGS
                "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.8 -m32" )
        ENDIF (ARCH64)
     ELSE (APPLE)
-       IF(ARCH64) 
+       IF(ARCH64)
            SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64" )
        ELSE (ARCH64)
           # I don't believe setting the CXX flags is working in cmake.
@@ -341,7 +341,9 @@ IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
             SET(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
         ELSE()
             SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+            IF(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+                SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+            ENDIF()
         ENDIF()
     ELSE() # not APPLE
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -363,14 +365,14 @@ IF("${SIMBODY_HOME}" STREQUAL "")
     # We assume the only case in which the user
     # wants us to search for Simbody is if they left SIMBODY_HOME empty.
     # If the user specifies an invalid SIMBODY_HOME by accident,
-    # we shouldn't let that fail silently and still search for 
+    # we shouldn't let that fail silently and still search for
     # Simbody elsewhere; they may never realize
     # we are not using their requested installation of Simbody.
     FIND_PACKAGE(Simbody ${SIMBODY_VERSION_TO_USE} QUIET
         NO_MODULE)
 ELSE()
     # Find the package using the user-specified path.
-    # NO_DEFAULT_PATH will cause find_package to only 
+    # NO_DEFAULT_PATH will cause find_package to only
     # look in the provided PATHS.
     FIND_PACKAGE(Simbody ${SIMBODY_VERSION_TO_USE} QUIET
         PATHS "${SIMBODY_HOME}" NO_MODULE NO_DEFAULT_PATH)
@@ -398,7 +400,7 @@ SET(BUILD_USING_OTHER_LAPACK "" CACHE STRING
  "If you have your own Lapack, put its library basename here. Default is to use lapack.")
 
 set(default_lapack_libs "lapack;blas")
-if (WIN32) 
+if (WIN32)
          set(default_lapack_libs "liblapack;libblas")
 endif()
 SET(LAPACK_BEING_USED ${default_lapack_libs} CACHE STRING
@@ -463,8 +465,8 @@ FOREACH(LIBF ${LIB_FILES})
 ENDFOREACH()
 
 # This target depends on the destination copies of the Simbody files (in the
-# binary build directory).  Those are produced by the OUTPUT custom command 
-# below, which depends on the source files from the Simbody installation 
+# binary build directory).  Those are produced by the OUTPUT custom command
+# below, which depends on the source files from the Simbody installation
 # directory.
 ADD_CUSTOM_TARGET(SimbodyFiles ALL DEPENDS ${COPIED_LIB_FILES})
 SET_TARGET_PROPERTIES(SimbodyFiles
@@ -487,9 +489,9 @@ FOREACH(LIBF ${LIB_FILES})
         VERBATIM)
 ENDFOREACH()
 
-INSTALL(DIRECTORY ${Simbody_INCLUDE_DIR} DESTINATION sdk/include/SimTK 
+INSTALL(DIRECTORY ${Simbody_INCLUDE_DIR} DESTINATION sdk/include/SimTK
             PATTERN ".svn" EXCLUDE)
-            
+
 
 IF(NOT LIBRARY_OUTPUT_PATH)
   SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/${VCVERSION} CACHE INTERNAL "Single output directory for building all libraries.")
@@ -524,40 +526,40 @@ SET(SIMTK_COMMON_LIB debug ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} optimiz
 SET(SIMTK_MATH_LIB debug ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKmath)
 SET(SIMTK_SIMBODY_LIB debug ${NameSpace}SimTKsimbody${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKsimbody)
 
-SET(SIMTK_ALL_LIBS  ${SIMTK_COMMON_LIB} 
-                    ${SIMTK_MATH_LIB} 
-                    ${SIMTK_SIMBODY_LIB} 
+SET(SIMTK_ALL_LIBS  ${SIMTK_COMMON_LIB}
+                    ${SIMTK_MATH_LIB}
+                    ${SIMTK_SIMBODY_LIB}
                     ${MATH_LIBS_TO_USE})
 
-# Now figure out which 3rd party files need to be installed in the /bin 
-# directory and which in the lib directory. Executables go in /bin on all 
-# platforms.  Libraries (shared or otherwise) go in /lib, except on Windows 
+# Now figure out which 3rd party files need to be installed in the /bin
+# directory and which in the lib directory. Executables go in /bin on all
+# platforms.  Libraries (shared or otherwise) go in /lib, except on Windows
 # where the ".dll" files go in bin along with executables. Anything that
 # is only needed for programmers goes in sdk/lib.
-IF(WIN32)   
-    FILE(GLOB THIRDPARTY_BIN_FILES 
+IF(WIN32)
+    FILE(GLOB THIRDPARTY_BIN_FILES
                     ${Simbody_BIN_DIR}/*.dll    # non repository layout
                     ${Simbody_BIN_DIR}/*.exe
                     ${Simbody_BIN_DIR}/${VCVERSION}/*.dll
                     ${Simbody_BIN_DIR}/${VCVERSION}/*.exe)
-    FILE(GLOB THIRDPARTY_SDKLIB_FILES 
+    FILE(GLOB THIRDPARTY_SDKLIB_FILES
                     ${Simbody_LIB_DIR}/*.lib    # non repository layout
                     ${Simbody_LIB_DIR}/${VCVERSION}/*.lib)
 ELSE(WIN32)
-    FILE(GLOB THIRDPARTY_BIN_FILES 
+    FILE(GLOB THIRDPARTY_BIN_FILES
         ${Simbody_BIN_DIR}/*) # executables only (e.g. visualizer)
     # If the LIB_DIR is some common place for libraries (e.g., /usr/lib),
     # we only want to copy over the libraries that have SimTK in the name.
-    FILE(GLOB THIRDPARTY_LIB_FILES 
+    FILE(GLOB THIRDPARTY_LIB_FILES
         ${Simbody_LIB_DIR}/*SimTK*.so
         ${Simbody_LIB_DIR}/*SimTK*.so.*
         ${Simbody_LIB_DIR}/*SimTK*.dylib)
-    FILE(GLOB THIRDPARTY_SDKLIB_FILES 
+    FILE(GLOB THIRDPARTY_SDKLIB_FILES
         ${Simbody_LIB_DIR}/*SimTK*.a)
 ENDIF(WIN32)
 
 # Specify "PROGRAMS" rather than "FILES" so the execute bit gets set.
-INSTALL(PROGRAMS ${THIRDPARTY_BIN_FILES}    
+INSTALL(PROGRAMS ${THIRDPARTY_BIN_FILES}
         DESTINATION bin)
 INSTALL(FILES ${THIRDPARTY_LIB_FILES}    DESTINATION lib)
 INSTALL(FILES ${THIRDPARTY_SDKLIB_FILES} DESTINATION sdk/lib)

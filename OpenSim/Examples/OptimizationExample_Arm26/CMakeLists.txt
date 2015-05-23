@@ -5,7 +5,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.6)
 # Settings.
 # ---------
 SET(TARGET optimizationExample CACHE TYPE STRING)
-SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME} 
+SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
         CACHE PATH "Top-level directory of OpenSim install")
 
 # Find and hook up to OpenSim.
@@ -20,7 +20,10 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR
             set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
             set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
         else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+            if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+            endif()
         endif()
     else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -50,4 +53,4 @@ FOREACH (dataFile ${DATA_FILES})
         ARGS -E copy
         ${dataFile}
         ${CMAKE_BINARY_DIR})
-ENDFOREACH (dataFile) 
+ENDFOREACH (dataFile)
