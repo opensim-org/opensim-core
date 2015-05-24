@@ -35,8 +35,8 @@ This documentation is for people who want to use the OpenSim application
 programming interface (API) with the MATLAB, Python, Java or C++ languages.
 Therefore, internal (public/private) methods are hidden from this
 documentation. If you want to extend the OpenSim library by writing your own
-C++ plugin or you want to contribute directly to the OpenSim library, see the
-\a developer API documentation.
+C++ plugin or you want to contribute directly to the OpenSim library, see
+the *developer* API documentation.
 \endif
 
 \if developer
@@ -44,12 +44,12 @@ This documentation is for people who want to extend the OpenSim library by, for
 example, writing a C++ plugin or creating new Components.  Therefore, this
 site contains documentation for protected methods that you might need to
 implement. If you simply want to make use of the API in MATLAB or Python, then
-check out the \a user API documentation.
+check out the *user* API documentation.
 \endif
 
 \htmlonly
 <!-- ImageReady Slices -->
-The table below represents the conceptual heirarchy of OpenSim within SimTK.
+The table below represents the hierarchical structure of OpenSim.
 Each box represents a class utilized by the OpenSim API, and is built on top of
 (i.e., requires) the components underneath. 
 For example, you can click on the "Model Component" block to see a list of
