@@ -54,6 +54,7 @@
 
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Simulation/Model/Ground.h>
 
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
@@ -825,6 +826,7 @@ namespace SimTK {
 
 %include <OpenSim/Simulation/Model/Frame.h>
 %include <OpenSim/Simulation/Model/PhysicalFrame.h>
+%include <OpenSim/Simulation/Model/Ground.h>
 
 %include <OpenSim/Simulation/Model/Force.h>
 %template(SetForces) OpenSim::Set<OpenSim::Force>;

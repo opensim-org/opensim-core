@@ -153,7 +153,7 @@ void WrapTorus::scale(const SimTK::Vec3& aScaleFactors)
  *
  * @param aModel pointer to OpenSim Model 
  */
-void WrapTorus::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
+void WrapTorus::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 {
     // Base class
     Super::connectToModelAndBody(aModel, aBody);

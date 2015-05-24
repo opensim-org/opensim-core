@@ -65,10 +65,10 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Object>;
         #undef override
     #endif
     #define override
-    #ifdef FINAL_11
-        #undef FINAL_11
+    #ifdef final
+        #undef final
     #endif
-    #define FINAL_11
+    #define final
     #define SWIG_DECLARE_EXCEPTION throw(OpenSim::Exception)
 #else
     #define SWIG_DECLARE_EXCEPTION
@@ -352,18 +352,6 @@ public:
     template <class T> Property<T>& 
     updProperty(const PropertyIndex& index);
 
-    /** When an object is initialized using the current values of its 
-    properties, it can set a flag indicating that it is up to date. This 
-    flag is automatically cleared when any property is modified. This allows 
-    objects to avoid expensive reinitialization if it is unnecessary (that is,
-    whenever this %Object hands out writable access to a property). Note
-    that use of this flag is entirely optional; most %Object classes don't
-    have any expensive initialization to worry about. 
-    
-    This flag is cleared automatically but if you want to clear it manually
-    for testing or debugging, see clearObjectIsUpToDateWithProperties(). **/
-    void setObjectIsUpToDateWithProperties()
-    {   _objectIsUpToDate = true; }
     /** Returns \c true if no property's value has changed since the last time
     setObjectIsUpToDateWithProperties() was called. **/
     bool isObjectUpToDateWithProperties() const {return _objectIsUpToDate;}
@@ -541,6 +529,28 @@ public:
     void setInlined(bool aInlined, const std::string &aFileName="");
 
 protected:
+    /** When an object is initialized using the current values of its
+    properties, it can set a flag indicating that it is up to date. This
+    flag is automatically cleared when any property is modified. This allows
+    objects to avoid expensive reinitialization if it is unnecessary (that is,
+    whenever this %Object hands out writable access to a property). Note
+    that use of this flag is entirely optional; most %Object classes don't
+    have any expensive initialization to worry about.
+
+    This flag is cleared automatically but if you want to clear it manually
+    for testing or debugging, see clearObjectIsUpToDateWithProperties(). **/
+    void setObjectIsUpToDateWithProperties() {
+        _objectIsUpToDate = true;
+    }
+
+    /** For testing or debugging purposes, manually clear the "object is up to
+    date with respect to properties" flag. This is normally done automatically
+    when a property is modified. Setting the flag is always done manually,
+    however, see setObjectIsUpToDateWithProperties(). **/
+    void clearObjectIsUpToDateWithProperties() {
+        _objectIsUpToDate = false;
+    }
+
     /** Use this method only if you're deserializing from a file and the object
     is at the top level; that is, primarily in constructors that take a file
     name as input. **/
@@ -602,13 +612,6 @@ public:
     {
         return _serializeAllDefaults;
     }
-
-    /** For testing or debugging purposes, manually clear the "object is up to 
-    date with respect to properties" flag. This is normally done automatically
-    when a property is modified. Setting the flag is always done manually,
-    however, see setObjectIsUpToDateWithProperties(). **/    
-    void clearObjectIsUpToDateWithProperties()
-    {   _objectIsUpToDate = false; }
 
     /** Returns true if the passed-in string is "Object"; each %Object-derived
     class defines a method of this name for its own class name. **/

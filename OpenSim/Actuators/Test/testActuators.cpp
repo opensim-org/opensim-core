@@ -105,7 +105,7 @@ void testMcKibbenActuator()
     Model *model = new Model;
     model->setGravity(Vec3(0));
 
-    OpenSim::Body& ground = model->getGroundBody();
+    Ground& ground = model->updGround();
 
     McKibbenActuator *actuator = new McKibbenActuator("mckibben", num_turns, B);
     
@@ -186,7 +186,7 @@ void testTorqueActuator()
     model->setGravity(Vec3(0));
 
     //OpenSim bodies
-    OpenSim::Body& ground = model->getGroundBody();
+    const Ground& ground = model->getGround();
 
     //Cylindrical bodies
     double r = 0.25, h = 1.0;
@@ -364,7 +364,7 @@ void testClutchedPathSpring()
     model->setGravity(gravity_vec);
 
     //OpenSim bodies
-    OpenSim::Body* ground = &model->getGroundBody();
+    const Ground* ground = &model->getGround();
     
     // body that acts as the pulley that the path wraps over
     OpenSim::Body* pulleyBody =
@@ -561,7 +561,7 @@ void testBodyActuator()
     model->setGravity(Vec3(0));
 
     //OpenSim body 1: Ground
-    OpenSim::Body& ground = model->getGroundBody();
+    const Ground& ground = model->getGround();
 
     // OpenSim body 2: A Block
     // Geometrical/Inertial properties for the block
@@ -741,7 +741,7 @@ void testActuatorsCombination()
     model->setGravity(Vec3(0));
 
     // OpenSim bodies: 1) The ground
-    OpenSim::Body& ground = model->getGroundBody();
+    const Ground& ground = model->getGround();
     //ground.addDisplayGeometry("block.vtp");
 
     // OpenSim bodies: 2) A Block

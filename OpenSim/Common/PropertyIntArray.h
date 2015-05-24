@@ -89,7 +89,7 @@ public:
     //--------------------------------------------------------------------------
 public:
     // TYPE
-    virtual std::string getTypeName() const override;
+    std::string getTypeName() const override;
     // VALUE
     virtual void setValue(const Array<int> &aArray);
     virtual void setValue(int aSize,const int aArray[]);
@@ -99,7 +99,7 @@ public:
     virtual int getArraySize() const { return _array.getSize(); }
     // VALUE as String
     virtual std::string toString() const;
-    virtual void clearValues() override {
+    void clearValues() override {
         _array.setSize(0);
     }
 

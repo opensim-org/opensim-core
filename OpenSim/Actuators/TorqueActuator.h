@@ -38,7 +38,7 @@
 
 namespace OpenSim { 
 
-class Body;
+class PhysicalFrame;
 class Model;
 
 //==============================================================================
@@ -96,7 +96,7 @@ public:
      @param axisInGround flag to inidicate the axis is expressed in ground
                            otherwise, it is expressed in bodyA's frame
     */
-    TorqueActuator(const Body& bodyA, const Body& bodyB,
+    TorqueActuator(const PhysicalFrame& bodyA, const PhysicalFrame& bodyB,
                    const SimTK::Vec3& axis, bool axisInGround=true);
 
     // Uses default (compiler-generated) destructor, copy constructor, copy 
@@ -126,11 +126,11 @@ public:
     {   return get_optimal_force(); }
 
     /* Set the bodies to which this actuator applies torque. */
-    void setBodyA(const Body& body);
-    void setBodyB(const Body& body);
+    void setBodyA(const PhysicalFrame& body);
+    void setBodyB(const PhysicalFrame& body);
     /* Get the bodies that this actuator applies torque to. */
-    const Body& getBodyA() const {return *_bodyA;}
-    const Body& getBodyB() const {return *_bodyB;}
+    const PhysicalFrame& getBodyA() const {return *_bodyA;}
+    const PhysicalFrame& getBodyB() const {return *_bodyB;}
 
 //==============================================================================
 // PRIVATE
@@ -171,10 +171,10 @@ private:
     // and also on copy construction and copy assignment.
 
     // Corresponding Body to which the torque actuator is applied.
-    SimTK::ReferencePtr<const Body> _bodyA;
+    SimTK::ReferencePtr<const PhysicalFrame> _bodyA;
 
     // Corresponding Body to which the equal and opposite torque is applied.
-    SimTK::ReferencePtr<const Body> _bodyB;
+    SimTK::ReferencePtr<const PhysicalFrame> _bodyB;
 
 //==============================================================================
 };  // END of class TorqueActuator

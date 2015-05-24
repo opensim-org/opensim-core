@@ -70,8 +70,8 @@ int main()
         osimModel.setName("tugOfWar");
 
         // GROUND BODY
-        // Get a reference to the model's ground body
-        OpenSim::Body& ground = osimModel.getGroundBody();
+        // Get a reference to the model's ground frame
+        Ground& ground = osimModel.updGround();
 
         // Add display geometry to the ground to visualize in the Visualizer and GUI
         // add a checkered floor

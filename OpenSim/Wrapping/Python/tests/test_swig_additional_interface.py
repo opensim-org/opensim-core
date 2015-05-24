@@ -46,7 +46,7 @@ def test_markAdopted2():
     orient_in_body = osim.Vec3(0, 0, 0)
     print "creating Weld Joint.."
     joint = osim.WeldJoint("weld_joint",
-            a.getGroundBody(),
+            a.getGround(),
             loc_in_parent, orient_in_parent,
             body,
             loc_in_body, orient_in_parent)
@@ -89,61 +89,61 @@ def test_Joint():
     orient_in_body = osim.Vec3(0, 0, 0)
 
     joint = osim.FreeJoint("joint",
-            a.getGroundBody(),
+            a.getGround(),
             loc_in_parent, orient_in_parent,
             body,
             loc_in_body, orient_in_parent)
     del joint
     joint = osim.CustomJoint("joint",
-            a.getGroundBody(),
+            a.getGround(),
             loc_in_parent, orient_in_parent,
             body,
             loc_in_body, orient_in_parent)
     del joint
     joint = osim.EllipsoidJoint("joint",
-            a.getGroundBody(),
+            a.getGround(),
             loc_in_parent, orient_in_parent,
             body,
             loc_in_body, orient_in_parent, osim.Vec3(1, 1, 1))
     del joint
     joint = osim.BallJoint("joint",
-            a.getGroundBody(),
+            a.getGround(),
             loc_in_parent, orient_in_parent,
             body,
             loc_in_body, orient_in_parent)
     del joint
     joint = osim.PinJoint("joint",
-            a.getGroundBody(),
+            a.getGround(),
             loc_in_parent, orient_in_parent,
             body,
             loc_in_body, orient_in_parent)
     del joint
     joint = osim.SliderJoint("joint",
-            a.getGroundBody(),
+            a.getGround(),
             loc_in_parent, orient_in_parent,
             body,
             loc_in_body, orient_in_parent)
     del joint
     joint = osim.WeldJoint("joint",
-            a.getGroundBody(),
+            a.getGround(),
             loc_in_parent, orient_in_parent,
             body,
             loc_in_body, orient_in_parent)
     del joint
     joint = osim.GimbalJoint("joint",
-            a.getGroundBody(),
+            a.getGround(),
             loc_in_parent, orient_in_parent,
             body,
             loc_in_body, orient_in_parent)
     del joint
     joint = osim.UniversalJoint("joint",
-            a.getGroundBody(),
+            a.getGround(),
             loc_in_parent, orient_in_parent,
             body,
             loc_in_body, orient_in_parent)
     del joint
     joint = osim.PlanarJoint("joint",
-            a.getGroundBody(),
+            a.getGround(),
             loc_in_parent, orient_in_parent,
             body,
             loc_in_body, orient_in_parent)
@@ -227,7 +227,7 @@ def test_markAdoptedSets():
     loc_in_body = osim.Vec3(0, 0, 0)
     orient_in_body = osim.Vec3(0, 0, 0)
     joint = osim.WeldJoint("weld_joint",
-            a.getGroundBody(),
+            a.getGround(),
             loc_in_parent, orient_in_parent,
             body,
             loc_in_body, orient_in_parent)

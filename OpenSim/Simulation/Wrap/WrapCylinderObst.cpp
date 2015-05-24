@@ -140,7 +140,7 @@ void WrapCylinderObst::setupProperties()
 *
 * @param aModel pointer to OpenSim model.
 */
-void WrapCylinderObst::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
+void WrapCylinderObst::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 {
     // Base class
     Super::connectToModelAndBody(aModel, aBody);

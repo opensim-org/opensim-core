@@ -79,10 +79,10 @@ class Object;
         #undef override
     #endif
     #define override
-    #ifdef FINAL_11
-        #undef FINAL_11
+    #ifdef final
+        #undef final
     #endif
-    #define FINAL_11 
+    #define final 
 #endif
 
 #ifdef WIN32
@@ -162,18 +162,18 @@ public:
     {assert(!"Property_Deprecated::writeToXMLElement not implemented");}
 
     // Override for array types.
-    virtual int getNumValues() const override {return 1;}
-    virtual void clearValues() override {assert(!"implemented");}
+    int getNumValues() const override {return 1;}
+    void clearValues() override {assert(!"implemented");}
 
-    virtual bool isUnnamedProperty() const override {return false;}
-    virtual bool isObjectProperty() const override {return false;}
-    virtual bool isAcceptableObjectTag
+    bool isUnnamedProperty() const override {return false;}
+    bool isObjectProperty() const override {return false;}
+    bool isAcceptableObjectTag
         (const std::string& objectTypeTag) const override {return false;}
-    virtual const Object& getValueAsObject(int index=-1) const override
+    const Object& getValueAsObject(int index=-1) const override
     {   Property_PROPERTY_TYPE_MISMATCH(); }
-    virtual Object& updValueAsObject(int index=-1) override
+    Object& updValueAsObject(int index=-1) override
     {   Property_PROPERTY_TYPE_MISMATCH(); }
-    virtual void setValueAsObject(const Object& obj, int index=-1) override
+    void setValueAsObject(const Object& obj, int index=-1) override
     {   Property_PROPERTY_TYPE_MISMATCH(); }
 
     //--------------------------------------------------------------------------
@@ -201,11 +201,11 @@ public:
     // TYPE
     void setType(PropertyType aType);
     PropertyType getType() const;
-    virtual std::string getTypeName() const override =0;
+    std::string getTypeName() const override =0;
 
     // VALUE
     // Textual representation
-    virtual std::string toString() const override =0;
+    std::string toString() const override =0;
 
     // These methods have been given default implementations, rather than being made pure virtual
     // so that all classes derived from Property will not have to implement each method.

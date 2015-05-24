@@ -242,7 +242,7 @@ void PrescribedForce::computeForce(const SimTK::State& state,
                    forceFunctions[2].calcValue(timeAsVector));
         if (!forceIsGlobal)
             engine.transform(state, *_body,                 force, 
-                                    engine.getGroundBody(), force);
+                                    getModel().getGround(), force);
         Vec3 point(0); // Default is body origin.
         if (hasPointFunctions) {
             // Apply force to a specified point on the body.
@@ -250,7 +250,7 @@ void PrescribedForce::computeForce(const SimTK::State& state,
                          pointFunctions[1].calcValue(timeAsVector), 
                          pointFunctions[2].calcValue(timeAsVector));
             if (pointIsGlobal)
-                engine.transformPosition(state, engine.getGroundBody(), point,
+                engine.transformPosition(state, getModel().getGround(), point,
                                                 *_body,                 point);
         }
         applyForceToPoint(state, *_body, point, force, bodyForces);
@@ -261,7 +261,7 @@ void PrescribedForce::computeForce(const SimTK::State& state,
                     torqueFunctions[2].calcValue(timeAsVector));
         if (!forceIsGlobal)
             engine.transform(state, *_body,                 torque, 
-                                    engine.getGroundBody(), torque);
+                                    getModel().getGround(), torque);
         applyTorque(state, *_body, torque, bodyForces);
     }
 }
@@ -377,7 +377,7 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
                    forceFunctions[2].calcValue(timeAsVector));
         if (!forceIsGlobal)
             engine.transform(state, *_body, force, 
-                             engine.getGroundBody(), force);
+                             getModel().getGround(), force);
         if (!pointSpecified) {
             //applyForce(*_body, force);
             for (int i=0; i<3; i++) values.append(force[i]);
@@ -386,7 +386,7 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
                        pointFunctions[1].calcValue(timeAsVector), 
                        pointFunctions[2].calcValue(timeAsVector));
             if (pointIsGlobal)
-                engine.transformPosition(state, engine.getGroundBody(), point, 
+                engine.transformPosition(state, getModel().getGround(), point, 
                                          *_body, point);
             //applyForceToPoint(*_body, point, force);
             for (int i=0; i<3; i++) values.append(force[i]);
@@ -399,7 +399,7 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
                     torqueFunctions[2].calcValue(timeAsVector));
         if (!forceIsGlobal)
             engine.transform(state, *_body, torque, 
-                             engine.getGroundBody(), torque);
+                             getModel().getGround(), torque);
         for (int i=0; i<3; i++) values.append(torque[i]);
         //applyTorque(*_body, torque);
     }

@@ -52,9 +52,9 @@ SliderJoint::SliderJoint() :
 /**
  * Convenience Constructor.
  */
-SliderJoint::SliderJoint(const std::string &name, const Body& parent,
+SliderJoint::SliderJoint(const std::string &name, const PhysicalFrame& parent,
     const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-    const Body& child,
+    const PhysicalFrame& child,
     const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
     bool reverse) :
         Super(name, parent, locationInParent, orientationInParent,

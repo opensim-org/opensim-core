@@ -486,8 +486,6 @@ record(const SimTK::State& s)
         ActivationFiberLengthMuscle *mus = dynamic_cast<ActivationFiberLengthMuscle*>(&actuators[k]);
         if(mus){
             mus->setDefaultActivation(_parameters[k]);
-            // Don't send up red flags when the def
-            mus->setObjectIsUpToDateWithProperties();
         }
     }
 

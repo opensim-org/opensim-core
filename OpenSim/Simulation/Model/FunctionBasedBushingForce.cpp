@@ -150,30 +150,15 @@ void FunctionBasedBushingForce::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel); // base class first
 
-    string errorMessage;
+    // Look up the two bodies being connected by bushing by name in the
+    // model. TODO: use Connectors
     const string& body1Name = get_body_1(); // error if unspecified
     const string& body2Name = get_body_2();
 
-
-    // Look up the two bodies being connected by bushing by name in the
-    // model. TODO: keep a pointer to them?
-    if (aModel.updBodySet().contains(body1Name)) {
-        // ?Keep a pointer to body1?
-    }
-    else {
-        errorMessage = "Invalid bushing body1 (" + body1Name 
-                        + ") specified in Force " + getName();
-        throw OpenSim::Exception(errorMessage);
-    }
-
-    if (aModel.updBodySet().contains(body2Name)) {
-        // ?Keep a pointer to body2?
-    }
-    else {
-        errorMessage = "Invalid bushing body2 (" + body2Name 
-                        + ") specified in Force " + getName();
-        throw OpenSim::Exception(errorMessage);
-    }
+    _body1 =
+        static_cast<const PhysicalFrame*>(&getModel().getComponent(body1Name));
+    _body2 =
+        static_cast<const PhysicalFrame*>(&getModel().getComponent(body2Name));
 }
 
 void FunctionBasedBushingForce::extendAddToSystem(SimTK::MultibodySystem& system) const
@@ -187,22 +172,18 @@ void FunctionBasedBushingForce::extendAddToSystem(SimTK::MultibodySystem& system
     const SimTK::Vec3& locationInBody2      = get_location_body_2();
     const SimTK::Vec3& orientationInBody2   = get_orientation_body_2();
 
-    Body& body1 = _model->updBodySet().get(body1Name);
-    Body& body2 = _model->updBodySet().get(body2Name);
-
     // Beyond the const Component get access to underlying SimTK elements
     FunctionBasedBushingForce* mutableThis = const_cast<FunctionBasedBushingForce *>(this);
 
     // Get underlying mobilized bodies
-    mutableThis->_b1 = &body1.getMobilizedBody();
-    mutableThis->_b2 = &body2.getMobilizedBody();
+    mutableThis->_b1 = _body1->getMobilizedBody();
+    mutableThis->_b2 = _body2->getMobilizedBody();
     // Define the transforms for the bushing frames affixed to the specified bodies
     SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(orientationInBody1);
     SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(orientationInBody2);
     // Hang on to the transforms for the bushing frames
     mutableThis->_inb1 = SimTK::Transform(r1, locationInBody1);
     mutableThis->_inb2 = SimTK::Transform(r2, locationInBody2);
-
 }
 
 //=============================================================================

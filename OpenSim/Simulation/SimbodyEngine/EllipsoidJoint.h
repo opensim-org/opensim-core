@@ -71,9 +71,15 @@ public:
     // CONSTRUCTION
     EllipsoidJoint();
     // convenience constructor
-    EllipsoidJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-                OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
-                SimTK::Vec3 ellipsoidRadii, bool reverse=false);
+    EllipsoidJoint(const std::string &name,
+        const PhysicalFrame& parent,
+        const SimTK::Vec3& locationInParent,
+        const SimTK::Vec3& orientationInParent,
+        const PhysicalFrame& child,
+        const SimTK::Vec3& locationInChild,
+        const SimTK::Vec3& orientationInChild,
+        const SimTK::Vec3& ellipsoidRadii,
+        bool reverse = false);
 
     virtual ~EllipsoidJoint();
 

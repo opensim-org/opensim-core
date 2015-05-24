@@ -30,6 +30,9 @@
 //==============================================================================
 namespace OpenSim { 
 
+class Model;
+class PhysicalFrame;
+
 /**
  * A simple point to point spring with a resting length and stiffness.
  * Points are connected to bodies and are defined in the body frame.
@@ -69,8 +72,8 @@ public:
     @param stiffness    spring stiffness
     @param restlength   the resting (zero force) length of the spring
     **/
-    PointToPointSpring( const Body& body1, SimTK::Vec3 point1,
-                        const Body& body2, SimTK::Vec3 point2,
+    PointToPointSpring( const PhysicalFrame& body1, SimTK::Vec3 point1,
+                        const PhysicalFrame& body2, SimTK::Vec3 point2,
                         double stiffness, double restlength );
 
     // default destructor, copy constructor, copy assignment
@@ -78,9 +81,9 @@ public:
     //--------------------------------------------------------------------------
     // Visible Object Support
     //--------------------------------------------------------------------------
-    virtual VisibleObject* getDisplayer() const;
-    virtual void updateDisplayer(const SimTK::State& s);
-    virtual void updateGeometry(const SimTK::State& s);
+    VisibleObject* getDisplayer() const;
+    void updateDisplayer(const SimTK::State& s);
+    void updateGeometry(const SimTK::State& s);
     
     //-----------------------------------------------------------------------------
     // GET and SET Spring parameters
@@ -88,10 +91,10 @@ public:
     /**
     * Spring end point bodies 
     */
-    void setBody1(const Body& body);
-    void setBody2(const Body& Body);
-    const Body& getBody1() const;
-    const Body& getBody2() const;
+    void setBody1(const PhysicalFrame& body);
+    void setBody2(const PhysicalFrame& body);
+    const PhysicalFrame& getBody1() const;
+    const PhysicalFrame& getBody2() const;
 
     /**
     * Spring end points 
@@ -126,11 +129,11 @@ public:
     /** 
      * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
      */
-    virtual OpenSim::Array<std::string> getRecordLabels() const ;
+    OpenSim::Array<std::string> getRecordLabels() const override;
     /**
     *  Provide the value(s) to be reported that correspond to the labels
     */
-    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
+    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
 protected:
     /** how to display the Spring */

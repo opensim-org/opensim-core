@@ -63,9 +63,9 @@ PinJoint::PinJoint() :
 /**
  * Convenience Constructor.
  */
-PinJoint::PinJoint(const std::string &name, const OpenSim::Body &parent,
+PinJoint::PinJoint(const std::string &name, const PhysicalFrame& parent,
     const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-    const OpenSim::Body& child,
+    const PhysicalFrame& child,
     const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
     bool reverse) : 
         Super(name, parent, locationInParent, orientationInParent,

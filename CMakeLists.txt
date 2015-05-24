@@ -113,18 +113,8 @@ SET(BUILD_PLATFORM "${PLATFORM_NAME}:${PLATFORM_ABI}" CACHE STRING
     "This is the platform and ABI we're building for. Not changeable here; use a different CMake generator instead."
     FORCE)
 
-#######################################################################
-# Allow build of binaries on Leopard that work on Tiger
-# Plus, -m32 is required for building on Snow Leopard, until we have a 64-bit Mac Lapack
-IF( APPLE )
-    SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.8 -m32" )
-    SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.8 -m32" )
-   SET( LIB64  )
-   SET(ARCH64 OFF) 
-ENDIF( APPLE )
-
 IF(NOT MSVC AND NOT XCODE AND NOT CMAKE_BUILD_TYPE)
-    SET(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release build" FORCE)
+    SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Debug or Release build" FORCE)
 ENDIF()
 
 ## Choose the maximum level of x86 instruction set that the compiler is 
@@ -319,7 +309,9 @@ IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
             SET(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
         ELSE()
             SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+            IF(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
             SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+        ENDIF()
         ENDIF()
     ELSE() # not APPLE
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -493,6 +485,25 @@ FILE(APPEND  ${VERSION_FILE_PATH} "\n")
 FILE(APPEND  ${VERSION_FILE_PATH} "Platform=${Platform}-${PLATFORM_ABI}")
 FILE(APPEND  ${VERSION_FILE_PATH} "\n")
 INSTALL(FILES ${VERSION_FILE_PATH} DESTINATION sdk)
+
+
+# Preprocessor definitions.
+# -------------------------
+# These are used in OpenSim/version.h
+SET(OPENSIM_SYSTEM_INFO ${CMAKE_SYSTEM})
+SET(OPENSIM_OS_NAME ${CMAKE_SYSTEM_NAME})
+
+IF( WIN32 )
+    SET(OPENSIM_COMPILER_INFO ${MSVC_VERSION})
+ELSE ()
+    SET(OPENSIM_COMPILER_INFO ${CMAKE_CXX_COMPILER} )
+ENDIF()
+
+ADD_DEFINITIONS(-DOSIM_SYS_INFO=${OPENSIM_SYSTEM_INFO}
+    -DOSIM_COMPILER_INFO=${OPENSIM_COMPILER_INFO}
+    -DOSIM_OS_NAME=${OPENSIM_OS_NAME}
+    -DOSIM_VERSION=${OPENSIM_VERSION})
+
 
 
 #-----------------------------------------------------------------------------

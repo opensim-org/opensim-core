@@ -23,7 +23,7 @@
 
 #include "Force.h"
 #include "Model.h"
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/ForceAdapter.h>
 
 
@@ -165,14 +165,14 @@ double Force::computePotentialEnergy(const SimTK::State& state) const
 //-----------------------------------------------------------------------------
 // METHODS TO APPLY FORCES AND TORQUES
 //-----------------------------------------------------------------------------
-void Force::applyForceToPoint(const SimTK::State &s, const OpenSim::Body &aBody, const Vec3& aPoint, 
+void Force::applyForceToPoint(const SimTK::State &s, const PhysicalFrame &aBody, const Vec3& aPoint, 
                                     const Vec3& aForce, Vector_<SpatialVec> &bodyForces) const
 {
     _model->getMatterSubsystem().addInStationForce(s, aBody.getMobilizedBodyIndex(),
                                                    aPoint, aForce, bodyForces);
 }
 
-void Force::applyTorque(const SimTK::State &s, const OpenSim::Body &aBody, 
+void Force::applyTorque(const SimTK::State &s, const PhysicalFrame& aBody, 
                         const Vec3& aTorque, Vector_<SpatialVec> &bodyForces) const
 {
     _model->getMatterSubsystem().addInBodyTorque(s, aBody.getMobilizedBodyIndex(),

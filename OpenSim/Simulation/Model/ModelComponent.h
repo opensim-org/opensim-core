@@ -250,7 +250,7 @@ private:
     /** Satisfy the general Component interface, but this is not part of the
     * ModelComponent interface. ModelComponent::extendConnect() ensures that
     * extendConnectToModel() on ModelComponent subcomponents are invoked. **/
-    void extendConnect(Component& root) FINAL_11;
+    void extendConnect(Component& root) override final;
 
     const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;
     const SimTK::DefaultSystemSubsystem& updDefaultSubsystem();

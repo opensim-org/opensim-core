@@ -1,5 +1,5 @@
 /* --------------------------------------------------------------------------*
-*                         OpenSim:  PhysicalFrame.cpp                        *
+*                             OpenSim:  Ground.cpp                           *
 * -------------------------------------------------------------------------- *
 * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
 * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -8,7 +8,7 @@
 * through the Warrior Web program.                                           *
 *                                                                            *
 * Copyright (c) 2005-2015 Stanford University and the Authors                *
-* Author(s): Matt DeMers, Ayman Habib, Ajay Seth                             *
+* Author(s): Ajay Seth                                                       *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
 * not use this file except in compliance with the License. You may obtain a  *
@@ -24,9 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "PhysicalFrame.h"
-#include "Model.h"
-
+#include "Ground.h"
 
 //=============================================================================
 // STATICS
@@ -38,90 +36,28 @@ using namespace OpenSim;
 // CONSTRUCTOR(S)
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
 * Default constructor.
 */
-PhysicalFrame::PhysicalFrame() : Frame()
+Ground::Ground() : PhysicalFrame()
 {
-    setAuthors("Matt DeMers, Ayman Habib, Ajay Seth");
-    constructProperties();
-}
-
-void PhysicalFrame::constructProperties()
-{
-    constructProperty_VisibleObject(VisibleObject());
-    constructProperty_WrapObjectSet(WrapObjectSet());
-}
-
-const SimTK::MobilizedBody& PhysicalFrame::getMobilizedBody() const
-{
-    return getModel().getMatterSubsystem().getMobilizedBody(_mbIndex);
-}
-
-SimTK::MobilizedBody& PhysicalFrame::updMobilizedBody() 
-{
-    return updModel().updMatterSubsystem().updMobilizedBody(_mbIndex);
+    setName("ground");
+    setAuthors("Ajay Seth");
 }
 
 /*
-* Implementation of Frame interface by PhysicalFrame.
+* Implementation of Frame interface by Ground.
 * 
 */
-SimTK::Transform PhysicalFrame::
+SimTK::Transform Ground::
     calcGroundTransform(const SimTK::State& s) const
 {
-    // return X_GF = X_GB * X_BF;
-    return getMobilizedBody().getBodyTransform(s);
+    return SimTK::Transform();
 }
 
-
-SimTK::Transform PhysicalFrame::extendFindTransformInBaseFrame() const
+void Ground::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    return Transform();
+    Super::extendAddToSystem(system);
+    setMobilizedBodyIndex(SimTK::GroundIndex);
 }
 
-void PhysicalFrame::extendConnectToModel(Model& aModel)
-{
-    Super::extendConnectToModel(aModel);
-
-    for (int i = 0; i < get_WrapObjectSet().getSize(); i++)
-        get_WrapObjectSet().get(i).connectToModelAndBody(aModel, *this);
-}
-
-
-void PhysicalFrame::addDisplayGeometry(const std::string &aGeometryFileName)
-{
-    updDisplayer()->setGeometryFileName(updDisplayer()->getNumGeometryFiles(), aGeometryFileName);
-}
-
-
-const WrapObject* PhysicalFrame::getWrapObject(const string& aName) const
-{
-    int i;
-
-    for (i = 0; i < get_WrapObjectSet().getSize(); i++) {
-        if (aName == get_WrapObjectSet()[i].getName())
-            return &get_WrapObjectSet()[i];
-    }
-    return nullptr;
-}
-
-void PhysicalFrame::addWrapObject(WrapObject* wrap) {
-    upd_WrapObjectSet().adoptAndAppend(wrap);
-}
-
-void PhysicalFrame::scale(const SimTK::Vec3& aScaleFactors)
-{
-    // Base class, to scale wrap objects
-    for (int i = 0; i< get_WrapObjectSet().getSize(); i++)
-        upd_WrapObjectSet().get(i).scale(aScaleFactors);
-
-    SimTK::Vec3 oldScaleFactors;
-    getDisplayer()->getScaleFactors(oldScaleFactors);
-
-    for (int i = 0; i<3; i++) {
-        oldScaleFactors[i] *= aScaleFactors[i];
-    }
-    // Update scale factors for displayer
-    updDisplayer()->setScaleFactors(oldScaleFactors);
-}
