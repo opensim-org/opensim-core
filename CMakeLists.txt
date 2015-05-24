@@ -17,8 +17,8 @@ endif(COMMAND cmake_policy)
 
 # OpenSim version.
 # ----------------
-SET(OPENSIM_MAJOR_VERSION 3)
-SET(OPENSIM_MINOR_VERSION 2)
+SET(OPENSIM_MAJOR_VERSION 4)
+SET(OPENSIM_MINOR_VERSION 0)
 SET(OPENSIM_PATCH_VERSION 0)
 
 # Don't include the patch version if it is 0.
