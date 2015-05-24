@@ -28,7 +28,7 @@ Mainpage, the first page that a user sees when entering the Doxygen-
 generated API documentation. This is not actually included as part of the
 OpenSim source and it is not installed with OpenSim. **/
 
-/** @mainpage  OpenSim 3.2 Documentation
+/** @mainpage Overview
 
 \if user
 This documentation is for people who want to use the OpenSim application
