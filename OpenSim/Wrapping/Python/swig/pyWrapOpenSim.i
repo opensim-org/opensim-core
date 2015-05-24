@@ -1,6 +1,12 @@
 %module(directors="1") opensim
 %module opensim
 #pragma SWIG nowarn=822,451,503,516,325
+// 401 is "Nothing known about base class *some-class*.
+//         Maybe you forgot to instantiate *some-template* using %template."
+// When wrapping new classes it's good to uncomment the line below to make sure
+// you've wrapped your new class properly. However, SWIG generates lots of 401
+// errors that are very difficult to resolve.
+#pragma SWIG nowarn=401
 
 /*
 For consistency with the rest of the API, we use camel-case for variable names.
@@ -241,8 +247,6 @@ own project.
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
 
-#include <OpenSim/Wrapping/Python/OpenSimContext.h>
-
 using namespace OpenSim;
 using namespace SimTK;
 
@@ -259,16 +263,42 @@ using namespace SimTK;
 %rename(OpenSimObject) OpenSim::Object;
 %rename(OpenSimException) OpenSim::Exception;
 
-%newobject *::clone; 
+// Relay exceptions to the target language.
+// This causes substantial code bloat and possibly hurts performance.
+// Without these try-catch block, a SimTK or OpenSim exception causes the
+// program to crash.
+%include exception.i
+%exception {
+    try {
+        $action
+    } catch (const SimTK::Exception::IndexOutOfRange& e) {
+        SWIG_exception(SWIG_IndexError, e.what());
+    } catch (const OpenSim::Exception& e) {
+        std::string str("OpenSim Exception: ");
+        std::string what(e.what());
+        SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
+    } catch (...) {
+        SWIG_exception(SWIG_RuntimeError, "Unknown exception.");
+    }
+}
+
+%newobject *::clone;
 
 %rename(printToXML) OpenSim::Object::print(const std::string&) const;
 %rename(printToXML) OpenSim::XMLDocument::print(const std::string&);
 %rename(printToXML) OpenSim::XMLDocument::print();
 %rename(printToFile) OpenSim::Storage::print;
+%rename(NoType) OpenSim::Geometry::None;
+%rename(NoPreference) OpenSim::DisplayGeometry::None;
 
+// Operators
+// =========
 /* If needed %extend will be used, these operators are not supported.*/
 %ignore *::operator[];
 %ignore *::operator=;
+
+// For reference (doesn't work and should not be necessary):
+// %rename(__add__) operator+;
 
 /* This file is for creation/handling of arrays */
 %include "std_carray.i";
@@ -276,6 +306,69 @@ using namespace SimTK;
 /* This interface file is for better handling of pointers and references */
 %include "typemaps.i"
 %include "std_string.i"
+
+// To access std::vector from Python.
+// %include "std_vector.i"
+
+// Typemaps
+// ========
+// Allow passing python objects into OpenSim functions. For example,
+// pass a list of 3 float's into a function that takes a Vec3 as an argument.
+/*
+TODO disabling these for now as the typemaps remove the ability to pass
+arguments using the C++ types. For example, with these typemaps,
+Model::setGravity() can no longer take a Vec3. We can revisit typemaps if we
+can keep the ability to use the original argument types.
+These typemaps work, though.
+%typemap(in) SimTK::Vec3 {
+    SimTK::Vec3 v;
+    if (!PySequence_Check($input)) {
+        PyErr_SetString(PyExc_ValueError, "Expected a sequence.");
+        return NULL;
+    }
+    if (PySequence_Length($input) != v.size()) {
+        PyErr_SetString(PyExc_ValueError,
+                "Size mismatch. Expected 3 elements.");
+        return NULL;
+    }
+    for (int i = 0; i < v.size(); ++i) {
+        PyObject* o = PySequence_GetItem($input, i);
+        if (PyNumber_Check(o)) {
+            v[i] = PyFloat_AsDouble(o);
+        } else {
+            PyErr_SetString(PyExc_ValueError,
+                "Sequence elements must be numbers.");
+            return NULL;
+        }
+    }
+    $1 = &v;
+};
+%typemap(in) const SimTK::Vec3& {
+    SimTK::Vec3 v;
+    if (!PySequence_Check($input)) {
+        PyErr_SetString(PyExc_ValueError, "Expected a sequence.");
+        return NULL;
+    }
+    if (PySequence_Length($input) != v.size()) {
+        PyErr_SetString(PyExc_ValueError,
+                "Size mismatch. Expected 3 elements.");
+        return NULL;
+    }
+    for (int i = 0; i < v.size(); ++i) {
+        PyObject* o = PySequence_GetItem($input, i);
+        if (PyNumber_Check(o)) {
+            v[i] = PyFloat_AsDouble(o);
+        } else {
+            PyErr_SetString(PyExc_ValueError,
+                "Sequence elements must be numbers.");
+            return NULL;
+        }
+    }
+    $1 = &v;
+};
+// This is how one would apply a generic typemap to specific arguments:
+//%apply const SimTK::Vec3& INPUT { const SimTK::Vec3& aGrav };
+*/
 
 // Memory management
 // =================
@@ -442,27 +535,75 @@ import_array();
 %include <SimTKcommon/Constants.h>
 %include <SWIGSimTK/Vec.h>
 %include <SimTKcommon/SmallMatrix.h>
+
 // Vec3
+// Extend the template Vec class; these methods will apply for all template
+// parameters. This extend block must appear before the %template call below.
+%extend SimTK::Vec {
+    std::string __str__() const {
+        return $self->toString();
+    }
+    int __len__() const {
+        return $self->size();
+    }
+};
 namespace SimTK {
 %template(Vec3) Vec<3>;
 }
+%extend SimTK::Vec<3> {
+     double __getitem__(int i) const {
+        SimTK_INDEXCHECK_ALWAYS(i, $self->size(), "Vec3.__getitem__()");
+        return $self->operator[](i);
+    }
+    void __setitem__(int i, double value) {
+        SimTK_INDEXCHECK_ALWAYS(i, $self->size(), "Vec3.__setitem__()");
+        $self->operator[](i) = value;
+    }
+    SimTK::Vec<3> __add__(const SimTK::Vec<3>& v) const {
+        return *($self) + v;
+    }
+};
+
 // Mat33
 %include <SWIGSimTK/Mat.h>
 namespace SimTK {
 %template(Mat33) Mat<3, 3>;
 }
+
 // Vector and Matrix
 %include <SWIGSimTK/BigMatrix.h>
+// Extend the template Vec class; these methods will apply for all template
+// parameters. This extend block must appear before the %template call below.
+%extend SimTK::Vector_ {
+    std::string __str__() const {
+        return $self->toString();
+    }
+    int __len__() const {
+        return $self->size();
+    }
+};
 namespace SimTK {
 %template(MatrixBaseDouble) SimTK::MatrixBase<double>;
 %template(VectorBaseDouble) SimTK::VectorBase<double>;
 %template(Vector) SimTK::Vector_<double>;
 %template(Matrix) SimTK::Matrix_<double>;
 }
+%extend SimTK::Vector_<double> {
+    double __getitem__(int i) const {
+        SimTK_INDEXCHECK_ALWAYS(i, $self->size(), "Vector.__getitem__()");
+        return $self->operator[](i);
+    }
+    void __setitem__(int i, double value) {
+        SimTK_INDEXCHECK_ALWAYS(i, $self->size(), "Vector.__setitem__()");
+        $self->operator[](i) = value;
+    }
+};
 
 %include <SWIGSimTK/SpatialAlgebra.h>
 namespace SimTK {
 %template(SpatialVec) Vec<2,   Vec3>;
+%template(VectorBaseOfSpatialVec) VectorBase<SpatialVec>;
+%template(VectorBaseOfVec3) VectorBase<Vec3>;
 %template(VectorOfSpatialVec) Vector_<SpatialVec>;
 %template(VectorOfVec3) Vector_<Vec3>;
 }
@@ -479,6 +620,10 @@ namespace SimTK {
 }
 %include <SWIGSimTK/common.h>
 %include <SWIGSimTK/Array.h>
+namespace SimTK {
+    %template(ArrayView) ArrayView_<double, unsigned int>;
+    %template(ArrayViewOfVec3) ArrayView_<Vec3, unsigned int>;
+}
 
 typedef int MobilizedBodyIndex;
 typedef int SubsystemIndex;
@@ -519,6 +664,49 @@ namespace SimTK {
 %include <OpenSim/Common/ObjectGroup.h>
 %include <OpenSim/Common/Geometry.h>
 %include <OpenSim/Common/DisplayGeometry.h>
+
+%extend OpenSim::Set {
+%pythoncode %{
+    class SetIterator(object):
+        """
+        Use this object to iterate over a Set. You create an instance of
+        this nested class by calling Set.__iter__().
+        """
+        def __init__(self, set_obj, index):
+            """Construct an iterator for the Set `set`."""
+            self._set_obj = set_obj
+            self._index = index
+        def __iter__(self):
+            """This iterator is also iterable."""
+            return self
+        def next(self):
+            if self._index < self._set_obj.getSize():
+                current_index = self._index
+                self._index += 1
+                return self._set_obj.get(current_index)
+            else:
+                # This is how Python knows to stop iterating.
+                 raise StopIteration()
+
+    def __iter__(self):
+        """Get an iterator for this Set, starting at index 0."""
+        return self.SetIterator(self, 0)
+
+    def items(self):
+        """
+        A generator function that allows you to iterate over the key-value
+        pairs of this Set. You can use this in a for-loop as such::
+
+            for key, val in my_function_set.items():
+                # `val` is an item in the Set, and `key` is its name.
+                print key, val
+        """
+        index = 0
+        while index < self.getSize():
+            yield self.get(index).getName(), self.get(index)
+            index += 1
+%}
+};
 %include <OpenSim/Common/Set.h>
 %template(SetGeometry) OpenSim::Set<OpenSim::DisplayGeometry>;
 %include <OpenSim/Common/GeometrySet.h>
@@ -557,6 +745,11 @@ namespace SimTK {
 %include <OpenSim/Common/ComponentOutput.h>
 %include <OpenSim/Common/ComponentConnector.h>
 %include <OpenSim/Common/Component.h>
+namespace OpenSim {
+    // Python does not support these operators.
+    %ignore ComponentListIterator::operator++();
+    %ignore ComponentListIterator::operator++(int);
+};
 %include <OpenSim/Common/ComponentList.h>
 
 %template(ComponentList_Muscles) OpenSim::ComponentList<OpenSim::Muscle>;
@@ -646,6 +839,7 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/Station.h>
 %include <OpenSim/Simulation/Model/Marker.h>
 %template(SetMarkers) OpenSim::Set<OpenSim::Marker>;
+%template(ModelComponentSetMarker) OpenSim::ModelComponentSet<OpenSim::Marker>;
 %include <OpenSim/Simulation/Model/MarkerSet.h>
 
 %include <OpenSim/Simulation/Wrap/WrapObject.h>
@@ -672,6 +866,10 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/BodyScaleSet.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+namespace OpenSim {
+    // This method overshadows setFunction(const Function&).
+    %ignore TransformAxis::setFunction(Function*);
+};
 %include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
 %include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 %include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
@@ -703,6 +901,10 @@ namespace SimTK {
 %include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 %include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
 %include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
+namespace OpenSim {
+    // This method overshadows setFunction(const Function&).
+    %ignore CoordinateCouplerConstraint::setFunction(Function*);
+};
 %include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 %include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
 
@@ -715,7 +917,11 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
 %include <OpenSim/Simulation/Model/ActuatorForceProbe.h>
 %include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
+%template(SetBhargava2004MuscleMetabolicsProbeMetabolicMuscleParameter)
+    OpenSim::Set<OpenSim::Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter>;
 %include <OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.h>
+%template(SetUmberger2010MuscleMetabolicsProbeMetabolicMuscleParameter)
+    OpenSim::Set<OpenSim::Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>;
 %include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
 %include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 %include <OpenSim/Simulation/Model/ModelVisualizer.h>
@@ -802,6 +1008,11 @@ namespace SimTK {
 
 %template(ReferenceVec3) OpenSim::Reference_<SimTK::Vec3>;
 %template(ReferenceDouble) OpenSim::Reference_<double>;
+%template(ArrayViewConstCoordinateReference)
+    SimTK::ArrayViewConst_<OpenSim::CoordinateReference>;
+%ignore ArrayViewConstCoordinateReference;
+%template(ArrayViewCoordinateReference)
+    SimTK::ArrayView_<OpenSim::CoordinateReference>;
 %template(ArrayCoordinateReference) SimTK::Array_<OpenSim::CoordinateReference>;
 %template(SimTKArrayDouble) SimTK::Array_<double>;
 %template(SimTKArrayVec3) SimTK::Array_<SimTK::Vec3>;
@@ -817,8 +1028,6 @@ namespace SimTK {
 %include <OpenSim/Tools/RRATool.h>
 %include <OpenSim/Tools/AnalyzeTool.h>
 %include <OpenSim/Tools/InverseKinematicsTool.h>
-
-%include <OpenSim/Wrapping/Python/OpenSimContext.h>
 
 // Memory management
 // =================

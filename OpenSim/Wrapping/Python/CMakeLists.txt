@@ -28,6 +28,7 @@ SET(swig_interface_file_fullname
 ADD_CUSTOM_COMMAND(
     OUTPUT ${swig_output_cxx_file_fullname} ${swig_output_header_file_fullname}
     COMMAND ${SWIG_EXECUTABLE} -v -c++ -python
+        #-debug-tmused # Which typemaps were used?
         -I${OpenSim_SOURCE_DIR}
         -I${Simbody_INCLUDE_DIR}
         -I${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/
@@ -42,8 +43,8 @@ ADD_CUSTOM_TARGET(PyWrap
 
 SET_TARGET_PROPERTIES(PyWrap PROPERTIES PROJECT_LABEL "Python Bindings - Generate")
 
-SET(SOURCE_FILES OpenSimContext.cpp "${swig_output_cxx_file_fullname}")
-SET(INCLUDE_FILES OpenSimContext.h "${swig_output_header_file_fullname}")
+SET(SOURCE_FILES "${swig_output_cxx_file_fullname}")
+SET(INCLUDE_FILES "${swig_output_header_file_fullname}")
 
 # swig 2.0.10 uses the c++ register keyword, which Clang tells us is
 # deprecated. While still using swig 2.0.10, we suppress this warning.
@@ -64,6 +65,20 @@ LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools osimActuators
     ${PYTHON_LIBRARIES})
 
 ADD_LIBRARY(_${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
+
+# Turn off optimization for SWIG wrapper code. Optimization slows down
+# compiling and also requires lots of memory. Also, there's not much to gain
+# from an optimized wrapper file. 
+IF(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
+        ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+    # Note that the last optimization flag is what counts for GCC. So an -O0 later
+    # on the command line overrides a previous -O2.
+    SET_SOURCE_FILES_PROPERTIES("${swig_output_cxx_file_fullname}"
+        PROPRETIES COMPILE_FLAGS -O0)
+ENDIF()
+# TODO disable optimization on Windows.
+
+
 
 # Resulting library must be named _opensim.so on Unix, _opensim.pyd on Windows.
 SET_TARGET_PROPERTIES(_${KIT} PROPERTIES
