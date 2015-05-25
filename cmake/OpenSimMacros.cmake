@@ -3,6 +3,8 @@ include(CMakeParseArguments)
 # Create an OpenSim API library. Here are the arguments:
 # VENDORLIB: If this is a vendor library, specify "VENDORLIB" as the first
 #   argument. Otherwise, omit.
+# LOWERINCLUDEDIRNAME: When installing the headers for this library, make the
+#   name of the library all lower-case (e.g., Lepton -> lepton).
 # KIT: Name of the library (e.g., Common).
 # AUTHORS: A string listing authors of the library.
 # LINKLIBS: List of libraries (targets) to link against.
@@ -21,7 +23,7 @@ include(CMakeParseArguments)
 #   OPENSIM_ADD_LIBRARY(
 #       KIT Common
 #       AUTHORS "Clay_Anderson-Ayman_Habib_and_Peter_Loan"
-#       LINKLIBS ${SIMTK_COMMON_LIB} ${SIMTK_MATH_LIB} ${MATH_LIBS_TO_USE}
+#       LINKLIBS ${Simbody_LIBRARIES}
 #       INCLUDES ${INCLUDES}
 #       SOURCES ${SOURCES}
 #       TESTDIRS "Test"
@@ -31,7 +33,7 @@ FUNCTION(OPENSIM_ADD_LIBRARY)
     # Parse arguments.
     # ----------------
     # http://www.cmake.org/cmake/help/v2.8.9/cmake.html#module:CMakeParseArguments
-    SET(options VENDORLIB)
+    SET(options VENDORLIB LOWERINCLUDEDIRNAME)
     SET(oneValueArgs KIT AUTHORS)
     SET(multiValueArgs LINKLIBS INCLUDES SOURCES TESTDIRS INCLUDEDIRS)
     CMAKE_PARSE_ARGUMENTS(
@@ -106,15 +108,21 @@ FUNCTION(OPENSIM_ADD_LIBRARY)
     ELSE()
         SET(_INCLUDE_PREFIX ${_INCLUDE_PREFIX}/OpenSim)
     ENDIF()
+    IF(OSIMADDLIB_LOWERINCLUDEDIRNAME)
+        STRING(TOLOWER "${OSIMADDLIB_KIT}" OSIMADDLIB_LKIT)
+        SET(_INCLUDE_LIBNAME ${OSIMADDLIB_LKIT})
+    ELSE()
+        SET(_INCLUDE_LIBNAME ${OSIMADDLIB_KIT})
+    ENDIF()
     IF(OSIMADDLIB_INCLUDEDIRS)
         FOREACH(dir ${OSIMADDLIB_INCLUDEDIRS})
             FILE(GLOB HEADERS ${dir}/*.h) # returns full pathnames
             INSTALL(FILES ${HEADERS}
-                DESTINATION ${_INCLUDE_PREFIX}/${OSIMADDLIB_KIT}/${dir})
+                DESTINATION ${_INCLUDE_PREFIX}/${_INCLUDE_LIBNAME}/${dir})
         ENDFOREACH(dir)
     ELSE()
         INSTALL(FILES ${OSIMADDLIB_INCLUDES}
-            DESTINATION ${_INCLUDE_PREFIX}/${OSIMADDLIB_KIT})
+            DESTINATION ${_INCLUDE_PREFIX}/${_INCLUDE_LIBNAME})
     ENDIF()
 
 

@@ -50,52 +50,26 @@ SET(EXECUTABLE_OUTPUT_PATH ${BUILD_BINARY_DIR})
 SET(LIBRARY_OUTPUT_PATH ${BUILD_BINARY_DIR})
 
 
-# Build using namespace.
-# ----------------------
-# Use this to generate a private set of libraries whose names
-# won't conflict with installed versions.
-SET(BUILD_USING_NAMESPACE "" CACHE STRING
-    "All library names will be prefixed with 'xxx_' if this is set to xxx.")
-
-SET(NameSpace)
-IF(BUILD_USING_NAMESPACE)
-    SET(NameSpace "${BUILD_USING_NAMESPACE}_")
-ENDIF(BUILD_USING_NAMESPACE)
-
 # Specify number of cores to run for build
 SET(PROCESSOR_COUNT 8 CACHE STRING "Number of processors in the CPU")
 MARK_AS_ADVANCED(PROCESSOR_COUNT)
 
 
-# Simbody libraries.
-# ------------------
+# Simbody.
+# --------
 # This will be initialized to the environment variable of the same name
 # if it is set, otherwise it will be empty.
 SET(SIMBODY_HOME $ENV{SIMBODY_HOME} CACHE
     PATH "The location of the Simbody installation to use; you can change this. Set as empty to let CMake search for Simbody automatically.")
 
-#
-# These are the names of all the libraries we depend on. These are
-# target names so can be used to specify dependencies of one library
-# on another. (In Debug mode the actual targets will have "_d" appended.)
-#
-
-SET(SimTKSIMBODY_LIBRARY_NAME ${NameSpace}SimTKsimbody CACHE STRING
-"Base name of the library being built; can't be changed here; see BUILD_USING_NAMESPACE variable."
-FORCE)
-SET(SimTKMATH_LIBRARY_NAME ${NameSpace}SimTKmath CACHE STRING
-"Base name of the library being built; can't be changed here; see BUILD_USING_NAMESPACE variable."
-FORCE)
-SET(SimTKCOMMON_LIBRARY_NAME ${NameSpace}SimTKcommon CACHE STRING
-"Base name of the library being built; can't be changed here; see BUILD_USING_NAMESPACE variable."
-FORCE)
-MARK_AS_ADVANCED( SimTKSIMBODY_LIBRARY_NAME )
-MARK_AS_ADVANCED( SimTKMATH_LIBRARY_NAME )
-MARK_AS_ADVANCED( SimTKCOMMON_LIBRARY_NAME )
-
-SET(SimTKCOMMON_SHARED_LIBRARY ${SimTKCOMMON_LIBRARY_NAME})
-SET(SimTKMATH_SHARED_LIBRARY ${SimTKMATH_LIBRARY_NAME})
-SET(SimTKSIMBODY_SHARED_LIBRARY ${SimTKSIMBODY_LIBRARY_NAME})
+OPTION(OPENSIM_COPY_SIMBODY "Copy Simbody headers and libraries into the
+OpenSim installation. This way, you can treat OpenSim and Simbody as one
+package, and you only need to set environment variables (e.g., PATH,
+LD_LIBRARY_PATH, DYLD_LIBRARY_PATH) for OpenSim.  On Windows, this also copies
+Simbody dll's and exe's into the OpenSim build directory, so that you don't
+need to set PATH to run OpenSim tests and examples; this is done via the
+SimbodyFiles project. If OFF, you likely must set those environment variables
+for both OpenSim and Simbody." ON)
 
 
 # Platform.
@@ -103,18 +77,12 @@ SET(SimTKSIMBODY_SHARED_LIBRARY ${SimTKSIMBODY_LIBRARY_NAME})
 # Create a platform name useful for finding things in the Platform
 # directory.
 IF(WIN32)
-    IF(CMAKE_GENERATOR MATCHES  "Visual Studio 8")
-        SET(VCVERSION VC8)
-    ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 8")
-    IF(CMAKE_GENERATOR MATCHES  "Visual Studio 9")
-        SET(VCVERSION VC9)
-    ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 9")
-    IF(CMAKE_GENERATOR MATCHES  "Visual Studio 10")
+    IF(CMAKE_GENERATOR MATCHES "Visual Studio 10")
         #NOTE: VC12 (VS2013) does not require explicit link line to Psapi library
         #Specifying here so it will link for VC10
         link_libraries(Psapi)
         SET(VCVERSION VC10)
-    ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 10")
+    ENDIF()
     SET(Platform "Windows")
     SET(NATIVE_COPY_CMD copy)
 ELSEIF(APPLE)
@@ -342,18 +310,17 @@ IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
         ELSE()
             SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
             IF(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-                SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-            ENDIF()
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+        ENDIF()
         ENDIF()
     ELSE() # not APPLE
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     ENDIF()
 ENDIF()
 
-SET(BUILD_USING_NAMESPACE "OpenSim")
 
-## Find Simbody.
-
+# Find Simbody.
+# -------------
 # As of Simbody 3.4, Simbody has a SimbodyConfig.cmake file, which is a
 # preferred way to find Simbody over the previous FindSimbody.cmake script.
 # NO_MODULE means we will not allow the use of a FindSimbody.cmake script.
@@ -388,181 +355,108 @@ IF(NOT Simbody_FOUND)
         SIMBODY_HOME to the installation directory of Simbody.")
 ENDIF()
 
-include_directories(${Simbody_INCLUDE_DIR})
-link_directories(${Simbody_LIB_DIR})
+# Directories for Simbody headers and libraries for building.
+# -----------------------------------------------------------
+INCLUDE_DIRECTORIES("${Simbody_INCLUDE_DIR}")
+LINK_DIRECTORIES("${Simbody_LIB_DIR}")
 
-# MESSAGE("Simbody_LIB_DIR="${Simbody_LIB_DIR})
-# MESSAGE("Simbody_BIN_DIR="${Simbody_BIN_DIR})
-# MESSAGE("Simbody_INCLUDE_DIR="${Simbody_INCLUDE_DIR})
 
-# Determine which math libraries to use for this platform.
-SET(BUILD_USING_OTHER_LAPACK "" CACHE STRING
- "If you have your own Lapack, put its library basename here. Default is to use lapack.")
+# Copy files over from the Simbody installation.
+# ----------------------------------------------
+IF(${OPENSIM_COPY_SIMBODY})
 
-set(default_lapack_libs "lapack;blas")
-if (WIN32)
-         set(default_lapack_libs "liblapack;libblas")
-endif()
-SET(LAPACK_BEING_USED ${default_lapack_libs} CACHE STRING
-"Basename of the actual Lapack library we're depending on; can't change here; see variable BUILD_USING_OTHER_LAPACK." FORCE)
+    # Install Simbody headers into OpenSim installation.
+    INSTALL(DIRECTORY "${Simbody_INCLUDE_DIR}" DESTINATION sdk/include/SimTK)
 
-IF(BUILD_USING_OTHER_LAPACK)
-    SET(LAPACK_BEING_USED ${BUILD_USING_OTHER_LAPACK} CACHE STRING
-"Basename of the actual Lapack library we're depending on; can't change here; see variable BUILD_USING_OTHER_LAPACK." FORCE)
-ENDIF(BUILD_USING_OTHER_LAPACK)
-
-#IF(${CMAKE_C_COMPILER} MATCHES "cl")
-    ## Assume Microsoft Visual Studio
-    #    SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthreadVC2)
-    #ELSE(${CMAKE_C_COMPILER} MATCHES "cl")
-    #    IF(APPLE)
-    #    SET(REALTIME_LIB)
-    # ELSE()
-    #    SET(REALTIME_LIB rt)
-    # ENDIF()
-    #SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthread ${REALTIME_LIB} dl)
-    #ENDIF(${CMAKE_C_COMPILER} MATCHES "cl")
-
-IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
-    IF(APPLE)
-        SET(REALTIME_LIB)
+    # Figure out which Simbody files need to be installed in the /bin
+    # directory and which in the lib directory. Executables go in /bin on all
+    # platforms.  Libraries (shared or otherwise) go in /lib, except on Windows
+    # where the ".dll" files go in bin along with executables. Anything that
+    # is only needed for programmers goes in sdk/lib.
+    IF(WIN32)
+        FILE(GLOB SIMBODY_BIN_FILES
+            ${Simbody_BIN_DIR}/*.dll
+            ${Simbody_BIN_DIR}/*.exe)
+        FILE(GLOB SIMBODY_SDKLIB_FILES
+            ${Simbody_LIB_DIR}/*.lib)
     ELSE()
-        SET(REALTIME_LIB rt)
+        FILE(GLOB SIMBODY_BIN_FILES
+            ${Simbody_BIN_DIR}/simbody*) # executables only (e.g., visualizer).
+        # If the LIB_DIR is some common place for libraries (e.g., /usr/lib/),
+        # we only want to copy over libraries that have SimTK in their name.
+        FILE(GLOB SIMBODY_LIB_FILES
+            ${Simbody_LIB_DIR}/*SimTK*.so
+            ${Simbody_LIB_DIR}/*SimTK*.so.*
+            ${Simbody_LIB_DIR}/*SimTK*.dylib)
+        FILE(GLOB SIMBODY_SDKLIB_FILES
+            ${Simbody_LIB_DIR}/*SimTK*.a)
     ENDIF()
-    SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthread ${REALTIME_LIB} dl)
-    SET(MATH_LIBS_TO_USE_VN ${LAPACK_BEING_USED} pthread ${REALTIME_LIB} dl)
-ELSE()
-    ## Assume Microsoft Visual Studio
-    if(${PLATFORM_ABI} MATCHES "x64")
-        SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthreadVC2_x64)
-        SET(MATH_LIBS_TO_USE_VN ${LAPACK_BEING_USED} pthreadVC2_x64)
-    else()
-        SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthreadVC2)
-        SET(MATH_LIBS_TO_USE_VN ${LAPACK_BEING_USED} pthreadVC2)
-    endif()
+
+    # Specify "PROGRAMS" rather than "FILES" so the execute bit gets set.
+    INSTALL(PROGRAMS ${SIMBODY_BIN_FILES} DESTINATION bin)
+    INSTALL(FILES ${SIMBODY_LIB_FILES}    DESTINATION lib)
+    INSTALL(FILES ${SIMBODY_SDKLIB_FILES} DESTINATION sdk/lib)
+
+    # On Windows, we must copy Simbody libraries to the OpenSim build directory
+    # so that the tests and examples can run without modifying the PATH
+    # (that is, put Simbody's dll's in the same directory as OpenSim's
+    # executables and libraries).
+    IF(WIN32)
+
+        # This is where we're going to put these binaries.
+        SET(COPIED_LIB_FILES)
+        FOREACH(LIBF ${SIMBODY_BIN_FILES})
+            GET_FILENAME_COMPONENT(LIBF_ROOT ${LIBF} NAME)
+            SET(COPIED_LIB_FILES ${COPIED_LIB_FILES}
+                "${BUILD_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
+        ENDFOREACH()
+
+        # This target depends on the destination copies of the Simbody files
+        # (in the binary build directory).  Those are produced by the OUTPUT
+        # custom command below, which depends on the source files from the
+        # Simbody installation directory.
+        ADD_CUSTOM_TARGET(SimbodyFiles ALL DEPENDS ${COPIED_LIB_FILES})
+        SET_TARGET_PROPERTIES(SimbodyFiles
+            PROPERTIES PROJECT_LABEL "Library - Simbody Files")
+
+        FOREACH(LIBF ${SIMBODY_BIN_FILES})
+            # MESSAGE("LIB_FILE" ${LIBF})
+            GET_FILENAME_COMPONENT(LIBF_ROOT ${LIBF} NAME)
+            GET_FILENAME_COMPONENT(LIBF_SUFFIX ${LIBF} EXT)
+            SET(COPIED_LIBF "${BUILD_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
+            FILE(TO_NATIVE_PATH "${LIBF}" LIBF_SRC)
+            FILE(TO_NATIVE_PATH "${COPIED_LIBF}" LIBF_DEST)
+
+            # Copy Simbody files if they are out of date. This is invoked
+            # because the SimbodyFiles target depends on these output files.
+            ADD_CUSTOM_COMMAND(OUTPUT "${COPIED_LIBF}"
+                COMMAND ${NATIVE_COPY_CMD} "${LIBF_SRC}" "${LIBF_DEST}"
+                DEPENDS "${LIBF}"
+                COMMENT "Copy ${LIBF_SRC} -> ${LIBF_DEST}"
+                VERBATIM)
+        ENDFOREACH()
+    ENDIF()
 ENDIF()
-# Copy libraries from ${SIMTK_BIN_DIR} to ${BUILD_BINARY_DIR}
-
-IF(WIN32)
-    FILE(GLOB LIB_FILES
-        "${Simbody_BIN_DIR}/*.dll"
-        "${Simbody_BIN_DIR}/*") # .dll, .exe, no suffix executable
-ELSE()
-    FILE(GLOB LIB_FILES
-        "${Simbody_LIB_DIR}/*SimTK*.a"
-        "${Simbody_LIB_DIR}/*SimTK*.so"
-        "${Simbody_LIB_DIR}/*SimTK*.so.*"
-        "${Simbody_LIB_DIR}/*SimTK*.dylib"
-        )
-ENDIF()
-
-# This is where we're going to put these binaries.
-SET(COPIED_LIB_FILES)
-FOREACH(LIBF ${LIB_FILES})
-    GET_FILENAME_COMPONENT(LIBF_ROOT ${LIBF} NAME)
-    SET(COPIED_LIB_FILES ${COPIED_LIB_FILES}
-        "${BUILD_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
-ENDFOREACH()
-
-# This target depends on the destination copies of the Simbody files (in the
-# binary build directory).  Those are produced by the OUTPUT custom command
-# below, which depends on the source files from the Simbody installation
-# directory.
-ADD_CUSTOM_TARGET(SimbodyFiles ALL DEPENDS ${COPIED_LIB_FILES})
-SET_TARGET_PROPERTIES(SimbodyFiles
-    PROPERTIES PROJECT_LABEL "Library - Simbody Files")
-
-FOREACH(LIBF ${LIB_FILES})
-    # MESSAGE("LIB_FILE" ${LIBF})
-    GET_FILENAME_COMPONENT(LIBF_ROOT ${LIBF} NAME)
-    GET_FILENAME_COMPONENT(LIBF_SUFFIX ${LIBF} EXT)
-    SET(COPIED_LIBF "${BUILD_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
-    FILE(TO_NATIVE_PATH "${LIBF}" LIBF_SRC)
-    FILE(TO_NATIVE_PATH "${COPIED_LIBF}" LIBF_DEST)
-
-    # Copy Simbody files if they are out of date. This is invoked because
-    # the SimbodyFiles target depends on these output files.
-    ADD_CUSTOM_COMMAND(OUTPUT "${COPIED_LIBF}"
-        COMMAND ${NATIVE_COPY_CMD} "${LIBF_SRC}" "${LIBF_DEST}"
-        DEPENDS "${LIBF}"
-        COMMENT "Copy ${LIBF_SRC} -> ${LIBF_DEST}"
-        VERBATIM)
-ENDFOREACH()
-
-INSTALL(DIRECTORY ${Simbody_INCLUDE_DIR} DESTINATION sdk/include/SimTK
-            PATTERN ".svn" EXCLUDE)
 
 
+# Where do build products go in the build tree?
+# ---------------------------------------------
 IF(NOT LIBRARY_OUTPUT_PATH)
-  SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/${VCVERSION} CACHE INTERNAL "Single output directory for building all libraries.")
-ENDIF(NOT LIBRARY_OUTPUT_PATH)
+    SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR} CACHE INTERNAL
+        "Single output directory for building all libraries.")
+ENDIF()
 IF(NOT EXECUTABLE_OUTPUT_PATH)
-  SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/${VCVERSION} CACHE INTERNAL "Single output directory for building all executables.")
-ENDIF(NOT EXECUTABLE_OUTPUT_PATH)
-SET(OpenSim_LIBRARY_DIR ${LIBRARY_OUTPUT_PATH})
-SET(OpenSim_EXECUTABLE_DIR ${EXECUTABLE_OUTPUT_PATH})
+  SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR} CACHE INTERNAL
+      "Single output directory for building all executables.")
+ENDIF()
+
 
 # Other than Windows we can debug without debuggable SimTK libraries
 IF(WIN32)
-SET(CMAKE_DEBUG_POSTFIX "_d" CACHE INTERNAL "" FORCE)
+    SET(CMAKE_DEBUG_POSTFIX "_d" CACHE INTERNAL "" FORCE)
 ELSE(WIN32)
-SET(CMAKE_DEBUG_POSTFIX "_d" CACHE STRING "Suffix for debug libraries")
+    SET(CMAKE_DEBUG_POSTFIX "_d" CACHE STRING "Suffix for debug libraries")
 ENDIF(WIN32)
-
-#
-INCLUDE_DIRECTORIES(${Simbody_INCLUDE_DIR})
-
-IF(WIN32)
-        LINK_DIRECTORIES(${Simbody_LIB_DIR} ${OpenSim_LIBRARY_DIR})
-ELSE(WIN32)
-    IF(APPLE)
-        LINK_DIRECTORIES(${Simbody_LIB_DIR} ${OpenSim_LIBRARY_DIR})
-    ELSE(APPLE) # Linux?
-        LINK_DIRECTORIES(${Simbody_LIB_DIR}/ ${OpenSim_LIBRARY_DIR})
-    ENDIF(APPLE)
-ENDIF(WIN32)
-
-SET(SIMTK_COMMON_LIB debug ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKcommon)
-SET(SIMTK_MATH_LIB debug ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKmath)
-SET(SIMTK_SIMBODY_LIB debug ${NameSpace}SimTKsimbody${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKsimbody)
-
-SET(SIMTK_ALL_LIBS  ${SIMTK_COMMON_LIB}
-                    ${SIMTK_MATH_LIB}
-                    ${SIMTK_SIMBODY_LIB}
-                    ${MATH_LIBS_TO_USE})
-
-# Now figure out which 3rd party files need to be installed in the /bin
-# directory and which in the lib directory. Executables go in /bin on all
-# platforms.  Libraries (shared or otherwise) go in /lib, except on Windows
-# where the ".dll" files go in bin along with executables. Anything that
-# is only needed for programmers goes in sdk/lib.
-IF(WIN32)
-    FILE(GLOB THIRDPARTY_BIN_FILES
-                    ${Simbody_BIN_DIR}/*.dll    # non repository layout
-                    ${Simbody_BIN_DIR}/*.exe
-                    ${Simbody_BIN_DIR}/${VCVERSION}/*.dll
-                    ${Simbody_BIN_DIR}/${VCVERSION}/*.exe)
-    FILE(GLOB THIRDPARTY_SDKLIB_FILES
-                    ${Simbody_LIB_DIR}/*.lib    # non repository layout
-                    ${Simbody_LIB_DIR}/${VCVERSION}/*.lib)
-ELSE(WIN32)
-    FILE(GLOB THIRDPARTY_BIN_FILES
-        ${Simbody_BIN_DIR}/*) # executables only (e.g. visualizer)
-    # If the LIB_DIR is some common place for libraries (e.g., /usr/lib),
-    # we only want to copy over the libraries that have SimTK in the name.
-    FILE(GLOB THIRDPARTY_LIB_FILES
-        ${Simbody_LIB_DIR}/*SimTK*.so
-        ${Simbody_LIB_DIR}/*SimTK*.so.*
-        ${Simbody_LIB_DIR}/*SimTK*.dylib)
-    FILE(GLOB THIRDPARTY_SDKLIB_FILES
-        ${Simbody_LIB_DIR}/*SimTK*.a)
-ENDIF(WIN32)
-
-# Specify "PROGRAMS" rather than "FILES" so the execute bit gets set.
-INSTALL(PROGRAMS ${THIRDPARTY_BIN_FILES}
-        DESTINATION bin)
-INSTALL(FILES ${THIRDPARTY_LIB_FILES}    DESTINATION lib)
-INSTALL(FILES ${THIRDPARTY_SDKLIB_FILES} DESTINATION sdk/lib)
 
 
 ## The following are required to uses Dart and the Cdash dashboard per Jesse

@@ -435,6 +435,9 @@ And you could get all the optional dependencies via:
     * `BUILD_PYTHON_WRAPPING` if you want to access OpenSim through Python; see
       dependencies above.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
+    * `OPENSIM_COPY_SIMBODY` to decide if Simbody headers and libraries should
+      be installed inside OpenSim; you want this off if you're installing
+      Simbody and OpenSim into `/usr/` or `/usr/local/`.
 9. Click the **Configure** button again. Then, click **Generate** to create
    Makefiles in the build directory.
 
