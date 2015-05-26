@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                                       *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Author(s): Ajay Seth, Ayman Habib                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -62,10 +62,11 @@ public:
         addComponent(comp);
     }
 
+
     // Top level connection method for all encompassing Component
-    void connect() { 
+    void buildComponentTreeAndConnect() { 
         initComponentTreeTraversal(*this);
-        Super::connect(*this);
+        connect(*this);
     }
     void buildUpSystem(MultibodySystem& system) { addToSystem(system); }
 
@@ -410,7 +411,7 @@ int main() {
         // add a subcomponent
         // connect internals
         try{
-            theWorld.connect();
+            theWorld.buildComponentTreeAndConnect();
         }
         catch (const std::exception& e) {
             // Should fail to connect because child and parent Foo's are the same
@@ -451,7 +452,7 @@ int main() {
         string connectorName = bar.updConnector<Foo>("childFoo").getConcreteClassName();
 
         // Bar should connect now
-        theWorld.connect();
+        theWorld.buildComponentTreeAndConnect();
 
         std::cout << "Iterate over only Foo's." << std::endl;
         for (auto& component : theWorld.getComponentList<Foo>()) {
@@ -516,7 +517,7 @@ int main() {
             "Model serialization->deserialization FAILED");
 
         world2->setName("InternalWorld");
-        world2->connect();
+        world2->buildComponentTreeAndConnect();
 
         world2->updComponent("Bar").getConnector<Foo>("childFoo");
         ASSERT("Foo2" ==
@@ -537,7 +538,7 @@ int main() {
 
         // Add second world as the internal model of the first
         theWorld.add(world2);
-        theWorld.connect();
+        theWorld.buildComponentTreeAndConnect();
 
         Bar& bar2 = *new Bar();
         bar2.setName("bar2");
