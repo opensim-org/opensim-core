@@ -87,8 +87,12 @@ INSTALL(TARGETS _${KIT}
         LIBRARY DESTINATION sdk/python/opensim
         ARCHIVE DESTINATION sdk/python/opensim)
 
+# Configure setup.py
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in
+               ${CMAKE_CURRENT_BINARY_DIR}/setup.py @ONLY)
+
 #install .py files
-INSTALL(FILES setup.py DESTINATION sdk/python)
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/setup.py DESTINATION sdk/python)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/opensim.py
     DESTINATION sdk/python/opensim)
 INSTALL(FILES __init__.py DESTINATION sdk/python/opensim)

@@ -36,7 +36,7 @@ int main() {
     // Joints that connect the bodies together.
     PinJoint* joint1 = new PinJoint("shoulder",
             // Parent body, location in parent, orientation in parent.
-            model.getGroundBody(), Vec3(0), Vec3(0),
+            model.getGround(), Vec3(0), Vec3(0),
             // Child body, location in child, orientation in child.
             *link1, Vec3(0, 1, 0), Vec3(0));
     PinJoint* joint2 = new PinJoint("elbow",
@@ -410,12 +410,12 @@ And you could get all the optional dependencies via:
    variable to where you installed Simbody (e.g., `~/simbody`). If you
    installed Simbody using `brew`, then CMake will find Simbody automatically.
 7. Choose your build type by setting `CMAKE_BUILD_TYPE` to one of the following:
-    * *Debug*: debugger symbols; no optimizations (more than 10x slower).
+    * **Debug**: debugger symbols; no optimizations (more than 10x slower).
     Library names end with `_d`.
-    * *Release*: no debugger symbols; optimized.
-    * *RelWithDebInfo*: debugger symbols; optimized. Bigger but not slower
+    * **Release**: no debugger symbols; optimized.
+    * **RelWithDebInfo**: debugger symbols; optimized. Bigger but not slower
     than Release; choose this if unsure.
-    * *MinSizeRel*: minimum size; optimized.
+    * **MinSizeRel**: minimum size; optimized.
 
     You at least want release libraries (the last 3 count as release), but you
     can have debug libraries coexist with them. To do this, go through the
@@ -435,6 +435,9 @@ And you could get all the optional dependencies via:
     * `BUILD_PYTHON_WRAPPING` if you want to access OpenSim through Python; see
       dependencies above.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
+    * `OPENSIM_COPY_SIMBODY` to decide if Simbody headers and libraries should
+      be installed inside OpenSim; you want this off if you're installing
+      Simbody and OpenSim into `/usr/` or `/usr/local/`.
 9. Click the **Configure** button again. Then, click **Generate** to create
    Makefiles in the build directory.
 

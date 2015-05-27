@@ -16,7 +16,7 @@ TARGET_LINK_LIBRARIES(${EXAMPLE_TARGET}
     debug osimCommon${CMAKE_DEBUG_POSTFIX}      optimized osimCommon
     debug osimAnalyses${CMAKE_DEBUG_POSTFIX}    optimized osimAnalyses
     debug osimTools${CMAKE_DEBUG_POSTFIX}       optimized osimTools
-    ${SIMTK_ALL_LIBS}
+    ${Simbody_LIBRARIES}
 )
 SET_TARGET_PROPERTIES(${EXAMPLE_TARGET}
     PROPERTIES
