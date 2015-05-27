@@ -1,5 +1,3 @@
-#ifndef OPENSIM_DATA_TABLE_H_
-#define OPENSIM_DATA_TABLE_H_
 /* -------------------------------------------------------------------------- *
  *                            OpenSim:  DataTable.h                           *
  * -------------------------------------------------------------------------- *
@@ -23,76 +21,95 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/** @file
-* This file defines the  DataTable class, which is used by OpenSim to provide
-* an in memory container for data access and manipulation.
+/** \file
+* This file defines the  DataTable class, which is used by OpenSim to provide  *
+* an in-memory container for data access and manipulation.                     *
 */
-#include "SimTKmath.h"
-#include "XMLDocument.h"
-#include "FileAdapter.h"
-#include "Array.h"
-#include <memory>
-#include <typeindex>
 
+#ifndef OPENSIM_DATA_TABLE_H_
+#define OPENSIM_DATA_TABLE_H_
+
+#include <memory>
 
 namespace OpenSim {
 
-//=============================================================================
-/**
- * AbstractDataTable defines a simple interface for in memory access to
- * numerical data as a table. A DataTable is independent of the data source 
- * used to populate it. A concrete DataTable provides fast access to data
- * elements by row and/or column indices as well as columns by label.
- *
- * @author Ajay Seth
- */
-class AbstractDataTable {
-public:
-    virtual ~AbstractDataTable() = default;
+/**----------------------------------------------------------------------------*
+* DataTableBase defines an interface for an in-memory numerical table data     *
+* structure -- DataTable. A DataTable is independent of the data source used   *
+* to populate it. A concrete DataTable provides a random access to data        *
+* elements by row and/or column indices as well as column by column-name.      *
+* This class allows storing different DataTables in containers.                *
+*                                                                              *
+* @author Ajay Seth                                                            *
+*-----------------------------------------------------------------------------*/
+class DataTableBase {
+ public:
+  using size_t       = std::size_t;
+  using string       = std::string;
+  using MetaDataType = std::unordered_map<string, double>;
 
-    virtual AbstractDataTable* clone() const = 0;
+  virtual ~DataTableBase() = default;
 
-    /** Read the meta data associated with this DataTable as an XMLDocument */
-    virtual const XMLDocument& getMetaData() const = 0;
-    /** Update the meta data associated with this DataTable as an XMLDocument */
-    virtual XMLDocument& updMetaData() = 0;
+  virtual DataTableBase clone() const = 0;
 
-    /** Get the number of rows in the DataTable */
-    virtual size_t  getNumRows() const = 0;
-    /** Get the number of columns in the DataTable */
-    virtual size_t  getNumCols() const = 0;
+  /// Get meta-data.
+  virtual MetaDataType getMetaData() const = 0;
+  /// Get meta-data value for a given key.
+  virtual double getMetaData(const string& key) const = 0;
+  /// Set meta-data. Existing meta-data is replaced with a *copy* of
+  /// new_metadata.
+  virtual void setMetaData(const MetaDataType& new_metadata) = 0;
+  /// Set meta-data. Existing meta-data is replaced with a *move* of
+  /// new_metadata.c 
+  virtual void setMetaData(MetaDataType&& new_meta_data) = 0;
+  /// Set individual key-value pairs in meta-data.
+  virtual void setMetaData(const string& key, const double value) = 0;
 
-    /** Determine if the DataTable has a column associated with a 
-        column label (string) */
-    virtual bool hasColumn(const std::string& label) const = 0;
-    /** For a known column label return its column index. */
-    virtual size_t getColumnIndex(const std::string& label) const = 0;
+  /// Number of rows.
+  virtual size_t getNumRows() const = 0;
+  /// Number of columns.
+  virtual size_t getNumCols() const = 0;
 
-    /** Read-only column labels associated with the columns of the DataTable */
-    virtual const Array<std::string>& getColumnLabels() const = 0;
-    /** Update column labels associated with the columns of the DataTable */
-    virtual Array<std::string>& updColumnLabels() = 0;
+  /// Does column(by the given name) exist ?
+  virtual bool hasCol(const string& name) const = 0;
+  /// Does column(by the given index) exist ?
+  virtual bool hasCol(size_t ind) const = 0;
 
-    /* TODO: Read in the units associated with the columns of the DataTable */
-    /* virtual const Array<Units>& getColumnUnits() const = 0;
-    */
+  /// Get column index corresponding to given name. If column name does
+  /// not exist, throws ColumnDoesNotExist exception.
+  virtual size_t getColInd(const string& name) const = 0;
+  /// Get column name corresponding to given index. If column index does
+  /// not exist, throws ColumnDoesNotExist exception.
+  virtual string getColName(const size_t ind) const = 0;
+  /// Set column name corresponding to given index. If column index does
+  /// not exist, throws ColumnDoesNotExist exception.
+  virtual void setColName(const size_t ind, const string& new_colname) = 0;
+  /// Change name of a column from old to new. If old column name does not
+  /// exist, throws ColumnDoesNotExist exception.
+  virtual void setColName(const string& old, const string& new) = 0;
 
-    /** Get the underlying type of data held in the DataTable. Can be any 
-        SimTK numerical type: Real, Vec<M>, Mat<M, N>, SpatialVec, ... */
-    virtual const std::type_index& getDataTypeInfo() const = 0;
+  /// Get column names.
+  virtual std::vector<string> getColNames() const = 0;
+  /// Set column names with a *copy* of colnames.
+  virtual void setColNames(const std::vector<string>& colnames) = 0;
+  /// Set column names with a *move* of colnames.
+  virtual void setColNames(std::vector<string>&& colnames) = 0;
 
-    /** Dump the DataTable to an output stream */
-    virtual void dumpToStream(std::ostream &out) const = 0;
+  /// Write to an output stream.
+  virtual void writeToStream(std::ostream &out) const = 0;
 
-//=============================================================================
-};  // END of class AbstractDataTable
-//=============================================================================
+};  // DataTableBase
 
+
+class ColumnDoesNotExist : public std::runtime_error {
+ public:
+ ColumnDoesNotExist(const std::string& expl) : runtime_error(expl) {}
+};
 
 /** Concrete Implementation of the <tt>DataTable<DataType></tt>
 @tparam DataType  Any numerical type: (SimTK::) Real, Vec<M>, Mat<M,N>, ...*/
 template<typename DataType = SimTK::Real>
-class DataTable_ : public AbstractDataTable {
+class DataTable_ : public DataTableBase {
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -109,8 +126,8 @@ public:
         _data(int(nrows), int(ncols), val),
         _type(typeid(DataType)) {}
 
-    /** Convenience construction of a DataTable from a filename with its source
-        type identified by the file extension. E.g. `results.csv`, `states.sto`
+    /** Convenience construction of a DataTable from a file name with type
+        identified by the file extension. E.g. `results.csv`, `stats.sto`, ...
     @param[in] filename         the name of the data file to be accessed
     */
     DataTable_(const std::string& filename) :
@@ -134,9 +151,10 @@ public:
         return *this;
     }
 
-    virtual AbstractDataTable* clone() const override {
+    virtual DataTableBase* clone() const override {
         return new DataTable_(*this);
     }
+
 
     const XMLDocument& getMetaData() const override final { return _metaData; }
     XMLDocument& updMetaData() override final { return _metaData; }
@@ -180,7 +198,7 @@ public:
         return _data(int(col));
     }
 
-    /** Read-only access to an element of DataType in the table by row and
+    /** Read-only access to an DataType element in the table by row and
         column indices.*/
     const DataType& getElement(size_t row, size_t col) const {
         return _data(int(row), int(col));
@@ -205,7 +223,7 @@ public:
     }
 
     /** Append another data table's rows to this table. If the number of
-        columns are incompatible it will throw and exception. */
+        columns are in compatible it will throw and exception. */
     void appendDataTable(const DataTable_& table) {
         size_t nrows = table.getNumRows();
         if (getNumCols() != table.getNumCols()) {
@@ -231,10 +249,10 @@ public:
         }
     }
 
-    SimTK_DOWNCAST(DataTable_, AbstractDataTable);
+    SimTK_DOWNCAST(DataTable_, DataTableBase);
 
 protected:
-    /** Satisfy AbstractDataTable to determines its numerical data type */
+    /** Satisfy DataTableBase to determine its numerical data type */
     const std::type_index& getDataTypeInfo() const override {
         return _type;
     }
@@ -257,7 +275,7 @@ private:
 };  // END of class DataTable_<T>
 //=============================================================================
 
-inline std::ostream& operator<<(std::ostream &out, const AbstractDataTable& dt)
+inline std::ostream& operator<<(std::ostream &out, const DataTableBase& dt)
 {
     out << dt.getColumnLabels() << std::endl;
     dt.dumpToStream(out);
