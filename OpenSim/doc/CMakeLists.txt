@@ -7,18 +7,33 @@ ELSE(DOXYGEN_EXECUTABLE-NOTFOUND)
     SET(DOXY_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile")
 
     # Configure linking to Simbody documentation.
-    # Some of these variables are used in Doxyfile.in.
     # This variable must be a STRING; a PATH variable resolves //'s as a single
     # /, but we need to use double slashes for URL's.
     SET(OPENSIM_SIMBODY_DOXYGEN_LOCATION "${Simbody_DOXYGEN_DIR}"
-        CACHE STRING
-        "The location of Simbody's doxygen documentation. By default, OpenSim's
-        Doxygen will link to the user's *local* Simbody documentation. However,
-        when the OpenSim documentation is put online, there is no local Simbody
-        Doxygen documentation. In this case, this variable can be set to a URL
-        where one can find Simbody Doxygen documentation online. Delete from
-        CMakeCache.txt to reset to default.")
+        CACHE STRING "The location of Simbody's doxygen documentation.
+        To link to Simbody Doxygen documentation, you must build
+        *and* install Simbody Doxygen documentation. By default,
+        OpenSim's Doxygen documentation will link to your *local* Simbody
+        Doxygen documentation, and this variable is automatically populated 
+        with the location of Simbody's Doyxgen files.
+        However, when the OpenSim Doxygen documentation is put online, 
+        there is no 'local' Simbody Doxygen documentation. In this case, 
+        set this variable to a URL where one can find the correct 
+        Simbody Doxygen documentation online. To reset to default
+        (the local location of Simbody's Doxygen files), remove this
+        variable from your CMakeCache.txt, and it will be 
+        automatically populated again.")
+
     MARK_AS_ADVANCED(OPENSIM_SIMBODY_DOXYGEN_LOCATION)
+
+    # This variable is used in Doxyfile.in.
+    SET(OPENSIM_SIMBODY_TAGFILE_CONFIG "")
+    IF(Simbody_DOXYGEN_TAGFILE)
+        # The variable above is only defined if Simbody's Doxygen documentation
+        # was (built and) installed.
+        SET(OPENSIM_SIMBODY_TAGFILE_CONFIG
+            "${Simbody_DOXYGEN_TAGFILE}=${OPENSIM_SIMBODY_DOXYGEN_LOCATION}")
+    ENDIF()
 
     CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in 
           ${DOXY_CONFIG}

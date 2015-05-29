@@ -71,7 +71,7 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 
       case DLL_THREAD_ATTACH:
       case DLL_THREAD_DETACH:
-			break;
+            break;
     }
 
     return TRUE;

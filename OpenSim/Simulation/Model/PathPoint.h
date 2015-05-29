@@ -25,29 +25,24 @@
 
 
 // INCLUDE
-#include <assert.h>
-#include <iostream>
-#include <string>
-#include <math.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Array.h>
-#include <OpenSim/Common/Geometry.h>
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/PropertyStr.h>
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+    #ifdef OSIMSIMULATION_API
+        #undef OSIMSIMULATION_API
+        #define OSIMSIMULATION_API
+    #endif
 #endif
 
 namespace OpenSim {
 
-class Body;
+class PhysicalFrame;
 class Model;
+class Geometry;
 class GeometryPath;
 class SimbodyEngine;
 class WrapObject;
@@ -75,88 +70,88 @@ protected:
    PropertyDblVec3 _locationProp;
    SimTK::Vec3 &_location;
 
-	PropertyStr _bodyNameProp;
+    PropertyStr _bodyNameProp;
    std::string &_bodyName;
 
-	// Support for Display
-	VisibleObject _displayer;
+    // Support for Display
+    VisibleObject _displayer;
 
-	/* const*/ OpenSim::Body *_body; // Not const anymore since the body's displayer is not const
+    /* const*/ PhysicalFrame* _body; // Not const anymore since the body's displayer is not const
 
-	GeometryPath* _path; // the path that owns this location point
+    GeometryPath* _path; // the path that owns this location point
 
-	/** A temporary kluge until the default mechanism is working */
-	static Geometry *_defaultGeometry;
+    /** A temporary kluge until the default mechanism is working */
+    static Geometry* _defaultGeometry;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	PathPoint();
-	PathPoint(const PathPoint &aPoint);
-	virtual ~PathPoint();
+    PathPoint();
+    PathPoint(const PathPoint &aPoint);
+    virtual ~PathPoint();
 
 #ifndef SWIG
-	PathPoint& operator=(const PathPoint &aPoint);
+    PathPoint& operator=(const PathPoint &aPoint);
 #endif
    void copyData(const PathPoint &aPoint);
-	virtual void init(const PathPoint& aPoint);
+    virtual void init(const PathPoint& aPoint);
 
 #ifndef SWIG
-	const SimTK::Vec3& getLocation() const { return _location; }
+    const SimTK::Vec3& getLocation() const { return _location; }
 #endif
-	SimTK::Vec3& getLocation()  { return _location; }
+    SimTK::Vec3& getLocation()  { return _location; }
 
-	const double& getLocationCoord(int aXYZ) const { assert(aXYZ>=0 && aXYZ<=2); return _location[aXYZ]; }
-	void setLocationCoord(int aXYZ, double aValue) { assert(aXYZ>=0 && aXYZ<=2); _location[aXYZ]=aValue; }
-	// A variant that uses basic types for use by GUI
+    const double& getLocationCoord(int aXYZ) const { assert(aXYZ>=0 && aXYZ<=2); return _location[aXYZ]; }
+    void setLocationCoord(int aXYZ, double aValue) { assert(aXYZ>=0 && aXYZ<=2); _location[aXYZ]=aValue; }
+    // A variant that uses basic types for use by GUI
 
-	void setLocation( const SimTK::State& s, const SimTK::Vec3& aLocation);
-	void setLocation( const SimTK::State& s, int aCoordIndex, double aLocation);
-	void setLocation( const SimTK::State& s, double pt[]){ // A variant that uses basic types for use by GUI
-		setLocation(s,SimTK::Vec3::updAs(pt));
-	}
-	void setBody(OpenSim::Body& aBody);
-	void changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody);
+    void setLocation( const SimTK::State& s, const SimTK::Vec3& aLocation);
+    void setLocation( const SimTK::State& s, int aCoordIndex, double aLocation);
+    void setLocation( const SimTK::State& s, double pt[]){ // A variant that uses basic types for use by GUI
+        setLocation(s,SimTK::Vec3::updAs(pt));
+    }
+    void setBody(PhysicalFrame& aBody);
+    void changeBodyPreserveLocation(const SimTK::State& s, PhysicalFrame& aBody);
 
-	OpenSim::Body& getBody() const { return *_body; }
-	const std::string& getBodyName() const { return _bodyName; }
-	GeometryPath* getPath() const { return _path; }
+    PhysicalFrame& getBody() const { return *_body; }
+    const std::string& getBodyName() const { return _bodyName; }
+    GeometryPath* getPath() const { return _path; }
 
     virtual void scale(const SimTK::State& s, const SimTK::Vec3& aScaleFactors);
-	virtual const WrapObject* getWrapObject() const { return NULL; }
+    virtual const WrapObject* getWrapObject() const { return NULL; }
 
-	virtual bool isActive(const SimTK::State& s) const { return true; }
-	virtual void connectToModelAndPath(const Model& aModel, GeometryPath& aPath);
-	virtual void update(const SimTK::State& s) { }
+    virtual bool isActive(const SimTK::State& s) const { return true; }
+    virtual void connectToModelAndPath(const Model& aModel, GeometryPath& aPath);
+    virtual void update(const SimTK::State& s) { }
 
-	// get the relative velocity of the path point with resepct to the body
-	// it is connected to.
-	virtual void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity);
-	// get the partial of the point location w.r.t. to the coordinates (Q)
-	// it is dependent on.
-	virtual SimTK::Vec3 getdPointdQ(const SimTK::State& s) const
-	    { return SimTK::Vec3(0); }
+    // get the relative velocity of the path point with resepct to the body
+    // it is connected to.
+    virtual void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity);
+    // get the partial of the point location w.r.t. to the coordinates (Q)
+    // it is dependent on.
+    virtual SimTK::Vec3 getdPointdQ(const SimTK::State& s) const
+        { return SimTK::Vec3(0); }
 
-	// Visible Object Support
-	virtual const VisibleObject* getDisplayer() const { return &_displayer; }
-	virtual VisibleObject*	updDisplayer() { return &_displayer; };
-	virtual void updateGeometry();
+    // Visible Object Support
+    virtual const VisibleObject* getDisplayer() const { return &_displayer; }
+    virtual VisibleObject*  updDisplayer() { return &_displayer; };
+    virtual void updateGeometry();
 
-	// Utility
-	static PathPoint* makePathPointOfType(PathPoint* aPoint, const std::string& aNewTypeName);
-	static void deletePathPoint(PathPoint* aPoint) { if (aPoint) delete aPoint; }
+    // Utility
+    static PathPoint* makePathPointOfType(PathPoint* aPoint, const std::string& aNewTypeName);
+    static void deletePathPoint(PathPoint* aPoint) { if (aPoint) delete aPoint; }
 
 protected:
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 //=============================================================================
-};	// END of class PathPoint
+};  // END of class PathPoint
 //=============================================================================
 //=============================================================================
 

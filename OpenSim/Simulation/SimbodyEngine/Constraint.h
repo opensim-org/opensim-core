@@ -48,10 +48,10 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(Constraint, ModelComponent);
 //=============================================================================
 public:
 
-	OpenSim_DECLARE_PROPERTY(isDisabled, bool, 
-		"Flag indicating whether the constraint is disabled or not."
-		"Disabled means that the constraint is not active in subsequent "
-		"dynamics realizations.");
+    OpenSim_DECLARE_PROPERTY(isDisabled, bool, 
+        "Flag indicating whether the constraint is disabled or not."
+        "Disabled means that the constraint is not active in subsequent "
+        "dynamics realizations.");
 
 //=============================================================================
 // METHODS
@@ -59,56 +59,61 @@ public:
 //--------------------------------------------------------------------------
 // CONSTRUCTION
 //-------------------------------------------------------------------------
-	Constraint();
-	virtual ~Constraint();
+    Constraint();
+    virtual ~Constraint();
 
-	virtual void updateFromConstraint(SimTK::State& s, const Constraint &aConstraint);
-	virtual bool isDisabled(const SimTK::State& s) const;
-	virtual bool setDisabled(SimTK::State& s, bool isDisabled);
+    virtual void updateFromConstraint(SimTK::State& s, const Constraint &aConstraint);
+    virtual bool isDisabled(const SimTK::State& s) const;
+    virtual bool setDisabled(SimTK::State& s, bool isDisabled);
 
-	virtual void calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor, 
-									  SimTK::Vector& mobilityForces) const;
+    virtual void calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor, 
+                                      SimTK::Vector& mobilityForces) const;
 
-	/** 
-	 * Methods to query a Constraint forces (defaults to the Lagrange mulipliers) applied
-	 * The names of the quantities (column labels) is returned by this first function
-	 * getRecordLabels()
-	 */
-	virtual Array<std::string> getRecordLabels() const;
-	/**
-	 * Given SimTK::State object extract all the values necessary to report constraint forces (multipliers)
-	 * Subclasses can override to report force, application location frame, etc. used in conjunction
-	 * with getRecordLabels and should return same size Array
-	 */
-	virtual Array<double> getRecordValues(const SimTK::State& state) const;
+    /** 
+     * Methods to query a Constraint forces (defaults to the Lagrange mulipliers) applied
+     * The names of the quantities (column labels) is returned by this first function
+     * getRecordLabels()
+     */
+    virtual Array<std::string> getRecordLabels() const;
+    /**
+     * Given SimTK::State object extract all the values necessary to report constraint forces (multipliers)
+     * Subclasses can override to report force, application location frame, etc. used in conjunction
+     * with getRecordLabels and should return same size Array
+     */
+    virtual Array<double> getRecordValues(const SimTK::State& state) const;
 
-	virtual void scale(const ScaleSet& aScaleSet) {};
+    virtual void scale(const ScaleSet& aScaleSet) {};
 
-	/**
-	* This method specifies the interface that a constraint must implement
-	* in order to be used by the Induced Accelerations Analysis
-	*/
-	virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point){
-		throw Exception("This constraint does not implement setContactPointForInducedAccelerations");
-	}
+    /**
+    * This method specifies the interface that a constraint must implement
+    * in order to be used by the Induced Accelerations Analysis
+    */
+    virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point){
+        throw Exception("This constraint does not implement setContactPointForInducedAccelerations");
+    }
 
 protected:
     // ModelComponent interface.
-	void connectToModel(Model& aModel) override;
-	void initStateFromProperties(SimTK::State& state) const override;
-    void setPropertiesFromState(const SimTK::State& state) override;
+    void extendConnectToModel(Model& aModel) override;
+    void extendInitStateFromProperties(SimTK::State& state) const override;
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
-	/** ID for the constraint in Simbody. */
-	SimTK::ConstraintIndex _index;
+    /** Helper method to assign the underlying SimTK::Constraint index */
+    void assignConstraintIndex(SimTK::ConstraintIndex ix) const {
+        _index = ix;
+     }
 
 private:
-	void setNull();
-	void constructProperties();
+    void setNull();
+    void constructProperties();
 
-	friend class SimbodyEngine;
+    /** ID for the constraint in Simbody. */
+    mutable SimTK::ConstraintIndex _index;
+
+    friend class SimbodyEngine;
 
 //=============================================================================
-};	// END of class Constraint
+};  // END of class Constraint
 //=============================================================================
 //=============================================================================
 

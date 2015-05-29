@@ -56,27 +56,27 @@ This function will print cvs file of the column vector col0 and the matrix
  data
 
 @params col0: A vector that must have the same number of rows as the data matrix
-				This column vector is printed as the first column
+                This column vector is printed as the first column
 @params data: A matrix of data
 @params filename: The name of the file to print
 */
 void printMatrixToFile(const SimTK::Vector& col0, 
     const SimTK::Matrix& data, string filename)
 {
-	
+    
     ofstream datafile;
-	datafile.open(filename.c_str());
+    datafile.open(filename.c_str());
 
-	for(int i = 0; i < data.nrow(); i++){
-		datafile << col0(i) << ",";
-		for(int j = 0; j < data.ncol(); j++){
-			if(j<data.ncol()-1)
-				datafile << data(i,j) << ",";
-			else
-				datafile << data(i,j) << "\n";
-		}	
-	}
-	datafile.close();
+    for(int i = 0; i < data.nrow(); i++){
+        datafile << col0(i) << ",";
+        for(int j = 0; j < data.ncol(); j++){
+            if(j<data.ncol()-1)
+                datafile << data(i,j) << ",";
+            else
+                datafile << data(i,j) << "\n";
+        }   
+    }
+    datafile.close();
 } 
 
 
@@ -89,19 +89,19 @@ This function will print cvs file of the matrix
 */
 void printMatrixToFile( const SimTK::Matrix& data, string filename)
 {
-	
+    
     ofstream datafile;
-	datafile.open(filename.c_str());
+    datafile.open(filename.c_str());
 
-	for(int i = 0; i < data.nrow(); i++){
-		for(int j = 0; j < data.ncol(); j++){
-			if(j<data.ncol()-1)
-				datafile << data(i,j) << ",";
-			else
-				datafile << data(i,j) << "\n";
-		}	
-	}
-	datafile.close();
+    for(int i = 0; i < data.nrow(); i++){
+        for(int j = 0; j < data.ncol(); j++){
+            if(j<data.ncol()-1)
+                datafile << data(i,j) << ",";
+            else
+                datafile << data(i,j) << "\n";
+        }   
+    }
+    datafile.close();
 }
 
 /**
@@ -111,39 +111,39 @@ void printMatrixToFile( const SimTK::Matrix& data, string filename)
 
  @param x domain vector
  @param y range vector
- @param extrap_endpoints: (false)	Endpoints of the returned vector will be 
+ @param extrap_endpoints: (false)   Endpoints of the returned vector will be 
                                     zero, because a central difference
-									is undefined at these endpoints
-							(true)	Endpoints are computed by linearly 
+                                    is undefined at these endpoints
+                            (true)  Endpoints are computed by linearly 
                                     extrapolating using a first difference from 
-									the neighboring 2 points
+                                    the neighboring 2 points
  @returns dy/dx computed using central differences
 */
 SimTK::Vector calcCentralDifference(SimTK::Vector x, SimTK::Vector y, 
                                                bool extrap_endpoints){
-	SimTK::Vector dy(x.size());
-	double dx1,dx2;
-	double dy1,dy2;
-	int size = x.size();
+    SimTK::Vector dy(x.size());
+    double dx1,dx2;
+    double dy1,dy2;
+    int size = x.size();
 
-	for(int i=1; i<x.size()-1; i++){
-		dx1 = x(i)-x(i-1);
-		dx2 = x(i+1)-x(i);
-		dy1 = y(i)-y(i-1);
-		dy2 = y(i+1)-y(i);
-		dy(i)= 0.5*dy1/dx1 + 0.5*dy2/dx2;
-	}
+    for(int i=1; i<x.size()-1; i++){
+        dx1 = x(i)-x(i-1);
+        dx2 = x(i+1)-x(i);
+        dy1 = y(i)-y(i-1);
+        dy2 = y(i+1)-y(i);
+        dy(i)= 0.5*dy1/dx1 + 0.5*dy2/dx2;
+    }
 
-	if(extrap_endpoints == true){
-		dy1 = dy(2)-dy(1);
-		dx1 = x(2)-x(1);
-		dy(0) = dy(1) + (dy1/dx1)*(x(0)-x(1));
+    if(extrap_endpoints == true){
+        dy1 = dy(2)-dy(1);
+        dx1 = x(2)-x(1);
+        dy(0) = dy(1) + (dy1/dx1)*(x(0)-x(1));
 
-		dy2 = dy(size-2)-dy(size-3);
-		dx2 = x(size-2)-x(size-3);
-		dy(size-1) = dy(size-2) + (dy2/dx2)*(x(size-1)-x(size-2));
-	}
-	return dy;
+        dy2 = dy(size-2)-dy(size-3);
+        dx2 = x(size-2)-x(size-3);
+        dy(size-1) = dy(size-2) + (dy2/dx2)*(x(size-1)-x(size-2));
+    }
+    return dy;
 }
 
 
@@ -302,9 +302,9 @@ void testMonotonicity(SimTK::Matrix mcfSample)
  */
 int main(int argc, char* argv[])
 {
-	
+    
 
-	try {
+    try {
         SimTK_START_TEST("Testing MuscleFixedWidthPennationModel");
         cout << endl;
         cout << "**************************************************" << endl;
@@ -325,7 +325,8 @@ int main(int argc, char* argv[])
 
         MuscleFixedWidthPennationModel fibKin(  optFibLen, 
                                                 optPenAng,
-                                                SimTK::Pi/2.0);
+                                                SimTK::Pi/2.0 - SimTK::SignificantReal);
+        fibKin.finalizeFromProperties();
 
         MuscleFixedWidthPennationModel fibKin2( optFibLen*2, 
                                                 optPenAng,
@@ -795,13 +796,38 @@ int main(int argc, char* argv[])
         cout << "**************************************************" << endl;
         cout << "TEST: Exception Handling" << endl;
 
-        //constructor
-        SimTK_TEST_MUST_THROW(MuscleFixedWidthPennationModel fibKinEX = 
-            MuscleFixedWidthPennationModel(0, optPenAng, SimTK::Pi/2.0));
-        SimTK_TEST_MUST_THROW(MuscleFixedWidthPennationModel fibKinEX = 
-            MuscleFixedWidthPennationModel(optFibLen, -0.01, SimTK::Pi/2.0));
-        SimTK_TEST_MUST_THROW(MuscleFixedWidthPennationModel fibKinEX = 
-            MuscleFixedWidthPennationModel(optFibLen, SimTK::Pi/2, SimTK::Pi/2.0));
+        // Test property bounds.
+        {
+            MuscleFixedWidthPennationModel mfwpm;
+            mfwpm.set_optimal_fiber_length(0.0);
+            SimTK_TEST_MUST_THROW_EXC(mfwpm.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+        }
+        {
+            MuscleFixedWidthPennationModel mfwpm;
+            mfwpm.set_pennation_angle_at_optimal(-SimTK::SignificantReal);
+            SimTK_TEST_MUST_THROW_EXC(mfwpm.finalizeFromProperties(),
+                SimTK::Exception::ValueOutOfRange);
+        }
+        {
+            MuscleFixedWidthPennationModel mfwpm;
+            mfwpm.set_pennation_angle_at_optimal(SimTK::Pi/2.0);
+            SimTK_TEST_MUST_THROW_EXC(mfwpm.finalizeFromProperties(),
+                SimTK::Exception::ValueOutOfRange);
+        }
+        {
+            MuscleFixedWidthPennationModel mfwpm;
+            mfwpm.set_maximum_pennation_angle(-SimTK::SignificantReal);
+            SimTK_TEST_MUST_THROW_EXC(mfwpm.finalizeFromProperties(),
+                SimTK::Exception::ValueOutOfRange);
+        }
+        {
+            MuscleFixedWidthPennationModel mfwpm;
+            mfwpm.set_maximum_pennation_angle(SimTK::Pi/2.0
+                                              + SimTK::SignificantReal);
+            SimTK_TEST_MUST_THROW_EXC(mfwpm.finalizeFromProperties(),
+                SimTK::Exception::ValueOutOfRange);
+        }
 
         //Unset properties
         MuscleFixedWidthPennationModel fibKinDirty;
@@ -864,7 +890,7 @@ int main(int argc, char* argv[])
 
         double maxPenAngle = SimTK::Pi/2.0 * (7.0/8.0);
 
-        fibKin.setMaximumPennationAngle(maxPenAngle);
+        fibKin.set_maximum_pennation_angle(maxPenAngle);
 
         //printf("Clamped Angle %f, expected %f\n",
         //    fibKin.calcPennationAngle(0,caller),
@@ -883,19 +909,19 @@ int main(int argc, char* argv[])
     catch (const std::exception& ex)
     {
         cout << ex.what() << endl;
-		cin.get();		
-		return 1;
+        cin.get();      
+        return 1;
     }
     catch (...)
     {
         cout << "UNRECOGNIZED EXCEPTION" << endl;
-		cin.get();
+        cin.get();
         return 1;
     }
 
-	
+    
 
     cout << "\nDone. testMuscleFixedWidthPenationModel completed.\n";
-	return 0;
+    return 0;
 }
 

@@ -77,19 +77,19 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 {
   try {
 
-	Object::registerType( CoordinateActuator() );
-	Object::registerType( PointActuator() );
-	Object::registerType( TorqueActuator() );
-	Object::registerType( BodyActuator() );
-	Object::registerType( PointToPointActuator() );
-	Object::registerType( ClutchedPathSpring() );
+    Object::registerType( CoordinateActuator() );
+    Object::registerType( PointActuator() );
+    Object::registerType( TorqueActuator() );
+    Object::registerType( BodyActuator() );
+    Object::registerType( PointToPointActuator() );
+    Object::registerType( ClutchedPathSpring() );
 
-	Object::registerType( Thelen2003Muscle() );
-	Object::registerType( Thelen2003Muscle_Deprecated() );
-	Object::registerType( Schutte1993Muscle_Deprecated() );
-	Object::registerType( Delp1990Muscle_Deprecated() );
-	Object::registerType( SpringGeneralizedForce() );
-	Object::registerType( RigidTendonMuscle() );
+    Object::registerType( Thelen2003Muscle() );
+    Object::registerType( Thelen2003Muscle_Deprecated() );
+    Object::registerType( Schutte1993Muscle_Deprecated() );
+    Object::registerType( Delp1990Muscle_Deprecated() );
+    Object::registerType( SpringGeneralizedForce() );
+    Object::registerType( RigidTendonMuscle() );
 
     Object::RegisterType( ActiveForceLengthCurve() );
     Object::RegisterType( ForceVelocityCurve() );
@@ -109,16 +109,16 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
     //Object::RegisterType( ZerothOrderMuscleActivationDynamics() );
     //Object::RegisterType( FirstOrderMuscleActivationDynamics() );
 
-	// OLD Versions
-	//Associate an instance with old name to help deserialization
-	// This has to be done after the new Type is registered
-	Object::renameType("GeneralizedForce", "CoordinateActuator");
-	Object::renameType("Force", "PointActuator");
-	Object::renameType("Torque", "TorqueActuator");
-	Object::renameType("Schutte1993Muscle", "Schutte1993Muscle_Deprecated");
-	Object::renameType("Delp1990Muscle", "Delp1990Muscle_Deprecated");
+    // OLD Versions
+    //Associate an instance with old name to help deserialization
+    // This has to be done after the new Type is registered
+    Object::renameType("GeneralizedForce", "CoordinateActuator");
+    Object::renameType("Force", "PointActuator");
+    Object::renameType("Torque", "TorqueActuator");
+    Object::renameType("Schutte1993Muscle", "Schutte1993Muscle_Deprecated");
+    Object::renameType("Delp1990Muscle", "Delp1990Muscle_Deprecated");
 
-	//Object::RenameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
+    //Object::RenameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 
   } catch (const std::exception& e) {
     std::cerr 

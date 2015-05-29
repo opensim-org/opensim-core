@@ -1,4 +1,4 @@
-OpenSim Core [![Build Status][buildstatus_image]][travisci]
+OpenSim Core [![Travis][buildstatus_image_travis]][travisci] [![Appveyor][buildstatus_image_appveyor]][appveyorci]
 ============
 
 OpenSim is software that lets users develop models of musculoskeletal
@@ -36,7 +36,7 @@ int main() {
     // Joints that connect the bodies together.
     PinJoint* joint1 = new PinJoint("shoulder",
             // Parent body, location in parent, orientation in parent.
-            model.getGroundBody(), Vec3(0), Vec3(0),
+            model.getGround(), Vec3(0), Vec3(0),
             // Child body, location in child, orientation in child.
             *link1, Vec3(0, 1, 0), Vec3(0));
     PinJoint* joint2 = new PinJoint("elbow",
@@ -74,8 +74,8 @@ int main() {
     viz.setBackgroundColor(Vec3(1, 1, 1));
     // Ellipsoids: 0.5 m radius along y axis, centered 0.5 m up along y axis.
     DecorativeEllipsoid geom(Vec3(0.1, 0.5, 0.1)); Vec3 center(0, 0.5, 0);
-    viz.addDecoration(link1->getIndex(), Transform(center), geom);
-    viz.addDecoration(link2->getIndex(), Transform(center), geom);
+    viz.addDecoration(link1->getMobilizedBodyIndex(), Transform(center), geom);
+    viz.addDecoration(link2->getMobilizedBodyIndex(), Transform(center), geom);
 
     // Simulate.
     RungeKuttaMersonIntegrator integrator(model.getSystem());
@@ -109,7 +109,7 @@ On Windows using Visual Studio
 
 * **operating system**: Windows 7 or 8.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8
 * **compiler / IDE**: Visual Studio 2013. We recommended either:
     * *Visual Studio Express 2013 for Windows Desktop*, which is free, or
     * *Visual Studio Professional 2013* through
@@ -118,7 +118,7 @@ On Windows using Visual Studio
 * **physics engine**:
   [Simbody](https://github.com/simbody/simbody#windows-and-visual-studio) >= 3.4
 * **API documentation** (optional):
-  [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8
+  [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git. There are many options:
     * [Git for Windows](http://msysgit.github.io/), most advanced;
     * [TortoiseGit](https://code.google.com/p/tortoisegit/wiki/Download),
@@ -227,15 +227,16 @@ On Mac using Xcode
 
 * **operating system**: OS X 10.8 or later.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8
 * **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 5, through
   the Mac App Store.
 * **physics engine**:
-  [Simbody](https://github.com/simbody/simbody#installing) >= 3.4.
-  **Important**: If installing Simbody using Makefile's, make sure Simbody's
-  CMake variable `SIMBODY_STANDARD_11` is turned on.
+  [Simbody](https://github.com/simbody/simbody#installing) >= 3.5.
+  **Important**: If installing Simbody 3.5 using Makefile's, make sure Simbody's
+  CMake variable `SIMBODY_STANDARD_11` is turned on (in 3.6 and later, this variable
+  is removed).
 * **API documentation** (optional):
-  [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8
+  [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git.
     * Xcode Command Line Tools gives you git on the command line.
     * [GitHub for Mac](https://mac.github.com), easiest.
@@ -350,16 +351,19 @@ line below, we show the corresponding package.
 
 * **operating system**: Ubuntu 13.10 or later.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8;
-  `cmake-gui`.
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8;
+  `cmake-gui`. Ubuntu 12.04 only has 2.8.6 available; download from the website
+  or from this [third party
+  PPA](https://launchpad.net/~robotology/+archive/ubuntu/ppa).
 * **compiler**: [gcc](http://gcc.gnu.org) >= 4.8; `g++-4.8`, or
       [Clang](http://clang.llvm.org) >= 3.4; `clang-3.4`.
 * **physics engine**:
-  [Simbody](https://github.com/simbody/simbody#installing) >= 3.4.
-  **Important**: If installing Simbody using Makefile's, make sure Simbody's
-  CMake variable `SIMBODY_STANDARD_11` is turned on.
+  [Simbody](https://github.com/simbody/simbody#installing) >= 3.5.
+  **Important**: If installing Simbody 3.5 using Makefile's, make sure Simbody's
+  CMake variable `SIMBODY_STANDARD_11` is turned on (in 3.6 and later, this variable
+  is removed).
 * **API documentation** (optional):
-  [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8;
+  [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
 * **version control** (optional): git; `git`.
 * **Wrapping** (optional): [SWIG](http://www.swig.org/) 2.0.10 `swig`
@@ -406,12 +410,12 @@ And you could get all the optional dependencies via:
    variable to where you installed Simbody (e.g., `~/simbody`). If you
    installed Simbody using `brew`, then CMake will find Simbody automatically.
 7. Choose your build type by setting `CMAKE_BUILD_TYPE` to one of the following:
-    * *Debug*: debugger symbols; no optimizations (more than 10x slower).
+    * **Debug**: debugger symbols; no optimizations (more than 10x slower).
     Library names end with `_d`.
-    * *Release*: no debugger symbols; optimized.
-    * *RelWithDebInfo*: debugger symbols; optimized. Bigger but not slower
+    * **Release**: no debugger symbols; optimized.
+    * **RelWithDebInfo**: debugger symbols; optimized. Bigger but not slower
     than Release; choose this if unsure.
-    * *MinSizeRel*: minimum size; optimized.
+    * **MinSizeRel**: minimum size; optimized.
 
     You at least want release libraries (the last 3 count as release), but you
     can have debug libraries coexist with them. To do this, go through the
@@ -476,8 +480,10 @@ And you could get all the optional dependencies via:
 Your changes will only take effect in new terminal windows.
 
 
+[buildstatus_image_travis]: https://travis-ci.org/opensim-org/opensim-core.svg?branch=master
 [travisci]: https://travis-ci.org/opensim-org/opensim-core
-[buildstatus_image]: https://travis-ci.org/opensim-org/opensim-core.svg?branch=master
+[buildstatus_image_appveyor]: https://ci.appveyor.com/api/projects/status/i4wxnmx9jlk69kge/branch/master?svg=true
+[appveyorci]: https://ci.appveyor.com/project/opensim-org/opensim-core/branch/master
 [running_gif]: OpenSim/doc/images/opensim_running.gif
 [simple_example_gif]: OpenSim/doc/images/opensim_double_pendulum_muscle.gif
 [java]: http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase6-419409.html

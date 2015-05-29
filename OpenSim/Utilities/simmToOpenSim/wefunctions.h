@@ -98,13 +98,13 @@ void enable_debug_shapes(SBoolean);
 #if VISUAL_WRAPPING_DEBUG
 
 void add_debug_point(
-	dpWrapObject* wo, double factor,
-	double pt[], float radius, const char* name, const float* color);
-	
+    dpWrapObject* wo, double factor,
+    double pt[], float radius, const char* name, const float* color);
+    
 void add_debug_line(
-	dpWrapObject* wo, double factor,
-	double pt1[], double pt2[], float lineWidth,
-	const char* name1, const char* name2, const float* color);
+    dpWrapObject* wo, double factor,
+    double pt1[], double pt2[], float lineWidth,
+    const char* name1, const char* name2, const float* color);
 
 float* lerp_clr(const float start[3], const float end[3], double t, float color[3]);
 

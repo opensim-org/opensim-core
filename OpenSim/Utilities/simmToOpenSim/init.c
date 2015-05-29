@@ -93,7 +93,7 @@ void initialize(void)
       glueSetConstrainedWindows(no);
 
    if (is_preference_on(get_preference("MULTIPLE_SCREENS")) == no)
-	   open_main_window();
+       open_main_window();
 
    init_global_lighting();
 
@@ -174,8 +174,8 @@ void open_main_window()
    init_main_menu();   /* the main menu must be created *before* the SIMM window */
 
    glueSetWindowPlacement(GLUT_NORMAL_WINDOW, GLUE_CENTER,
-			  root.gldesc.max_screen_x,
-			  root.gldesc.max_screen_y, 0, 0, NULL);
+              root.gldesc.max_screen_x,
+              root.gldesc.max_screen_y, 0, 0, NULL);
 
    bwin.id = glueOpenWindow("simm",no,GLUE_NO_WINDOW_FLAGS);
 
@@ -192,7 +192,7 @@ void open_main_window()
       strcat(buffer, " - Demo Mode");
 #else
    sprintf(buffer,"%s: %s, %s  %s", program_name, program_full_name,
-	   program_version, copyright_notice);
+       program_version, copyright_notice);
 #endif
 
    mstrcpy(&bwin.name,buffer);
@@ -201,7 +201,7 @@ void open_main_window()
 
    wun.tool = NULL;
    root.basewindow = add_window(&bwin,&wun,NOTYPE,-1,no,display_background,
-				update_background,background);
+                update_background,background);
    if (root.basewindow == -1)
       error(exit_program,tool_message);
 
@@ -496,7 +496,7 @@ void init_segment(ModelStruct* ms, SegmentStruct* seg)
    for (i=0; i<3; i++)
    {
       for (j=0; j<3; j++)
-	 seg->inertia[i][j] = 0.0;
+     seg->inertia[i][j] = 0.0;
       seg->masscenter[i] = 0.0;
    }
 
@@ -956,79 +956,79 @@ int mark_unconstrained_dof(ModelStruct* ms, GeneralizedCoord* gencoord, int* jnt
     * create a correct model).
     * JPL 8/2/04: this function has been updated to also check to make sure
     * that the 2-point, slope=1 function also passes through zero.
-	 * JPL 3/6/06: this function appeared to have a bug which prevented
-	 * the negative-slope case from getting used, but it turns out that
-	 * the code for that case is incorrect. So negative-slope functions
-	 * are not allowed, and will return an error when attempting to save
-	 * dynamics.
+     * JPL 3/6/06: this function appeared to have a bug which prevented
+     * the negative-slope case from getting used, but it turns out that
+     * the code for that case is incorrect. So negative-slope functions
+     * are not allowed, and will return an error when attempting to save
+     * dynamics.
     */
    for (i = 0; i < ms->numjoints; i++)
    {
       for (j = 0; j < 6; j++)
       {
-	      if (ms->joint[i].dofs[j].type == function_dof &&
-	          ms->joint[i].dofs[j].gencoord == gencoord)
-	      {
+          if (ms->joint[i].dofs[j].type == function_dof &&
+              ms->joint[i].dofs[j].gencoord == gencoord)
+          {
             func = ms->joint[i].dofs[j].function;
-	         if (func->numpoints == 2 && EQUAL_WITHIN_ERROR(func->x[0], func->y[0]))
-	         {
+             if (func->numpoints == 2 && EQUAL_WITHIN_ERROR(func->x[0], func->y[0]))
+             {
                slope = (func->y[1] - func->y[0]) / (func->x[1] - func->x[0]);
                if (EQUAL_WITHIN_ERROR(slope, 1.0))
                {
-	               ms->joint[i].dofs[j].sd.constrained = no;
-		            ms->joint[i].dofs[j].sd.conversion_sign = 1.0;
+                   ms->joint[i].dofs[j].sd.constrained = no;
+                    ms->joint[i].dofs[j].sd.conversion_sign = 1.0;
                   *jnt = i;
                   *dof = j;
-						if (constrained)
-							*constrained = no;
+                        if (constrained)
+                            *constrained = no;
                   return 1;
                }
                else if (EQUAL_WITHIN_ERROR(slope,-1.0))
                {
-	               ms->joint[i].dofs[j].sd.constrained = no;
-	               /* If slope is negative, set the conversion_sign to -1
-		             * so the conversion factor (which is set later) will
-		             * be negative.
-		             */
-		            ms->joint[i].dofs[j].sd.conversion_sign = -1.0;
+                   ms->joint[i].dofs[j].sd.constrained = no;
+                   /* If slope is negative, set the conversion_sign to -1
+                     * so the conversion factor (which is set later) will
+                     * be negative.
+                     */
+                    ms->joint[i].dofs[j].sd.conversion_sign = -1.0;
                   *jnt = i;
                   *dof = j;
-						if (constrained)
-							*constrained = no;
+                        if (constrained)
+                            *constrained = no;
                   return 1;
                }
-	         }
-	      }
+             }
+          }
       }
    }
 
-	// This code is specifically for conversion to Simbody-based models, which do
-	// not have the restriction that every gencoord must map to a DOF with a "simple"
-	// function. If there is such a gencoord, its "primary" DOF is set to the first
-	// one that uses it, but it's marked as constrained so that the OpenSim export
-	// code knows to add the coordinate to the joint and the kinematic function to
-	// the corresponding transform axis.
-	if (constrained)
-	{
-		for (i = 0; i < ms->numjoints; i++)
-		{
-			for (j = 0; j < 6; j++)
-			{
-				if (ms->joint[i].dofs[j].type == function_dof &&
-					ms->joint[i].dofs[j].gencoord == gencoord)
-				{
-					ms->joint[i].dofs[j].sd.constrained = no;       // so other code will not create a new coordinate
-					ms->joint[i].dofs[j].sd.conversion_sign = 1.0;  // and constrain it to this gencoord
-					*jnt = i;
-					*dof = j;
-					*constrained = yes;
-					return 1;
-				}
-			}
-		}
-	}
+    // This code is specifically for conversion to Simbody-based models, which do
+    // not have the restriction that every gencoord must map to a DOF with a "simple"
+    // function. If there is such a gencoord, its "primary" DOF is set to the first
+    // one that uses it, but it's marked as constrained so that the OpenSim export
+    // code knows to add the coordinate to the joint and the kinematic function to
+    // the corresponding transform axis.
+    if (constrained)
+    {
+        for (i = 0; i < ms->numjoints; i++)
+        {
+            for (j = 0; j < 6; j++)
+            {
+                if (ms->joint[i].dofs[j].type == function_dof &&
+                    ms->joint[i].dofs[j].gencoord == gencoord)
+                {
+                    ms->joint[i].dofs[j].sd.constrained = no;       // so other code will not create a new coordinate
+                    ms->joint[i].dofs[j].sd.conversion_sign = 1.0;  // and constrain it to this gencoord
+                    *jnt = i;
+                    *dof = j;
+                    *constrained = yes;
+                    return 1;
+                }
+            }
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
 
@@ -1267,10 +1267,10 @@ void make_message_port(void)
    bbox.y1 = 0;
 
    make_slider(&hp->sl,vertical_slider,bbox,0,(double)(hp->num_lines)*20.0,
-	  (double)(hp->lines_per_page)*20.0,(double)(hp->num_lines)*20.0,4.0,NULL,NULL);
+      (double)(hp->lines_per_page)*20.0,(double)(hp->num_lines)*20.0,4.0,NULL,NULL);
    glueSetWindowPlacement(GLUT_NORMAL_WINDOW, GLUE_SOUTHWEST,
-			  hp->window_width, hp->window_height,
-			  0, 0, NULL);
+              hp->window_width, hp->window_height,
+              0, 0, NULL);
    
 #if defined WIN32 && SIMM_DEMO_VERSION
    iconified = is_in_demo_mode();
@@ -1287,7 +1287,7 @@ void make_message_port(void)
    wun.tool = NULL;
 
    windex = add_window(&mwin,&wun,NOTYPE,ZERO,no,draw_message_window,
-		       update_message_window,messages_input);
+               update_message_window,messages_input);
    if (windex == -1)
       error(exit_program,tool_message);
 
@@ -1350,7 +1350,7 @@ public void draw_message_window(WindowParams* win_parameters, WinUnion* win_stru
 
 
 public void messages_input(WindowParams* win_parameters, WinUnion* win_struct,
-			   SimmEvent se)
+               SimmEvent se)
 {
    if (se.field1 == window_shut)
    {

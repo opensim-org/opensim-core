@@ -50,9 +50,9 @@ MarkerSet::~MarkerSet(void)
 MarkerSet::MarkerSet(Model& aModel, const string& aMarkersFileName) :
 ModelComponentSet<Marker>(aModel, aMarkersFileName, false)
 {
-	setNull();
-	SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
-	updateFromXMLNode(e, getDocument()->getDocumentVersion());
+    setNull();
+    SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
+    updateFromXMLNode(e, getDocument()->getDocumentVersion());
 }
 
 //_____________________________________________________________________________
@@ -62,7 +62,7 @@ ModelComponentSet<Marker>(aModel, aMarkersFileName, false)
 MarkerSet::MarkerSet() :
 ModelComponentSet<Marker>()
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -72,8 +72,8 @@ ModelComponentSet<Marker>()
 MarkerSet::MarkerSet(const MarkerSet& aMarkerSet):
 ModelComponentSet<Marker>(aMarkerSet)
 {
-	setNull();
-	*this = aMarkerSet;
+    setNull();
+    *this = aMarkerSet;
 }
 
 //=============================================================================
@@ -98,8 +98,8 @@ void MarkerSet::setNull()
 #ifndef SWIG
 MarkerSet& MarkerSet::operator=(const MarkerSet &aMarkerSet)
 {
-	Set<Marker>::operator=(aMarkerSet);
-	return (*this);
+    Set<Marker>::operator=(aMarkerSet);
+    return (*this);
 }
 #endif
 
@@ -112,11 +112,11 @@ MarkerSet& MarkerSet::operator=(const MarkerSet &aMarkerSet)
  */
 void MarkerSet::getMarkerNames(Array<string>& aMarkerNamesArray)
 {
-	for (int i = 0; i < getSize(); i++)
-	{
-		Marker& nextMarker = get(i);
-		aMarkerNamesArray.append(nextMarker.getName());
-	}
+    for (int i = 0; i < getSize(); i++)
+    {
+        Marker& nextMarker = get(i);
+        aMarkerNamesArray.append(nextMarker.getName());
+    }
 }
 
 //_____________________________________________________________________________
@@ -125,25 +125,25 @@ void MarkerSet::getMarkerNames(Array<string>& aMarkerNamesArray)
  */
 void MarkerSet::scale(const ScaleSet& scaleSet)
 {
-	Vec3	scaleFactors(1.0);
+    Vec3    scaleFactors(1.0);
 
-	for (int i = 0; i < getSize(); i++)
-	{
-		Marker& nextMarker = get(i);
-		const string& refFrameName = nextMarker.getFrameName();
-		//assert(refBodyName);
-		bool found = false;
-		for (int j = 0; j < scaleSet.getSize() && !found; j++)
-		{
-			Scale& nextScale = scaleSet.get(j);
-			if (nextScale.getSegmentName() == refFrameName)
-			{
-				found = true;
-				nextScale.getScaleFactors(scaleFactors);
-				nextMarker.scale(scaleFactors);
-			}
-		}
-	}
+    for (int i = 0; i < getSize(); i++)
+    {
+        Marker& nextMarker = get(i);
+        const string& refFrameName = nextMarker.getFrameName();
+        //assert(refBodyName);
+        bool found = false;
+        for (int j = 0; j < scaleSet.getSize() && !found; j++)
+        {
+            Scale& nextScale = scaleSet.get(j);
+            if (nextScale.getSegmentName() == refFrameName)
+            {
+                found = true;
+                nextScale.getScaleFactors(scaleFactors);
+                nextMarker.scale(scaleFactors);
+            }
+        }
+    }
 }
 
 //_____________________________________________________________________________
@@ -152,30 +152,31 @@ void MarkerSet::scale(const ScaleSet& scaleSet)
  */
 void MarkerSet::addNamePrefix(const string& prefix)
 {
-	int i;
+    int i;
 
-	// Cycle thru set and add prefix
-	for (i = 0; i < getSize(); i++)
-		get(i).setName(prefix + get(i).getName());
+    // Cycle thru set and add prefix
+    for (i = 0; i < getSize(); i++)
+        get(i).setName(prefix + get(i).getName());
 }
 
 //_____________________________________________________________________________
 /**
  * Create a new marker and add it to the set.
  */
-Marker* MarkerSet::addMarker(const string& aName, const SimTK::Vec3& aOffset, OpenSim::RigidFrame& aRigidFrame)
+Marker* MarkerSet::addMarker(const string& aName, const SimTK::Vec3& aOffset, OpenSim::PhysicalFrame& aPhysicalFrame)
 {
-	// If a marker by this name already exists, do nothing.
-	if (contains(aName))
-		return NULL;
+    // If a marker by this name already exists, do nothing.
+    if (contains(aName))
+        return NULL;
 
-	// Create a marker and add it to the set.
-	Marker* m = new Marker();
-	m->setName(aName);
-	m->set_location(aOffset);
+    // Create a marker and add it to the set.
+    Marker* m = new Marker();
+    m->setName(aName);
+    m->set_location(aOffset);
     // Frame will be based on this name when marker is connected to Model.
-	m->setFrameName(aRigidFrame.getName()); 
-    aRigidFrame.updModel().addMarker(m);
 
-	return m;
+    m->setFrameName(aPhysicalFrame.getName()); 
+    aPhysicalFrame.updModel().addMarker(m);
+
+    return m;
 }

@@ -36,29 +36,29 @@ namespace OpenSim {
 class OSIMCOMMON_API StreamLogCallback : public LogCallback
 {
 private:
-	std::ostream *_out;
-	bool _ownsStream;
-	
+    std::ostream *_out;
+    bool _ownsStream;
+    
 public:
-	StreamLogCallback(const std::string &aFilename);
-	StreamLogCallback(std::ostream *aOut, bool aOwnsStream = true);
-	~StreamLogCallback();
-	void log(const std::string &aStr);
+    StreamLogCallback(const std::string &aFilename);
+    StreamLogCallback(std::ostream *aOut, bool aOwnsStream = true);
+    ~StreamLogCallback();
+    void log(const std::string &aStr);
 };
 
 
 class OSIMCOMMON_API LogBuffer : public std::stringbuf
 {
 public:
-	LogBuffer();
-	~LogBuffer();
-	bool addLogCallback(LogCallback *aLogCallback);
-	bool removeLogCallback(LogCallback *aLogCallback);
+    LogBuffer();
+    ~LogBuffer();
+    bool addLogCallback(LogCallback *aLogCallback);
+    bool removeLogCallback(LogCallback *aLogCallback);
 
 private:
-	Array<LogCallback*> _logCallbacks;
+    Array<LogCallback*> _logCallbacks;
 
-	int sync();
+    int sync();
 };
 /// @endcond
 
@@ -67,21 +67,21 @@ private:
 class OSIMCOMMON_API LogManager
 {
 public:
-	// Expose these members so users can manipulate output formats by calling functions on LogManager::out/err
-	static LogBuffer out;
-	static LogBuffer err;
+    // Expose these members so users can manipulate output formats by calling functions on LogManager::out/err
+    static LogBuffer out;
+    static LogBuffer err;
 
-	// LogManager's cout and cerr act as the normal standard output and error (i.e. they write to the terminal)
-	static std::ostream cout;
-	static std::ostream cerr;
+    // LogManager's cout and cerr act as the normal standard output and error (i.e. they write to the terminal)
+    static std::ostream cout;
+    static std::ostream cerr;
 
-	LogManager();
-	~LogManager();
+    LogManager();
+    ~LogManager();
 
-	static LogManager *getInstance();
+    static LogManager *getInstance();
 
-	LogBuffer *getOutBuffer();
-	LogBuffer *getErrBuffer();
+    LogBuffer *getOutBuffer();
+    LogBuffer *getErrBuffer();
 };
 /// @endcond
 }

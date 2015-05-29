@@ -30,8 +30,8 @@
 #ifdef SWIG
 #undef override
 #define override
-#undef FINAL_11
-#define FINAL_11
+#undef final
+#define final
 #endif
 
 namespace OpenSim {
@@ -342,7 +342,7 @@ public:
 
     /** Use TypeHelper's getTypeName() to satisfy this pure virtual. **/
     // See below for implementation.
-    std::string getTypeName() const FINAL_11;
+    std::string getTypeName() const override final;
 
     /** Get a const reference to one of the values in the value list. This will
     throw an exception if the index does not refer to an already-existing
@@ -542,7 +542,7 @@ public:
     /** Downcast the given AbstractProperty to a concrete
     property of this type (%Property\<T>). An exception is thrown if
     this is not the right type only in DEBUG mode; see isA() if you need to 
-	check first. **/
+    check first. **/
     static const Property& getAs(const AbstractProperty& prop) {
         const Property* p = SimTK_DYNAMIC_CAST_DEBUG<const Property*>(&prop);
         if (p) return *p;
@@ -555,7 +555,7 @@ public:
     /** Downcast the given AbstractProperty to a writable concrete
     property of this type (%Property\<T>). An exception is thrown if
     this is not the right type only in DEBUG mode; see isA() if you need to 
-	check first. **/
+    check first. **/
     static Property& updAs(AbstractProperty& prop) {
         Property* p = SimTK_DYNAMIC_CAST_DEBUG<Property*>(&prop);
         if (p) return *p;
@@ -645,12 +645,12 @@ template<> struct Property<SimTK::Vec3>::TypeHelper  {
 /** TypeHelper specialization for SimTK::Vec6; see double specialization
 for information on floating point comparison. **/
 template<> struct Property<SimTK::Vec6>::TypeHelper  {
-	static const bool IsObjectType = false;
-	static SimpleProperty<SimTK::Vec6>*
-		create(const std::string& name, bool isOne);
-	static std::string getTypeName() { return "Vec6"; }
-	OSIMCOMMON_API static bool isEqual(const SimTK::Vec6& a,
-		const SimTK::Vec6& b);
+    static const bool IsObjectType = false;
+    static SimpleProperty<SimTK::Vec6>*
+        create(const std::string& name, bool isOne);
+    static std::string getTypeName() { return "Vec6"; }
+    OSIMCOMMON_API static bool isEqual(const SimTK::Vec6& a,
+        const SimTK::Vec6& b);
 };
 /** TypeHelper specialization for SimTK::Vector; see double specialization
 for information on floating point comparison. **/
@@ -706,10 +706,10 @@ public:
 
     // Default destructor, copy constructor, copy assignment.
 
-    SimpleProperty* clone() const FINAL_11 
+    SimpleProperty* clone() const override final 
     {   return new SimpleProperty(*this); }
    
-    std::string toString() const                        FINAL_11 {
+    std::string toString() const override final {
         std::stringstream out;
         if (!this->isOneValueProperty()) out << "(";
         writeSimplePropertyToStream(out);
@@ -717,15 +717,15 @@ public:
         return out.str();
     }
 
-    bool isUnnamedProperty() const FINAL_11 {return false;}
-    bool isObjectProperty() const FINAL_11 {return false;}
-    bool isAcceptableObjectTag(const std::string&) const FINAL_11 
+    bool isUnnamedProperty() const override final {return false;}
+    bool isObjectProperty() const override final {return false;}
+    bool isAcceptableObjectTag(const std::string&) const override final 
     {   return false; }
 
-    int getNumValues() const FINAL_11 {return values.size(); }
-    void clearValues() FINAL_11 {values.clear();}
+    int getNumValues() const override final {return values.size(); }
+    void clearValues() override final {values.clear();}
 
-    bool isEqualTo(const AbstractProperty& other) const FINAL_11 {
+    bool isEqualTo(const AbstractProperty& other) const override final {
         // Check here rather than in base class because the old
         // Property_Deprecated implementation can't copy this flag right.
         if (this->getValueIsDefault() != other.getValueIsDefault())
@@ -743,7 +743,7 @@ public:
     // into elements of type T.
     void readFromXMLElement
        (SimTK::Xml::Element& propertyElement,
-        int                  versionNumber) FINAL_11 {
+        int                  versionNumber) override final {
         std::istringstream valstream(propertyElement.getValue());
         if (!readSimplePropertyFromStream(valstream)) {
             std::cerr << "Failed to read " << SimTK::NiceTypeName<T>::name()
@@ -773,26 +773,26 @@ public:
     // using an unformatted write to produce a series of blank-separated 
     // tokens.
     void writeToXMLElement
-       (SimTK::Xml::Element& propertyElement) const FINAL_11 {
+       (SimTK::Xml::Element& propertyElement) const override final {
         std::ostringstream valstream;
         writeSimplePropertyToStream(valstream);
         propertyElement.setValue(valstream.str()); 
     } 
 
 
-    const Object& getValueAsObject(int index=-1) const FINAL_11 {
+    const Object& getValueAsObject(int index=-1) const override final {
         throw OpenSim::Exception(
                 "SimpleProperty<T>::getValueAsObject(): property " 
                 + this->getName() + " is not an Object property."); 
     }
 
-    Object& updValueAsObject(int index=-1) FINAL_11 {
+    Object& updValueAsObject(int index=-1) override final {
         throw OpenSim::Exception(
                 "SimpleProperty<T>::updValueAsObject(): property " 
                 + this->getName() + " is not an Object property."); 
     }
 
-    void setValueAsObject(const Object& obj, int index=-1) FINAL_11 {
+    void setValueAsObject(const Object& obj, int index=-1) override final {
         throw OpenSim::Exception(
                 "SimpleProperty<T>::setValueAsObject(): property " 
                 + this->getName() + " is not an Object property."); 
@@ -824,17 +824,17 @@ public:
 private:
     // This is the Property<T> interface implementation.
     // Base class checks the index.
-    const T& getValueVirtual(int index) const   FINAL_11 
+    const T& getValueVirtual(int index) const   override final 
     {   return values[index]; }
-    T& updValueVirtual(int index)               FINAL_11 
+    T& updValueVirtual(int index)               override final 
     {   return values[index]; }
-    void setValueVirtual(int index, const T& value) FINAL_11
+    void setValueVirtual(int index, const T& value) override final
     {   values[index] = value; }
-    int appendValueVirtual(const T& value)     FINAL_11
+    int appendValueVirtual(const T& value)     override final
     {   values.push_back(value); return values.size()-1; }
     // Adopting a simple property just means we have to delete the one that
     // gets passed in because the caller thinks we took over ownership.
-    int adoptAndAppendValueVirtual(T* valuep)     FINAL_11
+    int adoptAndAppendValueVirtual(T* valuep)     override final
     {   values.push_back(*valuep); // make a copy
         delete valuep; // throw out the old one
         return values.size()-1; }
@@ -904,15 +904,15 @@ writeSimplePropertyToStream(std::ostream& o) const
 template<> inline bool SimpleProperty<std::string>::
 readSimplePropertyFromStream(std::istream& in)
 {
-	if(this->getMaxListSize()==1)
-	{
-		std::istringstream& instream = (std::istringstream&)(in);
-		values.clear();
-		values.push_back(instream.str());
-		return true;
+    if(this->getMaxListSize()==1)
+    {
+        std::istringstream& instream = (std::istringstream&)(in);
+        values.clear();
+        values.push_back(instream.str());
+        return true;
    }
    else
-	   return SimTK::readUnformatted(in, values);
+       return SimTK::readUnformatted(in, values);
 }
 
 
@@ -951,34 +951,35 @@ public:
     const std::string& getObjectClassName() const {return objectClassName;}
 
 
-    ObjectProperty* clone() const FINAL_11 
+    ObjectProperty* clone() const override final 
     {   return new ObjectProperty(*this); }
 
     // Implementation of these methods must be deferred until Object has been
     // declared; see Object.h.
-    std::string toString() const FINAL_11;
-    bool isAcceptableObjectTag(const std::string& objectTypeTag) const FINAL_11;
-    bool isEqualTo(const AbstractProperty& other) const FINAL_11;
+    std::string toString() const override final;
+    bool isAcceptableObjectTag(const std::string& objectTypeTag) const override
+        final;
+    bool isEqualTo(const AbstractProperty& other) const override final;
     void readFromXMLElement
        (SimTK::Xml::Element& propertyElement,
-        int                  versionNumber) FINAL_11;
+        int                  versionNumber) override final;
     void writeToXMLElement
-       (SimTK::Xml::Element& propertyElement) const FINAL_11;
-    void setValueAsObject(const Object& obj, int index=-1) FINAL_11;
+       (SimTK::Xml::Element& propertyElement) const override final;
+    void setValueAsObject(const Object& obj, int index=-1) override final;
 
-    bool isUnnamedProperty() const FINAL_11 {return isUnnamed;}
-    bool isObjectProperty() const FINAL_11 {return true;}
+    bool isUnnamedProperty() const override final {return isUnnamed;}
+    bool isObjectProperty() const override final {return true;}
 
-    int getNumValues() const FINAL_11 {return objects.size();}
-    void clearValues() FINAL_11 {objects.clear();}
+    int getNumValues() const override final {return objects.size();}
+    void clearValues() override final {objects.clear();}
 
-    const Object& getValueAsObject(int index=-1) const FINAL_11 {
+    const Object& getValueAsObject(int index=-1) const override final {
         if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
             index = 0;
         return *objects[index];
     }
 
-    Object& updValueAsObject(int index=-1) FINAL_11 {
+    Object& updValueAsObject(int index=-1) override final {
         if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
             index = 0;
         return *objects[index];
@@ -1004,18 +1005,18 @@ public:
     }
 private:
     // Base class checks the index.
-    const T& getValueVirtual(int index) const   FINAL_11 
+    const T& getValueVirtual(int index) const override final 
     {   return *objects[index]; }
-    T& updValueVirtual(int index)               FINAL_11 
+    T& updValueVirtual(int index) override final 
     {   return *objects[index]; }
-    void setValueVirtual(int index, const T& obj) FINAL_11
+    void setValueVirtual(int index, const T& obj) override final
     {   objects[index].clear();
         objects[index] = obj; }
-    int appendValueVirtual(const T& obj)        FINAL_11
+    int appendValueVirtual(const T& obj) override final
     {   objects.push_back();        // add empty element
         objects.back() = obj;       // insert a copy
         return objects.size()-1; }
-    int adoptAndAppendValueVirtual(T* objp)         FINAL_11
+    int adoptAndAppendValueVirtual(T* objp) override final
     {   objects.push_back();        // add empty element
         objects.back().reset(objp); // take over ownership
         return objects.size()-1; }
@@ -1063,7 +1064,7 @@ TypeHelper::create(const std::string& name, bool isOne)
 inline SimpleProperty<SimTK::Vec6>* Property<SimTK::Vec6>::
 TypeHelper::create(const std::string& name, bool isOne)
 {
-	return new SimpleProperty<SimTK::Vec6>(name, isOne);
+    return new SimpleProperty<SimTK::Vec6>(name, isOne);
 }
 
 inline SimpleProperty<SimTK::Vector>* Property<SimTK::Vector>::
@@ -1081,42 +1082,37 @@ TypeHelper::create(const std::string& name, bool isOne)
 SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
 #endif
 
+// Used by OpenSim_DECLARE_PROPERTY_HELPER below to control the members
+// that are used with SWIG.
+#ifndef SWIG
+#define OpenSim_DECLARE_PROPERTY_HELPER_PROPERTY_MEMBERS(name, T)           \
+    PropertyIndex PropertyIndex_##name;                                     \
+    const Property<T>& getProperty_##name() const                           \
+    {   return this->template getProperty<T>(PropertyIndex_##name); }       \
+    Property<T>& updProperty_##name()                                       \
+    {   return this->template updProperty<T>(PropertyIndex_##name); }
+#else
+// No need to wrap internal PropertyIndex or autogenerated methods that return 
+// templatized Properties
+#define OpenSim_DECLARE_PROPERTY_HELPER_PROPERTY_MEMBERS(name, T)
+#endif
+
 // For a property whose effective name (that is, property name or object
 // type for unnamed properties) is given, declare a variable to hold
 // its PropertyIndex and the methods needed for property access. This is 
 // used by all DECLARE_PROPERTY macro variants.
-#ifndef SWIG
 #define OpenSim_DECLARE_PROPERTY_HELPER(name, T)                            \
-    PropertyIndex PropertyIndex_##name;                                     \
-    void copyProperty_##name(const Self& source)                            \
-    {   PropertyIndex_##name = source.PropertyIndex_##name; }               \
-    const Property<T>& getProperty_##name() const                           \
-    {   return getProperty<T>(PropertyIndex_##name); }                      \
-    Property<T>& updProperty_##name()                                       \
-    {   return updProperty<T>(PropertyIndex_##name); }                      \
-    const T& get_##name(int i) const                                        \
-    {   return getProperty<T>(PropertyIndex_##name)[i]; }                   \
-    T& upd_##name(int i)                                                    \
-    {   return updProperty<T>(PropertyIndex_##name)[i]; }                   \
-    void set_##name(int i, const T& value)                                  \
-    {   updProperty_##name().setValue(i,value); }                           \
-    int append_##name(const T& value)                                       \
-    {   return updProperty_##name().appendValue(value); }
-#else
-// No need to wrap internal PropertyIndex or autogenerated methods that return 
-// Templatized Properties
-#define OpenSim_DECLARE_PROPERTY_HELPER(name, T)                            \
+    OpenSim_DECLARE_PROPERTY_HELPER_PROPERTY_MEMBERS(name, T)               \
     void copyProperty_##name(const Self& source)                            \
     {   PropertyIndex_##name = source.PropertyIndex_##name; }               \
     const T& get_##name(int i) const                                        \
-    {   return getProperty<T>(PropertyIndex_##name)[i]; }                   \
+    {   return this->template getProperty<T>(PropertyIndex_##name)[i]; }    \
     T& upd_##name(int i)                                                    \
-    {   return updProperty<T>(PropertyIndex_##name)[i]; }                   \
+    {   return this->template updProperty<T>(PropertyIndex_##name)[i]; }    \
     void set_##name(int i, const T& value)                                  \
-    {   updProperty_##name().setValue(i,value); }                           \
+    {   this->updProperty_##name().setValue(i,value); }                     \
     int append_##name(const T& value)                                       \
-    {   return updProperty_##name().appendValue(value); }
-#endif
+    {   return this->updProperty_##name().appendValue(value); }
 
 // All of the list properties share a constructor and set method that take
 // a "template template" argument allowing initialization from any container
@@ -1127,11 +1123,11 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
     OpenSim_DECLARE_PROPERTY_HELPER(name,T)                                 \
     template <template <class> class Container>                             \
     void constructProperty_##name(const Container<T>& initValue)            \
-    {   PropertyIndex_##name = addListProperty<T>(#name, comment,           \
-                            minSize, maxSize, initValue); }                 \
+    {   PropertyIndex_##name = this->template addListProperty<T>(#name,     \
+            comment, minSize, maxSize, initValue); }                        \
     template <template <class> class Container>                             \
     void set_##name(const Container<T>& value)                              \
-    {   updProperty_##name().setValue(value); }
+    {   this->updProperty_##name().setValue(value); }
 /** @endcond **/
 
 /** Declare a required, single-value property of the given \a name and 
@@ -1154,14 +1150,16 @@ A data member is also created but is intended for internal use only:
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_PROPERTY(name, T, comment)                          \
     OpenSim_DECLARE_PROPERTY_HELPER(name,T)                                 \
-    void constructProperty_##name(const T& initValue)                       \
-    {   PropertyIndex_##name = addProperty<T>(#name,comment,initValue); }   \
+    void constructProperty_##name(const T& initValue) {                     \
+        PropertyIndex_##name =                                              \
+            this->template addProperty<T>(#name,comment,initValue);         \
+    }                                                                       \
     const T& get_##name() const                                             \
-    {   return getProperty_##name().getValue(); }                           \
+    {   return this->getProperty_##name().getValue(); }                     \
     T& upd_##name()                                                         \
-    {   return updProperty_##name().updValue(); }                           \
+    {   return this->updProperty_##name().updValue(); }                     \
     void set_##name(const T& value)                                         \
-    {   updProperty_##name().setValue(value); }
+    {   this->updProperty_##name().setValue(value); }
 
 /** Declare a required, unnamed property holding exactly one object of type
 T derived from %OpenSim's Object class and identified by that object's class 
@@ -1171,13 +1169,14 @@ initialized with an object of type T.
 #define OpenSim_DECLARE_UNNAMED_PROPERTY(T, comment)                        \
     OpenSim_DECLARE_PROPERTY_HELPER(T,T)                                    \
     void constructProperty_##T(const T& initValue)                          \
-    {   PropertyIndex_##T = addProperty<T>("", comment, initValue); }       \
+    {   PropertyIndex_##T =                                                 \
+            this->template addProperty<T>("", comment, initValue); }        \
     const T& get_##T() const                                                \
-    {   return getProperty_##T().getValue(); }                              \
+    {   return this->getProperty_##T().getValue(); }                        \
     T& upd_##T()                                                            \
-    {   return updProperty_##T().updValue(); }                              \
+    {   return this->updProperty_##T().updValue(); }                        \
     void set_##T(const T& value)                                            \
-    {   updProperty_##T().setValue(value); }
+    {   this->updProperty_##T().setValue(value); }
 
 /** Declare a property of the given \a name containing an optional value of
 the given type T (that is, the value list can be of length 0 or 1 only).
@@ -1187,16 +1186,18 @@ value of type T.
 #define OpenSim_DECLARE_OPTIONAL_PROPERTY(name, T, comment)                 \
     OpenSim_DECLARE_PROPERTY_HELPER(name,T)                                 \
     void constructProperty_##name()                                         \
-    {   PropertyIndex_##name = addOptionalProperty<T>(#name, comment); }    \
+    {   PropertyIndex_##name =                                              \
+            this->template addOptionalProperty<T>(#name, comment); }        \
     void constructProperty_##name(const T& initValue)                       \
-    {   PropertyIndex_##name = addOptionalProperty<T>(#name, comment,       \
-                                                      initValue); }         \
+    {   PropertyIndex_##name =                                              \
+            this->template addOptionalProperty<T>(#name, comment,           \
+                                                  initValue); }             \
     const T& get_##name() const                                             \
-    {   return getProperty_##name().getValue(); }                           \
+    {   return this->getProperty_##name().getValue(); }                     \
     T& upd_##name()                                                         \
-    {   return updProperty_##name().updValue(); }                           \
+    {   return this->updProperty_##name().updValue(); }                     \
     void set_##name(const T& value)                                         \
-    {   updProperty_##name().setValue(value); }
+    {   this->updProperty_##name().setValue(value); }
 
 /** Declare a property of the given \a name containing a variable-length
 list of values of the given type T. The property may be constructed as empty, 
@@ -1211,7 +1212,7 @@ supports a %size() method and operator[] element selection.
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,                  \
                                          0, std::numeric_limits<int>::max())\
     void constructProperty_##name()                                         \
-    {   PropertyIndex_##name = addListProperty<T>                           \
+    {   PropertyIndex_##name = this->template addListProperty<T>            \
            (#name, comment, 0, std::numeric_limits<int>::max()); }
 
 /** Declare a property of the given \a name containing a list of values of 
@@ -1246,8 +1247,8 @@ method and operator[] element selection.
 #define OpenSim_DECLARE_LIST_PROPERTY_ATMOST(name, T, maxSize, comment)     \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment, 0, (maxSize))    \
     void constructProperty_##name()                                         \
-    {   PropertyIndex_##name = addListProperty<T>(#name, comment,           \
-                                                  0, (maxSize)); }
+    {   PropertyIndex_##name = this->template addListProperty<T>            \
+            (#name, comment, 0, (maxSize)); }
 
 /** Declare a property of the given \a name containing a list of values of 
 the given type T, with the number of values in the list restricted to be

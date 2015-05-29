@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Samuel R. Hamner, Ajay Seth                                                *
+ * Author(s): Samuel R. Hamner, Ajay Seth                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -47,66 +47,64 @@ double bestSoFar = Infinity;
 class ExampleOptimizationSystem : public OptimizerSystem {
    public:
 
-	   /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
-	   ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
+       /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
+       ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
              numControls(numParameters), OptimizerSystem(numParameters), si(s), osimModel(aModel)
-	   {
-		   // Create the integrator for the simulation.
-		   p_integrator = new RungeKuttaMersonIntegrator(osimModel.getMultibodySystem());
-		   p_integrator->setAccuracy(1.0e-7);
-		   p_manager = new Manager(osimModel, *p_integrator);
-	   }
-			 	
-	int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const {
+       {
+           // Create the integrator for the simulation.
+           p_integrator = new RungeKuttaMersonIntegrator(osimModel.getMultibodySystem());
+           p_integrator->setAccuracy(1.0e-7);
+           p_manager = new Manager(osimModel, *p_integrator);
+       }
+                
+    int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const {
 
         // make a copy of the initial states
         State s = si;
 
         // Update the control values
-		osimModel.updDefaultControls() = newControls;
-				
-		// Integrate from initial time to final time
-		p_manager->setInitialTime(initialTime);
-		p_manager->setFinalTime(finalTime);
+        osimModel.updDefaultControls() = newControls;
+                
+        // Integrate from initial time to final time
+        p_manager->setInitialTime(initialTime);
+        p_manager->setFinalTime(finalTime);
 
-		osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
+        osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
 
-		p_manager->integrate(s);
+        p_manager->integrate(s);
 
-		/* Calculate the scalar quantity we want to minimize or maximize. 
-		*  In this case, we’re maximizing forward velocity of the 
-		*  forearm/hand mass center, so to maximize, compute velocity 
-		*  and multiply it by -1.
-		*/
-		Vec3 massCenter = osimModel.getBodySet().get("r_ulna_radius_hand").getMassCenter();
-		Vec3 velocity;
-		osimModel.getMultibodySystem().realize(s, Stage::Velocity);
-		osimModel.getSimbodyEngine().getVelocity(s, osimModel.getBodySet().get("r_ulna_radius_hand"), massCenter, velocity);
-		
-		f = -velocity[0];
-		stepCount++;
-		
-		// Store and print the  results of the first step.
-		if( stepCount == 1){ 
-			p_manager->getStateStorage().print("Arm26_noActivation_states.sto");
-		}
-		// Use an if statement to only store and print the results of an 
-		//  optimization step if it is better than a previous result.
-		else if( f < bestSoFar){
-			bestSoFar = f;
-			cout << "\nobjective evaluation #: " << stepCount << "  controls = " << newControls <<  " bestSoFar = " << f << std::endl;
-		}		    
+        /* Calculate the scalar quantity we want to minimize or maximize. 
+        *  In this case, we’re maximizing forward velocity of the 
+        *  forearm/hand mass center, so to maximize, compute velocity 
+        *  and multiply it by -1.
+        */
+        Vec3 massCenter = osimModel.getBodySet().get("r_ulna_radius_hand").getMassCenter();
+        Vec3 velocity;
+        osimModel.getMultibodySystem().realize(s, Stage::Velocity);
+        osimModel.getSimbodyEngine().getVelocity(s, osimModel.getBodySet()
+            .get("r_ulna_radius_hand"), massCenter, velocity);
+        
+        f = -velocity[0];
+        stepCount++;
+        
+        // Use an if statement to only store and print the results of an 
+        //  optimization step if it is better than a previous result.
+        if(f < bestSoFar) {
+            bestSoFar = f;
+            cout << "\nobjective evaluation #: " << stepCount << "  controls = "
+                 << newControls <<  " bestSoFar = " << f << std::endl;
+        }
 
-      return(0);
+      return 0;
 
-   }	
+   }    
 
 private:
     int numControls;
-	State& si;
-	Model& osimModel;
-	SimTK::ReferencePtr<Manager> p_manager;
-	SimTK::ReferencePtr<RungeKuttaMersonIntegrator> p_integrator;
+    State& si;
+    Model& osimModel;
+    SimTK::ReferencePtr<Manager> p_manager;
+    SimTK::ReferencePtr<RungeKuttaMersonIntegrator> p_integrator;
 
  };
 
@@ -117,83 +115,104 @@ private:
  */
 int main()
 {
-	try {
-		std::clock_t startTime = std::clock();	
-	
-		// Create a new OpenSim model
-		// Similar to arm26 model but without wrapping surfaces for better performance
-		Model osimModel("Arm26_Optimize.osim");
-		
-		// Initialize the system and get the state representing the state system
-		State& si = osimModel.initSystem();
+    try {
+        std::clock_t startTime = std::clock();  
 
-		// initialize the starting shoulder angle
-		const CoordinateSet& coords = osimModel.getCoordinateSet();
-		coords.get("r_shoulder_elev").setValue(si, -1.57079633);
+        // Use Millard2012Equilibrium muscles with rigid tendons for better
+        // performance.
+        Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
+    
+        // Create a new OpenSim model. This model is similar to the arm26 model,
+        // but without wrapping surfaces for better performance.
+        Model osimModel("Arm26_Optimize.osim");
+        
+        // Initialize the system and get the state representing the state system
+        State& si = osimModel.initSystem();
 
-		// Set the initial muscle activations 
-		const Set<Muscle> &muscleSet = osimModel.getMuscles();
-     	for(int i=0; i< muscleSet.getSize(); i++ ){
-			muscleSet[i].setActivation(si, 0.01);
-		}
-	
-		// Make sure the muscles states are in equilibrium
-		osimModel.equilibrateMuscles(si);
+        // Initialize the starting shoulder angle.
+        const CoordinateSet& coords = osimModel.getCoordinateSet();
+        coords.get("r_shoulder_elev").setValue(si, -1.57079633);
 
-		// The number of controls will equal the number of muscles in the model!
-		int numControls = osimModel.getNumControls();
-		
-		// Initialize the optimizer system we've defined.
-		ExampleOptimizationSystem sys(numControls, si, osimModel);
-		Real f = NaN;
-		
-		/* Define initial values and bounds for the controls to optimize */
-		Vector controls(numControls, 0.01);
-		Vector lower_bounds(numControls, 0.01);
-		Vector upper_bounds(numControls, 0.99);
+        // Set the initial muscle activations and make all tendons rigid.
+        const Set<Muscle> &muscleSet = osimModel.getMuscles();
+        for(int i=0; i<muscleSet.getSize(); ++i) {
+            muscleSet[i].setActivation(si, 0.01);
+            muscleSet[i].setIgnoreTendonCompliance(si, true);
+        }
+    
+        // Make sure the muscles states are in equilibrium
+        osimModel.equilibrateMuscles(si);
 
-		sys.setParameterLimits( lower_bounds, upper_bounds );
-		
-		// Create an optimizer. Pass in our OptimizerSystem
-		// and the name of the optimization algorithm.
-		Optimizer opt(sys, SimTK::LBFGSB);
-		//Optimizer opt(sys, InteriorPoint);
+        // The number of controls will equal the number of muscles in the model!
+        int numControls = osimModel.getNumControls();
+        
+        // Initialize the optimizer system we've defined.
+        ExampleOptimizationSystem sys(numControls, si, osimModel);
+        Real f = NaN;
+        
+        /* Define initial values and bounds for the controls to optimize */
+        Vector controls(numControls, 0.01);
+        controls[3] = 0.99;
+        controls[4] = 0.99;
+        controls[5] = 0.99;
 
-		// Specify settings for the optimizer
-		opt.setConvergenceTolerance(0.1);
-		opt.useNumericalGradient(true, 1e-5);
-		opt.setMaxIterations(100);
-		opt.setLimitedMemoryHistory(500);
-			
-		// Optimize it!
-		f = opt.optimize(controls);
-			
-		cout << "Elapsed time = " << (std::clock()-startTime)/CLOCKS_PER_SEC << "s" << endl;
-		
-		const Set<Actuator>& actuators = osimModel.getActuators();
-		for(int i=0; i<actuators.getSize(); ++i){
-			cout << actuators[i].getName() << " control value = " << controls[i] << endl;
-		}
+        Vector lower_bounds(numControls, 0.01);
+        Vector upper_bounds(numControls, 0.99);
 
-		cout << "\nMaximum hand velocity = " << -f << "m/s" << endl;
+        sys.setParameterLimits( lower_bounds, upper_bounds );
+        
+        // Create an optimizer. Pass in our OptimizerSystem
+        // and the name of the optimization algorithm.
+        Optimizer opt(sys, SimTK::LBFGSB);
+        //Optimizer opt(sys, InteriorPoint);
+
+        // Specify settings for the optimizer
+        opt.setConvergenceTolerance(0.1);
+        opt.useNumericalGradient(true, 1e-5);
+        opt.setMaxIterations(100);
+        opt.setLimitedMemoryHistory(500);
+
+        // Optimize it!
+        f = opt.optimize(controls);
+            
+        cout << "Elapsed time = " << (std::clock()-startTime)/CLOCKS_PER_SEC << "s" << endl;
+        
+        const Set<Actuator>& actuators = osimModel.getActuators();
+        for(int i=0; i<actuators.getSize(); ++i){
+            cout << actuators[i].getName() << " control value = " << controls[i] << endl;
+        }
+
+        cout << "\nMaximum hand velocity = " << -f << "m/s" << endl;
 
         cout << "OpenSim example completed successfully." << endl;
-		
-		// Dump out optimization results to a text file for testing
-		ofstream ofile; 
-		ofile.open("Arm26_optimization_result"); 
-		for(int i=0; i<actuators.getSize(); ++i){
-			ofile << controls[i] << endl;
-	}
-		ofile << -f <<endl;
-		ofile.close(); 
-	}
+        
+        // Dump out optimization results to a text file for testing
+        ofstream ofile; 
+        ofile.open("Arm26_optimization_result"); 
+        for(int i=0; i<actuators.getSize(); ++i)
+            ofile << controls[i] << endl;
+        ofile << -f <<endl;
+        ofile.close(); 
+
+        // Re-run simulation with optimal controls.
+        RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
+        integrator.setAccuracy(1.0e-7);
+        Manager manager(osimModel, integrator);
+        osimModel.updDefaultControls() = controls;
+
+        // Integrate from initial time to final time.
+        manager.setInitialTime(initialTime);
+        manager.setFinalTime(finalTime);
+        osimModel.getMultibodySystem().realize(si, Stage::Acceleration);
+        manager.integrate(si);
+        manager.getStateStorage().print("Arm26_optimized_states.sto");
+    }
     catch (const std::exception& ex)
     {
         std::cout << ex.what() << std::endl;
         return 1;
     }
-	
-	// End of main() routine.
-	return 0;
+    
+    // End of main() routine.
+    return 0;
 }

@@ -22,11 +22,9 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
-// INCLUDES
 #include "Simbody.h"
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
-#include <OpenSim/Common/Object.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
 
 namespace OpenSim {
 /** This is a muscle modeling utility class that computes the time derivative of
@@ -69,12 +67,6 @@ namespace OpenSim {
     minActivation ...... 0.01
     \endverbatim
 
-    Note that this object should be updated through the set methods provided.
-    These set methods will take care of rebuilding the object correctly. If you
-    modify the properties directly, the object will not be rebuilt, and upon
-    calling any function, an exception will be thrown because the object is
-    out-of-date with its properties.
-
     <B>References</B>
     \li Thelen, D.G. (2003) Adjustment of muscle mechanics model parameters to
         simulate dynamic contractions in older adults. ASME Journal of
@@ -85,8 +77,8 @@ namespace OpenSim {
 
     @author Matt Millard
 */
-class OSIMACTUATORS_API MuscleFirstOrderActivationDynamicModel : public Object{
-OpenSim_DECLARE_CONCRETE_OBJECT(MuscleFirstOrderActivationDynamicModel, Object);
+class OSIMACTUATORS_API MuscleFirstOrderActivationDynamicModel : public ModelComponent{
+OpenSim_DECLARE_CONCRETE_OBJECT(MuscleFirstOrderActivationDynamicModel, ModelComponent);
 public:
 
 //==============================================================================
@@ -116,38 +108,6 @@ public:
                                            double minActivation,
                                            const std::string& muscleName);
 
-    void ensureModelUpToDate();
-
-    /** @returns The activation time constant (in seconds). */
-    double getActivationTimeConstant() const;
-
-    /** @returns The deactivation time constant (in seconds). */
-    double getDeactivationTimeConstant() const;
-
-    /** @returns The lower bound on activation. */
-    double getMinimumActivation() const;
-
-    /** @returns The upper bound on activation. */
-    double getMaximumActivation() const;
-
-    /**
-    @param activationTimeConstant The activation time constant (in seconds).
-    @returns A boolean indicating whether the value was set.
-    */
-    bool setActivationTimeConstant(double activationTimeConstant);
-
-    /**
-    @param deactivationTimeConstant The deactivation time constant (in seconds).
-    @returns A boolean indicating whether the value was set.
-    */
-    bool setDeactivationTimeConstant(double deactivationTimeConstant);
-        
-    /**
-    @param minimumActivation The lower bound on activation.
-    @returns A boolean indicating whether the value was set.
-    */
-    bool setMinimumActivation(double minimumActivation);
-
     /**
     @returns Activation clamped to the range [minActivation, 1.0].
     */
@@ -156,11 +116,13 @@ public:
     /** Calculates the time derivative of activation. */
     double calcDerivative(double activation, double excitation) const;
 
+protected:
+    // Component interface.
+    void extendFinalizeFromProperties() override;
 
 private:
     void setNull();
     void constructProperties();
-    void buildModel();
 
 };
 

@@ -59,73 +59,73 @@ public:
     /** @name Property declarations 
     These are the serializable properties associated with this class. **/
     /**@{**/
-	OpenSim_DECLARE_PROPERTY(thread_length, double,
-		"The thread length");
-	OpenSim_DECLARE_PROPERTY(number_of_turns, double,
-		"Number of turns of the thread.");
-	OpenSim_DECLARE_PROPERTY(cord_length, double,
+    OpenSim_DECLARE_PROPERTY(thread_length, double,
+        "The thread length");
+    OpenSim_DECLARE_PROPERTY(number_of_turns, double,
+        "Number of turns of the thread.");
+    OpenSim_DECLARE_PROPERTY(cord_length, double,
         "The length of the flexible cord attaching the actuator to the last point.");
-	/**@}**/
-	
+    /**@}**/
+    
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-	/** Default constructor leaves body names unspecified. **/
+    /** Default constructor leaves body names unspecified. **/
     McKibbenActuator();
-	/** Convenience constructor for API users. **/
-	McKibbenActuator(const std::string& name, double num_turns, double thread_length);
+    /** Convenience constructor for API users. **/
+    McKibbenActuator(const std::string& name, double num_turns, double thread_length);
 
-	/** Set the 'number of turns' property. **/
-	void setNumberOfTurns(double val)
+    /** Set the 'number of turns' property. **/
+    void setNumberOfTurns(double val)
     {   set_number_of_turns(val); }
     /** Get the current value of the 'number of turns' property. **/
-	double getNumberOfTurns() const 
+    double getNumberOfTurns() const 
     {   return get_number_of_turns(); }
-	
-	/** Set the 'thread length' property. **/
-	void setThreadLength(double val)
+    
+    /** Set the 'thread length' property. **/
+    void setThreadLength(double val)
     {   set_thread_length(val); }
     /** Get the current value of the 'thread length' property. **/
-	double getThreadLength() const
+    double getThreadLength() const
     {   return get_thread_length(); }
-	
-	/** Set the 'cord length' property. **/
-	void setCordLength(double val)
+    
+    /** Set the 'cord length' property. **/
+    void setCordLength(double val)
     {   set_cord_length(val); }
     /** Get the current value of the 'cord length' property. **/
-	double getCordLength() const
+    double getCordLength() const
     {   return get_cord_length(); }
 
-	/** Compute actuation for current state. **/
-	double computeActuation(const SimTK::State& s) const;
+    /** Compute actuation for current state. **/
+    double computeActuation(const SimTK::State& s) const;
 protected:
     /** how to display the McKibben
-	VisibleObject _displayer; */
+    VisibleObject _displayer; */
 
 private:
-	void constructProperties();
+    void constructProperties();
 
-	//--------------------------------------------------------------------------
-	// Implement Force interface
-	//--------------------------------------------------------------------------
-	void computeForce(const SimTK::State& state, 
-					  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-					  SimTK::Vector& mobilityForces) const override;
+    //--------------------------------------------------------------------------
+    // Implement Force interface
+    //--------------------------------------------------------------------------
+    void computeForce(const SimTK::State& state, 
+                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+                      SimTK::Vector& mobilityForces) const override;
 
 
-	//--------------------------------------------------------------------------
-	// Implement ModelComponent interface
-	//--------------------------------------------------------------------------
-	// Setup method initializes Body reference pointers to match the names.
-	void connectToModel(Model& aModel) override;
+    //--------------------------------------------------------------------------
+    // Implement ModelComponent interface
+    //--------------------------------------------------------------------------
+    // Setup method initializes Body reference pointers to match the names.
+    void extendConnectToModel(Model& aModel) override;
 
-	//--------------------------------------------------------------------------
-	// Visualization interface
-	//--------------------------------------------------------------------------
-	/*
-	virtual VisibleObject* getDisplayer() const;
-	virtual void updateDisplayer(const SimTK::State& s);
-	virtual void updateGeometry(const SimTK::State& s);*/
+    //--------------------------------------------------------------------------
+    // Visualization interface
+    //--------------------------------------------------------------------------
+    /*
+    virtual VisibleObject* getDisplayer() const;
+    virtual void updateDisplayer(const SimTK::State& s);
+    virtual void updateGeometry(const SimTK::State& s);*/
 
 }; // class McKibbenActuator
 } // namespace OpenSim

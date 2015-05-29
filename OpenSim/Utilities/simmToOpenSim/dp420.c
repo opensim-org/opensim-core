@@ -10,7 +10,7 @@
    All rights reserved.
 
    Description: This file contains functions that convert a SIMM model into
-	a Dynamics Pipeline model for use with dynamics DLLs created by SIMM 4.2 and 4.2.1.
+    a Dynamics Pipeline model for use with dynamics DLLs created by SIMM 4.2 and 4.2.1.
 
    Routines:
 
@@ -50,12 +50,12 @@ static void copyFunctionToDP420Function(dpFunction* from, dp420SplineFunction** 
 static void copySegmentsToDP420(ModelStruct* ms, dp420ModelStruct* dp);
 static void copyMusclesToDP420(ModelStruct* ms, dp420ModelStruct* dp, int muscleList[]);
 static ReturnCode copy_nondefault_dyn_params420(dpMuscleStruct* from, dp420MuscleStruct* to,
-																dpMuscleStruct* deffrom, dp420MuscleStruct* defto);
+                                                                dpMuscleStruct* deffrom, dp420MuscleStruct* defto);
 static ReturnCode copy_nonnull_dyn_params420(dpMuscleStruct* from, dp420MuscleStruct* to);
 static void copyDP420DefaultMuscle(dpMuscleStruct* from, dp420MuscleStruct* to, ModelStruct* ms, dp420ModelStruct* dp);
 static void copyMuscleToDP420Muscle(dpMuscleStruct* from, dpMuscleStruct* defFrom,
-												dp420MuscleStruct* to, dp420MuscleStruct* defTo,
-												ModelStruct* ms, dp420ModelStruct* dp);
+                                                dp420MuscleStruct* to, dp420MuscleStruct* defTo,
+                                                ModelStruct* ms, dp420ModelStruct* dp);
 static int get_sd_floor_num420(dp420ModelStruct* dp, char* name);
 
 
@@ -104,7 +104,7 @@ static void freeDP420DefaultMuscle(dp420MuscleStruct* dm)
          FREE_IFNOTNULL(dm->force_vel_curve);
       }
 
-		if (dm->dynamic_params)
+        if (dm->dynamic_params)
       {
          for (i = 0; i < dm->num_dynamic_params; i++)
             FREE_IFNOTNULL(dm->dynamic_params[i]);
@@ -183,7 +183,7 @@ static void freeDP420Muscle(dp420MuscleStruct* ms, dp420MuscleStruct* dm)
          FREE_IFNOTNULL(ms->force_vel_curve);
       }
 
-		/* The dynamic_params array (of pointers) is always unique to each muscle,
+        /* The dynamic_params array (of pointers) is always unique to each muscle,
        * but the doubles that they point to could be in the default muscle.
        */
       if (ms->dynamic_params)
@@ -338,7 +338,7 @@ void freeDP420ModelStruct(dp420ModelStruct* dp)
       FREE_IFNOTNULL(dp->constraint_object);
    }
 
-	FREE_IFNOTNULL(dp);
+    FREE_IFNOTNULL(dp);
 }
 
 static dp420WrapObject* getDP420WrapObject(dp420ModelStruct* dp, char name[])
@@ -439,24 +439,24 @@ static void copyMuscPointToDP420MuscPoint(dpMusclePoint* from, dp420MusclePoint*
    to->point[XX] = from->point[XX] - ms->segment[from->segment].masscenter[XX];
    to->point[YY] = from->point[YY] - ms->segment[from->segment].masscenter[YY];
    to->point[ZZ] = from->point[ZZ] - ms->segment[from->segment].masscenter[ZZ];
-	if (from->isVia == dpYes)
-	{
-		to->numranges = 1;
-		to->ranges = (dp420PointRange*)simm_malloc(sizeof(dp420PointRange));
-		/* Find the SIMM DOF which uses the gencoord as an unconstrained Q. */
-		dof = find_unconstrained_sd_dof(ms, (GeneralizedCoord*)from->viaRange.gencoord);
-		if (dof)
-			to->ranges[0].genc = dof->sd.state_number;
-		else
-			to->ranges[0].genc = 0; // TODO: serious error is index of gencoord in DP cannot be found!
-		to->ranges[0].start = from->viaRange.start;
-		to->ranges[0].end = from->viaRange.end;
-	}
-	else
-	{
-		to->numranges = 0;
-		to->ranges = NULL;
-	}
+    if (from->isVia == dpYes)
+    {
+        to->numranges = 1;
+        to->ranges = (dp420PointRange*)simm_malloc(sizeof(dp420PointRange));
+        /* Find the SIMM DOF which uses the gencoord as an unconstrained Q. */
+        dof = find_unconstrained_sd_dof(ms, (GeneralizedCoord*)from->viaRange.gencoord);
+        if (dof)
+            to->ranges[0].genc = dof->sd.state_number;
+        else
+            to->ranges[0].genc = 0; // TODO: serious error is index of gencoord in DP cannot be found!
+        to->ranges[0].start = from->viaRange.start;
+        to->ranges[0].end = from->viaRange.end;
+    }
+    else
+    {
+        to->numranges = 0;
+        to->ranges = NULL;
+    }
 
    to->is_auto_wrap_point = from->is_auto_wrap_point;
    to->wrap_distance = from->wrap_distance;
@@ -492,7 +492,7 @@ static void copyWrapObjectsToDP420(ModelStruct* ms, dp420ModelStruct* dp)
       dp420WrapObject* to = &dp->wrap_object[i];
 
       mstrcpy(&to->name, from->name);
-		to->wrap_type = from->wrap_type;
+        to->wrap_type = from->wrap_type;
       to->active = from->active;
       to->wrap_algorithm = from->wrap_algorithm;
       to->segment = get_sd_seg_num(ms->segment[from->segment].name);
@@ -535,7 +535,7 @@ static void copyQsToDP420(ModelStruct* ms, dp420ModelStruct* dp)
       dof = find_nth_q_dof(ms, i);
       jnt = find_nth_q_joint(ms, i);
       if (dof->gencoord) //dkb
-			gc = dof->gencoord;
+            gc = dof->gencoord;
       else
          gc = NULL;//dkb
       q = &dp->q[i];
@@ -550,7 +550,7 @@ static void copyQsToDP420(ModelStruct* ms, dp420ModelStruct* dp)
       {
          /* Locked gencoords are modeled as fixed Qs (as of version 4.1.1). */
          if (dof->gencoord && gc->locked == yes)
-				q->type = dpFixedQ;
+                q->type = dpFixedQ;
          else
             q->type = dpUnconstrainedQ;
       }
@@ -568,13 +568,13 @@ static void copyQsToDP420(ModelStruct* ms, dp420ModelStruct* dp)
       {
          q->range_start = gc->range.start;
          q->range_end = gc->range.end;
-			q->pd_stiffness = gc->pd_stiffness;
+            q->pd_stiffness = gc->pd_stiffness;
       }
       else
       {
          q->range_start = -99999.9;
          q->range_end = 99999.9;
-			q->pd_stiffness = 0.0;
+            q->pd_stiffness = 0.0;
       }
       if (dof->sd.fixed == yes || dof->sd.constrained == yes)
       {
@@ -590,7 +590,7 @@ static void copyQsToDP420(ModelStruct* ms, dp420ModelStruct* dp)
             /* The index of the function in the ModelStruct and the dpModelStruct
              * should be the same.
              */
-				q->restraint_func = &dp->constraint_function[getFunctionIndex(ms, gc->restraint_function)];
+                q->restraint_func = &dp->constraint_function[getFunctionIndex(ms, gc->restraint_function)];
             q->min_restraint_func = NULL;
             q->max_restraint_func = NULL;
             if (gc->restraintFuncActive == yes)
@@ -650,7 +650,7 @@ static void copyFunctionToDP420Function(dpFunction* from, dp420SplineFunction** 
 
    f = *to = (dp420SplineFunction*)simm_calloc(1, sizeof(dp420SplineFunction));
 
-	f->type = from->type;
+    f->type = from->type;
 
    f->cutoff_frequency = 0;
    f->usernum = 0;
@@ -746,7 +746,7 @@ static void copyMusclesToDP420(ModelStruct* ms, dp420ModelStruct* dp, int muscle
 
    dp->muscles = (dp420MuscleStruct*)simm_malloc(dp->num_muscles * sizeof(dp420MuscleStruct));
 
-	copyDP420DefaultMuscle(ms->default_muscle, &dp->default_muscle, ms, dp);
+    copyDP420DefaultMuscle(ms->default_muscle, &dp->default_muscle, ms, dp);
 
    for (i = 0, index = 0; i < ms->nummuscles; i++)
    {
@@ -757,7 +757,7 @@ static void copyMusclesToDP420(ModelStruct* ms, dp420ModelStruct* dp, int muscle
 
 
 static ReturnCode copy_nondefault_dyn_params420(dpMuscleStruct* from, dp420MuscleStruct* to,
-																dpMuscleStruct* deffrom, dp420MuscleStruct* defto)
+                                                                dpMuscleStruct* deffrom, dp420MuscleStruct* defto)
 {
    int i;
 
@@ -853,10 +853,10 @@ static void copyDP420DefaultMuscle(dpMuscleStruct* from, dp420MuscleStruct* to, 
    copy_nndouble(from->optimal_fiber_length,&to->optimal_fiber_length);
    copy_nndouble(from->resting_tendon_length,&to->resting_tendon_length);
 
-	// For the names of the dynamic parameters, use the array in the model struct.
-	to->dynamic_param_names = dp->dynamic_param_names;
+    // For the names of the dynamic parameters, use the array in the model struct.
+    to->dynamic_param_names = dp->dynamic_param_names;
 
-	copy_nonnull_dyn_params420(from, to);
+    copy_nonnull_dyn_params420(from, to);
 
    if (from->active_force_len_func == NULL)
       to->active_force_len_curve = NULL;
@@ -878,35 +878,35 @@ static void copyDP420DefaultMuscle(dpMuscleStruct* from, dp420MuscleStruct* to, 
    else
       copyFunctionToDP420Function(*from->force_vel_func, &to->force_vel_curve);
 
-	if (from->excitation_abscissa)
-	{
-		if (*from->excitation_abscissa == TIME)
-			to->excitation_abscissa = -2;
-		else
-		{
-			DofStruct* dof = find_unconstrained_sd_dof(ms, (GeneralizedCoord*)(*from->excitation_abscissa));
-			if (dof)
-				to->excitation_abscissa = dof->sd.state_number;
-			else
-				to->excitation_abscissa = 0;
-		}
-	}
-	else
-	{
-		to->excitation_abscissa = -2;
-	}
+    if (from->excitation_abscissa)
+    {
+        if (*from->excitation_abscissa == TIME)
+            to->excitation_abscissa = -2;
+        else
+        {
+            DofStruct* dof = find_unconstrained_sd_dof(ms, (GeneralizedCoord*)(*from->excitation_abscissa));
+            if (dof)
+                to->excitation_abscissa = dof->sd.state_number;
+            else
+                to->excitation_abscissa = 0;
+        }
+    }
+    else
+    {
+        to->excitation_abscissa = -2;
+    }
 
-	if (from->excitation_func == NULL)
-	{
+    if (from->excitation_func == NULL)
+    {
       to->excitation = NULL;
-		to->excitation_format = NULL;
-	}
+        to->excitation_format = NULL;
+    }
    else
-	{
+    {
       copyFunctionToDP420Function(*from->excitation_func, &to->excitation);
       to->excitation_format = (dpFunctionType*)simm_malloc(sizeof(dpFunctionType));
-		*to->excitation_format = (*from->excitation_func)->type;
-	}
+        *to->excitation_format = (*from->excitation_func)->type;
+    }
 
    copy_nnint(from->muscle_model_index, &to->muscle_model_index);
    /* In the Pipeline, muscle_model_index is zero-based. */
@@ -922,8 +922,8 @@ static void copyDP420DefaultMuscle(dpMuscleStruct* from, dp420MuscleStruct* to, 
 
 
 static void copyMuscleToDP420Muscle(dpMuscleStruct* from, dpMuscleStruct* defFrom,
-												dp420MuscleStruct* to, dp420MuscleStruct* defTo,
-												ModelStruct* ms, dp420ModelStruct* dp)
+                                                dp420MuscleStruct* to, dp420MuscleStruct* defTo,
+                                                ModelStruct* ms, dp420ModelStruct* dp)
 {
    int i;
 
@@ -1015,36 +1015,36 @@ static void copyMuscleToDP420Muscle(dpMuscleStruct* from, dpMuscleStruct* defFro
       *to->max_contraction_vel = *from->max_contraction_vel;
    }
 
-	copy_nondefault_dyn_params420(from, to, defFrom, defTo);
+    copy_nondefault_dyn_params420(from, to, defFrom, defTo);
 
-	if (from->excitation_abscissa == defFrom->excitation_abscissa)
-	{
-		to->excitation_abscissa = defTo->excitation_abscissa;
-	}
-	else if (from->excitation_abscissa)
-	{
-		DofStruct* dof = find_unconstrained_sd_dof(ms, (GeneralizedCoord*)(*from->excitation_abscissa));
-		if (dof)
-			to->excitation_abscissa = dof->sd.state_number;
-		else
-			to->excitation_abscissa = 0;
-	}
-	else
-	{
-		to->excitation_abscissa = -2;
-	}
+    if (from->excitation_abscissa == defFrom->excitation_abscissa)
+    {
+        to->excitation_abscissa = defTo->excitation_abscissa;
+    }
+    else if (from->excitation_abscissa)
+    {
+        DofStruct* dof = find_unconstrained_sd_dof(ms, (GeneralizedCoord*)(*from->excitation_abscissa));
+        if (dof)
+            to->excitation_abscissa = dof->sd.state_number;
+        else
+            to->excitation_abscissa = 0;
+    }
+    else
+    {
+        to->excitation_abscissa = -2;
+    }
 
    if (from->excitation_func == defFrom->excitation_func)
-	{
+    {
       to->excitation = defTo->excitation;
-		to->excitation_format = defTo->excitation_format;
-	}
+        to->excitation_format = defTo->excitation_format;
+    }
    else
-	{
+    {
       copyFunctionToDP420Function(*from->excitation_func, &to->excitation);
       to->excitation_format = (dpFunctionType*)simm_malloc(sizeof(dpFunctionType));
-		*to->excitation_format = (*from->excitation_func)->type;
-	}
+        *to->excitation_format = (*from->excitation_func)->type;
+    }
 
    if (from->muscle_model_index == defFrom->muscle_model_index)
       to->muscle_model_index = defTo->muscle_model_index;
@@ -1094,7 +1094,7 @@ dp420ModelStruct* copyModelToDP420Model(ModelStruct* ms, int muscleList[])
 {
    int i, j, k, segNum, count;
    ReturnCode rc;
-	dp420QStruct* gencoord;
+    dp420QStruct* gencoord;
    GeneralizedCoord* temp_gc;
    dp420QStruct* temp_q;
    dp420ModelStruct* dp;
@@ -1103,10 +1103,10 @@ dp420ModelStruct* copyModelToDP420Model(ModelStruct* ms, int muscleList[])
 
    dp->simmModel = (dpSimmModelID)ms;
 
-	/* This is only set to yes by set_up_kinetics_input() in the
-	 * simulation code.
-	 */
-	dp->newInverseSimulation = dpNo;
+    /* This is only set to yes by set_up_kinetics_input() in the
+     * simulation code.
+     */
+    dp->newInverseSimulation = dpNo;
 
    /* To fill in the dpModelStruct, you need to know how
     * the SIMM segments/joints are mapped to the SD/FAST segments/joints.
@@ -1223,11 +1223,11 @@ dp420ModelStruct* copyModelToDP420Model(ModelStruct* ms, int muscleList[])
    /* Copy the wrap objects. */
    copyWrapObjectsToDP420(ms, dp);
 
-	// SIMM 5.0 models do not hold dynamic_param_names in the model struct,
-	// and they are not needed in the 4.2 model struct (they are also stored
-	// in the default muscle).
+    // SIMM 5.0 models do not hold dynamic_param_names in the model struct,
+    // and they are not needed in the 4.2 model struct (they are also stored
+    // in the default muscle).
    dp->num_dynamic_params = 0;
-	dp->dynamic_param_names = NULL;
+    dp->dynamic_param_names = NULL;
 
    /* Copy the spring floors. */
    /* First count how many floors there are, since they are not stored in one array.
@@ -1362,9 +1362,9 @@ dp420ModelStruct* copyModelToDP420Model(ModelStruct* ms, int muscleList[])
             dpFunction* from = ms->function[i];
             dp420SplineFunction* to = &dp->constraint_function[index++];
 
-				to->type = from->type;
+                to->type = from->type;
             to->cutoff_frequency = 0.0;
-				to->usernum = from->usernum;
+                to->usernum = from->usernum;
             to->defined = dpYes;
 
             to->numpoints = to->coefficient_array_size = from->numpoints;
@@ -1393,21 +1393,21 @@ dp420ModelStruct* copyModelToDP420Model(ModelStruct* ms, int muscleList[])
     */
    copyQsToDP420(ms, dp);
 
-	// SIMM 5.0 models do not contain dynamic_param_names at the model level (only in the muscles),
-	// but in SIMM 4.2 models they do. So copy them from the 5.0 default muscle to the 4.2 model.
-	// The same array of param names will be stored in the 4.2 model, the default muscle, and
-	// all the muscles.
-	dp->num_dynamic_params = ms->default_muscle->num_dynamic_params;
-	if (dp->num_dynamic_params > 0)
-	{
-		dp->dynamic_param_names = (char**)simm_malloc(dp->num_dynamic_params * sizeof(char*));
-		for (i=0; i<dp->num_dynamic_params; i++)
-			mstrcpy(&dp->dynamic_param_names[i], ms->default_muscle->dynamic_param_names[i]);
-	}
-	else
-	{
-		dp->dynamic_param_names = NULL;
-	}
+    // SIMM 5.0 models do not contain dynamic_param_names at the model level (only in the muscles),
+    // but in SIMM 4.2 models they do. So copy them from the 5.0 default muscle to the 4.2 model.
+    // The same array of param names will be stored in the 4.2 model, the default muscle, and
+    // all the muscles.
+    dp->num_dynamic_params = ms->default_muscle->num_dynamic_params;
+    if (dp->num_dynamic_params > 0)
+    {
+        dp->dynamic_param_names = (char**)simm_malloc(dp->num_dynamic_params * sizeof(char*));
+        for (i=0; i<dp->num_dynamic_params; i++)
+            mstrcpy(&dp->dynamic_param_names[i], ms->default_muscle->dynamic_param_names[i]);
+    }
+    else
+    {
+        dp->dynamic_param_names = NULL;
+    }
 
    /* Copy the muscles. */
    copyMusclesToDP420(ms, dp, muscleList);

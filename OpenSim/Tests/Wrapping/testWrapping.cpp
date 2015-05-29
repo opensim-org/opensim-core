@@ -347,21 +347,21 @@ void simulateModelWithMusclesNoViz(const string &modelFile, double finalTime, do
 
 void simulateModelWithPassiveMuscles(const string &modelFile, double finalTime)
 {
-	// Create a new OpenSim model
-	Model osimModel(modelFile);
-	double initialTime = 0;
+    // Create a new OpenSim model
+    Model osimModel(modelFile);
+    double initialTime = 0;
 
-	// Show model visualizer
-	osimModel.setUseVisualizer(true);
+    // Show model visualizer
+    osimModel.setUseVisualizer(true);
 
-	// Initialize the system and get the state representing the state system
-	SimTK::State& si = osimModel.initSystem();
+    // Initialize the system and get the state representing the state system
+    SimTK::State& si = osimModel.initSystem();
 
-	const Set<Muscle>& muscles = osimModel.getMuscles();
-	for (int i=0; i<muscles.getSize(); ++i){
-		muscles[i].setActivation(si, 0); //setDisabled(si, true);
-	}
-	osimModel.equilibrateMuscles(si); 
+    const Set<Muscle>& muscles = osimModel.getMuscles();
+    for (int i=0; i<muscles.getSize(); ++i){
+        muscles[i].setActivation(si, 0); //setDisabled(si, true);
+    }
+    osimModel.equilibrateMuscles(si); 
 
     const ModelVisualizer& modelViz = osimModel.getVisualizer();
     const Visualizer& viz = modelViz.getSimbodyVisualizer();
@@ -659,8 +659,8 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 
         const OpenSim::Body& orgBody = osimModel.getBodySet().get(cableInfo.orgBodyName);
         const OpenSim::Body& insBody = osimModel.getBodySet().get(cableInfo.insBodyName);
-		const MobilizedBody& orgMobBody = matter.getMobilizedBody(orgBody.getMobilizedBodyIndex());
-		const MobilizedBody& insMobBody = matter.getMobilizedBody(insBody.getMobilizedBodyIndex());
+        const MobilizedBody& orgMobBody = orgBody.getMobilizedBody();
+        const MobilizedBody& insMobBody = insBody.getMobilizedBody();
 //        cout << "origin mob idx = " << orgBody.getIndex() << endl;
 //        cout << "insertion mob idx = " << insBody.getIndex() << endl;
 
@@ -672,7 +672,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         for (int j = 0; j < cableInfo.obstacles.getSize(); ++j) {
             ObstacleInfo oi = cableInfo.obstacles[j];
             const OpenSim::Body& osBody = osimModel.getBodySet().get(oi.bodyName);
-			const MobilizedBody& mobBody = matter.getMobilizedBody(osBody.getMobilizedBodyIndex());
+            const MobilizedBody& mobBody = osBody.getMobilizedBody();
 
             if (oi.isVia) {
                 CableObstacle::ViaPoint via(path, mobBody, oi.X_BS.p());
@@ -736,21 +736,6 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
     }
 
     system.addEventReporter(new ShowStuff(system, 0.1*0.1));
-
-//    system.invalidateSystemTopologyCache();
-//    system.realizeTopology();
-//    SimTK::State state = system.getDefaultState();
-//    osimModel.copyDefaultStateIntoWorkingState();
-//    matter.setUseEulerAngles(state, true);
-//    system.realizeModel(state);
-//    osimModel.initStateFromProperties(state);
-//    system.realize(state, Stage::Instance);
-//    modelViz.collectFixedGeometry(state);
-//    viz.report(state);
-//    cout << "Hit ENTER ...";
-//    cout.flush();
-//    getchar();
-
 
     SimTK::State& state = osimModel.initializeState();
     viz.report(state);

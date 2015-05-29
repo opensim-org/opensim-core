@@ -25,8 +25,15 @@
 #include <OpenSim/Common/Object.h>
 #include "RegisterTypes_osimSimulation.h"
 
-#include "Model/AnalysisSet.h"
 #include "Model/Model.h"
+
+#include "Model/Frame.h"
+#include "Model/PhysicalFrame.h"
+#include "Model/Ground.h"
+#include "Model/OffsetFrame.h"
+#include "Model/PhysicalOffsetFrame.h"
+
+#include "Model/AnalysisSet.h"
 #include "Model/ForceSet.h"
 #include "Model/FrameSet.h"
 #include "Model/BodyScale.h"
@@ -69,9 +76,6 @@
 #include "Model/SystemEnergyProbe.h"
 #include "Model/Umberger2010MuscleMetabolicsProbe.h"
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
-#include "Model/Frame.h"
-#include "Model/FixedFrame.h"
-#include "Model/RigidFrame.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -139,8 +143,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( BodyScaleSet());
     Object::registerType( FrameSet());
     Object::registerType( BodySet());
-	Object::registerType( ComponentSet() );
-	Object::registerType( ControllerSet() );
+    Object::registerType( ComponentSet() );
+    Object::registerType( ControllerSet() );
     Object::registerType( ConstraintSet() );
     Object::registerType( CoordinateSet() );
     Object::registerType( ForceSet() );
@@ -175,13 +179,11 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     // CURRENT RELEASE
     Object::registerType( SimbodyEngine() );
     Object::registerType( OpenSim::Body() );
-	Object::registerType( FixedFrame());
-    Object::registerType( WeldConstraint() );
-    Object::registerType( PointConstraint() );
-    Object::registerType( ConstantDistanceConstraint() );
-    Object::registerType( CoordinateCouplerConstraint() );
-	Object::registerType( WeldJoint());
-	Object::registerType( CustomJoint());
+    Object::registerType(OpenSim::Ground());
+    Object::registerType( PhysicalOffsetFrame());
+
+    Object::registerType( WeldJoint());
+    Object::registerType( CustomJoint());
     Object::registerType( EllipsoidJoint() );
     Object::registerType( FreeJoint() );
     Object::registerType( BallJoint() );
@@ -189,10 +191,17 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( UniversalJoint() );
     Object::registerType( PinJoint() );
     Object::registerType( SliderJoint() );
-	Object::registerType( PlanarJoint() );
+    Object::registerType( PlanarJoint() );
     Object::registerType( TransformAxis() );
     Object::registerType( Coordinate() );
     Object::registerType( SpatialTransform() );
+
+    Object::registerType(WeldConstraint());
+    Object::registerType(PointConstraint());
+    Object::registerType(ConstantDistanceConstraint());
+    Object::registerType(CoordinateCouplerConstraint());
+    Object::registerType(PointOnLineConstraint());
+    Object::registerType(RollingOnSurfaceConstraint());
 
     Object::registerType( ContactGeometrySet() );
     Object::registerType( ContactHalfSpace() );
@@ -205,21 +214,20 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( HuntCrossleyForce::ContactParametersSet() );
     Object::registerType( ElasticFoundationForce::ContactParameters() );
     Object::registerType( ElasticFoundationForce::ContactParametersSet() );
-    Object::registerType( PointOnLineConstraint() );
-    Object::registerType( RollingOnSurfaceConstraint() );
+
     Object::registerType( Ligament() );
     Object::registerType( PrescribedForce() );
     Object::registerType( ExternalForce() );
     Object::registerType( PointToPointSpring() );
-	Object::registerType( ExpressionBasedPointToPointForce() );
-	Object::registerType( PathSpring() );
+    Object::registerType( ExpressionBasedPointToPointForce() );
+    Object::registerType( PathSpring() );
     Object::registerType( BushingForce() );
     Object::registerType( FunctionBasedBushingForce() );
     Object::registerType( ExpressionBasedBushingForce() );
 
     Object::registerType( ControlSetController() );
     Object::registerType( PrescribedController() );
-	Object::registerType( ToyReflexController() );
+    Object::registerType( ToyReflexController() );
 
     Object::registerType( PathActuator() );
     Object::registerType( ProbeSet() );
@@ -232,10 +240,10 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet() );
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter() );
 
-	// Register commonly used Connectors for de/serialization
-	Object::registerType(Connector<OpenSim::Body>());
-	Object::registerType(Connector<Frame>());
-	Object::registerType(Connector<RigidFrame>());
+    // Register commonly used Connectors for de/serialization
+    Object::registerType(Connector<Frame>());
+    Object::registerType(Connector<PhysicalFrame>());
+    Object::registerType(Connector<Body>());
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.
@@ -248,14 +256,14 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::renameType("MovingMusclePoint", "MovingPathPoint");
     Object::renameType("MusclePointSet",    "PathPointSet");
 
-	Object::renameType("MuscleMetabolicPowerProbeUmberger2010",  
-		"Umberger2010MuscleMetabolicsProbe");
+    Object::renameType("MuscleMetabolicPowerProbeUmberger2010",  
+        "Umberger2010MuscleMetabolicsProbe");
 
-	Object::renameType("MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter",  
-		"Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter");
+    Object::renameType("MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter",  
+        "Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter");
 
-	Object::renameType("MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet",  
-		"Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet");
+    Object::renameType("MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet",  
+        "Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet");
 
   } catch (const std::exception& e) {
     std::cerr 

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,7 +26,7 @@
 
 // INCLUDE
 #include "Constraint.h"
-#include "Body.h"
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 namespace OpenSim {
 
@@ -37,7 +37,6 @@ namespace OpenSim {
  * is a Constraint::Weld
  *
  * @author Ajay Seth
- * @version 1.0
  */
 class OSIMSIMULATION_API WeldConstraint : public Constraint {
 OpenSim_DECLARE_CONCRETE_OBJECT(WeldConstraint, Constraint);
@@ -47,66 +46,60 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WeldConstraint, Constraint);
 //=============================================================================
 public:
 
-	/** Properties */
-	OpenSim_DECLARE_PROPERTY(body_1, std::string,
-		"Specify first of two bodies welded together by the constraint.");
-	OpenSim_DECLARE_PROPERTY(body_2, std::string,
-		"Specify second of two bodies welded together by the constraint.");
-	OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
-		"Location of the weld in first body specified in body1 reference frame.");
-	OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
-		"Location of the weld in second body specified in body2 reference frame.");
-	OpenSim_DECLARE_PROPERTY(orientation_body_1, SimTK::Vec3,
-		"Orientation of the weld axes on body1 specified in body1's reference frame."  
-		"Euler XYZ body-fixed rotation angles are used to express the orientation.");
-	OpenSim_DECLARE_PROPERTY(orientation_body_2, SimTK::Vec3,
-		"Orientation of the weld axes on body2 specified in body2's reference frame."
-		"Euler XYZ body-fixed rotation angles are used to express the orientation.");
+    /** Properties */
+    OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
+        "Location of the weld in first body specified in body1 reference frame.");
+    OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
+        "Location of the weld in second body specified in body2 reference frame.");
+    OpenSim_DECLARE_PROPERTY(orientation_body_1, SimTK::Vec3,
+        "Orientation of the weld axes on body1 specified in body1's reference frame."  
+        "Euler XYZ body-fixed rotation angles are used to express the orientation.");
+    OpenSim_DECLARE_PROPERTY(orientation_body_2, SimTK::Vec3,
+        "Orientation of the weld axes on body2 specified in body2's reference frame."
+        "Euler XYZ body-fixed rotation angles are used to express the orientation.");
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	WeldConstraint();
-	// Convenience constructors
-	WeldConstraint(const std::string &name, OpenSim::Body& body1, SimTK::Vec3 locationInBody1, SimTK::Vec3 orientationInBody1,
-					OpenSim::Body& body2, SimTK::Vec3 locationInBody2, SimTK::Vec3 orientationInBody2);
-	WeldConstraint(const std::string &name, OpenSim::Body& body1, SimTK::Transform transformInBody1, 
-											OpenSim::Body& body2, SimTK::Transform transformInBody2);
+    // CONSTRUCTION
+    WeldConstraint();
+    // Convenience constructors
+    WeldConstraint(const std::string &name, 
+        const PhysicalFrame& body1, SimTK::Vec3 locationInBody1, SimTK::Vec3 orientationInBody1,
+        const PhysicalFrame& body2, SimTK::Vec3 locationInBody2, SimTK::Vec3 orientationInBody2);
+    WeldConstraint(const std::string &name,
+        const PhysicalFrame& body1, SimTK::Transform transformInBody1,
+        const PhysicalFrame& body2, SimTK::Transform transformInBody2);
 
-	virtual ~WeldConstraint();
+    virtual ~WeldConstraint();
 
-	//SET 
-	void setBody1ByName(std::string aBodyName);
-	void setBody1WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
-	void setBody2ByName(std::string aBodyName);
-	void setBody2WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
+    //SET 
+    void setBody1ByName(const std::string& aBodyName);
+    void setBody1WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
+    void setBody2ByName(const std::string& aBodyName);
+    void setBody2WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
 
-	// Method to set point locations for induced acceleration analysis
-	virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point);
+    // Method to set point locations for induced acceleration analysis
+    virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point);
 
 protected:
-	void connectToModel(Model& aModel) override;
-	/**
-	 * Create a SimTK::Constraint::Weld which implements this Weld.
-	 */
-	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    /**
+    * Extend Component Interface.
+    */
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    /** Updating XML formating to latest revision */
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
+
 
 private:
-	void setNull();
-	void constructProperties();
-	friend class SimbodyEngine;
-
-private:
-	/** First body weld constraint joins. */
-	SimTK::ReferencePtr<Body> _body1;
-
-	/** Second body weld constraint joins. */
-	SimTK::ReferencePtr<Body> _body2;
-
+    void setNull();
+    /** Construct WeldConstraint's properties */
+    void constructProperties() override;
+    /** Construct WeldConstraint's connectors */
+    void constructConnectors() override;
 //=============================================================================
-};	// END of class WeldConstraint
+};  // END of class WeldConstraint
 //=============================================================================
 //=============================================================================
 

@@ -53,12 +53,12 @@ static const char* wrapTypeName = "torus";
  * Default constructor.
  */
 WrapTorus::WrapTorus() :
-	WrapObject(),
+    WrapObject(),
    _innerRadius(_innerRadiusProp.getValueDbl()),
    _outerRadius(_outerRadiusProp.getValueDbl())
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -76,13 +76,13 @@ WrapTorus::~WrapTorus()
  * @param aWrapTorus WrapTorus to be copied.
  */
 WrapTorus::WrapTorus(const WrapTorus& aWrapTorus) :
-	WrapObject(aWrapTorus),
+    WrapObject(aWrapTorus),
    _innerRadius(_innerRadiusProp.getValueDbl()),
    _outerRadius(_outerRadiusProp.getValueDbl())
 {
-	setNull();
-	setupProperties();
-	copyData(aWrapTorus);
+    setNull();
+    setupProperties();
+    copyData(aWrapTorus);
 }
 
 
@@ -103,16 +103,16 @@ void WrapTorus::setNull()
  */
 void WrapTorus::setupProperties()
 {
-	// BASE CLASS
-	//WrapObject::setupProperties();
+    // BASE CLASS
+    //WrapObject::setupProperties();
 
-	_innerRadiusProp.setName("inner_radius");
-	_innerRadiusProp.setValue(-1.0);
-	_propertySet.append(&_innerRadiusProp);
+    _innerRadiusProp.setName("inner_radius");
+    _innerRadiusProp.setValue(-1.0);
+    _propertySet.append(&_innerRadiusProp);
 
-	_outerRadiusProp.setName("outer_radius");
-	_outerRadiusProp.setValue(-1.0);
-	_propertySet.append(&_outerRadiusProp);
+    _outerRadiusProp.setName("outer_radius");
+    _outerRadiusProp.setValue(-1.0);
+    _propertySet.append(&_outerRadiusProp);
 }
 
 //_____________________________________________________________________________
@@ -127,19 +127,19 @@ void WrapTorus::scale(const SimTK::Vec3& aScaleFactors)
    // Base class, to scale origin in body frame
    WrapObject::scale(aScaleFactors);
 
-	SimTK::Vec3 localScaleVector[2]; // only need X and Y for torus
+    SimTK::Vec3 localScaleVector[2]; // only need X and Y for torus
 
    // _pose.x() holds the torus's X axis expressed in the
    // body's reference frame, and _pose.y() holds the Y.
    // Multiplying these vectors by the scale factor vector gives
-	// localScaleVector[]. The magnitudes of the localScaleVectors
-	// gives the amount to scale the torus in the XYZ dimensions.
-	// The wrap torus is oriented along the Z axis, so the inner and
-	// outer radii are scaled by the average of the X and Y scale factors.
-	for (int i=0; i<3; i++) {
-		localScaleVector[0][i] = _pose.x()[i] * aScaleFactors[i];
-		localScaleVector[1][i] = _pose.y()[i] * aScaleFactors[i];
-	}
+    // localScaleVector[]. The magnitudes of the localScaleVectors
+    // gives the amount to scale the torus in the XYZ dimensions.
+    // The wrap torus is oriented along the Z axis, so the inner and
+    // outer radii are scaled by the average of the X and Y scale factors.
+    for (int i=0; i<3; i++) {
+        localScaleVector[0][i] = _pose.x()[i] * aScaleFactors[i];
+        localScaleVector[1][i] = _pose.y()[i] * aScaleFactors[i];
+    }
 
    double averageXYScale = (localScaleVector[0].norm() + localScaleVector[1].norm()) * 0.5;
    _innerRadius *= averageXYScale;
@@ -153,28 +153,28 @@ void WrapTorus::scale(const SimTK::Vec3& aScaleFactors)
  *
  * @param aModel pointer to OpenSim Model 
  */
-void WrapTorus::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
+void WrapTorus::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 {
-	// Base class
-	Super::connectToModelAndBody(aModel, aBody);
+    // Base class
+    Super::connectToModelAndBody(aModel, aBody);
 
    // maybe set a parent pointer, _body = aBody;
 
-	if (_innerRadius < 0.0)
-	{
-		string errorMessage = "Error: inner_radius for WrapTorus " + getName() + " was either not specified, or is negative.";
-		throw Exception(errorMessage);
-	}
+    if (_innerRadius < 0.0)
+    {
+        string errorMessage = "Error: inner_radius for WrapTorus " + getName() + " was either not specified, or is negative.";
+        throw Exception(errorMessage);
+    }
 
-	if (_outerRadius <= _innerRadius)
-	{
-		string errorMessage = "Error: outer_radius for WrapTorus " + getName() + " is less than or equal to inner_radius.";
-		throw Exception(errorMessage);
-	}
+    if (_outerRadius <= _innerRadius)
+    {
+        string errorMessage = "Error: outer_radius for WrapTorus " + getName() + " is less than or equal to inner_radius.";
+        throw Exception(errorMessage);
+    }
     _displayer.freeGeometry();
-	AnalyticTorus* torus = new AnalyticTorus(_innerRadius, (_outerRadius-_innerRadius));
-	setGeometryQuadrants(torus);
-	_displayer.addGeometry(torus);
+    AnalyticTorus* torus = new AnalyticTorus(_innerRadius, (_outerRadius-_innerRadius));
+    setGeometryQuadrants(torus);
+    _displayer.addGeometry(torus);
 }
 
 //_____________________________________________________________________________
@@ -185,11 +185,11 @@ void WrapTorus::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
  */
 void WrapTorus::copyData(const WrapTorus& aWrapTorus)
 {
-	// BASE CLASS
-	WrapObject::copyData(aWrapTorus);
+    // BASE CLASS
+    WrapObject::copyData(aWrapTorus);
 
-	_innerRadius = aWrapTorus._innerRadius;
-	_outerRadius = aWrapTorus._outerRadius;
+    _innerRadius = aWrapTorus._innerRadius;
+    _outerRadius = aWrapTorus._outerRadius;
 }
 
 //_____________________________________________________________________________
@@ -200,7 +200,7 @@ void WrapTorus::copyData(const WrapTorus& aWrapTorus)
  */
 const char* WrapTorus::getWrapTypeName() const
 {
-	return wrapTypeName;
+    return wrapTypeName;
 }
 
 //_____________________________________________________________________________
@@ -213,10 +213,10 @@ const char* WrapTorus::getWrapTypeName() const
  */
 string WrapTorus::getDimensionsString() const
 {
-	stringstream dimensions;
-	dimensions << "radius " << _innerRadius << " " << _outerRadius;
+    stringstream dimensions;
+    dimensions << "radius " << _innerRadius << " " << _outerRadius;
 
-	return dimensions.str();
+    return dimensions.str();
 }
 //_____________________________________________________________________________
 /**
@@ -249,10 +249,10 @@ SimTK::Real WrapTorus::getOuterRadius() const
  */
 WrapTorus& WrapTorus::operator=(const WrapTorus& aWrapTorus)
 {
-	// BASE CLASS
-	WrapObject::operator=(aWrapTorus);
+    // BASE CLASS
+    WrapObject::operator=(aWrapTorus);
 
-	return(*this);
+    return(*this);
 }
 
 //=============================================================================
@@ -270,53 +270,53 @@ WrapTorus& WrapTorus::operator=(const WrapTorus& aWrapTorus)
  * @return The status, as a WrapAction enum
  */
 int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-								const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
+                                const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
-	int i;
-	SimTK::Vec3 closestPt;
-	bool constrained = (bool) (_wrapSign != 0);
-	bool far_side_wrap = false;
-	aFlag = true;
+    int i;
+    SimTK::Vec3 closestPt;
+    bool constrained = (bool) (_wrapSign != 0);
+    bool far_side_wrap = false;
+    aFlag = true;
 
-	if (findClosestPoint(_outerRadius, &aPoint1[0], &aPoint2[0], &closestPt[0], &closestPt[1], &closestPt[2], _wrapSign, _wrapAxis) == 0)
-		return noWrap;
+    if (findClosestPoint(_outerRadius, &aPoint1[0], &aPoint2[0], &closestPt[0], &closestPt[1], &closestPt[2], _wrapSign, _wrapAxis) == 0)
+        return noWrap;
 
-	// Now put a cylinder at closestPt and call the cylinder wrap code.
-	WrapCylinder cyl;//(rot, trans, quadrant, body, radius, length);
-	SimTK::Vec3 cylXaxis, cylYaxis, cylZaxis; // cylinder axes in torus reference frame
+    // Now put a cylinder at closestPt and call the cylinder wrap code.
+    WrapCylinder cyl;//(rot, trans, quadrant, body, radius, length);
+    SimTK::Vec3 cylXaxis, cylYaxis, cylZaxis; // cylinder axes in torus reference frame
 
-	cyl.setRadius(_innerRadius);
-	cyl.setLength(CYL_LENGTH);
-	cyl.setQuadrantName("+x");
+    cyl.setRadius(_innerRadius);
+    cyl.setLength(CYL_LENGTH);
+    cyl.setQuadrantName("+x");
 
-	closestPt *= -1;
+    closestPt *= -1;
 
-	cylXaxis = closestPt;
-	Mtx::Normalize(3, cylXaxis, cylXaxis);
-	cylYaxis[0] = 0.0;
-	cylYaxis[1] = 0.0;
-	cylYaxis[2] = -1.0;
-	Mtx::CrossProduct(cylXaxis, cylYaxis, cylZaxis);
-	// Note: you don't need to recalculate Y as Z x X because X and Z are always in the XY plane, so Y will remain 0 0 -1.
+    cylXaxis = closestPt;
+    Mtx::Normalize(3, cylXaxis, cylXaxis);
+    cylYaxis[0] = 0.0;
+    cylYaxis[1] = 0.0;
+    cylYaxis[2] = -1.0;
+    Mtx::CrossProduct(cylXaxis, cylYaxis, cylZaxis);
+    // Note: you don't need to recalculate Y as Z x X because X and Z are always in the XY plane, so Y will remain 0 0 -1.
 
-	// cylinderToTorus is the transform from the cylinder to the torus.
-	// The origin of the cylinder frame in the torus frame is closestPt.
-	// closestPtCyl is along the X axis of the cylinder since cylXaxis = closestPt.
-	SimTK::Transform cylinderToTorus(SimTK::Rotation(SimTK::Mat33(cylXaxis[0], cylXaxis[1], cylXaxis[2],
-		cylYaxis[0], cylYaxis[1], cylYaxis[2], cylZaxis[0], cylZaxis[1], cylZaxis[2])));
-	SimTK::Vec3 closestPtCyl = cylinderToTorus.shiftFrameStationToBase(closestPt);
-	cylinderToTorus.setP(closestPtCyl);
-	Vec3 p1 = cylinderToTorus.shiftFrameStationToBase(aPoint1);
-	Vec3 p2 = cylinderToTorus.shiftFrameStationToBase(aPoint2);
-	int return_code = cyl.wrapLine(s, p1, p2, aPathWrap, aWrapResult, aFlag);
+    // cylinderToTorus is the transform from the cylinder to the torus.
+    // The origin of the cylinder frame in the torus frame is closestPt.
+    // closestPtCyl is along the X axis of the cylinder since cylXaxis = closestPt.
+    SimTK::Transform cylinderToTorus(SimTK::Rotation(SimTK::Mat33(cylXaxis[0], cylXaxis[1], cylXaxis[2],
+        cylYaxis[0], cylYaxis[1], cylYaxis[2], cylZaxis[0], cylZaxis[1], cylZaxis[2])));
+    SimTK::Vec3 closestPtCyl = cylinderToTorus.shiftFrameStationToBase(closestPt);
+    cylinderToTorus.setP(closestPtCyl);
+    Vec3 p1 = cylinderToTorus.shiftFrameStationToBase(aPoint1);
+    Vec3 p2 = cylinderToTorus.shiftFrameStationToBase(aPoint2);
+    int return_code = cyl.wrapLine(s, p1, p2, aPathWrap, aWrapResult, aFlag);
    if (aFlag == true && return_code > 0) {
-		aWrapResult.r1 = cylinderToTorus.shiftBaseStationToFrame(aWrapResult.r1);
-		aWrapResult.r2 = cylinderToTorus.shiftBaseStationToFrame(aWrapResult.r2);
-		for (i = 0; i < aWrapResult.wrap_pts.getSize(); i++)
-			aWrapResult.wrap_pts.updElt(i) = cylinderToTorus.shiftBaseStationToFrame(aWrapResult.wrap_pts.get(i));
-	}
+        aWrapResult.r1 = cylinderToTorus.shiftBaseStationToFrame(aWrapResult.r1);
+        aWrapResult.r2 = cylinderToTorus.shiftBaseStationToFrame(aWrapResult.r2);
+        for (i = 0; i < aWrapResult.wrap_pts.getSize(); i++)
+            aWrapResult.wrap_pts.updElt(i) = cylinderToTorus.shiftBaseStationToFrame(aWrapResult.wrap_pts.get(i));
+    }
 
-	return wrapped;
+    return wrapped;
 }
 
 //_____________________________________________________________________________
@@ -336,8 +336,8 @@ int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3
  * @return '1' if a closest point was found, '0' if there was an error while trying to constrain the wrap
  */
 int WrapTorus::findClosestPoint(double radius, double p1[], double p2[],
-										  double* xc, double* yc, double* zc,
-										  int wrap_sign, int wrap_axis) const
+                                          double* xc, double* yc, double* zc,
+                                          int wrap_sign, int wrap_axis) const
 {
    int info;                  // output flag
    int num_func_calls;        // number of calls to func (nfev)
@@ -494,7 +494,7 @@ int WrapTorus::findClosestPoint(double radius, double p1[], double p2[],
  * @param ptr Pointer to data structure containing current point and circle radius
  */
 void WrapTorus::calcCircleResids(int numResid, int numQs, double q[],
-											double resid[], int *flag2, void *ptr)
+                                            double resid[], int *flag2, void *ptr)
 {
    double mag, nx, ny, nz, u;
    double c2, c3, c4, c5, c6;

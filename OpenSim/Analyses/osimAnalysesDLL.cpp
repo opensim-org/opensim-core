@@ -36,9 +36,9 @@ using namespace std;
 //
 static void Plugin_Attach()
 {
-	//cout<<"\n-------------------------------------------------------\n";
-	//cout<<"Library Analyses...\n";
-	//cout<<"-------------------------------------------------------\n\n";
+    //cout<<"\n-------------------------------------------------------\n";
+    //cout<<"Library Analyses...\n";
+    //cout<<"-------------------------------------------------------\n\n";
 }
 
 static void Plugin_Detach()
@@ -73,7 +73,7 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 
       case DLL_THREAD_ATTACH:
       case DLL_THREAD_DETACH:
-			break;
+            break;
     }
 
     return TRUE;

@@ -1,0 +1,57 @@
+# Windows testing using Visual Studio.
+
+# Syntax for this file:
+# http://www.appveyor.com/docs/appveyor-yml
+
+# See http://msdn.microsoft.com/en-us/library/ms164311.aspx for
+# command-line options to MSBuild.
+
+# Speeding up a Visual Studio build.
+# http://blogs.msdn.com/b/vcblog/archive/2011/01/05/damn-my-vc-project-is-building-slower-in-vs2010-what-do-i-do-now-a-step-by-step-guide.aspx
+
+# To treat warnings as errors: -DCMAKE_CXX_FLAGS="/WX /EHsc"
+# "/EHsc" is to "unwind semantics" to get error messages when using "/WX" (C4530).
+# However, this was causing some weird behavior. Not treating warnings
+# as errors for now.
+  
+shallow_clone: true
+
+platform: x64
+
+init:
+  # Put MSBuild on the path.
+  - SET PATH=C:\Program Files (x86)\MSBuild\12.0\bin\;%PATH%
+  
+nuget:
+  account_feed: true
+
+install:
+  # Use Chocolatey to install SWIG 3.0.0.
+  #- cinst swig
+  # TODO not testing wrapping yet.
+  #- cinst wget
+  #- wget http://prdownloads.sourceforge.net/swig/swigwin-3.0.2.zip
+  #- jar xf swigwin-3.0.2.zip
+  #- mv swigwin-3.0.2 C:\
+  
+  ## Simbody.
+  # Simbody's installation is pushed to our Appveyor NuGet account feed.
+  # Must use version 0.0.0, otherwise, nuget will use nuget.org, where
+  # chrisdembia once uploaded a simbody 3.5.0 nupkg.
+  # Output directory must match how Simbody was packaged, otherwise
+  # SimbodyConfig.cmake will have all the wrong paths.
+  - nuget install simbody -Version 0.0.0 -ExcludeVersion -OutputDirectory C:\
+
+build_script:
+  ## Configure and build OpenSim.
+  # Must create separate build dir, otherwise can't read test files
+  # for some reason.
+  - mkdir build
+  - cd build
+  # Configure.
+  - cmake .. -G"Visual Studio 12 Win64" -DSIMBODY_HOME=C:\simbody # TODO -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON -DSWIG_EXECUTABLE=C:\swigwin-3.0.2\swig.exe # TODO -DBUILD_SIMM_TRANSLATOR=ON
+  # Build.
+  - MSBuild OpenSim.sln /target:ALL_BUILD /p:Configuration=Release /maxcpucount:4 /verbosity:quiet
+
+test_script:
+  - ctest --parallel 4 --build-config Release --output-on-failure

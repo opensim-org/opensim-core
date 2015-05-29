@@ -46,81 +46,81 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(TrackingTask, Object);
 // DATA
 //=============================================================================
 protected:
-	// PROPERTIES
-	/** Property to indicate on or off state. */
-	PropertyBool _propOn;
-	/** Weights of the task goals. */
-	PropertyDblArray _propW;
+    // PROPERTIES
+    /** Property to indicate on or off state. */
+    PropertyBool _propOn;
+    /** Weights of the task goals. */
+    PropertyDblArray _propW;
 
-	/** Reference to the value of the on property. */
-	bool &_on;
-	/** Reference to the value of the Weight property. */
-	Array<double> &_w;
+    /** Reference to the value of the on property. */
+    bool &_on;
+    /** Reference to the value of the Weight property. */
+    Array<double> &_w;
 
-	/** Model. */
-	Model *_model;
+    /** Model. */
+    Model *_model;
 
-	/** Number of functions for this target. */
-	int _nTrk;
+    /** Number of functions for this target. */
+    int _nTrk;
 
-	/** Position task functions.  Different types of tasks can 
-	require different numbers of task functions.  For example, to track
-	a joint angle, only one task function is needed.  However, to track
-	a position, up to three task functions may be needed. */
-	Function *_pTrk[3];
-	/** Velocity task functions.  If velocity task functions are
-	not specified, derivatives of the position task function are used. */
-	Function *_vTrk[3];
-	/** Acceleration task functions.  If acceleration task functions are
-	not specified, derivatives of the position task function are used. */
-	Function *_aTrk[3];
+    /** Position task functions.  Different types of tasks can 
+    require different numbers of task functions.  For example, to track
+    a joint angle, only one task function is needed.  However, to track
+    a position, up to three task functions may be needed. */
+    Function *_pTrk[3];
+    /** Velocity task functions.  If velocity task functions are
+    not specified, derivatives of the position task function are used. */
+    Function *_vTrk[3];
+    /** Acceleration task functions.  If acceleration task functions are
+    not specified, derivatives of the position task function are used. */
+    Function *_aTrk[3];
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	TrackingTask();
-	TrackingTask(const TrackingTask &aTaskObject);
-	virtual ~TrackingTask();
+    TrackingTask();
+    TrackingTask(const TrackingTask &aTaskObject);
+    virtual ~TrackingTask();
 
 private:
-	void setNull();
-	void setupProperties();
-	void copyData(const TrackingTask &aTaskObject);
+    void setNull();
+    void setupProperties();
+    void copyData(const TrackingTask &aTaskObject);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 
 #ifndef SWIG
-	TrackingTask& operator=(const TrackingTask &aTaskObject);
+    TrackingTask& operator=(const TrackingTask &aTaskObject);
 #endif
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	// MODEL
-	virtual void setModel(OpenSim::Model& aModel);
-	Model* getModel() const;
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    // MODEL
+    virtual void setModel(OpenSim::Model& aModel);
+    Model* getModel() const;
 
-	// ON,OFF
-	void setOn(bool aTrueFalse);
-	bool getOn() const;
-	// WEIGHTS
-	void setWeight(double aW0,double aW1=0.0,double aW2=0.0);
-	void setWeights(const Array<double>& aWeights) {_w = aWeights; };
-	double getWeight(int aWhich) const;
-	const Array<double>& getWeights() const { return _w; };
-	// TASK FUNCTIONS
-	int getNumTaskFunctions() const;
-	virtual void setTaskFunctions(Function *aF0,
-		Function *aF1=NULL,Function *aF2=NULL);
+    // ON,OFF
+    void setOn(bool aTrueFalse);
+    bool getOn() const;
+    // WEIGHTS
+    void setWeight(double aW0,double aW1=0.0,double aW2=0.0);
+    void setWeights(const Array<double>& aWeights) {_w = aWeights; };
+    double getWeight(int aWhich) const;
+    const Array<double>& getWeights() const { return _w; };
+    // TASK FUNCTIONS
+    int getNumTaskFunctions() const;
+    virtual void setTaskFunctions(Function *aF0,
+        Function *aF1=NULL,Function *aF2=NULL);
 //=============================================================================
-};	// END of class TrackingTask
+};  // END of class TrackingTask
 //=============================================================================
 //=============================================================================
 

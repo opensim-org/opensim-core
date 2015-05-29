@@ -46,14 +46,14 @@ using SimTK::SpatialVec; using SimTK::UnitVec3; using SimTK::State;
 // Default constructor.
 PointToPointActuator::PointToPointActuator()
 {
-	constructProperties();
+    constructProperties();
 }
 //_____________________________________________________________________________
 // Constructor with given body names.
 PointToPointActuator::PointToPointActuator(const string& bodyNameA, 
                                            const string& bodyNameB)
 {
-	constructProperties();
+    constructProperties();
 
     if (!bodyNameA.empty()) set_bodyA(bodyNameA);
     if (!bodyNameB.empty()) set_bodyB(bodyNameB);
@@ -66,8 +66,8 @@ void PointToPointActuator::constructProperties()
     constructProperty_bodyA();
     constructProperty_bodyB();
     constructProperty_points_are_global(false);
-	constructProperty_pointA(Vec3(0));  // origin
-	constructProperty_pointB(Vec3(0));
+    constructProperty_pointA(Vec3(0));  // origin
+    constructProperty_pointB(Vec3(0));
     constructProperty_optimal_force(1.0);
 }
 
@@ -86,9 +86,9 @@ void PointToPointActuator::constructProperties()
  */
 void PointToPointActuator::setBodyA(Body* aBody)
 {
-	_bodyA = aBody;
-	if(aBody)
-		set_bodyA(aBody->getName());
+    _bodyA = aBody;
+    if(aBody)
+        set_bodyA(aBody->getName());
 }
 //_____________________________________________________________________________
 /**
@@ -99,9 +99,9 @@ void PointToPointActuator::setBodyA(Body* aBody)
  */
 void PointToPointActuator::setBodyB(Body* aBody)
 {
-	_bodyB = aBody;
-	if(aBody)
-		set_bodyB(aBody->getName());
+    _bodyB = aBody;
+    if(aBody)
+        set_bodyB(aBody->getName());
 }
 
 
@@ -116,7 +116,7 @@ void PointToPointActuator::setBodyB(Body* aBody)
  */
 double PointToPointActuator::getStress( const SimTK::State& s) const
 {
-	return std::abs(getActuation(s) / getOptimalForce()); 
+    return std::abs(getActuation(s) / getOptimalForce()); 
 }
 //_____________________________________________________________________________
 /**
@@ -128,10 +128,10 @@ double PointToPointActuator::getStress( const SimTK::State& s) const
 
 double PointToPointActuator::computeActuation( const SimTK::State& s ) const
 {
-	if(!_model) return 0;
+    if(!_model) return 0;
 
-	// FORCE
-	return getControl(s) * getOptimalForce();
+    // FORCE
+    return getControl(s) * getOptimalForce();
 }
 
 
@@ -146,90 +146,90 @@ double PointToPointActuator::computeActuation( const SimTK::State& s ) const
  * @param s current SimTK::State
  */
 void PointToPointActuator::computeForce(const SimTK::State& s, 
-							    SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							    SimTK::Vector& generalizedForces) const
+                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+                                SimTK::Vector& generalizedForces) const
 {
-	const bool pointsAreGlobal = getPointsAreGlobal();
-	const SimTK::Vec3& pointA = getPointA();
-	const SimTK::Vec3& pointB = getPointB();
+    const bool pointsAreGlobal = getPointsAreGlobal();
+    const SimTK::Vec3& pointA = getPointA();
+    const SimTK::Vec3& pointB = getPointB();
 
-	if(!_model) return;
-	const SimbodyEngine& engine = getModel().getSimbodyEngine();
-	
-	if( !_bodyA || !_bodyB )
-		return;
-	
-	// Get pointA and pointB positions in both the global frame, and in 
+    if(!_model) return;
+    const SimbodyEngine& engine = getModel().getSimbodyEngine();
+    
+    if( !_bodyA || !_bodyB )
+        return;
+    
+    // Get pointA and pointB positions in both the global frame, and in 
     // the local frame of bodyA and bodyB, respectively. Points may have
     // been supplied either way.
 
-	SimTK::Vec3 pointA_inGround, pointB_inGround, 
+    SimTK::Vec3 pointA_inGround, pointB_inGround, 
                 pointA_inBodyA, pointB_inBodyB;
 
-	if (pointsAreGlobal)
-	{
-		pointA_inGround = pointA;
-		pointB_inGround = pointB;
-		engine.transformPosition(s, engine.getGroundBody(), pointA_inGround, 
+    if (pointsAreGlobal)
+    {
+        pointA_inGround = pointA;
+        pointB_inGround = pointB;
+        engine.transformPosition(s, getModel().getGround(), pointA_inGround, 
                                  *_bodyA, pointA_inBodyA);
-		engine.transformPosition(s, engine.getGroundBody(), pointB_inGround, 
+        engine.transformPosition(s, getModel().getGround(), pointB_inGround, 
                                  *_bodyB, pointB_inBodyB);
-	}
-	else
-	{
-		pointA_inBodyA = pointA;
-		pointB_inBodyB = pointB;
-		engine.transformPosition(s, *_bodyA, pointA_inBodyA, 
-                                 engine.getGroundBody(), pointA_inGround);
-		engine.transformPosition(s, *_bodyB, pointB_inBodyB, 
-                                 engine.getGroundBody(), pointB_inGround);
-	}
+    }
+    else
+    {
+        pointA_inBodyA = pointA;
+        pointB_inBodyB = pointB;
+        engine.transformPosition(s, *_bodyA, pointA_inBodyA, 
+                                 getModel().getGround(), pointA_inGround);
+        engine.transformPosition(s, *_bodyB, pointB_inBodyB, 
+                                 getModel().getGround(), pointB_inGround);
+    }
 
-	// Find the direction along which the actuator applies its force.
+    // Find the direction along which the actuator applies its force.
     // NOTE: this will fail if the points are coincident.
-	const SimTK::Vec3 r = pointA_inGround - pointB_inGround;
-	const SimTK::UnitVec3 direction(r); // normalize
+    const SimTK::Vec3 r = pointA_inGround - pointB_inGround;
+    const SimTK::UnitVec3 direction(r); // normalize
 
-	// Find the force magnitude and set it. Then form the force vector.
-	double forceMagnitude;
+    // Find the force magnitude and set it. Then form the force vector.
+    double forceMagnitude;
 
-	if (isActuationOverriden(s)) {
-		forceMagnitude = computeOverrideActuation(s);
+    if (isActuationOverriden(s)) {
+        forceMagnitude = computeOverrideActuation(s);
     } else {
        forceMagnitude = computeActuation(s);
     }
-	setActuation(s, forceMagnitude);
+    setActuation(s, forceMagnitude);
 
-	const SimTK::Vec3 force = forceMagnitude*direction;
+    const SimTK::Vec3 force = forceMagnitude*direction;
 
-	// Apply equal and opposite forces to the bodies.
-	applyForceToPoint(s, *_bodyA, pointA_inBodyA, force, bodyForces);
-	applyForceToPoint(s, *_bodyB, pointB_inBodyB, -force, bodyForces);
+    // Apply equal and opposite forces to the bodies.
+    applyForceToPoint(s, *_bodyA, pointA_inBodyA, force, bodyForces);
+    applyForceToPoint(s, *_bodyB, pointB_inBodyB, -force, bodyForces);
 
-	// Get the relative velocity of the points in ground.
-	SimTK::Vec3 velA_G, velB_G, velAB_G;
-	engine.getVelocity(s, *_bodyA, pointA_inBodyA, velA_G);
-	engine.getVelocity(s, *_bodyB, pointB_inBodyB, velB_G);
-	velAB_G = velA_G-velB_G;
-	// Speed used to compute power is the speed along the line connecting 
+    // Get the relative velocity of the points in ground.
+    SimTK::Vec3 velA_G, velB_G, velAB_G;
+    engine.getVelocity(s, *_bodyA, pointA_inBodyA, velA_G);
+    engine.getVelocity(s, *_bodyB, pointB_inBodyB, velB_G);
+    velAB_G = velA_G-velB_G;
+    // Speed used to compute power is the speed along the line connecting 
     // the two bodies.
-	setSpeed(s, ~velAB_G*direction);
+    setSpeed(s, ~velAB_G*direction);
 }
 //_____________________________________________________________________________
 /**
  * Sets the actual Body references _bodyA and _bodyB
  */
-void PointToPointActuator::connectToModel(Model& model)
+void PointToPointActuator::extendConnectToModel(Model& model)
 {
-	Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 
     if (get_bodyA().empty() || get_bodyB().empty())
         throw OpenSim::Exception(
-            "PointToPointActuator::connectToModel(): body name properties "
+            "PointToPointActuator::extendConnectToModel(): body name properties "
             "were not set.");
 
     // Look up the bodies by name in the Model, and record pointers to the
     // corresponding body objects.
-	_bodyA = &updModel().updBodySet().get(get_bodyA());
-	_bodyB = &updModel().updBodySet().get(get_bodyB());
+    _bodyA = &updModel().updBodySet().get(get_bodyA());
+    _bodyB = &updModel().updBodySet().get(get_bodyB());
 }

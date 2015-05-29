@@ -102,13 +102,6 @@ namespace OpenSim {
     physiologically possible (that is shorter than approximately half a 
     normalized fiber length).
 
-     <B> Usage </B>
-    This object should be updated through the set methods provided. 
-    These set methods will take care of rebuilding the object correctly. If you
-    modify the properties directly, the object will not be rebuilt, and upon
-    calling any functions an exception will be thrown because the object is out 
-    of date with its properties.
-
   <B> References </B>
 
    DG Thelen, Adjustment of muscle mechanics model parameters to simulate dynamic 
@@ -127,12 +120,6 @@ public:
     /** @name Property declarations 
     These are the serializable properties associated with this class. **/
     /**@{**/
-    OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
-        "time constant for ramping up muscle activation");
-
-    OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
-        "time constant for ramping down of muscle activation");
-
     OpenSim_DECLARE_PROPERTY(FmaxTendonStrain, double,
         "tendon strain at maximum isometric muscle force");
 
@@ -151,12 +138,14 @@ public:
     OpenSim_DECLARE_PROPERTY(Flen, double,
         "maximum normalized lengthening force");
 
-    //OpenSim_DECLARE_PROPERTY(activation_minimum_value, double,
-    //    "minimum activation value permitted");
-    
     OpenSim_DECLARE_PROPERTY(fv_linear_extrap_threshold, double,
         "fv threshold where linear extrapolation is used");
 
+    OpenSim_DECLARE_UNNAMED_PROPERTY(MuscleFirstOrderActivationDynamicModel,
+        "The model governing the excitation-to-activation dynamics.");
+
+    OpenSim_DECLARE_UNNAMED_PROPERTY(MuscleFixedWidthPennationModel,
+        "The model governing the fiber and tendon kinematics.");
 
     /**@}**/
 
@@ -179,17 +168,21 @@ public:
 //==============================================================================
 // Get and Set Properties
 //==============================================================================
-    // Properties    
+    // Properties
+
+    /** @name Convenience methods
+    These are convenience methods that get and set properties of the activation
+    and pennation models. **/
+    /**@{**/
     double getActivationTimeConstant() const;
-    double getMinimumActivation() const;
+    void setActivationTimeConstant(double actTimeConstant);
     double getDeactivationTimeConstant() const;
-    double getFmaxTendonStrain() const;
-    double getFmaxMuscleStrain() const;
-    double getKshapeActive() const;
-    double getKshapePassive() const;
-    double getAf() const;
-    double getFlen() const;
-    double getForceVelocityExtrapolationThreshold() const;
+    void setDeactivationTimeConstant(double deactTimeConstant);
+    double getMinimumActivation() const;
+    void setMinimumActivation(double minimumActivation);
+    double getMaximumPennationAngle() const;
+    void setMaximumPennationAngle(double maximumPennationAngle);
+    /**@}**/
 
     /**
      @returns the minimum fiber length, which is the maximum of two values:
@@ -199,22 +192,6 @@ public:
         fiber velocity goes positive.
     */
     double getMinimumFiberLength() const;
-
-    /**
-    @return the maximum pennation angle allowed by this muscle model (radians)
-    */
-    double getMaximumPennationAngle() const;
-
-    bool setActivationTimeConstant(double aActivationTimeConstant);   
-    bool setDeactivationTimeConstant(double aDeactivationTimeConstant);
-    bool setMinimumActivation(double aActivationMinValue);
-    bool setFmaxTendonStrain(double aFmaxTendonStrain);
-    bool setFmaxFiberStrain(double aFmaxMuscleStrain);
-    bool setKshapeActive(double aKShapeActive);
-    bool setKshapePassive(double aKshapePassive);
-    bool setAf(double aAf);
-    bool setFlen(double aFlen);
-    bool setForceVelocityExtrapolationThreshold(double aFvThresh);
 
     /**
    @returns the MuscleFirstOrderActivationDynamicModel 
@@ -238,7 +215,7 @@ public:
 // Public Computations
 //==============================================================================
     //Ajay: this is old. Can I stop calling it?
-    virtual double computeActuation(const SimTK::State& s) const override;
+    double computeActuation(const SimTK::State& s) const override;
 
 
     /** Compute initial fiber length (velocity) such that muscle fiber and 
@@ -264,8 +241,9 @@ public:
                                             double fiberLength, 
                                             double fiberVelocity) const; 
 
-    virtual double calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
-                                             double aActivation) const FINAL_11;
+    double calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
+                                             double aActivation)
+        const override final;
     ///@endcond
 
 protected:
@@ -288,36 +266,31 @@ protected:
     void  calcMuscleDynamicsInfo(const SimTK::State& s, 
                                     MuscleDynamicsInfo& mdi) const override;
 
-	/** calculate muscle's fiber and tendon potential energy */
-	void calcMusclePotentialEnergyInfo(const SimTK::State& s,
-		MusclePotentialEnergyInfo& mpei) const;
+    /** calculate muscle's fiber and tendon potential energy */
+    void calcMusclePotentialEnergyInfo(const SimTK::State& s,
+        MusclePotentialEnergyInfo& mpei) const;
 
     /** Calculate activation rate */
     double calcActivationRate(const SimTK::State& s) const override; 
 
+    /** Component interface. */
+    void extendFinalizeFromProperties() override;
+
     /** Implement the ModelComponent interface */
-    void connectToModel(Model& aModel) override;
-    void initStateFromProperties(SimTK::State& s) const override;
-    void setPropertiesFromState(const SimTK::State& state) override;
+    void extendConnectToModel(Model& aModel) override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
 private:
     void setNull();
     void constructProperties() override;
-    void buildMuscle();
-    void ensureMuscleUpToDate();
+
     //=====================================================================
     // Private Utility Class Members
     //      -Computes activation dynamics and fiber kinematics
     //=====================================================================
     //bool initializedModel;
 
-    double activation_minimum_value;
-    //Activation Dynamics
-    MuscleFirstOrderActivationDynamicModel actMdl;
-
-    //Fiber and Tendon Kinematics
-    MuscleFixedWidthPennationModel penMdl;
-    
     //=====================================================================
     // Private Accessor names
     //=====================================================================

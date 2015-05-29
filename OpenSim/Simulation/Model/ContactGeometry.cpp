@@ -41,15 +41,16 @@ namespace OpenSim {
 // Default constructor.
 ContactGeometry::ContactGeometry() : ModelComponent()
 {
-	setNull();
+    setNull();
     constructProperties();
 }
 
 //_____________________________________________________________________________
 // Convienience constructor.
-ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, Body& body) : ModelComponent()
+ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, 
+    PhysicalFrame& body) : ModelComponent()
 {
-	setNull();
+    setNull();
     constructProperties();
 
     _body = &body;
@@ -60,8 +61,7 @@ ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, 
 
 void ContactGeometry::setNull()
 {
-	setAuthors("Peter Eastman");
-    _body = NULL;
+    setAuthors("Peter Eastman");
 }
 
 
@@ -77,7 +77,7 @@ void ContactGeometry::constructProperties()
     constructProperty_display_preference(1);
 
     Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
-	defaultColor[0] = 0.0; 
+    defaultColor[0] = 0.0; 
     constructProperty_color(defaultColor);
 }
 
@@ -109,17 +109,17 @@ SimTK::Transform ContactGeometry::getTransform()
         get_orientation()[2], SimTK::ZAxis), get_location());
 }
 
-Body& ContactGeometry::getBody()
+PhysicalFrame& ContactGeometry::updBody()
 {
     return *_body;
 }
 
-const Body& ContactGeometry::getBody() const
+const PhysicalFrame& ContactGeometry::getBody() const
 {
     return *_body;
 }
 
-void ContactGeometry::setBody(Body& body)
+void ContactGeometry::setBody(PhysicalFrame& body)
 {
     _body = &body;
     set_body_name(body.getName());
@@ -133,7 +133,7 @@ const std::string& ContactGeometry::getBodyName()
 void ContactGeometry::setBodyName(const std::string& name)
 {
     set_body_name(name);
-    _body = NULL;
+    _body = nullptr;
 }
 
 const int ContactGeometry::getDisplayPreference()
@@ -146,20 +146,24 @@ void ContactGeometry::setDisplayPreference(const int dispPref)
     set_display_preference(dispPref);
 }
 
-void ContactGeometry::connectToModel(Model& aModel)
+void ContactGeometry::extendConnectToModel(Model& aModel)
 {
+    Super::extendConnectToModel(aModel);
+
+    //TODO use Connectors!
     try {
-    	_body = &aModel.updBodySet().get(get_body_name());
-		_model = &aModel;
+        _body =
+            static_cast<PhysicalFrame*>(&updModel().updComponent(get_body_name()));
     }
-	catch (...)
+    catch (...)
     {
         std::string errorMessage = "Invalid body (" + get_body_name() + ") specified in contact geometry " + getName();
-		throw (Exception(errorMessage.c_str()));
-	}
-	_body->updDisplayer()->addDependent(updDisplayer());
-	_displayer.setTransform(getTransform());
-	_displayer.setOwner(this);
+        throw (Exception(errorMessage.c_str()));
+    }
+
+    _body->updDisplayer()->addDependent(updDisplayer());
+    _displayer.setTransform(getTransform());
+    _displayer.setOwner(this);
 }
 
 void ContactGeometry::scale(const ScaleSet& aScaleSet)

@@ -54,59 +54,59 @@ class OSIMSIMULATION_API WrapTorus : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapTorus, WrapObject);
 
 private:
-	struct CircleCallback {
-		double p1[3], p2[3], r;
-	};
+    struct CircleCallback {
+        double p1[3], p2[3], r;
+    };
 
 //=============================================================================
 // DATA
 //=============================================================================
 
-	PropertyDbl _innerRadiusProp;
-	double& _innerRadius;
+    PropertyDbl _innerRadiusProp;
+    double& _innerRadius;
 
-	PropertyDbl _outerRadiusProp;
-	double& _outerRadius;
+    PropertyDbl _outerRadiusProp;
+    double& _outerRadius;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	WrapTorus();
-	WrapTorus(const WrapTorus& aWrapTorus);
-	virtual ~WrapTorus();
+    WrapTorus();
+    WrapTorus(const WrapTorus& aWrapTorus);
+    virtual ~WrapTorus();
 
 #ifndef SWIG
-	WrapTorus& operator=(const WrapTorus& aWrapTorus);
+    WrapTorus& operator=(const WrapTorus& aWrapTorus);
 #endif
    void copyData(const WrapTorus& aWrapTorus);
-	virtual const char* getWrapTypeName() const;
-	virtual std::string getDimensionsString() const;
-	SimTK::Real getInnerRadius() const;
-	SimTK::Real getOuterRadius() const;
+    virtual const char* getWrapTypeName() const;
+    virtual std::string getDimensionsString() const;
+    SimTK::Real getInnerRadius() const;
+    SimTK::Real getOuterRadius() const;
 
-	virtual void scale(const SimTK::Vec3& aScaleFactors);
-	virtual void connectToModelAndBody(Model& aModel, OpenSim::Body& aBody);
+    virtual void scale(const SimTK::Vec3& aScaleFactors);
+    void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 #ifndef SWIG
-	virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-		const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
+    virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
 #endif
 protected:
-	void setupProperties();
+    void setupProperties();
 
 private:
-	void setNull();
-	int findClosestPoint(double radius, double p1[], double p2[],
-		double* xc, double* yc, double* zc,
-		int wrap_sign, int wrap_axis) const;
-	static void calcCircleResids(int numResid, int numQs, double q[],
-		double resid[], int *flag2, void *ptr);
+    void setNull();
+    int findClosestPoint(double radius, double p1[], double p2[],
+        double* xc, double* yc, double* zc,
+        int wrap_sign, int wrap_axis) const;
+    static void calcCircleResids(int numResid, int numQs, double q[],
+        double resid[], int *flag2, void *ptr);
 
 //=============================================================================
-};	// END of class WrapTorus
+};  // END of class WrapTorus
 //=============================================================================
 //=============================================================================
 

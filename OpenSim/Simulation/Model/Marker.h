@@ -54,28 +54,29 @@ class Body;
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	Marker();
-	virtual ~Marker();
+    Marker();
+    virtual ~Marker();
 
     const std::string& getFrameName() const;
-	void setFrameName(const std::string& aName);
-	void changeFrame(const OpenSim::RigidFrame& aRigidFrame );
-	void changeFramePreserveLocation(const SimTK::State& s, OpenSim::RigidFrame& aRigidFrame );
-	void scale(const SimTK::Vec3& aScaleFactors);
+
+    void setFrameName(const std::string& aName);
+    void changeFrame(const OpenSim::PhysicalFrame& aPhysicalFrame );
+    void changeFramePreserveLocation(const SimTK::State& s, OpenSim::PhysicalFrame& aPhysicalFrame );
+    void scale(const SimTK::Vec3& aScaleFactors);
 
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode,
         int versionNumber = -1) override;
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 //=============================================================================
-};	// END of class Marker
+};  // END of class Marker
 //=============================================================================
 //=============================================================================
 

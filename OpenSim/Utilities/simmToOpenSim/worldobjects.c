@@ -73,7 +73,7 @@ ReturnCode read_world_object(ModelStruct* ms, FILE* fp)
    {
       ms->world_array_size += ARRAY_INCREMENT;
       ms->worldobj = (WorldObject*)simm_realloc(ms->worldobj,
-			     ms->world_array_size*sizeof(WorldObject),&rc);
+                 ms->world_array_size*sizeof(WorldObject),&rc);
       if (rc == code_bad)
       {
          ms->world_array_size -= ARRAY_INCREMENT;
@@ -96,159 +96,159 @@ ReturnCode read_world_object(ModelStruct* ms, FILE* fp)
    else
       mstrcpy(&obj->name,name);
 
-	while (1)
-	{
-		if (read_string(fp,buffer) == EOF)
-		{
-			(void)sprintf(errorbuffer, "Unexpected EOF found reading definition of object %s", obj->name);
-			error(abort_action,errorbuffer);
-			return code_bad;
-		}
-		else if (STRINGS_ARE_EQUAL(buffer, "endworldobject"))
-		{
-			break;
-		}
-		else if (STRINGS_ARE_EQUAL(buffer, "filename"))
-		{
+    while (1)
+    {
+        if (read_string(fp,buffer) == EOF)
+        {
+            (void)sprintf(errorbuffer, "Unexpected EOF found reading definition of object %s", obj->name);
+            error(abort_action,errorbuffer);
+            return code_bad;
+        }
+        else if (STRINGS_ARE_EQUAL(buffer, "endworldobject"))
+        {
+            break;
+        }
+        else if (STRINGS_ARE_EQUAL(buffer, "filename"))
+        {
          FileReturnCode frc;
-			if (fscanf(fp, "%s", fname) != 1)
-			{
-				(void)sprintf(errorbuffer, "Error reading filename in definition of worldobject %s", obj->name);
-				error(abort_action, errorbuffer);
-				return code_bad;	    
-			}
+            if (fscanf(fp, "%s", fname) != 1)
+            {
+                (void)sprintf(errorbuffer, "Error reading filename in definition of worldobject %s", obj->name);
+                error(abort_action, errorbuffer);
+                return code_bad;        
+            }
 #if ! ENGINE
-			frc = lookup_polyhedron(obj->wobj, fname, ms);
+            frc = lookup_polyhedron(obj->wobj, fname, ms);
 
-			if (frc == file_missing)
+            if (frc == file_missing)
          {
-				(void)sprintf(mess, "Unable to locate object file %s", fname);
-				error(none, mess);
+                (void)sprintf(mess, "Unable to locate object file %s", fname);
+                error(none, mess);
          }
          else if (frc == file_bad)
-			{
-				(void)sprintf(mess, "Unable to read object from file %s", fname);
-				error(none, mess);
-			}
-			else
-			{
-				/* simm_printf(no, "Read object file %s\n", fname); */
+            {
+                (void)sprintf(mess, "Unable to read object from file %s", fname);
+                error(none, mess);
+            }
+            else
+            {
+                /* simm_printf(no, "Read object file %s\n", fname); */
             //TODO5.0 shouldn't the filename be copied anyway, even if the file was not found?
-			}
-			mstrcpy(&obj->filename, fname);
+            }
+            mstrcpy(&obj->filename, fname);
 #else
-			mstrcpy(&obj->filename, fname);
+            mstrcpy(&obj->filename, fname);
 #endif
-		}
-		else if (STRINGS_ARE_EQUAL(buffer, "origin"))
-		{
-			if (fscanf(fp, "%lg %lg %lg", &translation[0], &translation[1], &translation[2]) != 3)
-			{
-				(void)sprintf(errorbuffer, "Error reading origin in definition of worldobject %s", obj->name);
-				error(none, errorbuffer);
-				error(none, "Using default value of 0.0 0.0 0.0");
+        }
+        else if (STRINGS_ARE_EQUAL(buffer, "origin"))
+        {
+            if (fscanf(fp, "%lg %lg %lg", &translation[0], &translation[1], &translation[2]) != 3)
+            {
+                (void)sprintf(errorbuffer, "Error reading origin in definition of worldobject %s", obj->name);
+                error(none, errorbuffer);
+                error(none, "Using default value of 0.0 0.0 0.0");
             translation[0] = translation[1] = translation[2] = 0.0;
-			}
-		}
-		else if (STRINGS_ARE_EQUAL(buffer, "scale"))
-		{
-			if (fscanf(fp, "%lg %lg %lg", &scale[0], &scale[1], &scale[2]) != 3)
-			{
-				(void)sprintf(errorbuffer, "Error reading scale factor in definition of worldobject %s", obj->name);
-				error(none, errorbuffer);
-				error(none, "Using default values of 1.0 1.0 1.0");
+            }
+        }
+        else if (STRINGS_ARE_EQUAL(buffer, "scale"))
+        {
+            if (fscanf(fp, "%lg %lg %lg", &scale[0], &scale[1], &scale[2]) != 3)
+            {
+                (void)sprintf(errorbuffer, "Error reading scale factor in definition of worldobject %s", obj->name);
+                error(none, errorbuffer);
+                error(none, "Using default values of 1.0 1.0 1.0");
             scale[0] = scale[1] = scale[2] = 1.0;
-			}
-		}
-		else if (STRINGS_ARE_EQUAL(buffer, "rotation"))
-		{
-			if (fscanf(fp, "%lg %lg %lg", &rotation[0], &rotation[1], &rotation[2]) != 3)
-			{
-				(void)sprintf(errorbuffer, "Error reading XYZ Euler rotations in definition of worldobject %s", obj->name);
-				error(none, errorbuffer);
-				error(none, "Using default values of 0.0 0.0 0.0");
+            }
+        }
+        else if (STRINGS_ARE_EQUAL(buffer, "rotation"))
+        {
+            if (fscanf(fp, "%lg %lg %lg", &rotation[0], &rotation[1], &rotation[2]) != 3)
+            {
+                (void)sprintf(errorbuffer, "Error reading XYZ Euler rotations in definition of worldobject %s", obj->name);
+                error(none, errorbuffer);
+                error(none, "Using default values of 0.0 0.0 0.0");
             rotation[0] = rotation[1] = rotation[2] = 0.0;
-			}
-		}
-		else if (STRINGS_ARE_EQUAL(buffer, "drawmode"))
-		{
-			if (fscanf(fp, "%s", buffer) != 1)
-			{
-				(void)sprintf(errorbuffer, "Error reading drawmode in definition of worldobject %s", obj->name);
-				error(none, errorbuffer);
-				error(none, "Using default value of solid_fill");
-			}
-			if (STRINGS_ARE_EQUAL(buffer, "wireframe"))
-				obj->drawmode = wireframe;
-			else if (STRINGS_ARE_EQUAL(buffer, "solid_fill"))
-				obj->drawmode = solid_fill;
-			else if (STRINGS_ARE_EQUAL(buffer, "flat_shading"))
-				obj->drawmode = flat_shading;
-			else if (STRINGS_ARE_EQUAL(buffer, "gouraud_shading"))
-				obj->drawmode = gouraud_shading;
-			else if (STRINGS_ARE_EQUAL(buffer, "outlined_polygons"))
-				obj->drawmode = outlined_polygons;
-			else if (STRINGS_ARE_EQUAL(buffer, "bounding_box"))
-			{
-				(void)sprintf(errorbuffer, "Warning: bounding_box drawmode not supported for worldobjects (%s).", obj->name);
-				error(none, errorbuffer);
-				error(none, "Using solid_fill instead.");
-				obj->drawmode = solid_fill;
-			}
-			else if (STRINGS_ARE_EQUAL(buffer, "none"))
-				obj->drawmode = no_surface;
-			else
-			{
-				(void)sprintf(errorbuffer, "Unknown drawmode found for worldobject (%s).", obj->name);
-				error(none, errorbuffer);
-				error(none, "Using solid_fill instead.");
-				obj->drawmode = solid_fill;
-			}
-		}
-		else if (STRINGS_ARE_EQUAL(buffer, "material"))
-		{
-			if (fscanf(fp,"%s", fname) != 1)
-			{
-				(void)sprintf(errorbuffer, "Error reading material in definition of worldobject %s", obj->name);
-				error(none, errorbuffer);
-				error(none, "Using default value of def_bone");
-				obj->material = enter_material(ms, "def_bone", just_checking_element);
-			}
-			else
-			{
-				obj->material = enter_material(ms,fname,declaring_element);
-			}
-		}
+            }
+        }
+        else if (STRINGS_ARE_EQUAL(buffer, "drawmode"))
+        {
+            if (fscanf(fp, "%s", buffer) != 1)
+            {
+                (void)sprintf(errorbuffer, "Error reading drawmode in definition of worldobject %s", obj->name);
+                error(none, errorbuffer);
+                error(none, "Using default value of solid_fill");
+            }
+            if (STRINGS_ARE_EQUAL(buffer, "wireframe"))
+                obj->drawmode = wireframe;
+            else if (STRINGS_ARE_EQUAL(buffer, "solid_fill"))
+                obj->drawmode = solid_fill;
+            else if (STRINGS_ARE_EQUAL(buffer, "flat_shading"))
+                obj->drawmode = flat_shading;
+            else if (STRINGS_ARE_EQUAL(buffer, "gouraud_shading"))
+                obj->drawmode = gouraud_shading;
+            else if (STRINGS_ARE_EQUAL(buffer, "outlined_polygons"))
+                obj->drawmode = outlined_polygons;
+            else if (STRINGS_ARE_EQUAL(buffer, "bounding_box"))
+            {
+                (void)sprintf(errorbuffer, "Warning: bounding_box drawmode not supported for worldobjects (%s).", obj->name);
+                error(none, errorbuffer);
+                error(none, "Using solid_fill instead.");
+                obj->drawmode = solid_fill;
+            }
+            else if (STRINGS_ARE_EQUAL(buffer, "none"))
+                obj->drawmode = no_surface;
+            else
+            {
+                (void)sprintf(errorbuffer, "Unknown drawmode found for worldobject (%s).", obj->name);
+                error(none, errorbuffer);
+                error(none, "Using solid_fill instead.");
+                obj->drawmode = solid_fill;
+            }
+        }
+        else if (STRINGS_ARE_EQUAL(buffer, "material"))
+        {
+            if (fscanf(fp,"%s", fname) != 1)
+            {
+                (void)sprintf(errorbuffer, "Error reading material in definition of worldobject %s", obj->name);
+                error(none, errorbuffer);
+                error(none, "Using default value of def_bone");
+                obj->material = enter_material(ms, "def_bone", just_checking_element);
+            }
+            else
+            {
+                obj->material = enter_material(ms,fname,declaring_element);
+            }
+        }
       else if (STRINGS_ARE_EQUAL(buffer, "texture_file"))
       {
          FileReturnCode frc;
-			if (fscanf(fp, "%s", fname) != 1)
-			{
-				(void)sprintf(errorbuffer, "Error reading name of texture file in definition of worldobject %s", obj->name);
-				error(abort_action, errorbuffer);
-				return code_bad;	    
-			}
+            if (fscanf(fp, "%s", fname) != 1)
+            {
+                (void)sprintf(errorbuffer, "Error reading name of texture file in definition of worldobject %s", obj->name);
+                error(abort_action, errorbuffer);
+                return code_bad;        
+            }
 
-			mstrcpy(&obj->texture_filename, fname);
-		}
+            mstrcpy(&obj->texture_filename, fname);
+        }
       else if (STRINGS_ARE_EQUAL(buffer, "texture_coords_file"))
       {
          FileReturnCode frc;
-			if (fscanf(fp, "%s", fname) != 1)
-			{
-				(void)sprintf(errorbuffer, "Error reading name of texture coordinates file in definition of worldobject %s", obj->name);
-				error(abort_action, errorbuffer);
-				return code_bad;	    
-			}
+            if (fscanf(fp, "%s", fname) != 1)
+            {
+                (void)sprintf(errorbuffer, "Error reading name of texture coordinates file in definition of worldobject %s", obj->name);
+                error(abort_action, errorbuffer);
+                return code_bad;        
+            }
 
-			mstrcpy(&obj->texture_coords_filename, fname);
-		}
-		else
-		{
-			(void)sprintf(errorbuffer, "Unknown string (%s) in definition of object %s", buffer, obj->name);
-			error(recover, errorbuffer);
-		}
-	}
+            mstrcpy(&obj->texture_coords_filename, fname);
+        }
+        else
+        {
+            (void)sprintf(errorbuffer, "Unknown string (%s) in definition of object %s", buffer, obj->name);
+            error(recover, errorbuffer);
+        }
+    }
 
    identity_matrix(obj->transform);
 
@@ -289,7 +289,7 @@ ReturnCode read_world_object(ModelStruct* ms, FILE* fp)
    }
 #endif
 
-	ms->numworldobjects++;
+    ms->numworldobjects++;
 
    return code_fine;
 }

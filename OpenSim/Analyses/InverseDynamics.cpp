@@ -54,25 +54,25 @@ using namespace std;
  */
 InverseDynamics::~InverseDynamics()
 {
-	deleteStorage();
-	delete _modelWorkingCopy;
-	if(_ownsForceSet) delete _forceSet;
+    deleteStorage();
+    delete _modelWorkingCopy;
+    if(_ownsForceSet) delete _forceSet;
 }
 //_____________________________________________________________________________
 /**
  */
 InverseDynamics::InverseDynamics(Model *aModel) :
-	Analysis(aModel),
-	_useModelForceSet(_useModelForceSetProp.getValueBool()),
-	_modelWorkingCopy(NULL),
-	_numCoordinateActuators(0)
+    Analysis(aModel),
+    _useModelForceSet(_useModelForceSetProp.getValueBool()),
+    _modelWorkingCopy(NULL),
+    _numCoordinateActuators(0)
 {
-	setNull();
+    setNull();
 
-	if(aModel) {
-		setModel(*aModel);
-	}
-	else allocateStorage();
+    if(aModel) {
+        setModel(*aModel);
+    }
+    else allocateStorage();
 }
 // Copy constrctor and virtual copy 
 //_____________________________________________________________________________
@@ -81,14 +81,14 @@ InverseDynamics::InverseDynamics(Model *aModel) :
  *
  */
 InverseDynamics::InverseDynamics(const InverseDynamics &aInverseDynamics):
-	Analysis(aInverseDynamics),
-	_useModelForceSet(_useModelForceSetProp.getValueBool()),
-	_modelWorkingCopy(NULL),
-	_numCoordinateActuators(aInverseDynamics._numCoordinateActuators)
+    Analysis(aInverseDynamics),
+    _useModelForceSet(_useModelForceSetProp.getValueBool()),
+    _modelWorkingCopy(NULL),
+    _numCoordinateActuators(aInverseDynamics._numCoordinateActuators)
 {
-	setNull();
-	// COPY TYPE AND NAME
-	*this = aInverseDynamics;
+    setNull();
+    // COPY TYPE AND NAME
+    *this = aInverseDynamics;
 }
 
 //=============================================================================
@@ -106,14 +106,14 @@ InverseDynamics::InverseDynamics(const InverseDynamics &aInverseDynamics):
 InverseDynamics& InverseDynamics::
 operator=(const InverseDynamics &aInverseDynamics)
 {
-	// BASE CLASS
-	Analysis::operator=(aInverseDynamics);
+    // BASE CLASS
+    Analysis::operator=(aInverseDynamics);
 
-	_useModelForceSet = aInverseDynamics._useModelForceSet;
-	_modelWorkingCopy = 0;
-	_numCoordinateActuators = aInverseDynamics._numCoordinateActuators;
-	_forceSet = 0;
-	return(*this);
+    _useModelForceSet = aInverseDynamics._useModelForceSet;
+    _modelWorkingCopy = 0;
+    _numCoordinateActuators = aInverseDynamics._numCoordinateActuators;
+    _forceSet = 0;
+    return(*this);
 }
 
 //_____________________________________________________________________________
@@ -123,16 +123,16 @@ operator=(const InverseDynamics &aInverseDynamics)
 void InverseDynamics::
 setNull()
 {
-	setupProperties();
+    setupProperties();
 
-	// OTHER VARIABLES
-	_useModelForceSet = true;
-	_storage = NULL;
-	_ownsForceSet = false;
-	_forceSet = NULL;
-	_numCoordinateActuators = 0;
+    // OTHER VARIABLES
+    _useModelForceSet = true;
+    _storage = NULL;
+    _ownsForceSet = false;
+    _forceSet = NULL;
+    _numCoordinateActuators = 0;
 
-	setName("InverseDynamics");
+    setName("InverseDynamics");
 }
 //_____________________________________________________________________________
 /**
@@ -141,10 +141,10 @@ setNull()
 void InverseDynamics::
 setupProperties()
 {
-	_useModelForceSetProp.setComment("If true, the model's own force set will be used in the inverse dynamics computation.  "
-													"Otherwise, inverse dynamics coordinate actuators will be computed for all unconstrained degrees of freedom.");
-	_useModelForceSetProp.setName("use_model_force_set");
-	_propertySet.append(&_useModelForceSetProp);
+    _useModelForceSetProp.setComment("If true, the model's own force set will be used in the inverse dynamics computation.  "
+                                                    "Otherwise, inverse dynamics coordinate actuators will be computed for all unconstrained degrees of freedom.");
+    _useModelForceSetProp.setName("use_model_force_set");
+    _propertySet.append(&_useModelForceSetProp);
 }
 
 //=============================================================================
@@ -157,8 +157,8 @@ setupProperties()
 void InverseDynamics::
 constructDescription()
 {
-	string descrip = "This file contains inverse dynamics results.\n\n";
-	setDescription(descrip);
+    string descrip = "This file contains inverse dynamics results.\n\n";
+    setDescription(descrip);
 }
 
 //_____________________________________________________________________________
@@ -168,34 +168,34 @@ constructDescription()
 void InverseDynamics::
 constructColumnLabels()
 {
-	Array<string> labels;
-	labels.append("time");
-	if(_modelWorkingCopy) {
+    Array<string> labels;
+    labels.append("time");
+    if(_modelWorkingCopy) {
         if( _useModelForceSet ) {
            for (int i=0; i < _numCoordinateActuators; i++) {
-		      Actuator* act = dynamic_cast<Actuator*>(&_forceSet->get(i));
-			  if( act )labels.append(act->getName());
+              Actuator* act = dynamic_cast<Actuator*>(&_forceSet->get(i));
+              if( act )labels.append(act->getName());
            }
         } else {
-		   const CoordinateSet& cs = _modelWorkingCopy->getCoordinateSet();
-		   for (int i=0; i < _numCoordinateActuators; i++) {
-		  	  Force& force = _forceSet->get(i);
-			  for(int i=0; i<cs.getSize(); i++) {
-				 Coordinate& coord = cs.get(i);
-				 if(coord.getName()==force.getName()) {
-					if(coord.getMotionType() == Coordinate::Rotational) {
-						labels.append(force.getName()+"_moment");
-					} else if (coord.getMotionType() == Coordinate::Translational) {
-						labels.append(force.getName()+"_force");
-					} else {
-						labels.append(force.getName());
-					}
-				 }
-			  }
-		   }
+           const CoordinateSet& cs = _modelWorkingCopy->getCoordinateSet();
+           for (int i=0; i < _numCoordinateActuators; i++) {
+              Force& force = _forceSet->get(i);
+              for(int i=0; i<cs.getSize(); i++) {
+                 Coordinate& coord = cs.get(i);
+                 if(coord.getName()==force.getName()) {
+                    if(coord.getMotionType() == Coordinate::Rotational) {
+                        labels.append(force.getName()+"_moment");
+                    } else if (coord.getMotionType() == Coordinate::Translational) {
+                        labels.append(force.getName()+"_force");
+                    } else {
+                        labels.append(force.getName());
+                    }
+                 }
+              }
+           }
         }
-	}
-	setColumnLabels(labels);
+    }
+    setColumnLabels(labels);
 
 }
 
@@ -206,12 +206,12 @@ constructColumnLabels()
 void InverseDynamics::
 allocateStorage()
 {
-	_storage = new Storage(1000,"Inverse Dynamics");
-	_storage->setDescription(getDescription());
-	_storage->setColumnLabels(getColumnLabels());
-	// Keep references o all storages in a list for uniform access from GUI
-	_storageList.append(_storage);
-	_storageList.setMemoryOwner(false);
+    _storage = new Storage(1000,"Inverse Dynamics");
+    _storage->setDescription(getDescription());
+    _storage->setColumnLabels(getColumnLabels());
+    // Keep references o all storages in a list for uniform access from GUI
+    _storageList.append(_storage);
+    _storageList.setMemoryOwner(false);
 }
 
 
@@ -225,7 +225,7 @@ allocateStorage()
 void InverseDynamics::
 deleteStorage()
 {
-	delete _storage; _storage = NULL;
+    delete _storage; _storage = NULL;
 }
 
 //=============================================================================
@@ -241,7 +241,7 @@ void InverseDynamics::
 setModel(Model& aModel)
 {
     
-	Analysis::setModel(aModel);
+    Analysis::setModel(aModel);
 }
 
 //-----------------------------------------------------------------------------
@@ -256,7 +256,7 @@ setModel(Model& aModel)
 Storage* InverseDynamics::
 getStorage()
 {
-	return(_storage);
+    return(_storage);
 }
 
 //-----------------------------------------------------------------------------
@@ -272,7 +272,7 @@ getStorage()
 void InverseDynamics::
 setStorageCapacityIncrements(int aIncrement)
 {
-	_storage->setCapacityIncrement(aIncrement);
+    _storage->setCapacityIncrement(aIncrement);
 }
 
 //=============================================================================
@@ -282,21 +282,21 @@ setStorageCapacityIncrements(int aIncrement)
 void InverseDynamics::
 computeAcceleration(SimTK::State& s, double *aF,double *rAccel) const
 {
-	for(int i=0,j=0; i<_forceSet->getSize(); i++) {
-		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
+    for(int i=0,j=0; i<_forceSet->getSize(); i++) {
+        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
         if( act ) {
-			act->setOverrideActuation(s, aF[j++]);
+            act->setOverrideActuation(s, aF[j++]);
         }
-	}
+    }
 
-	// NEED TO APPLY OTHER FORCES (e.g. Prescribed) FROM ORIGINAL MODEL 
+    // NEED TO APPLY OTHER FORCES (e.g. Prescribed) FROM ORIGINAL MODEL 
 
-	_modelWorkingCopy->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);
+    _modelWorkingCopy->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);
 
-	SimTK::Vector udot = _modelWorkingCopy->getMatterSubsystem().getUDot(s);
+    SimTK::Vector udot = _modelWorkingCopy->getMatterSubsystem().getUDot(s);
 
-	for(int i=0; i<_accelerationIndices.getSize(); i++) 
-		rAccel[i] = udot[_accelerationIndices[i]];
+    for(int i=0; i<_accelerationIndices.getSize(); i++) 
+        rAccel[i] = udot[_accelerationIndices[i]];
 
 }
 
@@ -307,79 +307,90 @@ computeAcceleration(SimTK::State& s, double *aF,double *rAccel) const
 int InverseDynamics::
 record(const SimTK::State& s)
 {
-	if(!_modelWorkingCopy) return -1;
+    if(!_modelWorkingCopy) return -1;
 
 //cout << "\nInverse Dynamics record() : \n" << endl;
-	// Set model Q's and U's
+    // Set model Q's and U's
     SimTK::State sWorkingCopy = _modelWorkingCopy->getWorkingState();
 
-	// Set modeling options for Actuators to be overriden
-	for(int i=0,j=0; i<_forceSet->getSize(); i++) {
+    // Set modeling options for Actuators to be overriden
+    for(int i=0,j=0; i<_forceSet->getSize(); i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
         if( act ) {
-			act->overrideActuation(sWorkingCopy, true);
+            act->overrideActuation(sWorkingCopy, true);
         }
-	}
+    }
 
-	// Having updated the model atleast re-realize Model stage!
-	_modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy, SimTK::Stage::Model);
+    // Having updated the model atleast re-realize Model stage!
+    _modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy, SimTK::Stage::Model);
 
-	sWorkingCopy.setTime(s.getTime());
-	sWorkingCopy.setQ(s.getQ());
-	sWorkingCopy.setU(s.getU());
+    sWorkingCopy.setTime(s.getTime());
+    sWorkingCopy.setQ(s.getQ());
+    sWorkingCopy.setU(s.getU());
 
 
-	// Having updated the states atleast realize to velocity!
-	_modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy, SimTK::Stage::Velocity);
+    // Having updated the states atleast realize to velocity!
+    _modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy, SimTK::Stage::Velocity);
 
-	int nf = _numCoordinateActuators;
-	int nacc = _accelerationIndices.getSize();
-	int nq = _modelWorkingCopy->getNumCoordinates();
+    int nf = _numCoordinateActuators;
+    int nacc = _accelerationIndices.getSize();
+    int nq = _modelWorkingCopy->getNumCoordinates();
 
 //cout << "\nQ= " << s.getQ() << endl;
 //cout << "\nU= " << s.getU() << endl;
-	// Build linear constraint matrix and constant constraint vector
-	SimTK::Vector f(nf), c(nacc);
-	f = 0;
-	computeAcceleration(sWorkingCopy, &f[0], &_constraintVector[0]);
+    // Build linear constraint matrix and constant constraint vector
+    SimTK::Vector f(nf), c(nacc);
+    f = 0;
+    computeAcceleration(sWorkingCopy, &f[0], &_constraintVector[0]);
 
-	for(int j=0; j<nf; j++) {
-		f[j] = 1;
-		computeAcceleration(sWorkingCopy, &f[0], &c[0]);
-		for(int i=0; i<nacc; i++) _constraintMatrix(i,j) = (c[i] - _constraintVector[i]);
-		f[j] = 0;
-	}
-	for(int i=0; i<nacc; i++) {
-		Coordinate& coord = _modelWorkingCopy->getCoordinateSet().get(_accelerationIndices[i]);
-		GCVSpline& presribedFunc = dynamic_cast<GCVSpline&>(_statesSplineSet.get(_statesStore->getStateIndex(coord.getName()+"_u",0)));
-		std::vector<int> firstDerivComponents(1);
-		firstDerivComponents[0]=0;
-        double targetAcceleration = presribedFunc.calcDerivative( firstDerivComponents, SimTK::Vector(1,sWorkingCopy.getTime()));
+    for(int j=0; j<nf; j++) {
+        f[j] = 1;
+        computeAcceleration(sWorkingCopy, &f[0], &c[0]);
+        for(int i=0; i<nacc; i++) _constraintMatrix(i,j) = (c[i] - _constraintVector[i]);
+        f[j] = 0;
+    }
+    for(int i=0; i<nacc; i++) {
+        Coordinate& coord = _modelWorkingCopy->getCoordinateSet().get(_accelerationIndices[i]);
+        int ind = _statesStore->getStateIndex(coord.getSpeedName(), 0);
+        if (ind < 0){
+            string fullname = coord.getJoint().getName() + "/" + coord.getSpeedName();
+            ind = _statesStore->getStateIndex(fullname, 0);
+            if (ind < 0){
+                string msg = "StaticOptimizationTarget::computeConstraintVector: \n";
+                msg += "target motion for coordinate '";
+                msg += coord.getName() + "' not found.";
+                throw Exception(msg);
+            }
+        }
+        Function& targetFunc = _statesSplineSet.get(ind);
+        std::vector<int> firstDerivComponents(1);
+        firstDerivComponents[0]=0;
+        double targetAcceleration = targetFunc.calcDerivative(firstDerivComponents, SimTK::Vector(1, sWorkingCopy.getTime()));
 //cout <<  coord.getName() << " t=" << sWorkingCopy.getTime() << "  acc=" << targetAcceleration << " index=" << _accelerationIndices[i] << endl; 
-		_constraintVector[i] = targetAcceleration - _constraintVector[i];
-	}
-	//cout << "NEW Constraint Vector Adjusted = " << endl;
-	//_constraintVector.dump(&t);
+        _constraintVector[i] = targetAcceleration - _constraintVector[i];
+    }
+    //cout << "NEW Constraint Vector Adjusted = " << endl;
+    //_constraintVector.dump(&t);
 
-	// LAPACK SOLVER
-	// NOTE: It destroys the matrices/vectors we pass to it, so we need to pass it copies of performanceMatrix and performanceVector (don't bother making
-	// copies of _constraintMatrix/Vector since those are reinitialized each time anyway)
-	int info;
-	SimTK::Matrix performanceMatrixCopy = _performanceMatrix;
-	SimTK::Vector performanceVectorCopy = _performanceVector;
+    // LAPACK SOLVER
+    // NOTE: It destroys the matrices/vectors we pass to it, so we need to pass it copies of performanceMatrix and performanceVector (don't bother making
+    // copies of _constraintMatrix/Vector since those are reinitialized each time anyway)
+    int info;
+    SimTK::Matrix performanceMatrixCopy = _performanceMatrix;
+    SimTK::Vector performanceVectorCopy = _performanceVector;
 //cout << "performanceMatrixCopy : " << performanceMatrixCopy << endl;
 //cout << "performanceVectorCopy : " << performanceVectorCopy << endl;
 //cout << "_constraintMatrix : " << _constraintMatrix << endl;
 //cout << "_constraintVector : " << _constraintVector << endl;
 //cout << "nf=" << nf << "  nacc=" << nacc << endl;
-	dgglse_(nf, nf, nacc, &performanceMatrixCopy(0,0), nf, &_constraintMatrix(0,0), nacc, &performanceVectorCopy[0], &_constraintVector[0], &f[0], &_lapackWork[0], _lapackWork.size(), info);
+    dgglse_(nf, nf, nacc, &performanceMatrixCopy(0,0), nf, &_constraintMatrix(0,0), nacc, &performanceVectorCopy[0], &_constraintVector[0], &f[0], &_lapackWork[0], _lapackWork.size(), info);
 
-	// Record inverse dynamics forces
-	_storage->append(sWorkingCopy.getTime(),nf,&f[0]);
+    // Record inverse dynamics forces
+    _storage->append(sWorkingCopy.getTime(),nf,&f[0]);
 
 //cout << "\n ** f : " << f << endl << endl;
 
-	return 0;
+    return 0;
 }
 //_____________________________________________________________________________
 /**
@@ -397,120 +408,120 @@ record(const SimTK::State& s)
 int InverseDynamics::
 begin(SimTK::State& s )
 {
-	if(!proceed()) return(0);
+    if(!proceed()) return(0);
 
-	SimTK::Matrix massMatrix;
+    SimTK::Matrix massMatrix;
     _model->getMatterSubsystem().calcM(s, massMatrix);
 
-	//massMatrix.dump("mass matrix is:");
-	// Check that m is full rank
-	try {
- 	    SimTK::FactorLU lu(massMatrix);
+    //massMatrix.dump("mass matrix is:");
+    // Check that m is full rank
+    try {
+        SimTK::FactorLU lu(massMatrix);
     } catch (const SimTK::Exception::Base&) {
         throw Exception("InverseDynamics: ERROR- mass matrix is singular  ",__FILE__,__LINE__);
     }
     // enable the line below when simmath is fixed
-	//bool singularMassMatrix = lu.isSingular();
+    //bool singularMassMatrix = lu.isSingular();
 
-	//cout << "Mass matrix is " << (singularMassMatrix?"singular":"Non-singular");
+    //cout << "Mass matrix is " << (singularMassMatrix?"singular":"Non-singular");
 
-	// Make a working copy of the model
-	delete _modelWorkingCopy;
-	_modelWorkingCopy = _model->clone();
-	_modelWorkingCopy->updAnalysisSet().setSize(0);
-	//_modelWorkingCopy = _model->clone();
-	//_modelWorkingCopy = new Model(*_model);
+    // Make a working copy of the model
+    delete _modelWorkingCopy;
+    _modelWorkingCopy = _model->clone();
+    _modelWorkingCopy->updAnalysisSet().setSize(0);
+    //_modelWorkingCopy = _model->clone();
+    //_modelWorkingCopy = new Model(*_model);
 
-	// Replace model force set with only generalized forces
-	if(_model) {
-		SimTK::State& sWorkingCopyTemp = _modelWorkingCopy->initSystem();
-		// Update the _forceSet we'll be computing inverse dynamics for
-		if(_ownsForceSet) delete _forceSet;
-		if(_useModelForceSet) {
-			// Set pointer to model's internal force set
-			_forceSet = &_modelWorkingCopy->updForceSet();
-		    _numCoordinateActuators = _modelWorkingCopy->getActuators().getSize();
-		} else {
-			ForceSet& as = _modelWorkingCopy->updForceSet();
-			// Keep a copy of forces that are not muscles to restore them back.
-			ForceSet* saveForces = as.clone();
-			// Generate an force set consisting of a coordinate actuator for every unconstrained degree of freedom
-			_forceSet = CoordinateActuator::CreateForceSetOfCoordinateActuatorsForModel(sWorkingCopyTemp,*_modelWorkingCopy,1,false);
-		    _numCoordinateActuators = _forceSet->getSize();
-			// Copy whatever forces that are not muscles back into the model
-			
-			for(int i=0; i<saveForces->getSize(); i++){
-				const Force& f=saveForces->get(i);
-				if ((dynamic_cast<const Muscle*>(&saveForces->get(i)))==NULL)
-					as.append(saveForces->get(i).clone());
-			}
-		}
-	    _modelWorkingCopy->setAllControllersEnabled(false);
-		_ownsForceSet = false;
+    // Replace model force set with only generalized forces
+    if(_model) {
+        SimTK::State& sWorkingCopyTemp = _modelWorkingCopy->initSystem();
+        // Update the _forceSet we'll be computing inverse dynamics for
+        if(_ownsForceSet) delete _forceSet;
+        if(_useModelForceSet) {
+            // Set pointer to model's internal force set
+            _forceSet = &_modelWorkingCopy->updForceSet();
+            _numCoordinateActuators = _modelWorkingCopy->getActuators().getSize();
+        } else {
+            ForceSet& as = _modelWorkingCopy->updForceSet();
+            // Keep a copy of forces that are not muscles to restore them back.
+            ForceSet* saveForces = as.clone();
+            // Generate an force set consisting of a coordinate actuator for every unconstrained degree of freedom
+            _forceSet = CoordinateActuator::CreateForceSetOfCoordinateActuatorsForModel(sWorkingCopyTemp,*_modelWorkingCopy,1,false);
+            _numCoordinateActuators = _forceSet->getSize();
+            // Copy whatever forces that are not muscles back into the model
+            
+            for(int i=0; i<saveForces->getSize(); i++){
+                const Force& f=saveForces->get(i);
+                if ((dynamic_cast<const Muscle*>(&saveForces->get(i)))==NULL)
+                    as.append(saveForces->get(i).clone());
+            }
+        }
+        _modelWorkingCopy->setAllControllersEnabled(false);
+        _ownsForceSet = false;
 
-		SimTK::State& sWorkingCopy = _modelWorkingCopy->initSystem();
+        SimTK::State& sWorkingCopy = _modelWorkingCopy->initSystem();
 
-		// Gather indices into speed set corresponding to the unconstrained degrees of freedom (for which we will set acceleration constraints)
-		_accelerationIndices.setSize(0);
-		const CoordinateSet& coordSet = _model->getCoordinateSet();
-		for(int i=0; i<coordSet.getSize(); i++) {
-			const Coordinate& coord = coordSet.get(i);
-			if(!coord.isConstrained(sWorkingCopy)) {
-				_accelerationIndices.append(i);
-			}
-		}
+        // Gather indices into speed set corresponding to the unconstrained degrees of freedom (for which we will set acceleration constraints)
+        _accelerationIndices.setSize(0);
+        const CoordinateSet& coordSet = _model->getCoordinateSet();
+        for(int i=0; i<coordSet.getSize(); i++) {
+            const Coordinate& coord = coordSet.get(i);
+            if(!coord.isConstrained(sWorkingCopy)) {
+                _accelerationIndices.append(i);
+            }
+        }
 
-		_dydt.setSize(_modelWorkingCopy->getNumCoordinates() + _modelWorkingCopy->getNumSpeeds());
+        _dydt.setSize(_modelWorkingCopy->getNumCoordinates() + _modelWorkingCopy->getNumSpeeds());
 
-		int nf = _numCoordinateActuators;
-		int nacc = _accelerationIndices.getSize();
+        int nf = _numCoordinateActuators;
+        int nacc = _accelerationIndices.getSize();
 
-		if(nf < nacc) 
-			throw(Exception("InverseDynamics: ERROR- overconstrained system -- need at least as many forces as there are degrees of freedom.\n"));
+        if(nf < nacc) 
+            throw(Exception("InverseDynamics: ERROR- overconstrained system -- need at least as many forces as there are degrees of freedom.\n"));
 
-		// Realize to velocity in case there are any velocity dependent forces
-		_modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy, SimTK::Stage::Velocity);
+        // Realize to velocity in case there are any velocity dependent forces
+        _modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy, SimTK::Stage::Velocity);
 
-		_constraintMatrix.resize(nacc,nf);
-		_constraintVector.resize(nacc);
+        _constraintMatrix.resize(nacc,nf);
+        _constraintVector.resize(nacc);
 
-		_performanceMatrix.resize(nf,nf);
-		_performanceMatrix = 0;
-		for(int i=0,j=0; i<nf; i++) {
-			ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
+        _performanceMatrix.resize(nf,nf);
+        _performanceMatrix = 0;
+        for(int i=0,j=0; i<nf; i++) {
+            ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
             if( act ) {
-				act->setActuation(sWorkingCopy, 1);
-			    _performanceMatrix(j,j) = act->getStress(sWorkingCopy);
+                act->setActuation(sWorkingCopy, 1);
+                _performanceMatrix(j,j) = act->getStress(sWorkingCopy);
                 j++;
              }
-		}
+        }
 
-		_performanceVector.resize(nf);
-		_performanceVector = 0;
+        _performanceVector.resize(nf);
+        _performanceVector = 0;
 
-		int lwork = nf + nf + nacc;
-		_lapackWork.resize(lwork);
-	}
+        int lwork = nf + nf + nacc;
+        _lapackWork.resize(lwork);
+    }
 
-	_statesSplineSet=GCVSplineSet(5,_statesStore);
+    _statesSplineSet=GCVSplineSet(5,_statesStore);
 
-	// DESCRIPTION AND LABELS
-	constructDescription();
-	constructColumnLabels();
+    // DESCRIPTION AND LABELS
+    constructDescription();
+    constructColumnLabels();
 
-	deleteStorage();
-	allocateStorage();
+    deleteStorage();
+    allocateStorage();
 
-	// RESET STORAGE
-	_storage->reset(s.getTime());
+    // RESET STORAGE
+    _storage->reset(s.getTime());
 
-	// RECORD
-	int status = 0;
-	if(_storage->getSize()<=0) {
-		status = record(s);
-	}
+    // RECORD
+    int status = 0;
+    if(_storage->getSize()<=0) {
+        status = record(s);
+    }
 
-	return(status);
+    return(status);
 }
 //_____________________________________________________________________________
 /**
@@ -529,11 +540,11 @@ begin(SimTK::State& s )
 int InverseDynamics::
 step(const SimTK::State& s, int stepNumber )
 {
-	if(!proceed(stepNumber)) return(0);
+    if(!proceed(stepNumber)) return(0);
 
-	record(s);
+    record(s);
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -551,13 +562,13 @@ step(const SimTK::State& s, int stepNumber )
 int InverseDynamics::
 end(SimTK::State& s )
 {
-	if(!proceed()) return(0);
+    if(!proceed()) return(0);
 
-	record(s);
+    record(s);
 
     _model->overrideAllActuators( s, false );
 
-	return(0);
+    return(0);
 }
 
 
@@ -581,12 +592,12 @@ end(SimTK::State& s )
  */
 int InverseDynamics::
 printResults(const string &aBaseName,const string &aDir,double aDT,
-				 const string &aExtension)
+                 const string &aExtension)
 {
-	// ACCELERATIONS
-	Storage::printResult(_storage,aBaseName+"_"+getName(),aDir,aDT,aExtension);
+    // ACCELERATIONS
+    Storage::printResult(_storage,aBaseName+"_"+getName(),aDir,aDT,aExtension);
 
-	return(0);
+    return(0);
 }
 
 

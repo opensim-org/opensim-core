@@ -54,65 +54,65 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WrapCylinderObst, WrapObject);
 // DATA
 //=============================================================================
 
-	enum WrapDirectionEnum	// The prescribed direction of wrapping about the cylinders' z-axis
-	{
-		righthand,
-		lefthand
-	};
+    enum WrapDirectionEnum  // The prescribed direction of wrapping about the cylinders' z-axis
+    {
+        righthand,
+        lefthand
+    };
 
-	PropertyDbl _radiusProp;
-	double& _radius;
+    PropertyDbl _radiusProp;
+    double& _radius;
 
-	// Facilitate prescription of wrapping direction around obstacle: "righthand" or "lefthand".
-	// In traversing from the 1st point (P) to the 2nd (S), the path will wrap either
-	//    righthanded or lefthanded about the obstacle's z-axis.
-	PropertyStr _wrapDirectionNameProp;
-	std::string& _wrapDirectionName;
-	WrapDirectionEnum _wrapDirection;
+    // Facilitate prescription of wrapping direction around obstacle: "righthand" or "lefthand".
+    // In traversing from the 1st point (P) to the 2nd (S), the path will wrap either
+    //    righthanded or lefthanded about the obstacle's z-axis.
+    PropertyStr _wrapDirectionNameProp;
+    std::string& _wrapDirectionName;
+    WrapDirectionEnum _wrapDirection;
 
-	PropertyDbl _lengthProp;
-	double& _length;
+    PropertyDbl _lengthProp;
+    double& _length;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	WrapCylinderObst();
-	WrapCylinderObst(const WrapCylinderObst& aWrapCylinderObst);
-	virtual ~WrapCylinderObst();
+    WrapCylinderObst();
+    WrapCylinderObst(const WrapCylinderObst& aWrapCylinderObst);
+    virtual ~WrapCylinderObst();
 
 #ifndef SWIG
-	WrapCylinderObst& operator=(const WrapCylinderObst& aWrapCylinderObst);
+    WrapCylinderObst& operator=(const WrapCylinderObst& aWrapCylinderObst);
 #endif
    void copyData(const WrapCylinderObst& aWrapCylinderObst);
 
-	double getRadius() const { return _radius; }
-	void setRadius(double aRadius) { _radius = aRadius; }
-	double getLength() const { return _length; }
-	void setLength(double aLength) { _length = aLength; }
-	//WrapDirectionEnum getWrapDirection() const { return _wrapDirection; }
-	int getWrapDirection() const { return (int)_wrapDirection; }
+    double getRadius() const { return _radius; }
+    void setRadius(double aRadius) { _radius = aRadius; }
+    double getLength() const { return _length; }
+    void setLength(double aLength) { _length = aLength; }
+    //WrapDirectionEnum getWrapDirection() const { return _wrapDirection; }
+    int getWrapDirection() const { return (int)_wrapDirection; }
 
-	virtual const char* getWrapTypeName() const;
-	virtual std::string getDimensionsString() const;
-	virtual void scale(const SimTK::Vec3& aScaleFactors) { }
-	virtual void connectToModelAndBody(Model& aModel, OpenSim::Body& aBody);
+    virtual const char* getWrapTypeName() const;
+    virtual std::string getDimensionsString() const;
+    virtual void scale(const SimTK::Vec3& aScaleFactors) { }
+    void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 #ifndef SWIG
-	virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-		const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
+    virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
 #endif
 protected:
-	void setupProperties();
+    void setupProperties();
 
 private:
-	void setNull();
-	void initCircleWrapPts();
+    void setNull();
+    void initCircleWrapPts();
 
 //=============================================================================
-};	// END of class WrapCylinder
+};  // END of class WrapCylinder
 //=============================================================================
 //=============================================================================
 

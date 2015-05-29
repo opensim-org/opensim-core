@@ -29,10 +29,10 @@
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle_Deprecated.h>
 
 #ifdef SWIG
-	#ifdef OSIMACTUATORS_API
-		#undef OSIMACTUATORS_API
-		#define OSIMACTUATORS_API
-	#endif
+    #ifdef OSIMACTUATORS_API
+        #undef OSIMACTUATORS_API
+        #define OSIMACTUATORS_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -55,91 +55,91 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ContDerivMuscle_Deprecated,
 //=============================================================================
 protected:
 
-	/** Activation time constant */  
-	PropertyDbl _activationTimeConstantProp;
-	double &_activationTimeConstant;
+    /** Activation time constant */  
+    PropertyDbl _activationTimeConstantProp;
+    double &_activationTimeConstant;
 
-	/** Deactivation time constant */
-	PropertyDbl _deactivationTimeConstantProp;
-	double &_deactivationTimeConstant;
+    /** Deactivation time constant */
+    PropertyDbl _deactivationTimeConstantProp;
+    double &_deactivationTimeConstant;
 
-	/** Max contraction velocity full activation in fiber lengths per second */
-	PropertyDbl _vmaxProp;
-	double &_vmax;
+    /** Max contraction velocity full activation in fiber lengths per second */
+    PropertyDbl _vmaxProp;
+    double &_vmax;
 
-	/** Max contraction velocity at low activation */
-	PropertyDbl _vmax0Prop;
-	double &_vmax0;
+    /** Max contraction velocity at low activation */
+    PropertyDbl _vmax0Prop;
+    double &_vmax0;
 
-	/** Tendon strain due to maximum isometric muscle force */
-	PropertyDbl _fmaxTendonStrainProp;
-	double &_fmaxTendonStrain;
+    /** Tendon strain due to maximum isometric muscle force */
+    PropertyDbl _fmaxTendonStrainProp;
+    double &_fmaxTendonStrain;
 
-	/** Passive muscle strain due to maximum isometric muscle force */
-	PropertyDbl _fmaxMuscleStrainProp;
-	double &_fmaxMuscleStrain;
+    /** Passive muscle strain due to maximum isometric muscle force */
+    PropertyDbl _fmaxMuscleStrainProp;
+    double &_fmaxMuscleStrain;
 
-	/** Shape factor for Gaussian active muscle force-length relationship */
-	PropertyDbl _kShapeActiveProp;
-	double &_kShapeActive;
+    /** Shape factor for Gaussian active muscle force-length relationship */
+    PropertyDbl _kShapeActiveProp;
+    double &_kShapeActive;
 
-	/** Exponential shape factor for passive force-length relationship */
-	PropertyDbl _kShapePassiveProp;
-	double &_kShapePassive;
+    /** Exponential shape factor for passive force-length relationship */
+    PropertyDbl _kShapePassiveProp;
+    double &_kShapePassive;
 
-	/** Passive damping included in the force-velocity relationship */
-	PropertyDbl _dampingProp;
-	double &_damping;
+    /** Passive damping included in the force-velocity relationship */
+    PropertyDbl _dampingProp;
+    double &_damping;
 
-	/** Force-velocity shape factor */
-	PropertyDbl _afProp;
-	double &_af;
+    /** Force-velocity shape factor */
+    PropertyDbl _afProp;
+    double &_af;
 
-	/** Maximum normalized lengthening force */
-	PropertyDbl _flenProp;
-	double &_flen;
+    /** Maximum normalized lengthening force */
+    PropertyDbl _flenProp;
+    double &_flen;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	ContDerivMuscle_Deprecated();
-	ContDerivMuscle_Deprecated(const ContDerivMuscle_Deprecated &aMuscle);
-	virtual ~ContDerivMuscle_Deprecated();
+    ContDerivMuscle_Deprecated();
+    ContDerivMuscle_Deprecated(const ContDerivMuscle_Deprecated &aMuscle);
+    virtual ~ContDerivMuscle_Deprecated();
 
 #ifndef SWIG
-	ContDerivMuscle_Deprecated& operator=(const ContDerivMuscle_Deprecated &aMuscle);
+    ContDerivMuscle_Deprecated& operator=(const ContDerivMuscle_Deprecated &aMuscle);
 #endif
-	void copyData(const ContDerivMuscle_Deprecated &aMuscle);
+    void copyData(const ContDerivMuscle_Deprecated &aMuscle);
 
-	//--------------------------------------------------------------------------
-	// GET
-	//--------------------------------------------------------------------------
-	// Properties
-	virtual double getActivationTimeConstant() const { return _activationTimeConstant; }
-	virtual double getDeactivationTimeConstant() const { return _deactivationTimeConstant; }
-	virtual double getVmax() const { return _vmax; }
-	virtual double getVmax0() const { return _vmax0; }
-	virtual double getFmaxTendonStrain() const { return _fmaxTendonStrain; }
-	virtual double getFmaxMuscleStrain() const { return _fmaxMuscleStrain; }
-	virtual double getKshapeActive() const { return _kShapeActive; }
-	virtual double getKshapePassive() const { return _kShapePassive; }
-	virtual double getDamping() const { return _damping; }
-	virtual double getAf() const { return _af; }
-	virtual double getFlen() const { return _flen; }
-	// Computed quantities
-	virtual double getNormalizedFiberLength(const SimTK::State& s) const;
-	virtual double getPassiveFiberForce(const SimTK::State& s) const;
-	virtual double getStress(const SimTK::State& s) const;
-	virtual double getActivation(const SimTK::State& s) const { return getStateVariable(s, STATE_ACTIVATION_NAME); }
-    virtual void setActivation(SimTK::State& s, double activation) const { setStateVariable(s, STATE_ACTIVATION_NAME, activation); }
+    //--------------------------------------------------------------------------
+    // GET
+    //--------------------------------------------------------------------------
+    // Properties
+    virtual double getActivationTimeConstant() const { return _activationTimeConstant; }
+    virtual double getDeactivationTimeConstant() const { return _deactivationTimeConstant; }
+    virtual double getVmax() const { return _vmax; }
+    virtual double getVmax0() const { return _vmax0; }
+    virtual double getFmaxTendonStrain() const { return _fmaxTendonStrain; }
+    virtual double getFmaxMuscleStrain() const { return _fmaxMuscleStrain; }
+    virtual double getKshapeActive() const { return _kShapeActive; }
+    virtual double getKshapePassive() const { return _kShapePassive; }
+    virtual double getDamping() const { return _damping; }
+    virtual double getAf() const { return _af; }
+    virtual double getFlen() const { return _flen; }
+    // Computed quantities
+    virtual double getNormalizedFiberLength(const SimTK::State& s) const;
+    virtual double getPassiveFiberForce(const SimTK::State& s) const;
+    virtual double getStress(const SimTK::State& s) const;
+    virtual double getActivation(const SimTK::State& s) const { return getStateVariableValue(s, STATE_ACTIVATION_NAME); }
+    virtual void setActivation(SimTK::State& s, double activation) const { setStateVariableValue(s, STATE_ACTIVATION_NAME, activation); }
     virtual double getActivationDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_ACTIVATION_NAME); }
     virtual void setActivationDeriv(const SimTK::State& s, double activationDeriv) const { setStateVariableDeriv(s, STATE_ACTIVATION_NAME, activationDeriv); }
-    virtual double getFiberLength(const SimTK::State& s) const { return getStateVariable(s, STATE_FIBER_LENGTH_NAME); }
-    virtual void setFiberLength(SimTK::State& s, double fiberLength) const { setStateVariable(s, STATE_FIBER_LENGTH_NAME, fiberLength); }
+    virtual double getFiberLength(const SimTK::State& s) const { return getStateVariableValue(s, STATE_FIBER_LENGTH_NAME); }
+    virtual void setFiberLength(SimTK::State& s, double fiberLength) const { setStateVariableValue(s, STATE_FIBER_LENGTH_NAME, fiberLength); }
     virtual double getFiberLengthDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_FIBER_LENGTH_NAME); }
     virtual void setFiberLengthDeriv(const SimTK::State& s, double fiberLengthDeriv) const { setStateVariableDeriv(s, STATE_FIBER_LENGTH_NAME, fiberLengthDeriv); }
     virtual void setTendonForce(const SimTK::State& s, double aForce) const;
@@ -151,32 +151,32 @@ public:
 
 
 
-	//--------------------------------------------------------------------------
-	// FORCE-LENGTH-VELOCITY PROPERTIES
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // FORCE-LENGTH-VELOCITY PROPERTIES
+    //--------------------------------------------------------------------------
 
-	//--------------------------------------------------------------------------
-	// COMPUTATIONS
-	//--------------------------------------------------------------------------
-	virtual void computeEquilibrium(SimTK::State& s ) const;
-	virtual double computeActuation(const SimTK::State& s) const;
-	double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
-	double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const;
-	double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;
-	double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
-	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
+    //--------------------------------------------------------------------------
+    // COMPUTATIONS
+    //--------------------------------------------------------------------------
+    virtual void computeEquilibrium(SimTK::State& s ) const;
+    virtual double computeActuation(const SimTK::State& s) const;
+    double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
+    double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const;
+    double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;
+    double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
+    virtual double computeIsometricForce(SimTK::State& s, double activation) const;
 
 protected:
-	// Model Component Interface
-	void connectToModel(Model& aModel)  override;
-	void extendAddToSystem(SimTK::MultibodySystem& system) const  override;
-	void computeStateVariableDerivatives(const SimTK::State& s) const override;
+    // Model Component Interface
+    void extendConnectToModel(Model& aModel)  override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const  override;
+    void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 //=============================================================================
-};	// END of class ContDerivMuscle_Deprecated
+};  // END of class ContDerivMuscle_Deprecated
 //=============================================================================
 //=============================================================================
 

@@ -51,9 +51,9 @@ static ReturnCode read_muscle_function(FILE* fp, ModelStruct* model, dpMuscleStr
                                        char ending[], char description[]);
 static void finish_muscle_definition(FILE* fp);
 static ReturnCode read_muscle_parameter(FILE* fp, dpMuscleStruct* ms,
-					dpMuscleStruct* default_musc, double** param,
-					double* def_param, char param_name[],
-					double min_value, double max_value);
+                    dpMuscleStruct* default_musc, double** param,
+                    double* def_param, char param_name[],
+                    double min_value, double max_value);
 static ReturnCode read_excitation(FILE* fp, ModelStruct* ms, dpMuscleStruct* muscle);
 static ReturnCode read_dynamic_parameter_names(FILE* fp, dpMuscleStruct* muscle);
 static SBoolean check_dynamic_param_array(FILE* fp, dpMuscleStruct* muscle, char text_string[]);
@@ -82,7 +82,7 @@ ReturnCode read_muscle_file(ModelStruct* ms, char filename[], SBoolean* file_exi
    strcpy(tempFileName, glutGetTempFileName("simm-muscles"));
 #endif
 
-	if (file_exists)
+    if (file_exists)
       *file_exists = no;
 
    if ((fp = preprocess_file(filename, tempFileName)) == NULL)
@@ -97,7 +97,7 @@ ReturnCode read_muscle_file(ModelStruct* ms, char filename[], SBoolean* file_exi
    }
 
    ms->nummuscles = 0;
-	ms->default_muscle = (dpMuscleStruct*)simm_calloc(1, sizeof(dpMuscleStruct));
+    ms->default_muscle = (dpMuscleStruct*)simm_calloc(1, sizeof(dpMuscleStruct));
 
    // To support deprecated parameter, reset this for each model loaded.
    excitationType = dpStepFunction;
@@ -743,7 +743,7 @@ static ReturnCode read_muscle(ModelStruct* ms, FILE* fp, dpMuscleStruct* muscle,
          num_read = fscanf(fp, "%d", muscle->muscle_model_index);
          if (num_read != 1 || *(muscle->muscle_model_index) < 1)
          {
-            if (muscle != ms->default_muscle &&	ms->default_muscle->muscle_model_index != NULL)
+            if (muscle != ms->default_muscle && ms->default_muscle->muscle_model_index != NULL)
             {
                *(muscle->muscle_model_index) = *(ms->default_muscle->muscle_model_index);
                (void)sprintf(errorbuffer, "Error reading muscle_model for muscle %s.",
@@ -966,9 +966,9 @@ static void finish_muscle_definition(FILE* fp)
  * pointer will be set to the corresponding parameter in the default muscle.
  */
 static ReturnCode read_muscle_parameter(FILE* fp, dpMuscleStruct* ms,
-					dpMuscleStruct* default_musc, double** param,
-					double* def_param, char param_name[],
-					double min_value, double max_value)
+                    dpMuscleStruct* default_musc, double** param,
+                    double* def_param, char param_name[],
+                    double min_value, double max_value)
 {
    *param = (double *)simm_malloc(sizeof(double));
    if (*param == NULL)
@@ -1152,7 +1152,7 @@ static ReturnCode read_excitation(FILE* fp, ModelStruct* ms, dpMuscleStruct* mus
 
    *muscle->excitation_func = load_simm_function(ms, &newFunc, yes);
 
-	return code_fine;
+    return code_fine;
 }
 
 
@@ -1175,7 +1175,7 @@ ReturnCode init_default_muscle(ModelStruct* ms)
    {
       ms->default_muscle->min_thickness = (double*)simm_malloc(sizeof(double));
       if (ms->default_muscle->min_thickness == NULL)
-	      return code_bad;
+          return code_bad;
       *ms->default_muscle->min_thickness = 0.002;
       ms->specified_min_thickness = no;
    }
@@ -1184,7 +1184,7 @@ ReturnCode init_default_muscle(ModelStruct* ms)
    {
       ms->default_muscle->max_thickness = (double*)simm_malloc(sizeof(double));
       if (ms->default_muscle->max_thickness == NULL)
-	      return code_bad;
+          return code_bad;
       *ms->default_muscle->max_thickness = 0.008;
       ms->specified_max_thickness = no;
    }

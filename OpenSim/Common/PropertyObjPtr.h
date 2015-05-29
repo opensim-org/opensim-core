@@ -51,86 +51,86 @@ template<class T=Object> class PropertyObjPtr : public Property_Deprecated
 // DATA
 //=============================================================================
 private:
-	/** Value. */
-	T *_value;
+    /** Value. */
+    T *_value;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	PropertyObjPtr() : Property_Deprecated(ObjPtr, "ObjPtrPropertyName")
-	{
-		_value = 0;
+    PropertyObjPtr() : Property_Deprecated(ObjPtr, "ObjPtrPropertyName")
+    {
+        _value = 0;
         setAllowableListSize(0,1);
-	}
+    }
 
-	PropertyObjPtr(const PropertyObjPtr<T> &aProperty)
-		: Property_Deprecated(aProperty)
-	{
-		_value = aProperty._value ? aProperty._value->clone() : 0;
-	}
+    PropertyObjPtr(const PropertyObjPtr<T> &aProperty)
+        : Property_Deprecated(aProperty)
+    {
+        _value = aProperty._value ? aProperty._value->clone() : 0;
+    }
 
-	PropertyObjPtr* clone() const override
-	{
-		return new PropertyObjPtr<T>(*this);
-	}
+    PropertyObjPtr* clone() const override
+    {
+        return new PropertyObjPtr<T>(*this);
+    }
 
-	virtual ~PropertyObjPtr()
-	{ 
-		delete _value; 
-	}
+    virtual ~PropertyObjPtr()
+    { 
+        delete _value; 
+    }
 
-    virtual int getNumValues() const override {return _value?1:0;}
-    virtual bool isObjectProperty() const override {return true;}
-    virtual bool isAcceptableObjectTag
+    int getNumValues() const override {return _value?1:0;}
+    bool isObjectProperty() const override {return true;}
+    bool isAcceptableObjectTag
         (const std::string& objectTypeTag) const override {return true;}
-    virtual const Object& getValueAsObject(int index=-1) const override
+    const Object& getValueAsObject(int index=-1) const override
     {   assert(index <= 0); return *_value; }
-    virtual Object& updValueAsObject(int index=-1) override
+    Object& updValueAsObject(int index=-1) override
     {   assert(index <= 0); return *_value; }
-    virtual void setValueAsObject(const Object& obj, int index=-1) override
+    void setValueAsObject(const Object& obj, int index=-1) override
     {   assert(index <= 0); setValue(obj.clone()); }
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
-	PropertyObjPtr<T>& operator=(const PropertyObjPtr &aProperty)
-	{
-		Property_Deprecated::operator =(aProperty);
-		delete _value;
-		_value = aProperty._value ? aProperty._value->clone() : 0;
-		return *this;
-	}
+    PropertyObjPtr<T>& operator=(const PropertyObjPtr &aProperty)
+    {
+        Property_Deprecated::operator =(aProperty);
+        delete _value;
+        _value = aProperty._value ? aProperty._value->clone() : 0;
+        return *this;
+    }
 
-	virtual bool operator==(const Property_Deprecated& aProperty) const {
-		bool equal = Property_Deprecated::operator==(aProperty);
-		if (equal){ 
-			if (_value==NULL) return (((PropertyObjPtr&) aProperty)._value==NULL);
-			return ((*_value) == (*((PropertyObjPtr&) aProperty)._value));
-		}
-		return equal;
-	}
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    virtual bool operator==(const Property_Deprecated& aProperty) const {
+        bool equal = Property_Deprecated::operator==(aProperty);
+        if (equal){ 
+            if (_value==NULL) return (((PropertyObjPtr&) aProperty)._value==NULL);
+            return ((*_value) == (*((PropertyObjPtr&) aProperty)._value));
+        }
+        return equal;
+    }
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 public:
-	// TYPE
-	virtual std::string getTypeName() const override
+    // TYPE
+    std::string getTypeName() const override
     {   return T::getClassName(); }
-	// VALUE
-	virtual bool isValidObject(const Object *aValue) const { return dynamic_cast<const T*>(aValue)!=0; }
-	virtual void setValue(Object *aValue) { delete _value; _value = dynamic_cast<T*>(aValue); }
+    // VALUE
+    virtual bool isValidObject(const Object *aValue) const { return dynamic_cast<const T*>(aValue)!=0; }
+    virtual void setValue(Object *aValue) { delete _value; _value = dynamic_cast<T*>(aValue); }
     const Object* getValueObjPtr() const override { return _value; }
-	T*& getValueObjPtrRef() { return _value; }
-	// VALUE as String
-	virtual std::string toString() const {return "(ObjectPointer)";}
+    T*& getValueObjPtrRef() { return _value; }
+    // VALUE as String
+    virtual std::string toString() const {return "(ObjectPointer)";}
 
 //=============================================================================
-};	// END of class PropertyObjPtr
+};  // END of class PropertyObjPtr
 
 }; //namespace
 //=============================================================================

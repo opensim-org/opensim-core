@@ -48,30 +48,30 @@ class OSIMSIMULATION_API WrapResult
 // DATA
 //=============================================================================
 public:
-	int startPoint;            // first point in muscle line that is wrapped
-	int endPoint;              // second point in muscle line that is wrapped
-	Array<SimTK::Vec3> wrap_pts; // array of wrapping path points
-	double wrap_path_length;   // distance along curved r1->r2 path
-	SimTK::Vec3 r1;              // wrap tangent point nearest to p1
-	SimTK::Vec3 r2;              // wrap tangent point nearest to p2
-	SimTK::Vec3 c1;              // intermediate point used by some wrap objects
-	SimTK::Vec3 sv;              // intermediate point used by some wrap objects
-	double factor;             // scale factor used to normalize parameters
+    int startPoint;            // first point in muscle line that is wrapped
+    int endPoint;              // second point in muscle line that is wrapped
+    Array<SimTK::Vec3> wrap_pts; // array of wrapping path points
+    double wrap_path_length;   // distance along curved r1->r2 path
+    SimTK::Vec3 r1;              // wrap tangent point nearest to p1
+    SimTK::Vec3 r2;              // wrap tangent point nearest to p2
+    SimTK::Vec3 c1;              // intermediate point used by some wrap objects
+    SimTK::Vec3 sv;              // intermediate point used by some wrap objects
+    double factor;             // scale factor used to normalize parameters
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	WrapResult();
-	virtual ~WrapResult();
-	void copyData(const WrapResult& aWrapResult);
-	WrapResult& operator=(const WrapResult& aWrapResult);
+    WrapResult();
+    virtual ~WrapResult();
+    void copyData(const WrapResult& aWrapResult);
+    WrapResult& operator=(const WrapResult& aWrapResult);
 
 //=============================================================================
-};	// END of class WrapResult
+};  // END of class WrapResult
 //=============================================================================
 //=============================================================================
 

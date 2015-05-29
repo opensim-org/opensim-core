@@ -27,6 +27,7 @@
 #include "PathPoint.h"
 #include "BodySet.h"
 #include "Model.h"
+#include <OpenSim/Common/Geometry.h>
 #include "GeometryPath.h"
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h> 
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
@@ -38,7 +39,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-Geometry *PathPoint::_defaultGeometry= AnalyticSphere::createSphere(0.005);
+Geometry* PathPoint::_defaultGeometry= AnalyticSphere::createSphere(0.005);
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -49,10 +50,10 @@ Geometry *PathPoint::_defaultGeometry= AnalyticSphere::createSphere(0.005);
  */
 PathPoint::PathPoint() :
    _location(_locationProp.getValueDblVec()),
-	_bodyName(_bodyNameProp.getValueStr())
+    _bodyName(_bodyNameProp.getValueStr())
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -72,11 +73,11 @@ PathPoint::~PathPoint()
 PathPoint::PathPoint(const PathPoint &aPoint) :
    Object(aPoint),
    _location(_locationProp.getValueDblVec()),
-	_bodyName(_bodyNameProp.getValueStr())
+    _bodyName(_bodyNameProp.getValueStr())
 {
-	setNull();
-	setupProperties();
-	copyData(aPoint);
+    setNull();
+    setupProperties();
+    copyData(aPoint);
 }
 
 
@@ -91,11 +92,11 @@ PathPoint::PathPoint(const PathPoint &aPoint) :
  */
 void PathPoint::copyData(const PathPoint &aPoint)
 {
-	_location = aPoint._location;
-	_displayer = aPoint._displayer;
-	_bodyName = aPoint._bodyName;
-	_body = aPoint._body;
-	_path = aPoint._path;
+    _location = aPoint._location;
+    _displayer = aPoint._displayer;
+    _bodyName = aPoint._bodyName;
+    _body = aPoint._body;
+    _path = aPoint._path;
 }
 
 //_____________________________________________________________________________
@@ -106,7 +107,7 @@ void PathPoint::copyData(const PathPoint &aPoint)
  */
 void PathPoint::init(const PathPoint& aPoint)
 {
-	copyData(aPoint);
+    copyData(aPoint);
 }
 
 //_____________________________________________________________________________
@@ -115,8 +116,8 @@ void PathPoint::init(const PathPoint& aPoint)
  */
 void PathPoint::setNull()
 {
-	_body = NULL;
-	_path = NULL;
+    _body = NULL;
+    _path = NULL;
 }
 
 //_____________________________________________________________________________
@@ -125,38 +126,41 @@ void PathPoint::setNull()
  */
 void PathPoint::setupProperties()
 {
-	const SimTK::Vec3 defaultLocation(0.0);
-	_locationProp.setName("location");
-	_locationProp.setValue(defaultLocation);
-	//_locationProp.setAllowableListSize(3);
-	_propertySet.append(&_locationProp);
+    const SimTK::Vec3 defaultLocation(0.0);
+    _locationProp.setName("location");
+    _locationProp.setValue(defaultLocation);
+    //_locationProp.setAllowableListSize(3);
+    _propertySet.append(&_locationProp);
 
-	_bodyNameProp.setName("body");
-	_propertySet.append(&_bodyNameProp);
+    _bodyNameProp.setName("body");
+    _propertySet.append(&_bodyNameProp);
 }
 
 //_____________________________________________________________________________
 /**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel model containing this PathPoint.
+ * TODO: All Points should be Components that use Connectors
+ * and extendConnect(). This must go away! -aseth
  */
 void PathPoint::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
 {
-	_path = &aPath;
-	_model  = &aModel;
+    _path = &aPath;
+    _model  = &aModel;
 
-	// Look up the body by name in the kinematics engine and
-	// store a pointer to it.
-	if (!aModel.getBodySet().contains(_bodyName))
-	{
-		string errorMessage = "Body " + _bodyName + " referenced in path" + aPath.getName() + " not found in model " + aModel.getName();
-		throw Exception(errorMessage);
-	}
-	_body = &const_cast<Model*>(&aModel)->updBodySet().get(_bodyName);
+    if (_bodyName == aModel.getGround().getName()){
+        _body = &const_cast<Model*>(&aModel)->updGround();
+        return;
+    }
 
+    // Look up the body by name in the kinematics engine and
+    // store a pointer to it.
+    if (!aModel.getBodySet().contains(_bodyName))
+    {
+        string errorMessage = "Body " + _bodyName + " referenced in path" + aPath.getName() + " not found in model " + aModel.getName();
+        throw Exception(errorMessage);
+    }
+    _body = &const_cast<Model*>(&aModel)->updBodySet().get(_bodyName);
 }
+
 //_____________________________________________________________________________
 /**
  * Update geometry of the muscle point.
@@ -164,9 +168,9 @@ void PathPoint::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
  */
 void PathPoint::updateGeometry()
 {
-	Transform position;
-	position.setP(_location);
-	updDisplayer()->setTransform(position);
+    Transform position;
+    position.setP(_location);
+    updDisplayer()->setTransform(position);
 }
 //=============================================================================
 // OPERATORS
@@ -179,12 +183,12 @@ void PathPoint::updateGeometry()
  */
 PathPoint& PathPoint::operator=(const PathPoint &aPoint)
 {
-	// BASE CLASS
-	Object::operator=(aPoint);
+    // BASE CLASS
+    Object::operator=(aPoint);
 
-	copyData(aPoint);
+    copyData(aPoint);
 
-	return(*this);
+    return(*this);
 }
 
 //_____________________________________________________________________________
@@ -193,13 +197,13 @@ PathPoint& PathPoint::operator=(const PathPoint &aPoint)
  *
  * @param aBody Reference to the body.
  */
-void PathPoint::setBody(Body& aBody)
+void PathPoint::setBody(PhysicalFrame& aBody)
 {
-	if (&aBody == _body)
-		return;
+    if (&aBody == _body)
+        return;
 
-	_body = &aBody;
-	_bodyName = aBody.getName();
+    _body = &aBody;
+    _bodyName = aBody.getName();
 }
 
 //_____________________________________________________________________________
@@ -211,17 +215,25 @@ void PathPoint::setBody(Body& aBody)
  * @param s State.
  * @param aBody Reference to the body.
  */
-void PathPoint::changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody)
+void PathPoint::changeBodyPreserveLocation(const SimTK::State& s, PhysicalFrame& aBody)
 {
-	if (&aBody == _body || !_body)
-		return;
+    if (!_body){
+        throw Exception("PathPoint::changeBodyPreserveLocation attempted to "
+            " change the body on PathPoint which was not assigned to a body.");
+    }
+    // if it is already assigned to aBody, do nothing
+    if (_body == &aBody )
+        return;
 
-	// Preserve location means to switch bodies without changing
-	// the location of the point in the inertial reference frame.
-    aBody.getModel().getSimbodyEngine().transformPosition(s, *_body, _location, aBody, _location);
+    // Preserve location means to switch bodies without changing
+    // the location of the point in the inertial reference frame.
+    _location = _body->findLocationInAnotherFrame(s, _location, aBody);
+    _bodyName = aBody.getName();
 
-	_bodyName = aBody.getName();
-	connectToModelAndPath(aBody.getModel(), *getPath());
+    // now assign this point's body to point to aBody
+    _body = &aBody;
+
+    connectToModelAndPath(aBody.getModel(), *getPath());
 }
 
 //_____________________________________________________________________________
@@ -232,7 +244,7 @@ void PathPoint::changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body&
  */
 void PathPoint::setLocation( const SimTK::State& s, const SimTK::Vec3& aLocation)
 {
-	_location = aLocation;
+    _location = aLocation;
 }
 
 //_____________________________________________________________________________
@@ -244,8 +256,8 @@ void PathPoint::setLocation( const SimTK::State& s, const SimTK::Vec3& aLocation
  */
 void PathPoint::setLocation( const SimTK::State& s, int aCoordIndex, double aLocation)
 {
-	if (aCoordIndex >= 0 && aCoordIndex <= 2)
-		_location[aCoordIndex] = aLocation;
+    if (aCoordIndex >= 0 && aCoordIndex <= 2)
+        _location[aCoordIndex] = aLocation;
 }
 
 //_____________________________________________________________________________
@@ -257,25 +269,25 @@ void PathPoint::setLocation( const SimTK::State& s, int aCoordIndex, double aLoc
 
 void PathPoint::getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity)
 {
-	aVelocity[0] = aVelocity[1] = aVelocity[2] = 0.0;
+    aVelocity[0] = aVelocity[1] = aVelocity[2] = 0.0;
 }
 
 PathPoint* PathPoint::makePathPointOfType(PathPoint* aPoint, const string& aNewTypeName)
 {
-	PathPoint* newPoint = NULL;
+    PathPoint* newPoint = NULL;
 
-	if (aPoint != NULL) {
-		Object* newObject = Object::newInstanceOfType(aNewTypeName);
-		if (newObject) {
-			newPoint = dynamic_cast<PathPoint*>(newObject);
-			if (newPoint) {
-				// Copy the contents from aPoint.
-				newPoint->init(*aPoint);
-			}
-		}
-	}
+    if (aPoint != NULL) {
+        Object* newObject = Object::newInstanceOfType(aNewTypeName);
+        if (newObject) {
+            newPoint = dynamic_cast<PathPoint*>(newObject);
+            if (newPoint) {
+                // Copy the contents from aPoint.
+                newPoint->init(*aPoint);
+            }
+        }
+    }
 
-	return newPoint;
+    return newPoint;
 }
 
 //=============================================================================
@@ -289,8 +301,8 @@ PathPoint* PathPoint::makePathPointOfType(PathPoint* aPoint, const string& aNewT
  */
 void PathPoint::scale(const SimTK::State& s, const SimTK::Vec3& aScaleFactors)
 {
-	for (int i = 0; i < 3; i++)
-		_location[i] *= aScaleFactors[i];
+    for (int i = 0; i < 3; i++)
+        _location[i] *= aScaleFactors[i];
 
-	updateGeometry();
+    updateGeometry();
 }

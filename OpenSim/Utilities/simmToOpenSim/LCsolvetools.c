@@ -1692,7 +1692,7 @@ static void calculateGenCoordResiduals(void *data, int numQ, double q[], int num
                rangeError = 0.0;            
             resid[index] = rangeError;
 #endif
-				resid[index] = 0.0;
+                resid[index] = 0.0;
          }  //added dkb apr 2003
       }
 //if (!JACOBIAN)   printf("resid[%d] (gc%s) = %f\n", index, gc->name, resid[index]);

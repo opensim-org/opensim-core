@@ -392,7 +392,7 @@ public:
 //==============================================================================
     /** @param[in] s The state of the system.
         @returns The tensile force the muscle is generating (N). */
-    double computeActuation(const SimTK::State& s) const FINAL_11;
+    double computeActuation(const SimTK::State& s) const override final;
 
     /** Computes the fiber length such that the fiber and tendon are developing
     the same force, distributing the velocity of the entire musculotendon
@@ -446,8 +446,9 @@ public:
     muscle model
         @param s the state of the system
         @param aActivation the activation of the muscle */
-    virtual double calcInextensibleTendonActiveFiberForce(SimTK::State& s,
-                                        double aActivation) const FINAL_11;
+    double calcInextensibleTendonActiveFiberForce(SimTK::State& s,
+                                        double aActivation) const override
+        final;
     ///@endcond
 
 //==============================================================================
@@ -498,24 +499,24 @@ protected:
     void calcMuscleDynamicsInfo(const SimTK::State& s,
                                 MuscleDynamicsInfo& mdi) const override;
 
-	/** Calculate the potential energy values associated with the muscle */
-	void  calcMusclePotentialEnergyInfo(const SimTK::State& s, 
-		MusclePotentialEnergyInfo& mpei) const override;
+    /** Calculate the potential energy values associated with the muscle */
+    void  calcMusclePotentialEnergyInfo(const SimTK::State& s, 
+            MusclePotentialEnergyInfo& mpei) const override;
 
 //==============================================================================
 // MODELCOMPONENT INTERFACE REQUIREMENTS
 //==============================================================================
     /** Sets up the ModelComponent from the model, if necessary */
-    void connectToModel(Model& model) override;
+    void extendConnectToModel(Model& model) override;
 
     /** Creates the ModelComponent so that it can be used in simulation */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     /** Initializes the state of the ModelComponent */
-    void initStateFromProperties(SimTK::State& s) const override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
 
     /** Sets the default state for the ModelComponent */
-    void setPropertiesFromState(const SimTK::State& s) override;
+    void extendSetPropertiesFromState(const SimTK::State& s) override;
 
     /** Computes state variable derivatives */
     void computeStateVariableDerivatives(const SimTK::State& s) const override;
@@ -537,7 +538,7 @@ private:
     void buildMuscle();
 
     // Rebuilds muscle model if any of its properties have changed.
-	void finalizeFromProperties() override;
+    void extendFinalizeFromProperties() override;
 
     /* Calculates the fiber velocity that satisfies the equilibrium equation
     given a fixed fiber length.

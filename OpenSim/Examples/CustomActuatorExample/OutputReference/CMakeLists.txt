@@ -1,54 +1,53 @@
-cmake_minimum_required(VERSION 2.6)
-
 PROJECT (CustomActuatorExample)
 
+cmake_minimum_required(VERSION 2.8.6)
+
 FILE(GLOB SOURCE_FILES *.cpp )
-FILE(GLOB INCLUDE_FILES *.h ) 
+FILE(GLOB INCLUDE_FILES *.h )
 
+# Settings.
+# ---------
 SET(TARGET toyLeg_example
-		CACHE STRING "Name of example to build")
+        CACHE STRING "Name of example to build")
+SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
+        CACHE PATH "Top-level directory of OpenSim install")
 
-SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release"
-      CACHE STRING "Semicolon separated list of supported configuration types, only supports Debug, Release, MinSizeRel, and RelWithDebInfo, anything else will be ignored." FORCE )
+# Find and hook up to OpenSim.
+# ----------------------------
+# OpenSim uses C++11 language features.
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR
+        "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    # Using C++11 on OSX requires using libc++ instead of libstd++.
+    # libc++ is an implementation of the C++ standard library for OSX.
+    if(APPLE)
+        if(XCODE)
+            set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
+            set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+        else()
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+            if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+            endif()
+        endif()
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    endif()
+endif()
 
-SET(OPENSIM_INSTALL_DIR "C:/Program Files/OpenSim 2.1" 
-		CACHE PATH "Top-level directory of OpenSim install")
+FIND_PACKAGE(OpenSim REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")
 
-# Location of headers
-SET(SIMTK_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include/SimTK/include)
-SET(OPENSIM_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include)
-INCLUDE_DIRECTORIES(${SIMTK_HEADERS_DIR} ${OPENSIM_HEADERS_DIR})
-# Libraries and dlls
-SET(OPENSIM_LIBS_DIR ${OPENSIM_INSTALL_DIR}/sdk/lib)
-SET(OPENSIM_DLLS_DIR ${OPENSIM_INSTALL_DIR}/bin)
-LINK_DIRECTORIES(${OPENSIM_LIBS_DIR} ${OPENSIM_DLLS_DIR})
+INCLUDE_DIRECTORIES(${OpenSim_INCLUDE_DIRS})
+LINK_DIRECTORIES(${OpenSim_LIB_DIR})
 
-SET(NameSpace "OpenSim_" CACHE STRING "Prefix for simtk lib names, includes trailing _. Leave empty to use stock SimTK libraries.")
-MARK_AS_ADVANCED(NameSpace)
+# Configure this project.
+# -----------------------
+ADD_EXECUTABLE(${TARGET}  ${SOURCE_FILES} ${INCLUDE_FILES})
 
-LINK_LIBRARIES(
-	debug osimCommon_d optimized osimCommon
-	debug osimSimulation_d optimized osimSimulation
-	debug osimAnalyses_d optimized osimAnalyses
-	debug osimActuators_d optimized osimActuators
-	debug osimTools_d optimized osimTools
-	debug ${NameSpace}SimTKcommon_d optimized   ${NameSpace}SimTKcommon
-	debug ${NameSpace}SimTKmath_d optimized  ${NameSpace}SimTKmath
-	debug ${NameSpace}SimTKsimbody_d optimized  ${NameSpace}SimTKsimbody
-	)
-
-ADD_EXECUTABLE(${TARGET}  ${SOURCE_FILES} ${INCLUDE_FILES}) 
-
-IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	SET(CMAKE_INSTALL_PREFIX ${CustomActuatorExample_SOURCE_DIR}
-			CACHE STRING "Install path prefix." FORCE)
-ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-
-MARK_AS_ADVANCED(CMAKE_INSTALL_PREFIX)
+TARGET_LINK_LIBRARIES(${TARGET} ${OpenSim_LIBRARIES})
 
 SET_TARGET_PROPERTIES(
-	${TARGET} PROPERTIES
-	PROJECT_LABEL "Actuator_examples")
+    ${TARGET} PROPERTIES
+    PROJECT_LABEL "Actuator_examples")
 
 INSTALL_TARGETS(/ ${TARGET})
 

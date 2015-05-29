@@ -1,5 +1,5 @@
-/* -------------------------------------------------------------------------- *
-*                             OpenSim:  RigidFrame.cpp                             *
+/* --------------------------------------------------------------------------*
+*                             OpenSim:  Ground.cpp                           *
 * -------------------------------------------------------------------------- *
 * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
 * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -7,8 +7,8 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2012 Stanford University and the Authors                *
-* Author(s): Matt DeMers & Ayman Habib                                       *
+* Copyright (c) 2005-2015 Stanford University and the Authors                *
+* Author(s): Ajay Seth                                                       *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
 * not use this file except in compliance with the License. You may obtain a  *
@@ -24,8 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "RigidFrame.h"
-#include <OpenSim/Simulation/Model/Model.h>
+#include "Ground.h"
 
 //=============================================================================
 // STATICS
@@ -37,29 +36,28 @@ using namespace OpenSim;
 // CONSTRUCTOR(S)
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
 * Default constructor.
 */
-RigidFrame::RigidFrame() : Frame()
+Ground::Ground() : PhysicalFrame()
 {
-	setNull();
-
+    setName("ground");
+    setAuthors("Ajay Seth");
 }
 
-
-void RigidFrame::setNull()
-{
-	setAuthors("Matt DeMers");
-}
-
-/**
-* Implementation of Frame interface by RigidFrame
+/*
+* Implementation of Frame interface by Ground.
+* 
 */
-SimTK::Transform RigidFrame::calcGroundTransform(const SimTK::State& state) const {
+SimTK::Transform Ground::
+    calcGroundTransform(const SimTK::State& s) const
+{
+    return SimTK::Transform();
+}
 
-    const SimTK::MobilizedBody &B = getModel().getMatterSubsystem().getMobilizedBody(_index);
-    const SimTK::Transform& X_GB = B.getBodyTransform(state);
-
-    return X_GB*getTransformInMobilizedBody();
+void Ground::extendAddToSystem(SimTK::MultibodySystem& system) const
+{
+    Super::extendAddToSystem(system);
+    setMobilizedBodyIndex(SimTK::GroundIndex);
 }
 

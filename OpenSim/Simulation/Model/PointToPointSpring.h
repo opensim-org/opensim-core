@@ -30,6 +30,9 @@
 //==============================================================================
 namespace OpenSim { 
 
+class Model;
+class PhysicalFrame;
+
 /**
  * A simple point to point spring with a resting length and stiffness.
  * Points are connected to bodies and are defined in the body frame.
@@ -45,22 +48,22 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
-	OpenSim_DECLARE_PROPERTY(point1, SimTK::Vec3,
-		"Spring attachment point on body1.");
-	OpenSim_DECLARE_PROPERTY(point2, SimTK::Vec3,
-		"Spring attachment point on body2.");
-	OpenSim_DECLARE_PROPERTY(stiffness, double,
-		"Spring stiffness (N/m).");
-	OpenSim_DECLARE_PROPERTY(rest_length, double,
-		"Spring resting length (m).");
+    OpenSim_DECLARE_PROPERTY(point1, SimTK::Vec3,
+        "Spring attachment point on body1.");
+    OpenSim_DECLARE_PROPERTY(point2, SimTK::Vec3,
+        "Spring attachment point on body2.");
+    OpenSim_DECLARE_PROPERTY(stiffness, double,
+        "Spring stiffness (N/m).");
+    OpenSim_DECLARE_PROPERTY(rest_length, double,
+        "Spring resting length (m).");
     /**@}**/
 
 
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-	/** Default constructor. **/
-	PointToPointSpring();
+    /** Default constructor. **/
+    PointToPointSpring();
     /** Convenience constructor for API users.
     @param body1        the first body to which the spring is attached
     @param point1       location where spring is attached on body1
@@ -69,81 +72,81 @@ public:
     @param stiffness    spring stiffness
     @param restlength   the resting (zero force) length of the spring
     **/
-    PointToPointSpring( const Body& body1, SimTK::Vec3 point1,
-                        const Body& body2, SimTK::Vec3 point2,
+    PointToPointSpring( const PhysicalFrame& body1, SimTK::Vec3 point1,
+                        const PhysicalFrame& body2, SimTK::Vec3 point2,
                         double stiffness, double restlength );
 
     // default destructor, copy constructor, copy assignment
 
-	//--------------------------------------------------------------------------
-	// Visible Object Support
-	//--------------------------------------------------------------------------
-	virtual VisibleObject* getDisplayer() const;
-	virtual void updateDisplayer(const SimTK::State& s);
-	virtual void updateGeometry(const SimTK::State& s);
-	
-	//-----------------------------------------------------------------------------
-	// GET and SET Spring parameters
-	//-----------------------------------------------------------------------------
-	/**
-	* Spring end point bodies 
-	*/
-    void setBody1(const Body& body);
-    void setBody2(const Body& Body);
-    const Body& getBody1() const;
-    const Body& getBody2() const;
+    //--------------------------------------------------------------------------
+    // Visible Object Support
+    //--------------------------------------------------------------------------
+    VisibleObject* getDisplayer() const;
+    void updateDisplayer(const SimTK::State& s);
+    void updateGeometry(const SimTK::State& s);
+    
+    //-----------------------------------------------------------------------------
+    // GET and SET Spring parameters
+    //-----------------------------------------------------------------------------
+    /**
+    * Spring end point bodies 
+    */
+    void setBody1(const PhysicalFrame& body);
+    void setBody2(const PhysicalFrame& body);
+    const PhysicalFrame& getBody1() const;
+    const PhysicalFrame& getBody2() const;
 
-	/**
-	* Spring end points 
-	*/
-	void setPoint1(SimTK::Vec3 aPosition) { set_point1(aPosition); }
-	const SimTK::Vec3& getPoint1() const { return get_point1(); }
-	void setPoint2(SimTK::Vec3 aPosition) { set_point2(aPosition); }
-	const SimTK::Vec3& getPoint2() const { return get_point2(); }
+    /**
+    * Spring end points 
+    */
+    void setPoint1(SimTK::Vec3 aPosition) { set_point1(aPosition); }
+    const SimTK::Vec3& getPoint1() const { return get_point1(); }
+    void setPoint2(SimTK::Vec3 aPosition) { set_point2(aPosition); }
+    const SimTK::Vec3& getPoint2() const { return get_point2(); }
 
-	/**
-	* Spring stiffness
-	* @param stiffness 
-	*/
-	void setStiffness(double stiffness) {set_stiffness(stiffness);}
-	double getStiffness() const {return get_stiffness();}
-	/**
-	* Spring resting length
-	* @param restLength 
-	*/
-	void setRestlength(double restLength) {set_rest_length(restLength);}
-	double getRestlength() const {return get_rest_length();}
+    /**
+    * Spring stiffness
+    * @param stiffness 
+    */
+    void setStiffness(double stiffness) {set_stiffness(stiffness);}
+    double getStiffness() const {return get_stiffness();}
+    /**
+    * Spring resting length
+    * @param restLength 
+    */
+    void setRestlength(double restLength) {set_rest_length(restLength);}
+    double getRestlength() const {return get_rest_length();}
 
-	//-----------------------------------------------------------------------------
-	// ModelComponent interface
-	//-----------------------------------------------------------------------------
-	void connectToModel(Model& model) override;
-	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    //-----------------------------------------------------------------------------
+    // ModelComponent interface
+    //-----------------------------------------------------------------------------
+    void extendConnectToModel(Model& model) override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-	//-----------------------------------------------------------------------------
-	// Reporting
-	//-----------------------------------------------------------------------------
-	/** 
-	 * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
-	 */
-	virtual OpenSim::Array<std::string> getRecordLabels() const ;
-	/**
-	*  Provide the value(s) to be reported that correspond to the labels
-	*/
-	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
+    //-----------------------------------------------------------------------------
+    // Reporting
+    //-----------------------------------------------------------------------------
+    /** 
+     * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
+     */
+    OpenSim::Array<std::string> getRecordLabels() const override;
+    /**
+    *  Provide the value(s) to be reported that correspond to the labels
+    */
+    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
 protected:
-	/** how to display the Spring */
-	VisibleObject _displayer;
+    /** how to display the Spring */
+    VisibleObject _displayer;
 
 private:
-	void setNull();
+    void setNull();
     void constructProperties() override;
     /** These will be the two bodies the PointToPointSpring connects to.*/
     void constructConnectors() override;
 
 //==============================================================================
-};	// END of class PointToPointSpring
+};  // END of class PointToPointSpring
 
 }; //namespace
 //==============================================================================

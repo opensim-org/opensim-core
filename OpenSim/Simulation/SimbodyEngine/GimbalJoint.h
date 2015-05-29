@@ -28,20 +28,25 @@
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
 /**
- * A class implementing an Gimbal joint.  The underlying implementation 
- * in Simbody is a MobilizedBody::Gimbal.
- *
- * @author Tim Dorn
- * @author Ajay Seth
- */
+A class implementing a Gimbal joint. The underlying implementation Simbody is a
+SimTK::MobilizedBody::Gimbal. The opensim Gimbal joint implementation uses a fixed
+ 1-2-3 (x-y-z) body fixed Euler sequence for generalized coordinates calculation.
+Gimbal joints have a singularity when Y is near \f$\frac{\pi}{2}\f$.
+Generalized speeds are equal to the Eular angle derivatives  (\f$\vec{u} = \dot{\vec{q}}\f$)
+
+\image html gimbalJoint.gif
+
+@author Tim Dorn
+@author Ajay Seth
+*/
+
+
 class OSIMSIMULATION_API GimbalJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(GimbalJoint, Joint);
 
 private:
-	static const int _numMobilities = 3;
+    static const int _numMobilities = 3;
 //=============================================================================
 // DATA
 //=============================================================================
@@ -52,30 +57,33 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	GimbalJoint();
-	// convenience constructor
-	GimbalJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-				OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
-				/*bool useEulerAngles=true,*/ bool reverse=false);
+    // CONSTRUCTION
+    GimbalJoint();
+    // convenience constructor
+    GimbalJoint(const std::string &name,
+        const PhysicalFrame& parent,
+        const SimTK::Vec3& locationInParent,
+        const SimTK::Vec3& orientationInParent,
+        const PhysicalFrame& child,
+        const SimTK::Vec3& locationInChild,
+        const SimTK::Vec3& orientationInChild,
+        bool reverse = false);
 
-	virtual ~GimbalJoint();
+    virtual ~GimbalJoint();
 
-	int numCoordinates() const override  {return _numMobilities;}
+    int numCoordinates() const override  {return _numMobilities;}
 
 protected:
     // ModelComponent interface.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    void initStateFromProperties(SimTK::State& s) const override;
-    void setPropertiesFromState(const SimTK::State& state) override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
 //=============================================================================
-};	// END of class GimbalJoint
+};  // END of class GimbalJoint
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
 #endif // OPENSIM_GIMBAL_JOINT_H_
-
-

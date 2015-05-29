@@ -33,15 +33,16 @@ class Model;
 //==============================================================================
 //==============================================================================
 /**
- * This class represents a Probe which is designed to query a Vector of model values
- * given system state. This model quantity is specified as a SimTK::Vector by the pure
- * virtual method computeProbeInputs(), which must be specified for each child Probe. 
- * In addition, the Probe model component interface allows <I> operations </I> to be
- * performed on this value (specified by the property: probe_operation), and then have 
- * this result scaled (by the scalar property: 'scale_factor'). 
+ * This class represents a Probe which is designed to query a Vector of model
+ * values given system state. This model quantity is specified as a
+ * SimTK::Vector by the pure virtual method computeProbeInputs(), which must be
+ * specified for each child Probe.  In addition, the Probe model component
+ * interface allows <I> operations </I> to be performed on this value
+ * (specified by the property: probe_operation), and then have this result
+ * scaled (by the scalar property: 'scale_factor'). 
  * 
  * The data flow of the Probe is shown below:
-  \verbatim
+  \code
  
   ===========================
   |  SimTK::Vector          |       DEVELOPER NEEDS TO IMPLEMENT THIS
@@ -68,39 +69,49 @@ class Model;
   |                                        by the API developer          |
   |----------------------------------------------------------------------|
 
-  \endverbatim
- * The model query is performed at Stage::Report, so that model values are up to date
- * and is based on the specific Probe's overridden method computeProbeInputs(s). 
- * The final output of the probe is available by accessing getProbeOutputs(s). 
- * Note that all queries, operations, and scaling are performed by SimTK::Measures. 
- * Note also that to define a new child Probe class, three methods which are declared
- * as pure virtual in this Probe abstract class need to be overridden:\n
- * - computeProbeInputs()     ---   returns the input probe values (i.e., model queries).
- * - getNumProbeInputs()      ---   returns the size of the vector of input probe values (i.e., model queries).
- * - getProbeOutputLabels()   ---   returns the labels that correspond to each probe value.
+  \endcode
+ * The model query is performed at Stage::Report, so that model values are up
+ * to date and is based on the specific Probe's overridden method
+ * computeProbeInputs(s).  The final output of the probe is available by
+ * accessing getProbeOutputs(s).  Note that all queries, operations, and
+ * scaling are performed by SimTK::Measures.  Note also that to define a new
+ * child Probe class, three methods which are declared as pure virtual in this
+ * Probe abstract class need to be overridden:\n
+ * - computeProbeInputs()     ---   returns the input probe values (i.e., model
+ *                                  queries).
+ * - getNumProbeInputs()      ---   returns the size of the vector of input
+ *                                  probe values (i.e., model queries).
+ * - getProbeOutputLabels()   ---   returns the labels that correspond to each
+ *                                  probe value.
  *
  * <B> Available probe operations: </B>
  * - 'value' (default): returns the probe input value.
  * - 'integrate'      : returns the integral of the probe input value.
  * - 'differentiate'  : returns the derivative of the probe input value.
  * - 'minimum'        : returns the minimum of the probe input value.
- * - 'minabs'         : returns the absolute minimum of the probe input value (always positive).
+ * - 'minabs'         : returns the absolute minimum of the probe input value
+ *                      (always positive).
  * - 'maximum'        : returns the maximum of the probe input value.
- * - 'maxabs'         : returns the absolute maximum of the probe input value (always positive).
+ * - 'maxabs'         : returns the absolute maximum of the probe input value
+ *                      (always positive).
  *
- * The Probe interface differs from the Analysis interface in two fundamental ways:
- * -  (1) Operations can be performed on probes (i.e., in addition to simply reporting 
- *        a model value, model values (probe input values) may have operations performed
- *        on them such as integration and differentiation).
+ * The Probe interface differs from the Analysis interface in two fundamental
+ * ways:
+ * -  (1) Operations can be performed on probes (i.e., in addition to simply
+ *        reporting a model value, model values (probe input values) may have
+ *        operations performed on them such as integration and
+ *        differentiation).
  *
- * -  (2) Analyses are not formally part of the model structure (i.e. they are not 
- *        ModelComponents), and because of this, analysis results can not be accessed with
- *        the model and state value -- they can only be accessed by file at the end of a 
- *        simulation. Probes, on the other hand, are ModelComponents and therefore can be
- *        accessed at any time during a simulation from the API, and can also be used to
- *        compute model values that are fed back into ths system through via custom designed 
- *        Controllers. Note that Probe values can also be reported to file at the end of a
- *        simulation by attaching a ProbeReporter analysis to the simulation.
+ * -  (2) Analyses are not formally part of the model structure (i.e. they are
+ *        not ModelComponents), and because of this, analysis results can not
+ *        be accessed with the model and state value -- they can only be
+ *        accessed by file at the end of a simulation. Probes, on the other
+ *        hand, are ModelComponents and therefore can be accessed at any time
+ *        during a simulation from the API, and can also be used to compute
+ *        model values that are fed back into ths system through via custom
+ *        designed Controllers. Note that Probe values can also be reported to
+ *        file at the end of a simulation by attaching a ProbeReporter analysis
+ *        to the simulation.
  *
  *
  * @author Tim Dorn
@@ -204,12 +215,13 @@ public:
 
 protected:
     // ModelComponent interface.
-    /** Concrete probes may override; be sure to invoke Super::connectToModel()
-    at the beginning of the overriding method. **/
-    void connectToModel(Model& model) override;
+    /** Concrete probes may override; be sure to invoke
+    Super::extendConnectToModel() at the beginning of the overriding method.
+     **/
+    void extendConnectToModel(Model& model) override;
 
-    /** Concrete probes may override; be sure to invoke Super::extendAddToSystem()
-    at the beginning of the overriding method. **/
+    /** Concrete probes may override; be sure to invoke
+    Super::extendAddToSystem() at the beginning of the overriding method. **/
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 
@@ -227,7 +239,7 @@ private:
 
 
 //=============================================================================
-};	// END of class Probe
+};  // END of class Probe
 //=============================================================================
 //=============================================================================
 
