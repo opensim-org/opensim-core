@@ -1,6 +1,10 @@
-When possible, we provide the GitHub issues or pull requests that
+This document lists the changes to `opensim-core` that are
+introduced with each new version. When possible, we provide the
+GitHub issues or pull requests that
 are related to the items below. If there is no issue or pull
-request related to the change, then we may provide a commit hash.
+request related to the change, then we may provide the commit.
+
+**Note**: This document is currently under construction.
 
 v4.0
 ====
