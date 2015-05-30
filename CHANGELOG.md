@@ -30,6 +30,8 @@ Converting from v3.2 to v4.0
   the Component developer (extension) interface. **IMPORTANT** The calls to
   `Super::addToSystem`, etc. in the implementation of these methods must now
   also use the `extend` variants. Otherwise, you will enter into an infinite recursion.
+- OpenSim now makes substantial use of C++11 features; if you compile OpenSim, your compiler 
+  must support C++11. Also, any C++ project in which you use OpenSim must also be compiled with C++11.
 
 Bug Fixes
 ---------
@@ -48,20 +50,20 @@ New Classes
 Other Changes
 -------------
 - There is now a formal CMake mechanism for using OpenSim in your own C++ project. See cmake/SampleCMakeLists.txt. (PR #187)
+- Substantial cleanup of the internal CMake scripts.
 - Lepton was upgraded to the latest version (PR #349)
 - Made Object::print a const member function (PR #191)
 - Improved the testOptimization/OptimizationExample to reduce the runtime (PR #416)
 
 Documentation
 --------------
-- Improved Doxygen layout, linking, and fixed several bugs and warnings (various)
-- Added a detailed ReadMe and guides to contributing and developing
+- Improved Doxygen layout and fixed several bugs and warnings (various)
+- All mentions of SimTK/Simbody classes in OpenSim's Doxygen now provide links directly to SimTK/Simbody's doxygen.
+- Added a detailed README.md wtith build instructions, as well as guides to contributing and developing (CONTRIBUTING.md).
 - Included GIFs in Doxygen for several commonly used Joint types
 
 STILL NEED TO ADD: 
-Additional changes to Model Component Interface, Iterator (any PRs labeled "New MCI")
-Anything for PR #213 ?
-PR #364
-PR #370
-PR #378
-Other important changes to build/cmake to include here?
+- Additional changes to Model Component Interface, Iterator (any PRs labeled "New MCI")
+- PR #364
+- PR #370
+- PR #378
