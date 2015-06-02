@@ -329,12 +329,12 @@ public:
 
   string getColName(const size_t colind) const override {
     using ColNamesValueType = typename ColNamesType::value_type;
-    auto res = std::find(col_ind.cbegin(), 
-			 col_ind.cend(), 
-			 [colind] (const ColNamesValueType& kv) {
-			   return kv.second == colind;
-			 });
-    if(res == col_ind.end())
+    auto res = std::find_if(col_ind.cbegin(), 
+			    col_ind.cend(),
+			    [colind] (const ColNamesValueType& kv) {
+			      return kv.second == colind;
+			    });
+    if(res == col_ind.cend())
       throw std::out_of_range{""};
 
     return res->first;
@@ -342,12 +342,12 @@ public:
 
   void setColName(const size_t colind, const string& new_colname) override {
     using ColNamesValueType = typename ColNamesType::value_type;
-    auto res = std::find(col_ind.begin(), 
-			 col_ind.end(), 
-			 [colind] (const ColNamesValueType& kv) {
-			   return kv.second == colind;
-			 });
-    if(res == metadata.end())
+    auto res = std::find_if(col_ind.begin(), 
+			    col_ind.end(), 
+			    [colind] (const ColNamesValueType& kv) {
+			      return kv.second == colind;
+			    });
+    if(res == col_ind.cend())
       throw std::out_of_range{""};
     else {
       col_ind.erase(res);
