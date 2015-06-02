@@ -45,7 +45,6 @@ namespace OpenSim {
   template<typename ET> class DataTable_;
 
   using DataTable = DataTable_<SimTK::Real>;
-
 } // namespace OpenSim
 
 
@@ -58,18 +57,17 @@ namespace OpenSim {
 *                                                                              *
 * @author Ajay Seth                                                            *
 *-----------------------------------------------------------------------------*/
-class DataTableBase {
-private:
-  using MetaDataType          = std::unordered_map<string, string>;
-  using MetaDataIterType      = MetaDataType::iterator;
-  using MetaDataConstIterType = MetaDataType::const_iterator;
-  using ColNamesType          = std::unordered_map<string, size_t>;
-  using ColNamesIterType      = ColNamesType::iterator;
-  using ColNamesConstIterType = ColNamesType::const_iterator;
+class OpenSim::DataTableBase {
 
 public:
   using size_t                    = std::size_t;
   using string                    = std::string;
+  using MetaDataType              = std::unordered_map<string, string>;
+  using MetaDataIterType          = MetaDataType::iterator;
+  using MetaDataConstIterType     = MetaDataType::const_iterator;
+  using ColNamesType              = std::unordered_map<string, size_t>;
+  using ColNamesIterType          = ColNamesType::iterator;
+  using ColNamesConstIterType     = ColNamesType::const_iterator;
   using MetaDataKVType            = std::pair<string, string>;
   using MetaDataIterPairType      = std::pair<MetaDataIterType, 
 					      MetaDataIterType>;
@@ -82,7 +80,7 @@ public:
 
   virtual ~DataTableBase() = default;
 
-  virtual DataTableBase clone() const = 0;
+  virtual DataTableBase& clone() const = 0;
 
   /// Get meta-data.
   virtual MetaDataConstIterPairType getMetaData() const = 0;
@@ -128,16 +126,6 @@ public:
 
   /// Set column names with a *move* of colnames.
   virtual void repColNames(const std::vector<string>& colnames) = 0;
-
-  virtual SimTK::RowVectorView_<ET> getRow(size_t row) const = 0;
-
-  virtual SimTK::RowVectorView_<ET> updRow(size_t row) = 0;
-
-  virtual SimTK::VectorView_<ET> getColumn(size_t col) const = 0;
-
-  virtual SimTK::VectorView_<ET> updColumn(size_t col) = 0;
-
-  virtual SimTK::Matrix_<ET> getAsMatrix() const = 0;
 }; // DataTableBase
 
 
@@ -146,9 +134,14 @@ public:
   ColumnDoesNotExist(const std::string& expl) : runtime_error(expl) {}
 };
 
-class ZeroElements : public std::rutime_error {
+class ZeroElements : public std::runtime_error {
 public:
   ZeroElements(const std::string& expl) : runtime_error(expl) {}
+};
+
+class InvalidEntry : public std::runtime_error {
+public:
+  InvalidEntry(const std::string& expl) : runtime_error(expl) {}
 };
 
 
@@ -173,7 +166,7 @@ public:
 // * For the function getAsMatrix, is it better to return reference to
 //   underlying matrix for efficiency ?
 template<typename ET = SimTK::Real> // Element datatype.
-class DataTable_ : public DataTableBase {
+class OpenSim::DataTable_ : public OpenSim::DataTableBase {
 public:
   /// Enum to specify if the the input iterator is traversing data row-wise or
   /// col-wise.
@@ -188,22 +181,22 @@ public:
 
   /// Construct a pre-sized DataTable populated with given value val. Default
   /// value for val is NaN.
-  DataTable_(size_t nrows, 
-	     size_t ncols, 
+  DataTable_(size_t nrows,
+	     size_t ncols,
 	     const ET& val = ET(SimTK::NaN)) :
     data{int(nrows), int(ncols), val}, metadata{}, col_ind{} {}
 
   /// Construct DataTable using an "input iterator". 
   template<typename InputIt>
-  DataTable(InputIt first, 
-	    InputIt last, 
-	    size_t ndir, 
-	    InputItDir dir = ROWWISE) :
+  DataTable_(InputIt first,
+	     InputIt last,
+	     size_t ndir,
+	     InputItDir dir = ROWWISE) :
     data{dir == ROWWISE ? 1 : ndir, dir == COLWISE ? ndir : 1},
     metadata{},
     col_ind{} {
     if(!(first != last))
-      throw ZeroElements{};
+      throw ZeroElements{""};
 
     size_t row{0};
     size_t col{0};
@@ -225,13 +218,13 @@ public:
   DataTable_(const DataTable_& dt) :
     data{dt.data}, metadata{dt.metadata}, col_ind{dt.col_ind} {}
 
-  DataTable_ clone() const {
-    return new DataTable_{*this};
+  DataTable_& clone() const override {
+    return *(new DataTable_{*this});
   }
 
   DataTable_(DataTable_&& dt) :
-    data{std::move(dt.data)}, 
-    metadata{std::move(dt.metadata)}, 
+    data{std::move(dt.data)},
+    metadata{std::move(dt.metadata)},
     col_ind{std::move(dt.col_ind)} {}
 
   virtual ~DataTable_() {};
@@ -243,47 +236,35 @@ public:
     return *this;
   }
 
-  virtual DataTable_& clone() const override {
-    return new DataTable_(*this);
-  }
-
   MetaDataConstIterPairType getMetaData() const override {
     return std::make_pair(metadata.cbegin(), metadata.cend());
   }
 
-  template<typename OT = string>
-  OT getMetaData(string key) const {
+  string getMetaDataAsString(string key) const {
     return metadata.at(key);
   }
-  template<>
-  int getMetaData<int>(string key) const {
+  int getMetaDataAsInt(string key) const {
     return std::stoi(metadata.at(key));
   }
-  template<>
-  long getMetaData<long>(string key) const {
+  long getMetaDataAsLong(string key) const {
     return std::stol(metadata.at(key));
   }
-  template<>
-  long long getMetaData<long long>(string key) const {
+  long long getMetaDataAsLongLong(string key) const {
     return std::stoll(metadata.at(key));
   }
-  template<>
-  unsigned long getMetaData<unsigned long>(string key) const {
+  unsigned long getMetaDataAsULong(string key) const {
     return std::stoul(metadata.at(key));
   }
-  template<>
-  unsigned long long getMetaData<unsigned long long>(string key) const {
+  unsigned long long getMetaDataAsULongLong(string key) const {
     return std::stoull(metadata.at(key));
   }
-  template<>
-  float getMetaData<float>(string key) const {
+  float getMetaDataAsFloat(string key) const {
     return std::stof(metadata.at(key));
   }
-  template<>
-  double getMetaData<double>(string key) const {
+  double getMetaDataAsDouble(string key) const {
     return std::stod(metadata.at(key));
   }
-  long double getMetaData<long double>(string key) const {
+  long double getMetaDataAsLongDouble(string key) const {
     return std::stold(metadata.at(key));
   }
 
@@ -292,16 +273,18 @@ public:
   }
 
   /// Set individual key-value pairs in meta-data.
-  template<VT, typename = std::enable_if_t<std::is_constructible<string, VT>>>
+  template<typename VT, 
+	   typename = typename std::enable_if<
+	     std::is_constructible<string, VT>::value>::type>
   void insertMetaData(const string& key, VT&& value) {
-    return metadata.insert(std::make_pair(key, std::forward<VT>(value)));
+    metadata.insert(std::make_pair(key, std::forward<VT>(value)));
   }
-  template<VT, 
-	   typename = std::enable_if_t<std::is_same
-				       <std::result_of_t<std::to_string, VT>, 
-					string>::value>>
-  void insertMetaData(const string& key, const VT& value) {
-    return metadata.insert(std::make_pair(key, std::to_string(value)));
+
+  template<typename VT, 
+  	   typename = typename std::enable_if<
+	     std::is_arithmetic<VT>::value>::type>
+  void insertMetaData(const string& key, const VT value) { 
+    metadata.insert(std::make_pair(key, std::to_string(value)));
   }
 
   /// Replace meta-data. Existing meta-data is replaced with a *copy* of
@@ -345,9 +328,10 @@ public:
   }
 
   string getColName(const size_t colind) const override {
+    using ColNamesValueType = typename ColNamesType::value_type;
     auto res = std::find(col_ind.cbegin(), 
 			 col_ind.cend(), 
-			 [colind] (const auto& kv) {
+			 [colind] (const ColNamesValueType& kv) {
 			   return kv.second == colind;
 			 });
     if(res == col_ind.end())
@@ -356,17 +340,18 @@ public:
     return res->first;
   }
 
-  void setColName(const size_t ind, const string& new_colname) override {
+  void setColName(const size_t colind, const string& new_colname) override {
+    using ColNamesValueType = typename ColNamesType::value_type;
     auto res = std::find(col_ind.begin(), 
 			 col_ind.end(), 
-			 [colind] (const auto& kv) {
+			 [colind] (const ColNamesValueType& kv) {
 			   return kv.second == colind;
 			 });
     if(res == metadata.end())
       throw std::out_of_range{""};
     else {
       col_ind.erase(res);
-      col_ind[new_colname] = ind;
+      col_ind[new_colname] = colind;
     }
   }
 
@@ -381,7 +366,7 @@ public:
     return std::make_pair(col_ind.cbegin(), col_ind.cend());
   }
 
-  ColNamesIterPairType updColNames() const override {
+  ColNamesIterPairType updColNames() override {
     return std::make_pair(col_ind.begin(), col_ind.end());
   }
 
@@ -399,7 +384,7 @@ public:
       col_ind[*begin++] = i++;
   }
     
-  SimTK::RowVectorView_<ET> getRow(size_t row) const override {
+  SimTK::RowVectorView_<ET> getRow(size_t row) const {
     return data.row(row);
   }
 
@@ -427,17 +412,17 @@ public:
     return new SimTK::Matrix_<ET>{data};
   }
 
-  /** Append a row of data as a RowVector to the table. */
+  /// Append a row of data as a RowVector to the table.
   void appendRow(const SimTK::RowVector_<ET>& row) {
     // ncols specified by the table unless it is zero, in which
     // case allow the first row appended to dictate its size
-    int ncols = _data.ncol() == 0 ? row.size() : _data.ncol();
+    int ncols = data.ncol() == 0 ? row.size() : data.ncol();
     SimTK_ASSERT_ALWAYS(row.size() == ncols, "DataTable::appendRow() "
 			"row length does match number of columns.");
     SimTK_ASSERT_ALWAYS(row.size() > 0, "DataTable::appendRow() "
 			"row is empty.");
-    _data.resizeKeep(_data.nrow() + 1, ncols);
-    _data[_data.nrow() - 1].updAsRowVector() = row;
+    data.resizeKeep(data.nrow() + 1, ncols);
+    data[data.nrow() - 1].updAsRowVector() = row;
   }
 
   /** Append another data table's rows to this table. If the number of
@@ -445,14 +430,14 @@ public:
   void appendDataTable(const DataTable_& table) {
     size_t nrows = table.getNumRows();
     if (getNumCols() != table.getNumCols()) {
-      throw Exception("DataTable::appendDataTable() cannot append a "
-		      " DataTable with a different number of columns.");
+      throw InvalidEntry("DataTable::appendDataTable() cannot append a "
+			 " DataTable with a different number of columns.");
     }
     // resize once to tack on the new table
-    size_t offset = _data.nrow();
-    _data.resizeKeep(int( offset + nrows), int(getNumCols()) );
+    size_t offset = data.nrow();
+    data.resizeKeep(int( offset + nrows), int(getNumCols()) );
     for (size_t i = 0; i < nrows; ++i){
-      _data[int(i + offset)].updAsRowVector() = table.getRow(i);
+      data[int(i + offset)].updAsRowVector() = table.getRow(i);
     }
   }
 
