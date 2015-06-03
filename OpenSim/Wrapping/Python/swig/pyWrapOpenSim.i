@@ -266,6 +266,8 @@ using namespace SimTK;
 %rename(printToXML) OpenSim::XMLDocument::print();
 %rename(printToFile) OpenSim::Storage::print;
 
+%rename(appendNative) OpenSim::ForceSet::append(Force* aForce);
+
 /* If needed %extend will be used, these operators are not supported.*/
 %ignore *::operator[];
 %ignore *::operator=;
@@ -882,6 +884,6 @@ SET_ADOPT_HELPER(Control);
 %pythoncode %{
     def append(self, aForce):
         aForce._markAdopted()
-        return super(ForceSet, self).append(aForce)
+        return appendNative(self, aForce)
 %}
 };
