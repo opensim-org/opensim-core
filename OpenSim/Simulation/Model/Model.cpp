@@ -1447,36 +1447,45 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
 
     aOStream << "MODEL: " << getName() << std::endl;
 
-    aOStream << "\nANALYSES (" << getNumAnalyses() << ")" << std::endl;
-    for (int i = 0; i < _analysisSet.getSize(); i++)
-        aOStream << "analysis[" << i << "] = " << _analysisSet.get(i).getName() << std::endl;
-
-    aOStream << "\nBODIES (" << getNumBodies() << ")" << std::endl;
-    const BodySet& bodySet = getBodySet();
-    for(int i=0; i < bodySet.getSize(); i++) {
-        const OpenSim::Body& body = bodySet.get(i);
-        aOStream << "body[" << i << "] = " << body.getName();
-        aOStream << " (mass: "<<body.get_mass()<<")";
-        const SimTK::Inertia& inertia = body.getInertia();
-        aOStream << " (inertia: [" << inertia.getMoments() << "  ";
-        aOStream << inertia.getProducts() << "])" << endl;
-    }
-
-    int j = 0;
-    aOStream << "\nACTUATORS (" << getActuators().getSize() << ")" << std::endl;
-    for (int i = 0; i < getActuators().getSize(); i++) {
-         aOStream << "actuator[" << j << "] = " << getActuators().get(i).getName() << std::endl;
-         j++;
-    }
-
+    aOStream << std::endl;
     aOStream << "numStates = " << s.getNY() << std::endl;
     aOStream << "numCoordinates = " << getNumCoordinates() << std::endl;
     aOStream << "numSpeeds = " << getNumSpeeds() << std::endl;
     aOStream << "numActuators = " << getActuators().getSize() << std::endl;
     aOStream << "numBodies = " << getNumBodies() << std::endl;
     aOStream << "numConstraints = " << getConstraintSet().getSize() << std::endl;
-    ;
     aOStream << "numProbes = " << getProbeSet().getSize() << std::endl;
+
+    aOStream << "\nANALYSES (total: " << getNumAnalyses() << ")" << std::endl;
+    for (int i = 0; i < _analysisSet.getSize(); i++)
+        aOStream << "analysis[" << i << "] = " << _analysisSet.get(i).getName() << std::endl;
+
+    aOStream << "\nBODIES (total: " << getNumBodies() << ")" << std::endl;
+    const BodySet& bodySet = getBodySet();
+    for(int i=0; i < bodySet.getSize(); i++) {
+        const OpenSim::Body& body = bodySet.get(i);
+        aOStream << "body[" + std::to_string(i) + "] = " + body.getName() + ". ";
+        aOStream << "mass: " << body.get_mass() << std::endl;
+        const SimTK::Inertia& inertia = body.getInertia();
+        aOStream << "              moments of inertia:  " << inertia.getMoments()
+            << std::endl;
+        aOStream << "              products of inertia: " << inertia.getProducts()
+            << std::endl;
+    }
+
+    aOStream << "\nJOINTS (total: " << getNumJoints() << ")" << std::endl;
+    const JointSet& jointSet = getJointSet();
+    for (int i = 0; i < jointSet.getSize(); i++) {
+        const OpenSim::Joint& joint = get_JointSet().get(i);
+        aOStream << "joint[" << i << "] = " << joint.getName() << ".";
+        aOStream << " parent: " << joint.getParentFrameName() <<
+            ", child: " << joint.getChildFrameName() << std::endl;
+    }
+
+    aOStream << "\nACTUATORS (total: " << getActuators().getSize() << ")" << std::endl;
+    for (int i = 0; i < getActuators().getSize(); i++) {
+         aOStream << "actuator[" << i << "] = " << getActuators().get(i).getName() << std::endl;
+    }
 
     /*
     int n;
@@ -1503,7 +1512,7 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
 
 */
     Array<string> stateNames = getStateVariableNames();
-    aOStream<<"\nSTATES ("<<stateNames.getSize()<<")"<<std::endl;
+    aOStream<<"\nSTATES (total: "<<stateNames.getSize()<<")"<<std::endl;
     for(int i=0;i<stateNames.getSize();i++) aOStream<<"y["<<i<<"] = "<<stateNames[i]<<std::endl;
 }
 
