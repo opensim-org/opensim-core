@@ -27,6 +27,7 @@
 #include "PhysicalFrame.h"
 #include "Model.h"
 
+
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -43,6 +44,13 @@ using namespace OpenSim;
 PhysicalFrame::PhysicalFrame() : Frame()
 {
     setAuthors("Matt DeMers, Ayman Habib, Ajay Seth");
+    constructProperties();
+}
+
+void PhysicalFrame::constructProperties()
+{
+    constructProperty_VisibleObject(VisibleObject());
+    constructProperty_WrapObjectSet(WrapObjectSet());
 }
 
 const SimTK::MobilizedBody& PhysicalFrame::getMobilizedBody() const
@@ -72,3 +80,48 @@ SimTK::Transform PhysicalFrame::extendFindTransformInBaseFrame() const
     return Transform();
 }
 
+void PhysicalFrame::extendConnectToModel(Model& aModel)
+{
+    Super::extendConnectToModel(aModel);
+
+    for (int i = 0; i < get_WrapObjectSet().getSize(); i++)
+        get_WrapObjectSet().get(i).connectToModelAndBody(aModel, *this);
+}
+
+
+void PhysicalFrame::addDisplayGeometry(const std::string &aGeometryFileName)
+{
+    updDisplayer()->setGeometryFileName(updDisplayer()->getNumGeometryFiles(), aGeometryFileName);
+}
+
+
+const WrapObject* PhysicalFrame::getWrapObject(const string& aName) const
+{
+    int i;
+
+    for (i = 0; i < get_WrapObjectSet().getSize(); i++) {
+        if (aName == get_WrapObjectSet()[i].getName())
+            return &get_WrapObjectSet()[i];
+    }
+    return nullptr;
+}
+
+void PhysicalFrame::addWrapObject(WrapObject* wrap) {
+    upd_WrapObjectSet().adoptAndAppend(wrap);
+}
+
+void PhysicalFrame::scale(const SimTK::Vec3& aScaleFactors)
+{
+    // Base class, to scale wrap objects
+    for (int i = 0; i< get_WrapObjectSet().getSize(); i++)
+        upd_WrapObjectSet().get(i).scale(aScaleFactors);
+
+    SimTK::Vec3 oldScaleFactors;
+    getDisplayer()->getScaleFactors(oldScaleFactors);
+
+    for (int i = 0; i<3; i++) {
+        oldScaleFactors[i] *= aScaleFactors[i];
+    }
+    // Update scale factors for displayer
+    updDisplayer()->setScaleFactors(oldScaleFactors);
+}

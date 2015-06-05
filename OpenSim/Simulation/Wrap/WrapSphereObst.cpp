@@ -114,7 +114,7 @@ void WrapSphereObst::setupProperties()
 *
 * @param aModel point to OpenSim Model.
 */
-void WrapSphereObst::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
+void WrapSphereObst::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 {
     // Base class
     Super::connectToModelAndBody(aModel, aBody);

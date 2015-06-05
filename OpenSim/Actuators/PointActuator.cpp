@@ -180,9 +180,9 @@ void PointActuator::computeForce(const SimTK::State& s,
     Vec3 lpoint = get_point();
     if (!get_force_is_global())
         engine.transform(s, *_body, forceVec, 
-                         engine.getGroundBody(), forceVec);
+                         getModel().getGround(), forceVec);
     if (get_point_is_global())
-        engine.transformPosition(s, engine.getGroundBody(), lpoint, 
+        engine.transformPosition(s, getModel().getGround(), lpoint, 
                                  *_body, lpoint);
     applyForceToPoint(s, *_body, lpoint, forceVec, bodyForces);
 

@@ -712,28 +712,28 @@ bool SimbodySimmModel::addExtraJoints(const OpenSim::Joint& aJoint, string& rPar
    if (isParentJointNeeded(aJoint)) {
        location = aJoint.getLocationInParent();
        orientation = aJoint.getOrientationInParent();
-      string bodyName = aJoint.getChildBodyName() + "_pjc";
+      string bodyName = aJoint.getChildFrameName() + "_pjc";
       SimbodySimmBody* b = new SimbodySimmBody(NULL, bodyName);
       _simmBody.append(b);
-      makeSimmJoint(aJoint.getName() + "_pjc", aJoint.getParentBodyName(), bodyName, location, orientation);
+      makeSimmJoint(aJoint.getName() + "_pjc", aJoint.getParentFrameName(), bodyName, location, orientation);
       rParentName = bodyName;
         parentJointAdded = true;
    } else {
-      rParentName = aJoint.getParentBodyName();
+      rParentName = aJoint.getParentFrameName();
         parentJointAdded = false;
    }
 
    if (isChildJointNeeded(aJoint)) {
        location = aJoint.getLocationInChild();
        orientation = aJoint.getOrientationInChild();
-       string bodyName = aJoint.getChildBodyName() + "_jcc";
+       string bodyName = aJoint.getChildFrameName() + "_jcc";
       SimbodySimmBody* b = new SimbodySimmBody(NULL, bodyName);
       _simmBody.append(b);
       // This joint is specified in the reverse direction.
-      makeSimmJoint(aJoint.getName() + "_jcc", aJoint.getChildBodyName(), bodyName, location, orientation);
+      makeSimmJoint(aJoint.getName() + "_jcc", aJoint.getChildFrameName(), bodyName, location, orientation);
       rChildName = bodyName;
    } else {
-       rChildName = aJoint.getChildBodyName();
+       rChildName = aJoint.getChildFrameName();
    }
 
     return parentJointAdded;

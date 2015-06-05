@@ -161,10 +161,13 @@ void ExternalForce::extendConnectToModel(Model& model)
 
     // hook up body pointers from names
     if (_model){
-        _appliedToBody = &_model->updBodySet().get(appliedToBodyName);
-        _forceExpressedInBody = &_model->updBodySet().get(forceExpressedInBodyName);
+        _appliedToBody = 
+            static_cast<const PhysicalFrame*>(&_model->getComponent(appliedToBodyName));
+        _forceExpressedInBody = 
+            static_cast<const PhysicalFrame*>(&_model->getComponent(forceExpressedInBodyName));
         _pointExpressedInBody = _specifiesPoint ? 
-            &_model->updBodySet().get(get_point_expressed_in_body()) : NULL;
+            static_cast<const PhysicalFrame*>(&_model->getComponent(get_point_expressed_in_body()))
+            : nullptr;
     }
 
     if(!_appliedToBody){
@@ -322,7 +325,7 @@ void ExternalForce::computeForce(const SimTK::State& state,
     if (_appliesForce) {
         Vec3 force = getForceAtTime(time);
         engine.transform(state, *_forceExpressedInBody, force, 
-                                engine.getGroundBody(), force);
+                                getModel().getGround(), force);
         Vec3 point(0); // Default is body origin.
         if (_specifiesPoint) {
             point = getPointAtTime(time);
@@ -335,7 +338,7 @@ void ExternalForce::computeForce(const SimTK::State& state,
     if (_appliesTorque) {
         Vec3 torque = getTorqueAtTime(time);
         engine.transform(state, *_forceExpressedInBody, torque, 
-                                engine.getGroundBody(), torque);
+                                getModel().getGround(), torque);
         applyTorque(state, *_appliedToBody, torque, bodyForces);
     }
 }
@@ -428,7 +431,7 @@ OpenSim::Array<double> ExternalForce::getRecordValues(const SimTK::State& state)
 
     if (_appliesForce) {
         Vec3 force = getForceAtTime(time);
-        engine.transform(state, *_forceExpressedInBody, force, engine.getGroundBody(), force);
+        engine.transform(state, *_forceExpressedInBody, force, getModel().getGround(), force);
         for(int i=0; i<3; ++i)
             values.append(force[i]);
     
@@ -441,7 +444,7 @@ OpenSim::Array<double> ExternalForce::getRecordValues(const SimTK::State& state)
     }
     if (_appliesTorque){
         Vec3 torque = getTorqueAtTime(time);
-        engine.transform(state, *_forceExpressedInBody, torque, engine.getGroundBody(), torque);
+        engine.transform(state, *_forceExpressedInBody, torque, getModel().getGround(), torque);
         for(int i=0; i<3; ++i)
             values.append(torque[i]);
     }

@@ -28,12 +28,12 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include <OpenSim/Common/XMLDocument.h>
+#include "TorqueActuator.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 
-#include "TorqueActuator.h"
 
 using namespace OpenSim;
 using std::string;
@@ -53,7 +53,7 @@ TorqueActuator::TorqueActuator()
 }
 //_____________________________________________________________________________
 // Constructor with given body names.
-TorqueActuator::TorqueActuator(const Body& bodyA, const Body& bodyB,
+TorqueActuator::TorqueActuator(const PhysicalFrame& bodyA, const PhysicalFrame& bodyB,
                    const SimTK::Vec3& axis, bool axisInGround)
 {
     constructProperties();
@@ -85,24 +85,21 @@ void TorqueActuator::constructProperties()
 // BodyID
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set the generalized Body to which the Body actuator is applied.
- *
- * @param aBody Pointer to the generalized Body.
+/*
+ * Set the PhysicalFrame to which the Body actuator is applied.
+
  */
-void TorqueActuator::setBodyA(const Body& aBody)
+void TorqueActuator::setBodyA(const PhysicalFrame& aBody)
 {
     _bodyA = &aBody;
     set_bodyA(aBody.getName());
 }
 //_____________________________________________________________________________
-/**
- * Set the generalized Body to which the equal and opposite Body actuation 
+/*
+ * Set the PhysicalFrame to which the equal and opposite Body actuation 
  * is applied.
- *
- * @param aBody Pointer to the generalized Body.
  */
-void TorqueActuator::setBodyB(const Body& aBody)
+void TorqueActuator::setBodyB(const PhysicalFrame& aBody)
 {
     _bodyB = &aBody;
     set_bodyB(aBody.getName());
@@ -170,7 +167,7 @@ void TorqueActuator::computeForce(const State& s,
     Vec3 torque = actuation * UnitVec3(axis);
     
     if (!torqueIsGlobal)
-        engine.transform(s, *_bodyA, torque, engine.getGroundBody(), torque);
+        engine.transform(s, *_bodyA, torque, getModel().getGround(), torque);
     
     applyTorque(s, *_bodyA, torque, bodyForces);
 
@@ -201,8 +198,11 @@ void TorqueActuator::extendConnectToModel(Model& model)
 
     // Look up the bodies by name in the Model, and record pointers to the
     // corresponding body objects.
-    _bodyA = model.updBodySet().get(get_bodyA());
-    _bodyB = model.updBodySet().get(get_bodyB());
+    _bodyA =
+        static_cast<const PhysicalFrame*>(&getModel().getComponent(get_bodyA()));
+    _bodyB =
+        static_cast<const PhysicalFrame*>(&getModel().getComponent(get_bodyB()));
+
 }
 
 //==============================================================================

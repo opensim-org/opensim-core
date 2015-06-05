@@ -113,27 +113,20 @@ void PathWrap::setupProperties()
     _propertySet.append(&_rangeProp);
 }
 
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- * @param s current state of  system
- * @param aModel pointer to the OpenSim model.
- */
+
 void PathWrap::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
 {
-    int i;
-    const BodySet& bodySet = aModel.getBodySet();
-
     _path = &aPath;
 
-    for (i = 0; i < bodySet.getSize(); i++) {
-        const WrapObject* wo = bodySet.get(i).getWrapObject(getWrapObjectName());
+    ComponentList<PhysicalFrame> bodiesList = aModel.getComponentList<PhysicalFrame>();
+    for (ComponentList<PhysicalFrame>::const_iterator it = bodiesList.begin();
+            it != bodiesList.end(); ++it) {
+        const WrapObject* wo = it->getWrapObject(getWrapObjectName());
         if (wo) {
             _wrapObject = wo;
-            _wrapPoints[0].setBody(bodySet.get(i));
+            _wrapPoints[0].setBody(wo->getBody());
             _wrapPoints[0].setWrapObject(wo);
-            _wrapPoints[1].setBody(bodySet.get(i));
+            _wrapPoints[1].setBody(wo->getBody());
             _wrapPoints[1].setWrapObject(wo);
             break;
         }
