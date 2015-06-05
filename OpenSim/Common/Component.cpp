@@ -789,15 +789,6 @@ setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value)
     }
 }
 
-/*
-// Specifiy a member function of the state implemented by this component to be
-// an Output.
-template <typename T>
-void Component::addOutput(const std::string& name,
-                    const std::function<T(const SimTK::State&)> outputFunction,
-                    const SimTK::Stage& dependsOn)
-*/
-
 void Component::constructOutputForStateVariable(const std::string& name) {
     constructOutput<double>(name,
             std::bind(&Component::getStateVariableValue,
