@@ -884,6 +884,6 @@ SET_ADOPT_HELPER(Control);
 %pythoncode %{
     def append(self, aForce):
         aForce._markAdopted()
-        return appendNative(self, aForce)
+        return self.appendNative(aForce)
 %}
 };
