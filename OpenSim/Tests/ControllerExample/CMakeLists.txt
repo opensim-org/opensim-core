@@ -1,7 +1,3 @@
-cmake_minimum_required(VERSION 2.6)
-
-INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-            ${OpenSim_SOURCE_DIR}/Vendors)
 
 LINK_LIBRARIES( debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
         debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation

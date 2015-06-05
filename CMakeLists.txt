@@ -10,8 +10,12 @@ PROJECT (OpenSim)
 
 cmake_minimum_required(VERSION 2.8.8)
 if(COMMAND cmake_policy)
-        cmake_policy(SET CMP0003 NEW)
-        cmake_policy(SET CMP0005 NEW)
+    cmake_policy(SET CMP0003 NEW)
+    cmake_policy(SET CMP0005 NEW)
+    if(NOT (${CMAKE_VERSION} VERSION_LESS 3.0))
+        # MACOSX_RPATH enabled by default; policy introduced with cmake 3.0.
+        cmake_policy(SET CMP0042 NEW)
+    endif()
 endif(COMMAND cmake_policy)
 
 
@@ -311,8 +315,8 @@ IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
         ELSE()
             SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
             IF(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-        ENDIF()
+                SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+            ENDIF()
         ENDIF()
     ELSE() # not APPLE
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")

@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 2.6)
-
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
             ${OpenSim_SOURCE_DIR}/Vendors)
 
