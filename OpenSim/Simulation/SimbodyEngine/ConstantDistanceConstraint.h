@@ -1,5 +1,5 @@
-#ifndef __ConstantDistanceConstraint_h__
-#define __ConstantDistanceConstraint_h__
+#ifndef OPENSIM_CONSTANT_DISTANCE_CONSTRAINT_H_
+#define OPENSIM_CONSTANT_DISTANCE_CONSTRAINT_H_
 /* -------------------------------------------------------------------------- *
  *                   OpenSim:  ConstantDistanceConstraint.h                   *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -39,11 +39,10 @@ namespace OpenSim {
 //=============================================================================
 /**
  * A class implementing a constraint that maintains a constant distance between
- * between two points.  The underlying Constraint in Simbody
- * is a Constraint::Rod
+ * between two points on separate PhysicalFrames. 
+ * The underlying SimTK::Constraint in Simbody is a Constraint::Rod
  *
  * @author Matt DeMers
- * @version 1.0
  */
 class OSIMSIMULATION_API ConstantDistanceConstraint : public Constraint {
 OpenSim_DECLARE_CONCRETE_OBJECT(ConstantDistanceConstraint, Constraint);
@@ -55,10 +54,6 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
-    OpenSim_DECLARE_PROPERTY(body_1, std::string,
-        "Specify first of two bodies connected together by the constraint.");
-    OpenSim_DECLARE_PROPERTY(body_2, std::string,
-        "Specify second of two bodies connected together by the constraint.");
     OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
         "Location of the point in first body specified in body1 "
         "reference frame.");
@@ -70,43 +65,56 @@ public:
         "fixed on each body.");
     /**@}**/
 
-protected:
-    /** First body point constraint joins. */
-    Body *_body1;
-
-    /** Second body point constraint joins. */
-    Body *_body2;
-
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
     // CONSTRUCTION
     ConstantDistanceConstraint();
-    ConstantDistanceConstraint(OpenSim::Body& body1, SimTK::Vec3& locationBody1, OpenSim::Body& body2, SimTK::Vec3& locationBody2, double& distance);
+    /**
+    * Convenience Constructor.
+    *
+    * @param body1          first PhysicalFrame connected by the constraint
+    * @param locationBody1  point fixed on body1 where the contraint is applied
+    * @param body2          second PhysicalFrame connected by the constraint
+    * @param locationBody2: point fixed on body2 where the constraint is applied
+    * @param distance       nonzero fixed distance between the points
+    */
+    ConstantDistanceConstraint(
+        const PhysicalFrame& body1, const SimTK::Vec3& locationBody1, 
+        const PhysicalFrame& body2, const SimTK::Vec3& locationBody2,
+        const double& distance);
+
     virtual ~ConstantDistanceConstraint();
-    
+
+    /** The Physical frames that the constraint is connected to are
+        acessible after connectToModel() has been called on the Model. */
+    const PhysicalFrame& getBody1() const;
+    const PhysicalFrame& getBody2() const;
     //SET 
-    void setBody1ByName(std::string aBodyName);
+    void setBody1ByName(const std::string& aBodyName);
     void setBody1PointLocation(SimTK::Vec3 location);
-    void setBody2ByName(std::string aBodyName);
+    void setBody2ByName(const std::string& aBodyName);
     void setBody2PointLocation(SimTK::Vec3 location);
     void setConstantDistance(double distance);
 
-    /** Method to set point location of contact during an induced acceleration analysis */
-    //virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point);
-
-
 protected:
-    void extendConnectToModel(Model& aModel) override;
     /**
-     * Create a SimTK::Constraint::Ball which implements this Point constraint.
-     */
+    * Extend Component Interface.
+    */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
+    /** Updating XML formating to latest revision */
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
+
+
 private:
+    /** Construct ConstantDistanceConstraint's properties */
+    void constructProperties() override;
+    /** Construct ConstantDistanceConstraint's connectors */
+    void constructConnectors() override;
+
     void setNull();
-    void constructProperties();
 
 //=============================================================================
 };  // END of class ConstantDistanceConstraint
@@ -115,6 +123,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __ConstantDistanceConstraint_h__
+#endif // OPENSIM_CONSTANT_DISTANCE_CONSTRAINT_H_
 
 

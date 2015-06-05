@@ -206,8 +206,8 @@ void testPhysicalOffsetFrameOnBody()
         "testPhysicalOffsetFrameOnBody(): incorrect transform between offset and rod.");
 
     SimTK::Vec3 f_R(10.1, 20.2, 30.3);
-    SimTK::Vec3 f_RG = rod1.expressVectorInAnotherFrame(s, f_R,
-        pendulum->getGroundBody());
+    SimTK::Vec3 f_RG = rod1.expressVectorInAnotherFrame(s, f_R, 
+                                                    pendulum->getGround());
 
     ASSERT_EQUAL(f_R.norm(), f_RG.norm(), tolerance(0),
         __FILE__, __LINE__,
@@ -220,7 +220,7 @@ void testPhysicalOffsetFrameOnBody()
 
     SimTK::Vec3 p_R(0.333, 0.222, 0.111);
     SimTK::Vec3 p_G = 
-        rod1.findLocationInAnotherFrame(s, p_R, pendulum->getGroundBody());
+        rod1.findLocationInAnotherFrame(s, p_R, pendulum->getGround());
     SimTK::Vec3 p_G_2 = 
         rod1.getMobilizedBody().findStationLocationInGround(s, p_R);
 
@@ -243,10 +243,12 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
     // rotate the frame 
     X_RO.updR().setRotationToBodyFixedXYZ(SimTK::Vec3(0.33, 0.22, 0.11));
     PhysicalOffsetFrame* offsetFrame = new PhysicalOffsetFrame(rod1, X_RO);
+    offsetFrame->setName("first");
     pendulum->addFrame(offsetFrame);
 
     //connect a second frame to the first PhysicalOffsetFrame 
     PhysicalOffsetFrame* secondFrame = offsetFrame->clone();
+    secondFrame->setName("second");
     secondFrame->setParentFrame(*offsetFrame);
     X_RO.setP(SimTK::Vec3(3.3, 2.2, 1.1));
     X_RO.updR().setRotationToBodyFixedXYZ(SimTK::Vec3(1.5, -0.707, 0.5));
@@ -373,7 +375,7 @@ void testFilterByFrameType()
             << " of type " << typeid(component).name() << std::endl;
     }
 
-    ASSERT_EQUAL(3, i, 0, __FILE__, __LINE__,
+    ASSERT_EQUAL(2, i, 0, __FILE__, __LINE__,
         "testFilterByFrameType failed to find the 2 Bodies in the model.");
     
 
@@ -413,7 +415,7 @@ void testStationOnFrame()
         coord.setValue(s, radAngle);
 
         SimTK::Vec3 comInGround = 
-            myStation->findLocationInFrame(s, pendulum->getGroundBody());
+            myStation->findLocationInFrame(s, pendulum->getGround());
         SimTK::Vec3 comBySimbody = 
             rod1.getMobilizedBody().findStationLocationInGround(s, com);
         ASSERT_EQUAL(comInGround, comBySimbody, tolerance, __FILE__, __LINE__,

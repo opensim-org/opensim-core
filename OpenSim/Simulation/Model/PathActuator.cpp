@@ -142,7 +142,7 @@ double PathActuator::getStress( const SimTK::State& s) const
  */
 void PathActuator::addNewPathPoint(
          const std::string& proposedName, 
-         OpenSim::Body& aBody, 
+         PhysicalFrame& aBody, 
          const SimTK::Vec3& aPositionOnBody) {
     // Create new PathPoint
     PathPoint* newPathPoint = updGeometryPath()

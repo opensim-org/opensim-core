@@ -39,10 +39,13 @@
 #define GET_OS_NAME \
     MAKE_STRING(OSIM_OS_NAME)
 
+#define GET_OSIM_VERSION \
+    MAKE_STRING(OSIM_VERSION)
+
 namespace OpenSim {
 #endif
 
-    static const char *OpenSimVersion = "3.2.0";
+    static const char *OpenSimVersion = GET_OSIM_VERSION;
 
 #if defined(__cplusplus) || defined(SWIG)
     std::string GetVersionAndDate() { 

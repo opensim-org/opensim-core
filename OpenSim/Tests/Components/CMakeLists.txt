@@ -1,5 +1,4 @@
 
-FILE(GLOB TEST_PROGS "test*.cpp")
 FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 
 OPENSIM_ADD_TESTS(

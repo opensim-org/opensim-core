@@ -144,6 +144,9 @@ public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(MuscleFirstOrderActivationDynamicModel,
         "The model governing the excitation-to-activation dynamics.");
 
+    OpenSim_DECLARE_UNNAMED_PROPERTY(MuscleFixedWidthPennationModel,
+        "The model governing the fiber and tendon kinematics.");
+
     /**@}**/
 
     enum CurveType{FiberActiveForceLength,
@@ -169,7 +172,7 @@ public:
 
     /** @name Convenience methods
     These are convenience methods that get and set properties of the activation
-    model. **/
+    and pennation models. **/
     /**@{**/
     double getActivationTimeConstant() const;
     void setActivationTimeConstant(double actTimeConstant);
@@ -177,6 +180,8 @@ public:
     void setDeactivationTimeConstant(double deactTimeConstant);
     double getMinimumActivation() const;
     void setMinimumActivation(double minimumActivation);
+    double getMaximumPennationAngle() const;
+    void setMaximumPennationAngle(double maximumPennationAngle);
     /**@}**/
 
     /**
@@ -187,11 +192,6 @@ public:
         fiber velocity goes positive.
     */
     double getMinimumFiberLength() const;
-
-    /**
-    @return the maximum pennation angle allowed by this muscle model (radians)
-    */
-    double getMaximumPennationAngle() const;
 
     /**
    @returns the MuscleFirstOrderActivationDynamicModel 
@@ -284,17 +284,13 @@ protected:
 private:
     void setNull();
     void constructProperties() override;
-    void buildMuscle();
-    //void ensureMuscleUpToDate();
+
     //=====================================================================
     // Private Utility Class Members
     //      -Computes activation dynamics and fiber kinematics
     //=====================================================================
     //bool initializedModel;
 
-    //Fiber and Tendon Kinematics
-    MuscleFixedWidthPennationModel penMdl;
-    
     //=====================================================================
     // Private Accessor names
     //=====================================================================

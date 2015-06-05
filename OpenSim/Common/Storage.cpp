@@ -147,7 +147,7 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
     if (_columnLabels.getSize()!= nc){
         std::cout << "Storage: Warning- inconsistent headers in file " << 
             aFileName << ". nColumns=" << nc << " but "
-            << _columnLabels.getSize() << "were found" << std::endl;
+            << _columnLabels.getSize() << " were found" << std::endl;
     }
     // CAPACITY
     _storage.ensureCapacity(nr);

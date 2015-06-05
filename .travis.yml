@@ -1,10 +1,15 @@
+# This script is used by the Travis-CI (continuous integration) testing
+# service to run opensim-core's tests with every GitHub push or pull-request.
 # To learn about this file, go to http://docs.travis-ci.com/user/languages/c/
 language: cpp
+
+# Use container-based infrastructure to allow caching (for ccache).
+sudo: false
 
 matrix:
   include:
     - compiler: clang
-      env: BUILD_WRAPPING=on NPROC=8
+      env: BUILD_WRAPPING=on NPROC=4
     - compiler: gcc
       env: BUILD_WRAPPING=off NPROC=3
 
@@ -12,24 +17,56 @@ env:
   global:
     # The python tests look for OPENSIM_HOME.
     - OPENSIM_HOME=~/opensim-install SWIG=swig-2.0.10
+    - USE_CCACHE=1
+    - CCACHE_COMPRESS=1
+    # for Clang to work with ccache.
+    - CCACHE_CPP2=1
+
+cache: 
+  - directories: $HOME/.ccache
+
+addons:
+  # Dependencies on linux.
+  apt:
+    sources:
+      # For gcc >= 4.8
+      - ubuntu-toolchain-r-test
+      # For cmake >= 2.8.8 (for CMakePackageConfigHelpers)
+      - kubuntu-backports
+    packages:
+      - cmake
+      # For Simbody.
+      - liblapack-dev
+      # C++11 on Ubuntu. Update to gcc 4.8, which provides full C++11 support.  We
+      # use this script because if building Simbody with C++11, we need gcc-4.8,
+      # and the Travis Ubuntu 12.04 machines have an older version of gcc. Even if
+      # building with Clang, we need the newer libstdc++ that we get by updating to
+      # gcc-4.8.  See https://github.com/travis-ci/travis-ci/issues/979.
+      - g++-4.8
+      # In case someone wants to check for memory leaks.
+      - valgrind
+      # To run the python tests.
+      - python-nose
 
 before_install:
-  ## Install CMake 2.8.8 (for CMakePackageConfigHelpers).
-  - sudo add-apt-repository ppa:kalakris/cmake -y
-  - sudo apt-get update -qq
-  - sudo apt-get install cmake
-  ## Get Simbody and its dependencies.
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq liblapack-dev
-  # Must get a newer gcc so we can compile with C++11,
-  # when using gcc OR Clang.
-  # from https://github.com/travis-ci/travis-ci/issues/979.
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq g++-4.8
+
+  ## Set up environment variables.
   # Only if compiling with gcc, update environment variables
   # to use the new gcc.
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+
+  ## Set up ccache.
+  # Lots of this is borrowed from https://github.com/weitjong/Urho3D/blob/master/.travis.yml.
+  # Put /usr/lib/ccache on the path.
+  - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
+  # For some reason the Travis CI clang compiler toolchain installation does not
+  # have a symlink in the ccache symlinks directory, so workaround it
+  - ln -s $(which ccache) $HOME/clang && ln -s $(which ccache) $HOME/clang++ && export PATH=$HOME:$PATH
+  # Without the following lines, ccache causes clang to not print in color.
+  - if [ "$CC" == "clang" ]; then export CC="clang -fcolor-diagnostics"; fi;
+  - if [ "$CXX" == "clang++" ]; then export CX="clang++ -fcolor-diagnostics"; fi;
+
+  ## Install Simbody.
   # Clone Simbody into the Simbody directory. Don't need its history, and
   # only need the master branch.
   - git clone https://github.com/simbody/simbody.git ~/simbody-source --depth 1 --branch master
@@ -48,18 +85,17 @@ before_install:
   - mkdir ~/swig-source && cd ~/swig-source
   - wget http://prdownloads.sourceforge.net/swig/$SWIG.tar.gz
   - tar xzf $SWIG.tar.gz && cd $SWIG
-  - ./configure && make && sudo make -j8 install
+  - ./configure --prefix=$HOME/swig && make && make -j8 install
 
   ## Detect if we should check memory leaks with valgrind.
   - cd $TRAVIS_BUILD_DIR
   - git log --format=%B --no-merges -n 1 | grep '\[ci valgrind\]'; export RUN_VALGRIND=$?; true
-  - if [ $RUN_VALGRIND = "0" ]; then sudo apt-get install -qq valgrind; fi
   - if [ $RUN_VALGRIND = "0" ]; then export CTEST_FLAGS="-D ExperimentalMemCheck"; fi
 
 install:
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
   # Configure OpenSim.
-  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$BUILD_WRAPPING -DBUILD_PYTHON_WRAPPING=$BUILD_WRAPPING -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME
+  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$BUILD_WRAPPING -DBUILD_PYTHON_WRAPPING=$BUILD_WRAPPING -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME
   # Build OpenSim.
   - make -j$NPROC
 
@@ -74,16 +110,13 @@ script:
   # Install OpenSim. Suppress output.
   - if [ "$BUILD_WRAPPING" = "on" ]; then make -j8 install > /dev/null; fi
   # Add OpenSim libraries to library path.
-  - if [ "$BUILD_WRAPPING" = "on" ]; then echo "$OPENSIM_HOME/lib" | sudo tee /etc/ld.so.conf.d/opensim.conf; fi
-  - if [ "$BUILD_WRAPPING" = "on" ]; then sudo ldconfig; fi
+  - if [ "$BUILD_WRAPPING" = "on" ]; then export LD_LIBRARY_PATH=$OPENSIM_HOME/lib; fi
   # For python tests, we need to copy over some model files.
   # This is temporary; in the future, we will use the opensim-models repo.
   - if [ "$BUILD_WRAPPING" = "on" ]; then mkdir -p $OPENSIM_HOME/Models/Arm26 && cp OpenSim/Tools/Test/arm26.osim "$_"; fi
   - if [ "$BUILD_WRAPPING" = "on" ]; then mkdir -p $OPENSIM_HOME/Models/Gait10dof18musc && cp Applications/CMC/test/gait10dof18musc_subject01.osim "$_/gait10dof18musc.osim"; fi
   # Go to the python wrapping package directory.
   - if [ "$BUILD_WRAPPING" = "on" ]; then cd $OPENSIM_HOME/sdk/python; fi
-  # Get a python package with which to run the tests.
-  - if [ "$BUILD_WRAPPING" = "on" ]; then sudo apt-get install python-nose; fi
   # Run the python tests, verbosely.
   - if [ "$BUILD_WRAPPING" = "on" ]; then nosetests -v; fi
 
@@ -96,3 +129,11 @@ script:
   # that match the specified pattern. GREP does not pick up explicit tabs
   # (e.g., literally a \t in a source file).
   - if grep --recursive --include={CMakeLists.txt,*.cpp,*.c,*.h} -P "\t" . ; then echo "Tabs found in the lines shown above. See CONTRIBUTING.md about tabs."; false; fi
+
+  # Maximum size of cache is 100 MB.
+  # TODO 100 MB is not big enough. Using default limit of 1 GB for now.
+  #- ccache --max-size 100M
+
+before_cache:
+  # Show cache statistics.
+  - ccache --show-stats

@@ -28,11 +28,6 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/ArrayPtrs.h>
-#include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyObjPtr.h>
-#include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
@@ -48,6 +43,7 @@
 #include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/FrameSet.h>
+#include <OpenSim/Simulation/Model/Ground.h>
 #include "Simbody.h"
 
 
@@ -131,6 +127,9 @@ public:
     "indicates inconsistency in the constraints. For example, the feet are welded " 
     "at locations measured to five significant digits while the model lacks dofs "
     "to change stance width, in which case it cannot achieve 1e-9 accuracy." );
+
+    OpenSim_DECLARE_PROPERTY(ground, Ground,
+        "The model's ground reference frame.");
 
     OpenSim_DECLARE_PROPERTY(gravity,SimTK::Vec3,
         "Acceleration due to gravity, expressed in ground.");
@@ -304,9 +303,9 @@ public:
 
     
     /** Convenience method that invokes buildSystem() and then 
-    initializeState(). A reference to the writable internally-
-    maintained model State is returned (note that this does not affect the 
-    system's default state (which is part of the model and hence read only). **/
+    initializeState(). This returns a reference to the writable internally-
+    maintained model State. Note that this does not affect the 
+    system's default state (which is part of the model and hence read-only). **/
     SimTK::State& initSystem() SWIG_DECLARE_EXCEPTION {
         buildSystem();
         return initializeState();
@@ -782,8 +781,10 @@ public:
     ContactGeometrySet& updContactGeometrySet() { return upd_ContactGeometrySet(); }
     const ContactGeometrySet& getContactGeometrySet() const { return get_ContactGeometrySet(); }
 
-    Body& getGroundBody() const;
-
+    /** Get a const reference to the Ground reference frame */
+    const Ground& getGround() const;
+    /** Get a writeable reference to the Ground reference frame */
+    Ground& updGround();
 
     //--------------------------------------------------------------------------
     // FRAMES
@@ -953,7 +954,6 @@ private:
     // Set the values of all data members to an appropriate "null" value.
     void setNull();
 
-    void createGroundBodyIfNecessary();
     void setDefaultProperties();
     void createMultibodySystem();
 
@@ -1003,10 +1003,6 @@ private:
 
     // Set containing the generalized coordinates in this model.
     CoordinateSet   _coordinateSet;
-
-    // Body used for ground, the inertial frame. This is just a reference
-    // to an existing Body and should not be destructed.
-    Body*           _groundBody;
 
     SimTK::MultibodyGraphMaker _multibodyTree;
 

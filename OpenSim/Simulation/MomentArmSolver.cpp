@@ -43,7 +43,8 @@ MomentArmSolver::MomentArmSolver(const Model &model) : Solver(model)
     _stateCopy = model.getWorkingState();
 
     // Get the body forces equivalent of the point forces of the path
-    _bodyForces = Vector_<SpatialVec>(getModel().getNumBodies(), SpatialVec(0));
+    _bodyForces = getModel().getSystem()
+        .getRigidBodyForces(_stateCopy, Stage::Instance);
     // get the right size coupling vector
     _coupling = _stateCopy.getU();
 }

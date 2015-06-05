@@ -54,9 +54,9 @@ CustomJoint::CustomJoint() : Super()
 /**
  * Constructor with specified SpatialTransform.
  */
-CustomJoint::CustomJoint(const std::string &name, const OpenSim::Body &parent,
+CustomJoint::CustomJoint(const std::string& name, const PhysicalFrame& parent,
     const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-    const OpenSim::Body& child,
+    const PhysicalFrame& child,
     const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
     SpatialTransform& aSpatialTransform, bool reverse) :
         Super(name, parent, locationInParent, orientationInParent,
@@ -71,9 +71,9 @@ CustomJoint::CustomJoint(const std::string &name, const OpenSim::Body &parent,
 /**
  * Convenience Constructor; use default SpatialTransform.
  */
-CustomJoint::CustomJoint(const std::string &name, const OpenSim::Body &parent,
+CustomJoint::CustomJoint(const std::string &name, const PhysicalFrame& parent,
     const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-    const OpenSim::Body& child,
+    const PhysicalFrame& child,
     const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
     bool reverse) : 
         Super(name, parent, locationInParent,orientationInParent,
@@ -162,7 +162,7 @@ void CustomJoint::scale(const ScaleSet& aScaleSet)
     // SCALING TO DO WITH THE PARENT BODY -----
     // Joint kinematics are scaled by the scale factors for the
     // parent body, so get those body's factors
-    const string& parentName = getParentBody().getName();
+    const string& parentName = getParentFrameName();
     for (int i=0; i<aScaleSet.getSize(); i++) {
         Scale& scale = aScaleSet.get(i);
         if (scale.getSegmentName()==parentName) {
@@ -238,21 +238,21 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
     SimTK::Body outb;
     const SimTK::Transform* inbX = &getParentTransform();
     const SimTK::Transform* outbX = &getChildTransform();
-    const OpenSim::Body* mobilized = &getChildBody();
+    const OpenSim::PhysicalFrame* mobilized = &getChildFrame();
     // if the joint is reversed then flip the underlying tree representation
     // of inboard and outboard bodies, although the joint direction will be 
     // preserved, the inboard must exist first.
     if (get_reverse()){
-        inb = getChildBody().getMobilizedBody();
+        inb = getChildFrame().getMobilizedBody();
         inbX = &getChildTransform();
 
         outb = getParentInternalRigidBody();
         outbX = &getParentTransform();
 
-        mobilized = &getParentBody();
+        mobilized = &getParentFrame();
     }
     else{
-        inb = getParentBody().getMobilizedBody();
+        inb = getParentFrame().getMobilizedBody();
         outb = getChildInternalRigidBody();
     }
 

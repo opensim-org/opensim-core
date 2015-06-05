@@ -4,7 +4,6 @@ SET(TEST_ENVIRONMENT checkEnvironment)
 ADD_EXECUTABLE(${TEST_ENVIRONMENT}
     ${OpenSim_SOURCE_DIR}/OpenSim/Examples/checkEnvironment/test.cpp)         
 TARGET_LINK_LIBRARIES(${TEST_ENVIRONMENT} osimTools)
-
 SET_TARGET_PROPERTIES(${TEST_ENVIRONMENT}        
        PROPERTIES        
        PROJECT_LABEL "Utilities - ${TEST_ENVIRONMENT}"       

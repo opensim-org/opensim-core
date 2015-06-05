@@ -153,7 +153,7 @@ void WrapCylinder::scale(const SimTK::Vec3& aScaleFactors)
 *
 * @param aModel pointer to OpenSim model.
 */
-void WrapCylinder::connectToModelAndBody(Model& aModel, Body& aBody)
+void WrapCylinder::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 {
     // Base class
     Super::connectToModelAndBody(aModel, aBody);

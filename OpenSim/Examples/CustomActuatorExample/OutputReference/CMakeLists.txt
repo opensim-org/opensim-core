@@ -3,13 +3,13 @@ PROJECT (CustomActuatorExample)
 cmake_minimum_required(VERSION 2.8.6)
 
 FILE(GLOB SOURCE_FILES *.cpp )
-FILE(GLOB INCLUDE_FILES *.h ) 
+FILE(GLOB INCLUDE_FILES *.h )
 
 # Settings.
 # ---------
 SET(TARGET toyLeg_example
         CACHE STRING "Name of example to build")
-SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME} 
+SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
         CACHE PATH "Top-level directory of OpenSim install")
 
 # Find and hook up to OpenSim.
@@ -24,7 +24,10 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR
             set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
             set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
         else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+            if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+            endif()
         endif()
     else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -38,7 +41,7 @@ LINK_DIRECTORIES(${OpenSim_LIB_DIR})
 
 # Configure this project.
 # -----------------------
-ADD_EXECUTABLE(${TARGET}  ${SOURCE_FILES} ${INCLUDE_FILES}) 
+ADD_EXECUTABLE(${TARGET}  ${SOURCE_FILES} ${INCLUDE_FILES})
 
 TARGET_LINK_LIBRARIES(${TARGET} ${OpenSim_LIBRARIES})
 

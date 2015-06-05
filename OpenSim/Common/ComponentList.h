@@ -26,7 +26,6 @@
 
 // INCLUDES
 #include <OpenSim/Common/osimCommonDLL.h>
-#include "OpenSim/Common/Object.h"
 #include "Simbody.h"
 
 namespace OpenSim {
@@ -159,7 +158,9 @@ for (const GeometryPath& gpath : geomPathList) {
 @endcode
 */
 template <typename T>
-class ComponentListIterator : public std::iterator<std::forward_iterator_tag, OpenSim::Component>{
+class ComponentListIterator : 
+    public std::iterator<std::forward_iterator_tag, Component>
+{
     friend class ComponentList<T>;
 public:
     /// Check that the component under the cuurent iterator is same 
