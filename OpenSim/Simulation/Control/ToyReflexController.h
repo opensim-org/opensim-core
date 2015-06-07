@@ -49,9 +49,6 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    /** @name Property declarations 
-    These are the serializable properties associated with a ToyReflexController.*/
-    /**@{**/    
     OpenSim_DECLARE_PROPERTY(gain, double, 
         "Factor by which the stretch reflex is scaled." );
 

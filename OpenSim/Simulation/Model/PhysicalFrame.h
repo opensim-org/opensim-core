@@ -58,24 +58,22 @@ public:
     //==============================================================================
     // PROPERTIES
     //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with a PhysicalFrame.
-    NOTE: These properties used to be members of Body and were moved up in the
-    hierarchy with the introduction of Frames.
-
-    TODO: Both VisibleObject and the WrapObjectSet should NOT be properties
+    /* TODO: Both VisibleObject and the WrapObjectSet should NOT be properties
     of the PhysicalFrame. This is an itermediate solution as we integrate Frames 
     use into the OpenSim API. These properties should be their own components with
     Connectors to the PhysicalFrames they attach to. This must be addressed prior
-    to OpenSim 4.0 release. - aseth */
-    /**@{**/
+    to OpenSim 4.0 release. - aseth
+    */
     OpenSim_DECLARE_UNNAMED_PROPERTY(VisibleObject,
-        "For visualization in the Simbody visualizer or OpenSim GUI.");
+        "For visualization in the Simbody visualizer or OpenSim GUI."
+        "This property used to be a member of Body but was moved up with "
+        "the introduction of Frames.");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(WrapObjectSet,
-        "Set of wrap objects fixed to this body that GeometryPaths can wrap over.");
+        "Set of wrap objects fixed to this body that GeometryPaths can wrap over."
+        "This property used to be a member of Body but was moved up with "
+        "the introduction of Frames.");
 
-    /**@}**/
     //==========================================================================
     // PUBLIC METHODS
     //==========================================================================

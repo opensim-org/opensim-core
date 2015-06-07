@@ -98,16 +98,12 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-        These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,
         "Optimal length of the muscle fibers (overridden when this is a subcomponent of Muscle)");
     OpenSim_DECLARE_PROPERTY(pennation_angle_at_optimal, double,
         "Angle between tendon and fibers at optimal fiber length expressed in radians (overridden when this is a subcomponent of Muscle)");
     OpenSim_DECLARE_PROPERTY(maximum_pennation_angle, double,
         "Maximum pennation angle (radians)");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS

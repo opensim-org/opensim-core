@@ -64,9 +64,6 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(fatigue_factor, double, 
         "percentage of active motor units that fatigue in unit time");
     OpenSim_DECLARE_PROPERTY(recovery_factor, double, 
@@ -77,7 +74,6 @@ public:
         "default state value for the fraction of motor units that are active");
     OpenSim_DECLARE_PROPERTY(default_fatigued_motor_units, double, 
         "default state value for the fraction of motor units that are fatigued");
-    /**@}**/
 
 public:
 //=============================================================================
