@@ -58,9 +58,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_OPTIONAL_PROPERTY(body_1, std::string,
         "One of the two bodies connected by the bushing.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(body_2, std::string,
@@ -105,7 +102,6 @@ public:
         "Damping parameters resisting relative angular velocity.");
     OpenSim_DECLARE_PROPERTY(translational_damping, SimTK::Vec3,
         "Damping parameters resisting relative translational velocity.");
-    /**@}**/
 
 protected:
     /** how to display the bushing */

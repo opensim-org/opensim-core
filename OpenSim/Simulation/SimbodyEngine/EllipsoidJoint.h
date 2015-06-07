@@ -56,13 +56,9 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with an EllipsoidJoint. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(radii_x_y_z, SimTK::Vec3,
         "Radii of the ellipsoid fixed to the parent frame, "
         "specified as a Vec3(rX, rY, rZ).");
-    /**@}**/
 
 //=============================================================================
 // METHODS

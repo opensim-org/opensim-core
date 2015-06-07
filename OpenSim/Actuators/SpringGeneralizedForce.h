@@ -50,9 +50,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_OPTIONAL_PROPERTY(coordinate, std::string,
         "Name of the coordinate to which this force is applied.");
     OpenSim_DECLARE_PROPERTY(stiffness, double,
@@ -61,7 +58,6 @@ public:
         "Coordinate value at which spring produces no force.");
     OpenSim_DECLARE_PROPERTY(viscosity, double,
         "Damping constant.");
-    /**@}**/
 
 
 //==============================================================================

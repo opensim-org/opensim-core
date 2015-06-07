@@ -62,9 +62,6 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    /** @name Property declarations
-    These are the serializable properties of the %ClutchedPathSpring class.  */
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(stiffness, double,
         "The linear stiffness (N/m) of the ClutchedPathSpring");
     OpenSim_DECLARE_PROPERTY(dissipation, double,
@@ -77,7 +74,6 @@ public:
         "The initial stretch (m) of the spring element. Note if the clucth is "
         "not engaged, the actuator will 'slip' until there is no stretch according "
         "to the relaxation_time_constant.");
-    /**@}**/
 
 //=============================================================================
 // PUBLIC METHODS

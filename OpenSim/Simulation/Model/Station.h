@@ -52,13 +52,9 @@ public:
     //==============================================================================
     // PROPERTIES
     //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with a Station. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
         "The location (Vec3) of the station in a reference frame. "
         "Frame is specified as Connector.");
-    /**@}**/
 
 public:
     //--------------------------------------------------------------------------

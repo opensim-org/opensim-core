@@ -48,16 +48,10 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with the %PathActuator
-    class. Note that objects derived from this class inherit these
-    properties. **/
-    /**@{**/
     OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath,
         "The set of points defining the path of the muscle.");
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum force this actuator can produce.");
-    /**@}**/
 
 //=============================================================================
 // PUBLIC METHODS

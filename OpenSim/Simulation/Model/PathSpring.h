@@ -57,9 +57,6 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(resting_length, double,
         "The resting length (m) of the PathSpring");
     OpenSim_DECLARE_PROPERTY(stiffness, double,
@@ -69,7 +66,6 @@ public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath, 
         "The GeometryPath defines the set of points and wrapping surface" 
         "interactions that form the path of action of the PathSpring");
-    /**@}**/
 
 
 //==============================================================================
