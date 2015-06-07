@@ -56,9 +56,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
-    These are the serializable properties associated with a Coordinate. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(motion_type, std::string, 
         "Coordinate can describe rotational, translational, or coupled motion. "
         "Defaults to rotational.");
@@ -99,7 +96,6 @@ public:
         "constraints. This allows values for important coordinates, which have "
         "this flag set to false, to dictate the value of unimportant coordinates " 
         "if they are linked via constraints."); 
-    /**@}**/
 
     /** Motion type that describes the motion dictated by the coordinate.
         Types include: Rotational, Translational and Coupled (both) */

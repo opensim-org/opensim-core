@@ -119,9 +119,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-        These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(min_norm_active_fiber_length, double,
         "Normalized fiber length where the steep ascending limb starts");
     OpenSim_DECLARE_PROPERTY(transition_norm_fiber_length, double,
@@ -132,7 +129,6 @@ public:
         "Slope of the shallow ascending limb");
     OpenSim_DECLARE_PROPERTY(minimum_value, double,
         "Minimum value of the active-force-length curve");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS

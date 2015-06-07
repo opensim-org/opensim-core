@@ -50,10 +50,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. Others
-    are inherited from the superclass. **/
-    /**@{**/
 
     /** List of Joints to probe.  **/
     OpenSim_DECLARE_LIST_PROPERTY(joint_names, std::string,
@@ -71,7 +67,6 @@ public:
     Probe value will be equal to JointPower_J1^exponent + JointPower_J2^exponent.  **/
     OpenSim_DECLARE_PROPERTY(exponent, double,
         "Element-wise power exponent to apply to each joint power prior to the Probe operation.");
-    /**@}**/
 
 //=============================================================================
 // PUBLIC METHODS

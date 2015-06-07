@@ -55,9 +55,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_OPTIONAL_PROPERTY(body1, std::string,
         "Name of the Body to which the 1st point of the force is attached.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(body2, std::string,
@@ -70,7 +67,6 @@ public:
         "Expression of the point-to-point force magnitude as a function of "
         "the distance (d) between the points and its time derivative (ddot). "
         "Note, expression cannot have any whitespace separating characters.");
-    /**@}**/
 
 
 //==============================================================================

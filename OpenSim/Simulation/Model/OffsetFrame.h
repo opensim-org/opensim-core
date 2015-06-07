@@ -66,16 +66,12 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
-    These are the serializable properties associated with a OffsetFrame. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(translation, SimTK::Vec3, 
     "Translational offset of this frame's origin from the parent frame's origin, " 
     "expressed in the parent frame.");
     OpenSim_DECLARE_PROPERTY(orientation, SimTK::Vec3,
     "Orientation offset of this frame in its parent frame, expressed as a "
     "frame-fixed x-y-z rotation sequence.");
-    /**@}**/
 
 //=============================================================================
 // PUBLIC METHODS

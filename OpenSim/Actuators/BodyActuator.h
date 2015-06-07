@@ -53,9 +53,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(point, SimTK::Vec3,
         "Location of application point; in body frame unless "
         "point_is_global=true");
@@ -65,7 +62,6 @@ public:
     /** The default is spatial_force_is_global=true. **/
     OpenSim_DECLARE_PROPERTY(spatial_force_is_global, bool,
         "Interpret axis in Ground frame if true; otherwise, body's frame.");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS

@@ -123,9 +123,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     /** Enabled by default. **/
     OpenSim_DECLARE_PROPERTY(isDisabled, bool,
         "Flag indicating whether the Probe is disabled or not.");
@@ -142,7 +139,6 @@ public:
 
     OpenSim_DECLARE_PROPERTY(gain, double,
         "Constant gain to scale the probe output by.");
-    /**@}**/
 
 //=============================================================================
 // METHODS

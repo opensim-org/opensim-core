@@ -152,9 +152,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-        These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(strain_at_one_norm_force, double,
         "Tendon strain at a tension of 1 normalized force");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(stiffness_at_one_norm_force, double,
@@ -163,7 +160,6 @@ public:
         "Normalized force developed at the end of the toe region");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(curviness, double,
         "Tendon curve bend, from linear (0) to maximum bend (1)");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS
