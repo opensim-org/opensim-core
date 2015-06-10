@@ -45,6 +45,30 @@ namespace OpenSim {
   template<typename ET> class DataTable_;
 
   using DataTable = DataTable_<SimTK::Real>;
+
+  /// Enum to specify if the the input iterator is traversing data row-wise or
+  /// col-wise.
+  /// clang3.6 crashes if this is turned to a "enum class"
+  enum InputItDir{
+    ROWWISE, 
+    COLWISE
+  };
+
+  // Bind two DataTables by row.
+  template<typename ET>
+  DataTable_<ET> rbindDataTables(const DataTable_<ET>& dt1, 
+                                 const DataTable_<ET>& dt2);
+
+  // Bind two DataTables by col.
+  template<typename ET>
+  DataTable_<ET> cbindDataTables(const DataTable_<ET>& dt1, 
+                                 const DataTable_<ET>& dt2);
+
+  // Exceptions.
+  class ColumnDoesNotExist;
+  class ColumnHasNoLabel;
+  class ZeroElements;
+  class InvalidEntry;
 } // namespace OpenSim
 
 
@@ -59,95 +83,32 @@ namespace OpenSim {
 *-----------------------------------------------------------------------------*/
 class OpenSim::AbstractDataTable {
 public:
-  using size_t                     = std::size_t;
-  using string                     = std::string;
-  using MetaDataType               = std::unordered_map<string, AbstractValue&>;
-  using ColLabelsType              = std::unordered_map<string, size_t>;
-  using ColLabelsIterType          = ColLabelsType::iterator;
-  using ColLabelsConstIterType     = ColLabelsType::const_iterator;
-  using MetaDataKVType             = std::pair<string, string>;
-  using ColLabelsIterPairType      = std::pair<ColLabelsIterType,
-                                               ColLabelsIterType>;
-  using ColLabelsConstIterPairType = std::pair<ColLabelsConstIterType,
-                                               ColLabelsConstIterType>;
-
   virtual ~AbstractDataTable() = default;
 
-  virtual AbstractDataTable& clone() const = 0;
-
-  /// Get meta-data.
-  virtual MetaDataConstIterPairType getMetaData() const = 0;
-  
-  /// Set meta-data. Existing meta-data is replaced with a *copy* of
-  /// new_metadata.
-  virtual MetaDataIterPairType updMetaData() = 0;
-
-  /// Number of rows.
-  virtual size_t getNumRows() const = 0;
-
-  /// Number of columns.
-  virtual size_t getNumCols() const = 0;
-
-  /// Does column(by the given name) exist ?
-  virtual bool hasCol(const string& name) const = 0;
-
-  /// Does column(by the given index) exist ?
-  virtual bool hasCol(const size_t ind) const = 0;
-
-  /// Get column index corresponding to given name. If column name does
-  /// not exist, throws ColumnDoesNotExist exception.
-  virtual size_t getColInd(const string& colname) const = 0;
-
-  /// Get column name corresponding to given index. If column index does
-  /// not exist, throws ColumnDoesNotExist exception.
-  virtual string getColName(const size_t colind) const = 0;
-
-  /// Set column name corresponding to given index. If column index does
-  /// not exist, throws ColumnDoesNotExist exception.
-  virtual void setColName(const size_t ind, const string& new_colname) = 0;
-
-  /// Change name of a column from old to new. If old column name does not
-  /// exist, throws ColumnDoesNotExist exception.
-  virtual void setColName(const string& old_colname, 
-			  const string& new_colname) = 0;
-
-  /// Get column names.
-  virtual ColNamesConstIterPairType getColNames() const = 0;
-
-  /// Set column names with a *copy* of colnames.
-  virtual ColNamesIterPairType updColNames() = 0;
-
-  /// Set column names with a *move* of colnames.
-  virtual void repColNames(const std::vector<string>& colnames) = 0;
+  virtual std::unique_ptr<AbstractDataTable> clone() const = 0;
 }; // AbstractDataTable
 
 
-class ColumnDoesNotExist : public std::runtime_error {
+class OpenSim::ColumnDoesNotExist : public std::runtime_error {
 public:
   ColumnDoesNotExist(const std::string& expl) : runtime_error(expl) {}
 };
 
-class ColumnHasNoLabel : public std::runtime_error {
+class OpenSim::ColumnHasNoLabel : public std::runtime_error {
 public:
   ColumnHasNoLabel(const std::string& expl) : runtime_error(expl) {}
-}
+};
 
-class ZeroElements : public std::runtime_error {
+class OpenSim::ZeroElements : public std::runtime_error {
 public:
   ZeroElements(const std::string& expl) : runtime_error(expl) {}
 };
 
-class InvalidEntry : public std::runtime_error {
+class OpenSim::InvalidEntry : public std::runtime_error {
 public:
   InvalidEntry(const std::string& expl) : runtime_error(expl) {}
 };
 
-
-// * Change metadata from unordered map of string to string -->> string to
-//   type erased object.
-// * Change colNames to colLabels.
-// * have an overload for getting columns by name.
-// * Add a method to populate a default constructed DataTable.
 
 /**----------------------------------------------------------------------------*
 * DataTable_ is a concrete implementation of AbstractDataTable interface.      *
@@ -169,16 +130,34 @@ public:
 // * How to enforce constness in the functions getRow and getCol ?
 // * For the function getAsMatrix, is it better to return reference to
 //   underlying matrix for efficiency ?
-// * Error checking disabled during non-Debug builds. Is that okay ?
+// * All throw statements are limited to Debug builds. 
+// * Why not use C++14 ?
+// * Have all the exceptions thrown from DataTable to be in the namespace
+//   OpenSim.
+// * Let me know if I have missed any test.
+// * Are the virtual constructors useful here ? The base class does not have
+//   any other functions.
+// * We should probably add initializer list constructors, move constructors and
+//   iterator constructors to SimTK::Matrix and its derivatives.
+// * Is it possible to make getRow give a compile time error if the target is
+//   not a constant variable.
+// * Default constructing a RowVector gives 1x1 matrix but default constructing
+//   a Vector gives 0x1 matrix ?
+// * Any useful methods I have missed ?
 template<typename ET = SimTK::Real> // Element datatype.
 class OpenSim::DataTable_ : public OpenSim::AbstractDataTable {
 public:
-  /// Enum to specify if the the input iterator is traversing data row-wise or
-  /// col-wise.
-  enum InputItDir {
-    Row,
-    Col
-  };
+  using size_t                     = std::size_t;
+  using string                     = std::string;
+  using MetaDataType               = std::unordered_map<string, 
+                                                        SimTK::AbstractValue&>;
+  using ColLabelsType              = std::unordered_map<string, size_t>;
+  using ColLabelsIterType          = ColLabelsType::iterator;
+  using ColLabelsConstIterType     = ColLabelsType::const_iterator;
+  using ColLabelsIterPairType      = std::pair<ColLabelsIterType,
+                                               ColLabelsIterType>;
+  using ColLabelsConstIterPairType = std::pair<ColLabelsConstIterType,
+                                               ColLabelsConstIterType>;
 
   /// Construct an empty DataTable.
   DataTable_() :
@@ -188,36 +167,42 @@ public:
   /// value for val is NaN.
   DataTable_(size_t nrows,
 	     size_t ncols,
-	     const ET& val = ET(SimTK::NaN)) :
+	     const ET& val = ET{SimTK::NaN}) :
     data{int(nrows), int(ncols), val}, metadata{}, col_ind{} {}
 
-  /// Construct DataTable using an "input iterator". 
+  /// Construct DataTable using an `std::input_iterator`(or its derivative). 
   template<typename InputIt>
   DataTable_(InputIt first,
-	     InputIt last,
-	     size_t ndir,
-	     InputItDir dir = ROWWISE) :
-    data{dir == ROWWISE ? 1 : ndir, dir == COLWISE ? ndir : 1},
+	     typename std::enable_if<!std::is_integral<InputIt>::value, 
+                                     InputIt>::type last,
+	     const size_t ndir,
+	     const InputItDir dir = ROWWISE) :
+    data{static_cast<int>(dir == ROWWISE ? 1    : ndir), 
+         static_cast<int>(dir == ROWWISE ? ndir :    1)},
     metadata{},
     col_ind{} {
-#ifndef NDEBUG
     if(!(first != last))
-      throw ZeroElements{"Input iterators produce zero elements."};
-#endif
+      throw OpenSim::ZeroElements{"Input iterators produce zero elements."};
 
-    size_t row{0};
-    size_t col{0};
+    int row{0};
+    int col{0};
     while(first != last) {
       data.set(row, col, *first);
       ++first;
-      if(dir == ROWWISE && ++col == ndir && first != last) {
-	col = 0;
-	++row;
-	data.resizekeep(data.nrow() + 1, data.ncol());
-      } else if(++row == ndir && first != last) {
-	row = 0;
-	++col;
-	data.resizekeep(data.nrow(), data.ncol() + 1);
+      if(dir == ROWWISE) {
+        ++col;
+        if(col == static_cast<int>(ndir)  && first != last) {
+          col = 0;
+          ++row;
+          data.resizeKeep(data.nrow() + 1, data.ncol());
+        }
+      } else {
+        ++row;
+        if(row == static_cast<int>(ndir) && first != last) {
+          row = 0;
+          ++col;
+          data.resizeKeep(data.nrow(), data.ncol() + 1);
+        }
       }
     }
   }
@@ -225,8 +210,8 @@ public:
   DataTable_(const DataTable_& dt) :
     data{dt.data}, metadata{dt.metadata}, col_ind{dt.col_ind} {}
 
-  DataTable_& clone() const override {
-    return *(new DataTable_{*this});
+  std::unique_ptr<AbstractDataTable> clone() const override {
+    return std::unique_ptr<AbstractDataTable>(new DataTable_{*this});
   }
 
   DataTable_(DataTable_&& dt) :
@@ -234,7 +219,7 @@ public:
     metadata{std::move(dt.metadata)},
     col_ind{std::move(dt.col_ind)} {}
 
-  virtual ~DataTable_() {};
+  virtual ~DataTable_() {}
 
   DataTable_& operator=(const DataTable_& dt) {
     metadata = dt.metadata;
@@ -243,165 +228,189 @@ public:
     return *this;
   }
 
-  size_t getNumRows() const override {
-    return data.nrow(); 
+  size_t getNumRows() const {
+    return static_cast<size_t>(data.nrow()); 
   }
 
-  size_t getNumCols() const override {
-    return data.ncol(); 
+  size_t getNumCols() const {
+    return static_cast<size_t>(data.ncol()); 
   }
 
   SimTK::RowVectorView_<ET> getRow(const size_t row) const {
-    return data.row(row);
+    return data.row(static_cast<int>(row));
   }
 
   SimTK::RowVectorView_<ET> updRow(const size_t row) {
-    return data.updRow(row);
+    return data.updRow(static_cast<int>(row));
   }
 
   SimTK::VectorView_<ET> getCol(const size_t col) const {
-    return data.col(col);
+    return data.col(static_cast<int>(col));
   }
 
   SimTK::VectorView_<ET> getCol(const string& collabel) const {
-    return data.col(col_ind.at(collabel));
+    try {
+      return data.col(static_cast<int>(col_ind.at(collabel)));
+    } catch (std::out_of_range exc) {
+      std::string expl{"Column label '" + collabel + "' does not exist."};
+      throw OpenSim::ColumnDoesNotExist{expl};
+    }
   }
 
   SimTK::VectorView_<ET> updCol(const size_t col) {
-    return data.updCol(col);
+    return data.updCol(static_cast<int>(col));
   }
 
   SimTK::VectorView_<ET> updCol(const string& collabel) {
-    return data.updCol(col_ind.at(collabel));
+    try {
+      return data.updCol(static_cast<int>(col_ind.at(collabel)));
+    } catch (std::out_of_range exc) {
+      std::string expl{"Column label '" + collabel + "' does not exist."};
+      throw OpenSim::ColumnDoesNotExist{expl};
+    }
   }
 
   const ET& getElt(const size_t row, const size_t col) const {
-    return data.getElt(row, col);
+    return data.getElt(static_cast<int>(row), static_cast<int>(col));
   }
 
   const ET& getElt(const size_t row, const string& collabel) const {
-    return data.getElt(row, col_ind.at(collabel));
+    try {
+      return data.getElt(static_cast<int>(row), 
+                         static_cast<int>(col_ind.at(collabel)));
+    } catch (std::out_of_range exc) {
+      std::string expl{"Column label '" + collabel + "' does not exist."};
+      throw OpenSim::ColumnDoesNotExist{expl};
+    }
   }
 
   ET& updElt(const size_t row, const size_t col) {
-    return data.updElt(row, col);
+    return data.updElt(static_cast<int>(row), static_cast<int>(col));
   }
 
   ET& updElt(const size_t row, const string& collabel) {
-    return data.updElt(row, col_ind.at(collabel));
+    try {
+      return data.updElt(static_cast<int>(row), 
+                         static_cast<int>(col_ind.at(collabel)));
+    } catch (std::out_of_range exc) {
+      std::string expl{"Column label '" + collabel + "' does not exist."};
+      throw OpenSim::ColumnDoesNotExist{expl};
+    }
   }
 
   SimTK::Matrix_<ET> getAsMatrix() const {
-    return new SimTK::Matrix_<ET>{data};
+    return *(new SimTK::Matrix_<ET>{data});
   }
 
   /// Append a row of data as a RowVector to the table.
   void addRow(const SimTK::RowVector_<ET>& row) {
-#ifndef NDEBUG
-    if(row.size() == 0)
-      throw ZeroElements{"Input row has zero length."};
+    if(row.nrow() == 0 || row.ncol() == 0)
+      throw OpenSim::ZeroElements{"Input row has zero length."};
     if(data.ncol() > 0 && row.size() != data.ncol())
       throw InvalidEntry{"Input row has incorrect number of columns."};
-#endif
-    data.resizeKeep(data.nrow() + 1, data.ncols());
+
+    data.resizeKeep(data.nrow() + 1, row.ncol());
     data.updRow(data.nrow() - 1).updAsRowVector() = row;
   }
 
-  template<InputIt>
+  template<typename InputIt>
   void addRow(InputIt first, InputIt last, size_t ncol_hint = 2) {
-#ifndef NDEBUG
     if(!(first != last))
-      throw ZeroElements{"Input iterators produce zero elements."};
-#endif
+      throw OpenSim::ZeroElements{"Input iterators produce zero elements."};
 
     if(data.ncol() > 0) {
       data.resizeKeep(data.nrow() + 1, data.ncol());
-      size_t col = 0;
-      while(first != last)
-        data.set(data.nrow() - 1, col++, *first);
-    } else {
-      size_t colind{0}
-      size_t ncol{ncol_hint};
-      data.resizeKeep(1, ncol);
+      int colind = 0;
       while(first != last) {
-        data.set(1, colind++, *first);
-        if(colind == ncol && first != last) {
+        data.set(data.nrow() - 1, colind++, *first);
+        ++first;
+      }
+    } else {
+      int colind{0};
+      size_t ncol{ncol_hint};
+      data.resizeKeep(1, static_cast<int>(ncol));
+      while(first != last) {
+        data.set(0, colind++, *first);
+        ++first;
+        if(colind == static_cast<int>(ncol) && first != last) {
           // If ncol is a power of 2, double it. Otherwise round it to the next
           // power of 2.
           ncol = (ncol & (ncol - 1)) == 0 ? ncol << 2 : rndToNextPowOf2(ncol); 
-          data.resizeKeep(1, ncol);
+          data.resizeKeep(1, static_cast<int>(ncol));
         }
       }
-      if(colind != ncol)
+      if(colind != static_cast<int>(ncol))
         data.resizeKeep(1, colind);
     }
   }
 
   void addCol(const SimTK::Vector_<ET>& col) {
-#ifndef NDEBUG
-    if(col.size() == 0)
-      throw ZeroElements{"Input column has zero length."};
+    if(col.nrow() == 0 || col.ncol() == 0)
+      throw OpenSim::ZeroElements{"Input column has zero length."};
     if(data.nrow() > 0 && col.size() != data.nrow())
       throw InvalidEntry{"Input column has incorrect number of rows."};
-#endif
+
     data.resizeKeep(col.size(), data.ncol() + 1);
     data.updCol(data.ncol() - 1).updAsVector() = col;
   }
 
-  template<InputIt>
-  void addCol(InputIt first, InputIt last, nrow_hint = 2) {
-#ifndef NDEBUG
+  template<typename InputIt>
+  void addCol(InputIt first, InputIt last, size_t nrow_hint = 2) {
     if(!(first != last))
-      throw ZeroElements{"Input iterators produce zero elements."};
-#endif
+      throw OpenSim::ZeroElements{"Input iterators produce zero elements."};
 
     if(data.nrow() > 0) {
       data.resizeKeep(data.nrow(), data.ncol() + 1);
-      size_t row = 0;
-      while(first != last)
-        data.set(row++, data.nrow() - 1, *first);
-    } else {
-      size_t rowind{0}
-      size_t nrow{nrow_hint};
-      data.resizeKeep(nrow, 1);
+      int rowind = 0;
       while(first != last) {
-        data.set(rowind++, 1, *first);
-        if(rowind == nrow && first != last) {
+        data.set(rowind++, data.ncol() - 1, *first);
+        ++first;
+      }
+    } else {
+      int rowind{0};
+      size_t nrow{nrow_hint};
+      data.resizeKeep(static_cast<int>(nrow), 1);
+      while(first != last) {
+        data.set(rowind++, 0, *first);
+        ++first;
+        if(rowind == static_cast<int>(nrow) && first != last) {
           // If nrow is a power of 2, double it. Otherwise round it to the next
           // power of 2.
           nrow = (nrow & (nrow - 1)) == 0 ? nrow << 2 : rndToNextPowOf2(nrow); 
-          data.resizeKeep(1, nrow);
+          data.resizeKeep(static_cast<int>(nrow), 1);
         }
       }
-      if(rowind != nrow)
+      if(rowind != static_cast<int>(nrow))
         data.resizeKeep(rowind, 1);
     }
   }
 
   void rbindDataTable(const DataTable_& table) {
-#ifndef NDEBUG
-    if(data.ncol() != table.data.ncol()) {
+    if(data.ncol() != table.data.ncol()) 
       throw InvalidEntry{"Input DataTable has incorrect number of columns."};
-    }
-#endif
+    if(&data == &table.data)
+      throw InvalidEntry{"Cannot rbind a DataTable to itself."};
 
-    size_t old_nrow{data.nrow()};
+    int old_nrow{data.nrow()};
     data.resizeKeep(data.nrow() + table.data.nrow(), data.ncol());
-    data.updBlock(old_nrow, data.nrow() - 1, 
-                  0       , data.ncol() - 1).updAsMatrix = table.data;
+    data.updBlock(old_nrow         ,           0, 
+                  table.data.nrow(), data.ncol()).updAsMatrix() = table.data;
   }
 
   void cbindDataTable(const DataTable_& table) {
-#ifndef NDEBUG
-    if(data.nrow() != table.data.nrow()) {
+    if(data.nrow() != table.data.nrow())
       throw InvalidEntry{"Input DataTable has incorrect number of rows."};
-    }
-#endif
+    if(&data == &table.data)
+      throw InvalidEntry{"Cannot cbind a DataTable to itself."};
 
-    size_t old_ncol{data.ncol()};
+    int old_ncol{data.ncol()};
     data.resizeKeep(data.nrow(), data.ncol() + table.data.ncol());
-    data.updBlock(0       , data.nrow() - 1,
-                  old_ncol, data.ncol() - 1).updAsMatrix = table.data;
+    data.updBlock(0          ,          old_ncol,
+                  data.nrow(), table.data.ncol()).updAsMatrix() = table.data;
+  }
+
+  void clearData() {
+    data.clear();
   }
 
   /*---------------------------------------------------------------------------*
@@ -410,25 +419,26 @@ public:
 
   template<typename ValueType>
   void insertMetaData(const string& key, const ValueType& value) {
-    metadata.insert(std::make_pair(key, Value<ValueType>{value}));
+    metadata.insert(std::make_pair(key, SimTK::Value<ValueType>{value}));
   }
   
   template<typename ValueType>
   void insertMetaData(const string& key, ValueType&& value) {
-    metadata.insert(std::make_pair(key, Value<ValueType>{std::move(value)}));
+    metadata.insert(std::make_pair(key, 
+                                   SimTK::Value<ValueType>{std::move(value)}));
   }
 
   template<typename ValueType>
   void insertMetaData(const std::pair<string, ValueType>& key_value) {
     metadata.insert(std::make_pair(key_value.first, 
-                                   Value<ValueType>{key_value.second}));
+                                   SimTK::Value<ValueType>{key_value.second}));
   }
 
   template<typename ValueType>
   void insertMetaData(std::pair<string, ValueType>&& key_value) {
     using namespace std;
     metadata.insert(make_pair(move(key_value.first), 
-                              move(Value<ValueType>{key_value.second})));
+                              move(SimTK::Value<ValueType>{key_value.second})));
   }
 
   /// Works for both lvalues and rvalues.
@@ -442,12 +452,14 @@ public:
 
   template<typename ValueType>
   const ValueType& getMetaData(const string& key) const {
-    return metadata.at(key).getValue<ValueType>();
+    const SimTK::AbstractValue& abs_value{metadata.at(key)};
+    return abs_value.getValue<ValueType>();
   }
 
   template<typename ValueType>
   ValueType& updMetaData(const string& key) {
-    return metadata.at(key).updValue<ValueType>();
+    const SimTK::AbstractValue& abs_value{metadata.at(key)};
+    return abs_value.updValue<ValueType>();
   }
 
   /// The the value will be moved from the meta-data container to the caller.
@@ -455,7 +467,7 @@ public:
   ValueType popMetaData(const string& key) {
     ValueType value{std::move(metadata.at(key))};
     metadata.erase(key);
-    return value
+    return value;
   }
 
   void clearMetaData() {
@@ -478,7 +490,7 @@ public:
   * Column labels accessors & mutators.                                        *
   *---------------------------------------------------------------------------*/
 
-  bool colHasLabel(const size_t colind) override {
+  bool colHasLabel(const size_t colind) {
     using ColLabelsValueType = typename ColLabelsType::value_type;
     auto res = std::find_if(col_ind.begin(), 
 			    col_ind.end(), 
@@ -488,66 +500,64 @@ public:
     return res == col_ind.end();
   }
 
-  bool colExists(const size_t colind) override {
+  bool colExists(const size_t colind) {
     return colind >= 0 && colind < data.ncol();
   }
 
-  bool colExists(const string& key) override {
+  bool colExists(const string& key) {
     return col_ind.find(key) != col_ind.end();
   }
 
-  void insertColLabel(const size_t colind, const string& collabel) override {
+  void insertColLabel(const size_t colind, const string& collabel) {
     checkColExistsAndHasLabel(colind);
     col_ind.insert(std::make_pair(collabel, colind));
   }
 
-  void insertColLabel(const size_t colind, string&& collabel) override {
+  void insertColLabel(const size_t colind, string&& collabel) {
     checkColExistsAndHasLabel(colind);
     col_ind.insert(std::make_pair(std::move(collabel), colind));
   }
 
   /// Input iterators can be either lvalue or rvalue iterators.
-  template<typelabel InputIt>
+  template<typename InputIt>
   void insertColLabels(InputIt first, InputIt last) {
+    size_t colind{0};
     while(first != last) {
-      checkColExistsAndHasLabel(colind);
+      checkColExistsAndHasLabel(colind++);
       col_ind.insert(std::make_pair(first->second, first->first));
       ++first;
     }
   }
   
-  void setColLabel(const size_t colind, const string& new_collabel) override {
-    checkColExistsAndHasLabel(colind);
-    col_ind.erase(res);
-    col_ind.insert(std::make_pair(new_collabel));
+  void setColLabel(const size_t colind, const string& new_collabel) {
+    string old_collabel{getColLabel(colind)};
+    col_ind.erase(old_collabel);
+    col_ind.insert(std::make_pair(new_collabel, colind));
   }
 
   void setColLabel(const string& old_collabel, 
-                   const string& new_collabel) override {
+                   const string& new_collabel) {
     size_t colind{col_ind.at(old_collabel)};
     col_ind.erase(old_collabel);
     col_ind[new_collabel] = colind;
   }
 
-  void setColLabels(const std::vector<string>& collabels) override {
+  void setColLabels(const std::vector<string>& collabels) {
     col_ind.clear();
 
-    for(size_t i = 0; i < collabels.size(); ++i) {
-      if(!colExists(colind))
-        throw ColumnDoesNotExist{"Column index out of range."};
-
-      col_ind[collabels[i]] = i;
+    for(size_t colind = 0; colind < collabels.size(); ++colind) {
+      checkColExists(colind);
+      col_ind[collabels[colind]] = colind;
     }
   }
 
-  template<typelabel InputIter>
+  template<typename InputIter>
   void setColLabels(InputIter begin, InputIter end) {
     col_ind.clear();
-
     insertColLabels(begin, end);
   }
 
-  string getColLabel(const size_t colind) const override {
+  string getColLabel(const size_t colind) const {
     checkColExists(colind);
     using ColLabelsValueType = typename ColLabelsType::value_type;
     auto res = std::find_if(col_ind.begin(),
@@ -555,42 +565,41 @@ public:
 			    [colind] (const ColLabelsValueType& kv) {
 			      return kv.second == colind;
 			    });
-    if(res == col_ind.end())
-      throw ColumnHasNoLabel{""};
+    if(res == col_ind.end()) {
+      throw OpenSim::ColumnHasNoLabel{"Column " + std::to_string(colind) + 
+                                      " has no label."};
+    }
 
     return res->first;
   }
 
-  ColLabelsConstIterPairType getColLabels() const override {
+  ColLabelsConstIterPairType getColLabels() const {
     return std::make_pair(col_ind.cbegin(), col_ind.cend());
   }
 
-  ColLabelsIterPairType updColLabels() override {
+  ColLabelsIterPairType updColLabels() {
     return std::make_pair(col_ind.begin(), col_ind.end());
   }
 
-  size_t getColInd(const string& collabel) const override {
+  size_t getColInd(const string& collabel) const {
     return col_ind.at(collabel);
   }
 
 private:
-  /// Exists only in Debug builds.
   void checkColExists(const size_t colind) {
-#ifndef NDEBUG
-    if(!colExists(colind))
-      throw ColumnDoesNotExist{""};
-#endif
+    if(!colExists(colind)) {
+      throw OpenSim::ColumnDoesNotExist{"Column " + std::to_string(colind) + 
+                                        " does not exist."};
+    }
   }
 
-  /// Exists only in Debug builds.
   void checkColHasLabel(const size_t colind) {
-#ifndef NDEBUG
-    if(colHasLabel(colind))
-      throw InvalidEntry{"Column already has a label."};
-#endif
+    if(colHasLabel(colind)) {
+      throw InvalidEntry{"Column " + std::to_string(colind) + 
+                         " already has a label."};
+    }
   }
 
-  /// Exists only in Debug builds.
   void checkColExistsAndHasLabel(const size_t colind) {
     checkColExists(colind);
     checkColHasLabel(colind);
@@ -607,12 +616,32 @@ private:
     return ++num;
   }
 
-  /// Meta-data.
-  MetaDataType       metadata;
   /// Matrix of data. This excludes timestamp column.
   SimTK::Matrix_<ET> data;
+  /// Meta-data.
+  MetaDataType       metadata;
   /// Column label to column index.
   ColLabelsType      col_ind;
 };  // DataTable_
+
+
+template<typename ET>
+OpenSim::DataTable_<ET> 
+OpenSim::rbindDataTables(const OpenSim::DataTable_<ET>& dt1, 
+                         const OpenSim::DataTable_<ET>& dt2) {
+  OpenSim::DataTable_<ET> dt{dt1};
+  dt.rbindDataTable(dt2);
+  return dt;
+}
+
+
+template<typename ET>
+OpenSim::DataTable_<ET> 
+OpenSim::cbindDataTables(const OpenSim::DataTable_<ET>& dt1, 
+                         const OpenSim::DataTable_<ET>& dt2) {
+  OpenSim::DataTable_<ET> dt{dt1};
+  dt.cbindDataTable(dt2);
+  return dt;
+}
 
 #endif //OPENSIM_DATA_TABLE_H_
