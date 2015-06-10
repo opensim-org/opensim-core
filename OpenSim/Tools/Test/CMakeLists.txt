@@ -26,7 +26,7 @@ FOREACH(TEST_PROG ${TEST_PROGS})
 ENDFOREACH(TEST_PROG ${TEST_PROGS})
 
 # Also need to copy data files (.osim, .xml, .sto, .trc, .mot) to run directory
-FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
+FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot *.txt)
 
 #
 # Copy files to run dir

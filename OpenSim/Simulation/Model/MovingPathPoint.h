@@ -29,7 +29,6 @@
 #include <string>
 #include <math.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/PropertyObjPtr.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/Storage.h>

@@ -163,12 +163,10 @@ void WrapDoubleCylinderObst::connectToModelAndBody(Model& aModel, OpenSim::Body&
         string errorMessage = "Error: radii for WrapDoubleCylinderObst " + getName() + " were either not specified, or one or more is negative.";
         throw Exception(errorMessage);
     }
-
-    _displayer.freeGeometry();
-    AnalyticCylinder* cyl = new AnalyticCylinder(_radiusUcyl, _length);
+/*
+    Cylinder* cyl = new Cylinder(_radiusUcyl, _length);
     setGeometryQuadrants(cyl);
-    _displayer.addGeometry(cyl);
-
+*/
     // Check wrapUcylDirectionName
     if (_wrapUcylDirectionName == "righthand" || _wrapUcylDirectionName == "right" || _wrapUcylDirectionName == "righthanded" || _wrapUcylDirectionName == "Righthand" || _wrapUcylDirectionName == "Right" || _wrapUcylDirectionName == "Righthanded")
         _wrapUcylDirection = righthand;

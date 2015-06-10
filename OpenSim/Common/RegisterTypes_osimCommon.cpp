@@ -24,7 +24,6 @@
 
 #include "Object.h"
 #include "Component.h"
-#include "VisibleObject.h"
 #include "RegisterTypes_osimCommon.h"
 #include "FunctionSet.h"
 #include "GCVSplineSet.h"
@@ -42,9 +41,6 @@
 #include "MultiplierFunction.h"
 #include "PolynomialFunction.h"
 
-#include "DisplayGeometry.h"
-#include "GeometrySet.h"
-#include "VisibleObject.h"
 #include "ObjectGroup.h"
 
 #include <string>
@@ -89,11 +85,6 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::registerType( PiecewiseConstantFunction() );
     Object::registerType( MultiplierFunction() );
     Object::registerType(PolynomialFunction());
-
-
-    Object::registerType( DisplayGeometry() );
-    Object::registerType( GeometrySet() );
-    Object::registerType( VisibleObject() );
     Object::registerType( ObjectGroup() );
 
     // TODO: temporarily map old NaturalCubicSpline (which wasn't a 

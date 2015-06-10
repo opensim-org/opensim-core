@@ -200,39 +200,16 @@ void EllipsoidJoint::generateDecorations
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const
     {
-        // invoke parent class method
+        // invoke parent class method, this draws 2 Frames
         Super::generateDecorations(fixed,hints,state,geometryArray); 
-        // the frame on body 1 will be red
-        SimTK::Vec3 frame1color(1.0,0.0,0.0);
-        // the frame on body 2 will be blue
-        SimTK::Vec3 frame2color(0.0,0.5,1.0);
-        // the moment on body 2 will be yellow
-        SimTK::Vec3 moment2color(1.0,1.0,0.0);
-        // the force on body 2 will be green
-        SimTK::Vec3 force2color(0.0,1.0,0.0);
 
         double dimension = get_radii_x_y_z().norm()/2;
-        // create frames to be fixed on body 1 and body 2
-        SimTK::DecorativeFrame childFrame(dimension);
-        SimTK::DecorativeFrame parentFrame(dimension);
-
-        // attach frame to body, translate and rotate it to the location of the joint
-        childFrame.setBodyId(getChildFrame().getMobilizedBodyIndex());
-        childFrame.setTransform(getChildTransform());
-        childFrame.setColor(frame1color);
-
-        // attach frame to parent, translate and rotate it to the location of the joint
-        parentFrame.setBodyId(getParentFrame().getMobilizedBodyIndex());
-        parentFrame.setTransform(getParentTransform());
-        parentFrame.setColor(frame2color);
 
         // Construct the visible Ellipsoid
         SimTK::DecorativeEllipsoid ellipsoid(get_radii_x_y_z());
         ellipsoid.setTransform(getParentTransform());
         ellipsoid.setColor(Vec3(0.0, 1.0, 1.0));
 
-        geometryArray.push_back(childFrame);
-        geometryArray.push_back(parentFrame);
         geometryArray.push_back(ellipsoid);
 
         // if the model is moving, calculate and draw motion.

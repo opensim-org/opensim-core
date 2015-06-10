@@ -121,7 +121,7 @@ int main()
     cout << "Prop after create system is " << dProp2.toString() << endl;
     bool after = PropertyHelper::getValueBool(dProp);
     SimTK_ASSERT_ALWAYS(!after, "Property has wrong value!!");
-    context->updateDisplayer(*dTRIlong);
+    dTRIlong->updGeometryPath().updateGeometry(context->getCurrentStateRef());
     const OpenSim::Array<PathPoint*>& path = context->getCurrentPath(*dTRIlong);
     cout << "Muscle Path" << endl;
     cout << path.getSize() << endl;
@@ -155,7 +155,7 @@ int main()
     cout << "After setting coordinate to 100 deg." << endl;
     cout << xform << endl;
     // Compare to known xform
-    context->updateDisplayer(*dTRIlong);
+    dTRIlong->updGeometryPath().updateGeometry(context->getCurrentStateRef());
     const OpenSim::Array<PathPoint*>& newPath = context->getCurrentPath(*dTRIlong);
     // Compare to known path 
     cout << "New Muscle Path" << endl;

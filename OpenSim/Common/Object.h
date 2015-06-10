@@ -80,7 +80,6 @@ namespace OpenSim {
 // CONSTANTS
 const char ObjectDEFAULT_NAME[] = "default";
 
-class VisibleObject;
 class XMLDocument;
 
 //==============================================================================
@@ -224,16 +223,6 @@ public:
     concrete object.
     @see getClassName() **/
     virtual const std::string& getConcreteClassName() const = 0;
-
-    /**
-     * Methods to support making the object displayable in the GUI or Visualizer
-     * Implemented only in few objects
-     */
-    /** Get const pointer to VisibleObject that contains geometry */
-    virtual const VisibleObject *getDisplayer() const { return 0; };
-    /** get Non const pointer to VisibleObject */
-    virtual VisibleObject *updDisplayer() { return 0; };
-
 
     //--------------------------------------------------------------------------
     // OPERATORS
