@@ -1,3 +1,9 @@
+################################################################################
+# Test DataTable class.
+add_executable(testDataTable DataTable.cpp)
+target_link_libraries(testDataTable ${Simbody_LIBRARIES})
+add_test(testDataTable ${EXECUTABLE_OUTPUT_PATH}/testDataTable)
+################################################################################
 
 # Automatically create tests using files named "test*.cpp"  // Adopted from SimTK core
 FILE(GLOB TEST_PROGS "*est*.cpp")
