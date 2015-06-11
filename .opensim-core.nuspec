@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <metadata>
-        <id>opensim</id>
+        <id>opensim-core</id>
         <version>0.0.0</version>
         <authors>OpenSim Team</authors>
         <owners>OpenSim Team</owners>
@@ -16,6 +16,6 @@
         <tags>biomechanics</tags>
     </metadata>
     <files>
-        <file src="*" target="" />
+        <file src="**" target="" />
     </files>
 </package>
