@@ -47,27 +47,93 @@ BushingForce::BushingForce()
     constructProperties();
 }
 
-// Convenience constructor.
-BushingForce::BushingForce(const string&    body1Name, 
-                           const Vec3&      point1, 
-                           const Vec3&      orientation1,
-                           const string&    body2Name, 
-                           const Vec3&      point2, 
-                           const Vec3&      orientation2,
-                           const Vec3&      transStiffness, 
-                           const Vec3&      rotStiffness, 
-                           const Vec3&      transDamping, 
-                           const Vec3&      rotDamping)
+BushingForce::BushingForce(const PhysicalOffsetFrame& frame1,
+    const PhysicalOffsetFrame& frame2,
+    const SimTK::Vec3& transStiffness,
+    const SimTK::Vec3& rotStiffness,
+    const SimTK::Vec3& transDamping,
+    const SimTK::Vec3& rotDamping)
+{
+    set_frame_1(frame1);
+    set_frame_2(frame2);
+    set_rotational_stiffness(rotStiffness);
+    set_translational_stiffness(transStiffness);
+    set_rotational_damping(rotDamping);
+    set_translational_damping(transDamping);
+}
+
+BushingForce::BushingForce(const PhysicalFrame& frame1,
+    const SimTK::Vec3& point1,
+    const SimTK::Vec3& orientation1,
+    const PhysicalFrame& frame2,
+    const SimTK::Vec3& point2,
+    const SimTK::Vec3& orientation2,
+    const SimTK::Vec3& transStiffness,
+    const SimTK::Vec3& rotStiffness,
+    const SimTK::Vec3& transDamping,
+    const SimTK::Vec3& rotDamping)
 {
     setNull();
     constructProperties();
 
-    set_body_1(body1Name);
-    set_body_2(body2Name);
-    set_location_body_1(point1);
-    set_orientation_body_1(orientation1);
-    set_location_body_2(point2);
-    set_orientation_body_2(orientation2);
+    upd_frame_1().setName(frame1.getName() + "_offset");
+    upd_frame_1().updConnector<PhysicalFrame>("parent")
+        .set_connected_to_name(frame1.getName());
+    Rotation rotation1(BodyRotationSequence,
+        orientation1[0], XAxis,
+        orientation1[1], YAxis,
+        orientation1[2], ZAxis);
+    upd_frame_1().setOffsetTransform(Transform(rotation1, point1));
+
+    upd_frame_2().setName(frame2.getName() + "_offset");
+    upd_frame_2().updConnector<PhysicalFrame>("parent")
+        .set_connected_to_name(frame2.getName());
+    Rotation rotation2(BodyRotationSequence,
+        orientation2[0], XAxis,
+        orientation2[1], YAxis,
+        orientation2[2], ZAxis);
+    upd_frame_2().setOffsetTransform(Transform(rotation2, point2));
+
+    set_rotational_stiffness(rotStiffness);
+    set_translational_stiffness(transStiffness);
+    set_rotational_damping(rotDamping);
+    set_translational_damping(transDamping);
+}
+
+// Convenience constructor.
+BushingForce::BushingForce(const string&    frame1Name,
+    const Vec3&      point1,
+    const Vec3&      orientation1,
+    const string&    frame2Name,
+    const Vec3&      point2,
+    const Vec3&      orientation2,
+    const Vec3&      transStiffness,
+    const Vec3&      rotStiffness,
+    const Vec3&      transDamping,
+    const Vec3&      rotDamping)
+{
+    setNull();
+    constructProperties();
+
+    upd_frame_1().setName(frame1Name + "_offset");
+    upd_frame_1().updConnector<PhysicalFrame>("parent")
+        .set_connected_to_name(frame1Name);
+    Rotation rotation1(BodyRotationSequence,
+        orientation1[0], XAxis,
+        orientation1[1], YAxis,
+        orientation1[2], ZAxis);
+    upd_frame_1().setOffsetTransform(Transform(rotation1, point1));
+
+    upd_frame_2().setName(frame2Name + "_offset");
+    upd_frame_2().updConnector<PhysicalFrame>("parent")
+        .set_connected_to_name(frame2Name);
+    Rotation rotation2(BodyRotationSequence,
+        orientation2[0], XAxis,
+        orientation2[1], YAxis,
+        orientation2[2], ZAxis);
+    upd_frame_2().setOffsetTransform(Transform(rotation2, point2));
+
+
     set_rotational_stiffness(rotStiffness);
     set_translational_stiffness(transStiffness);
     set_rotational_damping(rotDamping);
@@ -85,64 +151,39 @@ void BushingForce::setNull()
 // Allocate and initialize properties.
 void BushingForce::constructProperties()
 {
-    constructProperty_body_1();
-    constructProperty_body_2();
-
-    //Default location and orientation (rotation sequence)
-    constructProperty_location_body_1(Vec3(0)); // body origin
-    constructProperty_orientation_body_1(Vec3(0)); // no rotation
-    constructProperty_location_body_2(Vec3(0));
-    constructProperty_orientation_body_2(Vec3(0));
+    //Default frames
+    constructProperty_frame_1(PhysicalOffsetFrame()); // frame 1 
+    constructProperty_frame_2(PhysicalOffsetFrame()); // frame 2 
+    // default bushing material properties
     constructProperty_rotational_stiffness(Vec3(0));
     constructProperty_translational_stiffness(Vec3(0));
     constructProperty_rotational_damping(Vec3(0));
     constructProperty_translational_damping(Vec3(0));
 }
 
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel OpenSim model containing this BushingForce.
- */
-void BushingForce::extendConnectToModel(Model& aModel)
+void BushingForce::extendFinalizeFromProperties()
 {
-    Super::extendConnectToModel(aModel); // base class first
+    Super::extendFinalizeFromProperties();
 
-    // Look up the two bodies being connected by bushing by name in the
-    // model. TODO: use Connectors
-    const string& body1Name = get_body_1(); // error if unspecified
-    const string& body2Name = get_body_2();
-    _body1 = 
-        static_cast<const PhysicalFrame*>(&getModel().getComponent(body1Name));
-    _body2 =
-        static_cast<const PhysicalFrame*>(&getModel().getComponent(body2Name));
+    //mark the two PhysicalOffsetFrames as subcomponents 
+    addComponent(&upd_frame_1());
+    addComponent(&upd_frame_2());
 }
 
-void BushingForce::extendAddToSystem(SimTK::MultibodySystem& system) const
+// Add underly Simbody elements to the System after subcomponents
+void BushingForce::
+    extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) const
 {
-    Super::extendAddToSystem(system);
+    Super::extendAddToSystemAfterSubcomponents(system);
 
-    const string&      body1Name            = get_body_1();
-    const string&      body2Name            = get_body_2();
-    const SimTK::Vec3& locationInBody1      = get_location_body_1();
-    const SimTK::Vec3& orientationInBody1   = get_orientation_body_1();
-    const SimTK::Vec3& locationInBody2      = get_location_body_2();
-    const SimTK::Vec3& orientationInBody2   = get_orientation_body_2();
     const SimTK::Vec3& rotStiffness         = get_rotational_stiffness();
     const SimTK::Vec3& transStiffness       = get_translational_stiffness();
     const SimTK::Vec3& rotDamping           = get_rotational_damping();
     const SimTK::Vec3& transDamping         = get_translational_damping();
 
     // Get underlying mobilized bodies
-    const SimTK::MobilizedBody& b1 = _body1->getMobilizedBody();
-    const SimTK::MobilizedBody& b2 = _body2->getMobilizedBody();
-    // Build the transforms
-    SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(orientationInBody1);
-    SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(orientationInBody2);
-    SimTK::Transform inb1(r1, locationInBody1);
-    SimTK::Transform inb2(r2, locationInBody2);
+    const SimTK::MobilizedBody& b1 = get_frame_1().getMobilizedBody();
+    const SimTK::MobilizedBody& b2 = get_frame_2().getMobilizedBody();
 
     Vec6 stiffness(rotStiffness[0], rotStiffness[1], rotStiffness[2], 
                    transStiffness[0], transStiffness[1], transStiffness[2]);
@@ -151,7 +192,9 @@ void BushingForce::extendAddToSystem(SimTK::MultibodySystem& system) const
 
     // Now create a Simbody Force::LinearBushing
     SimTK::Force::LinearBushing simtkForce
-       (_model->updForceSubsystem(), b1, inb1, b2, inb2, stiffness, damping);
+        (_model->updForceSubsystem(), b1, get_frame_1().getOffsetTransform(), 
+                                      b2, get_frame_2().getOffsetTransform(), 
+                                      stiffness, damping );
     
     // Beyond the const Component get the index so we can access the 
     // SimTK::Force later.
@@ -164,31 +207,7 @@ void BushingForce::extendAddToSystem(SimTK::MultibodySystem& system) const
 //=============================================================================
 //_____________________________________________________________________________
 // The following methods set properties of the bushing Force.
-void BushingForce::setBody1ByName(const std::string& aBodyName)
-{
-    set_body_1(aBodyName);
-}
 
-void BushingForce::setBody2ByName(const std::string& aBodyName)
-{
-    set_body_2(aBodyName);
-}
-
-/** Set the location and orientation (optional) for weld on body 1*/
-void BushingForce::setBody1BushingLocation(const Vec3& location, 
-                                           const Vec3& orientation)
-{
-    set_location_body_1(location);
-    set_orientation_body_1(orientation);
-}
-
-/** Set the location and orientation (optional) for weld on body 2*/
-void BushingForce::setBody2BushingLocation(const Vec3& location, 
-                                           const Vec3& orientation)
-{
-    set_location_body_2(location);
-    set_orientation_body_2(orientation);
-}
 
 /* Potential energy is computed by underlying SimTK::Force. */
 double BushingForce::computePotentialEnergy(const SimTK::State& s) const
@@ -206,22 +225,22 @@ double BushingForce::computePotentialEnergy(const SimTK::State& s) const
  */
 OpenSim::Array<std::string> BushingForce::getRecordLabels() const 
 {
-    const string& body1Name = get_body_1();
-    const string& body2Name = get_body_2();
+    const string& frame1Name = get_frame_1().getName();
+    const string& frame2Name = get_frame_2().getName();
 
     OpenSim::Array<std::string> labels("");
-    labels.append(getName()+"."+body1Name+".force.X");
-    labels.append(getName()+"."+body1Name+".force.Y");
-    labels.append(getName()+"."+body1Name+".force.Z");
-    labels.append(getName()+"."+body1Name+".torque.X");
-    labels.append(getName()+"."+body1Name+".torque.Y");
-    labels.append(getName()+"."+body1Name+".torque.Z");
-    labels.append(getName()+"."+body2Name+".force.X");
-    labels.append(getName()+"."+body2Name+".force.Y");
-    labels.append(getName()+"."+body2Name+".force.Z");
-    labels.append(getName()+"."+body2Name+".torque.X");
-    labels.append(getName()+"."+body2Name+".torque.Y");
-    labels.append(getName()+"."+body2Name+".torque.Z");
+    labels.append(getName()+"."+frame1Name+".force.X");
+    labels.append(getName()+"."+frame1Name+".force.Y");
+    labels.append(getName()+"."+frame1Name+".force.Z");
+    labels.append(getName()+"."+frame1Name+".torque.X");
+    labels.append(getName()+"."+frame1Name+".torque.Y");
+    labels.append(getName()+"."+frame1Name+".torque.Z");
+    labels.append(getName()+"."+frame2Name+".force.X");
+    labels.append(getName()+"."+frame2Name+".force.Y");
+    labels.append(getName()+"."+frame2Name+".force.Z");
+    labels.append(getName()+"."+frame2Name+".torque.X");
+    labels.append(getName()+"."+frame2Name+".torque.Y");
+    labels.append(getName()+"."+frame2Name+".torque.Z");
 
     return labels;
 }
@@ -231,8 +250,8 @@ OpenSim::Array<std::string> BushingForce::getRecordLabels() const
 OpenSim::Array<double> BushingForce::
 getRecordValues(const SimTK::State& state) const 
 {
-    const string& body1Name = get_body_1();
-    const string& body2Name = get_body_2();
+    const string& frame1Name = get_frame_1().getName();
+    const string& frame2Name = get_frame_2().getName();
 
     OpenSim::Array<double> values(1);
 
@@ -245,13 +264,13 @@ getRecordValues(const SimTK::State& state) const
 
     //get the net force added to the system contributed by the bushing
     simtkSpring.calcForceContribution(state, bodyForces, particleForces, mobilityForces);
-    SimTK::Vec3 forces = bodyForces(_body1->getMobilizedBodyIndex())[1];
-    SimTK::Vec3 torques = bodyForces(_body1->getMobilizedBodyIndex())[0];
+    SimTK::Vec3 forces = bodyForces(get_frame_1().getMobilizedBodyIndex())[1];
+    SimTK::Vec3 torques = bodyForces(get_frame_1().getMobilizedBodyIndex())[0];
     values.append(3, &forces[0]);
     values.append(3, &torques[0]);
 
-    forces = bodyForces(_body2->getMobilizedBodyIndex())[1];
-    torques = bodyForces(_body2->getMobilizedBodyIndex())[0];
+    forces = bodyForces(get_frame_2().getMobilizedBodyIndex())[1];
+    torques = bodyForces(get_frame_2().getMobilizedBodyIndex())[0];
 
     values.append(3, &forces[0]);
     values.append(3, &torques[0]);
