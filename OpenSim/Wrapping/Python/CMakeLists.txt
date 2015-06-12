@@ -45,12 +45,21 @@ SET_TARGET_PROPERTIES(PyWrap PROPERTIES PROJECT_LABEL "Python Bindings - Generat
 SET(SOURCE_FILES OpenSimContext.cpp "${swig_output_cxx_file_fullname}")
 SET(INCLUDE_FILES OpenSimContext.h "${swig_output_header_file_fullname}")
 
-# swig 2.0.10 uses the c++ register keyword, which Clang tells us is
-# deprecated. While still using swig 2.0.10, we suppress this warning.
-# In some versions of Clang, this warning is Wdeprecated-register.
-IF (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    SET_SOURCE_FILES_PROPERTIES("${swig_output_cxx_file_fullname}"
-        PROPERTIES COMPILE_FLAGS "-Wno-deprecated")
+IF(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
+        ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+    # Turn off optimization for SWIG wrapper code. Optimization slows down
+    # compiling and also requires lots of memory. Also, there's not much to gain
+    # from an optimized wrapper file. 
+    # Note that the last optimization flag is what counts for GCC. So an -O0
+    # later on the command line overrides a previous -O2.
+    SET(_COMPILE_FLAGS "-O0")
+
+    IF (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+        # swig 2.0.10 uses the c++ register keyword, which Clang tells us is
+        # deprecated. While still using swig 2.0.10, we suppress this warning.
+        # In some versions of Clang, this warning is Wdeprecated-register.
+        LIST(APPEND _COMPILE_FLAGS "-Wno-deprecated")
+    ENDIF()
 ENDIF()
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
