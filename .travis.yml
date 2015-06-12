@@ -9,7 +9,7 @@ sudo: false
 matrix:
   include:
     - compiler: clang
-      env: BUILD_WRAPPING=on NPROC=4
+      env: BUILD_WRAPPING=on NPROC=1
     - compiler: gcc
       env: BUILD_WRAPPING=off NPROC=3
 
