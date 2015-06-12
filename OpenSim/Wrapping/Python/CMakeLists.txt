@@ -58,7 +58,7 @@ IF(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
         # swig 2.0.10 uses the c++ register keyword, which Clang tells us is
         # deprecated. While still using swig 2.0.10, we suppress this warning.
         # In some versions of Clang, this warning is Wdeprecated-register.
-        LIST(APPEND _COMPILE_FLAGS "-Wno-deprecated")
+        SET(_COMPILE_FLAGS "${_COMPILE_FLAGS} -Wno-deprecated")
     ENDIF()
 
     SET_SOURCE_FILES_PROPERTIES("${swig_output_cxx_file_fullname}"
