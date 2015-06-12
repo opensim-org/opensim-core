@@ -60,6 +60,9 @@ IF(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
         # In some versions of Clang, this warning is Wdeprecated-register.
         LIST(APPEND _COMPILE_FLAGS "-Wno-deprecated")
     ENDIF()
+
+    SET_SOURCE_FILES_PROPERTIES("${swig_output_cxx_file_fullname}"
+        PROPERTIES COMPILE_FLAGS "${_COMPILE_FLAGS}")
 ENDIF()
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
