@@ -9,7 +9,7 @@ sudo: false
 matrix:
   include:
     - compiler: clang
-      env: BUILD_WRAPPING=on NPROC=2
+      env: BUILD_WRAPPING=on NPROC=4
     - compiler: gcc
       env: BUILD_WRAPPING=off NPROC=3
 
@@ -97,7 +97,13 @@ install:
   # Configure OpenSim.
   - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$BUILD_WRAPPING -DBUILD_PYTHON_WRAPPING=$BUILD_WRAPPING -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME
   # Build OpenSim.
-  - make -j$NPROC
+  - if [ "$BUILD_WRAPPING" = "on" ]; then
+      make -j$NPROC osimTools osimJavaJNI PyWrap;
+      # Build opensim wrapping code separately to avoid going over the memory limit.
+      make _opensim;
+    fi
+  # Build whatever remains (at least tests and examples).
+  - make -j$NPROC;
 
 script:
   # Test OpenSim.
