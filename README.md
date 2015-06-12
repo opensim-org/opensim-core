@@ -1,6 +1,8 @@
 OpenSim Core [![Travis][buildstatus_image_travis]][travisci] [![Appveyor][buildstatus_image_appveyor]][appveyorci]
 ============
 
+**NOTE: This repository contains OpenSim 4.0 development and cannot be used to build OpenSim 3.x or earlier. For OpenSim 3.x, see [here](http://simtk-confluence.stanford.edu:8080/display/OpenSim/Building+OpenSim+from+Source).**
+
 OpenSim is software that lets users develop models of musculoskeletal
 structures and create dynamic simulations of movement, such as this one:
 
