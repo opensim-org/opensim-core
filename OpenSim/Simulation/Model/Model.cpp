@@ -146,10 +146,10 @@ Model::~Model()
 void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     
-    if ( versionNumber < XMLDocument::getLatestVersion()){
-        cout << "Updating Model file from "<< versionNumber << " to latest format..." << endl;
+    if (versionNumber < XMLDocument::getLatestVersion()){
+        cout << "Updating Model file from " << versionNumber << " to latest format..." << endl;
         // Version has to be 1.6 or later, otherwise assert
-        if (versionNumber==10600){
+        if (versionNumber == 10600){
             // Get node for DynamicsEngine
             SimTK::Xml::element_iterator engIter = aNode.element_begin("DynamicsEngine");
             //Get node for SimbodyEngine
@@ -158,52 +158,51 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 // Move all Children of simbodyEngineNode to be children of _node
                 // we'll keep inserting before enginesNode then remove it;
                 SimTK::Array_<SimTK::Xml::Element> elts = simbodyEngIter->getAllElements();
-                while(elts.size()!=0){
+                while (elts.size() != 0){
                     // get first child and move it to Model
                     aNode.insertNodeAfter(aNode.element_end(), simbodyEngIter->removeNode(simbodyEngIter->element_begin()));
                     elts = simbodyEngIter->getAllElements();
-                    }
-                engIter->eraseNode(simbodyEngIter);
                 }
+                engIter->eraseNode(simbodyEngIter);
+            }
             // Now handling the rename of ActuatorSet to ForceSet
             XMLDocument::renameChildNode(aNode, "ActuatorSet", "ForceSet");
+        }
+        if (versionNumber < 30500) {
+            // Create JointSet node after BodySet under <OpenSimDocument>/<Model>
+            SimTK::Xml::Element jointSetElement("JointSet");
+            SimTK::Xml::Element jointObjects("objects");
+            jointSetElement.insertNodeBefore(jointSetElement.element_begin(), jointObjects);
+            SimTK::Xml::element_iterator bodySetNode = aNode.element_begin("BodySet");
+            aNode.insertNodeAfter(bodySetNode, jointSetElement);
+            // Cycle through Bodies and move their Joint nodes under the Model's JointSet
+            SimTK::Xml::element_iterator  objects_node = bodySetNode->element_begin("objects");
+            SimTK::Xml::element_iterator bodyIter = objects_node->element_begin("Body");
+            for (; bodyIter != objects_node->element_end(); ++bodyIter) {
+                std::string body_name = bodyIter->getOptionalAttributeValue("name");
+                //cout << "Processing body " <<  body_name << std::endl;
+                SimTK::Xml::element_iterator  joint_node = bodyIter->element_begin("Joint");
+                if (joint_node->element_begin() != joint_node->element_end()){
+                    SimTK::Xml::Element detach_joint_node = joint_node->clone();
+                    SimTK::Xml::element_iterator concreteJointNode = detach_joint_node.element_begin();
+                    detach_joint_node.removeNode(concreteJointNode);
+                    SimTK::Xml::element_iterator parentBodyElement = concreteJointNode->element_begin("parent_body");
+                    SimTK::String parent_name = "ground";
+                    parentBodyElement->getValueAs<SimTK::String>(parent_name);
+                    //cout << "Processing Joint " << concreteJointNode->getElementTag() << "Parent body " << parent_name << std::endl;
+                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "parent_body", parent_name);
+                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "child_body", body_name);
+                    concreteJointNode->eraseNode(parentBodyElement);
+                    jointObjects.insertNodeAfter(jointObjects.node_end(), *concreteJointNode);
+                    detach_joint_node.clearOrphan();
                 }
+                bodyIter->eraseNode(joint_node);
             }
-            if (versionNumber < 30500) {
-                // Create JointSet node after BodySet under <OpenSimDocument>/<Model>
-                SimTK::Xml::Element jointSetElement("JointSet");
-                SimTK::Xml::Element jointObjects("objects");
-                jointSetElement.insertNodeBefore(jointSetElement.element_begin(), jointObjects);
-                SimTK::Xml::element_iterator bodySetNode = aNode.element_begin("BodySet");
-                aNode.insertNodeAfter(bodySetNode, jointSetElement);
-                // Cycle through Bodies and move their Joint nodes under the Model's JointSet
-                SimTK::Xml::element_iterator  objects_node = bodySetNode->element_begin("objects");
-                SimTK::Xml::element_iterator bodyIter= objects_node->element_begin("Body"); 
-                for (; bodyIter != objects_node->element_end(); ++bodyIter) {
-                     std::string body_name = bodyIter->getOptionalAttributeValue("name");
-                    //cout << "Processing body " <<  body_name << std::endl;
-                    SimTK::Xml::element_iterator  joint_node =  bodyIter->element_begin("Joint");
-                    if (joint_node->element_begin()!= joint_node->element_end()){
-                        SimTK::Xml::Element detach_joint_node = joint_node->clone();
-                        SimTK::Xml::element_iterator concreteJointNode = detach_joint_node.element_begin();
-                        detach_joint_node.removeNode(concreteJointNode);
-                        SimTK::Xml::element_iterator parentBodyElement = concreteJointNode->element_begin("parent_body");
-                        SimTK::String parent_name="ground";
-                        parentBodyElement->getValueAs<SimTK::String>(parent_name);
-                        //cout << "Processing Joint " << concreteJointNode->getElementTag() << "Parent body " << parent_name << std::endl;
-                        XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "parent_body", parent_name);
-                        XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "child_body", body_name);
-                        concreteJointNode->eraseNode(parentBodyElement);
-                        jointObjects.insertNodeAfter(jointObjects.node_end(), *concreteJointNode);
-                        detach_joint_node.clearOrphan();
-                    }
-                    bodyIter->eraseNode(joint_node);
-                }
-            }
-    // Call base class now assuming _node has been corrected for current version
-    Super::updateFromXMLNode(aNode, versionNumber);
-
-    setDefaultProperties();
+        }
+    }
+     // Call base class now assuming _node has been corrected for current version
+     Super::updateFromXMLNode(aNode, versionNumber);
+     setDefaultProperties();
 }
 
 
@@ -217,7 +216,6 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 void Model::setNull()
 {
     _useVisualizer = false;
-    _displayHints.clear();
     _allControllersEnabled = true;
 
     _system = NULL;
@@ -283,6 +281,8 @@ void Model::constructProperties()
     ProbeSet probeSet;
     constructProperty_ProbeSet(probeSet);
 
+    ModelVisualPreferences md;
+    constructProperty_ModelVisualPreferences(md);
 }
 
 //------------------------------------------------------------------------------
@@ -335,11 +335,6 @@ SimTK::State& Model::initializeState() {
     // geometry placements are frozen.
     getMultibodySystem().realize(_workingState, Stage::Instance);
 
-    // We can now collect up all the fixed geometry, which can depend only
-    // on instance variable, not on configuration.
-    if (getUseVisualizer())
-        _modelViz->collectFixedGeometry(_workingState);
-
     // Realize the initial configuration in preparation for assembly. This
     // initial configuration does not necessarily satisfy constraints.
     getMultibodySystem().realize(_workingState, Stage::Position);
@@ -354,6 +349,9 @@ SimTK::State& Model::initializeState() {
     // Do the assembly
     createAssemblySolver(_workingState);
     assemble(_workingState);
+    // We can now collect up all the fixed geometry, which needs full configuration.
+    if (getUseVisualizer())
+        _modelViz->collectFixedGeometry(_workingState);
 
     return _workingState;
 }
@@ -541,9 +539,13 @@ void Model::extendFinalizeFromProperties()
         for (int i = 0; i<bs.getSize(); ++i){
             //handle deprecated models with ground as a Body
             if (bs[i].getName() == "ground"){
-                VisibleObject* displayer = ground.updDisplayer();
-                *displayer = *bs[i].getDisplayer();
                 ground.upd_WrapObjectSet() = bs[i].get_WrapObjectSet();
+                int geomSize = bs[i].getNumGeometry();
+                for (int g = 0; g < geomSize-1; ++g){ 
+                    // geomSize-1 since last geometry is a FrameGeometry for 
+                    // what used to be GroundBody. ground has one already
+                    ground.addGeometry(bs[i].upd_geometry(g));
+                }
                 // remove and then decrement the counter
                 bs.remove(i--);
                 continue;
@@ -786,6 +788,8 @@ void Model::extendConnectToModel(Model &model)
             "Unrecognized loop constraint type '" + joint.getConcreteClassName() + "'.");
     }
 
+    // Create iterator here to include newly added components
+    initComponentTreeTraversal(*this);
 
     // Reorder coordinates in order of the underlying mobilities
     updCoordinateSet().populate(*this);
@@ -797,6 +801,7 @@ void Model::extendConnectToModel(Model &model)
 
     // TODO: Get rid of the SimbodyEngine
     updSimbodyEngine().connectSimbodyEngineToModel(*this);
+
 }
 
 
@@ -964,11 +969,10 @@ void Model::setup()
 {
     finalizeFromProperties();
     
-    // clear existing interconnections and all state allocations
-    disconnect();
-
     //now connect the Model and all its subcomponents all up
     connect(*this);
+
+    populatePathName("");
 }
 
 //_____________________________________________________________________________
@@ -1012,7 +1016,14 @@ void Model::generateDecorations
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
 {
-    Super::generateDecorations(fixed,hints,state,appendToThis);
+    ComponentList<Component> allComps = getComponentList();
+    ComponentList<Component>::const_iterator iter = allComps.begin();
+    while (iter != allComps.end()){
+        //std::string cn = iter->getConcreteClassName();
+        //std::cout << cn << ":" << iter->getName() << std::endl;
+        iter->generateDecorations(fixed, hints, state, appendToThis);
+        iter++;
+    }
 }
 
 void Model::equilibrateMuscles(SimTK::State& state)
@@ -1046,16 +1057,6 @@ void Model::equilibrateMuscles(SimTK::State& state)
     if(failed) // Notify the caller of the failure to equlibrate 
         throw Exception("Model::equilibrateMuscles() "+errorMsg, __FILE__, __LINE__);
 }
-
-//_____________________________________________________________________________
-/**
- * Register the types used by this class.
-void Model::registerTypes()
-{
-    // now handled by RegisterTypes_osimSimulation()
-}
- */
-
 
 //=============================================================================
 // GRAVITY

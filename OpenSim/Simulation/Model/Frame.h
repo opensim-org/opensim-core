@@ -188,12 +188,21 @@ public:
     // End of Base Frame and Transform accessors
     ///@}
 
+    /** Add a Mesh specified by file name to the list of Geometry owned by the Frame.
+    Scale defaults to 1.0 but can be changed on the call line. For convenience 
+    */
+    void addMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
+
 protected:
     /** @name Component Extension methods.
         Frame types override these Component methods. */
     /**@{**/
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendRealizeTopology(SimTK::State& s) const override;
+
+    /// override default extendAddGeometry to set Frame to this Object
+    void extendAddGeometry(OpenSim::Geometry& geom) override;
+
     /**@}**/
 
 private:

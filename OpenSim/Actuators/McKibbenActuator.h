@@ -118,10 +118,7 @@ private:
     //--------------------------------------------------------------------------
     // Visualization interface
     //--------------------------------------------------------------------------
-    /*
-    virtual VisibleObject* getDisplayer() const;
-    virtual void updateDisplayer(const SimTK::State& s);
-    virtual void updateGeometry(const SimTK::State& s);*/
+
 
 }; // class McKibbenActuator
 } // namespace OpenSim

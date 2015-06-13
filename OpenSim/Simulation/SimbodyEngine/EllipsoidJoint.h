@@ -98,7 +98,7 @@ protected:
         bool fixed,
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const;
+        SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const override;
 
 private:
     void constructProperties();

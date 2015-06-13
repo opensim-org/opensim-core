@@ -37,7 +37,6 @@
 namespace OpenSim {
 
 class Model;
-class VisibleObject;
 class Controller;
 class Coordinate;
 

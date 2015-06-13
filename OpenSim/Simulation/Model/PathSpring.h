@@ -175,12 +175,6 @@ protected:
         return values;
     }
 
-    //--------------------------------------------------------------------------
-    // Display
-    //--------------------------------------------------------------------------
-    const VisibleObject* getDisplayer() const override;
-    void updateDisplayer(const SimTK::State& s) const override;
-
 private:
     void constructProperties() override;
     void constructOutputs() override;

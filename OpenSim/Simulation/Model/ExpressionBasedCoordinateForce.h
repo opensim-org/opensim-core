@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 // INCLUDE
 #include "Force.h"
-#include <OpenSim/Common/VisibleObject.h>
 #include <Vendors/lepton/include/Lepton.h>
 
 namespace OpenSim {

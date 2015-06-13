@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "Force.h"
-#include <OpenSim/Common/VisibleObject.h>
 
 //==============================================================================
 //==============================================================================
@@ -73,13 +72,6 @@ public:
                         double stiffness, double restlength );
 
     // default destructor, copy constructor, copy assignment
-
-    //--------------------------------------------------------------------------
-    // Visible Object Support
-    //--------------------------------------------------------------------------
-    VisibleObject* getDisplayer() const;
-    void updateDisplayer(const SimTK::State& s);
-    void updateGeometry(const SimTK::State& s);
     
     //-----------------------------------------------------------------------------
     // GET and SET Spring parameters
@@ -132,8 +124,6 @@ public:
     OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
 protected:
-    /** how to display the Spring */
-    VisibleObject _displayer;
 
 private:
     void setNull();

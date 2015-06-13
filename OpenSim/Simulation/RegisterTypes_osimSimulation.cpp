@@ -76,6 +76,9 @@
 #include "Model/SystemEnergyProbe.h"
 #include "Model/Umberger2010MuscleMetabolicsProbe.h"
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
+#include "Model/Appearance.h"
+#include "Model/Geometry.h"
+#include "Model/ModelVisualPreferences.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -138,6 +141,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
   try {
 
     Object::registerType( AnalysisSet() );
+    Object::registerType( ModelDisplayHints());
     Object::registerType( Model() );
     Object::registerType( BodyScale() );
     Object::registerType( BodyScaleSet());
@@ -158,7 +162,22 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( PathPointSet() );
     Object::registerType( ConditionalPathPoint() );
     Object::registerType( MovingPathPoint() );
-    Object::registerType( GeometryPath() );
+    Object::registerType( BaseAppearance());
+    Object::registerType( Appearance());
+    Object::registerType( LineAppearance());
+    Object::registerType( ModelVisualPreferences());
+
+    Object::registerType( Brick());
+    Object::registerType( Sphere());
+    Object::registerType( Cylinder());
+    Object::registerType( Ellipsoid());
+    Object::registerType( Mesh());
+    Object::registerType( Torus());
+    Object::registerType( Cone());
+    Object::registerType( LineGeometry());
+    Object::registerType( FrameGeometry());
+    Object::registerType( Arrow());
+    Object::registerType( GeometryPath());
 
     Object::registerType( ControlSet() );
     Object::registerType( ControlConstant() );
@@ -179,7 +198,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     // CURRENT RELEASE
     Object::registerType( SimbodyEngine() );
     Object::registerType( OpenSim::Body() );
-    Object::registerType(OpenSim::Ground());
+    Object::registerType( OpenSim::Ground());
     Object::registerType( PhysicalOffsetFrame());
 
     Object::registerType( WeldJoint());

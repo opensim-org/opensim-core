@@ -1,0 +1,416 @@
+<OpenSimDocument Version="30503">
+	<Model name="BuiltinGeometry">
+		<!--List of bodies that make up this model.-->
+        <Ground name="ground">
+            <!--Geometry that can be attached to the Model Component-->
+            <geometry>
+                <Brick>
+                    <!--Scale factors in X, Y, Z directotions respectively.-->
+                    <scale_factors>1 1 1</scale_factors>
+                    <!--Name of geometry file.-->
+                    <half_lengths>0.5 0.01 0.5</half_lengths>
+                    <connectors>
+                        <Connector_Frame_ name="frame">
+                            <!--Name of the component this Connector should be connected to.-->
+                            <connected_to_name>ground</connected_to_name>
+                        </Connector_Frame_>
+                    </connectors>
+                </Brick>
+                <Brick>
+                    <!--Scale factors in X, Y, Z directotions respectively.-->
+                    <scale_factors>5 1 1</scale_factors>
+                    <!--Half lengths in X, Y, Z respectively.-->
+                    <half_lengths>0.05 0.05 0.05</half_lengths>
+                    <connectors>
+                        <Connector_Frame_ name="frame">
+                            <!--Name of the component this Connector should be connected to.-->
+                            <connected_to_name>LeftAnchor</connected_to_name>
+                        </Connector_Frame_>
+                    </connectors>
+                </Brick>
+                <Brick>
+                    <!--Scale factors in X, Y, Z directotions respectively.-->
+                    <scale_factors>5 1 1</scale_factors>
+                    <!--Half lengths in X, Y, Z respectively.-->
+                    <half_lengths>0.05 0.05 0.05</half_lengths>
+                    <connectors>
+                        <Connector_Frame_ name="frame">
+                            <!--Name of the component this Connector should be connected to.-->
+                            <connected_to_name>RightAnchor</connected_to_name>
+                        </Connector_Frame_>
+                    </connectors>
+                </Brick>
+                <Cylinder>
+                    <!--Radius of cylinder.-->
+                    <radius>0.2</radius>
+                    <!--Half-Height of cylinder.-->
+                    <half_height>0.3</half_height>
+                    <connectors>
+                        <Connector_Frame_ name="frame">
+                            <!--Name of the component this Connector should be connected to.-->
+                            <connected_to_name>CylAnchor</connected_to_name>
+                        </Connector_Frame_>
+                    </connectors>
+                </Cylinder>
+                <Ellipsoid>
+                    <!--Radii of Ellipsoid.-->
+                    <radii>0.2 0.7 0.5</radii>
+                    <connectors>
+                        <Connector_Frame_ name="frame">
+                            <!--Name of the component this Connector should be connected to.-->
+                            <connected_to_name>EllipsoidAnchor</connected_to_name>
+                        </Connector_Frame_>
+                    </connectors>
+                </Ellipsoid>
+            </geometry>
+        </Ground>
+        <BodySet>
+			<objects>
+				<Body name="block">
+					<!--Geometry that can be attached to the Model Component-->
+					<geometry>
+						<Sphere>
+							<!--Radius of sphere.-->
+							<radius>0.1</radius>
+                            <connectors>
+                                <Connector_Frame_ name="frame">
+                                    <!--Name of the component this Connector should be connected to.-->
+                                    <connected_to_name>block</connected_to_name>
+                                </Connector_Frame_>
+                            </connectors>
+                        </Sphere>
+					</geometry>
+					<!--The mass of the body (kg)-->
+					<mass>20</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>0.133333333333333 0.133333333333333 0.133333333333333 0 0 0</inertia>
+				</Body>
+			</objects>
+			<groups />
+		</BodySet>
+		<!--List of Frames that various objects can be anchored to or expressed in, Body frames are builtin and not included in this list.-->
+		<FrameSet>
+			<objects>
+				<PhysicalOffsetFrame name="LeftAnchor">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent">
+							<!--Name of the component this Connector should be connected to.-->
+							<connected_to_name>ground</connected_to_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Translation from the parent frame's origin to this frame's origin, expressed in the parent frame.-->
+					<translation>0 0.05 0.35</translation>
+					<!--orientation of this frame in its parent frame, expressed as a body-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="RightAnchor">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent">
+							<!--Name of the component this Connector should be connected to.-->
+							<connected_to_name>ground</connected_to_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Translation from the parent frame's origin to this frame's origin, expressed in the parent frame.-->
+					<translation>0 0.05 -0.35</translation>
+					<!--orientation of this frame in its parent frame, expressed as a body-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="CylAnchor">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent">
+							<!--Name of the component this Connector should be connected to.-->
+							<connected_to_name>ground</connected_to_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Translation from the parent frame's origin to this frame's origin, expressed in the parent frame.-->
+					<translation>-0.2 0 0</translation>
+					<!--orientation of this frame in its parent frame, expressed as a body-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="EllipsoidAnchor">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent">
+							<!--Name of the component this Connector should be connected to.-->
+							<connected_to_name>ground</connected_to_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Translation from the parent frame's origin to this frame's origin, expressed in the parent frame.-->
+					<translation>-0.6 0.6 0</translation>
+					<!--orientation of this frame in its parent frame, expressed as a body-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+			</objects>
+			<groups />
+		</FrameSet>
+		<!--List of joints that connect the bodies.-->
+		<JointSet>
+			<objects>
+				<FreeJoint name="blockToGround">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+                        <Connector_PhysicalFrame_ name="parent_body">
+							<!--Name of the component this Connector should be connected to.-->
+							<connected_to_name>ground</connected_to_name>
+						</Connector_PhysicalFrame_>
+                        <Connector_PhysicalFrame_ name="child_body">
+							<!--Name of the component this Connector should be connected to.-->
+							<connected_to_name>block</connected_to_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+					<location_in_parent>0 0.05 0</location_in_parent>
+					<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0).-->
+					<orientation_in_parent>0 0 0</orientation_in_parent>
+					<!--Location of the joint in the child body specified in the child reference frame. Default is (0,0,0).-->
+					<location_in_child>0 0 0</location_in_child>
+					<!--Orientation of the joint in the child body specified in the child body reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0)-->
+					<orientation_in_child>0 0 0</orientation_in_child>
+					<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+					<CoordinateSet>
+						<objects>
+							<Coordinate name="blockToGround_xRotation">
+								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+								<motion_type>rotational</motion_type>
+								<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+								<range>-1.5707963267949 1.5707963267949</range>
+								<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+								<prescribed>false</prescribed>
+							</Coordinate>
+							<Coordinate name="blockToGround_yRotation">
+								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+								<motion_type>rotational</motion_type>
+								<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+								<range>-1.5707963267949 1.5707963267949</range>
+								<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+								<prescribed>false</prescribed>
+							</Coordinate>
+							<Coordinate name="blockToGround_zRotation">
+								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+								<motion_type>rotational</motion_type>
+								<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+								<range>-1.5707963267949 1.5707963267949</range>
+								<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+								<prescribed>false</prescribed>
+							</Coordinate>
+							<Coordinate name="blockToGround_xTranslation">
+								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+								<motion_type>translational</motion_type>
+								<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+								<default_value>0.2</default_value>
+								<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+								<range>-1 1</range>
+								<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+								<prescribed>false</prescribed>
+							</Coordinate>
+							<Coordinate name="blockToGround_yTranslation">
+								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+								<motion_type>translational</motion_type>
+								<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+								<default_value>-0.00196133</default_value>
+								<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+								<range>-1 1</range>
+								<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+								<prescribed>false</prescribed>
+							</Coordinate>
+							<Coordinate name="blockToGround_zTranslation">
+								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+								<motion_type>translational</motion_type>
+								<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+								<range>-1 1</range>
+								<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+								<prescribed>false</prescribed>
+							</Coordinate>
+						</objects>
+						<groups />
+					</CoordinateSet>
+					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse == false) or child->parent (reverse == true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
+					<reverse>false</reverse>
+				</FreeJoint>
+			</objects>
+			<groups />
+		</JointSet>
+		<!--Controllers that provide the control inputs for Actuators.-->
+		<ControllerSet>
+			<objects>
+				<PrescribedController>
+					<!--The list of model actuators that this controller will control.The keyword ALL indicates the controller will controll all the acuators in the model-->
+					<actuator_list>muscle1 muscle2</actuator_list>
+					<!--Functions (one per control) describing the controls for actuatorsspecified for this controller.-->
+					<FunctionSet name="ControlFunctions">
+						<objects>
+							<LinearFunction>
+								<coefficients> -0.333333 1</coefficients>
+							</LinearFunction>
+							<LinearFunction>
+								<coefficients> 0.316667 0.05</coefficients>
+							</LinearFunction>
+						</objects>
+						<groups />
+					</FunctionSet>
+				</PrescribedController>
+			</objects>
+			<groups />
+		</ControllerSet>
+		<!--Constraints in the model.-->
+		<ConstraintSet>
+			<objects>
+				<ConstantDistanceConstraint>
+					<!--Specify first of two bodies connected together by the constraint.-->
+                    <connectors>
+                        <Connector_PhysicalFrame_ name="body_1">
+                            <!--Name of the component this Connector should be connected to.-->
+                            <connected_to_name>ground</connected_to_name>
+                        </Connector_PhysicalFrame_>
+                        <Connector_PhysicalFrame_ name="body_2">
+                            <!--Name of the component this Connector should be connected to.-->
+                            <connected_to_name>block</connected_to_name>
+                        </Connector_PhysicalFrame_>
+                    </connectors>
+					<!--Location of the point in first body specified in body1 reference frame.-->
+					<location_body_1>0 0.05 0</location_body_1>
+					<!--Location of the point in second body specified in body2 reference frame.-->
+					<location_body_2>0 0 0</location_body_2>
+					<!--constant distance to be rigidly maintained between the two points fixed on each body.-->
+					<constant_distance>0.2</constant_distance>
+				</ConstantDistanceConstraint>
+			</objects>
+			<groups />
+		</ConstraintSet>
+		<!--Forces in the model (includes Actuators).-->
+		<ForceSet>
+			<objects>
+				<Thelen2003Muscle name="muscle1">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="muscle1-point1">
+									<location> 0 0.05 -0.35</location>
+									<body>ground</body>
+								</PathPoint>
+								<PathPoint name="muscle1-point2">
+									<location> 0 0 -0.05</location>
+									<body>block</body>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+					</GeometryPath>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>1000</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.25</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.1</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
+					<!--Assumed activation level if none is assigned.-->
+					<default_activation>1</default_activation>
+					<!--Assumed fiber length, unless otherwise assigned.-->
+					<default_fiber_length>0.25</default_fiber_length>
+				</Thelen2003Muscle>
+				<Thelen2003Muscle name="muscle2">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="muscle2-point1">
+									<location> 0 0.05 0.35</location>
+									<body>ground</body>
+								</PathPoint>
+								<PathPoint name="muscle2-point2">
+									<location> 0 0 0.05</location>
+									<body>block</body>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+					</GeometryPath>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>1000</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.25</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.1</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
+					<!--Assumed activation level if none is assigned.-->
+					<default_activation>0.05</default_activation>
+					<!--Assumed fiber length, unless otherwise assigned.-->
+					<default_fiber_length>0.25</default_fiber_length>
+				</Thelen2003Muscle>
+				<PrescribedForce name="prescribedForce">
+					<!--Name of the body the force is applied to.-->
+					<body>block</body>
+					<!--Three functions describing the force to be applied.-->
+					<FunctionSet name="forceFunctions">
+						<objects>
+							<PiecewiseLinearFunction>
+								<x> 0 3</x>
+								<y> 0 588.399</y>
+							</PiecewiseLinearFunction>
+							<Constant>
+								<value>0</value>
+							</Constant>
+							<Constant>
+								<value>0</value>
+							</Constant>
+						</objects>
+						<groups />
+					</FunctionSet>
+					<!--Three functions describing the location at which the force is applied.-->
+					<FunctionSet name="pointFunctions">
+						<objects>
+							<Constant>
+								<value>0</value>
+							</Constant>
+							<Constant>
+								<value>0</value>
+							</Constant>
+							<Constant>
+								<value>0</value>
+							</Constant>
+						</objects>
+						<groups />
+					</FunctionSet>
+				</PrescribedForce>
+			</objects>
+			<groups />
+		</ForceSet>
+		<!--Markers in the model.-->
+		<MarkerSet>
+			<objects />
+			<groups />
+		</MarkerSet>
+		<!--Geometry to be used in contact forces.-->
+		<ContactGeometrySet>
+			<objects>
+				<ContactHalfSpace name="floor">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>ground</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>0 0 0</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 -1.5707963267949</orientation>
+				</ContactHalfSpace>
+			</objects>
+			<groups />
+		</ContactGeometrySet>
+	</Model>
+</OpenSimDocument>

@@ -49,14 +49,14 @@ using namespace OpenSim;
 using namespace std;
 
 //==============================================================================
-static const double IntegrationAccuracy = 1e-8;
-static const double SimulationTestTolerance = 1e-6;
+static const double IntegrationAccuracy         = 1e-8;
+static const double SimulationTestTolerance     = 1e-6;
 static const double InitializationTestTolerance = 1e-8;
-static const double CorrectnessTestTolerance = 1e-8;
+static const double CorrectnessTestTolerance    = 1e-8;
 
-static const int SimulationTest = 0;
-static const int InitializationTest = 1;
-static const int CorrectnessTest = 2;
+static const int SimulationTest         = 0;
+static const int InitializationTest     = 1;
+static const int CorrectnessTest        = 2;
 
 // MUSCLE CONSTANTS
 static const double MaxIsometricForce0 = 100.0,
@@ -94,10 +94,10 @@ void simulateMuscle(const Muscle &aMuscle,
     double act0,
     const Function *motion,
     const Function *control,
-    double integrationAccuracy,
-    int testType,
-    double testTolerance,
-    bool printResults);
+                    double integrationAccuracy,
+                    int testType,
+                    double testTolerance,
+                    bool printResults);
 
 
 int main()
@@ -105,31 +105,31 @@ int main()
     SimTK::Array_<std::string> failures;
 
     try {
-        Millard2012EquilibriumMuscle muscle("muscle",
-            MaxIsometricForce0,
-            OptimalFiberLength0,
-            TendonSlackLength0,
-            PennationAngle0);
+    Millard2012EquilibriumMuscle muscle("muscle",
+                    MaxIsometricForce0,
+                    OptimalFiberLength0,
+                    TendonSlackLength0,
+                    PennationAngle0);
 
-        muscle.setActivationTimeConstant(Activation0);
-        muscle.setDeactivationTimeConstant(Deactivation0);
+    muscle.setActivationTimeConstant(Activation0);
+    muscle.setDeactivationTimeConstant(Deactivation0);
 
-        double x0 = 0;
-        double act0 = 0.2;
+    double x0 = 0;
+    double act0 = 0.2;
 
-        Constant control(0.5);
+    Constant control(0.5);
 
-        Sine motion(0.1, SimTK::Pi, 0);
+    Sine motion(0.1, SimTK::Pi, 0);
 
         simulateMuscle(muscle,
             x0,
             act0,
             &motion,
             &control,
-            IntegrationAccuracy,
-            CorrectnessTest,
-            CorrectnessTestTolerance,
-            true);
+        IntegrationAccuracy,
+        CorrectnessTest,
+        CorrectnessTestTolerance,
+        true);
 
 
         cout << "Probes test passed" << endl;
@@ -168,18 +168,18 @@ void simulateMuscle(
     const Muscle &aMuscModel,
     double startX,
     double act0,
-    const Function *motion,  // prescribe motion of free end of muscle
-    const Function *control, // prescribed excitation signal to the muscle
-    double integrationAccuracy,
-    int testType,
-    double testTolerance,
-    bool printResults)
+        const Function *motion,  // prescribe motion of free end of muscle
+        const Function *control, // prescribed excitation signal to the muscle
+        double integrationAccuracy,
+        int testType,
+        double testTolerance,
+        bool printResults)
 {
     string prescribed = (motion == NULL) ? "." : " with Prescribed Motion.";
 
     cout << "\n******************************************************" << endl;
     cout << "Test " << aMuscModel.getConcreteClassName()
-        << " Model" << prescribed << endl;
+         << " Model" << prescribed << endl;
     cout << "******************************************************" << endl;
     using SimTK::Vec3;
 
@@ -200,25 +200,22 @@ void simulateMuscle(
     Model model;
 
     double optimalFiberLength = aMuscModel.getOptimalFiberLength();
-    double pennationAngle = aMuscModel.getPennationAngleAtOptimalFiberLength();
-    double tendonSlackLength = aMuscModel.getTendonSlackLength();
+    double pennationAngle     = aMuscModel.getPennationAngleAtOptimalFiberLength();
+    double tendonSlackLength  = aMuscModel.getTendonSlackLength();
 
     // Use a copy of the muscle model passed in to add path points later
     PathActuator *aMuscle = aMuscModel.clone();
 
     // Get a reference to the model's ground body
     Ground& ground = model.updGround();
-    ground.addDisplayGeometry("box.vtp");
-    ground.updDisplayer()
-        ->setScaleFactors(Vec3(anchorWidth, anchorWidth, 2 * anchorWidth));
+    ground.addMeshGeometry("box.vtp");
 
     OpenSim::Body * ball = new OpenSim::Body("ball",
         ballMass,
         Vec3(0),
-        ballMass*SimTK::Inertia::sphere(ballRadius));
+                        ballMass*SimTK::Inertia::sphere(ballRadius));
 
-    ball->addDisplayGeometry("sphere.vtp");
-    ball->updDisplayer()->setScaleFactors(Vec3(2 * ballRadius));
+    ball->addMeshGeometry("sphere.vtp");
     // ball connected  to ground via a slider along X
     double xSinG = optimalFiberLength*cos(pennationAngle) + tendonSlackLength;
 
@@ -228,13 +225,13 @@ void simulateMuscle(
         Vec3(0),
         *ball,
         Vec3(0),
-        Vec3(0));
+                        Vec3(0));
 
     CoordinateSet& jointCoordinateSet = slider->upd_CoordinateSet();
-    jointCoordinateSet[0].setName("tx");
-    jointCoordinateSet[0].setDefaultValue(1.0);
+        jointCoordinateSet[0].setName("tx");
+        jointCoordinateSet[0].setDefaultValue(1.0);
     jointCoordinateSet[0].setRangeMin(0);
-    jointCoordinateSet[0].setRangeMax(1.0);
+        jointCoordinateSet[0].setRangeMax(1.0);
 
     if (motion != NULL){
         jointCoordinateSet[0].setPrescribedFunction(*motion);
@@ -477,7 +474,7 @@ void simulateMuscle(
     cout << "initCondVec = " << initCondVec << endl;
 
     /* Since all components are allocated on the stack don't have model
-    own them (and try to free)*/
+       own them (and try to free)*/
     //  model.disownAllComponents();
     model.setName("testProbesModel");
     cout << "Saving model... " << endl;
@@ -567,17 +564,17 @@ void simulateMuscle(
 
     double realTimeMultiplier = ((finalTime - initialTime) / comp_time);
     printf("testMuscles: Realtime Multiplier: %f\n"
-        "           :  simulation duration / clock duration\n"
-        "              > 1 : faster than real time\n"
-        "              = 1 : real time\n"
-        "              < 1 : slower than real time\n",
+           "           :  simulation duration / clock duration\n"
+           "              > 1 : faster than real time\n"
+           "              = 1 : real time\n"
+           "              < 1 : slower than real time\n",
         realTimeMultiplier);
 
     /*
     ASSERT(comp_time <= (finalTime-initialTime));
     printf("testMuscles: PASSED Realtime test\n"
-    "             %s simulation time: %f with accuracy %f\n\n",
-    actuatorType.c_str(), comp_time , accuracy);
+           "             %s simulation time: %f with accuracy %f\n\n",
+                         actuatorType.c_str(), comp_time , accuracy);
     */
 
     //An analysis only writes to a dir that exists, so create here.

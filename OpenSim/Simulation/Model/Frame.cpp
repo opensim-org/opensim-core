@@ -73,6 +73,20 @@ const SimTK::Transform& Frame::getGroundTransform(const SimTK::State& s) const
             getCacheEntry(s, groundTransformIndex)).get();
 }
 
+void Frame::extendAddGeometry(OpenSim::Geometry& geom) {
+    if (geom.getFrameName() == "")
+        geom.setFrameName(getName());
+}
+
+
+void Frame::addMeshGeometry(const std::string& aGeometryFileName, const SimTK::Vec3 scale)
+{
+    Mesh geom(aGeometryFileName);
+    geom.set_scale_factors(scale);
+    geom.setFrameName(getName());
+    addGeometry(geom);
+}
+
 //=============================================================================
 // FRAME COMPUTATIONS
 //=============================================================================
