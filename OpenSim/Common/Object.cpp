@@ -1657,14 +1657,24 @@ osimCommonInstantiator::osimCommonInstantiator()
         registerDllClasses(); 
 } 
 
+class StackWalkerPrint : public StackWalker {
+public:
+    string output;
+    void OnOutput(LPCSTR szText) {
+        output += szText;
+    }
+};
+
 // TODO temporary printing of stack trace to debug appveyor crashes;
 // see issue #350.
 // Copied from oroboro.com/stack-trace-on-crash
 static inline void printStackTrace(FILE* out = stderr) {
 #if WIN32
     fprintf(out, "Stack trace:\n");
-    StackWalker sw;
-    sw.ShowCallstack();
+    StackWalkerPrint sw;
+    bool result = sw.ShowCallstack();
+    std::cout << sw.output;
+    std::cout << "Was stackwalker successful? " << result << std::endl;
 #endif
 }
 
