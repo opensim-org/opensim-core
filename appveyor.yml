@@ -13,6 +13,9 @@
 # "/EHsc" is to "unwind semantics" to get error messages when using "/WX" (C4530).
 # However, this was causing some weird behavior. Not treating warnings
 # as errors for now.
+
+# This specifies how Appveyor will number the builds.
+version: '{build}'
   
 shallow_clone: true
 
@@ -21,6 +24,13 @@ platform: x64
 init:
   # Put MSBuild on the path.
   - SET PATH=C:\Program Files (x86)\MSBuild\12.0\bin\;%PATH%
+  
+  ## To remote-desktop into the virtual machine.
+  # Get a script that will allow remote desktop.
+  #- git clone -q https://github.com/appveyor/ci.git
+  # This script will give an IP address, username, and password
+  # to use to log into the virtual machine using Windows remote desktop.
+  #- ps: .\ci\scripts\enable-rdp.ps1
   
 nuget:
   account_feed: true
