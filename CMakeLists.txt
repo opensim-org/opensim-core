@@ -517,7 +517,7 @@ SET(BUILD_API_ONLY OFF CACHE BOOL "Build/install only headers, libraries,
 MARK_AS_ADVANCED( BUILD_API_ONLY )
 
 # This directory contains files (e.g., .osim) that multiple tests may want to
-# use. See the OPENSIM_COPY_SHARED_TEST_FILES function in
+# use. See the OpenSimCopySharedTestFiles function in
 # cmake/OpenSimMacros.cmake.
 SET(OPENSIM_SHARED_TEST_FILES_DIR "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared")
 

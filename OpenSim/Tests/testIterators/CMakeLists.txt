@@ -13,7 +13,7 @@ SET(TEST_TARGET testIterators)
 SET(TEST_DIR ${OpenSim_BINARY_DIR}/OpenSim/Tests/testIterators)
 TARGET_LINK_LIBRARIES(${TEST_TARGET} ${LINK_LIBRARIES})
 
-OPENSIM_COPY_SHARED_TEST_FILES(arm26.osim)
+OpenSimCopySharedTestFiles(arm26.osim)
 
 #
 # Testing

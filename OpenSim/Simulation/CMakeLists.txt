@@ -16,7 +16,7 @@ FOREACH(dir ${SIMULATION_SUBDIRS})
     LIST(APPEND INCLUDES ${INCLUDES_ONEDIR})
 ENDFOREACH()
 
-OPENSIM_ADD_LIBRARY(
+OpenSimAddLibrary(
     KIT Simulation
     AUTHORS "Ajay_Seth-Michael_Sherman-Ayman_Habib"
     LINKLIBS ${Simbody_LIBRARIES} osimCommon osimLepton

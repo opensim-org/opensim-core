@@ -11,7 +11,7 @@ ADD_EXECUTABLE(testComponents testComponents.cpp)
 
 TARGET_LINK_LIBRARIES(testComponents ${LINK_LIBRARIES} )
 
-OPENSIM_COPY_SHARED_TEST_FILES(gait10dof18musc_subject01.osim)
+OpenSimCopySharedTestFiles(gait10dof18musc_subject01.osim)
 
 
 #

@@ -20,7 +20,7 @@ include(CMakeParseArguments)
 #
 # Here's an example from OpenSim/Common/CMakeLists.txt:
 #
-#   OPENSIM_ADD_LIBRARY(
+#   OpenSimAddLibrary(
 #       KIT Common
 #       AUTHORS "Clay_Anderson-Ayman_Habib_and_Peter_Loan"
 #       LINKLIBS ${Simbody_LIBRARIES}
@@ -28,7 +28,7 @@ include(CMakeParseArguments)
 #       SOURCES ${SOURCES}
 #       TESTDIRS "Test"
 #       )
-FUNCTION(OPENSIM_ADD_LIBRARY)
+FUNCTION(OpenSimAddLibrary)
 
     # Parse arguments.
     # ----------------
@@ -152,7 +152,7 @@ ENDFUNCTION()
 #
 # Arguments are a list of files in the test resources directory
 # (OPENSIM_SHARED_TEST_FILES_DIR) to copy.
-FUNCTION(OPENSIM_COPY_SHARED_TEST_FILES)
+FUNCTION(OpenSimCopySharedTestFiles)
     IF(BUILD_TESTING)
         FOREACH(filename ${ARGN})
             CONFIGURE_FILE("${OPENSIM_SHARED_TEST_FILES_DIR}/${filename}"
