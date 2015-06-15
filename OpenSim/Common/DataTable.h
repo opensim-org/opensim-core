@@ -8,7 +8,6 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2015 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -132,40 +131,6 @@ public:
   MetaDataTypeMismatch(const std::string& expl) : runtime_error(expl) {}
 };
 
-
-// * Derive DataTable for timeseries with an additional private member.
-// * Allow for move constructors.
-// * Allow setting the type of meta-data.
-// * Provide a global function to create DataTable that infers the element
-//   datatype.
-// * Wrap DataTable in a smart pointer or make DataTable itself a smart
-//   pointer ?
-// * Are all the functions efficient ? Any better ways of using SimTK::Matrix_ ?
-// * Are all the operations correct ?
-// * Do the mutating operations allow users to invalidate the DataTable ?
-// * Include time-complexity in documentation.
-// * Are the function names and signatures consistent with rest of the code ?
-// * How to enforce constness in the functions getRow and getCol ?
-// * For the function getAsMatrix, is it better to return reference to
-//   underlying matrix for efficiency ?
-// * All throw statements are limited to Debug builds. 
-// * Why not use C++14 ?
-// * Have all the exceptions thrown from DataTable to be in the namespace
-//   OpenSim.
-// * Let me know if I have missed any test.
-// * Are the virtual constructors useful here ? The base class does not have
-//   any other functions.
-// * We should probably add initializer list constructors, move constructors and
-//   iterator constructors to SimTK::Matrix and its derivatives.
-// * Is it possible to make getRow give a compile time error if the target is
-//   not a constant variable.
-// * Default constructing a RowVector gives 1x1 matrix but default constructing
-//   a Vector gives 0x1 matrix ?
-// * Any useful methods I have missed ?
-// * I can explain the interface and examples briefly in a meeting if you like.
-// * Try using static_assert more in member functions.
-// * Better ways of documenting ?
-// * It will be good if getRow can allow us to catch errors at compile time.
 
 /**----------------------------------------------------------------------------*
 * \brief DataTable_ is a in-memory storage container for data(in the form of a *
