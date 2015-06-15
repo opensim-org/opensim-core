@@ -425,7 +425,7 @@ void testAddCol(OpenSim::DataTable_<ET>& dt,
   // and this fully cover the code in the addCol function. Using new_data 
   // that is a repeated version of the data.
   auto new_data = data;
-  new_data.insert(new_data.cend(), data.cbegin(), data.cend());
+  new_data.insert(new_data.end(), data.cbegin(), data.cend());
   dt.addCol(new_data.cbegin(), new_data.cend());
 
   // Check the size of the DataTable.
