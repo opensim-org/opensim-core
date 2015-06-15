@@ -159,12 +159,6 @@ def test_markAdoptedSets():
     del fus
     del fu1
 
-    gs = osim.GeometrySet()
-    dg = osim.DisplayGeometry()
-    gs.adoptAndAppend(dg)
-    del gs
-    del dg
-
     s = osim.ScaleSet()
     o = osim.Scale()
     s.adoptAndAppend(o)
@@ -203,6 +197,12 @@ def test_markAdoptedSets():
 
     s = osim.MeasurementSet()
     o = osim.Measurement()
+    s.adoptAndAppend(o)
+    del s
+    del o
+
+    s = osim.FrameSet()
+    o = osim.PhysicalFrame()
     s.adoptAndAppend(o)
     del s
     del o

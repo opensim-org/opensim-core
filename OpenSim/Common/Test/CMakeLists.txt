@@ -3,7 +3,7 @@
 FILE(GLOB TEST_PROGS "*est*.cpp")
 
 LINK_LIBRARIES(debug osimCommon${CMAKE_DEBUG_POSTFIX}   optimized osimCommon
-               ${SIMTK_ALL_LIBS}
+               ${Simbody_LIBRARIES}
 )
 
 FOREACH(TEST_PROG ${TEST_PROGS})

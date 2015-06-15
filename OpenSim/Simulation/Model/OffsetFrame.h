@@ -265,6 +265,7 @@ SimTK::Transform OffsetFrame<C>::extendFindTransformInBaseFrame() const
 template<class C>
 void OffsetFrame<C>::extendFinalizeFromProperties()
 {
+    Super::extendFinalizeFromProperties();
     _offsetTransform.updP() = get_translation();
     _offsetTransform.updR().setRotationToBodyFixedXYZ(get_orientation());
 }

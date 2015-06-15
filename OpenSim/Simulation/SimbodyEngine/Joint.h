@@ -58,14 +58,18 @@ A Seth, M Sherman, P Eastman, S Delp; Nonlinear dynamics 62 (1), 291-303
 
 <b>C++ example</b>
 \code{.cpp}
-    \\ Define a Pin joint between ground and platform
-    PinJoint* platformToGround = new PinJoint("PlatformToGround", ground, locationInParent, orientationInParent, *platform, locationInChild, orientationInChild, false);
+    // Define a Pin joint between ground and platform.
+    PinJoint* platformToGround = new PinJoint("PlatformToGround",
+            ground, locationInParent, orientationInParent,
+            *platform, locationInChild, orientationInChild, false);
 \endcode
 
 <b>Python example</b>
 \code{.py}
-    ##Define a ball joint between blockA and blockB
-    abJoint  = osim.BallJoint('JointName',blockA,locInParent,oriInParent,blockB,locInChild,oriInChild, 0)
+    # Define a ball joint between blockA and blockB.
+    abJoint  = osim.BallJoint('JointName',
+            blockA, locInParent, oriInParent,
+            blockB, locInChild, oriInChild, False)
 \endcode
 
 @author Ajay Seth
@@ -266,6 +270,16 @@ public:
     * @param aScaleSet Set of XYZ scale factors for the bodies.
     */
     virtual void scale(const ScaleSet& aScaleSet);
+
+    /**
+    * ModelComponent display interface.
+    *
+    * This method appends the visuals for the Joint to the list appendToThis.
+    * Base class adds geometry for the two Frames making the joint, any extra 
+    * gometry needed to visualize the Joint would be added by the subclass.
+    */
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+        SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
 
 
 protected:

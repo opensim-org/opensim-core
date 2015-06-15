@@ -125,12 +125,10 @@ void WrapSphereObst::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
         string errorMessage = "Error: radius for WrapSphereObst " + getName() + " was either not specified, or is negative.";
         throw Exception(errorMessage);
     }
-
-    _displayer.freeGeometry();
-    AnalyticSphere* sph = new AnalyticSphere(_radius);
+    
+/*  Sphere* sph = new Sphere(_radius);
     setGeometryQuadrants(sph);
-    _displayer.addGeometry(sph);
-
+*/
 }
 
 //_____________________________________________________________________________

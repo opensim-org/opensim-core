@@ -21,7 +21,7 @@ ADD_LIBRARY(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN} SHARED
     )
 TARGET_LINK_LIBRARIES(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN}
     osimSimulation osimActuators osimCommon osimAnalyses osimTools osimLepton
-    ${SIMTK_ALL_LIBS}
+    ${Simbody_LIBRARIES}
 )
 SET_TARGET_PROPERTIES(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN}
     PROPERTIES
@@ -62,7 +62,10 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR
             set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
             set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
         else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+            if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+            endif()
         endif()
     else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")

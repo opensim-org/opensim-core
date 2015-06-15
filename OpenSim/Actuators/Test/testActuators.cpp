@@ -22,14 +22,14 @@
  * -------------------------------------------------------------------------- */
 //========================  Actuators Tested ==================================
 //
-// Tests Include:
-//    1. testTorqueActuator()
+//  Tests Include:
+//      1.  testTorqueActuator()
 //    2. testBodyActuator()
-//    2. testClutchedPathSpring()
-//    3. testMcKibbenActuator()
+//      2.  testClutchedPathSpring()
+//      3.  testMcKibbenActuator()
 //    4. testActuatorsCombination()
 //      
-// Add tests here as Actuators are added to OpenSim
+//     Add tests here as Actuators are added to OpenSim
 //
 //=============================================================================
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -373,7 +373,7 @@ void testClutchedPathSpring()
     // body the path spring is connected to at both ends
     OpenSim::Body* block =
         new OpenSim::Body("block", mass ,Vec3(0),  mass*Inertia::brick(0.2, 0.1, 0.1));
-    block->addDisplayGeometry("box.vtp");
+    block->addMeshGeometry("box.vtp");
     block->scale(Vec3(0.2, 0.1, 0.1), false);
 
     double dh = mass*gravity_vec(1)/stiffness;
@@ -574,7 +574,7 @@ void testBodyActuator()
                                              blockMassCenter, blockInertia);
 
     // Add display geometry to the block to visualize in the GUI
-    block->addDisplayGeometry("block.vtp");
+    block->addMeshGeometry("block.vtp");
 
     Vec3 locationInParent(0, blockSideLength / 2, 0), orientationInParent(0), 
         locationInBody(0), orientationInBody(0);
@@ -757,7 +757,7 @@ void testActuatorsCombination()
                                     blockMassCenter, blockInertia);
 
     // Add display geometry to the block to visualize in the GUI
-    block->addDisplayGeometry("block.vtp");
+    block->addMeshGeometry("block.vtp");
 
     // Make a FreeJoint from block to ground
     Vec3 locationInParent(0, blockSideLength/2, 0), orientationInParent(0), //locationInParent(0, blockSideLength, 0)

@@ -48,8 +48,10 @@ using namespace std;
 // up version to 20302 for Muscle's pennation_angle -> pennation_angle_at_optimal
 // up version to 30500 for OpenSim 4.0 development and Connectors
 // up version to 30501 for Changing serialization of Marker
+// up version to 30502 for Changing serialization of Geometry
+// up version to 30503 for Changing serialization of Ground
 
-const int XMLDocument::LatestVersion = 30501;   
+const int XMLDocument::LatestVersion = 30503;   
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================

@@ -45,11 +45,16 @@ PhysicalFrame::PhysicalFrame() : Frame()
 {
     setAuthors("Matt DeMers, Ayman Habib, Ajay Seth");
     constructProperties();
+    FrameGeometry frm(0.2);
+    frm.setName("frame_geometry");
+    frm.set_display_radius(.004);
+    frm.setRepresentation(Geometry::Hide);
+    append_geometry(frm);
+
 }
 
 void PhysicalFrame::constructProperties()
 {
-    constructProperty_VisibleObject(VisibleObject());
     constructProperty_WrapObjectSet(WrapObjectSet());
 }
 
@@ -74,26 +79,22 @@ SimTK::Transform PhysicalFrame::
     return getMobilizedBody().getBodyTransform(s);
 }
 
-
 SimTK::Transform PhysicalFrame::extendFindTransformInBaseFrame() const
 {
-    return Transform();
+    return SimTK::Transform();
 }
 
 void PhysicalFrame::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
 
+    // Better use name search or more robust method
+    if (upd_geometry(0).getFrameName() == "")
+        upd_geometry(0).setFrameName(getName());
+
     for (int i = 0; i < get_WrapObjectSet().getSize(); i++)
         get_WrapObjectSet().get(i).connectToModelAndBody(aModel, *this);
 }
-
-
-void PhysicalFrame::addDisplayGeometry(const std::string &aGeometryFileName)
-{
-    updDisplayer()->setGeometryFileName(updDisplayer()->getNumGeometryFiles(), aGeometryFileName);
-}
-
 
 const WrapObject* PhysicalFrame::getWrapObject(const string& aName) const
 {
@@ -117,11 +118,13 @@ void PhysicalFrame::scale(const SimTK::Vec3& aScaleFactors)
         upd_WrapObjectSet().get(i).scale(aScaleFactors);
 
     SimTK::Vec3 oldScaleFactors;
-    getDisplayer()->getScaleFactors(oldScaleFactors);
+    //NewGeometry getDisplayer()->getScaleFactors(oldScaleFactors);
 
     for (int i = 0; i<3; i++) {
         oldScaleFactors[i] *= aScaleFactors[i];
     }
+    // TODO: When we revamp scaling and solve the issue with where scale factors 
+    // are maintained, we need to fix this or remove it completely -Ayman 5/15
     // Update scale factors for displayer
-    updDisplayer()->setScaleFactors(oldScaleFactors);
+    //NewGeometry updDisplayer()->setScaleFactors(oldScaleFactors);
 }

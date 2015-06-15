@@ -133,7 +133,6 @@ void ContactMesh::loadMesh(const std::string& filename)
         if (restoreDirectory) IO::chDir(savedCwd);
         _geometry = new SimTK::ContactGeometry::TriangleMesh(mesh);
     }
-    _displayer.addGeometry(new PolyhedralGeometry(filename));
 
 }
 
