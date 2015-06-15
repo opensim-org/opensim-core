@@ -143,3 +143,21 @@ FUNCTION(OPENSIM_ADD_LIBRARY)
     ENDIF()
 
 ENDFUNCTION()
+
+# Copy a file from the directory containing test resources (model files, data,
+# etc.) to the directory in which a test will be executed. This function makes
+# it easy to re-use files that are used in tests. With an easier mechanism for
+# re-using resources, we won't end up version-controllingthe same file into
+# multiple test directories.
+#
+# Arguments are a list of files in the test resources directory
+# (OPENSIM_TEST_RESOURCES_DIR) to copy.
+FUNCTION(OPENSIM_COPY_TEST_RESOURCES)
+    IF(BUILD_TESTING)
+        FOREACH(filename ${ARGN})
+            CONFIGURE_FILE("${OPENSIM_TEST_RESOURCES_DIR}/${filename}"
+                "${CMAKE_CURRENT_BINARY_DIR}"
+                COPYONLY)
+        ENDFOREACH()
+    ENDIF()
+ENDFUNCTION()

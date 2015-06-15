@@ -903,6 +903,7 @@ SET_ADOPT_HELPER(Measurement);
 SET_ADOPT_HELPER(Marker);
 SET_ADOPT_HELPER(Control);
 SET_ADOPT_HELPER(Frame);
+SET_ADOPT_HELPER(Force);
 
 
 // These didn't work with the macro for some reason. I got complaints about
