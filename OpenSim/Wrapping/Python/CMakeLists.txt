@@ -96,6 +96,9 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/setup.py DESTINATION sdk/python)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/opensim.py
     DESTINATION sdk/python/opensim)
 INSTALL(FILES __init__.py DESTINATION sdk/python/opensim)
+INSTALL(FILES ${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim
+              ${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim
+        DESTINATION sdk/python/opensim/tests)
 INSTALL(DIRECTORY tests DESTINATION sdk/python/opensim)
 
 ENDIF(BUILD_PYTHON_WRAPPING)

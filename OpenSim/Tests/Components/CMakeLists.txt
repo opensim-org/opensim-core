@@ -11,19 +11,7 @@ ADD_EXECUTABLE(testComponents testComponents.cpp)
 
 TARGET_LINK_LIBRARIES(testComponents ${LINK_LIBRARIES} )
 
-FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
-
-#
-# Copy files to run dir
-#
-FOREACH (dataFile ${TEST_FILES})
-    ADD_CUSTOM_COMMAND(
-        TARGET testComponents
-        COMMAND ${CMAKE_COMMAND}
-        ARGS -E copy
-        ${dataFile}
-        ${OpenSim_BINARY_DIR}/OpenSim/Tests/Components)
-ENDFOREACH (dataFile)
+OPENSIM_COPY_SHARED_TEST_FILES(gait10dof18musc_subject01.osim)
 
 
 #

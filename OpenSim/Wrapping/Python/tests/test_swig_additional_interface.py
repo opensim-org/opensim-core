@@ -2,15 +2,14 @@
 make to the C++ API, via the SWIG interface (*.i) file.
 
 """
+
+import inspect
 import os
 
-import opensim as osim
+this_file_dir = os.path.dirname(
+                os.path.abspath(inspect.getfile(inspect.currentframe())))
 
-def test_check_env_var():
-    if 'OPENSIM_HOME' not in os.environ:
-        raise Exception("To run tests, must set environment "
-                "variable OPENSIM_HOME "
-                "to an OpenSim installation.")
+import opensim as osim
 
 def test_markAdopted1():
     """Ensures that we can tell an object that some other object is managing
@@ -69,8 +68,7 @@ def test_markAdopted2():
     f.setBody2ByName("body")
     a.addForce(f)
 
-    model = osim.Model(os.environ['OPENSIM_HOME'] +
-            "/Models/Arm26/arm26.osim")
+    model = osim.Model(os.path.join(this_file_dir, "arm26.osim"))
     g = osim.CoordinateActuator('r_shoulder_elev')
     model.addForce(g)
 
