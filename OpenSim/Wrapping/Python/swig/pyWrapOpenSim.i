@@ -264,6 +264,8 @@ using namespace SimTK;
 %rename(printToXML) OpenSim::XMLDocument::print();
 %rename(printToFile) OpenSim::Storage::print;
 
+%rename(appendNative) OpenSim::ForceSet::append(Force* aForce);
+
 /* If needed %extend will be used, these operators are not supported.*/
 %ignore *::operator[];
 %ignore *::operator=;
@@ -900,6 +902,8 @@ SET_ADOPT_HELPER(MarkerPair);
 SET_ADOPT_HELPER(Measurement);
 SET_ADOPT_HELPER(Marker);
 SET_ADOPT_HELPER(Control);
+SET_ADOPT_HELPER(Frame);
+SET_ADOPT_HELPER(Force);
 
 
 // These didn't work with the macro for some reason. I got complaints about
@@ -920,10 +924,12 @@ SET_ADOPT_HELPER(Control);
 %}
 };
 
-%extend OpenSim::FrameSet {
+// Attempt to solve segfault when calling ForceSet::append()
+// from scripting.
+%extend OpenSim::ForceSet {
 %pythoncode %{
-    def adoptAndAppend(self, aFrame):
-        aFrame._markAdopted()
-        return super(FrameSet, self).adoptAndAppend(aFrame)
+    def append(self, aForce):
+        aForce._markAdopted()
+        return self.appendNative(aForce)
 %}
 };

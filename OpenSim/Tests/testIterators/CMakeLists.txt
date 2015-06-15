@@ -13,25 +13,7 @@ SET(TEST_TARGET testIterators)
 SET(TEST_DIR ${OpenSim_BINARY_DIR}/OpenSim/Tests/testIterators)
 TARGET_LINK_LIBRARIES(${TEST_TARGET} ${LINK_LIBRARIES})
 
-FILE(GLOB TEST_FILES 
-    ${EXAMPLE_DIR}/*.obj 
-    ${EXAMPLE_DIR}/*.osim 
-    ${EXAMPLE_DIR}/*.xml 
-    ${EXAMPLE_DIR}/*.sto 
-    ${EXAMPLE_DIR}/*.mot
-    *.obj *.osim *.xml *.sto *.mot)
-
-#
-# Copy files to run dir
-#
-FOREACH (dataFile ${TEST_FILES})
- ADD_CUSTOM_COMMAND(
-    TARGET ${TEST_TARGET}
-    COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy
-    ${dataFile}
-    ${TEST_DIR})
-ENDFOREACH (dataFile) 
+OPENSIM_COPY_TEST_RESOURCES(arm26.osim)
 
 #
 # Testing

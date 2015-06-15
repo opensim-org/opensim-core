@@ -2,7 +2,12 @@
 make to the C++ API, via the SWIG interface (*.i) file.
 
 """
+
+import inspect
 import os
+
+this_file_dir = os.path.dirname(
+                os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 import opensim as osim
 
@@ -69,8 +74,7 @@ def test_markAdopted2():
     f.setBody2ByName("body")
     a.addForce(f)
 
-    model = osim.Model(os.environ['OPENSIM_HOME'] +
-            "/Models/Arm26/arm26.osim")
+    model = osim.Model(os.path.join(this_file_dir, "arm26.osim"))
     g = osim.CoordinateActuator('r_shoulder_elev')
     model.addForce(g)
 
@@ -201,12 +205,27 @@ def test_markAdoptedSets():
     del s
     del o
 
-    # TODO 
-    # s = osim.ProbeSet()
-    # o = osim.Umberger2010MuscleMetabolicsProbe()
-    # s.adoptAndAppend(o)
-    # del s
-    # del o
+    s = osim.FrameSet()
+    o = osim.Body()
+    s.adoptAndAppend(o)
+    del s
+    del o
+
+    s = osim.ForceSet()
+    o = osim.CoordinateLimitForce()
+    s.adoptAndAppend(o)
+    del s
+    del o
+    
+    s = osim.ForceSet()
+    o = osim.SpringGeneralizedForce()
+    s.append(o)
+
+    s = osim.ProbeSet()
+    o = osim.Umberger2010MuscleMetabolicsProbe()
+    s.adoptAndAppend(o)
+    del s
+    del o
 
 
     a = osim.Model()
