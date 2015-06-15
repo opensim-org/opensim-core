@@ -114,10 +114,6 @@ script:
   - if [ "$BUILD_WRAPPING" = "on" ]; then make -j8 install > /dev/null; fi
   # Add OpenSim libraries to library path.
   - if [ "$BUILD_WRAPPING" = "on" ]; then export LD_LIBRARY_PATH=$OPENSIM_HOME/lib; fi
-  # For python tests, we need to copy over some model files.
-  # This is temporary; in the future, we will use the opensim-models repo.
-  - if [ "$BUILD_WRAPPING" = "on" ]; then mkdir -p $OPENSIM_HOME/Models/Arm26 && cp OpenSim/Tools/Test/arm26.osim "$_"; fi
-  - if [ "$BUILD_WRAPPING" = "on" ]; then mkdir -p $OPENSIM_HOME/Models/Gait10dof18musc && cp Applications/CMC/test/gait10dof18musc_subject01.osim "$_/gait10dof18musc.osim"; fi
   # Go to the python wrapping package directory.
   - if [ "$BUILD_WRAPPING" = "on" ]; then cd $OPENSIM_HOME/sdk/python; fi
   # Run the python tests, verbosely.

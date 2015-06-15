@@ -11,6 +11,7 @@ Contents:
 
 - [Ways to Contribute](#ways-to-contribute)
 - [Making a Pull Request](#making-a-pull-request-pr)
+- [Writing tests](#writing-tests)
 - [Checking for Memory Leaks through GitHub](#checking-for-memory-leaks-through-github)
 - [Coding Standards](#coding-standards)
 - [List of Contributors](#list-of-contributors)
@@ -57,6 +58,11 @@ When you are ready to make a PR, please adhere to following guidelines:
 7. As the changes introduced by your pull request become finalized throughout the review process, you should decide if your changes warrant being mentioned in the change log. If so, update the [CHANGELOG.md](https://github.com/opensim-org/opensim-core/blob/master/CHANGELOG.md) with an additional commit to your pull request.
 
 A few additional practices will help streamline the code review process. Please use tags (i.e., @user_name) and quoting to help keep the discussion organized. Please also call for a meeting or Skype call when discussions start to stagnate. In addition, we recommend getting input on your interface design before implementing a major new component or other change.
+
+
+Writing tests
+-------------
+There are directories of tests scattered throughout the repository. Each directory contains most of the file resources (e.g., .osim model files) necessary to run the tests. When building, these files are copied over into the build directory. Some of these files are used by multiple tests from different parts of the repository. To avoid duplicating these files within the repository, such files should go into the `OpenSim/Tests/resources` directory. You can then use the `OPENSIM_COPY_TEST_RESOURCES` CMake macro (in `cmake/OpenSimMacros.osim`) to copy the necessary shared resources to the proper build directory.
 
 
 Checking for Memory Leaks through GitHub

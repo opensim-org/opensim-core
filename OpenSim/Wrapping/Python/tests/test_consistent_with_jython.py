@@ -24,8 +24,7 @@ def test_check_env_var():
 def test_makeUlnaHeavy():
 
     # Get handle to the Arm26 model
-    oldModel = osim.Model(os.environ['OPENSIM_HOME'] +
-            "/Models/Arm26/arm26.osim")
+    oldModel = osim.Model(os.path.join(this_file_dir, "arm26.osim"))
     # Create a fresh copy
     myModel = oldModel.clone()
 
@@ -62,8 +61,7 @@ def test_makeUlnaHeavy():
 
 def test_alterTendonSlackLength():
 
-    oldModel = osim.Model(os.environ['OPENSIM_HOME'] +
-            "/Models/Arm26/arm26.osim")
+    oldModel = osim.Model(os.path.join(this_file_dir, "arm26.osim"))
 
     # Create a fresh copy
     myModel = oldModel.clone()
@@ -105,8 +103,7 @@ def test_alterTendonSlackLength():
 
 def test_strengthenModel():
 
-    oldModel = osim.Model(os.environ['OPENSIM_HOME'] +
-            "/Models/Arm26/arm26.osim")
+    oldModel = osim.Model(os.path.join(this_file_dir, "arm26.osim"))
 
     # Create a fresh copy
     myModel = oldModel.clone()
@@ -181,8 +178,8 @@ def test_StorageToPieceWiseLinearFunction():
 
 def test_addMetabolicProbes():
 
-    model = osim.Model(os.environ['OPENSIM_HOME'] +
-            "/Models/Gait10dof18musc/gait10dof18musc.osim")
+    model = osim.Model(os.path.join(this_file_dir,
+        "gait10dof18musc_subject01.osim"))
 
     # Twitch ratios for gait1018.
     twitchRatios = { 'hamstrings': 0.49, 'bifemsh': 0.53, 'glut_max': 0.55,
@@ -220,7 +217,6 @@ def test_addMetabolicProbes():
     wholeBodyProbe.set_report_total_metabolics_only(False);
     
     # Add the probe to the model and provide a name.
-    # TODO SEGFAULT AT THIS NEXT LINE:
     model.addProbe(wholeBodyProbe)
     wholeBodyProbe.setName("metabolic_power")
     
