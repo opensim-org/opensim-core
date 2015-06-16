@@ -176,8 +176,8 @@ public:
   /// \param ncols Number of columns.
   /// \param val   Value to initialize all the entries to.
   DataTable_(size_t nrows,
-	     size_t ncols,
-	     const ET& val = ET{SimTK::NaN}) :
+             size_t ncols,
+             const ET& val = ET{SimTK::NaN}) :
     data{int(nrows), int(ncols), val}, metadata{}, col_ind{} {}
 
   /// Construct DataTable using an iterator(satisfying requirement of an 
@@ -201,10 +201,10 @@ public:
   ///                      That is first == last.
   template<typename InputIt>
   DataTable_(InputIt first,
-	     typename std::enable_if<!std::is_integral<InputIt>::value,
+             typename std::enable_if<!std::is_integral<InputIt>::value,
                                      InputIt>::type last,
-	     const size_t ndir,
-	     const InputItDir dir = ROWWISE,
+             const size_t ndir,
+             const InputItDir dir = ROWWISE,
              const bool allow_missing = false) :
     data{static_cast<int>(dir == ROWWISE ? 1    : ndir), 
          static_cast<int>(dir == ROWWISE ? ndir :    1)},
@@ -926,10 +926,10 @@ public:
     using ColLabelsValueType = typename ColLabelsType::value_type;
     checkColExists(colind);
     auto res = std::find_if(col_ind.begin(), 
-			    col_ind.end(), 
-			    [colind] (const ColLabelsValueType& kv) {
-			      return kv.second == colind;
-			    });
+                            col_ind.end(), 
+                            [colind] (const ColLabelsValueType& kv) {
+                              return kv.second == colind;
+                            });
     return res != col_ind.end();
   }
 
@@ -995,10 +995,10 @@ public:
     checkColExists(colind);
     using ColLabelsValueType = typename ColLabelsType::value_type;
     auto res = std::find_if(col_ind.begin(),
-			    col_ind.end(),
-			    [colind] (const ColLabelsValueType& kv) {
-			      return kv.second == colind;
-			    });
+                            col_ind.end(),
+                            [colind] (const ColLabelsValueType& kv) {
+                              return kv.second == colind;
+                            });
     if(res == col_ind.end()) {
       throw ColumnHasNoLabel{"Column " + std::to_string(colind) + 
                              " has no label."};
