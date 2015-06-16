@@ -1,8 +1,8 @@
-INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
+include_directories(${OpenSim_SOURCE_DIR} 
             ${OpenSim_SOURCE_DIR}/Vendors)
 
 
-LINK_LIBRARIES(
+link_libraries(
     debug osimSimulation${CMAKE_DEBUG_POSTFIX}   optimized osimSimulation
     debug osimActuators${CMAKE_DEBUG_POSTFIX}    optimized osimActuators
     debug osimCommon${CMAKE_DEBUG_POSTFIX}   optimized osimCommon
@@ -11,29 +11,29 @@ LINK_LIBRARIES(
     ${Simbody_LIBRARIES}
 )
 
-FILE(GLOB TEST_PROGS "test*.cpp")
+file(GLOB TEST_PROGS "test*.cpp")
 
-FOREACH(TEST_PROG ${TEST_PROGS})
-    GET_FILENAME_COMPONENT(TEST_ROOT ${TEST_PROG} NAME_WE)
+foreach(TEST_PROG ${TEST_PROGS})
+    get_filename_component(TEST_ROOT ${TEST_PROG} NAME_WE)
 
     # Link with shared library
-    ADD_EXECUTABLE(${TEST_ROOT} ${TEST_PROG})
-    TARGET_LINK_LIBRARIES(${TEST_ROOT} ${LINK_LIBRARIES})
-    ADD_TEST(${TEST_ROOT} ${EXECUTABLE_OUTPUT_PATH}/${TEST_ROOT})
-    SET_TARGET_PROPERTIES(${TEST_ROOT} 
+    add_executable(${TEST_ROOT} ${TEST_PROG})
+    target_link_libraries(${TEST_ROOT} ${LINK_LIBRARIES})
+    add_test(${TEST_ROOT} ${EXECUTABLE_OUTPUT_PATH}/${TEST_ROOT})
+    set_target_properties(${TEST_ROOT} 
         PROPERTIES 
         PROJECT_LABEL "Tests - ${TEST_ROOT}")
 
-ENDFOREACH(TEST_PROG ${TEST_PROGS})
+endforeach(TEST_PROG ${TEST_PROGS})
 
-FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
+file(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 
 #
 # Copy files to run dir
 #
-ADD_DEPENDENCIES(${TEST_ROOT} copyTestFiles)
+add_dependencies(${TEST_ROOT} copyTestFiles)
 FOREACH (dataFile ${TEST_FILES})
- ADD_CUSTOM_COMMAND(
+ add_custom_command(
     TARGET testInducedAccelerations
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy
@@ -46,11 +46,11 @@ FOREACH (dataFile ${TEST_FILES})
 #
 
 #IF (UNIX)
-#  ADD_DEFINITIONS(-fprofile-arcs -ftest-coverage)
-#  LINK_LIBRARIES(gcov)
+#  add_definitions(-fprofile-arcs -ftest-coverage)
+#  link_libraries(gcov)
 #ENDIF (UNIX)
 
-#ENABLE_TESTING()
+#enable_testing()
 
 IF (EXECUTABLE_OUTPUT_PATH)
   SET (TEST_PATH ${EXECUTABLE_OUTPUT_PATH})

@@ -1,5 +1,5 @@
 
-LINK_LIBRARIES( 
+link_libraries( 
         debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
         debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
         debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators
@@ -7,17 +7,17 @@ LINK_LIBRARIES(
         debug osimTools${CMAKE_DEBUG_POSTFIX} optimized osimTools
         ${Simbody_LIBRARIES})
 
-ADD_EXECUTABLE(testComponents testComponents.cpp)
+add_executable(testComponents testComponents.cpp)
 
-TARGET_LINK_LIBRARIES(testComponents ${LINK_LIBRARIES} )
+target_link_libraries(testComponents ${LINK_LIBRARIES} )
 
-FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
+file(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 
 #
 # Copy files to run dir
 #
 FOREACH (dataFile ${TEST_FILES})
-    ADD_CUSTOM_COMMAND(
+    add_custom_command(
         TARGET testComponents
         COMMAND ${CMAKE_COMMAND}
         ARGS -E copy
@@ -36,6 +36,6 @@ ELSE (EXECUTABLE_OUTPUT_PATH)
   SET (TEST_PATH .)
 ENDIF (EXECUTABLE_OUTPUT_PATH)
 
-ADD_TEST(testComponents ${TEST_PATH}/testComponents)
+add_test(testComponents ${TEST_PATH}/testComponents)
 
-SET_TARGET_PROPERTIES(testComponents PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Tests - testComponents")
+set_target_properties(testComponents PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Tests - testComponents")

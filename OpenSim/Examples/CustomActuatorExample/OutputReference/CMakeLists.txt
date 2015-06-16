@@ -2,14 +2,14 @@ PROJECT (CustomActuatorExample)
 
 cmake_minimum_required(VERSION 2.8.6)
 
-FILE(GLOB SOURCE_FILES *.cpp )
-FILE(GLOB INCLUDE_FILES *.h )
+file(GLOB SOURCE_FILES *.cpp )
+file(GLOB INCLUDE_FILES *.h )
 
 # Settings.
 # ---------
-SET(TARGET toyLeg_example
+set(TARGET toyLeg_example
         CACHE STRING "Name of example to build")
-SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
+set(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
         CACHE PATH "Top-level directory of OpenSim install")
 
 # Find and hook up to OpenSim.
@@ -34,20 +34,20 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR
     endif()
 endif()
 
-FIND_PACKAGE(OpenSim REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")
+find_package(OpenSim REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")
 
-INCLUDE_DIRECTORIES(${OpenSim_INCLUDE_DIRS})
-LINK_DIRECTORIES(${OpenSim_LIB_DIR})
+include_directories(${OpenSim_INCLUDE_DIRS})
+link_directories(${OpenSim_LIB_DIR})
 
 # Configure this project.
 # -----------------------
-ADD_EXECUTABLE(${TARGET}  ${SOURCE_FILES} ${INCLUDE_FILES})
+add_executable(${TARGET}  ${SOURCE_FILES} ${INCLUDE_FILES})
 
-TARGET_LINK_LIBRARIES(${TARGET} ${OpenSim_LIBRARIES})
+target_link_libraries(${TARGET} ${OpenSim_LIBRARIES})
 
-SET_TARGET_PROPERTIES(
+set_target_properties(
     ${TARGET} PROPERTIES
     PROJECT_LABEL "Actuator_examples")
 
-INSTALL_TARGETS(/ ${TARGET})
+install_targets(/ ${TARGET})
 
