@@ -706,8 +706,10 @@ public:
   }
 
   /// Bind another DataTable_ to this DataTable_ by row. The new elements will 
-  /// appear as the last rows of this DataTable_. To create a new DataTable_
-  /// that is a bind of two existing DataTable_(s), see rbindDataTables().
+  /// appear as the last rows of this DataTable_. Only data will be appended.
+  /// Metadata is not added. Columns retain their labels. To create a new 
+  /// DataTable_  that is a bind of two existing DataTable_(s), see 
+  /// rbindDataTables().
   ///
   /// \throws OpenSim::InvalidEntry If input DataTable_ has incorrect number of
   ///                               columns for bind to work.
@@ -725,7 +727,8 @@ public:
   }
 
   /// Bind another DataTable_ to this DataTable_ by col. The new elements will 
-  /// appear as the last cols of this DataTable_. To create a new DataTable_
+  /// appear as the last cols of this DataTable_. Only data will be appended.
+  /// Column labels and metadata are not added. To create a new DataTable_
   /// that is a bind of two existing DataTable_(s), see cbindDataTables().
   ///
   /// \throws OpenSim::InvalidEntry If input DataTable_ has incorrect number of
