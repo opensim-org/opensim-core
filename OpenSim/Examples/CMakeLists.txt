@@ -26,3 +26,9 @@ ADD_SUBDIRECTORY(checkEnvironment)
 ENDIF (BUILD_API_EXAMPLES)
 
 INSTALL(DIRECTORY Plugins DESTINATION  sdk/APIExamples  PATTERN ".svn" EXCLUDE)
+
+if(BUILD_API_EXAMPLES)
+  add_subdirectory(DataTable)
+  install(DIRECTORY   DataTable
+          DESTINATION sdk/APIExamples)
+endif(BUILD_API_EXAMPLES)

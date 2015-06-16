@@ -1,0 +1,6 @@
+# This is a CSV table for testing.
+# It does not represent real data.
+time,x,y,z,theta,phi,psi
+0,1.2,-3,2.3,.02,1.03,.9
+.1,1.24,-2.9,2.8,.4,.99,.8
+1,.9,-2.3,2.2,.7,.08,.77
