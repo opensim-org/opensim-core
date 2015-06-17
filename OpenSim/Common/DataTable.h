@@ -49,7 +49,7 @@ namespace OpenSim {
   /// Enum to specify if the the input iterator is traversing data row-wise or
   /// col-wise.
   /// clang3.6 crashes if this is turned to a "enum class". Until it is fixed,
-  /// use a struct.
+  /// use a pre c++11 enum.
   enum InputItDir{
     ROWWISE, 
     COLWISE
