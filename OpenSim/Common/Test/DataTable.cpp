@@ -495,15 +495,15 @@ void test1() {
 
   // Virtual constructor.
   std::cout << "test1 -- Virtual(clone) constructor: Real.\n";
-  OpenSim::AbstractDataTable& abs_dt_real{dt_real};
+  OpenSim::AbstractDataTable& abs_dt_real = dt_real;
   auto clone_absdt_real = abs_dt_real.clone();
   auto clone_dt_real = static_cast<decltype(dt_real)&>(*clone_absdt_real);
   std::cout << "test1 -- Virtual(clone) constructor: Vec3.\n";
-  OpenSim::AbstractDataTable& abs_dt_vec3{dt_vec3};
+  OpenSim::AbstractDataTable& abs_dt_vec3 = dt_vec3;
   auto clone_absdt_vec3 = abs_dt_vec3.clone();
   auto clone_dt_vec3 = static_cast<decltype(dt_vec3)&>(*clone_absdt_vec3);
   std::cout << "test1 -- Virtual(clone) constructor: Vec6.\n";
-  OpenSim::AbstractDataTable& abs_dt_vec6{dt_vec6};
+  OpenSim::AbstractDataTable& abs_dt_vec6 = dt_vec6;
   auto clone_absdt_vec6 = abs_dt_vec6.clone();
   auto clone_dt_vec6 = static_cast<decltype(dt_vec6)&>(*clone_absdt_vec6);
 
