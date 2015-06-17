@@ -12,7 +12,7 @@ add_library(acpp ${SOURCE_FILES} ${INCLUDE_FILES})
 
 set_target_properties(acpp PROPERTIES PROJECT_LABEL "Vendor Libraries - acpp")
 
-IF (WIN32)
+if(WIN32)
     install_targets(/sdk/lib/ acpp)
 else(WIN32)
     install_targets(/bin/ acpp)

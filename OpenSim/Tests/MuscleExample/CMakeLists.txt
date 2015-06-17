@@ -25,23 +25,23 @@ file(GLOB TEST_FILES
 #
 # Copy files to run dir
 #
-FOREACH (dataFile ${TEST_FILES})
+foreach(dataFile ${TEST_FILES})
  add_custom_command(
     TARGET ${TEST_TARGET}
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy
     ${dataFile}
     ${TEST_DIR})
-ENDFOREACH (dataFile) 
+endforeach(dataFile) 
 
 #
 # Testing
 #
-IF (EXECUTABLE_OUTPUT_PATH)
-  SET (TEST_PATH ${EXECUTABLE_OUTPUT_PATH})
-ELSE (EXECUTABLE_OUTPUT_PATH)
-  SET (TEST_PATH .)
-ENDIF (EXECUTABLE_OUTPUT_PATH)
+if(EXECUTABLE_OUTPUT_PATH)
+  set(TEST_PATH ${EXECUTABLE_OUTPUT_PATH})
+else(EXECUTABLE_OUTPUT_PATH)
+  set(TEST_PATH .)
+endif(EXECUTABLE_OUTPUT_PATH)
 
 add_test(${TEST_TARGET}Runs ${TEST_PATH}/${EXAMPLE_TARGET})
 add_test(${TEST_TARGET} ${TEST_PATH}/${TEST_TARGET})

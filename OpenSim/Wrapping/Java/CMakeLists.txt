@@ -6,21 +6,21 @@ subdirs(OpenSimJNI)
 if(BUILD_JAVA_WRAPPING) 
 
 ## Now build jar file from the java files created by SWIG. This depends on finding an installation of Java
-FIND_PACKAGE ( Java )
-IF ( JAVA_COMPILE )
-  # MESSAGE ( STATUS " ===========================================" )
-  # MESSAGE ( STATUS "  Java" )
-  # MESSAGE ( STATUS " ===========================================" )
+find_package( Java )
+if( JAVA_COMPILE )
+  # message( STATUS " ===========================================" )
+  # message( STATUS "  Java" )
+  # message( STATUS " ===========================================" )
   ## 
 
-  GET_FILENAME_COMPONENT (JAVA_BIN_PATH "${JAVA_COMPILE}" PATH)
-  FIND_PROGRAM ( JAVA_JAVA_H javah PATHS ${JAVA_BIN_PATH} )
+  get_filename_component(JAVA_BIN_PATH "${JAVA_COMPILE}" PATH)
+  find_program( JAVA_JAVA_H javah PATHS ${JAVA_BIN_PATH} )
 
-  # MESSAGE ( "JAVA_COMPILE=" ${JAVA_COMPILE} )
-  # MESSAGE ( "JAVA_SRC=" ${CMAKE_BINARY_DIR}"/OpenSim/Wrapping/Java/OpenSimJNI/src/org/opensim/modeling/*.java" )
-  # MESSAGE ( "WD=" ${CMAKE_BINARY_DIR}"/OpenSim/Wrapping/Java/OpenSimJNI/src/" )
+  # message( "JAVA_COMPILE=" ${JAVA_COMPILE} )
+  # message( "JAVA_SRC=" ${CMAKE_BINARY_DIR}"/OpenSim/Wrapping/Java/OpenSimJNI/src/org/opensim/modeling/*.java" )
+  # message( "WD=" ${CMAKE_BINARY_DIR}"/OpenSim/Wrapping/Java/OpenSimJNI/src/" )
 
-  ADD_CUSTOM_TARGET ( JavaCompile
+  add_custom_target( JavaCompile
      COMMAND ${JAVA_COMPILE} 
      ${CMAKE_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/src/org/opensim/modeling/*.java 
      -source 1.6 -target 1.6
@@ -33,7 +33,7 @@ IF ( JAVA_COMPILE )
                    WORKING_DIRECTORY
                    ${CMAKE_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/src/
    )
-ENDIF ( JAVA_COMPILE )
+endif( JAVA_COMPILE )
 endif(BUILD_JAVA_WRAPPING)
 
 install(DIRECTORY Matlab DESTINATION Scripts PATTERN ".svn" EXCLUDE 

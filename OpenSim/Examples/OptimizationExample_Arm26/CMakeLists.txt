@@ -46,11 +46,11 @@ target_link_libraries(${TARGET} ${OpenSim_LIBRARIES})
 # This block copies the additional files into the running directory
 # For example vtp, obj files. Add to the end for more extentions
 file(GLOB DATA_FILES *.vtp *.obj *.osim)
-FOREACH (dataFile ${DATA_FILES})
+foreach(dataFile ${DATA_FILES})
     add_custom_command(
         TARGET ${TARGET}
         COMMAND ${CMAKE_COMMAND}
         ARGS -E copy
         ${dataFile}
         ${CMAKE_BINARY_DIR})
-ENDFOREACH (dataFile)
+endforeach(dataFile)

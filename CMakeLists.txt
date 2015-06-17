@@ -1,4 +1,4 @@
-PROJECT (OpenSim)
+project(OpenSim)
 #
 # Build of OpenSim. There are three steps:
 #    (1) Choose appropriate platform
@@ -128,7 +128,7 @@ endif()
 ## On 64 bit MSVC, the default is sse2 and the argument
 ## isn't recognized so we won't specify it.
 
-if (CMAKE_CL_64)
+if(CMAKE_CL_64)
     set(default_build_inst_set)
 else()
     # Here's where we used to set sse2. Leaving this line in
@@ -142,7 +142,7 @@ set(BUILD_INST_SET ""
     "CPU instruction level compiler is permitted to use (default: let compiler decide).")
 mark_as_advanced( BUILD_INST_SET )
 
-if (BUILD_INST_SET)
+if(BUILD_INST_SET)
     set(inst_set_to_use ${BUILD_INST_SET})
 else()
     set(inst_set_to_use ${default_build_inst_set})
@@ -155,7 +155,7 @@ endif()
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
         ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    if (inst_set_to_use)
+    if(inst_set_to_use)
         string(TOLOWER ${inst_set_to_use} GCC_INST_SET)
         set(GCC_INST_SET "-m${GCC_INST_SET}")
     else()
@@ -177,7 +177,7 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     # We know Gcc 4.4.3 on Ubuntu 10 is buggy and that Snow Leopard's
     # 4.2.1 is not. To be safe for now we'll assume anything over 4.3
     # should have these disabled.
-    if (GCC_VERSION VERSION_GREATER 4.3 OR GCC_VERSION VERSION_EQUAL 4.3)
+    if(GCC_VERSION VERSION_GREATER 4.3 OR GCC_VERSION VERSION_EQUAL 4.3)
         set(GCC_OPT_DISABLE
     "-fno-tree-vrp -fno-strict-aliasing -fno-guess-branch-probability")
     endif()
@@ -212,7 +212,7 @@ endif()
 ## (i.e. sqrt instruction rather than sqrt subroutine) with flag /Oi.
 
 if(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
-    if (inst_set_to_use)
+    if(inst_set_to_use)
         string(TOUPPER ${inst_set_to_use} CL_INST_SET)
         set(CL_INST_SET "/arch:${CL_INST_SET}")
     else()

@@ -26,7 +26,7 @@ file(GLOB TEST_FILES *.osim *.xml *.sto *.mot *.trc)
 #
 # Copy files to run dir
 #
-FOREACH (dataFile ${TEST_FILES})
+foreach(dataFile ${TEST_FILES})
  add_custom_command(
     TARGET testSerialization
     COMMAND ${CMAKE_COMMAND}
@@ -34,5 +34,5 @@ FOREACH (dataFile ${TEST_FILES})
     ${dataFile}
     ${OpenSim_BINARY_DIR}/OpenSim/Common/Test)
     # message( "IN file "${dataFile} )
- ENDFOREACH (dataFile) 
+ endforeach(dataFile) 
 

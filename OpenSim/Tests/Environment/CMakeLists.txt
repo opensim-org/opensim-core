@@ -19,7 +19,7 @@ set_target_properties(${TEST_ENVIRONMENT}
 )        
          
 file(GLOB DATA_FILES *.osim *.xml *.sto *.mot *.vtp *.obj)       
-FOREACH (DATA_FILE ${DATA_FILES})        
+foreach(DATA_FILE ${DATA_FILES})        
   add_custom_command(        
        TARGET ${TEST_ENVIRONMENT}        
        COMMAND ${CMAKE_COMMAND}          
@@ -27,7 +27,7 @@ FOREACH (DATA_FILE ${DATA_FILES})
        ${DATA_FILE}          
        ${OpenSim_BINARY_DIR}/OpenSim/Examples/checkEnvironment       
   )          
-ENDFOREACH (DATA_FILE)       
+endforeach(DATA_FILE)       
          
 if(BUILD_TESTING)        
   set(TEST_EXAMPLE_MODEL testExampleModel)       

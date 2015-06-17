@@ -16,10 +16,10 @@ set_target_properties(${APPNAME} PROPERTIES PROJECT_LABEL "Applications - ${APPN
 # Testing
 #
 
-#IF (UNIX)
+#if(UNIX)
 #  add_definitions(-fprofile-arcs -ftest-coverage)
 #  link_libraries(gcov)
-#ENDIF (UNIX)
+#endif(UNIX)
 
 if(BUILD_TESTING)
     subdirs(test)

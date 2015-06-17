@@ -24,12 +24,12 @@ file(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 #
 # Copy files to run dir
 #
-FOREACH (dataFile ${TEST_FILES})
+foreach(dataFile ${TEST_FILES})
  add_custom_command(
     TARGET testContext
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy
     ${dataFile}
     ${OpenSim_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/Test)
- ENDFOREACH (dataFile) 
+ endforeach(dataFile) 
 endif(BUILD_JAVA_WRAPPING)

@@ -31,7 +31,7 @@ file(GLOB TEST_FILES *.osim *.xml *.sto *.mot *.txt)
 #
 # Copy files to run dir
 #
-FOREACH (dataFile ${TEST_FILES})
+foreach(dataFile ${TEST_FILES})
  add_custom_command(
     TARGET testControllers
     COMMAND ${CMAKE_COMMAND}
@@ -39,4 +39,4 @@ FOREACH (dataFile ${TEST_FILES})
     ${dataFile}
     ${OpenSim_BINARY_DIR}/OpenSim/Tools/Test)
     # message( "IN file "${dataFile} )
-ENDFOREACH (dataFile) 
+endforeach(dataFile) 

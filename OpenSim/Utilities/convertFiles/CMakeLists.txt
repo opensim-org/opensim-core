@@ -3,7 +3,7 @@ include_directories(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors ${XERCES
 file(GLOB SOURCE_FILES *.cpp)
 file(GLOB INCLUDE_FILES *.h)
 
-IF (BUILD_STATIC_OSIM_LIBS)
+if(BUILD_STATIC_OSIM_LIBS)
     add_definitions(-DSTATIC_OSIM_LIBS)
 endif(BUILD_STATIC_OSIM_LIBS)
 
