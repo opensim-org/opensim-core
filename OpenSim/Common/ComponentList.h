@@ -95,7 +95,7 @@ public:
     through this iterator. */
     typedef ComponentListIterator<T> const_iterator;
     /** Constructor that takes a Component to iterate over (itself and its
-    descendents) and a ComponentFilter. You can change the filter later
+    descendants) and a ComponentFilter. You can change the filter later
     using the setFilter() method. The filter is cloned on
     construction and can only be changed using setFilter().
     */
@@ -103,7 +103,7 @@ public:
         _root(root), _filter(f){
     }
     /** Constructor that takes only a Component to iterate over (itself and its
-    descendents). ComponentFilterMatchAll is used internally. You can
+    descendants). ComponentFilterMatchAll is used internally. You can
     change the filter using setFilter() method. 
     */
     ComponentList(const Component& root) : _root(root){

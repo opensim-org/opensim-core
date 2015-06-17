@@ -45,13 +45,14 @@ int main()
     // get all registered Components
     SimTK::Array_<Component*> availableComponents;
 
+    /*
     // starting with type Frame
     ArrayPtrs<Frame> availableFrames;
     Object::getRegisteredObjectsOfGivenType(availableFrames);
     for (int i = 0; i < availableFrames.size(); ++i) {
         availableComponents.push_back(availableFrames[i]);
     }
-
+*/
     // then type Joint
     ArrayPtrs<Joint> availableJoints;
     Object::getRegisteredObjectsOfGivenType(availableJoints);
@@ -64,6 +65,10 @@ int main()
     ArrayPtrs<PointToPointSpring> availablePointToPointSpring;
     Object::getRegisteredObjectsOfGivenType(availablePointToPointSpring);
     availableComponents.push_back(availablePointToPointSpring[0]);
+
+    ArrayPtrs<BushingForce> availableBushingForce;
+    Object::getRegisteredObjectsOfGivenType(availableBushingForce);
+    availableComponents.push_back(availableBushingForce[0]);
 
     for (unsigned int i = 0; i < availableComponents.size(); i++) {
         try {
@@ -97,6 +102,7 @@ void testComponent(const Component& instanceToTest)
 {
     // Empty model used to serve as the aggregate Component
     Model model;
+    model.setName("TheModel");
 
     // Make a copy so that we can modify the instance.
     Component* instance = instanceToTest.clone();
@@ -109,7 +115,7 @@ void testComponent(const Component& instanceToTest)
     // 1. Set properties to random values.
     // -----------------------------------
     cout << "Randomizing the component's properties." << endl;
-    randomize(instance); 
+    randomize(instance);
 
     // 2. Ensure that cloning produces an exact copy.
     // ----------------------------------------------
@@ -123,13 +129,13 @@ void testComponent(const Component& instanceToTest)
         cout << "XML serialization for the clone:" << endl;
         cout << copyInstance->dump() << endl;
         throw Exception(
-                "testComponents: for " + className +
-                ", clone() did not produce an identical object.",
-                __FILE__, __LINE__);
+            "testComponents: for " + className +
+            ", clone() did not produce an identical object.",
+            __FILE__, __LINE__);
     }
     // TODO should try to delete even if exception is thrown.
     delete copyInstance;
-    
+
     // 3. Serialize and de-serialize.
     // ------------------------------
     // This will find issues with serialization.
@@ -147,9 +153,9 @@ void testComponent(const Component& instanceToTest)
             endl;
         deserializedInstance->dump();
         throw Exception(
-                "testComponents: for " + className +
-                ", deserialization did not produce an identical object.",
-                __FILE__, __LINE__);
+            "testComponents: for " + className +
+            ", deserialization did not produce an identical object.",
+            __FILE__, __LINE__);
     }
     // TODO should try to delete even if exception is thrown.
     delete deserializedInstance;
@@ -167,32 +173,48 @@ void testComponent(const Component& instanceToTest)
     // ------------------------------------------------
     addObjectAsComponentToModel(instance, model);
 
+    //model.finalizeFromProperties();
+
     // 6. Connect up the aggregate; check that connections are correct.
     // ----------------------------------------------------------------
     // First make sure Connectors are satisfied.
-    int nc = instance->getNumConnectors();
-    for (int i = 0; i < nc; ++i){
-        AbstractConnector& connector = instance->updConnector(i);
-        string dependencyTypeName = connector.getConnectedToTypeName();
-        cout << "Connector '" << connector.getName() << 
-            "' has dependency on: " << dependencyTypeName << endl;
-        Object* dependency =
-            Object::newInstanceOfType(dependencyTypeName);
-        
-        if (dependency == nullptr){
-            // Get a concrete instance of a PhysicalFrame, which is a Body
-            if (dependencyTypeName == "PhysicalFrame"){
-                dependency = Object::newInstanceOfType("Body");
+    Component* sub = instance;
+    ComponentList<Component> comps = instance->getComponentList<Component>();
+    ComponentList<Component>::const_iterator it = comps.begin();
+
+    while(sub) {
+        int nc = sub->getNumConnectors();
+        for (int i = 0; i < nc; ++i){
+            AbstractConnector& connector = sub->updConnector(i);
+            string dependencyTypeName = connector.getConnectedToTypeName();
+            cout << "Connector '" << connector.getName() <<
+                "' has dependency on: " << dependencyTypeName << endl;
+            Object* dependency =
+                Object::newInstanceOfType(dependencyTypeName);
+
+            if (dependency == nullptr){
+                // Get a concrete instance of a PhysicalFrame, which is a Body
+                if (dependencyTypeName == "PhysicalFrame"){
+                    dependency = Object::newInstanceOfType("Body");
+                }
+            }
+
+            if (dependency) {
+                //give it some random values including a name
+                randomize(dependency);
+                connector.set_connected_to_name(dependency->getName());
+
+                // add the dependency 
+                addObjectAsComponentToModel(dependency, model);
             }
         }
-        
-        //give it some random values including a name
-        randomize(dependency);
-        connector.set_connected_to_name(dependency->getName());
-
-        // add the dependency 
-        addObjectAsComponentToModel(dependency, model);
+        const Component& next = *it;
+        //Now keep checking the subcomponents
+        sub = const_cast<Component *>(&next);
+        it++;
     }
+
+    model.print("testComponentsTempModel_beforeSetup.osim");
 
     // This method calls connect().
     cout << "Call Model::setup()." << endl;
@@ -206,6 +228,9 @@ void testComponent(const Component& instanceToTest)
         cout << " having structural dependencies that are not specified as Connectors.";
         cout << endl;
     }
+
+    model.print("testComponentsTempModel_afterSetup.osim");
+
 
     // 7. Build the system.
     // --------------------
@@ -351,5 +376,15 @@ void addObjectAsComponentToModel(Object* instance, Model& model)
     {
         throw Exception(className + " is not a ModelComponent.",
             __FILE__, __LINE__);
+    }
+
+    try {
+        model.connect(model);
+    }
+    catch (const std::exception& e) {
+        cout << "testComponents: Model unable to connect after adding ";
+        cout << instance->getName() << endl;
+        cout << "ERROR :'" << e.what() << "'" << endl;
+        cout << "Possible that dependency was not added yet. Continuing...." << endl;
     }
 }

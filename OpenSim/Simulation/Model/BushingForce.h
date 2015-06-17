@@ -57,9 +57,9 @@ public:
     These are the serializable properties associated with this class. **/
     /**@{**/
     /// The frames that are connected by the bushing force
-    OpenSim_DECLARE_PROPERTY(frame_1, PhysicalOffsetFrame,
+    OpenSim_DECLARE_PROPERTY(frame1, PhysicalOffsetFrame,
         "Bushing frame 1.");
-    OpenSim_DECLARE_PROPERTY(frame_2, PhysicalOffsetFrame,
+    OpenSim_DECLARE_PROPERTY(frame2, PhysicalOffsetFrame,
         "Bushing frame 2.");
     ///  Properties of the bushing force
     OpenSim_DECLARE_PROPERTY(rotational_stiffness, SimTK::Vec3,
