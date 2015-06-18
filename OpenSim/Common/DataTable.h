@@ -50,8 +50,8 @@ namespace OpenSim {
   col-wise. clang3.6 crashes if this is turned to a "enum class". Until it is 
   fixed, use a pre c++11 enum.                                                */
   enum InputItDir{
-    ROWWISE, 
-    COLWISE
+    RowWise, 
+    ColWise
   };
 
   /** Bind two DataTables by row.*/
@@ -270,7 +270,7 @@ public:
   /** Construct DataTable using an iterator(satisfying requirement of an 
   input_iterator) which produces one entry at a time. The entries of DataTable_
   are copy initialized using the values produced by the iterator. For example, 
-  specifying ROWWISE for parameter dir and 10 for parameter ndir will populate 
+  specifying RowWise for parameter dir and 10 for parameter ndir will populate 
   the DataTable one row at a time with each row's length taken to be 10.
       
   \param first Beginning of range covered by the iterator.
@@ -290,10 +290,10 @@ public:
              typename std::enable_if<!std::is_integral<InputIt>::value,
                                      InputIt>::type last,
              const size_t ndir,
-             const InputItDir dir = ROWWISE,
+             const InputItDir dir = RowWise,
              const bool allow_missing = false) :
-    m_data{static_cast<int>(dir == ROWWISE ? 1    : ndir), 
-           static_cast<int>(dir == ROWWISE ? ndir :    1)},
+    m_data{static_cast<int>(dir == RowWise ? 1    : ndir), 
+           static_cast<int>(dir == RowWise ? ndir :    1)},
     m_metadata{},
     m_col_ind{} {
     if(!(first != last))
@@ -306,7 +306,7 @@ public:
     while(first != last) {
       m_data.set(row, col, *first);
       ++first;
-      if(dir == ROWWISE) {
+      if(dir == RowWise) {
         ++col;
         if(col == static_cast<int>(ndir)  && first != last) {
           col = 0;
@@ -323,12 +323,12 @@ public:
       }
     }
     if(!allow_missing) {
-      if(dir == ROWWISE && col != m_data.ncol()) {
+      if(dir == RowWise && col != m_data.ncol()) {
         throw InvalidEntry{"Input iterator did not produce enough elements to "
                            "fill the last row. Expected = " + 
                            std::to_string(m_data.ncol()) + " Received = " + 
                            std::to_string(col)};
-      } else if(dir == COLWISE && row != m_data.nrow()) {
+      } else if(dir == ColWise && row != m_data.nrow()) {
         throw InvalidEntry{"Input iterator did not produce enough elements to "
                            "fill the last column. Expected = " +
                            std::to_string(m_data.nrow()) + " Received = " + 

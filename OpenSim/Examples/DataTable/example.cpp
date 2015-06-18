@@ -38,7 +38,7 @@ void ignore(AnyType&) {}
 // type.
 
 int main() {
-  constexpr double EPSILON{0.00001};
+  constexpr double Epsilon{0.00001};
 
   // Default construct a DataTable of SimTK::Real[alias for double].
   OpenSim::DataTable_<SimTK::Real> dt_real;
@@ -65,15 +65,15 @@ int main() {
     OpenSim::DataTable_<SimTK::Real> real{data_real.cbegin(),
                                           data_real.cend(),
                                           3,
-                                          OpenSim::COLWISE};
+                                          OpenSim::ColWise};
     OpenSim::DataTable_<SimTK::Vec3> vec3{data_vec3.cbegin(),
                                           data_vec3.cend(),
                                           3,
-                                          OpenSim::COLWISE};
+                                          OpenSim::ColWise};
     OpenSim::DataTable_<SimTK::Vec6> vec6{data_vec6.cbegin(),
                                           data_vec6.cend(),
                                           3,
-                                          OpenSim::COLWISE};
+                                          OpenSim::ColWise};
   }
 
   // Add multiple rows at once using an iterator. Because the DataTable is empty
@@ -238,7 +238,7 @@ int main() {
     const auto col2_vec3_copy = dt_vec3.getCol("col-two");
     const auto col2_vec6_copy = dt_vec6.getCol("col-two");
     for(int i = 0; i < col2_real.size(); ++i) {
-      assert(std::abs(col2_real[i] - col2_real_copy[i]) < EPSILON);
+      assert(std::abs(col2_real[i] - col2_real_copy[i]) < Epsilon);
       assert(col2_vec3[i] == col2_vec3_copy[i]);
       assert(col2_vec6[i] == col2_vec6_copy[i]);
     }
@@ -346,7 +346,7 @@ int main() {
     for(int c = 0; c < mat_real->ncol(); ++c) {
       auto a = mat_real_copy.getElt(r, c);
       auto b = mat_real->getElt(r, c);
-      assert(std::abs(a - b) < EPSILON || (std::isnan(a) && std::isnan(b)));
+      assert(std::abs(a - b) < Epsilon || (std::isnan(a) && std::isnan(b)));
     }
 
   // Retrieve std::vector from metadata.
