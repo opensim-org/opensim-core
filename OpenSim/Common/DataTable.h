@@ -254,7 +254,7 @@ public:
 
   /** Construct empty DataTable.*/
   DataTable_() :
-    data{}, metadata{}, col_ind{} {}
+    m_data{}, m_metadata{}, m_col_ind{} {}
 
   /** Construct DataTable of given shape populated with given value val. Default
   value for val is NaN.
@@ -265,7 +265,7 @@ public:
   DataTable_(size_t nrows,
              size_t ncols,
              const ET& val = ET{SimTK::NaN}) :
-    data{int(nrows), int(ncols), val}, metadata{}, col_ind{} {}
+    m_data{int(nrows), int(ncols), val}, m_metadata{}, m_col_ind{} {}
 
   /** Construct DataTable using an iterator(satisfying requirement of an 
   input_iterator) which produces one entry at a time. The entries of DataTable_
@@ -292,10 +292,10 @@ public:
              const size_t ndir,
              const InputItDir dir = ROWWISE,
              const bool allow_missing = false) :
-    data{static_cast<int>(dir == ROWWISE ? 1    : ndir), 
-         static_cast<int>(dir == ROWWISE ? ndir :    1)},
-    metadata{},
-    col_ind{} {
+    m_data{static_cast<int>(dir == ROWWISE ? 1    : ndir), 
+           static_cast<int>(dir == ROWWISE ? ndir :    1)},
+    m_metadata{},
+    m_col_ind{} {
     if(!(first != last))
       throw ZeroElements{"Input iterators produce zero elements."};
     if(ndir == 0)
@@ -304,34 +304,34 @@ public:
     int row{0};
     int col{0};
     while(first != last) {
-      data.set(row, col, *first);
+      m_data.set(row, col, *first);
       ++first;
       if(dir == ROWWISE) {
         ++col;
         if(col == static_cast<int>(ndir)  && first != last) {
           col = 0;
           ++row;
-          data.resizeKeep(data.nrow() + 1, data.ncol());
+          m_data.resizeKeep(m_data.nrow() + 1, m_data.ncol());
         }
       } else {
         ++row;
         if(row == static_cast<int>(ndir) && first != last) {
           row = 0;
           ++col;
-          data.resizeKeep(data.nrow(), data.ncol() + 1);
+          m_data.resizeKeep(m_data.nrow(), m_data.ncol() + 1);
         }
       }
     }
     if(!allow_missing) {
-      if(dir == ROWWISE && col != data.ncol()) {
+      if(dir == ROWWISE && col != m_data.ncol()) {
         throw InvalidEntry{"Input iterator did not produce enough elements to "
                            "fill the last row. Expected = " + 
-                           std::to_string(data.ncol()) + " Received = " + 
+                           std::to_string(m_data.ncol()) + " Received = " + 
                            std::to_string(col)};
-      } else if(dir == COLWISE && row != data.nrow()) {
+      } else if(dir == COLWISE && row != m_data.nrow()) {
         throw InvalidEntry{"Input iterator did not produce enough elements to "
                            "fill the last column. Expected = " +
-                           std::to_string(data.nrow()) + " Received = " + 
+                           std::to_string(m_data.nrow()) + " Received = " + 
                            std::to_string(row)};
       }
     }
@@ -339,9 +339,9 @@ public:
 
   /** Copy constructor. Perform a deep copy of the DataTable_.*/
   DataTable_(const DataTable_& dt) :
-    data{dt.data}, metadata{dt.metadata}, col_ind{dt.col_ind} {
+    m_data{dt.m_data}, m_metadata{dt.m_metadata}, m_col_ind{dt.m_col_ind} {
       // Deep copy of metadata.
-      for(auto& elem : metadata)
+      for(auto& elem : m_metadata)
         elem.second = elem.second->clone();
     }
 
@@ -353,15 +353,15 @@ public:
   /** Copy assignment operator. Perform a deep copy of the DataTable_.*/
   DataTable_& operator=(const DataTable_& dt) {
     // Release metadata memory.
-    for(auto& elem : metadata)
+    for(auto& elem : m_metadata)
       delete elem.second;
 
-    data     = dt.data;
-    metadata = dt.metadata;
-    col_ind  = dt.col_ind;
+    m_data     = dt.m_data;
+    m_metadata = dt.m_metadata;
+    m_col_ind  = dt.m_col_ind;
 
     // Deep copy of metadata.
-    for(auto& elem : metadata)
+    for(auto& elem : m_metadata)
       elem.second = elem.second->clone();
 
     return *this;
@@ -372,12 +372,12 @@ public:
 
   DataTable_& operator=(DataTable_&& dt) {
     // Release metadata memory.
-    for(auto& elem : metadata)
+    for(auto& elem : m_metadata)
       delete elem.second;
 
-    data     = std::move(dt.data);
-    metadata = std::move(dt.metadata);
-    col_ind  = std::move(dt.col_ind);
+    m_data     = std::move(dt.m_data);
+    m_metadata = std::move(dt.m_metadata);
+    m_col_ind  = std::move(dt.m_col_ind);
 
     return *this;
   }
@@ -385,18 +385,18 @@ public:
   /** Destructor.*/
   virtual ~DataTable_() {
     // Release metadata memory.
-    for(auto& elem : metadata)
+    for(auto& elem : m_metadata)
       delete elem.second;
   }
 
   /** Get number of rows in the DataTable_.*/
   size_t getNumRows() const {
-    return static_cast<size_t>(data.nrow()); 
+    return static_cast<size_t>(m_data.nrow()); 
   }
 
   /** Get number of columns in the DataTable_.*/
   size_t getNumCols() const {
-    return static_cast<size_t>(data.ncol()); 
+    return static_cast<size_t>(m_data.ncol()); 
   }
 
   /** Get a row of the DataTable_ by index. Returned row is read-only. Use 
@@ -406,7 +406,7 @@ public:
   \throws SimTK::Exception::IndexOutOfRange If the row index specified is not 
                                             in the DataTable_.                */
   SimTK::RowVectorView_<ET> getRow(const size_t row) const {
-    return data.row(static_cast<int>(row));
+    return m_data.row(static_cast<int>(row));
   }
 
   /** Get a row of the DataTable_ by index. Returned row is editable. See 
@@ -415,7 +415,7 @@ public:
   \throws SimTK::Exception::IndexOutOfRange If the row index specified is not 
                                             in the DataTable_.                */
   SimTK::RowVectorView_<ET> updRow(const size_t row) {
-    return data.updRow(static_cast<int>(row));
+    return m_data.updRow(static_cast<int>(row));
   }
 
   /** Get a col of the DataTable_ by index. Returned col is read-only. Use 
@@ -425,7 +425,7 @@ public:
   \throws SimTK::Exception::IndexOutOfRange If the col index specified is not 
                                             in the DataTable_.                */
   SimTK::VectorView_<ET> getCol(const size_t col) const {
-    return data.col(static_cast<int>(col));
+    return m_data.col(static_cast<int>(col));
   }
 
   /** Get a col of the DataTable_ by label. Returned col is read-only. Use 
@@ -436,7 +436,7 @@ public:
                                       DataTable_.                             */
   SimTK::VectorView_<ET> getCol(const string& collabel) const {
     try {
-      return data.col(static_cast<int>(col_ind.at(collabel)));
+      return m_data.col(static_cast<int>(m_col_ind.at(collabel)));
     } catch (std::out_of_range exc) {
       throw ColumnDoesNotExist{"Column label '" + collabel + 
                                "' does not exist."};
@@ -449,7 +449,7 @@ public:
   \throws SimTK::Exception::IndexOutOfRange If the col index specified is not 
                                             in the DataTable_.                */
   SimTK::VectorView_<ET> updCol(const size_t col) {
-    return data.updCol(static_cast<int>(col));
+    return m_data.updCol(static_cast<int>(col));
   }
 
   /** Get a col of the DataTable_ by label. Returned col is editable. See 
@@ -459,7 +459,7 @@ public:
                                       DataTable_.                             */
   SimTK::VectorView_<ET> updCol(const string& collabel) {
     try {
-      return data.updCol(static_cast<int>(col_ind.at(collabel)));
+      return m_data.updCol(static_cast<int>(m_col_ind.at(collabel)));
     } catch (std::out_of_range exc) {
       throw ColumnDoesNotExist{"Column label '" + collabel + 
                                "' does not exist."};
@@ -472,7 +472,7 @@ public:
   \throws SimTK::Exception::IndexOutOfRange If the row/col index specified is 
                                             not in the DataTable_.            */
   const ET& getElt(const size_t row, const size_t col) const {
-    return data.getElt(static_cast<int>(row), static_cast<int>(col));
+    return m_data.getElt(static_cast<int>(row), static_cast<int>(col));
   }
 
   /** Get an element of the DataTable_ by (row, col-label) pair. The returned
@@ -484,8 +484,8 @@ public:
                                       DataTable_.                             */
   const ET& getElt(const size_t row, const string& collabel) const {
     try {
-      return data.getElt(static_cast<int>(row), 
-                         static_cast<int>(col_ind.at(collabel)));
+      return m_data.getElt(static_cast<int>(row), 
+                           static_cast<int>(m_col_ind.at(collabel)));
     } catch (std::out_of_range exc) {
       throw ColumnDoesNotExist{"Column label '" + collabel + 
                                "' does not exist."};
@@ -498,7 +498,7 @@ public:
   \throws SimTK::Exception::IndexOutOfRange If the row/col index specified is 
                                             not in the DataTable_.            */
   ET& updElt(const size_t row, const size_t col) {
-    return data.updElt(static_cast<int>(row), static_cast<int>(col));
+    return m_data.updElt(static_cast<int>(row), static_cast<int>(col));
   }
 
   /** Get an element of the DataTable_ by (row, col-label) pair. The returned
@@ -510,8 +510,8 @@ public:
                                       the DataTable_.                         */
   ET& updElt(const size_t row, const string& collabel) {
     try {
-      return data.updElt(static_cast<int>(row), 
-                         static_cast<int>(col_ind.at(collabel)));
+      return m_data.updElt(static_cast<int>(row), 
+                           static_cast<int>(m_col_ind.at(collabel)));
     } catch (std::out_of_range exc) {
       throw ColumnDoesNotExist{"Column label '" + collabel + 
                                "' does not exist."};
@@ -520,7 +520,7 @@ public:
 
   /** Get a *copy* of the underlying matrix of the DataTable_.*/
   std::unique_ptr<SimTK::Matrix_<ET>> getAsMatrix() const {
-    return std::unique_ptr<SimTK::Matrix_<ET>>{new SimTK::Matrix_<ET>{data}};
+    return std::unique_ptr<SimTK::Matrix_<ET>>{new SimTK::Matrix_<ET>{m_data}};
   }
 
   /** Add(append) a row to the DataTable_ using a SimTK::RowVector_. If the 
@@ -535,13 +535,13 @@ public:
   void addRow(const SimTK::RowVector_<ET>& row) {
     if(row.nrow() == 0 || row.ncol() == 0)
       throw ZeroElements{"Input row has zero length."};
-    if(data.ncol() > 0 && row.size() != data.ncol())
+    if(m_data.ncol() > 0 && row.size() != m_data.ncol())
       throw InvalidEntry{"Input row has incorrect number of columns."
-                         " Expected = " + std::to_string(data.ncol()) + 
+                         " Expected = " + std::to_string(m_data.ncol()) + 
                          " Received = " + std::to_string(row.size())};
 
-    data.resizeKeep(data.nrow() + 1, row.ncol());
-    data.updRow(data.nrow() - 1).updAsRowVector() = row;
+    m_data.resizeKeep(m_data.nrow() + 1, row.ncol());
+    m_data.updRow(m_data.nrow() - 1).updAsRowVector() = row;
   }
 
   /** Add(append) a row to the DataTable_ using an iterator(satisfying 
@@ -575,38 +575,38 @@ public:
               const bool allow_missing = false) {
     if(!(first != last))
       throw ZeroElements{"Input iterators produce zero elements."};
-    if((data.nrow() == 0 || data.ncol() == 0) && ncol_hint == 0)
+    if((m_data.nrow() == 0 || m_data.ncol() == 0) && ncol_hint == 0)
       throw InvalidEntry{"Input argument 'ncol_hint' cannot be zero when "
                          "DataTable is empty."};
 
-    if(data.ncol() > 0) {
-      data.resizeKeep(data.nrow() + 1, data.ncol());
+    if(m_data.ncol() > 0) {
+      m_data.resizeKeep(m_data.nrow() + 1, m_data.ncol());
       int col{0};
       while(first != last) {
-        data.set(data.nrow() - 1, col++, *first);
+        m_data.set(m_data.nrow() - 1, col++, *first);
         ++first;
       }
-      if(!allow_missing && col != data.ncol())
+      if(!allow_missing && col != m_data.ncol())
         throw InvalidEntry{"Input iterator did not produce enough elements to "
                            "fill the row. Expected = " + 
-                           std::to_string(data.ncol()) + " Received = " + 
+                           std::to_string(m_data.ncol()) + " Received = " + 
                            std::to_string(col)};
     } else {
       int col{0};
       size_t ncol{ncol_hint};
-      data.resizeKeep(1, static_cast<int>(ncol));
+      m_data.resizeKeep(1, static_cast<int>(ncol));
       while(first != last) {
-        data.set(0, col++, *first);
+        m_data.set(0, col++, *first);
         ++first;
         if(col == static_cast<int>(ncol) && first != last) {
           // If ncol is a power of 2, double it. Otherwise round it to the next
           // power of 2.
           ncol = (ncol & (ncol - 1)) == 0 ? ncol << 2 : rndToNextPowOf2(ncol); 
-          data.resizeKeep(1, static_cast<int>(ncol));
+          m_data.resizeKeep(1, static_cast<int>(ncol));
         }
       }
       if(col != static_cast<int>(ncol))
-        data.resizeKeep(1, col);
+        m_data.resizeKeep(1, col);
     }
   }
 
@@ -638,28 +638,29 @@ public:
                const bool allow_missing = false) {
     if(!(first != last))
       throw ZeroElements{"Input iterators produce zero elements."};
-    if((data.nrow() == 0 || data.ncol() == 0) && 
+    if((m_data.nrow() == 0 || m_data.ncol() == 0) && 
        (ncol == std::numeric_limits<size_t>::max() || ncol == 0))
       throw InvalidEntry{"DataTable is empty. 'ncol' argument must be" 
                          " provided and it cannot be zero."};
 
-    data.resizeKeep(data.nrow() + 1, 
-                    data.ncol() == 0 ? static_cast<int>(ncol) : data.ncol());
-    int row{data.nrow() - 1};
+    m_data.resizeKeep(m_data.nrow() + 1, 
+                      m_data.ncol() == 0 ? 
+                      static_cast<int>(ncol) : m_data.ncol());
+    int row{m_data.nrow() - 1};
     int col{0};
     while(first != last) {
-      data.set(row, col, *first);
+      m_data.set(row, col, *first);
       ++first; ++col;
-      if(col == static_cast<int>(data.ncol()) && first != last) {
+      if(col == static_cast<int>(m_data.ncol()) && first != last) {
         col = 0;
         ++row;
-        data.resizeKeep(data.nrow() + 1, data.ncol());
+        m_data.resizeKeep(m_data.nrow() + 1, m_data.ncol());
       }
     }
-    if(!allow_missing && col != data.ncol())
+    if(!allow_missing && col != m_data.ncol())
       throw InvalidEntry{"Input iterator did not produce enough elements to "
                          "fill the last row. Expected = " + 
-                         std::to_string(data.ncol()) + " Received = " + 
+                         std::to_string(m_data.ncol()) + " Received = " + 
                          std::to_string(col)};
   }
 
@@ -675,13 +676,13 @@ public:
   void addCol(const SimTK::Vector_<ET>& col) {
     if(col.nrow() == 0 || col.ncol() == 0)
       throw ZeroElements{"Input column has zero length."};
-    if(data.nrow() > 0 && col.size() != data.nrow())
+    if(m_data.nrow() > 0 && col.size() != m_data.nrow())
       throw InvalidEntry{"Input column has incorrect number of rows. " 
-                         "Expected = " + std::to_string(data.nrow()) + 
+                         "Expected = " + std::to_string(m_data.nrow()) + 
                          " Received = " + std::to_string(col.size())};
 
-    data.resizeKeep(col.size(), data.ncol() + 1);
-    data.updCol(data.ncol() - 1).updAsVector() = col;
+    m_data.resizeKeep(col.size(), m_data.ncol() + 1);
+    m_data.updCol(m_data.ncol() - 1).updAsVector() = col;
   }
 
   /** Add(append) a col to the DataTable_ using an iterator(satisfying 
@@ -713,38 +714,38 @@ public:
               const bool allow_missing = false) {
     if(!(first != last))
       throw ZeroElements{"Input iterators produce zero elements."};
-    if((data.nrow() == 0 || data.ncol() == 0) && nrow_hint == 0)
+    if((m_data.nrow() == 0 || m_data.ncol() == 0) && nrow_hint == 0)
       throw InvalidEntry{"Input argument 'nrow_hint' cannot be zero when "
                          "DataTable is empty."};
 
-    if(data.nrow() > 0) {
-      data.resizeKeep(data.nrow(), data.ncol() + 1);
+    if(m_data.nrow() > 0) {
+      m_data.resizeKeep(m_data.nrow(), m_data.ncol() + 1);
       int row{0};
       while(first != last) {
-        data.set(row++, data.ncol() - 1, *first);
+        m_data.set(row++, m_data.ncol() - 1, *first);
         ++first;
       }
-      if(!allow_missing && row != data.nrow()) 
+      if(!allow_missing && row != m_data.nrow()) 
         throw InvalidEntry{"Input iterator did not produce enough elements to "
                            "fill the col. Expected = " + 
-                           std::to_string(data.nrow()) + " Received = " + 
+                           std::to_string(m_data.nrow()) + " Received = " + 
                            std::to_string(row)};
     } else {
       int row{0};
       size_t nrow{nrow_hint};
-      data.resizeKeep(static_cast<int>(nrow), 1);
+      m_data.resizeKeep(static_cast<int>(nrow), 1);
       while(first != last) {
-        data.set(row++, 0, *first);
+        m_data.set(row++, 0, *first);
         ++first;
         if(row == static_cast<int>(nrow) && first != last) {
           // If nrow is a power of 2, double it. Otherwise round it to the next
           // power of 2.
           nrow = (nrow & (nrow - 1)) == 0 ? nrow << 2 : rndToNextPowOf2(nrow); 
-          data.resizeKeep(static_cast<int>(nrow), 1);
+          m_data.resizeKeep(static_cast<int>(nrow), 1);
         }
       }
       if(row != static_cast<int>(nrow))
-        data.resizeKeep(row, 1);
+        m_data.resizeKeep(row, 1);
     }
   }
 
@@ -776,28 +777,29 @@ public:
                const bool allow_missing = false) {
     if(!(first != last))
       throw ZeroElements{"Input iterators produce zero elements."};
-    if((data.nrow() == 0 || data.ncol() == 0) && 
+    if((m_data.nrow() == 0 || m_data.ncol() == 0) && 
        (nrow == std::numeric_limits<size_t>::max() || nrow == 0))
       throw InvalidEntry{"DataTable is empty. 'nrow' argument must be" 
                          " provided and it cannot be zero."};
 
-    data.resizeKeep(data.nrow() == 0 ? static_cast<int>(nrow) : data.nrow(), 
-                    data.ncol() + 1);
+    m_data.resizeKeep(m_data.nrow() == 0 ? 
+                      static_cast<int>(nrow) : m_data.nrow(), 
+                      m_data.ncol() + 1);
     int row{0};
-    int col{data.ncol() - 1};
+    int col{m_data.ncol() - 1};
     while(first != last) {
-      data.set(row, col, *first);
+      m_data.set(row, col, *first);
       ++first; ++row;
-      if(row == static_cast<int>(data.nrow()) && first != last) {
+      if(row == static_cast<int>(m_data.nrow()) && first != last) {
         row = 0;
         ++col;
-        data.resizeKeep(data.nrow(), data.ncol() + 1);
+        m_data.resizeKeep(m_data.nrow(), m_data.ncol() + 1);
       }
     }
-    if(!allow_missing && row != data.nrow())
+    if(!allow_missing && row != m_data.nrow())
       throw InvalidEntry{"Input iterator did not produce enough elements to "
                          "fill the last col. Expected = " + 
-                         std::to_string(data.nrow()) + " Received = " + 
+                         std::to_string(m_data.nrow()) + " Received = " + 
                          std::to_string(row)};
   }
 
@@ -811,17 +813,19 @@ public:
                                 columns for bind to work.
   \throws Opensim::InvalidEntry If trying to bind a DataTable_ to itself.     */
   void rbindDataTable(const DataTable_& table) {
-    if(data.ncol() != table.data.ncol()) 
+    if(m_data.ncol() != table.m_data.ncol()) 
       throw InvalidEntry{"Input DataTable has incorrect number of columns. " 
-                         "Expected = " + std::to_string(data.ncol()) + 
-                         " Received = " + std::to_string(table.data.ncol())};
-    if(&data == &table.data)
+                         "Expected = " + std::to_string(m_data.ncol()) + 
+                         " Received = " + std::to_string(table.m_data.ncol())};
+    if(&m_data == &table.m_data)
       throw InvalidEntry{"Cannot rbind a DataTable to itself."};
 
-    int old_nrow{data.nrow()};
-    data.resizeKeep(data.nrow() + table.data.nrow(), data.ncol());
-    data.updBlock(old_nrow         ,           0, 
-                  table.data.nrow(), data.ncol()).updAsMatrix() = table.data;
+    int old_nrow{m_data.nrow()};
+    m_data.resizeKeep(m_data.nrow() + table.m_data.nrow(), m_data.ncol());
+    m_data.updBlock(old_nrow, 
+                    0, 
+                    table.m_data.nrow(), 
+                    m_data.ncol()).updAsMatrix() = table.m_data;
   }
 
   /** Bind another DataTable_ to this DataTable_ by col. The new elements will 
@@ -833,24 +837,26 @@ public:
                                 rows for bind to work.
   \throws Opensim::InvalidEntry If trying to bind a DataTable_ to itself.     */
   void cbindDataTable(const DataTable_& table) {
-    if(data.nrow() != table.data.nrow())
+    if(m_data.nrow() != table.m_data.nrow())
       throw InvalidEntry{"Input DataTable has incorrect number of rows." 
-                         "Expected = " + std::to_string(data.nrow()) + 
-                         " Received = " + std::to_string(table.data.nrow())};
-    if(&data == &table.data)
+                         "Expected = " + std::to_string(m_data.nrow()) + 
+                         " Received = " + std::to_string(table.m_data.nrow())};
+    if(&m_data == &table.m_data)
       throw InvalidEntry{"Cannot cbind a DataTable to itself."};
 
-    int old_ncol{data.ncol()};
-    data.resizeKeep(data.nrow(), data.ncol() + table.data.ncol());
-    data.updBlock(0          ,          old_ncol,
-                  data.nrow(), table.data.ncol()).updAsMatrix() = table.data;
+    int old_ncol{m_data.ncol()};
+    m_data.resizeKeep(m_data.nrow(), m_data.ncol() + table.m_data.ncol());
+    m_data.updBlock(0, 
+                    old_ncol,
+                    m_data.nrow(), 
+                    table.m_data.ncol()).updAsMatrix() = table.m_data;
   }
 
   /** Clear the data of this DataTable_. After this operation, the DataTabe_
   will be of size 0x0 and all column labels will be cleared as well.          */
   void clearData() {
-    data.clear();
-    col_ind.clear();
+    m_data.clear();
+    m_col_ind.clear();
   }
 
   /**---------------------------------------------------------------------------
@@ -882,7 +888,7 @@ public:
       throw MetaDataKeyExists{"Key '" + std::string{key} + "' already exists. " 
                               "Remove the existing entry before inserting."};
 
-    metadata.emplace(key, 
+    m_metadata.emplace(key, 
                      new Value<ValueTypeNoRef>{std::forward<ValueType>(value)});
   }
 
@@ -906,7 +912,7 @@ public:
                   " non-reference type of the MetaData value stored.");
 
     try {
-      return metadata.at(key)->template getValue<ValueType>();
+      return m_metadata.at(key)->template getValue<ValueType>();
     } catch(std::out_of_range&) {
       throw MetaDataKeyDoesNotExist{"Key '" + key + "' not found."};
     } catch(std::bad_cast&) {
@@ -934,7 +940,7 @@ public:
                   "the MetaData value stored.");
 
     try {
-      return metadata.at(key)->template updValue<ValueType>();
+      return m_metadata.at(key)->template updValue<ValueType>();
     } catch(std::out_of_range&) {
       throw MetaDataKeyDoesNotExist{"Key '" + key + "' not found."};
     } catch(std::bad_cast&) {
@@ -964,8 +970,8 @@ public:
 
     try {
       ValueType value = 
-        std::move(metadata.at(key)->template getValue<ValueType>());
-      metadata.erase(key);
+        std::move(m_metadata.at(key)->template getValue<ValueType>());
+      m_metadata.erase(key);
       return value;
     } catch(std::out_of_range&) {
       throw MetaDataKeyDoesNotExist{"Key '" + key + "' not found."};
@@ -981,29 +987,29 @@ public:
   constant on average and linear in number of elements in the metadata on
   worst case.                                                                 */
   bool rmvMetaData(const string& key) {
-    return metadata.erase(key);
+    return m_metadata.erase(key);
   }
 
   /** Clear the metadata. All the metadata will be lost with this operation.  */
   void clearMetaData() {
-    metadata.clear();
+    m_metadata.clear();
   }
 
   /** Check if metadata for a given key exists. Time complexity is constant on
   average and linear in the number of elements in the metadata on worst case. */
   bool metaDataExists(const string& key) const {
-    return metadata.find(key) != metadata.end();
+    return m_metadata.find(key) != m_metadata.end();
   }
 
   /** Check if metadata is empty -- if the number of elements is zero.        */
   bool isMetaDataEmpty() const {
-    return metadata.empty();
+    return m_metadata.empty();
   }
 
   /** Get the number of elements in the metadata. Time complexity of other 
   operations on metadata depend on this number.                               */
   size_t metaDataSize() const {
-    return metadata.size();
+    return m_metadata.size();
   }
 
   /**---------------------------------------------------------------------------
@@ -1018,23 +1024,23 @@ public:
   bool colHasLabel(const size_t colind) const override {
     using ColLabelsValueType = typename ColLabelsType::value_type;
     checkColExists(colind);
-    auto res = std::find_if(col_ind.begin(), 
-                            col_ind.end(), 
+    auto res = std::find_if(m_col_ind.begin(), 
+                            m_col_ind.end(), 
                             [colind] (const ColLabelsValueType& kv) {
                               return kv.second == colind;
                             });
-    return res != col_ind.end();
+    return res != m_col_ind.end();
   }
 
   /** Check if a column exists by its index.                                  */
   bool colExists(const size_t colind) const override {
-    return colind >= 0 && colind < static_cast<size_t>(data.ncol());
+    return colind >= 0 && colind < static_cast<size_t>(m_data.ncol());
   }
 
   /** Check if a column exists under given label. All columns have an index but
   not all columns may have labels.                                            */
   bool colExists(const string& collabel) const override {
-    return col_ind.find(collabel) != col_ind.end();
+    return m_col_ind.find(collabel) != m_col_ind.end();
   }
 
   /** Label a column. The column should not have a label already. To update the
@@ -1045,7 +1051,7 @@ public:
                                   label.                                      */
   void insertColLabel(const size_t colind, const string& collabel) override {
     checkColExistsAndHasLabel(colind);
-    col_ind.emplace(collabel, colind);
+    m_col_ind.emplace(collabel, colind);
   }
 
   /** Label a column. The column should not have a label already. To update the
@@ -1056,7 +1062,7 @@ public:
                                   label.                                      */
   void insertColLabel(const size_t colind, string&& collabel) override {
     checkColExistsAndHasLabel(colind);
-    col_ind.emplace(std::move(collabel), colind);
+    m_col_ind.emplace(std::move(collabel), colind);
   }
 
   /** Label a set of columns at once using an input iterator that produces one
@@ -1070,7 +1076,7 @@ public:
   void insertColLabels(InputIt first, InputIt last) {
     while(first != last) {
       checkColExistsAndHasLabel(first->first);
-      col_ind.emplace(first->second, first->first);
+      m_col_ind.emplace(first->second, first->first);
       ++first;
     }
   }
@@ -1084,12 +1090,12 @@ public:
   string getColLabel(const size_t colind) const override {
     checkColExists(colind);
     using ColLabelsValueType = typename ColLabelsType::value_type;
-    auto res = std::find_if(col_ind.begin(),
-                            col_ind.end(),
+    auto res = std::find_if(m_col_ind.begin(),
+                            m_col_ind.end(),
                             [colind] (const ColLabelsValueType& kv) {
                               return kv.second == colind;
                             });
-    if(res == col_ind.end()) {
+    if(res == m_col_ind.end()) {
       throw ColumnHasNoLabel{"Column " + std::to_string(colind) + 
                              " has no label."};
     }
@@ -1103,7 +1109,7 @@ public:
   (std::pair) where the first element of the pair is the label and the second 
   element is the column index. To update the column abels, use updColLabels().*/
   ColLabelsConstIterPairType getColLabels() const override {
-    return std::make_pair(col_ind.cbegin(), col_ind.cend());
+    return std::make_pair(m_col_ind.cbegin(), m_col_ind.cend());
   }
 
   /** Update the label of a column with a new label. Time complexity is linear
@@ -1116,8 +1122,8 @@ public:
                                       exist.                                  */
   void updColLabel(const size_t colind, const string& new_collabel) override {
     string old_collabel{getColLabel(colind)};
-    col_ind.erase(old_collabel);
-    col_ind.emplace(new_collabel, colind);
+    m_col_ind.erase(old_collabel);
+    m_col_ind.emplace(new_collabel, colind);
   }
 
   /** Update the label of a column with a new label. Time complexity is constant
@@ -1129,8 +1135,8 @@ public:
   void updColLabel(const string& old_collabel, 
                    const string& new_collabel) override {
     size_t colind{getColInd(old_collabel)};
-    col_ind.erase(old_collabel);
-    col_ind[new_collabel] = colind;
+    m_col_ind.erase(old_collabel);
+    m_col_ind[new_collabel] = colind;
   }
 
   /** Update all the column labels. Returns an iterator pair(std::pair) where
@@ -1139,7 +1145,7 @@ public:
   (std::pair) where the first element of the pair is the label and the second 
   element is the column index.                                                */
   ColLabelsIterPairType updColLabels() override {
-    return std::make_pair(col_ind.begin(), col_ind.end());
+    return std::make_pair(m_col_ind.begin(), m_col_ind.end());
   }
 
   /** Get the index of a column from its label. Time complexity is constant on
@@ -1148,7 +1154,7 @@ public:
   \throws OpenSim::ColumnDoesNotExist If the column label does not exist.     */
   size_t getColInd(const string& collabel) const override {
     try {
-      return col_ind.at(collabel);
+      return m_col_ind.at(collabel);
     } catch(const std::out_of_range&) {
       throw ColumnDoesNotExist{"No column with label '" + collabel + "'."};
     }
@@ -1156,7 +1162,7 @@ public:
 
   /** Clear all the column labels.                                            */
   void clearColLabels() override {
-    col_ind.clear();
+    m_col_ind.clear();
   }
 
 private:
@@ -1196,11 +1202,11 @@ private:
   }
 
   // Matrix of data. This excludes timestamp column.
-  SimTK::Matrix_<ET> data;
+  SimTK::Matrix_<ET> m_data;
   // Meta-data.
-  MetaDataType       metadata;
+  MetaDataType       m_metadata;
   // Column label to column index.
-  ColLabelsType      col_ind;
+  ColLabelsType      m_col_ind;
 };  // DataTable_
 
 
