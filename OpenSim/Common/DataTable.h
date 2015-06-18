@@ -77,16 +77,112 @@ namespace OpenSim {
 
 /**-----------------------------------------------------------------------------
 AbstractDataTable is the base-class of all DataTable_ allowing storage of
-DataTable_ of different types to be stored in containers. See Datatable_ for
-details on the interface.
+DataTable_ of different types to be stored in containers. AbstractDataTable_ 
+offers interface to access column labels of DataTable_. See DataTable_ interface
+for details on using DataTable_.
 ------------------------------------------------------------------------------*/
 class OpenSim::AbstractDataTable {
 public:
+  using size_t                     = std::size_t;
+  using string                     = std::string;
+  using ColLabelsType              = std::unordered_map<string, size_t>;
+  using ColLabelsIterType          = ColLabelsType::iterator;
+  using ColLabelsConstIterType     = ColLabelsType::const_iterator;
+  using ColLabelsIterPairType      = std::pair<ColLabelsIterType,
+                                               ColLabelsIterType>;
+  using ColLabelsConstIterPairType = std::pair<ColLabelsConstIterType,
+                                               ColLabelsConstIterType>;
+
+
   AbstractDataTable() = default;
   AbstractDataTable(const AbstractDataTable&) = delete;
   AbstractDataTable(AbstractDataTable&&) = delete;
   virtual std::unique_ptr<AbstractDataTable> clone() const = 0;
   virtual ~AbstractDataTable() {}
+
+  /**---------------------------------------------------------------------------
+     Column label acessors & mutators.
+  ----------------------------------------------------------------------------*/
+  
+  /** Check if a column index has label. Time complexity is linear in number of 
+  column labels. All columns will have an index. All columns need not have a 
+  label.
+
+  \throws OpenSim::ColumnDoesNotExist If col index specified does not exist.  */
+  virtual bool colHasLabel(const size_t colind) const = 0;
+
+  /** Check if a column exists by its index.                                  */
+  virtual bool colExists(const size_t colind) const = 0;
+
+  /** Check if a column exists under given label. All columns have an index but
+  not all columns may have labels.                                            */
+  virtual bool colExists(const string& collabel) const = 0;
+
+  /** Label a column. The column should not have a label already. To update the
+  label of a column that already has a label, use updColLabel().
+
+  \throws OpenSim::ColumnDoesNotExist If the col index specified does not exist.
+  \throws OpenSim::ColumnHasLabel If the column index specified already has a 
+                                  label.                                      */
+  virtual void insertColLabel(const size_t colind, const string& collabel) = 0;
+
+  /** Label a column. The column should not have a label already. To update the
+  label of a column that already has a label, use updColLabel().
+
+  \throws OpenSim::ColumnDoesNotExist If the col index specified does not exist.
+  \throws OpenSim::ColumnHasLabel If the column index specified already has a 
+                                  label.                                      */
+  virtual void insertColLabel(const size_t colind, string&& collabel) = 0;
+
+  /** Get the label of a column. Time complexity is linear in the number of
+  column labels. The returned value is a copy of the label. To update the label 
+  of a column, use updColLabel(). 
+
+  \throws OpenSim::ColumnHasNoLabel If the column does not have a label.
+  \throws OpenSim::ColumnDoesNotExist If the column does not exist.           */
+  virtual string getColLabel(const size_t colind) const = 0;
+
+  /** Get all the column labels. Returns an iterator pair(std::pair) where first
+  element of pair is the beginning and second element of the pair is the end 
+  (sentinel) of the labels. Dereferencing the iterator will produce a pair
+  (std::pair) where the first element of the pair is the label and the second 
+  element is the column index. To update the column abels, use updColLabels().*/
+  virtual ColLabelsConstIterPairType getColLabels() const = 0;
+
+  /** Update the label of a column with a new label. Time complexity is linear
+  in the number of column labels. The column specified must already have a
+  label. To label a column that does not yet have a label, use insertLabel().
+
+  \throws OpenSim::ColumnHasNoLabel If the column specified does not already
+                                    have a label.
+  \throws OpenSim::ColumnDoesNotExist If the column specified does not 
+                                      exist.                                  */
+  virtual void updColLabel(const size_t colind, const string& new_collabel) = 0;
+
+  /** Update the label of a column with a new label. Time complexity is constant
+  on average and linear in number of column labels in the worst case.
+
+  \throws OpenSim::ColumnHasNoLabel If the column specified does not already
+                                    have a label.
+  \throws OpenSim::ColumnDoesNotExist If the column specified does not exist. */
+  virtual void updColLabel(const string& old_collabel, 
+                           const string& new_collabel) = 0;
+
+  /** Update all the column labels. Returns an iterator pair(std::pair) where
+  first element of pair is the beginning and second element of the pair is the 
+  end(sentinel) of the labels. Dereferencing the iterator will produce a pair 
+  (std::pair) where the first element of the pair is the label and the second 
+  element is the column index.                                                */
+  virtual ColLabelsIterPairType updColLabels() = 0;
+
+  /** Get the index of a column from its label. Time complexity is constant on
+  average and linear in number of column labels on worst case.
+
+  \throws OpenSim::ColumnDoesNotExist If the column label does not exist.     */
+  virtual size_t getColInd(const string& collabel) const = 0;
+
+  /** Clear all the column labels.                                            */
+  virtual void clearColLabels() = 0;
 }; // AbstractDataTable
 
 class OpenSim::ColumnDoesNotExist : public std::runtime_error {
@@ -151,17 +247,8 @@ and value is is of any type.</li> </ul>
 template<typename ET = SimTK::Real> // Element datatype.
 class OpenSim::DataTable_ : public OpenSim::AbstractDataTable {
 public:
-  using size_t                     = std::size_t;
-  using string                     = std::string;
   using MetaDataType               = std::unordered_map<string, 
                                                         SimTK::AbstractValue*>;
-  using ColLabelsType              = std::unordered_map<string, size_t>;
-  using ColLabelsIterType          = ColLabelsType::iterator;
-  using ColLabelsConstIterType     = ColLabelsType::const_iterator;
-  using ColLabelsIterPairType      = std::pair<ColLabelsIterType,
-                                               ColLabelsIterType>;
-  using ColLabelsConstIterPairType = std::pair<ColLabelsConstIterType,
-                                               ColLabelsConstIterType>;
 
   /** Construct empty DataTable.*/
   DataTable_() :
@@ -908,7 +995,7 @@ public:
   label.
 
   \throws OpenSim::ColumnDoesNotExist If col index specified does not exist.  */
-  bool colHasLabel(const size_t colind) const {
+  bool colHasLabel(const size_t colind) const override {
     using ColLabelsValueType = typename ColLabelsType::value_type;
     checkColExists(colind);
     auto res = std::find_if(col_ind.begin(), 
@@ -920,13 +1007,13 @@ public:
   }
 
   /** Check if a column exists by its index.                                  */
-  bool colExists(const size_t colind) const {
+  bool colExists(const size_t colind) const override {
     return colind >= 0 && colind < static_cast<size_t>(data.ncol());
   }
 
   /** Check if a column exists under given label. All columns have an index but
   not all columns may have labels.                                            */
-  bool colExists(const string& collabel) const {
+  bool colExists(const string& collabel) const override {
     return col_ind.find(collabel) != col_ind.end();
   }
 
@@ -936,7 +1023,7 @@ public:
   \throws OpenSim::ColumnDoesNotExist If the col index specified does not exist.
   \throws OpenSim::ColumnHasLabel If the column index specified already has a 
                                   label.                                      */
-  void insertColLabel(const size_t colind, const string& collabel) {
+  void insertColLabel(const size_t colind, const string& collabel) override {
     checkColExistsAndHasLabel(colind);
     col_ind.emplace(collabel, colind);
   }
@@ -947,7 +1034,7 @@ public:
   \throws OpenSim::ColumnDoesNotExist If the col index specified does not exist.
   \throws OpenSim::ColumnHasLabel If the column index specified already has a 
                                   label.                                      */
-  void insertColLabel(const size_t colind, string&& collabel) {
+  void insertColLabel(const size_t colind, string&& collabel) override {
     checkColExistsAndHasLabel(colind);
     col_ind.emplace(std::move(collabel), colind);
   }
@@ -974,7 +1061,7 @@ public:
 
   \throws OpenSim::ColumnHasNoLabel If the column does not have a label.
   \throws OpenSim::ColumnDoesNotExist If the column does not exist.           */
-  string getColLabel(const size_t colind) const {
+  string getColLabel(const size_t colind) const override {
     checkColExists(colind);
     using ColLabelsValueType = typename ColLabelsType::value_type;
     auto res = std::find_if(col_ind.begin(),
@@ -995,7 +1082,7 @@ public:
   (sentinel) of the labels. Dereferencing the iterator will produce a pair
   (std::pair) where the first element of the pair is the label and the second 
   element is the column index. To update the column abels, use updColLabels().*/
-  ColLabelsConstIterPairType getColLabels() const {
+  ColLabelsConstIterPairType getColLabels() const override {
     return std::make_pair(col_ind.cbegin(), col_ind.cend());
   }
 
@@ -1007,7 +1094,7 @@ public:
                                     have a label.
   \throws OpenSim::ColumnDoesNotExist If the column specified does not 
                                       exist.                                  */
-  void updColLabel(const size_t colind, const string& new_collabel) {
+  void updColLabel(const size_t colind, const string& new_collabel) override {
     string old_collabel{getColLabel(colind)};
     col_ind.erase(old_collabel);
     col_ind.emplace(new_collabel, colind);
@@ -1020,7 +1107,7 @@ public:
                                     have a label.
   \throws OpenSim::ColumnDoesNotExist If the column specified does not exist. */
   void updColLabel(const string& old_collabel, 
-                   const string& new_collabel) {
+                   const string& new_collabel) override {
     size_t colind{getColInd(old_collabel)};
     col_ind.erase(old_collabel);
     col_ind[new_collabel] = colind;
@@ -1031,7 +1118,7 @@ public:
   end(sentinel) of the labels. Dereferencing the iterator will produce a pair 
   (std::pair) where the first element of the pair is the label and the second 
   element is the column index.                                                */
-  ColLabelsIterPairType updColLabels() {
+  ColLabelsIterPairType updColLabels() override {
     return std::make_pair(col_ind.begin(), col_ind.end());
   }
 
@@ -1039,7 +1126,7 @@ public:
   average and linear in number of column labels on worst case.
 
   \throws OpenSim::ColumnDoesNotExist If the column label does not exist.     */
-  size_t getColInd(const string& collabel) const {
+  size_t getColInd(const string& collabel) const override {
     try {
       return col_ind.at(collabel);
     } catch(const std::out_of_range&) {
@@ -1048,7 +1135,7 @@ public:
   }
 
   /** Clear all the column labels.                                            */
-  void clearColLabels() {
+  void clearColLabels() override {
     col_ind.clear();
   }
 

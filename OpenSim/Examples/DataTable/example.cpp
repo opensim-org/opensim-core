@@ -353,5 +353,74 @@ int main() {
   // Retrieve the datatable from metadata.
   auto dt_vec3_cpy = dt_real.getMetaData<decltype(dt_vec3)>("datatable");
 
+  
+  // DataTables can be stored in standard containers. They will first have to 
+  // upcasted to AbstractDataTable in order to do so.
+
+  OpenSim::DataTable_<SimTK::Real> table_real{3, 4, 10};
+  OpenSim::DataTable_<SimTK::Vec3> table_vec3{3, 4, {10, 20, 30}};
+  OpenSim::DataTable_<SimTK::Vec6> table_vec6{3, 4, {10, 20, 30, 40, 50, 60}};
+
+  // Sequence container. Other containers templated on 
+  // OpenSim::AbstractDataTable* should also work.
+  std::vector<OpenSim::AbstractDataTable*> vector{};
+
+  // Add the DataTables to vector as pointers. The upcast happens implicitly.
+  vector.push_back(&table_real);
+  vector.push_back(&table_vec3);
+  vector.push_back(&table_vec6);
+
+  // Add column labels to all the DataTables through pointers stored in the
+  // container.
+  for(auto& dt : vector) {
+    dt->insertColLabel(0, "col-zero");
+    dt->insertColLabel(2, "col-two");
+  }
+
+  // Check if a column index has label associated.
+  for(auto& dt : vector) {
+    assert(dt->colHasLabel(0) == true);
+    assert(dt->colHasLabel(2) == true);
+    assert(dt->colHasLabel(1) == false);
+    assert(dt->colHasLabel(3) == false);
+  }
+
+  // Retrieve column labels using get<> method.
+  for(auto& dt : vector) {
+    assert(dt->getColLabel(0) == "col-zero");
+    assert(dt->getColLabel(2) == "col-two");
+  }
+
+  // Check if a column label exists in the DataTable.
+  for(auto& dt : vector) {
+    assert(dt->colExists("col-zero") == true);
+    assert(dt->colExists("col-two") == true);
+  }
+
+  // Retrieve the column index using its label.
+  assert(vector[0]->getColInd("col-zero") == 0 &&
+         table_real.getColInd("col-zero") == 0);
+  assert(vector[2]->getColInd("col-two")  == 2 &&
+         table_real.getColInd("col-two")  == 2);
+  assert(vector[0]->getColInd("col-zero") == 0 &&
+         table_vec3.getColInd("col-zero") == 0);
+  assert(vector[2]->getColInd("col-two")  == 2 &&
+         table_vec3.getColInd("col-two")  == 2);
+  assert(vector[0]->getColInd("col-zero") == 0 &&
+         table_vec6.getColInd("col-zero") == 0);
+  assert(vector[2]->getColInd("col-two")  == 2 &&
+         table_vec6.getColInd("col-two")  == 2);
+
+  // Update column labels using upd<> method. Update can be done using index
+  // or using column label.
+  for(auto& dt : vector) {
+    dt->updColLabel(0        , "column-zero");
+    dt->updColLabel("col-two", "column-two");
+  }
+
+  // Clear the column labels.
+  for(auto& dt : vector)
+    dt->clearColLabels();
+
   return 0;
 }

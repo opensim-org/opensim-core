@@ -2342,6 +2342,127 @@ void test7() {
 }
 
 
+// Test adding DataTable to containers.
+void test8() {
+  // Construct DataTables.
+  std::cout << "test8 -- Construct DataTable with default value: Real.\n";
+  OpenSim::DataTable_<SimTK::Real> dt_real{3, 4, 10};
+  std::cout << "test8 -- Construct DataTable with default value: Vec3.\n";
+  OpenSim::DataTable_<SimTK::Vec3> dt_vec3{3, 4, {10, 20, 30}};
+  std::cout << "test8 -- Construct DataTable with default value: Vec6.\n"; 
+  OpenSim::DataTable_<SimTK::Vec6> dt_vec6{3, 4, {10, 20, 30, 40, 50, 60}};
+
+  // Sequence container.
+  std::vector<OpenSim::AbstractDataTable*> vector{};
+
+  // Add the DataTables to vector.
+  std::cout << "test8 -- push_back to std::vector: Real.\n";
+  vector.push_back(&dt_real);
+  std::cout << "test8 -- push_back to std::vector: Vec3.\n";
+  vector.push_back(&dt_vec3);
+  std::cout << "test8 -- push_back to std::vector: Vec6.\n";
+  vector.push_back(&dt_vec6);
+
+  // Add column labels to all the DataTables in the container.
+  std::cout << "test8 -- Add column labels.\n";
+  for(auto& dt : vector) {
+    dt->insertColLabel(0, "col-zero");
+    dt->insertColLabel(2, "col-two");
+  }
+
+  // Check existence of column labels.
+  std::cout << "test8 -- Check existence of col labels: Real.\n";
+  assert(dt_real.colHasLabel(0) == true);
+  assert(dt_real.colHasLabel(2) == true);
+  assert(dt_real.colHasLabel(1) == false);
+  assert(dt_real.colHasLabel(3) == false);
+  std::cout << "test8 -- Check existence of col labels: Vec3.\n";
+  assert(dt_vec3.colHasLabel(0) == true);
+  assert(dt_vec3.colHasLabel(2) == true);
+  assert(dt_vec3.colHasLabel(1) == false);
+  assert(dt_vec3.colHasLabel(3) == false);
+  std::cout << "test8 -- Check existence of col labels: Vec6.\n";
+  assert(dt_vec6.colHasLabel(0) == true);
+  assert(dt_vec6.colHasLabel(2) == true);
+  assert(dt_vec6.colHasLabel(1) == false);
+  assert(dt_vec6.colHasLabel(3) == false);
+
+  // Check col labels.
+  std::cout << "test8 -- Check col labels: Real.\n";
+  assert(vector[0]->getColLabel(0) == "col-zero" &&
+         dt_real.getColLabel(0)    == "col-zero");
+  assert(vector[0]->getColLabel(2) == "col-two" &&
+         dt_real.getColLabel(2)    == "col-two");
+  std::cout << "test8 -- Check col labels: Vec3.\n";
+  assert(vector[1]->getColLabel(0) == "col-zero" &&
+         dt_vec3.getColLabel(0)    == "col-zero");
+  assert(vector[1]->getColLabel(2) == "col-two" &&
+         dt_vec3.getColLabel(2)    == "col-two");
+  std::cout << "test8 -- Check col labels: Vec6.\n";
+  assert(vector[2]->getColLabel(0) == "col-zero" &&
+         dt_vec6.getColLabel(0)    == "col-zero");
+  assert(vector[2]->getColLabel(2) == "col-two" &&
+         dt_vec6.getColLabel(2)    == "col-two");
+
+  // Check col indices.
+  std::cout << "test8 -- Check col indices: Real.\n";
+  assert(vector[0]->getColInd("col-zero") == 0 &&
+         dt_real.getColInd("col-zero")    == 0);
+  assert(vector[2]->getColInd("col-two") == 2 &&
+         dt_real.getColInd("col-two")    == 2);
+  std::cout << "test8 -- Check col indices: Vec3.\n";
+  assert(vector[0]->getColInd("col-zero") == 0 &&
+         dt_vec3.getColInd("col-zero")    == 0);
+  assert(vector[2]->getColInd("col-two") == 2 &&
+         dt_vec3.getColInd("col-two")    == 2);
+  std::cout << "test8 -- Check col indices: Vec6.\n";
+  assert(vector[0]->getColInd("col-zero") == 0 &&
+         dt_vec6.getColInd("col-zero")    == 0);
+  assert(vector[2]->getColInd("col-two") == 2 &&
+         dt_vec6.getColInd("col-two")    == 2);
+
+  // Update col labels.
+  std::cout << "test8 -- Update column labels.\n";
+  for(auto& dt : vector) {
+    dt->updColLabel(0, "column-zero");
+    dt->updColLabel("col-two", "column-two");
+  }
+
+  // Check col labels.
+  std::cout << "test8 -- Check col labels: Real.\n";
+  assert(vector[0]->getColLabel(0) == dt_real.getColLabel(0));
+  assert(vector[0]->getColLabel(2) == dt_real.getColLabel(2));
+  std::cout << "test8 -- Check col labels: Vec3.\n";
+  assert(vector[1]->getColLabel(0) == dt_vec3.getColLabel(0));
+  assert(vector[1]->getColLabel(2) == dt_vec3.getColLabel(2));
+  std::cout << "test8 -- Check col labels: Vec6.\n";
+  assert(vector[2]->getColLabel(0) == dt_vec6.getColLabel(0));
+  assert(vector[2]->getColLabel(2) == dt_vec6.getColLabel(2));
+
+  // Check the col labels.
+  std::cout << "test8 -- Check col labels: Real.\n";
+  assert(vector[0]->getColLabel(0) == "column-zero" &&
+         dt_real.getColLabel(0)    == "column-zero");
+  assert(vector[0]->getColLabel(2) == "column-two" &&
+         dt_real.getColLabel(2)    == "column-two");
+  std::cout << "test8 -- Check col labels: Vec3.\n";
+  assert(vector[1]->getColLabel(0) == "column-zero" &&
+         dt_vec3.getColLabel(0)    == "column-zero");
+  assert(vector[1]->getColLabel(2) == "column-two" &&
+         dt_vec3.getColLabel(2)    == "column-two");
+  std::cout << "test8 -- Check col labels: Vec6.\n";
+  assert(vector[2]->getColLabel(0) == "column-zero" &&
+         dt_vec6.getColLabel(0)    == "column-zero");
+  assert(vector[2]->getColLabel(2) == "column-two" &&
+         dt_vec6.getColLabel(2)    == "column-two");
+
+  // Clear the column labels.
+  std::cout << "test8 -- Clear column labels.\n";
+  for(auto& dt : vector)
+    dt->clearColLabels();
+}
+
+
 int main() {
   test1();
 
@@ -2356,6 +2477,8 @@ int main() {
   test6();
 
   test7();
+
+  test8();
 
   return 0;
 }
