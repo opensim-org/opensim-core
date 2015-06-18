@@ -41,15 +41,15 @@ int main() {
   constexpr double EPSILON{0.00001};
 
   // Default construct a DataTable of SimTK::Real[alias for double].
-  OpenSim::DataTable_<SimTK::Real> dt_real{};
+  OpenSim::DataTable_<SimTK::Real> dt_real;
   // Default construct a DataTable of SimTK::Vec3[a tuple of 3 double(s)].
-  OpenSim::DataTable_<SimTK::Vec3> dt_vec3{};
+  OpenSim::DataTable_<SimTK::Vec3> dt_vec3;
   // Default construct a DataTable of SimTK::Vec6[a tuple of 6 double(s)].
-  OpenSim::DataTable_<SimTK::Vec6> dt_vec6{};
+  OpenSim::DataTable_<SimTK::Vec6> dt_vec6;
 
-  std::vector<SimTK::Real> data_real{};
-  std::vector<SimTK::Vec3> data_vec3{};
-  std::vector<SimTK::Vec6> data_vec6{};
+  std::vector<SimTK::Real> data_real;
+  std::vector<SimTK::Vec3> data_vec3;
+  std::vector<SimTK::Vec6> data_vec6;
   for(int i = 0; i < 12; ++i) {
     data_real.push_back(i);
     data_vec3.push_back(SimTK::Vec3{1, 2, 3} + i);
@@ -367,7 +367,7 @@ int main() {
 
   // Sequence container. Other containers templated on 
   // OpenSim::AbstractDataTable* should also work.
-  std::vector<OpenSim::AbstractDataTable*> vector{};
+  std::vector<OpenSim::AbstractDataTable*> vector;
 
   // Add the DataTables to vector as pointers. The upcast happens implicitly.
   vector.push_back(&table_real);
