@@ -323,10 +323,17 @@ public:
       }
     }
     if(!allow_missing) {
-      if((dir == ROWWISE && col != data.ncol()) ||
-         (dir == COLWISE && row != data.nrow()))
+      if(dir == ROWWISE && col != data.ncol()) {
         throw InvalidEntry{"Input iterator did not produce enough elements to "
-                           "fill the last row."};
+                           "fill the last row. Expected = " + 
+                           std::to_string(data.ncol()) + " Received = " + 
+                           std::to_string(col)};
+      } else if(dir == COLWISE && row != data.nrow()) {
+        throw InvalidEntry{"Input iterator did not produce enough elements to "
+                           "fill the last column. Expected = " +
+                           std::to_string(data.nrow()) + " Received = " + 
+                           std::to_string(row)};
+      }
     }
   }
 
@@ -431,8 +438,8 @@ public:
     try {
       return data.col(static_cast<int>(col_ind.at(collabel)));
     } catch (std::out_of_range exc) {
-      std::string expl{"Column label '" + collabel + "' does not exist."};
-      throw ColumnDoesNotExist{expl};
+      throw ColumnDoesNotExist{"Column label '" + collabel + 
+                               "' does not exist."};
     }
   }
 
@@ -454,8 +461,8 @@ public:
     try {
       return data.updCol(static_cast<int>(col_ind.at(collabel)));
     } catch (std::out_of_range exc) {
-      std::string expl{"Column label '" + collabel + "' does not exist."};
-      throw ColumnDoesNotExist{expl};
+      throw ColumnDoesNotExist{"Column label '" + collabel + 
+                               "' does not exist."};
     }
   }
 
@@ -480,8 +487,8 @@ public:
       return data.getElt(static_cast<int>(row), 
                          static_cast<int>(col_ind.at(collabel)));
     } catch (std::out_of_range exc) {
-      std::string expl{"Column label '" + collabel + "' does not exist."};
-      throw ColumnDoesNotExist{expl};
+      throw ColumnDoesNotExist{"Column label '" + collabel + 
+                               "' does not exist."};
     }
   }
 
@@ -506,8 +513,8 @@ public:
       return data.updElt(static_cast<int>(row), 
                          static_cast<int>(col_ind.at(collabel)));
     } catch (std::out_of_range exc) {
-      std::string expl{"Column label '" + collabel + "' does not exist."};
-      throw ColumnDoesNotExist{expl};
+      throw ColumnDoesNotExist{"Column label '" + collabel + 
+                               "' does not exist."};
     }
   }
 
@@ -529,7 +536,9 @@ public:
     if(row.nrow() == 0 || row.ncol() == 0)
       throw ZeroElements{"Input row has zero length."};
     if(data.ncol() > 0 && row.size() != data.ncol())
-      throw InvalidEntry{"Input row has incorrect number of columns."};
+      throw InvalidEntry{"Input row has incorrect number of columns."
+                         " Expected = " + std::to_string(data.ncol()) + 
+                         " Received = " + std::to_string(row.size())};
 
     data.resizeKeep(data.nrow() + 1, row.ncol());
     data.updRow(data.nrow() - 1).updAsRowVector() = row;
@@ -572,30 +581,32 @@ public:
 
     if(data.ncol() > 0) {
       data.resizeKeep(data.nrow() + 1, data.ncol());
-      int colind{0};
+      int col{0};
       while(first != last) {
-        data.set(data.nrow() - 1, colind++, *first);
+        data.set(data.nrow() - 1, col++, *first);
         ++first;
       }
-      if(!allow_missing && colind != data.ncol())
+      if(!allow_missing && col != data.ncol())
         throw InvalidEntry{"Input iterator did not produce enough elements to "
-                           "fill the row."};
+                           "fill the row. Expected = " + 
+                           std::to_string(data.ncol()) + " Received = " + 
+                           std::to_string(col)};
     } else {
-      int colind{0};
+      int col{0};
       size_t ncol{ncol_hint};
       data.resizeKeep(1, static_cast<int>(ncol));
       while(first != last) {
-        data.set(0, colind++, *first);
+        data.set(0, col++, *first);
         ++first;
-        if(colind == static_cast<int>(ncol) && first != last) {
+        if(col == static_cast<int>(ncol) && first != last) {
           // If ncol is a power of 2, double it. Otherwise round it to the next
           // power of 2.
           ncol = (ncol & (ncol - 1)) == 0 ? ncol << 2 : rndToNextPowOf2(ncol); 
           data.resizeKeep(1, static_cast<int>(ncol));
         }
       }
-      if(colind != static_cast<int>(ncol))
-        data.resizeKeep(1, colind);
+      if(col != static_cast<int>(ncol))
+        data.resizeKeep(1, col);
     }
   }
 
@@ -647,7 +658,9 @@ public:
     }
     if(!allow_missing && col != data.ncol())
       throw InvalidEntry{"Input iterator did not produce enough elements to "
-                         "fill the last row."};
+                         "fill the last row. Expected = " + 
+                         std::to_string(data.ncol()) + " Received = " + 
+                         std::to_string(col)};
   }
 
   /** Add(append) a col to the DataTable_ using a SimTK::Vector_. If the 
@@ -663,7 +676,9 @@ public:
     if(col.nrow() == 0 || col.ncol() == 0)
       throw ZeroElements{"Input column has zero length."};
     if(data.nrow() > 0 && col.size() != data.nrow())
-      throw InvalidEntry{"Input column has incorrect number of rows."};
+      throw InvalidEntry{"Input column has incorrect number of rows. " 
+                         "Expected = " + std::to_string(data.nrow()) + 
+                         " Received = " + std::to_string(col.size())};
 
     data.resizeKeep(col.size(), data.ncol() + 1);
     data.updCol(data.ncol() - 1).updAsVector() = col;
@@ -711,7 +726,9 @@ public:
       }
       if(!allow_missing && row != data.nrow()) 
         throw InvalidEntry{"Input iterator did not produce enough elements to "
-                           "fill the col."};
+                           "fill the col. Expected = " + 
+                           std::to_string(data.nrow()) + " Received = " + 
+                           std::to_string(row)};
     } else {
       int row{0};
       size_t nrow{nrow_hint};
@@ -779,7 +796,9 @@ public:
     }
     if(!allow_missing && row != data.nrow())
       throw InvalidEntry{"Input iterator did not produce enough elements to "
-                         "fill the last col."};
+                         "fill the last col. Expected = " + 
+                         std::to_string(data.nrow()) + " Received = " + 
+                         std::to_string(row)};
   }
 
   /** Bind another DataTable_ to this DataTable_ by row. The new elements will 
@@ -793,7 +812,9 @@ public:
   \throws Opensim::InvalidEntry If trying to bind a DataTable_ to itself.     */
   void rbindDataTable(const DataTable_& table) {
     if(data.ncol() != table.data.ncol()) 
-      throw InvalidEntry{"Input DataTable has incorrect number of columns."};
+      throw InvalidEntry{"Input DataTable has incorrect number of columns. " 
+                         "Expected = " + std::to_string(data.ncol()) + 
+                         " Received = " + std::to_string(table.data.ncol())};
     if(&data == &table.data)
       throw InvalidEntry{"Cannot rbind a DataTable to itself."};
 
@@ -813,7 +834,9 @@ public:
   \throws Opensim::InvalidEntry If trying to bind a DataTable_ to itself.     */
   void cbindDataTable(const DataTable_& table) {
     if(data.nrow() != table.data.nrow())
-      throw InvalidEntry{"Input DataTable has incorrect number of rows."};
+      throw InvalidEntry{"Input DataTable has incorrect number of rows." 
+                         "Expected = " + std::to_string(data.nrow()) + 
+                         " Received = " + std::to_string(table.data.nrow())};
     if(&data == &table.data)
       throw InvalidEntry{"Cannot cbind a DataTable to itself."};
 
@@ -855,11 +878,9 @@ public:
                   "'value' cannot be of array type. For ex. use std::string"
                   " instead of char[], use std::vector<int> instead of int[].");
 
-    if(metaDataExists(key)) {
-      std::string expl{"Key '" + std::string{key} + "' already exists. " + 
-                       "Remove the existing entry before inserting."};
-      throw MetaDataKeyExists{expl};
-    }
+    if(metaDataExists(key))
+      throw MetaDataKeyExists{"Key '" + std::string{key} + "' already exists. " 
+                              "Remove the existing entry before inserting."};
 
     metadata.emplace(key, 
                      new Value<ValueTypeNoRef>{std::forward<ValueType>(value)});
@@ -887,8 +908,7 @@ public:
     try {
       return metadata.at(key)->template getValue<ValueType>();
     } catch(std::out_of_range&) {
-      std::string expl{"Key '" + std::string{key} + "' not found."};
-      throw MetaDataKeyDoesNotExist{expl};
+      throw MetaDataKeyDoesNotExist{"Key '" + key + "' not found."};
     } catch(std::bad_cast&) {
       throw MetaDataTypeMismatch{"Template argument specified for getMetaData"
                                  " is incorrect."};
@@ -916,8 +936,7 @@ public:
     try {
       return metadata.at(key)->template updValue<ValueType>();
     } catch(std::out_of_range&) {
-      std::string expl{"Key '" + std::string{key} + "' not found."};
-      throw MetaDataKeyDoesNotExist{expl};
+      throw MetaDataKeyDoesNotExist{"Key '" + key + "' not found."};
     } catch(std::bad_cast&) {
       throw MetaDataTypeMismatch{"Template argument specified for updMetaData"
                                  " is incorrect"};
@@ -949,8 +968,7 @@ public:
       metadata.erase(key);
       return value;
     } catch(std::out_of_range&) {
-      std::string expl{"Key '" + std::string{key} + "' not found."};
-      throw MetaDataKeyDoesNotExist{expl};
+      throw MetaDataKeyDoesNotExist{"Key '" + key + "' not found."};
     } catch(std::bad_cast&) {
       throw MetaDataTypeMismatch{"Template argument specified for popMetaData"
                                  " is incorrect"};
