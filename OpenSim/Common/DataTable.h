@@ -37,6 +37,7 @@ in-memory container for data access and manipulation.                         */
 #include <limits>
 // Non-standard headers.
 #include <SimTKcommon.h>
+#include <OpenSim/Common/Exception.h>
 
 
 namespace OpenSim {
@@ -73,6 +74,47 @@ namespace OpenSim {
   class MetaDataKeyDoesNotExist;
   class MetaDataTypeMismatch;
 } // namespace OpenSim
+
+
+class OpenSim::ColumnDoesNotExist : public OpenSim::Exception {
+public:
+  ColumnDoesNotExist(const std::string& expl) : Exception(expl) {}
+};
+
+class OpenSim::ColumnHasLabel : public OpenSim::Exception {
+public:
+  ColumnHasLabel(const std::string& expl) : Exception(expl) {}
+};
+
+class OpenSim::ColumnHasNoLabel : public OpenSim::Exception {
+public:
+  ColumnHasNoLabel(const std::string& expl) : Exception(expl) {}
+};
+
+class OpenSim::ZeroElements : public OpenSim::Exception {
+public:
+  ZeroElements(const std::string& expl) : Exception(expl) {}
+};
+
+class OpenSim::InvalidEntry : public OpenSim::Exception {
+public:
+  InvalidEntry(const std::string& expl) : Exception(expl) {}
+};
+
+class OpenSim::MetaDataKeyExists : public OpenSim::Exception {
+public:
+  MetaDataKeyExists(const std::string& expl) : Exception(expl) {}
+};
+
+class OpenSim::MetaDataKeyDoesNotExist : public OpenSim::Exception {
+public:
+  MetaDataKeyDoesNotExist(const std::string& expl) : Exception(expl) {}
+};
+
+class OpenSim::MetaDataTypeMismatch : public OpenSim::Exception {
+public:
+  MetaDataTypeMismatch(const std::string& expl) : Exception(expl) {}
+};
 
 
 /**-----------------------------------------------------------------------------
@@ -184,46 +226,6 @@ public:
   /** Clear all the column labels.                                            */
   virtual void clearColLabels() = 0;
 }; // AbstractDataTable
-
-class OpenSim::ColumnDoesNotExist : public std::runtime_error {
-public:
-  ColumnDoesNotExist(const std::string& expl) : runtime_error(expl) {}
-};
-
-class OpenSim::ColumnHasLabel : public std::runtime_error {
-public:
-  ColumnHasLabel(const std::string& expl) : runtime_error(expl) {}
-};
-
-class OpenSim::ColumnHasNoLabel : public std::runtime_error {
-public:
-  ColumnHasNoLabel(const std::string& expl) : runtime_error(expl) {}
-};
-
-class OpenSim::ZeroElements : public std::runtime_error {
-public:
-  ZeroElements(const std::string& expl) : runtime_error(expl) {}
-};
-
-class OpenSim::InvalidEntry : public std::runtime_error {
-public:
-  InvalidEntry(const std::string& expl) : runtime_error(expl) {}
-};
-
-class OpenSim::MetaDataKeyExists : public std::runtime_error {
-public:
-  MetaDataKeyExists(const std::string& expl) : runtime_error(expl) {}
-};
-
-class OpenSim::MetaDataKeyDoesNotExist : public std::runtime_error {
-public:
-  MetaDataKeyDoesNotExist(const std::string& expl) : runtime_error(expl) {}
-};
-
-class OpenSim::MetaDataTypeMismatch : public std::runtime_error {
-public:
-  MetaDataTypeMismatch(const std::string& expl) : runtime_error(expl) {}
-};
 
 
 /**-----------------------------------------------------------------------------

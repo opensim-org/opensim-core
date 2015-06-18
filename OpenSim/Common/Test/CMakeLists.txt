@@ -1,7 +1,7 @@
 ################################################################################
 # Test DataTable class.
 add_executable(testDataTable DataTable.cpp)
-target_link_libraries(testDataTable ${Simbody_LIBRARIES})
+target_link_libraries(testDataTable ${Simbody_LIBRARIES} osimCommon)
 add_test(testDataTable ${EXECUTABLE_OUTPUT_PATH}/testDataTable)
 ################################################################################
 
