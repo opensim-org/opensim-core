@@ -462,9 +462,9 @@ _______________________________________________________________________
     **Approximate. Includes estimated cost of evaluating a cubic spline
                     with 100 knots
 */
-SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder,
-    double domainMin,
-    double domainMax) const{
+DataTable SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder,
+        double domainMin,
+        double domainMax) const {
     int pts = 1; //Number of points between each of the spline points used
                   //to fit u(x), and also the integral spline
     SimTK_ERRCHK_ALWAYS(maxOrder <= getMaxDerivativeOrder(),
@@ -504,16 +504,18 @@ SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder,
         
     SimTK::Vector xsmpl(pts*(midX.size()-1)+2*10*pts);
     
-    SimTK::Matrix results;
+    int nrows = pts*(midX.size()-1)+2*10*pts;
+    int ncols = maxOrder+2;
 
     if(_computeIntegral){
-        results.resize(pts*(midX.size()-1)+2*10*pts,maxOrder+2+1);
-    }else{
-        results.resize(pts*(midX.size()-1)+2*10*pts,maxOrder+2);
+        ncols += 1;
     }
+
+    DataTable results(nrows, ncols);
+
     //Array initialization is so ugly ...
-    SimTK::Array_<int> d1y(1),d2y(2),d3y(3),d4y(4),d5y(5),d6y(6);
-    d1y[0]=0;
+    SimTK::Array_<int> d1y(1), d2y(2), d3y(3), d4y(4), d5y(5), d6y(6);
+    d1y[0] = 0;
     d2y[0] = 0;
     d2y[1] = 0;
     for(int i=0;i<3;i++)
@@ -568,28 +570,28 @@ SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder,
     SimTK::Vector ax(1);
     for(int i=0; i < xsmpl.nelt(); i++){
         ax(0) = xsmpl(i);
-        results(i,0) = ax(0);
-        results(i,1) = calcValue(ax);
+        results.updElt(i,0) = ax(0);
+        results.updElt(i,1) = calcValue(ax);
         if(maxOrder>=1)
-        results(i,2) = calcDerivative(d1y,ax);
+        results.updElt(i,2) = calcDerivative(d1y,ax);
 
         if(maxOrder>=2)
-        results(i,3) = calcDerivative(d2y,ax);
+        results.updElt(i,3) = calcDerivative(d2y,ax);
         
         if(maxOrder>=3)
-        results(i,4) = calcDerivative(d3y,ax);
+        results.updElt(i,4) = calcDerivative(d3y,ax);
         
         if(maxOrder>=4)
-        results(i,5) = calcDerivative(d4y,ax);
+        results.updElt(i,5) = calcDerivative(d4y,ax);
         
         if(maxOrder>=5)
-        results(i,6) = calcDerivative(d5y,ax);
+        results.updElt(i,6) = calcDerivative(d5y,ax);
         
         if(maxOrder>=6)
-        results(i,7) = calcDerivative(d6y,ax);
+        results.updElt(i,7) = calcDerivative(d6y,ax);
 
         if(_computeIntegral){
-            results(i,maxOrder+2) = calcIntegral(ax(0));
+            results.updElt(i,maxOrder+2) = calcIntegral(ax(0));
         }
     }
    return results;
@@ -627,33 +629,33 @@ void SmoothSegmentedFunction::printMuscleCurveToCSVFile(
                                                 double domainMax) const
 {
     //Only compute up to the 2nd derivative
-    SimTK::Matrix results = calcSampledMuscleCurve(2,domainMin,domainMax);
-    SimTK::Array_<std::string> colNames(results.ncol());
-    colNames[0] = "x";
-    colNames[1] = "y";
-    colNames[2] = "dy/dx";
-    colNames[3] = "d2y/dx2";
+    DataTable results = calcSampledMuscleCurve(2,domainMin,domainMax);
+    results.insertColLabel(0, "x");
+    results.insertColLabel(1, "y");
+    results.insertColLabel(2, "dy/dx");
+    results.insertColLabel(3, "d2y/dx2");
     
-    if(results.ncol() == 5){
-        colNames[4] = "int_y(x)";
+    if(results.getNumCols() == 5){
+        results.insertColLabel(4, "int_y(x)");
     }
 
-            std::string fname = _name;
-            SimTK_ERRCHK_ALWAYS(fname.length() > 0,
-                "SmoothSegmentedFunction::printMuscleCurveToCSVFile",
-                "Muscle Curve name is empty!");
-            fname.append(".csv");
+    std::string fname = _name;
+    SimTK_ERRCHK_ALWAYS(fname.length() > 0,
+            "SmoothSegmentedFunction::printMuscleCurveToCSVFile",
+            "Muscle Curve name is empty!");
+    fname.append(".csv");
 
-            printMatrixToFile(results,colNames,path,fname);
+    // TODO print results to CSV.
 }
+
 /*
 This function will print cvs file of the column vector col0 and the matrix data
 */
 void SmoothSegmentedFunction::
-    printMatrixToFile(SimTK::Matrix& data, SimTK::Array_<std::string>& colNames,
+    printMatrixToFile(DataTable& data, SimTK::Array_<std::string>& colNames,
     const std::string& path, const std::string& filename) const
 {
-    
+    data.insert( 
     ofstream datafile;
     std::string fullpath = path;
     

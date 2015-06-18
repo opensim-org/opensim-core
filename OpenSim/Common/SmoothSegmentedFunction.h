@@ -295,9 +295,9 @@ namespace OpenSim {
 
        */
 
-       SimTK::Matrix calcSampledMuscleCurve(int maxOrder,
-                                            double domainMin,
-                                            double domainMax) const;
+       DataTable calcSampledMuscleCurve(int maxOrder,
+                                        double domainMin,
+                                        double domainMax) const;
        ///@endcond
 
     private:
@@ -419,7 +419,7 @@ namespace OpenSim {
             -If the desired file cannot be created and openened, perhaps 
              because the path doesn't exist.
         */
-        void printMatrixToFile(SimTK::Matrix& data,
+        void printMatrixToFile(DataTable& data,
             SimTK::Array_<std::string>& colnames,
             const std::string& path, const std::string& filename) const;
 
