@@ -157,9 +157,9 @@ int main() {
   dt_vec6.addCols(data2_vec6.cbegin(), data2_vec6.cend());
 
   // Copy construct DataTable.
-  decltype(dt_real) dt_real_copy{dt_real};
-  decltype(dt_vec3) dt_vec3_copy{dt_vec3};
-  decltype(dt_vec6) dt_vec6_copy{dt_vec6};
+  OpenSim::DataTable_<SimTK::Real> dt_real_copy{dt_real};
+  OpenSim::DataTable_<SimTK::Vec3> dt_vec3_copy{dt_vec3};
+  OpenSim::DataTable_<SimTK::Vec6> dt_vec6_copy{dt_vec6};
 
   // Add/bind an entire DataTable by row.
   dt_real.rbindDataTable(dt_real_copy);
@@ -180,14 +180,16 @@ int main() {
   // one to another.
   {
     // Construct DataTable of a given size with a default value.
-    decltype(dt_real) dt1_real{3, 4, SimTK::Real{10}};
-    decltype(dt_vec3) dt1_vec3{3, 4, SimTK::Vec3{10, 20, 30}};
-    decltype(dt_vec6) dt1_vec6{3, 4, SimTK::Vec6{10, 20, 30, 40, 50, 60}};
+    OpenSim::DataTable_<SimTK::Real> dt1_real{3, 4, SimTK::Real{10}};
+    OpenSim::DataTable_<SimTK::Vec3> dt1_vec3{3, 4, SimTK::Vec3{10, 20, 30}};
+    OpenSim::DataTable_<SimTK::Vec6> dt1_vec6{3, 4, SimTK::Vec6{10, 20, 30, 
+                                                                40, 50, 60}};
 
     // Construct DataTable of a given size with a default value.
-    decltype(dt_real) dt2_real{6, 4, SimTK::Real{5}};
-    decltype(dt_vec3) dt2_vec3{6, 4, SimTK::Vec3{5, 6, 7}};
-    decltype(dt_vec6) dt2_vec6{6, 4, SimTK::Vec6{5, 6, 7, 8, 9, 0}};
+    OpenSim::DataTable_<SimTK::Real> dt2_real{6, 4, SimTK::Real{5}};
+    OpenSim::DataTable_<SimTK::Vec3> dt2_vec3{6, 4, SimTK::Vec3{5, 6, 7}};
+    OpenSim::DataTable_<SimTK::Vec6> dt2_vec6{6, 4, SimTK::Vec6{5, 6, 7, 
+                                                                8, 9, 0}};
 
     // Bind by row.
     auto rbind_dt_real = rbindDataTables(dt1_real, dt2_real);
@@ -348,10 +350,12 @@ int main() {
     }
 
   // Retrieve std::vector from metadata.
-  auto data_real_copy = dt_real.getMetaData<decltype(data_real)>("data_real");
+  using DataReal = std::vector<SimTK::Real>;
+  auto data_real_copy = dt_real.getMetaData<DataReal>("data_real");
 
   // Retrieve the datatable from metadata.
-  auto dt_vec3_cpy = dt_real.getMetaData<decltype(dt_vec3)>("datatable");
+  using DataTableVec3 = OpenSim::DataTable_<SimTK::Vec3>;
+  auto dt_vec3_cpy = dt_real.getMetaData<DataTableVec3>("datatable");
 
   
   // DataTables can be stored in standard containers. They will first have to 
