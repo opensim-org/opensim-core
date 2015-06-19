@@ -13,36 +13,28 @@
 # "/EHsc" is to "unwind semantics" to get error messages when using "/WX" (C4530).
 # However, this was causing some weird behavior. Not treating warnings
 # as errors for now.
-
-# This specifies how Appveyor will number the builds.
-version: '{build}'
   
 shallow_clone: true
 
 platform: x64
 
 init:
-  # Put MSBuild on the path.
-  - SET PATH=C:\Program Files (x86)\MSBuild\12.0\bin\;%PATH%
-  
-  ## To remote-desktop into the virtual machine.
-  # Get a script that will allow remote desktop.
-  #- git clone -q https://github.com/appveyor/ci.git
-  # This script will give an IP address, username, and password
-  # to use to log into the virtual machine using Windows remote desktop.
-  #- ps: .\ci\scripts\enable-rdp.ps1
+  # Note: python 2.7 32bit is already on the path. We want v2.7 64bit,
+  # so we must add v2.7 64bit earlier on the PATH.
+  # http://www.appveyor.com/docs/installed-software
+  - SET PATH=C:\Program Files (x86)\MSBuild\12.0\bin\;C:\Python27-x64\Scripts;%PATH%
+  - SET OPENSIM_HOME=C:\OpenSim
   
 nuget:
   account_feed: true
 
 install:
-  # Use Chocolatey to install SWIG 3.0.0.
-  #- cinst swig
-  # TODO not testing wrapping yet.
-  #- cinst wget
-  #- wget http://prdownloads.sourceforge.net/swig/swigwin-3.0.2.zip
-  #- jar xf swigwin-3.0.2.zip
-  #- mv swigwin-3.0.2 C:\
+  
+  ## Use Chocolatey to install SWIG.
+  - choco install swig
+  
+  ## Install python-nose for python testing.
+  - pip install nose
   
   ## Simbody.
   # Simbody's installation is pushed to our Appveyor NuGet account feed.
@@ -59,16 +51,34 @@ build_script:
   - mkdir build
   - cd build
   # Configure.
-  - cmake .. -G"Visual Studio 12 Win64" -DSIMBODY_HOME=C:\simbody -DCMAKE_INSTALL_PREFIX=C:\OpenSim # TODO -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON -DSWIG_EXECUTABLE=C:\swigwin-3.0.2\swig.exe # TODO -DBUILD_SIMM_TRANSLATOR=ON
+  - cmake .. -G"Visual Studio 12 2013 Win64" -DSIMBODY_HOME=C:\simbody -DCMAKE_INSTALL_PREFIX=%OPENSIM_HOME% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON # TODO -DBUILD_SIMM_TRANSLATOR=ON
   # Build.
-  - MSBuild OpenSim.sln /target:ALL_BUILD /p:Configuration=Release /maxcpucount:4 /verbosity:quiet
-
+  - cmake --build . --target ALL_BUILD --config Release -- /maxcpucount:4 /verbosity:quiet
+  
 test_script:
-  # Run tests.
+  ## Run tests.
   - ctest --parallel 4 --build-config Release --output-on-failure
 
-  # Ensure we have no trouble installing.
+  ## Ensure we have no trouble installing.
   - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
+  
+  ## Test python wrapping.
+  - set PATH=%OPENSIM_HOME%\bin;%PATH%
+  
+  # Copy over model files needed for testing.
+  # TODO this is temporary until we have a proper way to distribute models.
+  # The md command makes directories.
+  - cd %APPVEYOR_BUILD_DIR%
+  - md C:\OpenSim\Models\Arm26
+  - copy OpenSim\Tools\Test\arm26.osim C:\OpenSim\Models\Arm26\arm26.osim
+  - md C:\OpenSim\Models\Gait10dof18musc
+  - copy Applications\CMC\test\gait10dof18musc_subject01.osim C:\OpenSim\Models\Gait10dof18musc\gait10dof18musc.osim
+  
+  # Move to the installed location of the python package.
+  - cd %OPENSIM_HOME%\sdk\python
+  
+  # Run python tests.
+  - nosetests -v
 
 after_test:
   - ## On master branch, create NuGet package for OpenSim.
@@ -76,5 +86,5 @@ after_test:
   - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
   - # Create and upload NuGet package.
   - IF DEFINED DISTR cd %APPVEYOR_BUILD_FOLDER%
-  - IF DEFINED DISTR nuget pack .opensim-core.nuspec -BasePath C:\OpenSim
+  - IF DEFINED DISTR nuget pack .opensim-core.nuspec -BasePath %OPENSIM_HOME
   - IF DEFINED DISTR appveyor PushArtifact opensim-core.0.0.0.nupkg
