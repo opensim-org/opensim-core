@@ -912,7 +912,7 @@ public:
                   "'value' cannot be of array type. For ex. use std::string"
                   " instead of char[], use std::vector<int> instead of int[].");
 
-    if(metaDataExists(key))
+    if(hasMetaData(key))
       throw MetaDataKeyExists{"Key '" + std::string{key} + "' already exists. " 
                               "Remove the existing entry before inserting."};
 
@@ -1022,7 +1022,7 @@ public:
 
   /** Check if metadata for a given key exists. Time complexity is constant on
   average and linear in the number of elements in the metadata on worst case. */
-  bool metaDataExists(const string& key) const {
+  bool hasMetaData(const string& key) const {
     return m_metadata.find(key) != m_metadata.end();
   }
 

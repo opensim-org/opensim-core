@@ -1975,27 +1975,27 @@ void test6() {
   assert(dt_vec6.isMetaDataEmpty() == false);
 
   // Check existence of metadata.
-  std::cout << "test6 -- metaDataExists(): Real.\n";
-  assert(dt_real.metaDataExists("integer_l") == false);
-  assert(dt_real.metaDataExists("string_l") == false);
-  assert(dt_real.metaDataExists("vector_l") == false);
-  assert(dt_real.metaDataExists("integer_r") == false);
-  assert(dt_real.metaDataExists("string_r") == true);
-  assert(dt_real.metaDataExists("vector_r") == true);
-  std::cout << "test6 -- metaDataExists(): Vec3.\n";
-  assert(dt_vec3.metaDataExists("integer_l") == false);
-  assert(dt_vec3.metaDataExists("string_l") == false);
-  assert(dt_vec3.metaDataExists("vector_l") == false);
-  assert(dt_vec3.metaDataExists("integer_r") == false);
-  assert(dt_vec3.metaDataExists("string_r") == true);
-  assert(dt_vec3.metaDataExists("vector_r") == true);
-  std::cout << "test6 -- metaDataExists(): Vec6.\n";
-  assert(dt_vec6.metaDataExists("integer_l") == false);
-  assert(dt_vec6.metaDataExists("string_l") == false);
-  assert(dt_vec6.metaDataExists("vector_l") == false);
-  assert(dt_vec6.metaDataExists("integer_r") == false);
-  assert(dt_vec6.metaDataExists("string_r") == true);
-  assert(dt_vec6.metaDataExists("vector_r") == true);
+  std::cout << "test6 -- hasMetaData(): Real.\n";
+  assert(dt_real.hasMetaData("integer_l") == false);
+  assert(dt_real.hasMetaData("string_l") == false);
+  assert(dt_real.hasMetaData("vector_l") == false);
+  assert(dt_real.hasMetaData("integer_r") == false);
+  assert(dt_real.hasMetaData("string_r") == true);
+  assert(dt_real.hasMetaData("vector_r") == true);
+  std::cout << "test6 -- hasMetaData(): Vec3.\n";
+  assert(dt_vec3.hasMetaData("integer_l") == false);
+  assert(dt_vec3.hasMetaData("string_l") == false);
+  assert(dt_vec3.hasMetaData("vector_l") == false);
+  assert(dt_vec3.hasMetaData("integer_r") == false);
+  assert(dt_vec3.hasMetaData("string_r") == true);
+  assert(dt_vec3.hasMetaData("vector_r") == true);
+  std::cout << "test6 -- hasMetaData(): Vec6.\n";
+  assert(dt_vec6.hasMetaData("integer_l") == false);
+  assert(dt_vec6.hasMetaData("string_l") == false);
+  assert(dt_vec6.hasMetaData("vector_l") == false);
+  assert(dt_vec6.hasMetaData("integer_r") == false);
+  assert(dt_vec6.hasMetaData("string_r") == true);
+  assert(dt_vec6.hasMetaData("vector_r") == true);
 
   // Clear metadata.
   std::cout << "test6 -- clearMetaData(): Real.\n";
