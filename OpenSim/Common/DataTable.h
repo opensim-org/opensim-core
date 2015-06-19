@@ -1225,6 +1225,9 @@ private:
 
   // Helper function. Round to next highest power of 2. Works only for 32 bits.
   size_t rndToNextPowOf2(size_t num) {
+    assert(static_cast<unsigned long long>(num) <= 
+           static_cast<unsigned long long>(0xFFFFFFFF));
+
     --num;
     num |= (num >>  1); // Highest  2 bits are set by end of this.
     num |= (num >>  2); // Highest  4 bits are set by end of this.
