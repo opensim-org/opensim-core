@@ -850,7 +850,7 @@ public:
     m_data.updBlock(old_nrow, 
                     0, 
                     table.m_data.nrow(), 
-                    m_data.ncol()).updAsMatrix() = table.m_data;
+                    m_data.ncol()) = table.m_data;
   }
 
   /** Add/concatenate another DataTable_ to this DataTable_ by col. The new 
@@ -876,7 +876,7 @@ public:
     m_data.updBlock(0, 
                     old_ncol,
                     m_data.nrow(), 
-                    table.m_data.ncol()).updAsMatrix() = table.m_data;
+                    table.m_data.ncol()) = table.m_data;
   }
 
   /** Clear the data of this DataTable_. After this operation, the DataTabe_
