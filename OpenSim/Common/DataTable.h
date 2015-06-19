@@ -411,6 +411,10 @@ public:
       delete elem.second;
   }
 
+  /** \name Data Methods.
+      Data accessors & mutators.                                              */
+  /**@{*/
+
   /** Get number of rows in the DataTable_.*/
   size_t getNumRows() const {
     return static_cast<size_t>(m_data.nrow()); 
@@ -896,9 +900,10 @@ public:
     m_col_ind.clear();
   }
 
-  /**---------------------------------------------------------------------------
-    Meta-data accessors & mutators.
-  ----------------------------------------------------------------------------*/
+  /**@}*/
+  /** Meta-data Methods.
+      Meta-data accessors and mutators                                        */
+  /**@{*/
 
   /** Insert metadata. DataTable_ can hold metadata as an associative array of 
   key-value pairs where is key is always of type std::string and value can be 
@@ -1046,9 +1051,10 @@ public:
     return m_metadata.size();
   }
 
-  /**---------------------------------------------------------------------------
-     Column labels accessors & mutators.                                       
-  ----------------------------------------------------------------------------*/
+  /**@}*/
+  /** Column-label Methods.
+      Column labels accessors & mutators.                                     */
+  /**@{*/
 
   /** Check if a column index has label. Time complexity is linear in number of 
   column labels. All columns will have an index. All columns need not have a 
@@ -1194,6 +1200,8 @@ public:
   void clearColLabels() override {
     m_col_ind.clear();
   }
+
+  /**@}*/
 
 private:
   // Helper function. Check if a column exists and throw an exception if it
