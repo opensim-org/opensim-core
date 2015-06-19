@@ -1509,17 +1509,17 @@ void test5() {
   } catch(OpenSim::ColumnDoesNotExist&) {}
 
   // Try inserting column labels to columns that do not exist.
-  std::cout << "test5 -- insertColLabel()[ColumnDoesNotExist]: Real.\n";
+  std::cout << "test5 -- setColLabel()[ColumnDoesNotExist]: Real.\n";
   try {
-    dt_real.insertColLabel(4, "col-does-not-exist");
+    dt_real.setColLabel(4, "col-does-not-exist");
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- insertColLabel()[ColumnDoesNotExist]: Vec3.\n";
+  std::cout << "test5 -- setColLabel()[ColumnDoesNotExist]: Vec3.\n";
   try {
-    dt_vec3.insertColLabel(4, "col-does-not-exist");
+    dt_vec3.setColLabel(4, "col-does-not-exist");
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- insertColLabel()[ColumnDoesNotExist]: Vec6.\n";
+  std::cout << "test5 -- setColLabel()[ColumnDoesNotExist]: Vec6.\n";
   try {
-    dt_vec6.insertColLabel(4, "col-does-not-exist");
+    dt_vec6.setColLabel(4, "col-does-not-exist");
   } catch(OpenSim::ColumnDoesNotExist&) {}
 
   // Try editing column label for a column that does not exist.
@@ -1551,26 +1551,26 @@ void test5() {
   } catch(OpenSim::ColumnHasNoLabel&) {}
   
   // Insert some column labels.
-  std::cout << "test5 -- insertColLabel(): Real.\n";
+  std::cout << "test5 -- setColLabel(): Real.\n";
   std::string collabel{"ColZero"};
-  dt_real.insertColLabel(0, collabel);
-  dt_real.insertColLabel(2, "ColTwo");
-  std::cout << "test5 -- insertColLabel(): Vec3.\n";
-  dt_vec3.insertColLabel(0, collabel);
-  dt_vec3.insertColLabel(2, "ColTwo");
-  std::cout << "test5 -- insertColLabel(): Vec6.\n";
-  dt_vec6.insertColLabel(0, collabel);
-  dt_vec6.insertColLabel(2, "ColTwo");
+  dt_real.setColLabel(0, collabel);
+  dt_real.setColLabel(2, "ColTwo");
+  std::cout << "test5 -- setColLabel(): Vec3.\n";
+  dt_vec3.setColLabel(0, collabel);
+  dt_vec3.setColLabel(2, "ColTwo");
+  std::cout << "test5 -- setColLabel(): Vec6.\n";
+  dt_vec6.setColLabel(0, collabel);
+  dt_vec6.setColLabel(2, "ColTwo");
 
   // Insert more column labels.
   std::vector<std::pair<size_t, std::string>> col_data{{1, "ColOne"}, 
                                                        {3, "ColThree"}};
-  std::cout << "test5 -- insertColLabels(): Real.\n";
-  dt_real.insertColLabels(col_data.cbegin(), col_data.cend());
-  std::cout << "test5 -- insertColLabels(): Vec3.\n";
-  dt_vec3.insertColLabels(col_data.cbegin(), col_data.cend());
-  std::cout << "test5 -- insertColLabels(): Vec6.\n";
-  dt_vec6.insertColLabels(col_data.cbegin(), col_data.cend());
+  std::cout << "test5 -- setColLabels(): Real.\n";
+  dt_real.setColLabels(col_data.cbegin(), col_data.cend());
+  std::cout << "test5 -- setColLabels(): Vec3.\n";
+  dt_vec3.setColLabels(col_data.cbegin(), col_data.cend());
+  std::cout << "test5 -- setColLabels(): Vec6.\n";
+  dt_vec6.setColLabels(col_data.cbegin(), col_data.cend());
 
   // Check the number of column labels.
   std::cout << "test5 -- Number of column labels: Real.\n";
@@ -1626,63 +1626,63 @@ void test5() {
   assert(dt_vec6.getColInd("ColThree") == 3);
 
   // Try inserting labels for columns that don't exist.
-  std::cout << "test5 -- insertColLabel()[ColumnDoesNotExist]: Real.\n";
+  std::cout << "test5 -- setColLabel()[ColumnDoesNotExist]: Real.\n";
   try {
-    dt_real.insertColLabel(4, "col-does-not-exist");
+    dt_real.setColLabel(4, "col-does-not-exist");
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- insertColLabel()[ColumnDoesNotExist]: Vec3.\n";
+  std::cout << "test5 -- setColLabel()[ColumnDoesNotExist]: Vec3.\n";
   try {
-    dt_vec3.insertColLabel(4, "col-does-not-exist");
+    dt_vec3.setColLabel(4, "col-does-not-exist");
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- insertColLabel()[ColumnDoesNotExist]: Vec6.\n";
+  std::cout << "test5 -- setColLabel()[ColumnDoesNotExist]: Vec6.\n";
   try {
-    dt_vec6.insertColLabel(4, "col-does-not-exist");
+    dt_vec6.setColLabel(4, "col-does-not-exist");
   } catch(OpenSim::ColumnDoesNotExist&) {}
 
   // Try inserting lables for columns that already have labels.
-  std::cout << "test5 -- insertColLabel()[ColumnHasLabel]: Real.\n";
+  std::cout << "test5 -- setColLabel()[ColumnHasLabel]: Real.\n";
   try{
-    dt_real.insertColLabel(0, "col-has-label");
+    dt_real.setColLabel(0, "col-has-label");
   } catch(OpenSim::ColumnHasLabel&) {}
-  std::cout << "test5 -- insertColLabel()[ColumnHasLabel]: Vec3.\n";
+  std::cout << "test5 -- setColLabel()[ColumnHasLabel]: Vec3.\n";
   try{
-    dt_vec3.insertColLabel(0, "col-has-label");
+    dt_vec3.setColLabel(0, "col-has-label");
   } catch(OpenSim::ColumnHasLabel&) {}
-  std::cout << "test5 -- insertColLabel()[ColumnHasLabel]: Vec6.\n";
+  std::cout << "test5 -- setColLabel()[ColumnHasLabel]: Vec6.\n";
   try{
-    dt_vec6.insertColLabel(0, "col-has-label");
+    dt_vec6.setColLabel(0, "col-has-label");
   } catch(OpenSim::ColumnHasLabel&) {}
 
   // Try inserting labels to for columns that don't exist. This time use
   // iterators.
   std::vector<std::pair<size_t, std::string>> col_data1{{4, "ColFour"},
                                                         {5, "ColFive"}};
-  std::cout << "test5 -- insertColLabels()[ColumnDoesNotExist]: Real.\n";
+  std::cout << "test5 -- setColLabels()[ColumnDoesNotExist]: Real.\n";
   try {
-    dt_real.insertColLabels(col_data1.cbegin(), col_data1.cend());
+    dt_real.setColLabels(col_data1.cbegin(), col_data1.cend());
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- insertColLabels()[ColumnDoesNotExist]: Vec3.\n";
+  std::cout << "test5 -- setColLabels()[ColumnDoesNotExist]: Vec3.\n";
   try {
-    dt_vec3.insertColLabels(col_data1.cbegin(), col_data1.cend());
+    dt_vec3.setColLabels(col_data1.cbegin(), col_data1.cend());
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- insertColLabels()[ColumnDoesNotExist]: Vec6.\n";
+  std::cout << "test5 -- setColLabels()[ColumnDoesNotExist]: Vec6.\n";
   try {
-    dt_vec6.insertColLabels(col_data1.cbegin(), col_data1.cend());
+    dt_vec6.setColLabels(col_data1.cbegin(), col_data1.cend());
   } catch(OpenSim::ColumnDoesNotExist&) {}
 
   // Try inserting labels for columns that already have labels. This time use
   // iterators.
-  std::cout << "test5 -- insertColLabels()[ColumnHasLabel]: Real.\n";
+  std::cout << "test5 -- setColLabels()[ColumnHasLabel]: Real.\n";
   try {
-    dt_real.insertColLabels(col_data.cbegin(), col_data.cend());
+    dt_real.setColLabels(col_data.cbegin(), col_data.cend());
   } catch(OpenSim::ColumnHasLabel&) {}
-  std::cout << "test5 -- insertColLabels()[ColumnHasLabel]: Vec3.\n";
+  std::cout << "test5 -- setColLabels()[ColumnHasLabel]: Vec3.\n";
   try {
-    dt_vec3.insertColLabels(col_data.cbegin(), col_data.cend());
+    dt_vec3.setColLabels(col_data.cbegin(), col_data.cend());
   } catch(OpenSim::ColumnHasLabel&) {}
-  std::cout << "test5 -- insertColLabels()[ColumnHasLabel]: Vec6.\n";
+  std::cout << "test5 -- setColLabels()[ColumnHasLabel]: Vec6.\n";
   try {
-    dt_vec6.insertColLabels(col_data.cbegin(), col_data.cend());
+    dt_vec6.setColLabels(col_data.cbegin(), col_data.cend());
   } catch(OpenSim::ColumnHasLabel&) {}
 
   // Try updating column label of a column that does not exist using its index.
@@ -2029,15 +2029,15 @@ void test7() {
   OpenSim::DataTable_<SimTK::Vec6> dt_vec6{3, 4, {10, 20, 30, 40, 50, 60}};
 
   // Add column labels.
-  std::cout << "test7 -- insertColLabel(): Real.\n";
-  dt_real.insertColLabel(0, "zero");
-  dt_real.insertColLabel(2, "two");
-  std::cout << "test7 -- insertColLabel(): Vec3.\n";
-  dt_vec3.insertColLabel(0, "zero");
-  dt_vec3.insertColLabel(2, "two");
-  std::cout << "test7 -- insertColLabel(): Vec6.\n";
-  dt_vec6.insertColLabel(0, "zero");
-  dt_vec6.insertColLabel(2, "two");
+  std::cout << "test7 -- setColLabel(): Real.\n";
+  dt_real.setColLabel(0, "zero");
+  dt_real.setColLabel(2, "two");
+  std::cout << "test7 -- setColLabel(): Vec3.\n";
+  dt_vec3.setColLabel(0, "zero");
+  dt_vec3.setColLabel(2, "two");
+  std::cout << "test7 -- setColLabel(): Vec6.\n";
+  dt_vec6.setColLabel(0, "zero");
+  dt_vec6.setColLabel(2, "two");
 
   // Add metadata.
   std::string string{"metadata"};
@@ -2375,8 +2375,8 @@ void test8() {
   // Add column labels to all the DataTables in the container.
   std::cout << "test8 -- Add column labels.\n";
   for(auto& dt : vector) {
-    dt->insertColLabel(0, "col-zero");
-    dt->insertColLabel(2, "col-two");
+    dt->setColLabel(0, "col-zero");
+    dt->setColLabel(2, "col-two");
   }
 
   // Check existence of column labels.

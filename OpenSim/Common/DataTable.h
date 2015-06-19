@@ -183,14 +183,14 @@ public:
 
   \throws ColumnDoesNotExist If the col index specified does not exist.
   \throws ColumnHasLabel If the column index specified already has a label.   */
-  virtual void insertColLabel(const size_t colind, const string& collabel) = 0;
+  virtual void setColLabel(const size_t colind, const string& collabel) = 0;
 
   /** Label a column. The column should not have a label already. To update the
   label of a column that already has a label, use updColLabel().
 
   \throws ColumnDoesNotExist If the col index specified does not exist.
   \throws ColumnHasLabel If the column index specified already has a label.   */
-  virtual void insertColLabel(const size_t colind, string&& collabel) = 0;
+  virtual void setColLabel(const size_t colind, string&& collabel) = 0;
 
   /** Get the label of a column. Time complexity is linear in the number of
   column labels. The returned value is a copy of the label. To update the label 
@@ -209,7 +209,7 @@ public:
 
   /** Update the label of a column with a new label. Time complexity is linear
   in the number of column labels. The column specified must already have a
-  label. To label a column that does not yet have a label, use insertLabel().
+  label. To label a column that does not yet have a label, use setColLabel().
 
   \throws ColumnHasNoLabel If the column specified does not already have a 
                            label.
@@ -1082,7 +1082,7 @@ public:
 
   \throws ColumnDoesNotExist If the col index specified does not exist.
   \throws ColumnHasLabel If the column index specified already has a label.   */
-  void insertColLabel(const size_t colind, const string& collabel) override {
+  void setColLabel(const size_t colind, const string& collabel) override {
     checkColExistsAndHasLabel(colind);
     m_col_ind.emplace(collabel, colind);
   }
@@ -1092,7 +1092,7 @@ public:
 
   \throws ColumnDoesNotExist If the col index specified does not exist.
   \throws ColumnHasLabel If the column index specified already has a label.   */
-  void insertColLabel(const size_t colind, string&& collabel) override {
+  void setColLabel(const size_t colind, string&& collabel) override {
     checkColExistsAndHasLabel(colind);
     m_col_ind.emplace(std::move(collabel), colind);
   }
@@ -1104,7 +1104,7 @@ public:
   \throws ColumnDoesNotExist If the col index specified does not exist.
   \throws ColumnHasLabel If the column index specified already has a label.   */
   template<typename InputIt>
-  void insertColLabels(InputIt first, InputIt last) {
+  void setColLabels(InputIt first, InputIt last) {
     while(first != last) {
       checkColExistsAndHasLabel(first->first);
       m_col_ind.emplace(first->second, first->first);
@@ -1145,7 +1145,7 @@ public:
 
   /** Update the label of a column with a new label. Time complexity is linear
   in the number of column labels. The column specified must already have a
-  label. To label a column that does not yet have a label, use insertLabel().
+  label. To label a column that does not yet have a label, use setColLabel().
 
   \throws ColumnHasNoLabel If the column specified does not already have a 
                            label.

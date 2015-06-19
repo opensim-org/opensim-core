@@ -204,15 +204,15 @@ int main() {
 
   // The columns of a DataTable can be labeled. Not all columns need to be
   // labeled. 
-  dt_real.insertColLabel(0, "col-zero");
-  dt_vec3.insertColLabel(0, "col-zero");
-  dt_vec6.insertColLabel(0, "col-zero");
-  dt_real.insertColLabel(2, "col-two");
-  dt_vec3.insertColLabel(2, "col-two");
-  dt_vec6.insertColLabel(2, "col-two");
-  dt_real.insertColLabel(4, "col-four");
-  dt_vec3.insertColLabel(4, "col-four");
-  dt_vec6.insertColLabel(4, "col-four");
+  dt_real.setColLabel(0, "col-zero");
+  dt_vec3.setColLabel(0, "col-zero");
+  dt_vec6.setColLabel(0, "col-zero");
+  dt_real.setColLabel(2, "col-two");
+  dt_vec3.setColLabel(2, "col-two");
+  dt_vec6.setColLabel(2, "col-two");
+  dt_real.setColLabel(4, "col-four");
+  dt_vec3.setColLabel(4, "col-four");
+  dt_vec6.setColLabel(4, "col-four");
 
   // Retrieve number of rows and cols in the DataTable.
   assert(dt_real.getNumRows() == 14 && dt_real.getNumCols() == 16);
@@ -377,8 +377,8 @@ int main() {
   // Add column labels to all the DataTables through pointers stored in the
   // container.
   for(auto& dt : vector) {
-    dt->insertColLabel(0, "col-zero");
-    dt->insertColLabel(2, "col-two");
+    dt->setColLabel(0, "col-zero");
+    dt->setColLabel(2, "col-two");
   }
 
   // Check if a column index has label associated.
