@@ -318,7 +318,7 @@ public:
            static_cast<int>(dir == RowWise ? ndir :    1)},
     m_metadata{},
     m_col_ind{} {
-    if(!(first != last))
+    if(first == last)
       throw ZeroElements{"Input iterators produce zero elements."};
     if(ndir == 0)
       throw InvalidEntry{"Input argument 'ndir' cannot be zero."};
@@ -603,7 +603,7 @@ public:
               InputIt last, 
               const size_t ncol_hint = 2,
               const bool allow_missing = false) {
-    if(!(first != last))
+    if(first == last)
       throw ZeroElements{"Input iterators produce zero elements."};
     if((m_data.nrow() == 0 || m_data.ncol() == 0) && ncol_hint == 0)
       throw InvalidEntry{"Input argument 'ncol_hint' cannot be zero when "
@@ -668,7 +668,7 @@ public:
                InputIt last, 
                const size_t ncol = std::numeric_limits<size_t>::max(),
                const bool allow_missing = false) {
-    if(!(first != last))
+    if(first == last)
       throw ZeroElements{"Input iterators produce zero elements."};
     if((m_data.nrow() == 0 || m_data.ncol() == 0) && 
        (ncol == std::numeric_limits<size_t>::max() || ncol == 0))
@@ -748,7 +748,7 @@ public:
               InputIt last, 
               const size_t nrow_hint = 2,
               const bool allow_missing = false) {
-    if(!(first != last))
+    if(first == last)
       throw ZeroElements{"Input iterators produce zero elements."};
     if((m_data.nrow() == 0 || m_data.ncol() == 0) && nrow_hint == 0)
       throw InvalidEntry{"Input argument 'nrow_hint' cannot be zero when "
@@ -813,7 +813,7 @@ public:
                InputIt last, 
                const size_t nrow = std::numeric_limits<size_t>::max(),
                const bool allow_missing = false) {
-    if(!(first != last))
+    if(first == last)
       throw ZeroElements{"Input iterators produce zero elements."};
     if((m_data.nrow() == 0 || m_data.ncol() == 0) && 
        (nrow == std::numeric_limits<size_t>::max() || nrow == 0))
