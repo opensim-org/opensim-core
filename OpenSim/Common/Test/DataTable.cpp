@@ -88,7 +88,7 @@ void checkDataTableLimits(DT& dt, size_t nrow, size_t ncol) {
     auto elt = dt.updElt(nrow, "foo"); ignore(elt);
   } catch (OpenSim::ColumnDoesNotExist&) {}
 
-  auto underlying_matrix = dt.getAsMatrix(); ignore(underlying_matrix);
+  auto underlying_matrix = dt.copyAsMatrix(); ignore(underlying_matrix);
 }
 
 

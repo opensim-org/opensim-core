@@ -531,7 +531,7 @@ public:
   }
 
   /** Get a *copy* of the underlying matrix of the DataTable_.                */
-  std::unique_ptr<SimTK::Matrix_<ET>> getAsMatrix() const {
+  std::unique_ptr<SimTK::Matrix_<ET>> copyAsMatrix() const {
     return std::unique_ptr<SimTK::Matrix_<ET>>{new SimTK::Matrix_<ET>{m_data}};
   }
 

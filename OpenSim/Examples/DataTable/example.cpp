@@ -295,9 +295,9 @@ int main() {
   }
 
   // Get a copy of the underlying matrix.
-  auto mat_real = dt_real.getAsMatrix(); ignore(mat_real);
-  auto mat_vec3 = dt_vec3.getAsMatrix(); ignore(mat_real);
-  auto mat_vec6 = dt_vec6.getAsMatrix(); ignore(mat_real);
+  auto mat_real = dt_real.copyAsMatrix(); ignore(mat_real);
+  auto mat_vec3 = dt_vec3.copyAsMatrix(); ignore(mat_real);
+  auto mat_vec6 = dt_vec6.copyAsMatrix(); ignore(mat_real);
 
   // It is possible to clear the data in the DataTable if we want to fill it up
   // with other data later. This also clears the column labels.
