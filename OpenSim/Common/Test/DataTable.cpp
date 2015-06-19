@@ -1948,15 +1948,15 @@ void test6() {
   assert(dt_vec6.metaDataSize() == 4);
 
   // Remove some metadata values.
-  std::cout << "test6 -- rmvMetaData(): Real.\n";
-  dt_real.rmvMetaData("integer_r");
-  dt_real.rmvMetaData("integer_l");
-  std::cout << "test6 -- rmvMetaData(): Vec3.\n";
-  dt_vec3.rmvMetaData("integer_r");
-  dt_vec3.rmvMetaData("integer_l");
-  std::cout << "test6 -- rmvMetaData(): Vec6.\n";
-  dt_vec6.rmvMetaData("integer_r");
-  dt_vec6.rmvMetaData("integer_l");
+  std::cout << "test6 -- removeMetaData(): Real.\n";
+  dt_real.removeMetaData("integer_r");
+  dt_real.removeMetaData("integer_l");
+  std::cout << "test6 -- removeMetaData(): Vec3.\n";
+  dt_vec3.removeMetaData("integer_r");
+  dt_vec3.removeMetaData("integer_l");
+  std::cout << "test6 -- removeMetaData(): Vec6.\n";
+  dt_vec6.removeMetaData("integer_r");
+  dt_vec6.removeMetaData("integer_l");
 
   // Check the size of metadata.
   std::cout << "test6 -- metaDataSize(): Real.\n";

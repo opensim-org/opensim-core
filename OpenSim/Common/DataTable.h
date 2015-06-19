@@ -979,7 +979,7 @@ public:
   argument has to be exactly the non-reference type of the metadata previously 
   inserted using insertMetaData(). The key-value pair is removed from metadata 
   and the value is returned. To simply remove the key-value pair without 
-  retrieving the value, use rmvMetaData(). Time complexity is constant on
+  retrieving the value, use removeMetaData(). Time complexity is constant on
   average and linear in number of elements in the metadata on worst case.
 
   \throws MetaDataKeyDoesNotExist If the key specified does not exist in 
@@ -1011,7 +1011,7 @@ public:
   removed; false means the key was not found in metadata. Time complexity is
   constant on average and linear in number of elements in the metadata on
   worst case.                                                                 */
-  bool rmvMetaData(const string& key) {
+  bool removeMetaData(const string& key) {
     return m_metadata.erase(key);
   }
 
