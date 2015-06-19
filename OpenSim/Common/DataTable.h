@@ -168,7 +168,7 @@ public:
   column labels. All columns will have an index. All columns need not have a 
   label.
 
-  \throws OpenSim::ColumnDoesNotExist If col index specified does not exist.  */
+  \throws ColumnDoesNotExist If col index specified does not exist.           */
   virtual bool colHasLabel(const size_t colind) const = 0;
 
   /** Check if a column exists by its index.                                  */
@@ -181,25 +181,23 @@ public:
   /** Label a column. The column should not have a label already. To update the
   label of a column that already has a label, use updColLabel().
 
-  \throws OpenSim::ColumnDoesNotExist If the col index specified does not exist.
-  \throws OpenSim::ColumnHasLabel If the column index specified already has a 
-                                  label.                                      */
+  \throws ColumnDoesNotExist If the col index specified does not exist.
+  \throws ColumnHasLabel If the column index specified already has a label.   */
   virtual void insertColLabel(const size_t colind, const string& collabel) = 0;
 
   /** Label a column. The column should not have a label already. To update the
   label of a column that already has a label, use updColLabel().
 
-  \throws OpenSim::ColumnDoesNotExist If the col index specified does not exist.
-  \throws OpenSim::ColumnHasLabel If the column index specified already has a 
-                                  label.                                      */
+  \throws ColumnDoesNotExist If the col index specified does not exist.
+  \throws ColumnHasLabel If the column index specified already has a label.   */
   virtual void insertColLabel(const size_t colind, string&& collabel) = 0;
 
   /** Get the label of a column. Time complexity is linear in the number of
   column labels. The returned value is a copy of the label. To update the label 
   of a column, use updColLabel(). 
 
-  \throws OpenSim::ColumnHasNoLabel If the column does not have a label.
-  \throws OpenSim::ColumnDoesNotExist If the column does not exist.           */
+  \throws ColumnHasNoLabel If the column does not have a label.
+  \throws ColumnDoesNotExist If the column does not exist.                    */
   virtual string getColLabel(const size_t colind) const = 0;
 
   /** Get all the column labels. Returns an iterator pair(std::pair) where first
@@ -213,18 +211,17 @@ public:
   in the number of column labels. The column specified must already have a
   label. To label a column that does not yet have a label, use insertLabel().
 
-  \throws OpenSim::ColumnHasNoLabel If the column specified does not already
-                                    have a label.
-  \throws OpenSim::ColumnDoesNotExist If the column specified does not 
-                                      exist.                                  */
+  \throws ColumnHasNoLabel If the column specified does not already have a 
+                           label.
+  \throws ColumnDoesNotExist If the column specified does not exist.          */
   virtual void updColLabel(const size_t colind, const string& new_collabel) = 0;
 
   /** Update the label of a column with a new label. Time complexity is constant
   on average and linear in number of column labels in the worst case.
 
-  \throws OpenSim::ColumnHasNoLabel If the column specified does not already
-                                    have a label.
-  \throws OpenSim::ColumnDoesNotExist If the column specified does not exist. */
+  \throws ColumnHasNoLabel If the column specified does not already have a 
+                           label.
+  \throws ColumnDoesNotExist If the column specified does not exist.          */
   virtual void updColLabel(const string& old_collabel, 
                            const string& new_collabel) = 0;
 
@@ -238,7 +235,7 @@ public:
   /** Get the index of a column from its label. Time complexity is constant on
   average and linear in number of column labels on worst case.
 
-  \throws OpenSim::ColumnDoesNotExist If the column label does not exist.     */
+  \throws ColumnDoesNotExist If the column label does not exist.              */
   virtual size_t getColInd(const string& collabel) const = 0;
 
   /** Clear all the column labels.                                            */
