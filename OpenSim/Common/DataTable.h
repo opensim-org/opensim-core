@@ -65,6 +65,9 @@ namespace OpenSim {
                                  const DataTable_<ET>& dt2);
 
   // Exceptions.
+  class NotEnoughElements;
+  class NumberOfColsMismatch;
+  class NumberOfRowsMismatch;
   class ColumnDoesNotExist;
   class ColumnHasLabel;
   class ColumnHasNoLabel;
@@ -75,6 +78,21 @@ namespace OpenSim {
   class MetaDataTypeMismatch;
 } // namespace OpenSim
 
+
+class OpenSim::NotEnoughElements : public OpenSim::Exception {
+public:
+  NotEnoughElements(const std::string& expl) : Exception(expl) {}
+};
+
+class OpenSim::NumberOfColsMismatch : public OpenSim::Exception {
+public:
+  NumberOfColsMismatch(const std::string& expl) : Exception(expl) {}
+};
+
+class OpenSim::NumberOfRowsMismatch : public OpenSim::Exception {
+public:
+  NumberOfRowsMismatch(const std::string& expl) : Exception(expl) {}
+};
 
 class OpenSim::ColumnDoesNotExist : public OpenSim::Exception {
 public:
@@ -284,7 +302,14 @@ public:
                        elements are set to SimTK::NaN.
   
   \throws ZeroElements When input-iterator does not produce any elements.
-                       That is first == last.                                 */
+                       That is first == last.                                 
+  \throws InvalidEntry When the required input argument 'ndir' is zero.
+  \throws NotEnoughElements If dir == RowWise, this is thrown when the input 
+                            iterator does not produce enough elements to fill 
+                            up the last row completely. If dir == ColWise, this
+                            is thrown when the input iterator does not produce 
+                            enough elements to fill up the last col 
+                            completely.                                       */
   template<typename InputIt>
   DataTable_(InputIt first,
              typename std::enable_if<!std::is_integral<InputIt>::value,
@@ -324,15 +349,15 @@ public:
     }
     if(!allow_missing) {
       if(dir == RowWise && col != m_data.ncol()) {
-        throw InvalidEntry{"Input iterator did not produce enough elements to "
-                           "fill the last row. Expected = " + 
-                           std::to_string(m_data.ncol()) + " Received = " + 
-                           std::to_string(col)};
+        throw NotEnoughElements{"Input iterator did not produce enough elements"
+                                " to fill the last row. Expected = " + 
+                                std::to_string(m_data.ncol()) + 
+                                " Received = " + std::to_string(col)};
       } else if(dir == ColWise && row != m_data.nrow()) {
-        throw InvalidEntry{"Input iterator did not produce enough elements to "
-                           "fill the last column. Expected = " +
-                           std::to_string(m_data.nrow()) + " Received = " + 
-                           std::to_string(row)};
+        throw NotEnoughElements{"Input iterator did not produce enough elements"
+                                " to fill the last column. Expected = " +
+                                std::to_string(m_data.nrow()) + 
+                                " Received = " + std::to_string(row)};
       }
     }
   }
@@ -432,8 +457,8 @@ public:
   updCol to obtain a writable reference. See SimTK::VectorView_ for more 
   details.
       
-  \throws OpenSim::ColumnDoesNotExist If the col label specified is not in the 
-                                      DataTable_.                             */
+  \throws ColumnDoesNotExist If the col label specified is not in the 
+                             DataTable_.                                      */
   SimTK::VectorView_<ET> getCol(const string& collabel) const {
     try {
       return m_data.col(static_cast<int>(m_col_ind.at(collabel)));
@@ -455,8 +480,8 @@ public:
   /** Get a col of the DataTable_ by label. Returned col is editable. See 
   SimTK::VectorView_ for more details.
   
-  \throws OpenSim::ColumnDoesNotExist If the col label specified is not in the 
-                                      DataTable_.                             */
+  \throws ColumnDoesNotExist If the col label specified is not in the 
+                             DataTable_.                                      */
   SimTK::VectorView_<ET> updCol(const string& collabel) {
     try {
       return m_data.updCol(static_cast<int>(m_col_ind.at(collabel)));
@@ -480,8 +505,8 @@ public:
    
   \throws SimTK::Exception::IndexOutOfRange If the row index specified is not 
                                             in the DataTable_.
-  \throws OpenSim::ColumnDoesNotExist If the col label specified is not in the 
-                                      DataTable_.                             */
+  \throws ColumnDoesNotExist If the col label specified is not in the 
+                             DataTable_.                                      */
   const ET& getElt(const size_t row, const string& collabel) const {
     try {
       return m_data.getElt(static_cast<int>(row), 
@@ -506,8 +531,8 @@ public:
 
   \throws SimTK::Exception::IndexOutOfRange If the row index specified is not 
                                             in the DataTable_.
-  \throws OpenSim::ColumnDoesNotExist If the col label specified is not in
-                                      the DataTable_.                         */
+  \throws ColumnDoesNotExist If the col label specified is not in the 
+                             DataTable_.                                      */
   ET& updElt(const size_t row, const string& collabel) {
     try {
       return m_data.updElt(static_cast<int>(row), 
@@ -518,7 +543,7 @@ public:
     }
   }
 
-  /** Get a *copy* of the underlying matrix of the DataTable_.*/
+  /** Get a *copy* of the underlying matrix of the DataTable_.                */
   std::unique_ptr<SimTK::Matrix_<ET>> getAsMatrix() const {
     return std::unique_ptr<SimTK::Matrix_<ET>>{new SimTK::Matrix_<ET>{m_data}};
   }
@@ -529,16 +554,17 @@ public:
   
   \param row The row to be added as a SimTK::RowVector_.
   
-  \throws OpenSim::ZeroElements If number of elements in the input row is zero.
-  \throws OpenSim::InvalidEntry If number of columns in the input row does not 
-                                match the number of columns of the DataTable_.*/
+  \throws ZeroElements If number of elements in the input row is zero.
+  \throws NumberOfColsMismatch If number of columns in the input row does not 
+                               match the number of columns of the DataTable_. */
   void addRow(const SimTK::RowVector_<ET>& row) {
     if(row.nrow() == 0 || row.ncol() == 0)
       throw ZeroElements{"Input row has zero length."};
     if(m_data.ncol() > 0 && row.size() != m_data.ncol())
-      throw InvalidEntry{"Input row has incorrect number of columns."
-                         " Expected = " + std::to_string(m_data.ncol()) + 
-                         " Received = " + std::to_string(row.size())};
+      throw NumberOfColsMismatch{"Input row has incorrect number of columns."
+                                 " Expected = " + 
+                                 std::to_string(m_data.ncol()) + 
+                                 " Received = " + std::to_string(row.size())};
 
     m_data.resizeKeep(m_data.nrow() + 1, row.ncol());
     m_data.updRow(m_data.nrow() - 1).updAsRowVector() = row;
@@ -564,10 +590,13 @@ public:
                        row only partially. When set to true, missing elements 
                        are set to SimTK::NaN.
   
-  \throws OpenSim::ZeroElements If the number of elements produced by the
-                                input iterator is zero.
-  \throws OpenSim::InvalidEntry If allow_missing is false and the input iterator
-                                does not fill up the last row completely.     */
+  \throws ZeroElements If the number of elements produced by the input iterator
+                       is zero.
+  \throws InvalidEntry The DataTable is empty and the input argument 
+                       'ncol_hint' is zero.
+  \throws NotEnoughElements If allow_missing is false and the input iterator 
+                            does not produce enough elements to fill up the 
+                            row completely.                                   */
   template<typename InputIt>
   void addRow(InputIt first, 
               InputIt last, 
@@ -587,10 +616,10 @@ public:
         ++first;
       }
       if(!allow_missing && col != m_data.ncol())
-        throw InvalidEntry{"Input iterator did not produce enough elements to "
-                           "fill the row. Expected = " + 
-                           std::to_string(m_data.ncol()) + " Received = " + 
-                           std::to_string(col)};
+        throw NotEnoughElements{"Input iterator did not produce enough elements"
+                                " to fill the row. Expected = " + 
+                                std::to_string(m_data.ncol()) + 
+                                " Received = " + std::to_string(col)};
     } else {
       int col{0};
       size_t ncol{ncol_hint};
@@ -625,12 +654,14 @@ public:
                        last row only partially. When set to true, missing 
                        elements are set to SimTK::NaN.
 
-  \throws OpenSim::ZeroElements If the number of elements produced by the input
-                                iterator is zero.
-  \throws OpenSim::InvalidEntry If the function is called on an empty DataTable_
-                                without providing the argument ncol.
-  \throws OpenSim::InvalidEntry If allow_missing is false and the input iterator
-                                does not fill up the last row completely.     */
+  \throws ZeroElements If the number of elements produced by the input iterator
+                       is zero.
+  \throws InvalidEntry If the function is called on an empty DataTable_ 
+                       -- without providing the argument ncol or 
+                       -- providing a zero for ncol.
+  \throws NotEnoughElements If allow_missing is false and the input iterator
+                            does not produce enough elements to fill up the 
+                            last row completely.                              */
   template<typename InputIt>
   void addRows(InputIt first, 
                InputIt last, 
@@ -658,10 +689,10 @@ public:
       }
     }
     if(!allow_missing && col != m_data.ncol())
-      throw InvalidEntry{"Input iterator did not produce enough elements to "
-                         "fill the last row. Expected = " + 
-                         std::to_string(m_data.ncol()) + " Received = " + 
-                         std::to_string(col)};
+      throw NotEnoughElements{"Input iterator did not produce enough elements" 
+                              " to fill the last row. Expected = " + 
+                              std::to_string(m_data.ncol()) + " Received = " + 
+                              std::to_string(col)};
   }
 
   /** Add(append) a col to the DataTable_ using a SimTK::Vector_. If the 
@@ -670,16 +701,16 @@ public:
   
   \param col The col to be added as a SimTK::Vector_.
   
-  \throws OpenSim::ZeroElements If number of elements in the input col is zero.
-  \throws OpenSim::InvalidEntry If number of columns in the input col does not 
-                                match the number of rows of the DataTable_.   */
+  \throws ZeroElements If number of elements in the input col is zero.
+  \throws NumberOfRowsMismatch If number of columns in the input col does not 
+                               match the number of rows of the DataTable_.    */
   void addCol(const SimTK::Vector_<ET>& col) {
     if(col.nrow() == 0 || col.ncol() == 0)
       throw ZeroElements{"Input column has zero length."};
     if(m_data.nrow() > 0 && col.size() != m_data.nrow())
-      throw InvalidEntry{"Input column has incorrect number of rows. " 
-                         "Expected = " + std::to_string(m_data.nrow()) + 
-                         " Received = " + std::to_string(col.size())};
+      throw NotEnoughElements{"Input column has incorrect number of rows. " 
+                              "Expected = " + std::to_string(m_data.nrow()) + 
+                              " Received = " + std::to_string(col.size())};
 
     m_data.resizeKeep(col.size(), m_data.ncol() + 1);
     m_data.updCol(m_data.ncol() - 1).updAsVector() = col;
@@ -705,8 +736,12 @@ public:
                        row only partially. When set to true, missing elements 
                        are set to SimTK::NaN.
 
-  \throws OpenSim::ZeroElements If the number of elements produced by the input
-                                iterator is zero.                             */
+  \throws ZeroElements If the number of elements produced by the input
+                       iterator is zero.                                      
+  \throws InvalidEntry DataTable is empty and input argument ncol_hint is zero.
+  \throws NotEnoughElements Argument allow_missing is false and the input 
+                            iterator does not produce enough elements to fill 
+                            up the last col completely                        */
   template<typename InputIt>
   void addCol(InputIt first, 
               InputIt last, 
@@ -726,10 +761,10 @@ public:
         ++first;
       }
       if(!allow_missing && row != m_data.nrow()) 
-        throw InvalidEntry{"Input iterator did not produce enough elements to "
-                           "fill the col. Expected = " + 
-                           std::to_string(m_data.nrow()) + " Received = " + 
-                           std::to_string(row)};
+        throw NotEnoughElements{"Input iterator did not produce enough elements"
+                                " to fill the col. Expected = " + 
+                                std::to_string(m_data.nrow()) + 
+                                " Received = " + std::to_string(row)};
     } else {
       int row{0};
       size_t nrow{nrow_hint};
@@ -764,12 +799,14 @@ public:
                        last col only partially. When set to true, missing 
                        elements are set to SimTK::NaN.
 
-  \throws OpenSim::ZeroElements If the number of elements produced by the input
-                                iterator is zero.
-  \throws OpenSim::InvalidEntry If the function is called on an empty DataTable_
-                                 without providing the argument nrow.
-  \throws OpenSim::InvalidEntry If allow_missing is false and the input iterator
-                                does not fill up the last col completely.     */
+  \throws ZeroElements If the number of elements produced by the input iterator
+                       is zero.
+  \throws InvalidEntry If the function is called on an empty DataTable_ 
+                       -- without providing the argument nrow or 
+                       -- providing zero for nrow.
+  \throws NotEnoughElements If allow_missing is false and the input iterator
+                            does not produce enough elements to fill up the 
+                            last col completely.                              */
   template<typename InputIt>
   void addCols(InputIt first, 
                InputIt last, 
@@ -797,10 +834,10 @@ public:
       }
     }
     if(!allow_missing && row != m_data.nrow())
-      throw InvalidEntry{"Input iterator did not produce enough elements to "
-                         "fill the last col. Expected = " + 
-                         std::to_string(m_data.nrow()) + " Received = " + 
-                         std::to_string(row)};
+      throw NotEnoughElements{"Input iterator did not produce enough elements"
+                              " to fill the last col. Expected = " + 
+                              std::to_string(m_data.nrow()) + " Received = " + 
+                              std::to_string(row)};
   }
 
   /** Bind another DataTable_ to this DataTable_ by row. The new elements will 
@@ -809,14 +846,15 @@ public:
   DataTable_  that is a bind of two existing DataTable_(s), see 
   rbindDataTables().
 
-  \throws OpenSim::InvalidEntry If input DataTable_ has incorrect number of
-                                columns for bind to work.
-  \throws Opensim::InvalidEntry If trying to bind a DataTable_ to itself.     */
+  \throws NumberOfColsMismatch If input DataTable_ has incorrect number of
+                               columns for bind to work.
+  \throws InvalidEntry If trying to bind a DataTable_ to itself.              */
   void rbindDataTable(const DataTable_& table) {
     if(m_data.ncol() != table.m_data.ncol()) 
-      throw InvalidEntry{"Input DataTable has incorrect number of columns. " 
-                         "Expected = " + std::to_string(m_data.ncol()) + 
-                         " Received = " + std::to_string(table.m_data.ncol())};
+      throw NumberOfColsMismatch{"Input DataTable has incorrect number of " 
+                                 "columns. Expected = " + 
+                                 std::to_string(m_data.ncol()) + " Received = " 
+                                 + std::to_string(table.m_data.ncol())};
     if(&m_data == &table.m_data)
       throw InvalidEntry{"Cannot rbind a DataTable to itself."};
 
@@ -833,14 +871,15 @@ public:
   Column labels and metadata are not added. To create a new DataTable_ that is 
   a bind of two existing DataTable_(s), see cbindDataTables().
 
-  \throws OpenSim::InvalidEntry If input DataTable_ has incorrect number of
-                                rows for bind to work.
-  \throws Opensim::InvalidEntry If trying to bind a DataTable_ to itself.     */
+  \throws NumberOfRowsMismatch If input DataTable_ has incorrect number of
+                               rows for bind to work.
+  \throws InvalidEntry If trying to bind a DataTable_ to itself.              */
   void cbindDataTable(const DataTable_& table) {
     if(m_data.nrow() != table.m_data.nrow())
-      throw InvalidEntry{"Input DataTable has incorrect number of rows." 
-                         "Expected = " + std::to_string(m_data.nrow()) + 
-                         " Received = " + std::to_string(table.m_data.nrow())};
+      throw NumberOfRowsMismatch{"Input DataTable has incorrect number of " 
+                                 "rows. Expected = " + 
+                                 std::to_string(m_data.nrow()) + " Received = " 
+                                 + std::to_string(table.m_data.nrow())};
     if(&m_data == &table.m_data)
       throw InvalidEntry{"Cannot cbind a DataTable to itself."};
 
@@ -874,7 +913,7 @@ public:
   \param value An object/value of any type except array types[eg int[]]. The 
                code will fail to compile for array types.
 
-  \throws OpenSim::MetaDataKeyExists If the specified key already exits       */
+  \throws MetaDataKeyExists If the specified key already exits                */
   template<typename ValueType>
   void insertMetaData(const std::string& key, ValueType&& value) {
     using namespace SimTK;
@@ -899,12 +938,11 @@ public:
   complexity is constant on average and linear in number of elements in 
   metadata on worst case.
 
-  \throws OpenSim::MetaDataKeyDoesNotExist If the key specified does not exist 
-                                           in metadata.
-  \throws OpenSim::MetaDataTypeMismatch If the type specified as template
-                                        argument does not match the type of
-                                        metadata stored under the key 
-                                        specified.                            */
+  \throws MetaDataKeyDoesNotExist If the key specified does not exist in 
+                                  metadata.
+  \throws MetaDataTypeMismatch If the type specified as template argument does 
+                               not match the type of metadata stored under the 
+                               key specified.                                 */
   template<typename ValueType>
   const ValueType& getMetaData(const string& key) const {
     static_assert(!std::is_reference<ValueType>::value, 
@@ -927,12 +965,11 @@ public:
   complexity is constant on average and linear in number of elements in 
   metadata on worst case.
 
-  \throws OpenSim::MetaDataKeyDoesNotExist If the key specified does not
-                                           exist in metadata.
-  \throws OpenSim::MetaDataTypeMismatch If the type specified as template
-                                        argument does not match the type of
-                                        metadata stored under the key
-                                        specified.                            */
+  \throws MetaDataKeyDoesNotExist If the key specified does not exist in 
+                                  metadata.
+  \throws MetaDataTypeMismatch If the type specified as template argument does 
+                               not match the type of metadata stored under the 
+                               key specified.                                 */
   template<typename ValueType>
   ValueType& updMetaData(const string& key) {
     static_assert(!std::is_reference<ValueType>::value, "Template argument " 
@@ -956,12 +993,11 @@ public:
   retrieving the value, use rmvMetaData(). Time complexity is constant on
   average and linear in number of elements in the metadata on worst case.
 
-  \throws OpenSim::MetaDataKeyDoesNotExist If the key specified does not exist 
-                                           in metadata.
-  \throws OpenSim::MetaDataTypeMismatch If the type specified as template
-                                        argument does not match the type of
-                                        metadata stored under the key
-                                        specified.                            */
+  \throws MetaDataKeyDoesNotExist If the key specified does not exist in 
+                                  metadata.
+  \throws MetaDataTypeMismatch If the type specified as template argument does 
+                               not match the type of metadata stored under the 
+                               key specified.                                 */
   template<typename ValueType>
   ValueType popMetaData(const string& key) {
     static_assert(!std::is_reference<ValueType>::value, "Template argument "
@@ -1020,7 +1056,7 @@ public:
   column labels. All columns will have an index. All columns need not have a 
   label.
 
-  \throws OpenSim::ColumnDoesNotExist If col index specified does not exist.  */
+  \throws ColumnDoesNotExist If col index specified does not exist.           */
   bool colHasLabel(const size_t colind) const override {
     using ColLabelsValueType = typename ColLabelsType::value_type;
     checkColExists(colind);
@@ -1046,9 +1082,8 @@ public:
   /** Label a column. The column should not have a label already. To update the
   label of a column that already has a label, use updColLabel().
 
-  \throws OpenSim::ColumnDoesNotExist If the col index specified does not exist.
-  \throws OpenSim::ColumnHasLabel If the column index specified already has a 
-                                  label.                                      */
+  \throws ColumnDoesNotExist If the col index specified does not exist.
+  \throws ColumnHasLabel If the column index specified already has a label.   */
   void insertColLabel(const size_t colind, const string& collabel) override {
     checkColExistsAndHasLabel(colind);
     m_col_ind.emplace(collabel, colind);
@@ -1057,9 +1092,8 @@ public:
   /** Label a column. The column should not have a label already. To update the
   label of a column that already has a label, use updColLabel().
 
-  \throws OpenSim::ColumnDoesNotExist If the col index specified does not exist.
-  \throws OpenSim::ColumnHasLabel If the column index specified already has a 
-                                  label.                                      */
+  \throws ColumnDoesNotExist If the col index specified does not exist.
+  \throws ColumnHasLabel If the column index specified already has a label.   */
   void insertColLabel(const size_t colind, string&& collabel) override {
     checkColExistsAndHasLabel(colind);
     m_col_ind.emplace(std::move(collabel), colind);
@@ -1069,9 +1103,8 @@ public:
   index-label pair (std::pair<size_t, std::string>) at a time. The columns
   referred to by the iterator must not already have a label. 
 
-  \throws OpenSim::ColumnDoesNotExist If the col index specified does not exist.
-  \throws OpenSim::ColumnHasLabel If the column index specified already has a 
-                                  label.                                      */
+  \throws ColumnDoesNotExist If the col index specified does not exist.
+  \throws ColumnHasLabel If the column index specified already has a label.   */
   template<typename InputIt>
   void insertColLabels(InputIt first, InputIt last) {
     while(first != last) {
@@ -1085,8 +1118,8 @@ public:
   column labels. The returned value is a copy of the label. To update the label 
   of a column, use updColLabel(). 
 
-  \throws OpenSim::ColumnHasNoLabel If the column does not have a label.
-  \throws OpenSim::ColumnDoesNotExist If the column does not exist.           */
+  \throws ColumnHasNoLabel If the column does not have a label.
+  \throws ColumnDoesNotExist If the column does not exist.                    */
   string getColLabel(const size_t colind) const override {
     checkColExists(colind);
     using ColLabelsValueType = typename ColLabelsType::value_type;
@@ -1116,10 +1149,9 @@ public:
   in the number of column labels. The column specified must already have a
   label. To label a column that does not yet have a label, use insertLabel().
 
-  \throws OpenSim::ColumnHasNoLabel If the column specified does not already
-                                    have a label.
-  \throws OpenSim::ColumnDoesNotExist If the column specified does not 
-                                      exist.                                  */
+  \throws ColumnHasNoLabel If the column specified does not already have a 
+                           label.
+  \throws ColumnDoesNotExist If the column specified does not exist.          */
   void updColLabel(const size_t colind, const string& new_collabel) override {
     string old_collabel{getColLabel(colind)};
     m_col_ind.erase(old_collabel);
@@ -1129,9 +1161,9 @@ public:
   /** Update the label of a column with a new label. Time complexity is constant
   on average and linear in number of column labels in the worst case.
 
-  \throws OpenSim::ColumnHasNoLabel If the column specified does not already
-                                    have a label.
-  \throws OpenSim::ColumnDoesNotExist If the column specified does not exist. */
+  \throws ColumnHasNoLabel If the column specified does not already have a 
+                           label.
+  \throws ColumnDoesNotExist If the column specified does not exist.          */
   void updColLabel(const string& old_collabel, 
                    const string& new_collabel) override {
     size_t colind{getColInd(old_collabel)};
@@ -1151,7 +1183,7 @@ public:
   /** Get the index of a column from its label. Time complexity is constant on
   average and linear in number of column labels on worst case.
 
-  \throws OpenSim::ColumnDoesNotExist If the column label does not exist.     */
+  \throws ColumnDoesNotExist If the column label does not exist.              */
   size_t getColInd(const string& collabel) const override {
     try {
       return m_col_ind.at(collabel);

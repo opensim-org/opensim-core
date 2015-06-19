@@ -110,13 +110,13 @@ int main() {
   // elements to fill up the row will throw as follows.
   try {
     dt_real.addRow(data1_real.cbegin(), data1_real.cend() - 1);
-  } catch(OpenSim::InvalidEntry&) {}
+  } catch(OpenSim::NotEnoughElements&) {}
   try {
     dt_vec3.addRow(data1_vec3.cbegin(), data1_vec3.cend() - 1);
-  } catch(OpenSim::InvalidEntry&) {}
+  } catch(OpenSim::NotEnoughElements&) {}
   try {
     dt_vec6.addRow(data1_vec6.cbegin(), data1_vec6.cend() - 1);
-  } catch(OpenSim::InvalidEntry&) {}
+  } catch(OpenSim::NotEnoughElements&) {}
 
   // DataTable can be told to allow for missing values when using iterator
   // as follows. In this case, the missing values will be SimTK::NaN. See the

@@ -189,7 +189,7 @@ void testAddRow(OpenSim::DataTable_<ET>& dt,
     // Try adding a row with insufficient number of columns.
     try {
       dt_copy1.addRow(data.cbegin(), data.cend() - 1);
-    } catch(OpenSim::InvalidEntry&) {}
+    } catch(OpenSim::NotEnoughElements&) {}
 
     // Copy the original DataTable.
     auto dt_copy2 = dt;
@@ -240,7 +240,7 @@ void testAddRow(OpenSim::DataTable_<ET>& dt,
     // row.
     try {
       dt_copy.addRows(data_copy.cbegin(), data_copy.cend() - 1);
-    } catch(OpenSim::InvalidEntry&) {}
+    } catch(OpenSim::NotEnoughElements&) {}
 
     // Add rows with insufficient number of elements but specify allow_missing.
     dt_copy.addRows(data_copy.cbegin(), data_copy.cend() - 1, 0, true);
@@ -274,7 +274,7 @@ void testAddRow(OpenSim::DataTable_<ET>& dt,
   try {
     dt.addRow(SimTK::RowVector_<ET>{});
   } catch(OpenSim::ZeroElements&) {}
-    catch(OpenSim::InvalidEntry&) {}
+    catch(OpenSim::NumberOfColsMismatch&) {}
 
   // Clear the DataTable.
   dt.clearData();
@@ -329,7 +329,7 @@ void testAddCol(OpenSim::DataTable_<ET>& dt,
     // Try adding a col with insufficient number of columns.
     try {
       dt_copy1.addCol(data.cbegin(), data.cend() - 1);
-    } catch(OpenSim::InvalidEntry&) {}
+    } catch(OpenSim::NotEnoughElements&) {}
 
     // Copy the original DataTable.
     auto dt_copy2 = dt;
@@ -460,86 +460,86 @@ void testAddCol(OpenSim::DataTable_<ET>& dt,
 // Start with default constructed DataTable and add rows/cols to it.
 void test1() {
   // Construct a DataTable of SimTK::Real(alias for double).
-  std::cout << "test1 -- Default construct DataTable: Real.\n";
+  std::cout << "test1 -- Default construct DataTable: Real." << std::endl;
   OpenSim::DataTable_<SimTK::Real> dt_real{};
   // Construct a DataTable of SimTK::Vec3.
-  std::cout << "test1 -- Default construct DataTable: Vec3.\n";
+  std::cout << "test1 -- Default construct DataTable: Vec3." << std::endl;
   OpenSim::DataTable_<SimTK::Vec3> dt_vec3{};
   // Construct a DataTable of SimTK::Vec6.
-  std::cout << "test1 -- Default construct DataTable: Vec6.\n";
+  std::cout << "test1 -- Default construct DataTable: Vec6." << std::endl;
   OpenSim::DataTable_<SimTK::Vec6> dt_vec6{};
 
   // Check the size of the DataTable.
-  std::cout << "test1 -- checkDataTableLimits(): Real.\n";
+  std::cout << "test1 -- checkDataTableLimits(): Real." << std::endl;
   checkDataTableLimits(dt_real, 0, 0);
-  std::cout << "test1 -- checkDataTableLimits(): Vec3.\n";
+  std::cout << "test1 -- checkDataTableLimits(): Vec3." << std::endl;
   checkDataTableLimits(dt_vec3, 0, 0);
-  std::cout << "test1 -- checkDataTableLimits(): Vec6.\n";
+  std::cout << "test1 -- checkDataTableLimits(): Vec6." << std::endl;
   checkDataTableLimits(dt_vec6, 0, 0);
 
   // Copy construct from default constructed DataTable.
-  std::cout << "test1 -- Copy construct: Real.\n";
+  std::cout << "test1 -- Copy construct: Real." << std::endl;
   decltype(dt_real) copy_dt_real{dt_real};
-  std::cout << "test1 -- Copy construct: Vec3.\n";
+  std::cout << "test1 -- Copy construct: Vec3." << std::endl;
   decltype(dt_vec3) copy_dt_vec3{dt_vec3};
-  std::cout << "test1 -- Copy construct: Vec6.\n";
+  std::cout << "test1 -- Copy construct: Vec6." << std::endl;
   decltype(dt_vec6) copy_dt_vec6{dt_vec6};
 
   // Check the size of the DataTable.
-  std::cout << "test1 -- checkDataTableLimits(): Real.\n";
+  std::cout << "test1 -- checkDataTableLimits(): Real." << std::endl;
   checkDataTableLimits(copy_dt_real, 0, 0);
-  std::cout << "test1 -- checkDataTableLimits(): Vec3.\n";
+  std::cout << "test1 -- checkDataTableLimits(): Vec3." << std::endl;
   checkDataTableLimits(copy_dt_vec3, 0, 0);
-  std::cout << "test1 -- checkDataTableLimits(): Vec6.\n";
+  std::cout << "test1 -- checkDataTableLimits(): Vec6." << std::endl;
   checkDataTableLimits(copy_dt_vec6, 0, 0);
 
   // Virtual constructor.
-  std::cout << "test1 -- Virtual(clone) constructor: Real.\n";
+  std::cout << "test1 -- Virtual(clone) constructor: Real." << std::endl;
   OpenSim::AbstractDataTable& abs_dt_real = dt_real;
   auto clone_absdt_real = abs_dt_real.clone();
   auto clone_dt_real = static_cast<decltype(dt_real)&>(*clone_absdt_real);
-  std::cout << "test1 -- Virtual(clone) constructor: Vec3.\n";
+  std::cout << "test1 -- Virtual(clone) constructor: Vec3." << std::endl;
   OpenSim::AbstractDataTable& abs_dt_vec3 = dt_vec3;
   auto clone_absdt_vec3 = abs_dt_vec3.clone();
   auto clone_dt_vec3 = static_cast<decltype(dt_vec3)&>(*clone_absdt_vec3);
-  std::cout << "test1 -- Virtual(clone) constructor: Vec6.\n";
+  std::cout << "test1 -- Virtual(clone) constructor: Vec6." << std::endl;
   OpenSim::AbstractDataTable& abs_dt_vec6 = dt_vec6;
   auto clone_absdt_vec6 = abs_dt_vec6.clone();
   auto clone_dt_vec6 = static_cast<decltype(dt_vec6)&>(*clone_absdt_vec6);
 
   // Check the size of the clone DataTable.
-  std::cout << "test1 -- checkDataTableLimits(): Real.\n";
+  std::cout << "test1 -- checkDataTableLimits(): Real." << std::endl;
   checkDataTableLimits(clone_dt_real, 0, 0);
-  std::cout << "test1 -- checkDataTableLimits(): Vec3.\n";
+  std::cout << "test1 -- checkDataTableLimits(): Vec3." << std::endl;
   checkDataTableLimits(clone_dt_vec3, 0, 0);
-  std::cout << "test1 -- checkDataTableLimits(): Vec6.\n";
+  std::cout << "test1 -- checkDataTableLimits(): Vec6." << std::endl;
   checkDataTableLimits(clone_dt_vec6, 0, 0);
 
   // Move constructors.
-  std::cout << "test1 -- Move constructor: Real.\n";
+  std::cout << "test1 -- Move constructor: Real." << std::endl;
   decltype(dt_real) move_dt_real{std::move(dt_real)};
-  std::cout << "test1 -- Move constructor: Vec3.\n";
+  std::cout << "test1 -- Move constructor: Vec3." << std::endl;
   decltype(dt_vec3) move_dt_vec3{std::move(dt_vec3)};
-  std::cout << "test1 -- Move constructor: Vec6.\n";
+  std::cout << "test1 -- Move constructor: Vec6." << std::endl;
   decltype(dt_vec6) move_dt_vec6{std::move(dt_vec6)};
 
   // Check the size of the clone DataTable.
-  std::cout << "test1 -- checkDataTableLimits(): Real.\n";
+  std::cout << "test1 -- checkDataTableLimits(): Real." << std::endl;
   checkDataTableLimits(clone_dt_real, 0, 0);
-  std::cout << "test1 -- checkDataTableLimits(): Vec3.\n";
+  std::cout << "test1 -- checkDataTableLimits(): Vec3." << std::endl;
   checkDataTableLimits(clone_dt_vec3, 0, 0);
-  std::cout << "test1 -- checkDataTableLimits(): Vec6.\n";
+  std::cout << "test1 -- checkDataTableLimits(): Vec6." << std::endl;
   checkDataTableLimits(clone_dt_vec6, 0, 0);
 
   // Test adding rows to empty DataTable using a SimTK::RowVector. Using 
   // integers only for demostration. The underlying type can hold `double`.
-  std::cout << "test1 -- testAddRow(): Real.\n";
+  std::cout << "test1 -- testAddRow(): Real." << std::endl;
   testAddRow(dt_real, std::vector<SimTK::Real>{1, 2, 3});
-  std::cout << "test1 -- testAddRow(): Vec3.\n";
+  std::cout << "test1 -- testAddRow(): Vec3." << std::endl;
   testAddRow(dt_vec3, std::vector<SimTK::Vec3>{{1, 2, 3},
                                                {4, 5, 6},
                                                {7, 8, 9}});
-  std::cout << "test1 -- testAddRow(): Vec6.\n";
+  std::cout << "test1 -- testAddRow(): Vec6." << std::endl;
   testAddRow(dt_vec6, 
              std::vector<SimTK::Vec6>{{1, 2, 3, 11, 22, 33},
                                       {4, 5, 6, 44, 55, 66},
@@ -547,22 +547,22 @@ void test1() {
 
 
   // Test adding cols to previously populated DataTable.
-  std::cout << "test1 -- testAddCol(): Real.\n";
+  std::cout << "test1 -- testAddCol(): Real." << std::endl;
   testAddCol(dt_real, std::vector<SimTK::Real>{1, 2});
-  std::cout << "test1 -- testAddCol(): Vec3.\n";
+  std::cout << "test1 -- testAddCol(): Vec3." << std::endl;
   testAddCol(dt_vec3, std::vector<SimTK::Vec3>{{1, 2, 3},
                                                {4, 5, 6}});
-  std::cout << "test1 -- testAddCol(): Vec6.\n";
+  std::cout << "test1 -- testAddCol(): Vec6." << std::endl;
   testAddCol(dt_vec6, std::vector<SimTK::Vec6>{{1, 2, 3, 11, 22, 33},
                                                {4, 5, 6, 44, 55, 66}});
 
   // Test adding rows to previously populated DataTable.
-  std::cout << "test1 -- testAddRow(): Real.\n";
+  std::cout << "test1 -- testAddRow(): Real." << std::endl;
   testAddRow(dt_real, std::vector<SimTK::Real>{1, 2});
-  std::cout << "test1 -- testAddRow(): Vec3.\n";
+  std::cout << "test1 -- testAddRow(): Vec3." << std::endl;
   testAddRow(dt_vec3, std::vector<SimTK::Vec3>{{1, 2, 3}, 
                                                {4, 5, 6}});
-  std::cout << "test1 -- testAddRow(): Vec6.\n";
+  std::cout << "test1 -- testAddRow(): Vec6." << std::endl;
   testAddRow(dt_vec6, 
              std::vector<SimTK::Vec6>{{1, 2, 3, 11, 22, 33}, 
                                       {4, 5, 6, 44, 55, 66}});
@@ -575,45 +575,48 @@ void test1() {
 void test2() {
   // Construct a DataTable of SimTK::Real(alias for double). Using an integers
   // for demonstration. The underlying type can hold double.
-  std::cout << "test2 -- Construct DataTable with default value: Real.\n";
+  std::cout << "test2 -- Construct DataTable with default value: Real." 
+            << std::endl;
   OpenSim::DataTable_<SimTK::Real> dt_real{3, 4, 10};
   // Construct a DataTable of SimTK::Vec3.
-  std::cout << "test2 -- Construct DataTable with default value: Vec3.\n";
+  std::cout << "test2 -- Construct DataTable with default value: Vec3." 
+            << std::endl;
   OpenSim::DataTable_<SimTK::Vec3> dt_vec3{3, 4, {10, 20, 30}};
   // Construct a DataTable of SimTK::Vec6.
-  std::cout << "test2 -- Construct DataTable with default value: Vec6.\n"; 
+  std::cout << "test2 -- Construct DataTable with default value: Vec6." 
+            << std::endl; 
   OpenSim::DataTable_<SimTK::Vec6> dt_vec6{3, 4, {10, 20, 30, 40, 50, 60}};
 
   // Check the size of the DataTable.
-  std::cout << "test2 -- checkDataTableLimits(): Real.\n";
+  std::cout << "test2 -- checkDataTableLimits(): Real." << std::endl;
   checkDataTableLimits(dt_real, 3, 4);
-  std::cout << "test2 -- checkDataTableLimits(): Vec3.\n";
+  std::cout << "test2 -- checkDataTableLimits(): Vec3." << std::endl;
   checkDataTableLimits(dt_vec3, 3, 4);
-  std::cout << "test2 -- checkDataTableLimits(): Vec6.\n";
+  std::cout << "test2 -- checkDataTableLimits(): Vec6." << std::endl;
   checkDataTableLimits(dt_vec6, 3, 4);
 
   // Check the entries of few rows of the DataTable.
-  std::cout << "test2 -- checkDataTableRow(row 0): Real.\n";
+  std::cout << "test2 -- checkDataTableRow(row 0): Real." << std::endl;
   checkDataTableRow(dt_real, std::vector<SimTK::Real>{10, 10, 10, 10}, 0);
-  std::cout << "test2 -- checkDataTableRow(row 2): Real.\n";
+  std::cout << "test2 -- checkDataTableRow(row 2): Real." << std::endl;
   checkDataTableRow(dt_real, std::vector<SimTK::Real>{10, 10, 10, 10}, 2);
-  std::cout << "test2 -- checkDataTableRow(row 0): Vec3.\n";
+  std::cout << "test2 -- checkDataTableRow(row 0): Vec3." << std::endl;
   checkDataTableRow(dt_vec3, std::vector<SimTK::Vec3>{{10, 20, 30},
                                                       {10, 20, 30},
                                                       {10, 20, 30},
                                                       {10, 20, 30}}, 0);
-  std::cout << "test2 -- checkDataTableRow(row 2): Vec3.\n";
+  std::cout << "test2 -- checkDataTableRow(row 2): Vec3." << std::endl;
   checkDataTableRow(dt_vec3, std::vector<SimTK::Vec3>{{10, 20, 30},
                                                       {10, 20, 30},
                                                       {10, 20, 30},
                                                       {10, 20, 30}}, 2);
-  std::cout << "test2 -- checkDataTableRow(row 0): Vec6.\n";
+  std::cout << "test2 -- checkDataTableRow(row 0): Vec6." << std::endl;
   checkDataTableRow(dt_vec6, 
                     std::vector<SimTK::Vec6>{{10, 20, 30, 40, 50, 60},
                                              {10, 20, 30, 40, 50, 60},
                                              {10, 20, 30, 40, 50, 60},
                                              {10, 20, 30, 40, 50, 60}}, 0);
-  std::cout << "test2 -- checkDataTableRow(row 2): Vec6.\n";
+  std::cout << "test2 -- checkDataTableRow(row 2): Vec6." << std::endl;
   checkDataTableRow(dt_vec6, 
                     std::vector<SimTK::Vec6>{{10, 20, 30, 40, 50, 60},
                                              {10, 20, 30, 40, 50, 60},
@@ -621,43 +624,43 @@ void test2() {
                                              {10, 20, 30, 40, 50, 60}}, 2);
 
   // Copy construct from default constructed DataTable.
-  std::cout << "test2 -- Copy construct: Real.\n";
+  std::cout << "test2 -- Copy construct: Real." << std::endl;
   decltype(dt_real) copy_dt_real{dt_real};
-  std::cout << "test2 -- Copy construct: Vec3.\n";
+  std::cout << "test2 -- Copy construct: Vec3." << std::endl;
   decltype(dt_vec3) copy_dt_vec3{dt_vec3};
-  std::cout << "test2 -- Copy construct: Vec6.\n";
+  std::cout << "test2 -- Copy construct: Vec6." << std::endl;
   decltype(dt_vec6) copy_dt_vec6{dt_vec6};
 
   // Check the size of the copy constructed DataTable.
-  std::cout << "test2 -- checkDataTableLimits(): Real.\n";
+  std::cout << "test2 -- checkDataTableLimits(): Real." << std::endl;
   checkDataTableLimits(copy_dt_real, 3, 4);
-  std::cout << "test2 -- checkDataTableLimits(): Vec3.\n";
+  std::cout << "test2 -- checkDataTableLimits(): Vec3." << std::endl;
   checkDataTableLimits(copy_dt_vec3, 3, 4);
-  std::cout << "test2 -- checkDataTableLimits(): Vec6.\n";
+  std::cout << "test2 -- checkDataTableLimits(): Vec6." << std::endl;
   checkDataTableLimits(copy_dt_vec6, 3, 4);
 
   // Check the entries of few rows of the copy constructed DataTable.
-  std::cout << "test2 -- checkDataTableRow(row 0): Real.\n";
+  std::cout << "test2 -- checkDataTableRow(row 0): Real." << std::endl;
   checkDataTableRow(copy_dt_real, std::vector<SimTK::Real>{10, 10, 10, 10}, 0);
-  std::cout << "test2 -- checkDataTableRow(row 2): Real.\n";
+  std::cout << "test2 -- checkDataTableRow(row 2): Real." << std::endl;
   checkDataTableRow(copy_dt_real, std::vector<SimTK::Real>{10, 10, 10, 10}, 2);
-  std::cout << "test2 -- checkDataTableRow(row 0): Vec3.\n";
+  std::cout << "test2 -- checkDataTableRow(row 0): Vec3." << std::endl;
   checkDataTableRow(copy_dt_vec3, std::vector<SimTK::Vec3>{{10, 20, 30},
                                                            {10, 20, 30},
                                                            {10, 20, 30},
                                                            {10, 20, 30}}, 0);
-  std::cout << "test2 -- checkDataTableRow(row 2): Vec3.\n";
+  std::cout << "test2 -- checkDataTableRow(row 2): Vec3." << std::endl;
   checkDataTableRow(copy_dt_vec3, std::vector<SimTK::Vec3>{{10, 20, 30},
                                                            {10, 20, 30},
                                                            {10, 20, 30},
                                                            {10, 20, 30}}, 2);
-  std::cout << "test2 -- checkDataTableRow(row 0): Vec6.\n";
+  std::cout << "test2 -- checkDataTableRow(row 0): Vec6." << std::endl;
   checkDataTableRow(copy_dt_vec6, 
                     std::vector<SimTK::Vec6>{{10, 20, 30, 40, 50, 60},
                                              {10, 20, 30, 40, 50, 60},
                                              {10, 20, 30, 40, 50, 60},
                                              {10, 20, 30, 40, 50, 60}}, 0);
-  std::cout << "test2 -- checkDataTableRow(row 2): Vec6.\n";
+  std::cout << "test2 -- checkDataTableRow(row 2): Vec6." << std::endl;
   checkDataTableRow(copy_dt_vec6, 
                     std::vector<SimTK::Vec6>{{10, 20, 30, 40, 50, 60},
                                              {10, 20, 30, 40, 50, 60},
@@ -665,49 +668,49 @@ void test2() {
                                              {10, 20, 30, 40, 50, 60}}, 2);
 
   // Virtual constructor.
-  std::cout << "test2 -- Virtual(clone) constructor: Real.\n";
+  std::cout << "test2 -- Virtual(clone) constructor: Real." << std::endl;
   OpenSim::AbstractDataTable& abs_dt_real = dt_real;
   auto clone_absdt_real = abs_dt_real.clone();
   auto clone_dt_real = static_cast<decltype(dt_real)&>(*clone_absdt_real);
-  std::cout << "test2 -- Virtual(clone) constructor: Vec3.\n";
+  std::cout << "test2 -- Virtual(clone) constructor: Vec3." << std::endl;
   OpenSim::AbstractDataTable& abs_dt_vec3 = dt_vec3;
   auto clone_absdt_vec3 = abs_dt_vec3.clone();
   auto clone_dt_vec3 = static_cast<decltype(dt_vec3)&>(*clone_absdt_vec3);
-  std::cout << "test2 -- Virtual(clone) constructor: Vec6.\n";
+  std::cout << "test2 -- Virtual(clone) constructor: Vec6." << std::endl;
   OpenSim::AbstractDataTable& abs_dt_vec6 = dt_vec6;
   auto clone_absdt_vec6 = abs_dt_vec6.clone();
   auto clone_dt_vec6 = static_cast<decltype(dt_vec6)&>(*clone_absdt_vec6);
 
   // Check the size of the clone DataTable.
-  std::cout << "test2 -- checkDataTableLimits(): Real.\n";
+  std::cout << "test2 -- checkDataTableLimits(): Real." << std::endl;
   checkDataTableLimits(clone_dt_real, 3, 4);
-  std::cout << "test2 -- checkDataTableLimits(): Vec3.\n";
+  std::cout << "test2 -- checkDataTableLimits(): Vec3." << std::endl;
   checkDataTableLimits(clone_dt_vec3, 3, 4);
-  std::cout << "test2 -- checkDataTableLimits(): Vec6.\n";
+  std::cout << "test2 -- checkDataTableLimits(): Vec6." << std::endl;
   checkDataTableLimits(clone_dt_vec6, 3, 4);
 
   // Check the entries of few rows of the DataTable.
-  std::cout << "test2 -- checkDataTableRow(row 0): Real.\n";
+  std::cout << "test2 -- checkDataTableRow(row 0): Real." << std::endl;
   checkDataTableRow(clone_dt_real, std::vector<SimTK::Real>{10, 10, 10, 10}, 0);
-  std::cout << "test2 -- checkDataTableRow(row 2): Real.\n";
+  std::cout << "test2 -- checkDataTableRow(row 2): Real." << std::endl;
   checkDataTableRow(clone_dt_real, std::vector<SimTK::Real>{10, 10, 10, 10}, 2);
-  std::cout << "test2 -- checkDataTableRow(row 0): Vec3.\n";
+  std::cout << "test2 -- checkDataTableRow(row 0): Vec3." << std::endl;
   checkDataTableRow(clone_dt_vec3, std::vector<SimTK::Vec3>{{10, 20, 30},
                                                             {10, 20, 30},
                                                             {10, 20, 30},
                                                             {10, 20, 30}}, 0);
-  std::cout << "test2 -- checkDataTableRow(row 2): Vec3.\n";
+  std::cout << "test2 -- checkDataTableRow(row 2): Vec3." << std::endl;
   checkDataTableRow(clone_dt_vec3, std::vector<SimTK::Vec3>{{10, 20, 30},
                                                             {10, 20, 30},
                                                             {10, 20, 30},
                                                             {10, 20, 30}}, 2);
-  std::cout << "test2 -- checkDataTableRow(row 0): Vec6.\n";
+  std::cout << "test2 -- checkDataTableRow(row 0): Vec6." << std::endl;
   checkDataTableRow(clone_dt_vec6, 
                     std::vector<SimTK::Vec6>{{10, 20, 30, 40, 50, 60},
                                              {10, 20, 30, 40, 50, 60},
                                              {10, 20, 30, 40, 50, 60},
                                              {10, 20, 30, 40, 50, 60}}, 0);
-  std::cout << "test2 -- checkDataTableRow(row 2): Vec6.\n";
+  std::cout << "test2 -- checkDataTableRow(row 2): Vec6." << std::endl;
   checkDataTableRow(clone_dt_vec6, 
                     std::vector<SimTK::Vec6>{{10, 20, 30, 40, 50, 60},
                                              {10, 20, 30, 40, 50, 60},
@@ -715,43 +718,43 @@ void test2() {
                                              {10, 20, 30, 40, 50, 60}}, 2);
 
   // Move constructor.
-  std::cout << "test2 -- Move constructor: Real.\n";
+  std::cout << "test2 -- Move constructor: Real." << std::endl;
   decltype(dt_real) move_dt_real{std::move(dt_real)};
-  std::cout << "test2 -- Move constructor: Vec3.\n";
+  std::cout << "test2 -- Move constructor: Vec3." << std::endl;
   decltype(dt_vec3) move_dt_vec3{std::move(dt_vec3)};
-  std::cout << "test2 -- Move constructor: Vec6.\n";
+  std::cout << "test2 -- Move constructor: Vec6." << std::endl;
   decltype(dt_vec6) move_dt_vec6{std::move(dt_vec6)};
 
   // Check the size of the DataTable created.
-  std::cout << "test2 -- checkDataTableLimits(): Real.\n";
+  std::cout << "test2 -- checkDataTableLimits(): Real." << std::endl;
   checkDataTableLimits(move_dt_real, 3, 4);
-  std::cout << "test2 -- checkDataTableLimits(): Vec3.\n";
+  std::cout << "test2 -- checkDataTableLimits(): Vec3." << std::endl;
   checkDataTableLimits(move_dt_vec3, 3, 4);
-  std::cout << "test2 -- checkDataTableLimits(): Vec6.\n";
+  std::cout << "test2 -- checkDataTableLimits(): Vec6." << std::endl;
   checkDataTableLimits(move_dt_vec6, 3, 4);
 
   // Check the entries of few rows of the DataTable.
-  std::cout << "test2 -- checkDataTableRow(row 0): Real.\n";
+  std::cout << "test2 -- checkDataTableRow(row 0): Real." << std::endl;
   checkDataTableRow(move_dt_real, std::vector<SimTK::Real>{10, 10, 10, 10}, 0);
-  std::cout << "test2 -- checkDataTableRow(row 2): Real.\n";
+  std::cout << "test2 -- checkDataTableRow(row 2): Real." << std::endl;
   checkDataTableRow(move_dt_real, std::vector<SimTK::Real>{10, 10, 10, 10}, 2);
-  std::cout << "test2 -- checkDataTableRow(row 0): Vec3.\n";
+  std::cout << "test2 -- checkDataTableRow(row 0): Vec3." << std::endl;
   checkDataTableRow(move_dt_vec3, std::vector<SimTK::Vec3>{{10, 20, 30},
                                                            {10, 20, 30},
                                                            {10, 20, 30},
                                                            {10, 20, 30}}, 0);
-  std::cout << "test2 -- checkDataTableRow(row 2): Vec3.\n";
+  std::cout << "test2 -- checkDataTableRow(row 2): Vec3." << std::endl;
   checkDataTableRow(move_dt_vec3, std::vector<SimTK::Vec3>{{10, 20, 30},
                                                            {10, 20, 30},
                                                            {10, 20, 30},
                                                            {10, 20, 30}}, 2);
-  std::cout << "test2 -- checkDataTableRow(row 0): Vec6.\n";
+  std::cout << "test2 -- checkDataTableRow(row 0): Vec6." << std::endl;
   checkDataTableRow(move_dt_vec6, 
                     std::vector<SimTK::Vec6>{{10, 20, 30, 40, 50, 60},
                                              {10, 20, 30, 40, 50, 60},
                                              {10, 20, 30, 40, 50, 60},
                                              {10, 20, 30, 40, 50, 60}}, 0);
-  std::cout << "test2 -- checkDataTableRow(row 2): Vec6.\n";
+  std::cout << "test2 -- checkDataTableRow(row 2): Vec6." << std::endl;
   checkDataTableRow(move_dt_vec6, 
                     std::vector<SimTK::Vec6>{{10, 20, 30, 40, 50, 60},
                                              {10, 20, 30, 40, 50, 60},
@@ -759,14 +762,14 @@ void test2() {
                                              {10, 20, 30, 40, 50, 60}}, 2);
 
   // Test adding rows to the DataTable.
-  std::cout << "test2 -- testAddRow(): Real.\n";
+  std::cout << "test2 -- testAddRow(): Real." << std::endl;
   testAddRow(dt_real, std::vector<SimTK::Real>{1, 2, 3, 4});
-  std::cout << "test2 -- testAddRow(): Vec3.\n";
+  std::cout << "test2 -- testAddRow(): Vec3." << std::endl;
   testAddRow(dt_vec3, std::vector<SimTK::Vec3>{{ 1,  2,  3}, 
                                                { 4,  5,  6},
                                                { 7,  8,  9},
                                                {10, 11, 12}});
-  std::cout << "test2 -- testAddRow(): Vec6.\n";
+  std::cout << "test2 -- testAddRow(): Vec6." << std::endl;
   testAddRow(dt_vec6, 
              std::vector<SimTK::Vec6>{{ 1,  2,  3,  11,  22,  33},
                                       { 4,  5,  6,  44,  55,  66},
@@ -774,22 +777,22 @@ void test2() {
                                       {10, 11, 12, 110, 120, 140}});
 
   // Test adding cols to previously populated DataTable.
-  std::cout << "test2 -- testAddCol(): Real.\n";
+  std::cout << "test2 -- testAddCol(): Real." << std::endl;
   testAddCol(dt_real, std::vector<SimTK::Real>{1, 2});
-  std::cout << "test2 -- testAddCol(): Vec3.\n";
+  std::cout << "test2 -- testAddCol(): Vec3." << std::endl;
   testAddCol(dt_vec3, std::vector<SimTK::Vec3>{{1, 2, 3},
                                                {4, 5, 6}});
-  std::cout << "test2 -- testAddCol(): Vec6.\n";
+  std::cout << "test2 -- testAddCol(): Vec6." << std::endl;
   testAddCol(dt_vec6, std::vector<SimTK::Vec6>{{1, 2, 3, 11, 22, 33},
                                                {4, 5, 6, 44, 55, 66}});
 
   // Test adding rows to previously populated DataTable.
-  std::cout << "test2 -- testAddRow(): Real.\n";
+  std::cout << "test2 -- testAddRow(): Real." << std::endl;
   testAddRow(dt_real, std::vector<SimTK::Real>{1, 2});
-  std::cout << "test2 -- testAddRow(): Vec3.\n";
+  std::cout << "test2 -- testAddRow(): Vec3." << std::endl;
   testAddRow(dt_vec3, std::vector<SimTK::Vec3>{{1, 2, 3}, 
                                                {4, 5, 6}});
-  std::cout << "test2 -- testAddRow(): Vec6.\n";
+  std::cout << "test2 -- testAddRow(): Vec6." << std::endl;
   testAddRow(dt_vec6, 
              std::vector<SimTK::Vec6>{{1, 2, 3, 11, 22, 33}, 
                                       {4, 5, 6, 44, 55, 66}});
@@ -816,12 +819,12 @@ void test3() {
     // Try constructing a DataTable iterators but providing insufficient number
     // of elements to populate the whole table.
     std::cout << "test3 -- Construct DataTable with iterators rowwise"
-              << " [InvalidEntry]: Real.\n";
+              << " [NotEnoughElements]: Real." << std::endl;
     try {
       OpenSim::DataTable_<SimTK::Real> dt_real{data_real.cbegin(), 
                                                data_real.cend() - 2,
                                                4};  
-    } catch(OpenSim::InvalidEntry&) {
+    } catch(OpenSim::NotEnoughElements&) {
       OpenSim::DataTable_<SimTK::Real> dt_real{data_real.cbegin(), 
                                                data_real.cend() - 2,
                                                4, 
@@ -829,12 +832,12 @@ void test3() {
                                                true};  
     }
     std::cout << "test3 -- Construct DataTable with iterators rowwise"
-              << " [InvalidEntry]: Vec3.\n";
+              << " [NotEnoughElements]: Vec3." << std::endl;
     try {
       OpenSim::DataTable_<SimTK::Vec3> dt_vec3{data_vec3.cbegin(), 
                                                data_vec3.cend() - 2,
                                                4};  
-    } catch(OpenSim::InvalidEntry&) {
+    } catch(OpenSim::NotEnoughElements&) {
       OpenSim::DataTable_<SimTK::Vec3> dt_vec3{data_vec3.cbegin(), 
                                                data_vec3.cend() - 2,
                                                4,
@@ -842,12 +845,12 @@ void test3() {
                                                true};
     }
     std::cout << "test3 -- Construct DataTable with iterators rowwise"
-              << " [InvalidEntry]: Vec6.\n";
+              << " [NotEnoughElements]: Vec6." << std::endl;
     try {
       OpenSim::DataTable_<SimTK::Vec6> dt_vec6{data_vec6.cbegin(), 
                                                data_vec6.cend() - 2,
                                                4};  
-    } catch(OpenSim::InvalidEntry&) {
+    } catch(OpenSim::NotEnoughElements&) {
       OpenSim::DataTable_<SimTK::Vec6> dt_vec6{data_vec6.cbegin(), 
                                                data_vec6.cend() - 2,
                                                4,
@@ -859,13 +862,13 @@ void test3() {
     // Try constructing a DataTable iterators but providing insufficient number
     // of elements to populate the whole table.
     std::cout << "test3 -- Construct DataTable with iterators colwise"
-              << " [InvalidEntry]: Real.\n";
+              << " [NotEnoughElements]: Real." << std::endl;
     try {
       OpenSim::DataTable_<SimTK::Real> dt_real{data_real.cbegin(), 
                                                data_real.cend() - 2,
                                                4,
                                                OpenSim::ColWise};
-    } catch(OpenSim::InvalidEntry&) {
+    } catch(OpenSim::NotEnoughElements&) {
       OpenSim::DataTable_<SimTK::Real> dt_real{data_real.cbegin(), 
                                                data_real.cend() - 2,
                                                4,
@@ -873,13 +876,13 @@ void test3() {
                                                true};
     }
     std::cout << "test3 -- Construct DataTable with iterators colwise"
-              << " [InvalidEntry]: Vec3.\n";
+              << " [NotEnoughElements]: Vec3." << std::endl;
     try {
       OpenSim::DataTable_<SimTK::Vec3> dt_vec3{data_vec3.cbegin(), 
                                                data_vec3.cend() - 2,
                                                4,
                                                OpenSim::ColWise};
-    } catch(OpenSim::InvalidEntry&) {
+    } catch(OpenSim::NotEnoughElements&) {
       OpenSim::DataTable_<SimTK::Vec3> dt_vec3{data_vec3.cbegin(), 
                                                data_vec3.cend() - 2,
                                                4,
@@ -887,13 +890,13 @@ void test3() {
                                                true};
     }
     std::cout << "test3 -- Construct DataTable with iterators colwise"
-              << " [InvalidEntry]: Vec6.\n";
+              << " [NotEnoughElements]: Vec6." << std::endl;
     try {
       OpenSim::DataTable_<SimTK::Vec6> dt_vec6{data_vec6.cbegin(), 
                                                data_vec6.cend() - 2,
                                                4,
                                                OpenSim::ColWise};
-    } catch(OpenSim::InvalidEntry&) {
+    } catch(OpenSim::NotEnoughElements&) {
       OpenSim::DataTable_<SimTK::Vec6> dt_vec6{data_vec6.cbegin(), 
                                                data_vec6.cend() - 2,
                                                4,
@@ -905,236 +908,242 @@ void test3() {
   {
   // Construct a DataTable using iterators. Using integers for demostration. 
   // The underlyig type can hold double.
-  std::cout << "test3 -- Construct DataTable with iterators colwise: Real.\n";
+    std::cout << "test3 -- Construct DataTable with iterators colwise: Real." 
+              << std::endl;
   OpenSim::DataTable_<SimTK::Real> dt_real{data_real.cbegin(), 
                                            data_real.cend(),
                                            4,
                                            OpenSim::ColWise};
-  std::cout << "test3 -- Construct DataTable with iterators colwise: Vec3.\n";
+  std::cout << "test3 -- Construct DataTable with iterators colwise: Vec3."
+            << std::endl;
   OpenSim::DataTable_<SimTK::Vec3> dt_vec3{data_vec3.cbegin(),
                                            data_vec3.cend(),
                                            4,
                                            OpenSim::ColWise};
-  std::cout << "test3 -- Construct DataTable with iterators colwise: Vec6.\n";
+  std::cout << "test3 -- Construct DataTable with iterators colwise: Vec6." 
+            << std::endl;
   OpenSim::DataTable_<SimTK::Vec6> dt_vec6{data_vec6.cbegin(),
                                            data_vec6.cend(), 
                                            4,
                                            OpenSim::ColWise};
 
   // Check the size of the DataTable.
-  std::cout << "test3 -- checkDataTableLimits(): Real.\n";
+  std::cout << "test3 -- checkDataTableLimits(): Real." << std::endl;
   checkDataTableLimits(dt_real, 4, 3);
-  std::cout << "test3 -- checkDataTableLimits(): Vec3.\n";
+  std::cout << "test3 -- checkDataTableLimits(): Vec3." << std::endl;
   checkDataTableLimits(dt_vec3, 4, 3);
-  std::cout << "test3 -- checkDataTableLimits(): Vec6.\n";
+  std::cout << "test3 -- checkDataTableLimits(): Vec6." << std::endl;
   checkDataTableLimits(dt_vec6, 4, 3);
 
   // Check the entries of few cows of the DataTable.
-  std::cout << "test3 -- checkDataTableCol(col 0): Real.\n";
+  std::cout << "test3 -- checkDataTableCol(col 0): Real." << std::endl;
   checkDataTableCol(dt_real, decltype(data_real){data_real.cbegin(),
                                                  data_real.cbegin() + 4}, 0);
-  std::cout << "test3 -- checkDataTableCol(col 2): Real.\n";
+  std::cout << "test3 -- checkDataTableCol(col 2): Real." << std::endl;
   checkDataTableCol(dt_real, decltype(data_real){data_real.cend() - 4,
                                                  data_real.cend()}, 2);
-  std::cout << "test3 -- checkDataTableCol(col 0): Vec3.\n";
+  std::cout << "test3 -- checkDataTableCol(col 0): Vec3." << std::endl;
   checkDataTableCol(dt_vec3, decltype(data_vec3){data_vec3.cbegin(),
                                                  data_vec3.cbegin() + 4}, 0);
-  std::cout << "test3 -- checkDataTableCol(col 2): Vec3.\n";
+  std::cout << "test3 -- checkDataTableCol(col 2): Vec3." << std::endl;
   checkDataTableCol(dt_vec3, decltype(data_vec3){data_vec3.cend() - 4,
                                                  data_vec3.cend()}, 2);
-  std::cout << "test3 -- checkDataTableCol(col 0): Vec6.\n";
+  std::cout << "test3 -- checkDataTableCol(col 0): Vec6." << std::endl;
   checkDataTableCol(dt_vec6, decltype(data_vec6){data_vec6.cbegin(),
                                                  data_vec6.cbegin() + 4}, 0);
-  std::cout << "test3 -- checkDataTableCol(col 2): Vec6.\n";
+  std::cout << "test3 -- checkDataTableCol(col 2): Vec6." << std::endl;
   checkDataTableCol(dt_vec6, decltype(data_vec6){data_vec6.cend() - 4,
                                                  data_vec6.cend()}, 2);
   }
 
   // Construct a DataTable using iteratorsl. Using integers for demostration. 
   // The underlyig type can hold double.
-  std::cout << "test3 -- Construct DataTable with iterators rowwise: Real.\n";
+  std::cout << "test3 -- Construct DataTable with iterators rowwise: Real."
+            << std::endl;
   OpenSim::DataTable_<SimTK::Real> dt_real{data_real.cbegin(), 
                                            data_real.cend(),
                                            4};
-  std::cout << "test3 -- Construct DataTable with iterators rowwise: Vec3.\n";
+  std::cout << "test3 -- Construct DataTable with iterators rowwise: Vec3."
+            << std::endl;
   OpenSim::DataTable_<SimTK::Vec3> dt_vec3{data_vec3.cbegin(),
                                            data_vec3.cend(),
                                            4};
-  std::cout << "test3 -- Construct DataTable with iterators rowwise: Vec6.\n";
+  std::cout << "test3 -- Construct DataTable with iterators rowwise: Vec6."
+            << std::endl;
   OpenSim::DataTable_<SimTK::Vec6> dt_vec6{data_vec6.cbegin(),
                                            data_vec6.cend(), 
                                            4};
 
   // Check the size of the DataTable.
-  std::cout << "test3 -- checkDataTableLimits(): Real.\n";
+  std::cout << "test3 -- checkDataTableLimits(): Real." << std::endl;
   checkDataTableLimits(dt_real, 3, 4);
-  std::cout << "test3 -- checkDataTableLimits(): Vec3.\n";
+  std::cout << "test3 -- checkDataTableLimits(): Vec3." << std::endl;
   checkDataTableLimits(dt_vec3, 3, 4);
-  std::cout << "test3 -- checkDataTableLimits(): Vec6.\n";
+  std::cout << "test3 -- checkDataTableLimits(): Vec6." << std::endl;
   checkDataTableLimits(dt_vec6, 3, 4);
 
   // Check the entries of few rows of the DataTable.
-  std::cout << "test3 -- checkDataTableRow(row 0): Real.\n";
+  std::cout << "test3 -- checkDataTableRow(row 0): Real." << std::endl;
   checkDataTableRow(dt_real, decltype(data_real){data_real.cbegin(),
                                                  data_real.cbegin() + 4}, 0);
-  std::cout << "test3 -- checkDataTableRow(row 2): Real.\n";
+  std::cout << "test3 -- checkDataTableRow(row 2): Real." << std::endl;
   checkDataTableRow(dt_real, decltype(data_real){data_real.cend() - 4,
                                                  data_real.cend()}, 2);
-  std::cout << "test3 -- checkDataTableRow(row 0): Vec3.\n";
+  std::cout << "test3 -- checkDataTableRow(row 0): Vec3." << std::endl;
   checkDataTableRow(dt_vec3, decltype(data_vec3){data_vec3.cbegin(),
                                                  data_vec3.cbegin() + 4}, 0);
-  std::cout << "test3 -- checkDataTableRow(row 2): Vec3.\n";
+  std::cout << "test3 -- checkDataTableRow(row 2): Vec3." << std::endl;
   checkDataTableRow(dt_vec3, decltype(data_vec3){data_vec3.cend() - 4,
                                                  data_vec3.cend()}, 2);
-  std::cout << "test3 -- checkDataTableRow(row 0): Vec6.\n";
+  std::cout << "test3 -- checkDataTableRow(row 0): Vec6." << std::endl;
   checkDataTableRow(dt_vec6, decltype(data_vec6){data_vec6.cbegin(),
                                                  data_vec6.cbegin() + 4}, 0);
-  std::cout << "test3 -- checkDataTableRow(row 2): Vec6.\n";
+  std::cout << "test3 -- checkDataTableRow(row 2): Vec6." << std::endl;
   checkDataTableRow(dt_vec6, decltype(data_vec6){data_vec6.cend() - 4,
                                                  data_vec6.cend()}, 2);
 
   
   // Copy construct from default constructed DataTable.
-  std::cout << "test3 -- Copy construct: Real.\n";
+  std::cout << "test3 -- Copy construct: Real." << std::endl;
   decltype(dt_real) copy_dt_real{dt_real};
-  std::cout << "test3 -- Copy construct: Vec3.\n";
+  std::cout << "test3 -- Copy construct: Vec3." << std::endl;
   decltype(dt_vec3) copy_dt_vec3{dt_vec3};
-  std::cout << "test3 -- Copy construct: Vec6.\n";
+  std::cout << "test3 -- Copy construct: Vec6." << std::endl;
   decltype(dt_vec6) copy_dt_vec6{dt_vec6};
 
   // Check the size of the DataTable.
-  std::cout << "test3 -- checkDataTableLimits(): Real.\n";
+  std::cout << "test3 -- checkDataTableLimits(): Real." << std::endl;
   checkDataTableLimits(dt_real, 3, 4);
-  std::cout << "test3 -- checkDataTableLimits(): Vec3.\n";
+  std::cout << "test3 -- checkDataTableLimits(): Vec3." << std::endl;
   checkDataTableLimits(dt_vec3, 3, 4);
-  std::cout << "test3 -- checkDataTableLimits(): Vec6.\n";
+  std::cout << "test3 -- checkDataTableLimits(): Vec6." << std::endl;
   checkDataTableLimits(dt_vec6, 3, 4);
 
   // Check the entries of few rows of the DataTable.
-  std::cout << "test3 -- checkDataTableRow(row 0): Real.\n";
+  std::cout << "test3 -- checkDataTableRow(row 0): Real." << std::endl;
   checkDataTableRow(copy_dt_real, 
                     decltype(data_real){data_real.cbegin(), 
                                         data_real.cbegin() + 4}, 0);
-  std::cout << "test3 -- checkDataTableRow(row 2): Real.\n";
+  std::cout << "test3 -- checkDataTableRow(row 2): Real." << std::endl;
   checkDataTableRow(copy_dt_real, 
                     decltype(data_real){data_real.cend() - 4,
                                         data_real.cend()}, 2);
-  std::cout << "test3 -- checkDataTableRow(row 0): Vec3.\n";
+  std::cout << "test3 -- checkDataTableRow(row 0): Vec3." << std::endl;
   checkDataTableRow(copy_dt_vec3, 
                     decltype(data_vec3){data_vec3.cbegin(),
                                         data_vec3.cbegin() + 4}, 0);
-  std::cout << "test3 -- checkDataTableRow(row 2): Vec3.\n";
+  std::cout << "test3 -- checkDataTableRow(row 2): Vec3." << std::endl;
   checkDataTableRow(copy_dt_vec3, 
                     decltype(data_vec3){data_vec3.cend() - 4,
                                         data_vec3.cend()}, 2);
-  std::cout << "test3 -- checkDataTableRow(row 0): Vec6.\n";
+  std::cout << "test3 -- checkDataTableRow(row 0): Vec6." << std::endl;
   checkDataTableRow(copy_dt_vec6, 
                     decltype(data_vec6){data_vec6.cbegin(),
                                         data_vec6.cbegin() + 4}, 0);
-  std::cout << "test3 -- checkDataTableRow(row 2): Vec6.\n";
+  std::cout << "test3 -- checkDataTableRow(row 2): Vec6." << std::endl;
   checkDataTableRow(copy_dt_vec6, 
                     decltype(data_vec6){data_vec6.cend() - 4,
                                         data_vec6.cend()}, 2);
 
   // Virtual constructor.
-  std::cout << "test3 -- Virtual(clone) constructor: Real.\n";
+  std::cout << "test3 -- Virtual(clone) constructor: Real." << std::endl;
   OpenSim::AbstractDataTable& abs_dt_real = dt_real;
   auto clone_absdt_real = abs_dt_real.clone();
   auto clone_dt_real = static_cast<decltype(dt_real)&>(*clone_absdt_real);
-  std::cout << "test3 -- Virtual(clone) constructor: Vec3.\n";
+  std::cout << "test3 -- Virtual(clone) constructor: Vec3." << std::endl;
   OpenSim::AbstractDataTable& abs_dt_vec3 = dt_vec3;
   auto clone_absdt_vec3 = abs_dt_vec3.clone();
   auto clone_dt_vec3 = static_cast<decltype(dt_vec3)&>(*clone_absdt_vec3);
-  std::cout << "test3 -- Virtual(clone) constructor: Vec6.\n";
+  std::cout << "test3 -- Virtual(clone) constructor: Vec6." << std::endl;
   OpenSim::AbstractDataTable& abs_dt_vec6 = dt_vec6;
   auto clone_absdt_vec6 = abs_dt_vec6.clone();
   auto clone_dt_vec6 = static_cast<decltype(dt_vec6)&>(*clone_absdt_vec6);
 
   // Check the size of the DataTable.
-  std::cout << "test3 -- checkDataTableLimits(): Real.\n";
+  std::cout << "test3 -- checkDataTableLimits(): Real." << std::endl;
   checkDataTableLimits(dt_real, 3, 4);
-  std::cout << "test3 -- checkDataTableLimits(): Vec3.\n";
+  std::cout << "test3 -- checkDataTableLimits(): Vec3." << std::endl;
   checkDataTableLimits(dt_vec3, 3, 4);
-  std::cout << "test3 -- checkDataTableLimits(): Vec6.\n";
+  std::cout << "test3 -- checkDataTableLimits(): Vec6." << std::endl;
   checkDataTableLimits(dt_vec6, 3, 4);
 
   // Check the entries of few rows of the DataTable.
-  std::cout << "test3 -- checkDataTableRow(row 0): Real.\n";
+  std::cout << "test3 -- checkDataTableRow(row 0): Real." << std::endl;
   checkDataTableRow(clone_dt_real, 
                     decltype(data_real){data_real.cbegin(), 
                                         data_real.cbegin() + 4}, 0);
-  std::cout << "test3 -- checkDataTableRow(row 2): Real.\n";
+  std::cout << "test3 -- checkDataTableRow(row 2): Real." << std::endl;
   checkDataTableRow(clone_dt_real, 
                     decltype(data_real){data_real.cend() - 4,
                                         data_real.cend()}, 2);
-  std::cout << "test3 -- checkDataTableRow(row 0): Vec3.\n";
+  std::cout << "test3 -- checkDataTableRow(row 0): Vec3." << std::endl;
   checkDataTableRow(clone_dt_vec3, 
                     decltype(data_vec3){data_vec3.cbegin(),
                                         data_vec3.cbegin() + 4}, 0);
-  std::cout << "test3 -- checkDataTableRow(row 2): Vec3.\n";
+  std::cout << "test3 -- checkDataTableRow(row 2): Vec3." << std::endl;
   checkDataTableRow(clone_dt_vec3, 
                     decltype(data_vec3){data_vec3.cend() - 4,
                                         data_vec3.cend()}, 2);
-  std::cout << "test3 -- checkDataTableRow(row 0): Vec6.\n";
+  std::cout << "test3 -- checkDataTableRow(row 0): Vec6." << std::endl;
   checkDataTableRow(clone_dt_vec6, 
                     decltype(data_vec6){data_vec6.cbegin(),
                                         data_vec6.cbegin() + 4}, 0);
-  std::cout << "test3 -- checkDataTableRow(row 2): Vec6.\n";
+  std::cout << "test3 -- checkDataTableRow(row 2): Vec6." << std::endl;
   checkDataTableRow(clone_dt_vec6, 
                     decltype(data_vec6){data_vec6.cend() - 4,
                                         data_vec6.cend()}, 2);
 
   // Move constructor.
-  std::cout << "test3 -- Move constructor: Real.\n";
+  std::cout << "test3 -- Move constructor: Real." << std::endl;
   decltype(dt_real) move_dt_real{std::move(dt_real)};
-  std::cout << "test3 -- Move constructor: Vec3.\n";
+  std::cout << "test3 -- Move constructor: Vec3." << std::endl;
   decltype(dt_vec3) move_dt_vec3{std::move(dt_vec3)};
-  std::cout << "test3 -- Move constructor: Vec6.\n";
+  std::cout << "test3 -- Move constructor: Vec6." << std::endl;
   decltype(dt_vec6) move_dt_vec6{std::move(dt_vec6)};
 
   // Check the size of the DataTable.
-  std::cout << "test3 -- checkDataTableLimits(): Real.\n";
+  std::cout << "test3 -- checkDataTableLimits(): Real." << std::endl;
   checkDataTableLimits(dt_real, 3, 4);
-  std::cout << "test3 -- checkDataTableLimits(): Vec3.\n";
+  std::cout << "test3 -- checkDataTableLimits(): Vec3." << std::endl;
   checkDataTableLimits(dt_vec3, 3, 4);
-  std::cout << "test3 -- checkDataTableLimits(): Vec6.\n";
+  std::cout << "test3 -- checkDataTableLimits(): Vec6." << std::endl;
   checkDataTableLimits(dt_vec6, 3, 4);
 
   // Check the entries of few rows of the DataTable.
-  std::cout << "test3 -- checkDataTableRow(row 0): Real.\n";
+  std::cout << "test3 -- checkDataTableRow(row 0): Real." << std::endl;
   checkDataTableRow(clone_dt_real, 
                     decltype(data_real){data_real.cbegin(), 
                                         data_real.cbegin() + 4}, 0);
-  std::cout << "test3 -- checkDataTableRow(row 2): Real.\n";
+  std::cout << "test3 -- checkDataTableRow(row 2): Real." << std::endl;
   checkDataTableRow(clone_dt_real, 
                     decltype(data_real){data_real.cend() - 4,
                                         data_real.cend()}, 2);
-  std::cout << "test3 -- checkDataTableRow(row 0): Vec3.\n";
+  std::cout << "test3 -- checkDataTableRow(row 0): Vec3." << std::endl;
   checkDataTableRow(clone_dt_vec3, 
                     decltype(data_vec3){data_vec3.cbegin(),
                                         data_vec3.cbegin() + 4}, 0);
-  std::cout << "test3 -- checkDataTableRow(row 2): Vec3.\n";
+  std::cout << "test3 -- checkDataTableRow(row 2): Vec3." << std::endl;
   checkDataTableRow(clone_dt_vec3, 
                     decltype(data_vec3){data_vec3.cend() - 4,
                                         data_vec3.cend()}, 2);
-  std::cout << "test3 -- checkDataTableRow(row 0): Vec6.\n";
+  std::cout << "test3 -- checkDataTableRow(row 0): Vec6." << std::endl;
   checkDataTableRow(clone_dt_vec6, 
                     decltype(data_vec6){data_vec6.cbegin(),
                                         data_vec6.cbegin() + 4}, 0);
-  std::cout << "test3 -- checkDataTableRow(row 2): Vec6.\n";
+  std::cout << "test3 -- checkDataTableRow(row 2): Vec6." << std::endl;
   checkDataTableRow(clone_dt_vec6, 
                     decltype(data_vec6){data_vec6.cend() - 4,
                                         data_vec6.cend()}, 2);
 
   // Test adding rows to the DataTable.
-  std::cout << "test3 -- testAddRow(): Real.\n";
+  std::cout << "test3 -- testAddRow(): Real." << std::endl;
   testAddRow(dt_real, std::vector<SimTK::Real>{1, 2, 3, 4});
-  std::cout << "test3 -- testAddRow(): Vec3.\n";
+  std::cout << "test3 -- testAddRow(): Vec3." << std::endl;
   testAddRow(dt_vec3, std::vector<SimTK::Vec3>{{ 1,  2,  3}, 
                                                { 4,  5,  6},
                                                { 7,  8,  9},
                                                {10, 11, 12}});
-  std::cout << "test3 -- testAddRow(): Vec6.\n";
+  std::cout << "test3 -- testAddRow(): Vec6." << std::endl;
   testAddRow(dt_vec6, 
              std::vector<SimTK::Vec6>{{ 1,  2,  3,  11,  22,  33},
                                       { 4,  5,  6,  44,  55,  66},
@@ -1142,22 +1151,22 @@ void test3() {
                                       {10, 11, 12, 110, 120, 140}});
 
   // Test adding cols to previously populated DataTable.
-  std::cout << "test3 -- testAddCol(): Real.\n";
+  std::cout << "test3 -- testAddCol(): Real." << std::endl;
   testAddCol(dt_real, std::vector<SimTK::Real>{1, 2});
-  std::cout << "test3 -- testAddCol(): Vec3.\n";
+  std::cout << "test3 -- testAddCol(): Vec3." << std::endl;
   testAddCol(dt_vec3, std::vector<SimTK::Vec3>{{1, 2, 3},
                                                {4, 5, 6}});
-  std::cout << "test3 -- testAddCol(): Vec6.\n";
+  std::cout << "test3 -- testAddCol(): Vec6." << std::endl;
   testAddCol(dt_vec6, std::vector<SimTK::Vec6>{{1, 2, 3, 11, 22, 33},
                                                {4, 5, 6, 44, 55, 66}});
 
   // Test adding rows to previously populated DataTable.
-  std::cout << "test3 -- testAddRow(): Real.\n";
+  std::cout << "test3 -- testAddRow(): Real." << std::endl;
   testAddRow(dt_real, std::vector<SimTK::Real>{1, 2});
-  std::cout << "test3 -- testAddRow(): Vec3.\n";
+  std::cout << "test3 -- testAddRow(): Vec3." << std::endl;
   testAddRow(dt_vec3, std::vector<SimTK::Vec3>{{1, 2, 3}, 
                                                {4, 5, 6}});
-  std::cout << "test3 -- testAddRow(): Vec6.\n";
+  std::cout << "test3 -- testAddRow(): Vec6." << std::endl;
   testAddRow(dt_vec6, 
              std::vector<SimTK::Vec6>{{1, 2, 3, 11, 22, 33}, 
                                       {4, 5, 6, 44, 55, 66}});
@@ -1180,76 +1189,76 @@ void test4() {
   
   {
   // Construct DataTable 1.
-  std::cout << "test4 -- Constructor DataTable 1: Real.\n";
+  std::cout << "test4 -- Constructor DataTable 1: Real." << std::endl;
   OpenSim::DataTable_<SimTK::Real> dt1_real{3, 4, 10};
-  std::cout << "test4 -- Constructor DataTable 1: Vec3.\n";
+  std::cout << "test4 -- Constructor DataTable 1: Vec3." << std::endl;
   OpenSim::DataTable_<SimTK::Vec3> dt1_vec3{3, 4, {10, 20, 30}};
-  std::cout << "test4 -- Constructor DataTable 1: Vec6.\n";
+  std::cout << "test4 -- Constructor DataTable 1: Vec6." << std::endl;
   OpenSim::DataTable_<SimTK::Vec6> dt1_vec6{3, 4, {10, 20, 30, 40, 50, 60}};
 
   // Construct DataTable 2 with SimtTK::Real
-  std::cout << "test4 -- Construct DataTable 2: Real.\n";
+  std::cout << "test4 -- Construct DataTable 2: Real." << std::endl;
   OpenSim::DataTable_<SimTK::Real> dt2_real{data_real.cbegin(), 
                                            data_real.cend(),
                                            3,
                                            OpenSim::ColWise};
-  std::cout << "test4 -- Construct DataTable 2: Vec3.\n";
+  std::cout << "test4 -- Construct DataTable 2: Vec3." << std::endl;
   OpenSim::DataTable_<SimTK::Vec3> dt2_vec3{data_vec3.cbegin(),
                                            data_vec3.cend(),
                                            3,
                                            OpenSim::ColWise};
-  std::cout << "test4 -- Construct DataTable 2: Vec6.\n";
+  std::cout << "test4 -- Construct DataTable 2: Vec6." << std::endl;
   OpenSim::DataTable_<SimTK::Vec6> dt2_vec6{data_vec6.cbegin(),
                                            data_vec6.cend(), 
                                            3,
                                            OpenSim::ColWise};
   
   // Bind DataTable 2 to DataTable 1 by row.
-  std::cout << "test4 -- dt1.rbindDataTable(dt2): Real.\n";
+  std::cout << "test4 -- dt1.rbindDataTable(dt2): Real."  << std::endl;
   dt1_real.rbindDataTable(dt2_real);
-  std::cout << "test4 -- dt1.rbindDataTable(dt2): Vec3.\n";
+  std::cout << "test4 -- dt1.rbindDataTable(dt2): Vec3." << std::endl;
   dt1_vec3.rbindDataTable(dt2_vec3);
-  std::cout << "test4 -- dt1.rbindDataTable(dt2): Vec6.\n";
+  std::cout << "test4 -- dt1.rbindDataTable(dt2): Vec6." << std::endl;
   dt1_vec6.rbindDataTable(dt2_vec6);
 
 
   // Check the size of the DataTable.
-  std::cout << "test4 -- checkDataTableLimits(): Real.\n";
+  std::cout << "test4 -- checkDataTableLimits(): Real." << std::endl;
   checkDataTableLimits(dt1_real, 6, 4);
-  std::cout << "test4 -- checkDataTableLimits(): Vec3.\n";
+  std::cout << "test4 -- checkDataTableLimits(): Vec3." << std::endl;
   checkDataTableLimits(dt1_vec3, 6, 4);
-  std::cout << "test4 -- checkDataTableLimits(): Vec6.\n";
+  std::cout << "test4 -- checkDataTableLimits(): Vec6." << std::endl;
   checkDataTableLimits(dt1_vec6, 6, 4);
  
   // Check the entries of the DataTable.
-  std::cout << "test4 -- checkDataTableCol(col 0): Real.\n";
+  std::cout << "test4 -- checkDataTableCol(col 0): Real." << std::endl;
   checkDataTableCol(dt1_real, 
                     decltype(data_real){10, 10, 10, 100, 100, 100}, 0);
-  std::cout << "test4 -- checkDataTableCol(col 2): Real.\n";
+  std::cout << "test4 -- checkDataTableCol(col 2): Real." << std::endl;
   checkDataTableCol(dt1_real, 
                     decltype(data_real){10, 10, 10, 100, 100, 100}, 2);
-  std::cout << "test4 -- checkDataTableCol(col 0): Vec3.\n";
+  std::cout << "test4 -- checkDataTableCol(col 0): Vec3." << std::endl;
   checkDataTableCol(dt1_vec3, decltype(data_vec3){{ 10,  20,  30},
                                                   { 10,  20,  30},
                                                   { 10,  20,  30},
                                                   {100, 200, 300},
                                                   {100, 200, 300},
                                                   {100, 200, 300}}, 0);
-  std::cout << "test4 -- checkDataTableCol(col 2): Vec3.\n";
+  std::cout << "test4 -- checkDataTableCol(col 2): Vec3." << std::endl;
   checkDataTableCol(dt1_vec3, decltype(data_vec3){{ 10,  20,  30},
                                                   { 10,  20,  30},
                                                   { 10,  20,  30},
                                                   {100, 200, 300},
                                                   {100, 200, 300},
                                                   {100, 200, 300}}, 2);
-  std::cout << "test4 -- checkDataTableCol(col 0): Vec6.\n";
+  std::cout << "test4 -- checkDataTableCol(col 0): Vec6." << std::endl;
   checkDataTableCol(dt1_vec6, decltype(data_vec6){{10, 20, 30, 40, 50, 60},
                                                   {10, 20, 30, 40, 50, 60},
                                                   {10, 20, 30, 40, 50, 60},
                                             {100, 200, 300, 400, 500, 600},
                                             {100, 200, 300, 400, 500, 600},
                                             {100, 200, 300, 400, 500, 600}}, 0);
-  std::cout << "test4 -- checkDataTableCol(col 2): Vec6.\n";
+  std::cout << "test4 -- checkDataTableCol(col 2): Vec6." << std::endl;
   checkDataTableCol(dt1_vec6, decltype(data_vec6){{10, 20, 30, 40, 50, 60},
                                                   {10, 20, 30, 40, 50, 60},
                                                   {10, 20, 30, 40, 50, 60},
@@ -1258,18 +1267,18 @@ void test4() {
                                             {100, 200, 300, 400, 500, 600}}, 2);
 
   // Try binding DataTable 1 to DataTable 2 by col.
-  std::cout << "test4 -- dt2.cbindDataTable(dt1): Real.\n";
+  std::cout << "test4 -- dt2.cbindDataTable(dt1): Real." << std::endl;
   try {
     dt2_real.cbindDataTable(dt1_real);
-  } catch(OpenSim::InvalidEntry&) {}
-  std::cout << "test4 -- dt2.cbindDataTable(dt1): Vec3.\n";
+  } catch(OpenSim::NumberOfRowsMismatch&) {}
+  std::cout << "test4 -- dt2.cbindDataTable(dt1): Vec3." << std::endl;
   try {
     dt2_vec3.cbindDataTable(dt1_vec3);
-  } catch(OpenSim::InvalidEntry&) {}
-  std::cout << "test4 -- dt2.cbindDataTable(dt1): Vec6.\n";
+  } catch(OpenSim::NumberOfRowsMismatch&) {}
+  std::cout << "test4 -- dt2.cbindDataTable(dt1): Vec6." << std::endl;
   try {
     dt2_vec6.cbindDataTable(dt1_vec6);
-  } catch(OpenSim::InvalidEntry&) {}
+  } catch(OpenSim::NumberOfRowsMismatch&) {}
   }
 
   // Construct DataTable 1.
@@ -1360,15 +1369,15 @@ void test4() {
   std::cout << "test4 -- dt2.rbindDataTable(dt1): Real.\n";
   try {
     dt2_real.rbindDataTable(dt1_real);
-  } catch(OpenSim::InvalidEntry&) {}
+  } catch(OpenSim::NumberOfColsMismatch&) {}
   std::cout << "test4 -- dt2.rbindDataTable(dt1): Vec3.\n";
   try {
     dt2_vec3.rbindDataTable(dt1_vec3);
-  } catch(OpenSim::InvalidEntry&) {}
+  } catch(OpenSim::NumberOfColsMismatch&) {}
   std::cout << "test4 -- dt2.rbindDataTable(dt1): Vec6.\n";
   try {
     dt2_vec6.rbindDataTable(dt1_vec6);
-  } catch(OpenSim::InvalidEntry&) {}
+  } catch(OpenSim::NumberOfColsMismatch&) {}
 
   // Try binding DataTable 2 to itself by row.
   std::cout << "test4 -- dt2.rbindDataTable(dt2): Real.\n";
