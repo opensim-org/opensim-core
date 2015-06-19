@@ -155,8 +155,10 @@ public:
 
 
   AbstractDataTable() = default;
-  AbstractDataTable(const AbstractDataTable&) = delete;
-  AbstractDataTable(AbstractDataTable&&) = delete;
+  AbstractDataTable(const AbstractDataTable&) = default;
+  AbstractDataTable(AbstractDataTable&&) = default;
+  AbstractDataTable& operator=(const AbstractDataTable&) = default;
+  AbstractDataTable& operator=(AbstractDataTable&&) = default;
   virtual std::unique_ptr<AbstractDataTable> clone() const = 0;
   virtual ~AbstractDataTable() {}
 
@@ -264,8 +266,12 @@ Heterogeneous metadata container. Metadata in the form of key-value pairs where
 template<typename ET = SimTK::Real> // Element datatype.
 class OpenSim::DataTable_ : public OpenSim::AbstractDataTable {
 public:
-  using MetaDataType               = std::unordered_map<string, 
-                                                        SimTK::AbstractValue*>;
+  using MetaDataValue = SimTK::ClonePtr<SimTK::AbstractValue>;
+  using MetaDataType  = std::unordered_map<string, MetaDataValue>;
+
+  /** \name Create.
+      Constructors.                                                           */
+  /**@{*/
 
   /** Construct empty DataTable.*/
   DataTable_() :
@@ -359,57 +365,37 @@ public:
     }
   }
 
-  /** Copy constructor. Perform a deep copy of the DataTable_.*/
-  DataTable_(const DataTable_& dt) :
-    m_data{dt.m_data}, m_metadata{dt.m_metadata}, m_col_ind{dt.m_col_ind} {
-      // Deep copy of metadata.
-      for(auto& elem : m_metadata)
-        elem.second = elem.second->clone();
-    }
+  /**@}*/
+  /** \name Copy.
+      Copy operations including copy constructor.                             */
+  /**@{*/
 
-  /** Virtual copy constructor. Perform a deep copy of the DataTable_.*/
+  /** Copy constructor.                                                       */
+  DataTable_(const DataTable_& dt) = default;
+
+  /** Virtual copy constructor.                                               */
   std::unique_ptr<AbstractDataTable> clone() const override {
     return std::unique_ptr<AbstractDataTable>(new DataTable_{*this});
   }
 
-  /** Copy assignment operator. Perform a deep copy of the DataTable_.*/
-  DataTable_& operator=(const DataTable_& dt) {
-    // Release metadata memory.
-    for(auto& elem : m_metadata)
-      delete elem.second;
+  /** Copy assignment                                                         */
+  DataTable_& operator=(const DataTable_& dt) = default;
 
-    m_data     = dt.m_data;
-    m_metadata = dt.m_metadata;
-    m_col_ind  = dt.m_col_ind;
+  /**@}*/
+  /** \name Move.
+      Move operations.                                                        */
+  /**@{*/
 
-    // Deep copy of metadata.
-    for(auto& elem : m_metadata)
-      elem.second = elem.second->clone();
-
-    return *this;
-  }
-
-  /** Move constructor.*/
+  /** Move constructor.                                                       */
   DataTable_(DataTable_&& dt) = default;
 
-  DataTable_& operator=(DataTable_&& dt) {
-    // Release metadata memory.
-    for(auto& elem : m_metadata)
-      delete elem.second;
+  /** Move assignment                                                         */
+  DataTable_& operator=(DataTable_&& dt) = default;
 
-    m_data     = std::move(dt.m_data);
-    m_metadata = std::move(dt.m_metadata);
-    m_col_ind  = std::move(dt.m_col_ind);
+  /**@}*/
 
-    return *this;
-  }
-
-  /** Destructor.*/
-  virtual ~DataTable_() {
-    // Release metadata memory.
-    for(auto& elem : m_metadata)
-      delete elem.second;
-  }
+  /** Destructor.                                                             */
+  virtual ~DataTable_() = default;
 
   /** \name Data Methods.
       Data accessors & mutators.                                              */
@@ -931,7 +917,7 @@ public:
                               "Remove the existing entry before inserting."};
 
     m_metadata.emplace(key, 
-                     new Value<ValueTypeNoRef>{std::forward<ValueType>(value)});
+      MetaDataValue{new Value<ValueTypeNoRef>{std::forward<ValueType>(value)}});
   }
 
   /** Get previously inserted metadata using its key and type. The template
