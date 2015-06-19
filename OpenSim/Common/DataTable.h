@@ -1033,7 +1033,7 @@ public:
 
   /** Get the number of elements in the metadata. Time complexity of other 
   operations on metadata depend on this number.                               */
-  size_t metaDataSize() const {
+  size_t getMetaDataSize() const {
     return m_metadata.size();
   }
 

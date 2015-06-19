@@ -1810,12 +1810,12 @@ void test6() {
   OpenSim::DataTable_<SimTK::Vec6> dt_vec6{3, 4, {10, 20, 30, 40, 50, 60}};
 
   // Check metadata size in the DataTable.
-  std::cout << "test6 -- metaDataSize(): Real.\n";
-  assert(dt_real.metaDataSize() == 0);
-  std::cout << "test6 -- metaDataSize(): Vec3.\n";
-  assert(dt_vec3.metaDataSize() == 0);
-  std::cout << "test6 -- metaDataSize(): Vec6.\n";
-  assert(dt_vec6.metaDataSize() == 0);
+  std::cout << "test6 -- getMetaDataSize(): Real.\n";
+  assert(dt_real.getMetaDataSize() == 0);
+  std::cout << "test6 -- getMetaDataSize(): Vec3.\n";
+  assert(dt_vec3.getMetaDataSize() == 0);
+  std::cout << "test6 -- getMetaDataSize(): Vec6.\n";
+  assert(dt_vec6.getMetaDataSize() == 0);
 
   // Check if metadata is empty in the DataTable.
   std::cout << "test6 -- isMetaDataEmpty(): Real.\n";
@@ -1858,12 +1858,12 @@ void test6() {
   dt_vec6.insertMetaData("string_r" , std::string{"metadata"});
 
   // Check the size of metadata.
-  std::cout << "test6 -- metaDataSize(): Real.\n";
-  assert(dt_real.metaDataSize() == 6);
-  std::cout << "test6 -- metaDataSize(): Vec3.\n";
-  assert(dt_vec3.metaDataSize() == 6);
-  std::cout << "test6 -- metaDataSize(): Vec6.\n";
-  assert(dt_vec6.metaDataSize() == 6);
+  std::cout << "test6 -- getMetaDataSize(): Real.\n";
+  assert(dt_real.getMetaDataSize() == 6);
+  std::cout << "test6 -- getMetaDataSize(): Vec3.\n";
+  assert(dt_vec3.getMetaDataSize() == 6);
+  std::cout << "test6 -- getMetaDataSize(): Vec6.\n";
+  assert(dt_vec6.getMetaDataSize() == 6);
 
   // Check metadata values.
   std::cout << "test6 -- getMetaData(): Real.\n";
@@ -1903,12 +1903,12 @@ void test6() {
   dt_vec6.updMetaData<decltype(string)>("string_l") = "updmetadata";
 
   // Check the size of metadata.
-  std::cout << "test6 -- metaDataSize(): Real.\n";
-  assert(dt_real.metaDataSize() == 6);
-  std::cout << "test6 -- metaDataSize(): Vec3.\n";
-  assert(dt_vec3.metaDataSize() == 6);
-  std::cout << "test6 -- metaDataSize(): Vec6.\n";
-  assert(dt_vec6.metaDataSize() == 6);
+  std::cout << "test6 -- getMetaDataSize(): Real.\n";
+  assert(dt_real.getMetaDataSize() == 6);
+  std::cout << "test6 -- getMetaDataSize(): Vec3.\n";
+  assert(dt_vec3.getMetaDataSize() == 6);
+  std::cout << "test6 -- getMetaDataSize(): Vec6.\n";
+  assert(dt_vec6.getMetaDataSize() == 6);
 
   integer = 1;
   vector_r.push_back(5);
@@ -1940,12 +1940,12 @@ void test6() {
   assert(dt_vec6.popMetaData<decltype(vector)>("vector_l") == vector);
   
   // Check the size of metadata.
-  std::cout << "test6 -- metaDataSize(): Real.\n";
-  assert(dt_real.metaDataSize() == 4);
-  std::cout << "test6 -- metaDataSize(): Vec3.\n";
-  assert(dt_vec3.metaDataSize() == 4);
-  std::cout << "test6 -- metaDataSize(): Vec6.\n";
-  assert(dt_vec6.metaDataSize() == 4);
+  std::cout << "test6 -- getMetaDataSize(): Real.\n";
+  assert(dt_real.getMetaDataSize() == 4);
+  std::cout << "test6 -- getMetaDataSize(): Vec3.\n";
+  assert(dt_vec3.getMetaDataSize() == 4);
+  std::cout << "test6 -- getMetaDataSize(): Vec6.\n";
+  assert(dt_vec6.getMetaDataSize() == 4);
 
   // Remove some metadata values.
   std::cout << "test6 -- removeMetaData(): Real.\n";
@@ -1959,12 +1959,12 @@ void test6() {
   dt_vec6.removeMetaData("integer_l");
 
   // Check the size of metadata.
-  std::cout << "test6 -- metaDataSize(): Real.\n";
-  assert(dt_real.metaDataSize() == 2);
-  std::cout << "test6 -- metaDataSize(): Vec3.\n";
-  assert(dt_vec3.metaDataSize() == 2);
-  std::cout << "test6 -- metaDataSize(): Vec6.\n";
-  assert(dt_vec6.metaDataSize() == 2);
+  std::cout << "test6 -- getMetaDataSize(): Real.\n";
+  assert(dt_real.getMetaDataSize() == 2);
+  std::cout << "test6 -- getMetaDataSize(): Vec3.\n";
+  assert(dt_vec3.getMetaDataSize() == 2);
+  std::cout << "test6 -- getMetaDataSize(): Vec6.\n";
+  assert(dt_vec6.getMetaDataSize() == 2);
 
   // Check if metadata is empty in the DataTable.
   std::cout << "test6 -- isMetaDataEmpty(): Real.\n";
@@ -2006,12 +2006,12 @@ void test6() {
   dt_vec6.clearMetaData();
 
   // Check the size of metadata.
-  std::cout << "test6 -- metaDataSize(): Real.\n";
-  assert(dt_real.metaDataSize() == 0);
-  std::cout << "test6 -- metaDataSize(): Vec3.\n";
-  assert(dt_vec3.metaDataSize() == 0);
-  std::cout << "test6 -- metaDataSize(): Vec6.\n";
-  assert(dt_vec6.metaDataSize() == 0);
+  std::cout << "test6 -- getMetaDataSize(): Real.\n";
+  assert(dt_real.getMetaDataSize() == 0);
+  std::cout << "test6 -- getMetaDataSize(): Vec3.\n";
+  assert(dt_vec3.getMetaDataSize() == 0);
+  std::cout << "test6 -- getMetaDataSize(): Vec6.\n";
+  assert(dt_vec6.getMetaDataSize() == 0);
 }
 
 
