@@ -54,15 +54,15 @@ namespace OpenSim {
     ColWise
   };
 
-  /** Bind two DataTables by row.*/
+  /** Add/concatenate two DataTables by row.                                  */
   template<typename ET>
-  DataTable_<ET> rbindDataTables(const DataTable_<ET>& dt1, 
-                                 const DataTable_<ET>& dt2);
+  DataTable_<ET> addDataTablesByRow(const DataTable_<ET>& dt1, 
+                                    const DataTable_<ET>& dt2);
 
-  /** Bind two DataTables by col.*/
+  /** Add/concatenate two DataTables by col.                                  */
   template<typename ET>
-  DataTable_<ET> cbindDataTables(const DataTable_<ET>& dt1, 
-                                 const DataTable_<ET>& dt2);
+  DataTable_<ET> addDataTablesByCol(const DataTable_<ET>& dt1, 
+                                    const DataTable_<ET>& dt2);
 
   // Exceptions.
   class NotEnoughElements;
@@ -251,12 +251,12 @@ matrix with column names) with support for holding metatdata.
 param).</li>  <li>Random-access(constant-time) to specific entries, entire 
 columns and entire rows using their index.</li> <li>Average constant-time 
 access to columns through column-labels.</li> <li>Add rows and columns to 
-existing DataTable_.</li> <li>Bind two DataTable_(s) by row and by column. </li>
- <li>Set column labels for a subset of columns, update them, remove them etc.
-</li> <li>Construct DataTable_ emtpy OR with a given shape and default value OR 
-using and iterator pair one entry at a time.</li> <li>Heterogeneous metadata 
-container. Metadata in the form of key-value pairs where key is a std::string 
-and value is is of any type.</li> </ul>
+existing DataTable_.</li> <li>Add/concatenate two DataTable_(s) by row and by 
+column. </li> <li>Set column labels for a subset of columns, update them, remove
+ them etc. </li> <li>Construct DataTable_ emtpy OR with a given shape and 
+default value OR using and iterator pair one entry at a time.</li> <li>
+Heterogeneous metadata container. Metadata in the form of key-value pairs where
+ key is a std::string and value is is of any type.</li> </ul>
                                                                               
 \tparam ET Type of the entries in the underlying matrix. Defaults to         
            SimTK::Real(alias for double).
@@ -837,23 +837,23 @@ public:
                               std::to_string(row)};
   }
 
-  /** Bind another DataTable_ to this DataTable_ by row. The new elements will 
-  appear as the last rows of this DataTable_. Only data will be appended.
-  Metadata is not added. Columns retain their labels. To create a new 
-  DataTable_  that is a bind of two existing DataTable_(s), see 
-  rbindDataTables().
+  /** Add/concatenate another DataTable_ to this DataTable_ by row. The new 
+  elements will appear as the last rows of this DataTable_. Only data will be 
+  appended. Metadata is not added. Columns retain their labels. To create a new 
+  DataTable_  that is a concatenation of two existing DataTable_(s), see 
+  addDataTablesByRow().
 
   \throws NumberOfColsMismatch If input DataTable_ has incorrect number of
-                               columns for bind to work.
-  \throws InvalidEntry If trying to bind a DataTable_ to itself.              */
-  void rbindDataTable(const DataTable_& table) {
+                               columns for concatenation to work.
+  \throws InvalidEntry If trying to add a DataTable_ to itself.               */
+  void addDataTableByRow(const DataTable_& table) {
     if(m_data.ncol() != table.m_data.ncol()) 
       throw NumberOfColsMismatch{"Input DataTable has incorrect number of " 
                                  "columns. Expected = " + 
                                  std::to_string(m_data.ncol()) + " Received = " 
                                  + std::to_string(table.m_data.ncol())};
     if(&m_data == &table.m_data)
-      throw InvalidEntry{"Cannot rbind a DataTable to itself."};
+      throw InvalidEntry{"Cannot concatenate a DataTable to itself."};
 
     int old_nrow{m_data.nrow()};
     m_data.resizeKeep(m_data.nrow() + table.m_data.nrow(), m_data.ncol());
@@ -863,22 +863,23 @@ public:
                     m_data.ncol()).updAsMatrix() = table.m_data;
   }
 
-  /** Bind another DataTable_ to this DataTable_ by col. The new elements will 
-  appear as the last cols of this DataTable_. Only data will be appended.
-  Column labels and metadata are not added. To create a new DataTable_ that is 
-  a bind of two existing DataTable_(s), see cbindDataTables().
+  /** Add/concatenate another DataTable_ to this DataTable_ by col. The new 
+  elements will appear as the last cols of this DataTable_. Only data will be 
+  appended. Column labels and metadata are not added. To create a new 
+  DataTable_ that is a concatenation of two existing DataTable_(s), see 
+  addDataTablesByCol().
 
   \throws NumberOfRowsMismatch If input DataTable_ has incorrect number of
-                               rows for bind to work.
-  \throws InvalidEntry If trying to bind a DataTable_ to itself.              */
-  void cbindDataTable(const DataTable_& table) {
+                               rows for concatenation to work.
+  \throws InvalidEntry If trying to concatenation a DataTable_ to itself.     */
+  void addDataTableByCol(const DataTable_& table) {
     if(m_data.nrow() != table.m_data.nrow())
       throw NumberOfRowsMismatch{"Input DataTable has incorrect number of " 
                                  "rows. Expected = " + 
                                  std::to_string(m_data.nrow()) + " Received = " 
                                  + std::to_string(table.m_data.nrow())};
     if(&m_data == &table.m_data)
-      throw InvalidEntry{"Cannot cbind a DataTable to itself."};
+      throw InvalidEntry{"Cannot concatenate a DataTable to itself."};
 
     int old_ncol{m_data.ncol()};
     m_data.resizeKeep(m_data.nrow(), m_data.ncol() + table.m_data.ncol());
@@ -1239,24 +1240,24 @@ private:
 };  // DataTable_
 
 
-/// Bind two DataTable_(s) by row and produce a new DataTable_.
+/// Add/concatenate two DataTable_(s) by row and produce a new DataTable_.
 template<typename ET>
 OpenSim::DataTable_<ET> 
-OpenSim::rbindDataTables(const OpenSim::DataTable_<ET>& dt1, 
-                         const OpenSim::DataTable_<ET>& dt2) {
+OpenSim::addDataTablesByRow(const OpenSim::DataTable_<ET>& dt1, 
+                            const OpenSim::DataTable_<ET>& dt2) {
   OpenSim::DataTable_<ET> dt{dt1};
-  dt.rbindDataTable(dt2);
+  dt.addDataTableByRow(dt2);
   return dt;
 }
 
 
-/// Bind two DataTable_(s) by col and produce a new DataTable_.
+/// Add/concatenate two DataTable_(s) by col and produce a new DataTable_.
 template<typename ET>
 OpenSim::DataTable_<ET> 
-OpenSim::cbindDataTables(const OpenSim::DataTable_<ET>& dt1, 
+OpenSim::addDataTablesByCol(const OpenSim::DataTable_<ET>& dt1, 
                          const OpenSim::DataTable_<ET>& dt2) {
   OpenSim::DataTable_<ET> dt{dt1};
-  dt.cbindDataTable(dt2);
+  dt.addDataTableByCol(dt2);
   return dt;
 }
 

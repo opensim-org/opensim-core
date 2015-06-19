@@ -161,23 +161,23 @@ int main() {
   OpenSim::DataTable_<SimTK::Vec3> dt_vec3_copy{dt_vec3};
   OpenSim::DataTable_<SimTK::Vec6> dt_vec6_copy{dt_vec6};
 
-  // Add/bind an entire DataTable by row.
-  dt_real.rbindDataTable(dt_real_copy);
-  dt_vec3.rbindDataTable(dt_vec3_copy);
-  dt_vec6.rbindDataTable(dt_vec6_copy);
+  // Add/concatenate an entire DataTable by row.
+  dt_real.addDataTableByRow(dt_real_copy);
+  dt_vec3.addDataTableByRow(dt_vec3_copy);
+  dt_vec6.addDataTableByRow(dt_vec6_copy);
 
   // Copy assign DataTable.
   dt_real_copy = dt_real;
   dt_vec3_copy = dt_vec3;
   dt_vec6_copy = dt_vec6;
 
-  // Add/bind an entire DataTable by col.
-  dt_real.cbindDataTable(dt_real_copy);
-  dt_vec3.cbindDataTable(dt_vec3_copy);
-  dt_vec6.cbindDataTable(dt_vec6_copy);
+  // Add/concatenate an entire DataTable by col.
+  dt_real.addDataTableByCol(dt_real_copy);
+  dt_vec3.addDataTableByCol(dt_vec3_copy);
+  dt_vec6.addDataTableByCol(dt_vec6_copy);
 
-  // Bind two existing DataTable(s) and produce a new one instead of appending
-  // one to another.
+  // Concatenate two existing DataTable(s) and produce a new one instead of 
+  // appending one to another.
   {
     // Construct DataTable of a given size with a default value.
     OpenSim::DataTable_<SimTK::Real> dt1_real{3, 4, SimTK::Real{10}};
@@ -191,15 +191,15 @@ int main() {
     OpenSim::DataTable_<SimTK::Vec6> dt2_vec6{6, 4, SimTK::Vec6{5, 6, 7, 
                                                                 8, 9, 0}};
 
-    // Bind by row.
-    auto rbind_dt_real = rbindDataTables(dt1_real, dt2_real);
-    auto rbind_dt_vec3 = rbindDataTables(dt1_vec3, dt2_vec3);
-    auto rbind_dt_vec6 = rbindDataTables(dt1_vec6, dt2_vec6);
+    // Concatenate by row.
+    auto byrow_dt_real = addDataTablesByRow(dt1_real, dt2_real);
+    auto byrow_dt_vec3 = addDataTablesByRow(dt1_vec3, dt2_vec3);
+    auto byrow_dt_vec6 = addDataTablesByRow(dt1_vec6, dt2_vec6);
 
-    // Bind by col. The following using same table for both arguments.
-    auto cbind_dt_real = cbindDataTables(dt1_real, dt1_real);
-    auto cbind_dt_vec3 = cbindDataTables(dt1_vec3, dt1_vec3);
-    auto cbind_dt_vec6 = cbindDataTables(dt1_vec6, dt1_vec6);
+    // Concatenate by col. The following using same table for both arguments.
+    auto bycol_dt_real = addDataTablesByCol(dt1_real, dt1_real);
+    auto bycol_dt_vec3 = addDataTablesByCol(dt1_vec3, dt1_vec3);
+    auto bycol_dt_vec6 = addDataTablesByCol(dt1_vec6, dt1_vec6);
   }
 
   // The columns of a DataTable can be labeled. Not all columns need to be
