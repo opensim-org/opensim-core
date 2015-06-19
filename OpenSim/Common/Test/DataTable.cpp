@@ -49,9 +49,9 @@ void checkDataTableLimits(DT& dt, size_t nrow, size_t ncol) {
                             std::to_string(dt.getNumRows()) +
                             " and nrow = " + std::to_string(nrow)};
   }
-  if(dt.getNumCols() != ncol)
-    throw OpenSimTestFailed{"dt.getNumCols() = " + 
-                            std::to_string(dt.getNumCols()) +
+  if(dt.getNumColumns() != ncol)
+    throw OpenSimTestFailed{"dt.getNumColumns() = " + 
+                            std::to_string(dt.getNumColumns()) +
                             " and ncol = " + std::to_string(ncol)};
 
   // Retrieving any row and col must throw since DataTable is empty.
@@ -62,16 +62,16 @@ void checkDataTableLimits(DT& dt, size_t nrow, size_t ncol) {
     auto row = dt.updRow(nrow); ignore(row);
   } catch (SimTK::Exception::IndexOutOfRange&) {}
   try {
-    auto col = dt.getCol(ncol); ignore(col);
+    auto col = dt.getColumn(ncol); ignore(col);
   } catch (SimTK::Exception::IndexOutOfRange&) {}
   try {
-    auto col = dt.getCol("foo"); ignore(col);
+    auto col = dt.getColumn("foo"); ignore(col);
   } catch (OpenSim::ColumnDoesNotExist&) {}
   try {
-    auto col = dt.updCol(ncol); ignore(col);
+    auto col = dt.updColumn(ncol); ignore(col);
   } catch (SimTK::Exception::IndexOutOfRange&) {}
   try {
-    auto col = dt.updCol("foo"); ignore(col);
+    auto col = dt.updColumn("foo"); ignore(col);
   } catch (OpenSim::ColumnDoesNotExist&) {}
 
   // Retrieving any element should throw since the DataTable is empty.
@@ -143,7 +143,7 @@ void checkDataTableCol(OpenSim::DataTable_<ET>& dt,
 
   // Check entries of the col against data.
   {
-    const auto col = dt.getCol(colnum);
+    const auto col = dt.getColumn(colnum);
     for(size_t i = 0; i < data.size(); ++i)
       assert(col[static_cast<int>(i)] - data[i] > N_EPS &&
              col[static_cast<int>(i)] - data[i] < P_EPS);
@@ -151,14 +151,14 @@ void checkDataTableCol(OpenSim::DataTable_<ET>& dt,
 
   // Edit the col.
   {
-    auto col = dt.updCol(colnum);
+    auto col = dt.updColumn(colnum);
     for(size_t i = 0; i < data.size(); ++i)
       col[static_cast<int>(i)] += 1;
   }
 
   // Check if editing the col worked.
   {
-    const auto col = dt.getCol(colnum);
+    const auto col = dt.getColumn(colnum);
     for(size_t i = 0; i < data.size(); ++i)
       assert(col[static_cast<int>(i)] - (data[i] + 1) > N_EPS &&
              col[static_cast<int>(i)] - (data[i] + 1) < P_EPS);
@@ -199,7 +199,7 @@ void testAddRow(OpenSim::DataTable_<ET>& dt,
     dt_copy2.addRow(data.cbegin(), data.cend() - 1, 2, true);
     
     // Check the datatable size.
-    checkDataTableLimits(dt_copy2, dt.getNumRows() + 1, dt.getNumCols());
+    checkDataTableLimits(dt_copy2, dt.getNumRows() + 1, dt.getNumColumns());
   } else {
     // Copy the original DataTable.
     auto dt_copy = dt;
@@ -274,7 +274,7 @@ void testAddRow(OpenSim::DataTable_<ET>& dt,
   try {
     dt.addRow(SimTK::RowVector_<ET>{});
   } catch(OpenSim::ZeroElements&) {}
-    catch(OpenSim::NumberOfColsMismatch&) {}
+    catch(OpenSim::NumberOfColumnsMismatch&) {}
 
   // Clear the DataTable.
   dt.clearData();
@@ -320,15 +320,15 @@ void testAddRow(OpenSim::DataTable_<ET>& dt,
 template<typename ET>
 void testAddCol(OpenSim::DataTable_<ET>& dt,
                 const std::vector<ET>& data) {
-  size_t orig_ncol{dt.getNumCols()};
+  size_t orig_ncol{dt.getNumColumns()};
 
-  if(dt.getNumCols() > 0) {
+  if(dt.getNumColumns() > 0) {
     // Copy the original DataTable.
     auto dt_copy1 = dt;
 
     // Try adding a col with insufficient number of columns.
     try {
-      dt_copy1.addCol(data.cbegin(), data.cend() - 1);
+      dt_copy1.addColumn(data.cbegin(), data.cend() - 1);
     } catch(OpenSim::NotEnoughElements&) {}
 
     // Copy the original DataTable.
@@ -336,10 +336,10 @@ void testAddCol(OpenSim::DataTable_<ET>& dt,
 
     // Try adding a col with insufficient number of columns with allow_missing
     // argument set to true.
-    dt_copy2.addCol(data.cbegin(), data.cend() - 1, 2, true);
+    dt_copy2.addColumn(data.cbegin(), data.cend() - 1, 2, true);
     
     // Check the datatable size.
-    checkDataTableLimits(dt_copy2, dt.getNumRows(), dt.getNumCols() + 1);
+    checkDataTableLimits(dt_copy2, dt.getNumRows(), dt.getNumColumns() + 1);
   } else {
     // Copy the original DataTable.
     auto dt_copy = dt;
@@ -351,27 +351,27 @@ void testAddCol(OpenSim::DataTable_<ET>& dt,
 
     // Try adding multiple cols without providing number of columns.
     try {
-      dt_copy.addCols(data_copy.cbegin(), data_copy.cend());
+      dt_copy.addColumns(data_copy.cbegin(), data_copy.cend());
     } catch(OpenSim::InvalidEntry&) {}
     
     // Try adding multiple cols by providing number of columns to be zero.
     try {
-      dt_copy.addCols(data_copy.cbegin(), data_copy.cend(), 0);
+      dt_copy.addColumns(data_copy.cbegin(), data_copy.cend(), 0);
     } catch(OpenSim::InvalidEntry&) {}
 
     // Try adding cols with insufficient number of elements.
     try {
-      dt_copy.addCols(data_copy.cbegin(), data_copy.cend() - 1);
+      dt_copy.addColumns(data_copy.cbegin(), data_copy.cend() - 1);
     } catch(OpenSim::InvalidEntry&) {}
     
     // Add multiple cols at the same time.
-    dt_copy.addCols(data_copy.cbegin(), data_copy.cend(), data.size());
+    dt_copy.addColumns(data_copy.cbegin(), data_copy.cend(), data.size());
 
     // Check DataTable size.
     checkDataTableLimits(dt_copy, data.size(), 3);
 
     // Add more cols.
-    dt_copy.addCols(data_copy.cbegin(), data_copy.cend());
+    dt_copy.addColumns(data_copy.cbegin(), data_copy.cend());
 
     // Check DataTable size.
     checkDataTableLimits(dt_copy, data.size(), 6);
@@ -379,11 +379,11 @@ void testAddCol(OpenSim::DataTable_<ET>& dt,
     // Try adding cols with insufficient number of elements to fill up the last
     // col.
     try {
-      dt_copy.addCols(data_copy.cbegin(), data_copy.cend() - 1);
+      dt_copy.addColumns(data_copy.cbegin(), data_copy.cend() - 1);
     } catch(OpenSim::InvalidEntry&) {}
 
     // Add cols with insufficient number of elements but specify allow_missing.
-    dt_copy.addCols(data_copy.cbegin(), data_copy.cend() - 1, 0, true);
+    dt_copy.addColumns(data_copy.cbegin(), data_copy.cend() - 1, 0, true);
 
     // Check DataTable size.
     checkDataTableLimits(dt_copy, data.size(), 12);
@@ -391,7 +391,7 @@ void testAddCol(OpenSim::DataTable_<ET>& dt,
 
   // Add a col to the DataTable using a SimTK::Vector.
   SimTK::Vector_<ET> dt_col{static_cast<int>(data.size()), data.data()};
-  dt.addCol(dt_col);
+  dt.addColumn(dt_col);
 
   // Check the size of the DataTable.
   checkDataTableLimits(dt, data.size(), orig_ncol + 1);
@@ -401,7 +401,7 @@ void testAddCol(OpenSim::DataTable_<ET>& dt,
 
   // Add another col to the DataTable using iterators. This time add the data
   // in reverse order from the input vector.
-  dt.addCol(data.crbegin(), data.crend());
+  dt.addColumn(data.crbegin(), data.crend());
 
   // // Check the size of the DataTable.
   checkDataTableLimits(dt, data.size(), orig_ncol + 2);
@@ -412,7 +412,7 @@ void testAddCol(OpenSim::DataTable_<ET>& dt,
 
   // Try adding emtpy col.
   try {
-    dt.addCol(SimTK::Vector_<ET>{});
+    dt.addColumn(SimTK::Vector_<ET>{});
   } catch(OpenSim::ZeroElements&) {}
 
   // Clear the DataTable.
@@ -426,7 +426,7 @@ void testAddCol(OpenSim::DataTable_<ET>& dt,
   // that is a repeated version of the data.
   auto new_data = data;
   new_data.insert(new_data.end(), data.cbegin(), data.cend());
-  dt.addCol(new_data.cbegin(), new_data.cend());
+  dt.addColumn(new_data.cbegin(), new_data.cend());
 
   // Check the size of the DataTable.
   checkDataTableLimits(dt, new_data.size(), 1);
@@ -439,7 +439,7 @@ void testAddCol(OpenSim::DataTable_<ET>& dt,
 
   // Add the first col using iterators. This time provide a hint on how long
   // the col is.
-  dt.addCol(new_data.cbegin(), new_data.cend(), new_data.size());
+  dt.addColumn(new_data.cbegin(), new_data.cend(), new_data.size());
 
   // Check the size of the DataTable.
   checkDataTableLimits(dt, new_data.size(), 1);
@@ -447,7 +447,7 @@ void testAddCol(OpenSim::DataTable_<ET>& dt,
   // Add another col to the DataTable using Vector.
   decltype(dt_col) new_dt_col{static_cast<int>(new_data.size()), 
                               new_data.data()};
-  dt.addCol(new_dt_col);
+  dt.addColumn(new_dt_col);
 
   // Check the size of the DataTable.
   checkDataTableLimits(dt, new_data.size(), 2);
@@ -867,12 +867,12 @@ void test3() {
       OpenSim::DataTable_<SimTK::Real> dt_real{data_real.cbegin(), 
                                                data_real.cend() - 2,
                                                4,
-                                               OpenSim::ColWise};
+                                               OpenSim::ColumnWise};
     } catch(OpenSim::NotEnoughElements&) {
       OpenSim::DataTable_<SimTK::Real> dt_real{data_real.cbegin(), 
                                                data_real.cend() - 2,
                                                4,
-                                               OpenSim::ColWise,
+                                               OpenSim::ColumnWise,
                                                true};
     }
     std::cout << "test3 -- Construct DataTable with iterators colwise"
@@ -881,12 +881,12 @@ void test3() {
       OpenSim::DataTable_<SimTK::Vec3> dt_vec3{data_vec3.cbegin(), 
                                                data_vec3.cend() - 2,
                                                4,
-                                               OpenSim::ColWise};
+                                               OpenSim::ColumnWise};
     } catch(OpenSim::NotEnoughElements&) {
       OpenSim::DataTable_<SimTK::Vec3> dt_vec3{data_vec3.cbegin(), 
                                                data_vec3.cend() - 2,
                                                4,
-                                               OpenSim::ColWise,
+                                               OpenSim::ColumnWise,
                                                true};
     }
     std::cout << "test3 -- Construct DataTable with iterators colwise"
@@ -895,12 +895,12 @@ void test3() {
       OpenSim::DataTable_<SimTK::Vec6> dt_vec6{data_vec6.cbegin(), 
                                                data_vec6.cend() - 2,
                                                4,
-                                               OpenSim::ColWise};
+                                               OpenSim::ColumnWise};
     } catch(OpenSim::NotEnoughElements&) {
       OpenSim::DataTable_<SimTK::Vec6> dt_vec6{data_vec6.cbegin(), 
                                                data_vec6.cend() - 2,
                                                4,
-                                               OpenSim::ColWise,
+                                               OpenSim::ColumnWise,
                                                true};
     }
   }
@@ -913,19 +913,19 @@ void test3() {
   OpenSim::DataTable_<SimTK::Real> dt_real{data_real.cbegin(), 
                                            data_real.cend(),
                                            4,
-                                           OpenSim::ColWise};
+                                           OpenSim::ColumnWise};
   std::cout << "test3 -- Construct DataTable with iterators colwise: Vec3."
             << std::endl;
   OpenSim::DataTable_<SimTK::Vec3> dt_vec3{data_vec3.cbegin(),
                                            data_vec3.cend(),
                                            4,
-                                           OpenSim::ColWise};
+                                           OpenSim::ColumnWise};
   std::cout << "test3 -- Construct DataTable with iterators colwise: Vec6." 
             << std::endl;
   OpenSim::DataTable_<SimTK::Vec6> dt_vec6{data_vec6.cbegin(),
                                            data_vec6.cend(), 
                                            4,
-                                           OpenSim::ColWise};
+                                           OpenSim::ColumnWise};
 
   // Check the size of the DataTable.
   std::cout << "test3 -- checkDataTableLimits(): Real." << std::endl;
@@ -1201,17 +1201,17 @@ void test4() {
   OpenSim::DataTable_<SimTK::Real> dt2_real{data_real.cbegin(), 
                                            data_real.cend(),
                                            3,
-                                           OpenSim::ColWise};
+                                           OpenSim::ColumnWise};
   std::cout << "test4 -- Construct DataTable 2: Vec3." << std::endl;
   OpenSim::DataTable_<SimTK::Vec3> dt2_vec3{data_vec3.cbegin(),
                                            data_vec3.cend(),
                                            3,
-                                           OpenSim::ColWise};
+                                           OpenSim::ColumnWise};
   std::cout << "test4 -- Construct DataTable 2: Vec6." << std::endl;
   OpenSim::DataTable_<SimTK::Vec6> dt2_vec6{data_vec6.cbegin(),
                                            data_vec6.cend(), 
                                            3,
-                                           OpenSim::ColWise};
+                                           OpenSim::ColumnWise};
   
   // Bind DataTable 2 to DataTable 1 by row.
   std::cout << "test4 -- dt1.addDataTableByRow(dt2): Real."  << std::endl;
@@ -1267,17 +1267,17 @@ void test4() {
                                             {100, 200, 300, 400, 500, 600}}, 2);
 
   // Try binding DataTable 1 to DataTable 2 by col.
-  std::cout << "test4 -- dt2.addDataTableByCol(dt1): Real." << std::endl;
+  std::cout << "test4 -- dt2.addDataTableByColumn(dt1): Real." << std::endl;
   try {
-    dt2_real.addDataTableByCol(dt1_real);
+    dt2_real.addDataTableByColumn(dt1_real);
   } catch(OpenSim::NumberOfRowsMismatch&) {}
-  std::cout << "test4 -- dt2.addDataTableByCol(dt1): Vec3." << std::endl;
+  std::cout << "test4 -- dt2.addDataTableByColumn(dt1): Vec3." << std::endl;
   try {
-    dt2_vec3.addDataTableByCol(dt1_vec3);
+    dt2_vec3.addDataTableByColumn(dt1_vec3);
   } catch(OpenSim::NumberOfRowsMismatch&) {}
-  std::cout << "test4 -- dt2.addDataTableByCol(dt1): Vec6." << std::endl;
+  std::cout << "test4 -- dt2.addDataTableByColumn(dt1): Vec6." << std::endl;
   try {
-    dt2_vec6.addDataTableByCol(dt1_vec6);
+    dt2_vec6.addDataTableByColumn(dt1_vec6);
   } catch(OpenSim::NumberOfRowsMismatch&) {}
   }
 
@@ -1294,24 +1294,24 @@ void test4() {
   OpenSim::DataTable_<SimTK::Real> dt2_real{data_real.cbegin(), 
                                            data_real.cend(),
                                            3,
-                                           OpenSim::ColWise};
+                                           OpenSim::ColumnWise};
   std::cout << "test4 -- Construct DataTable 2: Vec3.\n";
   OpenSim::DataTable_<SimTK::Vec3> dt2_vec3{data_vec3.cbegin(),
                                            data_vec3.cend(),
                                            3,
-                                           OpenSim::ColWise};
+                                           OpenSim::ColumnWise};
   std::cout << "test4 -- Construct DataTable 2: Vec6.\n";
   OpenSim::DataTable_<SimTK::Vec6> dt2_vec6{data_vec6.cbegin(),
                                            data_vec6.cend(), 
                                            3,
-                                           OpenSim::ColWise};
+                                           OpenSim::ColumnWise};
   // Bind DataTable 2 to DataTable 1 by col.
-  std::cout << "test4 -- dt1.addDataTableByCol(dt2): Real.\n";
-  dt1_real.addDataTableByCol(dt2_real);
-  std::cout << "test4 -- dt1.addDataTableByCol(dt2): Vec3.\n";
-  dt1_vec3.addDataTableByCol(dt2_vec3);
-  std::cout << "test4 -- dt1.addDataTableByCol(dt2): Vec6.\n";
-  dt1_vec6.addDataTableByCol(dt2_vec6);
+  std::cout << "test4 -- dt1.addDataTableByColumn(dt2): Real.\n";
+  dt1_real.addDataTableByColumn(dt2_real);
+  std::cout << "test4 -- dt1.addDataTableByColumn(dt2): Vec3.\n";
+  dt1_vec3.addDataTableByColumn(dt2_vec3);
+  std::cout << "test4 -- dt1.addDataTableByColumn(dt2): Vec6.\n";
+  dt1_vec6.addDataTableByColumn(dt2_vec6);
 
   // Check the size of the DataTable.
   std::cout << "test4 -- checkDataTableLimits(): Real.\n";
@@ -1369,15 +1369,15 @@ void test4() {
   std::cout << "test4 -- dt2.addDataTableByRow(dt1): Real.\n";
   try {
     dt2_real.addDataTableByRow(dt1_real);
-  } catch(OpenSim::NumberOfColsMismatch&) {}
+  } catch(OpenSim::NumberOfColumnsMismatch&) {}
   std::cout << "test4 -- dt2.addDataTableByRow(dt1): Vec3.\n";
   try {
     dt2_vec3.addDataTableByRow(dt1_vec3);
-  } catch(OpenSim::NumberOfColsMismatch&) {}
+  } catch(OpenSim::NumberOfColumnsMismatch&) {}
   std::cout << "test4 -- dt2.addDataTableByRow(dt1): Vec6.\n";
   try {
     dt2_vec6.addDataTableByRow(dt1_vec6);
-  } catch(OpenSim::NumberOfColsMismatch&) {}
+  } catch(OpenSim::NumberOfColumnsMismatch&) {}
 
   // Try binding DataTable 2 to itself by row.
   std::cout << "test4 -- dt2.addDataTableByRow(dt2): Real.\n";
@@ -1394,17 +1394,17 @@ void test4() {
   } catch(OpenSim::InvalidEntry&) {}
 
   // Try binding DataTable 2 to itself by col.
-  std::cout << "test4 -- dt2.addDataTableByCol(dt2): Real.\n";
+  std::cout << "test4 -- dt2.addDataTableByColumn(dt2): Real.\n";
   try {
-    dt2_real.addDataTableByCol(dt2_real);
+    dt2_real.addDataTableByColumn(dt2_real);
   } catch(OpenSim::InvalidEntry&) {}
-  std::cout << "test4 -- dt2.addDataTableByCol(dt2): Vec3.\n";
+  std::cout << "test4 -- dt2.addDataTableByColumn(dt2): Vec3.\n";
   try {
-    dt2_vec3.addDataTableByCol(dt2_vec3);
+    dt2_vec3.addDataTableByColumn(dt2_vec3);
   } catch(OpenSim::InvalidEntry&) {}
-  std::cout << "test4 -- dt2.addDataTableByCol(dt2): Vec6.\n";
+  std::cout << "test4 -- dt2.addDataTableByColumn(dt2): Vec6.\n";
   try {
-    dt2_vec6.addDataTableByCol(dt2_vec6);
+    dt2_vec6.addDataTableByColumn(dt2_vec6);
   } catch(OpenSim::InvalidEntry&) {}
 }
 
@@ -1434,369 +1434,369 @@ void test5() {
   OpenSim::DataTable_<SimTK::Vec6> dt_vec6{3, 4, {10, 20, 30, 40, 50, 60}};
 
   // Check if column labels exist.
-  std::cout << "test5 -- colHasLabel(): Real.\n";
-  for(size_t i = 0; i < dt_real.getNumCols(); ++i)
-    assert(dt_real.colHasLabel(i) == false);
-  std::cout << "test5 -- colHasLabel(): Vec3.\n";
-  for(size_t i = 0; i < dt_vec3.getNumCols(); ++i)
-    assert(dt_vec3.colHasLabel(i) == false);
-  std::cout << "test5 -- colHaslabel(): Vec6.\n";
-  for(size_t i = 0; i < dt_vec6.getNumCols(); ++i)
-    assert(dt_vec6.colHasLabel(i) == false);
+  std::cout << "test5 -- columnHasLabel(): Real.\n";
+  for(size_t i = 0; i < dt_real.getNumColumns(); ++i)
+    assert(dt_real.columnHasLabel(i) == false);
+  std::cout << "test5 -- columnHasLabel(): Vec3.\n";
+  for(size_t i = 0; i < dt_vec3.getNumColumns(); ++i)
+    assert(dt_vec3.columnHasLabel(i) == false);
+  std::cout << "test5 -- columnHaslabel(): Vec6.\n";
+  for(size_t i = 0; i < dt_vec6.getNumColumns(); ++i)
+    assert(dt_vec6.columnHasLabel(i) == false);
 
   // Try checking for columns that don't exist.
-  std::cout << "test5 -- colHasLabel()[ColumnDoesNotExist]: Real.\n";
+  std::cout << "test5 -- columnHasLabel()[ColumnDoesNotExist]: Real.\n";
   try {
-    bool ans = dt_real.colHasLabel(5); ignore(ans);
+    bool ans = dt_real.columnHasLabel(5); ignore(ans);
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- colHasLabel()[ColumnDoesNotExist]: Vec3.\n";
+  std::cout << "test5 -- columnHasLabel()[ColumnDoesNotExist]: Vec3.\n";
   try {
-    bool ans = dt_vec3.colHasLabel(5); ignore(ans);
+    bool ans = dt_vec3.columnHasLabel(5); ignore(ans);
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- colHasLabel()[ColumnDoesNotExist]: Vec6.\n";
+  std::cout << "test5 -- columnHasLabel()[ColumnDoesNotExist]: Vec6.\n";
   try {
-    bool ans = dt_vec6.colHasLabel(5); ignore(ans);
+    bool ans = dt_vec6.columnHasLabel(5); ignore(ans);
   } catch(OpenSim::ColumnDoesNotExist&) {}
 
   // Try checking for column that does not exist.
-  std::cout << "test5 -- colExists(key): Real.\n";
-  assert(dt_real.colExists("no-such-column") == false);
-  std::cout << "test5 -- colExists(key): Vec3.\n";
-  assert(dt_vec3.colExists("no-such-column") == false);
-  std::cout << "test5 -- colExists(key): Vec6.\n";
-  assert(dt_vec6.colExists("no-such-column") == false);
+  std::cout << "test5 -- columnExists(key): Real.\n";
+  assert(dt_real.columnExists("no-such-column") == false);
+  std::cout << "test5 -- columnExists(key): Vec3.\n";
+  assert(dt_vec3.columnExists("no-such-column") == false);
+  std::cout << "test5 -- columnExists(key): Vec6.\n";
+  assert(dt_vec6.columnExists("no-such-column") == false);
 
   // Get column label by index. No column should have a label at this point.
-  std::cout << "test5 -- getColLabel()[ColumnHasNoLabel]: Real.\n";
-  for(size_t i = 0; i < dt_real.getNumCols(); ++i)
+  std::cout << "test5 -- getColumnLabel()[ColumnHasNoLabel]: Real.\n";
+  for(size_t i = 0; i < dt_real.getNumColumns(); ++i)
     try {
-      auto label = dt_real.getColLabel(i); ignore(label);
+      auto label = dt_real.getColumnLabel(i); ignore(label);
     } catch(OpenSim::ColumnHasNoLabel&) {}
-  std::cout << "test5 -- getColLabel()[ColumnHasNoLabel]: Vec3.\n";
-  for(size_t i = 0; i < dt_vec3.getNumCols(); ++i)
+  std::cout << "test5 -- getColumnLabel()[ColumnHasNoLabel]: Vec3.\n";
+  for(size_t i = 0; i < dt_vec3.getNumColumns(); ++i)
     try {
-      auto label = dt_vec3.getColLabel(i); ignore(label);
+      auto label = dt_vec3.getColumnLabel(i); ignore(label);
     } catch(OpenSim::ColumnHasNoLabel&) {}
-  std::cout << "test5 -- getColLabel()[ColumnHasNoLabel]: Vec6.\n";
-  for(size_t i = 0; i < dt_vec6.getNumCols(); ++i)
+  std::cout << "test5 -- getColumnLabel()[ColumnHasNoLabel]: Vec6.\n";
+  for(size_t i = 0; i < dt_vec6.getNumColumns(); ++i)
     try {
-      auto label = dt_vec6.getColLabel(i); ignore(label);
+      auto label = dt_vec6.getColumnLabel(i); ignore(label);
     } catch(OpenSim::ColumnHasNoLabel&) {}
 
   // Get all column labels. There should be no column labels.
-  std::cout << "test5 -- getcolLabels(): Real.\n";
-  auto iters = dt_real.getColLabels(); 
+  std::cout << "test5 -- getcolumnLabels(): Real.\n";
+  auto iters = dt_real.getColumnLabels(); 
   assert(iters.first == iters.second);
-  std::cout << "test5 -- getcolLabels(): Vec3.\n";
-  dt_vec3.getColLabels();
+  std::cout << "test5 -- getcolumnLabels(): Vec3.\n";
+  dt_vec3.getColumnLabels();
   assert(iters.first == iters.second);
-  std::cout << "test5 -- getcolLabels(): Vec6.\n";
-  dt_vec6.getColLabels();
+  std::cout << "test5 -- getcolumnLabels(): Vec6.\n";
+  dt_vec6.getColumnLabels();
   assert(iters.first == iters.second);
 
   // Get index of a column label that does not exist.
-  std::cout << "test5 -- getColInd()[ColumnDoesNotExist]: Real.\n";
+  std::cout << "test5 -- getColumnInd()[ColumnDoesNotExist]: Real.\n";
   try {
-    auto ind = dt_real.getColInd("no-such-column"); ignore(ind);
+    auto ind = dt_real.getColumnInd("no-such-column"); ignore(ind);
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- getColInd()[ColumnDoesNotExist]: Vec3.\n";
+  std::cout << "test5 -- getColumnInd()[ColumnDoesNotExist]: Vec3.\n";
   try {
-    auto ind = dt_vec3.getColInd("no-such-column"); ignore(ind);
+    auto ind = dt_vec3.getColumnInd("no-such-column"); ignore(ind);
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- getColInd()[ColumnDoesNotExist]: Vec6.\n";
+  std::cout << "test5 -- getColumnInd()[ColumnDoesNotExist]: Vec6.\n";
   try {
-    auto ind = dt_vec6.getColInd("no-such-column"); ignore(ind);
+    auto ind = dt_vec6.getColumnInd("no-such-column"); ignore(ind);
   } catch(OpenSim::ColumnDoesNotExist&) {}
 
   // Try inserting column labels to columns that do not exist.
-  std::cout << "test5 -- setColLabel()[ColumnDoesNotExist]: Real.\n";
+  std::cout << "test5 -- setColumnLabel()[ColumnDoesNotExist]: Real.\n";
   try {
-    dt_real.setColLabel(4, "col-does-not-exist");
+    dt_real.setColumnLabel(4, "col-does-not-exist");
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- setColLabel()[ColumnDoesNotExist]: Vec3.\n";
+  std::cout << "test5 -- setColumnLabel()[ColumnDoesNotExist]: Vec3.\n";
   try {
-    dt_vec3.setColLabel(4, "col-does-not-exist");
+    dt_vec3.setColumnLabel(4, "col-does-not-exist");
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- setColLabel()[ColumnDoesNotExist]: Vec6.\n";
+  std::cout << "test5 -- setColumnLabel()[ColumnDoesNotExist]: Vec6.\n";
   try {
-    dt_vec6.setColLabel(4, "col-does-not-exist");
+    dt_vec6.setColumnLabel(4, "col-does-not-exist");
   } catch(OpenSim::ColumnDoesNotExist&) {}
 
   // Try editing column label for a column that does not exist.
-  std::cout << "test5 -- updColLabel()[ColumnDoesNotExist]: Real.\n";
+  std::cout << "test5 -- updColumnLabel()[ColumnDoesNotExist]: Real.\n";
   try {
-    dt_real.updColLabel(4, "ColFour");
+    dt_real.updColumnLabel(4, "ColFour");
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- updColLabel()[ColumnDoesNotExist]: Vec3.\n";
+  std::cout << "test5 -- updColumnLabel()[ColumnDoesNotExist]: Vec3.\n";
   try {
-    dt_vec3.updColLabel(4, "ColFour");
+    dt_vec3.updColumnLabel(4, "ColFour");
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- updColLabel()[ColumnDoesNotExist]: Vec6.\n";
+  std::cout << "test5 -- updColumnLabel()[ColumnDoesNotExist]: Vec6.\n";
   try {
-    dt_vec6.updColLabel(4, "ColFour");
+    dt_vec6.updColumnLabel(4, "ColFour");
   } catch(OpenSim::ColumnDoesNotExist&) {}
 
   // Try editing column label for a column that does not have a label yet.
-  std::cout << "test5 -- updColLabel()[ColumnHasNoLabel]: Real.\n";
+  std::cout << "test5 -- updColumnLabel()[ColumnHasNoLabel]: Real.\n";
   try {
-    dt_real.updColLabel(0, "ColZero");
+    dt_real.updColumnLabel(0, "ColZero");
   } catch(OpenSim::ColumnHasNoLabel&) {}
-  std::cout << "test5 -- updColLabel()[ColumnHasNoLabel]: Vec3.\n";
+  std::cout << "test5 -- updColumnLabel()[ColumnHasNoLabel]: Vec3.\n";
   try {
-    dt_vec3.updColLabel(0, "ColZero");
+    dt_vec3.updColumnLabel(0, "ColZero");
   } catch(OpenSim::ColumnHasNoLabel&) {}
-  std::cout << "test5 -- updColLabel()[ColumnHasNoLabel]: Vec6.\n";
+  std::cout << "test5 -- updColumnLabel()[ColumnHasNoLabel]: Vec6.\n";
   try {
-    dt_vec6.updColLabel(0, "ColZero");
+    dt_vec6.updColumnLabel(0, "ColZero");
   } catch(OpenSim::ColumnHasNoLabel&) {}
   
   // Insert some column labels.
-  std::cout << "test5 -- setColLabel(): Real.\n";
+  std::cout << "test5 -- setColumnLabel(): Real.\n";
   std::string collabel{"ColZero"};
-  dt_real.setColLabel(0, collabel);
-  dt_real.setColLabel(2, "ColTwo");
-  std::cout << "test5 -- setColLabel(): Vec3.\n";
-  dt_vec3.setColLabel(0, collabel);
-  dt_vec3.setColLabel(2, "ColTwo");
-  std::cout << "test5 -- setColLabel(): Vec6.\n";
-  dt_vec6.setColLabel(0, collabel);
-  dt_vec6.setColLabel(2, "ColTwo");
+  dt_real.setColumnLabel(0, collabel);
+  dt_real.setColumnLabel(2, "ColTwo");
+  std::cout << "test5 -- setColumnLabel(): Vec3.\n";
+  dt_vec3.setColumnLabel(0, collabel);
+  dt_vec3.setColumnLabel(2, "ColTwo");
+  std::cout << "test5 -- setColumnLabel(): Vec6.\n";
+  dt_vec6.setColumnLabel(0, collabel);
+  dt_vec6.setColumnLabel(2, "ColTwo");
 
   // Insert more column labels.
   std::vector<std::pair<size_t, std::string>> col_data{{1, "ColOne"}, 
                                                        {3, "ColThree"}};
-  std::cout << "test5 -- setColLabels(): Real.\n";
-  dt_real.setColLabels(col_data.cbegin(), col_data.cend());
-  std::cout << "test5 -- setColLabels(): Vec3.\n";
-  dt_vec3.setColLabels(col_data.cbegin(), col_data.cend());
-  std::cout << "test5 -- setColLabels(): Vec6.\n";
-  dt_vec6.setColLabels(col_data.cbegin(), col_data.cend());
+  std::cout << "test5 -- setColumnLabels(): Real.\n";
+  dt_real.setColumnLabels(col_data.cbegin(), col_data.cend());
+  std::cout << "test5 -- setColumnLabels(): Vec3.\n";
+  dt_vec3.setColumnLabels(col_data.cbegin(), col_data.cend());
+  std::cout << "test5 -- setColumnLabels(): Vec6.\n";
+  dt_vec6.setColumnLabels(col_data.cbegin(), col_data.cend());
 
   // Check the number of column labels.
   std::cout << "test5 -- Number of column labels: Real.\n";
-  assert(numElems(dt_real.getColLabels()) == 4);
+  assert(numElems(dt_real.getColumnLabels()) == 4);
   std::cout << "test5 -- Number of column labels: Vec3.\n";
-  assert(numElems(dt_vec3.getColLabels()) == 4);
+  assert(numElems(dt_vec3.getColumnLabels()) == 4);
   std::cout << "test5 -- Number of column labels: Vec6.\n";
-  assert(numElems(dt_vec6.getColLabels()) == 4);
+  assert(numElems(dt_vec6.getColumnLabels()) == 4);
 
   // Check existence of column labels.
-  std::cout << "test5 -- colHasLabel(): Real.\n";
+  std::cout << "test5 -- columnHasLabel(): Real.\n";
   for(size_t i = 0; i < 4; ++i)
-    assert(dt_real.colHasLabel(i) == true);
-  std::cout << "test5 -- colHasLabel(): Vec3.\n";
+    assert(dt_real.columnHasLabel(i) == true);
+  std::cout << "test5 -- columnHasLabel(): Vec3.\n";
   for(size_t i = 0; i < 4; ++i)
-    assert(dt_vec3.colHasLabel(i) == true);
-  std::cout << "test5 -- colHasLabel(): Vec6.\n";
+    assert(dt_vec3.columnHasLabel(i) == true);
+  std::cout << "test5 -- columnHasLabel(): Vec6.\n";
   for(size_t i = 0; i < 4; ++i)
-    assert(dt_vec6.colHasLabel(i) == true);
+    assert(dt_vec6.columnHasLabel(i) == true);
 
   // Check the column labels.
-  std::cout << "test5 -- getColLabel(): Real.\n";
-  assert(dt_real.getColLabel(0) == "ColZero");
-  assert(dt_real.getColLabel(1) == "ColOne");
-  assert(dt_real.getColLabel(2) == "ColTwo");
-  assert(dt_real.getColLabel(3) == "ColThree");
-  std::cout << "test5 -- getColLabel(): Vec3.\n";
-  assert(dt_vec3.getColLabel(0) == "ColZero");
-  assert(dt_vec3.getColLabel(1) == "ColOne");
-  assert(dt_vec3.getColLabel(2) == "ColTwo");
-  assert(dt_vec3.getColLabel(3) == "ColThree");
-  std::cout << "test5 -- getColLabel(): Vec6.\n";
-  assert(dt_vec6.getColLabel(0) == "ColZero");
-  assert(dt_vec6.getColLabel(1) == "ColOne");
-  assert(dt_vec6.getColLabel(2) == "ColTwo");
-  assert(dt_vec6.getColLabel(3) == "ColThree");
+  std::cout << "test5 -- getColumnLabel(): Real.\n";
+  assert(dt_real.getColumnLabel(0) == "ColZero");
+  assert(dt_real.getColumnLabel(1) == "ColOne");
+  assert(dt_real.getColumnLabel(2) == "ColTwo");
+  assert(dt_real.getColumnLabel(3) == "ColThree");
+  std::cout << "test5 -- getColumnLabel(): Vec3.\n";
+  assert(dt_vec3.getColumnLabel(0) == "ColZero");
+  assert(dt_vec3.getColumnLabel(1) == "ColOne");
+  assert(dt_vec3.getColumnLabel(2) == "ColTwo");
+  assert(dt_vec3.getColumnLabel(3) == "ColThree");
+  std::cout << "test5 -- getColumnLabel(): Vec6.\n";
+  assert(dt_vec6.getColumnLabel(0) == "ColZero");
+  assert(dt_vec6.getColumnLabel(1) == "ColOne");
+  assert(dt_vec6.getColumnLabel(2) == "ColTwo");
+  assert(dt_vec6.getColumnLabel(3) == "ColThree");
 
   // Check column index against label.
-  std::cout << "test5 -- getColInd(): Real.\n";
-  assert(dt_real.getColInd("ColZero")  == 0);
-  assert(dt_real.getColInd("ColOne")   == 1);
-  assert(dt_real.getColInd("ColTwo")   == 2);
-  assert(dt_real.getColInd("ColThree") == 3);
-  std::cout << "test5 -- getColInd(): Vec3.\n";
-  assert(dt_vec3.getColInd("ColZero")  == 0);
-  assert(dt_vec3.getColInd("ColOne")   == 1);
-  assert(dt_vec3.getColInd("ColTwo")   == 2);
-  assert(dt_vec3.getColInd("ColThree") == 3);
-  std::cout << "test5 -- getColInd(): Vec6.\n";
-  assert(dt_vec6.getColInd("ColZero")  == 0);
-  assert(dt_vec6.getColInd("ColOne")   == 1);
-  assert(dt_vec6.getColInd("ColTwo")   == 2);
-  assert(dt_vec6.getColInd("ColThree") == 3);
+  std::cout << "test5 -- getColumnInd(): Real.\n";
+  assert(dt_real.getColumnInd("ColZero")  == 0);
+  assert(dt_real.getColumnInd("ColOne")   == 1);
+  assert(dt_real.getColumnInd("ColTwo")   == 2);
+  assert(dt_real.getColumnInd("ColThree") == 3);
+  std::cout << "test5 -- getColumnInd(): Vec3.\n";
+  assert(dt_vec3.getColumnInd("ColZero")  == 0);
+  assert(dt_vec3.getColumnInd("ColOne")   == 1);
+  assert(dt_vec3.getColumnInd("ColTwo")   == 2);
+  assert(dt_vec3.getColumnInd("ColThree") == 3);
+  std::cout << "test5 -- getColumnInd(): Vec6.\n";
+  assert(dt_vec6.getColumnInd("ColZero")  == 0);
+  assert(dt_vec6.getColumnInd("ColOne")   == 1);
+  assert(dt_vec6.getColumnInd("ColTwo")   == 2);
+  assert(dt_vec6.getColumnInd("ColThree") == 3);
 
   // Try inserting labels for columns that don't exist.
-  std::cout << "test5 -- setColLabel()[ColumnDoesNotExist]: Real.\n";
+  std::cout << "test5 -- setColumnLabel()[ColumnDoesNotExist]: Real.\n";
   try {
-    dt_real.setColLabel(4, "col-does-not-exist");
+    dt_real.setColumnLabel(4, "col-does-not-exist");
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- setColLabel()[ColumnDoesNotExist]: Vec3.\n";
+  std::cout << "test5 -- setColumnLabel()[ColumnDoesNotExist]: Vec3.\n";
   try {
-    dt_vec3.setColLabel(4, "col-does-not-exist");
+    dt_vec3.setColumnLabel(4, "col-does-not-exist");
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- setColLabel()[ColumnDoesNotExist]: Vec6.\n";
+  std::cout << "test5 -- setColumnLabel()[ColumnDoesNotExist]: Vec6.\n";
   try {
-    dt_vec6.setColLabel(4, "col-does-not-exist");
+    dt_vec6.setColumnLabel(4, "col-does-not-exist");
   } catch(OpenSim::ColumnDoesNotExist&) {}
 
   // Try inserting lables for columns that already have labels.
-  std::cout << "test5 -- setColLabel()[ColumnHasLabel]: Real.\n";
+  std::cout << "test5 -- setColumnLabel()[ColumnHasLabel]: Real.\n";
   try{
-    dt_real.setColLabel(0, "col-has-label");
+    dt_real.setColumnLabel(0, "col-has-label");
   } catch(OpenSim::ColumnHasLabel&) {}
-  std::cout << "test5 -- setColLabel()[ColumnHasLabel]: Vec3.\n";
+  std::cout << "test5 -- setColumnLabel()[ColumnHasLabel]: Vec3.\n";
   try{
-    dt_vec3.setColLabel(0, "col-has-label");
+    dt_vec3.setColumnLabel(0, "col-has-label");
   } catch(OpenSim::ColumnHasLabel&) {}
-  std::cout << "test5 -- setColLabel()[ColumnHasLabel]: Vec6.\n";
+  std::cout << "test5 -- setColumnLabel()[ColumnHasLabel]: Vec6.\n";
   try{
-    dt_vec6.setColLabel(0, "col-has-label");
+    dt_vec6.setColumnLabel(0, "col-has-label");
   } catch(OpenSim::ColumnHasLabel&) {}
 
   // Try inserting labels to for columns that don't exist. This time use
   // iterators.
   std::vector<std::pair<size_t, std::string>> col_data1{{4, "ColFour"},
                                                         {5, "ColFive"}};
-  std::cout << "test5 -- setColLabels()[ColumnDoesNotExist]: Real.\n";
+  std::cout << "test5 -- setColumnLabels()[ColumnDoesNotExist]: Real.\n";
   try {
-    dt_real.setColLabels(col_data1.cbegin(), col_data1.cend());
+    dt_real.setColumnLabels(col_data1.cbegin(), col_data1.cend());
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- setColLabels()[ColumnDoesNotExist]: Vec3.\n";
+  std::cout << "test5 -- setColumnLabels()[ColumnDoesNotExist]: Vec3.\n";
   try {
-    dt_vec3.setColLabels(col_data1.cbegin(), col_data1.cend());
+    dt_vec3.setColumnLabels(col_data1.cbegin(), col_data1.cend());
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- setColLabels()[ColumnDoesNotExist]: Vec6.\n";
+  std::cout << "test5 -- setColumnLabels()[ColumnDoesNotExist]: Vec6.\n";
   try {
-    dt_vec6.setColLabels(col_data1.cbegin(), col_data1.cend());
+    dt_vec6.setColumnLabels(col_data1.cbegin(), col_data1.cend());
   } catch(OpenSim::ColumnDoesNotExist&) {}
 
   // Try inserting labels for columns that already have labels. This time use
   // iterators.
-  std::cout << "test5 -- setColLabels()[ColumnHasLabel]: Real.\n";
+  std::cout << "test5 -- setColumnLabels()[ColumnHasLabel]: Real.\n";
   try {
-    dt_real.setColLabels(col_data.cbegin(), col_data.cend());
+    dt_real.setColumnLabels(col_data.cbegin(), col_data.cend());
   } catch(OpenSim::ColumnHasLabel&) {}
-  std::cout << "test5 -- setColLabels()[ColumnHasLabel]: Vec3.\n";
+  std::cout << "test5 -- setColumnLabels()[ColumnHasLabel]: Vec3.\n";
   try {
-    dt_vec3.setColLabels(col_data.cbegin(), col_data.cend());
+    dt_vec3.setColumnLabels(col_data.cbegin(), col_data.cend());
   } catch(OpenSim::ColumnHasLabel&) {}
-  std::cout << "test5 -- setColLabels()[ColumnHasLabel]: Vec6.\n";
+  std::cout << "test5 -- setColumnLabels()[ColumnHasLabel]: Vec6.\n";
   try {
-    dt_vec6.setColLabels(col_data.cbegin(), col_data.cend());
+    dt_vec6.setColumnLabels(col_data.cbegin(), col_data.cend());
   } catch(OpenSim::ColumnHasLabel&) {}
 
   // Try updating column label of a column that does not exist using its index.
-  std::cout << "test5 -- updColLabel(ind)[ColumnDoesNotExist]: Real.\n";
+  std::cout << "test5 -- updColumnLabel(ind)[ColumnDoesNotExist]: Real.\n";
   try {
-    dt_real.updColLabel(4, "col-does-not-exist");
+    dt_real.updColumnLabel(4, "col-does-not-exist");
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- updColLabel(ind)[ColumnDoesNotExist]: Vec3.\n";
+  std::cout << "test5 -- updColumnLabel(ind)[ColumnDoesNotExist]: Vec3.\n";
   try {
-    dt_vec3.updColLabel(4, "col-does-not-exist");
+    dt_vec3.updColumnLabel(4, "col-does-not-exist");
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- updColLabel(ind)[ColumnDoesNotExist]: Vec6.\n";
+  std::cout << "test5 -- updColumnLabel(ind)[ColumnDoesNotExist]: Vec6.\n";
   try {
-    dt_vec6.updColLabel(4, "col-does-not-exist");
+    dt_vec6.updColumnLabel(4, "col-does-not-exist");
   } catch(OpenSim::ColumnDoesNotExist&) {}
 
   // Try updating column label of a column that does not exist using its label.
-  std::cout << "test5 -- updColLabel(label)[ColumnDoesNotExist]: Real.\n";
+  std::cout << "test5 -- updColumnLabel(label)[ColumnDoesNotExist]: Real.\n";
   try {
-    dt_real.updColLabel("col-does-not-exist", "foo");
+    dt_real.updColumnLabel("col-does-not-exist", "foo");
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- updColLabel(label)[ColumnDoesNotExist]: Vec3.\n";
+  std::cout << "test5 -- updColumnLabel(label)[ColumnDoesNotExist]: Vec3.\n";
   try {
-    dt_vec3.updColLabel("col-does-not-exist", "foo");
+    dt_vec3.updColumnLabel("col-does-not-exist", "foo");
   } catch(OpenSim::ColumnDoesNotExist&) {}
-  std::cout << "test5 -- updColLabel(label)[ColumnDoesNotExist]: Vec6.\n";
+  std::cout << "test5 -- updColumnLabel(label)[ColumnDoesNotExist]: Vec6.\n";
   try {
-    dt_vec6.updColLabel("col-does-not-exist", "foo");
+    dt_vec6.updColumnLabel("col-does-not-exist", "foo");
   } catch(OpenSim::ColumnDoesNotExist&) {}
 
   // Update column label using column index.
-  std::cout << "test5 -- updColLabel(ind): Real.\n";
-  dt_real.updColLabel(0, "updColZero");
-  std::cout << "test5 -- updColLabel(ind): Vec3.\n";
-  dt_vec3.updColLabel(0, "updColZero");
-  std::cout << "test5 -- updColLabel(ind): Vec6.\n";
-  dt_vec6.updColLabel(0, "updColZero");
+  std::cout << "test5 -- updColumnLabel(ind): Real.\n";
+  dt_real.updColumnLabel(0, "updColZero");
+  std::cout << "test5 -- updColumnLabel(ind): Vec3.\n";
+  dt_vec3.updColumnLabel(0, "updColZero");
+  std::cout << "test5 -- updColumnLabel(ind): Vec6.\n";
+  dt_vec6.updColumnLabel(0, "updColZero");
 
   // Update column label using old column label.
-  std::cout << "test5 -- updColLabel(label): Real.\n";
-  dt_real.updColLabel("updColZero", "ColZero");
-  std::cout << "test5 -- updColLabel(label): Vec3.\n";
-  dt_vec3.updColLabel("updColZero", "ColZero");
-  std::cout << "test5 -- updColLabel(label): Vec6.\n";
-  dt_vec6.updColLabel("updColZero", "ColZero");
+  std::cout << "test5 -- updColumnLabel(label): Real.\n";
+  dt_real.updColumnLabel("updColZero", "ColZero");
+  std::cout << "test5 -- updColumnLabel(label): Vec3.\n";
+  dt_vec3.updColumnLabel("updColZero", "ColZero");
+  std::cout << "test5 -- updColumnLabel(label): Vec6.\n";
+  dt_vec6.updColumnLabel("updColZero", "ColZero");
   
   // Check the number of column labels.
   std::cout << "test5 -- Number of column labels: Real.\n";
-  assert(numElems(dt_real.getColLabels()) == 4);
+  assert(numElems(dt_real.getColumnLabels()) == 4);
   std::cout << "test5 -- Number of column labels: Vec3.\n";
-  assert(numElems(dt_vec3.getColLabels()) == 4);
+  assert(numElems(dt_vec3.getColumnLabels()) == 4);
   std::cout << "test5 -- Number of column labels: Vec6.\n";
-  assert(numElems(dt_vec6.getColLabels()) == 4);
+  assert(numElems(dt_vec6.getColumnLabels()) == 4);
 
   // Check existence of column labels.
-  std::cout << "test5 -- colHasLabel(): Real.\n";
+  std::cout << "test5 -- columnHasLabel(): Real.\n";
   for(size_t i = 0; i < 4; ++i)
-    assert(dt_real.colHasLabel(i) == true);
-  std::cout << "test5 -- colHasLabel(): Vec3.\n";
+    assert(dt_real.columnHasLabel(i) == true);
+  std::cout << "test5 -- colunHasLabel(): Vec3.\n";
   for(size_t i = 0; i < 4; ++i)
-    assert(dt_vec3.colHasLabel(i) == true);
-  std::cout << "test5 -- colHasLabel(): Vec6.\n";
+    assert(dt_vec3.columnHasLabel(i) == true);
+  std::cout << "test5 -- columnHasLabel(): Vec6.\n";
   for(size_t i = 0; i < 4; ++i)
-    assert(dt_vec6.colHasLabel(i) == true);
+    assert(dt_vec6.columnHasLabel(i) == true);
 
   // Check the column labels.
-  std::cout << "test5 -- getColLabel(): Real.\n";
-  assert(dt_real.getColLabel(0) == "ColZero");
-  assert(dt_real.getColLabel(1) == "ColOne");
-  assert(dt_real.getColLabel(2) == "ColTwo");
-  assert(dt_real.getColLabel(3) == "ColThree");
-  std::cout << "test5 -- getColLabel(): Vec3.\n";
-  assert(dt_vec3.getColLabel(0) == "ColZero");
-  assert(dt_vec3.getColLabel(1) == "ColOne");
-  assert(dt_vec3.getColLabel(2) == "ColTwo");
-  assert(dt_vec3.getColLabel(3) == "ColThree");
-  std::cout << "test5 -- getColLabel(): Vec6.\n";
-  assert(dt_vec6.getColLabel(0) == "ColZero");
-  assert(dt_vec6.getColLabel(1) == "ColOne");
-  assert(dt_vec6.getColLabel(2) == "ColTwo");
-  assert(dt_vec6.getColLabel(3) == "ColThree");
+  std::cout << "test5 -- getColumnLabel(): Real.\n";
+  assert(dt_real.getColumnLabel(0) == "ColZero");
+  assert(dt_real.getColumnLabel(1) == "ColOne");
+  assert(dt_real.getColumnLabel(2) == "ColTwo");
+  assert(dt_real.getColumnLabel(3) == "ColThree");
+  std::cout << "test5 -- getColumnLabel(): Vec3.\n";
+  assert(dt_vec3.getColumnLabel(0) == "ColZero");
+  assert(dt_vec3.getColumnLabel(1) == "ColOne");
+  assert(dt_vec3.getColumnLabel(2) == "ColTwo");
+  assert(dt_vec3.getColumnLabel(3) == "ColThree");
+  std::cout << "test5 -- getColumnLabel(): Vec6.\n";
+  assert(dt_vec6.getColumnLabel(0) == "ColZero");
+  assert(dt_vec6.getColumnLabel(1) == "ColOne");
+  assert(dt_vec6.getColumnLabel(2) == "ColTwo");
+  assert(dt_vec6.getColumnLabel(3) == "ColThree");
 
   // Check column index against label.
-  std::cout << "test5 -- getColInd(): Real.\n";
-  assert(dt_real.getColInd("ColZero")  == 0);
-  assert(dt_real.getColInd("ColOne")   == 1);
-  assert(dt_real.getColInd("ColTwo")   == 2);
-  assert(dt_real.getColInd("ColThree") == 3);
-  std::cout << "test5 -- getColInd(): Vec3.\n";
-  assert(dt_vec3.getColInd("ColZero")  == 0);
-  assert(dt_vec3.getColInd("ColOne")   == 1);
-  assert(dt_vec3.getColInd("ColTwo")   == 2);
-  assert(dt_vec3.getColInd("ColThree") == 3);
-  std::cout << "test5 -- getColInd(): Vec6.\n";
-  assert(dt_vec6.getColInd("ColZero")  == 0);
-  assert(dt_vec6.getColInd("ColOne")   == 1);
-  assert(dt_vec6.getColInd("ColTwo")   == 2);
-  assert(dt_vec6.getColInd("ColThree") == 3);
+  std::cout << "test5 -- getColumnInd(): Real.\n";
+  assert(dt_real.getColumnInd("ColZero")  == 0);
+  assert(dt_real.getColumnInd("ColOne")   == 1);
+  assert(dt_real.getColumnInd("ColTwo")   == 2);
+  assert(dt_real.getColumnInd("ColThree") == 3);
+  std::cout << "test5 -- getColumnInd(): Vec3.\n";
+  assert(dt_vec3.getColumnInd("ColZero")  == 0);
+  assert(dt_vec3.getColumnInd("ColOne")   == 1);
+  assert(dt_vec3.getColumnInd("ColTwo")   == 2);
+  assert(dt_vec3.getColumnInd("ColThree") == 3);
+  std::cout << "test5 -- getColumnInd(): Vec6.\n";
+  assert(dt_vec6.getColumnInd("ColZero")  == 0);
+  assert(dt_vec6.getColumnInd("ColOne")   == 1);
+  assert(dt_vec6.getColumnInd("ColTwo")   == 2);
+  assert(dt_vec6.getColumnInd("ColThree") == 3);
 
   // Clear the column labels.
-  std::cout << "test5 -- clearColLabels(): Real.\n";
-  dt_real.clearColLabels();
-  std::cout << "test5 -- clearColLabels(): Vec3.\n";
-  dt_vec3.clearColLabels();
-  std::cout << "test5 -- clearColLabels(): Vec6.\n";
-  dt_vec6.clearColLabels();
+  std::cout << "test5 -- clearColumnLabels(): Real.\n";
+  dt_real.clearColumnLabels();
+  std::cout << "test5 -- clearColumnLabels(): Vec3.\n";
+  dt_vec3.clearColumnLabels();
+  std::cout << "test5 -- clearColumnLabels(): Vec6.\n";
+  dt_vec6.clearColumnLabels();
   
   // Check the number of column labels.
   std::cout << "test5 -- Number of column labels: Real.\n";
-  assert(numElems(dt_real.getColLabels()) == 0);
+  assert(numElems(dt_real.getColumnLabels()) == 0);
   std::cout << "test5 -- Number of column labels: Vec3.\n";
-  assert(numElems(dt_vec3.getColLabels()) == 0);
+  assert(numElems(dt_vec3.getColumnLabels()) == 0);
   std::cout << "test5 -- Number of column labels: Vec6.\n";
-  assert(numElems(dt_vec6.getColLabels()) == 0);
+  assert(numElems(dt_vec6.getColumnLabels()) == 0);
 }
 
 
@@ -2029,15 +2029,15 @@ void test7() {
   OpenSim::DataTable_<SimTK::Vec6> dt_vec6{3, 4, {10, 20, 30, 40, 50, 60}};
 
   // Add column labels.
-  std::cout << "test7 -- setColLabel(): Real.\n";
-  dt_real.setColLabel(0, "zero");
-  dt_real.setColLabel(2, "two");
-  std::cout << "test7 -- setColLabel(): Vec3.\n";
-  dt_vec3.setColLabel(0, "zero");
-  dt_vec3.setColLabel(2, "two");
-  std::cout << "test7 -- setColLabel(): Vec6.\n";
-  dt_vec6.setColLabel(0, "zero");
-  dt_vec6.setColLabel(2, "two");
+  std::cout << "test7 -- setColumnLabel(): Real.\n";
+  dt_real.setColumnLabel(0, "zero");
+  dt_real.setColumnLabel(2, "two");
+  std::cout << "test7 -- setColumnLabel(): Vec3.\n";
+  dt_vec3.setColumnLabel(0, "zero");
+  dt_vec3.setColumnLabel(2, "two");
+  std::cout << "test7 -- setColumnLabel(): Vec6.\n";
+  dt_vec6.setColumnLabel(0, "zero");
+  dt_vec6.setColumnLabel(2, "two");
 
   // Add metadata.
   std::string string{"metadata"};
@@ -2066,27 +2066,27 @@ void test7() {
   // Verify the copied data is the same as original.
   std::cout << "test7 -- Check copied data: Real.\n";
   for(size_t r = 0; r < dt_real_copy.getNumRows(); ++r)
-    for(size_t c = 0; c < dt_real_copy.getNumCols(); ++c)
+    for(size_t c = 0; c < dt_real_copy.getNumColumns(); ++c)
       assert(std::abs(dt_real_copy.getElt(r, c) - 10) < EPSILON);
   std::cout << "test7 -- Check copied data: Vec3.\n";
   for(size_t r = 0; r < dt_vec3.getNumRows(); ++r)
-    for(size_t c = 0; c < dt_vec3_copy.getNumCols(); ++c)
+    for(size_t c = 0; c < dt_vec3_copy.getNumColumns(); ++c)
       assert(dt_vec3_copy.getElt(r, c) == SimTK::Vec3(10, 20, 30));
   std::cout << "test7 -- Check copied data: Vec6.\n";
   for(size_t r = 0; r < dt_vec6_copy.getNumRows(); ++r)
-    for(size_t c = 0; c < dt_vec6_copy.getNumCols(); ++c)
+    for(size_t c = 0; c < dt_vec6_copy.getNumColumns(); ++c)
       assert(dt_vec6_copy.getElt(r, c) == SimTK::Vec6(10, 20, 30, 40, 50, 60));
 
   // Verify the copied column labels.
   std::cout << "test7 -- Check copied column labels: Real.\n";
-  assert(dt_real_copy.getColLabel(0) == "zero");
-  assert(dt_real_copy.getColLabel(2) == "two");
+  assert(dt_real_copy.getColumnLabel(0) == "zero");
+  assert(dt_real_copy.getColumnLabel(2) == "two");
   std::cout << "test7 -- Check copied column labels: Vec3.\n";
-  assert(dt_vec3_copy.getColLabel(0) == "zero");
-  assert(dt_vec3_copy.getColLabel(2) == "two");
+  assert(dt_vec3_copy.getColumnLabel(0) == "zero");
+  assert(dt_vec3_copy.getColumnLabel(2) == "two");
   std::cout << "test7 -- Check copied column labels: Vec6.\n";
-  assert(dt_vec6_copy.getColLabel(0) == "zero");
-  assert(dt_vec6_copy.getColLabel(2) == "two");
+  assert(dt_vec6_copy.getColumnLabel(0) == "zero");
+  assert(dt_vec6_copy.getColumnLabel(2) == "two");
 
   // Verify the copied metadata.
   std::cout << "test7 -- Check copied metadata: Real.\n";
@@ -2111,15 +2111,15 @@ void test7() {
   dt_vec6.updRow(1) = SimTK::Vec6{100, 200, 300, 400, 500, 600};
 
   // Edit the original column labels.
-  std::cout << "test7 -- updColLabel(): Real.\n";
-  dt_real.updColLabel(0, "col_zero");
-  dt_real.updColLabel(2, "col_two");
-  std::cout << "test7 -- updColLabel(): Vec3.\n";
-  dt_vec3.updColLabel(0, "col_zero");
-  dt_vec3.updColLabel(2, "col_two");
-  std::cout << "test7 -- updColLabel(): Vec6.\n";
-  dt_vec6.updColLabel(0, "col_zero");
-  dt_vec6.updColLabel(2, "col_two");
+  std::cout << "test7 -- updColumnLabel(): Real.\n";
+  dt_real.updColumnLabel(0, "col_zero");
+  dt_real.updColumnLabel(2, "col_two");
+  std::cout << "test7 -- updColumnLabel(): Vec3.\n";
+  dt_vec3.updColumnLabel(0, "col_zero");
+  dt_vec3.updColumnLabel(2, "col_two");
+  std::cout << "test7 -- updColumnLabel(): Vec6.\n";
+  dt_vec6.updColumnLabel(0, "col_zero");
+  dt_vec6.updColumnLabel(2, "col_two");
 
   // Edit the original metadata.
   std::cout << "test7 -- updMetaData(): Real.\n";
@@ -2138,27 +2138,27 @@ void test7() {
   // Verify the copied data is unchanged.
   std::cout << "test7 -- Check copied data: Real.\n";
   for(size_t r = 0; r < dt_real_copy.getNumRows(); ++r)
-    for(size_t c = 0; c < dt_real_copy.getNumCols(); ++c)
+    for(size_t c = 0; c < dt_real_copy.getNumColumns(); ++c)
       assert(std::abs(dt_real_copy.getElt(r, c) - 10) < EPSILON);
   std::cout << "test7 -- Check copied data: Vec3.\n";
   for(size_t r = 0; r < dt_vec3.getNumRows(); ++r)
-    for(size_t c = 0; c < dt_vec3_copy.getNumCols(); ++c)
+    for(size_t c = 0; c < dt_vec3_copy.getNumColumns(); ++c)
       assert(dt_vec3_copy.getElt(r, c) == SimTK::Vec3(10, 20, 30));
   std::cout << "test7 -- Check copied data: Vec6.\n";
   for(size_t r = 0; r < dt_vec6_copy.getNumRows(); ++r)
-    for(size_t c = 0; c < dt_vec6_copy.getNumCols(); ++c)
+    for(size_t c = 0; c < dt_vec6_copy.getNumColumns(); ++c)
       assert(dt_vec6_copy.getElt(r, c) == SimTK::Vec6(10, 20, 30, 40, 50, 60));
 
   // Verify that copied column labels are unchanged.
   std::cout << "test7 -- Check copied column labels: Real.\n";
-  assert(dt_real_copy.getColLabel(0) == "zero");
-  assert(dt_real_copy.getColLabel(2) == "two");
+  assert(dt_real_copy.getColumnLabel(0) == "zero");
+  assert(dt_real_copy.getColumnLabel(2) == "two");
   std::cout << "test7 -- Check copied column labels: Vec3.\n";
-  assert(dt_vec3_copy.getColLabel(0) == "zero");
-  assert(dt_vec3_copy.getColLabel(2) == "two");
+  assert(dt_vec3_copy.getColumnLabel(0) == "zero");
+  assert(dt_vec3_copy.getColumnLabel(2) == "two");
   std::cout << "test7 -- Check copied column labels: Vec6.\n";
-  assert(dt_vec6_copy.getColLabel(0) == "zero");
-  assert(dt_vec6_copy.getColLabel(2) == "two");
+  assert(dt_vec6_copy.getColumnLabel(0) == "zero");
+  assert(dt_vec6_copy.getColumnLabel(2) == "two");
 
   // Verify the copied metadata is unchanged.
   std::cout << "test7 -- Check copied metadata: Real.\n";
@@ -2185,27 +2185,27 @@ void test7() {
   // Verify the orignal got back its data.
   std::cout << "test7 -- Check original data: Real.\n";
   for(size_t r = 0; r < dt_real.getNumRows(); ++r)
-    for(size_t c = 0; c < dt_real.getNumCols(); ++c)
+    for(size_t c = 0; c < dt_real.getNumColumns(); ++c)
       assert(std::abs(dt_real.getElt(r, c) - 10) < EPSILON);
   std::cout << "test7 -- Check original data: Vec3.\n";
   for(size_t r = 0; r < dt_vec3.getNumRows(); ++r)
-    for(size_t c = 0; c < dt_vec3.getNumCols(); ++c)
+    for(size_t c = 0; c < dt_vec3.getNumColumns(); ++c)
       assert(dt_vec3.getElt(r, c) == SimTK::Vec3(10, 20, 30));
   std::cout << "test7 -- Check original data: Vec6.\n";
   for(size_t r = 0; r < dt_vec6.getNumRows(); ++r)
-    for(size_t c = 0; c < dt_vec6.getNumCols(); ++c)
+    for(size_t c = 0; c < dt_vec6.getNumColumns(); ++c)
       assert(dt_vec6.getElt(r, c) == SimTK::Vec6(10, 20, 30, 40, 50, 60));
 
   // Verify that original got back its column labels.
   std::cout << "test7 -- Check original column labels: Real.\n";
-  assert(dt_real.getColLabel(0) == "zero");
-  assert(dt_real.getColLabel(2) == "two");
+  assert(dt_real.getColumnLabel(0) == "zero");
+  assert(dt_real.getColumnLabel(2) == "two");
   std::cout << "test7 -- Check original column labels: Vec3.\n";
-  assert(dt_vec3.getColLabel(0) == "zero");
-  assert(dt_vec3.getColLabel(2) == "two");
+  assert(dt_vec3.getColumnLabel(0) == "zero");
+  assert(dt_vec3.getColumnLabel(2) == "two");
   std::cout << "test7 -- Check original column labels: Vec6.\n";
-  assert(dt_vec6.getColLabel(0) == "zero");
-  assert(dt_vec6.getColLabel(2) == "two");
+  assert(dt_vec6.getColumnLabel(0) == "zero");
+  assert(dt_vec6.getColumnLabel(2) == "two");
 
   // Verify the original got back its metadata.
   std::cout << "test7 -- Check original metadata: Real.\n";
@@ -2232,27 +2232,27 @@ void test7() {
   // Verify the moved data is the same as original.
   std::cout << "test7 -- Check moved data: Real.\n";
   for(size_t r = 0; r < dt_real_move.getNumRows(); ++r)
-    for(size_t c = 0; c < dt_real_move.getNumCols(); ++c)
+    for(size_t c = 0; c < dt_real_move.getNumColumns(); ++c)
       assert(std::abs(dt_real_move.getElt(r, c) - 10) < EPSILON);
   std::cout << "test7 -- Check moved data: Vec3.\n";
   for(size_t r = 0; r < dt_vec3.getNumRows(); ++r)
-    for(size_t c = 0; c < dt_vec3_move.getNumCols(); ++c)
+    for(size_t c = 0; c < dt_vec3_move.getNumColumns(); ++c)
       assert(dt_vec3_move.getElt(r, c) == SimTK::Vec3(10, 20, 30));
   std::cout << "test7 -- Check moved data: Vec6.\n";
   for(size_t r = 0; r < dt_vec6_move.getNumRows(); ++r)
-    for(size_t c = 0; c < dt_vec6_move.getNumCols(); ++c)
+    for(size_t c = 0; c < dt_vec6_move.getNumColumns(); ++c)
       assert(dt_vec6_move.getElt(r, c) == SimTK::Vec6(10, 20, 30, 40, 50, 60));
 
   // Verify the moved column labels.
   std::cout << "test7 -- Check moved column labels: Real.\n";
-  assert(dt_real_move.getColLabel(0) == "zero");
-  assert(dt_real_move.getColLabel(2) == "two");
+  assert(dt_real_move.getColumnLabel(0) == "zero");
+  assert(dt_real_move.getColumnLabel(2) == "two");
   std::cout << "test7 -- Check moved column labels: Vec3.\n";
-  assert(dt_vec3_move.getColLabel(0) == "zero");
-  assert(dt_vec3_move.getColLabel(2) == "two");
+  assert(dt_vec3_move.getColumnLabel(0) == "zero");
+  assert(dt_vec3_move.getColumnLabel(2) == "two");
   std::cout << "test7 -- Check moved column labels: Vec6.\n";
-  assert(dt_vec6_move.getColLabel(0) == "zero");
-  assert(dt_vec6_move.getColLabel(2) == "two");
+  assert(dt_vec6_move.getColumnLabel(0) == "zero");
+  assert(dt_vec6_move.getColumnLabel(2) == "two");
 
   // Verify the moved metadata.
   std::cout << "test7 -- Check moved metadata: Real.\n";
@@ -2277,15 +2277,15 @@ void test7() {
   dt_vec6.updRow(1) = SimTK::Vec6{100, 200, 300, 400, 500, 600};
 
   // Edit the original column labels.
-  std::cout << "test7 -- updColLabel(): Real.\n";
-  dt_real.updColLabel(0, "col_zero");
-  dt_real.updColLabel(2, "col_two");
-  std::cout << "test7 -- updColLabel(): Vec3.\n";
-  dt_vec3.updColLabel(0, "col_zero");
-  dt_vec3.updColLabel(2, "col_two");
-  std::cout << "test7 -- updColLabel(): Vec6.\n";
-  dt_vec6.updColLabel(0, "col_zero");
-  dt_vec6.updColLabel(2, "col_two");
+  std::cout << "test7 -- updColumnLabel(): Real.\n";
+  dt_real.updColumnLabel(0, "col_zero");
+  dt_real.updColumnLabel(2, "col_two");
+  std::cout << "test7 -- updColumnLabel(): Vec3.\n";
+  dt_vec3.updColumnLabel(0, "col_zero");
+  dt_vec3.updColumnLabel(2, "col_two");
+  std::cout << "test7 -- updColumnLabel(): Vec6.\n";
+  dt_vec6.updColumnLabel(0, "col_zero");
+  dt_vec6.updColumnLabel(2, "col_two");
 
   // Edit the original metadata.
   std::cout << "test7 -- updMetaData(): Real.\n";
@@ -2313,27 +2313,27 @@ void test7() {
   // Verify the orignal got back its data.
   std::cout << "test7 -- Check original data: Real.\n";
   for(size_t r = 0; r < dt_real.getNumRows(); ++r)
-    for(size_t c = 0; c < dt_real.getNumCols(); ++c)
+    for(size_t c = 0; c < dt_real.getNumColumns(); ++c)
       assert(std::abs(dt_real.getElt(r, c) - 10) < EPSILON);
   std::cout << "test7 -- Check original data: Vec3.\n";
   for(size_t r = 0; r < dt_vec3.getNumRows(); ++r)
-    for(size_t c = 0; c < dt_vec3.getNumCols(); ++c)
+    for(size_t c = 0; c < dt_vec3.getNumColumns(); ++c)
       assert(dt_vec3.getElt(r, c) == SimTK::Vec3(10, 20, 30));
   std::cout << "test7 -- Check original data: Vec6.\n";
   for(size_t r = 0; r < dt_vec6.getNumRows(); ++r)
-    for(size_t c = 0; c < dt_vec6.getNumCols(); ++c)
+    for(size_t c = 0; c < dt_vec6.getNumColumns(); ++c)
       assert(dt_vec6.getElt(r, c) == SimTK::Vec6(10, 20, 30, 40, 50, 60));
 
   // Verify that original got back its column labels.
   std::cout << "test7 -- Check original column labels: Real.\n";
-  assert(dt_real.getColLabel(0) == "zero");
-  assert(dt_real.getColLabel(2) == "two");
+  assert(dt_real.getColumnLabel(0) == "zero");
+  assert(dt_real.getColumnLabel(2) == "two");
   std::cout << "test7 -- Check original column labels: Vec3.\n";
-  assert(dt_vec3.getColLabel(0) == "zero");
-  assert(dt_vec3.getColLabel(2) == "two");
+  assert(dt_vec3.getColumnLabel(0) == "zero");
+  assert(dt_vec3.getColumnLabel(2) == "two");
   std::cout << "test7 -- Check original column labels: Vec6.\n";
-  assert(dt_vec6.getColLabel(0) == "zero");
-  assert(dt_vec6.getColLabel(2) == "two");
+  assert(dt_vec6.getColumnLabel(0) == "zero");
+  assert(dt_vec6.getColumnLabel(2) == "two");
 
   // Verify the original got back its metadata.
   std::cout << "test7 -- Check original metadata: Real.\n";
@@ -2375,100 +2375,100 @@ void test8() {
   // Add column labels to all the DataTables in the container.
   std::cout << "test8 -- Add column labels.\n";
   for(auto& dt : vector) {
-    dt->setColLabel(0, "col-zero");
-    dt->setColLabel(2, "col-two");
+    dt->setColumnLabel(0, "col-zero");
+    dt->setColumnLabel(2, "col-two");
   }
 
   // Check existence of column labels.
   std::cout << "test8 -- Check existence of col labels: Real.\n";
-  assert(dt_real.colHasLabel(0) == true);
-  assert(dt_real.colHasLabel(2) == true);
-  assert(dt_real.colHasLabel(1) == false);
-  assert(dt_real.colHasLabel(3) == false);
+  assert(dt_real.columnHasLabel(0) == true);
+  assert(dt_real.columnHasLabel(2) == true);
+  assert(dt_real.columnHasLabel(1) == false);
+  assert(dt_real.columnHasLabel(3) == false);
   std::cout << "test8 -- Check existence of col labels: Vec3.\n";
-  assert(dt_vec3.colHasLabel(0) == true);
-  assert(dt_vec3.colHasLabel(2) == true);
-  assert(dt_vec3.colHasLabel(1) == false);
-  assert(dt_vec3.colHasLabel(3) == false);
+  assert(dt_vec3.columnHasLabel(0) == true);
+  assert(dt_vec3.columnHasLabel(2) == true);
+  assert(dt_vec3.columnHasLabel(1) == false);
+  assert(dt_vec3.columnHasLabel(3) == false);
   std::cout << "test8 -- Check existence of col labels: Vec6.\n";
-  assert(dt_vec6.colHasLabel(0) == true);
-  assert(dt_vec6.colHasLabel(2) == true);
-  assert(dt_vec6.colHasLabel(1) == false);
-  assert(dt_vec6.colHasLabel(3) == false);
+  assert(dt_vec6.columnHasLabel(0) == true);
+  assert(dt_vec6.columnHasLabel(2) == true);
+  assert(dt_vec6.columnHasLabel(1) == false);
+  assert(dt_vec6.columnHasLabel(3) == false);
 
   // Check col labels.
   std::cout << "test8 -- Check col labels: Real.\n";
-  assert(vector[0]->getColLabel(0) == "col-zero" &&
-         dt_real.getColLabel(0)    == "col-zero");
-  assert(vector[0]->getColLabel(2) == "col-two" &&
-         dt_real.getColLabel(2)    == "col-two");
+  assert(vector[0]->getColumnLabel(0) == "col-zero" &&
+         dt_real.getColumnLabel(0)    == "col-zero");
+  assert(vector[0]->getColumnLabel(2) == "col-two" &&
+         dt_real.getColumnLabel(2)    == "col-two");
   std::cout << "test8 -- Check col labels: Vec3.\n";
-  assert(vector[1]->getColLabel(0) == "col-zero" &&
-         dt_vec3.getColLabel(0)    == "col-zero");
-  assert(vector[1]->getColLabel(2) == "col-two" &&
-         dt_vec3.getColLabel(2)    == "col-two");
+  assert(vector[1]->getColumnLabel(0) == "col-zero" &&
+         dt_vec3.getColumnLabel(0)    == "col-zero");
+  assert(vector[1]->getColumnLabel(2) == "col-two" &&
+         dt_vec3.getColumnLabel(2)    == "col-two");
   std::cout << "test8 -- Check col labels: Vec6.\n";
-  assert(vector[2]->getColLabel(0) == "col-zero" &&
-         dt_vec6.getColLabel(0)    == "col-zero");
-  assert(vector[2]->getColLabel(2) == "col-two" &&
-         dt_vec6.getColLabel(2)    == "col-two");
+  assert(vector[2]->getColumnLabel(0) == "col-zero" &&
+         dt_vec6.getColumnLabel(0)    == "col-zero");
+  assert(vector[2]->getColumnLabel(2) == "col-two" &&
+         dt_vec6.getColumnLabel(2)    == "col-two");
 
   // Check col indices.
   std::cout << "test8 -- Check col indices: Real.\n";
-  assert(vector[0]->getColInd("col-zero") == 0 &&
-         dt_real.getColInd("col-zero")    == 0);
-  assert(vector[2]->getColInd("col-two") == 2 &&
-         dt_real.getColInd("col-two")    == 2);
+  assert(vector[0]->getColumnInd("col-zero") == 0 &&
+         dt_real.getColumnInd("col-zero")    == 0);
+  assert(vector[2]->getColumnInd("col-two") == 2 &&
+         dt_real.getColumnInd("col-two")    == 2);
   std::cout << "test8 -- Check col indices: Vec3.\n";
-  assert(vector[0]->getColInd("col-zero") == 0 &&
-         dt_vec3.getColInd("col-zero")    == 0);
-  assert(vector[2]->getColInd("col-two") == 2 &&
-         dt_vec3.getColInd("col-two")    == 2);
+  assert(vector[0]->getColumnInd("col-zero") == 0 &&
+         dt_vec3.getColumnInd("col-zero")    == 0);
+  assert(vector[2]->getColumnInd("col-two") == 2 &&
+         dt_vec3.getColumnInd("col-two")    == 2);
   std::cout << "test8 -- Check col indices: Vec6.\n";
-  assert(vector[0]->getColInd("col-zero") == 0 &&
-         dt_vec6.getColInd("col-zero")    == 0);
-  assert(vector[2]->getColInd("col-two") == 2 &&
-         dt_vec6.getColInd("col-two")    == 2);
+  assert(vector[0]->getColumnInd("col-zero") == 0 &&
+         dt_vec6.getColumnInd("col-zero")    == 0);
+  assert(vector[2]->getColumnInd("col-two") == 2 &&
+         dt_vec6.getColumnInd("col-two")    == 2);
 
   // Update col labels.
   std::cout << "test8 -- Update column labels.\n";
   for(auto& dt : vector) {
-    dt->updColLabel(0, "column-zero");
-    dt->updColLabel("col-two", "column-two");
+    dt->updColumnLabel(0, "column-zero");
+    dt->updColumnLabel("col-two", "column-two");
   }
 
   // Check col labels.
   std::cout << "test8 -- Check col labels: Real.\n";
-  assert(vector[0]->getColLabel(0) == dt_real.getColLabel(0));
-  assert(vector[0]->getColLabel(2) == dt_real.getColLabel(2));
+  assert(vector[0]->getColumnLabel(0) == dt_real.getColumnLabel(0));
+  assert(vector[0]->getColumnLabel(2) == dt_real.getColumnLabel(2));
   std::cout << "test8 -- Check col labels: Vec3.\n";
-  assert(vector[1]->getColLabel(0) == dt_vec3.getColLabel(0));
-  assert(vector[1]->getColLabel(2) == dt_vec3.getColLabel(2));
+  assert(vector[1]->getColumnLabel(0) == dt_vec3.getColumnLabel(0));
+  assert(vector[1]->getColumnLabel(2) == dt_vec3.getColumnLabel(2));
   std::cout << "test8 -- Check col labels: Vec6.\n";
-  assert(vector[2]->getColLabel(0) == dt_vec6.getColLabel(0));
-  assert(vector[2]->getColLabel(2) == dt_vec6.getColLabel(2));
+  assert(vector[2]->getColumnLabel(0) == dt_vec6.getColumnLabel(0));
+  assert(vector[2]->getColumnLabel(2) == dt_vec6.getColumnLabel(2));
 
   // Check the col labels.
   std::cout << "test8 -- Check col labels: Real.\n";
-  assert(vector[0]->getColLabel(0) == "column-zero" &&
-         dt_real.getColLabel(0)    == "column-zero");
-  assert(vector[0]->getColLabel(2) == "column-two" &&
-         dt_real.getColLabel(2)    == "column-two");
+  assert(vector[0]->getColumnLabel(0) == "column-zero" &&
+         dt_real.getColumnLabel(0)    == "column-zero");
+  assert(vector[0]->getColumnLabel(2) == "column-two" &&
+         dt_real.getColumnLabel(2)    == "column-two");
   std::cout << "test8 -- Check col labels: Vec3.\n";
-  assert(vector[1]->getColLabel(0) == "column-zero" &&
-         dt_vec3.getColLabel(0)    == "column-zero");
-  assert(vector[1]->getColLabel(2) == "column-two" &&
-         dt_vec3.getColLabel(2)    == "column-two");
+  assert(vector[1]->getColumnLabel(0) == "column-zero" &&
+         dt_vec3.getColumnLabel(0)    == "column-zero");
+  assert(vector[1]->getColumnLabel(2) == "column-two" &&
+         dt_vec3.getColumnLabel(2)    == "column-two");
   std::cout << "test8 -- Check col labels: Vec6.\n";
-  assert(vector[2]->getColLabel(0) == "column-zero" &&
-         dt_vec6.getColLabel(0)    == "column-zero");
-  assert(vector[2]->getColLabel(2) == "column-two" &&
-         dt_vec6.getColLabel(2)    == "column-two");
+  assert(vector[2]->getColumnLabel(0) == "column-zero" &&
+         dt_vec6.getColumnLabel(0)    == "column-zero");
+  assert(vector[2]->getColumnLabel(2) == "column-two" &&
+         dt_vec6.getColumnLabel(2)    == "column-two");
 
   // Clear the column labels.
   std::cout << "test8 -- Clear column labels.\n";
   for(auto& dt : vector)
-    dt->clearColLabels();
+    dt->clearColumnLabels();
 }
 
 

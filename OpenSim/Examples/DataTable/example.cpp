@@ -65,21 +65,21 @@ int main() {
     OpenSim::DataTable_<SimTK::Real> real{data_real.cbegin(),
                                           data_real.cend(),
                                           3,
-                                          OpenSim::ColWise};
+                                          OpenSim::ColumnWise};
     OpenSim::DataTable_<SimTK::Vec3> vec3{data_vec3.cbegin(),
                                           data_vec3.cend(),
                                           3,
-                                          OpenSim::ColWise};
+                                          OpenSim::ColumnWise};
     OpenSim::DataTable_<SimTK::Vec6> vec6{data_vec6.cbegin(),
                                           data_vec6.cend(),
                                           3,
-                                          OpenSim::ColWise};
+                                          OpenSim::ColumnWise};
   }
 
   // Add multiple rows at once using an iterator. Because the DataTable is empty
   // , number of columns has to specified when using iterator. When calling this
-  // function on a non-empty DataTable, the arugment ncol is ignored. We have 12
-  // elements in the iterator and following creates a 3x4 DataTable.
+  // function on a non-empty DataTable, the arugment ncolumn is ignored. We 
+  // have 12 elements in the iterator and following creates a 3x4 DataTable.
   dt_real.addRows(data_real.cbegin(), data_real.cend(), 4);
   dt_vec3.addRows(data_vec3.cbegin(), data_vec3.cend(), 4);
   dt_vec6.addRows(data_vec6.cbegin(), data_vec6.cend(), 4);
@@ -137,14 +137,14 @@ int main() {
                                        data2_vec3.data()};
   SimTK::Vector_<SimTK::Vec6> col_vec6{static_cast<int>(data2_vec6.size()),
                                        data2_vec6.data()};
-  dt_real.addCol(col_real);
-  dt_vec3.addCol(col_vec3);
-  dt_vec6.addCol(col_vec6);
+  dt_real.addColumn(col_real);
+  dt_vec3.addColumn(col_vec3);
+  dt_vec6.addColumn(col_vec6);
 
   // Add a column using an iterator.
-  dt_real.addCol(data2_real.cbegin(), data2_real.cend());
-  dt_vec3.addCol(data2_vec3.cbegin(), data2_vec3.cend());
-  dt_vec6.addCol(data2_vec6.cbegin(), data2_vec6.cend());
+  dt_real.addColumn(data2_real.cbegin(), data2_real.cend());
+  dt_vec3.addColumn(data2_vec3.cbegin(), data2_vec3.cend());
+  dt_vec6.addColumn(data2_vec6.cbegin(), data2_vec6.cend());
 
   // Add multiple columns using an iterator.
   for(int i = 0; i < 7; ++i) {
@@ -152,9 +152,9 @@ int main() {
     data2_vec3.push_back(SimTK::Vec3{1, 2, 3} + i);
     data2_vec6.push_back(SimTK::Vec6{1, 2, 3, 4, 5, 6} + i);
   }
-  dt_real.addCols(data2_real.cbegin(), data2_real.cend());
-  dt_vec3.addCols(data2_vec3.cbegin(), data2_vec3.cend());
-  dt_vec6.addCols(data2_vec6.cbegin(), data2_vec6.cend());
+  dt_real.addColumns(data2_real.cbegin(), data2_real.cend());
+  dt_vec3.addColumns(data2_vec3.cbegin(), data2_vec3.cend());
+  dt_vec6.addColumns(data2_vec6.cbegin(), data2_vec6.cend());
 
   // Copy construct DataTable.
   OpenSim::DataTable_<SimTK::Real> dt_real_copy{dt_real};
@@ -172,9 +172,9 @@ int main() {
   dt_vec6_copy = dt_vec6;
 
   // Add/concatenate an entire DataTable by col.
-  dt_real.addDataTableByCol(dt_real_copy);
-  dt_vec3.addDataTableByCol(dt_vec3_copy);
-  dt_vec6.addDataTableByCol(dt_vec6_copy);
+  dt_real.addDataTableByColumn(dt_real_copy);
+  dt_vec3.addDataTableByColumn(dt_vec3_copy);
+  dt_vec6.addDataTableByColumn(dt_vec6_copy);
 
   // Concatenate two existing DataTable(s) and produce a new one instead of 
   // appending one to another.
@@ -197,27 +197,27 @@ int main() {
     auto byrow_dt_vec6 = addDataTablesByRow(dt1_vec6, dt2_vec6);
 
     // Concatenate by col. The following using same table for both arguments.
-    auto bycol_dt_real = addDataTablesByCol(dt1_real, dt1_real);
-    auto bycol_dt_vec3 = addDataTablesByCol(dt1_vec3, dt1_vec3);
-    auto bycol_dt_vec6 = addDataTablesByCol(dt1_vec6, dt1_vec6);
+    auto bycol_dt_real = addDataTablesByColumn(dt1_real, dt1_real);
+    auto bycol_dt_vec3 = addDataTablesByColumn(dt1_vec3, dt1_vec3);
+    auto bycol_dt_vec6 = addDataTablesByColumn(dt1_vec6, dt1_vec6);
   }
 
   // The columns of a DataTable can be labeled. Not all columns need to be
   // labeled. 
-  dt_real.setColLabel(0, "col-zero");
-  dt_vec3.setColLabel(0, "col-zero");
-  dt_vec6.setColLabel(0, "col-zero");
-  dt_real.setColLabel(2, "col-two");
-  dt_vec3.setColLabel(2, "col-two");
-  dt_vec6.setColLabel(2, "col-two");
-  dt_real.setColLabel(4, "col-four");
-  dt_vec3.setColLabel(4, "col-four");
-  dt_vec6.setColLabel(4, "col-four");
+  dt_real.setColumnLabel(0, "col-zero");
+  dt_vec3.setColumnLabel(0, "col-zero");
+  dt_vec6.setColumnLabel(0, "col-zero");
+  dt_real.setColumnLabel(2, "col-two");
+  dt_vec3.setColumnLabel(2, "col-two");
+  dt_vec6.setColumnLabel(2, "col-two");
+  dt_real.setColumnLabel(4, "col-four");
+  dt_vec3.setColumnLabel(4, "col-four");
+  dt_vec6.setColumnLabel(4, "col-four");
 
   // Retrieve number of rows and cols in the DataTable.
-  assert(dt_real.getNumRows() == 14 && dt_real.getNumCols() == 16);
-  assert(dt_vec3.getNumRows() == 14 && dt_vec3.getNumCols() == 16);
-  assert(dt_vec6.getNumRows() == 14 && dt_vec6.getNumCols() == 16);
+  assert(dt_real.getNumRows() == 14 && dt_real.getNumColumns() == 16);
+  assert(dt_vec3.getNumRows() == 14 && dt_vec3.getNumColumns() == 16);
+  assert(dt_vec6.getNumRows() == 14 && dt_vec6.getNumColumns() == 16);
 
   // Get a row/col of by its index. Result of get<> functions is not writable.
   // See SimTK::RowVectorview_ and SimTK::VectorView for details on how to use 
@@ -228,15 +228,15 @@ int main() {
     const auto row2_vec3 = dt_vec3.getRow(2);
     const auto row2_vec6 = dt_vec6.getRow(2);
 
-    const auto col2_real = dt_real.getCol(2);
-    const auto col2_vec3 = dt_vec3.getCol(2);
-    const auto col2_vec6 = dt_vec6.getCol(2);
+    const auto col2_real = dt_real.getColumn(2);
+    const auto col2_vec3 = dt_vec3.getColumn(2);
+    const auto col2_vec6 = dt_vec6.getColumn(2);
 
     // Columns can also be retrieved using their labels, if they have been
     // given one.
-    const auto col2_real_copy = dt_real.getCol("col-two");
-    const auto col2_vec3_copy = dt_vec3.getCol("col-two");
-    const auto col2_vec6_copy = dt_vec6.getCol("col-two");
+    const auto col2_real_copy = dt_real.getColumn("col-two");
+    const auto col2_vec3_copy = dt_vec3.getColumn("col-two");
+    const auto col2_vec6_copy = dt_vec6.getColumn("col-two");
     for(int i = 0; i < col2_real.size(); ++i) {
       assert(std::abs(col2_real[i] - col2_real_copy[i]) < Epsilon);
       assert(col2_vec3[i] == col2_vec3_copy[i]);
@@ -253,18 +253,18 @@ int main() {
     row2_vec3 *= 2;
     row2_vec6 *= 2;
 
-    auto col2_real = dt_real.updCol(2);
-    auto col2_vec3 = dt_vec3.updCol(2);
-    auto col2_vec6 = dt_vec6.updCol(2);
+    auto col2_real = dt_real.updColumn(2);
+    auto col2_vec3 = dt_vec3.updColumn(2);
+    auto col2_vec6 = dt_vec6.updColumn(2);
     col2_real *= 2;
     col2_vec3 *= 2;
     col2_vec6 *= 2;
 
     // Columns can also be updated using their lables, if they have been
     // given one.
-    dt_real.updCol("col-two") *= 2;
-    dt_vec3.updCol("col-two") *= 2;
-    dt_vec6.updCol("col-two") *= 2;
+    dt_real.updColumn("col-two") *= 2;
+    dt_vec3.updColumn("col-two") *= 2;
+    dt_vec6.updColumn("col-two") *= 2;
   }
 
   // Individual elements of the DataTable can be retrieved using row-col pair.
@@ -377,54 +377,54 @@ int main() {
   // Add column labels to all the DataTables through pointers stored in the
   // container.
   for(auto& dt : vector) {
-    dt->setColLabel(0, "col-zero");
-    dt->setColLabel(2, "col-two");
+    dt->setColumnLabel(0, "col-zero");
+    dt->setColumnLabel(2, "col-two");
   }
 
   // Check if a column index has label associated.
   for(auto& dt : vector) {
-    assert(dt->colHasLabel(0) == true);
-    assert(dt->colHasLabel(2) == true);
-    assert(dt->colHasLabel(1) == false);
-    assert(dt->colHasLabel(3) == false);
+    assert(dt->columnHasLabel(0) == true);
+    assert(dt->columnHasLabel(2) == true);
+    assert(dt->columnHasLabel(1) == false);
+    assert(dt->columnHasLabel(3) == false);
   }
 
   // Retrieve column labels using get<> method.
   for(auto& dt : vector) {
-    assert(dt->getColLabel(0) == "col-zero");
-    assert(dt->getColLabel(2) == "col-two");
+    assert(dt->getColumnLabel(0) == "col-zero");
+    assert(dt->getColumnLabel(2) == "col-two");
   }
 
   // Check if a column label exists in the DataTable.
   for(auto& dt : vector) {
-    assert(dt->colExists("col-zero") == true);
-    assert(dt->colExists("col-two") == true);
+    assert(dt->columnExists("col-zero") == true);
+    assert(dt->columnExists("col-two") == true);
   }
 
   // Retrieve the column index using its label.
-  assert(vector[0]->getColInd("col-zero") == 0 &&
-         table_real.getColInd("col-zero") == 0);
-  assert(vector[2]->getColInd("col-two")  == 2 &&
-         table_real.getColInd("col-two")  == 2);
-  assert(vector[0]->getColInd("col-zero") == 0 &&
-         table_vec3.getColInd("col-zero") == 0);
-  assert(vector[2]->getColInd("col-two")  == 2 &&
-         table_vec3.getColInd("col-two")  == 2);
-  assert(vector[0]->getColInd("col-zero") == 0 &&
-         table_vec6.getColInd("col-zero") == 0);
-  assert(vector[2]->getColInd("col-two")  == 2 &&
-         table_vec6.getColInd("col-two")  == 2);
+  assert(vector[0]->getColumnInd("col-zero") == 0 &&
+         table_real.getColumnInd("col-zero") == 0);
+  assert(vector[2]->getColumnInd("col-two")  == 2 &&
+         table_real.getColumnInd("col-two")  == 2);
+  assert(vector[0]->getColumnInd("col-zero") == 0 &&
+         table_vec3.getColumnInd("col-zero") == 0);
+  assert(vector[2]->getColumnInd("col-two")  == 2 &&
+         table_vec3.getColumnInd("col-two")  == 2);
+  assert(vector[0]->getColumnInd("col-zero") == 0 &&
+         table_vec6.getColumnInd("col-zero") == 0);
+  assert(vector[2]->getColumnInd("col-two")  == 2 &&
+         table_vec6.getColumnInd("col-two")  == 2);
 
   // Update column labels using upd<> method. Update can be done using index
   // or using column label.
   for(auto& dt : vector) {
-    dt->updColLabel(0        , "column-zero");
-    dt->updColLabel("col-two", "column-two");
+    dt->updColumnLabel(0        , "column-zero");
+    dt->updColumnLabel("col-two", "column-two");
   }
 
   // Clear the column labels.
   for(auto& dt : vector)
-    dt->clearColLabels();
+    dt->clearColumnLabels();
 
   return 0;
 }
