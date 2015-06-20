@@ -892,6 +892,31 @@ public:
     m_col_ind.clear();
   }
 
+  /** Resize the data, retaining as much of the old data as will fit. New memory
+  will be allocated and the existing entries will be copied over to the extent 
+  it will fit. If the number of columns is decreased, the labels for the lost
+  columns will also be lost. *Be careful not to shrink the DataTable 
+  unintentionally*.                                                           */
+  void resizeKeep(size_t nrow, size_t ncol) {
+    using ColumnLabelsValueType = typename ColumnLabelsType::value_type;
+
+    assert(nrow != 0 && ncol != 0);
+
+    } else if(ncol < m_data.ncol()) {
+      for(size_t c = ncol; c < m_data.ncol(); ++c) {
+        auto res = std::find_if(m_col_ind.begin(),
+                                m_col_ind.end(),
+                                [c] (const ColumnLabelsValueType& kv) {
+                                  return kv.second == c;
+                                });
+        if(res != m_col_ind.end())
+          m_col_ind.erase(res);
+      }
+
+      m_data.resizeKeep(nrow, ncol);
+    }
+  }
+
   /**@}*/
   /** Meta-data Methods.
       Meta-data accessors and mutators                                        */
@@ -1118,8 +1143,9 @@ public:
   \throws ColumnHasNoLabel If the column does not have a label.
   \throws ColumnDoesNotExist If the column does not exist.                    */
   string getColumnLabel(const size_t columnInd) const override {
-    checkColumnExists(columnInd);
     using ColumnLabelsValueType = typename ColumnLabelsType::value_type;
+
+    checkColumnExists(columnInd);
     auto res = std::find_if(m_col_ind.begin(),
                             m_col_ind.end(),
                             [columnInd] (const ColumnLabelsValueType& kv) {

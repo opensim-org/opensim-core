@@ -313,6 +313,24 @@ void testAddRow(OpenSim::DataTable_<ET>& dt,
 
   // Check entries of row 1, which was just added.
   checkDataTableRow(dt, data, 1);
+
+  // Resize the DataTable to 1 column smaller.
+  dt.resizeKeep(2, data.size() -  1);
+
+  // Check the size of the DataTable.
+  checkDataTableLimits(dt, 2, data.size() - 1);
+
+  // Check entries of row 1.
+  checkDataTableRow(dt, decltype(data){data.cbegin(), data.cend() - 1}, 1);
+
+  // Resize the DataTable to 1 row larger.
+  dt.resizeKeep(3, data.size() -1);
+
+  // Check the size of the DataTable.
+  checkDataTableLimits(dt, 2, data.size() - 1);
+
+  // Check entries of row 1.
+  checkDataTableRow(dt, decltype(data){data.cbegin(), data.cend() - 1}, 1);
 }
 
 
