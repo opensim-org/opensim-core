@@ -174,11 +174,11 @@ public:
   virtual bool columnHasLabel(const size_t columnInd) const = 0;
 
   /** Check if a column exists by its index.                                  */
-  virtual bool columnExists(const size_t columnInd) const = 0;
+  virtual bool hasColumn(const size_t columnInd) const = 0;
 
   /** Check if a column exists under given label. All columns have an index but
   not all columns may have labels.                                            */
-  virtual bool columnExists(const string& columnLabel) const = 0;
+  virtual bool hasColumn(const string& columnLabel) const = 0;
 
   /** Label a column. The column should not have a label already. To update the
   label of a column that already has a label, use updColLabel().
@@ -1094,13 +1094,13 @@ public:
   }
 
   /** Check if a column exists by its index.                                  */
-  bool columnExists(const size_t columnInd) const override {
+  bool hasColumn(const size_t columnInd) const override {
     return columnInd >= 0 && columnInd < static_cast<size_t>(m_data.ncol());
   }
 
   /** Check if a column exists under given label. All columns have an index but
   not all columns may have labels.                                            */
-  bool columnExists(const string& columnLabel) const override {
+  bool hasColumn(const string& columnLabel) const override {
     return m_col_ind.find(columnLabel) != m_col_ind.end();
   }
 
@@ -1232,7 +1232,7 @@ private:
   // Helper function. Check if a column exists and throw an exception if it
   // does not.
   void checkColumnExists(const size_t columnInd) const {
-    if(!columnExists(columnInd)) {
+    if(!hasColumn(columnInd)) {
       throw ColumnDoesNotExist{"Column " + std::to_string(columnInd) + 
                                " does not exist."};
     }

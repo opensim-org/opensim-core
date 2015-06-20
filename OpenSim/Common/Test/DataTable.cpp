@@ -1489,12 +1489,12 @@ void test5() {
   } catch(OpenSim::ColumnDoesNotExist&) {}
 
   // Try checking for column that does not exist.
-  std::cout << "test5 -- columnExists(key): Real.\n";
-  assert(dt_real.columnExists("no-such-column") == false);
-  std::cout << "test5 -- columnExists(key): Vec3.\n";
-  assert(dt_vec3.columnExists("no-such-column") == false);
-  std::cout << "test5 -- columnExists(key): Vec6.\n";
-  assert(dt_vec6.columnExists("no-such-column") == false);
+  std::cout << "test5 -- hasColumn(key): Real.\n";
+  assert(dt_real.hasColumn("no-such-column") == false);
+  std::cout << "test5 -- hasColumn(key): Vec3.\n";
+  assert(dt_vec3.hasColumn("no-such-column") == false);
+  std::cout << "test5 -- hasColumn(key): Vec6.\n";
+  assert(dt_vec6.hasColumn("no-such-column") == false);
 
   // Get column label by index. No column should have a label at this point.
   std::cout << "test5 -- getColumnLabel()[ColumnHasNoLabel]: Real.\n";

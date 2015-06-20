@@ -397,8 +397,8 @@ int main() {
 
   // Check if a column label exists in the DataTable.
   for(auto& dt : vector) {
-    assert(dt->columnExists("col-zero") == true);
-    assert(dt->columnExists("col-two") == true);
+    assert(dt->hasColumn("col-zero") == true);
+    assert(dt->hasColumn("col-two") == true);
   }
 
   // Retrieve the column index using its label.
