@@ -143,15 +143,15 @@ for details on using DataTable_.
 ------------------------------------------------------------------------------*/
 class OpenSim::AbstractDataTable {
 public:
-  using size_t                     = std::size_t;
-  using string                     = std::string;
-  using ColumnLabelsType              = std::unordered_map<string, size_t>;
-  using ColumnLabelsIterType          = ColumnLabelsType::iterator;
-  using ColumnLabelsConstIterType     = ColumnLabelsType::const_iterator;
-  using ColumnLabelsIterPairType      = std::pair<ColumnLabelsIterType,
-                                                  ColumnLabelsIterType>;
-  using ColumnLabelsConstIterPairType = std::pair<ColumnLabelsConstIterType,
-                                                  ColumnLabelsConstIterType>;
+  using size_t                    = std::size_t;
+  using string                    = std::string;
+  using ColumnLabels              = std::unordered_map<string, size_t>;
+  using ColumnLabelsIter          = ColumnLabels::iterator;
+  using ColumnLabelsConstIter     = ColumnLabels::const_iterator;
+  using ColumnLabelsIterPair      = std::pair<ColumnLabelsIter,
+                                              ColumnLabelsIter>;
+  using ColumnLabelsConstIterPair = std::pair<ColumnLabelsConstIter,
+                                              ColumnLabelsConstIter>;
 
 
   AbstractDataTable() = default;
@@ -209,7 +209,7 @@ public:
   (std::pair) where the first element of the pair is the label and the second 
   element is the column index. To update the column abels, use 
   updColumnLabels().*/
-  virtual ColumnLabelsConstIterPairType getColumnLabels() const = 0;
+  virtual ColumnLabelsConstIterPair getColumnLabels() const = 0;
 
   /** Update the label of a column with a new label. Time complexity is linear
   in the number of column labels. The column specified must already have a
@@ -235,7 +235,7 @@ public:
   end(sentinel) of the labels. Dereferencing the iterator will produce a pair 
   (std::pair) where the first element of the pair is the label and the second 
   element is the column index.                                                */
-  virtual ColumnLabelsIterPairType updColumnLabels() = 0;
+  virtual ColumnLabelsIterPair updColumnLabels() = 0;
 
   /** Get the index of a column from its label. Time complexity is constant on
   average and linear in number of column labels on worst case.
@@ -270,7 +270,7 @@ template<typename ET = SimTK::Real> // Element datatype.
 class OpenSim::DataTable_ : public OpenSim::AbstractDataTable {
 public:
   using MetaDataValue = SimTK::ClonePtr<SimTK::AbstractValue>;
-  using MetaDataType  = std::unordered_map<string, MetaDataValue>;
+  using MetaData      = std::unordered_map<string, MetaDataValue>;
 
   /** \name Create.
       Constructors.                                                           */
@@ -898,7 +898,7 @@ public:
   columns will also be lost. *Be careful not to shrink the DataTable 
   unintentionally*.                                                           */
   void resizeKeep(size_t nrow, size_t ncol) {
-    using ColumnLabelsValueType = typename ColumnLabelsType::value_type;
+    using ColumnLabelsValue = typename ColumnLabels::value_type;
 
     if(nrow == 0)
       throw InvalidEntry{"Input argument 'nrow' cannot be zero."
@@ -911,7 +911,7 @@ public:
       for(size_t c = ncol; c < m_data.ncol(); ++c) {
         auto res = std::find_if(m_col_ind.begin(),
                                 m_col_ind.end(),
-                                [c] (const ColumnLabelsValueType& kv) {
+                                [c] (const ColumnLabelsValue& kv) {
                                   return kv.second == c;
                                 });
         if(res != m_col_ind.end())
@@ -1083,11 +1083,11 @@ public:
 
   \throws ColumnDoesNotExist If column index specified does not exist.        */
   bool columnHasLabel(const size_t columnInd) const override {
-    using ColumnLabelsValueType = typename ColumnLabelsType::value_type;
+    using ColumnLabelsValue = typename ColumnLabels::value_type;
     checkColumnExists(columnInd);
     auto res = std::find_if(m_col_ind.begin(), 
                             m_col_ind.end(), 
-                            [columnInd] (const ColumnLabelsValueType& kv) {
+                            [columnInd] (const ColumnLabelsValue& kv) {
                               return kv.second == columnInd;
                             });
     return res != m_col_ind.end();
@@ -1147,12 +1147,12 @@ public:
   \throws ColumnHasNoLabel If the column does not have a label.
   \throws ColumnDoesNotExist If the column does not exist.                    */
   string getColumnLabel(const size_t columnInd) const override {
-    using ColumnLabelsValueType = typename ColumnLabelsType::value_type;
+    using ColumnLabelsValue = typename ColumnLabels::value_type;
 
     checkColumnExists(columnInd);
     auto res = std::find_if(m_col_ind.begin(),
                             m_col_ind.end(),
-                            [columnInd] (const ColumnLabelsValueType& kv) {
+                            [columnInd] (const ColumnLabelsValue& kv) {
                               return kv.second == columnInd;
                             });
     if(res == m_col_ind.end()) {
@@ -1169,7 +1169,7 @@ public:
   (std::pair) where the first element of the pair is the label and the second 
   element is the column index. To update the column abels, use 
   updColumnLabels().                                                          */
-  ColumnLabelsConstIterPairType getColumnLabels() const override {
+  ColumnLabelsConstIterPair getColumnLabels() const override {
     return std::make_pair(m_col_ind.cbegin(), m_col_ind.cend());
   }
 
@@ -1205,7 +1205,7 @@ public:
   end(sentinel) of the labels. Dereferencing the iterator will produce a pair 
   (std::pair) where the first element of the pair is the label and the second 
   element is the column index.                                                */
-  ColumnLabelsIterPairType updColumnLabels() override {
+  ColumnLabelsIterPair updColumnLabels() override {
     return std::make_pair(m_col_ind.begin(), m_col_ind.end());
   }
 
@@ -1270,9 +1270,9 @@ private:
   // Matrix of data. This excludes timestamp column.
   SimTK::Matrix_<ET> m_data;
   // Meta-data.
-  MetaDataType       m_metadata;
+  MetaData           m_metadata;
   // Column label to column index.
-  ColumnLabelsType   m_col_ind;
+  ColumnLabels       m_col_ind;
 };  // DataTable_
 
 
