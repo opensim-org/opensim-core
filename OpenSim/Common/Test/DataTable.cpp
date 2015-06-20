@@ -323,14 +323,11 @@ void testAddRow(OpenSim::DataTable_<ET>& dt,
   // Check entries of row 1.
   checkDataTableRow(dt, decltype(data){data.cbegin(), data.cend() - 1}, 1);
 
-  // Resize the DataTable to 1 row larger.
-  dt.resizeKeep(3, data.size() -1);
+  // Resize the DataTable to 1 column larger.
+  dt.resizeKeep(2, data.size());
 
   // Check the size of the DataTable.
-  checkDataTableLimits(dt, 2, data.size() - 1);
-
-  // Check entries of row 1.
-  checkDataTableRow(dt, decltype(data){data.cbegin(), data.cend() - 1}, 1);
+  checkDataTableLimits(dt, 2, data.size());
 }
 
 
@@ -472,6 +469,21 @@ void testAddCol(OpenSim::DataTable_<ET>& dt,
 
   // Check entries of the col just added.
   checkDataTableCol(dt, new_data, 1);
+
+  // Resize the DataTable to 1 row smaller.
+  dt.resizeKeep(new_data.size() - 1, 2);
+
+  // Check the size of the DataTable.
+  checkDataTableLimits(dt, new_data.size() - 1, 2);
+
+  // Check entries of col 1.
+  checkDataTableCol(dt, decltype(data){data.cbegin(), data.cend() - 1}, 1);
+
+  // Resize the DataTable to 1 row larger.
+  dt.resizeKeep(new_data.size(), 2);
+
+  // Check the size of the DataTable.
+  checkDataTableLimits(dt, new_data.size(), 2);
 }
 
 

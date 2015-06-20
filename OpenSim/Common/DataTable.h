@@ -299,8 +299,8 @@ public:
       
   \param first Beginning of range covered by the iterator.
   \param last End of the range covered by the iterator.
-  \param ndir Extent of the dimention specified by parameter dir. 
-  \param dir Dimension to populate the DataTable. Populate row-wise or column 
+  \param numEntries Extent of the dimention specified by parameter dim. 
+  \param dim Dimension to populate the DataTable. Populate row-wise or column 
              wise. See OpenSim::InputItDir for possible values.
   \param allowMissing Allow for missing values. When set to false, this
                       function will throw if the input iterator fills up the 
@@ -320,16 +320,16 @@ public:
   DataTable_(InputIt first,
              typename std::enable_if<!std::is_integral<InputIt>::value,
                                      InputIt>::type last,
-             const size_t ndir,
-             const InputItDir dir = RowWise,
+             const size_t numEntries,
+             const InputItDir dim = RowWise,
              const bool allowMissing = false) :
-    m_data{static_cast<int>(dir == RowWise ? 1    : ndir), 
-           static_cast<int>(dir == RowWise ? ndir :    1)},
+    m_data{static_cast<int>(dim == RowWise ? 1          : numEntries), 
+           static_cast<int>(dim == RowWise ? numEntries :          1)},
     m_metadata{},
     m_col_ind{} {
     if(first == last)
       throw ZeroElements{"Input iterators produce zero elements."};
-    if(ndir == 0)
+    if(numEntries == 0)
       throw InvalidEntry{"Input argument 'ndir' cannot be zero."};
 
     int row{0};
@@ -337,16 +337,16 @@ public:
     while(first != last) {
       m_data.set(row, col, *first);
       ++first;
-      if(dir == RowWise) {
+      if(dim == RowWise) {
         ++col;
-        if(col == static_cast<int>(ndir)  && first != last) {
+        if(col == static_cast<int>(numEntries)  && first != last) {
           col = 0;
           ++row;
           m_data.resizeKeep(m_data.nrow() + 1, m_data.ncol());
         }
       } else {
         ++row;
-        if(row == static_cast<int>(ndir) && first != last) {
+        if(row == static_cast<int>(numEntries) && first != last) {
           row = 0;
           ++col;
           m_data.resizeKeep(m_data.nrow(), m_data.ncol() + 1);
@@ -354,12 +354,12 @@ public:
       }
     }
     if(!allowMissing) {
-      if(dir == RowWise && col != m_data.ncol()) {
+      if(dim == RowWise && col != m_data.ncol()) {
         throw NotEnoughElements{"Input iterator did not produce enough elements"
                                 " to fill the last row. Expected = " + 
                                 std::to_string(m_data.ncol()) + 
                                 " Received = " + std::to_string(col)};
-      } else if(dir == ColumnWise && row != m_data.nrow()) {
+      } else if(dim == ColumnWise && row != m_data.nrow()) {
         throw NotEnoughElements{"Input iterator did not produce enough elements"
                                 " to fill the last column. Expected = " +
                                 std::to_string(m_data.nrow()) + 
@@ -900,9 +900,14 @@ public:
   void resizeKeep(size_t nrow, size_t ncol) {
     using ColumnLabelsValueType = typename ColumnLabelsType::value_type;
 
-    assert(nrow != 0 && ncol != 0);
+    if(nrow == 0)
+      throw InvalidEntry{"Input argument 'nrow' cannot be zero."
+                         "To clear all data, use clearData()."};
+    if(ncol == 0)
+      throw InvalidEntry{"Input argument 'ncol' cannot be zero."
+                         "To clear all data, use clearData()."};
 
-    } else if(ncol < m_data.ncol()) {
+    if(ncol < m_data.ncol())
       for(size_t c = ncol; c < m_data.ncol(); ++c) {
         auto res = std::find_if(m_col_ind.begin(),
                                 m_col_ind.end(),
@@ -913,8 +918,7 @@ public:
           m_col_ind.erase(res);
       }
 
-      m_data.resizeKeep(nrow, ncol);
-    }
+    m_data.resizeKeep(nrow, ncol);
   }
 
   /**@}*/
