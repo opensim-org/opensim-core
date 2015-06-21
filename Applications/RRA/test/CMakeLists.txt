@@ -1,45 +1,45 @@
-INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
+include_directories(${OpenSim_SOURCE_DIR} 
             ${OpenSim_SOURCE_DIR}/Vendors)
 
 
-LINK_LIBRARIES( debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
+link_libraries( debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
         debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
         debug osimAnalyses${CMAKE_DEBUG_POSTFIX} optimized osimAnalyses
         )
 
-ADD_EXECUTABLE(testRRA testRRA.cpp)
+add_executable(testRRA testRRA.cpp)
 
-FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
+file(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 
 #
 # Copy files to run dir
 #
-FOREACH (dataFile ${TEST_FILES})
- ADD_CUSTOM_COMMAND(
+foreach(dataFile ${TEST_FILES})
+ add_custom_command(
     TARGET testRRA
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy
     ${dataFile}
     ${OpenSim_BINARY_DIR}/Applications/RRA/test)
- ENDFOREACH (dataFile) 
+ endforeach(dataFile) 
 
 #
 # Testing
 #
 
-#IF (UNIX)
-#  ADD_DEFINITIONS(-fprofile-arcs -ftest-coverage)
-#  LINK_LIBRARIES(gcov)
-#ENDIF (UNIX)
+#if(UNIX)
+#  add_definitions(-fprofile-arcs -ftest-coverage)
+#  link_libraries(gcov)
+#endif(UNIX)
 
-#ENABLE_TESTING()
+#enable_testing()
 
-IF (EXECUTABLE_OUTPUT_PATH)
-  SET (TEST_PATH ${EXECUTABLE_OUTPUT_PATH})
-ELSE (EXECUTABLE_OUTPUT_PATH)
-  SET (TEST_PATH .)
-ENDIF (EXECUTABLE_OUTPUT_PATH)
+if(EXECUTABLE_OUTPUT_PATH)
+  set(TEST_PATH ${EXECUTABLE_OUTPUT_PATH})
+else(EXECUTABLE_OUTPUT_PATH)
+  set(TEST_PATH .)
+endif(EXECUTABLE_OUTPUT_PATH)
 
-ADD_TEST(testRRA ${TEST_PATH}/testRRA)
+add_test(testRRA ${TEST_PATH}/testRRA)
 
-SET_TARGET_PROPERTIES(testRRA PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Tests - testRRA")
+set_target_properties(testRRA PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Tests - testRRA")
