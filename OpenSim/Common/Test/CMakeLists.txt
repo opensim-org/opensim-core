@@ -1,3 +1,9 @@
+################################################################################
+# Test DataTable class.
+add_executable(testDataTable DataTable.cpp)
+target_link_libraries(testDataTable ${Simbody_LIBRARIES} osimCommon)
+add_test(testDataTable ${EXECUTABLE_OUTPUT_PATH}/testDataTable)
+################################################################################
 
 # Automatically create tests using files named "test*.cpp"  // Adopted from SimTK core
 FILE(GLOB TEST_PROGS "*est*.cpp")
@@ -20,8 +26,8 @@ FOREACH(TEST_PROG ${TEST_PROGS})
 
 ENDFOREACH(TEST_PROG ${TEST_PROGS})
 
-# Also need to copy data files (.osim, .xml, .sto, .trc, .mot) to run directory
-FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot *.trc)
+# Also need to copy data files (.osim, .xml, .sto, .trc, .mot, .csv) to run directory
+FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot *.trc *.csv)
 
 #
 # Copy files to run dir
