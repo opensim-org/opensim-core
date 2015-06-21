@@ -58,6 +58,10 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     if(_default_install_prefix)
         set(CMAKE_INSTALL_PREFIX "${_default_install_prefix}" CACHE PATH 
             "The directory in which to install this project." FORCE)
+        # If CMAKE_INSTALL_PREFIX *is* unmodified, it usually
+        # appears in the CMake GUI. Otherwise, it is *not* shown in the GUI. We
+        # want to make sure it is *still* shown in the GUI.
+        mark_as_advanced(CLEAR CMAKE_INSTALL_PREFIX)
     endif()
 endif()
 
