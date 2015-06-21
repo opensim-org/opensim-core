@@ -245,7 +245,7 @@ public:
 
 
 /** \brief DataTable_ is a in-memory storage container for data(in the form of a
-matrix with column names) with support for holding metatdata.                
+matrix with column names) with support for holding metadata.                
                                                                               
 -- Underlying matrix will have entries of configurable type ET(template 
    param).
@@ -296,7 +296,7 @@ public:
       
     \param first Beginning of range covered by the iterator.
     \param last End of the range covered by the iterator.
-    \param numEntries Extent of the dimention specified by parameter dim. 
+    \param numEntries Extent of the dimension specified by parameter dim. 
     \param dim Dimension to populate the DataTable. Populate row-wise or column 
                wise. See OpenSim::InputItDir for possible values.
     \param allowMissing Allow for missing values. When set to false, this
