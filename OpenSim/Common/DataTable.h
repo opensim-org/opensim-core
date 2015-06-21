@@ -414,6 +414,32 @@ public:
         return static_cast<size_t>(m_data.ncol()); 
     }
 
+    /** Get a sub-matrix (or block) of the DataTable. Returned object is not
+    writable. Use updMatrix() to obtain a writable reference. For more 
+    information on using the result, see SimTK::MatrixView_.                  */
+    SimTK::MatrixView_<ET> getMatrix(size_t rowStart, 
+                                     size_t columnStart,
+                                     size_t numRows,
+                                     size_t numColumns) const {
+        return m_data.block(static_cast<int>(rowStart), 
+                            static_cast<int>(columnStart), 
+                            static_cast<int>(numRows), 
+                            static_cast<int>(numColumns));
+    }
+
+    /** Get a sub-matrix (or block) of the DataTable. Returned object is 
+    writable. For more information on using the result, see 
+    SimTK::MatrixView_.                                                       */
+    SimTK::MatrixView_<ET> updMatrix(size_t rowStart, 
+                                     size_t columnStart,
+                                     size_t numRows,
+                                     size_t numColumns) {
+        return m_data.updBlock(static_cast<int>(rowStart), 
+                               static_cast<int>(columnStart), 
+                               static_cast<int>(numRows), 
+                               static_cast<int>(numColumns));
+    }
+
     /** Get a row of the DataTable_ by index. Returned row is read-only. Use 
     updRow to obtain a writable reference. See SimTK::RowVectorView_ for more
     details.

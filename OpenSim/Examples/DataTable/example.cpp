@@ -299,6 +299,25 @@ int main() {
         dt_vec6.updElt(9, "col-four") *= 2;
     }
 
+    // It is possible to obtain read-only view of a sub-matrix in the 
+    // DataTable. Here we obtain 2x2 matrix starting at row 3, col 4.
+    // See SimTK::MatrixView_ for details on using the result to query various
+    // elements.
+    {
+        auto submat_real = dt_real.getMatrix(3, 4, 2, 2); ignore(submat_real);
+        auto submat_vec3 = dt_vec3.getMatrix(3, 4, 2, 2); ignore(submat_vec3);
+        auto submat_vec6 = dt_vec6.getMatrix(3, 4, 2, 2); ignore(submat_vec6);
+    }
+    // Update a sub-matrix of a DataTable by retrieving it using updMatrix()
+    // function which returns a writable reference to the sub-matrix.
+    // See SimTK::MatrixView_ for details on supported operations on the
+    // result.
+    {
+        dt_real.updMatrix(3, 4, 2, 2) *= 2;
+        dt_vec3.updMatrix(3, 4, 2, 2) *= 2;
+        dt_vec6.updMatrix(3, 4, 2, 2) *= 2;
+    }
+
     // Get a copy of the underlying matrix.
     auto mat_real = dt_real.copyAsMatrix(); ignore(mat_real);
     auto mat_vec3 = dt_vec3.copyAsMatrix(); ignore(mat_real);
