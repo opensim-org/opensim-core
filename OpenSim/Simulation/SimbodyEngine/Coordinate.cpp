@@ -170,8 +170,6 @@ void Coordinate::extendFinalizeFromProperties()
             cerr << "Default value = " << dv << "  > max = " << get_range(1) << endl;
         }       
     }
-    // Define the locked value for the constraint as a function
-    _lockFunction = new ModifiableConstant(get_default_value(), 1); 
 
     _lockedWarningGiven=false;
 
@@ -182,7 +180,15 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
 
-    //create lock constraint automatically
+    // Define the locked value for the constraint as a function.
+    // The PrescribedMotion will take ownership. This line was originally
+    // in extendFinalizeFromProperties(), but this caused a memory leak since
+    // extendFinalizeFromProperties() is called once when the model is
+    // constructed from a file, and again when one calls Model::initSystem()
+    // (or whenever finalizing from properties multiple times without recreating
+    // the SimTK System).
+    _lockFunction = new ModifiableConstant(get_default_value(), 1);
+    
     // The underlying SimTK constraint
     SimTK::Constraint::PrescribedMotion lock(system.updMatterSubsystem(), 
                                              _lockFunction, 
