@@ -46,7 +46,7 @@ namespace OpenSim {
     
     using DataTable = DataTable_<SimTK::Real>;
 
-    /** Enum to specify if the the input iterator is traversing data row-wise or
+    /** Enum to specify if the input iterator is traversing data row-wise or
     column-wise. clang3.6 crashes if this is turned to a "enum class". Until it 
     is fixed, use a pre c++11 enum.                                           */
     enum InputItDir{
