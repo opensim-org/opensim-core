@@ -167,10 +167,10 @@ public:
     a label.
 
     \throws ColumnDoesNotExist If column index specified does not exist.      */
-    virtual bool columnHasLabel(size_t columnInd) const = 0;
+    virtual bool columnHasLabel(size_t columnIndex) const = 0;
 
     /** Check if a column exists by its index.                                */
-    virtual bool hasColumn(size_t columnInd) const = 0;
+    virtual bool hasColumn(size_t columnIndex) const = 0;
 
     /** Check if a column exists under given label. All columns have an index 
     but not all columns may have labels.                                      */
@@ -181,7 +181,7 @@ public:
 
     \throws ColumnDoesNotExist If the column index specified does not exist.
     \throws ColumnHasLabel If the column index specified already has a label. */
-    virtual void setColumnLabel(size_t columnInd, 
+    virtual void setColumnLabel(size_t columnIndex, 
                                 const string& columnLabel) = 0;
 
     /** Label a column. The column should not have a label already. To update 
@@ -189,7 +189,7 @@ public:
 
     \throws ColumnDoesNotExist If the column index specified does not exist.
     \throws ColumnHasLabel If the column index specified already has a label. */
-    virtual void setColumnLabel(size_t columnInd, 
+    virtual void setColumnLabel(size_t columnIndex, 
                                 string&& columnLabel) = 0;
 
     /** Get the label of a column. Time complexity is linear in the number of
@@ -198,7 +198,7 @@ public:
 
     \throws ColumnHasNoLabel If the column does not have a label.
     \throws ColumnDoesNotExist If the column does not exist.                  */
-    virtual string getColumnLabel(size_t columnInd) const = 0;
+    virtual string getColumnLabel(size_t columnIndex) const = 0;
 
     /** Get all the column labels. Returns an iterator pair(std::pair) where 
     first element of pair is the beginning and second element of the pair is the
@@ -216,7 +216,7 @@ public:
     \throws ColumnHasNoLabel If the column specified does not already have a 
                              label.
     \throws ColumnDoesNotExist If the column specified does not exist.        */
-    virtual void updColumnLabel(size_t columnInd, 
+    virtual void updColumnLabel(size_t columnIndex, 
                                 const string& newColumnLabel) = 0;
 
     /** Update the label of a column with a new label. Time complexity is 
@@ -239,7 +239,7 @@ public:
     average and linear in number of column labels on worst case.
 
     \throws ColumnDoesNotExist If the column label does not exist.            */
-    virtual size_t getColumnInd(const string& columnLabel) const = 0;
+    virtual size_t getColumnIndex(const string& columnLabel) const = 0;
 
     /** Clear all the column labels.                                          */
     virtual void clearColumnLabels() = 0;
@@ -1124,20 +1124,21 @@ public:
     a label.
 
     \throws ColumnDoesNotExist If column index specified does not exist.      */
-    bool columnHasLabel(size_t columnInd) const override {
+    bool columnHasLabel(size_t columnIndex) const override {
         using ColumnLabelsValue = typename ColumnLabels::value_type;
-        checkColumnExists(columnInd);
+        checkColumnExists(columnIndex);
         auto res = std::find_if(m_col_ind.begin(), 
                                 m_col_ind.end(), 
-                                [columnInd] (const ColumnLabelsValue& kv) {
-                                    return kv.second == columnInd;
+                                [columnIndex] (const ColumnLabelsValue& kv) {
+                                    return kv.second == columnIndex;
                                 });
         return res != m_col_ind.end();
     }
 
     /** Check if a column exists by its index.                                */
-    bool hasColumn(size_t columnInd) const override {
-        return columnInd >= 0 && columnInd < static_cast<size_t>(m_data.ncol());
+    bool hasColumn(size_t columnIndex) const override {
+        return (columnIndex >= 0 && 
+                columnIndex < static_cast<size_t>(m_data.ncol()));
     }
 
     /** Check if a column exists under given label. All columns have an index 
@@ -1151,10 +1152,10 @@ public:
 
     \throws ColumnDoesNotExist If the column index specified does not exist.
     \throws ColumnHasLabel If the column index specified already has a label. */
-    void setColumnLabel(size_t columnInd, 
+    void setColumnLabel(size_t columnIndex, 
                         const string& columnLabel) override {
-        checkColumnExistsAndHasLabel(columnInd);
-        m_col_ind.emplace(columnLabel, columnInd);
+        checkColumnExistsAndHasLabel(columnIndex);
+        m_col_ind.emplace(columnLabel, columnIndex);
     }
 
     /** Label a column. The column should not have a label already. To update 
@@ -1162,9 +1163,9 @@ public:
 
     \throws ColumnDoesNotExist If the column index specified does not exist.
     \throws ColumnHasLabel If the column index specified already has a label. */
-    void setColumnLabel(size_t columnInd, string&& columnLabel) override {
-        checkColumnExistsAndHasLabel(columnInd);
-        m_col_ind.emplace(std::move(columnLabel), columnInd);
+    void setColumnLabel(size_t columnIndex, string&& columnLabel) override {
+        checkColumnExistsAndHasLabel(columnIndex);
+        m_col_ind.emplace(std::move(columnLabel), columnIndex);
     }
 
     /** Label a set of columns at once using an input iterator that produces one
@@ -1188,17 +1189,17 @@ public:
 
     \throws ColumnHasNoLabel If the column does not have a label.
     \throws ColumnDoesNotExist If the column does not exist.                  */
-    string getColumnLabel(size_t columnInd) const override {
+    string getColumnLabel(size_t columnIndex) const override {
         using ColumnLabelsValue = typename ColumnLabels::value_type;
 
-        checkColumnExists(columnInd);
+        checkColumnExists(columnIndex);
         auto res = std::find_if(m_col_ind.begin(),
                                 m_col_ind.end(),
-                                [columnInd] (const ColumnLabelsValue& kv) {
-                                    return kv.second == columnInd;
+                                [columnIndex] (const ColumnLabelsValue& kv) {
+                                    return kv.second == columnIndex;
                                 });
         if(res == m_col_ind.end()) {
-            throw ColumnHasNoLabel{"Column " + std::to_string(columnInd) + 
+            throw ColumnHasNoLabel{"Column " + std::to_string(columnIndex) + 
                     " has no label."};
         }
 
@@ -1223,11 +1224,11 @@ public:
     \throws ColumnHasNoLabel If the column specified does not already have a 
                              label.
     \throws ColumnDoesNotExist If the column specified does not exist.        */
-    void updColumnLabel(size_t columnInd, 
+    void updColumnLabel(size_t columnIndex, 
                         const string& newColumnLabel) override {
-        string old_collabel{getColumnLabel(columnInd)};
+        string old_collabel{getColumnLabel(columnIndex)};
         m_col_ind.erase(old_collabel);
-        m_col_ind.emplace(newColumnLabel, columnInd);
+        m_col_ind.emplace(newColumnLabel, columnIndex);
     }
 
     /** Update the label of a column with a new label. Time complexity is 
@@ -1238,7 +1239,7 @@ public:
     \throws ColumnDoesNotExist If the column specified does not exist.        */
     void updColumnLabel(const string& oldColumnLabel, 
                         const string& newColumnLabel) override {
-        size_t colind{getColumnInd(oldColumnLabel)};
+        size_t colind{getColumnIndex(oldColumnLabel)};
         m_col_ind.erase(oldColumnLabel);
         m_col_ind[newColumnLabel] = colind;
     }
@@ -1256,7 +1257,7 @@ public:
     average and linear in number of column labels on worst case.
 
     \throws ColumnDoesNotExist If the column label does not exist.            */
-    size_t getColumnInd(const string& columnLabel) const override {
+    size_t getColumnIndex(const string& columnLabel) const override {
         try {
             return m_col_ind.at(columnLabel);
         } catch(const std::out_of_range&) {
@@ -1275,26 +1276,26 @@ public:
 private:
     // Helper function. Check if a column exists and throw an exception if it
     // does not.
-    void checkColumnExists(const size_t columnInd) const {
-        if(!hasColumn(columnInd)) {
-            throw ColumnDoesNotExist{"Column " + std::to_string(columnInd) + 
+    void checkColumnExists(size_t columnIndex) const {
+        if(!hasColumn(columnIndex)) {
+            throw ColumnDoesNotExist{"Column " + std::to_string(columnIndex) + 
                     " does not exist."};
         }
     }
 
     // Helper function. Check if a column has label and throw an exception if it
     // does not.
-    void checkColumnHasLabel(const size_t columnInd) const {
-        if(columnHasLabel(columnInd)) {
-            throw ColumnHasLabel{"Column " + std::to_string(columnInd) + 
+    void checkColumnHasLabel(size_t columnIndex) const {
+        if(columnHasLabel(columnIndex)) {
+            throw ColumnHasLabel{"Column " + std::to_string(columnIndex) + 
                     " already has a label."};
         }
     }
 
     // Helper function. Does both checkColumnExists() and checkColumnHasLabel().
-    void checkColumnExistsAndHasLabel(const size_t columnInd) const {
-        checkColumnExists(columnInd);
-        checkColumnHasLabel(columnInd);
+    void checkColumnExistsAndHasLabel(const size_t columnIndex) const {
+        checkColumnExists(columnIndex);
+        checkColumnHasLabel(columnIndex);
     }
 
     // Helper function. Round to next highest power of 2. Works only for 

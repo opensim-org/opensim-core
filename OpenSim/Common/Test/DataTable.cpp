@@ -1568,17 +1568,17 @@ void test5() {
     assert(iters.first == iters.second);
 
     // Get index of a column label that does not exist.
-    std::cout << "test5 -- getColumnInd()[ColumnDoesNotExist]: Real.\n";
+    std::cout << "test5 -- getColumnIndex()[ColumnDoesNotExist]: Real.\n";
     try {
-        auto ind = dt_real.getColumnInd("no-such-column"); ignore(ind);
+        auto ind = dt_real.getColumnIndex("no-such-column"); ignore(ind);
     } catch(OpenSim::ColumnDoesNotExist&) {}
-    std::cout << "test5 -- getColumnInd()[ColumnDoesNotExist]: Vec3.\n";
+    std::cout << "test5 -- getColumnIndex()[ColumnDoesNotExist]: Vec3.\n";
     try {
-        auto ind = dt_vec3.getColumnInd("no-such-column"); ignore(ind);
+        auto ind = dt_vec3.getColumnIndex("no-such-column"); ignore(ind);
     } catch(OpenSim::ColumnDoesNotExist&) {}
-    std::cout << "test5 -- getColumnInd()[ColumnDoesNotExist]: Vec6.\n";
+    std::cout << "test5 -- getColumnIndex()[ColumnDoesNotExist]: Vec6.\n";
     try {
-        auto ind = dt_vec6.getColumnInd("no-such-column"); ignore(ind);
+        auto ind = dt_vec6.getColumnIndex("no-such-column"); ignore(ind);
     } catch(OpenSim::ColumnDoesNotExist&) {}
 
     // Try inserting column labels to columns that do not exist.
@@ -1682,21 +1682,21 @@ void test5() {
     assert(dt_vec6.getColumnLabel(3) == "ColThree");
 
     // Check column index against label.
-    std::cout << "test5 -- getColumnInd(): Real.\n";
-    assert(dt_real.getColumnInd("ColZero")  == 0);
-    assert(dt_real.getColumnInd("ColOne")   == 1);
-    assert(dt_real.getColumnInd("ColTwo")   == 2);
-    assert(dt_real.getColumnInd("ColThree") == 3);
-    std::cout << "test5 -- getColumnInd(): Vec3.\n";
-    assert(dt_vec3.getColumnInd("ColZero")  == 0);
-    assert(dt_vec3.getColumnInd("ColOne")   == 1);
-    assert(dt_vec3.getColumnInd("ColTwo")   == 2);
-    assert(dt_vec3.getColumnInd("ColThree") == 3);
-    std::cout << "test5 -- getColumnInd(): Vec6.\n";
-    assert(dt_vec6.getColumnInd("ColZero")  == 0);
-    assert(dt_vec6.getColumnInd("ColOne")   == 1);
-    assert(dt_vec6.getColumnInd("ColTwo")   == 2);
-    assert(dt_vec6.getColumnInd("ColThree") == 3);
+    std::cout << "test5 -- getColumnIndex(): Real.\n";
+    assert(dt_real.getColumnIndex("ColZero")  == 0);
+    assert(dt_real.getColumnIndex("ColOne")   == 1);
+    assert(dt_real.getColumnIndex("ColTwo")   == 2);
+    assert(dt_real.getColumnIndex("ColThree") == 3);
+    std::cout << "test5 -- getColumnIndex(): Vec3.\n";
+    assert(dt_vec3.getColumnIndex("ColZero")  == 0);
+    assert(dt_vec3.getColumnIndex("ColOne")   == 1);
+    assert(dt_vec3.getColumnIndex("ColTwo")   == 2);
+    assert(dt_vec3.getColumnIndex("ColThree") == 3);
+    std::cout << "test5 -- getColumnIndex(): Vec6.\n";
+    assert(dt_vec6.getColumnIndex("ColZero")  == 0);
+    assert(dt_vec6.getColumnIndex("ColOne")   == 1);
+    assert(dt_vec6.getColumnIndex("ColTwo")   == 2);
+    assert(dt_vec6.getColumnIndex("ColThree") == 3);
 
     // Try inserting labels for columns that don't exist.
     std::cout << "test5 -- setColumnLabel()[ColumnDoesNotExist]: Real.\n";
@@ -1841,21 +1841,21 @@ void test5() {
     assert(dt_vec6.getColumnLabel(3) == "ColThree");
 
     // Check column index against label.
-    std::cout << "test5 -- getColumnInd(): Real.\n";
-    assert(dt_real.getColumnInd("ColZero")  == 0);
-    assert(dt_real.getColumnInd("ColOne")   == 1);
-    assert(dt_real.getColumnInd("ColTwo")   == 2);
-    assert(dt_real.getColumnInd("ColThree") == 3);
-    std::cout << "test5 -- getColumnInd(): Vec3.\n";
-    assert(dt_vec3.getColumnInd("ColZero")  == 0);
-    assert(dt_vec3.getColumnInd("ColOne")   == 1);
-    assert(dt_vec3.getColumnInd("ColTwo")   == 2);
-    assert(dt_vec3.getColumnInd("ColThree") == 3);
-    std::cout << "test5 -- getColumnInd(): Vec6.\n";
-    assert(dt_vec6.getColumnInd("ColZero")  == 0);
-    assert(dt_vec6.getColumnInd("ColOne")   == 1);
-    assert(dt_vec6.getColumnInd("ColTwo")   == 2);
-    assert(dt_vec6.getColumnInd("ColThree") == 3);
+    std::cout << "test5 -- getColumnIndex(): Real.\n";
+    assert(dt_real.getColumnIndex("ColZero")  == 0);
+    assert(dt_real.getColumnIndex("ColOne")   == 1);
+    assert(dt_real.getColumnIndex("ColTwo")   == 2);
+    assert(dt_real.getColumnIndex("ColThree") == 3);
+    std::cout << "test5 -- getColumnIndex(): Vec3.\n";
+    assert(dt_vec3.getColumnIndex("ColZero")  == 0);
+    assert(dt_vec3.getColumnIndex("ColOne")   == 1);
+    assert(dt_vec3.getColumnIndex("ColTwo")   == 2);
+    assert(dt_vec3.getColumnIndex("ColThree") == 3);
+    std::cout << "test5 -- getColumnIndex(): Vec6.\n";
+    assert(dt_vec6.getColumnIndex("ColZero")  == 0);
+    assert(dt_vec6.getColumnIndex("ColOne")   == 1);
+    assert(dt_vec6.getColumnIndex("ColTwo")   == 2);
+    assert(dt_vec6.getColumnIndex("ColThree") == 3);
 
     // Clear the column labels.
     std::cout << "test5 -- clearColumnLabels(): Real.\n";
@@ -2493,20 +2493,20 @@ void test8() {
 
     // Check col indices.
     std::cout << "test8 -- Check col indices: Real.\n";
-    assert(vector[0]->getColumnInd("col-zero") == 0 &&
-           dt_real.getColumnInd("col-zero")    == 0);
-    assert(vector[2]->getColumnInd("col-two") == 2 &&
-           dt_real.getColumnInd("col-two")    == 2);
+    assert(vector[0]->getColumnIndex("col-zero") == 0 &&
+           dt_real.getColumnIndex("col-zero")    == 0);
+    assert(vector[2]->getColumnIndex("col-two") == 2 &&
+           dt_real.getColumnIndex("col-two")    == 2);
     std::cout << "test8 -- Check col indices: Vec3.\n";
-    assert(vector[0]->getColumnInd("col-zero") == 0 &&
-           dt_vec3.getColumnInd("col-zero")    == 0);
-    assert(vector[2]->getColumnInd("col-two") == 2 &&
-           dt_vec3.getColumnInd("col-two")    == 2);
+    assert(vector[0]->getColumnIndex("col-zero") == 0 &&
+           dt_vec3.getColumnIndex("col-zero")    == 0);
+    assert(vector[2]->getColumnIndex("col-two") == 2 &&
+           dt_vec3.getColumnIndex("col-two")    == 2);
     std::cout << "test8 -- Check col indices: Vec6.\n";
-    assert(vector[0]->getColumnInd("col-zero") == 0 &&
-           dt_vec6.getColumnInd("col-zero")    == 0);
-    assert(vector[2]->getColumnInd("col-two") == 2 &&
-           dt_vec6.getColumnInd("col-two")    == 2);
+    assert(vector[0]->getColumnIndex("col-zero") == 0 &&
+           dt_vec6.getColumnIndex("col-zero")    == 0);
+    assert(vector[2]->getColumnIndex("col-two") == 2 &&
+           dt_vec6.getColumnIndex("col-two")    == 2);
 
     // Update col labels.
     std::cout << "test8 -- Update column labels.\n";

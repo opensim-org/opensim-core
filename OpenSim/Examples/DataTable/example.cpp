@@ -427,18 +427,18 @@ int main() {
     }
 
     // Retrieve the column index using its label.
-    assert(vector[0]->getColumnInd("col-zero") == 0 &&
-           table_real.getColumnInd("col-zero") == 0);
-    assert(vector[2]->getColumnInd("col-two")  == 2 &&
-           table_real.getColumnInd("col-two")  == 2);
-    assert(vector[0]->getColumnInd("col-zero") == 0 &&
-           table_vec3.getColumnInd("col-zero") == 0);
-    assert(vector[2]->getColumnInd("col-two")  == 2 &&
-           table_vec3.getColumnInd("col-two")  == 2);
-    assert(vector[0]->getColumnInd("col-zero") == 0 &&
-           table_vec6.getColumnInd("col-zero") == 0);
-    assert(vector[2]->getColumnInd("col-two")  == 2 &&
-           table_vec6.getColumnInd("col-two")  == 2);
+    assert(vector[0]->getColumnIndex("col-zero") == 0 &&
+           table_real.getColumnIndex("col-zero") == 0);
+    assert(vector[2]->getColumnIndex("col-two")  == 2 &&
+           table_real.getColumnIndex("col-two")  == 2);
+    assert(vector[0]->getColumnIndex("col-zero") == 0 &&
+           table_vec3.getColumnIndex("col-zero") == 0);
+    assert(vector[2]->getColumnIndex("col-two")  == 2 &&
+           table_vec3.getColumnIndex("col-two")  == 2);
+    assert(vector[0]->getColumnIndex("col-zero") == 0 &&
+           table_vec6.getColumnIndex("col-zero") == 0);
+    assert(vector[2]->getColumnIndex("col-two")  == 2 &&
+           table_vec6.getColumnIndex("col-two")  == 2);
 
     // Update column labels using upd<> method. Update can be done using index
     // or using column label.
