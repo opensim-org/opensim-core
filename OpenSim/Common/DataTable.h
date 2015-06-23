@@ -280,13 +280,13 @@ public:
     /** Construct DataTable of given shape populated with given value val. 
     Default value for val is NaN.
   
-    \param nrows Number of rows.
-    \param ncolumns Number of columns.
+    \param numRows Number of rows.
+    \param numColumns Number of columns.
     \param val   Value to initialize all the entries to.                      */
-    DataTable_(size_t nrows,
-               size_t ncolumns,
+    DataTable_(size_t numRows,
+               size_t numColumns,
                const ET& val = ET{SimTK::NaN}) :
-        m_data{int(nrows), int(ncolumns), val}, m_metadata{}, m_col_ind{} {}
+        m_data{int(numRows), int(numColumns), val}, m_metadata{}, m_col_ind{} {}
 
     /** Construct DataTable using an iterator(satisfying requirement of an 
     input_iterator) which produces one entry at a time. The entries of 
@@ -742,19 +742,19 @@ public:
 
     /** Add(append) a column to the DataTable_ using an iterator(satisfying 
     requirements of an input_iterator) producing one entry at a time. If this
-    function is called on an empty DataTable_ without providing nrow_hint, it
+    function is called on an empty DataTable_ without providing numRowsHint, it
     performs <i>allocation + relocation</i> for [log2(nrow) + 1] times where 
     nrow is the actual number of elements produced by the input iterator. To add
     multiple columns at once using input-iterator, use addColumns().
 
     \param first Beginning of range covered by the iterator.
     \param last End of the range covered by the iterator.
-    \param nrowHint Hint for the number of rows in the input iterator. Can be 
-                    approximate above or below the actual number. This is only 
-                    used when this function is called on an empty DataTable_. 
-                    Ignored otherwise. Providing a hint reduces the number of 
-                    resize operations which involves memory allocation + r
-                    elocation.
+    \param numRowsHint Hint for the number of rows in the input iterator. Can 
+                       be approximate above or below the actual number. This is 
+                       only used when this function is called on an empty 
+                       DataTable_. Ignored otherwise. Providing a hint reduces 
+                       the number of resize operations which involves memory 
+                       allocation + r elocation.
     \param allowMissing Allow for missing values. When set to false, this
                         function will throw if the input iterator fills up the 
                         row only partially. When set to true, missing elements 
@@ -770,11 +770,11 @@ public:
     template<typename InputIt>
     void addColumn(InputIt first, 
                    InputIt last, 
-                   size_t nrowHint = 2,
+                   size_t numRowsHint = 2,
                    bool allowMissing = false) {
         if(first == last)
             throw ZeroElements{"Input iterators produce zero elements."};
-        if((m_data.nrow() == 0 || m_data.ncol() == 0) && nrowHint == 0)
+        if((m_data.nrow() == 0 || m_data.ncol() == 0) && numRowsHint == 0)
             throw InvalidEntry{"Input argument 'nrow_hint' cannot be zero when "
                                "DataTable is empty."};
 
@@ -793,7 +793,7 @@ public:
                                         " Received = " + std::to_string(row)};
         } else {
             int row{0};
-            size_t nrow{nrowHint};
+            size_t nrow{numRowsHint};
             m_data.resizeKeep(static_cast<int>(nrow), 1);
             while(first != last) {
                 m_data.set(row++, 0, *first);
@@ -818,9 +818,9 @@ public:
 
     \param first Beginning of range covered by the iterator.
     \param last End of the range covered by the iterator.
-    \param nrow Number of rows to create in the DataTable_. This is only used 
-                (and required) when the function is called on an empty 
-                DataTable_. Ignored otherwise.
+    \param numRows Number of rows to create in the DataTable_. This is only 
+                   used (and required) when the function is called on an empty 
+                   DataTable_. Ignored otherwise.
     \param allowMissing Allow for missing values. When set to false, this
                         function will throw if the input iterator fills up the 
                         last column only partially. When set to true, missing 
@@ -837,17 +837,17 @@ public:
     template<typename InputIt>
     void addColumns(InputIt first, 
                     InputIt last, 
-                    size_t nrow = std::numeric_limits<size_t>::max(),
+                    size_t numRows = std::numeric_limits<size_t>::max(),
                     bool allowMissing = false) {
         if(first == last)
             throw ZeroElements{"Input iterators produce zero elements."};
         if((m_data.nrow() == 0 || m_data.ncol() == 0) && 
-           (nrow == std::numeric_limits<size_t>::max() || nrow == 0))
+           (numRows == std::numeric_limits<size_t>::max() || numRows == 0))
             throw InvalidEntry{"DataTable is empty. 'nrow' argument must be" 
                                " provided and it cannot be zero."};
 
         m_data.resizeKeep(m_data.nrow() == 0 ? 
-                          static_cast<int>(nrow) : m_data.nrow(), 
+                          static_cast<int>(numRows) : m_data.nrow(), 
                           m_data.ncol() + 1);
         int row{0};
         int col{m_data.ncol() - 1};
@@ -934,18 +934,20 @@ public:
     extent it will fit. If the number of columns is decreased, the labels for 
     the lost columns will also be lost. *Be careful not to shrink the DataTable 
     unintentionally*.                                                         */
-    void resizeKeep(size_t nrow, size_t ncol) {
+    void resizeKeep(size_t numRows, size_t numColumns) {
         using ColumnLabelsValue = typename ColumnLabels::value_type;
 
-        if(nrow == 0)
+        if(numRows == 0)
             throw InvalidEntry{"Input argument 'nrow' cannot be zero."
-                    "To clear all data, use clearData()."};
-        if(ncol == 0)
+                               "To clear all data, use clearData()."};
+        if(numColumns == 0)
             throw InvalidEntry{"Input argument 'ncol' cannot be zero."
-                    "To clear all data, use clearData()."};
+                               "To clear all data, use clearData()."};
 
-        if(static_cast<int>(ncol) < m_data.ncol())
-            for(size_t c = ncol; c < static_cast<size_t>(m_data.ncol()); ++c) {
+        if(static_cast<int>(numColumns) < m_data.ncol())
+            for(size_t c = numColumns; 
+                c < static_cast<size_t>(m_data.ncol()); 
+                ++c) {
                 auto res = std::find_if(m_col_ind.begin(),
                                         m_col_ind.end(),
                                         [c] (const ColumnLabelsValue& kv) {
@@ -955,7 +957,8 @@ public:
                     m_col_ind.erase(res);
             }
 
-        m_data.resizeKeep(static_cast<int>(nrow), static_cast<int>(ncol));
+        m_data.resizeKeep(static_cast<int>(numRows), 
+                          static_cast<int>(numColumns));
     }
 
     /**@}*/
@@ -1292,7 +1295,7 @@ private:
     }
 
     // Helper function. Does both checkColumnExists() and checkColumnHasLabel().
-    void checkColumnExistsAndHasLabel(const size_t columnIndex) const {
+    void checkColumnExistsAndHasLabel(size_t columnIndex) const {
         checkColumnExists(columnIndex);
         checkColumnHasLabel(columnIndex);
     }
