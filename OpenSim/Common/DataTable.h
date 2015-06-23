@@ -286,9 +286,7 @@ public:
     DataTable_(size_t numRows,
                size_t numColumns,
                const ET& initialValue = ET{SimTK::NaN}) :
-        m_data{int(numRows), int(numColumns), initialValue}, 
-        m_metadata{}, 
-        m_col_ind{} {}
+        m_data{int(numRows), int(numColumns), initialValue} {}
 
     /** Construct DataTable using an iterator(satisfying requirement of an 
     input_iterator) which produces one entry at a time. The entries of 
@@ -324,9 +322,7 @@ public:
                InputItDir::Dir dim = InputItDir::RowWise,
                bool allowMissing = false) :
         m_data{static_cast<int>(dim == InputItDir::RowWise ? 1 : numEntries), 
-               static_cast<int>(dim == InputItDir::RowWise ? numEntries : 1)},
-        m_metadata{},
-        m_col_ind{} {
+               static_cast<int>(dim == InputItDir::RowWise ? numEntries : 1)} {
         if(first == last)
             throw ZeroElements{"Input iterators produce zero elements."};
         if(numEntries == 0)
