@@ -275,8 +275,7 @@ public:
     /**@{*/
 
     /** Construct empty DataTable.                                            */
-    DataTable_() :
-        m_data{}, m_metadata{}, m_col_ind{} {}
+    DataTable_() = default;
 
     /** Construct DataTable of given shape populated with given value val. 
     Default value for val is NaN.
