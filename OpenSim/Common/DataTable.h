@@ -282,11 +282,13 @@ public:
   
     \param numRows Number of rows.
     \param numColumns Number of columns.
-    \param val   Value to initialize all the entries to.                      */
+    \param initialValue Value to initialize all the entries to.               */
     DataTable_(size_t numRows,
                size_t numColumns,
-               const ET& val = ET{SimTK::NaN}) :
-        m_data{int(numRows), int(numColumns), val}, m_metadata{}, m_col_ind{} {}
+               const ET& initialValue = ET{SimTK::NaN}) :
+        m_data{int(numRows), int(numColumns), initialValue}, 
+        m_metadata{}, 
+        m_col_ind{} {}
 
     /** Construct DataTable using an iterator(satisfying requirement of an 
     input_iterator) which produces one entry at a time. The entries of 
