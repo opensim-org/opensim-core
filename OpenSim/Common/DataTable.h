@@ -36,8 +36,8 @@ in-memory container for data access and manipulation.                         */
 #include <type_traits>
 #include <limits>
 // Non-standard headers.
-#include <SimTKcommon.h>
-#include <OpenSim/Common/Exception.h>
+#include "SimTKcommon.h"
+#include "OpenSim/Common/Exception.h"
 
 
 namespace OpenSim {
