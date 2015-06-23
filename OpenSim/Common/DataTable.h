@@ -167,10 +167,10 @@ public:
     a label.
 
     \throws ColumnDoesNotExist If column index specified does not exist.      */
-    virtual bool columnHasLabel(const size_t columnInd) const = 0;
+    virtual bool columnHasLabel(size_t columnInd) const = 0;
 
     /** Check if a column exists by its index.                                */
-    virtual bool hasColumn(const size_t columnInd) const = 0;
+    virtual bool hasColumn(size_t columnInd) const = 0;
 
     /** Check if a column exists under given label. All columns have an index 
     but not all columns may have labels.                                      */
@@ -181,7 +181,7 @@ public:
 
     \throws ColumnDoesNotExist If the column index specified does not exist.
     \throws ColumnHasLabel If the column index specified already has a label. */
-    virtual void setColumnLabel(const size_t columnInd, 
+    virtual void setColumnLabel(size_t columnInd, 
                                 const string& columnLabel) = 0;
 
     /** Label a column. The column should not have a label already. To update 
@@ -189,7 +189,7 @@ public:
 
     \throws ColumnDoesNotExist If the column index specified does not exist.
     \throws ColumnHasLabel If the column index specified already has a label. */
-    virtual void setColumnLabel(const size_t columnInd, 
+    virtual void setColumnLabel(size_t columnInd, 
                                 string&& columnLabel) = 0;
 
     /** Get the label of a column. Time complexity is linear in the number of
@@ -198,7 +198,7 @@ public:
 
     \throws ColumnHasNoLabel If the column does not have a label.
     \throws ColumnDoesNotExist If the column does not exist.                  */
-    virtual string getColumnLabel(const size_t columnInd) const = 0;
+    virtual string getColumnLabel(size_t columnInd) const = 0;
 
     /** Get all the column labels. Returns an iterator pair(std::pair) where 
     first element of pair is the beginning and second element of the pair is the
@@ -216,7 +216,7 @@ public:
     \throws ColumnHasNoLabel If the column specified does not already have a 
                              label.
     \throws ColumnDoesNotExist If the column specified does not exist.        */
-    virtual void updColumnLabel(const size_t columnInd, 
+    virtual void updColumnLabel(size_t columnInd, 
                                 const string& newColumnLabel) = 0;
 
     /** Update the label of a column with a new label. Time complexity is 
@@ -319,9 +319,9 @@ public:
     DataTable_(InputIt first,
                typename std::enable_if<!std::is_integral<InputIt>::value,
                                        InputIt>::type last,
-               const size_t numEntries,
-               const InputItDir::Dir dim = InputItDir::RowWise,
-               const bool allowMissing = false) :
+               size_t numEntries,
+               InputItDir::Dir dim = InputItDir::RowWise,
+               bool allowMissing = false) :
         m_data{static_cast<int>(dim == InputItDir::RowWise ? 1 : numEntries), 
                static_cast<int>(dim == InputItDir::RowWise ? numEntries : 1)},
         m_metadata{},
@@ -448,7 +448,7 @@ public:
   
     \throws SimTK::Exception::IndexOutOfRange If the row index specified is not 
                                               in the DataTable_.              */
-    SimTK::RowVectorView_<ET> getRow(const size_t row) const {
+    SimTK::RowVectorView_<ET> getRow(size_t row) const {
         return m_data.row(static_cast<int>(row));
     }
 
@@ -457,7 +457,7 @@ public:
   
     \throws SimTK::Exception::IndexOutOfRange If the row index specified is not 
                                               in the DataTable_.              */
-    SimTK::RowVectorView_<ET> updRow(const size_t row) {
+    SimTK::RowVectorView_<ET> updRow(size_t row) {
         return m_data.updRow(static_cast<int>(row));
     }
 
@@ -467,7 +467,7 @@ public:
   
     \throws SimTK::Exception::IndexOutOfRange If the column index specified is 
                                               not in the DataTable_.          */
-    SimTK::VectorView_<ET> getColumn(const size_t column) const {
+    SimTK::VectorView_<ET> getColumn(size_t column) const {
         return m_data.col(static_cast<int>(column));
     }
 
@@ -491,7 +491,7 @@ public:
   
     \throws SimTK::Exception::IndexOutOfRange If the column index specified is 
                                               not in the DataTable_.          */
-    SimTK::VectorView_<ET> updColumn(const size_t column) {
+    SimTK::VectorView_<ET> updColumn(size_t column) {
         return m_data.updCol(static_cast<int>(column));
     }
 
@@ -514,7 +514,7 @@ public:
   
     \throws SimTK::Exception::IndexOutOfRange If the row/column index specified 
                                               is not in the DataTable_.       */
-    const ET& getElt(const size_t row, const size_t column) const {
+    const ET& getElt(size_t row, size_t column) const {
         return m_data.getElt(static_cast<int>(row), static_cast<int>(column));
     }
 
@@ -525,7 +525,7 @@ public:
                                               in the DataTable_.
     \throws ColumnDoesNotExist If the column label specified is not in the 
                                DataTable_.                                    */
-    const ET& getElt(const size_t row, const string& columnLabel) const {
+    const ET& getElt(size_t row, const string& columnLabel) const {
         try {
             return m_data.getElt(static_cast<int>(row), 
                                  static_cast<int>(m_col_ind.at(columnLabel)));
@@ -540,7 +540,7 @@ public:
   
     \throws SimTK::Exception::IndexOutOfRange If the row/column index specified 
                                               is not in the DataTable_.       */
-    ET& updElt(const size_t row, const size_t column) {
+    ET& updElt(size_t row, size_t column) {
         return m_data.updElt(static_cast<int>(row), static_cast<int>(column));
     }
 
@@ -551,7 +551,7 @@ public:
                                               in the DataTable_.
     \throws ColumnDoesNotExist If the column label specified is not in the 
                                DataTable_.                                    */
-    ET& updElt(const size_t row, const string& columnLabel) {
+    ET& updElt(size_t row, const string& columnLabel) {
         try {
             return m_data.updElt(static_cast<int>(row), 
                                  static_cast<int>(m_col_ind.at(columnLabel)));
@@ -621,8 +621,8 @@ public:
     template<typename InputIt>
     void addRow(InputIt first, 
                 InputIt last, 
-                const size_t ncolumnHint = 2,
-                const bool allowMissing = false) {
+                size_t ncolumnHint = 2,
+                bool allowMissing = false) {
         if(first == last)
             throw ZeroElements{"Input iterators produce zero elements."};
         if((m_data.nrow() == 0 || m_data.ncol() == 0) && ncolumnHint == 0)
@@ -687,8 +687,8 @@ public:
     template<typename InputIt>
     void addRows(InputIt first, 
                  InputIt last, 
-                 const size_t ncolumn = std::numeric_limits<size_t>::max(),
-                 const bool allowMissing = false) {
+                 size_t ncolumn = std::numeric_limits<size_t>::max(),
+                 bool allowMissing = false) {
         if(first == last)
             throw ZeroElements{"Input iterators produce zero elements."};
         if((m_data.nrow() == 0 || m_data.ncol() == 0) && 
@@ -771,8 +771,8 @@ public:
     template<typename InputIt>
     void addColumn(InputIt first, 
                    InputIt last, 
-                   const size_t nrowHint = 2,
-                   const bool allowMissing = false) {
+                   size_t nrowHint = 2,
+                   bool allowMissing = false) {
         if(first == last)
             throw ZeroElements{"Input iterators produce zero elements."};
         if((m_data.nrow() == 0 || m_data.ncol() == 0) && nrowHint == 0)
@@ -838,8 +838,8 @@ public:
     template<typename InputIt>
     void addColumns(InputIt first, 
                     InputIt last, 
-                    const size_t nrow = std::numeric_limits<size_t>::max(),
-                    const bool allowMissing = false) {
+                    size_t nrow = std::numeric_limits<size_t>::max(),
+                    bool allowMissing = false) {
         if(first == last)
             throw ZeroElements{"Input iterators produce zero elements."};
         if((m_data.nrow() == 0 || m_data.ncol() == 0) && 
@@ -1124,7 +1124,7 @@ public:
     a label.
 
     \throws ColumnDoesNotExist If column index specified does not exist.      */
-    bool columnHasLabel(const size_t columnInd) const override {
+    bool columnHasLabel(size_t columnInd) const override {
         using ColumnLabelsValue = typename ColumnLabels::value_type;
         checkColumnExists(columnInd);
         auto res = std::find_if(m_col_ind.begin(), 
@@ -1136,7 +1136,7 @@ public:
     }
 
     /** Check if a column exists by its index.                                */
-    bool hasColumn(const size_t columnInd) const override {
+    bool hasColumn(size_t columnInd) const override {
         return columnInd >= 0 && columnInd < static_cast<size_t>(m_data.ncol());
     }
 
@@ -1151,7 +1151,7 @@ public:
 
     \throws ColumnDoesNotExist If the column index specified does not exist.
     \throws ColumnHasLabel If the column index specified already has a label. */
-    void setColumnLabel(const size_t columnInd, 
+    void setColumnLabel(size_t columnInd, 
                         const string& columnLabel) override {
         checkColumnExistsAndHasLabel(columnInd);
         m_col_ind.emplace(columnLabel, columnInd);
@@ -1162,7 +1162,7 @@ public:
 
     \throws ColumnDoesNotExist If the column index specified does not exist.
     \throws ColumnHasLabel If the column index specified already has a label. */
-    void setColumnLabel(const size_t columnInd, string&& columnLabel) override {
+    void setColumnLabel(size_t columnInd, string&& columnLabel) override {
         checkColumnExistsAndHasLabel(columnInd);
         m_col_ind.emplace(std::move(columnLabel), columnInd);
     }
@@ -1188,7 +1188,7 @@ public:
 
     \throws ColumnHasNoLabel If the column does not have a label.
     \throws ColumnDoesNotExist If the column does not exist.                  */
-    string getColumnLabel(const size_t columnInd) const override {
+    string getColumnLabel(size_t columnInd) const override {
         using ColumnLabelsValue = typename ColumnLabels::value_type;
 
         checkColumnExists(columnInd);
@@ -1223,7 +1223,7 @@ public:
     \throws ColumnHasNoLabel If the column specified does not already have a 
                              label.
     \throws ColumnDoesNotExist If the column specified does not exist.        */
-    void updColumnLabel(const size_t columnInd, 
+    void updColumnLabel(size_t columnInd, 
                         const string& newColumnLabel) override {
         string old_collabel{getColumnLabel(columnInd)};
         m_col_ind.erase(old_collabel);
