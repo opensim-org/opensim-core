@@ -251,7 +251,7 @@ matrix with column names) with support for holding metadata.
                                                                               
 - Underlying matrix will have entries of configurable type ET(template 
   param).
-- Random-access(constant-time) to specific entries, entire columns and entire 
+- Random-access (constant-time) to specific entries, entire columns and entire 
   rows using their index.
 - Average constant-time access to columns through column-labels.
 - Add rows and columns to existing DataTable_. 
