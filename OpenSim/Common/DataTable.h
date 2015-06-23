@@ -49,9 +49,11 @@ namespace OpenSim {
     /** Enum to specify if the input iterator is traversing data row-wise or
     column-wise. clang3.6 crashes if this is turned to a "enum class". Until it 
     is fixed, use a pre c++11 enum.                                           */
-    enum InputItDir{
-        RowWise, 
-        ColumnWise
+    struct InputItDir {
+        enum Dir {
+            RowWise, 
+            ColumnWise
+        };
     };
 
     /** Add/concatenate two DataTables by row.                                */
@@ -307,9 +309,9 @@ public:
     \throws ZeroElements When input-iterator does not produce any elements.
                          That is first == last.                                 
     \throws InvalidEntry When the required input argument 'ndir' is zero.
-    \throws NotEnoughElements If dir == RowWise, this is thrown when the input 
+    \throws NotEnoughElements If dim == RowWise, this is thrown when the input 
                               iterator does not produce enough elements to fill 
-                              up the last row completely. If dir == ColumnWise, 
+                              up the last row completely. If dim == ColumnWise, 
                               this is thrown when the input iterator does not 
                               produce enough elements to fill up the last column
                               completely.                                     */
@@ -318,10 +320,10 @@ public:
                typename std::enable_if<!std::is_integral<InputIt>::value,
                                        InputIt>::type last,
                const size_t numEntries,
-               const InputItDir dim = RowWise,
+               const InputItDir::Dir dim = InputItDir::RowWise,
                const bool allowMissing = false) :
-        m_data{static_cast<int>(dim == RowWise ? 1          : numEntries), 
-               static_cast<int>(dim == RowWise ? numEntries :          1)},
+        m_data{static_cast<int>(dim == InputItDir::RowWise ? 1 : numEntries), 
+               static_cast<int>(dim == InputItDir::RowWise ? numEntries : 1)},
         m_metadata{},
         m_col_ind{} {
         if(first == last)
@@ -334,7 +336,7 @@ public:
         while(first != last) {
             m_data.set(row, col, *first);
             ++first;
-            if(dim == RowWise) {
+            if(dim == InputItDir::RowWise) {
                 ++col;
                 if(col == static_cast<int>(numEntries)  && first != last) {
                     col = 0;
@@ -351,14 +353,14 @@ public:
             }
         }
         if(!allowMissing) {
-            if(dim == RowWise && col != m_data.ncol()) {
+            if(dim == InputItDir::RowWise && col != m_data.ncol()) {
                 throw NotEnoughElements{"Input iterator did not produce " 
                                         "enough elements to fill the last " 
                                         "row. Expected = " + 
                                         std::to_string(m_data.ncol()) + 
                                         " Received = " + 
                                         std::to_string(col)};
-            } else if(dim == ColumnWise && row != m_data.nrow()) {
+            } else if(dim == InputItDir::ColumnWise && row != m_data.nrow()) {
                 throw NotEnoughElements{"Input iterator did not produce enough "
                                         "elements to fill the last column. " 
                                         "Expected = " + 
@@ -943,8 +945,8 @@ public:
             throw InvalidEntry{"Input argument 'ncol' cannot be zero."
                     "To clear all data, use clearData()."};
 
-        if(ncol < m_data.ncol())
-            for(size_t c = ncol; c < m_data.ncol(); ++c) {
+        if(static_cast<int>(ncol) < m_data.ncol())
+            for(size_t c = ncol; c < static_cast<size_t>(m_data.ncol()); ++c) {
                 auto res = std::find_if(m_col_ind.begin(),
                                         m_col_ind.end(),
                                         [c] (const ColumnLabelsValue& kv) {
@@ -954,7 +956,7 @@ public:
                     m_col_ind.erase(res);
             }
 
-        m_data.resizeKeep(nrow, ncol);
+        m_data.resizeKeep(static_cast<int>(nrow), static_cast<int>(ncol));
     }
 
     /**@}*/

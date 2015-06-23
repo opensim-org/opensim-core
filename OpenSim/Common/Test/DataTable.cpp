@@ -865,11 +865,12 @@ void test3() {
                                                      data_real.cend() - 2,
                                                      4};  
         } catch(OpenSim::NotEnoughElements&) {
-            OpenSim::DataTable_<SimTK::Real> dt_real{data_real.cbegin(), 
-                                                     data_real.cend() - 2,
-                                                     4, 
-                                                     OpenSim::RowWise,
-                                                     true};  
+            OpenSim::DataTable_<SimTK::Real> 
+                dt_real{data_real.cbegin(), 
+                        data_real.cend() - 2,
+                        4, 
+                        OpenSim::InputItDir::RowWise,
+                        true};  
         }
         std::cout << "test3 -- Construct DataTable with iterators rowwise"
                   << " [NotEnoughElements]: Vec3." << std::endl;
@@ -878,11 +879,12 @@ void test3() {
                                                      data_vec3.cend() - 2,
                                                      4};  
         } catch(OpenSim::NotEnoughElements&) {
-            OpenSim::DataTable_<SimTK::Vec3> dt_vec3{data_vec3.cbegin(), 
-                                                     data_vec3.cend() - 2,
-                                                     4,
-                                                     OpenSim::RowWise,
-                                                     true};
+            OpenSim::DataTable_<SimTK::Vec3> 
+                dt_vec3{data_vec3.cbegin(), 
+                        data_vec3.cend() - 2,
+                        4,
+                        OpenSim::InputItDir::RowWise,
+                        true};
         }
         std::cout << "test3 -- Construct DataTable with iterators rowwise"
                   << " [NotEnoughElements]: Vec6." << std::endl;
@@ -891,11 +893,12 @@ void test3() {
                                                      data_vec6.cend() - 2,
                                                      4};  
         } catch(OpenSim::NotEnoughElements&) {
-            OpenSim::DataTable_<SimTK::Vec6> dt_vec6{data_vec6.cbegin(), 
-                                                     data_vec6.cend() - 2,
-                                                     4,
-                                                     OpenSim::RowWise,
-                                                     true};
+            OpenSim::DataTable_<SimTK::Vec6> 
+                dt_vec6{data_vec6.cbegin(), 
+                        data_vec6.cend() - 2,
+                        4,
+                        OpenSim::InputItDir::RowWise,
+                        true};
         }
     }
     {
@@ -904,44 +907,50 @@ void test3() {
         std::cout << "test3 -- Construct DataTable with iterators colwise"
                   << " [NotEnoughElements]: Real." << std::endl;
         try {
-            OpenSim::DataTable_<SimTK::Real> dt_real{data_real.cbegin(), 
-                                                     data_real.cend() - 2,
-                                                     4,
-                                                     OpenSim::ColumnWise};
+            OpenSim::DataTable_<SimTK::Real> 
+                dt_real{data_real.cbegin(), 
+                        data_real.cend() - 2,
+                        4,
+                        OpenSim::InputItDir::ColumnWise};
         } catch(OpenSim::NotEnoughElements&) {
-            OpenSim::DataTable_<SimTK::Real> dt_real{data_real.cbegin(), 
-                                                     data_real.cend() - 2,
-                                                     4,
-                                                     OpenSim::ColumnWise,
-                                                     true};
+            OpenSim::DataTable_<SimTK::Real> 
+                dt_real{data_real.cbegin(), 
+                        data_real.cend() - 2,
+                        4,
+                        OpenSim::InputItDir::ColumnWise,
+                        true};
         }
         std::cout << "test3 -- Construct DataTable with iterators colwise"
                   << " [NotEnoughElements]: Vec3." << std::endl;
         try {
-            OpenSim::DataTable_<SimTK::Vec3> dt_vec3{data_vec3.cbegin(), 
-                                                     data_vec3.cend() - 2,
-                                                     4,
-                                                     OpenSim::ColumnWise};
+            OpenSim::DataTable_<SimTK::Vec3> 
+                dt_vec3{data_vec3.cbegin(), 
+                        data_vec3.cend() - 2,
+                        4,
+                        OpenSim::InputItDir::ColumnWise};
         } catch(OpenSim::NotEnoughElements&) {
-            OpenSim::DataTable_<SimTK::Vec3> dt_vec3{data_vec3.cbegin(), 
-                                                     data_vec3.cend() - 2,
-                                                     4,
-                                                     OpenSim::ColumnWise,
-                                                     true};
+            OpenSim::DataTable_<SimTK::Vec3> 
+                dt_vec3{data_vec3.cbegin(), 
+                        data_vec3.cend() - 2,
+                        4,
+                        OpenSim::InputItDir::ColumnWise,
+                        true};
         }
         std::cout << "test3 -- Construct DataTable with iterators colwise"
                   << " [NotEnoughElements]: Vec6." << std::endl;
         try {
-            OpenSim::DataTable_<SimTK::Vec6> dt_vec6{data_vec6.cbegin(), 
-                                                     data_vec6.cend() - 2,
-                                                     4,
-                                                     OpenSim::ColumnWise};
+            OpenSim::DataTable_<SimTK::Vec6> 
+                dt_vec6{data_vec6.cbegin(), 
+                        data_vec6.cend() - 2,
+                        4,
+                        OpenSim::InputItDir::ColumnWise};
         } catch(OpenSim::NotEnoughElements&) {
-            OpenSim::DataTable_<SimTK::Vec6> dt_vec6{data_vec6.cbegin(), 
-                                                     data_vec6.cend() - 2,
-                                                     4,
-                                                     OpenSim::ColumnWise,
-                                                     true};
+            OpenSim::DataTable_<SimTK::Vec6> 
+                dt_vec6{data_vec6.cbegin(), 
+                        data_vec6.cend() - 2,
+                        4,
+                        OpenSim::InputItDir::ColumnWise,
+                        true};
         }
     }
 
@@ -950,22 +959,25 @@ void test3() {
         // demostration. The underlyig type can hold double.
         std::cout << "test3 -- Construct DataTable with iterators colwise:" 
                   << " Real." << std::endl;
-        OpenSim::DataTable_<SimTK::Real> dt_real{data_real.cbegin(), 
-                                                 data_real.cend(),
-                                                 4,
-                                                 OpenSim::ColumnWise};
+        OpenSim::DataTable_<SimTK::Real> 
+            dt_real{data_real.cbegin(), 
+                    data_real.cend(),
+                    4,
+                    OpenSim::InputItDir::ColumnWise};
         std::cout << "test3 -- Construct DataTable with iterators colwise:" 
                   <<" Vec3." << std::endl;
-        OpenSim::DataTable_<SimTK::Vec3> dt_vec3{data_vec3.cbegin(),
-                                                 data_vec3.cend(),
-                                                 4,
-                                                 OpenSim::ColumnWise};
+        OpenSim::DataTable_<SimTK::Vec3> 
+            dt_vec3{data_vec3.cbegin(),
+                    data_vec3.cend(),
+                    4,
+                    OpenSim::InputItDir::ColumnWise};
         std::cout << "test3 -- Construct DataTable with iterators colwise:" 
                   << " Vec6." << std::endl;
-        OpenSim::DataTable_<SimTK::Vec6> dt_vec6{data_vec6.cbegin(),
-                                                 data_vec6.cend(), 
-                                                 4,
-                                                 OpenSim::ColumnWise};
+        OpenSim::DataTable_<SimTK::Vec6> 
+            dt_vec6{data_vec6.cbegin(),
+                    data_vec6.cend(), 
+                    4,
+                    OpenSim::InputItDir::ColumnWise};
 
         // Check the size of the DataTable.
         std::cout << "test3 -- checkDataTableLimits(): Real." << std::endl;
@@ -1242,20 +1254,23 @@ void test4() {
 
         // Construct DataTable 2 with SimtTK::Real
         std::cout << "test4 -- Construct DataTable 2: Real." << std::endl;
-        OpenSim::DataTable_<SimTK::Real> dt2_real{data_real.cbegin(), 
-                data_real.cend(),
-                3,
-                OpenSim::ColumnWise};
+        OpenSim::DataTable_<SimTK::Real> 
+            dt2_real{data_real.cbegin(), 
+                     data_real.cend(),
+                     3,
+                     OpenSim::InputItDir::ColumnWise};
         std::cout << "test4 -- Construct DataTable 2: Vec3." << std::endl;
-        OpenSim::DataTable_<SimTK::Vec3> dt2_vec3{data_vec3.cbegin(),
-                data_vec3.cend(),
-                3,
-                OpenSim::ColumnWise};
+        OpenSim::DataTable_<SimTK::Vec3> 
+            dt2_vec3{data_vec3.cbegin(),
+                     data_vec3.cend(),
+                     3,
+                     OpenSim::InputItDir::ColumnWise};
         std::cout << "test4 -- Construct DataTable 2: Vec6." << std::endl;
-        OpenSim::DataTable_<SimTK::Vec6> dt2_vec6{data_vec6.cbegin(),
-                data_vec6.cend(), 
-                3,
-                OpenSim::ColumnWise};
+        OpenSim::DataTable_<SimTK::Vec6> 
+            dt2_vec6{data_vec6.cbegin(),
+                     data_vec6.cend(), 
+                     3,
+                     OpenSim::InputItDir::ColumnWise};
   
         // Bind DataTable 2 to DataTable 1 by row.
         std::cout << "test4 -- dt1.addDataTableByRow(dt2): Real."  << std::endl;
@@ -1342,20 +1357,23 @@ void test4() {
 
     // Construct DataTable 2 with SimtTK::Real
     std::cout << "test4 -- Construct DataTable 2: Real.\n";
-    OpenSim::DataTable_<SimTK::Real> dt2_real{data_real.cbegin(), 
-            data_real.cend(),
-            3,
-            OpenSim::ColumnWise};
+    OpenSim::DataTable_<SimTK::Real> 
+        dt2_real{data_real.cbegin(), 
+                 data_real.cend(),
+                 3,
+                 OpenSim::InputItDir::ColumnWise};
     std::cout << "test4 -- Construct DataTable 2: Vec3.\n";
-    OpenSim::DataTable_<SimTK::Vec3> dt2_vec3{data_vec3.cbegin(),
-            data_vec3.cend(),
-            3,
-            OpenSim::ColumnWise};
+    OpenSim::DataTable_<SimTK::Vec3> 
+        dt2_vec3{data_vec3.cbegin(),
+                 data_vec3.cend(),
+                 3,
+                 OpenSim::InputItDir::ColumnWise};
     std::cout << "test4 -- Construct DataTable 2: Vec6.\n";
-    OpenSim::DataTable_<SimTK::Vec6> dt2_vec6{data_vec6.cbegin(),
-            data_vec6.cend(), 
-            3,
-            OpenSim::ColumnWise};
+    OpenSim::DataTable_<SimTK::Vec6> 
+        dt2_vec6{data_vec6.cbegin(),
+                 data_vec6.cend(), 
+                 3,
+                 OpenSim::InputItDir::ColumnWise};
     // Bind DataTable 2 to DataTable 1 by col.
     std::cout << "test4 -- dt1.addDataTableByColumn(dt2): Real.\n";
     dt1_real.addDataTableByColumn(dt2_real);
