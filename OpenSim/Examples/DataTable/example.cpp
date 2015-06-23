@@ -164,9 +164,9 @@ int main() {
     OpenSim::DataTable_<SimTK::Vec6> dt_vec6_copy{dt_vec6};
 
     // Add/concatenate an entire DataTable by row.
-    dt_real.addDataTableByRow(dt_real_copy);
-    dt_vec3.addDataTableByRow(dt_vec3_copy);
-    dt_vec6.addDataTableByRow(dt_vec6_copy);
+    dt_real.concatenateRows(dt_real_copy);
+    dt_vec3.concatenateRows(dt_vec3_copy);
+    dt_vec6.concatenateRows(dt_vec6_copy);
 
     // Copy assign DataTable.
     dt_real_copy = dt_real;
@@ -174,9 +174,9 @@ int main() {
     dt_vec6_copy = dt_vec6;
 
     // Add/concatenate an entire DataTable by col.
-    dt_real.addDataTableByColumn(dt_real_copy);
-    dt_vec3.addDataTableByColumn(dt_vec3_copy);
-    dt_vec6.addDataTableByColumn(dt_vec6_copy);
+    dt_real.concatenateColumns(dt_real_copy);
+    dt_vec3.concatenateColumns(dt_vec3_copy);
+    dt_vec6.concatenateColumns(dt_vec6_copy);
 
     // Concatenate two existing DataTable(s) and produce a new one instead of 
     // appending one to another.
@@ -195,15 +195,15 @@ int main() {
                                                                     8, 9, 0}};
 
         // Concatenate by row.
-        auto byrow_dt_real = addDataTablesByRow(dt1_real, dt2_real);
-        auto byrow_dt_vec3 = addDataTablesByRow(dt1_vec3, dt2_vec3);
-        auto byrow_dt_vec6 = addDataTablesByRow(dt1_vec6, dt2_vec6);
+        auto byrow_dt_real = concatenateRows(dt1_real, dt2_real);
+        auto byrow_dt_vec3 = concatenateRows(dt1_vec3, dt2_vec3);
+        auto byrow_dt_vec6 = concatenateRows(dt1_vec6, dt2_vec6);
 
         // Concatenate by col. The following using same table for both 
         // arguments.
-        auto bycol_dt_real = addDataTablesByColumn(dt1_real, dt1_real);
-        auto bycol_dt_vec3 = addDataTablesByColumn(dt1_vec3, dt1_vec3);
-        auto bycol_dt_vec6 = addDataTablesByColumn(dt1_vec6, dt1_vec6);
+        auto bycol_dt_real = concatenateColumns(dt1_real, dt1_real);
+        auto bycol_dt_vec3 = concatenateColumns(dt1_vec3, dt1_vec3);
+        auto bycol_dt_vec6 = concatenateColumns(dt1_vec6, dt1_vec6);
     }
 
     // The columns of a DataTable can be labeled. Not all columns need to be

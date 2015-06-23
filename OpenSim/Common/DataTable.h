@@ -58,13 +58,13 @@ namespace OpenSim {
 
     /** Add/concatenate two DataTables by row.                                */
     template<typename ET>
-    DataTable_<ET> addDataTablesByRow(const DataTable_<ET>& dt1, 
-                                      const DataTable_<ET>& dt2);
+    DataTable_<ET> concatenateRows(const DataTable_<ET>& dt1, 
+                                   const DataTable_<ET>& dt2);
 
     /** Add/concatenate two DataTables by column.                             */
     template<typename ET>
-    DataTable_<ET> addDataTablesByColumn(const DataTable_<ET>& dt1, 
-                                         const DataTable_<ET>& dt2);
+    DataTable_<ET> concatenateColumns(const DataTable_<ET>& dt1, 
+                                      const DataTable_<ET>& dt2);
 
     // Exceptions.
     class NotEnoughElements;
@@ -873,12 +873,12 @@ public:
     elements will appear as the last rows of this DataTable_. Only data will be 
     appended. Metadata is not added. Columns retain their labels. To create a 
     new DataTable_  that is a concatenation of two existing DataTable_(s), see 
-    addDataTablesByRow().
+    concatenateRows().
 
     \throws NumberOfColsMismatch If input DataTable_ has incorrect number of
                                  columns for concatenation to work.
     \throws InvalidEntry If trying to add a DataTable_ to itself.             */
-    void addDataTableByRow(const DataTable_& table) {
+    void concatenateRows(const DataTable_& table) {
         if(m_data.ncol() != table.m_data.ncol()) 
             throw NumberOfColumnsMismatch{"Input DataTable has incorrect number"
                                           " of columns. Expected = " + 
@@ -900,12 +900,12 @@ public:
     new elements will appear as the last columns of this DataTable_. Only data 
     will be appended. Column labels and metadata are not added. To create a new 
     DataTable_ that is a concatenation of two existing DataTable_(s), see 
-    addDataTablesByColumn().
+    concatenateColumns().
 
     \throws NumberOfRowsMismatch If input DataTable_ has incorrect number of
                                  rows for concatenation to work.
     \throws InvalidEntry If trying to concatenation a DataTable_ to itself.   */
-    void addDataTableByColumn(const DataTable_& table) {
+    void concatenateColumns(const DataTable_& table) {
         if(m_data.nrow() != table.m_data.nrow())
             throw NumberOfRowsMismatch{"Input DataTable has incorrect number of"
                                        " rows. Expected = " + 
@@ -1324,10 +1324,10 @@ private:
 /// Add/concatenate two DataTable_(s) by row and produce a new DataTable_.
 template<typename ET>
 OpenSim::DataTable_<ET> 
-OpenSim::addDataTablesByRow(const OpenSim::DataTable_<ET>& dt1, 
-                            const OpenSim::DataTable_<ET>& dt2) {
+OpenSim::concatenateRows(const OpenSim::DataTable_<ET>& dt1, 
+                         const OpenSim::DataTable_<ET>& dt2) {
     OpenSim::DataTable_<ET> dt{dt1};
-    dt.addDataTableByRow(dt2);
+    dt.concatenateRows(dt2);
     return dt;
 }
 
@@ -1335,10 +1335,10 @@ OpenSim::addDataTablesByRow(const OpenSim::DataTable_<ET>& dt1,
 /// Add/concatenate two DataTable_(s) by column and produce a new DataTable_.
 template<typename ET>
 OpenSim::DataTable_<ET> 
-OpenSim::addDataTablesByColumn(const OpenSim::DataTable_<ET>& dt1, 
-                               const OpenSim::DataTable_<ET>& dt2) {
+OpenSim::concatenateColumns(const OpenSim::DataTable_<ET>& dt1, 
+                            const OpenSim::DataTable_<ET>& dt2) {
     OpenSim::DataTable_<ET> dt{dt1};
-    dt.addDataTableByColumn(dt2);
+    dt.concatenateColumns(dt2);
     return dt;
 }
 

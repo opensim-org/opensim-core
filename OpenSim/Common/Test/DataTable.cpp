@@ -1273,12 +1273,12 @@ void test4() {
                      OpenSim::InputItDir::ColumnWise};
   
         // Bind DataTable 2 to DataTable 1 by row.
-        std::cout << "test4 -- dt1.addDataTableByRow(dt2): Real."  << std::endl;
-        dt1_real.addDataTableByRow(dt2_real);
-        std::cout << "test4 -- dt1.addDataTableByRow(dt2): Vec3." << std::endl;
-        dt1_vec3.addDataTableByRow(dt2_vec3);
-        std::cout << "test4 -- dt1.addDataTableByRow(dt2): Vec6." << std::endl;
-        dt1_vec6.addDataTableByRow(dt2_vec6);
+        std::cout << "test4 -- dt1.concatenateRows(dt2): Real."  << std::endl;
+        dt1_real.concatenateRows(dt2_real);
+        std::cout << "test4 -- dt1.concatenateRows(dt2): Vec3." << std::endl;
+        dt1_vec3.concatenateRows(dt2_vec3);
+        std::cout << "test4 -- dt1.concatenateRows(dt2): Vec6." << std::endl;
+        dt1_vec6.concatenateRows(dt2_vec6);
 
 
         // Check the size of the DataTable.
@@ -1330,20 +1330,20 @@ void test4() {
                           2);
 
         // Try binding DataTable 1 to DataTable 2 by col.
-        std::cout << "test4 -- dt2.addDataTableByColumn(dt1): Real." 
+        std::cout << "test4 -- dt2.concatenateColumns(dt1): Real." 
                   << std::endl;
         try {
-            dt2_real.addDataTableByColumn(dt1_real);
+            dt2_real.concatenateColumns(dt1_real);
         } catch(OpenSim::NumberOfRowsMismatch&) {}
-        std::cout << "test4 -- dt2.addDataTableByColumn(dt1): Vec3." 
+        std::cout << "test4 -- dt2.concatenateColumns(dt1): Vec3." 
                   << std::endl;
         try {
-            dt2_vec3.addDataTableByColumn(dt1_vec3);
+            dt2_vec3.concatenateColumns(dt1_vec3);
         } catch(OpenSim::NumberOfRowsMismatch&) {}
-        std::cout << "test4 -- dt2.addDataTableByColumn(dt1): Vec6." 
+        std::cout << "test4 -- dt2.concatenateColumns(dt1): Vec6." 
                   << std::endl;
         try {
-            dt2_vec6.addDataTableByColumn(dt1_vec6);
+            dt2_vec6.concatenateColumns(dt1_vec6);
         } catch(OpenSim::NumberOfRowsMismatch&) {}
     }
 
@@ -1375,12 +1375,12 @@ void test4() {
                  3,
                  OpenSim::InputItDir::ColumnWise};
     // Bind DataTable 2 to DataTable 1 by col.
-    std::cout << "test4 -- dt1.addDataTableByColumn(dt2): Real.\n";
-    dt1_real.addDataTableByColumn(dt2_real);
-    std::cout << "test4 -- dt1.addDataTableByColumn(dt2): Vec3.\n";
-    dt1_vec3.addDataTableByColumn(dt2_vec3);
-    std::cout << "test4 -- dt1.addDataTableByColumn(dt2): Vec6.\n";
-    dt1_vec6.addDataTableByColumn(dt2_vec6);
+    std::cout << "test4 -- dt1.concatenateColumns(dt2): Real.\n";
+    dt1_real.concatenateColumns(dt2_real);
+    std::cout << "test4 -- dt1.concatenateColumns(dt2): Vec3.\n";
+    dt1_vec3.concatenateColumns(dt2_vec3);
+    std::cout << "test4 -- dt1.concatenateColumns(dt2): Vec6.\n";
+    dt1_vec6.concatenateColumns(dt2_vec6);
 
     // Check the size of the DataTable.
     std::cout << "test4 -- checkDataTableLimits(): Real.\n";
@@ -1439,45 +1439,45 @@ void test4() {
                                           {100, 200, 300, 400, 500, 600}}, 2);
 
     // Try binding DataTable 1 to DataTable 2 by row.
-    std::cout << "test4 -- dt2.addDataTableByRow(dt1): Real.\n";
+    std::cout << "test4 -- dt2.concatenateRows(dt1): Real.\n";
     try {
-        dt2_real.addDataTableByRow(dt1_real);
+        dt2_real.concatenateRows(dt1_real);
     } catch(OpenSim::NumberOfColumnsMismatch&) {}
-    std::cout << "test4 -- dt2.addDataTableByRow(dt1): Vec3.\n";
+    std::cout << "test4 -- dt2.concatenateRows(dt1): Vec3.\n";
     try {
-        dt2_vec3.addDataTableByRow(dt1_vec3);
+        dt2_vec3.concatenateRows(dt1_vec3);
     } catch(OpenSim::NumberOfColumnsMismatch&) {}
-    std::cout << "test4 -- dt2.addDataTableByRow(dt1): Vec6.\n";
+    std::cout << "test4 -- dt2.concatenateRows(dt1): Vec6.\n";
     try {
-        dt2_vec6.addDataTableByRow(dt1_vec6);
+        dt2_vec6.concatenateRows(dt1_vec6);
     } catch(OpenSim::NumberOfColumnsMismatch&) {}
 
     // Try binding DataTable 2 to itself by row.
-    std::cout << "test4 -- dt2.addDataTableByRow(dt2): Real.\n";
+    std::cout << "test4 -- dt2.concatenateRows(dt2): Real.\n";
     try {
-        dt2_real.addDataTableByRow(dt2_real);
+        dt2_real.concatenateRows(dt2_real);
     } catch(OpenSim::InvalidEntry&) {}
-    std::cout << "test4 -- dt2.addDataTableByRow(dt2): Vec3.\n";
+    std::cout << "test4 -- dt2.concatenateRows(dt2): Vec3.\n";
     try {
-        dt2_vec3.addDataTableByRow(dt2_vec3);
+        dt2_vec3.concatenateRows(dt2_vec3);
     } catch(OpenSim::InvalidEntry&) {}
-    std::cout << "test4 -- dt2.addDataTableByRow(dt2): Vec6.\n";
+    std::cout << "test4 -- dt2.concatenateRows(dt2): Vec6.\n";
     try {
-        dt2_vec6.addDataTableByRow(dt2_vec6);
+        dt2_vec6.concatenateRows(dt2_vec6);
     } catch(OpenSim::InvalidEntry&) {}
 
     // Try binding DataTable 2 to itself by col.
-    std::cout << "test4 -- dt2.addDataTableByColumn(dt2): Real.\n";
+    std::cout << "test4 -- dt2.concatenateColumns(dt2): Real.\n";
     try {
-        dt2_real.addDataTableByColumn(dt2_real);
+        dt2_real.concatenateColumns(dt2_real);
     } catch(OpenSim::InvalidEntry&) {}
-    std::cout << "test4 -- dt2.addDataTableByColumn(dt2): Vec3.\n";
+    std::cout << "test4 -- dt2.concatenateColumns(dt2): Vec3.\n";
     try {
-        dt2_vec3.addDataTableByColumn(dt2_vec3);
+        dt2_vec3.concatenateColumns(dt2_vec3);
     } catch(OpenSim::InvalidEntry&) {}
-    std::cout << "test4 -- dt2.addDataTableByColumn(dt2): Vec6.\n";
+    std::cout << "test4 -- dt2.concatenateColumns(dt2): Vec6.\n";
     try {
-        dt2_vec6.addDataTableByColumn(dt2_vec6);
+        dt2_vec6.concatenateColumns(dt2_vec6);
     } catch(OpenSim::InvalidEntry&) {}
 }
 
