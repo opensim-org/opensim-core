@@ -249,18 +249,18 @@ public:
 /** \brief DataTable_ is a in-memory storage container for data(in the form of a
 matrix with column names) with support for holding metadata.                
                                                                               
--- Underlying matrix will have entries of configurable type ET(template 
-   param).
--- Random-access(constant-time) to specific entries, entire columns and entire 
-   rows using their index.
--- Average constant-time access to columns through column-labels.
--- Add rows and columns to existing DataTable_. 
--- Add/concatenate two DataTable_(s) by row and by column. 
--- Set column labels for a subset of columns, update them, remove them etc. 
--- Construct DataTable_ emtpy OR with a given shape and default value OR using 
-   and iterator pair one entry at a time.
--- Heterogeneous metadata container. Metadata in the form of key-value pairs 
-   where key is a std::string and value is is of any type.
+- Underlying matrix will have entries of configurable type ET(template 
+  param).
+- Random-access(constant-time) to specific entries, entire columns and entire 
+  rows using their index.
+- Average constant-time access to columns through column-labels.
+- Add rows and columns to existing DataTable_. 
+- Add/concatenate two DataTable_(s) by row and by column. 
+- Set column labels for a subset of columns, update them, remove them etc. 
+- Construct DataTable_ emtpy OR with a given shape and default value OR using 
+  and iterator pair one entry at a time.
+- Heterogeneous metadata container. Metadata in the form of key-value pairs 
+  where key is a std::string and value is is of any type.
                                                                               
 \tparam ET Type of the entries in the underlying matrix. Defaults to         
            SimTK::Real(alias for double).                                     */
