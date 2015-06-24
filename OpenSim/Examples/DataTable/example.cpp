@@ -65,15 +65,15 @@ int main() {
         OpenSim::DataTable_<SimTK::Real> real{data_real.cbegin(),
                                               data_real.cend(),
                                               3,
-                                              OpenSim::InputItDir::ColumnWise};
+                                              OpenSim::InputItDim::ColumnWise};
         OpenSim::DataTable_<SimTK::Vec3> vec3{data_vec3.cbegin(),
                                               data_vec3.cend(),
                                               3,
-                                              OpenSim::InputItDir::ColumnWise};
+                                              OpenSim::InputItDim::ColumnWise};
         OpenSim::DataTable_<SimTK::Vec6> vec6{data_vec6.cbegin(),
                                               data_vec6.cend(),
                                               3,
-                                              OpenSim::InputItDir::ColumnWise};
+                                              OpenSim::InputItDim::ColumnWise};
     }
 
     // Add multiple rows at once using an iterator. Because the DataTable is 

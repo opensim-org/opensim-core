@@ -49,8 +49,8 @@ namespace OpenSim {
     /** Enum to specify if the input iterator is traversing data row-wise or
     column-wise. clang3.6 crashes if this is turned to a "enum class". Until it 
     is fixed, use a pre c++11 enum.                                           */
-    struct InputItDir {
-        enum Dir {
+    struct InputItDim {
+        enum Dim {
             RowWise, 
             ColumnWise
         };
@@ -285,8 +285,8 @@ public:
     \param initialValue Value to initialize all the entries to.               */
     DataTable_(size_t numRows,
                size_t numColumns,
-               const ET& initialValue = ET{SimTK::NaN}) :
-        m_data{int(numRows), int(numColumns), initialValue} {}
+               const ET& initialValue = ET{SimTK::NaN}) 
+        : m_data{int(numRows), int(numColumns), initialValue} {}
 
     /** Construct DataTable using an iterator(satisfying requirement of an 
     input_iterator) which produces one entry at a time. The entries of 
@@ -298,8 +298,8 @@ public:
     \param first Beginning of range covered by the iterator.
     \param last End of the range covered by the iterator.
     \param numEntries Extent of the dimension specified by parameter dim. 
-    \param dim Dimension to populate the DataTable. Populate row-wise or column 
-               wise. See OpenSim::InputItDir for possible values.
+    \param dimension Dimension to populate the DataTable. Populate row-wise or 
+                     column wise. See OpenSim::InputItDim for possible values.
     \param allowMissing Allow for missing values. When set to false, this
                         function will throw if the input iterator fills up the 
                         last row/column partially. When set to true, missing 
@@ -319,10 +319,12 @@ public:
                typename std::enable_if<!std::is_integral<InputIt>::value,
                                        InputIt>::type last,
                size_t numEntries,
-               InputItDir::Dir dim = InputItDir::RowWise,
-               bool allowMissing = false) :
-        m_data{static_cast<int>(dim == InputItDir::RowWise ? 1 : numEntries), 
-               static_cast<int>(dim == InputItDir::RowWise ? numEntries : 1)} {
+               InputItDim::Dim dimension = InputItDim::RowWise,
+               bool allowMissing = false) 
+        : m_data{static_cast<int>(dimension == InputItDim::RowWise ? 
+                                  1 : numEntries), 
+                 static_cast<int>(dimension == InputItDim::RowWise ? 
+                                  numEntries : 1)} {
         if(first == last)
             throw ZeroElements{"Input iterators produce zero elements."};
         if(numEntries == 0)
@@ -333,7 +335,7 @@ public:
         while(first != last) {
             m_data.set(row, col, *first);
             ++first;
-            if(dim == InputItDir::RowWise) {
+            if(dimension == InputItDim::RowWise) {
                 ++col;
                 if(col == static_cast<int>(numEntries)  && first != last) {
                     col = 0;
@@ -350,14 +352,16 @@ public:
             }
         }
         if(!allowMissing) {
-            if(dim == InputItDir::RowWise && col != m_data.ncol()) {
+            if(dimension == InputItDim::RowWise && 
+               col != m_data.ncol()) {
                 throw NotEnoughElements{"Input iterator did not produce " 
                                         "enough elements to fill the last " 
                                         "row. Expected = " + 
                                         std::to_string(m_data.ncol()) + 
                                         " Received = " + 
                                         std::to_string(col)};
-            } else if(dim == InputItDir::ColumnWise && row != m_data.nrow()) {
+            } else if(dimension == InputItDim::ColumnWise && 
+                      row != m_data.nrow()) {
                 throw NotEnoughElements{"Input iterator did not produce enough "
                                         "elements to fill the last column. " 
                                         "Expected = " + 
@@ -373,7 +377,7 @@ public:
     /**@{*/
 
     /** Copy constructor.                                                     */
-    DataTable_(const DataTable_& dt) = default;
+    DataTable_(const DataTable_& source) = default;
 
     /** Virtual copy constructor.                                             */
     std::unique_ptr<AbstractDataTable> clone() const override {
