@@ -663,7 +663,7 @@ public:
         }
     }
 
-    /** Add(append) multiple rows to the DataTable_ using an iterator 
+    /** Add (append) multiple rows to the DataTable_ using an iterator 
     (satisfying requirements of an InputIterator) producing one entry at a 
     time. If this function is called on an empty DataTable_, numColumns must be 
     provided. Otherwise, numColumns is ignored. To add just one row, use 
@@ -721,7 +721,7 @@ public:
                                     " Received = " + std::to_string(col)};
     }
 
-    /** Add(append) a column to the DataTable_ using a SimTK::Vector_. If the 
+    /** Add (append) a column to the DataTable_ using a SimTK::Vector_. If the 
     DataTable is empty, input column will be the first column. This function can
     be used to populate an empty DataTable_.
   
@@ -745,7 +745,7 @@ public:
         m_data.updCol(m_data.ncol() - 1).updAsVector() = column;
     }
 
-    /** Add(append) a column to the DataTable_ using an iterator(satisfying 
+    /** Add (append) a column to the DataTable_ using an iterator(satisfying 
     requirements of an InputIterator) producing one entry at a time. If this
     function is called on an empty DataTable_ without providing numRowsHint, it
     performs <i>allocation + relocation</i> for [log2(nrow) + 1] times where 
