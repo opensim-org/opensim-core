@@ -814,7 +814,7 @@ public:
         }
     }
 
-    /** Add(append) multiple columns to the DataTable_ using an iterator
+    /** Add (append) multiple columns to the DataTable_ using an iterator
     (satisfying requirements of an InputIterator) producing one entry at a 
     time. If this function is called on an empty DataTable_, nrow must be 
     provided. Otherwise, nrow is ignored. To add just one col, use addRow().
