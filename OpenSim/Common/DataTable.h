@@ -449,8 +449,8 @@ public:
   
     \throws SimTK::Exception::IndexOutOfRange If the row index specified is not 
                                               in the DataTable_.              */
-    SimTK::RowVectorView_<ET> getRow(size_t row) const {
-        return m_data.row(static_cast<int>(row));
+    SimTK::RowVectorView_<ET> getRow(size_t rowIndex) const {
+        return m_data.row(static_cast<int>(rowIndex));
     }
 
     /** Get a row of the DataTable_ by index. Returned row is editable. See 
@@ -458,8 +458,8 @@ public:
   
     \throws SimTK::Exception::IndexOutOfRange If the row index specified is not 
                                               in the DataTable_.              */
-    SimTK::RowVectorView_<ET> updRow(size_t row) {
-        return m_data.updRow(static_cast<int>(row));
+    SimTK::RowVectorView_<ET> updRow(size_t rowIndex) {
+        return m_data.updRow(static_cast<int>(rowIndex));
     }
 
     /** Get a column of the DataTable_ by index. Returned column is read-only. 
@@ -468,8 +468,8 @@ public:
   
     \throws SimTK::Exception::IndexOutOfRange If the column index specified is 
                                               not in the DataTable_.          */
-    SimTK::VectorView_<ET> getColumn(size_t column) const {
-        return m_data.col(static_cast<int>(column));
+    SimTK::VectorView_<ET> getColumn(size_t columnIndex) const {
+        return m_data.col(static_cast<int>(columnIndex));
     }
 
     /** Get a column of the DataTable_ by label. Returned column is read-only. 
@@ -492,8 +492,8 @@ public:
   
     \throws SimTK::Exception::IndexOutOfRange If the column index specified is 
                                               not in the DataTable_.          */
-    SimTK::VectorView_<ET> updColumn(size_t column) {
-        return m_data.updCol(static_cast<int>(column));
+    SimTK::VectorView_<ET> updColumn(size_t columnIndex) {
+        return m_data.updCol(static_cast<int>(columnIndex));
     }
 
     /** Get a column of the DataTable_ by label. Returned column is editable. 
@@ -515,8 +515,9 @@ public:
   
     \throws SimTK::Exception::IndexOutOfRange If the row/column index specified 
                                               is not in the DataTable_.       */
-    const ET& getElt(size_t row, size_t column) const {
-        return m_data.getElt(static_cast<int>(row), static_cast<int>(column));
+    const ET& getElt(size_t rowIndex, size_t columnIndex) const {
+        return m_data.getElt(static_cast<int>(rowIndex), 
+                             static_cast<int>(columnIndex));
     }
 
     /** Get an element of the DataTable_ by (row, column-label) pair. The 
@@ -526,9 +527,9 @@ public:
                                               in the DataTable_.
     \throws ColumnDoesNotExist If the column label specified is not in the 
                                DataTable_.                                    */
-    const ET& getElt(size_t row, const string& columnLabel) const {
+    const ET& getElt(size_t rowIndex, const string& columnLabel) const {
         try {
-            return m_data.getElt(static_cast<int>(row), 
+            return m_data.getElt(static_cast<int>(rowIndex), 
                                  static_cast<int>(m_col_ind.at(columnLabel)));
         } catch (std::out_of_range exc) {
             throw ColumnDoesNotExist{"Column label '" + columnLabel + 
@@ -541,8 +542,9 @@ public:
   
     \throws SimTK::Exception::IndexOutOfRange If the row/column index specified 
                                               is not in the DataTable_.       */
-    ET& updElt(size_t row, size_t column) {
-        return m_data.updElt(static_cast<int>(row), static_cast<int>(column));
+    ET& updElt(size_t rowIndex, size_t columnIndex) {
+        return m_data.updElt(static_cast<int>(rowIndex), 
+                             static_cast<int>(columnIndex));
     }
 
     /** Get an element of the DataTable_ by (row, column-label) pair. The 
@@ -552,9 +554,9 @@ public:
                                               in the DataTable_.
     \throws ColumnDoesNotExist If the column label specified is not in the 
                                DataTable_.                                    */
-    ET& updElt(size_t row, const string& columnLabel) {
+    ET& updElt(size_t rowIndex, const string& columnLabel) {
         try {
-            return m_data.updElt(static_cast<int>(row), 
+            return m_data.updElt(static_cast<int>(rowIndex), 
                                  static_cast<int>(m_col_ind.at(columnLabel)));
         } catch (std::out_of_range exc) {
             throw ColumnDoesNotExist{"Column label '" + columnLabel + 
