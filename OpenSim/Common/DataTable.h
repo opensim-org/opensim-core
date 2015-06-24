@@ -595,19 +595,19 @@ public:
 
     /** Add(append) a row to the DataTable_ using an iterator(satisfying 
     requirements of an InputIterator) producing one entry at a time. If this
-    function is called on an empty DataTable_ without providing ncolumnHint, it
-    performs <i>allocation + relocation</i> for [log2(ncol) + 1] times where 
+    function is called on an empty DataTable_ without providing numColumnsHint, 
+    it performs <i>allocation + relocation</i> for [log2(ncol) + 1] times where 
     ncol is the actual number of elements produced by the input iterator. To add
     multiple rows at once using an input-iterator, use addRows().
   
     \param first Beginning of range covered by the iterator.
     \param last End of the range covered by the iterator.
-    \param ncolumnHint Hint for the number of columns in the input iterator. 
-                       Can be approximate above or below the actual number. This
-                       is only used when this function is called on an empty 
-                       DataTable_. Ignored otherwise. Providing a hint reduces 
-                       the number of resize operations which involves memory 
-                       allocation and relocation.
+    \param numColumnsHint Hint for the number of columns in the input iterator. 
+                          Can be approximate above or below the actual number. 
+                          This is only used when this function is called on an 
+                          empty DataTable_. Ignored otherwise. Providing a hint 
+                          reduces the number of resize operations which involves
+                          memory allocation and relocation.
     \param allowMissing Allow for missing values. When set to false, this
                         function will throw if the input iterator fills up the 
                         row only partially. When set to true, missing elements 
@@ -616,19 +616,19 @@ public:
     \throws ZeroElements If the number of elements produced by the input 
                          iterator is zero.
     \throws InvalidEntry The DataTable is empty and the input argument 
-                         'ncolumnHint' is zero.
+                         'numColumnsHint' is zero.
     \throws NotEnoughElements If allow_missing is false and the input iterator 
                               does not produce enough elements to fill up the 
                               row completely.                                 */
     template<typename InputIt>
     void addRow(InputIt first, 
                 InputIt last, 
-                size_t ncolumnHint = 2,
+                size_t numColumnsHint = 2,
                 bool allowMissing = false) {
         if(first == last)
             throw ZeroElements{"Input iterators produce zero elements."};
-        if((m_data.nrow() == 0 || m_data.ncol() == 0) && ncolumnHint == 0)
-            throw InvalidEntry{"Input argument 'ncolumnHint' cannot be zero " 
+        if((m_data.nrow() == 0 || m_data.ncol() == 0) && numColumnsHint == 0)
+            throw InvalidEntry{"Input argument 'numColumnsHint' cannot be zero "
                                "when DataTable is empty."};
 
         if(m_data.ncol() > 0) {
@@ -645,7 +645,7 @@ public:
                                         " Received = " + std::to_string(col)};
         } else {
             int col{0};
-            size_t ncol{ncolumnHint};
+            size_t ncol{numColumnsHint};
             m_data.resizeKeep(1, static_cast<int>(ncol));
             while(first != last) {
                 m_data.set(0, col++, *first);
@@ -665,14 +665,15 @@ public:
 
     /** Add(append) multiple rows to the DataTable_ using an iterator 
     (satisfying requirements of an InputIterator) producing one entry at a 
-    time. If this function is called on an empty DataTable_, ncolumn must be 
-    provided. Otherwise, ncolumn is ignored. To add just one row, use addRow().
+    time. If this function is called on an empty DataTable_, numColumns must be 
+    provided. Otherwise, numColumns is ignored. To add just one row, use 
+    addRow().
 
     \param first Beginning of range covered by the iterator.
     \param last End of the range covered by the iterator.
-    \param ncolumn Number of columns to create in the DataTable_. This is only
-                   used(and required) when the function is called on an empty 
-                   DataTable_. Ignore otherwise.
+    \param numColumns Number of columns to create in the DataTable_. This is 
+                      only used (and required) when the function is called on 
+                      an empty DataTable_. Ignore otherwise.
     \param allowMissing Allow for missing values. When set to false, this
                         function will throw if the input iterator fills up the 
                         last row only partially. When set to true, missing 
@@ -689,18 +690,19 @@ public:
     template<typename InputIt>
     void addRows(InputIt first, 
                  InputIt last, 
-                 size_t ncolumn = std::numeric_limits<size_t>::max(),
+                 size_t numColumns = std::numeric_limits<size_t>::max(),
                  bool allowMissing = false) {
         if(first == last)
             throw ZeroElements{"Input iterators produce zero elements."};
         if((m_data.nrow() == 0 || m_data.ncol() == 0) && 
-           (ncolumn == std::numeric_limits<size_t>::max() || ncolumn == 0))
-            throw InvalidEntry{"DataTable is empty. 'ncolumn' argument must be" 
-                               " provided and it cannot be zero."};
+           (numColumns == std::numeric_limits<size_t>::max() || 
+            numColumns == 0))
+            throw InvalidEntry{"DataTable is empty. 'numColumns' argument must" 
+                               " be provided and it cannot be zero."};
 
         m_data.resizeKeep(m_data.nrow() + 1, 
                           m_data.ncol() == 0 ? 
-                          static_cast<int>(ncolumn) : m_data.ncol());
+                          static_cast<int>(numColumns) : m_data.ncol());
         int row{m_data.nrow() - 1};
         int col{0};
         while(first != last) {
@@ -765,7 +767,7 @@ public:
 
     \throws ZeroElements If the number of elements produced by the input
                          iterator is zero.                                      
-    \throws InvalidEntry DataTable is empty and input argument ncolumnHint is 
+    \throws InvalidEntry DataTable is empty and input argument numRowsHint is
                          zero.
     \throws NotEnoughElements Argument allow_missing is false and the input 
                               iterator does not produce enough elements to fill 
@@ -778,8 +780,8 @@ public:
         if(first == last)
             throw ZeroElements{"Input iterators produce zero elements."};
         if((m_data.nrow() == 0 || m_data.ncol() == 0) && numRowsHint == 0)
-            throw InvalidEntry{"Input argument 'nrow_hint' cannot be zero when "
-                               "DataTable is empty."};
+            throw InvalidEntry{"Input argument 'numRowsHint' cannot be zero" 
+                               " when DataTable is empty."};
 
         if(m_data.nrow() > 0) {
             m_data.resizeKeep(m_data.nrow(), m_data.ncol() + 1);
