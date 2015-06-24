@@ -289,7 +289,7 @@ public:
         : m_data{int(numRows), int(numColumns), initialValue} {}
 
     /** Construct DataTable using an iterator(satisfying requirement of an 
-    input_iterator) which produces one entry at a time. The entries of 
+    InputIterator) which produces one entry at a time. The entries of 
     DataTable_ are copy initialized using the values produced by the iterator. 
     For example, specifying RowWise for parameter dir and 10 for parameter ndir
     will populate the DataTable one row at a time with each row's length taken 
@@ -594,7 +594,7 @@ public:
     }
 
     /** Add(append) a row to the DataTable_ using an iterator(satisfying 
-    requirements of an input_iterator) producing one entry at a time. If this
+    requirements of an InputIterator) producing one entry at a time. If this
     function is called on an empty DataTable_ without providing ncolumnHint, it
     performs <i>allocation + relocation</i> for [log2(ncol) + 1] times where 
     ncol is the actual number of elements produced by the input iterator. To add
@@ -664,7 +664,7 @@ public:
     }
 
     /** Add(append) multiple rows to the DataTable_ using an iterator 
-    (satisfying requirements of an input_iterator) producing one entry at a 
+    (satisfying requirements of an InputIterator) producing one entry at a 
     time. If this function is called on an empty DataTable_, ncolumn must be 
     provided. Otherwise, ncolumn is ignored. To add just one row, use addRow().
 
@@ -744,7 +744,7 @@ public:
     }
 
     /** Add(append) a column to the DataTable_ using an iterator(satisfying 
-    requirements of an input_iterator) producing one entry at a time. If this
+    requirements of an InputIterator) producing one entry at a time. If this
     function is called on an empty DataTable_ without providing numRowsHint, it
     performs <i>allocation + relocation</i> for [log2(nrow) + 1] times where 
     nrow is the actual number of elements produced by the input iterator. To add
@@ -815,7 +815,7 @@ public:
     }
 
     /** Add(append) multiple columns to the DataTable_ using an iterator
-    (satisfying requirements of an input_iterator) producing one entry at a 
+    (satisfying requirements of an InputIterator) producing one entry at a 
     time. If this function is called on an empty DataTable_, nrow must be 
     provided. Otherwise, nrow is ignored. To add just one col, use addRow().
 
