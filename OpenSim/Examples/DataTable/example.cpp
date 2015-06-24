@@ -223,10 +223,10 @@ int main() {
     assert(dt_vec3.getNumRows() == 14 && dt_vec3.getNumColumns() == 16);
     assert(dt_vec6.getNumRows() == 14 && dt_vec6.getNumColumns() == 16);
 
-    // Get a row/col of by its index. Result of get<> functions is not writable.
-    // See SimTK::RowVectorview_ and SimTK::VectorView for details on how to 
-    // use the result. For example, elements of the row/col can be read using 
-    // 'operator[]'.
+    // Get a row/col of by its index. Result of get...() functions is not 
+    // writable. See SimTK::RowVectorView_ and SimTK::VectorView for details on 
+    // how to use the result. For example, elements of the row/col can be read 
+    // using 'operator[]'.
     {
         const auto row2_real = dt_real.getRow(2);
         const auto row2_vec3 = dt_vec3.getRow(2);
@@ -247,8 +247,8 @@ int main() {
             assert(col2_vec6[i] == col2_vec6_copy[i]);
         }
     }
-    // Update a row/col by retrieving it using its index. We use upd<> functions
-    // to obtain a writable reference.
+    // Update a row/col by retrieving it using its index. We use upd...() 
+    // functions to obtain a writable reference.
     {
         auto row2_real = dt_real.updRow(2);
         auto row2_vec3 = dt_vec3.updRow(2);
@@ -272,7 +272,7 @@ int main() {
     }
 
     // Individual elements of the DataTable can be retrieved using row-col pair.
-    // Result of get<> functions is not writable.
+    // Result of get...() functions is not writable.
     {
         auto elem1_real = dt_real.getElt(5, 7); ignore(elem1_real);
         auto elem1_vec3 = dt_vec3.getElt(5, 7); ignore(elem1_vec3);
@@ -284,8 +284,8 @@ int main() {
         auto elem2_vec3 = dt_vec3.getElt(9, "col-four"); ignore(elem2_vec3);
         auto elem2_vec6 = dt_vec6.getElt(9, "col-four"); ignore(elem2_vec6);
     }
-    // Update an element by retrieving it using its row-col pair with upd<>
-    // functions. The upd<> functions return a writable reference to the 
+    // Update an element by retrieving it using its row-col pair with upd...()
+    // functions. The upd...() functions return a writable reference to the 
     // element.
     {
         dt_real.updElt(5, 7) *= 2;
@@ -414,7 +414,7 @@ int main() {
         assert(dt->columnHasLabel(3) == false);
     }
 
-    // Retrieve column labels using get<> method.
+    // Retrieve column labels using get...() method.
     for(auto& dt : vector) {
         assert(dt->getColumnLabel(0) == "col-zero");
         assert(dt->getColumnLabel(2) == "col-two");
@@ -440,8 +440,8 @@ int main() {
     assert(vector[2]->getColumnIndex("col-two")  == 2 &&
            table_vec6.getColumnIndex("col-two")  == 2);
 
-    // Update column labels using upd<> method. Update can be done using index
-    // or using column label.
+    // Update column labels using upd...() method. Update can be done using 
+    // index or using column label.
     for(auto& dt : vector) {
         dt->updColumnLabel(0        , "column-zero");
         dt->updColumnLabel("col-two", "column-two");
