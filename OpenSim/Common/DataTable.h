@@ -377,7 +377,7 @@ public:
     /**@{*/
 
     /** Copy constructor.                                                     */
-    DataTable_(const DataTable_& source) = default;
+    DataTable_(const DataTable_& dt) = default;
 
     /** Virtual copy constructor.                                             */
     std::unique_ptr<AbstractDataTable> clone() const override {
@@ -401,7 +401,7 @@ public:
     /**@}*/
 
     /** Destructor.                                                           */
-    virtual ~DataTable_() = default;
+    ~DataTable_() override = default;
 
     /** \name Data Methods.
         Data accessors & mutators.                                            */
