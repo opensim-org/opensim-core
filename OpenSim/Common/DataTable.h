@@ -565,9 +565,8 @@ public:
     }
 
     /** Get a *copy* of the underlying matrix of the DataTable_.              */
-    std::unique_ptr<SimTK::Matrix_<ET>> copyAsMatrix() const {
-        auto m_data_copy = new SimTK::Matrix_<ET>{m_data};
-        return std::unique_ptr<SimTK::Matrix_<ET>>{m_data_copy};
+    SimTK::Matrix_<ET> copyAsMatrix() const {
+        return *(new SimTK::Matrix_<ET>{m_data});
     }
 
     /** Add(append) a row to the DataTable_ using a SimTK::RowVector_. If the 

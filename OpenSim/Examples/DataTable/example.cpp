@@ -344,7 +344,7 @@ int main() {
     dt_real.insertMetaData("string", string);
 
     // Insert a SimTK::Matrix_ as metadata.
-    dt_real.insertMetaData("simtk_matrix", *mat_real);
+    dt_real.insertMetaData("simtk_matrix", mat_real);
 
     // Insert a std::vector<SimTK::Real> as metadata.
     dt_real.insertMetaData("data_real", data_real);
@@ -366,10 +366,10 @@ int main() {
     // Retrieve SimTK::Matrix_ from metadata.
     const auto& mat_real_copy = 
         dt_real.getMetaData<SimTK::Matrix_<double>>("simtk_matrix");
-    for(int r = 0; r < mat_real->nrow(); ++r)
-        for(int c = 0; c < mat_real->ncol(); ++c) {
+    for(int r = 0; r < mat_real.nrow(); ++r)
+        for(int c = 0; c < mat_real.ncol(); ++c) {
             auto a = mat_real_copy.getElt(r, c);
-            auto b = mat_real->getElt(r, c);
+            auto b = mat_real.getElt(r, c);
             assert(std::abs(a - b) < Epsilon || 
                    (std::isnan(a) && std::isnan(b)));
         }
