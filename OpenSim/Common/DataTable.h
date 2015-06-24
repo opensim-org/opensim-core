@@ -569,7 +569,7 @@ public:
         return *(new SimTK::Matrix_<ET>{m_data});
     }
 
-    /** Add(append) a row to the DataTable_ using a SimTK::RowVector_. If the 
+    /** Add (append) a row to the DataTable_ using a SimTK::RowVector_. If the 
     DataTable is empty, input row will be the first row. This function can be
     used to populate an empty DataTable_.
   
