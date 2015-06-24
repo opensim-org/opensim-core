@@ -593,7 +593,7 @@ public:
         m_data.updRow(m_data.nrow() - 1).updAsRowVector() = row;
     }
 
-    /** Add(append) a row to the DataTable_ using an iterator(satisfying 
+    /** Add (append) a row to the DataTable_ using an iterator(satisfying 
     requirements of an InputIterator) producing one entry at a time. If this
     function is called on an empty DataTable_ without providing numColumnsHint, 
     it performs <i>allocation + relocation</i> for [log2(ncol) + 1] times where 

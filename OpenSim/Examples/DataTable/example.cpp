@@ -90,7 +90,7 @@ int main() {
     std::vector<SimTK::Vec6> data1_vec6(4, {1, 2, 3, 4, 5, 6});
 
     // Add a row to the DataTable using SimTK::RowVector_. Create 
-    // SimTK::RowVector and add it as a row. After this the DataTable will of 
+    // SimTK::RowVector and add it as a row. After this the DataTable will be 
     // size 4x4.
     SimTK::RowVector_<SimTK::Real> row_real{static_cast<int>(data1_real.size()),
                                             data1_real.data()};
