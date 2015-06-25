@@ -206,3 +206,21 @@ FUNCTION(OPENSIM_ADD_TESTS)
     ENDIF()
 
 ENDFUNCTION()
+
+
+# Create an application/executable. To be used in the Appliations directory.
+# APPNAME: Name of the application. Must also be the name of the source file
+# containing main().
+#
+# Here's an example:
+#   OpenSimAddApplication(forward)
+function(OpenSimAddApplication APPNAME)
+
+    include_directories(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors)
+    add_executable(${APPNAME} ${APPNAME}.cpp)
+    target_link_libraries(${APPNAME} osimTools)
+    install(TARGETS ${APPNAME} DESTINATION bin)
+    set_target_properties(${APPNAME} PROPERTIES
+        PROJECT_LABEL "Applications - ${APPNAME}")
+
+endfunction()
