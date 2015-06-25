@@ -207,7 +207,7 @@ public:
     Dereferencing the iterator will produce a pair (std::pair) where the first 
     element of the pair is the column label and the second element is the column
     index. Not all columns will have labels.                                  */
-    virtual ColumnLabelsContainerProxy getColumnLabels() const {
+    ColumnLabelsContainerProxy getColumnLabels() const {
         return ColumnLabelsContainerProxy{this};
     }
     

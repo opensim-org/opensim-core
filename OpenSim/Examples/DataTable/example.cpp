@@ -77,10 +77,10 @@ int main() {
     }
 
     // Add multiple rows at once using an iterator. Because the DataTable is 
-    // empty, number of columns has to specified when using iterator. When 
-    // calling this function on a non-empty DataTable, the arugment ncolumn is 
-    // ignored. We have 12 elements in the iterator and following creates a 3x4
-    // DataTable.
+    // empty, the number of columns has to be specified when using iterator. 
+    // When calling this function on a non-empty DataTable, the arugment ncolumn
+    // is ignored. We have 12 elements in the iterator and following creates a 
+    // 3x4 DataTable.
     dt_real.addRows(data_real.cbegin(), data_real.cend(), 4);
     dt_vec3.addRows(data_vec3.cbegin(), data_vec3.cend(), 4);
     dt_vec6.addRows(data_vec6.cbegin(), data_vec6.cend(), 4);
