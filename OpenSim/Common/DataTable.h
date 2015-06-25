@@ -108,23 +108,53 @@ public:
 };
 
 
+template<typename ET> class DataTable_;
+
 /** AbstractDataTable is the base-class of all DataTable_ allowing storage of
-DataTable_ of different types to be stored in containers. AbstractDataTable_ 
-offers interface to access column labels of DataTable_. See DataTable_ interface
-for details on using DataTable_.                                              */
+DataTable_ templated on different types to be stored in a container like 
+std::vector. AbstractDataTable_ offers interface to access column labels of 
+DataTable_. See DataTable_ interface for details on using DataTable_.         */
 class AbstractDataTable {
-public:
+protected:
     using size_t                    = std::size_t;
     using string                    = std::string;
     using ColumnLabels              = std::unordered_map<string, size_t>;
-    using ColumnLabelsIter          = ColumnLabels::iterator;
     using ColumnLabelsConstIter     = ColumnLabels::const_iterator;
-    using ColumnLabelsIterPair      = std::pair<ColumnLabelsIter,
-                                                ColumnLabelsIter>;
-    using ColumnLabelsConstIterPair = std::pair<ColumnLabelsConstIter,
-                                                ColumnLabelsConstIter>;
 
+    // Proxy class pretending to be column labels container.
+    class ColumnLabelsContainerProxy {
+    public:
+        ColumnLabelsContainerProxy(const AbstractDataTable* adt) : adt_{adt} {}
+        ColumnLabelsContainerProxy()                                 = delete;
+        ColumnLabelsContainerProxy(const ColumnLabelsContainerProxy& adt) 
+                                                                     = default;
+        ColumnLabelsContainerProxy(ColumnLabelsContainerProxy&& adt) = default;
+        ColumnLabelsContainerProxy& operator=(const ColumnLabelsContainerProxy&)
+                                                                     = default;
+        ColumnLabelsContainerProxy& operator=(ColumnLabelsContainerProxy&&) 
+                                                                     = default;
 
+        ColumnLabelsConstIter cbegin() const {
+            return adt_->columnLabelsBegin();
+        }
+
+        ColumnLabelsConstIter cend() const {
+            return adt_->columnLabelsEnd();
+        }
+
+        ColumnLabelsConstIter begin() const {
+            return cbegin();
+        }
+
+        ColumnLabelsConstIter end() const {
+            return cend();
+        }
+
+    private:
+        const AbstractDataTable* adt_;
+    };
+
+public:
     AbstractDataTable() = default;
     AbstractDataTable(const AbstractDataTable&) = default;
     AbstractDataTable(AbstractDataTable&&) = default;
@@ -171,13 +201,15 @@ public:
     \throws ColumnDoesNotExist If the column does not exist.                  */
     virtual string getColumnLabel(size_t columnIndex) const = 0;
 
-    /** Get all the column labels. Returns an iterator pair(std::pair) where 
-    first element of pair is the beginning and second element of the pair is the
-    end (sentinel) of the labels. Dereferencing the iterator will produce a pair
-    (std::pair) where the first element of the pair is the label and the second 
-    element is the column index. To update the column abels, use 
-    updColumnLabels().                                                        */
-    virtual ColumnLabelsConstIterPair getColumnLabels() const = 0;
+    /** Get all the column labels. Returns a proxy container that can be used in
+    range-for statement. The returned proxy container supports begin() and 
+    end() functions to retrieve begin and end iterators respectively. 
+    Dereferencing the iterator will produce a pair (std::pair) where the first 
+    element of the pair is the column label and the second element is the column
+    index. Not all columns will have labels.                                  */
+    virtual ColumnLabelsContainerProxy getColumnLabels() const {
+        return ColumnLabelsContainerProxy{this};
+    }
     
     /** Update the label of a column with a new label. Time complexity is linear
     in the number of column labels. The column specified must already have a
@@ -199,13 +231,6 @@ public:
     virtual void updColumnLabel(const string& oldColumnLabel, 
                                 const string& newColumnLabel) = 0;
 
-    /** Update all the column labels. Returns an iterator pair(std::pair) where
-    first element of pair is the beginning and second element of the pair is 
-    the end(sentinel) of the labels. Dereferencing the iterator will produce a 
-    pair (std::pair) where the first element of the pair is the label and the 
-    second element is the column index.                                       */
-    virtual ColumnLabelsIterPair updColumnLabels() = 0;
-
     /** Get the index of a column from its label. Time complexity is constant on
     average and linear in number of column labels on worst case.
 
@@ -214,6 +239,14 @@ public:
 
     /** Clear all the column labels.                                          */
     virtual void clearColumnLabels() = 0;
+
+    /** Iterator representing the beginning of an associative container for
+    column labels to column index.                                            */
+    virtual ColumnLabelsConstIter columnLabelsBegin() const = 0;
+
+    /** Iterator representing the end of an associative container for column 
+    labels to column index.                                                   */
+    virtual ColumnLabelsConstIter columnLabelsEnd() const = 0;
 }; // AbstractDataTable
 
 
@@ -237,9 +270,14 @@ matrix with column names) with support for holding metadata.
            SimTK::Real(alias for double).                                     */
 template<typename ET = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
-public:
+private:
+    // Forward declaration.
+    struct ColumnLabelsContainerProxy;
     using MetaDataValue = SimTK::ClonePtr<SimTK::AbstractValue>;
     using MetaData      = std::unordered_map<string, MetaDataValue>;
+public:
+    using value_type    = ET;
+    using size_type     = size_t;
 
     /** \name Create.
         Constructors.                                                         */
@@ -257,7 +295,9 @@ public:
     DataTable_(size_t numRows,
                size_t numColumns,
                const ET& initialValue = ET{SimTK::NaN}) 
-        : data_{int(numRows), int(numColumns), initialValue} {}
+        : data_{static_cast<int>(numRows), 
+                static_cast<int>(numColumns), 
+                initialValue} {}
 
     /** Construct DataTable using an iterator(satisfying requirement of an 
     InputIterator) which produces one entry at a time. The entries of 
@@ -293,13 +333,13 @@ public:
                InputItDim::Dim dimension = InputItDim::RowWise,
                bool allowMissing = false) 
         : data_{static_cast<int>(dimension == InputItDim::RowWise ? 
-                                  1 : numEntries), 
-                 static_cast<int>(dimension == InputItDim::RowWise ? 
-                                  numEntries : 1)} {
+                                 1 : numEntries), 
+                static_cast<int>(dimension == InputItDim::RowWise ? 
+                                 numEntries : 1)} {
         if(first == last)
-            throw ZeroElements{"Input iterators produce zero elements."};
+            throw ZeroElements{"Input iterator produced zero elements."};
         if(numEntries == 0)
-            throw InvalidEntry{"Input argument 'ndir' cannot be zero."};
+            throw InvalidEntry{"Input argument 'numEntries' cannot be zero."};
 
         int row{0};
         int col{0};
@@ -400,9 +440,9 @@ public:
                                      size_t numRows,
                                      size_t numColumns) const {
         return data_.block(static_cast<int>(rowStart), 
-                            static_cast<int>(columnStart), 
-                            static_cast<int>(numRows), 
-                            static_cast<int>(numColumns));
+                           static_cast<int>(columnStart), 
+                           static_cast<int>(numRows), 
+                           static_cast<int>(numColumns));
     }
 
     /** Get a sub-matrix (or block) of the DataTable. Returned object is 
@@ -413,9 +453,9 @@ public:
                                      size_t numRows,
                                      size_t numColumns) {
         return data_.updBlock(static_cast<int>(rowStart), 
-                               static_cast<int>(columnStart), 
-                               static_cast<int>(numRows), 
-                               static_cast<int>(numColumns));
+                              static_cast<int>(columnStart), 
+                              static_cast<int>(numRows), 
+                              static_cast<int>(numColumns));
     }
 
     /** Get a row of the DataTable_ by index. Returned row is read-only. Use 
@@ -1188,16 +1228,6 @@ public:
         return res->first;
     }
 
-    /** Get all the column labels. Returns an iterator pair(std::pair) where 
-    first element of pair is the beginning and second element of the pair is the
-    end (sentinel) of the labels. Dereferencing the iterator will produce a pair
-    (std::pair) where the first element of the pair is the label and the second 
-    element is the column index. To update the column abels, use 
-    updColumnLabels().                                                        */
-    ColumnLabelsConstIterPair getColumnLabels() const override {
-        return std::make_pair(col_ind_.cbegin(), col_ind_.cend());
-    }
-
     /** Update the label of a column with a new label. Time complexity is linear
     in the number of column labels. The column specified must already have a
     label. To label a column that does not yet have a label, use 
@@ -1226,15 +1256,6 @@ public:
         col_ind_[newColumnLabel] = colind;
     }
 
-    /** Update all the column labels. Returns an iterator pair(std::pair) where
-    first element of pair is the beginning and second element of the pair is the
-    end(sentinel) of the labels. Dereferencing the iterator will produce a pair 
-    (std::pair) where the first element of the pair is the label and the second 
-    element is the column index.                                              */
-    ColumnLabelsIterPair updColumnLabels() override {
-        return std::make_pair(col_ind_.begin(), col_ind_.end());
-    }
-
     /** Get the index of a column from its label. Time complexity is constant on
     average and linear in number of column labels on worst case.
 
@@ -1251,6 +1272,14 @@ public:
     /** Clear all the column labels.                                          */
     void clearColumnLabels() override {
         col_ind_.clear();
+    }
+
+    ColumnLabelsConstIter columnLabelsBegin() const override {
+        return col_ind_.cbegin();
+    }
+
+    ColumnLabelsConstIter columnLabelsEnd() const override {
+        return col_ind_.cend();
     }
 
     /**@}*/

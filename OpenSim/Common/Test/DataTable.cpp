@@ -1483,11 +1483,11 @@ void test4() {
 
 
 // Compute the number of elements produced by an iterator pair.
-template<typename Iter>
-size_t numElems(const std::pair<Iter, Iter>& iters) {
+template<typename Container>
+size_t numElems(const Container& container) {
     size_t numelems{0};
-    auto first = iters.first;
-    auto last = iters.second;
+    auto first = container.begin();
+    auto last = container.end();
     while(first != last) {
         ++numelems;
         ++first;
@@ -1558,14 +1558,14 @@ void test5() {
 
     // Get all column labels. There should be no column labels.
     std::cout << "test5 -- getcolumnLabels(): Real.\n";
-    auto iters = dt_real.getColumnLabels(); 
-    assert(iters.first == iters.second);
+    auto labels = dt_real.getColumnLabels(); 
+    assert(labels.begin() == labels.end());
     std::cout << "test5 -- getcolumnLabels(): Vec3.\n";
-    dt_vec3.getColumnLabels();
-    assert(iters.first == iters.second);
+    labels = dt_vec3.getColumnLabels();
+    assert(labels.begin() == labels.end());
     std::cout << "test5 -- getcolumnLabels(): Vec6.\n";
-    dt_vec6.getColumnLabels();
-    assert(iters.first == iters.second);
+    labels = dt_vec6.getColumnLabels();
+    assert(labels.begin() == labels.end());
 
     // Get index of a column label that does not exist.
     std::cout << "test5 -- getColumnIndex()[ColumnDoesNotExist]: Real.\n";
