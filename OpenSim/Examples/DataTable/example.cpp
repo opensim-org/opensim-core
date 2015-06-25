@@ -242,6 +242,12 @@ int main() {
         const auto col2_vec3_copy = dt_vec3.getColumn("col-two");
         const auto col2_vec6_copy = dt_vec6.getColumn("col-two");
         for(int i = 0; i < col2_real.size(); ++i) {
+            // The comparison here has to be approximate because of floating
+            // point arithmetic. See online to learn about floating point 
+            // arithmetic problems 
+            // (for example: https://en.wikipedia.org/wiki/Floating_point).
+            // SimTK::Vec3 and SimTK::Vec6 implement equality operator 
+            // "operator==" that does something similar underneath.
             assert(std::abs(col2_real[i] - col2_real_copy[i]) < Epsilon);
             assert(col2_vec3[i] == col2_vec3_copy[i]);
             assert(col2_vec6[i] == col2_vec6_copy[i]);
