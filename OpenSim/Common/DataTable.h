@@ -227,7 +227,7 @@ matrix with column names) with support for holding metadata.
 - Average constant-time access to columns through column-labels.
 - Add rows and columns to existing DataTable_. 
 - Add/concatenate two DataTable_(s) by row and by column. 
-- Set column labels for a subset of columns, update them, remove them etc. 
+- %Set column labels for a subset of columns, update them, remove them etc. 
 - Construct DataTable_ emtpy OR with a given shape and default value OR using 
   and iterator pair one entry at a time.
 - Heterogeneous metadata container. Metadata in the form of key-value pairs 
@@ -370,10 +370,14 @@ public:
     DataTable_& operator=(DataTable_&& dt) = default;
 
     /**@}*/
+    /** \name Destroy.
+        Destructor.                                                           */
+    /**@{*/
 
     /** Destructor.                                                           */
     ~DataTable_() override = default;
 
+    /**@}*/
     /** \name Data.
         Data accessors & mutators.                                            */
     /**@{*/
