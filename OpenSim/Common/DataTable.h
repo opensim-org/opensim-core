@@ -110,16 +110,24 @@ public:
 
 template<typename ET> class DataTable_;
 
-/** AbstractDataTable is the base-class of all DataTable_ allowing storage of
-DataTable_ templated on different types to be stored in a container like 
-std::vector. AbstractDataTable_ offers interface to access column labels of 
-DataTable_. See DataTable_ interface for details on using DataTable_.         */
+/** AbstractDataTable is the base-class of all DataTable_(templated) allowing 
+storage of DataTable_ templated on different types to be stored in a container 
+like std::vector. AbstractDataTable_ offers:
+- interface to access columns of DataTable_ through column labels. 
+- a heterogeneous container to store metadata associated with the DataTable_ in
+  the form of key-value pairs where key is of type std::string and value can be
+  of any type.
+
+This class is abstract and cannot be used directly. Create instances of 
+DataTable_ instead. See DataTable_ for details on ussage.                     */
 class AbstractDataTable {
 protected:
-    using size_t                    = std::size_t;
-    using string                    = std::string;
-    using ColumnLabels              = std::unordered_map<string, size_t>;
-    using ColumnLabelsConstIter     = ColumnLabels::const_iterator;
+    using size_t                = std::size_t;
+    using string                = std::string;
+    using ColumnLabels          = std::unordered_map<string, size_t>;
+    using ColumnLabelsConstIter = ColumnLabels::const_iterator;
+    using MetaDataValue         = SimTK::ClonePtr<SimTK::AbstractValue>;
+    using MetaData              = std::unordered_map<string, MetaDataValue>;
 
     // Proxy class pretending to be column labels container.
     class ColumnLabelsContainerProxy {
@@ -162,6 +170,10 @@ public:
     AbstractDataTable& operator=(AbstractDataTable&&) = default;
     virtual std::unique_ptr<AbstractDataTable> clone() const = 0;
     virtual ~AbstractDataTable() {}
+
+    /** \name Column-labels.
+        Column labels accessors & mutators.                                   */
+    /**@{*/
 
     /** Check if a column index has label. Time complexity is linear in number 
     of column labels. All columns will have an index. All columns need not have 
@@ -247,6 +259,167 @@ public:
     /** Iterator representing the end of an associative container for column 
     labels to column index.                                                   */
     virtual ColumnLabelsConstIter columnLabelsEnd() const = 0;
+
+    /**@}*/
+    /** \name Meta-data.
+        Meta-data accessors and mutators                                      */
+    /**@{*/
+
+    /** Insert metadata. DataTable_ can hold metadata as an associative array of
+    key-value pairs where is key is always of type std::string and value can be 
+    of any type(except an array type[eg char[]]). The metadata inserted can 
+    later be retrieved using the functions getMetaData() and updMetaData(). This
+    function throws if the key is already present.
+
+    \param key A std::string that can be used the later to retrieve the inserted
+               metadata.
+    \param value An object/value of any type except array types[eg int[]]. The 
+                 code will fail to compile for array types.
+
+    \throws MetaDataKeyExists If the specified key already exits              */
+    template<typename ValueType>
+    void insertMetaData(const std::string& key, ValueType&& value) {
+        using namespace SimTK;
+        using ValueTypeNoRef = typename std::remove_reference<ValueType>::type;
+
+        static_assert(!std::is_array<ValueTypeNoRef>::value,
+                      "'value' cannot be of array type. For ex. use std::string"
+                      " instead of char[], use std::vector<int> instead of " 
+                      "int[].");
+
+        if(hasMetaData(key))
+            throw MetaDataKeyExists{"Key '" + std::string{key} + 
+                                    "' already exists. Remove the existing " 
+                                    "entry before inserting."};
+
+        // Type erased value.
+        auto tev = new Value<ValueTypeNoRef>{std::forward<ValueType>(value)};
+        metadata_.emplace(key, MetaDataValue{tev});
+    }
+
+    /** Get previously inserted metadata using its key and type. The template
+    argument has to be exactly the non-reference type of the metadata previousl 
+    stored using insertMetaData(). The return value is a ead-only reference to 
+    the metadata. Use updMetaData() to obtain a writable reference. Time 
+    complexity is constant on average and linear in number of elements in 
+    metadata on worst case.
+
+    \throws MetaDataKeyDoesNotExist If the key specified does not exist in 
+                                    metadata.
+    \throws MetaDataTypeMismatch If the type specified as template argument doe 
+                                 not match the type of metadata stored under the
+                                 key specified.                               */
+    template<typename ValueType>
+    const ValueType& getMetaData(const string& key) const {
+        static_assert(!std::is_reference<ValueType>::value, 
+                      "Template argument 'ValueType' should be exactly the" 
+                      " non-reference type of the MetaData value stored.");
+
+        try {
+            return metadata_.at(key)->template getValue<ValueType>();
+        } catch(std::out_of_range&) {
+            throw MetaDataKeyDoesNotExist{"Key '" + key + "' not found."};
+        } catch(std::bad_cast&) {
+            throw MetaDataTypeMismatch{"Template argument specified for " 
+                                       "getMetaData is incorrect."};
+        }
+    }
+
+    /** Get previously inserted metadata using its key and type. The template
+    argument has to be exactly the non-reference type of the metadata previousl
+    stored using insertMetaData(). The returned value is editable. Time 
+    complexity is constant on average and linear in number of elements in 
+    metadata on worst case.
+
+    \throws MetaDataKeyDoesNotExist If the key specified does not exist in 
+                                    metadata.
+    \throws MetaDataTypeMismatch If the type specified as template argument does
+                                 not match the type of metadata stored under the
+                                 key specified.                               */
+    template<typename ValueType>
+    ValueType& updMetaData(const string& key) {
+        static_assert(!std::is_reference<ValueType>::value, "Template argument " 
+                      "'ValueType' should be exactly the non-reference type of"
+                      "the MetaData value stored.");
+
+        try {
+            return metadata_.at(key)->template updValue<ValueType>();
+        } catch(std::out_of_range&) {
+            throw MetaDataKeyDoesNotExist{"Key '" + key + "' not found."};
+        } catch(std::bad_cast&) {
+            throw MetaDataTypeMismatch{"Template argument specified for " 
+                                       "updMetaData is incorrect"};
+        }
+    }
+
+    /** Pop previously inserted metadata using its key and type. The template
+    argument has to be exactly the non-reference type of the metadata previously
+    inserted using insertMetaData(). The key-value pair is removed from metadata
+    and the value is returned. To simply remove the key-value pair without 
+    retrieving the value, use removeMetaData(). Time complexity is constant on
+    average and linear in number of elements in the metadata on worst case.
+
+    \throws MetaDataKeyDoesNotExist If the key specified does not exist in 
+                                    metadata.
+    \throws MetaDataTypeMismatch If the type specified as template argument does
+                                 not match the type of metadata stored under the
+                                 key specified.                               */
+    template<typename ValueType>
+    ValueType popMetaData(const string& key) {
+        static_assert(!std::is_reference<ValueType>::value, "Template argument "
+                      "'ValueType' should be exactly the non-reference type of"
+                      "the MetaData value stored.");
+
+        try {
+            ValueType value = 
+                std::move(metadata_.at(key)->template getValue<ValueType>());
+            metadata_.erase(key);
+            return value;
+        } catch(std::out_of_range&) {
+            throw MetaDataKeyDoesNotExist{"Key '" + key + "' not found."};
+        } catch(std::bad_cast&) {
+            throw MetaDataTypeMismatch{"Template argument specified for " 
+                                       "popMetaData is incorrect"};
+        }
+    }
+
+    /** Remove a metadata key-value pair previously inserted. Return value 
+    indicates if there was a removal -- true means a key-value pair was
+    removed; false means the key was not found in metadata. Time complexity is
+    constant on average and linear in number of elements in the metadata on
+    worst case.                                                               */
+    bool removeMetaData(const string& key) {
+        return metadata_.erase(key);
+    }
+
+    /** Clear the metadata. All the metadata will be lost with this operation.*/
+    void clearMetaData() {
+        metadata_.clear();
+    }
+
+    /** Check if metadata for a given key exists. Time complexity is constant on
+    average and linear in the number of elements in the metadata on worst 
+    case.                                                                     */
+    bool hasMetaData(const string& key) const {
+        return metadata_.find(key) != metadata_.end();
+    }
+
+    /** Check if metadata is empty -- if the number of elements is zero.      */
+    bool isMetaDataEmpty() const {
+        return metadata_.empty();
+    }
+
+    /** Get the number of elements in the metadata. Time complexity of other 
+    operations on metadata depend on this number.                             */
+    size_t getMetaDataSize() const {
+        return metadata_.size();
+    }
+
+    /**@}*/
+
+private:
+    // Meta-data.
+    MetaData metadata_;
 }; // AbstractDataTable
 
 
@@ -263,18 +436,14 @@ matrix with column names) with support for holding metadata.
 - %Set column labels for a subset of columns, update them, remove them etc. 
 - Construct DataTable_ emtpy OR with a given shape and default value OR using 
   and iterator pair one entry at a time.
-- Heterogeneous metadata container. Metadata in the form of key-value pairs 
-  where key is a std::string and value is is of any type.
+- Heterogeneous metadata container through base class AbstractDataTable. 
+  Metadata in the form of key-value pairs where key is a std::string and value 
+  is is of any type.
                                                                               
 \tparam ET Type of the entries in the underlying matrix. Defaults to         
            SimTK::Real(alias for double).                                     */
 template<typename ET = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
-private:
-    // Forward declaration.
-    struct ColumnLabelsContainerProxy;
-    using MetaDataValue = SimTK::ClonePtr<SimTK::AbstractValue>;
-    using MetaData      = std::unordered_map<string, MetaDataValue>;
 public:
     using value_type    = ET;
     using size_type     = size_t;
@@ -982,161 +1151,6 @@ public:
     }
 
     /**@}*/
-    /** \name Meta-data.
-        Meta-data accessors and mutators                                      */
-    /**@{*/
-
-    /** Insert metadata. DataTable_ can hold metadata as an associative array of
-    key-value pairs where is key is always of type std::string and value can be 
-    of any type(except an array type[eg char[]]). The metadata inserted can 
-    later be retrieved using the functions getMetaData() and updMetaData(). This
-    function throws if the key is already present.
-
-    \param key A std::string that can be used the later to retrieve the inserted
-               metadata.
-    \param value An object/value of any type except array types[eg int[]]. The 
-                 code will fail to compile for array types.
-
-    \throws MetaDataKeyExists If the specified key already exits              */
-    template<typename ValueType>
-    void insertMetaData(const std::string& key, ValueType&& value) {
-        using namespace SimTK;
-        using ValueTypeNoRef = typename std::remove_reference<ValueType>::type;
-
-        static_assert(!std::is_array<ValueTypeNoRef>::value,
-                      "'value' cannot be of array type. For ex. use std::string"
-                      " instead of char[], use std::vector<int> instead of " 
-                      "int[].");
-
-        if(hasMetaData(key))
-            throw MetaDataKeyExists{"Key '" + std::string{key} + 
-                                    "' already exists. Remove the existing " 
-                                    "entry before inserting."};
-
-        // Type erased value.
-        auto tev = new Value<ValueTypeNoRef>{std::forward<ValueType>(value)};
-        metadata_.emplace(key, MetaDataValue{tev});
-    }
-
-    /** Get previously inserted metadata using its key and type. The template
-    argument has to be exactly the non-reference type of the metadata previousl 
-    stored using insertMetaData(). The return value is a ead-only reference to 
-    the metadata. Use updMetaData() to obtain a writable reference. Time 
-    complexity is constant on average and linear in number of elements in 
-    metadata on worst case.
-
-    \throws MetaDataKeyDoesNotExist If the key specified does not exist in 
-                                    metadata.
-    \throws MetaDataTypeMismatch If the type specified as template argument doe 
-                                 not match the type of metadata stored under the
-                                 key specified.                               */
-    template<typename ValueType>
-    const ValueType& getMetaData(const string& key) const {
-        static_assert(!std::is_reference<ValueType>::value, 
-                      "Template argument 'ValueType' should be exactly the" 
-                      " non-reference type of the MetaData value stored.");
-
-        try {
-            return metadata_.at(key)->template getValue<ValueType>();
-        } catch(std::out_of_range&) {
-            throw MetaDataKeyDoesNotExist{"Key '" + key + "' not found."};
-        } catch(std::bad_cast&) {
-            throw MetaDataTypeMismatch{"Template argument specified for " 
-                                       "getMetaData is incorrect."};
-        }
-    }
-
-    /** Get previously inserted metadata using its key and type. The template
-    argument has to be exactly the non-reference type of the metadata previousl
-    stored using insertMetaData(). The returned value is editable. Time 
-    complexity is constant on average and linear in number of elements in 
-    metadata on worst case.
-
-    \throws MetaDataKeyDoesNotExist If the key specified does not exist in 
-                                    metadata.
-    \throws MetaDataTypeMismatch If the type specified as template argument does
-                                 not match the type of metadata stored under the
-                                 key specified.                               */
-    template<typename ValueType>
-    ValueType& updMetaData(const string& key) {
-        static_assert(!std::is_reference<ValueType>::value, "Template argument " 
-                      "'ValueType' should be exactly the non-reference type of"
-                      "the MetaData value stored.");
-
-        try {
-            return metadata_.at(key)->template updValue<ValueType>();
-        } catch(std::out_of_range&) {
-            throw MetaDataKeyDoesNotExist{"Key '" + key + "' not found."};
-        } catch(std::bad_cast&) {
-            throw MetaDataTypeMismatch{"Template argument specified for " 
-                                       "updMetaData is incorrect"};
-        }
-    }
-
-    /** Pop previously inserted metadata using its key and type. The template
-    argument has to be exactly the non-reference type of the metadata previously
-    inserted using insertMetaData(). The key-value pair is removed from metadata
-    and the value is returned. To simply remove the key-value pair without 
-    retrieving the value, use removeMetaData(). Time complexity is constant on
-    average and linear in number of elements in the metadata on worst case.
-
-    \throws MetaDataKeyDoesNotExist If the key specified does not exist in 
-                                    metadata.
-    \throws MetaDataTypeMismatch If the type specified as template argument does
-                                 not match the type of metadata stored under the
-                                 key specified.                               */
-    template<typename ValueType>
-    ValueType popMetaData(const string& key) {
-        static_assert(!std::is_reference<ValueType>::value, "Template argument "
-                      "'ValueType' should be exactly the non-reference type of"
-                      "the MetaData value stored.");
-
-        try {
-            ValueType value = 
-                std::move(metadata_.at(key)->template getValue<ValueType>());
-            metadata_.erase(key);
-            return value;
-        } catch(std::out_of_range&) {
-            throw MetaDataKeyDoesNotExist{"Key '" + key + "' not found."};
-        } catch(std::bad_cast&) {
-            throw MetaDataTypeMismatch{"Template argument specified for " 
-                                       "popMetaData is incorrect"};
-        }
-    }
-
-    /** Remove a metadata key-value pair previously inserted. Return value 
-    indicates if there was a removal -- true means a key-value pair was
-    removed; false means the key was not found in metadata. Time complexity is
-    constant on average and linear in number of elements in the metadata on
-    worst case.                                                               */
-    bool removeMetaData(const string& key) {
-        return metadata_.erase(key);
-    }
-
-    /** Clear the metadata. All the metadata will be lost with this operation.*/
-    void clearMetaData() {
-        metadata_.clear();
-    }
-
-    /** Check if metadata for a given key exists. Time complexity is constant on
-    average and linear in the number of elements in the metadata on worst 
-    case.                                                                     */
-    bool hasMetaData(const string& key) const {
-        return metadata_.find(key) != metadata_.end();
-    }
-
-    /** Check if metadata is empty -- if the number of elements is zero.      */
-    bool isMetaDataEmpty() const {
-        return metadata_.empty();
-    }
-
-    /** Get the number of elements in the metadata. Time complexity of other 
-    operations on metadata depend on this number.                             */
-    size_t getMetaDataSize() const {
-        return metadata_.size();
-    }
-
-    /**@}*/
     /** \name Column-labels.
         Column labels accessors & mutators.                                   */
     /**@{*/
@@ -1326,8 +1340,6 @@ private:
 
     // Matrix of data. This excludes timestamp column.
     SimTK::Matrix_<ET> data_;
-    // Meta-data.
-    MetaData           metadata_;
     // Column label to column index.
     ColumnLabels       col_ind_;
 };  // DataTable_
