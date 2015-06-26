@@ -195,4 +195,21 @@ void ConstantDistanceConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, i
     }
 
     Super::updateFromXMLNode(aNode, versionNumber);
+}// Visual support ConstantDistanceConstraint drawing in SimTK visualizer.
+void ConstantDistanceConstraint::generateDecorations(
+    bool                                        fixed,
+    const ModelDisplayHints&                    hints,
+    const SimTK::State&                         state,
+    SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
+{
+    Super::generateDecorations(fixed, hints, state, appendToThis);
+    if (fixed) return;
+    const Vec3 pink(1, .6, .8);
+    const OpenSim::PhysicalFrame& frame1 = getBody1();
+    const Vec3& p_B1 = frame1.getGroundTransform(state)*get_location_body_1();
+    const OpenSim::PhysicalFrame& frame2 = getBody2();
+    const Vec3& p_B2 = frame2.getGroundTransform(state)*get_location_body_2();
+    appendToThis.push_back(
+        SimTK::DecorativeLine(p_B1, p_B2).setBodyId(0)
+        .setColor(pink).setOpacity(1.0).setLineThickness(.05));
 }

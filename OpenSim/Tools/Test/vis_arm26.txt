@@ -1,0 +1,900 @@
+DecorativeMesh:5442 2767 bodyId:0 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:9510 5434 bodyId:0 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:3779 3305 bodyId:0 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:1796 1459 bodyId:0 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:398 203 bodyId:0 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:1541 770 bodyId:0 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:588 309 bodyId:1 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:398 211 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:390 210 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:3725 1884 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:3698 1851 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:7126 3558 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:3228 1616 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:4812 2408 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:4536 2270 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:2864 1434 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:5250 2627 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:5846 2925 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:8456 4230 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:8222 4113 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:6556 3280 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:5080 2542 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:3990 1997 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:3534 1769 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:5178 2591 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:2046 1025 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:2218 1111 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:5672 2838 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:2262 1133 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:2572 1288 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:5320 2662 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:2240 1122 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:2638 1321 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:3824 1914 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:1608 806 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeMesh:3001 1502 bodyId:2 color:~[-1,-1,-1] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[1,1,1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.05365]
+[0,1,0,-0.01373]
+[0,0,1,0.14723]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.02714]
+[0,1,0,-0.11441]
+[0,0,1,-0.00664]
+[0,0,0,1]
+
+DecorativeLine:~[-0.05365,-0.01373,0.14723]~[-0.044685,-0.12141,0.16336] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.03184]
+[0,1,0,-0.22637]
+[0,0,1,-0.01217]
+[0,0,0,1]
+
+DecorativeLine:~[-0.044685,-0.12141,0.16336]~[-0.049385,-0.23337,0.15783] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.01743]
+[0,1,0,-0.26757]
+[0,0,1,-0.01208]
+[0,0,0,1]
+
+DecorativeLine:~[-0.049385,-0.23337,0.15783]~[-0.034975,-0.27457,0.15792] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:2 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.0219]
+[0,1,0,0.01046]
+[0,0,1,-0.00078]
+[0,0,0,1]
+
+DecorativeLine:~[-0.034975,-0.27457,0.15792]~[-0.033345,-0.28694,0.15692] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.00599]
+[0,1,0,-0.12646]
+[0,0,1,0.00428]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.02344]
+[0,1,0,-0.14528]
+[0,0,1,0.00928]
+[0,0,0,1]
+
+DecorativeLine:~[-0.023535,-0.13346,0.17428]~[-0.040985,-0.15228,0.17928] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.03184]
+[0,1,0,-0.22637]
+[0,0,1,-0.01217]
+[0,0,0,1]
+
+DecorativeLine:~[-0.040985,-0.15228,0.17928]~[-0.049385,-0.23337,0.15783] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.01743]
+[0,1,0,-0.26757]
+[0,0,1,-0.01208]
+[0,0,0,1]
+
+DecorativeLine:~[-0.049385,-0.23337,0.15783]~[-0.034975,-0.27457,0.15792] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:2 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.0219]
+[0,1,0,0.01046]
+[0,0,1,-0.00078]
+[0,0,0,1]
+
+DecorativeLine:~[-0.034975,-0.27457,0.15792]~[-0.033345,-0.28694,0.15692] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.00838]
+[0,1,0,-0.13695]
+[0,0,1,-0.00906]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.02601]
+[0,1,0,-0.15139]
+[0,0,1,-0.0108]
+[0,0,0,1]
+
+DecorativeLine:~[-0.025925,-0.14395,0.16094]~[-0.043555,-0.15839,0.1592] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.03184]
+[0,1,0,-0.22637]
+[0,0,1,-0.01217]
+[0,0,0,1]
+
+DecorativeLine:~[-0.043555,-0.15839,0.1592]~[-0.049385,-0.23337,0.15783] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.01743]
+[0,1,0,-0.26757]
+[0,0,1,-0.01208]
+[0,0,0,1]
+
+DecorativeLine:~[-0.049385,-0.23337,0.15783]~[-0.034975,-0.27457,0.15792] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:2 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.0219]
+[0,1,0,0.01046]
+[0,0,1,-0.00078]
+[0,0,0,1]
+
+DecorativeLine:~[-0.034975,-0.27457,0.15792]~[-0.033345,-0.28694,0.15692] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.039235]
+[0,1,0,0.00347]
+[0,0,1,0.14795]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.028945]
+[0,1,0,0.01391]
+[0,0,1,0.15639]
+[0,0,0,1]
+
+DecorativeLine:~[-0.039235,0.00347,0.14795]~[-0.028945,0.01391,0.15639] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.00141979]
+[0,1,0,0.0257063]
+[0,0,1,-0.00732448]
+[0,0,0,1]
+
+DecorativeLine:~[-0.028945,0.01391,0.15639]~[-0.0189648,0.0187063,0.162676] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.000561142]
+[0,1,0,0.0260886]
+[0,0,1,-0.00677835]
+[0,0,0,1]
+
+DecorativeLine:~[-0.0189648,0.0187063,0.162676]~[-0.0181061,0.0190886,0.163222] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.000307932]
+[0,1,0,0.0264152]
+[0,0,1,-0.00621499]
+[0,0,0,1]
+
+DecorativeLine:~[-0.0181061,0.0190886,0.163222]~[-0.0172371,0.0194152,0.163785] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.00118478]
+[0,1,0,0.0266858]
+[0,0,1,-0.00563622]
+[0,0,0,1]
+
+DecorativeLine:~[-0.0172371,0.0194152,0.163785]~[-0.0163602,0.0196858,0.164364] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.0020668]
+[0,1,0,0.0268999]
+[0,0,1,-0.00504381]
+[0,0,0,1]
+
+DecorativeLine:~[-0.0163602,0.0196858,0.164364]~[-0.0154782,0.0198999,0.164956] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.00295142]
+[0,1,0,0.0270572]
+[0,0,1,-0.00443957]
+[0,0,0,1]
+
+DecorativeLine:~[-0.0154782,0.0198999,0.164956]~[-0.0145936,0.0200572,0.16556] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.00383612]
+[0,1,0,0.0271578]
+[0,0,1,-0.00382529]
+[0,0,0,1]
+
+DecorativeLine:~[-0.0145936,0.0200572,0.16556]~[-0.0137089,0.0201578,0.166175] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.00471845]
+[0,1,0,0.0272018]
+[0,0,1,-0.00320274]
+[0,0,0,1]
+
+DecorativeLine:~[-0.0137089,0.0201578,0.166175]~[-0.0128266,0.0202018,0.166797] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.005596]
+[0,1,0,0.0271893]
+[0,0,1,-0.00257368]
+[0,0,0,1]
+
+DecorativeLine:~[-0.0128266,0.0202018,0.166797]~[-0.011949,0.0201893,0.167426] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.00646644]
+[0,1,0,0.0271208]
+[0,0,1,-0.00193985]
+[0,0,0,1]
+
+DecorativeLine:~[-0.011949,0.0201893,0.167426]~[-0.0110786,0.0201208,0.16806] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.00732749]
+[0,1,0,0.0269969]
+[0,0,1,-0.00130296]
+[0,0,0,1]
+
+DecorativeLine:~[-0.0110786,0.0201208,0.16806]~[-0.0102175,0.0199969,0.168697] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.00817696]
+[0,1,0,0.026818]
+[0,0,1,-0.000664698]
+[0,0,0,1]
+
+DecorativeLine:~[-0.0102175,0.0199969,0.168697]~[-0.00936804,0.019818,0.169335] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.0090127]
+[0,1,0,0.0265851]
+[0,0,1,-2.67223e-005]
+[0,0,0,1]
+
+DecorativeLine:~[-0.00936804,0.019818,0.169335]~[-0.0085323,0.0195851,0.169973] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.00983262]
+[0,1,0,0.0262988]
+[0,0,1,0.000609337]
+[0,0,0,1]
+
+DecorativeLine:~[-0.0085323,0.0195851,0.169973]~[-0.00771238,0.0192988,0.170609] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.0106347]
+[0,1,0,0.0259601]
+[0,0,1,0.00124188]
+[0,0,0,1]
+
+DecorativeLine:~[-0.00771238,0.0192988,0.170609]~[-0.00691028,0.0189601,0.171242] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.011417]
+[0,1,0,0.02557]
+[0,0,1,0.00186932]
+[0,0,0,1]
+
+DecorativeLine:~[-0.00691028,0.0189601,0.171242]~[-0.00612798,0.01857,0.171869] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.0121776]
+[0,1,0,0.0251296]
+[0,0,1,0.00249011]
+[0,0,0,1]
+
+DecorativeLine:~[-0.00612798,0.01857,0.171869]~[-0.00536737,0.0181296,0.17249] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.0129147]
+[0,1,0,0.0246401]
+[0,0,1,0.00310273]
+[0,0,0,1]
+
+DecorativeLine:~[-0.00536737,0.0181296,0.17249]~[-0.00463033,0.0176401,0.173103] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.0136264]
+[0,1,0,0.0241027]
+[0,0,1,0.00370568]
+[0,0,0,1]
+
+DecorativeLine:~[-0.00463033,0.0176401,0.173103]~[-0.00391859,0.0171027,0.173706] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.0136264]
+[0,1,0,0.0241027]
+[0,0,1,0.00370568]
+[0,0,0,1]
+
+DecorativeLine:~[-0.00391859,0.0171027,0.173706]~[-0.00391859,0.0171027,0.173706] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.02131]
+[0,1,0,0.01793]
+[0,0,1,0.01028]
+[0,0,0,1]
+
+DecorativeLine:~[-0.00391859,0.0171027,0.173706]~[0.003765,0.01093,0.18028] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.02378]
+[0,1,0,-0.00511]
+[0,0,1,0.01201]
+[0,0,0,1]
+
+DecorativeLine:~[0.003765,0.01093,0.18028]~[0.006235,-0.01211,0.18201] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.01345]
+[0,1,0,-0.02827]
+[0,0,1,0.00136]
+[0,0,0,1]
+
+DecorativeLine:~[0.006235,-0.01211,0.18201]~[-0.004095,-0.03527,0.17136] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.01068]
+[0,1,0,-0.07736]
+[0,0,1,-0.00165]
+[0,0,0,1]
+
+DecorativeLine:~[-0.004095,-0.03527,0.17136]~[-0.006865,-0.08436,0.16835] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.01703]
+[0,1,0,-0.12125]
+[0,0,1,0.00024]
+[0,0,0,1]
+
+DecorativeLine:~[-0.006865,-0.08436,0.16835]~[-0.000515,-0.12825,0.17024] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.0228]
+[0,1,0,-0.1754]
+[0,0,1,-0.0063]
+[0,0,0,1]
+
+DecorativeLine:~[-0.000515,-0.12825,0.17024]~[0.005255,-0.1824,0.1637] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:2 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.00751]
+[0,1,0,-0.04839]
+[0,0,1,0.02179]
+[0,0,0,1]
+
+DecorativeLine:~[0.005255,-0.1824,0.1637]~[-0.003935,-0.34579,0.17949] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.004675]
+[0,1,0,-0.01231]
+[0,0,1,0.13475]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.007075]
+[0,1,0,-0.04004]
+[0,0,1,0.14507]
+[0,0,0,1]
+
+DecorativeLine:~[0.004675,-0.01231,0.13475]~[-0.007075,-0.04004,0.14507] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.01117]
+[0,1,0,-0.07576]
+[0,0,1,-0.01101]
+[0,0,0,1]
+
+DecorativeLine:~[-0.007075,-0.04004,0.14507]~[-0.006375,-0.08276,0.15899] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.01703]
+[0,1,0,-0.12125]
+[0,0,1,-0.01079]
+[0,0,0,1]
+
+DecorativeLine:~[-0.006375,-0.08276,0.15899]~[-0.000515,-0.12825,0.15921] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.0228]
+[0,1,0,-0.1754]
+[0,0,1,-0.0063]
+[0,0,0,1]
+
+DecorativeLine:~[-0.000515,-0.12825,0.15921]~[0.005255,-0.1824,0.1637] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:2 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.00751]
+[0,1,0,-0.04839]
+[0,0,1,0.02179]
+[0,0,0,1]
+
+DecorativeLine:~[0.005255,-0.1824,0.1637]~[-0.003935,-0.34579,0.17949] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.0068]
+[0,1,0,-0.1739]
+[0,0,1,-0.0036]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.018729]
+[0,1,0,-0.290559]
+[0,0,1,-0.00910357]
+[0,0,0,1]
+
+DecorativeLine:~[-0.010745,-0.1809,0.1664]~[0.00118402,-0.297559,0.160896] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.0188075]
+[0,1,0,-0.292732]
+[0,0,1,-0.00920174]
+[0,0,0,1]
+
+DecorativeLine:~[0.00118402,-0.297559,0.160896]~[0.00126248,-0.299732,0.160798] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.0186001]
+[0,1,0,-0.294896]
+[0,0,1,-0.00930294]
+[0,0,0,1]
+
+DecorativeLine:~[0.00126248,-0.299732,0.160798]~[0.00105506,-0.301896,0.160697] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.0181105]
+[0,1,0,-0.297014]
+[0,0,1,-0.00941246]
+[0,0,0,1]
+
+DecorativeLine:~[0.00105506,-0.301896,0.160697]~[0.000565523,-0.304014,0.160588] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.0173477]
+[0,1,0,-0.299049]
+[0,0,1,-0.00953546]
+[0,0,0,1]
+
+DecorativeLine:~[0.000565523,-0.304014,0.160588]~[-0.000197347,-0.306049,0.160465] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.0163251]
+[0,1,0,-0.300965]
+[0,0,1,-0.00967683]
+[0,0,0,1]
+
+DecorativeLine:~[-0.000197347,-0.306049,0.160465]~[-0.00121986,-0.307965,0.160323] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.0150613]
+[0,1,0,-0.30273]
+[0,0,1,-0.00984115]
+[0,0,0,1]
+
+DecorativeLine:~[-0.00121986,-0.307965,0.160323]~[-0.0024837,-0.30973,0.160159] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:1 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0.0135788]
+[0,1,0,-0.304312]
+[0,0,1,-0.0100326]
+[0,0,0,1]
+
+DecorativeLine:~[-0.0024837,-0.30973,0.160159]~[-0.00396622,-0.311312,0.159967] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeSphere:0.005 bodyId:2 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:0.8 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,-0.0032]
+[0,1,0,-0.0239]
+[0,0,1,0.0009]
+[0,0,0,1]
+
+DecorativeLine:~[-0.00396622,-0.311312,0.159967]~[-0.014645,-0.3213,0.1586] bodyId:0 color:~[0.05,0,0.95] indexOnBody:-1 Opacity:-1 Rep:-1 Scale:~[-1,-1,-1] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+

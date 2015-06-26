@@ -23,6 +23,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 // INCLUDE
+#include <OpenSim/Common/PropertyDbl.h>
 #include "ContactGeometry.h"
 
 namespace OpenSim {

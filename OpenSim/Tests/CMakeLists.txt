@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 2.6)
-
 include_directories(${OpenSim_SOURCE_DIR} 
             ${OpenSim_SOURCE_DIR}/Vendors)
 
@@ -25,6 +23,7 @@ add_subdirectory(MuscleExample)
 add_subdirectory(SimpleOptimizationExample)
 add_subdirectory(Environment)
 add_subdirectory(testIterators)
+add_subdirectory(VisualizeModel)
 add_subdirectory(README)
 
 add_subdirectory(Wrapping)

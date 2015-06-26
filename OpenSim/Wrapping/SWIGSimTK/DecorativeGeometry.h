@@ -91,11 +91,10 @@ DecorativeGeometry() : rep(0) { }
 /** Copy construction is deep; the source object will be cloned to create an
 independent copy. **/
 DecorativeGeometry(const DecorativeGeometry& source);
-#ifndef SWIG
 /** Copy assignment is deep; the handle will be cleared if necessary and then
 the source object will be cloned to create an independent copy. **/
 DecorativeGeometry& operator=(const DecorativeGeometry& source);
-#endif
+
 /** Drawing modes. **/
 enum Representation {
     Hide = 0, ///< hide geometry for now to display later

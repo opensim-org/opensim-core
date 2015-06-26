@@ -20,7 +20,7 @@ include(CMakeParseArguments)
 #
 # Here's an example from OpenSim/Common/CMakeLists.txt:
 #
-#   OPENSIM_add_library(
+#   opensim_add_library(
 #       KIT Common
 #       AUTHORS "Clay_Anderson-Ayman_Habib_and_Peter_Loan"
 #       LINKLIBS ${Simbody_LIBRARIES}

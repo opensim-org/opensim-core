@@ -9,7 +9,7 @@ set(OPENSIM_INSTALL_CMAKE_DIR cmake)
 configure_file(OpenSimConfig.cmake.in
     "${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfig.cmake" @ONLY)
 
-CONFIGURE_PACKAGE_CONFIG_file(
+configure_package_config_file(
     OpenSimConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfig.cmake
     INSTALL_DESTINATION "${OPENSIM_INSTALL_CMAKE_DIR}"
@@ -19,7 +19,7 @@ CONFIGURE_PACKAGE_CONFIG_file(
     )
 
 # Version file.
-WRITE_BASIC_CONFIG_VERSION_file(
+write_basic_config_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfigVersion.cmake"
     VERSION "${OPENSIM_VERSION}"
     COMPATIBILITY SameMajorVersion)

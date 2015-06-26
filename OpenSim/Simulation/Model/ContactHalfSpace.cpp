@@ -62,8 +62,6 @@ void ContactHalfSpace::setNull()
 
 SimTK::ContactGeometry ContactHalfSpace::createSimTKContactGeometry()
 {
-    _displayer.freeGeometry();
-    _displayer.addGeometry(new PolyhedralGeometry("unit_plane.obj"));
     return SimTK::ContactGeometry::HalfSpace();
 }
 

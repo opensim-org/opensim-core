@@ -7,4 +7,3 @@ OPENSIM_ADD_TESTS(
     DATAFILES ${TEST_FILES}
     LINKLIBS osimTools
     )
-

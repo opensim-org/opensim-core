@@ -5,7 +5,3 @@ OPENSIM_ADD_TESTS(
     LINKLIBS osimTools
     )
 
-#if(UNIX)
-#  add_definitions(-fprofile-arcs -ftest-coverage)
-#  link_libraries(gcov)
-#endif(UNIX)

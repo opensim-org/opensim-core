@@ -124,8 +124,12 @@ void DynamicsTool::setupProperties()
     _timeRangeProp.setValue(defaultTimeRange);
     _propertySet.append(&_timeRangeProp);
 
-    _excludedForcesProp.setComment("List of forces by individual or grouping name (e.g. All, actuators, muscles, ...)"
-        " to be excluded when computing model dynamics.");
+    _excludedForcesProp.setComment(
+            "List of forces by individual or grouping name "
+            "(e.g. All, actuators, muscles, ...)"
+            " to be excluded when computing model dynamics. "
+            "'All' also excludes external loads added "
+            "via 'external_loads_file'.");
     _excludedForcesProp.setName("forces_to_exclude");
     _propertySet.append(&_excludedForcesProp);
 

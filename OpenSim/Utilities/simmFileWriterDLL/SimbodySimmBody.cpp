@@ -99,6 +99,7 @@ void SimbodySimmBody::write(ofstream& aStream)
       aStream << "        " << inertia[2][0] << " " << inertia[2][1] << " " << inertia[2][2] << endl;
 
       string fileName;
+      /*
       for (int i = 0; i < _body->getDisplayer()->getNumGeometryFiles(); i++)
       {
          fileName = _body->getDisplayer()->getGeometryFileName(i);
@@ -107,7 +108,7 @@ void SimbodySimmBody::write(ofstream& aStream)
             fileName.erase(dot, 4);
          fileName += ".asc";
          aStream << "bone " << fileName << endl;
-      }
+      }*/
 
       const MarkerSet& markerSet = _body->getModel().getMarkerSet();
       for (int i = 0; i < markerSet.getSize(); i++)
@@ -134,7 +135,7 @@ void SimbodySimmBody::write(ofstream& aStream)
       }
 
       SimTK::Vec3 scaleFactors;
-      _body->getDisplayer()->getScaleFactors(scaleFactors);
+     // _body->getDisplayer()->getScaleFactors(scaleFactors);
 
       aStream << "scale " << scaleFactors[0] << " " << scaleFactors[1] << " " << scaleFactors[2] << endl;
    } else {
