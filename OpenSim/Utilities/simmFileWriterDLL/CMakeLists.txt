@@ -1,8 +1,8 @@
 
-FILE(GLOB SOURCES *.cpp)
-FILE(GLOB INCLUDES *.h)
+file(GLOB SOURCES *.cpp)
+file(GLOB INCLUDES *.h)
 
-OPENSIM_ADD_LIBRARY(
+OPENSIM_add_library(
     KIT SimmFileWriter
     AUTHORS "Peter_Loan"
     LINKLIBS osimCommon osimSimulation osimActuators ${Simbody_LIBRARIES}

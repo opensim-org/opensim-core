@@ -1,5 +1,5 @@
 
-FILE(GLOB TEST_PROGS "*est*.cpp")
+file(GLOB TEST_PROGS "*est*.cpp")
 
 OPENSIM_ADD_TESTS(
     TESTPROGRAMS ${TEST_PROGS}

@@ -1,8 +1,8 @@
 OpenSimAddApplication(cmc)
 
-IF(BUILD_TESTING)
-    SUBDIRS(test)
-ENDIF(BUILD_TESTING)
+if(BUILD_TESTING)
+    subdirs(test)
+endif(BUILD_TESTING)
 
 
 
