@@ -57,19 +57,19 @@ void checkDataTableLimits(DT& dt, size_t nrow, size_t ncol) {
     // Retrieving any row and col must throw since DataTable is empty.
     try {
         auto row = dt.getRow(nrow); ignore(row);
-    } catch (SimTK::Exception::IndexOutOfRange&) {}
+    } catch (OpenSim::RowDoesNotExist&) {}
     try {
         auto row = dt.updRow(nrow); ignore(row);
-    } catch (SimTK::Exception::IndexOutOfRange&) {}
+    } catch (OpenSim::RowDoesNotExist&) {}
     try {
         auto col = dt.getColumn(ncol); ignore(col);
-    } catch (SimTK::Exception::IndexOutOfRange&) {}
+    } catch (OpenSim::ColumnDoesNotExist&) {}
     try {
         auto col = dt.getColumn("foo"); ignore(col);
     } catch (OpenSim::ColumnDoesNotExist&) {}
     try {
         auto col = dt.updColumn(ncol); ignore(col);
-    } catch (SimTK::Exception::IndexOutOfRange&) {}
+    } catch (OpenSim::ColumnDoesNotExist&) {}
     try {
         auto col = dt.updColumn("foo"); ignore(col);
     } catch (OpenSim::ColumnDoesNotExist&) {}
@@ -77,16 +77,16 @@ void checkDataTableLimits(DT& dt, size_t nrow, size_t ncol) {
     // Retrieving any element should throw since the DataTable is empty.
     try {
         auto elt = dt.getElt(nrow, ncol); ignore(elt);
-    } catch (SimTK::Exception::IndexOutOfRange&) {}
+    } catch (OpenSim::RowDoesNotExist&) {}
     try {
         auto elt = dt.getElt(nrow, "foo"); ignore(elt);
-    } catch (OpenSim::ColumnDoesNotExist&) {}
+    } catch (OpenSim::RowDoesNotExist&) {}
     try {
         auto elt = dt.updElt(nrow, ncol); ignore(elt);
-    } catch (SimTK::Exception::IndexOutOfRange&) {}
+    } catch (OpenSim::RowDoesNotExist&) {}
     try {
         auto elt = dt.updElt(nrow, "foo"); ignore(elt);
-    } catch (OpenSim::ColumnDoesNotExist&) {}
+    } catch (OpenSim::RowDoesNotExist&) {}
 
     auto underlying_matrix = dt.copyAsMatrix(); ignore(underlying_matrix);
 }
@@ -1636,8 +1636,8 @@ void test5() {
     dt_vec6.setColumnLabel(2, "ColTwo");
 
     // Insert more column labels.
-    std::vector<std::pair<size_t, std::string>> col_data{{1, "ColOne"}, 
-            {3, "ColThree"}};
+    std::vector<std::pair<std::string, size_t>> col_data{{"ColOne", 1}, 
+                                                         {"ColThree", 3}};
     std::cout << "test5 -- setColumnLabels(): Real.\n";
     dt_real.setColumnLabels(col_data.cbegin(), col_data.cend());
     std::cout << "test5 -- setColumnLabels(): Vec3.\n";
@@ -1728,8 +1728,8 @@ void test5() {
 
     // Try inserting labels to for columns that don't exist. This time use
     // iterators.
-    std::vector<std::pair<size_t, std::string>> col_data1{{4, "ColFour"},
-            {5, "ColFive"}};
+    std::vector<std::pair<std::string, size_t>> col_data1{{"ColFour", 4},
+                                                          {"ColFive", 5}};
     std::cout << "test5 -- setColumnLabels()[ColumnDoesNotExist]: Real.\n";
     try {
         dt_real.setColumnLabels(col_data1.cbegin(), col_data1.cend());

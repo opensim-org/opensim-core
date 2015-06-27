@@ -42,7 +42,7 @@ in-memory container for data access and manipulation.                         */
 
 
 namespace OpenSim {
-/** Enum to specify if the input iterator is traversing data row-wise or
+/** Enum to specify if the InputIterator is traversing data row-wise or
 column-wise. clang3.6 crashes if this is turned to a "enum class". Until it 
 is fixed, use a pre c++11 enum.                                           */
 struct InputItDim {
@@ -65,6 +65,11 @@ public:
 class NumberOfRowsMismatch : public Exception {
 public:
     NumberOfRowsMismatch(const std::string& expl) : Exception(expl) {}
+};
+
+class RowDoesNotExist : public Exception {
+public:
+    RowDoesNotExist(const std::string& expl) : Exception(expl) {}
 };
 
 class ColumnDoesNotExist : public Exception {
@@ -108,13 +113,11 @@ public:
 };
 
 
-template<typename ET> class DataTable_;
-
 /** AbstractDataTable is the base-class of all DataTable_(templated) allowing 
 storage of DataTable_ templated on different types to be stored in a container 
 like std::vector. AbstractDataTable_ offers:
-- interface to access columns of DataTable_ through column labels. 
-- a heterogeneous container to store metadata associated with the DataTable_ in
+- Interface to access columns of DataTable_ through column labels. 
+- A heterogeneous container to store metadata associated with the DataTable_ in
   the form of key-value pairs where key is of type std::string and value can be
   of any type.
 
@@ -163,11 +166,11 @@ protected:
     };
 
 public:
-    AbstractDataTable() = default;
-    AbstractDataTable(const AbstractDataTable&) = default;
-    AbstractDataTable(AbstractDataTable&&) = default;
-    AbstractDataTable& operator=(const AbstractDataTable&) = default;
-    AbstractDataTable& operator=(AbstractDataTable&&) = default;
+    AbstractDataTable()                                      = default;
+    AbstractDataTable(const AbstractDataTable&)              = default;
+    AbstractDataTable(AbstractDataTable&&)                   = default;
+    AbstractDataTable& operator=(const AbstractDataTable&)   = default;
+    AbstractDataTable& operator=(AbstractDataTable&&)        = default;
     virtual std::unique_ptr<AbstractDataTable> clone() const = 0;
     virtual ~AbstractDataTable() {}
 
@@ -175,50 +178,101 @@ public:
         Column labels accessors & mutators.                                   */
     /**@{*/
 
-    /** Check if a column index has label. Time complexity is linear in number 
-    of column labels. All columns will have an index. All columns need not have 
-    a label.
+    /** Check if a column has label. Time complexity is linear in number 
+    of column labels. All columns will have an index (starting at 0). All 
+    columns need not have a label.
 
     \throws ColumnDoesNotExist If column index specified does not exist.      */
-    virtual bool columnHasLabel(size_t columnIndex) const = 0;
+    bool columnHasLabel(size_t columnIndex) const {
+        using ColumnLabelsValue = typename ColumnLabels::value_type;
+        throwIfColumnDoesNotExist(columnIndex);
+        auto res = std::find_if(col_ind_.begin(), 
+                                col_ind_.end(), 
+                                [columnIndex] (const ColumnLabelsValue& kv) {
+                                    return kv.second == columnIndex;
+                                });
+        return res != col_ind_.end();
+    }
 
-    /** Check if a column exists by its index.                                */
+    /** Check if a column exists using column index.                          */
     virtual bool hasColumn(size_t columnIndex) const = 0;
 
-    /** Check if a column exists under given label. All columns have an index 
+    /** Check if a column exists using column label. All columns have an index 
     but not all columns may have labels.                                      */
-    virtual bool hasColumn(const string& columnLabel) const = 0;
-
-    /** Label a column. The column should not have a label already. To update 
-    the label of a column that already has a label, use updColLabel().
-
-    \throws ColumnDoesNotExist If the column index specified does not exist.
-    \throws ColumnHasLabel If the column index specified already has a label. */
-    virtual void setColumnLabel(size_t columnIndex, 
-                                const string& columnLabel) = 0;
+    bool hasColumn(const string& columnLabel) const {
+        return col_ind_.find(columnLabel) != col_ind_.end();
+    }
 
     /** Label a column. The column should not have a label already. To update 
     the label of a column that already has a label, use updColumnLabel().
 
     \throws ColumnDoesNotExist If the column index specified does not exist.
     \throws ColumnHasLabel If the column index specified already has a label. */
-    virtual void setColumnLabel(size_t columnIndex, 
-                                string&& columnLabel) = 0;
+    void setColumnLabel(size_t columnIndex, 
+                        const string& columnLabel) {
+        throwIfColumnHasLabel(columnIndex);
+        col_ind_.emplace(columnLabel, columnIndex);
+    }
 
+    /** Label a column. The column should not have a label already. To update 
+    the label of a column that already has a label, use updColumnLabel().
+
+    \throws ColumnDoesNotExist If the column index specified does not exist.
+    \throws ColumnHasLabel If the column index specified already has a label. */
+    void setColumnLabel(size_t columnIndex, 
+                        string&& columnLabel) {
+        throwIfColumnHasLabel(columnIndex);
+        col_ind_.emplace(std::move(columnLabel), columnIndex);
+    }
+
+    /** Label a set of columns at once using an InputIterator that produces one
+    index-label pair (std::pair<std::string, std::size_t>) at a time. The 
+    columns referred to by the iterator must not already have a label. See
+    <a href="http://en.cppreference.com/w/cpp/concept/InputIterator">this page
+    </a> for details on InputIterator.
+
+    \throws ColumnDoesNotExist If the column index specified by an entry 
+                               produced by the iterator does not exist.
+    \throws ColumnHasLabel If the column index specified by an entry produced
+                           by the iterator already has a label. */
+    template<typename InputIt>
+    void setColumnLabels(InputIt first, InputIt last) {
+        while(first != last) {
+            throwIfColumnHasLabel(first->second);
+            col_ind_.emplace(*first);
+            ++first;
+        }
+    }
+  
     /** Get the label of a column. Time complexity is linear in the number of
     column labels. The returned value is a copy of the label. To update the 
     label of a column, use updColumnLabel(). 
 
     \throws ColumnHasNoLabel If the column does not have a label.
     \throws ColumnDoesNotExist If the column does not exist.                  */
-    virtual string getColumnLabel(size_t columnIndex) const = 0;
+    string getColumnLabel(size_t columnIndex) const {
+        using ColumnLabelsValue = typename ColumnLabels::value_type;
+        throwIfColumnDoesNotExist(columnIndex);
+        auto res = std::find_if(col_ind_.begin(),
+                                col_ind_.end(),
+                                [columnIndex] (const ColumnLabelsValue& kv) {
+                                    return kv.second == columnIndex;
+                                });
+        if(res == col_ind_.end()) {
+            throw ColumnHasNoLabel{"Column " + std::to_string(columnIndex) + 
+                                   " has no label."};
+        }
 
-    /** Get all the column labels. Returns a proxy container that can be used in
-    range-for statement. The returned proxy container supports begin() and 
-    end() functions to retrieve begin and end iterators respectively. 
-    Dereferencing the iterator will produce a pair (std::pair) where the first 
-    element of the pair is the column label and the second element is the column
-    index. Not all columns will have labels.                                  */
+        return res->first;
+    }
+
+    /** Get all the column labels. Returns an object that can be used in a
+    range-for statement. The returned object supports begin() and end() 
+    functions to retrieve begin and end iterators respectively. Dereferencing 
+    the iterator will produce a pair (std::pair<std::string, std::size_t>) where
+    the first element of the pair is the column label and the second element is 
+    the column index. Not all columns will have labels. The result is not
+    writable. Use updColumnLabel() to update column labels                    */
     ColumnLabelsContainerProxy getColumnLabels() const {
         return ColumnLabelsContainerProxy{this};
     }
@@ -228,37 +282,95 @@ public:
     label. To label a column that does not yet have a label, use 
     setColumnLabel().
 
-    \throws ColumnHasNoLabel If the column specified does not already have a 
-                             label.
-    \throws ColumnDoesNotExist If the column specified does not exist.        */
-    virtual void updColumnLabel(size_t columnIndex, 
-                                const string& newColumnLabel) = 0;
+    \throws ColumnHasNoLabel If the column specified by the column index does 
+                             not already have a label.
+    \throws ColumnDoesNotExist If the column specified by the column index does 
+                               not exist.                                     */
+    void updColumnLabel(size_t columnIndex, 
+                        const string& newColumnLabel) {
+        const string old_collabel{getColumnLabel(columnIndex)};
+        col_ind_.erase(old_collabel);
+        col_ind_.emplace(newColumnLabel, columnIndex);
+    }
 
     /** Update the label of a column with a new label. Time complexity is 
     constant on average and linear in number of column labels in the worst case.
 
-    \throws ColumnHasNoLabel If the column specified does not already have a 
-                             label.
-    \throws ColumnDoesNotExist If the column specified does not exist.        */
-    virtual void updColumnLabel(const string& oldColumnLabel, 
-                                const string& newColumnLabel) = 0;
+    \throws ColumnDoesNotExist If there is no column with the specified label.*/
+    void updColumnLabel(const string& oldColumnLabel, 
+                        const string& newColumnLabel) {
+        const size_t colind{getColumnIndex(oldColumnLabel)};
+        col_ind_.erase(oldColumnLabel);
+        col_ind_[newColumnLabel] = colind;
+    }
 
     /** Get the index of a column from its label. Time complexity is constant on
     average and linear in number of column labels on worst case.
 
     \throws ColumnDoesNotExist If the column label does not exist.            */
-    virtual size_t getColumnIndex(const string& columnLabel) const = 0;
+    size_t getColumnIndex(const string& columnLabel) const {
+        try {
+            return col_ind_.at(columnLabel);
+        } catch(const std::out_of_range&) {
+            throw ColumnDoesNotExist{"No column with label '" + columnLabel + 
+                                     "'."};
+        }
+    }
 
-    /** Clear all the column labels.                                          */
-    virtual void clearColumnLabels() = 0;
+    /** Remove label for column specified by column index.
 
-    /** Iterator representing the beginning of an associative container for
-    column labels to column index.                                            */
-    virtual ColumnLabelsConstIter columnLabelsBegin() const = 0;
+    \retval true If the column index had a label and was removed.
+    \retval false If the column index did not have a label to remove.
 
-    /** Iterator representing the end of an associative container for column 
-    labels to column index.                                                   */
-    virtual ColumnLabelsConstIter columnLabelsEnd() const = 0;
+    \throws ColumnDoesNotExist If the column specified by "columnIndex" does
+                               not exist.                                     */
+    bool removeColumnLabel(size_t columnIndex) {
+        using ColumnLabelsValue = typename ColumnLabels::value_type;
+
+        throwIfColumnDoesNotExist(columnIndex);
+        auto res = std::find_if(col_ind_.begin(),
+                                col_ind_.end(),
+                                [columnIndex] (const ColumnLabelsValue& kv) {
+                                    return kv.second == columnIndex;
+                                });
+        if(res != col_ind_.end()) {
+            col_ind_.erase(res);
+            return true;
+        } else
+            return false;
+    }
+
+    /** Remove label for column specified by column label.
+
+    \retval true if the column label exists and was removed.
+    \retval false If the column label does not exist.                         */
+    bool removeColumnLabel(const string& columnLabel) {
+        return col_ind_.erase(columnLabel) > 0;
+    }
+
+    /** Clear all the column labels. Data is not cleared. Only the column labels
+    are cleared                                                               */
+    void clearColumnLabels() {
+        col_ind_.clear();
+    }
+
+    /** Get an InputIterator representing the beginning of column labels. Get
+    the sentinel iterator using columnLabelsEnd(). Dereferencing the iterator 
+    produces a pair (std::pair<std::string, std::size_t>) where the first 
+    element is the column label and second element is the column index. The 
+    result is not writable. Use updColumnLabel() to update column labels. See
+    <a href="http://en.cppreference.com/w/cpp/concept/InputIterator">this page
+    </a> for details on InputIterator.                                        */
+    ColumnLabelsConstIter columnLabelsBegin() const {
+        return col_ind_.cbegin();
+    }
+
+    /** Get an InputIterator representing the end of column labels. Get the
+    beginning iterator using columnLabelsBegin(). See columnLabelsBegin() on 
+    using the iterator.                                                       */
+    ColumnLabelsConstIter columnLabelsEnd() const {
+        return col_ind_.cend();
+    }
 
     /**@}*/
     /** \name Meta-data.
@@ -273,7 +385,7 @@ public:
 
     \param key A std::string that can be used the later to retrieve the inserted
                metadata.
-    \param value An object/value of any type except array types[eg int[]]. The 
+    \param value An object/value of any type except array types(eg int[]). The 
                  code will fail to compile for array types.
 
     \throws MetaDataKeyExists If the specified key already exits              */
@@ -298,8 +410,8 @@ public:
     }
 
     /** Get previously inserted metadata using its key and type. The template
-    argument has to be exactly the non-reference type of the metadata previousl 
-    stored using insertMetaData(). The return value is a ead-only reference to 
+    argument has to be exactly the non-reference type of the metadata previously
+    stored using insertMetaData(). The return value is a read-only reference to 
     the metadata. Use updMetaData() to obtain a writable reference. Time 
     complexity is constant on average and linear in number of elements in 
     metadata on worst case.
@@ -325,8 +437,8 @@ public:
         }
     }
 
-    /** Get previously inserted metadata using its key and type. The template
-    argument has to be exactly the non-reference type of the metadata previousl
+    /** Update previously inserted metadata using its key and type. The template
+    argument has to be exactly the non-reference type of the metadata previously
     stored using insertMetaData(). The returned value is editable. Time 
     complexity is constant on average and linear in number of elements in 
     metadata on worst case.
@@ -338,18 +450,7 @@ public:
                                  key specified.                               */
     template<typename ValueType>
     ValueType& updMetaData(const string& key) {
-        static_assert(!std::is_reference<ValueType>::value, "Template argument " 
-                      "'ValueType' should be exactly the non-reference type of"
-                      "the MetaData value stored.");
-
-        try {
-            return metadata_.at(key)->template updValue<ValueType>();
-        } catch(std::out_of_range&) {
-            throw MetaDataKeyDoesNotExist{"Key '" + key + "' not found."};
-        } catch(std::bad_cast&) {
-            throw MetaDataTypeMismatch{"Template argument specified for " 
-                                       "updMetaData is incorrect"};
-        }
+        return const_cast<ValueType&>(getMetaData<ValueType>(key));
     }
 
     /** Pop previously inserted metadata using its key and type. The template
@@ -366,28 +467,18 @@ public:
                                  key specified.                               */
     template<typename ValueType>
     ValueType popMetaData(const string& key) {
-        static_assert(!std::is_reference<ValueType>::value, "Template argument "
-                      "'ValueType' should be exactly the non-reference type of"
-                      "the MetaData value stored.");
-
-        try {
-            ValueType value = 
-                std::move(metadata_.at(key)->template getValue<ValueType>());
-            metadata_.erase(key);
-            return value;
-        } catch(std::out_of_range&) {
-            throw MetaDataKeyDoesNotExist{"Key '" + key + "' not found."};
-        } catch(std::bad_cast&) {
-            throw MetaDataTypeMismatch{"Template argument specified for " 
-                                       "popMetaData is incorrect"};
-        }
+        ValueType value{std::move(updMetaData<ValueType>(key))};
+        metadata_.erase(key);
+        return value;
     }
 
-    /** Remove a metadata key-value pair previously inserted. Return value 
-    indicates if there was a removal -- true means a key-value pair was
-    removed; false means the key was not found in metadata. Time complexity is
-    constant on average and linear in number of elements in the metadata on
-    worst case.                                                               */
+    /** Remove a metadata key-value pair previously inserted. 
+
+    \retval true If there was a removal. 
+    \retval false If the key was not found in metadata. 
+
+    Time complexity is constant on average and linear in number of elements in 
+    the metadata on worst case.                                               */
     bool removeMetaData(const string& key) {
         return metadata_.erase(key);
     }
@@ -417,16 +508,36 @@ public:
 
     /**@}*/
 
-private:
+protected:
+    // Helper function. Check if a column exists and throw an exception if it
+    // does not.
+    void throwIfColumnDoesNotExist(const size_t columnIndex) const {
+        if(!hasColumn(columnIndex)) {
+            throw ColumnDoesNotExist{"Column " + std::to_string(columnIndex) + 
+                                     " does not exist. Index out of range."};
+        }
+    }
+
+    // Helper function. Check if a column has label and throw an exception if it
+    // does.
+    void throwIfColumnHasLabel(const size_t columnIndex) const {
+        if(columnHasLabel(columnIndex)) {
+            throw ColumnHasLabel{"Column " + std::to_string(columnIndex) + 
+                                 " already has a label."};
+        }
+    }
+
     // Meta-data.
-    MetaData metadata_;
+    MetaData     metadata_;
+    // Column label to column index.
+    ColumnLabels col_ind_;
 }; // AbstractDataTable
 
 
-/** \brief DataTable_ is a in-memory storage container for data(in the form of a
-matrix with column names) with support for holding metadata.                
+/** \brief DataTable_ is a in-memory storage container for data (in the form of 
+a matrix with column names) with support for holding metadata.                
                                                                               
-- Underlying matrix will have entries of configurable type ET(template 
+- Underlying matrix will have entries of configurable type ET (template 
   param).
 - Random-access (constant-time) to specific entries, entire columns and entire 
   rows using their index.
@@ -441,7 +552,7 @@ matrix with column names) with support for holding metadata.
   is is of any type.
                                                                               
 \tparam ET Type of the entries in the underlying matrix. Defaults to         
-           SimTK::Real(alias for double).                                     */
+           SimTK::Real (alias for double).                                    */
 template<typename ET = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
 public:
@@ -455,8 +566,9 @@ public:
     /** Construct empty DataTable.                                            */
     DataTable_() = default;
 
-    /** Construct DataTable of given shape populated with given value val. 
-    Default value for val is NaN.
+    /** Construct DataTable_ with dimensions [numRows x numColumns] where each
+    entry is initialized with initialValue. Default value for initialValue is 
+    NaN.
   
     \param numRows Number of rows.
     \param numColumns Number of columns.
@@ -468,32 +580,41 @@ public:
                 static_cast<int>(numColumns), 
                 initialValue} {}
 
-    /** Construct DataTable using an iterator(satisfying requirement of an 
-    InputIterator) which produces one entry at a time. The entries of 
-    DataTable_ are copy initialized using the values produced by the iterator. 
-    For example, specifying RowWise for parameter dir and 10 for parameter ndir
-    will populate the DataTable one row at a time with each row's length taken 
-    to be 10.
+    /** Construct DataTable_ using an InputIterator which produces one entry at 
+    a time when dereferenced. The entries of DataTable_ are copy initialized 
+    using the values produced by the iterator. For example, specifying RowWise 
+    for parameter dimension and 10 for parameter numEntries will populate the 
+    DataTable_ one row at a time with each row's length taken to be 10. See
+    <a href="http://en.cppreference.com/w/cpp/concept/InputIterator">this page
+    </a> for details on InputIterator.
       
-    \param first Beginning of range covered by the iterator.
-    \param last End of the range covered by the iterator.
+    \param first Beginning of range covered by the iterator. Both first and last
+                 are of same type -- InputIt.
+    \param last End of the range covered by the iterator. Both first and last
+                are of same type -- InputIt.
     \param numEntries Extent of the dimension specified by parameter dim. 
-    \param dimension Dimension to populate the DataTable. Populate row-wise or 
-                     column wise. See InputItDim for possible values.
-    \param allowMissing Allow for missing values. When set to false, this
-                        function will throw if the input iterator fills up the 
-                        last row/column partially. When set to true, missing 
-                        elements are set to SimTK::NaN.
+    \param dimension Dimension to populate the DataTable_. Possible values are:
+                     - RowWise -- Populate the DataTable_ one row at a time.
+                     - ColumnWise -- Populate the DataTable_ one column at a 
+                       time.
+    \param allowMissing Allow for missing values. 
+                        - false -- NotEnoughElements will be thrown if the input
+                          iterator fills up the last row/column only partially. 
+                        - true -- No exception thrown if the input iterator
+                          fills up the last row/column only partially. Instead,
+                          missing elements are set to SimTK::NaN.
   
     \throws ZeroElements When input-iterator does not produce any elements.
                          That is first == last.                                 
-    \throws InvalidEntry When the required input argument 'ndir' is zero.
-    \throws NotEnoughElements If dim == RowWise, this is thrown when the input 
-                              iterator does not produce enough elements to fill 
-                              up the last row completely. If dim == ColumnWise, 
-                              this is thrown when the input iterator does not 
-                              produce enough elements to fill up the last column
-                              completely.                                     */
+    \throws InvalidEntry When the required input argument 'numEntries' is zero.
+    \throws NotEnoughElements The argument allowMissing enables/disables this
+                              exception. When enabled, if dimension == RowWise, 
+                              this exception is thrown when the input iterator 
+                              does not produce enough elements to fill up the 
+                              last row completely. If dimension == ColumnWise, 
+                              this exception is thrown when the input iterator 
+                              does not produce enough elements to fill up the 
+                              last column completely.                         */
     template<typename InputIt>
     DataTable_(InputIt first,
                typename std::enable_if<!std::is_integral<InputIt>::value,
@@ -601,26 +722,46 @@ public:
         return static_cast<size_t>(data_.ncol()); 
     }
 
-    /** Get a sub-matrix (or block) of the DataTable. Returned object is not
+    /** Get a sub-matrix (or block) of the DataTable_. Returned object is not
     writable. Use updMatrix() to obtain a writable reference. For more 
-    information on using the result, see SimTK::MatrixView_.                  */
+    information on using the result, see SimTK::MatrixView_.                  
+
+    \throws RowDoesNotExist If the row specified by either rowStart or 
+                            [rowStart + numRows - 1] does not exist.
+    \throws ColumnDoesNotExist If the column specified by either columnStart or
+                               [columnStart + numColumns - 1] does not exist. */
     SimTK::MatrixView_<ET> getMatrix(size_t rowStart, 
                                      size_t columnStart,
                                      size_t numRows,
                                      size_t numColumns) const {
+        throwIfRowDoesNotExist(rowStart);
+        throwIfRowDoesNotExist(rowStart + numRows - 1);
+        throwIfColumnDoesNotExist(columnStart);
+        throwIfColumnDoesNotExist(columnStart + numColumns - 1);
+        
         return data_.block(static_cast<int>(rowStart), 
                            static_cast<int>(columnStart), 
                            static_cast<int>(numRows), 
                            static_cast<int>(numColumns));
     }
 
-    /** Get a sub-matrix (or block) of the DataTable. Returned object is 
+    /** Get a sub-matrix (or block) of the DataTable_. Returned object is 
     writable. For more information on using the result, see 
-    SimTK::MatrixView_.                                                       */
+    SimTK::MatrixView_.                                                       
+
+    \throws RowDoesNotExist If the row specified by either rowStart or 
+                            [rowStart + numRows - 1] does not exist.
+    \throws ColumnDoesNotExist If the column specified by either columnStart or
+                               [columnStart + numColumns - 1] does not exist. */
     SimTK::MatrixView_<ET> updMatrix(size_t rowStart, 
                                      size_t columnStart,
                                      size_t numRows,
                                      size_t numColumns) {
+        throwIfRowDoesNotExist(rowStart);
+        throwIfRowDoesNotExist(rowStart + numRows - 1);
+        throwIfColumnDoesNotExist(columnStart);
+        throwIfColumnDoesNotExist(columnStart + numColumns - 1);
+
         return data_.updBlock(static_cast<int>(rowStart), 
                               static_cast<int>(columnStart), 
                               static_cast<int>(numRows), 
@@ -628,31 +769,34 @@ public:
     }
 
     /** Get a row of the DataTable_ by index. Returned row is read-only. Use 
-    updRow to obtain a writable reference. See SimTK::RowVectorView_ for more
+    updRow() to obtain a writable reference. See SimTK::RowVectorView_ for more
     details.
   
-    \throws SimTK::Exception::IndexOutOfRange If the row index specified is not 
-                                              in the DataTable_.              */
+    \throws RowDoesNotExist If the row specified by either rowIndex does not 
+                            exist.                                            */
     SimTK::RowVectorView_<ET> getRow(size_t rowIndex) const {
+        throwIfRowDoesNotExist(rowIndex);
         return data_.row(static_cast<int>(rowIndex));
     }
 
     /** Get a row of the DataTable_ by index. Returned row is editable. See 
     SimTK::RowVectorView_ for more details.
   
-    \throws SimTK::Exception::IndexOutOfRange If the row index specified is not 
-                                              in the DataTable_.              */
+    \throws RowDoesNotExist If the row specified by either rowIndex does not 
+                            exist.                                            */
     SimTK::RowVectorView_<ET> updRow(size_t rowIndex) {
+        throwIfRowDoesNotExist(rowIndex);
         return data_.updRow(static_cast<int>(rowIndex));
     }
 
     /** Get a column of the DataTable_ by index. Returned column is read-only. 
-    Use updColumn to obtain a writable reference. See SimTK::VectorView_ for 
+    Use updColumn() to obtain a writable reference. See SimTK::VectorView_ for 
     more details.
   
-    \throws SimTK::Exception::IndexOutOfRange If the column index specified is 
-                                              not in the DataTable_.          */
+    \throws ColumnDoesNotExist If the column specified by columnIndex does not
+                               exist.                                         */
     SimTK::VectorView_<ET> getColumn(size_t columnIndex) const {
+        throwIfColumnDoesNotExist(columnIndex);
         return data_.col(static_cast<int>(columnIndex));
     }
 
@@ -663,20 +807,16 @@ public:
     \throws ColumnDoesNotExist If the column label specified is not in the 
                                DataTable_.                                    */
     SimTK::VectorView_<ET> getColumn(const string& columnLabel) const {
-        try {
-            return data_.col(static_cast<int>(col_ind_.at(columnLabel)));
-        } catch (std::out_of_range exc) {
-            throw ColumnDoesNotExist{"Column label '" + columnLabel + 
-                                     "' does not exist."};
-        }
+        return data_.col(static_cast<int>(getColumnIndex(columnLabel)));
     }
 
     /** Get a column of the DataTable_ by index. Returned column is editable. 
     See SimTK::VectorView_ for more details.
   
-    \throws SimTK::Exception::IndexOutOfRange If the column index specified is 
-                                              not in the DataTable_.          */
+    \throws ColumnDoesNotExist If the column specified by columnIndex does not
+                               exist.                                         */
     SimTK::VectorView_<ET> updColumn(size_t columnIndex) {
+        throwIfColumnDoesNotExist(columnIndex);
         return data_.updCol(static_cast<int>(columnIndex));
     }
 
@@ -686,66 +826,57 @@ public:
     \throws ColumnDoesNotExist If the column label specified is not in the 
                                DataTable_.                                    */
     SimTK::VectorView_<ET> updColumn(const string& columnLabel) {
-        try {
-            return data_.updCol(static_cast<int>(col_ind_.at(columnLabel)));
-        } catch (std::out_of_range exc) {
-            throw ColumnDoesNotExist{"Column label '" + columnLabel + 
-                                     "' does not exist."};
-        }
+        return data_.updCol(static_cast<int>(getColumnIndex(columnLabel)));
     }
 
     /** Get an element of the DataTable_ by its index-pair(row, column). The 
-    returned element is read-only. use updElt to get a writable reference.
-  
-    \throws SimTK::Exception::IndexOutOfRange If the row/column index specified 
-                                              is not in the DataTable_.       */
+    returned element is read-only. use updElt() to get a writable reference.
+
+    \throws RowDoesNotExist If the row specified by rowIndex does not exist.
+    \throws ColumnDoesNotExist If the column specified by columnIndex does not
+                               exist                                          */
     const ET& getElt(size_t rowIndex, size_t columnIndex) const {
+        throwIfRowDoesNotExist(rowIndex);
+        throwIfColumnDoesNotExist(columnIndex);
         return data_.getElt(static_cast<int>(rowIndex), 
-                             static_cast<int>(columnIndex));
+                            static_cast<int>(columnIndex));
     }
 
     /** Get an element of the DataTable_ by (row, column-label) pair. The 
     returned element is read-only. use updElt to get a writable reference.
    
-    \throws SimTK::Exception::IndexOutOfRange If the row index specified is not 
-                                              in the DataTable_.
+    \throws RowDoesNotExist If the row specified by rowIndex does not exist.
     \throws ColumnDoesNotExist If the column label specified is not in the 
                                DataTable_.                                    */
     const ET& getElt(size_t rowIndex, const string& columnLabel) const {
-        try {
-            return data_.getElt(static_cast<int>(rowIndex), 
-                                 static_cast<int>(col_ind_.at(columnLabel)));
-        } catch (std::out_of_range exc) {
-            throw ColumnDoesNotExist{"Column label '" + columnLabel + 
-                                     "' does not exist."};
-        }
+        throwIfRowDoesNotExist(rowIndex);
+        return data_.getElt(static_cast<int>(rowIndex), 
+                            static_cast<int>(getColumnIndex(columnLabel)));
     }
 
     /** Get an element of the DataTable_ by its index-pair(row, column). The 
     returned element is editable.
   
-    \throws SimTK::Exception::IndexOutOfRange If the row/column index specified 
-                                              is not in the DataTable_.       */
+    \throws RowDoesNotExist If the row specified by rowIndex does not exist.
+    \throws ColumnDoesNotExist If the column specified by columnIndex does not
+                               exist                                          */
     ET& updElt(size_t rowIndex, size_t columnIndex) {
+        throwIfRowDoesNotExist(rowIndex);
+        throwIfColumnDoesNotExist(columnIndex);
         return data_.updElt(static_cast<int>(rowIndex), 
-                             static_cast<int>(columnIndex));
+                            static_cast<int>(columnIndex));
     }
 
     /** Get an element of the DataTable_ by (row, column-label) pair. The 
     returned element is editable.
 
-    \throws SimTK::Exception::IndexOutOfRange If the row index specified is not 
-                                              in the DataTable_.
+    \throws RowDoesNotExist If the row specified by rowIndex does not exist.
     \throws ColumnDoesNotExist If the column label specified is not in the 
                                DataTable_.                                    */
     ET& updElt(size_t rowIndex, const string& columnLabel) {
-        try {
-            return data_.updElt(static_cast<int>(rowIndex), 
-                                 static_cast<int>(col_ind_.at(columnLabel)));
-        } catch (std::out_of_range exc) {
-            throw ColumnDoesNotExist{"Column label '" + columnLabel + 
-                                     "' does not exist."};
-        }
+        throwIfRowDoesNotExist(rowIndex);
+        return data_.updElt(static_cast<int>(rowIndex), 
+                            static_cast<int>(getColumnIndex(columnLabel)));
     }
 
     /** Get a *copy* of the underlying matrix of the DataTable_.              */
@@ -777,12 +908,12 @@ public:
         data_.updRow(data_.nrow() - 1).updAsRowVector() = row;
     }
 
-    /** Add (append) a row to the DataTable_ using an iterator(satisfying 
-    requirements of an InputIterator) producing one entry at a time. If this
-    function is called on an empty DataTable_ without providing numColumnsHint, 
-    it performs <i>allocation + relocation</i> for [log2(ncol) + 1] times where 
-    ncol is the actual number of elements produced by the input iterator. To add
-    multiple rows at once using an input-iterator, use addRows().
+    /** Add (append) a row to the DataTable_ using an InputIterator producing 
+    one entry at a time. If this function is called on an empty DataTable_ 
+    without providing numColumnsHint, it performs <i>allocation + relocation</i>
+    for [log2(ncol) + 1] times where ncol is the actual number of elements 
+    produced by the InputIterator. To add multiple rows at once using an 
+    InputIterator, use addRows().
   
     \param first Beginning of range covered by the iterator.
     \param last End of the range covered by the iterator.
@@ -792,18 +923,26 @@ public:
                           empty DataTable_. Ignored otherwise. Providing a hint 
                           reduces the number of resize operations which involves
                           memory allocation and relocation.
-    \param allowMissing Allow for missing values. When set to false, this
-                        function will throw if the input iterator fills up the 
-                        row only partially. When set to true, missing elements 
-                        are set to SimTK::NaN.
+    \param allowMissing Allow for missing values. Enables/disables the exception
+                        NotEnoughElements. This is only used when DataTable_ is
+                        non-empty. If this function is called on an empty
+                        DataTable_, this argument is ignored.
+                        - false -- exception is thrown if the input iterator 
+                          fills up the row only partially. 
+                        - true -- exception is not thrown even if the input
+                        iterator fills up the row only partially. Instead,
+                        missing values are set to SimTK::NaN.
   
     \throws ZeroElements If the number of elements produced by the input 
                          iterator is zero.
-    \throws InvalidEntry The DataTable is empty and the input argument 
+    \throws InvalidEntry The DataTable is empty and required the input argument 
                          'numColumnsHint' is zero.
-    \throws NotEnoughElements If allow_missing is false and the input iterator 
-                              does not produce enough elements to fill up the 
-                              row completely.                                 */
+    \throws NotEnoughElements Argument allowMissing enables/disables this 
+                              exception. This exception is applicable only
+                              when this function is called on a non-empty 
+                              DataTable_. When enabled, this exception is thrown
+                              if the InputIterator does not produce enough
+                              elements to fill up the entire row.             */
     template<typename InputIt>
     void addRow(InputIt first, 
                 InputIt last, 
@@ -847,30 +986,33 @@ public:
         }
     }
 
-    /** Add (append) multiple rows to the DataTable_ using an iterator 
-    (satisfying requirements of an InputIterator) producing one entry at a 
-    time. If this function is called on an empty DataTable_, numColumns must be 
-    provided. Otherwise, numColumns is ignored. To add just one row, use 
-    addRow().
+    /** Add (append) multiple rows to the DataTable_ using an InputIterator 
+    producing one entry at a time. If this function is called on an empty 
+    DataTable_, numColumns must be provided. Otherwise, numColumns is ignored. 
+    To add just one row, use addRow() instead.
 
     \param first Beginning of range covered by the iterator.
     \param last End of the range covered by the iterator.
     \param numColumns Number of columns to create in the DataTable_. This is 
                       only used (and required) when the function is called on 
-                      an empty DataTable_. Ignore otherwise.
-    \param allowMissing Allow for missing values. When set to false, this
-                        function will throw if the input iterator fills up the 
-                        last row only partially. When set to true, missing 
-                        elements are set to SimTK::NaN.
+                      an empty DataTable_. Ignored otherwise.
+    \param allowMissing Allow for missing values. Enables/disables the exception
+                        NotEnoughElements.  
+                        - false -- exception is thrown if the input iterator 
+                          fills up the last row only partially. 
+                        - true -- exception is not thrown even if the input
+                          iterator fills up the last row only partially. Instead
+                          , missing values are set to SimTK::NaN.
 
     \throws ZeroElements If the number of elements produced by the input 
                          iterator is zero.
     \throws InvalidEntry If the function is called on an empty DataTable_ 
-                         -- without providing the argument ncolumn or 
-                         -- providing a zero for ncolumn.
-    \throws NotEnoughElements If allow_missing is false and the input iterator
-                              does not produce enough elements to fill up the 
-                              last row completely.                            */
+                         -- without providing the argument numColumns or 
+                         -- providing a zero for numColumns.
+    \throws NotEnoughElements Arguments allowMissing enables/disables this
+                              exception. When enables, this exception is thrown
+                              if the input iterator does not produce enough 
+                              elements to fill up the last row completely.    */
     template<typename InputIt>
     void addRows(InputIt first, 
                  InputIt last, 
@@ -929,12 +1071,12 @@ public:
         data_.updCol(data_.ncol() - 1).updAsVector() = column;
     }
 
-    /** Add (append) a column to the DataTable_ using an iterator(satisfying 
-    requirements of an InputIterator) producing one entry at a time. If this
-    function is called on an empty DataTable_ without providing numRowsHint, it
-    performs <i>allocation + relocation</i> for [log2(nrow) + 1] times where 
-    nrow is the actual number of elements produced by the input iterator. To add
-    multiple columns at once using input-iterator, use addColumns().
+    /** Add (append) a column to the DataTable_ using an InputIterator producing
+    one entry at a time. If this function is called on an empty DataTable_ 
+    without providing numRowsHint, it performs <i>allocation + relocation</i> 
+    for [log2(nrow) + 1] times where nrow is the actual number of elements 
+    produced by the InputIterator. To add multiple columns at once using 
+    input-iterator, use addColumns().
 
     \param first Beginning of range covered by the iterator.
     \param last End of the range covered by the iterator.
@@ -944,18 +1086,25 @@ public:
                        DataTable_. Ignored otherwise. Providing a hint reduces 
                        the number of resize operations which involves memory 
                        allocation + r elocation.
-    \param allowMissing Allow for missing values. When set to false, this
-                        function will throw if the input iterator fills up the 
-                        row only partially. When set to true, missing elements 
-                        are set to SimTK::NaN.
+    \param allowMissing Allow for missing values. Enables/disables the exception
+                        NotEnoughElements. This is only used when DataTable_ is
+                        non-empty. 
+                        - false -- exception is thrown if the input iterator 
+                          fills up the row only partially. 
+                        - true -- exception is not thrown even if the input
+                          iterator fills up the row only partially. Instead, 
+                          missing values are set to SimTK::NaN.
 
     \throws ZeroElements If the number of elements produced by the input
                          iterator is zero.                                      
     \throws InvalidEntry DataTable is empty and input argument numRowsHint is
                          zero.
-    \throws NotEnoughElements Argument allow_missing is false and the input 
-                              iterator does not produce enough elements to fill 
-                              up the last column completely.                  */
+    \throws NotEnoughElements Argument allowMissing enables/disables this
+                              exception. This exception is applicable only
+                              when this function is called on a non-empty 
+                              DataTable_. When enabled, this exception is thrown
+                              if the InputIterator does not produce enough 
+                              elements to fill up the column completely.      */
     template<typename InputIt>
     void addColumn(InputIt first, 
                    InputIt last, 
@@ -1000,29 +1149,33 @@ public:
         }
     }
 
-    /** Add (append) multiple columns to the DataTable_ using an iterator
-    (satisfying requirements of an InputIterator) producing one entry at a 
-    time. If this function is called on an empty DataTable_, nrow must be 
-    provided. Otherwise, nrow is ignored. To add just one col, use addRow().
+    /** Add (append) multiple columns to the DataTable_ using an InputIterator 
+    producing one entry at a time. If this function is called on an empty 
+    DataTable_, numRows must be provided. Otherwise, numRows is ignored. To add 
+    just one column, use addColumn() instead.
 
     \param first Beginning of range covered by the iterator.
     \param last End of the range covered by the iterator.
     \param numRows Number of rows to create in the DataTable_. This is only 
                    used (and required) when the function is called on an empty 
                    DataTable_. Ignored otherwise.
-    \param allowMissing Allow for missing values. When set to false, this
-                        function will throw if the input iterator fills up the 
-                        last column only partially. When set to true, missing 
-                        elements are set to SimTK::NaN.
+    \param allowMissing Allow for missing values. Enables/disables the exception
+                        NotEnoughElements. 
+                        - false -- exception is thrown if the input iterator
+                          fills up the last column only partially.
+                        - true -- exception is not thrown even if the input
+                          iterator fills up the last column only partially.
+                          Instead, missing values are set to SimTK::NaN.
 
     \throws ZeroElements If the number of elements produced by the input 
                          iterator is zero.
     \throws InvalidEntry If the function is called on an empty DataTable_ 
-                         -- without providing the argument nrow or 
-                         -- providing zero for nrow.
-    \throws NotEnoughElements If allow_missing is false and the input iterator
-                              does not produce enough elements to fill up the 
-                              last column completely.                         */
+                         -- without providing the argument numRows or 
+                         -- providing zero for numRows.
+    \throws NotEnoughElements Argument allowMissing enables/disables this 
+                              exception. When enabled, this exception is thrown
+                              if the input iterator does not produce enough 
+                              elements to fill up the last column completely. */
     template<typename InputIt>
     void addColumns(InputIt first, 
                     InputIt last, 
@@ -1057,14 +1210,14 @@ public:
                                     " Received = " + std::to_string(row)};
     }
 
-    /** Add/concatenate another DataTable_ to this DataTable_ by row. The new 
-    elements will appear as the last rows of this DataTable_. Only data will be 
-    appended. Metadata is not added. Columns retain their labels. To create a 
-    new DataTable_  that is a concatenation of two existing DataTable_(s), see 
-    OpenSim::concatenateRows().
+    /** Add/concatenate rows of another DataTable_ to this DataTable_. The new 
+    rows will appear as the last rows of this DataTable_. Only data will be 
+    appended. Metadata is not added from the other DataTable_. Columns retain 
+    their labels. To create a new DataTable_ by concatenating two existing 
+    DataTable_(s), use OpenSim::concatenateRows().
 
-    \throws NumberOfColsMismatch If input DataTable_ has incorrect number of
-                                 columns for concatenation to work.
+    \throws NumberOfColumsMismatch If input DataTable_ has incorrect number of
+                                   columns for concatenation to work.
     \throws InvalidEntry If trying to add a DataTable_ to itself.             */
     void concatenateRows(const DataTable_& table) {
         if(data_.ncol() != table.data_.ncol()) 
@@ -1084,11 +1237,11 @@ public:
                         data_.ncol()) = table.data_;
     }
 
-    /** Add/concatenate another DataTable_ to this DataTable_ by column. The 
-    new elements will appear as the last columns of this DataTable_. Only data 
-    will be appended. Column labels and metadata are not added. To create a new 
-    DataTable_ that is a concatenation of two existing DataTable_(s), see 
-    OpenSim::concatenateColumns().
+    /** Add/concatenate columns of another DataTable_ to this DataTable_. The 
+    new columns will appear as the last columns of this DataTable_. Only data 
+    will be appended. Column labels and metadata are not added. Current columns
+    retain their labels. To create a new DataTable_ by concatenating two 
+    existing DataTable_(s), use OpenSim::concatenateColumns().
 
     \throws NumberOfRowsMismatch If input DataTable_ has incorrect number of
                                  rows for concatenation to work.
@@ -1111,64 +1264,40 @@ public:
                         table.data_.ncol()) = table.data_;
     }
 
-    /** Clear the data of this DataTable_. After this operation, the DataTabe_
+    /** Clear the data of this DataTable_. After this operation, the DataTable_
     will be of size 0x0 and all column labels will be cleared as well.        */
     void clearData() {
         data_.clear();
-        col_ind_.clear();
+        clearColumnLabels();
     }
 
-    /** Resize the data, retaining as much of the old data as will fit. New 
-    memory will be allocated and the existing entries will be copied over to the
-    extent it will fit. If the number of columns is decreased, the labels for 
-    the lost columns will also be lost. *Be careful not to shrink the DataTable 
-    unintentionally*.                                                         */
+    /** Resize the DataTable_, retaining as much of the old data as will fit. 
+    New memory will be allocated and the existing entries will be copied over 
+    to the extent they will fit. If columns are dropped during this call, the 
+    labels for the lost columns will also be lost. *Be careful not to shrink 
+    the DataTable unintentionally*.                                           */
     void resizeKeep(size_t numRows, size_t numColumns) {
-        using ColumnLabelsValue = typename ColumnLabels::value_type;
-
         if(numRows == 0)
-            throw InvalidEntry{"Input argument 'nrow' cannot be zero."
+            throw InvalidEntry{"Input argument 'numRows' cannot be zero."
                                "To clear all data, use clearData()."};
         if(numColumns == 0)
-            throw InvalidEntry{"Input argument 'ncol' cannot be zero."
+            throw InvalidEntry{"Input argument 'numColumns' cannot be zero."
                                "To clear all data, use clearData()."};
 
         if(static_cast<int>(numColumns) < data_.ncol())
-            for(size_t c = numColumns; 
-                c < static_cast<size_t>(data_.ncol()); 
-                ++c) {
-                auto res = std::find_if(col_ind_.begin(),
-                                        col_ind_.end(),
-                                        [c] (const ColumnLabelsValue& kv) {
-                                            return kv.second == c;
-                                        });
-                if(res != col_ind_.end())
-                    col_ind_.erase(res);
-            }
+            for(size_t c_ind = numColumns; 
+                c_ind < static_cast<size_t>(data_.ncol()); 
+                ++c_ind) 
+                removeColumnLabel(c_ind);
 
         data_.resizeKeep(static_cast<int>(numRows), 
-                          static_cast<int>(numColumns));
+                         static_cast<int>(numColumns));
     }
 
-    /**@}*/
-    /** \name Column-labels.
-        Column labels accessors & mutators.                                   */
-    /**@{*/
-
-    /** Check if a column index has label. Time complexity is linear in number 
-    of column labels. All columns will have an index. All columns need not have
-    a label.
-
-    \throws ColumnDoesNotExist If column index specified does not exist.      */
-    bool columnHasLabel(size_t columnIndex) const override {
-        using ColumnLabelsValue = typename ColumnLabels::value_type;
-        checkColumnExists(columnIndex);
-        auto res = std::find_if(col_ind_.begin(), 
-                                col_ind_.end(), 
-                                [columnIndex] (const ColumnLabelsValue& kv) {
-                                    return kv.second == columnIndex;
-                                });
-        return res != col_ind_.end();
+    /** Check if a row exists by its index.                                   */
+    bool hasRow(size_t rowIndex) const {
+        return (rowIndex >= 0 &&
+                rowIndex < static_cast<size_t>(data_.nrow()));
     }
 
     /** Check if a column exists by its index.                                */
@@ -1177,150 +1306,15 @@ public:
                 columnIndex < static_cast<size_t>(data_.ncol()));
     }
 
-    /** Check if a column exists under given label. All columns have an index 
-    but not all columns may have labels.                                      */
-    bool hasColumn(const string& columnLabel) const override {
-        return col_ind_.find(columnLabel) != col_ind_.end();
-    }
-
-    /** Label a column. The column should not have a label already. To update 
-    the label of a column that already has a label, use updColumnLabel().
-
-    \throws ColumnDoesNotExist If the column index specified does not exist.
-    \throws ColumnHasLabel If the column index specified already has a label. */
-    void setColumnLabel(size_t columnIndex, 
-                        const string& columnLabel) override {
-        checkColumnExistsAndHasLabel(columnIndex);
-        col_ind_.emplace(columnLabel, columnIndex);
-    }
-
-    /** Label a column. The column should not have a label already. To update 
-    the label of a column that already has a label, use updColumnLabel().
-
-    \throws ColumnDoesNotExist If the column index specified does not exist.
-    \throws ColumnHasLabel If the column index specified already has a label. */
-    void setColumnLabel(size_t columnIndex, string&& columnLabel) override {
-        checkColumnExistsAndHasLabel(columnIndex);
-        col_ind_.emplace(std::move(columnLabel), columnIndex);
-    }
-
-    /** Label a set of columns at once using an input iterator that produces one
-    index-label pair (std::pair<size_t, std::string>) at a time. The columns
-    referred to by the iterator must not already have a label. 
-
-    \throws ColumnDoesNotExist If the column index specified does not exist.
-    \throws ColumnHasLabel If the column index specified already has a label. */
-    template<typename InputIt>
-    void setColumnLabels(InputIt first, InputIt last) {
-        while(first != last) {
-            checkColumnExistsAndHasLabel(first->first);
-            col_ind_.emplace(first->second, first->first);
-            ++first;
-        }
-    }
-  
-    /** Get the label of a column. Time complexity is linear in the number of
-    column labels. The returned value is a copy of the label. To update the 
-    label of a column, use updColumnLabel(). 
-
-    \throws ColumnHasNoLabel If the column does not have a label.
-    \throws ColumnDoesNotExist If the column does not exist.                  */
-    string getColumnLabel(size_t columnIndex) const override {
-        using ColumnLabelsValue = typename ColumnLabels::value_type;
-
-        checkColumnExists(columnIndex);
-        auto res = std::find_if(col_ind_.begin(),
-                                col_ind_.end(),
-                                [columnIndex] (const ColumnLabelsValue& kv) {
-                                    return kv.second == columnIndex;
-                                });
-        if(res == col_ind_.end()) {
-            throw ColumnHasNoLabel{"Column " + std::to_string(columnIndex) + 
-                    " has no label."};
-        }
-
-        return res->first;
-    }
-
-    /** Update the label of a column with a new label. Time complexity is linear
-    in the number of column labels. The column specified must already have a
-    label. To label a column that does not yet have a label, use 
-    setColumnLabel().
-
-    \throws ColumnHasNoLabel If the column specified does not already have a 
-                             label.
-    \throws ColumnDoesNotExist If the column specified does not exist.        */
-    void updColumnLabel(size_t columnIndex, 
-                        const string& newColumnLabel) override {
-        string old_collabel{getColumnLabel(columnIndex)};
-        col_ind_.erase(old_collabel);
-        col_ind_.emplace(newColumnLabel, columnIndex);
-    }
-
-    /** Update the label of a column with a new label. Time complexity is 
-    constant on average and linear in number of column labels in the worst case.
-
-    \throws ColumnHasNoLabel If the column specified does not already have a 
-                             label.
-    \throws ColumnDoesNotExist If the column specified does not exist.        */
-    void updColumnLabel(const string& oldColumnLabel, 
-                        const string& newColumnLabel) override {
-        size_t colind{getColumnIndex(oldColumnLabel)};
-        col_ind_.erase(oldColumnLabel);
-        col_ind_[newColumnLabel] = colind;
-    }
-
-    /** Get the index of a column from its label. Time complexity is constant on
-    average and linear in number of column labels on worst case.
-
-    \throws ColumnDoesNotExist If the column label does not exist.            */
-    size_t getColumnIndex(const string& columnLabel) const override {
-        try {
-            return col_ind_.at(columnLabel);
-        } catch(const std::out_of_range&) {
-            throw ColumnDoesNotExist{"No column with label '" + columnLabel + 
-                                     "'."};
-        }
-    }
-
-    /** Clear all the column labels.                                          */
-    void clearColumnLabels() override {
-        col_ind_.clear();
-    }
-
-    ColumnLabelsConstIter columnLabelsBegin() const override {
-        return col_ind_.cbegin();
-    }
-
-    ColumnLabelsConstIter columnLabelsEnd() const override {
-        return col_ind_.cend();
-    }
-
-    /**@}*/
+    using AbstractDataTable::hasColumn;
 
 private:
-    // Helper function. Check if a column exists and throw an exception if it
-    // does not.
-    void checkColumnExists(size_t columnIndex) const {
-        if(!hasColumn(columnIndex)) {
-            throw ColumnDoesNotExist{"Column " + std::to_string(columnIndex) + 
-                    " does not exist."};
-        }
-    }
-
-    // Helper function. Check if a column has label and throw an exception if it
-    // does not.
-    void checkColumnHasLabel(size_t columnIndex) const {
-        if(columnHasLabel(columnIndex)) {
-            throw ColumnHasLabel{"Column " + std::to_string(columnIndex) + 
-                    " already has a label."};
-        }
-    }
-
-    // Helper function. Does both checkColumnExists() and checkColumnHasLabel().
-    void checkColumnExistsAndHasLabel(size_t columnIndex) const {
-        checkColumnExists(columnIndex);
-        checkColumnHasLabel(columnIndex);
+    // Helper function. Check if a row exists and throw an exception if it does
+    // not.
+    void throwIfRowDoesNotExist(const size_t rowIndex) const {
+        if(!hasRow(rowIndex))
+            throw RowDoesNotExist{"Row " + std::to_string(rowIndex) + 
+                                  " does not exist. Index out of range."};
     }
 
     // Helper function. Round to next highest power of 2. Works only for 
@@ -1340,8 +1334,6 @@ private:
 
     // Matrix of data. This excludes timestamp column.
     SimTK::Matrix_<ET> data_;
-    // Column label to column index.
-    ColumnLabels       col_ind_;
 };  // DataTable_
 
 
