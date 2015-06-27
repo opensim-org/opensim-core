@@ -443,8 +443,8 @@ int main() {
     // Update column labels using upd...() method. Update can be done using 
     // index or using column label.
     for(auto& dt : vector) {
-        dt->updColumnLabel(0        , "column-zero");
-        dt->updColumnLabel("col-two", "column-two");
+        dt->changeColumnLabel(0        , "column-zero");
+        dt->changeColumnLabel("col-two", "column-two");
     }
 
     // Clear the column labels.

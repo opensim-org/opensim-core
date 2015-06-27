@@ -1596,31 +1596,31 @@ void test5() {
     } catch(OpenSim::ColumnDoesNotExist&) {}
 
     // Try editing column label for a column that does not exist.
-    std::cout << "test5 -- updColumnLabel()[ColumnDoesNotExist]: Real.\n";
+    std::cout << "test5 -- changeColumnLabel()[ColumnDoesNotExist]: Real.\n";
     try {
-        dt_real.updColumnLabel(4, "ColFour");
+        dt_real.changeColumnLabel(4, "ColFour");
     } catch(OpenSim::ColumnDoesNotExist&) {}
-    std::cout << "test5 -- updColumnLabel()[ColumnDoesNotExist]: Vec3.\n";
+    std::cout << "test5 -- changeColumnLabel()[ColumnDoesNotExist]: Vec3.\n";
     try {
-        dt_vec3.updColumnLabel(4, "ColFour");
+        dt_vec3.changeColumnLabel(4, "ColFour");
     } catch(OpenSim::ColumnDoesNotExist&) {}
-    std::cout << "test5 -- updColumnLabel()[ColumnDoesNotExist]: Vec6.\n";
+    std::cout << "test5 -- changeColumnLabel()[ColumnDoesNotExist]: Vec6.\n";
     try {
-        dt_vec6.updColumnLabel(4, "ColFour");
+        dt_vec6.changeColumnLabel(4, "ColFour");
     } catch(OpenSim::ColumnDoesNotExist&) {}
 
     // Try editing column label for a column that does not have a label yet.
-    std::cout << "test5 -- updColumnLabel()[ColumnHasNoLabel]: Real.\n";
+    std::cout << "test5 -- changeColumnLabel()[ColumnHasNoLabel]: Real.\n";
     try {
-        dt_real.updColumnLabel(0, "ColZero");
+        dt_real.changeColumnLabel(0, "ColZero");
     } catch(OpenSim::ColumnHasNoLabel&) {}
-    std::cout << "test5 -- updColumnLabel()[ColumnHasNoLabel]: Vec3.\n";
+    std::cout << "test5 -- changeColumnLabel()[ColumnHasNoLabel]: Vec3.\n";
     try {
-        dt_vec3.updColumnLabel(0, "ColZero");
+        dt_vec3.changeColumnLabel(0, "ColZero");
     } catch(OpenSim::ColumnHasNoLabel&) {}
-    std::cout << "test5 -- updColumnLabel()[ColumnHasNoLabel]: Vec6.\n";
+    std::cout << "test5 -- changeColumnLabel()[ColumnHasNoLabel]: Vec6.\n";
     try {
-        dt_vec6.updColumnLabel(0, "ColZero");
+        dt_vec6.changeColumnLabel(0, "ColZero");
     } catch(OpenSim::ColumnHasNoLabel&) {}
   
     // Insert some column labels.
@@ -1760,49 +1760,49 @@ void test5() {
 
     // Try updating column label of a column that does not exist using its 
     // index.
-    std::cout << "test5 -- updColumnLabel(ind)[ColumnDoesNotExist]: Real.\n";
+    std::cout << "test5 -- changeColumnLabel(ind)[ColumnDoesNotExist]: Real.\n";
     try {
-        dt_real.updColumnLabel(4, "col-does-not-exist");
+        dt_real.changeColumnLabel(4, "col-does-not-exist");
     } catch(OpenSim::ColumnDoesNotExist&) {}
-    std::cout << "test5 -- updColumnLabel(ind)[ColumnDoesNotExist]: Vec3.\n";
+    std::cout << "test5 -- changeColumnLabel(ind)[ColumnDoesNotExist]: Vec3.\n";
     try {
-        dt_vec3.updColumnLabel(4, "col-does-not-exist");
+        dt_vec3.changeColumnLabel(4, "col-does-not-exist");
     } catch(OpenSim::ColumnDoesNotExist&) {}
-    std::cout << "test5 -- updColumnLabel(ind)[ColumnDoesNotExist]: Vec6.\n";
+    std::cout << "test5 -- changeColumnLabel(ind)[ColumnDoesNotExist]: Vec6.\n";
     try {
-        dt_vec6.updColumnLabel(4, "col-does-not-exist");
+        dt_vec6.changeColumnLabel(4, "col-does-not-exist");
     } catch(OpenSim::ColumnDoesNotExist&) {}
 
     // Try updating column label of a column that does not exist using its 
     // label.
-    std::cout << "test5 -- updColumnLabel(label)[ColumnDoesNotExist]: Real.\n";
+    std::cout << "test5 -- changeColumnLabel(label)[ColumnDoesNotExist]: Real.\n";
     try {
-        dt_real.updColumnLabel("col-does-not-exist", "foo");
+        dt_real.changeColumnLabel("col-does-not-exist", "foo");
     } catch(OpenSim::ColumnDoesNotExist&) {}
-    std::cout << "test5 -- updColumnLabel(label)[ColumnDoesNotExist]: Vec3.\n";
+    std::cout << "test5 -- changeColumnLabel(label)[ColumnDoesNotExist]: Vec3.\n";
     try {
-        dt_vec3.updColumnLabel("col-does-not-exist", "foo");
+        dt_vec3.changeColumnLabel("col-does-not-exist", "foo");
     } catch(OpenSim::ColumnDoesNotExist&) {}
-    std::cout << "test5 -- updColumnLabel(label)[ColumnDoesNotExist]: Vec6.\n";
+    std::cout << "test5 -- changeColumnLabel(label)[ColumnDoesNotExist]: Vec6.\n";
     try {
-        dt_vec6.updColumnLabel("col-does-not-exist", "foo");
+        dt_vec6.changeColumnLabel("col-does-not-exist", "foo");
     } catch(OpenSim::ColumnDoesNotExist&) {}
 
     // Update column label using column index.
-    std::cout << "test5 -- updColumnLabel(ind): Real.\n";
-    dt_real.updColumnLabel(0, "updColZero");
-    std::cout << "test5 -- updColumnLabel(ind): Vec3.\n";
-    dt_vec3.updColumnLabel(0, "updColZero");
-    std::cout << "test5 -- updColumnLabel(ind): Vec6.\n";
-    dt_vec6.updColumnLabel(0, "updColZero");
+    std::cout << "test5 -- changeColumnLabel(ind): Real.\n";
+    dt_real.changeColumnLabel(0, "updColZero");
+    std::cout << "test5 -- changeColumnLabel(ind): Vec3.\n";
+    dt_vec3.changeColumnLabel(0, "updColZero");
+    std::cout << "test5 -- changeColumnLabel(ind): Vec6.\n";
+    dt_vec6.changeColumnLabel(0, "updColZero");
 
     // Update column label using old column label.
-    std::cout << "test5 -- updColumnLabel(label): Real.\n";
-    dt_real.updColumnLabel("updColZero", "ColZero");
-    std::cout << "test5 -- updColumnLabel(label): Vec3.\n";
-    dt_vec3.updColumnLabel("updColZero", "ColZero");
-    std::cout << "test5 -- updColumnLabel(label): Vec6.\n";
-    dt_vec6.updColumnLabel("updColZero", "ColZero");
+    std::cout << "test5 -- changeColumnLabel(label): Real.\n";
+    dt_real.changeColumnLabel("updColZero", "ColZero");
+    std::cout << "test5 -- changeColumnLabel(label): Vec3.\n";
+    dt_vec3.changeColumnLabel("updColZero", "ColZero");
+    std::cout << "test5 -- changeColumnLabel(label): Vec6.\n";
+    dt_vec6.changeColumnLabel("updColZero", "ColZero");
   
     // Check the number of column labels.
     std::cout << "test5 -- Number of column labels: Real.\n";
@@ -2187,15 +2187,15 @@ void test7() {
     dt_vec6.updRow(1) = SimTK::Vec6{100, 200, 300, 400, 500, 600};
 
     // Edit the original column labels.
-    std::cout << "test7 -- updColumnLabel(): Real.\n";
-    dt_real.updColumnLabel(0, "col_zero");
-    dt_real.updColumnLabel(2, "col_two");
-    std::cout << "test7 -- updColumnLabel(): Vec3.\n";
-    dt_vec3.updColumnLabel(0, "col_zero");
-    dt_vec3.updColumnLabel(2, "col_two");
-    std::cout << "test7 -- updColumnLabel(): Vec6.\n";
-    dt_vec6.updColumnLabel(0, "col_zero");
-    dt_vec6.updColumnLabel(2, "col_two");
+    std::cout << "test7 -- changeColumnLabel(): Real.\n";
+    dt_real.changeColumnLabel(0, "col_zero");
+    dt_real.changeColumnLabel(2, "col_two");
+    std::cout << "test7 -- changeColumnLabel(): Vec3.\n";
+    dt_vec3.changeColumnLabel(0, "col_zero");
+    dt_vec3.changeColumnLabel(2, "col_two");
+    std::cout << "test7 -- changeColumnLabel(): Vec6.\n";
+    dt_vec6.changeColumnLabel(0, "col_zero");
+    dt_vec6.changeColumnLabel(2, "col_two");
 
     // Edit the original metadata.
     std::cout << "test7 -- updMetaData(): Real.\n";
@@ -2355,15 +2355,15 @@ void test7() {
     dt_vec6.updRow(1) = SimTK::Vec6{100, 200, 300, 400, 500, 600};
 
     // Edit the original column labels.
-    std::cout << "test7 -- updColumnLabel(): Real.\n";
-    dt_real.updColumnLabel(0, "col_zero");
-    dt_real.updColumnLabel(2, "col_two");
-    std::cout << "test7 -- updColumnLabel(): Vec3.\n";
-    dt_vec3.updColumnLabel(0, "col_zero");
-    dt_vec3.updColumnLabel(2, "col_two");
-    std::cout << "test7 -- updColumnLabel(): Vec6.\n";
-    dt_vec6.updColumnLabel(0, "col_zero");
-    dt_vec6.updColumnLabel(2, "col_two");
+    std::cout << "test7 -- changeColumnLabel(): Real.\n";
+    dt_real.changeColumnLabel(0, "col_zero");
+    dt_real.changeColumnLabel(2, "col_two");
+    std::cout << "test7 -- changeColumnLabel(): Vec3.\n";
+    dt_vec3.changeColumnLabel(0, "col_zero");
+    dt_vec3.changeColumnLabel(2, "col_two");
+    std::cout << "test7 -- changeColumnLabel(): Vec6.\n";
+    dt_vec6.changeColumnLabel(0, "col_zero");
+    dt_vec6.changeColumnLabel(2, "col_two");
 
     // Edit the original metadata.
     std::cout << "test7 -- updMetaData(): Real.\n";
@@ -2511,8 +2511,8 @@ void test8() {
     // Update col labels.
     std::cout << "test8 -- Update column labels.\n";
     for(auto& dt : vector) {
-        dt->updColumnLabel(0, "column-zero");
-        dt->updColumnLabel("col-two", "column-two");
+        dt->changeColumnLabel(0, "column-zero");
+        dt->changeColumnLabel("col-two", "column-two");
     }
 
     // Check col labels.

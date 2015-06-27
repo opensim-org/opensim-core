@@ -286,7 +286,7 @@ public:
                              not already have a label.
     \throws ColumnDoesNotExist If the column specified by the column index does 
                                not exist.                                     */
-    void updColumnLabel(size_t columnIndex, 
+    void changeColumnLabel(size_t columnIndex, 
                         const string& newColumnLabel) {
         const string old_collabel{getColumnLabel(columnIndex)};
         col_ind_.erase(old_collabel);
@@ -297,7 +297,7 @@ public:
     constant on average and linear in number of column labels in the worst case.
 
     \throws ColumnDoesNotExist If there is no column with the specified label.*/
-    void updColumnLabel(const string& oldColumnLabel, 
+    void changeColumnLabel(const string& oldColumnLabel, 
                         const string& newColumnLabel) {
         const size_t colind{getColumnIndex(oldColumnLabel)};
         col_ind_.erase(oldColumnLabel);
