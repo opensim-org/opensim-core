@@ -1,5 +1,5 @@
 
-LINK_LIBRARIES( 
+link_libraries( 
         debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
         debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
         debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators
@@ -7,35 +7,35 @@ LINK_LIBRARIES(
         debug osimTools${CMAKE_DEBUG_POSTFIX} optimized osimTools
         ${Simbody_LIBRARIES})
 
-ADD_EXECUTABLE(testREADME testREADME.cpp)
+add_executable(testREADME testREADME.cpp)
 
-TARGET_LINK_LIBRARIES(testREADME ${LINK_LIBRARIES} )
+target_link_libraries(testREADME ${LINK_LIBRARIES} )
 
-FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
+file(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 
 #
 # Copy files to run dir
 #
-FOREACH (dataFile ${TEST_FILES})
-    ADD_CUSTOM_COMMAND(
+foreach(dataFile ${TEST_FILES})
+    add_custom_command(
         TARGET testREADME
         COMMAND ${CMAKE_COMMAND}
         ARGS -E copy
         ${dataFile}
         ${OpenSim_BINARY_DIR}/OpenSim/Tests/README)
-ENDFOREACH (dataFile)
+endforeach(dataFile)
 
 
 #
 # Testing
 #
 
-IF (EXECUTABLE_OUTPUT_PATH)
-  SET (TEST_PATH ${EXECUTABLE_OUTPUT_PATH})
-ELSE (EXECUTABLE_OUTPUT_PATH)
-  SET (TEST_PATH .)
-ENDIF (EXECUTABLE_OUTPUT_PATH)
+if(EXECUTABLE_OUTPUT_PATH)
+  set(TEST_PATH ${EXECUTABLE_OUTPUT_PATH})
+else(EXECUTABLE_OUTPUT_PATH)
+  set(TEST_PATH .)
+endif(EXECUTABLE_OUTPUT_PATH)
 
-ADD_TEST(testREADME ${TEST_PATH}/testREADME)
+add_test(testREADME ${TEST_PATH}/testREADME)
 
-SET_TARGET_PROPERTIES(testREADME PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Tests - testREADME")
+set_target_properties(testREADME PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Tests - testREADME")

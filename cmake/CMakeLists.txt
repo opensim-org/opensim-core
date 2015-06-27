@@ -2,14 +2,14 @@
 # ------------------------------------------
 
 # Requires CMake 2.8.8.
-INCLUDE(CMakePackageConfigHelpers)
+include(CMakePackageConfigHelpers)
 
-SET(OPENSIM_INSTALL_CMAKE_DIR cmake)
+set(OPENSIM_INSTALL_CMAKE_DIR cmake)
 
-CONFIGURE_FILE(OpenSimConfig.cmake.in
+configure_file(OpenSimConfig.cmake.in
     "${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfig.cmake" @ONLY)
 
-CONFIGURE_PACKAGE_CONFIG_FILE(
+configure_package_config_file(
     OpenSimConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfig.cmake
     INSTALL_DESTINATION "${OPENSIM_INSTALL_CMAKE_DIR}"
@@ -19,12 +19,12 @@ CONFIGURE_PACKAGE_CONFIG_FILE(
     )
 
 # Version file.
-WRITE_BASIC_CONFIG_VERSION_FILE(
+write_basic_config_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfigVersion.cmake"
     VERSION "${OPENSIM_VERSION}"
     COMPATIBILITY SameMajorVersion)
 
-INSTALL(
+install(
     FILES
         "SampleCMakeLists.txt"
         "${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfig.cmake"
@@ -33,4 +33,4 @@ INSTALL(
         "${OPENSIM_INSTALL_CMAKE_DIR}"
         )
 
-INSTALL(EXPORT OpenSimTargets DESTINATION "${OPENSIM_INSTALL_CMAKE_DIR}")
+install(EXPORT OpenSimTargets DESTINATION "${OPENSIM_INSTALL_CMAKE_DIR}")
