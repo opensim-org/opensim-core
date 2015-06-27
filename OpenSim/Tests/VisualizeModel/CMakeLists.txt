@@ -22,6 +22,5 @@ set_target_properties(${VISUALIZE_MODEL}
        PROJECT_LABEL "Utilities - ${VISUALIZE_MODEL}"       
 )
 
-mark_as_advanced(CMAKE_INSTALL_PREFIX)
 mark_as_advanced(EXECUTABLE_OUTPUT_PATH)
 mark_as_advanced(LIBRARY_OUTPUT_PATH)
