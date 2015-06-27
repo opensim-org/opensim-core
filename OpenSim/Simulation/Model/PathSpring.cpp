@@ -245,21 +245,3 @@ void PathSpring::computeForce(const SimTK::State& s,
     for(int i=0; i < PFDs.getSize(); i++)
         delete PFDs[i];
 }
-
-//_____________________________________________________________________________
-/**
- * Get the visible object used to represent the PathSpring.
- */
-const VisibleObject* PathSpring::getDisplayer() const
-{ 
-    return getGeometryPath().getDisplayer(); 
-}
-
-//_____________________________________________________________________________
-/**
- * Update the visible object used to represent the PathSpring.
- */
-void PathSpring::updateDisplayer(const SimTK::State& s) const
-{
-    getGeometryPath().updateDisplayer(s);
-}

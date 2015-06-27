@@ -1,29 +1,29 @@
-#INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
+#include_directories(${OpenSim_SOURCE_DIR} 
 #           ${OpenSim_SOURCE_DIR}/Vendors)
 
 
-LINK_LIBRARIES( debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
+link_libraries( debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
         debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
         debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators
         debug osimAnalyses${CMAKE_DEBUG_POSTFIX} optimized osimAnalyses
         debug osimTools${CMAKE_DEBUG_POSTFIX} optimized osimTools
-        ${SIMTK_ALL_LIBS})
+        ${Simbody_LIBRARIES})
 
 
-FILE(GLOB TEST_PROGS "test*.cpp")
+file(GLOB TEST_PROGS "test*.cpp")
 
-FOREACH(TEST_PROG ${TEST_PROGS})
-    GET_FILENAME_COMPONENT(TEST_ROOT ${TEST_PROG} NAME_WE)
+foreach(TEST_PROG ${TEST_PROGS})
+    get_filename_component(TEST_ROOT ${TEST_PROG} NAME_WE)
 
     # Link with shared library
-    ADD_EXECUTABLE(${TEST_ROOT} ${TEST_PROG})
-    TARGET_LINK_LIBRARIES(${TEST_ROOT} ${LINK_LIBRARIES})
-    ADD_TEST(${TEST_ROOT} ${EXECUTABLE_OUTPUT_PATH}/${TEST_ROOT})
-    SET_TARGET_PROPERTIES(${TEST_ROOT} 
+    add_executable(${TEST_ROOT} ${TEST_PROG})
+    target_link_libraries(${TEST_ROOT} ${LINK_LIBRARIES})
+    add_test(${TEST_ROOT} ${EXECUTABLE_OUTPUT_PATH}/${TEST_ROOT})
+    set_target_properties(${TEST_ROOT} 
         PROPERTIES 
         PROJECT_LABEL "Tests - ${TEST_ROOT}")
 
-ENDFOREACH(TEST_PROG ${TEST_PROGS})
+endforeach(TEST_PROG ${TEST_PROGS})
 
 
 
@@ -31,17 +31,17 @@ ENDFOREACH(TEST_PROG ${TEST_PROGS})
 # Testing
 #
 
-#IF (UNIX)
-#  ADD_DEFINITIONS(-fprofile-arcs -ftest-coverage)
-#  LINK_LIBRARIES(gcov)
-#ENDIF (UNIX)
+#if(UNIX)
+#  add_definitions(-fprofile-arcs -ftest-coverage)
+#  link_libraries(gcov)
+#endif(UNIX)
 
-#ENABLE_TESTING()
+#enable_testing()
 
-#IF (EXECUTABLE_OUTPUT_PATH)
-#  SET (TEST_PATH ${EXECUTABLE_OUTPUT_PATH})
-#ELSE (EXECUTABLE_OUTPUT_PATH)
-#  SET (TEST_PATH .)
-#ENDIF (EXECUTABLE_OUTPUT_PATH)
+#if(EXECUTABLE_OUTPUT_PATH)
+#  set(TEST_PATH ${EXECUTABLE_OUTPUT_PATH})
+#else(EXECUTABLE_OUTPUT_PATH)
+#  set(TEST_PATH .)
+#endif(EXECUTABLE_OUTPUT_PATH)
 
-#ADD_TEST(testPrescribedForce ${TEST_PATH}/testPrescribedForce)
+#add_test(testPrescribedForce ${TEST_PATH}/testPrescribedForce)

@@ -1,11 +1,11 @@
-FILE(GLOB SOURCE_FILES *.cpp)
-FILE(GLOB INCLUDE_FILES *.h)
+file(GLOB SOURCE_FILES *.cpp)
+file(GLOB INCLUDE_FILES *.h)
 
-LINK_LIBRARIES(psapi osimSimulation)
+link_libraries(psapi osimSimulation)
 
-ADD_EXECUTABLE(testMemoryLeaks ${SOURCE_FILES} ${INCLUDE_FILES})
+add_executable(testMemoryLeaks ${SOURCE_FILES} ${INCLUDE_FILES})
 
-SET_TARGET_PROPERTIES(testMemoryLeaks PROPERTIES
+set_target_properties(testMemoryLeaks PROPERTIES
     ${EXCLUDE_IF_MINIMAL_BUILD}
     PROJECT_LABEL "Tests - testMemoryLeaks"
 )

@@ -1,6 +1,8 @@
 OpenSim Core [![Travis][buildstatus_image_travis]][travisci] [![Appveyor][buildstatus_image_appveyor]][appveyorci]
 ============
 
+**NOTE: This repository contains OpenSim 4.0 development and cannot be used to build OpenSim 3.x or earlier. For OpenSim 3.x, see [here](http://simtk-confluence.stanford.edu:8080/display/OpenSim/Building+OpenSim+from+Source).**
+
 OpenSim is software that lets users develop models of musculoskeletal
 structures and create dynamic simulations of movement, such as this one:
 
@@ -435,6 +437,9 @@ And you could get all the optional dependencies via:
     * `BUILD_PYTHON_WRAPPING` if you want to access OpenSim through Python; see
       dependencies above.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
+    * `OPENSIM_COPY_SIMBODY` to decide if Simbody headers and libraries should
+      be installed inside OpenSim; you want this off if you're installing
+      Simbody and OpenSim into `/usr/` or `/usr/local/`.
 9. Click the **Configure** button again. Then, click **Generate** to create
    Makefiles in the build directory.
 

@@ -1,43 +1,44 @@
 
 # Automatically create tests using files named "test*.cpp"  // Adopted from SimTK core
-FILE(GLOB TEST_PROGS "test*.cpp")
+file(GLOB TEST_PROGS "test*.cpp")
 
-LINK_LIBRARIES(debug osimSimulation${CMAKE_DEBUG_POSTFIX}   optimized osimSimulation
-               debug osimCommon${CMAKE_DEBUG_POSTFIX}   optimized osimCommon
-               debug osimAnalyses${CMAKE_DEBUG_POSTFIX}     optimized osimAnalyses
-               ${SIMTK_ALL_LIBS}
+link_libraries(
+    debug osimSimulation${CMAKE_DEBUG_POSTFIX}   optimized osimSimulation
+    debug osimCommon${CMAKE_DEBUG_POSTFIX}   optimized osimCommon
+    debug osimAnalyses${CMAKE_DEBUG_POSTFIX}     optimized osimAnalyses
+    ${Simbody_LIBRARIES}
 )
 
-IF(BUILD_TESTING)
+if(BUILD_TESTING)
 
-FOREACH(TEST_PROG ${TEST_PROGS})
-    GET_FILENAME_COMPONENT(TEST_ROOT ${TEST_PROG} NAME_WE)
+foreach(TEST_PROG ${TEST_PROGS})
+    get_filename_component(TEST_ROOT ${TEST_PROG} NAME_WE)
 
     # Link with shared library
-    ADD_EXECUTABLE(${TEST_ROOT} ${TEST_PROG})
-    TARGET_LINK_LIBRARIES(${TEST_ROOT} ${LINK_LIBRARIES} )
-    ADD_TEST(${TEST_ROOT} ${EXECUTABLE_OUTPUT_PATH}/${TEST_ROOT})
-    SET_TARGET_PROPERTIES(${TEST_ROOT} 
+    add_executable(${TEST_ROOT} ${TEST_PROG})
+    target_link_libraries(${TEST_ROOT} ${LINK_LIBRARIES} )
+    add_test(${TEST_ROOT} ${EXECUTABLE_OUTPUT_PATH}/${TEST_ROOT})
+    set_target_properties(${TEST_ROOT} 
         PROPERTIES 
         PROJECT_LABEL "Tests - ${TEST_ROOT}")
-    # MESSAGE( "Adding test "${TEST_PROG} )
+    # message( "Adding test "${TEST_PROG} )
 
-ENDFOREACH(TEST_PROG ${TEST_PROGS})
+endforeach(TEST_PROG ${TEST_PROGS})
 
 # Also need to copy data files (.osim, .xml, .sto, .trc, .mot) to run directory
-FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
+file(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 
 #
 # Copy files to run dir
 #
-FOREACH (dataFile ${TEST_FILES})
- ADD_CUSTOM_COMMAND(
+foreach(dataFile ${TEST_FILES})
+ add_custom_command(
     TARGET testJoints
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy
     ${dataFile}
     ${OpenSim_BINARY_DIR}/OpenSim/Simulation/SimbodyEngine/Test)
-    # MESSAGE( "IN file "${dataFile} )
- ENDFOREACH (dataFile) 
+    # message( "IN file "${dataFile} )
+ endforeach(dataFile) 
 
-ENDIF(BUILD_TESTING)
+endif(BUILD_TESTING)

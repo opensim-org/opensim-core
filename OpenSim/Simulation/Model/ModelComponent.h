@@ -43,15 +43,14 @@
 
 // INCLUDES
 #include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
 #include "Simbody.h"
 
 namespace OpenSim {
 
 class Model;
-class ModelDisplayHints;
-
-
 //==============================================================================
 //                            MODEL COMPONENT
 //==============================================================================
@@ -79,9 +78,18 @@ class ModelDisplayHints;
  *
  * @author Ajay Seth, Michael Sherman
  */
+
 class OSIMSIMULATION_API ModelComponent : public Component {
 OpenSim_DECLARE_ABSTRACT_OBJECT(ModelComponent, Component);
-
+// PROPERTIES
+//==============================================================================
+/** @name Property declarations
+These are the serializable properties associated with this class. **/
+/**@{**/
+public:
+    OpenSim_DECLARE_LIST_PROPERTY(geometry, Geometry,
+        "List of Geometry that is attached to this Model Component.");
+/**@}**/
 //==============================================================================
 // METHODS
 //==============================================================================
@@ -110,15 +118,20 @@ public:
      * Get a modifiable reference to the Model this component is part of.
      */
     Model& updModel();
-
     /**
-     * In case the ModelComponent has a visual representation (VisualObject), override this method  
-     * to update it. This is typically done by recomputing anchor points and positions based 
-     * on transforms obtained from current state.
+     * returns the number of published Geometry objects 
+     * maintained by the ModelComponent.
      */
-    virtual void updateDisplayer(const SimTK::State& s) const {};
+    int getNumGeometry() const {
+        return getProperty_geometry().size();
+    }
+    /**
+     * Copy the passed in Geometry and add the copy to the visualization of 
+     * this ModelComponent as subcomponent.
+     */
+    void addGeometry(OpenSim::Geometry& aGeometry);
 
-
+    void extendFinalizeFromProperties();
 protected:
 template <class T> friend class ModelComponentSet;
 
@@ -178,56 +191,13 @@ template <class T> friend class ModelComponentSet;
                             %ModelComponent should be connected. **/
     virtual void extendConnectToModel(Model& model) {};
 
-    /** Optional method for generating arbitrary display geometry that reflects
-    this %ModelComponent at the specified \a state. This will be called once to 
-    obtain ground- and body-fixed geometry (with \a fixed=\c true), and then 
-    once per frame (with \a fixed=\c false) to generate on-the-fly geometry such
-    as rubber band lines, force arrows, labels, or debugging aids.
-  
-    If you override this method, be sure to invoke the base class method first, 
-    using code like this:
-    @code
-    void MyComponent::generateDecorations
-       (bool                                        fixed, 
-        const ModelDisplayHints&                    hints,
-        const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
-    {
-        // invoke parent class method
-        Super::generateDecorations(fixed,hints,state,appendToThis); 
-        // ... your code goes here
-    }
-    @endcode
+    /** Perform initialization on the passed in Geometry before adding it to
+     the list of subcomponents and Properties of this ModelComponent. For 
+     example, Frames can set the frame name on the Geometry to themselves. 
 
-    @param[in]      fixed   
-        If \c true, generate only geometry that is independent of time, 
-        configuration, and velocity. Otherwise generate only such dependent 
-        geometry.
-    @param[in]      hints   
-        See documentation for ModelDisplayHints; you may want to alter the 
-        geometry you generate depending on what you find there. For example, 
-        you can determine whether the user wants to see debug geometry.
-    @param[in]      state
-        The State for which geometry should be produced. See below for more
-        information.
-    @param[in,out]  appendToThis
-        %Array to which generated geometry should be \e appended via the
-        \c push_back() method.
-
-    When called with \a fixed=\c true only modeling options and parameters 
-    (Instance variables) should affect geometry; time, position, and velocity
-    should not. In that case OpenSim will already have realized the \a state
-    through Instance stage. When called with \a fixed=\c false, you may 
-    consult any relevant value in \a state. However, to avoid unnecessary
-    computation, OpenSim guarantees only that \a state will have been realized
-    through Position stage; if you need anything higher than that (reaction 
-    forces, for example) you should make sure the \a state is realized through 
-    Acceleration stage. **/
-    virtual void generateDecorations
-       (bool                                        fixed, 
-        const ModelDisplayHints&                    hints,
-        const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const;
+     @param[in,out]  geometry to be added to current ModelComponent   
+     **/
+    virtual void extendAddGeometry(OpenSim::Geometry& geometry) {};
 
     // End of Model Component Basic Interface (protected virtuals).
     //@} 
@@ -260,13 +230,11 @@ private:
     void setNull() {
         _model = NULL;
     }
-    
 protected:
     /** The model this component belongs to. */
     // TODO: this should be private; all components should use getModel()
     // and updModel() to get access. This is just a reference; don't delete!
     SimTK::ReferencePtr<Model> _model;
-
 
 //==============================================================================
 };  // END of class ModelComponent

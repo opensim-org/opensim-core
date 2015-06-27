@@ -160,10 +160,6 @@ void ContactGeometry::extendConnectToModel(Model& aModel)
         std::string errorMessage = "Invalid body (" + get_body_name() + ") specified in contact geometry " + getName();
         throw (Exception(errorMessage.c_str()));
     }
-
-    _body->updDisplayer()->addDependent(updDisplayer());
-    _displayer.setTransform(getTransform());
-    _displayer.setOwner(this);
 }
 
 void ContactGeometry::scale(const ScaleSet& aScaleSet)

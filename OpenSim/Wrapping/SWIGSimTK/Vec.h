@@ -1366,7 +1366,10 @@ operator>>(std::basic_istream<CHAR,TRAITS>& is, Vec<M,E,S>& v) {
     return is;
 }
 #endif
+typedef Vec<2> Vec2;
 typedef Vec<3> Vec3;
+typedef Vec<4> Vec4;
+typedef Vec<6> Vec6;
 
 } //namespace SimTK
 

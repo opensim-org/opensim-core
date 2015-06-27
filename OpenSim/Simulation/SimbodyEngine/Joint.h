@@ -271,6 +271,16 @@ public:
     */
     virtual void scale(const ScaleSet& aScaleSet);
 
+    /**
+    * ModelComponent display interface.
+    *
+    * This method appends the visuals for the Joint to the list appendToThis.
+    * Base class adds geometry for the two Frames making the joint, any extra 
+    * gometry needed to visualize the Joint would be added by the subclass.
+    */
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+        SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
+
 
 protected:
     // build Joint transforms from properties

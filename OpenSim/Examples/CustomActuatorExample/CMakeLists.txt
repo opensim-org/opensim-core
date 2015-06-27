@@ -1,11 +1,11 @@
-PROJECT (CustomActuatorExample)
+project(CustomActuatorExample)
 
 cmake_minimum_required(VERSION 2.8.6)
 
 # Settings.
 # ---------
-SET(TARGET exampleCustomActuator CACHE TYPE STRING)
-SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
+set(TARGET exampleCustomActuator CACHE TYPE STRING)
+set(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
         CACHE PATH "Top-level directory of OpenSim install")
 
 # Find and hook up to OpenSim.
@@ -30,27 +30,27 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR
     endif()
 endif()
 
-FIND_PACKAGE(OpenSim REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")
+find_package(OpenSim REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")
 
-INCLUDE_DIRECTORIES(${OpenSim_INCLUDE_DIRS})
-LINK_DIRECTORIES(${OpenSim_LIB_DIR})
+include_directories(${OpenSim_INCLUDE_DIRS})
+link_directories(${OpenSim_LIB_DIR})
 
 # Configure this project.
 # -----------------------
-FILE(GLOB SOURCE_FILES *.h *.cpp)
+file(GLOB SOURCE_FILES *.h *.cpp)
 
-ADD_EXECUTABLE(${TARGET} ${SOURCE_FILES})
+add_executable(${TARGET} ${SOURCE_FILES})
 
-TARGET_LINK_LIBRARIES(${TARGET} ${OpenSim_LIBRARIES})
+target_link_libraries(${TARGET} ${OpenSim_LIBRARIES})
 
 # This block copies the additional files into the running directory
 # For example vtp, obj files. Add to the end for more extentions
-FILE(GLOB DATA_FILES *.vtp *.obj *.osim)
-FOREACH (dataFile ${DATA_FILES})
-    ADD_CUSTOM_COMMAND(
+file(GLOB DATA_FILES *.vtp *.obj *.osim)
+foreach(dataFile ${DATA_FILES})
+    add_custom_command(
         TARGET ${TARGET}
         COMMAND ${CMAKE_COMMAND}
         ARGS -E copy
         ${dataFile}
         ${CMAKE_BINARY_DIR})
-ENDFOREACH (dataFile)
+endforeach(dataFile)

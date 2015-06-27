@@ -1,1 +1,1 @@
-SUBDIRS(Analyze Forward Scale IK ID CMC RRA versionUpdate) 
+subdirs(Analyze Forward Scale IK ID CMC RRA versionUpdate) 
