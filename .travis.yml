@@ -9,9 +9,11 @@ sudo: false
 matrix:
   include:
     - compiler: clang
-      env: BUILD_WRAPPING=on NPROC=4
+      env: BUILD_WRAPPING=on NPROC=4 BTYPE=RelWithDebInfo
     - compiler: gcc
-      env: BUILD_WRAPPING=off NPROC=3
+      env: BUILD_WRAPPING=off NPROC=3 BTYPE=RelWithDebInfo
+    - compiler: clang
+      env: BUILD_WRAPPING=on NPROC=4 BTYPE=Debug
 
 env:
   global:
@@ -92,10 +94,13 @@ before_install:
   - git log --format=%B --no-merges -n 1 | grep '\[ci valgrind\]'; export RUN_VALGRIND=$?; true
   - if [ $RUN_VALGRIND = "0" ]; then export CTEST_FLAGS="-D ExperimentalMemCheck"; fi
 
+  ## If we are building in debug, there are some tests to ignore.
+  - if [ $BTYPE = "Debug" ]; then export CTEST_FLAGS="$CTEST_FLAGS --exclude-regex '(testPrescribedForce)'"; fi
+
 install:
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
   # Configure OpenSim.
-  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$BUILD_WRAPPING -DBUILD_PYTHON_WRAPPING=$BUILD_WRAPPING -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME
+  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$BUILD_WRAPPING -DBUILD_PYTHON_WRAPPING=$BUILD_WRAPPING -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE
   # Build OpenSim.
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
   - if [[ "$BUILD_WRAPPING" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PyWrap; fi
