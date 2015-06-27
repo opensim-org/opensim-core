@@ -1,11 +1,11 @@
-PROJECT(Test)
+project(Test)
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.6)
+cmake_minimum_required(VERSION 2.8.6)
 
 # Settings.
 # ---------
-SET(TARGET test CACHE STRING "Name of example to build")
-SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
+set(TARGET test CACHE STRING "Name of example to build")
+set(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
         CACHE PATH "Top-level directory of OpenSim install")
 
 # Find and hook up to OpenSim.
@@ -30,24 +30,24 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR
     endif()
 endif()
 
-FIND_PACKAGE(OpenSim REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")
+find_package(OpenSim REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")
 
-INCLUDE_DIRECTORIES(${OpenSim_INCLUDE_DIRS})
-LINK_DIRECTORIES(${OpenSim_LIB_DIR})
+include_directories(${OpenSim_INCLUDE_DIRS})
+link_directories(${OpenSim_LIB_DIR})
 
 # Configure this project.
 # -----------------------
-SET(SOURCE_FILES ${TARGET}.cpp)
+set(SOURCE_FILES ${TARGET}.cpp)
 
-ADD_EXECUTABLE(${TARGET}  ${SOURCE_FILES})
+add_executable(${TARGET}  ${SOURCE_FILES})
 
-TARGET_LINK_LIBRARIES(${TARGET} ${OpenSim_LIBRARIES})
+target_link_libraries(${TARGET} ${OpenSim_LIBRARIES})
 
-SET_TARGET_PROPERTIES(
+set_target_properties(
     ${TARGET} PROPERTIES
     PROJECT_LABEL "Test Environment")
 
 
 # Configure installation.
 # -----------------------
-INSTALL_TARGETS(/bin ${TARGET})
+install_targets(/bin ${TARGET})
