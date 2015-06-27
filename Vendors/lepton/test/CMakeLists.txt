@@ -1,19 +1,19 @@
 
 # Automatically create tests using files named "test*.cpp"  // Adopted from SimTK core
-FILE(GLOB TEST_PROGS "*est*.cpp")
+file(GLOB TEST_PROGS "*est*.cpp")
 
-LINK_LIBRARIES(debug osimLepton_d   optimized osimLepton)
+link_libraries(debug osimLepton_d   optimized osimLepton)
 
-FOREACH(TEST_PROG ${TEST_PROGS})
-    GET_FILENAME_COMPONENT(TEST_ROOT ${TEST_PROG} NAME_WE)
+foreach(TEST_PROG ${TEST_PROGS})
+    get_filename_component(TEST_ROOT ${TEST_PROG} NAME_WE)
 
     # Link with shared library
-    ADD_EXECUTABLE(${TEST_ROOT} ${TEST_PROG})
-    TARGET_LINK_LIBRARIES(${TEST_ROOT} ${LINK_LIBRARIES})
-    ADD_TEST(${TEST_ROOT} ${EXECUTABLE_OUTPUT_PATH}/${TEST_ROOT})
-    SET_TARGET_PROPERTIES(${TEST_ROOT} 
+    add_executable(${TEST_ROOT} ${TEST_PROG})
+    target_link_libraries(${TEST_ROOT} ${LINK_LIBRARIES})
+    add_test(${TEST_ROOT} ${EXECUTABLE_OUTPUT_PATH}/${TEST_ROOT})
+    set_target_properties(${TEST_ROOT} 
         PROPERTIES 
         PROJECT_LABEL "Tests - ${TEST_ROOT}")
-    # MESSAGE( "Adding test "${TEST_PROG} )
+    # message( "Adding test "${TEST_PROG} )
 
-ENDFOREACH(TEST_PROG ${TEST_PROGS})
+endforeach(TEST_PROG ${TEST_PROGS})

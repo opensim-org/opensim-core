@@ -1,6 +1,6 @@
 
-FILE(GLOB SOURCES *.cpp)
-FILE(GLOB INCLUDES *.h)
+file(GLOB SOURCES *.cpp)
+file(GLOB INCLUDES *.h)
 
 OpenSimAddLibrary(
     KIT SimmFileWriter

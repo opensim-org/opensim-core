@@ -1,6 +1,6 @@
 
-FILE(GLOB INCLUDES *.h)
-FILE(GLOB SOURCES *.cpp)
+file(GLOB INCLUDES *.h)
+file(GLOB SOURCES *.cpp)
 
 OpenSimAddLibrary(
     KIT Tools

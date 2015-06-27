@@ -1,6 +1,6 @@
 
-FILE(GLOB INCLUDES *.h gcvspl.h)
-FILE(GLOB SOURCES *.cpp gcvspl.c)
+file(GLOB INCLUDES *.h gcvspl.h)
+file(GLOB SOURCES *.cpp gcvspl.c)
 
 OpenSimAddLibrary(
     KIT Common

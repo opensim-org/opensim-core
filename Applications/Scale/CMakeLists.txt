@@ -1,38 +1,38 @@
-SET(APPNAME scale)
+set(APPNAME scale)
 
-INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
+include_directories(${OpenSim_SOURCE_DIR} 
                           ${OpenSim_SOURCE_DIR}/Vendors)
                           
-ADD_EXECUTABLE(${APPNAME} ${APPNAME}.cpp)
+add_executable(${APPNAME} ${APPNAME}.cpp)
 
 # cmake should automatically figure out what other libraries are needed
-TARGET_LINK_LIBRARIES(${APPNAME}
+target_link_libraries(${APPNAME}
           debug osimTools${CMAKE_DEBUG_POSTFIX} optimized osimTools
           debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
           debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
           )
 
 
-INSTALL_TARGETS(/bin/ ${APPNAME})
-SET_TARGET_PROPERTIES(${APPNAME} PROPERTIES PROJECT_LABEL "Applications - ${APPNAME}")
+install_targets(/bin/ ${APPNAME})
+set_target_properties(${APPNAME} PROPERTIES PROJECT_LABEL "Applications - ${APPNAME}")
 
 #
 # Testing
 #
 
-#IF (UNIX)
-#  ADD_DEFINITIONS(-fprofile-arcs -ftest-coverage)
-#  LINK_LIBRARIES(gcov)
-#ENDIF (UNIX)
+#if(UNIX)
+#  add_definitions(-fprofile-arcs -ftest-coverage)
+#  link_libraries(gcov)
+#endif(UNIX)
 
-#ENABLE_TESTING()
+#enable_testing()
 
-IF (EXECUTABLE_OUTPUT_PATH)
-  SET (TEST_PATH ${EXECUTABLE_OUTPUT_PATH})
-ELSE (EXECUTABLE_OUTPUT_PATH)
-  SET (TEST_PATH .)
-ENDIF (EXECUTABLE_OUTPUT_PATH)
+if(EXECUTABLE_OUTPUT_PATH)
+  set(TEST_PATH ${EXECUTABLE_OUTPUT_PATH})
+else(EXECUTABLE_OUTPUT_PATH)
+  set(TEST_PATH .)
+endif(EXECUTABLE_OUTPUT_PATH)
 
-IF(BUILD_TESTING)
-    SUBDIRS(test)
-ENDIF(BUILD_TESTING)
+if(BUILD_TESTING)
+    subdirs(test)
+endif(BUILD_TESTING)
