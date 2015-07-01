@@ -48,7 +48,7 @@ value is of type T. The number of values allowed in the list is an attribute of
 the property; often it is just a single value. Properties are owned by classes
 that derive from %OpenSim's serializable Object base class. The documentation 
 here is most useful for developers who are interested in creating a new 
-ModelComponent or other serializable class derived from Object.
+Component, ModelComponent, or other serializable class derived from Object.
 
 A property's contained type T must be a serializable type. Serializable types 
 come in two flavors:
@@ -130,8 +130,11 @@ Properties are maintained in a PropertyTable by %OpenSim's Object base class
 that is used for all serializable objects. Do not create %Property objects 
 directly; instead, use the provided macros to declare them in the class
 declarations for objects derived from Object. These macros should appear in the 
-header file near the top of your class declaration, and should be preceded
-by Doxygen comments describing the property being declared.
+header file near the top of your class declaration. Comments that should appear
+in the generated Doxygen documentation as well as in XML files should be in the
+comment string; if you have a comment that should appear in Doxygen
+documentation but not in XML, then you can place it in a Doxygen comment just
+above the line where you declare your property.
 
 <b>Naming conventions:</b> %OpenSim property names should use lower case letters
 with \c words_separated_by_underscores. In contrast, %OpenSim object types 
@@ -177,9 +180,7 @@ list length:
     OpenSim_DECLARE_LIST_PROPERTY_RANGE(name, T, minSize, maxSize, 
                                         "property description");
 @endcode
-Here is an example of an object declaring two properties, including our
-convention of documenting the property declarations in their own Doxygen
-group entitled "Property declarations". **/
+Here is an example of an object declaring two properties: **/
 ///@code
 ///  class ActuatorWorkMeter : public ModelComponent {
 ///  OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorWorkMeter, ModelComponent);
@@ -187,14 +188,11 @@ group entitled "Property declarations". **/
 ///  //=======================================================================
 ///  // PROPERTIES
 ///  //=======================================================================
-///      /** @name Property declarations
-///      These are the serializable properties associated with this class. **/
-///      /**@{**/
 ///      OpenSim_DECLARE_PROPERTY(actuator_name, std::string,
 ///          "The name of the actuator whose work use will be calculated.");
+///      /** The value for this property is used for reporting purposes. */
 ///      OpenSim_DECLARE_PROPERTY(initial_actuator_work, double,
 ///          "Initial value for work; normally zero.");
-///      /**@}**/
 ///  //=======================================================================
 ///  // PUBLIC METHODS
 ///  //=======================================================================
