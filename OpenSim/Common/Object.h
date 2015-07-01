@@ -1175,8 +1175,8 @@ ObjectProperty<T>::isEqualTo(const AbstractProperty& other) const {
     assert(this->size() == other.size()); // base class checked
     const ObjectProperty& otherO = ObjectProperty::getAs(other);
     for (int i=0; i<objects.size(); ++i) {
-        const T* const thisp  = objects[i].getPtr();
-        const T* const otherp = otherO.objects[i].getPtr();
+        const T* const thisp  = objects[i].get();
+        const T* const otherp = otherO.objects[i].get();
         if (thisp == otherp)
             continue; // same object or both null
         if (!(thisp && otherp))
