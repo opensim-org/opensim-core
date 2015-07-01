@@ -174,12 +174,12 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     # If you know of optimization bugs that affect SimTK in particular
     # gcc versions, this is the place to turn off those optimizations.
     set(GCC_OPT_DISABLE)
-    # We know Gcc 4.4.3 on Ubuntu 10 is buggy and that Snow Leopard's
-    # 4.2.1 is not. To be safe for now we'll assume anything over 4.3
-    # should have these disabled.
-    if(GCC_VERSION VERSION_GREATER 4.3 OR GCC_VERSION VERSION_EQUAL 4.3)
+    # We know Gcc 4.4.3 on Ubuntu 10 is buggy.
+    if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
+      if(GCC_VERSION VERSION_EQUAL 4.4)
         set(GCC_OPT_DISABLE
-    "-fno-tree-vrp -fno-strict-aliasing -fno-guess-branch-probability")
+        "-fno-strict-aliasing -fno-tree-vrp -fno-guess-branch-probability")
+      endif()
     endif()
 
     # C++
