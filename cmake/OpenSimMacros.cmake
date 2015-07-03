@@ -182,7 +182,7 @@ function(OPENSIM_ADD_TESTS)
             get_filename_component(TEST_NAME ${test_program} NAME_WE)
 
             add_executable(${TEST_NAME} ${test_program}
-                ${OSIIMADDTESTS_SOURCES})
+                ${OSIMADDTESTS_SOURCES})
             target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
             add_test(${TEST_NAME} ${TEST_PATH}/${TEST_NAME})
             set_target_properties(${TEST_NAME} PROPERTIES
