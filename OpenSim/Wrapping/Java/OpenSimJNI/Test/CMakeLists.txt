@@ -1,35 +1,13 @@
 if(BUILD_JAVA_WRAPPING) 
 
-# Automatically create tests using files named "test*.cpp"  // Adopted from SimTK core
-file(GLOB TEST_PROGS "test*.cpp")
+    file(GLOB TEST_PROGS "test*.cpp")
+    file(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 
-link_libraries(debug osimJavaJNI${CMAKE_DEBUG_POSTFIX}  optimized osimJavaJNI)
+    OPENSIM_ADD_TESTS(
+        TESTPROGRAMS ${TEST_PROGS}
+        DATAFILES ${TEST_FILES}
+        LINKLIBS osimJavaJNI
+        SOURCES "../OpenSimContext.cpp"
+        )
 
-foreach(TEST_PROG ${TEST_PROGS})
-    get_filename_component(TEST_ROOT ${TEST_PROG} NAME_WE)
-
-    # Link with shared library
-    add_executable(${TEST_ROOT} ${TEST_PROG} "../OpenSimContext.cpp")
-    target_link_libraries(${TEST_ROOT} ${LINK_LIBRARIES} )
-    add_test(${TEST_ROOT} ${EXECUTABLE_OUTPUT_PATH}/${TEST_ROOT})
-    set_target_properties(${TEST_ROOT} 
-        PROPERTIES 
-        PROJECT_LABEL "Tests - ${TEST_ROOT}")
-    # message( "Adding test "${TEST_PROG} )
-endforeach(TEST_PROG ${TEST_PROGS})
-
-# Also need to copy data files (.osim, .xml, .sto, .trc, .mot) to run directory
-file(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
-
-#
-# Copy files to run dir
-#
-foreach(dataFile ${TEST_FILES})
- add_custom_command(
-    TARGET testContext
-    COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy
-    ${dataFile}
-    ${OpenSim_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/Test)
- endforeach(dataFile) 
 endif(BUILD_JAVA_WRAPPING)
