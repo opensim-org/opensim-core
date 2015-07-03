@@ -7,7 +7,6 @@ if(BUILD_JAVA_WRAPPING)
         TESTPROGRAMS ${TEST_PROGS}
         DATAFILES ${TEST_FILES}
         LINKLIBS osimJavaJNI
-        SOURCES "../OpenSimContext.cpp"
         )
 
 endif(BUILD_JAVA_WRAPPING)
