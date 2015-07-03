@@ -95,7 +95,7 @@ before_install:
   - if [ $RUN_VALGRIND = "0" ]; then export CTEST_FLAGS="-D ExperimentalMemCheck"; fi
 
   ## If we are building in debug, there are some tests to ignore.
-  - if [ $BTYPE = "Debug" ]; then export CTEST_FLAGS="$CTEST_FLAGS --exclude-regex '(testPrescribedForce)'"; fi
+  - if [ $BTYPE = "Debug" ]; then export CTEST_FLAGS="$CTEST_FLAGS --exclude-regex '(testPrescribedForce|testInducedAccelerations|testAssemblySolver)'"; fi
 
 install:
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
