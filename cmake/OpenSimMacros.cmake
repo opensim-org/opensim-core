@@ -184,7 +184,7 @@ function(OPENSIM_ADD_TESTS)
             add_executable(${TEST_NAME} ${test_program}
                 ${OSIMADDTESTS_SOURCES})
             target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
-            add_test(${TEST_NAME} ${TEST_PATH}/${TEST_NAME})
+            add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
             set_target_properties(${TEST_NAME} PROPERTIES
                 PROJECT_LABEL "Tests - ${TEST_NAME}")
 
@@ -194,8 +194,7 @@ function(OPENSIM_ADD_TESTS)
         foreach(data_file ${OSIMADDTESTS_DATAFILES})
             # This command re-copies the data files if they are modified;
             # custom commands don't do this.
-            configure_file("${data_file}" "${CMAKE_CURRENT_BINARY_DIR}"
-                COPYONLY)
+            file(COPY "${data_file}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
         endforeach()
 
         #if(UNIX)
