@@ -39,17 +39,15 @@ in-memory container for data access and manipulation.                         */
 #include <string>
 #include <type_traits>
 #include <limits>
+#include <algorithm>
 
 
 namespace OpenSim {
 /** Enum to specify if the InputIterator is traversing data row-wise or
-column-wise. clang3.6 crashes if this is turned to a "enum class". Until it 
-is fixed, use a pre c++11 enum.                                           */
-struct InputItDim {
-    enum Dim {
-        RowWise, 
-        ColumnWise
-    };
+column-wise.                                                                  */
+enum class InputItDim {
+    RowWise, 
+    ColumnWise
 };
 
 class NotEnoughElements : public Exception {
@@ -87,6 +85,11 @@ public:
     ColumnHasNoLabel(const std::string& expl) : Exception(expl) {}
 };
 
+class ColumnLabelExists : public Exception {
+public:
+    ColumnLabelExists(const std::string& expl) : Exception(expl) {}
+};
+
 class ZeroElements : public Exception {
 public:
     ZeroElements(const std::string& expl) : Exception(expl) {}
@@ -113,6 +116,109 @@ public:
 };
 
 
+namespace internal {
+template<typename...>
+using void_t = void;
+
+// Compile time check to see if the iterator (template parameter Iter) supports
+// dereferencing operator.
+template<typename Iter>
+using dereference_t = decltype(*std::declval<Iter>());
+
+template<typename Iter, typename = void>
+struct is_dereferencable_t 
+    : std::false_type {};
+
+template<typename Iter>
+struct is_dereferencable_t<Iter, void_t<dereference_t<Iter>>> 
+    : std::true_type {};
+
+template<typename Iter>
+constexpr bool is_dereferencable = is_dereferencable_t<Iter>::value;
+
+
+// Compile time check to see if two types are the same after stripping 
+// reference and cv qualifiers.
+template<typename T>
+using rmv_ref_t = typename std::remove_reference<T>::type;
+
+template<typename T>
+using rmv_cv_t = typename std::remove_cv<T>::type;
+
+template<typename T>
+using rmv_ref_cv_t = rmv_cv_t<rmv_ref_t<T>>;
+
+template<typename A, typename B>
+constexpr bool
+is_same = std::is_same<rmv_ref_cv_t<A>, rmv_ref_cv_t<B>>::value;
+
+// Compile time check to see if the a type supports equality comparison.
+template<typename T>
+using eq_expr_t = decltype(std::declval<T>() == std::declval<T>());
+
+template<typename T, typename = void>
+struct is_eq_comparable_t
+    : std::false_type {};
+
+template<typename T>
+struct is_eq_comparable_t<T, void_t<eq_expr_t<T>>>
+    : std::true_type {};
+
+template<typename T>
+constexpr bool is_eq_comparable = is_eq_comparable_t<T>::value;
+
+// Compile time check to see if the a type supports inequality comparison.
+template<typename T>
+using neq_expr_t = decltype(std::declval<T>() != std::declval<T>());
+
+template<typename T, typename = void>
+struct is_neq_comparable_t
+    : std::false_type {};
+
+template<typename T>
+struct is_neq_comparable_t<T, void_t<neq_expr_t<T>>>
+    : std::true_type {};
+
+template<typename T>
+constexpr bool is_neq_comparable = is_neq_comparable_t<T>::value;
+
+// Compile time check to see if a type has member function named begin().
+template<typename C>
+using mem_begin_t = decltype(std::declval<C>().begin());
+
+template<typename C, typename = void>
+struct has_mem_begin_t 
+    : std::false_type {};
+
+template<typename C>
+struct has_mem_begin_t<C, void_t<mem_begin_t<C>>>
+    : std::true_type {};
+
+template<typename C>
+constexpr bool
+has_mem_begin = has_mem_begin_t<C>::value;
+
+// Compile time check to see if a type has member function named end().
+template<typename C>
+using mem_end_t = decltype(std::declval<C>().end());
+
+template<typename C, typename = void>
+struct has_mem_end_t 
+    : std::false_type {};
+
+template<typename C>
+struct has_mem_end_t<C, void_t<mem_end_t<C>>>
+    : std::true_type {};
+
+template<typename C>
+constexpr bool
+has_mem_end = has_mem_end_t<C>::value;
+
+    template<typename T>
+    struct shrik;
+}
+
+
 /** AbstractDataTable is the base-class of all DataTable_(templated) allowing 
 storage of DataTable_ templated on different types to be stored in a container 
 like std::vector. AbstractDataTable_ offers:
@@ -125,6 +231,8 @@ This class is abstract and cannot be used directly. Create instances of
 DataTable_ instead. See DataTable_ for details on ussage.                     */
 class AbstractDataTable {
 protected:
+    /** \cond */
+
     using size_t                = std::size_t;
     using string                = std::string;
     using ColumnLabels          = std::unordered_map<string, size_t>;
@@ -136,14 +244,13 @@ protected:
     class ColumnLabelsContainerProxy {
     public:
         ColumnLabelsContainerProxy(const AbstractDataTable* adt) : adt_{adt} {}
-        ColumnLabelsContainerProxy()                                 = delete;
-        ColumnLabelsContainerProxy(const ColumnLabelsContainerProxy& adt) 
-                                                                     = default;
-        ColumnLabelsContainerProxy(ColumnLabelsContainerProxy&& adt) = default;
+        ColumnLabelsContainerProxy()                                  = delete;
+        ColumnLabelsContainerProxy(const ColumnLabelsContainerProxy&) = default;
+        ColumnLabelsContainerProxy(ColumnLabelsContainerProxy&&)      = default;
         ColumnLabelsContainerProxy& operator=(const ColumnLabelsContainerProxy&)
-                                                                     = default;
+                                                                      = default;
         ColumnLabelsContainerProxy& operator=(ColumnLabelsContainerProxy&&) 
-                                                                     = default;
+                                                                      = default;
 
         ColumnLabelsConstIter cbegin() const {
             return adt_->columnLabelsBegin();
@@ -165,6 +272,7 @@ protected:
         const AbstractDataTable* adt_;
     };
 
+    /** \endcond */
 public:
     AbstractDataTable()                                      = default;
     AbstractDataTable(const AbstractDataTable&)              = default;
@@ -178,6 +286,11 @@ public:
         Column labels accessors & mutators.                                   */
     /**@{*/
 
+    /** Check if the DataTable_ has a column with given string as the label   */
+    bool hasColumnLabel(const std::string& columnLabel) const {
+        return col_ind_.find(columnLabel) != col_ind_.end();
+    }
+
     /** Check if a column has label. Time complexity is linear in number 
     of column labels. All columns will have an index (starting at 0). All 
     columns need not have a label.
@@ -186,6 +299,7 @@ public:
     bool columnHasLabel(size_t columnIndex) const {
         using ColumnLabelsValue = typename ColumnLabels::value_type;
         throwIfColumnDoesNotExist(columnIndex);
+
         auto res = std::find_if(col_ind_.begin(), 
                                 col_ind_.end(), 
                                 [columnIndex] (const ColumnLabelsValue& kv) {
@@ -203,45 +317,136 @@ public:
         return col_ind_.find(columnLabel) != col_ind_.end();
     }
 
-    /** Label a column. The column should not have a label already. To update 
-    the label of a column that already has a label, use updColumnLabel().
+    /** Label a column. The column should not have a label already. Column 
+    labels are unique for entire DataTable_. To update the label of a column 
+    that already has a label, use updColumnLabel().
 
+    \throws ColumnLabelExists If a column in the DataTable_ already has the 
+                              label specified by 'columnLabel'.
     \throws ColumnDoesNotExist If the column index specified does not exist.
     \throws ColumnHasLabel If the column index specified already has a label. */
-    void setColumnLabel(size_t columnIndex, 
-                        const string& columnLabel) {
+    void setColumnLabel(size_t columnIndex, const string& columnLabel) {
         throwIfColumnHasLabel(columnIndex);
+        throwIfColumnLabelExists(columnLabel);
+
         col_ind_.emplace(columnLabel, columnIndex);
-    }
-
-    /** Label a column. The column should not have a label already. To update 
-    the label of a column that already has a label, use updColumnLabel().
-
-    \throws ColumnDoesNotExist If the column index specified does not exist.
-    \throws ColumnHasLabel If the column index specified already has a label. */
-    void setColumnLabel(size_t columnIndex, 
-                        string&& columnLabel) {
-        throwIfColumnHasLabel(columnIndex);
-        col_ind_.emplace(std::move(columnLabel), columnIndex);
     }
 
     /** Label a set of columns at once using an InputIterator that produces one
     index-label pair (std::pair<std::string, std::size_t>) at a time. The 
-    columns referred to by the iterator must not already have a label. See
+    columns referred to by the iterator must not already have a label. The 
+    column labels have to be unique for the entire DataTable_. See
     <a href="http://en.cppreference.com/w/cpp/concept/InputIterator">this page
     </a> for details on InputIterator.
 
+    \param first InputIterator representing beginning of the range of input
+                 values. Both 'first' and 'last' are of same type -- InputIt
+                 (type of the input iterator). Don't be confused by the extra
+                 code that appears in function signature for 'last'.
+    \param last InputIterator representing end of the range of vallues. Both 
+                'first' and 'last' are of same type -- InputIt (type of the 
+                input iterator). Don't be confused by the extra code that 
+                appears in function signature for 'last'.
+
+    \throws ZeroElements If the InputIterator produces zero elements.
+    \throws ColumnLabelExists If a column in the DataTable_ already has the 
+                              label specified by an entry produced by the 
+                              iterator.
     \throws ColumnDoesNotExist If the column index specified by an entry 
                                produced by the iterator does not exist.
     \throws ColumnHasLabel If the column index specified by an entry produced
                            by the iterator already has a label. */
     template<typename InputIt>
-    void setColumnLabels(InputIt first, InputIt last) {
+    void setColumnLabels(InputIt first, 
+    typename std::enable_if<std::is_constructible<ColumnLabels::value_type, 
+    typename std::iterator_traits<InputIt>::value_type>::value, 
+                         InputIt>::type last) {
+        if(first == last)
+            throw ZeroElements{"Input iterator produced zero elements."};
+
         while(first != last) {
             throwIfColumnHasLabel(first->second);
+            throwIfColumnLabelExists(first->first);
+
             col_ind_.emplace(*first);
             ++first;
         }
+    }
+
+    /** Label a set of columns at once using an InputIterator that produces one
+    label (std::string) at a time. The columns referred to by the iterator must 
+    not already have a label. The column labels have to be unique for the entire
+    DataTable_. See
+    <a href="http://en.cppreference.com/w/cpp/concept/InputIterator">this page
+    </a> for details on InputIterator.
+
+    \param first InputIterator representing beginning of the range of input
+                 values. Both 'first' and 'last' are of same type -- InputIt
+                 (type of the input iterator). Don't be confused by the extra
+                 code that appears in function signature for 'last'.
+    \param last InputIterator representing end of the range of vallues. Both 
+                'first' and 'last' are of same type -- InputIt (type of the 
+                input iterator). Don't be confused by the extra code that 
+                appears in function signature for 'last'.
+    \param startColumnIndex Label the columns starting at the column specified
+                            by 'startColumnIndex'.
+
+    \throws ZeroElements If the InputIterator produces zero elements.
+    \throws ColumnLabelExists If a column in the DataTable_ already has the 
+                              label specified by an entry produced by the 
+                              iterator.
+    \throws ColumnDoesNotExist If the (1) column index specified by 
+                               'startColumnIndex' does not exist OR (2) the 
+                               iterator produces more entries than expected in
+                               which case it attempts to label a column that 
+                               does not exist.
+    \throws ColumnHasLabel If the column index specified by an entry produced
+                           by the iterator already has a label. */
+    template<typename InputIt>
+    void setColumnLabels(InputIt first,
+     typename std::enable_if<std::is_constructible<std::string,
+     typename std::iterator_traits<InputIt>::value_type>::value,
+                         InputIt>::type last,
+                         size_t startColumnIndex = 0) {
+        if(first == last)
+            throw ZeroElements{"Input iterator produced zero elements."};
+
+        size_t col{startColumnIndex};
+        while(first != last) {
+            throwIfColumnHasLabel(col);
+            throwIfColumnLabelExists(*first);
+
+            col_ind_.emplace(*first, col);
+            ++first; ++col;
+        }
+    }
+
+    /** Label a set of columns at once using a:
+    - sequence container of labels (std::string) OR
+    - associative container of label-index pair (std::pair<std::string, 
+      std::size_t>). 
+    Calling this function is equivalent to:
+    \code
+    setColumnLabels(container.begin(), container.end());
+    \endcode
+    See overloads of setColumnLabels() taking InputIterator for exceptions 
+    thrown.                                                                   */
+    template<typename Container>
+    void setColumnLabels(Container container) {
+        using ColumnLabelsValue = ColumnLabels::value_type;
+        using ContainerIter = typename Container::iterator;
+        using ContainerIterTraits = std::iterator_traits<ContainerIter>;
+        using ContainerIterValue = typename ContainerIterTraits::value_type;
+        static_assert(std::is_constructible<ColumnLabels::value_type, 
+                                            ContainerIterValue>::value ||
+                      std::is_constructible<std::string,
+                                            ContainerIterValue>::value,
+                      "The input container must support an iterator that " 
+                      "produces elements of type std::pair<std::string, " 
+                      "std::size_t> or of type std::string. See documentation "
+                      "for more details.");
+
+        setColumnLabels(container.begin(), container.end());
     }
   
     /** Get the label of a column. Time complexity is linear in the number of
@@ -253,6 +458,7 @@ public:
     string getColumnLabel(size_t columnIndex) const {
         using ColumnLabelsValue = typename ColumnLabels::value_type;
         throwIfColumnDoesNotExist(columnIndex);
+
         auto res = std::find_if(col_ind_.begin(),
                                 col_ind_.end(),
                                 [columnIndex] (const ColumnLabelsValue& kv) {
@@ -277,31 +483,74 @@ public:
         return ColumnLabelsContainerProxy{this};
     }
     
-    /** Update the label of a column with a new label. Time complexity is linear
+    /** Change the label of a column with a new label. Time complexity is linear
     in the number of column labels. The column specified must already have a
-    label. To label a column that does not yet have a label, use 
-    setColumnLabel().
+    label. Column labels must be unique for the entire DataTable_. To label a 
+    column that does not yet have a label, use setColumnLabel().
 
+    \throws ColumnLabelExists If there is already a column with label specified
+                              by 'newColumnLabel'.
     \throws ColumnHasNoLabel If the column specified by the column index does 
                              not already have a label.
     \throws ColumnDoesNotExist If the column specified by the column index does 
                                not exist.                                     */
     void changeColumnLabel(size_t columnIndex, 
-                        const string& newColumnLabel) {
+                           const string& newColumnLabel) {
         const string old_collabel{getColumnLabel(columnIndex)};
         col_ind_.erase(old_collabel);
+
+        throwIfColumnLabelExists(newColumnLabel);
+
         col_ind_.emplace(newColumnLabel, columnIndex);
     }
 
-    /** Update the label of a column with a new label. Time complexity is 
+    /** Change the label of a column with a new label. Time complexity is 
     constant on average and linear in number of column labels in the worst case.
 
+    \throws ColumnLabelExists If there is already column with the label 
+                              specified by 'newColumnLabel'.
     \throws ColumnDoesNotExist If there is no column with the specified label.*/
     void changeColumnLabel(const string& oldColumnLabel, 
-                        const string& newColumnLabel) {
+                           const string& newColumnLabel) {
         const size_t colind{getColumnIndex(oldColumnLabel)};
         col_ind_.erase(oldColumnLabel);
+
+        throwIfColumnLabelExists(newColumnLabel);
+
         col_ind_[newColumnLabel] = colind;
+    }
+
+    /** Change the labels of a set of columns at once using an InputIterator
+    that produces either:
+    - A label-index pair (std::pair<std::string, std::size_t>) where label is 
+      the new label for the column with given index. OR
+    - A new_label-old_label pair (std::pair<std::string, std::string>).     
+    See other overloads of changeColumnLabels() for exceptions thrown         */
+    template<typename InputIt>
+    void changeColumnLabels(InputIt first, InputIt last) {
+        if(first == last)
+            throw ZeroElements{"Input iterator produced zero elements."};
+
+        while(first != last) {
+            changeColumnLabels(first->second, first->first);
+            ++first;
+        }
+    }
+
+    /** Change the labels of a set of columns at once using an associative
+    container of:
+    - new label to column index where label is of type std::string and index is 
+      of type std::size_t.
+    - new label to old label where both labels are of type std::string.
+    Calling this function is equivalent to:
+    \code
+    changeColumnLabels(container.begin(), container.end());
+    \endcode
+    See overload of changeColumnLabels() taking iterators for exceptions
+    thrown.                                                                   */
+    template<typename Container>
+    void changeColumnlabels(Container container) {
+        changeColumnLabels(container.begin(), container.end());
     }
 
     /** Get the index of a column from its label. Time complexity is constant on
@@ -309,12 +558,9 @@ public:
 
     \throws ColumnDoesNotExist If the column label does not exist.            */
     size_t getColumnIndex(const string& columnLabel) const {
-        try {
-            return col_ind_.at(columnLabel);
-        } catch(const std::out_of_range&) {
-            throw ColumnDoesNotExist{"No column with label '" + columnLabel + 
-                                     "'."};
-        }
+        throwIfColumnDoesNotExist(columnLabel);
+
+        return col_ind_.at(columnLabel);
     }
 
     /** Remove label for column specified by column index.
@@ -326,8 +572,8 @@ public:
                                not exist.                                     */
     bool removeColumnLabel(size_t columnIndex) {
         using ColumnLabelsValue = typename ColumnLabels::value_type;
-
         throwIfColumnDoesNotExist(columnIndex);
+
         auto res = std::find_if(col_ind_.begin(),
                                 col_ind_.end(),
                                 [columnIndex] (const ColumnLabelsValue& kv) {
@@ -509,12 +755,22 @@ public:
     /**@}*/
 
 protected:
+    /** \cond */
     // Helper function. Check if a column exists and throw an exception if it
     // does not.
     void throwIfColumnDoesNotExist(const size_t columnIndex) const {
         if(!hasColumn(columnIndex)) {
             throw ColumnDoesNotExist{"Column " + std::to_string(columnIndex) + 
                                      " does not exist. Index out of range."};
+        }
+    }
+
+    // Helper function. Check if a column exists and throw an exception if it
+    // does not.
+    void throwIfColumnDoesNotExist(const std::string& columnLabel) const {
+        if(!hasColumnLabel(columnLabel)) {
+            throw ColumnDoesNotExist{"No Column with label '" + columnLabel + 
+                                     "'."};
         }
     }
 
@@ -527,10 +783,21 @@ protected:
         }
     }
 
+    // Helper function. Check if a column label exists and throw an exception if
+    // it does.
+    void throwIfColumnLabelExists(const std::string& columnLabel) const {
+        if(hasColumnLabel(columnLabel))
+            throw ColumnLabelExists{"A column with label '" + columnLabel + 
+                                    "' already exists. Column labels have to be"
+                                    " unique."};
+    }
+
     // Meta-data.
     MetaData     metadata_;
     // Column label to column index.
     ColumnLabels col_ind_;
+
+    /** \endcond */
 }; // AbstractDataTable
 
 
@@ -555,6 +822,10 @@ a matrix with column names) with support for holding metadata.
            SimTK::Real (alias for double).                                    */
 template<typename ET = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
+    static_assert(std::is_arithmetic<ET>::value || std::is_class<ET>::value, 
+                   "Template parameter ET must be either an arithmetic type " 
+                   "(int, float, double etc) or a class/struct type.");
+
 public:
     using value_type    = ET;
     using size_type     = size_t;
@@ -620,12 +891,31 @@ public:
                typename std::enable_if<!std::is_integral<InputIt>::value,
                                        InputIt>::type last,
                size_t numEntries,
-               InputItDim::Dim dimension = InputItDim::RowWise,
+               InputItDim dimension = InputItDim::RowWise,
                bool allowMissing = false) 
         : data_{static_cast<int>(dimension == InputItDim::RowWise ? 
                                  1 : numEntries), 
                 static_cast<int>(dimension == InputItDim::RowWise ? 
                                  numEntries : 1)} {
+        {
+        using namespace internal;
+        static_assert(is_dereferencable<InputIt>, "Input iterator (InputIt) is "
+                      "not dereferencable. It does not support 'operator*()'.");
+
+        static_assert(is_same<ET, decltype(*first)>, "The type of the value "
+                      "produced by dereferencing the input iterator (InputIt) "
+                      "does not match template parameter ET used to " 
+                      "instantiate DataTable.");
+
+        static_assert(is_eq_comparable<InputIt>, "Input iterator does not " 
+                      "support 'operator==' and so is not comparable for " 
+                      "equality.");
+
+        static_assert(is_neq_comparable<InputIt>, "Input iterator does not " 
+                      "support 'operator!=' and so is not comparable for " 
+                      "inequality.");
+        }
+
         if(first == last)
             throw ZeroElements{"Input iterator produced zero elements."};
         if(numEntries == 0)
@@ -671,6 +961,38 @@ public:
             }
         }
     }
+
+    template<typename Container>
+    DataTable_(Container container,
+               size_t numEntries,
+               InputItDim dimension = InputItDim::RowWise,
+               bool allowMissing = false) {
+        {
+        using namespace internal;
+        static_assert(has_mem_begin<Container>, "Input container does not have "
+                      "a member function named begin(). Input container is " 
+                      "required to have members begin() and end() that return " 
+                      "an iterator to the container.");
+
+        static_assert(has_mem_end<Container>, "Input container does not have "
+                      "a member function named end(). Input container is " 
+                      "required to have members begin() and end() that return " 
+                      "an iterator to the container.");
+
+        static_assert(std::is_same<decltype(container.begin()),
+                                   decltype(container.end())>::value,
+                      "The member functions begin() and end() of input " 
+                      "container do not produce the same type. Input container "
+                      "is reuiqred to have members begin() and end() that " 
+                      "return an iterator to the container.");
+        }
+        
+        DataTable_(container.begin(), 
+                   container.end(), 
+                   numEntries, 
+                   dimension,
+                   allowMissing);
+    }
     
     /**@}*/
     /** \name Copy.
@@ -678,7 +1000,7 @@ public:
     /**@{*/
 
     /** Copy constructor.                                                     */
-    DataTable_(const DataTable_& dt) = default;
+    DataTable_(const DataTable_&) = default;
 
     /** Virtual copy constructor.                                             */
     std::unique_ptr<AbstractDataTable> clone() const override {
@@ -686,7 +1008,7 @@ public:
     }
 
     /** Copy assignment                                                       */
-    DataTable_& operator=(const DataTable_& dt) = default;
+    DataTable_& operator=(const DataTable_&) = default;
 
     /**@}*/
     /** \name Move.
@@ -694,10 +1016,10 @@ public:
     /**@{*/
 
     /** Move constructor.                                                     */
-    DataTable_(DataTable_&& dt) = default;
+    DataTable_(DataTable_&&) = default;
 
     /** Move assignment                                                       */
-    DataTable_& operator=(DataTable_&& dt) = default;
+    DataTable_& operator=(DataTable_&&) = default;
 
     /**@}*/
     /** \name Destroy.
@@ -948,6 +1270,25 @@ public:
                 InputIt last, 
                 size_t numColumnsHint = 2,
                 bool allowMissing = false) {
+        {
+        using namespace internal;
+        static_assert(is_dereferencable<InputIt>, "Input iterator (InputIt) is "
+                      "not dereferencable. It does not support 'operator*()'.");
+
+        static_assert(is_same<ET, decltype(*first)>, "The type of the value "
+                      "produced by dereferencing the input iterator (InputIt) "
+                      "does not match template parameter ET used to " 
+                      "instantiate DataTable.");
+
+        static_assert(is_eq_comparable<InputIt>, "Input iterator does not " 
+                      "support 'operator==' and so is not comparable for " 
+                      "equality.");
+
+        static_assert(is_neq_comparable<InputIt>, "Input iterator does not " 
+                      "support 'operator!=' and so is not comparable for " 
+                      "inequality.");
+        }
+
         if(first == last)
             throw ZeroElements{"Input iterators produce zero elements."};
         if((data_.nrow() == 0 || data_.ncol() == 0) && numColumnsHint == 0)
@@ -986,6 +1327,33 @@ public:
         }
     }
 
+    template<typename Container>
+    void addRow(const Container& container, 
+                size_t numColumnsHint = 2,
+                bool allowMissing = false) {
+        {
+        using namespace internal;
+        static_assert(has_mem_begin<Container>, "Input container does not have "
+                      "a member function named begin(). Input container is " 
+                      "required to have members begin() and end() that return " 
+                      "an iterator to the container.");
+
+        static_assert(has_mem_end<Container>, "Input container does not have "
+                      "a member function named end(). Input container is " 
+                      "required to have members begin() and end() that return " 
+                      "an iterator to the container.");
+
+        static_assert(std::is_same<decltype(container.begin()),
+                                   decltype(container.end())>::value,
+                      "The member functions begin() and end() of input " 
+                      "container do not produce the same type. Input container "
+                      "is reuiqred to have members begin() and end() that " 
+                      "return an iterator to the container.");
+        }
+
+        addRow_impl(container, numColumnsHint, allowMissing);
+    }
+
     /** Add (append) multiple rows to the DataTable_ using an InputIterator 
     producing one entry at a time. If this function is called on an empty 
     DataTable_, numColumns must be provided. Otherwise, numColumns is ignored. 
@@ -1018,6 +1386,25 @@ public:
                  InputIt last, 
                  size_t numColumns = std::numeric_limits<size_t>::max(),
                  bool allowMissing = false) {
+        {
+        using namespace internal;
+        static_assert(is_dereferencable<InputIt>, "Input iterator (InputIt) is "
+                      "not dereferencable. It does not support 'operator*()'.");
+
+        static_assert(is_same<ET, decltype(*first)>, "The type of the value "
+                      "produced by dereferencing the input iterator (InputIt) "
+                      "does not match template parameter ET used to " 
+                      "instantiate DataTable.");
+
+        static_assert(is_eq_comparable<InputIt>, "Input iterator does not " 
+                      "support 'operator==' and so is not comparable for " 
+                      "equality.");
+
+        static_assert(is_neq_comparable<InputIt>, "Input iterator does not " 
+                      "support 'operator!=' and so is not comparable for " 
+                      "inequality.");
+        }
+
         if(first == last)
             throw ZeroElements{"Input iterators produce zero elements."};
         if((data_.nrow() == 0 || data_.ncol() == 0) && 
@@ -1045,6 +1432,33 @@ public:
                                     "elements to fill the last row. Expected = "
                                     + std::to_string(data_.ncol()) + 
                                     " Received = " + std::to_string(col)};
+    }
+
+    template<typename Container>
+    void addRows(Container container,
+                 size_t numColumns = std::numeric_limits<size_t>::max(),
+                 bool allowMissing = false) {
+        {
+        using namespace internal;
+        static_assert(has_mem_begin<Container>, "Input container does not have "
+                      "a member function named begin(). Input container is " 
+                      "required to have members begin() and end() that return " 
+                      "an iterator to the container.");
+
+        static_assert(has_mem_end<Container>, "Input container does not have "
+                      "a member function named end(). Input container is " 
+                      "required to have members begin() and end() that return " 
+                      "an iterator to the container.");
+
+        static_assert(std::is_same<decltype(container.begin()),
+                                   decltype(container.end())>::value,
+                      "The member functions begin() and end() of input " 
+                      "container do not produce the same type. Input container "
+                      "is reuiqred to have members begin() and end() that " 
+                      "return an iterator to the container.");
+        }
+
+        addRows(container.begin(), container.end(), numColumns, allowMissing);
     }
 
     /** Add (append) a column to the DataTable_ using a SimTK::Vector_. If the 
@@ -1110,6 +1524,25 @@ public:
                    InputIt last, 
                    size_t numRowsHint = 2,
                    bool allowMissing = false) {
+        {
+        using namespace internal;
+        static_assert(is_dereferencable<InputIt>, "Input iterator (InputIt) is "
+                      "not dereferencable. It does not support 'operator*()'.");
+
+        static_assert(is_same<ET, decltype(*first)>, "The type of the value "
+                      "produced by dereferencing the input iterator (InputIt) "
+                      "does not match template parameter ET used to " 
+                      "instantiate DataTable.");
+
+        static_assert(is_eq_comparable<InputIt>, "Input iterator does not " 
+                      "support 'operator==' and so is not comparable for " 
+                      "equality.");
+
+        static_assert(is_neq_comparable<InputIt>, "Input iterator does not " 
+                      "support 'operator!=' and so is not comparable for " 
+                      "inequality.");
+        }
+
         if(first == last)
             throw ZeroElements{"Input iterators produce zero elements."};
         if((data_.nrow() == 0 || data_.ncol() == 0) && numRowsHint == 0)
@@ -1149,6 +1582,33 @@ public:
         }
     }
 
+    template<typename Container>
+    void addColumn(const Container& container, 
+                   size_t numRowsHint = 2,
+                   bool allowMissing = false) {
+        {
+        using namespace internal;
+        static_assert(has_mem_begin<Container>, "Input container does not have "
+                      "a member function named begin(). Input container is " 
+                      "required to have members begin() and end() that return " 
+                      "an iterator to the container.");
+
+        static_assert(has_mem_end<Container>, "Input container does not have "
+                      "a member function named end(). Input container is " 
+                      "required to have members begin() and end() that return " 
+                      "an iterator to the container.");
+
+        static_assert(std::is_same<decltype(container.begin()),
+                                   decltype(container.end())>::value,
+                      "The member functions begin() and end() of input " 
+                      "container do not produce the same type. Input container "
+                      "is reuiqred to have members begin() and end() that " 
+                      "return an iterator to the container.");
+        }
+
+        addColumn_impl(container, numRowsHint, allowMissing);
+    }
+
     /** Add (append) multiple columns to the DataTable_ using an InputIterator 
     producing one entry at a time. If this function is called on an empty 
     DataTable_, numRows must be provided. Otherwise, numRows is ignored. To add 
@@ -1181,6 +1641,25 @@ public:
                     InputIt last, 
                     size_t numRows = std::numeric_limits<size_t>::max(),
                     bool allowMissing = false) {
+        {
+        using namespace internal;
+        static_assert(is_dereferencable<InputIt>, "Input iterator (InputIt) is "
+                      "not dereferencable. It does not support 'operator*()'.");
+
+        static_assert(is_same<ET, decltype(*first)>, "The type of the value "
+                      "produced by dereferencing the input iterator (InputIt) "
+                      "does not match template parameter ET used to " 
+                      "instantiate DataTable.");
+
+        static_assert(is_eq_comparable<InputIt>, "Input iterator does not " 
+                      "support 'operator==' and so is not comparable for " 
+                      "equality.");
+
+        static_assert(is_neq_comparable<InputIt>, "Input iterator does not " 
+                      "support 'operator!=' and so is not comparable for " 
+                      "inequality.");
+        }
+
         if(first == last)
             throw ZeroElements{"Input iterators produce zero elements."};
         if((data_.nrow() == 0 || data_.ncol() == 0) && 
@@ -1208,6 +1687,33 @@ public:
                                     "Expected = " + 
                                     std::to_string(data_.nrow()) + 
                                     " Received = " + std::to_string(row)};
+    }
+
+    template<typename Container>
+    void addColumns(Container container,
+                     size_t numRows = std::numeric_limits<size_t>::max(),
+                     bool allowMissing = false) {
+        {
+        using namespace internal;
+        static_assert(has_mem_begin<Container>, "Input container does not have "
+                      "a member function named begin(). Input container is " 
+                      "required to have members begin() and end() that return " 
+                      "an iterator to the container.");
+
+        static_assert(has_mem_end<Container>, "Input container does not have "
+                      "a member function named end(). Input container is " 
+                      "required to have members begin() and end() that return " 
+                      "an iterator to the container.");
+
+        static_assert(std::is_same<decltype(container.begin()),
+                                   decltype(container.end())>::value,
+                      "The member functions begin() and end() of input " 
+                      "container do not produce the same type. Input container "
+                      "is reuiqred to have members begin() and end() that " 
+                      "return an iterator to the container.");
+        }
+
+        addColumns(container.begin(), container.end(), numRows, allowMissing);
     }
 
     /** Add/concatenate rows of another DataTable_ to this DataTable_. The new 
@@ -1308,7 +1814,45 @@ public:
 
     using AbstractDataTable::hasColumn;
 
-private:
+protected:
+    template<typename Container>
+    void addRow_impl(Container container, 
+                     decltype(std::declval<Container>().size()),
+                     bool allowMissing) {
+        addRow(container.begin(), 
+               container.end(), 
+               container.size(), 
+               allowMissing);
+    }
+    template<typename Container>
+    void addRow_impl(Container container,
+                     size_t numColumnsHint,
+                     unsigned allowMissing) {
+        addRow(container.begin(),
+               container.end(),
+               numColumnsHint,
+               allowMissing);
+    }
+
+    template<typename Container>
+    void addColumn_impl(Container container, 
+                        decltype(std::declval<Container>().size()),
+                        bool allowMissing) {
+        addColumn(container.begin(), 
+                  container.end(), 
+                  container.size(), 
+                  allowMissing);
+    }
+    template<typename Container>
+    void addColumn_impl(Container container,
+                        size_t numColumnsHint,
+                        unsigned allowMissing) {
+        addColumn(container.begin(),
+                  container.end(),
+                  numColumnsHint,
+                  allowMissing);
+    }
+
     // Helper function. Check if a row exists and throw an exception if it does
     // not.
     void throwIfRowDoesNotExist(const size_t rowIndex) const {
@@ -1358,6 +1902,475 @@ DataTable_<ET> concatenateColumns(const DataTable_<ET>& dt1,
     dt.concatenateColumns(dt2);
     return dt;
 }
+
+
+class TimestampsEmpty : public OpenSim::Exception {
+public:
+    TimestampsEmpty(const std::string& expl) : Exception(expl) {}
+};
+
+
+class DataHasZeroRows : public OpenSim::Exception {
+public:
+    DataHasZeroRows(const std::string& expl) : Exception(expl) {}
+};
+
+
+class TimestampsLengthIncorrect : public OpenSim::Exception {
+public:
+    TimestampsLengthIncorrect(const std::string& expl) : Exception(expl) {}
+};
+
+
+class TimestampDoesNotExist : public OpenSim::Exception {
+public:
+    TimestampDoesNotExist(const std::string& expl) : Exception(expl) {}
+};
+
+
+class TimestampBreaksInvariant : public OpenSim::Exception {
+public:
+    TimestampBreaksInvariant(const std::string& expl) : Exception(expl) {}
+};
+
+class TimestampsColumnFull : public OpenSim::Exception {
+public:
+    TimestampsColumnFull(const std::string& expl) : Exception(expl) {}
+};
+
+
+enum class NearestDir {
+    LessOrGreaterThanEqual,
+    LessThanEqual,
+    GreaterThanEqual
+};
+
+
+template<typename ET = SimTK::Real, typename TS = float>
+class TimeSeriesDataTable_ : public DataTable_<ET> {
+    static_assert(std::is_arithmetic<TS>::value, "Template argument 'TS' "
+                  "representing timestamp must be an arithmetic type (eg. int, "
+                  "float, double etc.).");
+
+protected:
+    using string = std::string;
+    using Timestamps = std::vector<TS>;
+    using TimestampsIter = typename Timestamps::iterator;
+    using TimestampsConstIter = typename Timestamps::const_iterator;
+
+    class TimestampsContainerProxy {
+    public:
+        TimestampsContainerProxy(const TimeSeriesDataTable_* tsdt) : 
+            tsdt_{tsdt} {}
+        TimestampsContainerProxy()                                    = delete;
+        TimestampsContainerProxy(const TimestampsContainerProxy&)     = default;
+        TimestampsContainerProxy(TimestampsContainerProxy&&)          = default;
+        TimestampsContainerProxy& operator=(const TimestampsContainerProxy&)
+                                                                      = default;
+        TimestampsContainerProxy& operator=(TimestampsContainerProxy&&) 
+                                                                      = default;
+
+        TimestampsConstIter cbegin() const {
+            return tsdt_->timestampsBegin();
+        }
+
+        TimestampsConstIter cend() const {
+            return tsdt_->timestampsEnd();
+        }
+
+        TimestampsConstIter begin() const {
+            return cbegin();
+        }
+
+        TimestampsConstIter end() const {
+            return cend();
+        }
+
+    private:
+        const TimeSeriesDataTable_* tsdt_;
+    };
+
+public:
+    using timestamp_type = TS;
+
+    using DataTable_<ET>::DataTable_;
+
+    TimeSeriesDataTable_& operator=(const TimeSeriesDataTable_&) = default;
+    TimeSeriesDataTable_& operator=(TimeSeriesDataTable_&&) = default;
+
+    ~TimeSeriesDataTable_() override = default;
+
+    template<typename Timestamp>
+    bool hasTimestamp(Timestamp timestamp) const {
+        throwIfDataHasZeroRows();
+        throwIfTimestampsLengthIncorrect();
+
+        return std::binary_search(timestamps_.cbegin(), 
+                                  timestamps_.cend(), 
+                                  timestamp);
+    }
+
+    void addTimestamp(TS timestamp) {
+        throwIfDataHasZeroRows();
+        throwIfTimestampsFull();
+        throwIfTimestampBreaksInvariantPrev(timestamps_.size(), timestamp);
+
+        timestamps_.push_back(timestamp);
+    }
+
+    template<typename InputIt>
+    void addTimestamps(InputIt first, InputIt last) {
+        using IterValue = typename std::iterator_traits<InputIt>::value_type;
+        static_assert(std::is_constructible<TS, IterValue>::value,
+                      "Input iterator must produce values of type that is "
+                      "convertible to type of timestamp column (template " 
+                      "parameter 'TS').");
+
+        throwIfDataHasZeroRows();
+
+        while(first != last) {
+            throwIfTimestampsFull();
+            throwIfTimestampBreaksInvariantPrev(timestamps_.size(), *first);
+
+            timestamps_.push_back(*first);
+            ++first;
+        }
+    }
+
+    template<typename Container>
+    void addTimestamps(const Container& container) {
+        using ContainerIter = typename Container::iterator;
+        using ContainerIterTraits = std::iterator_traits<ContainerIter>;
+        using ContainerIterValue = typename ContainerIterTraits::value_type;
+        static_assert(std::is_constructible<TS, ContainerIterValue>::value,
+                      "The input container must support an iterator that "
+                      "produces elements of type that is convertible to the " 
+                      "type of timestamp column (template parameter 'TS').");
+
+        addTimestamps(container.begin(), container.end());
+    }
+
+    template<typename... ArgsToAddRow>
+    void addTimestampAndRow(TS timestamp, ArgsToAddRow&&... argsToAddRow) {
+        this-addRow(std::forward<ArgsToAddRow>(argsToAddRow)...);
+        addTimestamp(timestamp);
+    }
+
+    TS getTimestamp(size_t rowIndex) const {
+        throwIfDataHasZeroRows();
+        throwIfTimestampsLengthIncorrect();
+        this->throwIfRowDoesNotExist(rowIndex);
+
+        return timestamps_[rowIndex];
+    }
+
+    TS getTimestamp(TS timestamp, NearestDir direction) {
+        throwIfDataHasZeroRows();
+        throwIfTimestampsLengthIncorrect();
+
+        auto geq_iter = std::lower_bound(timestamps_.cbegin(), 
+                                         timestamps_.cend(),
+                                         timestamp);
+
+        if(direction == NearestDir::LessOrGreaterThanEqual) {
+            if(geq_iter == timestamps_.cend())
+                return timestamps_.back();
+
+            if(*geq_iter == timestamp)
+                return timestamp;
+
+            if(geq_iter == timestamps_.cbegin())
+                return timestamps_.front();
+
+            if(*geq_iter -  timestamp <= timestamp - *(geq_iter - 1))
+                return *geq_iter;
+            else
+                return *(--geq_iter);
+        } else if(direction == NearestDir::LessThanEqual) {
+            if(geq_iter == timestamps_.cend())
+                return timestamps_.back();
+
+            if(*geq_iter == timestamp)
+                return timestamp;
+
+            if(geq_iter == timestamps_.cbegin())
+                throw TimestampDoesNotExist{"There is no timestamp less-than/"
+                        "equal-to " + std::to_string(timestamp) + "."};
+
+            return *(--geq_iter);
+        } else if(direction == NearestDir::GreaterThanEqual) {
+            if(geq_iter == timestamps_.cend())
+                throw TimestampDoesNotExist{"There is no timestamp " 
+                        "greater-than/equal-to " + std::to_string(timestamp) + 
+                        "."};
+
+            return *geq_iter;
+        }
+    }
+
+    TimestampsContainerProxy getTimestamps() const {
+        throwIfDataHasZeroRows();
+        throwIfTimestampsLengthIncorrect();
+
+        return TimestampsContainerProxy{this};
+    }
+
+    void changeTimestampOfRow(size_t rowIndex, TS newTimestamp) {
+        throwIfDataHasZeroRows();
+        this->throwIfRowDoesNotExist(rowIndex);
+        throwIfIndexExceedsTimestampLength(rowIndex);
+        throwIfBreaksInvariantPrev(rowIndex, newTimestamp);
+        throwIfBreaksInvariantNext(rowIndex, newTimestamp);
+
+        timestamps_[rowIndex] = newTimestamp;
+    }
+
+    void changeTimestamp(TS oldTimestamp, TS newTimestamp) {
+        throwIfDataHasZeroRows();
+        throwIfTimestampsEmpty();
+
+        auto iter = std::lower_bound(timestamps_.begin(), 
+                                     timestamps_.end(),
+                                     oldTimestamp);
+
+        if(*iter != oldTimestamp)
+            throw TimestampDoesNotExist{"Timestamp '" + 
+                    std::to_string(oldTimestamp) + "' does not exist."};
+            
+
+        throwifBreaksInvariantPrev(iter - timestamps_.cbegin(), newTimestamp);
+        throwifBreaksInvariantNext(iter - timestamps_.cbegin(), newTimestamp);
+
+        *iter = newTimestamp;
+    }
+
+    template<typename InputIt>
+    void changeTimestamps(size_t startAtRow, InputIt first, InputIt last) {
+        using IterValue = typename std::iterator_traits<InputIt>::value_type;
+        static_assert(std::is_constructible<TS, IterValue>::value,
+                      "Input iterator must produce values of type that is "
+                      "convertible to type of timestamp column (template " 
+                      "parameter 'TS').");
+        
+        throwIfDataHasZeroRows();
+
+        size_t rowIndex{startAtRow};
+        while(first != last) {
+            this->throwIfRowDoesNotExist(rowIndex);
+            throwIfIndexExceedsTimestampLength(rowIndex);
+            throwIfBreaksInvariantPrev(rowIndex, *first);
+            throwIfBreaksInvariantNext(rowIndex, *first);
+            
+            timestamps_[rowIndex] = *first;
+
+            ++first;
+        }
+    }
+
+    template<typename Container>
+    void changeTimestamps(Container container) {
+        using ContIter = typename Container::iterator;
+        using IterValue = typename std::iterator_traits<ContIter>::value_type;
+        static_assert(std::is_constructible<TS, IterValue>::value,
+                      "Input container must support an iterator that produces " 
+                      "values of a type that is convertible to type of " 
+                      "timestamp column (template parameter 'TS').");
+
+        changeTimestamps(container.begin(), container.end());
+    }
+
+    size_t getRowIndex(TS timestamp) const {
+        throwIfDataHasZeroRows();
+        throwIfTimestampsLengthIncorrect();
+
+        auto iter = std::lower_bound(timestamps_.cbegin(), 
+                                     timestamps_.cend(), 
+                                     timestamp);
+
+        if(*iter != timestamp)
+            throw TimestampDoesNotExist{"Timestamp '" + 
+                    std::to_string(timestamp) + "' does not exist."};
+            
+        return iter - timestamps_.cbegin();
+    }
+
+    size_t getRowIndex(TS timestamp, NearestDir direction) const {
+        throwIfDataHasZeroRows();
+        throwIfTimestampsLengthIncorrect();
+
+        auto geq_iter = std::lower_bound(timestamps_.cbegin(),
+                                         timestamps_.cend(),
+                                         timestamp);
+
+        if(direction == NearestDir::LessOrGreaterThanEqual) {
+            if(geq_iter == timestamps_.cend())
+                return timestamps_.size() - 1;
+            
+            if(*geq_iter == timestamp)
+                return geq_iter - timestamps_.cbegin();
+
+            if(geq_iter == timestamps_.cbegin())
+                return 0;
+
+            if(*geq_iter - timestamp <= timestamp - *(geq_iter - 1))
+                return geq_iter - timestamps_.cbegin();
+            else
+                return geq_iter - timestamps_.cbegin() - 1;
+        } else if(direction == NearestDir::LessThanEqual) {
+            if(geq_iter == timestamps_.cend())
+                return timestamps_.size() - 1;
+
+            if(*geq_iter == timestamp)
+                return geq_iter - timestamps_.cbegin();
+
+            if(geq_iter == timestamps_.cbegin())
+                throw TimestampDoesNotExist{"There is no timestamp less-than/"
+                        "equal-to " + std::to_string(timestamp) + "."};
+
+            return geq_iter - timestamps_.cbegin() - 1;
+        } else if(direction == NearestDir::GreaterThanEqual) {
+            if(geq_iter == timestamps_.cend())
+                throw TimestampDoesNotExist{"There is no timestamp "
+                        "greater-than/equal-to " + std::to_string(timestamp) + 
+                        "."};
+
+            return geq_iter - timestamps_.cbegin();
+        }
+    }
+
+    SimTK::RowVectorView_<ET> getRowOfTimestamp(TS timestamp) const {
+        return this->getRow(getRowIndex(timestamp));
+    }
+
+    SimTK::RowVectorView_<ET> getRowOfTimestamp(TS timestamp, 
+                                                NearestDir direction) const {
+        return this->getRow(getRowIndex(timestamp, direction));
+    }
+
+    SimTK::RowVectorView_<ET> updRowOfTimestamp(TS timestamp) {
+        return this->updRow(getRowIndex(timestamp));
+    }
+
+    SimTK::RowVectorView_<ET> updRowOfTimestamp(TS timestamp, 
+                                                NearestDir direction) {
+        return this->updRow(getRowIndex(timestamp, direction));
+    }
+
+    const ET& getEltOfTimestamp(TS timestamp, size_t columnIndex) const {
+        this->getElt(getRowIndex(timestamp), columnIndex);
+    }
+
+    const ET& getEltOfTimestamp(TS timestamp, const string& columnLabel) const {
+        this->getElt(getRowIndex(timestamp), columnLabel);
+    }
+
+    const ET& getEltOfTimestamp(TS timestamp, 
+                                size_t columnIndex, 
+                                NearestDir direction) const {
+        this->getElt(getRowIndex(timestamp, direction), columnIndex);
+    }
+
+    const ET& getEltOfTimestamp(TS timestamp,
+                                const string& columnLabel,
+                                NearestDir direction) const {
+        this->getElt(getRowIndex(timestamp, direction), columnLabel);
+    }
+
+    ET& updEltOfTimestamp(TS timestamp, size_t columnIndex) {
+        this->updElt(getRowIndex(timestamp), columnIndex);
+    }
+
+    ET& updEltOfTimestamp(TS timestamp, const string& columnLabel) {
+        this->updElt(getRowIndex(timestamp), columnLabel);
+    }
+
+    ET& updEltOfTimestamp(TS timestamp, 
+                          size_t columnIndex, 
+                          NearestDir direction) {
+        this->updElt(getRowIndex(timestamp, direction), columnIndex);
+    }
+
+    ET& updEltOfTimestamp(TS timestamp,
+                          const string& columnLabel,
+                          NearestDir direction) {
+        this->updElt(getRowIndex(timestamp, direction), columnLabel);
+    }
+
+    TimestampsConstIter timestampsBegin() const {
+        return timestamps_.cbegin();
+    }
+
+    TimestampsConstIter timestampsEnd() const {
+        return timestamps_.cend();
+    }
+
+
+protected:
+    void throwIfTimestampsEmpty() {
+        if(timestamps_.empty())
+            throw TimestampsEmpty{"Timestamp column is empty. Use setTimestamps"
+                                  "() to set the timestamp column."};
+    }
+
+    void throwIfDataHasZeroRows() {
+        if(this->getNumRows() == 0)
+            throw DataHasZeroRows{"DataTable currently has zero rows. There " 
+                                  "can be no timestamps without data."};
+    }
+
+    void throwIfTimestampsLengthIncorrect() {
+        if(this->getNumRows() != timestamps_.size())
+            throw TimestampsLengthIncorrect{"Timestamp column length (" + 
+                    std::to_string(timestamps_.size()) + ") does not match the "
+                    "number of rows (" + std::to_string(this->getNumRows()) + 
+                    ") in the DataTable. Add timestamps to fix it."};
+    }
+
+    void throwIfTimestampBreaksInvariantPrev(const size_t rowIndex, 
+                                     const TS newTimestamp) {
+        if(rowIndex > 0 && 
+           timestamps_[rowIndex - 1] >= newTimestamp)
+            throw TimestampBreaksInvariant{"The input timestamp '" + 
+                    std::to_string(newTimestamp) + "' at row " + 
+                    std::to_string(rowIndex) + 
+                    " is less-than/equal-to previous timestamp '" + 
+                    std::to_string(timestamps_[rowIndex - 1]) + "' at row " + 
+                    std::to_string(rowIndex - 1) + " and so breaks the " 
+                    "invariant that timestamp column must be increasing."};
+    }
+
+    void throwIfTimestampBreaksInvariantNext(const size_t rowIndex, 
+                                     const TS newTimestamp) {
+        if(rowIndex < timestamps_.size() - 1 && 
+           timestamps_[rowIndex + 1] <= newTimestamp)
+            throw TimestampBreaksInvariant{"The input timestamp '" + 
+                    std::to_string(newTimestamp) + "' at row " + 
+                    std::to_string(rowIndex) + 
+                    " is greater-than/equal-to next timestamp '" + 
+                    std::to_string(timestamps_[rowIndex + 1]) + "' at row " + 
+                    std::to_string(rowIndex + 1) + " and so breaks the " 
+                    "invariant that timestamp column must be increasing."};
+    }
+
+    void throwIfIndexExceedsTimestampLength(const size_t rowIndex) {
+        if(rowIndex > timestamps_.size() - 1)
+            throw TimestampDoesNotExist{"Timestamp column length is " + 
+                    std::to_string(timestamps_.size()) + ". There is no " 
+                    "timestamp for row " + std::to_string(rowIndex) + ". Use "
+                    "addTimestamp(s) to add timestamps."};
+    }
+
+    void throwIfTimestampsFull() {
+        if(this->getNumRows() == timestamps_.size())
+            throw TimestampsColumnFull{"Both timestamp column length and number"
+                    " of rows currently are " + 
+                    std::to_string(timestamps_.size()) + ". Timestamp column "
+                    "length cannot exceed number of rows in DataTable. Add a " 
+                    "row before adding another timestamp."};
+    }
+
+    Timestamps timestamps_;
+};
 
 } // namespace OpenSim
 

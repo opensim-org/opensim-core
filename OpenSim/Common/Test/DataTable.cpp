@@ -2567,5 +2567,25 @@ int main() {
 
     test8();
 
+    std::vector<SimTK::Real> tsdt_data{1, 1, 1, 1, 
+                                       2, 2, 2, 2, 
+                                       3, 3, 3, 3};
+    OpenSim::TimeSeriesDataTable_<SimTK::Real, float> 
+        tsdt{tsdt_data.cbegin(),
+             tsdt_data.cend(),
+             4,
+             OpenSim::InputItDim::RowWise};
+
+    std::vector<double> tmp{4, 4, 4, 4};
+    tsdt.addRow(tmp);
+
+    std::cout << tsdt.getNumRows() << std::endl;
+
+    std::vector<std::string> tsdt_labels{"col-one", "col-two", "col-three", 
+                                         "col-four"};
+    tsdt.setColumnLabels(tsdt_labels);
+
+    tsdt.addTimestamps(std::vector<long>{1, 2, 3});
+
     return 0;
 }
