@@ -40,19 +40,24 @@ in-memory container for data access and manipulation.                         */
 #include <type_traits>
 #include <limits>
 #include <algorithm>
+#include <cstdlib>
 
 
 namespace OpenSim {
-/** Enum to specify if the InputIterator is traversing data row-wise or
-column-wise.                                                                  */
-enum class InputItDim {
-    RowWise, 
-    ColumnWise
+/** Enum to specify dimension of data traversal -- row-wise or olumn-wise.    */
+enum class TraverseDir {
+    RowMajor, 
+    ColumnMajor
 };
 
 class NotEnoughElements : public Exception {
 public:
     NotEnoughElements(const std::string& expl) : Exception(expl) {}
+};
+
+class TooManyElements : public Exception {
+public:
+    TooManyElements(const std::string& expl) : Exception(expl) {}
 };
 
 class NumberOfColumnsMismatch : public Exception {
@@ -213,9 +218,6 @@ struct has_mem_end_t<C, void_t<mem_end_t<C>>>
 template<typename C>
 constexpr bool
 has_mem_end = has_mem_end_t<C>::value;
-
-    template<typename T>
-    struct shrik;
 }
 
 
@@ -433,7 +435,6 @@ public:
     thrown.                                                                   */
     template<typename Container>
     void setColumnLabels(Container container) {
-        using ColumnLabelsValue = ColumnLabels::value_type;
         using ContainerIter = typename Container::iterator;
         using ContainerIterTraits = std::iterator_traits<ContainerIter>;
         using ContainerIterValue = typename ContainerIterTraits::value_type;
@@ -825,7 +826,6 @@ class DataTable_ : public AbstractDataTable {
     static_assert(std::is_arithmetic<ET>::value || std::is_class<ET>::value, 
                    "Template parameter ET must be either an arithmetic type " 
                    "(int, float, double etc) or a class/struct type.");
-
 public:
     using value_type    = ET;
     using size_type     = size_t;
@@ -890,13 +890,10 @@ public:
     DataTable_(InputIt first,
                typename std::enable_if<!std::is_integral<InputIt>::value,
                                        InputIt>::type last,
-               size_t numEntries,
-               InputItDim dimension = InputItDim::RowWise,
-               bool allowMissing = false) 
-        : data_{static_cast<int>(dimension == InputItDim::RowWise ? 
-                                 1 : numEntries), 
-                static_cast<int>(dimension == InputItDim::RowWise ? 
-                                 numEntries : 1)} {
+               size_t numEntriesInMajor,
+               TraverseDir dimension = TraverseDir::RowMajor,
+               bool allowMissing     = false,
+               size_t numMajors      = 0) {
         {
         using namespace internal;
         static_assert(is_dereferencable<InputIt>, "Input iterator (InputIt) is "
@@ -918,55 +915,96 @@ public:
 
         if(first == last)
             throw ZeroElements{"Input iterator produced zero elements."};
-        if(numEntries == 0)
-            throw InvalidEntry{"Input argument 'numEntries' cannot be zero."};
 
+        if(numEntriesInMajor == 0)
+            throw InvalidEntry{"Input argument 'numEntriesInMajor' is required "
+                    " cannot be zero."};
+
+        // Optimization. If numMajors is specified, pre-size the data and 
+        // avoid having to resize it multiple times later.
+        if(numMajors != 0) {
+            if(dimension == TraverseDir::RowMajor)
+                data_.resize(static_cast<int>(numMajors), 
+                             static_cast<int>(numEntriesInMajor));
+            else if(dimension == TraverseDir::ColumnMajor)
+                data_.resize(static_cast<int>(numEntriesInMajor), 
+                             static_cast<int>(numMajors));
+        } else {
+            if(dimension == TraverseDir::RowMajor)
+                data_.resize(1, static_cast<int>(numEntriesInMajor));
+            else if(dimension == TraverseDir::ColumnMajor)
+                data_.resize(static_cast<int>(numEntriesInMajor), 1);
+        }
+            
         int row{0};
         int col{0};
         while(first != last) {
             data_.set(row, col, *first);
             ++first;
-            if(dimension == InputItDim::RowWise) {
+            if(dimension == TraverseDir::RowMajor) {
                 ++col;
-                if(col == static_cast<int>(numEntries)  && first != last) {
+                if(col == static_cast<int>(numEntriesInMajor) && 
+                   first != last) {
                     col = 0;
                     ++row;
-                    data_.resizeKeep(data_.nrow() + 1, data_.ncol());
+                    if(numMajors == 0)
+                        data_.resizeKeep(data_.nrow() + 1, data_.ncol());
+                    else if(row == static_cast<int>(numMajors))
+                        throw TooManyElements{"Input iterator produced more "
+                                "elements than needed to fill " + 
+                                std::to_string(numMajors) + " (numMajors) " 
+                                "rows."};
                 }
             } else {
                 ++row;
-                if(row == static_cast<int>(numEntries) && first != last) {
+                if(row == static_cast<int>(numEntriesInMajor) && 
+                   first != last) {
                     row = 0;
                     ++col;
-                    data_.resizeKeep(data_.nrow(), data_.ncol() + 1);
+                    if(numMajors == 0)
+                        data_.resizeKeep(data_.nrow(), data_.ncol() + 1);
+                    else if(col == static_cast<int>(numMajors))
+                        throw TooManyElements{"Input iterator produced more "
+                                "elements than need to fill " + 
+                                std::to_string(numMajors) + " (numMajors) "
+                                "columns."};
                 }
             }
         }
+
         if(!allowMissing) {
-            if(dimension == InputItDim::RowWise && 
-               col != data_.ncol()) {
-                throw NotEnoughElements{"Input iterator did not produce " 
-                                        "enough elements to fill the last " 
-                                        "row. Expected = " + 
-                                        std::to_string(data_.ncol()) + 
-                                        " Received = " + 
-                                        std::to_string(col)};
-            } else if(dimension == InputItDim::ColumnWise && 
-                      row != data_.nrow()) {
-                throw NotEnoughElements{"Input iterator did not produce enough "
-                                        "elements to fill the last column. " 
-                                        "Expected = " + 
-                                        std::to_string(data_.nrow()) + 
-                                        " Received = " + std::to_string(row)};
+            if(dimension == TraverseDir::RowMajor) {
+                if(numMajors != 0 && row != data_.nrow() - 1)
+                    throw NotEnoughElements{"Input iterator did not produce "
+                            "enough elements to fill all the rows. Total rows ="
+                            " " + std::to_string(data_.nrow()) + " Filled rows "
+                            "= " + std::to_string(row) + "."};
+                if(col != data_.ncol())
+                    throw NotEnoughElements{"Input iterator did not produce " 
+                            "enough elements to fill the last row. Expected = " 
+                            + std::to_string(data_.ncol()) + ", Received = " + 
+                            std::to_string(col)};
+            } else if(dimension == TraverseDir::ColumnMajor) {
+                if(numMajors != 0 && col != data_.ncol() - 1)
+                    throw NotEnoughElements{"Input iterator did not produce "
+                            "enough elements to fill all the columns. Total "
+                            "columns = " + std::to_string(data_.ncol()) + 
+                            " Filled columns = " + std::to_string(col) + "."};
+                if(row != data_.nrow())
+                    throw NotEnoughElements{"Input iterator did not produce "
+                            "enough elements to fill the last column. Expected "
+                            "= " +  std::to_string(data_.nrow()) + ", "
+                            "Received = " + std::to_string(row)};
             }
         }
     }
 
     template<typename Container>
     DataTable_(Container container,
-               size_t numEntries,
-               InputItDim dimension = InputItDim::RowWise,
-               bool allowMissing = false) {
+               size_t numEntriesInMajor,
+               TraverseDir dimension = TraverseDir::RowMajor,
+               bool allowMissing     = false,
+               size_t numMajors      = 0) {
         {
         using namespace internal;
         static_assert(has_mem_begin<Container>, "Input container does not have "
@@ -986,12 +1024,12 @@ public:
                       "is reuiqred to have members begin() and end() that " 
                       "return an iterator to the container.");
         }
-        
-        DataTable_(container.begin(), 
-                   container.end(), 
-                   numEntries, 
-                   dimension,
-                   allowMissing);
+
+        DataTable__impl(container, 
+                        numEntriesInMajor, 
+                        dimension, 
+                        allowMissing, 
+                        numMajors);
     }
     
     /**@}*/
@@ -1384,8 +1422,9 @@ public:
     template<typename InputIt>
     void addRows(InputIt first, 
                  InputIt last, 
-                 size_t numColumns = std::numeric_limits<size_t>::max(),
-                 bool allowMissing = false) {
+                 size_t numColumns = 0,
+                 bool allowMissing = false,
+                 size_t numRows    = 0) {
         {
         using namespace internal;
         static_assert(is_dereferencable<InputIt>, "Input iterator (InputIt) is "
@@ -1407,37 +1446,68 @@ public:
 
         if(first == last)
             throw ZeroElements{"Input iterators produce zero elements."};
-        if((data_.nrow() == 0 || data_.ncol() == 0) && 
-           (numColumns == std::numeric_limits<size_t>::max() || 
-            numColumns == 0))
-            throw InvalidEntry{"DataTable is empty. 'numColumns' argument must" 
-                               " be provided and it cannot be zero."};
+        if(data_.nrow() == 0 || data_.ncol() == 0) {
+            if(numColumns == 0)
+                throw InvalidEntry{"DataTable is empty. In order to add rows, "
+                        "argument 'numColumns' must be provided and it cannot "
+                        "be zero."};
+        } else {
+            if(numColumns != 0 &&
+               static_cast<int>(numColumns) != data_.ncol())
+                throw InvalidEntry{"DataTable has " + 
+                        std::to_string(data_.nrow()) + " rows and " + 
+                        std::to_string(data_.ncol()) + " columns. Argument " 
+                        "'numColumns' must be either zero or equal to actual "
+                        "number of columns. It is ignored either way but this"
+                        " is just to prevent logical errors in the code."};
+        }
 
-        data_.resizeKeep(data_.nrow() + 1, 
-                          data_.ncol() == 0 ? 
-                          static_cast<int>(numColumns) : data_.ncol());
-        int row{data_.nrow() - 1};
+        int row{0};
         int col{0};
+        if(data_.nrow() == 0 || data_.ncol() == 0) {
+            data_.resize(static_cast<int>(numRows ? numRows : 1), 
+                         static_cast<int>(numColumns));
+        } else {
+            row = data_.nrow();
+            data_.resizeKeep(data_.nrow() + 
+                             static_cast<int>(numRows ? numRows : 1), 
+                             data_.ncol());
+        }
+
         while(first != last) {
             data_.set(row, col, *first);
             ++first; ++col;
             if(col == static_cast<int>(data_.ncol()) && first != last) {
                 col = 0;
                 ++row;
-                data_.resizeKeep(data_.nrow() + 1, data_.ncol());
+                if(numRows == 0)
+                    data_.resizeKeep(data_.nrow() + 1, data_.ncol());
+                else if(row == static_cast<int>(numRows))
+                    throw TooManyElements{"Input iterator produced more "
+                            "elements than needed to fill " + 
+                            std::to_string(numRows) + " (numRows) rows."};
             }
         }
-        if(!allowMissing && col != data_.ncol())
-            throw NotEnoughElements{"Input iterator did not produce enough " 
-                                    "elements to fill the last row. Expected = "
-                                    + std::to_string(data_.ncol()) + 
-                                    " Received = " + std::to_string(col)};
+
+        if(!allowMissing) { 
+            if(row != data_.nrow() - 1)
+                throw NotEnoughElements{"Input iterator did not produce "
+                        "enough elements to fill all the rows. Total rows = " +
+                        std::to_string(data_.nrow()) + ", Filled rows = " +
+                        std::to_string(row) + "."};
+            if(col != data_.ncol())
+                throw NotEnoughElements{"Input iterator did not produce enough" 
+                        " elements to fill the last row. Expected = " + 
+                        std::to_string(data_.ncol()) + ", Received = " + 
+                        std::to_string(col) + "."};
+        }
     }
 
     template<typename Container>
     void addRows(Container container,
-                 size_t numColumns = std::numeric_limits<size_t>::max(),
-                 bool allowMissing = false) {
+                 size_t numColumns = 0,
+                 bool allowMissing = false,
+                 size_t numRows    = 0) {
         {
         using namespace internal;
         static_assert(has_mem_begin<Container>, "Input container does not have "
@@ -1458,7 +1528,7 @@ public:
                       "return an iterator to the container.");
         }
 
-        addRows(container.begin(), container.end(), numColumns, allowMissing);
+        addRows_impl(container, numColumns, allowMissing, numRows);
     }
 
     /** Add (append) a column to the DataTable_ using a SimTK::Vector_. If the 
@@ -1639,8 +1709,9 @@ public:
     template<typename InputIt>
     void addColumns(InputIt first, 
                     InputIt last, 
-                    size_t numRows = std::numeric_limits<size_t>::max(),
-                    bool allowMissing = false) {
+                    size_t numRows    = 0,
+                    bool allowMissing = false,
+                    size_t numColumns = 0) {
         {
         using namespace internal;
         static_assert(is_dereferencable<InputIt>, "Input iterator (InputIt) is "
@@ -1662,37 +1733,68 @@ public:
 
         if(first == last)
             throw ZeroElements{"Input iterators produce zero elements."};
-        if((data_.nrow() == 0 || data_.ncol() == 0) && 
-           (numRows == std::numeric_limits<size_t>::max() || numRows == 0))
-            throw InvalidEntry{"DataTable is empty. 'nrow' argument must be" 
-                               " provided and it cannot be zero."};
+        if(data_.nrow() == 0 || data_.ncol() == 0) {
+           if(numRows == 0)
+               throw InvalidEntry{"DataTable is empty. In order to add columns,"
+                       " argument 'numRows' must be provided and it cannot be "
+                       "zero."};
+        } else {
+            if(numRows != 0 &&
+               static_cast<int>(numRows) != data_.nrow())
+                throw InvalidEntry{"DataTable has " + 
+                        std::to_string(data_.nrow()) + " rows and " +
+                        std::to_string(data_.ncol()) + " columns. Argument "
+                        "'numRows' must be either zero or equal to actual " 
+                        "number of rows. It is ignored either way but this is"
+                        " just to prevent logical errors in the code."};
+        }
 
-        data_.resizeKeep(data_.nrow() == 0 ? 
-                          static_cast<int>(numRows) : data_.nrow(), 
-                          data_.ncol() + 1);
         int row{0};
-        int col{data_.ncol() - 1};
+        int col{0};
+        if(data_.nrow() == 0 || data_.ncol() == 0) {
+            data_.resize(static_cast<int>(numRows), 
+                         static_cast<int>(numColumns ? numColumns : 1));
+        } else {
+            col = data_.ncol();
+            data_.resizeKeep(data_.nrow(), 
+                             data_.ncol() + 
+                             static_cast<int>(numColumns ? numColumns : 1));
+        }
+
         while(first != last) {
             data_.set(row, col, *first);
             ++first; ++row;
             if(row == static_cast<int>(data_.nrow()) && first != last) {
                 row = 0;
                 ++col;
-                data_.resizeKeep(data_.nrow(), data_.ncol() + 1);
+                if(numColumns == 0)
+                    data_.resizeKeep(data_.nrow(), data_.ncol() + 1);
+                else if(col == static_cast<int>(numColumns))
+                    throw TooManyElements{"Input iterator produced more "
+                            "elements than needed to fill " +
+                            std::to_string(numColumns) + " (numColumns) "
+                            "columns"};
             }
         }
-        if(!allowMissing && row != data_.nrow())
-            throw NotEnoughElements{"Input iterator did not produce enough " 
-                                    "elements to fill the last column. " 
-                                    "Expected = " + 
-                                    std::to_string(data_.nrow()) + 
-                                    " Received = " + std::to_string(row)};
+        if(!allowMissing) {
+            if(col != data_.ncol() - 1)
+                throw NotEnoughElements{"Input iterator did not produce "
+                        "enough elements to fill all the columns. Total columns"
+                        " = " + std::to_string(data_.ncol()) + ", Filled "
+                        "columns = " + std::to_string(col) + "."};
+            if(row != data_.nrow())
+                throw NotEnoughElements{"Input iterator did not produce enough" 
+                        " elements to fill the last column. Expected = " + 
+                        std::to_string(data_.nrow()) + ", Received = " + 
+                        std::to_string(row) + "."};
+        }
     }
 
     template<typename Container>
     void addColumns(Container container,
-                     size_t numRows = std::numeric_limits<size_t>::max(),
-                     bool allowMissing = false) {
+                    size_t numRows    = 0,
+                    bool allowMissing = false,
+                    size_t numColumns = 0) {
         {
         using namespace internal;
         static_assert(has_mem_begin<Container>, "Input container does not have "
@@ -1713,7 +1815,7 @@ public:
                       "return an iterator to the container.");
         }
 
-        addColumns(container.begin(), container.end(), numRows, allowMissing);
+        addColumns_impl(container, numRows, allowMissing, numColumns);
     }
 
     /** Add/concatenate rows of another DataTable_ to this DataTable_. The new 
@@ -1815,6 +1917,101 @@ public:
     using AbstractDataTable::hasColumn;
 
 protected:
+    template<typename Container, 
+             typename = decltype(std::declval<Container>().size())>
+    void DataTable__impl(Container container,
+                         size_t numEntriesInMajor,
+                         TraverseDir dimension,
+                         bool allowMissing,
+                         size_t numMajors) {
+        if(numMajors == 0) {
+            auto res = std::div(container.size(), numEntriesInMajor);
+
+            if(!allowMissing && res.rem != 0) {
+                if(dimension == TraverseDir::RowMajor)
+                    throw NotEnoughElements{"The container does not have enough"
+                            " elements to add full rows. Last "
+                            "row received " + std::string(res.rem) + 
+                            " elements. Expected " + 
+                            std::to_string(numEntriesInMajor) + " elements " 
+                            "(numEntriesInMajor). Missing values are not " 
+                            "allowed (allowMissing)."};
+                else if(dimension == TraverseDir::ColumnMajor)
+                    throw NotEnoughElements{"The container does not have enough"
+                            " elements to add full columns. Last"
+                            " column received " + std::to_string(res.rem) +
+                            " elements. Expected " + 
+                            std::to_string(numEntriesInMajor) + " elements " 
+                            "(numEntriesInMajor). Missing values are not " 
+                            "allowed (allowMissing)."};
+            }
+
+            numMajors = res.rem == 0 ? res.quot : res.quot + 1;
+        } else {
+            if(numMajors * numEntriesInMajor < container.size()) {
+                if(dimension == TraverseDir::RowMajor)
+                    throw TooManyElements{"The container has more elements than"
+                            " needed to add " + std::to_string(numMajors) + 
+                            " rows (numMajors) with "
+                            + std::to_string(numEntriesInMajor) + " columns "
+                            "(numEntriesInMajor). Expected = " + 
+                            std::to_string(numMajors * numEntriesInMajor) + 
+                            " elements,  Received = " + 
+                            std::to_string(container.size()) + " elements."};
+                else if(dimension == TraverseDir::ColumnMajor)
+                    throw TooManyElements{"The container has more elements than"
+                            " needed to add " + std::to_string(numMajors) + 
+                            " columns (numMajors) with " + 
+                            std::to_string(numEntriesInMajor) + 
+                            " rows (numEntriesInMajor). Expected = " + 
+                            std::to_string(numMajors * numEntriesInMajor) + 
+                            " elements,  Received = " + 
+                            std::to_string(container.size()) + " elements."};
+            } else if(numMajors * numEntriesInMajor > container.size() &&
+                      !allowMissing) {
+                if(dimension == TraverseDir::RowMajor)
+                    throw NotEnoughElements{"The container does not have enough"
+                            " elements to add " + std::to_string(numMajors) + 
+                            " rows (numMajors) with " +
+                            std::to_string(numEntriesInMajor) + " columns " 
+                            "(numEntriesInMajor). Expected = " + 
+                            std::to_string(numMajors * numEntriesInMajor) +
+                            " elements. Received = " + 
+                            std::to_string(container.size()) + " elements."};
+                if(dimension == TraverseDir::ColumnMajor)
+                    throw NotEnoughElements{"The container does not have enough"
+                            " elements to add " + std::to_string(numMajors) + 
+                            " columns (numMajors) with " + 
+                            std::to_string(numEntriesInMajor) + " rows " 
+                            "(numEntriesInMajor). Expected = " + 
+                            std::to_string(numMajors * numEntriesInMajor) +
+                            " elements. Received = " + 
+                            std::to_string(container.size()) + " elements."};
+                
+            }
+        }
+
+        DataTable_(container.begin(),
+                   container.end(),
+                   numEntriesInMajor,
+                   dimension,
+                   allowMissing,
+                   numMajors);
+    }
+    template<typename Container>
+    void DataTable__impl(Container container,
+                         size_t numEntriesInMajor,
+                         TraverseDir dimension,
+                         unsigned allowMissing,
+                         size_t numMajors) {
+        DataTable_(container.begin(),
+                   container.end(),
+                   numEntriesInMajor,
+                   dimension,
+                   allowMissing,
+                   numMajors);
+    }
+
     template<typename Container>
     void addRow_impl(Container container, 
                      decltype(std::declval<Container>().size()),
@@ -1834,6 +2031,102 @@ protected:
                allowMissing);
     }
 
+    template<typename Container,
+             typename = decltype(std::declval<Container>().size())>
+    void addRows_impl(Container container,
+                      size_t numColumns,
+                      bool allowMissing,
+                      size_t numRows) {
+        if(data_.nrow() == 0 || data_.ncol() == 0) {
+            if(numColumns == 0)
+                throw InvalidEntry{"DataTable is empty. Argument 'numColumns' "
+                        "must be provided and it cannot be zero."};
+            if(numRows == 0) {
+                auto res = std::div(container.size(), numColumns);
+
+                if(!allowMissing && res.rem != 0)
+                    throw NotEnoughElements{"The container does not have enough"
+                            " elements add full rows. Last "
+                            "row received " + std::string(res.rem) + 
+                            " elements. Expected " + 
+                            std::to_string(numColumns) + " elements " 
+                            "(numColumns). Missing values are not " 
+                            "allowed (allowMissing)."};
+                
+                numRows = res.rem == 0 ? res.quot : res.quot + 1;
+            } else {
+                if(numRows * numColumns < container.size())
+                    throw TooManyElements{"The container has more elements than"
+                            " needed to add " + std::to_string(numRows) + 
+                            " rows (numRows) with "
+                            + std::to_string(numColumns) + " columns "
+                            "(numColumns). Expected = " + 
+                            std::to_string(numRows * numColumns) + 
+                            " elements,  Received = " + 
+                            std::to_string(container.size()) + " elements."};
+                if(numRows * numColumns > container.size() && !allowMissing)
+                    throw NotEnoughElements{"The container does not have enough"
+                            " elements to add " + std::to_string(numRows) + 
+                            " rows (numRows) with " + std::to_string(numColumns)
+                            + " columns (numColumns). Expected = " + 
+                            std::to_string(numRows * numColumns) +
+                            " elements. Received = " + 
+                            std::to_string(container.size()) + " elements."};
+            }
+        } else {
+            if(numRows == 0) {
+                auto res = std::div(container.size(), data_.ncol());
+                
+                if(!allowMissing && res.rem != 0)
+                    throw NotEnoughElements{"The container does not have enough"
+                            " elements to add full rows. Last "
+                            "row received " + std::string(res.rem) + 
+                            " elements. Expected " + 
+                            std::to_string(data_.ncol()) + " elements " 
+                            "(getNumColumns()). Missing values are not " 
+                            "allowed (allowMissing)."};
+
+                numRows = res.rem = 0 ? res.quot : res.quot + 1;
+            } else {
+                if(numRows * data_.ncol() < container.size())
+                    throw TooManyElements{"The container has more elements than"
+                            " needed to add " + std::to_string(numRows) + 
+                            " rows (numRows) with " + 
+                            std::to_string(data_.ncol()) + " columns "
+                            "(getNumColumns()). Expected = " + 
+                            std::to_string(numRows * data_.ncol()) + 
+                            " elements,  Received = " + 
+                            std::to_string(container.size()) + " elements."};
+                if(numRows * data_.ncol() > container.size() && !allowMissing)
+                    throw NotEnoughElements{"The container does not have enough"
+                            " elements to add " + std::to_string(numRows) + 
+                            " rows (numRows) with " + 
+                            std::to_string(data_.ncol()) +
+                            " columns (numColumns). Expected = " + 
+                            std::to_string(numRows * data_.ncol()) +
+                            " elements. Received = " + 
+                            std::to_string(container.size()) + " elements."};
+            }
+        }
+
+        addRows(container.begin(),
+                container.end(),
+                numColumns,
+                allowMissing,
+                numRows);
+    }
+    template<typename Container>
+    void addRows_impl(Container container,
+                      size_t numColumns,
+                      unsigned allowMissing,
+                      size_t numRows) {
+        addRows(container.begin(),
+                container.end(),
+                numColumns,
+                allowMissing,
+                numRows);
+    }
+
     template<typename Container>
     void addColumn_impl(Container container, 
                         decltype(std::declval<Container>().size()),
@@ -1851,6 +2144,103 @@ protected:
                   container.end(),
                   numColumnsHint,
                   allowMissing);
+    }
+
+    template<typename Container,
+             typename = decltype(std::declval<Container>().size())>
+    void addColumns_impl(Container container,
+                         size_t numRows,
+                         bool allowMissing,
+                         size_t numColumns) {
+        if(data_.nrow() == 0 || data_.ncol() == 0) {
+            if(numRows == 0)
+                throw InvalidEntry{"DataTable is empty. Argument 'numRows' "
+                        "must be provided and it cannot be zero."};
+            if(numColumns == 0) {
+                auto res = std::div(container.size(), numRows);
+
+                if(!allowMissing && res.rem != 0)
+                    throw NotEnoughElements{"The container does not have enough"
+                            " elements add full columns. Last "
+                            "column received " + std::string(res.rem) + 
+                            " elements. Expected " + 
+                            std::to_string(numRows) + " elements " 
+                            "(numRows). Missing values are not " 
+                            "allowed (allowMissing)."};
+                
+                numColumns = res.rem == 0 ? res.quot : res.quot + 1;
+            } else {
+                if(numRows * numColumns < container.size())
+                    throw TooManyElements{"The container has more elements than"
+                            " needed to add " + std::to_string(numColumns) + 
+                            " columns (numColumns) with "
+                            + std::to_string(numRows) + " rows "
+                            "(numRows). Expected = " + 
+                            std::to_string(numRows * numColumns) + 
+                            " elements,  Received = " + 
+                            std::to_string(container.size()) + " elements."};
+                if(numRows * numColumns > container.size() && !allowMissing)
+                    throw NotEnoughElements{"The container does not have enough"
+                            " elements to add " + std::to_string(numColumns) + 
+                            " columns (numColumns) with " + 
+                            std::to_string(numRows) + " rows (numRows). "
+                            "Expected = " + std::to_string(numRows * numColumns)
+                            + " elements, Received = " + 
+                            std::to_string(container.size()) + " elements."};
+            }
+        } else {
+            if(numColumns == 0) {
+                auto res = std::div(container.size(), data_.ncol());
+                
+                if(!allowMissing && res.rem != 0)
+                    throw NotEnoughElements{"The container does not have enough"
+                            " elements to add full columns. Last "
+                            "column received " + std::string(res.rem) + 
+                            " elements. Expected " + 
+                            std::to_string(data_.nrow()) + " elements " 
+                            "(getNumRows()). Missing values are not " 
+                            "allowed (allowMissing)."};
+
+                numColumns = res.rem = 0 ? res.quot : res.quot + 1;
+            } else {
+                if(data_.nrow() * numColumns < container.size())
+                    throw TooManyElements{"The container has more elements than"
+                            " needed to add " + std::to_string(numColumns) + 
+                            " columns (numColumns) with " + 
+                            std::to_string(data_.nrow()) + " rows "
+                            "(getNumRows()). Expected = " + 
+                            std::to_string(data_.nrow() * numColumns) + 
+                            " elements,  Received = " + 
+                            std::to_string(container.size()) + " elements."};
+                if(data_.nrow() * numColumns > container.size() && 
+                   !allowMissing)
+                    throw NotEnoughElements{"The container does not have enough"
+                            " elements to add " + std::to_string(numColumns) + 
+                            " columns (numColumns) with " + 
+                            std::to_string(data_.nrow()) +
+                            " rows (numRows). Expected = " + 
+                            std::to_string(data_.nrow() * numColumns) +
+                            " elements. Received = " + 
+                            std::to_string(container.size()) + " elements."};
+            }
+        }
+
+        addColumns(container.begin(),
+                   container.end(),
+                   numRows,
+                   allowMissing,
+                   numColumns);
+    }
+    template<typename Container>
+    void addColumns_impl(Container container,
+                         size_t numRows,
+                         unsigned allowMissing,
+                         size_t numColumns) {
+        addColumns(container.begin(),
+                   container.end(),
+                   numRows,
+                   allowMissing,
+                   numColumns);
     }
 
     // Helper function. Check if a row exists and throw an exception if it does
