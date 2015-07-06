@@ -142,8 +142,8 @@ template<typename Iter>
 constexpr bool is_dereferencable = is_dereferencable_t<Iter>::value;
 
 
-// Compile time check to see if two types are the same after stripping 
-// reference and cv qualifiers.
+// Compile time checks to see two types are the same after stripping reference 
+// and cv qualifiers.
 template<typename T>
 using rmv_ref_t = typename std::remove_reference<T>::type;
 
@@ -899,10 +899,10 @@ public:
         static_assert(is_dereferencable<InputIt>, "Input iterator (InputIt) is "
                       "not dereferencable. It does not support 'operator*()'.");
 
-        static_assert(is_same<ET, decltype(*first)>, "The type of the value "
-                      "produced by dereferencing the input iterator (InputIt) "
-                      "does not match template parameter ET used to " 
-                      "instantiate DataTable.");
+        static_assert(std::is_constructible<ET, decltype(*first)>::value, 
+                      "The type of the value produced by dereferencing the "
+                      "input iterator (InputIt) does not match template "
+                      "parameter ET used to instantiate DataTable.");
 
         static_assert(is_eq_comparable<InputIt>, "Input iterator does not " 
                       "support 'operator==' and so is not comparable for " 
@@ -1000,7 +1000,7 @@ public:
     }
 
     template<typename Container>
-    DataTable_(Container container,
+    DataTable_(const Container& container,
                size_t numEntriesInMajor,
                TraverseDir dimension = TraverseDir::RowMajor,
                bool allowMissing     = false,
@@ -1313,10 +1313,10 @@ public:
         static_assert(is_dereferencable<InputIt>, "Input iterator (InputIt) is "
                       "not dereferencable. It does not support 'operator*()'.");
 
-        static_assert(is_same<ET, decltype(*first)>, "The type of the value "
-                      "produced by dereferencing the input iterator (InputIt) "
-                      "does not match template parameter ET used to " 
-                      "instantiate DataTable.");
+        static_assert(std::is_constructible<ET, decltype(*first)>::value, 
+                      "The type of the value produced by dereferencing the "
+                      "input iterator (InputIt) does not match template "
+                      "parameter ET used to instantiate DataTable.");
 
         static_assert(is_eq_comparable<InputIt>, "Input iterator does not " 
                       "support 'operator==' and so is not comparable for " 
@@ -1430,10 +1430,10 @@ public:
         static_assert(is_dereferencable<InputIt>, "Input iterator (InputIt) is "
                       "not dereferencable. It does not support 'operator*()'.");
 
-        static_assert(is_same<ET, decltype(*first)>, "The type of the value "
-                      "produced by dereferencing the input iterator (InputIt) "
-                      "does not match template parameter ET used to " 
-                      "instantiate DataTable.");
+        static_assert(std::is_constructible<ET, decltype(*first)>::value, 
+                      "The type of the value produced by dereferencing the "
+                      "input iterator (InputIt) does not match template "
+                      "parameter ET used to instantiate DataTable.");
 
         static_assert(is_eq_comparable<InputIt>, "Input iterator does not " 
                       "support 'operator==' and so is not comparable for " 
@@ -1504,7 +1504,7 @@ public:
     }
 
     template<typename Container>
-    void addRows(Container container,
+    void addRows(const Container& container,
                  size_t numColumns = 0,
                  bool allowMissing = false,
                  size_t numRows    = 0) {
@@ -1599,10 +1599,10 @@ public:
         static_assert(is_dereferencable<InputIt>, "Input iterator (InputIt) is "
                       "not dereferencable. It does not support 'operator*()'.");
 
-        static_assert(is_same<ET, decltype(*first)>, "The type of the value "
-                      "produced by dereferencing the input iterator (InputIt) "
-                      "does not match template parameter ET used to " 
-                      "instantiate DataTable.");
+        static_assert(std::is_constructible<ET, decltype(*first)>::value, 
+                      "The type of the value produced by dereferencing the "
+                      "input iterator (InputIt) does not match template "
+                      "parameter ET used to instantiate DataTable.");
 
         static_assert(is_eq_comparable<InputIt>, "Input iterator does not " 
                       "support 'operator==' and so is not comparable for " 
@@ -1717,10 +1717,10 @@ public:
         static_assert(is_dereferencable<InputIt>, "Input iterator (InputIt) is "
                       "not dereferencable. It does not support 'operator*()'.");
 
-        static_assert(is_same<ET, decltype(*first)>, "The type of the value "
-                      "produced by dereferencing the input iterator (InputIt) "
-                      "does not match template parameter ET used to " 
-                      "instantiate DataTable.");
+        static_assert(std::is_constructible<ET, decltype(*first)>::value, 
+                      "The type of the value produced by dereferencing the "
+                      "input iterator (InputIt) does not match template "
+                      "parameter ET used to instantiate DataTable.");
 
         static_assert(is_eq_comparable<InputIt>, "Input iterator does not " 
                       "support 'operator==' and so is not comparable for " 
@@ -1791,7 +1791,7 @@ public:
     }
 
     template<typename Container>
-    void addColumns(Container container,
+    void addColumns(const Container& container,
                     size_t numRows    = 0,
                     bool allowMissing = false,
                     size_t numColumns = 0) {
@@ -1919,7 +1919,7 @@ public:
 protected:
     template<typename Container, 
              typename = decltype(std::declval<Container>().size())>
-    void DataTable__impl(Container container,
+    void DataTable__impl(const Container& container,
                          size_t numEntriesInMajor,
                          TraverseDir dimension,
                          bool allowMissing,
@@ -1999,7 +1999,7 @@ protected:
                    numMajors);
     }
     template<typename Container>
-    void DataTable__impl(Container container,
+    void DataTable__impl(const Container& container,
                          size_t numEntriesInMajor,
                          TraverseDir dimension,
                          unsigned allowMissing,
@@ -2013,7 +2013,7 @@ protected:
     }
 
     template<typename Container>
-    void addRow_impl(Container container, 
+    void addRow_impl(const Container& container, 
                      decltype(std::declval<Container>().size()),
                      bool allowMissing) {
         addRow(container.begin(), 
@@ -2022,7 +2022,7 @@ protected:
                allowMissing);
     }
     template<typename Container>
-    void addRow_impl(Container container,
+    void addRow_impl(const Container& container,
                      size_t numColumnsHint,
                      unsigned allowMissing) {
         addRow(container.begin(),
@@ -2033,7 +2033,7 @@ protected:
 
     template<typename Container,
              typename = decltype(std::declval<Container>().size())>
-    void addRows_impl(Container container,
+    void addRows_impl(const Container& container,
                       size_t numColumns,
                       bool allowMissing,
                       size_t numRows) {
@@ -2116,7 +2116,7 @@ protected:
                 numRows);
     }
     template<typename Container>
-    void addRows_impl(Container container,
+    void addRows_impl(const Container& container,
                       size_t numColumns,
                       unsigned allowMissing,
                       size_t numRows) {
@@ -2128,7 +2128,7 @@ protected:
     }
 
     template<typename Container>
-    void addColumn_impl(Container container, 
+    void addColumn_impl(const Container& container, 
                         decltype(std::declval<Container>().size()),
                         bool allowMissing) {
         addColumn(container.begin(), 
@@ -2137,7 +2137,7 @@ protected:
                   allowMissing);
     }
     template<typename Container>
-    void addColumn_impl(Container container,
+    void addColumn_impl(const Container& container,
                         size_t numColumnsHint,
                         unsigned allowMissing) {
         addColumn(container.begin(),
@@ -2148,7 +2148,7 @@ protected:
 
     template<typename Container,
              typename = decltype(std::declval<Container>().size())>
-    void addColumns_impl(Container container,
+    void addColumns_impl(const Container& container,
                          size_t numRows,
                          bool allowMissing,
                          size_t numColumns) {
@@ -2232,7 +2232,7 @@ protected:
                    numColumns);
     }
     template<typename Container>
-    void addColumns_impl(Container container,
+    void addColumns_impl(const Container& container,
                          size_t numRows,
                          unsigned allowMissing,
                          size_t numColumns) {
@@ -2409,12 +2409,30 @@ public:
     }
 
     template<typename InputIt>
-    void addTimestamps(InputIt first, InputIt last) {
-        using IterValue = typename std::iterator_traits<InputIt>::value_type;
-        static_assert(std::is_constructible<TS, IterValue>::value,
-                      "Input iterator must produce values of type that is "
-                      "convertible to type of timestamp column (template " 
-                      "parameter 'TS').");
+    void addTimestamps(InputIt first, 
+                       InputIt last) {
+        {
+        using namespace internal;
+        static_assert(is_dereferencable<InputIt>, "Input iterator (InputIt) is "
+                      "not dereferencable. It does not support 'operator*()'.");
+
+        static_assert(std::is_constructible<TS, decltype(*first)>::value, 
+                      "The type of the value produced by dereferencing the "
+                      "input iterator (InputIt) does not match template "
+                      "parameter TS (timestamp) used to instantiate "
+                      "DataTable.");
+
+        static_assert(is_eq_comparable<InputIt>, "Input iterator does not " 
+                      "support 'operator==' and so is not comparable for " 
+                      "equality.");
+
+        static_assert(is_neq_comparable<InputIt>, "Input iterator does not " 
+                      "support 'operator!=' and so is not comparable for " 
+                      "inequality.");
+        }
+
+        if(first == last)
+            throw ZeroElements{"Input iterator produced zero elements"};
 
         throwIfDataHasZeroRows();
 
@@ -2429,13 +2447,25 @@ public:
 
     template<typename Container>
     void addTimestamps(const Container& container) {
-        using ContainerIter = typename Container::iterator;
-        using ContainerIterTraits = std::iterator_traits<ContainerIter>;
-        using ContainerIterValue = typename ContainerIterTraits::value_type;
-        static_assert(std::is_constructible<TS, ContainerIterValue>::value,
-                      "The input container must support an iterator that "
-                      "produces elements of type that is convertible to the " 
-                      "type of timestamp column (template parameter 'TS').");
+        {
+        using namespace internal;
+        static_assert(has_mem_begin<Container>, "Input container does not have "
+                      "a member function named begin(). Input container is " 
+                      "required to have members begin() and end() that return " 
+                      "an iterator to the container.");
+
+        static_assert(has_mem_end<Container>, "Input container does not have "
+                      "a member function named end(). Input container is " 
+                      "required to have members begin() and end() that return " 
+                      "an iterator to the container.");
+
+        static_assert(std::is_same<decltype(container.begin()),
+                                   decltype(container.end())>::value,
+                      "The member functions begin() and end() of input " 
+                      "container do not produce the same type. Input container "
+                      "is reuiqred to have members begin() and end() that " 
+                      "return an iterator to the container.");
+        }
 
         addTimestamps(container.begin(), container.end());
     }
@@ -2444,6 +2474,21 @@ public:
     void addTimestampAndRow(TS timestamp, ArgsToAddRow&&... argsToAddRow) {
         this-addRow(std::forward<ArgsToAddRow>(argsToAddRow)...);
         addTimestamp(timestamp);
+    }
+
+    template<typename TimestampInputIt, typename... ArgsToAddRows>
+    void addTimestampsAndRows(TimestampInputIt timestampFirst,
+                              TimestampInputIt timestampLast,
+                              ArgsToAddRows&&... argsToAddRows) {
+        this->addRows(std::forward<ArgsToAddRows>(argsToAddRows)...);
+        addTimestamps(timestampFirst, timestampLast);
+    }
+
+    template<typename TimestampContainer, typename... ArgsToAddRows>
+    void addTimestampsAndRows(const TimestampContainer& timestampContainer,
+                              ArgsToAddRows&&... argsToAddRows) {
+        this->addRows(std::forward<ArgsToAddRows>(argsToAddRows)...);
+        addTimestamps(timestampContainer);
     }
 
     TS getTimestamp(size_t rowIndex) const {

@@ -2585,7 +2585,7 @@ int main() {
                                          "col-four"};
     tsdt.setColumnLabels(tsdt_labels);
 
-    tsdt.addTimestamps(std::vector<long>{1, 2, 3});
+    tsdt.addTimestamps(std::vector<double>{1, 2, 3});
 
     return 0;
 }
