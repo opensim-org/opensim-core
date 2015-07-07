@@ -2064,18 +2064,25 @@ void Model::realizeReport(const SimTK::State& state) const
 {
     getSystem().realize(state, Stage::Report);
 }
+//------------------------------------------------------------------------------
+//       OVERRIDDEN METHOD TO COMPUTE CONTROLS DURING REALIZE VELOCITY
+//------------------------------------------------------------------------------
 void Model::extendRealizeVelocity(const SimTK::State& state) const
 {
     Super::extendRealizeVelocity(state);
-
     Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
 
-    // Always reset controls to their default values before computing controls
-    // since default behavior is for controllors to "addInControls" so there should be valid
-    // values to begin with.
-    controlsCache.updValue(state) = _defaultControls;
-    computeControls(state, controlsCache.updValue(state));
-    controlsCache.markAsValid(state);
+    //Calculate the controls cache before we realize dynamics and call calcForces (possibly in parallel).
+    //Note: If the shared controls cache is calculated inside of calcForces and the force in which it is
+    //being calculated is parallel, a data race may occur to mark the controlsCache as valid/invalid.
+    if(!controlsCache.isValid(s)){
+      // Always reset controls to their default values before computing controls
+      // since default behavior is for controllors to "addInControls" so there should be valid
+      // values to begin with.
+      controlsCache.updValue(state) = _defaultControls;
+      computeControls(state, controlsCache.updValue(state));
+      controlsCache.markAsValid(state);
+    }
 }
 
 /**

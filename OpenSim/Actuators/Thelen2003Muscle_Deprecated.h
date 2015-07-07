@@ -79,7 +79,9 @@ public:
     OpenSim_DECLARE_PROPERTY(Flen, double,
         "maximum normalized lengthening force");
 
-    //Parallelism Method Overrides
+    //Parallelism Method Override
+    //Note: Forces cannot be flagged as parallel if they modify (recalculate) system controls
+    //during calcForces
     bool isParallelByDefault() const override;
     /**@}**/
 
