@@ -158,7 +158,7 @@ void Millard2012EquilibriumMuscle::buildMuscle()
         // Compute the minimum active fiber length (in meters)
         double minActiveFiberLength = falCurve.getMinActiveFiberLength()
                                       * getOptimalFiberLength();
- 
+
         // Minimum pennated fiber length (in meters)
         double minPennatedFiberLength = penMdl.getMinimumFiberLength();
         m_minimumFiberLength = max(minActiveFiberLength,minPennatedFiberLength);
@@ -182,6 +182,9 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
     buildMuscle();
 }
 
+bool Millard2012EquilibriumMuscle::isParallelByDefault() const{
+  return true;
+}
 //==============================================================================
 // CONSTRUCTORS
 //==============================================================================
@@ -1691,7 +1694,7 @@ calcActiveFiberForceAlongTendon(double activation,
                             + ":calcActiveFiberForceAlongTendon\n" + x.what();
         throw OpenSim::Exception(msg);
     }
-  
+
     return activeFiberForce;
 }
 

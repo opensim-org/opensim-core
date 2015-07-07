@@ -44,67 +44,67 @@ namespace OpenSim {
 //                          THELEN 2003 MUSCLE
 //==============================================================================
 /**
- Implementation of a two state (activation and fiber-length) Muscle model by 
+ Implementation of a two state (activation and fiber-length) Muscle model by
  Thelen 2003.\ This a complete rewrite of a previous implementation (present in
  OpenSim 2.4 and earlier) contained numerous errors.
 
  The Thelen2003Muscle model uses a standard equilibrium muscle equation
 
- \f[ (a(t) f_{AL}(l_{CE}) f_{V}(\dot{l}_{CE}) 
+ \f[ (a(t) f_{AL}(l_{CE}) f_{V}(\dot{l}_{CE})
  - f_{PE}(l_{CE}))\cos \phi - f_{SE}(l_{T}) = 0  \f]
 
- Rearranging the above equation and solving for \f$ f_{V}(\dot{l}_{CE}) \f$ 
+ Rearranging the above equation and solving for \f$ f_{V}(\dot{l}_{CE}) \f$
  yields
 
- \f[ f_{V}(\dot{l}_{CE}) = 
+ \f[ f_{V}(\dot{l}_{CE}) =
  \frac{ \frac{f_{SE}(l_{T})}{\cos\phi} - f_{PE}(l_{CE}) }{ a(t) f_{AL}(l_{CE}) }
  \f]
 
  The force velocity curve is usually inverted to compute the fiber velocity,
- 
- \f[ \dot{l}_{CE} = f_{V}^{-1}( 
+
+ \f[ \dot{l}_{CE} = f_{V}^{-1}(
  \frac{ \frac{f_{SE}(l_{T})}{\cos\phi} - f_{PE}(l_{CE}) }{ a(t) f_{AL}(l_{CE}) }
  )
  \f]
 
- which is then integrated to simualate the musculotendon dynamics. In general, 
+ which is then integrated to simualate the musculotendon dynamics. In general,
  the previous equation has 4 singularity conditions:
 
  -# \f$ a(t) \rightarrow 0 \f$
  -# \f$ f_{AL}(l_{CE}) \rightarrow 0 \f$
  -# \f$ \phi \rightarrow \frac{\pi}{2} \f$
- -# \f$ f_{V}(\dot{l}_{CE}) \le 0 \f$ or 
+ -# \f$ f_{V}(\dot{l}_{CE}) \le 0 \f$ or
     \f$ f_{V}(\dot{l}_{CE}) \ge F^M_{len}\f$
 
- This implementation has been slightly modified from the model presented in the 
+ This implementation has been slightly modified from the model presented in the
  journal paper (marked with a *) to prevent some of these singularities:
- 
- -# *\f$ a(t) \rightarrow a_{min} > 0 \f$ : A modified activation dynamic 
-    equation is used - MuscleFirstOrderActivationDynamicModel - which smoothly 
+
+ -# *\f$ a(t) \rightarrow a_{min} > 0 \f$ : A modified activation dynamic
+    equation is used - MuscleFirstOrderActivationDynamicModel - which smoothly
     approaches some minimum value that is greater than zero.
- -# \f$ f_{AL}(l_{CE}) > 0 \f$ . The active force length curve of the Thelen 
+ -# \f$ f_{AL}(l_{CE}) > 0 \f$ . The active force length curve of the Thelen
     muscle is a Gaussian, which is always greater than 0.
- -# \f$ \phi \rightarrow \frac{\pi}{2} \f$ . This singularity cannot be removed 
-    without changing the first equation, and still exists in the present 
+ -# \f$ \phi \rightarrow \frac{\pi}{2} \f$ . This singularity cannot be removed
+    without changing the first equation, and still exists in the present
     Thelen2003Muscle formulation.
- -# *\f$ f_{V}(\dot{l}_{CE}) \le 0 \f$ or 
-    \f$ f_{V}(\dot{l}_{CE}) \ge F^M_{len}\f$: Equation 6 in Thelen 2003 has been 
-    modified so that \f$ V^M \f$ is linearly extrapolated when \f$ F^M < 0\f$ 
-    (during a concentric contraction), and when \f$ F^M > 0.95 F^M_{len}\f$ 
-    (during an eccentric contraction). These two modifications make the force 
-    velocity curve invertible. The original force velocity curve as published 
-    by Thelen was not invertible.   
- -# A unilateral constraint has been implemented to prevent the fiber from 
+ -# *\f$ f_{V}(\dot{l}_{CE}) \le 0 \f$ or
+    \f$ f_{V}(\dot{l}_{CE}) \ge F^M_{len}\f$: Equation 6 in Thelen 2003 has been
+    modified so that \f$ V^M \f$ is linearly extrapolated when \f$ F^M < 0\f$
+    (during a concentric contraction), and when \f$ F^M > 0.95 F^M_{len}\f$
+    (during an eccentric contraction). These two modifications make the force
+    velocity curve invertible. The original force velocity curve as published
+    by Thelen was not invertible.
+ -# A unilateral constraint has been implemented to prevent the fiber from
     approaching a fiber length that is smaller than 0.01*optimal fiber length,
-    or a fiber length that creates a pennation angle greater than the maximum 
-    pennation angle specified by the pennation model. Note that this unilateral 
-    constraint does not prevent the muscle fiber from becoming shorter than is 
-    physiologically possible (that is shorter than approximately half a 
+    or a fiber length that creates a pennation angle greater than the maximum
+    pennation angle specified by the pennation model. Note that this unilateral
+    constraint does not prevent the muscle fiber from becoming shorter than is
+    physiologically possible (that is shorter than approximately half a
     normalized fiber length).
 
   <B> References </B>
 
-   DG Thelen, Adjustment of muscle mechanics model parameters to simulate dynamic 
+   DG Thelen, Adjustment of muscle mechanics model parameters to simulate dynamic
  contractions in older adults. Journal of biomechanical engineering, 2003.
 
  @author Matt Millard
@@ -117,7 +117,7 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
+    /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(FmaxTendonStrain, double,
@@ -127,13 +127,13 @@ public:
         "passive muscle strain at maximum isometric muscle force");
 
     OpenSim_DECLARE_PROPERTY(KshapeActive, double,
-        "shape factor for Gaussian active muscle force-length relationship");   
+        "shape factor for Gaussian active muscle force-length relationship");
 
     OpenSim_DECLARE_PROPERTY(KshapePassive, double,
-        "exponential shape factor for passive force-length relationship");   
+        "exponential shape factor for passive force-length relationship");
 
     OpenSim_DECLARE_PROPERTY(Af, double,
-        "force-velocity shape factor"); 
+        "force-velocity shape factor");
 
     OpenSim_DECLARE_PROPERTY(Flen, double,
         "maximum normalized lengthening force");
@@ -162,7 +162,7 @@ public:
                     double aOptimalFiberLength,double aTendonSlackLength,
                     double aPennationAngle);
 
-    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // Uses default (compiler-generated) destructor, copy constructor, copy
     // assignment operator.
 
 //==============================================================================
@@ -182,25 +182,26 @@ public:
     void setMinimumActivation(double minimumActivation);
     double getMaximumPennationAngle() const;
     void setMaximumPennationAngle(double maximumPennationAngle);
+    bool isParallelByDefault() const override;
     /**@}**/
 
     /**
      @returns the minimum fiber length, which is the maximum of two values:
-        the smallest fiber length allowed by the pennation model, and the 
+        the smallest fiber length allowed by the pennation model, and the
         minimum fiber length in the active force length curve. When the fiber
-        length reaches this value, it is constrained to this value until the 
+        length reaches this value, it is constrained to this value until the
         fiber velocity goes positive.
     */
     double getMinimumFiberLength() const;
 
     /**
-   @returns the MuscleFirstOrderActivationDynamicModel 
+   @returns the MuscleFirstOrderActivationDynamicModel
             that this muscle model uses
    */
     const MuscleFirstOrderActivationDynamicModel& getActivationModel() const;
 
     /**
-   @returns the MuscleFixedWidthPennationModel 
+   @returns the MuscleFixedWidthPennationModel
             that this muscle model uses
    */
     const MuscleFixedWidthPennationModel& getPennationModel() const;
@@ -208,7 +209,7 @@ public:
 //==============================================================================
 // Public Convenience Methods
 //==============================================================================
-    void printCurveToCSVFile(const CurveType ctype, 
+    void printCurveToCSVFile(const CurveType ctype,
                             const std::string& path);
 
 //==============================================================================
@@ -218,15 +219,15 @@ public:
     double computeActuation(const SimTK::State& s) const override;
 
 
-    /** Compute initial fiber length (velocity) such that muscle fiber and 
+    /** Compute initial fiber length (velocity) such that muscle fiber and
         tendon are in static equilibrium and update the state
-        
+
         Part of the Muscle.h interface
     */
     void computeInitialFiberEquilibrium(SimTK::State& s) const override;
-       
-    ///@cond TO BE DEPRECATED. 
-    /*  Once the ignore_tendon_compliance flag is implemented correctly get rid 
+
+    ///@cond TO BE DEPRECATED.
+    /*  Once the ignore_tendon_compliance flag is implemented correctly get rid
         of this method as it duplicates code in calcMuscleLengthInfo,
         calcFiberVelocityInfo, and calcMuscleDynamicsInfo
     */
@@ -235,13 +236,13 @@ public:
     @param fiberLength in (m)
     @param fiberVelocity in (m/s)
     @returns the force component generated by the fiber that is associated only
-             with activation (the parallel element is not included)   
+             with activation (the parallel element is not included)
     */
-    double calcActiveFiberForceAlongTendon( double activation, 
-                                            double fiberLength, 
-                                            double fiberVelocity) const; 
+    double calcActiveFiberForceAlongTendon( double activation,
+                                            double fiberLength,
+                                            double fiberVelocity) const;
 
-    double calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
+    double calcInextensibleTendonActiveFiberForce(SimTK::State& s,
                                              double aActivation)
         const override final;
     ///@endcond
@@ -253,17 +254,17 @@ protected:
 
     /**calculate muscle's position related values such fiber and tendon lengths,
     normalized lengths, pennation angle, etc... */
-    void calcMuscleLengthInfo(const SimTK::State& s, 
+    void calcMuscleLengthInfo(const SimTK::State& s,
                               MuscleLengthInfo& mli) const override;
 
-    /** calculate muscle's velocity related values such fiber and tendon 
+    /** calculate muscle's velocity related values such fiber and tendon
         velocities,normalized velocities, pennation angular velocity, etc... */
-    void  calcFiberVelocityInfo(const SimTK::State& s, 
-                                      FiberVelocityInfo& fvi) const override; 
+    void  calcFiberVelocityInfo(const SimTK::State& s,
+                                      FiberVelocityInfo& fvi) const override;
 
-    /** calculate muscle's active and passive force-length, force-velocity, 
+    /** calculate muscle's active and passive force-length, force-velocity,
         tendon force, relationships and their related values */
-    void  calcMuscleDynamicsInfo(const SimTK::State& s, 
+    void  calcMuscleDynamicsInfo(const SimTK::State& s,
                                     MuscleDynamicsInfo& mdi) const override;
 
     /** calculate muscle's fiber and tendon potential energy */
@@ -271,7 +272,7 @@ protected:
         MusclePotentialEnergyInfo& mpei) const;
 
     /** Calculate activation rate */
-    double calcActivationRate(const SimTK::State& s) const override; 
+    double calcActivationRate(const SimTK::State& s) const override;
 
     /** Component interface. */
     void extendFinalizeFromProperties() override;
@@ -306,26 +307,26 @@ private:
     SimTK::Vector initMuscleState(SimTK::State& s, double aActivation,
                              double aSolTolerance, int aMaxIterations) const;
 
-    
-    double calcFm(double ma, double fal, double fv, 
+
+    double calcFm(double ma, double fal, double fv,
                  double fpe, double fiso) const;
 
-    double calcActiveFm(double ma, double fal, 
+    double calcActiveFm(double ma, double fal,
                         double fv, double fiso) const;
 
     //Stiffness related functions
-    double calcDFmDlce(double lce, double a,  double fv, 
+    double calcDFmDlce(double lce, double a,  double fv,
                       double fiso, double ofl) const;
 
-    double calcDFmATDlce(double lce, double phi, double cosphi, 
+    double calcDFmATDlce(double lce, double phi, double cosphi,
     double Fm, double d_Fm_d_lce, double penHeight) const;
 
-    double calcDFseDlce(double tl, double lce, double phi, double cosphi, 
+    double calcDFseDlce(double tl, double lce, double phi, double cosphi,
                                     double fiso, double tsl, double vol) const;
 
     double calcDFseDtl(double tl, double fiso, double tsl) const;
-    
-    
+
+
     //Tendon related helper functions
     double calcfse(double tlN) const;
     double calcDfseDtlN(double tlN) const;
@@ -335,29 +336,29 @@ private:
     double calcfal( double lceN) const;
     double calcDfalDlceN( double lceN) const;
 
-    //Parallel element functions    
+    //Parallel element functions
     double calcfpe(double lceN) const;
     double calcDfpeDlceN(double lceN) const;
-    double calcfpefisoPE(double lceN) const;    
+    double calcfpefisoPE(double lceN) const;
 
-    //Force velocity functions      
+    //Force velocity functions
     double calcdlceN(double act,double fal, double actFalFv) const;
     double calcfv(double aFse, double aFpe, double aFal,
                   double aCosPhi, double aAct) const;
-    SimTK::Vector calcfvInv(double aAct,  double aFal, double dlceN, 
+    SimTK::Vector calcfvInv(double aAct,  double aFal, double dlceN,
                             double tolerance, int maxIterations) const;
-    double calcDdlceDaFalFv(double aAct, double fal, 
+    double calcDdlceDaFalFv(double aAct, double fal,
                             double aFalFv) const;
 
-    //Returns true if the fiber state is currently clamped to prevent the 
+    //Returns true if the fiber state is currently clamped to prevent the
     //fiber from attaining a length that is too short.
-    bool isFiberStateClamped(const SimTK::State& s, 
+    bool isFiberStateClamped(const SimTK::State& s,
                             double dlceN) const;
 
     void printMatrixToFile(SimTK::Matrix& data, SimTK::Array_<std::string>& colNames,
     const std::string& path, const std::string& filename) const;
 
-};    
+};
 } // end of namespace OpenSim
 
 #endif // OPENSIM_THELEN_2003_MUSCLE_H_

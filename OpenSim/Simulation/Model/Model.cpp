@@ -110,7 +110,7 @@ Model::Model(const string &aFileName, const bool finalize) :
     _allControllersEnabled(true),
     _system(NULL),
     _workingState()
-{   
+{
     constructInfrastructure();
     setNull();
     updateFromXMLDocument();
@@ -135,7 +135,7 @@ Model::~Model()
     delete _gravityForce;
     delete _forceSubsystem;
     delete _matter;
-    delete _system; 
+    delete _system;
 }
 //_____________________________________________________________________________
 /**
@@ -145,7 +145,7 @@ Model::~Model()
 /*virtual*/
 void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-    
+
     if (versionNumber < XMLDocument::getLatestVersion()){
         cout << "Updating Model file from " << versionNumber << " to latest format..." << endl;
         // Version has to be 1.6 or later, otherwise assert
@@ -244,7 +244,7 @@ void Model::constructProperties()
     constructProperty_credits("Frank Anderson, Peter Loan, Ayman Habib, Ajay Seth, Michael Sherman");
 
     constructProperty_publications("List of publications related to model...");
-    
+
     constructProperty_length_units("meters");
     _lengthUnits = Units::Meters;
 
@@ -309,18 +309,18 @@ void Model::buildSystem() {
 //------------------------------------------------------------------------------
 // Requires that buildSystem() has already been called.
 SimTK::State& Model::initializeState() {
-    if (!_system) 
+    if (!_system)
         throw Exception("Model::initializeState(): call buildSystem() first.");
 
     // This tells Simbody to finalize the System.
     getMultibodySystem().invalidateSystemTopologyCache();
     getMultibodySystem().realizeTopology();
 
-    // Set the model's operating state (internal member variable) to the 
+    // Set the model's operating state (internal member variable) to the
     // default state that is stored inside the System.
     _workingState = getMultibodySystem().getDefaultState();
 
-    // Set the Simbody modeling option that tells any joints that use 
+    // Set the Simbody modeling option that tells any joints that use
     // quaternions to use Euler angles instead.
     _matter->setUseEulerAngles(_workingState, true);
 
@@ -330,8 +330,8 @@ SimTK::State& Model::initializeState() {
     // Invoke the ModelComponent interface for initializing the state.
     initStateFromProperties(_workingState);
 
-    // Realize instance variables that may have been set above. This 
-    // means floating point parameters such as mass properties and 
+    // Realize instance variables that may have been set above. This
+    // means floating point parameters such as mass properties and
     // geometry placements are frozen.
     getMultibodySystem().realize(_workingState, Stage::Instance);
 
@@ -345,7 +345,7 @@ SimTK::State& Model::initializeState() {
 
     // Reset the controller's storage
     upd_ControllerSet().constructStorage();
-    
+
     // Do the assembly
     createAssemblySolver(_workingState);
     assemble(_workingState);
@@ -377,7 +377,7 @@ const SimTK::State& Model::getWorkingState() const
 
 void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
 {
-    
+
     bool constrained = false;
     const CoordinateSet &coords = getCoordinateSet();
     for(int i=0; i<coords.getSize(); ++i){
@@ -480,7 +480,7 @@ void Model::createMultibodySystem()
         delete _system;
     }
 
-    // create system    
+    // create system
     _system = new SimTK::MultibodySystem;
     _matter = new SimTK::SimbodyMatterSubsystem(*_system);
     _forceSubsystem = new SimTK::GeneralForceSubsystem(*_system);
@@ -541,8 +541,8 @@ void Model::extendFinalizeFromProperties()
             if (bs[i].getName() == "ground"){
                 ground.upd_WrapObjectSet() = bs[i].get_WrapObjectSet();
                 int geomSize = bs[i].getNumGeometry();
-                for (int g = 0; g < geomSize-1; ++g){ 
-                    // geomSize-1 since last geometry is a FrameGeometry for 
+                for (int g = 0; g < geomSize-1; ++g){
+                    // geomSize-1 since last geometry is a FrameGeometry for
                     // what used to be GroundBody. ground has one already
                     ground.addGeometry(bs[i].upd_geometry(g));
                 }
@@ -553,10 +553,10 @@ void Model::extendFinalizeFromProperties()
             // add the Body to the list of subcomponents for this Model
             addComponent(&bs[i]);
 
-            _multibodyTree.addBody(bs[i].getName(), 
-                                   bs[i].getMass(), 
-                                   false, 
-                                   &bs[i]); 
+            _multibodyTree.addBody(bs[i].getName(),
+                                   bs[i].getMass(),
+                                   false,
+                                   &bs[i]);
         }
     }
 
@@ -676,17 +676,17 @@ void Model::extendConnectToModel(Model &model)
     int nb = bodies.getSize();
 
     bool isMemoryOwner = joints.getMemoryOwner();
-    //Temporarily set owner ship to false so we 
+    //Temporarily set owner ship to false so we
     //can swap to rearrange order of the joints
     joints.setMemoryOwner(false);
 
     // Run through all the mobilizers in the multibody tree, adding
-    // a joint in the correct sequence. Also add massless bodies, 
+    // a joint in the correct sequence. Also add massless bodies,
     // loop closure constraints, etc... to form the valid tree.
     for (int m = 0; m < _multibodyTree.getNumMobilizers(); ++m) {
         // Get a mobilizer from the tree, then extract its corresponding
         // joint and bodies. Note that these should have equivalents in OpenSim.
-        const MultibodyGraphMaker::Mobilizer& mob 
+        const MultibodyGraphMaker::Mobilizer& mob
             = _multibodyTree.getMobilizer(m);
 
         if (mob.isSlaveMobilizer()){
@@ -700,7 +700,7 @@ void Model::extendConnectToModel(Model &model)
                 outb = outbMaster->addSlave();
                 useJoint->setSlaveBodyForChild(*outb);
                 SimTK::Transform o(SimTK::Vec3(0));
-                //Now add the constraints that weld the slave to the master at the 
+                //Now add the constraints that weld the slave to the master at the
                 // body origin
                 WeldConstraint* weld = new WeldConstraint(outb->getName()+"_weld",
                                                           *outbMaster, o, *outb, o);
@@ -750,7 +750,7 @@ void Model::extendConnectToModel(Model &model)
         }
         // Update the directionality of the joint to tree's preferential direction
         joints[m].upd_reverse() = mob.isReversedFromJoint();
-    
+
     }
     joints.setMemoryOwner(isMemoryOwner);
 
@@ -805,13 +805,13 @@ void Model::extendConnectToModel(Model &model)
 }
 
 
-// ModelComponent interface enables this model to be treated as a subcomponent of another model by 
+// ModelComponent interface enables this model to be treated as a subcomponent of another model by
 // creating components in its system.
 void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Model *mutableThis = const_cast<Model *>(this);
 
-    //Analyses are not Components so add them after legit 
+    //Analyses are not Components so add them after legit
     //Components have been wired-up correctly.
     mutableThis->updAnalysisSet().setModel(*mutableThis);
 
@@ -819,11 +819,11 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
     mutableThis->_defaultControls.resize(0);
 
     // Create the shared cache that will hold all model controls
-    // This must be created before Actuator.extendAddToSystem() since Actuator will append 
+    // This must be created before Actuator.extendAddToSystem() since Actuator will append
     // its "slots" and retain its index by accessing this cached Vector
     // value depends on velocity and invalidates dynamics BUT should not trigger
     // recomputation of the controls which are necessary for dynamics
-    Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(), 
+    Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(),
         Stage::Velocity, Stage::Acceleration);
 
     mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
@@ -968,7 +968,7 @@ void Model::addController(Controller *aController)
 void Model::setup()
 {
     finalizeFromProperties();
-    
+
     //now connect the Model and all its subcomponents all up
     connect(*this);
 
@@ -1011,7 +1011,7 @@ void Model::extendSetPropertiesFromState(const SimTK::State& state)
 }
 
 void Model::generateDecorations
-       (bool                                        fixed, 
+       (bool                                        fixed,
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
@@ -1045,7 +1045,7 @@ void Model::equilibrateMuscles(SimTK::State& state)
                     errorMsg = e.what();
                     failed = true;
                 }
-                // just because one muscle failed to equilibrate doesn't mean 
+                // just because one muscle failed to equilibrate doesn't mean
                 // it isn't still useful to have remaining muscles equilibrate
                 // in an analysis, for example, we might not be reporting about
                 // all muscles, so continue with the rest.
@@ -1054,7 +1054,7 @@ void Model::equilibrateMuscles(SimTK::State& state)
         }
     }
 
-    if(failed) // Notify the caller of the failure to equlibrate 
+    if(failed) // Notify the caller of the failure to equlibrate
         throw Exception("Model::equilibrateMuscles() "+errorMsg, __FILE__, __LINE__);
 }
 
@@ -1554,7 +1554,7 @@ void Model::createAssemblySolver(const SimTK::State& s)
     SimTK::Array_<CoordinateReference> coordsToTrack;
 
     for(int i=0; i<getNumCoordinates(); ++i){
-        // Iff a coordinate is dependent on other coordinates for its value, 
+        // Iff a coordinate is dependent on other coordinates for its value,
         // do not give it a reference/goal.
         if(!_coordinateSet[i].isDependent(s)){
             Constant reference(_coordinateSet[i].getValue(s));
@@ -1576,7 +1576,7 @@ void Model::createAssemblySolver(const SimTK::State& s)
 
 void Model::updateAssemblyConditions(SimTK::State& s)
 {
-    createAssemblySolver(s);    
+    createAssemblySolver(s);
 }
 //--------------------------------------------------------------------------
 // MARKERS
@@ -1673,7 +1673,7 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
     }
 
     // Todo_AYMAN: We need to call connectMarkerToModel() again to make sure the
-    // _body pointers are up to date; but note that we've already called 
+    // _body pointers are up to date; but note that we've already called
     // it before so we need to make sure the connectMarkerToModel() function
     // supports getting called multiple times.
     initSystem();
@@ -1746,7 +1746,7 @@ Ground& Model::updGround()
 int Model::getNumControls() const
 {
     if(!_system){
-        throw Exception("Model::getNumControls() requires an initialized Model./n" 
+        throw Exception("Model::getNumControls() requires an initialized Model./n"
             "Prior Model::initSystem() required.");
     }
 
@@ -1757,13 +1757,14 @@ int Model::getNumControls() const
  * Throws an exception if called before Model::initSystem() */
 Vector& Model::updControls(const SimTK::State &s) const
 {
+  throw Exception("CALLED UPDCONTROLS/n");
     if( (!_system) || (!_modelControlsIndex.isValid()) ){
-        throw Exception("Model::updControls() requires an initialized Model./n" 
+        throw Exception("Model::updControls() requires an initialized Model./n"
             "Prior call to Model::initSystem() is required.");
     }
 
-    // direct the system shared cache 
-    Measure_<Vector>::Result controlsCache = 
+    // direct the system shared cache
+    Measure_<Vector>::Result controlsCache =
         Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem()
             .getMeasure(_modelControlsIndex));
     return controlsCache.updValue(s);
@@ -1772,25 +1773,26 @@ Vector& Model::updControls(const SimTK::State &s) const
 void Model::markControlsAsValid(const SimTK::State& s) const
 {
     if( (!_system) || (!_modelControlsIndex.isValid()) ){
-        throw Exception("Model::markControlsAsValid() requires an initialized Model./n" 
+        throw Exception("Model::markControlsAsValid() requires an initialized Model./n"
             "Prior call to Model::initSystem() is required.");
     }
 
-    Measure_<Vector>::Result controlsCache = 
+    Measure_<Vector>::Result controlsCache =
         Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem()
             .getMeasure(_modelControlsIndex));
     controlsCache.markAsValid(s);
 }
 
 void Model::setControls(const SimTK::State& s, const SimTK::Vector& controls) const
-{   
+{
+  throw Exception("CALLED SETCONTROLS/n");
     if( (!_system) || (!_modelControlsIndex.isValid()) ){
-        throw Exception("Model::setControls() requires an initialized Model./n" 
+        throw Exception("Model::setControls() requires an initialized Model./n"
             "Prior call to Model::initSystem() is required.");
     }
 
-    // direct the system shared cache 
-    Measure_<Vector>::Result controlsCache = 
+    // direct the system shared cache
+    Measure_<Vector>::Result controlsCache =
         Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem()
         .getMeasure(_modelControlsIndex));
     controlsCache.setValue(s, controls);
@@ -1805,21 +1807,22 @@ void Model::setControls(const SimTK::State& s, const SimTK::Vector& controls) co
 const Vector& Model::getControls(const SimTK::State &s) const
 {
     if( (!_system) || (!_modelControlsIndex.isValid()) ){
-        throw Exception("Model::getControls() requires an initialized Model./n" 
+        throw Exception("Model::getControls() requires an initialized Model./n"
             "Prior call to Model::initSystem() is required.");
     }
 
-    // direct the system shared cache 
+    // // direct the system shared cache
     Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
-
-    if(!controlsCache.isValid(s)){
-        // Always reset controls to their default values before computing controls
-        // since default behavior is for controllors to "addInControls" so there should be valid
-        // values to begin with.
-        controlsCache.updValue(s) = _defaultControls;
-        computeControls(s, controlsCache.updValue(s));
-        controlsCache.markAsValid(s);
-    }
+    //
+    // if(!controlsCache.isValid(s)){
+    //   throw Exception("The controls cache was not valid in getControls, should have been calculated in Stage::Velocity/n");
+    //     // Always reset controls to their default values before computing controls
+    //     // since default behavior is for controllors to "addInControls" so there should be valid
+    //     // values to begin with.
+    //     controlsCache.updValue(s) = _defaultControls;
+    //     computeControls(s, controlsCache.updValue(s));
+    //     controlsCache.markAsValid(s);
+    // }
 
     return controlsCache.getValue(s);
 }
@@ -1861,9 +1864,9 @@ void Model::setAllControllersEnabled( bool enabled ) {
 }
 /**
  * Model::formStateStorage is intended to take any storage and populate stateStorage.
- * stateStorage is supposed to be a Storage with labels identical to those obtained by 
+ * stateStorage is supposed to be a Storage with labels identical to those obtained by
  * calling Model::getStateVariableNames(). Columns/entries found in the "originalStorage"
- * are copied to the output statesStorage. Entries not found are populated with 
+ * are copied to the output statesStorage. Entries not found are populated with
  * 0s (should be default value).
  */
 void Model::formStateStorage(const Storage& originalStorage, Storage& statesStorage)
@@ -2008,19 +2011,19 @@ void Model::overrideAllActuators( SimTK::State& s, bool flag) {
 }
 
 const Object& Model::getObjectByTypeAndName(const std::string& typeString, const std::string& nameString) {
-    if (typeString=="Body") 
+    if (typeString=="Body")
         return getBodySet().get(nameString);
     else if (typeString == "Joint")
         return getJointSet().get(nameString);
-    else if (typeString=="Force") 
+    else if (typeString=="Force")
         return getForceSet().get(nameString);
     else if (typeString=="Constraint")
         return getConstraintSet().get(nameString);
-    else if (typeString=="Coordinate") 
+    else if (typeString=="Coordinate")
         return getCoordinateSet().get(nameString);
-    else if (typeString=="Marker") 
+    else if (typeString=="Marker")
         return getMarkerSet().get(nameString);
-    else if (typeString=="Controller") 
+    else if (typeString=="Controller")
         return getControllerSet().get(nameString);
     else if (typeString == "Probe")
         return getProbeSet().get(nameString);
@@ -2043,12 +2046,10 @@ void Model::realizePosition(const SimTK::State& state) const
 {
     getSystem().realize(state, Stage::Position);
 }
-
 void Model::realizeVelocity(const SimTK::State& state) const
 {
     getSystem().realize(state, Stage::Velocity);
 }
-
 void Model::realizeDynamics(const SimTK::State& state) const
 {
     getSystem().realize(state, Stage::Dynamics);
@@ -2063,7 +2064,19 @@ void Model::realizeReport(const SimTK::State& state) const
 {
     getSystem().realize(state, Stage::Report);
 }
+void Model::extendRealizeVelocity(const SimTK::State& state) const
+{
+    Super::extendRealizeVelocity(state);
 
+    Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
+
+    // Always reset controls to their default values before computing controls
+    // since default behavior is for controllors to "addInControls" so there should be valid
+    // values to begin with.
+    controlsCache.updValue(state) = _defaultControls;
+    computeControls(state, controlsCache.updValue(state));
+    controlsCache.markAsValid(state);
+}
 
 /**
  * Compute the derivatives of the generalized coordinates and speeds.
@@ -2071,7 +2084,7 @@ void Model::realizeReport(const SimTK::State& state) const
 void Model::computeStateVariableDerivatives(const SimTK::State &s) const
 {
     try {
-        realizeAcceleration(s);
+        extendRealizeAcceleration(s);
     }
     catch (const std::exception& e){
         string exmsg = e.what();
@@ -2106,7 +2119,7 @@ SimTK::Inertia Model::getInertiaAboutMassCenter(const SimTK::State &s) const
 SimTK::Vec3 Model::calcMassCenterPosition(const SimTK::State &s) const
 {
     getMultibodySystem().realize(s, Stage::Position);
-    return getMatterSubsystem().calcSystemMassCenterLocationInGround(s);    
+    return getMatterSubsystem().calcSystemMassCenterLocationInGround(s);
 }
 /**
  * Return the velocity vector of the system mass center, measured from the Ground origin, and expressed in Ground.
@@ -2115,7 +2128,7 @@ SimTK::Vec3 Model::calcMassCenterPosition(const SimTK::State &s) const
 SimTK::Vec3 Model::calcMassCenterVelocity(const SimTK::State &s) const
 {
     getMultibodySystem().realize(s, Stage::Velocity);
-    return getMatterSubsystem().calcSystemMassCenterVelocityInGround(s);    
+    return getMatterSubsystem().calcSystemMassCenterVelocityInGround(s);
 }
 /**
  * Return the acceleration vector of the system mass center, measured from the Ground origin, and expressed in Ground.
@@ -2124,7 +2137,7 @@ SimTK::Vec3 Model::calcMassCenterVelocity(const SimTK::State &s) const
 SimTK::Vec3 Model::calcMassCenterAcceleration(const SimTK::State &s) const
 {
     getMultibodySystem().realize(s, Stage::Acceleration);
-    return getMatterSubsystem().calcSystemMassCenterAccelerationInGround(s);    
+    return getMatterSubsystem().calcSystemMassCenterAccelerationInGround(s);
 }
 
 /**
@@ -2137,11 +2150,11 @@ void Model::constructOutputs()
     //return the position of the center of mass
    constructOutput<SimTK::Vec3>("com_position",
        std::bind(&Model::calcMassCenterPosition,this,std::placeholders::_1), SimTK::Stage::Position);
-   //return the velocity of the center of mass 
+   //return the velocity of the center of mass
    constructOutput<SimTK::Vec3>("com_velocity",
        std::bind(&Model::calcMassCenterVelocity,this,std::placeholders::_1), SimTK::Stage::Velocity);
    //return the accleration of the center of mass
    constructOutput<SimTK::Vec3>("com_acceleration",
        std::bind(&Model::calcMassCenterAcceleration,this,std::placeholders::_1), SimTK::Stage::Acceleration);
-    
+
 }

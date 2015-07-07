@@ -45,15 +45,15 @@ namespace OpenSim {
  *
  * @author Peter Loan
  */
-class OSIMACTUATORS_API Thelen2003Muscle_Deprecated 
+class OSIMACTUATORS_API Thelen2003Muscle_Deprecated
 :   public ActivationFiberLengthMuscle_Deprecated {
-OpenSim_DECLARE_CONCRETE_OBJECT(Thelen2003Muscle_Deprecated, 
+OpenSim_DECLARE_CONCRETE_OBJECT(Thelen2003Muscle_Deprecated,
                                 ActivationFiberLengthMuscle_Deprecated);
 public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
+    /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
@@ -78,6 +78,9 @@ public:
         "force-velocity shape factor");
     OpenSim_DECLARE_PROPERTY(Flen, double,
         "maximum normalized lengthening force");
+
+    //Parallelism Method Overrides
+    bool isParallelByDefault() const override;
     /**@}**/
 
 //==============================================================================
@@ -92,11 +95,11 @@ public:
                                 double              optimalFiberLength,
                                 double              tendonSlackLength,
                                 double              pennationAngle);
-    
+
     // Properties
-    double getActivationTimeConstant() const 
+    double getActivationTimeConstant() const
     {   return get_activation_time_constant(); }
-    double getDeactivationTimeConstant() const 
+    double getDeactivationTimeConstant() const
     {   return get_deactivation_time_constant(); }
     double getVmax() const {return get_Vmax();}
     double getVmax0() const {return get_Vmax0();}

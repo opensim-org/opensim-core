@@ -222,6 +222,7 @@ public:
         "Passive-force-length curve.");
     OpenSim_DECLARE_UNNAMED_PROPERTY(TendonForceLengthCurve,
         "Tendon-force-length curve.");
+    bool isParallelByDefault() const override;
     /**@}**/
 
 //==============================================================================
@@ -376,7 +377,7 @@ public:
     function of fiber length. */
     void setFiberForceLengthCurve(
         FiberForceLengthCurve& aFiberForceLengthCurve);
-    
+
     /** @param aTendonForceLengthCurve The TendonForceLengthCurve used by the
     muscle model to calculate the force exerted by the tendon as a function of
     tendon length. */
@@ -386,7 +387,6 @@ public:
     /** @param[out] s The state of the system.
         @param fiberLength The desired fiber length (m). */
     void setFiberLength(SimTK::State& s, double fiberLength) const;
-
 //==============================================================================
 // MUSCLE.H INTERFACE
 //==============================================================================
@@ -407,7 +407,7 @@ public:
     we obtain a reasonable and robust solution that provides a rough solution
     for fiber length.
         @param[in,out] s The state of the system. */
-    void computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const 
+    void computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
         override;
 
 //==============================================================================
@@ -500,7 +500,7 @@ protected:
                                 MuscleDynamicsInfo& mdi) const override;
 
     /** Calculate the potential energy values associated with the muscle */
-    void  calcMusclePotentialEnergyInfo(const SimTK::State& s, 
+    void  calcMusclePotentialEnergyInfo(const SimTK::State& s,
             MusclePotentialEnergyInfo& mpei) const override;
 
 //==============================================================================

@@ -53,7 +53,7 @@ Thelen2003Muscle_Deprecated::Thelen2003Muscle_Deprecated()
 Thelen2003Muscle_Deprecated::Thelen2003Muscle_Deprecated
    (const std::string& name, double maxIsometricForce,
     double optimalFiberLength, double tendonSlackLength,
-    double pennationAngle) 
+    double pennationAngle)
 :   Super()
 {
     constructProperties();
@@ -83,6 +83,10 @@ void Thelen2003Muscle_Deprecated::constructProperties()
     constructProperty_Flen(1.8);
 }
 
+//Parallelism Method Overrides
+bool Thelen2003Muscle_Deprecated::isParallelByDefault() const{
+  return true;
+}
 
 //==============================================================================
 // GET
@@ -210,7 +214,7 @@ calcTendonForce(const SimTK::State& s, double aNormTendonLength) const
     double tendon_force;
     if (tendon_strain>ToeStrain)
         tendon_force = klin*(tendon_strain-ToeStrain)+ToeForce;
-    else if (tendon_strain>0) 
+    else if (tendon_strain>0)
         tendon_force = ToeForce*(exp(KToe*tendon_strain/ToeStrain)-1.0)/(exp(KToe)-1);
     else
         tendon_force=0.;
@@ -232,7 +236,7 @@ calcTendonForce(const SimTK::State& s, double aNormTendonLength) const
  * This equation is parameterized using the following dynamic parameters
  * which must be specified in the muscle file
  * Dynamic Parameters:
- *   FmaxMuscleStrain - passive muscle strain due to the application of 
+ *   FmaxMuscleStrain - passive muscle strain due to the application of
  *                      maximum isometric muscle force
  *   KshapePassive - exponential shape factor
  *
@@ -301,7 +305,7 @@ calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce
     double epsilon=1.e-6;
 
     // Don't allow zero activation
-    if (aActivation<epsilon) 
+    if (aActivation<epsilon)
         aActivation=epsilon;
 
     double Fa = aActivation*aActiveForce;
@@ -349,7 +353,7 @@ calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce
  * fiber and tendon lengths so that the forces in each match. This routine
  * takes pennation angle into account, so its definition of static equilibrium
  * is when tendon_force = fiber_force * cos(pennation_angle). This funcion
- * will modify the object's values for length, fiberLength, activeForce, 
+ * will modify the object's values for length, fiberLength, activeForce,
  * and passiveForce.
  *
  * @param aActivation Activation of the muscle.
@@ -417,7 +421,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
       return 0.0;
    } else {
       fiberLength = _optimalFiberLength;
-      cos_factor = cos(calcPennation( fiberLength, _optimalFiberLength,  _pennationAngleAtOptimal ));  
+      cos_factor = cos(calcPennation( fiberLength, _optimalFiberLength,  _pennationAngleAtOptimal ));
       tendon_length = length - fiberLength * cos_factor;
 
       /* Check to make sure tendon is not shorter than its slack length. If it
@@ -454,7 +458,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
         setTendonForce(s, tendon_force);
 
       old_error_force = error_force;
- 
+
       error_force = tendon_force - fiber_force;
 
       if (DABS(error_force) <= ERROR_LIMIT) // muscle-tendon force found!
