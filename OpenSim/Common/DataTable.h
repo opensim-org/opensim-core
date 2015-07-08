@@ -966,6 +966,38 @@ protected:
         size_t index_;
     };
 
+    template<bool RowsOrColsContainer, bool IsConst>
+    class RowsColsContainerProxy {
+    public:
+        RowsColsContainerProxy(DataTable_* dt) : dt_{dt} {}
+        RowsColsContainerProxy()                                    = delete;
+        RowsColsContainerProxy(const RowsColsContainerProxy&)       = default;
+        RowsColsContainerProxy(RowsColsContainerProxy&&)            = default;
+        RowsColsContainerProxy& operator=(const RowsColsContainerProxy&)
+                                                                    = default;
+        RowsColsContainerProxy& operator=(RowsColsContainerProxy&&) = default;
+
+        Iterator<RowsOrColsContainer, IsConst> begin() {
+            return Iterator<RowsOrColsContainer, IsConst>{dt_, 0};
+        }
+
+        Iterator<RowsOrColsContainer, IsConst> end() {
+            return Iterator<RowsOrColsContainer, IsConst>{dt_, size()};
+        }
+
+    private:
+        typename std::enable_if<RowsOrColsContainer, size_t>::type 
+        size() {
+            dt_->getNumRows();
+        }
+        typename std::enable_if<!RowsOrColsContainer, size_t>::type 
+        size(int = 0) {
+            dt_->getNumColumns();
+        }
+
+        DataTable_* dt_;
+    };
+
 public:
     using value_type    = ET;
     using size_type     = size_t;
@@ -1268,20 +1300,6 @@ public:
                               static_cast<int>(numColumns));
     }
 
-    Iterator<true, true> getRowsBegin() const {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
-
-        return Iterator<true, true>{this, 0};
-    }
-
-    Iterator<true, true> getRowsEnd() const {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
-
-        return Iterator<true, true>{this, data_.nrow()};
-    }
-
     /** Get a row of the DataTable_ by index. Returned row is read-only. Use 
     updRow() to obtain a writable reference. See SimTK::RowVectorView_ for more
     details.
@@ -1293,20 +1311,6 @@ public:
         return data_.row(static_cast<int>(rowIndex));
     }
 
-    Iterator<true, false> updRowsBegin() const {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
-
-        return Iterator<true, false>{this, 0};
-    }
-
-    Iterator<true, false> updRowsEnd() const {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
-
-        return Iterator<true, false>{this, data_.nrow()};
-    }
-
     /** Get a row of the DataTable_ by index. Returned row is editable. See 
     SimTK::RowVectorView_ for more details.
   
@@ -1315,20 +1319,6 @@ public:
     SimTK::RowVectorView_<ET> updRow(size_t rowIndex) {
         throwIfRowDoesNotExist(rowIndex);
         return data_.updRow(static_cast<int>(rowIndex));
-    }
-
-    Iterator<false, true> getColumnsBegin() const {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
-
-        return Iterator<false, true>{this, 0};
-    }
-
-    Iterator<false, true> getColumnsEnd() const {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
-
-        return Iterator<false, true>{this, data_.ncol()};
     }
 
     /** Get a column of the DataTable_ by index. Returned column is read-only. 
@@ -1350,20 +1340,6 @@ public:
                                DataTable_.                                    */
     SimTK::VectorView_<ET> getColumn(const string& columnLabel) const {
         return data_.col(static_cast<int>(getColumnIndex(columnLabel)));
-    }
-
-    Iterator<false, false> updColumnsBegin() const {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
-
-        return Iterator<false, false>{this, 0};
-    }
-
-    Iterator<false, false> updColumnsEnd() const {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
-
-        return Iterator<false, false>{this, data_.ncol()};
     }
 
     /** Get a column of the DataTable_ by index. Returned column is editable. 
@@ -2012,6 +1988,78 @@ public:
         }
 
         addColumns_impl(container, numRows, allowMissing, numColumns);
+    }
+
+    Iterator<true, true> rowsCBegin() const {
+        if(data_.nrow() == 0 || data_.ncol() == 0)
+            throw EmptyDataTable{"DataTable is empty."};
+
+        return Iterator<true, true>{this, 0};
+    }
+
+    Iterator<true, true> rowsCEnd() const {
+        if(data_.nrow() == 0 || data_.ncol() == 0)
+            throw EmptyDataTable{"DataTable is empty."};
+
+        return Iterator<true, true>{this, data_.nrow()};
+    }
+
+    Iterator<true, true> rowsBegin() const {
+        return rowsCBegin();
+    }
+
+    Iterator<true, true> rowsEnd() const {
+        return rowsCEnd();
+    }
+
+    Iterator<true, false> rowsBegin() {
+        if(data_.nrow() == 0 || data_.ncol() == 0)
+            throw EmptyDataTable{"DataTable is empty."};
+
+        return Iterator<true, false>{this, 0};
+    }
+
+    Iterator<true, false> rowsEnd() {
+        if(data_.nrow() == 0 || data_.ncol() == 0)
+            throw EmptyDataTable{"DataTable is empty."};
+
+        return Iterator<true, false>{this, data_.nrow()};
+    }
+
+    Iterator<false, true> columnsCBegin() const {
+        if(data_.nrow() == 0 || data_.ncol() == 0)
+            throw EmptyDataTable{"DataTable is empty."};
+
+        return Iterator<false, true>{this, 0};
+    }
+
+    Iterator<false, true> columnsCEnd() const {
+        if(data_.nrow() == 0 || data_.ncol() == 0)
+            throw EmptyDataTable{"DataTable is empty."};
+
+        return Iterator<false, true>{this, data_.ncol()};
+    }
+
+    Iterator<false, true> columnsBegin() const {
+        return columnsCBegin();
+    }
+
+    Iterator<false, true> columnsEnd() const {
+        return columnsCEnd();
+    }
+
+    Iterator<false, false> columnsBegin() {
+        if(data_.nrow() == 0 || data_.ncol() == 0)
+            throw EmptyDataTable{"DataTable is empty."};
+
+        return Iterator<false, false>{this, 0};
+    }
+
+    Iterator<false, false> columnsEnd() {
+        if(data_.nrow() == 0 || data_.ncol() == 0)
+            throw EmptyDataTable{"DataTable is empty."};
+
+        return Iterator<false, false>{this, data_.ncol()};
     }
 
     /** Add/concatenate rows of another DataTable_ to this DataTable_. The new 
