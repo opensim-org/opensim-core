@@ -50,6 +50,11 @@ enum class TraverseDir {
     ColumnMajor
 };
 
+class EmptyDataTable : public Exception {
+public:
+    EmptyDataTable(const std::string& expl) : Exception(expl) {}
+};
+
 class NotEnoughElements : public Exception {
 public:
     NotEnoughElements(const std::string& expl) : Exception(expl) {}
@@ -118,6 +123,11 @@ public:
 class MetaDataTypeMismatch : public Exception {
 public:
     MetaDataTypeMismatch(const std::string& expl) : Exception(expl) {}
+};
+
+class IncompatibleIterators : public Exception {
+public:
+    IncompatibleIterators(const std::string& expl) : Exception(expl) {}
 };
 
 
@@ -824,8 +834,138 @@ a matrix with column names) with support for holding metadata.
 template<typename ET = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
     static_assert(std::is_arithmetic<ET>::value || std::is_class<ET>::value, 
-                   "Template parameter ET must be either an arithmetic type " 
-                   "(int, float, double etc) or a class/struct type.");
+                  "Template parameter ET must be either an arithmetic type " 
+                  "(int, float, double etc) or a class/struct type.");
+protected:
+    template<bool RowOrColIter, bool IsConst>
+    class Iterator {
+    public:
+        using value_type      = std::conditional<RowOrColIter, 
+                                                 SimTK::RowVectorView_<ET>,
+                                                 SimTK::VectorView_<ET>>;
+        using difference_type = int;
+
+        Iterator()                           = delete;
+        Iterator(const Iterator&)            = default;
+        Iterator(Iterator&&)                 = default;
+        Iterator& operator=(const Iterator&) = default;
+        Iterator& operator=(Iterator&&)      = default;
+        ~Iterator()                          = default;
+
+        Iterator(const DataTable_* dt, size_t index) 
+            : dt_{dt}, index_{index} {}
+
+        std::conditional<RowOrColIter, 
+                         SimTK::RowVectorView_<ET>,
+                         SimTK::VectorView_<ET>>
+        operator*() {
+            return rowOrCol(index_);
+        }
+
+        Iterator& operator++() {
+            ++index_;
+            return *this;
+        }
+
+        bool operator!=(const Iterator& rhs) const {
+            if(dt_ != rhs.dt_)
+                throw IncompatibleIterators{"The iterators are for two "
+                        "different DataTables."};
+                
+            return index_ != rhs.index_;
+        }
+
+        bool operator==(const Iterator& rhs) const {
+            return !operator==(rhs);
+        }
+
+        Iterator& operator+=(int n) {
+            index_ += n;
+            return *this;
+        }
+
+        Iterator operator+(int n) const {
+            return Iterator{dt_, index_ + n};
+        }
+
+        Iterator& operator-=(int n) {
+            return operator+=(-1 * n);
+        }
+
+        Iterator operator-(int n) const {
+            return operator+(-1 * n);
+        }
+
+        int operator-(const Iterator& rhs) const {
+            if(dt_ != rhs.dt_)
+                throw IncompatibleIterators{"The iterators are for two "
+                        "different DataTables."};
+
+            return index_ - rhs.index_;
+        }
+
+        SimTK::RowVectorView_<ET> operator[](size_t index) const {
+            return rowOrCol(index);
+        }
+
+        bool operator<(const Iterator& rhs) const {
+            if(dt_ != rhs.dt_)
+                throw IncompatibleIterators{"The iterators are for two "
+                        "different DataTables."};
+
+            return index_ < rhs.index_;
+        }
+
+        bool operator>(const Iterator& rhs) const {
+            if(dt_ != rhs.dt_)
+                throw IncompatibleIterators{"The iterators are for two "
+                        "different DataTables."};
+            
+            return index_ > rhs.index_;
+        }
+
+        bool operator>=(const Iterator& rhs) const {
+            if(dt_ != rhs.dt_)
+                throw IncompatibleIterators{"The iterators are for two "
+                        "different DataTables."};
+            
+            return index_ >= rhs.index_;
+        }
+
+        bool operator<=(const Iterator& rhs) const {
+            if(dt_ != rhs.dt_)
+                throw IncompatibleIterators{"The iterators are for two "
+                        "different DataTables."};
+            
+            return index_ <= rhs.index_;
+        }
+
+    private:
+        typename std::enable_if<RowOrColIter && IsConst, 
+                                SimTK::RowVectorView_<ET>>::type
+        rowOrCol(size_t index) const {
+            return dt_->getRow(index);
+        }
+        typename std::enable_if<RowOrColIter && !IsConst, 
+                                SimTK::RowVectorView_<ET>>::type
+        rowOrCol(size_t index) {
+            return dt_->updRow(index);
+        }
+        typename std::enable_if<!RowOrColIter && IsConst, 
+                                SimTK::VectorView_<ET>>::type
+        rowOrCol(size_t index, int = 0) const {
+            return dt_->getCol(index);
+        }
+        typename std::enable_if<!RowOrColIter && !IsConst, 
+                       SimTK::VectorView_<ET>>::type
+        rowOrCol(size_t index, int = 0) {
+            return dt_->updCol(index);
+        }
+
+        DataTable_* const dt_;
+        size_t index_;
+    };
+
 public:
     using value_type    = ET;
     using size_type     = size_t;
@@ -1128,6 +1268,20 @@ public:
                               static_cast<int>(numColumns));
     }
 
+    Iterator<true, true> getRowsBegin() const {
+        if(data_.nrow() == 0 || data_.ncol() == 0)
+            throw EmptyDataTable{"DataTable is empty."};
+
+        return Iterator<true, true>{this, 0};
+    }
+
+    Iterator<true, true> getRowsEnd() const {
+        if(data_.nrow() == 0 || data_.ncol() == 0)
+            throw EmptyDataTable{"DataTable is empty."};
+
+        return Iterator<true, true>{this, data_.nrow()};
+    }
+
     /** Get a row of the DataTable_ by index. Returned row is read-only. Use 
     updRow() to obtain a writable reference. See SimTK::RowVectorView_ for more
     details.
@@ -1139,6 +1293,20 @@ public:
         return data_.row(static_cast<int>(rowIndex));
     }
 
+    Iterator<true, false> updRowsBegin() const {
+        if(data_.nrow() == 0 || data_.ncol() == 0)
+            throw EmptyDataTable{"DataTable is empty."};
+
+        return Iterator<true, false>{this, 0};
+    }
+
+    Iterator<true, false> updRowsEnd() const {
+        if(data_.nrow() == 0 || data_.ncol() == 0)
+            throw EmptyDataTable{"DataTable is empty."};
+
+        return Iterator<true, false>{this, data_.nrow()};
+    }
+
     /** Get a row of the DataTable_ by index. Returned row is editable. See 
     SimTK::RowVectorView_ for more details.
   
@@ -1147,6 +1315,20 @@ public:
     SimTK::RowVectorView_<ET> updRow(size_t rowIndex) {
         throwIfRowDoesNotExist(rowIndex);
         return data_.updRow(static_cast<int>(rowIndex));
+    }
+
+    Iterator<false, true> getColumnsBegin() const {
+        if(data_.nrow() == 0 || data_.ncol() == 0)
+            throw EmptyDataTable{"DataTable is empty."};
+
+        return Iterator<false, true>{this, 0};
+    }
+
+    Iterator<false, true> getColumnsEnd() const {
+        if(data_.nrow() == 0 || data_.ncol() == 0)
+            throw EmptyDataTable{"DataTable is empty."};
+
+        return Iterator<false, true>{this, data_.ncol()};
     }
 
     /** Get a column of the DataTable_ by index. Returned column is read-only. 
@@ -1168,6 +1350,20 @@ public:
                                DataTable_.                                    */
     SimTK::VectorView_<ET> getColumn(const string& columnLabel) const {
         return data_.col(static_cast<int>(getColumnIndex(columnLabel)));
+    }
+
+    Iterator<false, false> updColumnsBegin() const {
+        if(data_.nrow() == 0 || data_.ncol() == 0)
+            throw EmptyDataTable{"DataTable is empty."};
+
+        return Iterator<false, false>{this, 0};
+    }
+
+    Iterator<false, false> updColumnsEnd() const {
+        if(data_.nrow() == 0 || data_.ncol() == 0)
+            throw EmptyDataTable{"DataTable is empty."};
+
+        return Iterator<false, false>{this, data_.ncol()};
     }
 
     /** Get a column of the DataTable_ by index. Returned column is editable. 
@@ -2269,6 +2465,8 @@ protected:
     // Matrix of data. This excludes timestamp column.
     SimTK::Matrix_<ET> data_;
 };  // DataTable_
+
+
 
 
 using DataTable = DataTable_<SimTK::Real>;
