@@ -162,9 +162,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( PathPointSet() );
     Object::registerType( ConditionalPathPoint() );
     Object::registerType( MovingPathPoint() );
-    Object::registerType( BaseAppearance());
-    Object::registerType( Appearance());
-    Object::registerType( LineAppearance());
+    Object::registerType( SurfaceAppearance());
+    Object::registerType( CurveAppearance());
     Object::registerType( ModelVisualPreferences());
 
     Object::registerType( Brick());
@@ -273,7 +272,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::renameType("MusclePoint",       "PathPoint");
     Object::renameType("MuscleViaPoint",    "ConditionalPathPoint");
     Object::renameType("MovingMusclePoint", "MovingPathPoint");
-    Object::renameType("MusclePointSet",    "PathPointSet");
+    Object::renameType("MusclePointSet", "PathPointSet");
+    Object::renameType("Appearance", "SurfaceAppearance");
 
     Object::renameType("MuscleMetabolicPowerProbeUmberger2010",  
         "Umberger2010MuscleMetabolicsProbe");

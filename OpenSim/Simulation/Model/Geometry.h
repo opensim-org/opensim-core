@@ -65,9 +65,6 @@ public:
     // Scale factors
     OpenSim_DECLARE_PROPERTY(scale_factors, SimTK::Vec3,
         "Scale factors in X, Y, Z directions respectively.");
-    // Default display properiies e.g. Representation, color, texture, etc.
-    OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
-        "Default appearance for this Geometry");
 
     enum DisplayPreference {
         Hide = 0,       ///<Hide geometry from display
@@ -88,7 +85,6 @@ public:
         constructInfrastructure();
 
         constructProperty_scale_factors(SimTK::Vec3(1));
-        constructProperty_Appearance(Appearance());
     }
     /// Convenience constructor that takes a Frame
     Geometry(const Frame& frame)
@@ -97,7 +93,6 @@ public:
         constructInfrastructure();
 
         constructProperty_scale_factors(SimTK::Vec3(1));
-        constructProperty_Appearance(Appearance());
 
         setFrame(frame);
     }
@@ -116,6 +111,10 @@ public:
     /** Return a reference to the actual Frame to which this Geometry
     is attached. */
     const Frame& getFrame() const;
+    /** Return const reference to an Appearance object associated with Geometry */
+    virtual const Appearance& getAppearance() const = 0;
+    /** Return writable reference to an Appearance object associated with Geometry */
+    virtual Appearance& updAppearance() = 0;
     //==========================================================================
     // METHODS
     //==========================================================================
@@ -130,37 +129,37 @@ public:
     /// from Geometry to DecorativeGeometry.
     void setDecorativeGeometryAppearance(
         SimTK::DecorativeGeometry& decoration) const {
-            decoration.setColor(get_Appearance().get_color());
-            decoration.setOpacity(get_Appearance().get_opacity());
+            decoration.setColor(getAppearance().get_color());
+            decoration.setOpacity(getAppearance().get_opacity());
             decoration.setRepresentation(
                 (SimTK::DecorativeGeometry::Representation)
-                get_Appearance().get_representation());
+                getAppearance().get_representation());
     };
     /// Convenient access to set Appearance/Color
     void setColor(const SimTK::Vec3& color) { 
-        upd_Appearance().set_color(color); 
+        updAppearance().set_color(color); 
     };
     /// Convenient access to get Appearance/Color
     const SimTK::Vec3& getColor() const { 
-        return get_Appearance().get_color(); 
+        return getAppearance().get_color(); 
     };
 
     /// Convenient access to set Appearance/Opacity
     void setOpacity(const double opacity) { 
-        upd_Appearance().set_opacity(opacity); 
+        updAppearance().set_opacity(opacity); 
     };
     /// Convenient access to get Appearance/Opacity
     const double getOpacity() { 
-        return get_Appearance().get_opacity(); 
+        return getAppearance().get_opacity(); 
     };
 
     /// Convenient access to set Appearance/representation
     void setRepresentation(const DisplayPreference& rep) { 
-        upd_Appearance().set_representation(rep); 
+        updAppearance().set_representation(rep); 
     };
     /// Convenient access to get Appearance/representation
     const DisplayPreference& getRepresentation() { return 
-        (const DisplayPreference&)get_Appearance().get_representation(); 
+        (const DisplayPreference&)getAppearance().get_representation(); 
     };
 
     /// Map this Geometry into a list of primitives aka SimTK::DecorativeGeometry 
@@ -188,13 +187,31 @@ private:
     }    //=====================================================================
 };  // END of class Geometry
 
+class OSIMSIMULATION_API CurveGeometry : public Geometry
+{
+    OpenSim_DECLARE_CONCRETE_OBJECT(CurveGeometry, Geometry);
+protected:
+    // Default display properiies e.g. Representation, color, texture, etc.
+    OpenSim_DECLARE_UNNAMED_PROPERTY(CurveAppearance,
+        "Default appearance for this Geometry");
+    // Constructor
+    CurveGeometry()
+    {
+        constructProperty_CurveAppearance(CurveAppearance());
+    }
+    // Overrides to enable common interface to Appearance
+    const CurveAppearance& getAppearance() const override { return get_CurveAppearance(); }
+    CurveAppearance& updAppearance() override { return upd_CurveAppearance(); }
+}; // END of class CurveGeometry
+
+
 /**
  * LineGeometry is a utility class used to abstract a line segment.
  * It is used by muscle segments so that it's as small and useful as possible.
  */
-class OSIMSIMULATION_API LineGeometry : public Geometry
+class OSIMSIMULATION_API LineGeometry : public CurveGeometry
 {   
-    OpenSim_DECLARE_CONCRETE_OBJECT(LineGeometry, Geometry);
+    OpenSim_DECLARE_CONCRETE_OBJECT(LineGeometry, CurveGeometry);
 public:
     // Property start_point
     OpenSim_DECLARE_PROPERTY(start_point, SimTK::Vec3,
@@ -204,7 +221,7 @@ public:
         "Line end point.");
     /// Convenience constructor that takes two end points
     LineGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2):
-      Geometry()
+        CurveGeometry()
     {
         constructProperties();
         setPoints(aPoint1, aPoint2);
@@ -213,7 +230,7 @@ public:
     }
     /// default constructor, creates line (0,0,0)-(1,1,1)
     LineGeometry():
-      Geometry()
+        CurveGeometry()
     {
         constructProperties();
     }
@@ -247,9 +264,9 @@ private:
 * start_point (Property) and has direction (Property) and length (Property)
 * 
 */
-class OSIMSIMULATION_API Arrow : public Geometry
+class OSIMSIMULATION_API Arrow : public CurveGeometry
 {   
-    OpenSim_DECLARE_CONCRETE_OBJECT(Arrow, Geometry);
+    OpenSim_DECLARE_CONCRETE_OBJECT(Arrow, CurveGeometry);
 public:
     // Property start_point
     OpenSim_DECLARE_PROPERTY(start_point, SimTK::Vec3,
@@ -288,6 +305,22 @@ private:
     }
 };
 
+class OSIMSIMULATION_API SurfaceGeometry : public Geometry
+{
+    OpenSim_DECLARE_CONCRETE_OBJECT(SurfaceGeometry, Geometry);
+protected:
+    // Default display properiies e.g. Representation, color, texture, etc.
+    OpenSim_DECLARE_UNNAMED_PROPERTY(SurfaceAppearance,
+        "Default appearance for this Geometry");
+    // Constructor
+    SurfaceGeometry()
+    {
+        constructProperty_SurfaceAppearance(SurfaceAppearance());
+    }
+    // Overrides to enable common interface to Appearance
+    const SurfaceAppearance& getAppearance() const override { return get_SurfaceAppearance(); }
+    SurfaceAppearance& updAppearance() override { return upd_SurfaceAppearance(); }
+};  // END of class SurfaceGeometry
 
 /**
  * Utility class used to abstract anayltic geometry. This will need to be 
@@ -296,9 +329,9 @@ private:
  *
  * TODO: using start/end angle may be a better choice.
  */
-class OSIMSIMULATION_API AnalyticGeometry : public Geometry
+class OSIMSIMULATION_API AnalyticGeometry : public SurfaceGeometry
 {    
-    OpenSim_DECLARE_ABSTRACT_OBJECT(AnalyticGeometry, Geometry);
+    OpenSim_DECLARE_ABSTRACT_OBJECT(AnalyticGeometry, SurfaceGeometry);
     // Amended with a quadrants array to support pieces of analytic geometry (for wrapping)
     OpenSim_DECLARE_LIST_PROPERTY(quadrants, std::string,
         "Quadrants to use: combination of +X -X +Y -Y +Z -Z space separated."); 
@@ -540,9 +573,9 @@ public:
 /**
 * A class to represent Brick geometry. Brick is specified by three half_lengths
 */
-class OSIMSIMULATION_API Brick : public Geometry
+class OSIMSIMULATION_API Brick : public SurfaceGeometry
 {
-    OpenSim_DECLARE_CONCRETE_OBJECT(Brick, Geometry);
+    OpenSim_DECLARE_CONCRETE_OBJECT(Brick, SurfaceGeometry);
 public:
     /// Half lengths in X,Y,Z directions respectively
     OpenSim_DECLARE_PROPERTY(half_lengths, SimTK::Vec3, 
@@ -551,13 +584,13 @@ public:
 public:
     /// Default constructor, makes a Brick with half-length 0.1,0.2,0.3
     Brick() :
-    Geometry()
+    SurfaceGeometry()
     {
         constructProperty_half_lengths(SimTK::Vec3(0.1, 0.2, 0.3));
     }
     /// Convenience constructor with specified half-lengths
     Brick(const SimTK::Vec3& halfLengths) :
-        Geometry()
+        SurfaceGeometry()
     {
         constructProperty_half_lengths(SimTK::Vec3(0.1, 0.2, 0.3));
         upd_half_lengths() = halfLengths;
@@ -573,9 +606,9 @@ public:
 * A class to represent Mesh geometry that comes from a file.
 * Supported file formats .vtp, .stl, .obj but will grow over time
 */
-class OSIMSIMULATION_API Mesh : public Geometry
+class OSIMSIMULATION_API Mesh : public SurfaceGeometry
 {
-    OpenSim_DECLARE_CONCRETE_OBJECT(Mesh, Geometry);
+    OpenSim_DECLARE_CONCRETE_OBJECT(Mesh, SurfaceGeometry);
 public:
     OpenSim_DECLARE_PROPERTY(mesh_file, std::string,
         "Name of geometry file.");
@@ -583,13 +616,13 @@ public:
 public:
     /// Default constructor
     Mesh() :
-        Geometry()
+        SurfaceGeometry()
     {
         constructProperty_mesh_file("");
     }
     /// Constructor that takes a mesh file name
     Mesh(const std::string& geomFile) :
-        Geometry()
+        SurfaceGeometry()
     {
         constructProperty_mesh_file("");
         upd_mesh_file() = geomFile;
@@ -611,15 +644,15 @@ public:
 * A class to represent Frame geometry. Knobs that can be changed
 * are in Appearance::Representation, size, thickness.
 */
-class OSIMSIMULATION_API FrameGeometry : public Geometry
+class OSIMSIMULATION_API FrameGeometry : public CurveGeometry
 {
-    OpenSim_DECLARE_CONCRETE_OBJECT(FrameGeometry, Geometry);
+    OpenSim_DECLARE_CONCRETE_OBJECT(FrameGeometry, CurveGeometry);
 public:
     OpenSim_DECLARE_PROPERTY(display_radius, double,
         "The radius of the arrow-shaft used to display the frame.");
     /// Default constructor
     FrameGeometry(double scale=1.0) :
-        Geometry()
+        CurveGeometry()
     {
        constructInfrastructure();
        set_scale_factors(SimTK::Vec3(scale));
