@@ -116,6 +116,10 @@ Delp1990Muscle_Deprecated::Delp1990Muscle_Deprecated(const Delp1990Muscle_Deprec
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
+//Parallelism Method Overrides
+bool Delp1990Muscle_Deprecated::isParallelByDefault() const{
+  return true;
+}
 //_____________________________________________________________________________
 /**
  * Copy data members from one Delp1990Muscle_Deprecated to another.
@@ -222,7 +226,7 @@ void Delp1990Muscle_Deprecated::extendConnectToModel(Model& aModel)
     if (!_model)
         return;
 
-    if(!getActiveForceLengthCurve()) 
+    if(!getActiveForceLengthCurve())
         throw Exception("Delp1990Muscle_Deprecated::extendConnectToModel(): ERROR- No active force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
     else if(!getPassiveForceLengthCurve())
         throw Exception("Delp1990Muscle_Deprecated::extendConnectToModel(): ERROR- No passive force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
@@ -396,7 +400,7 @@ double Delp1990Muscle_Deprecated::computeActuation(const SimTK::State& s) const
     setFiberLengthDeriv(s, normStateDeriv[STATE_FIBER_LENGTH] * _optimalFiberLength / _timeScale);
     setFiberVelocityDeriv(s, normStateDeriv[STATE_FIBER_VELOCITY] * _optimalFiberLength / (_timeScale * _timeScale));
 
-    tendonForce *= _maxIsometricForce; 
+    tendonForce *= _maxIsometricForce;
     setTendonForce(s, tendonForce);
     setActuation(s, tendonForce);
     setPassiveForce(s, getPassiveForce(s) * _maxIsometricForce);
@@ -550,7 +554,7 @@ double Delp1990Muscle_Deprecated::calcFiberForce(double aActivation, double aNor
  * fiber and tendon lengths so that the forces in each match. This routine
  * takes pennation angle into account, so its definition of static equilibrium
  * is when tendon_force = fiber_force * cos(pennation_angle). This funcion
- * will modify the object's values for length, fiber length, active force, 
+ * will modify the object's values for length, fiber length, active force,
  * and passive force.
  *
  * @param aActivation Activation of the muscle.
@@ -566,7 +570,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
     double cos_factor, fiber_stiffness;
     double old_fiber_length, length_change, tendon_stiffness, percent;
     double error_force = 0.0, old_error_force, tendon_force, tendon_strain;
-   
+
     // If the muscle has no fibers, then treat it as a ligament.
     if (_optimalFiberLength < ROUNDOFF_ERROR) {
         // ligaments should be a separate class, so _optimalFiberLength should
@@ -615,7 +619,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
         setActuation(s, 0.0);
         return 0.0;
     } else {
-        cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngleAtOptimal));  
+        cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngleAtOptimal));
         tendon_length = length - getFiberLength(s) * cos_factor;
 
         /* Check to make sure tendon is not shorter than its slack length. If it
@@ -655,7 +659,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
         setActuation(s, tendon_force);
 
         old_error_force = error_force;
- 
+
         error_force = tendon_force - fiber_force;
 
         if (DABS(error_force) <= ERROR_LIMIT) // muscle-tendon force found!

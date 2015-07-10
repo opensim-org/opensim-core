@@ -147,6 +147,10 @@ public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(MuscleFixedWidthPennationModel,
         "The model governing the fiber and tendon kinematics.");
 
+    //Parallelism Method Override
+    //Note: Forces cannot be flagged as parallel if they modify (recalculate) system controls
+    //during calcForces
+    bool isParallelByDefault() const override;
     /**@}**/
 
     enum CurveType{FiberActiveForceLength,
@@ -182,7 +186,6 @@ public:
     void setMinimumActivation(double minimumActivation);
     double getMaximumPennationAngle() const;
     void setMaximumPennationAngle(double maximumPennationAngle);
-    bool isParallelByDefault() const override;
     /**@}**/
 
     /**

@@ -222,6 +222,10 @@ public:
         "Passive-force-length curve.");
     OpenSim_DECLARE_UNNAMED_PROPERTY(TendonForceLengthCurve,
         "Tendon-force-length curve.");
+        
+    //Parallelism Method Override
+    //Note: Forces cannot be flagged as parallel if they modify (recalculate) system controls
+    //during calcForces
     bool isParallelByDefault() const override;
     /**@}**/
 

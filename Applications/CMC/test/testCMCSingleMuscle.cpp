@@ -62,8 +62,8 @@ void testSingleMuscle() {
     cout<<"\n******************************************************************" << endl;
     cout << "*                         testSingleMuscle                       *" << endl;
     cout << "******************************************************************\n" << endl;
-    //ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
-    //forward.run();
+    ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
+    forward.run();
 
     CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
     cmc.run();

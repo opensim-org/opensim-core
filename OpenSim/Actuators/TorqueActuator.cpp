@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
+/*
  * Author: Ajay Seth
  */
 
@@ -37,7 +37,7 @@
 
 using namespace OpenSim;
 using std::string;
-using SimTK::Vec3; using SimTK::Vector_; using SimTK::Vector; 
+using SimTK::Vec3; using SimTK::Vector_; using SimTK::Vector;
 using SimTK::SpatialVec; using SimTK::UnitVec3; using SimTK::State;
 
 //==============================================================================
@@ -77,7 +77,6 @@ void TorqueActuator::constructProperties()
     constructProperty_optimal_force(1.0);
 }
 
-
 //==============================================================================
 // GET AND SET
 //==============================================================================
@@ -96,7 +95,7 @@ void TorqueActuator::setBodyA(const PhysicalFrame& aBody)
 }
 //_____________________________________________________________________________
 /*
- * Set the PhysicalFrame to which the equal and opposite Body actuation 
+ * Set the PhysicalFrame to which the equal and opposite Body actuation
  * is applied.
  */
 void TorqueActuator::setBodyB(const PhysicalFrame& aBody)
@@ -141,8 +140,8 @@ double TorqueActuator::computeActuation(const State& s) const
 /**
  * Apply the actuator force to BodyA and BodyB.
  */
-void TorqueActuator::computeForce(const State& s, 
-                                  Vector_<SpatialVec>& bodyForces, 
+void TorqueActuator::computeForce(const State& s,
+                                  Vector_<SpatialVec>& bodyForces,
                                   Vector& generalizedForces) const
 {
     if(!_model) return;
@@ -150,7 +149,7 @@ void TorqueActuator::computeForce(const State& s,
 
     const bool torqueIsGlobal = getTorqueIsGlobal();
     const Vec3& axis = getAxis();
-    
+
     double actuation = 0;
 
     if (isActuationOverriden(s)) {
@@ -162,13 +161,13 @@ void TorqueActuator::computeForce(const State& s,
 
     if(!_bodyA)
         return;
-    
+
     setActuation(s, actuation);
     Vec3 torque = actuation * UnitVec3(axis);
-    
+
     if (!torqueIsGlobal)
         engine.transform(s, *_bodyA, torque, getModel().getGround(), torque);
-    
+
     applyTorque(s, *_bodyA, torque, bodyForces);
 
     // if bodyB is not specified, use the ground body by default
@@ -235,5 +234,4 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
     }
     Super::updateFromXMLNode(aNode, versionNumber);
     if (converting) upd_axis() *= -1.0;
-}   
-
+}

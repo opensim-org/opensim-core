@@ -67,7 +67,6 @@
 #include <iostream>
 #include <string>
 #include <cmath>
-#include <exception>
 
 using namespace std;
 using namespace OpenSim;
@@ -120,8 +119,7 @@ Model::Model(const string &aFileName, const bool finalize) :
         finalizeFromProperties();
     }
 
-    cacheLock = new std::mutex();
-
+    controlsCacheLock = new std::mutex();
     _fileName = aFileName;
     cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
 }
@@ -148,7 +146,6 @@ Model::~Model()
 /*virtual*/
 void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-
     if (versionNumber < XMLDocument::getLatestVersion()){
         cout << "Updating Model file from " << versionNumber << " to latest format..." << endl;
         // Version has to be 1.6 or later, otherwise assert
@@ -1760,7 +1757,7 @@ int Model::getNumControls() const
  * Throws an exception if called before Model::initSystem() */
 Vector& Model::updControls(const SimTK::State &s) const
 {
-  throw Exception("CALLED UPDCONTROLS/n");
+    std::unique_lock<std::mutex> lock(*controlsCacheLock);
     if( (!_system) || (!_modelControlsIndex.isValid()) ){
         throw Exception("Model::updControls() requires an initialized Model./n"
             "Prior call to Model::initSystem() is required.");
@@ -1775,6 +1772,7 @@ Vector& Model::updControls(const SimTK::State &s) const
 
 void Model::markControlsAsValid(const SimTK::State& s) const
 {
+  std::unique_lock<std::mutex> lock(*controlsCacheLock);
     if( (!_system) || (!_modelControlsIndex.isValid()) ){
         throw Exception("Model::markControlsAsValid() requires an initialized Model./n"
             "Prior call to Model::initSystem() is required.");
@@ -1788,7 +1786,7 @@ void Model::markControlsAsValid(const SimTK::State& s) const
 
 void Model::setControls(const SimTK::State& s, const SimTK::Vector& controls) const
 {
-  throw Exception("CALLED SETCONTROLS/n");
+  std::unique_lock<std::mutex> lock(*controlsCacheLock);
     if( (!_system) || (!_modelControlsIndex.isValid()) ){
         throw Exception("Model::setControls() requires an initialized Model./n"
             "Prior call to Model::initSystem() is required.");
@@ -1809,35 +1807,15 @@ void Model::setControls(const SimTK::State& s, const SimTK::Vector& controls) co
 /** Const access to controls does not invalidate dynamics */
 const Vector& Model::getControls(const SimTK::State &s) const
 {
-   std::unique_lock<std::mutex> lock(*cacheLock);
+   std::unique_lock<std::mutex> lock(*controlsCacheLock);
 
     if( (!_system) || (!_modelControlsIndex.isValid()) ){
         throw Exception("Model::getControls() requires an initialized Model./n"
             "Prior call to Model::initSystem() is required.");
     }
 
-    // // direct the system shared cache
-    // SimTK::AbstractMeasure* controlsCacheImpl = _system->updDefaultSubsystem().updMeasure(_modelControlsIndex);
-    // const Array_<AbstractMeasure::Implementation*>* m_measures = _system->updDefaultSubsystem().updM_Measures();
-
-    try{
-
     Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
-
-
-    // if(!controlsCache.isValid(s)){
-    //   throw Exception("The controls cache was not valid in getControls, should have been calculated in Stage::Velocity/n");
-    //     // Always reset controls to their default values before computing controls
-    //     // since default behavior is for controllors to "addInControls" so there should be valid
-    //     // values to begin with.
-    //     controlsCache.updValue(s) = _defaultControls;
-    //     computeControls(s, controlsCache.updValue(s));
-    //     controlsCache.markAsValid(s);
-    // }
     return controlsCache.getValue(s);
-    }catch(exception e){
-      throw(e);
-    }
 }
 
 

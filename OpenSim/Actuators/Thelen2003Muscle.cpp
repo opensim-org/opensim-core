@@ -169,6 +169,8 @@ void Thelen2003Muscle::constructProperties()
     constructProperty_fv_linear_extrap_threshold(0.95);
     //acos(0.05) = 84.26 degrees
 }
+
+//Parallelism Method Overrides
 bool Thelen2003Muscle::isParallelByDefault() const{
   return true;
 }

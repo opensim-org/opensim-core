@@ -318,7 +318,6 @@ public:
         return initializeState();
     }
 
-
     /** Convenience method that returns a reference to the model's 'working'
     state. This is just returning the reference that was returned by
     initSystem() and initializeState() -- note that either of these methods
@@ -364,8 +363,6 @@ public:
      * to weight that coordinate value more heavily if specified.
      */
     void assemble(SimTK::State& state, const Coordinate *coord = NULL, double weight = 10);
-
-
     /**
      * Update the state of all Muscles so they are in equilibrium.
      */
@@ -980,7 +977,8 @@ private:
     // To provide access to private _modelComponents member.
     friend class Component;
 
-    std::mutex* cacheLock;
+    // Mutex lock to prevent multiple threads from accessing the shared controlsCache
+    std::mutex* controlsCacheLock;
 
 
 //==============================================================================
