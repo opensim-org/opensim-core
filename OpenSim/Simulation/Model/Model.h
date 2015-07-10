@@ -48,6 +48,7 @@
 #include "Simbody.h"
 
 
+#include <mutex>
 
 namespace OpenSim {
 
@@ -978,6 +979,9 @@ private:
 
     // To provide access to private _modelComponents member.
     friend class Component;
+
+    std::mutex* cacheLock;
+
 
 //==============================================================================
 // DATA MEMBERS
