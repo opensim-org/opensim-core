@@ -130,7 +130,7 @@ public:
     IncompatibleIterators(const std::string& expl) : Exception(expl) {}
 };
 
-
+/** \cond */
 namespace internal {
 template<typename...>
 using void_t = void;
@@ -229,6 +229,7 @@ template<typename C>
 constexpr bool
 has_mem_end = has_mem_end_t<C>::value;
 }
+/** \endcond */
 
 
 /** AbstractDataTable is the base-class of all DataTable_(templated) allowing 
@@ -611,20 +612,18 @@ public:
         col_ind_.clear();
     }
 
-    /** Get an InputIterator representing the beginning of column labels. Get
-    the sentinel iterator using columnLabelsEnd(). Dereferencing the iterator 
-    produces a pair (std::pair<std::string, std::size_t>) where the first 
-    element is the column label and second element is the column index. The 
-    result is not writable. Use updColumnLabel() to update column labels. See
-    <a href="http://en.cppreference.com/w/cpp/concept/InputIterator">this page
-    </a> for details on InputIterator.                                        */
+    /** Get an iterator (representing the beginning) to iterate over column 
+    labels. Get the sentinel iterator using columnLabelsEnd(). Dereferencing the
+    iterator produces a pair (std::pair<std::string, std::size_t>) where the 
+    first element is the column label and second element is the column index. 
+    The result is not writable. Use updColumnLabel() to update column labels. */
     ColumnLabelsConstIter columnLabelsBegin() const {
         return col_ind_.cbegin();
     }
 
-    /** Get an InputIterator representing the end of column labels. Get the
-    beginning iterator using columnLabelsBegin(). See columnLabelsBegin() on 
-    using the iterator.                                                       */
+    /** Get an iterator (representing the end) to iterate over column labels. 
+    Get the beginning iterator using columnLabelsBegin(). See 
+    columnLabelsBegin() on using the iterator.                                */
     ColumnLabelsConstIter columnLabelsEnd() const {
         return col_ind_.cend();
     }
@@ -635,10 +634,10 @@ public:
     /**@{*/
 
     /** Insert metadata. DataTable_ can hold metadata as an associative array of
-    key-value pairs where is key is always of type std::string and value can be 
-    of any type(except an array type[eg char[]]). The metadata inserted can 
-    later be retrieved using the functions getMetaData() and updMetaData(). This
-    function throws if the key is already present.
+    key-value pairs where is \a key is always of type std::string and \a value 
+    can be of any type(except an array type[eg char[]]). The metadata inserted 
+    can later be retrieved using the functions getMetaData() and updMetaData(). 
+    This function throws if the \a key is already present.
 
     \param key A std::string that can be used the later to retrieve the inserted
                metadata.
@@ -666,12 +665,12 @@ public:
         metadata_.emplace(key, MetaDataValue{tev});
     }
 
-    /** Get previously inserted metadata using its key and type. The template
-    argument has to be exactly the non-reference type of the metadata previously
-    stored using insertMetaData(). The return value is a read-only reference to 
-    the metadata. Use updMetaData() to obtain a writable reference. Time 
-    complexity is constant on average and linear in number of elements in 
-    metadata on worst case.
+    /** Get previously inserted metadata using its \a key and type. The template
+    argument \a ValueType has to be exactly the non-reference type of the 
+    metadata previously stored using insertMetaData(). The return value is a 
+    read-only reference to the metadata. Use updMetaData() to obtain a writable 
+    reference. Time complexity is constant on average and linear in number of 
+    elements in metadata on worst case.
 
     \throws MetaDataKeyDoesNotExist If the key specified does not exist in 
                                     metadata.
@@ -694,11 +693,11 @@ public:
         }
     }
 
-    /** Update previously inserted metadata using its key and type. The template
-    argument has to be exactly the non-reference type of the metadata previously
-    stored using insertMetaData(). The returned value is editable. Time 
-    complexity is constant on average and linear in number of elements in 
-    metadata on worst case.
+    /** Update previously inserted metadata using its \a key and type. The 
+    template argument \a ValueType has to be exactly the non-reference type of 
+    the metadata previously stored using insertMetaData(). The returned value is
+    editable. Time complexity is constant on average and linear in number of 
+    elements in metadata on worst case.
 
     \throws MetaDataKeyDoesNotExist If the key specified does not exist in 
                                     metadata.
@@ -710,12 +709,13 @@ public:
         return const_cast<ValueType&>(getMetaData<ValueType>(key));
     }
 
-    /** Pop previously inserted metadata using its key and type. The template
-    argument has to be exactly the non-reference type of the metadata previously
-    inserted using insertMetaData(). The key-value pair is removed from metadata
-    and the value is returned. To simply remove the key-value pair without 
-    retrieving the value, use removeMetaData(). Time complexity is constant on
-    average and linear in number of elements in the metadata on worst case.
+    /** Pop previously inserted metadata using its \a key and type. The template
+    argument \a ValueType has to be exactly the non-reference type of the 
+    metadata previously inserted using insertMetaData(). The key-value pair is 
+    removed from metadata and the value is returned. To simply remove the 
+    key-value pair without retrieving the value, use removeMetaData(). Time 
+    complexity is constant on average and linear in number of elements in the 
+    metadata on worst case.
 
     \throws MetaDataKeyDoesNotExist If the key specified does not exist in 
                                     metadata.
@@ -729,7 +729,7 @@ public:
         return value;
     }
 
-    /** Remove a metadata key-value pair previously inserted. 
+    /** Remove a metadata key-value pair previously inserted using the \a key. 
 
     \retval true If there was a removal. 
     \retval false If the key was not found in metadata. 
@@ -812,8 +812,8 @@ protected:
 }; // AbstractDataTable
 
 
-/** \brief DataTable_ is a in-memory storage container for data (in the form of 
-a matrix with column names) with support for holding metadata.                
+/** DataTable_ is a in-memory storage container for data (in the form of a 
+matrix with column names) with support for holding metadata.                
                                                                               
 - Underlying matrix will have entries of configurable type ET (template 
   param).
@@ -837,13 +837,27 @@ class DataTable_ : public AbstractDataTable {
                   "Template parameter ET must be either an arithmetic type " 
                   "(int, float, double etc) or a class/struct type.");
 protected:
+    /** \cond */
+    // Iterator to support iterating over rows and columns of the DataTable_.
+    // The template paramters determine whether the iteration is over rows or
+    // columns and whether the iterator allows editing the row/column.
+    // RowOrColIter -- Set to true for iterating over rows. 
+    //                 Set to false for iterating over columns.
+    // IsConst -- Set to true to produce a 'const' iterator. Does not allow
+    //            writing to the row/column when dereferenced.
+    //            Set to false to produce a 'non-const' iterator. Does allow
+    //            writing to the row/column when dereferenced.
+    // The iterator provides random access to rows and columns.
     template<bool RowOrColIter, bool IsConst>
     class Iterator {
     public:
-        using value_type      = std::conditional<RowOrColIter, 
-                                                 SimTK::RowVectorView_<ET>,
-                                                 SimTK::VectorView_<ET>>;
-        using difference_type = int;
+        using value_type        = std::conditional<RowOrColIter, 
+                                                   SimTK::RowVectorView_<ET>,
+                                                   SimTK::VectorView_<ET>>;
+        using reference         = value_type&;
+        using pointer           = value_type*;
+        using difference_type   = int;
+        using iterator_category = std::random_access_iterator_tag;
 
         Iterator()                           = delete;
         Iterator(const Iterator&)            = default;
@@ -966,6 +980,7 @@ protected:
         size_t index_;
     };
 
+    // Rows or Columns container proxy. 
     template<bool RowsOrColsContainer, bool IsConst>
     class RowsColsContainerProxy {
     public:
@@ -997,6 +1012,7 @@ protected:
 
         DataTable_* dt_;
     };
+    /** \endcond */
 
 public:
     using value_type    = ET;
@@ -1009,9 +1025,9 @@ public:
     /** Construct empty DataTable.                                            */
     DataTable_() = default;
 
-    /** Construct DataTable_ with dimensions [numRows x numColumns] where each
+    /** Construct DataTable_ with size [\a numRows x \a numColumns] where each
     entry is initialized with initialValue. Default value for initialValue is 
-    NaN.
+    \a NaN.
   
     \param numRows Number of rows.
     \param numColumns Number of columns.
@@ -1023,47 +1039,82 @@ public:
                 static_cast<int>(numColumns), 
                 initialValue} {}
 
-    /** Construct DataTable_ using an InputIterator which produces one entry at 
-    a time when dereferenced. The entries of DataTable_ are copy initialized 
-    using the values produced by the iterator. For example, specifying RowWise 
-    for parameter dimension and 10 for parameter numEntries will populate the 
-    DataTable_ one row at a time with each row's length taken to be 10. See
-    <a href="http://en.cppreference.com/w/cpp/concept/InputIterator">this page
-    </a> for details on InputIterator.
+    /** Construct DataTable_ using an InputIterator which produces one entry (of
+    type convertible to type ET) at a time when dereferenced. The entries of 
+    DataTable_ are copy initialized using the values produced by the iterator. 
+    The DataTable_ can be populated either row-wise or column-wise by specifying
+    \a rowMajor or \a columnMajor for the parameter \a traverseDir. Either way,
+    the constructor needs to know the length of each row/column from the 
+    paramter \a numEntriesInMajor' so it can split the values coming from the 
+    iterator into rows/columns. For example, specifying \a RowMajor for 
+    \a traverseDir and 10 for \a numEntriesInMajor will populate the DataTable_
+    one row at a time with each row's length taken to be 10. If/when the 
+    iterator falls short of producing enough values to fill up rows/columns 
+    completely, an exception is thrown, which can disabled using 
+    \a allowMissing. For the previous example, if the iterator produces say 26 
+    elements in total, then rows 0 and 1 get all 10 elements filled up but row 3
+    will only get 6 elements. At this point, an exception is thrown if \a 
+    allowMissing is false. The constructor also accepts an optional argument \a 
+    numMajors, which when specified will speed up the construction of the 
+    DataTable_ by allocating enough memory for the entire DataTable_ at once 
+    instead of allocating and relocating for every new row added. For the 
+    previous example, if it is known that the iterator will produce 50 elements
+    in total, with rows of length 10, there were be a total of 5 rows, which
+    can be specified using \a numMajors. 
+    See <a href="http://en.cppreference.com/w/cpp/concept/InputIterator">this 
+    page</a> for details on InputIterator.
       
     \param first Beginning of range covered by the iterator. Both first and last
                  are of same type -- InputIt.
     \param last End of the range covered by the iterator. Both first and last
-                are of same type -- InputIt.
-    \param numEntries Extent of the dimension specified by parameter dim. 
-    \param dimension Dimension to populate the DataTable_. Possible values are:
-                     - RowWise -- Populate the DataTable_ one row at a time.
-                     - ColumnWise -- Populate the DataTable_ one column at a 
-                       time.
+                are of same type -- InputIt. [Don't be confused by the extra
+                code (std::enable_if stuff) that is an implmentation detail but
+                appears in the documentation.]
+    \param traverseDir Whether to populate the DataTable_ row-wise or 
+                       column-wise.  Possible values are:
+                       - RowMajor -- Populate the DataTable_ one row at a time.
+                       - ColumnMajor -- Populate the DataTable_ one column at a 
+                         time.
+    \param numEntriesInMajor If \a traverseDir is:
+                             - \a RowMajor, then this is the length of each row 
+                               in the DataTable_.
+                             - \a ColumnMajor, then this is the length of each
+                               column in the DataTable_.
     \param allowMissing Allow for missing values. 
                         - false -- NotEnoughElements will be thrown if the input
                           iterator fills up the last row/column only partially. 
                         - true -- No exception thrown if the input iterator
                           fills up the last row/column only partially. Instead,
                           missing elements are set to SimTK::NaN.
+    \param numMajors Optional argument for speed. If \a traverseDir is:
+                     - \a RowMajor, then this is the number of rows. If the 
+                       number of rows produced by the iterator is known in
+                       advance, it an be specified here.
+                     - \a ColumnMajor, then this is the number of columns. If 
+                       the number of columns produced by the iterator is known 
+                       in advance, it can be specified here.
   
     \throws ZeroElements When input-iterator does not produce any elements.
                          That is first == last.                                 
-    \throws InvalidEntry When the required input argument 'numEntries' is zero.
+    \throws InvalidEntry When the required input argument \a numEntriesInMajor 
+                         is zero.
+    \throws TooManyElements If \a numMajors is specified and input iterator
+                            produces more elements than needed to construct the
+                            DataTable_, this exception is thrown.
     \throws NotEnoughElements The argument allowMissing enables/disables this
-                              exception. When enabled, if dimension == RowWise, 
-                              this exception is thrown when the input iterator 
-                              does not produce enough elements to fill up the 
-                              last row completely. If dimension == ColumnWise, 
-                              this exception is thrown when the input iterator 
-                              does not produce enough elements to fill up the 
-                              last column completely.                         */
+                              exception. When enabled, if \a traverseDir == \a 
+                              RowMajor, this exception is thrown when the input 
+                              iterator does not produce enough elements to fill
+                              up all the rows completely. If \a traverseDir == 
+                              \a ColumnMajor, this exception is thrown when the
+                              input iterator does not produce enough elements to
+                              fill up all the columns completely.             */
     template<typename InputIt>
     DataTable_(InputIt first,
                typename std::enable_if<!std::is_integral<InputIt>::value,
                                        InputIt>::type last,
                size_t numEntriesInMajor,
-               TraverseDir dimension = TraverseDir::RowMajor,
+               TraverseDir traverseDir = TraverseDir::RowMajor,
                bool allowMissing     = false,
                size_t numMajors      = 0) {
         {
@@ -1095,16 +1146,16 @@ public:
         // Optimization. If numMajors is specified, pre-size the data and 
         // avoid having to resize it multiple times later.
         if(numMajors != 0) {
-            if(dimension == TraverseDir::RowMajor)
+            if(traverseDir == TraverseDir::RowMajor)
                 data_.resize(static_cast<int>(numMajors), 
                              static_cast<int>(numEntriesInMajor));
-            else if(dimension == TraverseDir::ColumnMajor)
+            else if(traverseDir == TraverseDir::ColumnMajor)
                 data_.resize(static_cast<int>(numEntriesInMajor), 
                              static_cast<int>(numMajors));
         } else {
-            if(dimension == TraverseDir::RowMajor)
+            if(traverseDir == TraverseDir::RowMajor)
                 data_.resize(1, static_cast<int>(numEntriesInMajor));
-            else if(dimension == TraverseDir::ColumnMajor)
+            else if(traverseDir == TraverseDir::ColumnMajor)
                 data_.resize(static_cast<int>(numEntriesInMajor), 1);
         }
             
@@ -1113,7 +1164,7 @@ public:
         while(first != last) {
             data_.set(row, col, *first);
             ++first;
-            if(dimension == TraverseDir::RowMajor) {
+            if(traverseDir == TraverseDir::RowMajor) {
                 ++col;
                 if(col == static_cast<int>(numEntriesInMajor) && 
                    first != last) {
@@ -1137,7 +1188,7 @@ public:
                         data_.resizeKeep(data_.nrow(), data_.ncol() + 1);
                     else if(col == static_cast<int>(numMajors))
                         throw TooManyElements{"Input iterator produced more "
-                                "elements than need to fill " + 
+                                "elements than needed to fill " + 
                                 std::to_string(numMajors) + " (numMajors) "
                                 "columns."};
                 }
@@ -1145,7 +1196,7 @@ public:
         }
 
         if(!allowMissing) {
-            if(dimension == TraverseDir::RowMajor) {
+            if(traverseDir == TraverseDir::RowMajor) {
                 if(numMajors != 0 && row != data_.nrow() - 1)
                     throw NotEnoughElements{"Input iterator did not produce "
                             "enough elements to fill all the rows. Total rows ="
@@ -1156,7 +1207,7 @@ public:
                             "enough elements to fill the last row. Expected = " 
                             + std::to_string(data_.ncol()) + ", Received = " + 
                             std::to_string(col)};
-            } else if(dimension == TraverseDir::ColumnMajor) {
+            } else if(traverseDir == TraverseDir::ColumnMajor) {
                 if(numMajors != 0 && col != data_.ncol() - 1)
                     throw NotEnoughElements{"Input iterator did not produce "
                             "enough elements to fill all the columns. Total "
@@ -1171,10 +1222,37 @@ public:
         }
     }
 
+    /** Construct DataTable_ using a container holding elements of type ET
+    (template paramter). The entries of the DataTable_ are copy initialized 
+    using the values in the container. The container is required to support an 
+    iterator. In other words, the container must have member functions %begin()
+    and %end() that emit an iterator to the container. Calling this constructor
+    is equivalent to calling the constructor taking an iterator:
+    \code
+    DataTable_{container.begin(), 
+               container.end(), 
+               numEntriesInMajor,
+               traverseDir,
+               allowMissing,
+               numMajors};
+    \endcode
+    For details, see documentation for constructor taking iterator.
+    
+    Besides being a convenience wrapper for the constructor taking iterator, 
+    this constructor will _try_ to apply an optimization by inquiring the number
+    of elements in the container by calling the member function %size() on the 
+    container, if the container has such a member function. Otherwise, this 
+    function is nothing more than a wrapper. Knowing the total number of 
+    elements allows this constructor to calculate the argument \a numMajors 
+    automatically and apply optimization by allocating memory for the entire 
+    DataTable_ once and populating it using elements of the container.        
+    If \a numMajors is specified in the call, optimization is applied 
+    using that value but container size, if available, is still used to perform
+    some error checking.                                                      */
     template<typename Container>
     DataTable_(const Container& container,
                size_t numEntriesInMajor,
-               TraverseDir dimension = TraverseDir::RowMajor,
+               TraverseDir traverseDir = TraverseDir::RowMajor,
                bool allowMissing     = false,
                size_t numMajors      = 0) {
         {
@@ -1199,7 +1277,7 @@ public:
 
         DataTable__impl(container, 
                         numEntriesInMajor, 
-                        dimension, 
+                        traverseDir, 
                         allowMissing, 
                         numMajors);
     }
@@ -1469,6 +1547,9 @@ public:
                          iterator is zero.
     \throws InvalidEntry The DataTable is empty and required the input argument 
                          'numColumnsHint' is zero.
+    \throws TooManyElements When called on non-empty DataTable_, if the input
+                            iterator produces more elements than needed to add
+                            a row.
     \throws NotEnoughElements Argument allowMissing enables/disables this 
                               exception. This exception is applicable only
                               when this function is called on a non-empty 
@@ -1505,12 +1586,16 @@ public:
             throw InvalidEntry{"Input argument 'numColumnsHint' cannot be zero "
                                "when DataTable is empty."};
 
-        if(data_.ncol() > 0) {
+        if(data_.nrow() > 0 && data_.ncol() > 0) {
             data_.resizeKeep(data_.nrow() + 1, data_.ncol());
             int col{0};
             while(first != last) {
                 data_.set(data_.nrow() - 1, col++, *first);
                 ++first;
+                if(col == data_.ncol())
+                    throw TooManyElements{"Input iterator produced more "
+                            "elements than needed to fill a row with " + 
+                            std::to_string(data_.ncol()) + " columns."};
             }
             if(!allowMissing && col != data_.ncol())
                 throw NotEnoughElements{"Input iterator did not produce enough "
@@ -1537,6 +1622,31 @@ public:
         }
     }
 
+    /** Add (append) a row to the DataTable_ using a container holding values
+    of a type ET (template parameter). The container is required to support
+    an iterator. In other words, the container must have member functions 
+    %begin() and %end() that emit an iterator to the container. Calling this
+    function is equivalent to calling addRow() taking an iterator:
+    \code
+    addRow(container.begin(),
+           container.end(),
+           numColumnsHint,
+           allowMissing);
+    \endcode
+    For details, see documentation for addRow() taking an iterator.
+
+    Besides being a convenience wrapper for addRow() taking an iterator, this
+    function will _try_ to apply an optimization when it called to add a row to
+    an empty DataTable_. The function will _try_ to inquire the number of 
+    elements in the container by calling the member function %size() on the 
+    container, if the container has such a member function. Otherwise, this 
+    function is nothing more than a convenience wrapper. Knowing the total 
+    number of elements allows this function to know the length of the row being 
+    added and apply optimization by allocating memory for the row once and 
+    populating it using the elements of the container.                          
+    If \a numColumnsHint is specified in the call, optimization is applied using
+    that value but container size, if available, is still used to perform some 
+    error checking.                                                           */
     template<typename Container>
     void addRow(const Container& container, 
                 size_t numColumnsHint = 2,
@@ -1568,6 +1678,7 @@ public:
     producing one entry at a time. If this function is called on an empty 
     DataTable_, numColumns must be provided. Otherwise, numColumns is ignored. 
     To add just one row, use addRow() instead.
+    See also documentation for the constructor of DataTable_ taking an iterator.
 
     \param first Beginning of range covered by the iterator.
     \param last End of the range covered by the iterator.
@@ -1587,6 +1698,9 @@ public:
     \throws InvalidEntry If the function is called on an empty DataTable_ 
                          -- without providing the argument numColumns or 
                          -- providing a zero for numColumns.
+    \throws TooManyElements When \a numRows is specified, this exception is
+                            thrown if the input iterator produces more elements
+                            than needed to fill that many rows.
     \throws NotEnoughElements Arguments allowMissing enables/disables this
                               exception. When enables, this exception is thrown
                               if the input iterator does not produce enough 
@@ -1675,6 +1789,33 @@ public:
         }
     }
 
+    /** Add (append) a rows to the DataTable_ using a container holding values
+    of a type ET (template parameter). The container is required to support
+    an iterator. In other words, the container must have member functions 
+    %begin() and %end() that emit an iterator to the container. Calling this
+    function is equivalent to calling addRows() taking an iterator:
+    \code
+    addRow(container.begin(),
+           container.end(),
+           numColumns,
+           allowMissing,
+           numRows);
+    \endcode
+    For details on arguments, see documentation for addRows() taking an 
+    iterator.
+
+    Besides being a convenience wrapper for addRows() taking an iterator, this
+    function will _try_ to apply an optimization inquiring the number of 
+    elements in the container by calling the member function %size() on the 
+    container, if the container such a member function. Otherwise, this function
+    is nothing more than a convenience wrapper. Knowing the total number of 
+    elements allows this function to calculate the number of rows being added 
+    and apply optimization by allocating memory for all the rows once and 
+    populating them using the elements of the container.                       
+                    
+    If \a numRows is specified in the call, optimization is applied using
+    that value but container size, if available, is still used to perform some 
+    error checking.                                                           */
     template<typename Container>
     void addRows(const Container& container,
                  size_t numColumns = 0,
@@ -1755,6 +1896,9 @@ public:
                          iterator is zero.                                      
     \throws InvalidEntry DataTable is empty and input argument numRowsHint is
                          zero.
+    \throws TooManyElements When called on non-empty DataTable_, if the input
+                            iterator produces more elements than needed to add
+                            a column.
     \throws NotEnoughElements Argument allowMissing enables/disables this
                               exception. This exception is applicable only
                               when this function is called on a non-empty 
@@ -1791,12 +1935,16 @@ public:
             throw InvalidEntry{"Input argument 'numRowsHint' cannot be zero" 
                                " when DataTable is empty."};
 
-        if(data_.nrow() > 0) {
+        if(data_.nrow() > 0 && data_.ncol() > 0) {
             data_.resizeKeep(data_.nrow(), data_.ncol() + 1);
             int row{0};
             while(first != last) {
                 data_.set(row++, data_.ncol() - 1, *first);
                 ++first;
+                if(row == data_.nrow())
+                    throw TooManyElements{"Input iterator produced more "
+                            "elements than needed to fill a column with " +
+                            std::to_string(data_.nrow()) + " rows."};
             }
             if(!allowMissing && row != data_.nrow()) 
                 throw NotEnoughElements{"Input iterator did not produce enough "
@@ -1824,6 +1972,31 @@ public:
         }
     }
 
+    /** Add (append) a column to the DataTable_ using a container holding values
+    of a type ET (template parameter). The container is required to support
+    an iterator. In other words, the container must have member functions 
+    %begin() and %end() that emit an iterator to the container. Calling this
+    function is equivalent to calling addColumn() taking an iterator:
+    \code
+    addColumn(container.begin(),
+              container.end(),
+              numRowsHint,
+              allowMissing);
+    \endcode
+    For details, see documentation for addColumn() taking an iterator.
+
+    Besides being a convenience wrapper for addColumn() taking an iterator, this
+    function will _try_ to apply an optimization when it called to add a column 
+    to an empty DataTable_. The function will _try_ to inquire the number of 
+    elements in the container by calling the member function %size() on the 
+    container, if the container has such a member function. Otherwise, this 
+    function is nothing more than a convenience wrapper. Knowing the total 
+    number of elements allows this function to know the length of the column 
+    being added and apply optimization by allocating memory for the column once
+    and populating it using the elements of the container.                      
+    If \a numRowsHint is specified in the call, optimization is applied using
+    that value but container size, if available, is still used to perform some 
+    error checking.                                                           */
     template<typename Container>
     void addColumn(const Container& container, 
                    size_t numRowsHint = 2,
@@ -1874,6 +2047,9 @@ public:
     \throws InvalidEntry If the function is called on an empty DataTable_ 
                          -- without providing the argument numRows or 
                          -- providing zero for numRows.
+    \throws TooManyElements When \a numColumns is specified, this exception is
+                            thrown if the input iterator produces more elements
+                            than needed to fill that many columns.
     \throws NotEnoughElements Argument allowMissing enables/disables this 
                               exception. When enabled, this exception is thrown
                               if the input iterator does not produce enough 
@@ -1962,6 +2138,33 @@ public:
         }
     }
 
+    /** Add (append) a columns to the DataTable_ using a container holding 
+    values of a type ET (template parameter). The container is required to 
+    support an iterator. In other words, the container must have member 
+    functions %begin() and %end() that emit an iterator to the container. 
+    Calling this function is equivalent to calling addRows() taking an iterator:
+    \code
+    addRow(container.begin(),
+           container.end(),
+           numRows,
+           allowMissing,
+           numColumns);
+    \endcode
+    For details on arguments, see documentation for addColumns() taking an 
+    iterator.
+
+    Besides being a convenience wrapper for addColumns() taking an iterator, 
+    this function will _try_ to apply an optimization inquiring the number of 
+    elements in the container by calling the member function %size() on the 
+    container, if the container such a member function. Otherwise, this function
+    is nothing more than a convenience wrapper. Knowing the total number of 
+    elements allows this function to calculate the number of columns being added
+    and apply optimization by allocating memory for all the columns once and 
+    populating them using the elements of the container.                       
+                    
+    If \a numColumns is specified in the call, optimization is applied using
+    that value but container size, if available, is still used to perform some 
+    error checking.                                                           */
     template<typename Container>
     void addColumns(const Container& container,
                     size_t numRows    = 0,
@@ -1990,6 +2193,7 @@ public:
         addColumns_impl(container, numRows, allowMissing, numColumns);
     }
 
+    /** Get a const iterator (representing the beginning) over rows.          */
     Iterator<true, true> rowsCBegin() const {
         if(data_.nrow() == 0 || data_.ncol() == 0)
             throw EmptyDataTable{"DataTable is empty."};
@@ -1997,6 +2201,7 @@ public:
         return Iterator<true, true>{this, 0};
     }
 
+    /** Get a const iterator (representing the end) over rows.                */
     Iterator<true, true> rowsCEnd() const {
         if(data_.nrow() == 0 || data_.ncol() == 0)
             throw EmptyDataTable{"DataTable is empty."};
@@ -2004,14 +2209,17 @@ public:
         return Iterator<true, true>{this, data_.nrow()};
     }
 
+    /** Get a const iterator (representing the beginning) over rows.          */
     Iterator<true, true> rowsBegin() const {
         return rowsCBegin();
     }
 
+    /** Get a const iterator (representing the end) over rows.                */
     Iterator<true, true> rowsEnd() const {
         return rowsCEnd();
     }
 
+    /** Get a non-const iterator (representing the beginning) over rows.      */
     Iterator<true, false> rowsBegin() {
         if(data_.nrow() == 0 || data_.ncol() == 0)
             throw EmptyDataTable{"DataTable is empty."};
@@ -2019,6 +2227,7 @@ public:
         return Iterator<true, false>{this, 0};
     }
 
+    /** Get a non-const iterator (representing the end) over rows.            */
     Iterator<true, false> rowsEnd() {
         if(data_.nrow() == 0 || data_.ncol() == 0)
             throw EmptyDataTable{"DataTable is empty."};
@@ -2026,6 +2235,7 @@ public:
         return Iterator<true, false>{this, data_.nrow()};
     }
 
+    /** Get a const iterator (representing the beginning) over columns.       */
     Iterator<false, true> columnsCBegin() const {
         if(data_.nrow() == 0 || data_.ncol() == 0)
             throw EmptyDataTable{"DataTable is empty."};
@@ -2033,6 +2243,7 @@ public:
         return Iterator<false, true>{this, 0};
     }
 
+    /** Get a const iterator (representing the end) over columns.             */
     Iterator<false, true> columnsCEnd() const {
         if(data_.nrow() == 0 || data_.ncol() == 0)
             throw EmptyDataTable{"DataTable is empty."};
@@ -2040,14 +2251,17 @@ public:
         return Iterator<false, true>{this, data_.ncol()};
     }
 
+    /** Get a const iterator (representing the beginning) over columns.       */
     Iterator<false, true> columnsBegin() const {
         return columnsCBegin();
     }
 
+    /** Get a const iterator (representing the end) over columns.             */
     Iterator<false, true> columnsEnd() const {
         return columnsCEnd();
     }
 
+    /** Get a non-const iterator (representing the beginning) over columns.   */
     Iterator<false, false> columnsBegin() {
         if(data_.nrow() == 0 || data_.ncol() == 0)
             throw EmptyDataTable{"DataTable is empty."};
@@ -2055,6 +2269,7 @@ public:
         return Iterator<false, false>{this, 0};
     }
 
+    /** Get a non-const iterator (representing the end) over columns.         */
     Iterator<false, false> columnsEnd() {
         if(data_.nrow() == 0 || data_.ncol() == 0)
             throw EmptyDataTable{"DataTable is empty."};
@@ -2161,18 +2376,22 @@ public:
     using AbstractDataTable::hasColumn;
 
 protected:
+    /** \cond */
+    // Helper functions. Function overloads detect presence of size() member
+    // function in the container and use it to perform optimization and error
+    // checking.
     template<typename Container, 
              typename = decltype(std::declval<Container>().size())>
     void DataTable__impl(const Container& container,
                          size_t numEntriesInMajor,
-                         TraverseDir dimension,
+                         TraverseDir traverseDir,
                          bool allowMissing,
                          size_t numMajors) {
         if(numMajors == 0) {
             auto res = std::div(container.size(), numEntriesInMajor);
 
             if(!allowMissing && res.rem != 0) {
-                if(dimension == TraverseDir::RowMajor)
+                if(traverseDir == TraverseDir::RowMajor)
                     throw NotEnoughElements{"The container does not have enough"
                             " elements to add full rows. Last "
                             "row received " + std::string(res.rem) + 
@@ -2180,7 +2399,7 @@ protected:
                             std::to_string(numEntriesInMajor) + " elements " 
                             "(numEntriesInMajor). Missing values are not " 
                             "allowed (allowMissing)."};
-                else if(dimension == TraverseDir::ColumnMajor)
+                else if(traverseDir == TraverseDir::ColumnMajor)
                     throw NotEnoughElements{"The container does not have enough"
                             " elements to add full columns. Last"
                             " column received " + std::to_string(res.rem) +
@@ -2193,7 +2412,7 @@ protected:
             numMajors = res.rem == 0 ? res.quot : res.quot + 1;
         } else {
             if(numMajors * numEntriesInMajor < container.size()) {
-                if(dimension == TraverseDir::RowMajor)
+                if(traverseDir == TraverseDir::RowMajor)
                     throw TooManyElements{"The container has more elements than"
                             " needed to add " + std::to_string(numMajors) + 
                             " rows (numMajors) with "
@@ -2202,7 +2421,7 @@ protected:
                             std::to_string(numMajors * numEntriesInMajor) + 
                             " elements,  Received = " + 
                             std::to_string(container.size()) + " elements."};
-                else if(dimension == TraverseDir::ColumnMajor)
+                else if(traverseDir == TraverseDir::ColumnMajor)
                     throw TooManyElements{"The container has more elements than"
                             " needed to add " + std::to_string(numMajors) + 
                             " columns (numMajors) with " + 
@@ -2213,7 +2432,7 @@ protected:
                             std::to_string(container.size()) + " elements."};
             } else if(numMajors * numEntriesInMajor > container.size() &&
                       !allowMissing) {
-                if(dimension == TraverseDir::RowMajor)
+                if(traverseDir == TraverseDir::RowMajor)
                     throw NotEnoughElements{"The container does not have enough"
                             " elements to add " + std::to_string(numMajors) + 
                             " rows (numMajors) with " +
@@ -2222,7 +2441,7 @@ protected:
                             std::to_string(numMajors * numEntriesInMajor) +
                             " elements. Received = " + 
                             std::to_string(container.size()) + " elements."};
-                if(dimension == TraverseDir::ColumnMajor)
+                if(traverseDir == TraverseDir::ColumnMajor)
                     throw NotEnoughElements{"The container does not have enough"
                             " elements to add " + std::to_string(numMajors) + 
                             " columns (numMajors) with " + 
@@ -2238,24 +2457,26 @@ protected:
         DataTable_(container.begin(),
                    container.end(),
                    numEntriesInMajor,
-                   dimension,
+                   traverseDir,
                    allowMissing,
                    numMajors);
     }
     template<typename Container>
     void DataTable__impl(const Container& container,
                          size_t numEntriesInMajor,
-                         TraverseDir dimension,
+                         TraverseDir traverseDir,
                          unsigned allowMissing,
                          size_t numMajors) {
         DataTable_(container.begin(),
                    container.end(),
                    numEntriesInMajor,
-                   dimension,
+                   traverseDir,
                    allowMissing,
                    numMajors);
     }
 
+    // Helper funcitons. Function overloads detect the presence of size() member
+    // function in the container and use it to apply optimization.
     template<typename Container>
     void addRow_impl(const Container& container, 
                      decltype(std::declval<Container>().size()),
@@ -2275,6 +2496,9 @@ protected:
                allowMissing);
     }
 
+    // Helper functions. Function overloads detect the presence of size() member
+    // function in the container and use it to apply optimization and perform 
+    // error checking.
     template<typename Container,
              typename = decltype(std::declval<Container>().size())>
     void addRows_impl(const Container& container,
@@ -2371,6 +2595,8 @@ protected:
                 numRows);
     }
 
+    // Helper functions. Function overloads detect the presence of size() member
+    // function in the container and use it to apply optimization.
     template<typename Container>
     void addColumn_impl(const Container& container, 
                         decltype(std::declval<Container>().size()),
@@ -2390,6 +2616,9 @@ protected:
                   allowMissing);
     }
 
+    // Helper functions. Function overlaods detect the presence of size() member
+    // function in the container and use it to apply optimization and perform
+    // error checking.
     template<typename Container,
              typename = decltype(std::declval<Container>().size())>
     void addColumns_impl(const Container& container,
@@ -2512,9 +2741,8 @@ protected:
 
     // Matrix of data. This excludes timestamp column.
     SimTK::Matrix_<ET> data_;
+    /** \endcond */
 };  // DataTable_
-
-
 
 
 using DataTable = DataTable_<SimTK::Real>;
@@ -2539,7 +2767,7 @@ DataTable_<ET> concatenateColumns(const DataTable_<ET>& dt1,
     return dt;
 }
 
-
+/** \cond */
 class TimestampsEmpty : public OpenSim::Exception {
 public:
     TimestampsEmpty(const std::string& expl) : Exception(expl) {}
@@ -2573,6 +2801,7 @@ class TimestampsColumnFull : public OpenSim::Exception {
 public:
     TimestampsColumnFull(const std::string& expl) : Exception(expl) {}
 };
+/** \endcond */
 
 
 enum class NearestDir {
@@ -2582,6 +2811,11 @@ enum class NearestDir {
 };
 
 
+/** TimeSeriesDataTable_ is a DataTable_ that adds support for a time-series 
+column. 
+
+The timestamp column is enforced to be strictly increasing. Entries in the 
+time-series column can be used to access the rows of the DataTable.                    */
 template<typename ET = SimTK::Real, typename TS = float>
 class TimeSeriesDataTable_ : public DataTable_<ET> {
     static_assert(std::is_arithmetic<TS>::value, "Template argument 'TS' "
@@ -2589,6 +2823,7 @@ class TimeSeriesDataTable_ : public DataTable_<ET> {
                   "float, double etc.).");
 
 protected:
+    /** \cond */
     using string = std::string;
     using Timestamps = std::vector<TS>;
     using TimestampsIter = typename Timestamps::iterator;
@@ -2625,17 +2860,27 @@ protected:
     private:
         const TimeSeriesDataTable_* tsdt_;
     };
+    /** \endcond */
 
 public:
     using timestamp_type = TS;
 
+    /** Inherit constructors.                                                 */
     using DataTable_<ET>::DataTable_;
 
+    /** Copy.                                                                 */
     TimeSeriesDataTable_& operator=(const TimeSeriesDataTable_&) = default;
-    TimeSeriesDataTable_& operator=(TimeSeriesDataTable_&&) = default;
+    TimeSeriesDataTable_& operator=(TimeSeriesDataTable_&&)      = default;
 
+    /** Destroy.                                                              */
     ~TimeSeriesDataTable_() override = default;
 
+    /** Check if the DataTable has a timestamp.                               
+
+    \throws DataHasZeroRows If the DataTable currently has zero rows.
+    \throws TimestampsLengthIncorrect If the length of the timestamp column does
+                                      not match the number of rows in the
+                                      DataTable.                              */
     template<typename Timestamp>
     bool hasTimestamp(Timestamp timestamp) const {
         throwIfDataHasZeroRows();
@@ -2646,6 +2891,16 @@ public:
                                   timestamp);
     }
 
+    /** Add (append) a timestamp to the timestamp column.
+
+    \throws DataHasZeroRows If the DataTable currently has zero rows.
+    \throws TimestampsColumnFull If the length of the timestamp column is 
+                                 already equal to the number of rows in the
+                                 DataTable. At this point no timestamps can be
+                                 added.
+    \throws TimestampBreaksInvariant If the new timestamp breaks the invariant
+                                     that the timestamp column must be
+                                     increasing.                              */
     void addTimestamp(TS timestamp) {
         throwIfDataHasZeroRows();
         throwIfTimestampsFull();
@@ -2654,6 +2909,19 @@ public:
         timestamps_.push_back(timestamp);
     }
 
+    /** Add (append) timestamps to the timestamp column using an iterator. This
+    is equivalent to calling addTimestamp() with a single timestamp multiple
+    times.
+
+    \throws DataHasZeroRows If the DataTable currently has zero rows.
+    \throws TimestampsColumnFull If the iterator produces more values than
+                                 needed to fill up the timestamp column. The
+                                 timestamp column is not allowed to have
+                                 length past the number of rows.
+    \throws TimestampBreaksInvariant If the a new timestamp breaks the invariant
+                                     that the timestamp column must be
+                                     increasing.
+    \throws ZeroElements If the input iterator produces zero elements.        */
     template<typename InputIt>
     void addTimestamps(InputIt first, 
                        InputIt last) {
@@ -2691,6 +2959,14 @@ public:
         }
     }
 
+    /** Add (append) timestamps to the timestamp column using a container. The
+    container is required to support an iterator. In other words, the container
+    must have member functions %begin() and %end() that emit an iterator to the
+    container. Calling this function is equivalent to calling addTimestamps
+    taking an iterator:
+    \code
+    addTimestamps(container.begin(), container.end());
+    \endcode                                                                  */
     template<typename Container>
     void addTimestamps(const Container& container) {
         {
@@ -2716,12 +2992,23 @@ public:
         addTimestamps(container.begin(), container.end());
     }
 
+    /** Add a timestamp and a row in one function call. 
+    - The first argument is forwarded to addTimestamp(). See documentation for
+      addTimestamp().
+    - Rest of the arguments are forwarded to DataTable_::addRow(). See
+      documentation for addRow() member function overloads of DataTable_.     */
     template<typename... ArgsToAddRow>
     void addTimestampAndRow(TS timestamp, ArgsToAddRow&&... argsToAddRow) {
         this-addRow(std::forward<ArgsToAddRow>(argsToAddRow)...);
         addTimestamp(timestamp);
     }
 
+    /** Add multiple timestamps and rows in one function call.
+    - The first two arguments are iterators for timestamp. These are forwarded
+      to addTimestamps() taking an iterator. See documentation for 
+      addTimestamps() taking an iterator.
+    - Rest of the arguments are forwarded to DataTable_::addRows(). See
+      documentation for addRows() member function overloads of DataTable_.    */
     template<typename TimestampInputIt, typename... ArgsToAddRows>
     void addTimestampsAndRows(TimestampInputIt timestampFirst,
                               TimestampInputIt timestampLast,
@@ -2730,6 +3017,11 @@ public:
         addTimestamps(timestampFirst, timestampLast);
     }
 
+    /** Add multiple timestamps and rows in one function call using containers.
+    - The first argument is the timestamp container and is forwarded to the
+      function addTimestamps() taking a container.
+    - Rest of the arguments are forwarded to DataTable_::addRows(). See
+      documentation for addRows() overloads of DataTable_.                    */
     template<typename TimestampContainer, typename... ArgsToAddRows>
     void addTimestampsAndRows(const TimestampContainer& timestampContainer,
                               ArgsToAddRows&&... argsToAddRows) {
@@ -2737,6 +3029,13 @@ public:
         addTimestamps(timestampContainer);
     }
 
+    /** Get the timestamp of a row.
+
+    \throws DataHasZeroRows If the DataTable currently has zero rows.
+    \throws TimestampsLengthIncorrect If the length of the timestamp column does
+                                      not match the number of rows in the
+                                      DataTable.                             
+    \throws RowDoesNotExist If the row specified by rowIndex does not exist.  */
     TS getTimestamp(size_t rowIndex) const {
         throwIfDataHasZeroRows();
         throwIfTimestampsLengthIncorrect();
@@ -2745,6 +3044,22 @@ public:
         return timestamps_[rowIndex];
     }
 
+    /** Get the timestamp that is closest to the given timestamp. Closeness can
+    be specified with \a direction argument to retrieve:
+    - Closest timestamp that is less than or equal to the given timestamp.
+    - Closest timestamp that is greater than or equal to the given timestamp.
+    - Closer of the above two.
+
+    \throws DataHasZeroRows If the DataTable currently has zero rows.
+    \throws TimestampsLengthIncorrect If the length of the timestamp column does
+                                      not match the number of rows in the
+                                      DataTable.                             
+    \throws TimestampDoesNotExist (1) When direction is \a LessThanEqual and 
+                                  there is no timestamp satisfying that 
+                                  criteria.
+                                  (2) When direction is \a GreaterThanEqual and
+                                  there is no timestamp satisfying that
+                                  criteria.                                   */
     TS getTimestamp(TS timestamp, NearestDir direction) {
         throwIfDataHasZeroRows();
         throwIfTimestampsLengthIncorrect();
@@ -2789,6 +3104,14 @@ public:
         }
     }
 
+    /** Get all the timestamps in a container. Returns an object that can be
+    used in a range-for statement to iterate over the timestamps. The iterator
+    does not allow writing.
+
+    \throws DataHasZeroRows If the DataTable currently has zero rows.
+    \throws TimestampsLengthIncorrect If the length of the timestamp column does
+                                      not match the number of rows in the
+                                      DataTable.                              */
     TimestampsContainerProxy getTimestamps() const {
         throwIfDataHasZeroRows();
         throwIfTimestampsLengthIncorrect();
@@ -2796,6 +3119,15 @@ public:
         return TimestampsContainerProxy{this};
     }
 
+    /** Change the timestamp for a row.
+
+    \throws DataHasZeroRows If the DataTable currently has zero rows.
+    \throws RowDoesNotExist If the row specified by \a rowIndex does not exist. 
+    \throws TimestampDoesNotExist If the row specified by \a rowIndex does not
+                                  have an associated timestamp.
+    \throws TimestampBreaksInvariant If the new timestamp breaks the invariant
+                                     that the timestamp column must be
+                                     increasing.                              */
     void changeTimestampOfRow(size_t rowIndex, TS newTimestamp) {
         throwIfDataHasZeroRows();
         this->throwIfRowDoesNotExist(rowIndex);
@@ -2806,6 +3138,12 @@ public:
         timestamps_[rowIndex] = newTimestamp;
     }
 
+    /** Change timestamp.
+
+    \throws DataHasZeroRows If the DataTable currently has zero rows.
+    \throws TimestampsEmpty If the timestamp column is empty.
+    \throws TimestampDoesNotExist If oldTimestamp does not exist in the 
+                                  timestamp column.                           */
     void changeTimestamp(TS oldTimestamp, TS newTimestamp) {
         throwIfDataHasZeroRows();
         throwIfTimestampsEmpty();
@@ -2825,6 +3163,21 @@ public:
         *iter = newTimestamp;
     }
 
+    /** Change multiple timestamps starting at a given row using an iterator.
+    The old timestamps at those rows will be replaced with new timestamps
+    produced by the iterator.
+
+    \throws DataHasZeroRows If the DataTable currently has zero rows.
+    \throws RowDoesNotExist If the row for which the iterator is trying to 
+                            replace the timestamp does not exist. This can 
+                            happen for example if the iterator produces more
+                            elements than needed.
+    \throws TimestampDoesNotExist If the row for which the iterator is tyring to
+                                  replace timestamp does not have an associated
+                                  timestamp.
+    \throws TimestampBreaksInvariant If the new timestamp breaks the invariant
+                                     that the timestamp column must be
+                                     increasing.                              */
     template<typename InputIt>
     void changeTimestamps(size_t startAtRow, InputIt first, InputIt last) {
         using IterValue = typename std::iterator_traits<InputIt>::value_type;
@@ -2848,8 +3201,17 @@ public:
         }
     }
 
+    /** Change multiple timestamps starting at a given row using a container.
+    The old timestamps at those rows will be replaced with timestamps from the
+    container. Calling this function is equivalent to caling:
+    \code
+    changeTimestamps(startAtRow,
+                     container.begin(),
+                     container.end());
+    \endcode                                                                  
+    See documentation for changeTimestamps() taking an iterator pair.         */
     template<typename Container>
-    void changeTimestamps(Container container) {
+    void changeTimestamps(size_t startAtRow, Container container) {
         using ContIter = typename Container::iterator;
         using IterValue = typename std::iterator_traits<ContIter>::value_type;
         static_assert(std::is_constructible<TS, IterValue>::value,
@@ -2857,9 +3219,16 @@ public:
                       "values of a type that is convertible to type of " 
                       "timestamp column (template parameter 'TS').");
 
-        changeTimestamps(container.begin(), container.end());
+        changeTimestamps(startAtRow, container.begin(), container.end());
     }
 
+    /** Get the row index of a timestamp.
+
+    \throws DataHasZeroRows If the DataTable currently has zero rows.
+    \throws TimestampsLengthIncorrect If the timestamp column length does not
+                                      match the number of rows in the DataTable.
+    \throws TimestampDoesNotExist If the given timestamp is not found in the
+                                  timestamp column.                           */
     size_t getRowIndex(TS timestamp) const {
         throwIfDataHasZeroRows();
         throwIfTimestampsLengthIncorrect();
@@ -2875,7 +3244,24 @@ public:
         return iter - timestamps_.cbegin();
     }
 
-    size_t getRowIndex(TS timestamp, NearestDir direction) const {
+    /** Get the row index of the row whose timestamp is closest to the given
+    timestamp. Closeness can be specified with \a direction argument to 
+    retrieve:
+    - Closest timestamp that is less than or equal to the given timestamp.
+    - Closest timestamp that is greater than or equal to the given timestamp.
+    - Closer of the above two.
+
+    \throws DataHasZeroRows If the DataTable currently has zero rows.
+    \throws TimestampsLengthIncorrect If the length of the timestamp column does
+                                      not match the number of rows in the
+                                      DataTable.
+    \throws TimestampDoesNotExist (1) When direction is \a LessThanEqual and
+                                  there is no timestamp satisfying that 
+                                  criteria.
+                                  (2) When direction is \a GreaterThanEqual and
+                                  there is no timestamp satisfying that
+                                  criteria.                                   */
+    size_t getRowIndex(TS timestamp, NearestDir direction ) const {
         throwIfDataHasZeroRows();
         throwIfTimestampsLengthIncorrect();
 
@@ -2919,74 +3305,191 @@ public:
         }
     }
 
+    /** Get the row corresponding to the given timestamp. This is equivalent to
+    calling:
+    \code
+    getRow(getRowIndex(timestamp))
+    \endcode
+    See documentation for getRowIndex() and getRow() for details.             */
     SimTK::RowVectorView_<ET> getRowOfTimestamp(TS timestamp) const {
         return this->getRow(getRowIndex(timestamp));
     }
 
+    /** Get the row with timestamp closest to the given timestamp. Closeness can
+    be specified with \a direction argument. The returned row is not writable.
+    This is equivalent to calling:
+    \code
+    getRow(getRowIndex(timestamp, direction))
+    \endcode
+    See documenation for getRowIndex() and getRow() for details.              */
     SimTK::RowVectorView_<ET> getRowOfTimestamp(TS timestamp, 
                                                 NearestDir direction) const {
         return this->getRow(getRowIndex(timestamp, direction));
     }
 
+    /** Update the row corresponding to the given timestamp. The returned row is
+    writable. This is equivalent to calling:
+    \code
+    updRow(getRowIndex(timestamp))
+    \endcode
+    See documentation for getRowIndex() and updRow() for details.             */
     SimTK::RowVectorView_<ET> updRowOfTimestamp(TS timestamp) {
         return this->updRow(getRowIndex(timestamp));
     }
 
+    /** Update the row with timestamp closest to the given timestamp. Closeness 
+    can be specified with \a direction argument. The returned row is writable.
+    This is equivalent to calling:
+    \code
+    updRow(getRowIndex(timestamp, direction))
+    \endcode
+    See documenation for getRowIndex() and updRow() for details.              */
     SimTK::RowVectorView_<ET> updRowOfTimestamp(TS timestamp, 
                                                 NearestDir direction) {
         return this->updRow(getRowIndex(timestamp, direction));
     }
 
+    /** Get the element for (timestamp, column-index) pair. The returned element
+    is not writable. This is equivalent to calling:
+    \code
+    getElt(getRowIndex(timestamp), columnIndex)
+    \endcode
+    See documentation for getRowIndex() and getElt() for details.             */
     const ET& getEltOfTimestamp(TS timestamp, size_t columnIndex) const {
         this->getElt(getRowIndex(timestamp), columnIndex);
     }
 
+    /** Get the element for (timestamp, column-label) pair. The returned element
+    is not writable. This is equivalent to calling:
+    \code
+    getElt(getRowIndex(timestamp), columnLabel)
+    \endcode
+    See documentation for getRowIndex() and getElt() for details.             */
     const ET& getEltOfTimestamp(TS timestamp, const string& columnLabel) const {
         this->getElt(getRowIndex(timestamp), columnLabel);
     }
 
+    /** Get the element for (row-index, column-index) pair where the row-index
+    is the index of the row whose timestamp is closest to the given timestamp.
+    Closeness can be specified with \a direction argument. The returned element
+    is not writable.
+    This is equivalent to calling:
+    \code
+    getElt(getRowIndex(timestamp, direction), columnIndex)
+    \endcode
+    See documentation for getRowIndex() and getElt() for details.             */
     const ET& getEltOfTimestamp(TS timestamp, 
                                 size_t columnIndex, 
                                 NearestDir direction) const {
         this->getElt(getRowIndex(timestamp, direction), columnIndex);
     }
 
+    /** Get the element for (row-index, column-label) pair where the row-index
+    is the index of the row whose timestamp is closest to the given timestamp.
+    Closeness can be specified with \a direction argument. The returned element
+    is not writable.
+    This is equivalent to calling:
+    \code
+    getElt(getRowIndex(timestamp, direction), columnLabel)
+    \endcode
+    See documentation for getRowIndex() and getElt() for details.             */
     const ET& getEltOfTimestamp(TS timestamp,
                                 const string& columnLabel,
                                 NearestDir direction) const {
         this->getElt(getRowIndex(timestamp, direction), columnLabel);
     }
 
+    /** Update the element for (timestamp, column-index) pair. The returned 
+    element is writable. This is equivalent to calling:
+    \code
+    updElt(getRowIndex(timestamp), columnIndex)
+    \endcode
+    See documentation for getRowIndex() and updElt() for details.             */
     ET& updEltOfTimestamp(TS timestamp, size_t columnIndex) {
         this->updElt(getRowIndex(timestamp), columnIndex);
     }
 
+    /** Update the element for (timestamp, column-label) pair. The returned 
+    element is writable. This is equivalent to calling:
+    \code
+    updElt(getRowIndex(timestamp), columnLabel)
+    \endcode
+    See documentation for getRowIndex() and updElt() for details.             */
     ET& updEltOfTimestamp(TS timestamp, const string& columnLabel) {
         this->updElt(getRowIndex(timestamp), columnLabel);
     }
 
+    /** Update the element for (row-index, column-index) pair where the 
+    row-index is the index of the row whose timestamp is closest to the given 
+    timestamp. Closeness can be specified with \a direction argument. The 
+    returned element is writable.
+    This is equivalent to calling:
+    \code
+    updElt(getRowIndex(timestamp, direction), columnIndex)
+    \endcode
+    See documentation for getRowIndex() and updElt() for details.             */
     ET& updEltOfTimestamp(TS timestamp, 
                           size_t columnIndex, 
                           NearestDir direction) {
         this->updElt(getRowIndex(timestamp, direction), columnIndex);
     }
 
+    /** Update the element for (row-index, column-label) pair where the 
+    row-index is the index of the row whose timestamp is closest to the given 
+    timestamp. Closeness can be specified with \a direction argument. The 
+    returned element is writable.
+    This is equivalent to calling:
+    \code
+    updElt(getRowIndex(timestamp, direction), columnLabel)
+    \endcode
+    See documentation for getRowIndex() and updElt() for details.             */
     ET& updEltOfTimestamp(TS timestamp,
                           const string& columnLabel,
                           NearestDir direction) {
         this->updElt(getRowIndex(timestamp, direction), columnLabel);
     }
 
+    /** Get a const iterator (representing the beginning) to iterate over 
+    timestamps. Get the sentinel iterator using timestampsCEnd(). The iterator 
+    does not allow writing to timestamps.                                     */
+    TimestampsConstIter timestampsCBegin() const {
+        return timestamps_.cbegin();
+    }
+
+    /** Get a const iterator (representing the end) to iterate over timestamps.
+    Get the beginning iterator using timestampsCBegin().                      */
+    TimestampsConstIter timestampsCEnd() const {
+        return timestamps_.cend();
+    }
+
+    /** Get a const iterator (representing the beginning) to iterate over 
+    timestamps. Get the sentinel iterator using timestampsEnd(). The iterator 
+    does not allow writing to timestamps.                                     */
     TimestampsConstIter timestampsBegin() const {
         return timestamps_.cbegin();
     }
 
+    /** Get a const iterator (representing the end) to iterate over timestamps. 
+    Get the beginning iterator using timestampsBegin().                       */
     TimestampsConstIter timestampsEnd() const {
         return timestamps_.cend();
     }
 
+    /** Get a non-const iterator (representing the beginning) to iterate over 
+    timestamps. Get the sentinel iterator using timestampsEnd(). The iterator 
+    does allow writing to timestamps.                                         */
+    TimestampsConstIter timestampsBegin() {
+        return timestamps_.begin();
+    }
+
+    /** Get a non-const iterator (representing the end) to iterate over 
+    timestamps. Get the beginning iterator using timestampsBegin().           */
+    TimestampsConstIter timestampsEnd() {
+        return timestamps_.end();
+    }
 
 protected:
+    /** \cond */
     void throwIfTimestampsEmpty() {
         if(timestamps_.empty())
             throw TimestampsEmpty{"Timestamp column is empty. Use setTimestamps"
@@ -3051,6 +3554,8 @@ protected:
     }
 
     Timestamps timestamps_;
+
+    /** \endcond */
 };
 
 } // namespace OpenSim
