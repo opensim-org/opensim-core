@@ -1002,10 +1002,10 @@ template <class T> friend class ComponentMeasure;
                 if (this == &root) // only to be safe if root changes
                     _components[i]->_nextComponent = nullptr;
                 else
-                    _components[i]->_nextComponent.reset(_nextComponent);
+                    _components[i]->_nextComponent = _nextComponent;
             }
             else
-                _components[i]->_nextComponent.reset(_components[i + 1]);
+                _components[i]->_nextComponent = _components[i + 1];
         }
         // recur to handle children of subcomponents
         for (unsigned int i = 0; i < _components.size(); i++){
@@ -1873,7 +1873,7 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
                 _node = nullptr;
                 continue;
             }
-            _node = _node->_nextComponent;
+            _node = _node->_nextComponent.get();
         }
     }
     return;
