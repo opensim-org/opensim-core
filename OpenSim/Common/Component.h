@@ -1614,7 +1614,7 @@ protected:
     class StateVariable {
         friend void Component::addStateVariable(StateVariable* sv) const;
     public:
-        StateVariable() : name(""), owner(NULL),
+        StateVariable() : name(""), owner(nullptr),
             subsysIndex(SimTK::InvalidIndex), varIndex(SimTK::InvalidIndex),
             sysYIndex(SimTK::InvalidIndex), hidden(true) {}
         explicit StateVariable(const std::string& name, //state var name
