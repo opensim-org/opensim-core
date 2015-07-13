@@ -96,6 +96,8 @@ Model::Model() :
 {
     constructInfrastructure();    setNull();
     finalizeFromProperties();
+
+    controlsCacheLock = new std::mutex();
 }
 //_____________________________________________________________________________
 /**
@@ -118,8 +120,8 @@ Model::Model(const string &aFileName, const bool finalize) :
     if (finalize) {
         finalizeFromProperties();
     }
-
     controlsCacheLock = new std::mutex();
+
     _fileName = aFileName;
     cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
 }
@@ -1807,15 +1809,24 @@ void Model::setControls(const SimTK::State& s, const SimTK::Vector& controls) co
 /** Const access to controls does not invalidate dynamics */
 const Vector& Model::getControls(const SimTK::State &s) const
 {
-   std::unique_lock<std::mutex> lock(*controlsCacheLock);
-
     if( (!_system) || (!_modelControlsIndex.isValid()) ){
         throw Exception("Model::getControls() requires an initialized Model./n"
             "Prior call to Model::initSystem() is required.");
     }
 
-    Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
-    return controlsCache.getValue(s);
+    // Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
+
+    //TODO: Is this necessary?
+    // if(!controlsCache.isValid(s)){
+    //      // Always reset controls to their default values before computing controls
+    //      // since default behavior is for controllors to "addInControls" so there should be valid
+    //      // values to begin with.
+    //      controlsCache.updValue(s) = _defaultControls;
+    //      computeControls(s, controlsCache.updValue(s));
+    //      controlsCache.markAsValid(s);
+    //  }
+
+    return m_controlsCache.getValue(s);
 }
 
 
@@ -2074,6 +2085,8 @@ void Model::extendRealizeVelocity(const SimTK::State& state) const
       computeControls(state, controlsCache.updValue(state));
       controlsCache.markAsValid(state);
     }
+
+    m_controlsCache = controlsCache;
 }
 
 /**

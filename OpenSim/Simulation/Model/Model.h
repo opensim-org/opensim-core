@@ -980,6 +980,7 @@ private:
     // Mutex lock to prevent multiple threads from accessing the shared controlsCache
     std::mutex* controlsCacheLock;
 
+    mutable SimTK::Measure_<SimTK::Vector>::Result m_controlsCache;
 
 //==============================================================================
 // DATA MEMBERS
