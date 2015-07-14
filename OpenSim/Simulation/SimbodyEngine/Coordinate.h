@@ -292,8 +292,12 @@ private:
     /* MobilizedBodyIndex of the body which this coordinate serves.  */
     SimTK::MobilizedBodyIndex _bodyIndex;
 
-    /* Mobilizer Q (i.e. genearlized coordinate) index for this Coordinate. */
+    /* Mobilizer Q (i.e. generalized coordinate) index for this Coordinate. */
     SimTK::MobilizerQIndex _mobilizerQIndex;
+
+    /* Keep a reference to the SimTK function owned by the PrescribedMotion
+    Constraint, so we can change the value at which to lock the joint. */
+    SimTK::ReferencePtr<ModifiableConstant> _lockFunction;
 
     /* Motion type (translational, rotational or combination). */
     MotionType _motionType;
@@ -304,9 +308,6 @@ private:
 
     /* The OpenSim::Joint that owns this coordinate. */
     SimTK::ReferencePtr<const Joint> _joint;
-
-    /* SimTK function used to lock the joint at a fixed value */
-    mutable SimTK::ReferencePtr<ModifiableConstant> _lockFunction;
 
     mutable bool _lockedWarningGiven;
 
