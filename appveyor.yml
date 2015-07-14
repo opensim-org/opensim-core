@@ -13,6 +13,8 @@
 # "/EHsc" is to "unwind semantics" to get error messages when using "/WX" (C4530).
 # However, this was causing some weird behavior. Not treating warnings
 # as errors for now.
+#
+### TEMPORARILY DISABLING WRAPPING (see lines with ###)
   
 shallow_clone: true
 
@@ -31,10 +33,10 @@ nuget:
 install:
   
   ## Use Chocolatey to install SWIG.
-  - choco -y install swig
+  ###- choco -y install swig
   
   ## Install python-nose for python testing.
-  - pip install nose
+  ###- pip install nose
   
   ## Simbody.
   # Simbody's installation is pushed to our Appveyor NuGet account feed.
@@ -51,7 +53,8 @@ build_script:
   - mkdir build
   - cd build
   # Configure.
-  - cmake .. -G"Visual Studio 12 2013 Win64" -DSIMBODY_HOME=C:\simbody -DCMAKE_INSTALL_PREFIX=%OPENSIM_HOME% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON # TODO -DBUILD_SIMM_TRANSLATOR=ON
+  ###- cmake .. -G"Visual Studio 12 2013 Win64" -DSIMBODY_HOME=C:\simbody -DCMAKE_INSTALL_PREFIX=%OPENSIM_HOME% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON # TODO -DBUILD_SIMM_TRANSLATOR=ON
+  - cmake .. -G"Visual Studio 12 2013 Win64" -DSIMBODY_HOME=C:\simbody -DCMAKE_INSTALL_PREFIX=%OPENSIM_HOME% -DBUILD_JAVA_WRAPPING=OFF -DBUILD_PYTHON_WRAPPING=OFF
   # Build.
   - cmake --build . --target ALL_BUILD --config Release -- /maxcpucount:4 /verbosity:quiet
   
@@ -75,10 +78,10 @@ test_script:
   - copy Applications\CMC\test\gait10dof18musc_subject01.osim %OPENSIM_HOME%\Models\Gait10dof18musc\gait10dof18musc.osim
   
   # Move to the installed location of the python package.
-  - cd %OPENSIM_HOME%\sdk\python
+  ###- cd %OPENSIM_HOME%\sdk\python
   
   # Run python tests.
-  - nosetests -v
+  ###- nosetests -v
 
 after_test:
   - ## On master branch, create NuGet package for OpenSim.
