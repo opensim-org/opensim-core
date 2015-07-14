@@ -91,7 +91,7 @@ Model::Model() :
     _coordinateSet(CoordinateSet()),
     _useVisualizer(false),
     _allControllersEnabled(true),
-    _system(NULL),
+    _system(nullptr),
     _workingState()
 {
     constructInfrastructure();    setNull();
@@ -108,7 +108,7 @@ Model::Model(const string &aFileName, const bool finalize) :
     _coordinateSet(CoordinateSet()),
     _useVisualizer(false),
     _allControllersEnabled(true),
-    _system(NULL),
+    _system(nullptr),
     _workingState()
 {   
     constructInfrastructure();

@@ -191,7 +191,7 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
     
     // The underlying SimTK constraint
     SimTK::Constraint::PrescribedMotion lock(system.updMatterSubsystem(), 
-                                             _lockFunction, 
+                                             _lockFunction.get(), 
                                              _bodyIndex, 
                                              SimTK::MobilizerQIndex(_mobilizerQIndex));
 
