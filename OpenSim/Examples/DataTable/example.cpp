@@ -397,9 +397,9 @@ int main() {
     // the matrix can be different and they are in our examples -- Timestamp
     // column entries are of type float and matrix entries are of type
     // SimTK::Real, SimTK::Vec3 and SimTK::Vec6.
-    tsdt_real.addTimestamps({0.0, 0.25, 0.50, 0.75, 1.0});
-    tsdt_vec3.addTimestamps({0.0, 0.25, 0.50, 0.75, 1.0});
-    tsdt_vec6.addTimestamps({0.0, 0.25, 0.50, 0.75, 1.0});
+    tsdt_real.addTimes({0.0, 0.25, 0.50, 0.75, 1.0});
+    tsdt_vec3.addTimes({0.0, 0.25, 0.50, 0.75, 1.0});
+    tsdt_vec6.addTimes({0.0, 0.25, 0.50, 0.75, 1.0});
 
     // Both a timestamp and a row can be added in one call. Multiple timestamps
     // and rows can be added in one call as well using addTimestampsAndRows().
@@ -409,16 +409,16 @@ int main() {
     data_real.assign(3, 20);
     data_vec3.assign(3, SimTK::Vec3{40, 50, 60});
     data_vec6.assign(3, SimTK::Vec6{70, 80, 90, 100, 110, 120});
-    tsdt_real.addTimestampAndRow(1.25, data_real);
-    tsdt_vec3.addTimestampAndRow(1.25, data_vec3);
-    tsdt_vec6.addTimestampAndRow(1.25, data_vec6);
+    tsdt_real.addTimeAndRow(1.25, data_real);
+    tsdt_vec3.addTimeAndRow(1.25, data_vec3);
+    tsdt_vec6.addTimeAndRow(1.25, data_vec6);
 
     // Timestamps can be changed. Following changes timestamps of all the rows
     // at once. It is possible to specify a starting row index to change 
     // timestamps for only a subset of rows. See documentation for details.
-    tsdt_real.changeTimestamps({0.0, 0.2, 0.4, 0.6, 0.8, 1.0});
-    tsdt_vec3.changeTimestamps({0.0, 0.2, 0.4, 0.6, 0.8, 1.0});
-    tsdt_vec6.changeTimestamps({0.0, 0.2, 0.4, 0.6, 0.8, 1.0});
+    tsdt_real.changeTimes({0.0, 0.2, 0.4, 0.6, 0.8, 1.0});
+    tsdt_vec3.changeTimes({0.0, 0.2, 0.4, 0.6, 0.8, 1.0});
+    tsdt_vec6.changeTimes({0.0, 0.2, 0.4, 0.6, 0.8, 1.0});
 
     // Labeling of columns is exactly same as that for DataTable_.
     tsdt_real.setColumnLabels({"col-one", "col-two", "col-three"});
@@ -427,13 +427,13 @@ int main() {
 
     // Rows can be indexed on timestamps.
     {
-        auto dtrow_real = tsdt_real.getRowOfTimestamp(0.6); ignore(dtrow_real);
-        auto dtrow_vec3 = tsdt_vec3.getRowOfTimestamp(0.6); ignore(dtrow_vec3);
-        auto dtrow_vec6 = tsdt_vec6.getRowOfTimestamp(0.6); ignore(dtrow_vec6);
+        auto dtrow_real = tsdt_real.getRowOfTime(0.6); ignore(dtrow_real);
+        auto dtrow_vec3 = tsdt_vec3.getRowOfTime(0.6); ignore(dtrow_vec3);
+        auto dtrow_vec6 = tsdt_vec6.getRowOfTime(0.6); ignore(dtrow_vec6);
 
-        tsdt_real.updRowOfTimestamp(0.4) *= 2;
-        tsdt_vec3.updRowOfTimestamp(0.4) *= 2;
-        tsdt_vec6.updRowOfTimestamp(0.4) *= 2;
+        tsdt_real.updRowOfTime(0.4) *= 2;
+        tsdt_vec3.updRowOfTime(0.4) *= 2;
+        tsdt_vec6.updRowOfTime(0.4) *= 2;
     }
 
     // Timestamps used to index the rows need not exist in the timestamp
@@ -445,24 +445,21 @@ int main() {
 
         // Get a row whose timestamp is less than or equal to given timestamp.
         // Row 2 (3rd row) is returned for below call.
-        auto dtrow_real = tsdt_real.getRowOfTimestamp(0.5, 
-                                                      LessThanEqual);
+        auto dtrow_real = tsdt_real.getRowOfTime(0.5, LessThanEqual);
         ignore(dtrow_real);
         // Get a row whose timestamp is greater than or equal to the given
         // timestamp. Row 3 (4th row) is returned for below call.
-        auto dtrow_vec3 = tsdt_real.getRowOfTimestamp(0.5,
-                                                      GreaterThanEqual);
+        auto dtrow_vec3 = tsdt_real.getRowOfTime(0.5, GreaterThanEqual);
         ignore(dtrow_vec3);
         // Get a row whose timestamp is closest in either direction to the
         // given timestamp. Row 3 (4th row) is returned for below call.
-        auto dtrow_vec6 = tsdt_real.getRowOfTimestamp(0.5,
-                                                      LessOrGreaterThanEqual);
+        auto dtrow_vec6 = tsdt_real.getRowOfTime(0.5, LessOrGreaterThanEqual);
         ignore(dtrow_vec6);
 
         
-        tsdt_real.updRowOfTimestamp(0.5, LessThanEqual)          *= 2;
-        tsdt_vec3.updRowOfTimestamp(0.5, GreaterThanEqual)       *= 2;
-        tsdt_vec6.updRowOfTimestamp(0.5, LessOrGreaterThanEqual) *= 2;
+        tsdt_real.updRowOfTime(0.5, LessThanEqual)          *= 2;
+        tsdt_vec3.updRowOfTime(0.5, GreaterThanEqual)       *= 2;
+        tsdt_vec6.updRowOfTime(0.5, LessOrGreaterThanEqual) *= 2;
     }
 
     // Individual elements can indexed in four different ways:
@@ -475,20 +472,20 @@ int main() {
         // All the following calls access element (3, 2).
         tsdt_real.updElt(3, 2)                      *= 2;
         tsdt_real.updElt(3, "col-two")              *= 2;
-        tsdt_real.updEltOfTimestamp(0.6, 2)         *= 2;
-        tsdt_real.updEltOfTimestamp(0.6, "col-two") *= 2;
+        tsdt_real.updEltOfTime(0.6, 2)         *= 2;
+        tsdt_real.updEltOfTime(0.6, "col-two") *= 2;
     }
 
     // Timestamps can be iterated over.
-    for(const auto& timestamp : tsdt_real.getTimestamps()) 
+    for(const auto& time : tsdt_real.getTimes()) 
         // Do somthing with timestamp.
-        ignore(timestamp);
-    for(const auto& timestamp : tsdt_vec3.getTimestamps())
+        ignore(time);
+    for(const auto& time : tsdt_vec3.getTimes())
         // Do somthing with timestamp.
-        ignore(timestamp);
-    for(const auto& timestamp : tsdt_vec6.getTimestamps())
+        ignore(time);
+    for(const auto& time : tsdt_vec6.getTimes())
         // Do somthing with timestamp.
-        ignore(timestamp);
+        ignore(time);
 
     // Rows can be iterated over.
     for(auto row : tsdt_real.getRows())

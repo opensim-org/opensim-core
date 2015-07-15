@@ -33,9 +33,9 @@ provide an in-memory container for data access and manipulation.              */
 namespace OpenSim {
 
 /** \cond */
-class TimestampsEmpty : public OpenSim::Exception {
+class TimeColumnEmpty : public OpenSim::Exception {
 public:
-    TimestampsEmpty(const std::string& expl) : Exception(expl) {}
+    TimeColumnEmpty(const std::string& expl) : Exception(expl) {}
 };
 
 
@@ -45,29 +45,28 @@ public:
 };
 
 
-class TimestampsLengthIncorrect : public OpenSim::Exception {
+class TimeColumnLengthIncorrect : public OpenSim::Exception {
 public:
-    TimestampsLengthIncorrect(const std::string& expl) : Exception(expl) {}
+    TimeColumnLengthIncorrect(const std::string& expl) : Exception(expl) {}
 };
 
 
-class TimestampDoesNotExist : public OpenSim::Exception {
+class TimeDoesNotExist : public OpenSim::Exception {
 public:
-    TimestampDoesNotExist(const std::string& expl) : Exception(expl) {}
+    TimeDoesNotExist(const std::string& expl) : Exception(expl) {}
 };
 
 
-class TimestampBreaksInvariant : public OpenSim::Exception {
+class TimeBreaksInvariant : public OpenSim::Exception {
 public:
-    TimestampBreaksInvariant(const std::string& expl) : Exception(expl) {}
+    TimeBreaksInvariant(const std::string& expl) : Exception(expl) {}
 };
 
-class TimestampsColumnFull : public OpenSim::Exception {
+class TimeColumnFull : public OpenSim::Exception {
 public:
-    TimestampsColumnFull(const std::string& expl) : Exception(expl) {}
+    TimeColumnFull(const std::string& expl) : Exception(expl) {}
 };
 /** \endcond */
-
 
 enum class NearestDir {
     LessOrGreaterThanEqual,
@@ -75,50 +74,53 @@ enum class NearestDir {
     GreaterThanEqual
 };
 
+/** TimeSeriesDataTable_ is a DataTable_ that adds support for a time column. 
+The time column can be of any arithmetic type -- float, double, int, long etc. 
+In this documentaion, words time & timestamp are used interchangeably to mean
+an entry of the time column.
 
-/** TimeSeriesDataTable_ is a DataTable_ that adds support for a time-series 
-column. 
+The time column is enforced to be strictly increasing. Entries in the 
+time-series column can be used to access the rows of the DataTable.           
 
-The timestamp column is enforced to be strictly increasing. Entries in the 
-time-series column can be used to access the rows of the DataTable.           */
+\tparam ET Type of the entries in the underlying matrix. Defaults to
+           SimTK::Real (alias for double).
+\Tparam TS Type of the time column.                                           */
 template<typename ET = SimTK::Real, typename TS = float>
 class TimeSeriesDataTable_ : public DataTable_<ET> {
     static_assert(std::is_arithmetic<TS>::value, "Template argument 'TS' "
-                  "representing timestamp must be an arithmetic type (eg. int, "
-                  "float, double etc.).");
+                  "representing type of time column must be an arithmetic type "
+                  "(eg. int, float, double etc.).");
 
 protected:
     /** \cond */
     using string = std::string;
-    using Timestamps = std::vector<TS>;
-    using TimestampsIter = typename Timestamps::iterator;
-    using TimestampsConstIter = typename Timestamps::const_iterator;
+    using TimeColumn = std::vector<TS>;
+    using TimeColumnIter = typename TimeColumn::iterator;
+    using TimeColumnConstIter = typename TimeColumn::const_iterator;
 
-    class TimestampsContainerProxy {
+    class TimesContainerProxy {
     public:
-        TimestampsContainerProxy(const TimeSeriesDataTable_* tsdt) : 
+        TimesContainerProxy(const TimeSeriesDataTable_* tsdt) : 
             tsdt_{tsdt} {}
-        TimestampsContainerProxy()                                    = delete;
-        TimestampsContainerProxy(const TimestampsContainerProxy&)     = default;
-        TimestampsContainerProxy(TimestampsContainerProxy&&)          = default;
-        TimestampsContainerProxy& operator=(const TimestampsContainerProxy&)
-                                                                      = default;
-        TimestampsContainerProxy& operator=(TimestampsContainerProxy&&) 
-                                                                      = default;
+        TimesContainerProxy()                                         = delete;
+        TimesContainerProxy(const TimesContainerProxy&)               = default;
+        TimesContainerProxy(TimesContainerProxy&&)                    = default;
+        TimesContainerProxy& operator=(const TimesContainerProxy&)    = default;
+        TimesContainerProxy& operator=(TimesContainerProxy&&)         = default;
 
-        TimestampsConstIter cbegin() const {
-            return tsdt_->timestampsBegin();
+        TimeColumnConstIter cbegin() const {
+            return tsdt_->timesBegin();
         }
 
-        TimestampsConstIter cend() const {
-            return tsdt_->timestampsEnd();
+        TimeColumnConstIter cend() const {
+            return tsdt_->timesEnd();
         }
 
-        TimestampsConstIter begin() const {
+        TimeColumnConstIter begin() const {
             return cbegin();
         }
 
-        TimestampsConstIter end() const {
+        TimeColumnConstIter end() const {
             return cend();
         }
 
@@ -128,7 +130,7 @@ protected:
     /** \endcond */
 
 public:
-    using timestamp_type = TS;
+    using time_type = TS;
 
     /** Inherit constructors.                                                 */
     using DataTable_<ET>::DataTable_;
@@ -140,66 +142,60 @@ public:
     /** Destroy.                                                              */
     ~TimeSeriesDataTable_() override = default;
 
-    /** Clear the timestamp column.                                           */
-    void clearTimestamps() {
-        timestamps_.clear();
+    /** Clear the time column.                                                */
+    void clearTimeColumn() {
+        times_.clear();
     }
 
-    /** Check if the timestamp column is empty.                               */
-    bool timestampsEmpty() const {
-        return timestamps_.empty();
+    /** Check if the time column is empty.                                    */
+    bool isTimeColumnEmpty() const {
+        return times_.empty();
     }
 
     /** Check if the DataTable has a timestamp.                               
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
-    \throws TimestampsLengthIncorrect If the length of the timestamp column does
-                                      not match the number of rows in the
+    \throws TimeColumnLengthIncorrect If the length of the time column does not 
+                                      match the number of rows in the 
                                       DataTable.                              */
-    template<typename Timestamp>
-    bool hasTimestamp(Timestamp timestamp) const {
+    template<typename Time>
+    bool hasTime(Time time) const {
         throwIfDataHasZeroRows();
-        throwIfTimestampsLengthIncorrect();
+        throwIfTimeColumnLengthIncorrect();
 
-        return std::binary_search(timestamps_.cbegin(), 
-                                  timestamps_.cend(), 
-                                  timestamp);
+        return std::binary_search(times_.cbegin(), 
+                                  times_.cend(), 
+                                  time);
     }
 
-    /** Add (append) a timestamp to the timestamp column.
+    /** Add (append) a time to the time column.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
-    \throws TimestampsColumnFull If the length of the timestamp column is 
-                                 already equal to the number of rows in the
-                                 DataTable. At this point no timestamps can be
-                                 added.
-    \throws TimestampBreaksInvariant If the new timestamp breaks the invariant
-                                     that the timestamp column must be
-                                     increasing.                              */
-    void addTimestamp(TS timestamp) {
+    \throws TimesColumnFull If the length of the time column is already equal to
+                            the number of rows in the DataTable. At this point 
+                            no timestamps can be added.
+    \throws TimeBreaksInvariant If the new timestamp breaks the invariant that 
+                                the times column must be increasing.          */
+    void addTime(TS time) {
         throwIfDataHasZeroRows();
-        throwIfTimestampsFull();
-        throwIfTimestampBreaksInvariantPrev(timestamps_.size(), timestamp);
+        throwIfTimeColumnFull();
+        throwIfTimeBreaksInvariantPrev(times_.size(), time);
 
-        timestamps_.push_back(timestamp);
+        times_.push_back(time);
     }
 
-    /** Add (append) timestamps to the timestamp column using an iterator. This
-    is equivalent to calling addTimestamp() with a single timestamp multiple
-    times.
+    /** Add (append) timestamps to the time column using an iterator. This is 
+    equivalent to calling addTime() with a single timestamp multiple times.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
-    \throws TimestampsColumnFull If the iterator produces more values than
-                                 needed to fill up the timestamp column. The
-                                 timestamp column is not allowed to have
-                                 length past the number of rows.
-    \throws TimestampBreaksInvariant If the a new timestamp breaks the invariant
-                                     that the timestamp column must be
-                                     increasing.
+    \throws TimeColumnFull If the iterator produces more values than needed to 
+                           fill up the timestamp column. The time column is not 
+                           allowed to have length past the number of rows.
+    \throws TimeBreaksInvariant If the a new timestamp breaks the invariant
+                                that the timestamp column must be increasing.
     \throws ZeroElements If the input iterator produces zero elements.        */
     template<typename InputIt>
-    void addTimestamps(InputIt first, 
-                       InputIt last) {
+    void addTimes(InputIt first, InputIt last) {
         {
         using namespace internal;
         static_assert(is_dereferencable<InputIt>, "Input iterator (InputIt) is "
@@ -226,24 +222,24 @@ public:
         throwIfDataHasZeroRows();
 
         while(first != last) {
-            throwIfTimestampsFull();
-            throwIfTimestampBreaksInvariantPrev(timestamps_.size(), *first);
+            throwIfTimeColumnFull();
+            throwIfTimeBreaksInvariantPrev(times_.size(), *first);
 
-            timestamps_.push_back(*first);
+            times_.push_back(*first);
             ++first;
         }
     }
 
-    /** Add (append) timestamps to the timestamp column using a container. The
+    /** Add (append) timestamps to the time column using a container. The
     container is required to support an iterator. In other words, the container
     must have member functions %begin() and %end() that emit an iterator to the
-    container. Calling this function is equivalent to calling addTimestamps
+    container. Calling this function is equivalent to calling addTimes()
     taking an iterator:
     \code
-    addTimestamps(container.begin(), container.end());
+    addTimes(container.begin(), container.end());
     \endcode                                                                  */
     template<typename Container>
-    void addTimestamps(const Container& container) {
+    void addTimes(const Container& container) {
         {
         using namespace internal;
         static_assert(has_mem_begin<Container>, "Input container does not have "
@@ -264,26 +260,26 @@ public:
                       "return an iterator to the container.");
         }
 
-        addTimestamps(container.begin(), container.end());
+        addTimes(container.begin(), container.end());
     }
 
-    /** Add (append) timestamps to the timestamp column using a braced "{}" list
-    of values (std::initializer_list). See addTimestamps() taking an iterator
-    for details.                                                              */
-    template<typename Timestamp>
-    void addTimestamps(const std::initializer_list<Timestamp>& list) {
-        addTimestamps(list.begin(), list.end());
+    /** Add (append) timestamps to the time column using a braced "{}" list of 
+    values (std::initializer_list). See addTimes() taking an iterator for 
+    details.                                                                  */
+    template<typename Time>
+    void addTimes(const std::initializer_list<Time>& list) {
+        addTimes(list.begin(), list.end());
     }
 
     /** Add a timestamp and a row in one function call. 
-    - The first argument is forwarded to addTimestamp(). See documentation for
-      addTimestamp().
+    - The first argument is forwarded to addTime(). See documentation for
+      addTime().
     - Rest of the arguments are forwarded to DataTable_::addRow(). See
       documentation for addRow() member function overloads of DataTable_.     */
     template<typename... ArgsToAddRow>
-    void addTimestampAndRow(TS timestamp, ArgsToAddRow&&... argsToAddRow) {
+    void addTimeAndRow(TS time, ArgsToAddRow&&... argsToAddRow) {
         this->addRow(std::forward<ArgsToAddRow>(argsToAddRow)...);
-        addTimestamp(timestamp);
+        addTime(time);
     }
 
     /** Add multiple timestamps and rows in one function call.
@@ -292,39 +288,39 @@ public:
       addTimestamps() taking an iterator.
     - Rest of the arguments are forwarded to DataTable_::addRows(). See
       documentation for addRows() member function overloads of DataTable_.    */
-    template<typename TimestampInputIt, typename... ArgsToAddRows>
-    void addTimestampsAndRows(TimestampInputIt timestampFirst,
-                              TimestampInputIt timestampLast,
-                              ArgsToAddRows&&... argsToAddRows) {
+    template<typename TimeInputIt, typename... ArgsToAddRows>
+    void addTimesAndRows(TimeInputIt timeFirst,
+                         TimeInputIt timeLast,
+                         ArgsToAddRows&&... argsToAddRows) {
         this->addRows(std::forward<ArgsToAddRows>(argsToAddRows)...);
-        addTimestamps(timestampFirst, timestampLast);
+        addTimes(timeFirst, timeLast);
     }
 
     /** Add multiple timestamps and rows in one function call using containers.
     - The first argument is the timestamp container and is forwarded to the
-      function addTimestamps() taking a container. See its documentation for
+      function addTimes() taking a container. See its documentation for
       details.
     - Rest of the arguments are forwarded to DataTable_::addRows(). See
       documentation for addRows() overloads of DataTable_.                    */
-    template<typename TimestampContainer, typename... ArgsToAddRows>
-    void addTimestampsAndRows(const TimestampContainer& timestampContainer,
-                              ArgsToAddRows&&... argsToAddRows) {
+    template<typename TimeContainer, typename... ArgsToAddRows>
+    void addTimesAndRows(const TimeContainer& timeContainer,
+                         ArgsToAddRows&&... argsToAddRows) {
         this->addRows(std::forward<ArgsToAddRows>(argsToAddRows)...);
-        addTimestamps(timestampContainer);
+        addTimes(timeContainer);
     }
 
     /** Add multiple timestamps and rows in one function call using a braced 
     "{}" list of values (std::initializer_list).
     - The first argument is a list containing timestamps. It is forwarded to the
-      function addTimestamps() taking a std::initializer_list. See its 
+      function addTimes() taking a std::initializer_list. See its 
       documentation for details.
     - The rest of the arguments are forwarded to DataTable_::addRows(). See its
       documenation for details.                                               */
-    template<typename Timestamp, typename... ArgsToAddRows>
-    void addTimestampsAndRows(const std::initializer_list<Timestamp>& list,
-                              ArgsToAddRows&&... argsToAddRows) {
+    template<typename Time, typename... ArgsToAddRows>
+    void addTimesAndRows(const std::initializer_list<Time>& list,
+                         ArgsToAddRows&&... argsToAddRows) {
         this->addRows(std::forward<ArgsToAddRows>(argsToAddRows)...);
-        addTimestamps(list);
+        addTimes(list);
     }
 
     /** Get the timestamp of a row.
@@ -334,68 +330,66 @@ public:
                                       not match the number of rows in the
                                       DataTable.                             
     \throws RowDoesNotExist If the row specified by rowIndex does not exist.  */
-    TS getTimestamp(size_t rowIndex) const {
+    TS getTimes(size_t rowIndex) const {
         throwIfDataHasZeroRows();
-        throwIfTimestampsLengthIncorrect();
+        throwIfTimeColumnLengthIncorrect();
         this->throwIfRowDoesNotExist(rowIndex);
 
-        return timestamps_[rowIndex];
+        return times_[rowIndex];
     }
 
-    /** Get the timestamp that is closest to the given timestamp. Closeness can
-    be specified with \a direction argument to retrieve:
-    - Closest timestamp that is less than or equal to the given timestamp.
-    - Closest timestamp that is greater than or equal to the given timestamp.
-    - Closer of the above two.
+    /** Get the timestamp that is closest/nearest to the given timestamp. 
+    If the argument \a direction is:
+    - LessThanEqual -- The timestamp returned is less than or equal to (<=) the 
+      given timestamp.
+    - GreaterThanEqual -- The timestamp returned is greater than or equal to 
+      (>=) the given timestamp.
+    - LessOrGreaterThanEqual -- The timestamp returned is best of the above two.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
-    \throws TimestampsLengthIncorrect If the length of the timestamp column does
+    \throws TimeColumnLengthIncorrect If the length of the timestamp column does
                                       not match the number of rows in the
-                                      DataTable.                             
-    \throws TimestampDoesNotExist (1) When direction is \a LessThanEqual and 
-                                  there is no timestamp satisfying that 
-                                  criteria.
-                                  (2) When direction is \a GreaterThanEqual and
-                                  there is no timestamp satisfying that
-                                  criteria.                                   */
-    TS getTimestamp(TS timestamp, NearestDir direction) {
+                                      DataTable.                              
+    \throws TimeDoesNotExist This is applicable only for cases when \a direction
+                             is either \a LessThanEqual or \a GreaterThanEqual. 
+                             This exception is thrown if there is no timestamp 
+                             satisfying the criteria.                         */
+    TS getTime(TS time, NearestDir direction) {
         throwIfDataHasZeroRows();
-        throwIfTimestampsLengthIncorrect();
+        throwIfTimeColumnLengthIncorrect();
 
-        auto geq_iter = std::lower_bound(timestamps_.cbegin(), 
-                                         timestamps_.cend(),
-                                         timestamp);
-
+        auto geq_iter = std::lower_bound(times_.cbegin(), times_.cend(), time);
+        
         if(direction == NearestDir::LessOrGreaterThanEqual) {
-            if(geq_iter == timestamps_.cend())
-                return timestamps_.back();
+            if(geq_iter == times_.cend())
+                return times_.back();
 
-            if(*geq_iter == timestamp)
-                return timestamp;
+            if(*geq_iter == time)
+                return time;
 
-            if(geq_iter == timestamps_.cbegin())
-                return timestamps_.front();
+            if(geq_iter == times_.cbegin())
+                return times_.front();
 
-            if(*geq_iter -  timestamp <= timestamp - *(geq_iter - 1))
+            if(*geq_iter -  time <= time - *(geq_iter - 1))
                 return *geq_iter;
             else
                 return *(--geq_iter);
         } else if(direction == NearestDir::LessThanEqual) {
-            if(geq_iter == timestamps_.cend())
-                return timestamps_.back();
+            if(geq_iter == times_.cend())
+                return times_.back();
 
-            if(*geq_iter == timestamp)
-                return timestamp;
+            if(*geq_iter == time)
+                return time;
 
-            if(geq_iter == timestamps_.cbegin())
-                throw TimestampDoesNotExist{"There is no timestamp less-than/"
-                        "equal-to " + std::to_string(timestamp) + "."};
+            if(geq_iter == times_.cbegin())
+                throw TimeDoesNotExist{"There is no timestamp less-than/"
+                        "equal-to " + std::to_string(time) + "."};
 
             return *(--geq_iter);
-        } else if(direction == NearestDir::GreaterThanEqual) {
-            if(geq_iter == timestamps_.cend())
-                throw TimestampDoesNotExist{"There is no timestamp " 
-                        "greater-than/equal-to " + std::to_string(timestamp) + 
+        } else {
+            if(geq_iter == times_.cend())
+                throw TimeDoesNotExist{"There is no timestamp " 
+                        "greater-than/equal-to " + std::to_string(time) + 
                         "."};
 
             return *geq_iter;
@@ -407,12 +401,12 @@ public:
     does not allow writing.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
-    \throws TimestampsLengthIncorrect If the length of the timestamp column does
+    \throws TimeColumnLengthIncorrect If the length of the timestamp column does
                                       not match the number of rows in the
                                       DataTable.                              */
-    TimestampsContainerProxy getTimestamps() const {
+    TimesContainerProxy getTimes() const {
         throwIfDataHasZeroRows();
-        throwIfTimestampsLengthIncorrect();
+        throwIfTimeColumnLengthIncorrect();
 
         return this;
     }
@@ -421,44 +415,41 @@ public:
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
     \throws RowDoesNotExist If the row specified by \a rowIndex does not exist. 
-    \throws TimestampDoesNotExist If the row specified by \a rowIndex does not
-                                  have an associated timestamp.
-    \throws TimestampBreaksInvariant If the new timestamp breaks the invariant
-                                     that the timestamp column must be
-                                     increasing.                              */
-    void changeTimestampOfRow(size_t rowIndex, TS newTimestamp) {
+    \throws TimeDoesNotExist If the row specified by \a rowIndex does not
+                             have an associated timestamp.
+    \throws TimeBreaksInvariant If the new timestamp breaks the invariant
+                                that the timestamp column must be increasing. */
+    void changeTimeOfRow(size_t rowIndex, TS newTime) {
         throwIfDataHasZeroRows();
         this->throwIfRowDoesNotExist(rowIndex);
-        throwIfIndexExceedsTimestampLength(rowIndex);
-        throwIfBreaksInvariantPrev(rowIndex, newTimestamp);
-        throwIfBreaksInvariantNext(rowIndex, newTimestamp);
+        throwIfIndexExceedsTimeColumnLength(rowIndex);
+        throwIfTimeBreaksInvariantPrev(rowIndex, newTime);
+        throwIfTimeBreaksInvariantNext(rowIndex, newTime);
 
-        timestamps_[rowIndex] = newTimestamp;
+        times_[rowIndex] = newTime;
     }
 
     /** Change timestamp.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
-    \throws TimestampsEmpty If the timestamp column is empty.
-    \throws TimestampDoesNotExist If oldTimestamp does not exist in the 
-                                  timestamp column.                           */
-    void changeTimestamp(TS oldTimestamp, TS newTimestamp) {
+    \throws TimeColumnEmpty If the timestamp column is empty.
+    \throws TimeDoesNotExist If oldTimestamp does not exist in the 
+                             timestamp column.                                */
+    void changeTime(TS oldTime, TS newTime) {
         throwIfDataHasZeroRows();
-        throwIfTimestampsEmpty();
+        throwIfTimeColumnEmpty();
 
-        auto iter = std::lower_bound(timestamps_.begin(), 
-                                     timestamps_.end(),
-                                     oldTimestamp);
+        auto iter = std::lower_bound(times_.begin(), times_.end(), oldTime);
 
-        if(*iter != oldTimestamp)
-            throw TimestampDoesNotExist{"Timestamp '" + 
-                    std::to_string(oldTimestamp) + "' does not exist."};
+        if(*iter != oldTime)
+            throw TimeDoesNotExist{"Timestamp '" + 
+                    std::to_string(oldTime) + "' does not exist."};
             
 
-        throwifBreaksInvariantPrev(iter - timestamps_.cbegin(), newTimestamp);
-        throwifBreaksInvariantNext(iter - timestamps_.cbegin(), newTimestamp);
+        throwifTimeBreaksInvariantPrev(iter - times_.cbegin(), newTime);
+        throwifTimeBreaksInvariantNext(iter - times_.cbegin(), newTime);
 
-        *iter = newTimestamp;
+        *iter = newTime;
     }
 
     /** Change multiple timestamps starting at a given row using an iterator.
@@ -470,16 +461,13 @@ public:
                             replace the timestamp does not exist. This can 
                             happen for example if the iterator produces more
                             elements than needed.
-    \throws TimestampDoesNotExist If the row for which the iterator is tyring to
-                                  replace timestamp does not have an associated
-                                  timestamp.
-    \throws TimestampBreaksInvariant If the new timestamp breaks the invariant
-                                     that the timestamp column must be
-                                     increasing.                              */
+    \throws TimeDoesNotExist If the row for which the iterator is tyring to
+                             replace timestamp does not have an associated
+                             timestamp.
+    \throws TimeBreaksInvariant If the new timestamp breaks the invariant
+                                that the timestamp column must be increasing. */
     template<typename InputIt>
-    void changeTimestamps(InputIt first, 
-                          InputIt last, 
-                          size_t startAtRowIndex = 0) {
+    void changeTimes(InputIt first, InputIt last, size_t startAtRowIndex = 0) {
         {
         using namespace internal;
         static_assert(is_dereferencable<InputIt>, "Input iterator (InputIt) is "
@@ -505,11 +493,11 @@ public:
         size_t rowIndex{startAtRowIndex};
         while(first != last) {
             this->throwIfRowDoesNotExist(rowIndex);
-            throwIfIndexExceedsTimestampLength(rowIndex);
-            throwIfTimestampBreaksInvariantPrev(rowIndex, *first);
-            throwIfTimestampBreaksInvariantNext(rowIndex, *first);
+            throwIfIndexExceedsTimeColumnLength(rowIndex);
+            throwIfTimeBreaksInvariantPrev(rowIndex, *first);
+            throwIfTimeBreaksInvariantNext(rowIndex, *first);
             
-            timestamps_[rowIndex] = *first;
+            times_[rowIndex] = *first;
 
             ++first; ++rowIndex;
         }
@@ -519,14 +507,11 @@ public:
     The old timestamps at those rows will be replaced with timestamps from the
     container. Calling this function is equivalent to caling:
     \code
-    changeTimestamps(container.begin(),
-                     container.end(),
-                     startAtRowIndex)
+    changeTimes(container.begin(), container.end(), startAtRowIndex)
     \endcode                                                                  
-    See documentation for changeTimestamps() taking an iterator pair.         */
+    See documentation for changeTimes() taking an iterator pair.              */
     template<typename Container>
-    void changeTimestamps(const Container& container, 
-                          size_t startAtRowIndex = 0) {
+    void changeTimes(const Container& container, size_t startAtRowIndex = 0) {
         {
         using namespace internal;
         static_assert(has_mem_begin<Container>, "Input container does not have "
@@ -547,41 +532,39 @@ public:
                       "return an iterator to the container.");
         }
 
-        changeTimestamps(container.begin(), container.end(), startAtRowIndex);
+        changeTimes(container.begin(), container.end(), startAtRowIndex);
     }
 
     /** Change multiple timestamps starting at a given row using a braced "{}"
     list of timestamps. Calling this function is equivalent to calling:
     \code
-    changeTimestamps(list.begin(), list.end(), startAtRowIndex)
+    changeTimes(list.begin(), list.end(), startAtRowIndex)
     \endcode
-    See documenation of changeTimestamps() taking an iterator for details.    */
-    template<typename Timestamp>
-    void changeTimestamps(const std::initializer_list<Timestamp>& list,
-                          size_t startAtRowIndex = 0) {
-        changeTimestamps(list.begin(), list.end(), startAtRowIndex);
+    See documenation of changeTimes() taking an iterator for details.         */
+    template<typename Time>
+    void changeTimes(const std::initializer_list<Time>& list,
+                     size_t startAtRowIndex = 0) {
+        changeTimes(list.begin(), list.end(), startAtRowIndex);
     }
 
     /** Get the row index of a timestamp.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
-    \throws TimestampsLengthIncorrect If the timestamp column length does not
+    \throws TimeColumnLengthIncorrect If the timestamp column length does not
                                       match the number of rows in the DataTable.
-    \throws TimestampDoesNotExist If the given timestamp is not found in the
-                                  timestamp column.                           */
-    size_t getRowIndex(TS timestamp) const {
+    \throws TimeDoesNotExist If the given timestamp is not found in the
+                             timestamp column.                                */
+    size_t getRowIndex(TS time) const {
         throwIfDataHasZeroRows();
-        throwIfTimestampsLengthIncorrect();
+        throwIfTimeColumnLengthIncorrect();
 
-        auto iter = std::lower_bound(timestamps_.cbegin(), 
-                                     timestamps_.cend(), 
-                                     timestamp);
+        auto iter = std::lower_bound(times_.cbegin(), times_.cend(), time);
 
-        if(*iter != timestamp)
-            throw TimestampDoesNotExist{"Timestamp '" + 
-                    std::to_string(timestamp) + "' does not exist."};
+        if(*iter != time)
+            throw TimeDoesNotExist{"Timestamp '" + 
+                    std::to_string(time) + "' does not exist."};
             
-        return iter - timestamps_.cbegin();
+        return iter - times_.cbegin();
     }
 
     /** Get the row index of the row whose timestamp is closest to the given
@@ -601,114 +584,109 @@ public:
                                   (2) When direction is \a GreaterThanEqual and
                                   there is no timestamp satisfying that
                                   criteria.                                   */
-    size_t getRowIndex(TS timestamp, NearestDir direction ) const {
+    size_t getRowIndex(TS time, NearestDir direction ) const {
         throwIfDataHasZeroRows();
-        throwIfTimestampsLengthIncorrect();
+        throwIfTimeColumnLengthIncorrect();
 
-        auto geq_iter = std::lower_bound(timestamps_.cbegin(),
-                                         timestamps_.cend(),
-                                         timestamp);
+        auto geq_iter = std::lower_bound(times_.cbegin(), times_.cend(), time);
 
         if(direction == NearestDir::LessOrGreaterThanEqual) {
-            if(geq_iter == timestamps_.cend())
-                return timestamps_.size() - 1;
+            if(geq_iter == times_.cend())
+                return times_.size() - 1;
             
-            if(*geq_iter == timestamp)
-                return geq_iter - timestamps_.cbegin();
+            if(*geq_iter == time)
+                return geq_iter - times_.cbegin();
 
-            if(geq_iter == timestamps_.cbegin())
+            if(geq_iter == times_.cbegin())
                 return 0;
 
-            if(*geq_iter - timestamp <= timestamp - *(geq_iter - 1))
-                return geq_iter - timestamps_.cbegin();
+            if(*geq_iter - time <= time - *(geq_iter - 1))
+                return geq_iter - times_.cbegin();
             else
-                return geq_iter - timestamps_.cbegin() - 1;
+                return geq_iter - times_.cbegin() - 1;
         } else if(direction == NearestDir::LessThanEqual) {
-            if(geq_iter == timestamps_.cend())
-                return timestamps_.size() - 1;
+            if(geq_iter == times_.cend())
+                return times_.size() - 1;
 
-            if(*geq_iter == timestamp)
-                return geq_iter - timestamps_.cbegin();
+            if(*geq_iter == time)
+                return geq_iter - times_.cbegin();
 
-            if(geq_iter == timestamps_.cbegin())
-                throw TimestampDoesNotExist{"There is no timestamp less-than/"
-                        "equal-to " + std::to_string(timestamp) + "."};
+            if(geq_iter == times_.cbegin())
+                throw TimeDoesNotExist{"There is no timestamp less-than/"
+                        "equal-to " + std::to_string(time) + "."};
 
-            return geq_iter - timestamps_.cbegin() - 1;
-        } else if(direction == NearestDir::GreaterThanEqual) {
-            if(geq_iter == timestamps_.cend())
-                throw TimestampDoesNotExist{"There is no timestamp "
-                        "greater-than/equal-to " + std::to_string(timestamp) + 
-                        "."};
+            return geq_iter - times_.cbegin() - 1;
+        } else {
+            if(geq_iter == times_.cend())
+                throw TimeDoesNotExist{"There is no timestamp "
+                        "greater-than/equal-to " + std::to_string(time) + "."};
 
-            return geq_iter - timestamps_.cbegin();
+            return geq_iter - times_.cbegin();
         } 
-        // This is to suppress compiler warning. Control *cannot* reach here.
-        return 0;
     }
 
     /** Get the row corresponding to the given timestamp. This is equivalent to
     calling:
     \code
-    getRow(getRowIndex(timestamp))
+    getRow(getRowIndex(time))
     \endcode
     See documentation for getRowIndex() and getRow() for details.             */
-    SimTK::RowVectorView_<ET> getRowOfTimestamp(TS timestamp) const {
-        return this->getRow(getRowIndex(timestamp));
+    SimTK::RowVectorView_<ET> getRowOfTime(TS time) const {
+        return this->getRow(getRowIndex(time));
     }
 
     /** Get the row with timestamp closest to the given timestamp. Closeness can
     be specified with \a direction argument. The returned row is not writable.
     This is equivalent to calling:
     \code
-    getRow(getRowIndex(timestamp, direction))
+    getRow(getRowIndex(time, direction))
     \endcode
     See documenation for getRowIndex() and getRow() for details.              */
-    SimTK::RowVectorView_<ET> getRowOfTimestamp(TS timestamp, 
-                                                NearestDir direction) const {
-        return this->getRow(getRowIndex(timestamp, direction));
+    SimTK::RowVectorView_<ET> getRowOfTime(TS time, 
+                                           NearestDir direction) const {
+        return this->getRow(getRowIndex(time, direction));
     }
 
     /** Update the row corresponding to the given timestamp. The returned row is
     writable. This is equivalent to calling:
     \code
-    updRow(getRowIndex(timestamp))
+    updRow(getRowIndex(time))
     \endcode
     See documentation for getRowIndex() and updRow() for details.             */
-    SimTK::RowVectorView_<ET> updRowOfTimestamp(TS timestamp) {
-        return this->updRow(getRowIndex(timestamp));
+    SimTK::RowVectorView_<ET> updRowOfTime(TS time) {
+        return this->updRow(getRowIndex(time));
     }
 
     /** Update the row with timestamp closest to the given timestamp. Closeness 
     can be specified with \a direction argument. The returned row is writable.
     This is equivalent to calling:
     \code
-    updRow(getRowIndex(timestamp, direction))
+    updRow(getRowIndex(time, direction))
     \endcode
     See documenation for getRowIndex() and updRow() for details.              */
-    SimTK::RowVectorView_<ET> updRowOfTimestamp(TS timestamp, 
-                                                NearestDir direction) {
-        return this->updRow(getRowIndex(timestamp, direction));
+    SimTK::RowVectorView_<ET> updRowOfTime(TS time, 
+                                           NearestDir direction) {
+        return this->updRow(getRowIndex(time, direction));
     }
 
     /** Get the element for (timestamp, column-index) pair. The returned element
     is not writable. This is equivalent to calling:
     \code
-    getElt(getRowIndex(timestamp), columnIndex)
+    getElt(getRowIndex(time), columnIndex)
     \endcode
     See documentation for getRowIndex() and getElt() for details.             */
-    const ET& getEltOfTimestamp(TS timestamp, size_t columnIndex) const {
-        return this->getElt(getRowIndex(timestamp), columnIndex);
+    const ET& getEltOfTime(TS time, size_t columnIndex) const {
+        return this->getElt(getRowIndex(time), columnIndex);
     }
 
     /** Get the element for (timestamp, column-label) pair. The returned element
     is not writable. This is equivalent to calling:
     \code
-    getElt(getRowIndex(timestamp), columnLabel)
+    getElt(getRowIndex(time), columnLabel)
     \endcode
     See documentation for getRowIndex() and getElt() for details.             */
-    const ET& getEltOfTimestamp(TS timestamp, const string& columnLabel) const {
-        return this->getElt(getRowIndex(timestamp), columnLabel);
+    const ET& getEltOfTime(TS time, const string& columnLabel) const {
+        return this->getElt(getRowIndex(time), columnLabel);
     }
 
     /** Get the element for (row-index, column-index) pair where the row-index
@@ -717,13 +695,13 @@ public:
     is not writable.
     This is equivalent to calling:
     \code
-    getElt(getRowIndex(timestamp, direction), columnIndex)
+    getElt(getRowIndex(time, direction), columnIndex)
     \endcode
     See documentation for getRowIndex() and getElt() for details.             */
-    const ET& getEltOfTimestamp(TS timestamp, 
-                                size_t columnIndex, 
-                                NearestDir direction) const {
-        return this->getElt(getRowIndex(timestamp, direction), columnIndex);
+    const ET& getEltOfTime(TS time, 
+                           size_t columnIndex, 
+                           NearestDir direction) const {
+        return this->getElt(getRowIndex(time, direction), columnIndex);
     }
 
     /** Get the element for (row-index, column-label) pair where the row-index
@@ -732,33 +710,33 @@ public:
     is not writable.
     This is equivalent to calling:
     \code
-    getElt(getRowIndex(timestamp, direction), columnLabel)
+    getElt(getRowIndex(time, direction), columnLabel)
     \endcode
     See documentation for getRowIndex() and getElt() for details.             */
-    const ET& getEltOfTimestamp(TS timestamp,
-                                const string& columnLabel,
-                                NearestDir direction) const {
-        return this->getElt(getRowIndex(timestamp, direction), columnLabel);
+    const ET& getEltOfTime(TS time,
+                           const string& columnLabel,
+                           NearestDir direction) const {
+        return this->getElt(getRowIndex(time, direction), columnLabel);
     }
 
     /** Update the element for (timestamp, column-index) pair. The returned 
     element is writable. This is equivalent to calling:
     \code
-    updElt(getRowIndex(timestamp), columnIndex)
+    updElt(getRowIndex(time), columnIndex)
     \endcode
     See documentation for getRowIndex() and updElt() for details.             */
-    ET& updEltOfTimestamp(TS timestamp, size_t columnIndex) {
-        return this->updElt(getRowIndex(timestamp), columnIndex);
+    ET& updEltOfTime(TS time, size_t columnIndex) {
+        return this->updElt(getRowIndex(time), columnIndex);
     }
 
     /** Update the element for (timestamp, column-label) pair. The returned 
     element is writable. This is equivalent to calling:
     \code
-    updElt(getRowIndex(timestamp), columnLabel)
+    updElt(getRowIndex(time), columnLabel)
     \endcode
     See documentation for getRowIndex() and updElt() for details.             */
-    ET& updEltOfTimestamp(TS timestamp, const string& columnLabel) {
-        return this->updElt(getRowIndex(timestamp), columnLabel);
+    ET& updEltOfTime(TS time, const string& columnLabel) {
+        return this->updElt(getRowIndex(time), columnLabel);
     }
 
     /** Update the element for (row-index, column-index) pair where the 
@@ -767,13 +745,11 @@ public:
     returned element is writable.
     This is equivalent to calling:
     \code
-    updElt(getRowIndex(timestamp, direction), columnIndex)
+    updElt(getRowIndex(time, direction), columnIndex)
     \endcode
     See documentation for getRowIndex() and updElt() for details.             */
-    ET& updEltOfTimestamp(TS timestamp, 
-                          size_t columnIndex, 
-                          NearestDir direction) {
-        return this->updElt(getRowIndex(timestamp, direction), columnIndex);
+    ET& updEltOfTime(TS time, size_t columnIndex, NearestDir direction) {
+        return this->updElt(getRowIndex(time, direction), columnIndex);
     }
 
     /** Update the element for (row-index, column-label) pair where the 
@@ -782,59 +758,57 @@ public:
     returned element is writable.
     This is equivalent to calling:
     \code
-    updElt(getRowIndex(timestamp, direction), columnLabel)
+    updElt(getRowIndex(time, direction), columnLabel)
     \endcode
     See documentation for getRowIndex() and updElt() for details.             */
-    ET& updEltOfTimestamp(TS timestamp,
-                          const string& columnLabel,
-                          NearestDir direction) {
-        return this->updElt(getRowIndex(timestamp, direction), columnLabel);
+    ET& updEltOfTime(TS time, const string& columnLabel, NearestDir direction) {
+        return this->updElt(getRowIndex(time, direction), columnLabel);
     }
 
     /** Get a const iterator (representing the beginning) to iterate over 
     timestamps. Get the sentinel iterator using timestampsCEnd(). The iterator 
     does not allow writing to timestamps.                                     */
-    TimestampsConstIter timestampsCBegin() const {
-        return timestamps_.cbegin();
+    TimeColumnConstIter timesCBegin() const {
+        return times_.cbegin();
     }
 
     /** Get a const iterator (representing the end) to iterate over timestamps.
     Get the beginning iterator using timestampsCBegin().                      */
-    TimestampsConstIter timestampsCEnd() const {
-        return timestamps_.cend();
+    TimeColumnConstIter timesCEnd() const {
+        return times_.cend();
     }
 
     /** Get a const iterator (representing the beginning) to iterate over 
     timestamps. Get the sentinel iterator using timestampsEnd(). The iterator 
     does not allow writing to timestamps.                                     */
-    TimestampsConstIter timestampsBegin() const {
-        return timestamps_.cbegin();
+    TimeColumnConstIter timesBegin() const {
+        return times_.cbegin();
     }
 
     /** Get a const iterator (representing the end) to iterate over timestamps. 
     Get the beginning iterator using timestampsBegin().                       */
-    TimestampsConstIter timestampsEnd() const {
-        return timestamps_.cend();
+    TimeColumnConstIter timesEnd() const {
+        return times_.cend();
     }
 
     /** Get a non-const iterator (representing the beginning) to iterate over 
     timestamps. Get the sentinel iterator using timestampsEnd(). The iterator 
     does allow writing to timestamps.                                         */
-    TimestampsConstIter timestampsBegin() {
-        return timestamps_.begin();
+    TimeColumnConstIter timesBegin() {
+        return times_.begin();
     }
 
     /** Get a non-const iterator (representing the end) to iterate over 
     timestamps. Get the beginning iterator using timestampsBegin().           */
-    TimestampsConstIter timestampsEnd() {
-        return timestamps_.end();
+    TimeColumnConstIter timesEnd() {
+        return times_.end();
     }
 
 protected:
     /** \cond */
-    void throwIfTimestampsEmpty() const {
-        if(timestamps_.empty())
-            throw TimestampsEmpty{"Timestamp column is empty. Use setTimestamps"
+    void throwIfTimeColumnEmpty() const {
+        if(times_.empty())
+            throw TimeColumnEmpty{"Timestamp column is empty. Use setTimestamps"
                                   "() to set the timestamp column."};
     }
 
@@ -844,58 +818,58 @@ protected:
                                   "can be no timestamps without data."};
     }
 
-    void throwIfTimestampsLengthIncorrect() const {
-        if(this->getNumRows() != timestamps_.size())
-            throw TimestampsLengthIncorrect{"Timestamp column length (" + 
-                    std::to_string(timestamps_.size()) + ") does not match the "
+    void throwIfTimeColumnLengthIncorrect() const {
+        if(this->getNumRows() != times_.size())
+            throw TimeColumnLengthIncorrect{"Timestamp column length (" + 
+                    std::to_string(times_.size()) + ") does not match the "
                     "number of rows (" + std::to_string(this->getNumRows()) + 
                     ") in the DataTable. Add timestamps to fix it."};
     }
 
-    void throwIfTimestampBreaksInvariantPrev(const size_t rowIndex, 
-                                             const TS newTimestamp) const {
+    void throwIfTimeBreaksInvariantPrev(const size_t rowIndex, 
+                                        const TS newTime) const {
         if(rowIndex > 0 && 
-           timestamps_[rowIndex - 1] >= newTimestamp)
-            throw TimestampBreaksInvariant{"The input timestamp '" + 
-                    std::to_string(newTimestamp) + "' at row " + 
+           times_[rowIndex - 1] >= newTime)
+            throw TimeBreaksInvariant{"The input timestamp '" + 
+                    std::to_string(newTime) + "' at row " + 
                     std::to_string(rowIndex) + 
                     " is less-than/equal-to previous timestamp '" + 
-                    std::to_string(timestamps_[rowIndex - 1]) + "' at row " + 
+                    std::to_string(times_[rowIndex - 1]) + "' at row " + 
                     std::to_string(rowIndex - 1) + " and so breaks the " 
                     "invariant that timestamp column must be increasing."};
     }
 
-    void throwIfTimestampBreaksInvariantNext(const size_t rowIndex, 
-                                             const TS newTimestamp) const {
-        if(rowIndex < timestamps_.size() - 1 && 
-           timestamps_[rowIndex + 1] <= newTimestamp)
-            throw TimestampBreaksInvariant{"The input timestamp '" + 
-                    std::to_string(newTimestamp) + "' at row " + 
+    void throwIfTimeBreaksInvariantNext(const size_t rowIndex, 
+                                        const TS newTime) const {
+        if(rowIndex < times_.size() - 1 && 
+           times_[rowIndex + 1] <= newTime)
+            throw TimeBreaksInvariant{"The input timestamp '" + 
+                    std::to_string(newTime) + "' at row " + 
                     std::to_string(rowIndex) + 
                     " is greater-than/equal-to next timestamp '" + 
-                    std::to_string(timestamps_[rowIndex + 1]) + "' at row " + 
+                    std::to_string(times_[rowIndex + 1]) + "' at row " + 
                     std::to_string(rowIndex + 1) + " and so breaks the " 
                     "invariant that timestamp column must be increasing."};
     }
 
-    void throwIfIndexExceedsTimestampLength(const size_t rowIndex) const {
-        if(rowIndex > timestamps_.size() - 1)
-            throw TimestampDoesNotExist{"Timestamp column length is " + 
-                    std::to_string(timestamps_.size()) + ". There is no " 
+    void throwIfIndexExceedsTimeColumnLength(const size_t rowIndex) const {
+        if(rowIndex > times_.size() - 1)
+            throw TimeDoesNotExist{"Timestamp column length is " + 
+                    std::to_string(times_.size()) + ". There is no " 
                     "timestamp for row " + std::to_string(rowIndex) + ". Use "
                     "addTimestamp(s) to add timestamps."};
     }
 
-    void throwIfTimestampsFull() const {
-        if(this->getNumRows() == timestamps_.size())
-            throw TimestampsColumnFull{"Both timestamp column length and number"
+    void throwIfTimeColumnFull() const {
+        if(this->getNumRows() == times_.size())
+            throw TimeColumnFull{"Both timestamp column length and number"
                     " of rows currently are " + 
-                    std::to_string(timestamps_.size()) + ". Timestamp column "
+                    std::to_string(times_.size()) + ". Timestamp column "
                     "length cannot exceed number of rows in DataTable. Add a " 
                     "row before adding another timestamp."};
     }
 
-    Timestamps timestamps_;
+    TimeColumn times_;
 
     /** \endcond */
 };
