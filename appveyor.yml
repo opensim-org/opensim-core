@@ -32,6 +32,7 @@ nuget:
 
 install:
   
+  choco -y install cmake
   ## Use Chocolatey to install SWIG.
   ###- choco -y install swig
   
