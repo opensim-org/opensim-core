@@ -20,7 +20,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Common/DataTable.h>
+#include "OpenSim/Common/TimeSeriesDataTable.h"
 
 // Function to do nothing more than  suppress 'un-used variable' warning. 
 // Ignore these calls.
