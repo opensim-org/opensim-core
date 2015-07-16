@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  DataTable.h                           *
+ *                            OpenSim:  TimeSeriesDataTable.h                 *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -85,7 +85,7 @@ time-series column can be used to access the rows of the DataTable.
 \tparam ET Type of the entries in the underlying matrix. Defaults to
            SimTK::Real (alias for double).
 \Tparam TS Type of the time column.                                           */
-template<typename ET = SimTK::Real, typename TS = float>
+template<typename ET = SimTK::Real, typename TS = SimTK::Real>
 class TimeSeriesDataTable_ : public DataTable_<ET> {
     static_assert(std::is_arithmetic<TS>::value, "Template argument 'TS' "
                   "representing type of time column must be an arithmetic type "
@@ -152,7 +152,8 @@ public:
         return times_.empty();
     }
 
-    /** Check if the DataTable has a timestamp.                               
+    /** Check if the DataTable has a timestamp. Time complexity for this 
+    function is O(log n) where 'n' is the length of the time column.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
     \throws TimeColumnLengthIncorrect If the length of the time column does not 
@@ -163,9 +164,7 @@ public:
         throwIfDataHasZeroRows();
         throwIfTimeColumnLengthIncorrect();
 
-        return std::binary_search(times_.cbegin(), 
-                                  times_.cend(), 
-                                  time);
+        return std::binary_search(times_.cbegin(), times_.cend(), time);
     }
 
     /** Add (append) a time to the time column.
@@ -323,14 +322,14 @@ public:
         addTimes(list);
     }
 
-    /** Get the timestamp of a row.
+    /** Get the timestamp of a row. Time complexity is O(1).
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
     \throws TimestampsLengthIncorrect If the length of the timestamp column does
                                       not match the number of rows in the
                                       DataTable.                             
     \throws RowDoesNotExist If the row specified by rowIndex does not exist.  */
-    TS getTimes(size_t rowIndex) const {
+    TS getTime(size_t rowIndex) const {
         throwIfDataHasZeroRows();
         throwIfTimeColumnLengthIncorrect();
         this->throwIfRowDoesNotExist(rowIndex);
@@ -345,6 +344,7 @@ public:
     - GreaterThanEqual -- The timestamp returned is greater than or equal to 
       (>=) the given timestamp.
     - LessOrGreaterThanEqual -- The timestamp returned is best of the above two.
+    Time complexity is O(log n) where n is time column length.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
     \throws TimeColumnLengthIncorrect If the length of the timestamp column does
@@ -411,7 +411,7 @@ public:
         return this;
     }
 
-    /** Change the timestamp for a row.
+    /** Change the timestamp for a row. Time complexity is O(1).
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
     \throws RowDoesNotExist If the row specified by \a rowIndex does not exist. 
@@ -429,7 +429,8 @@ public:
         times_[rowIndex] = newTime;
     }
 
-    /** Change timestamp.
+    /** Change timestamp. Time complexity is O(log n) where n is time column
+    length.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
     \throws TimeColumnEmpty If the timestamp column is empty.
@@ -454,7 +455,8 @@ public:
 
     /** Change multiple timestamps starting at a given row using an iterator.
     The old timestamps at those rows will be replaced with new timestamps
-    produced by the iterator.
+    produced by the iterator. Time complexity is o(n) where n is the number
+    elements produced by the iterator.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
     \throws RowDoesNotExist If the row for which the iterator is trying to 
@@ -547,7 +549,8 @@ public:
         changeTimes(list.begin(), list.end(), startAtRowIndex);
     }
 
-    /** Get the row index of a timestamp.
+    /** Get the row index of a timestamp. Time complexity is O(log n) where n
+    is the length of the time column.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
     \throws TimeColumnLengthIncorrect If the timestamp column length does not
@@ -573,6 +576,7 @@ public:
     - Closest timestamp that is less than or equal to the given timestamp.
     - Closest timestamp that is greater than or equal to the given timestamp.
     - Closer of the above two.
+    Time complexity is o(log n) where n is the length of the time column.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
     \throws TimestampsLengthIncorrect If the length of the timestamp column does
@@ -873,6 +877,10 @@ protected:
 
     /** \endcond */
 };
+
+
+using TimeSeriesTable = TimeSeriesDataTable_<SimTK::Real, SimTK::Real>;
+
 
 } // namespace OpenSim
 

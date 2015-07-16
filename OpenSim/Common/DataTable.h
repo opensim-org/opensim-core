@@ -1021,7 +1021,7 @@ protected:
         }
 
         bool operator==(const Iterator& rhs) const {
-            return !operator==(rhs);
+            return !operator!=(rhs);
         }
 
         Iterator& operator+=(int n) {
