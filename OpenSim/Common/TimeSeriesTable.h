@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  TimeSeriesDataTable.h                 *
+ *                            OpenSim:  TimeSeriesTable.h                     *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -21,7 +21,7 @@
  * -------------------------------------------------------------------------- */
 
 /** \file
-This file defines the TimeSeriesDataTable class, which is used by OpenSim to 
+This file defines the TimeSeriesTable_ class, which is used by OpenSim to 
 provide an in-memory container for data access and manipulation.              */
 
 #ifndef OPENSIM_COMMON_TIMESERIESDATATABLE_H_
@@ -74,7 +74,7 @@ enum class NearestDir {
     GreaterThanEqual
 };
 
-/** TimeSeriesDataTable_ is a DataTable_ that adds support for a time column. 
+/** TimeSeriesTable_ is a DataTable_ that adds support for a time column. 
 The time column can be of any arithmetic type -- float, double, int, long etc. 
 In this documentaion, words time & timestamp are used interchangeably to mean
 an entry of the time column.
@@ -86,7 +86,7 @@ time-series column can be used to access the rows of the DataTable.
            SimTK::Real (alias for double).
 \Tparam TS Type of the time column.                                           */
 template<typename ET = SimTK::Real, typename TS = SimTK::Real>
-class TimeSeriesDataTable_ : public DataTable_<ET> {
+class TimeSeriesTable_ : public DataTable_<ET> {
     static_assert(std::is_arithmetic<TS>::value, "Template argument 'TS' "
                   "representing type of time column must be an arithmetic type "
                   "(eg. int, float, double etc.).");
@@ -100,8 +100,7 @@ protected:
 
     class TimesContainerProxy {
     public:
-        TimesContainerProxy(const TimeSeriesDataTable_* tsdt) : 
-            tsdt_{tsdt} {}
+        TimesContainerProxy(const TimeSeriesTable_* tsdt) : tsdt_{tsdt} {}
         TimesContainerProxy()                                         = delete;
         TimesContainerProxy(const TimesContainerProxy&)               = default;
         TimesContainerProxy(TimesContainerProxy&&)                    = default;
@@ -125,7 +124,7 @@ protected:
         }
 
     private:
-        const TimeSeriesDataTable_* tsdt_;
+        const TimeSeriesTable_* tsdt_;
     };
     /** \endcond */
 
@@ -136,11 +135,11 @@ public:
     using DataTable_<ET>::DataTable_;
 
     /** Copy.                                                                 */
-    TimeSeriesDataTable_& operator=(const TimeSeriesDataTable_&) = default;
-    TimeSeriesDataTable_& operator=(TimeSeriesDataTable_&&)      = default;
+    TimeSeriesTable_& operator=(const TimeSeriesTable_&) = default;
+    TimeSeriesTable_& operator=(TimeSeriesTable_&&)      = default;
 
     /** Destroy.                                                              */
-    ~TimeSeriesDataTable_() override = default;
+    ~TimeSeriesTable_() override = default;
 
     /** Clear the time column.                                                */
     void clearTimeColumn() {
@@ -879,7 +878,7 @@ protected:
 };
 
 
-using TimeSeriesTable = TimeSeriesDataTable_<SimTK::Real, SimTK::Real>;
+using TimeSeriesTable = TimeSeriesTable_<SimTK::Real, SimTK::Real>;
 
 
 } // namespace OpenSim

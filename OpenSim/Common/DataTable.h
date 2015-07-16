@@ -21,7 +21,7 @@
  * -------------------------------------------------------------------------- */
 
 /** \file
-This file defines the  DataTable class, which is used by OpenSim to provide an 
+This file defines the  DataTable_ class, which is used by OpenSim to provide an 
 in-memory container for data access and manipulation.                         */
 
 #ifndef OPENSIM_COMMON_DATATABLE_H_

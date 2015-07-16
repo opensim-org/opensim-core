@@ -20,7 +20,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Common/TimeSeriesDataTable.h"
+#include "OpenSim/Common/TimeSeriesTable.h"
 
 // Function to do nothing more than  suppress 'un-used variable' warning. 
 // Ignore these calls.
@@ -29,14 +29,14 @@ void ignore(AnyType&) {}
 
 
 // This file demonstrates the use of the OpenSim::DataTable_ class and 
-// OpenSim::TimeSeriesDataTable_ class. See OpenSim::DataTable_ and 
-// OpenSim::TimeSeriesDataTable_ for details on the interface. 
+// OpenSim::TimeSeriesTable_ class. See OpenSim::DataTable_ and 
+// OpenSim::TimeSeriesTable_ for details on the interface. 
 // OpenSim::DataTable_ is a container of a matrix of elements(of any type)
 // that supports random-access to the columns and rows through the their
 // index. Columns can be labeled with std::string and accessing the columns
 // through labels is constant-time on average. DataTable_ can also hold key-
 // value pairs as metadata where key is a std::string and value can be of any
-// type. OpenSim::TimeSeriesDataTable_ is a DataTable_ which adds support for
+// type. OpenSim::TimeSeriesTable_ is a DataTable_ which adds support for
 // a timestamp column and rows can be indexed using the timestamps.
 
 int main() {
@@ -369,18 +369,18 @@ int main() {
     dt_vec3.clearData();
     dt_vec6.clearData();
 
-    // TimeSeriesDataTable_ is a DataTable_ that adds support for a timestamp
+    // TimeSeriesTable_ is a DataTable_ that adds support for a timestamp
     // column that can be used to index rows.
     // Useful type aliases. The first template argument is the same as the one
     // going into DataTable_ -- it is the type of the entries in the matrix. The
     // second template argument is the type of the timestamp column.
-    using TsDataTableReal = OpenSim::TimeSeriesDataTable_<SimTK::Real, float>;
-    using TsDataTableVec3 = OpenSim::TimeSeriesDataTable_<SimTK::Vec3, float>;
-    using TsDataTableVec6 = OpenSim::TimeSeriesDataTable_<SimTK::Vec6, float>;
+    using TsDataTableReal = OpenSim::TimeSeriesTable_<SimTK::Real, float>;
+    using TsDataTableVec3 = OpenSim::TimeSeriesTable_<SimTK::Vec3, float>;
+    using TsDataTableVec6 = OpenSim::TimeSeriesTable_<SimTK::Vec6, float>;
 
-    // Constructing a TimeSeriesDataTable_ is same as constructing a DataTable_.
+    // Constructing a TimeSeriesTable_ is same as constructing a DataTable_.
     // Timestamps can be added later to the timestamp column. The below code
-    // constructs a TimeSeriesDataTable_ of size 5x3 where all entries are
+    // constructs a TimeSeriesTable_ of size 5x3 where all entries are
     // filled will a given value.
     TsDataTableReal tsdt_real{5, 3, 10};
     TsDataTableVec3 tsdt_vec3{5, 3, SimTK::Vec3{10, 20, 30}};
