@@ -634,7 +634,7 @@ public:
     getRow(getRowIndex(time))
     \endcode
     See documentation for getRowIndex() and getRow() for details.             */
-    SimTK::RowVectorView_<ET> getRowOfTime(TS time) const {
+    SimTK::RowVectorView_<ET> getRowAtTime(TS time) const {
         return this->getRow(getRowIndex(time));
     }
 
@@ -645,7 +645,7 @@ public:
     getRow(getRowIndex(time, direction))
     \endcode
     See documenation for getRowIndex() and getRow() for details.              */
-    SimTK::RowVectorView_<ET> getRowOfTime(TS time, 
+    SimTK::RowVectorView_<ET> getRowAtTime(TS time, 
                                            NearestDir direction) const {
         return this->getRow(getRowIndex(time, direction));
     }
@@ -656,7 +656,7 @@ public:
     updRow(getRowIndex(time))
     \endcode
     See documentation for getRowIndex() and updRow() for details.             */
-    SimTK::RowVectorView_<ET> updRowOfTime(TS time) {
+    SimTK::RowVectorView_<ET> updRowAtTime(TS time) {
         return this->updRow(getRowIndex(time));
     }
 
@@ -667,7 +667,7 @@ public:
     updRow(getRowIndex(time, direction))
     \endcode
     See documenation for getRowIndex() and updRow() for details.              */
-    SimTK::RowVectorView_<ET> updRowOfTime(TS time, 
+    SimTK::RowVectorView_<ET> updRowAtTime(TS time, 
                                            NearestDir direction) {
         return this->updRow(getRowIndex(time, direction));
     }
@@ -678,7 +678,7 @@ public:
     getElt(getRowIndex(time), columnIndex)
     \endcode
     See documentation for getRowIndex() and getElt() for details.             */
-    const ET& getEltOfTime(TS time, size_t columnIndex) const {
+    const ET& getEltAtTime(TS time, size_t columnIndex) const {
         return this->getElt(getRowIndex(time), columnIndex);
     }
 
@@ -688,7 +688,7 @@ public:
     getElt(getRowIndex(time), columnLabel)
     \endcode
     See documentation for getRowIndex() and getElt() for details.             */
-    const ET& getEltOfTime(TS time, const string& columnLabel) const {
+    const ET& getEltAtTime(TS time, const string& columnLabel) const {
         return this->getElt(getRowIndex(time), columnLabel);
     }
 
@@ -701,7 +701,7 @@ public:
     getElt(getRowIndex(time, direction), columnIndex)
     \endcode
     See documentation for getRowIndex() and getElt() for details.             */
-    const ET& getEltOfTime(TS time, 
+    const ET& getEltAtTime(TS time, 
                            size_t columnIndex, 
                            NearestDir direction) const {
         return this->getElt(getRowIndex(time, direction), columnIndex);
@@ -716,7 +716,7 @@ public:
     getElt(getRowIndex(time, direction), columnLabel)
     \endcode
     See documentation for getRowIndex() and getElt() for details.             */
-    const ET& getEltOfTime(TS time,
+    const ET& getEltAtTime(TS time,
                            const string& columnLabel,
                            NearestDir direction) const {
         return this->getElt(getRowIndex(time, direction), columnLabel);
@@ -728,7 +728,7 @@ public:
     updElt(getRowIndex(time), columnIndex)
     \endcode
     See documentation for getRowIndex() and updElt() for details.             */
-    ET& updEltOfTime(TS time, size_t columnIndex) {
+    ET& updEltAtTime(TS time, size_t columnIndex) {
         return this->updElt(getRowIndex(time), columnIndex);
     }
 
@@ -738,7 +738,7 @@ public:
     updElt(getRowIndex(time), columnLabel)
     \endcode
     See documentation for getRowIndex() and updElt() for details.             */
-    ET& updEltOfTime(TS time, const string& columnLabel) {
+    ET& updEltAtTime(TS time, const string& columnLabel) {
         return this->updElt(getRowIndex(time), columnLabel);
     }
 
@@ -751,7 +751,7 @@ public:
     updElt(getRowIndex(time, direction), columnIndex)
     \endcode
     See documentation for getRowIndex() and updElt() for details.             */
-    ET& updEltOfTime(TS time, size_t columnIndex, NearestDir direction) {
+    ET& updEltAtTime(TS time, size_t columnIndex, NearestDir direction) {
         return this->updElt(getRowIndex(time, direction), columnIndex);
     }
 
@@ -764,7 +764,7 @@ public:
     updElt(getRowIndex(time, direction), columnLabel)
     \endcode
     See documentation for getRowIndex() and updElt() for details.             */
-    ET& updEltOfTime(TS time, const string& columnLabel, NearestDir direction) {
+    ET& updEltAtTime(TS time, const string& columnLabel, NearestDir direction) {
         return this->updElt(getRowIndex(time, direction), columnLabel);
     }
 

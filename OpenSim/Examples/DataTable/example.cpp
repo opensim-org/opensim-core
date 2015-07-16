@@ -374,9 +374,9 @@ int main() {
     // Useful type aliases. The first template argument is the same as the one
     // going into DataTable_ -- it is the type of the entries in the matrix. The
     // second template argument is the type of the timestamp column.
-    using TsDataTableReal = OpenSim::TimeSeriesTable_<SimTK::Real, float>;
-    using TsDataTableVec3 = OpenSim::TimeSeriesTable_<SimTK::Vec3, float>;
-    using TsDataTableVec6 = OpenSim::TimeSeriesTable_<SimTK::Vec6, float>;
+    using TsDataTableReal = OpenSim::TimeSeriesTable_<SimTK::Real>;
+    using TsDataTableVec3 = OpenSim::TimeSeriesTable_<SimTK::Vec3>;
+    using TsDataTableVec6 = OpenSim::TimeSeriesTable_<SimTK::Vec6>;
 
     // Constructing a TimeSeriesTable_ is same as constructing a DataTable_.
     // Timestamps can be added later to the timestamp column. The below code
@@ -427,13 +427,13 @@ int main() {
 
     // Rows can be indexed on timestamps.
     {
-        auto dtrow_real = tsdt_real.getRowOfTime(0.6); ignore(dtrow_real);
-        auto dtrow_vec3 = tsdt_vec3.getRowOfTime(0.6); ignore(dtrow_vec3);
-        auto dtrow_vec6 = tsdt_vec6.getRowOfTime(0.6); ignore(dtrow_vec6);
+        auto dtrow_real = tsdt_real.getRowAtTime(0.6); ignore(dtrow_real);
+        auto dtrow_vec3 = tsdt_vec3.getRowAtTime(0.6); ignore(dtrow_vec3);
+        auto dtrow_vec6 = tsdt_vec6.getRowAtTime(0.6); ignore(dtrow_vec6);
 
-        tsdt_real.updRowOfTime(0.4) *= 2;
-        tsdt_vec3.updRowOfTime(0.4) *= 2;
-        tsdt_vec6.updRowOfTime(0.4) *= 2;
+        tsdt_real.updRowAtTime(0.4) *= 2;
+        tsdt_vec3.updRowAtTime(0.4) *= 2;
+        tsdt_vec6.updRowAtTime(0.4) *= 2;
     }
 
     // Timestamps used to index the rows need not exist in the timestamp
@@ -445,35 +445,35 @@ int main() {
 
         // Get a row whose timestamp is less than or equal to given timestamp.
         // Row 2 (3rd row) is returned for below call.
-        auto dtrow_real = tsdt_real.getRowOfTime(0.5, LessThanEqual);
+        auto dtrow_real = tsdt_real.getRowAtTime(0.5, LessThanEqual);
         ignore(dtrow_real);
         // Get a row whose timestamp is greater than or equal to the given
         // timestamp. Row 3 (4th row) is returned for below call.
-        auto dtrow_vec3 = tsdt_real.getRowOfTime(0.5, GreaterThanEqual);
+        auto dtrow_vec3 = tsdt_real.getRowAtTime(0.5, GreaterThanEqual);
         ignore(dtrow_vec3);
         // Get a row whose timestamp is closest in either direction to the
         // given timestamp. Row 3 (4th row) is returned for below call.
-        auto dtrow_vec6 = tsdt_real.getRowOfTime(0.5, LessOrGreaterThanEqual);
+        auto dtrow_vec6 = tsdt_real.getRowAtTime(0.5, LessOrGreaterThanEqual);
         ignore(dtrow_vec6);
 
         
-        tsdt_real.updRowOfTime(0.5, LessThanEqual)          *= 2;
-        tsdt_vec3.updRowOfTime(0.5, GreaterThanEqual)       *= 2;
-        tsdt_vec6.updRowOfTime(0.5, LessOrGreaterThanEqual) *= 2;
+        tsdt_real.updRowAtTime(0.5, LessThanEqual)          *= 2;
+        tsdt_vec3.updRowAtTime(0.5, GreaterThanEqual)       *= 2;
+        tsdt_vec6.updRowAtTime(0.5, LessOrGreaterThanEqual) *= 2;
     }
 
     // Individual elements can indexed in four different ways:
     // - (row index, column index) pair. Use getElt().
     // - (row index, column label) pair. Use getElt().
-    // - (timestamp, column index) pair. Use getEltOfTimestamp().
-    // - (timestamp, column label) pair. Use getEltOfTimestamp().
+    // - (timestamp, column index) pair. Use getEltAtTimestamp().
+    // - (timestamp, column label) pair. Use getEltAtTimestamp().
     // For updating the elements, upd...() functions can be used.
     {
         // All the following calls access element (3, 2).
         tsdt_real.updElt(3, 2)                      *= 2;
         tsdt_real.updElt(3, "col-two")              *= 2;
-        tsdt_real.updEltOfTime(0.6, 2)         *= 2;
-        tsdt_real.updEltOfTime(0.6, "col-two") *= 2;
+        tsdt_real.updEltAtTime(0.6, 2)         *= 2;
+        tsdt_real.updEltAtTime(0.6, "col-two") *= 2;
     }
 
     // Timestamps can be iterated over.
