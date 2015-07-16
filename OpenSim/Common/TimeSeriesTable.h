@@ -166,6 +166,20 @@ public:
         return std::binary_search(times_.cbegin(), times_.cend(), time);
     }
 
+    /** Get range (min, max) of time column. Returns a pair (std::pair) of 
+    values where the first value is the min and the second value is the max.
+
+    \throws DataHasZeroRows If the DataTable currently has zero rows.
+    \throws TimeColumnLengthIncorrect If the length of the time column does not 
+                                      match the number of rows in the 
+                                      DataTable.                              */
+    std::pair<TS, TS> getTimeRange() {
+        throwIfDataHasZeroRows();
+        throwIfTimeColumnLengthIncorrect();
+
+        return {times_.front(), times_.back()};
+    }
+
     /** Add (append) a time to the time column.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
