@@ -34,7 +34,7 @@
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <SimTKcommon.h>
-
+#include "ForceReporter.h"
 
 //=============================================================================
 //=============================================================================
@@ -59,6 +59,9 @@ OpenSim_DECLARE_CONCRETE_OBJECT(StaticOptimization, Analysis);
 //=============================================================================
 private:
     int _numCoordinateActuators;
+
+    ForceReporter* _forceReporter;
+
 protected:
     /** Use force set from model. */
     PropertyBool _useModelForceSetProp;
