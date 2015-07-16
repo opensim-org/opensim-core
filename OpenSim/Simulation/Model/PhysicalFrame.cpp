@@ -117,14 +117,14 @@ void PhysicalFrame::scale(const SimTK::Vec3& aScaleFactors)
     for (int i = 0; i< get_WrapObjectSet().getSize(); i++)
         upd_WrapObjectSet().get(i).scale(aScaleFactors);
 
-    SimTK::Vec3 oldScaleFactors;
-    //NewGeometry getDisplayer()->getScaleFactors(oldScaleFactors);
-
-    for (int i = 0; i<3; i++) {
-        oldScaleFactors[i] *= aScaleFactors[i];
+    // Scale the Geometry if any
+    for (int i = 0; i < getNumGeometry(); ++i){
+        const SimTK::Vec3& oldScaleFactor = get_geometry(i).get_scale_factors();
+        //NewGeometry getDisplayer()->getScaleFactors(oldScaleFactors);
+        SimTK::Vec3 newScaleFactor = oldScaleFactor.elementwiseMultiply(aScaleFactors);
+        upd_geometry(i).set_scale_factors(newScaleFactor);
+        // TODO: When we revamp scaling and solve the issue with where scale factors 
+        // are maintained, we need to fix this or remove it completely -Ayman 5/15
+        // Update scale factors for displayer
     }
-    // TODO: When we revamp scaling and solve the issue with where scale factors 
-    // are maintained, we need to fix this or remove it completely -Ayman 5/15
-    // Update scale factors for displayer
-    //NewGeometry updDisplayer()->setScaleFactors(oldScaleFactors);
 }

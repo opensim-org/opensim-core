@@ -217,7 +217,7 @@ void scaleModelWithLigament()
 
     ASSERT(!subject->isDefaultModelScaler() && subject->getModelScaler().getApply());
     ModelScaler& scaler = subject->getModelScaler();
-    ASSERT(scaler.processModel(s, model, subject->getPathToSubject(), subject->getSubjectMass()));
+    ASSERT(scaler.processModel(model, setupFilePath, subject->getSubjectMass()));
 
     const std::string& scaledModelFile = scaler.getOutputModelFileName();
     const std::string& std_scaledModelFile = "std_toyLigamentModelScaled.osim";
