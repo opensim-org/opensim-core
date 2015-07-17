@@ -29,6 +29,7 @@
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/Storage.h>
 #include "DynamicsTool.h"
 
 #ifdef SWIG
@@ -117,6 +118,9 @@ protected:
 private:
     void setNull();
     void setupProperties();
+    /* If CoorindatesFile property is populated, load data into a live _coordinateValues
+    storage object. */
+    bool loadCoordinateValues();
 
     //--------------------------------------------------------------------------
     // OPERATORS
@@ -130,7 +134,6 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
     void setCoordinateValues(const OpenSim::Storage& aStorage);
-    bool hasCoordinateValues();
     /**
      * get/set the name of the file to be used as ouput from the tool
      */
@@ -144,6 +147,12 @@ public:
     const std::string& getCoordinatesFileName() const { return _coordinatesFileName;};
     void setCoordinatesFileName(const std::string& aCoordinateFile)  { 
         _coordinatesFileName=aCoordinateFile;
+        if (_coordinateValues != NULL){
+            // there's an old Storage hanging around from potentially different 
+            // CoordinatesFile, wipe it out.
+            delete _coordinateValues;
+            _coordinateValues = NULL;
+        }
     };
     const double getLowpassCutoffFrequency() const {
         return _lowpassCutoffFrequency;
