@@ -672,8 +672,8 @@ computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vect
         ScalarActuator *act = dynamic_cast<ScalarActuator*>(&fs.get(i));
          if( act ) {
              act->setOverrideActuation(s, parameters[j] * _optimalForce[j]);
+             j++;
          }
-         j++;
     }
 
     _model->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);
