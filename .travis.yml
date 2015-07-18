@@ -86,7 +86,7 @@ before_install:
   - wget https://github.com/swig/swig/archive/rel-$SWIG_VER.tar.gz
   #- wget http://prdownloads.sourceforge.net/swig/$SWIG.tar.gz
   - tar xzf rel-$SWIG_VER.tar.gz && cd swig-rel-$SWIG_VER
-  - sh autogen.sh && ./configure --prefix=$HOME/swig && make all && make -j8 install
+  - sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache && make && make -j8 install
   #- ./configure --prefix=$HOME/swig && make && make -j8 install
 
   ## Detect if we should check memory leaks with valgrind.
