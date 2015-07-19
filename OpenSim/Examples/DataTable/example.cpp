@@ -198,12 +198,21 @@ int main() {
     dt_vec3.addColumns(data2_vec3);
     dt_vec6.addColumns(data2_vec6);
 
+    // Label the columns.
+    dt_real.setColumnLabels({"one", "two", "three", "four", 
+                             "five", "six", "seven", "eight"});
+    dt_vec3.setColumnLabels({"one", "two", "three", "four", 
+                             "five", "six", "seven", "eight"});
+    dt_vec6.setColumnLabels({"one", "two", "three", "four", 
+                             "five", "six", "seven", "eight"});
+
     // DataTable is copiable. Copy construct DataTable.
     OpenSim::DataTable_<SimTK::Real> dt_real_copy{dt_real};
     OpenSim::DataTable_<SimTK::Vec3> dt_vec3_copy{dt_vec3};
     OpenSim::DataTable_<SimTK::Vec6> dt_vec6_copy{dt_vec6};
 
-    // Add/concatenate an entire DataTable by row.
+    // Concatenate/append an entire DataTable by row. Columns of the input 
+    // DataTable are appended to the respective columns based on column labels.
     dt_real.concatenateRows(dt_real_copy);
     dt_vec3.concatenateRows(dt_vec3_copy);
     dt_vec6.concatenateRows(dt_vec6_copy);
@@ -213,7 +222,15 @@ int main() {
     dt_vec3_copy = dt_vec3;
     dt_vec6_copy = dt_vec6;
 
-    // Add/concatenate an entire DataTable by col.
+    dt_real_copy.changeColumnLabels({"nine", "ten", "eleven", "twelve",
+                                 "thirteen", "fourteen", "fifteen", "sixteen"});
+    dt_vec3_copy.changeColumnLabels({"nine", "ten", "eleven", "twelve",
+                                 "thirteen", "fourteen", "fifteen", "sixteen"});
+    dt_vec6_copy.changeColumnLabels({"nine", "ten", "eleven", "twelve",
+                                 "thirteen", "fourteen", "fifteen", "sixteen"});
+
+    // Concatenate an entire DataTable by column. Column labels of the input 
+    // DataTable must be distinct from exisitng column labels.
     dt_real.concatenateColumns(dt_real_copy);
     dt_vec3.concatenateColumns(dt_vec3_copy);
     dt_vec6.concatenateColumns(dt_vec6_copy);
@@ -222,32 +239,54 @@ int main() {
     // appending one to another.
     {
         // Construct DataTable of a given size with a default value.
-        OpenSim::DataTable_<SimTK::Real> dt1_real{3, 4, SimTK::Real{10}};
+        OpenSim::DataTable_<SimTK::Real> dt1_real{3, 4, 
+                                                  SimTK::Real{10}};
         OpenSim::DataTable_<SimTK::Vec3> dt1_vec3{3, 4, 
                                                   SimTK::Vec3{10, 20, 30}};
-        OpenSim::DataTable_<SimTK::Vec6> dt1_vec6{3, 4, SimTK::Vec6{10, 20, 30, 
-                    40, 50, 60}};
+        OpenSim::DataTable_<SimTK::Vec6> dt1_vec6{3, 4, 
+                                                  SimTK::Vec6{10, 20, 30, 
+                                                              40, 50, 60}};
 
         // Construct DataTable of a given size with a default value.
-        OpenSim::DataTable_<SimTK::Real> dt2_real{6, 4, SimTK::Real{5}};
-        OpenSim::DataTable_<SimTK::Vec3> dt2_vec3{6, 4, SimTK::Vec3{5, 6, 7}};
-        OpenSim::DataTable_<SimTK::Vec6> dt2_vec6{6, 4, SimTK::Vec6{5, 6, 7, 
-                                                                    8, 9, 0}};
+        OpenSim::DataTable_<SimTK::Real> dt2_real{3, 4, 
+                                                  SimTK::Real{5}};
+        OpenSim::DataTable_<SimTK::Vec3> dt2_vec3{3, 4, 
+                                                  SimTK::Vec3{5, 6, 7}};
+        OpenSim::DataTable_<SimTK::Vec6> dt2_vec6{3, 4, 
+                                                  SimTK::Vec6{5, 6, 7, 
+                                                              8, 9, 0}};
 
-        // Concatenate by row.
+        // Label the columns. Concatenation by row requires column labels.
+        std::vector<std::string> dt1_labels{"one", "two", "three", "four"};
+        dt1_real.setColumnLabels(dt1_labels);
+        dt1_vec3.setColumnLabels(dt1_labels);
+        dt1_vec6.setColumnLabels(dt1_labels);
+        dt2_real.setColumnLabels(dt1_labels);
+        dt2_vec3.setColumnLabels(dt1_labels);
+        dt2_vec6.setColumnLabels(dt1_labels);
+
+        // Concatenate by row. 
         auto byrow_dt_real = concatenateRows(dt1_real, dt2_real);
         auto byrow_dt_vec3 = concatenateRows(dt1_vec3, dt2_vec3);
         auto byrow_dt_vec6 = concatenateRows(dt1_vec6, dt2_vec6);
 
-        // Concatenate by col. The following using same table for both 
-        // arguments.
-        auto bycol_dt_real = concatenateColumns(dt1_real, dt1_real);
-        auto bycol_dt_vec3 = concatenateColumns(dt1_vec3, dt1_vec3);
-        auto bycol_dt_vec6 = concatenateColumns(dt1_vec6, dt1_vec6);
+        // Change the column labels of one of the tables. Concatenation by
+        // column requries the tables to have distinct column labels.
+        std::vector<std::string> dt2_labels{"five", "six", "seven", "eight"};
+        dt2_real.changeColumnLabels(dt2_labels);
+        dt2_vec3.changeColumnLabels(dt2_labels);
+        dt2_vec6.changeColumnLabels(dt2_labels);
+
+        // Concatenate by column. 
+        auto bycol_dt_real = concatenateColumns(dt1_real, dt2_real);
+        auto bycol_dt_vec3 = concatenateColumns(dt1_vec3, dt2_vec3);
+        auto bycol_dt_vec6 = concatenateColumns(dt1_vec6, dt2_vec6);
     }
 
-    // The columns of a DataTable can be labeled. Not all columns need to be
-    // labeled. 
+    // Not all columns need to be labeled. 
+    dt_real.clearColumnLabels();
+    dt_vec3.clearColumnLabels();
+    dt_vec6.clearColumnLabels();
     dt_real.setColumnLabel(0, "col-zero");
     dt_vec3.setColumnLabel(0, "col-zero");
     dt_vec6.setColumnLabel(0, "col-zero");
@@ -439,27 +478,28 @@ int main() {
     // Timestamps used to index the rows need not exist in the timestamp
     // column. A row with an approximate match can be obtained as follows.
     {
-        using OpenSim::NearestDir::LessThanEqual;
-        using OpenSim::NearestDir::GreaterThanEqual;
-        using OpenSim::NearestDir::LessOrGreaterThanEqual;
+        using OpenSim::NearestDir;
 
         // Get a row whose timestamp is less than or equal to given timestamp.
         // Row 2 (3rd row) is returned for below call.
-        auto dtrow_real = tsdt_real.getRowAtTime(0.5, LessThanEqual);
+        auto dtrow_real = tsdt_real.getRowAtTime(0.5, 
+                                            NearestDir::LessThanEqual);
         ignore(dtrow_real);
         // Get a row whose timestamp is greater than or equal to the given
         // timestamp. Row 3 (4th row) is returned for below call.
-        auto dtrow_vec3 = tsdt_real.getRowAtTime(0.5, GreaterThanEqual);
+        auto dtrow_vec3 = tsdt_real.getRowAtTime(0.5, 
+                                            NearestDir::GreaterThanEqual);
         ignore(dtrow_vec3);
         // Get a row whose timestamp is closest in either direction to the
         // given timestamp. Row 3 (4th row) is returned for below call.
-        auto dtrow_vec6 = tsdt_real.getRowAtTime(0.5, LessOrGreaterThanEqual);
+        auto dtrow_vec6 = tsdt_real.getRowAtTime(0.5, 
+                                            NearestDir::LessOrGreaterThanEqual);
         ignore(dtrow_vec6);
 
         
-        tsdt_real.updRowAtTime(0.5, LessThanEqual)          *= 2;
-        tsdt_vec3.updRowAtTime(0.5, GreaterThanEqual)       *= 2;
-        tsdt_vec6.updRowAtTime(0.5, LessOrGreaterThanEqual) *= 2;
+        tsdt_real.updRowAtTime(0.5, NearestDir::LessThanEqual)          *= 2;
+        tsdt_vec3.updRowAtTime(0.5, NearestDir::GreaterThanEqual)       *= 2;
+        tsdt_vec6.updRowAtTime(0.5, NearestDir::LessOrGreaterThanEqual) *= 2;
     }
 
     // Individual elements can indexed in four different ways:

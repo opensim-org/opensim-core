@@ -33,38 +33,39 @@ provide an in-memory container for data access and manipulation.              */
 namespace OpenSim {
 
 /** \cond */
-class TimeColumnEmpty : public OpenSim::Exception {
+class TimeColumnEmpty : public Exception {
 public:
     TimeColumnEmpty(const std::string& expl) : Exception(expl) {}
 };
 
-
-class DataHasZeroRows : public OpenSim::Exception {
+class DataHasZeroRows : public Exception {
 public:
     DataHasZeroRows(const std::string& expl) : Exception(expl) {}
 };
 
-
-class TimeColumnLengthIncorrect : public OpenSim::Exception {
+class RowMissingTime : public Exception {
 public:
-    TimeColumnLengthIncorrect(const std::string& expl) : Exception(expl) {}
+    RowMissingTime(const std::string& expl) : Exception(expl) {}
 };
 
-
-class TimeDoesNotExist : public OpenSim::Exception {
+class TimeDoesNotExist : public Exception {
 public:
     TimeDoesNotExist(const std::string& expl) : Exception(expl) {}
 };
 
-
-class TimeBreaksInvariant : public OpenSim::Exception {
+class TimeColumnNotIncreasing : public Exception {
 public:
-    TimeBreaksInvariant(const std::string& expl) : Exception(expl) {}
+    TimeColumnNotIncreasing(const std::string& expl) : Exception(expl) {}
 };
 
-class TimeColumnFull : public OpenSim::Exception {
+class TimeColumnFull : public Exception {
 public:
     TimeColumnFull(const std::string& expl) : Exception(expl) {}
+};
+
+class TimeColumnMismatch : public Exception {
+public:
+    TimeColumnMismatch(const std::string& expl) : Exception(expl) {}
 };
 /** \endcond */
 
@@ -155,13 +156,11 @@ public:
     function is O(log n) where 'n' is the length of the time column.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
-    \throws TimeColumnLengthIncorrect If the length of the time column does not 
-                                      match the number of rows in the 
-                                      DataTable.                              */
+    \throws RowMissingTime If any of the rows is missing a timestamp.         */
     template<typename Time>
     bool hasTime(Time time) const {
         throwIfDataHasZeroRows();
-        throwIfTimeColumnLengthIncorrect();
+        throwIfRowMissingTime();
 
         return std::binary_search(times_.cbegin(), times_.cend(), time);
     }
@@ -170,12 +169,10 @@ public:
     values where the first value is the min and the second value is the max.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
-    \throws TimeColumnLengthIncorrect If the length of the time column does not 
-                                      match the number of rows in the 
-                                      DataTable.                              */
+    \throws RowMissingTime If any of the rows is missing a timestamp.         */
     std::pair<TS, TS> getTimeRange() {
         throwIfDataHasZeroRows();
-        throwIfTimeColumnLengthIncorrect();
+        throwIfRowMissingTime();
 
         return {times_.front(), times_.back()};
     }
@@ -186,12 +183,12 @@ public:
     \throws TimesColumnFull If the length of the time column is already equal to
                             the number of rows in the DataTable. At this point 
                             no timestamps can be added.
-    \throws TimeBreaksInvariant If the new timestamp breaks the invariant that 
-                                the times column must be increasing.          */
+    \throws TimeColumnNotIncreasing If the new timestamp breaks the invariant 
+                                    that the times column must be increasing. */
     void addTime(TS time) {
         throwIfDataHasZeroRows();
         throwIfTimeColumnFull();
-        throwIfTimeBreaksInvariantPrev(times_.size(), time);
+        throwIfTimeColumnNotIncreasingPrev(times_.size(), time);
 
         times_.push_back(time);
     }
@@ -203,7 +200,7 @@ public:
     \throws TimeColumnFull If the iterator produces more values than needed to 
                            fill up the timestamp column. The time column is not 
                            allowed to have length past the number of rows.
-    \throws TimeBreaksInvariant If the a new timestamp breaks the invariant
+    \throws TimeColumnNotIncreasing If the a new timestamp breaks the invariant
                                 that the timestamp column must be increasing.
     \throws ZeroElements If the input iterator produces zero elements.        */
     template<typename InputIt>
@@ -235,7 +232,7 @@ public:
 
         while(first != last) {
             throwIfTimeColumnFull();
-            throwIfTimeBreaksInvariantPrev(times_.size(), *first);
+            throwIfTimeColumnNotIncreasingPrev(times_.size(), *first);
 
             times_.push_back(*first);
             ++first;
@@ -338,13 +335,11 @@ public:
     /** Get the timestamp of a row. Time complexity is O(1).
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
-    \throws TimestampsLengthIncorrect If the length of the timestamp column does
-                                      not match the number of rows in the
-                                      DataTable.                             
+    \throws RowMissingTime If any of the rows is missing a timestamp.
     \throws RowDoesNotExist If the row specified by rowIndex does not exist.  */
     TS getTime(size_t rowIndex) const {
         throwIfDataHasZeroRows();
-        throwIfTimeColumnLengthIncorrect();
+        throwIfRowMissingTime();
         this->throwIfRowDoesNotExist(rowIndex);
 
         return times_[rowIndex];
@@ -360,16 +355,14 @@ public:
     Time complexity is O(log n) where n is time column length.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
-    \throws TimeColumnLengthIncorrect If the length of the timestamp column does
-                                      not match the number of rows in the
-                                      DataTable.                              
+    \throws RowMissingTime If any of the rows is missing a timestamp.
     \throws TimeDoesNotExist This is applicable only for cases when \a direction
                              is either \a LessThanEqual or \a GreaterThanEqual. 
                              This exception is thrown if there is no timestamp 
                              satisfying the criteria.                         */
     TS getTime(TS time, NearestDir direction) {
         throwIfDataHasZeroRows();
-        throwIfTimeColumnLengthIncorrect();
+        throwIfRowMissingTime();
 
         auto geq_iter = std::lower_bound(times_.cbegin(), times_.cend(), time);
         
@@ -414,12 +407,10 @@ public:
     does not allow writing.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
-    \throws TimeColumnLengthIncorrect If the length of the timestamp column does
-                                      not match the number of rows in the
-                                      DataTable.                              */
+    \throws RowMissingTime If any of the rows is missing a timestamp.         */
     TimesContainerProxy getTimes() const {
         throwIfDataHasZeroRows();
-        throwIfTimeColumnLengthIncorrect();
+        throwIfRowMissingTime();
 
         return this;
     }
@@ -430,14 +421,14 @@ public:
     \throws RowDoesNotExist If the row specified by \a rowIndex does not exist. 
     \throws TimeDoesNotExist If the row specified by \a rowIndex does not
                              have an associated timestamp.
-    \throws TimeBreaksInvariant If the new timestamp breaks the invariant
+    \throws TimeColumnNotIncreasing If the new timestamp breaks the invariant
                                 that the timestamp column must be increasing. */
     void changeTimeOfRow(size_t rowIndex, TS newTime) {
         throwIfDataHasZeroRows();
         this->throwIfRowDoesNotExist(rowIndex);
         throwIfIndexExceedsTimeColumnLength(rowIndex);
-        throwIfTimeBreaksInvariantPrev(rowIndex, newTime);
-        throwIfTimeBreaksInvariantNext(rowIndex, newTime);
+        throwIfTimeColumnNotIncreasingPrev(rowIndex, newTime);
+        throwIfTimeColumnNotIncreasingNext(rowIndex, newTime);
 
         times_[rowIndex] = newTime;
     }
@@ -460,8 +451,8 @@ public:
                     std::to_string(oldTime) + "' does not exist."};
             
 
-        throwifTimeBreaksInvariantPrev(iter - times_.cbegin(), newTime);
-        throwifTimeBreaksInvariantNext(iter - times_.cbegin(), newTime);
+        throwifTimeColumnNotIncreasingPrev(iter - times_.cbegin(), newTime);
+        throwifTimeColumnNotIncreasingNext(iter - times_.cbegin(), newTime);
 
         *iter = newTime;
     }
@@ -479,7 +470,7 @@ public:
     \throws TimeDoesNotExist If the row for which the iterator is tyring to
                              replace timestamp does not have an associated
                              timestamp.
-    \throws TimeBreaksInvariant If the new timestamp breaks the invariant
+    \throws TimeColumnNotIncreasing If the new timestamp breaks the invariant
                                 that the timestamp column must be increasing. */
     template<typename InputIt>
     void changeTimes(InputIt first, InputIt last, size_t startAtRowIndex = 0) {
@@ -509,8 +500,8 @@ public:
         while(first != last) {
             this->throwIfRowDoesNotExist(rowIndex);
             throwIfIndexExceedsTimeColumnLength(rowIndex);
-            throwIfTimeBreaksInvariantPrev(rowIndex, *first);
-            throwIfTimeBreaksInvariantNext(rowIndex, *first);
+            throwIfTimeColumnNotIncreasingPrev(rowIndex, *first);
+            throwIfTimeColumnNotIncreasingNext(rowIndex, *first);
             
             times_[rowIndex] = *first;
 
@@ -566,13 +557,12 @@ public:
     is the length of the time column.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
-    \throws TimeColumnLengthIncorrect If the timestamp column length does not
-                                      match the number of rows in the DataTable.
+    \throws RowMissingTime If any of the rows is missing a timestamp.
     \throws TimeDoesNotExist If the given timestamp is not found in the
                              timestamp column.                                */
     size_t getRowIndex(TS time) const {
         throwIfDataHasZeroRows();
-        throwIfTimeColumnLengthIncorrect();
+        throwIfRowMissingTime();
 
         auto iter = std::lower_bound(times_.cbegin(), times_.cend(), time);
 
@@ -592,9 +582,7 @@ public:
     Time complexity is o(log n) where n is the length of the time column.
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
-    \throws TimestampsLengthIncorrect If the length of the timestamp column does
-                                      not match the number of rows in the
-                                      DataTable.
+    \throws RowMissingTime If any of the rows is missing a timestamp.
     \throws TimestampDoesNotExist (1) When direction is \a LessThanEqual and
                                   there is no timestamp satisfying that 
                                   criteria.
@@ -603,7 +591,7 @@ public:
                                   criteria.                                   */
     size_t getRowIndex(TS time, NearestDir direction ) const {
         throwIfDataHasZeroRows();
-        throwIfTimeColumnLengthIncorrect();
+        throwIfRowMissingTime();
 
         auto geq_iter = std::lower_bound(times_.cbegin(), times_.cend(), time);
 
@@ -821,6 +809,51 @@ public:
         return times_.end();
     }
 
+    /** Add/concatenate rows of another TimeSeriesTable_ to this 
+    TimeSeriesTable_. This function is a wrapper around 
+    DataTable_::concatenateRows() that makes sure the time column is strictly
+    increasing after concatenation. See DataTable_::concatenateRows() for 
+    details.
+    To create a new TimeSeriesTable_ by concatenating two existing 
+    TimeSeriesTable_(s), use OpenSim::concatenateRows().
+
+    \throws TimeColumnNotIncreasing If the input TimeSeriesTable_'s time column
+                                    when appended to the time column of
+                                    this TimeSeriesTable_ will result in a time
+                                    column that is not strictly increasing.   */
+    void concatennateRows(const TimeSeriesTable_& table,
+                          bool matchColumnLabels = true) {
+        if(times_.back() >= times_.front())
+            throw TimeColumnNotIncreasing{"Time column of Table 2, if "
+                    "appended to time column of Table 1, will result in a "
+                    "time column that is not strictly increasing."};
+
+        DataTable_<ET>::concatenateRows(table, matchColumnLabels);
+    }
+
+    /** Add/concatenate columns of another TimeSeriesTable_ to this 
+    TimeSeriesTable_. This function is a wrapper around
+    DataTable_::concatenateColumns() that makes sure the time columns of the 
+    tables match for concatenation. See DataTable_::concatenateColumns() for
+    details.
+    To create a new TimeSeriesTable_ by concatenating two existing 
+    TimeSeriesTable_(s), use OpenSim::concatenateColumns().                   
+    
+    \throws RowMissingTime If any row of the two tables is missing timestamp.
+    \throws TimeColumnMismatch If the time columns of the two tables do not 
+                               match.                                         */
+    void concatenateColumns(const TimeSeriesTable_& table,
+                            bool discardColumnLabels = false) {
+        throwIfRowMissingTime();
+        table.throwIfRowMissingTime();
+
+        if(times_ != table.times_)
+            throw TimeColumnMismatch{"Time columns of the two Tables do not "
+                    "match. The two tables are required to have exactly the"};
+
+        DataTable_<ET>::concatenateColumns(table, discardColumnLabels);
+    }
+
 protected:
     /** \cond */
     void throwIfTimeColumnEmpty() const {
@@ -835,19 +868,17 @@ protected:
                                   "can be no timestamps without data."};
     }
 
-    void throwIfTimeColumnLengthIncorrect() const {
+    void throwIfRowMissingTime() const {
         if(this->getNumRows() != times_.size())
-            throw TimeColumnLengthIncorrect{"Timestamp column length (" + 
-                    std::to_string(times_.size()) + ") does not match the "
-                    "number of rows (" + std::to_string(this->getNumRows()) + 
-                    ") in the DataTable. Add timestamps to fix it."};
+            throw RowMissingTime{"Row " + std::to_string(times_.size()) + 
+                    " does not have an associated timestamp."};
     }
 
-    void throwIfTimeBreaksInvariantPrev(const size_t rowIndex, 
+    void throwIfTimeColumnNotIncreasingPrev(const size_t rowIndex, 
                                         const TS newTime) const {
         if(rowIndex > 0 && 
            times_[rowIndex - 1] >= newTime)
-            throw TimeBreaksInvariant{"The input timestamp '" + 
+            throw TimeColumnNotIncreasing{"The input timestamp '" + 
                     std::to_string(newTime) + "' at row " + 
                     std::to_string(rowIndex) + 
                     " is less-than/equal-to previous timestamp '" + 
@@ -856,11 +887,11 @@ protected:
                     "invariant that timestamp column must be increasing."};
     }
 
-    void throwIfTimeBreaksInvariantNext(const size_t rowIndex, 
+    void throwIfTimeColumnNotIncreasingNext(const size_t rowIndex, 
                                         const TS newTime) const {
         if(rowIndex < times_.size() - 1 && 
            times_[rowIndex + 1] <= newTime)
-            throw TimeBreaksInvariant{"The input timestamp '" + 
+            throw TimeColumnNotIncreasing{"The input timestamp '" + 
                     std::to_string(newTime) + "' at row " + 
                     std::to_string(rowIndex) + 
                     " is greater-than/equal-to next timestamp '" + 
@@ -894,6 +925,27 @@ protected:
 
 using TimeSeriesTable = TimeSeriesTable_<SimTK::Real, SimTK::Real>;
 
+
+/** Concatenate two TimeSeriesTable_(s) by row and produce a new 
+TimeSeriesTable_. See TimeSeriesTable_::concatenateRows() for details.        */
+template<typename ET>
+TimeSeriesTable_<ET> concatenateRows(const TimeSeriesTable_<ET>& dt1, 
+                                     const TimeSeriesTable_<ET>& dt2) {
+    TimeSeriesTable_<ET> dt{dt1};
+    dt.concatenateRows(dt2);
+    return dt;
+}
+
+
+/** Concatenate two TimeSeriesTable_(s) by colun and produce a new 
+TimeSeriesTable_. See TimeSeriesTable_::concatenateColumns() for details.     */
+template<typename ET>
+TimeSeriesTable_<ET> concatenateColumns(const TimeSeriesTable_<ET>& dt1, 
+                                        const TimeSeriesTable_<ET>& dt2) {
+    TimeSeriesTable_<ET> dt{dt1};
+    dt.concatenateColumns(dt2);
+    return dt;
+}
 
 } // namespace OpenSim
 

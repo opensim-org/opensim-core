@@ -76,6 +76,21 @@ public:
     NumberOfRowsMismatch(const std::string& expl) : Exception(expl) {}
 };
 
+class MissingColumnLabels : public Exception {
+public:
+    MissingColumnLabels(const std::string& expl) : Exception(expl) {}
+};
+
+class ColumnLabelsMismatch : public Exception {
+public:
+    ColumnLabelsMismatch(const std::string& expl) : Exception(expl) {}
+};
+
+class DuplicateColumnLabels : public Exception {
+public:
+    DuplicateColumnLabels(const std::string& expl) : Exception(expl) {}
+};
+
 class RowDoesNotExist : public Exception {
 public:
     RowDoesNotExist(const std::string& expl) : Exception(expl) {}
@@ -300,6 +315,11 @@ public:
         Column labels accessors & mutators.                                   */
     /**@{*/
 
+    /** Get total number of columns that have labels.                         */
+    size_t getNumColumnLabels() const {
+        return col_ind_.size();
+    }
+
     /** Check if the DataTable_ has a column with given string as the label   */
     bool hasColumnLabel(const std::string& columnLabel) const {
         return col_ind_.find(columnLabel) != col_ind_.end();
@@ -401,8 +421,7 @@ public:
                       "std::pair<std::string, size_t> (2) std::string.");
         }
 
-        if(first == last)
-            throw ZeroElements{"Input iterator produced zero elements."};
+        throwIfIterHasZeroElements(first, last);
 
         setColumnLabels_impl(first, last, startAtColumnIndex);
     }
@@ -574,8 +593,7 @@ public:
                       "(3) std::string for newColumnLabel.");
         }
 
-        if(first == last)
-            throw ZeroElements{"Input iterator produced zero elements."};
+        throwIfIterHasZeroElements(first, last);
 
         changeColumnLabels_impl(first, last, startAtColumnIndex);
     }
@@ -592,7 +610,7 @@ public:
     \endcode
     See overload of changeColumnLabels() taking iterators for details.        */
     template<typename Container>
-    void changeColumnlabels(const Container& container, 
+    void changeColumnLabels(const Container& container, 
                             size_t startAtColumnIndex = 0) {
         {
         using namespace internal;
@@ -881,7 +899,7 @@ protected:
                                  InputIt>::type last, 
                                  size_t) {
         while(first != last) {
-            changeColumnLabels(first->second, first->first);
+            changeColumnLabel(first->second, first->first);
             ++first;
         }
     }
@@ -893,7 +911,7 @@ protected:
                               size_t startAtColumnIndex) {
         size_t columnIndex{startAtColumnIndex};
         while(first != last) {
-            changeColumnLabels(columnIndex, *first);
+            changeColumnLabel(columnIndex, *first);
             ++first; ++columnIndex;
         }
     }
@@ -932,6 +950,13 @@ protected:
             throw ColumnLabelExists{"A column with label '" + columnLabel + 
                                     "' already exists. Column labels have to be"
                                     " unique."};
+    }
+
+    // Helper function. Throw if the iterators produce zero elements.
+    template<typename Iter>
+    void throwIfIterHasZeroElements(const Iter& first, const Iter& last) const {
+        if(first == last)
+            throw ZeroElements{"Input iterators produce zero elements."};
     }
 
     // Meta-data.
@@ -1280,8 +1305,7 @@ public:
                       "inequality.");
         }
 
-        if(first == last)
-            throw ZeroElements{"Input iterator produced zero elements."};
+        throwIfIterHasZeroElements(first, last);
 
         if(numEntriesInMajor == 0)
             throw InvalidEntry{"Input argument 'numEntriesInMajor' is required "
@@ -1724,8 +1748,8 @@ public:
                       "inequality.");
         }
 
-        if(first == last)
-            throw ZeroElements{"Input iterators produce zero elements."};
+        throwIfIterHasZeroElements(first, last);
+
         if((data_.nrow() == 0 || data_.ncol() == 0) && numColumnsHint == 0)
             throw InvalidEntry{"Input argument 'numColumnsHint' cannot be zero "
                                "when DataTable is empty."};
@@ -1877,9 +1901,9 @@ public:
                       "support 'operator!=' and so is not comparable for " 
                       "inequality.");
         }
+        
+        throwIfIterHasZeroElements(first, last);
 
-        if(first == last)
-            throw ZeroElements{"Input iterators produce zero elements."};
         if(data_.nrow() == 0 || data_.ncol() == 0) {
             if(numColumns == 0)
                 throw InvalidEntry{"DataTable is empty. In order to add rows, "
@@ -2079,8 +2103,8 @@ public:
                       "inequality.");
         }
 
-        if(first == last)
-            throw ZeroElements{"Input iterators produce zero elements."};
+        throwIfIterHasZeroElements(first, last);
+
         if((data_.nrow() == 0 || data_.ncol() == 0) && numRowsHint == 0)
             throw InvalidEntry{"Input argument 'numRowsHint' cannot be zero" 
                                " when DataTable is empty."};
@@ -2233,9 +2257,9 @@ public:
                       "support 'operator!=' and so is not comparable for " 
                       "inequality.");
         }
+        
+        throwIfIterHasZeroElements(first, last);
 
-        if(first == last)
-            throw ZeroElements{"Input iterators produce zero elements."};
         if(data_.nrow() == 0 || data_.ncol() == 0) {
            if(numRows == 0)
                throw InvalidEntry{"DataTable is empty. In order to add columns,"
@@ -2357,8 +2381,7 @@ public:
     the iterator will produce a SimTK::RowVectorView_. The result is not
     writable.                                                                 */
     RowsOrColsContainerProxy<true, true> getRows() const {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
+        throwIfDataTableEmpty();
 
         return this;
     }
@@ -2368,8 +2391,7 @@ public:
     functions to retrieve begin and end iterators respectively. Dereferencing
     the iterator will produce a SimTK::RowVectorView_. The result is writable.*/
     RowsOrColsContainerProxy<true, false> updRows() {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
+        throwIfDataTableEmpty();
 
         return this;
     }
@@ -2380,8 +2402,7 @@ public:
     the iterator will produce a SimTK::RowVectorView_. The result is not
     writable.                                                                 */
     RowsOrColsContainerProxy<false, true> getColumns() const {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
+        throwIfDataTableEmpty();
 
         return this;
     }
@@ -2391,148 +2412,223 @@ public:
     functions to retrieve begin and end iterators respectively. Dereferencing
     the iterator will produce a SimTK::RowVectorView_. The result is writable.*/
     RowsOrColsContainerProxy<false, false> updColumns() {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
+        throwIfDataTableEmpty();
 
         return this;
     }
 
     /** Get a const iterator (representing the beginning) over rows.          */
     Iterator<true, true> rowsCBegin() const {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
+        throwIfDataTableEmpty();
 
         return {this, 0};
     }
 
     /** Get a const iterator (representing the end) over rows.                */
     Iterator<true, true> rowsCEnd() const {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
+        throwIfDataTableEmpty();
 
         return {this, data_.nrow()};
     }
 
     /** Get a const iterator (representing the beginning) over rows.          */
     Iterator<true, true> rowsBegin() const {
+        throwIfDataTableEmpty();
+
         return rowsCBegin();
     }
 
     /** Get a const iterator (representing the end) over rows.                */
     Iterator<true, true> rowsEnd() const {
+        throwIfDataTableEmpty();
+
         return rowsCEnd();
     }
 
     /** Get a non-const iterator (representing the beginning) over rows.      */
     Iterator<true, false> rowsBegin() {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
+        throwIfDataTableEmpty();
 
         return {this, 0};
     }
 
     /** Get a non-const iterator (representing the end) over rows.            */
     Iterator<true, false> rowsEnd() {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
+        throwIfDataTableEmpty();
 
         return {this, data_.nrow()};
     }
 
     /** Get a const iterator (representing the beginning) over columns.       */
     Iterator<false, true> columnsCBegin() const {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
+        throwIfDataTableEmpty();
 
         return {this, 0};
     }
 
     /** Get a const iterator (representing the end) over columns.             */
     Iterator<false, true> columnsCEnd() const {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
+        throwIfDataTableEmpty();
 
         return {this, data_.ncol()};
     }
 
     /** Get a const iterator (representing the beginning) over columns.       */
     Iterator<false, true> columnsBegin() const {
+        throwIfDataTableEmpty();
+
         return columnsCBegin();
     }
 
     /** Get a const iterator (representing the end) over columns.             */
     Iterator<false, true> columnsEnd() const {
+        throwIfDataTableEmpty();
+
         return columnsCEnd();
     }
 
     /** Get a non-const iterator (representing the beginning) over columns.   */
     Iterator<false, false> columnsBegin() {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
+        throwIfDataTableEmpty();
 
         return {this, 0};
     }
 
     /** Get a non-const iterator (representing the end) over columns.         */
     Iterator<false, false> columnsEnd() {
-        if(data_.nrow() == 0 || data_.ncol() == 0)
-            throw EmptyDataTable{"DataTable is empty."};
+        throwIfDataTableEmpty();
 
         return {this, data_.ncol()};
     }
 
-    /** Add/concatenate rows of another DataTable_ to this DataTable_. The new 
-    rows will appear as the last rows of this DataTable_. Only data will be 
-    appended. Metadata is not added from the other DataTable_. Columns retain 
-    their labels. To create a new DataTable_ by concatenating two existing 
-    DataTable_(s), use OpenSim::concatenateRows().
+    /** Add/concatenate rows of another DataTable_ to this DataTable_.
+    Concatenation can be done in two ways:
+     - If \a matchColumnLabels is true, Columns from the input DataTable_ are 
+       appended to the columns of this DataTable_ by matching column labels. For
+       example, a column labeled "column-three" in this DataTable_ will be 
+       appended with column labeled the same in the input DataTable_ regardless 
+       of the column's index in the input DataTable_. This can be used if the 
+       columns in the two DataTables are not in the same order. Both 
+       DataTable_(s) must have all their columns labeled.
+    - If \a matchColumnLabels is false, the underlying matrix from the input
+      DataTable_ will be appended to underlying matrix of this DataTable_. This
+      DataTable_ will retain its column labels. This can be used if it is known
+      that the columns of the input DataTable_ are in the same order as columns
+      of this DataTable_. This alternative is more efficient than the previous.
+      The two DataTable_(s) need not have all their columns labeled.
 
-    \throws NumberOfColumsMismatch If input DataTable_ has incorrect number of
+    Metadata is not added from the other DataTable_. To create a new DataTable_
+    by concatenating two existing DataTable_(s), use OpenSim::concatenateRows().
+
+    \throws EmptyDataTable If either this table or the input table is empty.
+    \throws NumberOfColumsMismatch If input DataTable_ has different number of
                                    columns for concatenation to work.
+    \throws MissingColumnLabels If this DataTable_ or the input DataTable_ is 
+                                missing label for any column. Applicable only
+                                when \a matchColumnLabels is true.
+    \throws ColumnLabelsMismatch If any column label from this DataTable_ is not
+                                 found in the input DataTable_. Applicable only
+                                 when \a matchColumnLabels is true.
     \throws InvalidEntry If trying to add a DataTable_ to itself.             */
-    void concatenateRows(const DataTable_& table) {
-        if(data_.ncol() != table.data_.ncol()) 
-            throw NumberOfColumnsMismatch{"Input DataTable has incorrect number"
-                                          " of columns. Expected = " + 
-                                          std::to_string(data_.ncol()) + 
-                                          " Received = " + 
-                                          std::to_string(table.data_.ncol())};
+    virtual void concatenateRows(const DataTable_& table,
+                                 bool matchColumnLabels = true) {
         if(&data_ == &table.data_)
             throw InvalidEntry{"Cannot concatenate a DataTable to itself."};
 
-        int old_nrow{data_.nrow()};
+        throwIfDataTableEmpty();
+        table.throwIfDataTableEmpty();
+
+        if(data_.ncol() != table.data_.ncol()) 
+            throw NumberOfColumnsMismatch{"DataTables have different number"
+                                          " of columns. Table 1 = " + 
+                                          std::to_string(data_.ncol()) + 
+                                          " Table 2 = " + 
+                                          std::to_string(table.data_.ncol())};
+
+        if(matchColumnLabels) {
+            throwIfMissingColumnLabels();
+            table.throwIfMissingColumnLabels();
+        }
+        
+        int row_start{data_.nrow()};
         data_.resizeKeep(data_.nrow() + table.data_.nrow(), data_.ncol());
-        data_.updBlock(old_nrow, 
-                        0, 
-                        table.data_.nrow(), 
-                        data_.ncol()) = table.data_;
+
+        if(matchColumnLabels) {
+            for(const auto& label_ind : col_ind_) {
+                try {
+                    auto column = data_.updBlock(row_start, label_ind.second, 
+                                                 table.data_.nrow(), 1);
+                    column = table.getColumn(label_ind.first);
+                } catch (ColumnDoesNotExist&) {
+                    data_.resizeKeep(row_start, data_.ncol());
+                    throw ColumnLabelsMismatch{"Column label " + 
+                            label_ind.first + " exists in DataTable 1 but not "
+                            "in DataTable 2. For concatenation, all labels in "
+                            "DataTable 1 must exist in DataTable 2 and vice " 
+                            "versa."};
+                }
+            }
+        } else {
+            data_.updBlock(row_start, 0,
+                           table.data_.nrow(), data_.ncol()) = table.data_;
+        }
     }
 
-    /** Add/concatenate columns of another DataTable_ to this DataTable_. The 
-    new columns will appear as the last columns of this DataTable_. Only data 
-    will be appended. Column labels and metadata are not added. Current columns
-    retain their labels. To create a new DataTable_ by concatenating two 
+    /** Add/concatenate columns of another DataTable_ to this DataTable_. 
+    Concatenation can be done in two ways:
+    - If \a discardColumnLabels is false, column labels from the input 
+      DataTable_ are added to this DataTable_. For this to happen, both 
+      DataTables must have all their columns labeled and together, all the
+      column labels across both tables must be unique.
+    - If \a discardColumnLabels is true, column labels of the input DataTable_
+      are discarded during concatenation. After concatenation, these columns
+      will have no labels.
+
+    Metadata are not added. To create a new DataTable_ by concatenating two 
     existing DataTable_(s), use OpenSim::concatenateColumns().
 
+    \throws EmptyDataTable If either this table or the input table is empty.
     \throws NumberOfRowsMismatch If input DataTable_ has incorrect number of
                                  rows for concatenation to work.
+    \throws MissingColumnLabels If this DataTable_ or the input DataTable_ is 
+                                missing label for any column. Applicable only
+                                when \a dicardColumnLabels is false.
+    \throws DuplicateColumnLabels If any column label in this DataTable_ also
+                                  exists in the input DataTable_. Applicable 
+                                  only when \a discardColumnLabels is false.
     \throws InvalidEntry If trying to concatenation a DataTable_ to itself.   */
-    void concatenateColumns(const DataTable_& table) {
-        if(data_.nrow() != table.data_.nrow())
-            throw NumberOfRowsMismatch{"Input DataTable has incorrect number of"
-                                       " rows. Expected = " + 
-                                       std::to_string(data_.nrow()) + 
-                                       " Received = " 
-                                       + std::to_string(table.data_.nrow())};
+    virtual void concatenateColumns(const DataTable_& table, 
+                                    bool discardColumnLabels = false) {
         if(&data_ == &table.data_)
             throw InvalidEntry{"Cannot concatenate a DataTable to itself."};
 
-        int old_ncol{data_.ncol()};
+        throwIfDataTableEmpty();
+        table.throwIfDataTableEmpty();
+
+        if(data_.nrow() != table.data_.nrow())
+            throw NumberOfRowsMismatch{"Input DataTable has different number of"
+                                       " rows. Table 1 = " + 
+                                       std::to_string(data_.nrow()) + 
+                                       " Table 2 = " 
+                                       + std::to_string(table.data_.nrow())};
+
+        if(!discardColumnLabels) {
+            throwIfMissingColumnLabels();
+            table.throwIfMissingColumnLabels();
+            for(const auto& label_ind : col_ind_)
+                if(table.col_ind_.find(label_ind.first) != table.col_ind_.end())
+                    throw DuplicateColumnLabels{"Both DataTables have column "
+                            "label '" + label_ind.first + "'. Column labels "
+                            "have to be unique across both tables for "
+                            "concatenation to work."};
+
+            col_ind_.insert(table.col_ind_.cbegin(), table.col_ind_.cend());
+        }
+
+        int col_start{data_.ncol()};
         data_.resizeKeep(data_.nrow(), data_.ncol() + table.data_.ncol());
-        data_.updBlock(0, 
-                        old_ncol,
-                        data_.nrow(), 
-                        table.data_.ncol()) = table.data_;
+        data_.updBlock(0, col_start, 
+                       data_.nrow(), table.data_.ncol()) = table.data_;
     }
 
     /** Clear the data of this DataTable_. After this operation, the DataTable_
@@ -2937,12 +3033,26 @@ protected:
                    numColumns);
     }
 
+    // Helper function. Throw if the DataTable_ is empty.
+    void throwIfDataTableEmpty() const {
+        if(data_.nrow() == 0 || data_.ncol() == 0)
+            throw EmptyDataTable{"DataTable is empty."};
+    }
+
     // Helper function. Check if a row exists and throw an exception if it does
     // not.
     void throwIfRowDoesNotExist(const size_t rowIndex) const {
         if(!hasRow(rowIndex))
             throw RowDoesNotExist{"Row " + std::to_string(rowIndex) + 
                                   " does not exist. Index out of range."};
+    }
+
+    // Helper function. Throw if any column is missing label.
+    void throwIfMissingColumnLabels() const {
+        if(getNumColumnLabels() != getNumColumns())
+            throw MissingColumnLabels{"DataTable has columns with no "
+                    "labels. All columns need to have labels for "
+                    "concatenation."};
     }
 
     // Helper function. Round to next highest power of 2. Works only for 
@@ -2969,7 +3079,8 @@ protected:
 using DataTable = DataTable_<SimTK::Real>;
 
 
-/** Add/concatenate two DataTable_(s) by row and produce a new DataTable_.    */
+/** Concatenate two DataTable_(s) by row and produce a new DataTable_.        
+See DataTable_::concatenateRows() for details.                                */
 template<typename ET>
 DataTable_<ET> concatenateRows(const DataTable_<ET>& dt1, 
                                const DataTable_<ET>& dt2) {
@@ -2979,7 +3090,8 @@ DataTable_<ET> concatenateRows(const DataTable_<ET>& dt1,
 }
 
 
-/** Add/concatenate two DataTable_(s) by column and produce a new DataTable_. */
+/** Concatenate two DataTable_(s) by column and produce a new DataTable_.     
+See DataTable_::concatenateColumns() for details.                             */
 template<typename ET>
 DataTable_<ET> concatenateColumns(const DataTable_<ET>& dt1, 
                                   const DataTable_<ET>& dt2) {
