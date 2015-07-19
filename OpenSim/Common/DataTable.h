@@ -45,12 +45,7 @@ in-memory container for data access and manipulation.                         */
 
 namespace OpenSim {
 
-/** Enum to specify dimension of data traversal -- row-wise or olumn-wise.    */
-enum class TraverseDir {
-    RowMajor, 
-    ColumnMajor
-};
-
+/** \cond */
 class EmptyDataTable : public Exception {
 public:
     EmptyDataTable(const std::string& expl) : Exception(expl) {}
@@ -146,7 +141,6 @@ public:
     IncompatibleIterators(const std::string& expl) : Exception(expl) {}
 };
 
-/** \cond */
 namespace internal {
 template<typename...>
 using void_t = void;
@@ -370,6 +364,7 @@ public:
     of:
     - index-label pair (std::pair<std::string, std::size_t>).
     - label (std::string). 
+
     In the first case, the argument \a startAtColumnIndex is ignored. In the 
     second case, the argument \a startAtColumnIndex specifies the column-index 
     of first column that will receive a label. The columns referred to must not 
@@ -430,7 +425,8 @@ public:
     - sequence container of labels (std::string).
     - associative container of label-index pair (std::pair<std::string, 
       std::size_t>).
-    In first case above, \a startAtColumnIndex specifies the first column that
+ 
+   In first case above, \a startAtColumnIndex specifies the first column that
     will receive a new label. For the second case above, the argument
     \a startAtColumnIndex is ignored.
     Calling this function is equivalent to:
@@ -508,10 +504,10 @@ public:
         return ColumnLabelsContainerProxy{this};
     }
     
-    /** Change the label of a column with a new label. Time complexity is linear
-    in the number of column labels. The column specified must already have a
-    label. Column labels must be unique for the entire DataTable_. To label a 
-    column that does not yet have a label, use setColumnLabel().
+    /** Change the label of a column. Time complexity is linear in the number of
+    column labels. The column specified must already have a label. Column labels
+    must be unique for the entire DataTable_. To label a column that does not 
+    yet have a label, use setColumnLabel().
 
     \throws ColumnLabelExists If there is already a column with label specified
                               by 'newColumnLabel'.
@@ -529,8 +525,8 @@ public:
         col_ind_.emplace(newColumnLabel, columnIndex);
     }
 
-    /** Change the label of a column with a new label. Time complexity is 
-    constant on average and linear in number of column labels in the worst case.
+    /** Change the label of a column. Time complexity is constant on average and
+    linear in number of column labels in the worst case.
 
     \throws ColumnLabelExists If there is already column with the label 
                               specified by 'newColumnLabel'.
@@ -551,6 +547,7 @@ public:
       the new label for the column with given index.
     - A new_label-old_label pair (std::pair<std::string, std::string>).
     - A label (std::string).
+
     In the first and second case, the argument \a startAtColumnIndex is ignored.
     In the third case, the argument \a startAtColumnIndex specified the column-
     index of the first column that will receive a label. Calling this function
@@ -604,6 +601,7 @@ public:
       (std::pair<std::string, size_t>).
     - associative container of new label - old label pair
       (std::pair<std::string, std::string>).
+
     Calling this function is equivalent to:
     \code
     changeColumnLabels(container.begin(), container.end(), startAtColumnIndex);
@@ -968,6 +966,13 @@ protected:
 }; // AbstractDataTable
 
 
+/** Enum to specify dimension of data traversal -- row-wise or olumn-wise.    */
+enum class TraverseDir {
+    RowMajor, 
+    ColumnMajor
+};
+
+
 /** DataTable_ is a in-memory storage container for data (in the form of a 
 matrix with column names) with support for holding metadata.                
                                                                               
@@ -1233,12 +1238,8 @@ public:
     See <a href="http://en.cppreference.com/w/cpp/concept/InputIterator">this 
     page</a> for details on InputIterator.
       
-    \param first Beginning of range covered by the iterator. Both first and last
-                 are of same type -- InputIt.
-    \param last End of the range covered by the iterator. Both first and last
-                are of same type -- InputIt. [Don't be confused by the extra
-                code (std::enable_if stuff) that is an implmentation detail but
-                appears in the documentation.]
+    \param first Beginning of range covered by the iterator. 
+    \param last End of the range covered by the iterator. 
     \param traverseDir Whether to populate the DataTable_ row-wise or 
                        column-wise.  Possible values are:
                        - RowMajor -- Populate the DataTable_ one row at a time.
@@ -1278,10 +1279,10 @@ public:
                               \a ColumnMajor, this exception is thrown when the
                               input iterator does not produce enough elements to
                               fill up all the columns completely.             */
-    template<typename InputIt>
+    template<typename InputIt, 
+    typename = typename std::enable_if<!std::is_integral<InputIt>::value>::type>
     DataTable_(InputIt first,
-               typename std::enable_if<!std::is_integral<InputIt>::value,
-                                       InputIt>::type last,
+               InputIt last,
                size_t numEntriesInMajor,
                TraverseDir traverseDir = TraverseDir::RowMajor,
                bool allowMissing     = false,
@@ -2503,13 +2504,13 @@ public:
 
     /** Add/concatenate rows of another DataTable_ to this DataTable_.
     Concatenation can be done in two ways:
-     - If \a matchColumnLabels is true, Columns from the input DataTable_ are 
-       appended to the columns of this DataTable_ by matching column labels. For
-       example, a column labeled "column-three" in this DataTable_ will be 
-       appended with column labeled the same in the input DataTable_ regardless 
-       of the column's index in the input DataTable_. This can be used if the 
-       columns in the two DataTables are not in the same order. Both 
-       DataTable_(s) must have all their columns labeled.
+    - If \a matchColumnLabels is true, Columns from the input DataTable_ are 
+      appended to the columns of this DataTable_ by matching column labels. For
+      example, a column labeled "column-three" in this DataTable_ will be 
+      appended with column labeled the same in the input DataTable_ regardless 
+      of the column's index in the input DataTable_. This can be used if the 
+      columns in the two DataTables are not in the same order. Both 
+      DataTable_(s) must have all their columns labeled.
     - If \a matchColumnLabels is false, the underlying matrix from the input
       DataTable_ will be appended to underlying matrix of this DataTable_. This
       DataTable_ will retain its column labels. This can be used if it is known
@@ -3075,7 +3076,7 @@ protected:
     /** \endcond */
 };  // DataTable_
 
-
+// See DataTable_ for details on the interface.
 using DataTable = DataTable_<SimTK::Real>;
 
 

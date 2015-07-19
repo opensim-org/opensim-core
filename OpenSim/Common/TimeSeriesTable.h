@@ -69,6 +69,8 @@ public:
 };
 /** \endcond */
 
+/** Enum to specify the direction for approximate search/match in the time 
+column of the TimeSeriesTable_.                                               */
 enum class NearestDir {
     LessOrGreaterThanEqual,
     LessThanEqual,
@@ -85,7 +87,7 @@ time-series column can be used to access the rows of the DataTable.
 
 \tparam ET Type of the entries in the underlying matrix. Defaults to
            SimTK::Real (alias for double).
-\Tparam TS Type of the time column.                                           */
+\tparam TS Type of the time column.                                           */
 template<typename ET = SimTK::Real, typename TS = SimTK::Real>
 class TimeSeriesTable_ : public DataTable_<ET> {
     static_assert(std::is_arithmetic<TS>::value, "Template argument 'TS' "
@@ -922,7 +924,7 @@ protected:
     /** \endcond */
 };
 
-
+// See TimeSeriesTable_ for details on the interface.
 using TimeSeriesTable = TimeSeriesTable_<SimTK::Real, SimTK::Real>;
 
 
