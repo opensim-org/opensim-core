@@ -3076,7 +3076,7 @@ protected:
     /** \endcond */
 };  // DataTable_
 
-// See DataTable_ for details on the interface.
+/** See DataTable_ for details on the interface.                              */
 using DataTable = DataTable_<SimTK::Real>;
 
 

@@ -924,7 +924,7 @@ protected:
     /** \endcond */
 };
 
-// See TimeSeriesTable_ for details on the interface.
+/** See TimeSeriesTable_ for details on the interface.                        */
 using TimeSeriesTable = TimeSeriesTable_<SimTK::Real, SimTK::Real>;
 
 
