@@ -58,7 +58,7 @@ static const Vec3 DefaultDefaultColor(.5,.5,.5); // boring gray
 GeometryPath::GeometryPath() :
     ModelComponent(),
     _preScaleLength(0.0),
-    _owner(NULL)
+    _owner(nullptr)
 {
     setNull();
     constructProperties();

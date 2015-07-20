@@ -31,6 +31,8 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 
+#include <memory>
+
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -170,8 +172,6 @@ void Coordinate::extendFinalizeFromProperties()
             cerr << "Default value = " << dv << "  > max = " << get_range(1) << endl;
         }       
     }
-    // Define the locked value for the constraint as a function
-    _lockFunction = new ModifiableConstant(get_default_value(), 1); 
 
     _lockedWarningGiven=false;
 
@@ -182,17 +182,27 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
 
-    //create lock constraint automatically
-    // The underlying SimTK constraint
-    SimTK::Constraint::PrescribedMotion lock(system.updMatterSubsystem(), 
-                                             _lockFunction, 
-                                             _bodyIndex, 
-                                             SimTK::MobilizerQIndex(_mobilizerQIndex));
-
-    // Beyond the const Component get the index so we can access the SimTK::Constraint later
+    // Make this modifiable temporarily so we can record information needed
+    // to later access our pieces of the SimTK::MultibodySystem. That info is
+    // const after the system has been built.
     Coordinate* mutableThis = const_cast<Coordinate *>(this);
+
+    // Define the locked value for the constraint as a function.
+    // The PrescribedMotion will take ownership, but we'll keep a reference
+    // pointer here to allow for later modification.
+    std::unique_ptr<ModifiableConstant> 
+        funcOwner(new ModifiableConstant(get_default_value(), 1));
+    mutableThis->_lockFunction = funcOwner.get();
+    
+    // The underlying SimTK constraint
+    SimTK::Constraint::PrescribedMotion 
+        lock(system.updMatterSubsystem(), 
+             funcOwner.release(),   // give up ownership 
+             _bodyIndex, 
+             SimTK::MobilizerQIndex(_mobilizerQIndex));
+
+    // Save the index so we can access the SimTK::Constraint later
     mutableThis->_lockedConstraintIndex = lock.getConstraintIndex();
-    //mutableThis->_model->addModelComponent(mutableThis);
             
     if(!getProperty_prescribed_function().empty()){
         //create prescribed motion constraint automatically
