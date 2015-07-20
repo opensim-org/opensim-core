@@ -45,8 +45,8 @@ void testModelWithPassiveForces();
 int main()
 {
     Array<string> muscleModelNames;
-    muscleModelNames.append("Thelen2003Muscle_Deprecated");	
-    muscleModelNames.append("Thelen2003Muscle");	
+    muscleModelNames.append("Thelen2003Muscle_Deprecated");
+    muscleModelNames.append("Thelen2003Muscle");
     muscleModelNames.append("Millard2012EquilibriumMuscle");
     muscleModelNames.append("Millard2012AccelerationMuscle");
     
