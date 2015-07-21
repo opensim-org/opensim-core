@@ -872,6 +872,7 @@ void GeometryPath::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 void GeometryPath::computePath(const SimTK::State& s) const
 {
+
     const SimTK::Stage& sg = s.getSystemStage();
 
     if (isCacheVariableValid(s, "current_path"))  {
@@ -882,6 +883,7 @@ void GeometryPath::computePath(const SimTK::State& s) const
     Array<PathPoint*>& currentPath =
         updCacheVariableValue<Array<PathPoint*> >(s, "current_path");
     currentPath.setSize(0);
+
 
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // TODO: This is a bug. Here we are going to modify moving path point
@@ -897,6 +899,7 @@ void GeometryPath::computePath(const SimTK::State& s) const
         if (get_PathPointSet()[i].isActive(s))
             currentPath.append(&get_PathPointSet()[i]); // <--- !!!!BAD
     }
+
 
     // Use the current path so far to check for intersection with wrap objects,
     // which may add additional points to the path.
@@ -920,6 +923,7 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
                 velStartInertial, velEndInertial;
     SimTK::Vec3 velStartLocal, velEndLocal, velStartMoving, velEndMoving;
     PathPoint *start, *end;
+
     const Array<PathPoint*>& currentPath = getCurrentPath(s);
 
     double speed = 0.0;
@@ -1094,6 +1098,7 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
 
                         result[i] = wo->wrapPathSegment(s, *path.get(pt1),
                                                         *path.get(pt2), ws, wr);
+
                         if (result[i] == WrapObject::mandatoryWrap) {
                             // "mandatoryWrap" means the path actually
                             // intersected the wrap object. In this case, you

@@ -31,6 +31,8 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
+#include <mutex>
+#include <thread>
 
 //=============================================================================
 // STATICS
@@ -118,7 +120,7 @@ void WrapEllipsoid::setupProperties()
 * Perform some set up functions that happen after the
 * object has been deserialized or copied.
 *
-* @param aModel 
+* @param aModel
 */
 void WrapEllipsoid::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 {
@@ -263,7 +265,9 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
     // In case you need any variables from the previous wrap, copy them from
     // the PathWrap into the WrapResult, re-normalizing the ones that were
     // un-normalized at the end of the previous wrap calculation.
+
     const WrapResult& previousWrap = aPathWrap.getPreviousWrap();
+
     aWrapResult.factor = previousWrap.factor;
     for (i = 0; i < 3; i++)
     {
@@ -274,6 +278,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
     }
 
     aFlag = true;
+    //std::unique_lock<std::mutex> lock(*s.cacheLock);
     aWrapResult.wrap_pts.setSize(0);
 
     // This algorithm works best if the coordinates (aPoint1, aPoint2,
@@ -582,7 +587,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
 
             if (fanWeight > 0.0)
             {
-                SimTK::Vec3 tc1; 
+                SimTK::Vec3 tc1;
                 double bisection = (orig_c1[_wrapAxis] + aWrapResult.c1[_wrapAxis]) / 2.0;
 
                 aWrapResult.c1[_wrapAxis] = aWrapResult.c1[_wrapAxis] + fanWeight * (bisection - aWrapResult.c1[_wrapAxis]);
@@ -828,7 +833,7 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
                 ee[2] = Mtx::DotProduct(3, nr1, r1) + d1;
                 ee[3] = Mtx::DotProduct(3, nr1, p1) + d1;
 
-                ssqo = ssq;     
+                ssqo = ssq;
 
                 ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
 
@@ -853,9 +858,9 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
             ee[3] = Mtx::DotProduct(3, nr1, p1) + d1;
 
             ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
-            ssqo = ssq;     
+            ssqo = ssq;
         }
-    }   
+    }
     return 1;
 
 }
@@ -874,7 +879,7 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
  * @param far_side_wrap Whether or not the wrapping is the long way around
  * @param aWrapResult The wrapping results (tangent points, etc.)
  */
-void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, SimTK::Vec3& m, SimTK::Vec3& a, 
+void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, SimTK::Vec3& m, SimTK::Vec3& a,
                                                           SimTK::Vec3& vs, double vs4, bool far_side_wrap,
                                                           WrapResult& aWrapResult) const
 {
@@ -1025,7 +1030,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
     {
         Vec3 p = aWrapResult.wrap_pts.get(i);
         Vec3 q = aWrapResult.wrap_pts.get(i+1);
-        MAKE_3DVECTOR21(q, p, dv); 
+        MAKE_3DVECTOR21(q, p, dv);
 
         aWrapResult.wrap_path_length += dv.norm(); //Mtx::Magnitude(3, dv);
     }
@@ -1063,7 +1068,7 @@ double WrapEllipsoid::findClosestPoint(double a, double b, double c,
     // is not stable for points near the coordinate planes.  The first part
     // of this code handles those points separately.
     int i,j;
-    
+
     // handle points near the coordinate planes by reducing the problem
     // to a 2-dimensional pt-to-ellipse.
     //
@@ -1072,7 +1077,7 @@ double WrapEllipsoid::findClosestPoint(double a, double b, double c,
     if (specialCaseAxis < 0)
     {
          double uvw[3], minEllipseRadiiSum = SimTK::Infinity;
-       
+
        uvw[0] = u; uvw[1] = v; uvw[2] = w;
 
        for (i = 0; i < 3; i++)
@@ -1125,7 +1130,7 @@ double WrapEllipsoid::findClosestPoint(double a, double b, double c,
         else
         {
             double max = a;
-        
+
             if ( b > max )
                 max = b;
             if ( c > max )
@@ -1142,17 +1147,17 @@ double WrapEllipsoid::findClosestPoint(double a, double b, double c,
             double PQ, PR, QR, PQR, fp;
 
             f = P2*Q2*_R2 - a2u2*Q2*_R2 - b2v2*P2*_R2 - c2w2*P2*Q2;
-        
+
             if ( fabs(f) < 1e-09 )
             {
                 *x = a2 * u / P;
                 *y = b2 * v / Q;
                 *z = c2 * w / R;
-            
+
                 dx = *x - u;
                 dy = *y - v;
                 dz = *z - w;
-            
+
                 return sqrt(dx*dx+dy*dy+dz*dz);
             }
 
@@ -1161,7 +1166,7 @@ double WrapEllipsoid::findClosestPoint(double a, double b, double c,
             QR = Q*R;
             PQR = P*Q*R;
             fp = 2.0*(PQR*(QR+PR+PQ)-a2u2*QR*(Q+R)-b2v2*PR*(P+R)-c2w2*PQ*(P+Q));
-        
+
             t -= f/fp;
         }
     }

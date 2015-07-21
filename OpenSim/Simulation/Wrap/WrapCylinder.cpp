@@ -32,6 +32,8 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
+#include <mutex>
+#include <thread>
 
 //=============================================================================
 // STATICS
@@ -250,8 +252,8 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     double dist1, dist2;
     double t12, t00;
 
-    Vec3 pp, vv, uu, r1a, r1b, r2a, r2b, apex, plane_normal, sum_musc, 
-        r1am, r1bm, r2am, r2bm, p11, p22, r1p, r2p, axispt, near12, 
+    Vec3 pp, vv, uu, r1a, r1b, r2a, r2b, apex, plane_normal, sum_musc,
+        r1am, r1bm, r2am, r2bm, p11, p22, r1p, r2p, axispt, near12,
         vert1, vert2, mpt, apex1, apex2, l1, l2, near00;
 
     int i, return_code = wrapped;
@@ -262,7 +264,9 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     // In case you need any variables from the previous wrap, copy them from
     // the PathWrap into the WrapResult, re-normalizing the ones that were
     // un-normalized at the end of the previous wrap calculation.
+
     const WrapResult& previousWrap = aPathWrap.getPreviousWrap();
+
     aWrapResult.factor = previousWrap.factor;
     for (i = 0; i < 3; i++)
     {
@@ -663,7 +667,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
         return noWrap;
 
     // make the path and calculate the muscle length:
-    _make_spiral_path(aPoint1, aPoint2, long_wrap, aWrapResult);
+    _make_spiral_path(s,aPoint1, aPoint2, long_wrap, aWrapResult);
 
     aFlag = true;
 
@@ -682,7 +686,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
  * @param far_side_wrap Boolean indicating if the wrap is the long way around
  * @param aWrapResult The result of the wrapping (tangent points, etc.)
  */
-void WrapCylinder::_make_spiral_path(SimTK::Vec3& aPoint1,
+void WrapCylinder::_make_spiral_path(const SimTK::State& s, SimTK::Vec3& aPoint1,
                                                  SimTK::Vec3& aPoint2,
                                                  bool far_side_wrap,
                                                  WrapResult& aWrapResult) const
@@ -770,7 +774,7 @@ restart_spiral_wrap:
                 goto restart_spiral_wrap;
             }
         }
-
+        //std::unique_lock<std::mutex> lock(*s.cacheLock);
         aWrapResult.wrap_pts.append(wrap_pt);
     }
 }

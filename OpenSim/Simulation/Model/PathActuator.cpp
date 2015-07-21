@@ -103,7 +103,7 @@ double PathActuator::getOptimalForce() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Get the length of the path actuator. This is a convenience function that 
+ * Get the length of the path actuator. This is a convenience function that
  * calls the underlying path object for its length.
  *
  * @return Current length of the actuator's path.
@@ -130,19 +130,19 @@ double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
 */
 double PathActuator::getStress( const SimTK::State& s) const
 {
-    return fabs(getActuation(s)/get_optimal_force()); 
+    return fabs(getActuation(s)/get_optimal_force());
 }
 
 
 //_____________________________________________________________________________
 /**
- * Add a Path point to the _path of the actuator. The new point is appended 
+ * Add a Path point to the _path of the actuator. The new point is appended
  * to the end of the current path
  *
  */
 void PathActuator::addNewPathPoint(
-         const std::string& proposedName, 
-         PhysicalFrame& aBody, 
+         const std::string& proposedName,
+         PhysicalFrame& aBody,
          const SimTK::Vec3& aPositionOnBody) {
     // Create new PathPoint
     PathPoint* newPathPoint = updGeometryPath()
@@ -178,8 +178,8 @@ double PathActuator::computeActuation( const SimTK::State& s ) const
 /**
  * Apply the actuator force along path wrapping over and connecting rigid bodies
  */
-void PathActuator::computeForce( const SimTK::State& s, 
-                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void PathActuator::computeForce( const SimTK::State& s,
+                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                SimTK::Vector& mobilityForces) const
 {
     if(!_model) return;
@@ -189,7 +189,7 @@ void PathActuator::computeForce( const SimTK::State& s,
     // compute path's lengthening speed if necessary
     double speed = path.getLengtheningSpeed(s);
 
-    // the lengthening speed of this actutor is the "speed" of the actuator 
+    // the lengthening speed of this actutor is the "speed" of the actuator
     // used to compute power
     setSpeed(s, speed);
 
@@ -260,7 +260,7 @@ void PathActuator::extendRealizeDynamics(const SimTK::State& state) const
 // color. Derived classes like Muscle will override this with something
 // meaningful.
 // TODO: should the default attempt to use the actuation level to control
-// colors? Not sure how to scale. Muscles could still override that with 
+// colors? Not sure how to scale. Muscles could still override that with
 // activation level.
 SimTK::Vec3 PathActuator::computePathColor(const SimTK::State& state) const {
     return SimTK::Vec3(SimTK::NaN);
@@ -285,7 +285,7 @@ void PathActuator::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumb
 {
     updGeometryPath().setOwner(this);
     Super::updateFromXMLNode(aNode, versionNumber);
-}   
+}
 
 //=============================================================================
 // SCALING

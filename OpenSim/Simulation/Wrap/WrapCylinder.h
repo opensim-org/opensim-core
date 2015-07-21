@@ -96,7 +96,7 @@ protected:
 
 private:
     void setNull();
-    void _make_spiral_path(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+    void _make_spiral_path(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                                  bool far_side_wrap,WrapResult& aWrapResult) const;
     void _calc_spiral_wrap_point(const SimTK::Vec3& r1a,
                                                          const SimTK::Vec3& axial_vec,
@@ -121,5 +121,3 @@ private:
 } // end of namespace OpenSim
 
 #endif // __WrapCylinder_h__
-
-
