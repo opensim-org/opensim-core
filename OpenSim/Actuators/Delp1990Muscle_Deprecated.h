@@ -52,9 +52,9 @@ class Function;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API Delp1990Muscle_Deprecated 
+class OSIMACTUATORS_API Delp1990Muscle_Deprecated
 :   public ActivationFiberLengthMuscle_Deprecated {
-OpenSim_DECLARE_CONCRETE_OBJECT(Delp1990Muscle_Deprecated, 
+OpenSim_DECLARE_CONCRETE_OBJECT(Delp1990Muscle_Deprecated,
                                 ActivationFiberLengthMuscle_Deprecated);
 
 //=============================================================================
@@ -131,6 +131,11 @@ public:
     virtual void setActiveForce(const SimTK::State& s, double aForce) const;
     virtual double getActiveForce(const SimTK::State& s) const;
 
+    //Parallelism Method Override
+    //Note: Forces cannot be flagged as parallel if they modify (recalculate) system controls
+    //during calcForces
+    bool isParallelByDefault() const override;
+    
     //--------------------------------------------------------------------------
     // COMPUTATION
     //--------------------------------------------------------------------------
@@ -150,7 +155,7 @@ protected:
     // Model Component Interface
     void extendConnectToModel(Model& aModel) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    void computeStateVariableDerivatives(const SimTK::State &s) const override; 
+    void computeStateVariableDerivatives(const SimTK::State &s) const override;
 
 private:
     void setNull();
@@ -166,5 +171,3 @@ private:
 } // end of namespace OpenSim
 
 #endif // __Delp1990Muscle_Deprecated_h__
-
-

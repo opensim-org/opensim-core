@@ -128,7 +128,7 @@ void WrapObject::constructProperties()
 {
     constructProperty_display_preference(1);
     Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
-    defaultColor[0] = 0.0; 
+    defaultColor[0] = 0.0;
 
     constructProperty_color(defaultColor);
 }
@@ -163,7 +163,7 @@ void WrapObject::scale(const SimTK::Vec3& aScaleFactors)
 //_____________________________________________________________________________
 /**
  * set quadrants for the geometric object representing the wrap object
- * This has to be done after geometry object creation so it's not 
+ * This has to be done after geometry object creation so it's not
  * part of WrapObject::connectToModelAndBody()
  *
 void WrapObject::setGeometryQuadrants(OpenSim::AnalyticGeometry *aGeometry) const
@@ -212,7 +212,7 @@ void WrapObject::setQuadrantName(const string& aName)
 //_____________________________________________________________________________
 /**
  * Determine the appropriate values of _quadrant, _wrapAxis, and _wrapSign,
- * based on the name of the quadrant. This should be called in 
+ * based on the name of the quadrant. This should be called in
  * connectToModelAndBody() and whenever the quadrant name changes.
  */
 void WrapObject::setupQuadrant()
@@ -297,7 +297,7 @@ int WrapObject::wrapPathSegment(const SimTK::State& s, PathPoint& aPoint1, PathP
     //_model->getSimbodyEngine().transformPosition(s, aPoint1.getBody(), aPoint1.getLocation(), getBody(), pt1);
     pt1 = aPoint1.getBody()
         .findLocationInAnotherFrame(s, aPoint1.getLocation(), getBody());
-    
+
     //_model->getSimbodyEngine().transformPosition(s, aPoint2.getBody(), aPoint2.getLocation(), getBody(), pt2);
     pt2 = aPoint2.getBody()
         .findLocationInAnotherFrame(s, aPoint2.getLocation(), getBody());

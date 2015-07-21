@@ -151,7 +151,7 @@ void WrapTorus::scale(const SimTK::Vec3& aScaleFactors)
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aModel pointer to OpenSim Model 
+ * @param aModel pointer to OpenSim Model
  */
 void WrapTorus::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 {
@@ -271,6 +271,8 @@ WrapTorus& WrapTorus::operator=(const WrapTorus& aWrapTorus)
 int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                 const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
+    std::unique_lock<std::mutex> lock(*s.getStateLock());
+    
     int i;
     SimTK::Vec3 closestPt;
     bool constrained = (bool) (_wrapSign != 0);
@@ -351,7 +353,7 @@ int WrapTorus::findClosestPoint(double radius, double p1[], double p2[],
    double ftol = 1e-4, xtol = 1e-4, gtol = 0.0;
    double epsfcn = 0.0, step_factor = 0.2;
    // work arrays
-   int ipvt[2];  
+   int ipvt[2];
    double diag[2], qtf[2], wa1[2], wa2[2], wa3[2], wa4[2];
    // Circle variables
    double u, mag, nx, ny, nz, x, y, z, a1[3], a2[3], distance1, distance2, betterPt = 0;

@@ -36,7 +36,7 @@
 
 #include "Simbody.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
 class PhysicalFrame;
 class Model;
@@ -45,10 +45,10 @@ class Model;
 //                           TORQUE ACTUATOR
 //==============================================================================
 /**
- * A TorqueActuatorr applies equal and opposite torques on the two bodies 
+ * A TorqueActuatorr applies equal and opposite torques on the two bodies
  * (bodyA and B) that it connects. The torque is applied about an axis
- * specified in ground (global) by default, otherwise it is in bodyA's frame. 
- * The magnitude of the torque is equal to the product of the optimal_force of 
+ * specified in ground (global) by default, otherwise it is in bodyA's frame.
+ * The magnitude of the torque is equal to the product of the optimal_force of
  * the actuator and its control signal.
  *
  * @author Ajay Seth, Matt DeMers
@@ -59,7 +59,7 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
+    /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
     OpenSim_DECLARE_OPTIONAL_PROPERTY(bodyA, std::string,
@@ -67,7 +67,7 @@ public:
     OpenSim_DECLARE_OPTIONAL_PROPERTY(bodyB, std::string,
         "Name of Body to which the equal and opposite torque is applied.");
     /** The default is torque_is_global=true. **/
-    OpenSim_DECLARE_PROPERTY(torque_is_global, bool, 
+    OpenSim_DECLARE_PROPERTY(torque_is_global, bool,
         "Interpret axis in Ground frame if true; otherwise, body A's frame.");
     /** The default direction for the axis is z (0,0,1). **/
     OpenSim_DECLARE_PROPERTY(axis, SimTK::Vec3,
@@ -76,7 +76,6 @@ public:
     /** The default for optimal force is 1. **/
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum torque produced by this actuator when fully activated.");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS
@@ -86,9 +85,9 @@ public:
 
     /** Convenience Constructor.
      Create a torque actuator that applies equal and opposite torques
-     on the two bodies (bodyA and B) that it connects. The torque is applied 
+     on the two bodies (bodyA and B) that it connects. The torque is applied
      about an axis specified in ground if axisInGround is true, otherwise
-     it is specified in bodyA's body frame. 
+     it is specified in bodyA's body frame.
 
      @param bodyA   the body that the actuator applies torque to
      @param bodyB   the body that the actuator applies the opposite torque to
@@ -99,20 +98,20 @@ public:
     TorqueActuator(const PhysicalFrame& bodyA, const PhysicalFrame& bodyB,
                    const SimTK::Vec3& axis, bool axisInGround=true);
 
-    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // Uses default (compiler-generated) destructor, copy constructor, copy
     // assignment operator.
-    
+
     /** Set the 'axis' property to the supplied value; frame is interpreted
     according to the 'torque_is_global' property. **/
-    void setAxis(const SimTK::Vec3& axis) 
+    void setAxis(const SimTK::Vec3& axis)
     {   set_axis(axis); }
     /** Return the current value of the 'axis' property. **/
-    const SimTK::Vec3& getAxis() const 
+    const SimTK::Vec3& getAxis() const
     {   return get_axis(); }
 
     /** Set the 'torque_is_global' property that determines how to interpret
     the 'axis' vector; if not global (Ground frame) it is in body A's frame. **/
-    void setTorqueIsGlobal(bool isGlobal) 
+    void setTorqueIsGlobal(bool isGlobal)
     {   set_torque_is_global(isGlobal); }
     /** Return the current value of the 'torque_is_global' property. **/
     bool getTorqueIsGlobal() const
@@ -141,8 +140,8 @@ private:
     //--------------------------------------------------------------------------
     // Implement Force interface
     //--------------------------------------------------------------------------
-    void computeForce(const SimTK::State& state, 
-                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+    void computeForce(const SimTK::State& state,
+                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                       SimTK::Vector& mobilityForces) const override;
 
     //--------------------------------------------------------------------------
@@ -150,7 +149,7 @@ private:
     //--------------------------------------------------------------------------
     double computeActuation(const SimTK::State& s) const override;
     // Return the stress, defined as abs(force/optimal_force).
-    double getStress(const SimTK::State& state) const override; 
+    double getStress(const SimTK::State& state) const override;
 
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface
@@ -167,7 +166,7 @@ private:
 //==============================================================================
 // DATA
 //==============================================================================
-    // Note: reference pointers are automatically set to null on construction 
+    // Note: reference pointers are automatically set to null on construction
     // and also on copy construction and copy assignment.
 
     // Corresponding Body to which the torque actuator is applied.
@@ -184,5 +183,3 @@ private:
 //==============================================================================
 
 #endif // OPENSIM_TORQUE_ACTUATOR_H_
-
-
