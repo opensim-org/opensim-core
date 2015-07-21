@@ -247,6 +247,8 @@ WrapCylinder& WrapCylinder::operator=(const WrapCylinder& aWrapCylinder)
 int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                     const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
+    std::unique_lock<std::mutex> lock(*s.getStateLock());
+    
     double dist, p11_dist, p22_dist, t, dot1, dot2, dot3, dot4, d, sin_theta,
         *r11, *r22, alpha, beta, r_squared = _radius * _radius;
     double dist1, dist2;
@@ -320,7 +322,10 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
 
     // find preliminary tangent point candidates r1a & r1b
     MAKE_3DVECTOR(p11, aPoint1, vv);
-
+    //p11 Vec3
+    //apoint1 Vec3
+    //vv = apoint1 - p11, Vec3
+    //p11_dist = vv.norm
     p11_dist = Mtx::Normalize(3, vv, vv);
 
     sin_theta = _radius / p11_dist;
@@ -774,7 +779,6 @@ restart_spiral_wrap:
                 goto restart_spiral_wrap;
             }
         }
-        //std::unique_lock<std::mutex> lock(*s.cacheLock);
         aWrapResult.wrap_pts.append(wrap_pt);
     }
 }

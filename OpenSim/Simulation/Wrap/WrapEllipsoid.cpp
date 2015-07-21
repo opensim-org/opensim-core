@@ -254,6 +254,8 @@ WrapEllipsoid& WrapEllipsoid::operator=(const WrapEllipsoid& aWrapEllipsoid)
 int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                      const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
+    std::unique_lock<std::mutex> lock(*s.getStateLock());
+
     int i, j, bestMu;
     SimTK::Vec3 p1, p2, m, a, p1p2, p1m, p2m, f1, f2, p1c1, r1r2, vs, t, mu;
     double ppm, aa, bb, cc, disc, l1, l2,
@@ -278,7 +280,6 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
     }
 
     aFlag = true;
-    //std::unique_lock<std::mutex> lock(*s.cacheLock);
     aWrapResult.wrap_pts.setSize(0);
 
     // This algorithm works best if the coordinates (aPoint1, aPoint2,

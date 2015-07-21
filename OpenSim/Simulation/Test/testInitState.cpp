@@ -135,16 +135,16 @@ void testStates(const string& modelFile)
 
     y4.dump("y4: Default State after second simulation:");
 
-    // for (int i = 0; i < y1.size(); i++)
-    // {
-    //     cout << i <<" : y1[i] = " << y1[i] << " :: y3[i] = " << y3[i] << endl;
-    //     ASSERT_EQUAL(y1[i], y3[i], 1e-5,__FILE__, __LINE__,
-    //         "Model failed to maintain default state after simulation.");
-    //     cout << i <<" : y2[i] = " << y2[i] << " :: y4[i] = " << y4[i] << endl;
-    //     ASSERT_EQUAL(y2[i], y4[i], 1e-5,__FILE__, __LINE__,
-    //         "Model failed to properly update default state after simulation.");
-    // }
-    // ASSERT(max(abs(y1-y2)) > 1e-4);
+    for (int i = 0; i < y1.size(); i++)
+    {
+        cout << i <<" : y1[i] = " << y1[i] << " :: y3[i] = " << y3[i] << endl;
+        ASSERT_EQUAL(y1[i], y3[i], 1e-5,__FILE__, __LINE__,
+            "Model failed to maintain default state after simulation.");
+        cout << i <<" : y2[i] = " << y2[i] << " :: y4[i] = " << y4[i] << endl;
+        ASSERT_EQUAL(y2[i], y4[i], 1e-5,__FILE__, __LINE__,
+            "Model failed to properly update default state after simulation.");
+    }
+    ASSERT(max(abs(y1-y2)) > 1e-4);
 }
 
 void testMemoryUsage(const string& modelFile)
