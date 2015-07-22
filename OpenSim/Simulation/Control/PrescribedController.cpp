@@ -60,7 +60,7 @@ PrescribedController::PrescribedController() :
  * Convenience constructor.
  */
 PrescribedController::
-    PrescribedController(const std::string& controlsFileName, 
+    PrescribedController(const std::string& controlsFileName,
                          int interpMethodType) : Controller()
 {
     setNull();
@@ -134,7 +134,7 @@ void PrescribedController::extendConnectToModel(Model& model)
                 // find a corresponding actuator in the model
                 found = modelActuators.getIndex(actName);
                 if(found >= 0){ // found a corresponding actuator
-                    controls.getDataColumn(controls.getStateIndex(actName), 
+                    controls.getDataColumn(controls.getStateIndex(actName),
                                             data);
                     Function* pfunc=createFunctionFromData(actName, time, data);
                     //if not already assigned to this controller, assign it
@@ -166,7 +166,7 @@ void PrescribedController::computeControls(const SimTK::State& s, SimTK::Vector&
     for(int i=0; i<getActuatorSet().getSize(); i++){
         actControls[0] = get_ControlFunctions()[i].calcValue(time);
         getActuatorSet()[i].addInControls(actControls, controls);
-    }  
+    }
 }
 
 
@@ -177,17 +177,17 @@ void PrescribedController::computeControls(const SimTK::State& s, SimTK::Vector&
 void PrescribedController::
     prescribeControlForActuator(int index, Function *prescribedFunction)
 {
-    SimTK_ASSERT( index < getActuatorSet().getSize(), 
+    SimTK_ASSERT( index < getActuatorSet().getSize(),
         "PrescribedController::computeControl:  index > number of actuators" );
-    SimTK_ASSERT( index >= 0,  
+    SimTK_ASSERT( index >= 0,
         "PrescribedController::computeControl:  index < 0" );
     if(index >= get_ControlFunctions().getSize())
         upd_ControlFunctions().setSize(index+1);
-    upd_ControlFunctions().set(index, prescribedFunction);  
+    upd_ControlFunctions().set(index, prescribedFunction);
 }
 
 void PrescribedController::
-    prescribeControlForActuator(const std::string actName, 
+    prescribeControlForActuator(const std::string actName,
                                 Function *prescribedFunction)
 {
     int index = getProperty_actuator_list().findIndex(actName);
@@ -207,7 +207,7 @@ Function* PrescribedController::createFunctionFromData(const std::string& name,
     if(method > 0)
         return new GCVSpline(method, time.getSize(), &time[0], &data[0], name);
     else if(method ==0)
-        return new PiecewiseConstantFunction(time.getSize(), 
+        return new PiecewiseConstantFunction(time.getSize(),
                                                     &time[0], &data[0], name);
     else
         throw Exception("PrescribedController- Invalid interpolation method.");

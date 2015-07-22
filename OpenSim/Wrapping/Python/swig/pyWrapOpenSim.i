@@ -257,7 +257,7 @@ using namespace SimTK;
 %rename(OpenSimObject) OpenSim::Object;
 %rename(OpenSimException) OpenSim::Exception;
 
-%newobject *::clone; 
+%newobject *::clone;
 
 %rename(printToXML) OpenSim::Object::print(const std::string&) const;
 %rename(printToXML) OpenSim::XMLDocument::print(const std::string&);
@@ -316,7 +316,7 @@ MODEL_ADOPT_HELPER(Force);
 MODEL_ADOPT_HELPER(Controller);
 
 // Make sure clone does not leak memory
-%newobject *::clone; 
+%newobject *::clone;
 
 // Would prefer to modify the Joint abstract class constructor,
 // but the proxy classes don't even call it.
@@ -350,19 +350,19 @@ JOINT_ADOPT_HELPER(PlanarJoint);
 	SimTK::Vec3 getAsVec3() {
 		return SimTK::Vec3::getAs(self->get());
 	};
-	
+
 	static SimTK::Vec3 createVec3(double e1, double e2, double e3) {
 		Array<double>* arr = new Array<double>(e1, 3);
 		arr->set(1, e2);
 		arr->set(2, e3);
 		return SimTK::Vec3::getAs(arr->get());
 	};
-  
+
    static SimTK::Vec3 createVec3(double e1) {
 		Array<double>* arr = new Array<double>(e1, 3);
 		return SimTK::Vec3::getAs(arr->get());
   };
-   
+
    static SimTK::Vec3  createVec3(double es[3]) {
 		Array<double>* arr = new Array<double>(es[0], 3);
 		arr->set(1, es[1]);
@@ -385,12 +385,12 @@ JOINT_ADOPT_HELPER(PlanarJoint);
 		for (int i=0; i<3; i++) arr[i] = vec3[i];
 		return arr;
   };
-  
+
   std::string toString() const {
 		std::stringstream stream;
 		for (int i=0; i< self->getSize(); i++)
 			stream <<  self->get(i) << " ";
-		return stream.str(); 
+		return stream.str();
   }
 
   void setFromPyArray(double* dValues, int size) {
@@ -423,7 +423,7 @@ JOINT_ADOPT_HELPER(PlanarJoint);
 		  Object::getRegisteredObjectsOfGivenType<OpenSim::Function>(rArray);
 		  for (int i=0;i<rArray.size(); i++)
 			availableClassNames.append(rArray[i]->getConcreteClassName());
-		  
+
 		  return availableClassNames;
 	}
 }
@@ -512,8 +512,8 @@ typedef int SystemUErrIndex;
 typedef int SystemUDotErrIndex;
 
 namespace SimTK {
-%template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>; 
-%template(ArrayIndexInt) ArrayIndexTraits<int>; 
+%template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>;
+%template(ArrayIndexInt) ArrayIndexTraits<int>;
 }
 
 %include <SWIGSimTK/DecorativeGeometry.h>
@@ -634,7 +634,7 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/PhysicalFrame.h>
 %include <OpenSim/Simulation/Model/Ground.h>
 %include <OpenSim/Simulation/Model/OffsetFrame.h>
-%template(PhysicalFrameWithOffset)   OpenSim::OffsetFrame<OpenSim::PhysicalFrame>; 
+%template(PhysicalFrameWithOffset)   OpenSim::OffsetFrame<OpenSim::PhysicalFrame>;
 %include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 %template(SetFrames) OpenSim::Set<OpenSim::Frame>;
 %template(ModelComponentSetFrames) OpenSim::ModelComponentSet<OpenSim::Frame>;

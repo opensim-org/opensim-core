@@ -26,7 +26,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-// Headers define the various property types that OpenSim objects can read 
+// Headers define the various property types that OpenSim objects can read
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include "osimPluginDLL.h"      // Header to define plugin (DLL) interface
 
@@ -34,16 +34,16 @@
 //=============================================================================
 //=============================================================================
 /*
- * A class template for writing a custom Analysis 
+ * A class template for writing a custom Analysis
  * Currenlty reports the position and orientation of bodies listed in its
  * properties.
  *
  * @author Frank C. Anderson, Ajay Seth, Tim Dorn
  * @version 3.0
  */
-namespace OpenSim { 
+namespace OpenSim {
 
-class OSIMPLUGIN_API AnalysisPlugin_Template : public Analysis 
+class OSIMPLUGIN_API AnalysisPlugin_Template : public Analysis
 {
 OpenSim_DECLARE_CONCRETE_OBJECT(AnalysisPlugin_Template, Analysis);
 public:
@@ -55,7 +55,7 @@ public:
 /**@{**/
 
     /** String list property containing the name of the body names*/
-    OpenSim_DECLARE_LIST_PROPERTY(body_names, std::string, 
+    OpenSim_DECLARE_LIST_PROPERTY(body_names, std::string,
     "Names of the bodies on which to perform the analysis."
     "The key word 'All' indicates that the analysis should be performed for all bodies.");
 
@@ -63,20 +63,20 @@ public:
     // Uncomment them as you need them.
     // ------------------------------------------------------
     //// My string property
-    //OpenSim_DECLARE_PROPERTY(string_property, std::string, 
-    //"My string property."); 
+    //OpenSim_DECLARE_PROPERTY(string_property, std::string,
+    //"My string property.");
 
     //// My int property
-    //OpenSim_DECLARE_PROPERTY(int_property, int, 
-    //"My int property."); 
+    //OpenSim_DECLARE_PROPERTY(int_property, int,
+    //"My int property.");
 
     //// My bool property
-    //OpenSim_DECLARE_PROPERTY(bool_property, bool, 
-    //"My bool property."); 
+    //OpenSim_DECLARE_PROPERTY(bool_property, bool,
+    //"My bool property.");
 
     //// My double property
-    //OpenSim_DECLARE_PROPERTY(double_property, double, 
-    //"My double property."); 
+    //OpenSim_DECLARE_PROPERTY(double_property, double,
+    //"My double property.");
 
 /**@}**/
 

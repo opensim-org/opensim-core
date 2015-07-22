@@ -38,15 +38,15 @@ namespace OpenSim {
 //                             FUNCTION BASED BUSHING FORCE
 //==============================================================================
 /**
- * A class implementing a bushing force driven by functions relating forces to 
+ * A class implementing a bushing force driven by functions relating forces to
  * deviations.  Thes functions can be arbitrary, user defined functions that
  * caputure nonlinearities in biologic structures.  This Function Based Bushing
- * does not capture coupling between the deflections (e.g. force in x due to 
+ * does not capture coupling between the deflections (e.g. force in x due to
  * rotation in z).
  *
- * A bushing force is the force increasing due to deviation between two frames. 
- * One can think of the Bushing as being composed of 3 translational and 3 
- * torsional spring-dampers, which act along or about the bushing frames. 
+ * A bushing force is the force increasing due to deviation between two frames.
+ * One can think of the Bushing as being composed of 3 translational and 3
+ * torsional spring-dampers, which act along or about the bushing frames.
  * Orientations are measured as x-y-z body-fixed Euler rotations.
  * The underlying Force in Simbody is a SimtK::Force::LinearBushing.
  *
@@ -117,26 +117,26 @@ public:
     /** Default constructor leaves bodies unspecified, sets the bushing frames
       * to be at their body origins, and sets all bushing parameters to zero. **/
     FunctionBasedBushingForce();
-    /** This convenience constructor defines and sets the bushing frames on 
+    /** This convenience constructor defines and sets the bushing frames on
       * each body, and sets all bushing functions to zero.  **/
-    FunctionBasedBushingForce(const std::string& body1Name, 
-                 const SimTK::Vec3& point1, 
+    FunctionBasedBushingForce(const std::string& body1Name,
+                 const SimTK::Vec3& point1,
                  const SimTK::Vec3& orientation1,
-                 const std::string& body2Name, 
-                 const SimTK::Vec3& point2, 
+                 const std::string& body2Name,
+                 const SimTK::Vec3& point2,
                  const SimTK::Vec3& orientation2);
     /** This convenience constructor defines a bushing that behaves like a
       * primitive bushing.  Stiffnesses are used to define linear functions for
       * force deflection profiles.**/
-    FunctionBasedBushingForce(const std::string& body1Name, 
-                 const SimTK::Vec3& point1, 
+    FunctionBasedBushingForce(const std::string& body1Name,
+                 const SimTK::Vec3& point1,
                  const SimTK::Vec3& orientation1,
-                 const std::string& body2Name, 
-                 const SimTK::Vec3& point2, 
+                 const std::string& body2Name,
+                 const SimTK::Vec3& point2,
                  const SimTK::Vec3& orientation2,
-                 const SimTK::Vec3& transStiffness, 
-                 const SimTK::Vec3& rotStiffness, 
-                 const SimTK::Vec3& transDamping, 
+                 const SimTK::Vec3& transStiffness,
+                 const SimTK::Vec3& rotStiffness,
+                 const SimTK::Vec3& transDamping,
                  const SimTK::Vec3& rotDamping);
 
     // Uses default (compiler-generated) destructor, copy constructor, and copy
@@ -144,20 +144,20 @@ public:
 
     /** Set the name of the Body that will serve as body 1 for this bushing. **/
     void setBody1ByName(const std::string& aBodyName);
-    /** Set the location and orientation (optional) for bushing frame on 
+    /** Set the location and orientation (optional) for bushing frame on
       * body 1. **/
-    void setBody1BushingLocation(const SimTK::Vec3& location, 
+    void setBody1BushingLocation(const SimTK::Vec3& location,
                                  const SimTK::Vec3& orientation=SimTK::Vec3(0));
     /** Set the name of the Body that will serve as body 2 for this bushing. **/
     void setBody2ByName(const std::string& aBodyName);
-    /** Set the location and orientation (optional) for bushing frame on 
+    /** Set the location and orientation (optional) for bushing frame on
       * body 2. **/
-    void setBody2BushingLocation(const SimTK::Vec3& location, 
+    void setBody2BushingLocation(const SimTK::Vec3& location,
                                  const SimTK::Vec3& orientation=SimTK::Vec3(0));
-    /** Set the value used to scale the bushing moment on body2 when drawing it to screen.  
+    /** Set the value used to scale the bushing moment on body2 when drawing it to screen.
       * A moment of magnitude |M| will be drawn on screen with a length of (|M|*scale).  **/
     void setMomentVisualScale(double scale) {set_moment_visual_scale(scale);};
-    /** Set the value used to scale the bushing force on body2 when drawing it to screen.  
+    /** Set the value used to scale the bushing force on body2 when drawing it to screen.
       * A force of magnitude |F| will be drawn on screen with a length of (|F|*scale).  **/
     void setForceVisualScale(double scale) {set_force_visual_scale(scale);}
     /** Set the aspect ratio used to control the thickness of the bushing force and moment
@@ -172,23 +172,23 @@ public:
     virtual SimTK::Vec6 computeDeflection(const SimTK::State& s) const;
 
     /** Compute the bushing force contribution to the system and add in to appropriate
-      * bodyForce and/or system generalizedForce. 
+      * bodyForce and/or system generalizedForce.
       */
-    virtual void computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+    virtual void computeForce(const SimTK::State& s,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const;
 
     /** Potential energy is determined by the elastic energy storage of the bushing.
       * In spatial terms, U = ~dq*[K]*dq, with K and dq defined above. */
     virtual double computePotentialEnergy(const SimTK::State& s) const;
 
-    
+
 
     //--------------------------------------------------------------------------
     // Reporting
     //--------------------------------------------------------------------------
-    /** 
-     * Provide name(s) of the quantities (column labels) of the force value(s) 
+    /**
+     * Provide name(s) of the quantities (column labels) of the force value(s)
      * to be reported.
      */
     virtual OpenSim::Array<std::string> getRecordLabels() const ;
@@ -202,12 +202,12 @@ protected:
     // Visual support in SimTK visualizer
     // -------------------------------------------------------------------------
     void generateDecorations(
-        bool fixed, 
+        bool fixed,
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const override;
-    void ComputeForcesAtBushing(const SimTK::State& state, 
-                                SimTK::SpatialVec& forces_on_M_in_ground, 
+    void ComputeForcesAtBushing(const SimTK::State& state,
+                                SimTK::SpatialVec& forces_on_M_in_ground,
                                 SimTK::SpatialVec& forces_on_F_in_ground) const;
 
 private:

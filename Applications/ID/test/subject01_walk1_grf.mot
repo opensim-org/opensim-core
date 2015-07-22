@@ -1,8 +1,8 @@
-name subject01_walk1_grf.mot																		
-datacolumns 19																		
-datarows 9009																		
-range 0.000000 15.013300																		
-endheader																		
+name subject01_walk1_grf.mot
+datacolumns 19
+datarows 9009
+range 0.000000 15.013300
+endheader
                 time	     ground_force_vx	     ground_force_vy	     ground_force_vz	     ground_force_px	     ground_force_py	     ground_force_pz	     l_ground_force_vx	     l_ground_force_vy	     l_ground_force_vz	     l_ground_force_px	     l_ground_force_py	     l_ground_force_pz	     ground_torque_x	     ground_torque_y	     ground_torque_z	     l_ground_torque_x	     l_ground_torque_y	     l_ground_torque_z
 0	101.5119767	745.4661142	-47.44870554	0.37898285	-0.0075	0.12774652	17.26938127	20.49185173	-7.46930128	0.81009656	-0.0075	-0.05354309	0	13.53783445	0	1.5550397	-0.75741936	6.88030347
 0.0017	103.2043876	743.0973413	-46.86966548	0.37809513	-0.0075	0.12810137	18.91380164	28.77852948	-7.85752687	0.80990349	-0.0075	-0.05269428	0	12.55074067	0	1.31259011	-0.63901732	6.11982231

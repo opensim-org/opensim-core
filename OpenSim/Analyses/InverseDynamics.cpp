@@ -74,7 +74,7 @@ InverseDynamics::InverseDynamics(Model *aModel) :
     }
     else allocateStorage();
 }
-// Copy constrctor and virtual copy 
+// Copy constrctor and virtual copy
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -240,7 +240,7 @@ deleteStorage()
 void InverseDynamics::
 setModel(Model& aModel)
 {
-    
+
     Analysis::setModel(aModel);
 }
 
@@ -289,13 +289,13 @@ computeAcceleration(SimTK::State& s, double *aF,double *rAccel) const
         }
     }
 
-    // NEED TO APPLY OTHER FORCES (e.g. Prescribed) FROM ORIGINAL MODEL 
+    // NEED TO APPLY OTHER FORCES (e.g. Prescribed) FROM ORIGINAL MODEL
 
     _modelWorkingCopy->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);
 
     SimTK::Vector udot = _modelWorkingCopy->getMatterSubsystem().getUDot(s);
 
-    for(int i=0; i<_accelerationIndices.getSize(); i++) 
+    for(int i=0; i<_accelerationIndices.getSize(); i++)
         rAccel[i] = udot[_accelerationIndices[i]];
 
 }
@@ -366,7 +366,7 @@ record(const SimTK::State& s)
         std::vector<int> firstDerivComponents(1);
         firstDerivComponents[0]=0;
         double targetAcceleration = targetFunc.calcDerivative(firstDerivComponents, SimTK::Vector(1, sWorkingCopy.getTime()));
-//cout <<  coord.getName() << " t=" << sWorkingCopy.getTime() << "  acc=" << targetAcceleration << " index=" << _accelerationIndices[i] << endl; 
+//cout <<  coord.getName() << " t=" << sWorkingCopy.getTime() << "  acc=" << targetAcceleration << " index=" << _accelerationIndices[i] << endl;
         _constraintVector[i] = targetAcceleration - _constraintVector[i];
     }
     //cout << "NEW Constraint Vector Adjusted = " << endl;
@@ -449,7 +449,7 @@ begin(SimTK::State& s )
             _forceSet = CoordinateActuator::CreateForceSetOfCoordinateActuatorsForModel(sWorkingCopyTemp,*_modelWorkingCopy,1,false);
             _numCoordinateActuators = _forceSet->getSize();
             // Copy whatever forces that are not muscles back into the model
-            
+
             for(int i=0; i<saveForces->getSize(); i++){
                 const Force& f=saveForces->get(i);
                 if ((dynamic_cast<const Muscle*>(&saveForces->get(i)))==NULL)
@@ -476,7 +476,7 @@ begin(SimTK::State& s )
         int nf = _numCoordinateActuators;
         int nacc = _accelerationIndices.getSize();
 
-        if(nf < nacc) 
+        if(nf < nacc)
             throw(Exception("InverseDynamics: ERROR- overconstrained system -- need at least as many forces as there are degrees of freedom.\n"));
 
         // Realize to velocity in case there are any velocity dependent forces
@@ -578,7 +578,7 @@ end(SimTK::State& s )
 //_____________________________________________________________________________
 /**
  * Print results.
- * 
+ *
  * The file names are constructed as
  * aDir + "/" + aBaseName + "_" + ComponentName + aExtension
  *

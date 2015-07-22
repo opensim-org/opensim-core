@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -313,7 +313,7 @@ add(int aN,double aY[])
 /**
  * Add a value to a state.
  *
- * Only one state is altered.  This function was implemented so that 
+ * Only one state is altered.  This function was implemented so that
  * a value could be added to an entire column of a Storage.
  *
  * @param aN Index of state to be altered.
@@ -496,11 +496,11 @@ divide(int aN,double aY[])
     if(aY==NULL) return;
     int i,n=aN;
     if(n>_data.getSize()) n = _data.getSize();
-    for(i=0;i<n;i++) {  
+    for(i=0;i<n;i++) {
         if(aY[i]==0.0)  _data[i] = SimTK::NaN;
         else    _data[i] /= aY[i];
     }
-        
+
 }
 //_____________________________________________________________________________
 /**
@@ -522,7 +522,7 @@ divide(StateVector *aStateVector)
 
     // DIVIDE
     int i;
-    for(i=0;i<n;i++) {  
+    for(i=0;i<n;i++) {
         if(data[i]==0.0)    _data[i] = SimTK::NaN;
         else    _data[i] /= data[i];
     }

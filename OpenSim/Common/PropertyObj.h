@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -37,7 +37,7 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * Class PropertyObj extends class Property.  It consists of a pointer to
@@ -92,7 +92,7 @@ public:
 public:
     virtual bool isValidObject(const Object *obj) const { return true; } // TODO: make this class templated and do type checking
     // TYPE
-    std::string getTypeName() const override 
+    std::string getTypeName() const override
     {   return "Object"; }
     // VALUE
     // Got rid of setValue(Obj) since it would be dangerous to do so given that users of

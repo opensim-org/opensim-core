@@ -155,7 +155,7 @@ ReturnCode copy_muscle_path(dpMusclePathStruct *from, dpMusclePathStruct *to)
 }
 
 /* COPY_MUSCLE_POINT: copy the individual point from a path
- * Allocate space for the wrapping points 
+ * Allocate space for the wrapping points
  */
 ReturnCode copy_muscle_point(dpMusclePoint* from, dpMusclePoint* to)
 {
@@ -705,7 +705,7 @@ ReturnCode copy_muscle(dpMuscleStruct* from, dpMuscleStruct* to, dpMuscleStruct*
             *to->excitation_abscissa = (void*)enter_gencoord(modelTo, ((GeneralizedCoord*)(*from->excitation_abscissa))->name, no);
             // If you got a NULL in the destination, but the source has an abscissa, something went wron
             if (*to->excitation_abscissa == NULL && *from->excitation_abscissa != NULL)
-               return code_bad;     
+               return code_bad;
          }
       }
    }
@@ -773,7 +773,7 @@ ReturnCode copy_muscle_dp(dpMuscleStruct* from, dpMuscleStruct* to, dpMuscleStru
             return code_bad;
          memcpy(to->wrapStruct[i], from->wrapStruct[i], sizeof(dpMuscleWrapStruct));
          // need to allocate space for wrap_object otherwise element in DP model points to element
-         // in SIMM model.  Changes to DP model (adjusting segment index for SD segments) 
+         // in SIMM model.  Changes to DP model (adjusting segment index for SD segments)
          // cause unwanted changes in SIMM model
          // find the wrap object in dp model...
 //         to->wrapStruct[i]->wrap_object = (dpWrapObject *) simm_malloc(sizeof(dpWrapObject));

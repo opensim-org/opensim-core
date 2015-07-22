@@ -87,7 +87,7 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::registerType(PolynomialFunction());
     Object::registerType( ObjectGroup() );
 
-    // TODO: temporarily map old NaturalCubicSpline (which wasn't a 
+    // TODO: temporarily map old NaturalCubicSpline (which wasn't a
     // natural cubic spline) to renamed SimmSpline class. Later we
     // will replace this with an actual natural cubic spline.
     Object::renameType("NaturalCubicSpline", "SimmSpline");
@@ -95,7 +95,7 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::renameType("natCubicSpline", "SimmSpline");
 
   } catch (const std::exception& e) {
-    std::cerr 
+    std::cerr
         << "ERROR during osimCommon Object registration:\n"
         << e.what() << "\n";
   }

@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -36,7 +36,7 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * A class that represents a constant control curve.  That is, the value
@@ -76,7 +76,7 @@ private:
     void copyData(const ControlConstant &aControl);
 protected:
     void setupProperties();
-    
+
 
     //--------------------------------------------------------------------------
     // OPERATORS

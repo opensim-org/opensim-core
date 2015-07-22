@@ -48,7 +48,7 @@ private:
 public:
     CoordinateSet();
     CoordinateSet(Model& model) : Super(model) {}
-    CoordinateSet(Model& model, const std::string &aFileName, 
+    CoordinateSet(Model& model, const std::string &aFileName,
                   bool aUpdateFromXMLNode=true)
     :   Super(model, aFileName, aUpdateFromXMLNode) {}
     CoordinateSet(const CoordinateSet& aCoordinateSet);

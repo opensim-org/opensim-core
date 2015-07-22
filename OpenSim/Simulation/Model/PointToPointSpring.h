@@ -27,7 +27,7 @@
 
 //==============================================================================
 //==============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 class Model;
 class PhysicalFrame;
@@ -67,7 +67,7 @@ public:
     @param body1        the first body to which the spring is attached
     @param point1       location where spring is attached on body1
     @param body2        the second body to which the spring is attached
-    @param point2       location where spring is attached on body2 
+    @param point2       location where spring is attached on body2
     @param stiffness    spring stiffness
     @param restlength   the resting (zero force) length of the spring
     **/
@@ -76,12 +76,12 @@ public:
                         double stiffness, double restlength );
 
     // default destructor, copy constructor, copy assignment
-    
+
     //-----------------------------------------------------------------------------
     // GET and SET Spring parameters
     //-----------------------------------------------------------------------------
     /**
-    * Spring end point bodies 
+    * Spring end point bodies
     */
     void setBody1(const PhysicalFrame& body);
     void setBody2(const PhysicalFrame& body);
@@ -89,7 +89,7 @@ public:
     const PhysicalFrame& getBody2() const;
 
     /**
-    * Spring end points 
+    * Spring end points
     */
     void setPoint1(SimTK::Vec3 aPosition) { set_point1(aPosition); }
     const SimTK::Vec3& getPoint1() const { return get_point1(); }
@@ -98,13 +98,13 @@ public:
 
     /**
     * Spring stiffness
-    * @param stiffness 
+    * @param stiffness
     */
     void setStiffness(double stiffness) {set_stiffness(stiffness);}
     double getStiffness() const {return get_stiffness();}
     /**
     * Spring resting length
-    * @param restLength 
+    * @param restLength
     */
     void setRestlength(double restLength) {set_rest_length(restLength);}
     double getRestlength() const {return get_rest_length();}
@@ -118,7 +118,7 @@ public:
     //-----------------------------------------------------------------------------
     // Reporting
     //-----------------------------------------------------------------------------
-    /** 
+    /**
      * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
      */
     OpenSim::Array<std::string> getRecordLabels() const override;

@@ -48,7 +48,7 @@ public:
     ~FrameSet();
 
     // Somehow the following function is not exported from base template
-    FrameSet(Model& model, const std::string &aFileName, 
+    FrameSet(Model& model, const std::string &aFileName,
              bool aUpdateFromXMLNode = true)
     :   Super(model, aFileName, aUpdateFromXMLNode) {}
 

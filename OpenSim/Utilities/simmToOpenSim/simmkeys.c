@@ -183,22 +183,22 @@ int lookup_simm_key (const char* keyname)
     * in place of symbolic key names.
     */
    const char* p = keyname;
-   
+
    for ( ; *p; p++)
      if ( ! isdigit(*p))
        break;
-   
+
    /* If 'keyname' has no alphabetic characters (ie. all digits), then
     * convert it directly to an integer value.
     */
    if (*p == '\0')
       return atoi(keyname);
-   
+
    /* Otherwise lookup the symbolic keyname and return its value.
     */
    {
       int i, n = sizeof(simmkeys) / sizeof(KeyDef);
-   
+
       for (i = 0; i < n; i++)
       {
          if (strcmp(keyname, simmkeys[i].keyname) == 0)

@@ -26,7 +26,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-// Headers define the various property types that OpenSim objects can read 
+// Headers define the various property types that OpenSim objects can read
 #include <string>
 #include "osimPluginDLL.h"
 #include <OpenSim/Simulation/Model/Force.h>
@@ -35,7 +35,7 @@
 //=============================================================================
 //=============================================================================
 /*
- * A class template for writing a custom Force plugin. 
+ * A class template for writing a custom Force plugin.
  * Applies a body drag force to a given OpenSim Body at
  * it's center of mass location.
  *
@@ -46,7 +46,7 @@
  */
 namespace OpenSim {
 
-class OSIMPLUGIN_API BodyDragForce : public Force  
+class OSIMPLUGIN_API BodyDragForce : public Force
 {
 OpenSim_DECLARE_CONCRETE_OBJECT(BodyDragForce, Force);
 public:
@@ -58,16 +58,16 @@ public:
 /**@{**/
 
     /** String property containing the name of the body names*/
-    OpenSim_DECLARE_PROPERTY(body_name, std::string, 
+    OpenSim_DECLARE_PROPERTY(body_name, std::string,
     "Body name to apply drag force to.");
 
     /** Double property containing the drag coefficient*/
-    OpenSim_DECLARE_PROPERTY(coefficient, double, 
+    OpenSim_DECLARE_PROPERTY(coefficient, double,
     "Names of the bodies on which to perform the analysis."
     "The key word 'All' indicates that the analysis should be performed for all bodies.");
 
     /** Double property containing the drag exponent*/
-    OpenSim_DECLARE_PROPERTY(exponent, double, 
+    OpenSim_DECLARE_PROPERTY(exponent, double,
     "Names of the bodies on which to perform the analysis."
     "The key word 'All' indicates that the analysis should be performed for all bodies.");
 
@@ -76,20 +76,20 @@ public:
     // Uncomment them as you need them.
     // ------------------------------------------------------
     //// My string property
-    //OpenSim_DECLARE_PROPERTY(string_property, std::string, 
-    //"My string property."); 
+    //OpenSim_DECLARE_PROPERTY(string_property, std::string,
+    //"My string property.");
 
     //// My int property
-    //OpenSim_DECLARE_PROPERTY(int_property, int, 
-    //"My int property."); 
+    //OpenSim_DECLARE_PROPERTY(int_property, int,
+    //"My int property.");
 
     //// My bool property
-    //OpenSim_DECLARE_PROPERTY(bool_property, bool, 
-    //"My bool property."); 
+    //OpenSim_DECLARE_PROPERTY(bool_property, bool,
+    //"My bool property.");
 
     //// My double property
-    //OpenSim_DECLARE_PROPERTY(double_property, double, 
-    //"My double property."); 
+    //OpenSim_DECLARE_PROPERTY(double_property, double,
+    //"My double property.");
 
 /**@}**/
 
@@ -107,15 +107,15 @@ public:
     //--------------------------------------------------------------------------
     /** Compute the bushing force contribution to the system and add in to appropriate
       * bodyForce and/or system generalizedForce. The bushing force is [K]*dq + [D]*dqdot
-      * where, [K] is the spatial 6dof stiffness matrix between the two frames 
+      * where, [K] is the spatial 6dof stiffness matrix between the two frames
                dq is the deflection in body spatial coordinates with rotations in Euler angles
       *        [D] is the spatial 6dof damping matrix opposing the velocity between the frames
       *        dqdot is the relative spatial velocity of the two frames
       * BodyDragForce implementation based SimTK::Force::LinearBushing
       * developed and implemented by Michael Sherman.
       */
-    virtual void computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+    virtual void computeForce(const SimTK::State& s,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const;
 
     /** Potential energy is determined by the elastic energy storage of the bushing.
@@ -125,7 +125,7 @@ public:
     //-----------------------------------------------------------------------------
     // Reporting
     //-----------------------------------------------------------------------------
-    /** 
+    /**
      * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
      */
     virtual OpenSim::Array<std::string> getRecordLabels() const ;
@@ -142,7 +142,7 @@ private:
     void setNull();
     void constructProperties();
 
-    
+
 //=============================================================================
 };  // END of class BodyDragForce
 //=============================================================================

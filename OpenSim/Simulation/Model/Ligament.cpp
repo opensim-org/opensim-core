@@ -36,7 +36,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static const Vec3 DefaultLigamentColor(.9,.9,.9); // mostly white 
+static const Vec3 DefaultLigamentColor(.9,.9,.9); // mostly white
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -51,7 +51,7 @@ Ligament::Ligament()
 //_____________________________________________________________________________
 /*
  * Construct and initialize the properties for the ligament.
- * 
+ *
  * You should give each property a meaningful name and an informative comment.
  * The name you give each property is the tag that will be used in the XML
  * file. The comment will appear before the property in the XML file.
@@ -244,7 +244,7 @@ void Ligament::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 
 const double& Ligament::getTension(const SimTK::State& s) const
 {
-    return getCacheVariableValue<double>(s, "tension"); 
+    return getCacheVariableValue<double>(s, "tension");
 }
 
 
@@ -261,8 +261,8 @@ double Ligament::computeMomentArm(const SimTK::State& s, Coordinate& aCoord) con
 
 
 
-void Ligament::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void Ligament::computeForce(const SimTK::State& s,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const
 {
     const GeometryPath& path = getGeometryPath();
@@ -275,7 +275,7 @@ void Ligament::computeForce(const SimTK::State& s,
         setCacheVariableValue<double>(s, "tension", force);
         return;
     }
-    
+
     // evaluate normalized tendon force length curve
     force = getForceLengthCurve().calcValue(
         SimTK::Vector(1, path.getLength(s)/restingLength))* pcsaForce;
@@ -285,7 +285,7 @@ void Ligament::computeForce(const SimTK::State& s,
     path.getPointForceDirections(s, &PFDs);
 
     for (int i=0; i < PFDs.getSize(); i++) {
-        applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), 
+        applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(),
                           force*PFDs[i]->direction(), bodyForces);
     }
     for(int i=0; i < PFDs.getSize(); i++)

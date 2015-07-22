@@ -1,6 +1,6 @@
 set(APPNAME cmc)
 
-include_directories(${OpenSim_SOURCE_DIR} 
+include_directories(${OpenSim_SOURCE_DIR}
                           ${OpenSim_SOURCE_DIR}/Vendors)
 
 # cmake should automatically figure out what other libraries are needed

@@ -168,11 +168,11 @@ a.elRef {
 }
 
 a.code, a.code:visited, a.line, a.line:visited {
-	color: #439DE0; 
+	color: #439DE0;
 }
 
 a.codeRef, a.codeRef:visited, a.lineRef, a.lineRef:visited {
-	color: #439DE0; 
+	color: #439DE0;
 }
 
 /* @end */
@@ -206,7 +206,7 @@ div.line {
 	font-family: monospace;
     font-size: 11px;
     color: #717171;
-	min-height: 13px; 
+	min-height: 13px;
 	line-height: 1.0;
 	text-wrap: unrestricted;
 	white-space: -moz-pre-wrap; /* Moz */
@@ -318,7 +318,7 @@ p.formulaDsp {
 }
 
 img.formulaDsp {
-	
+
 }
 
 img.formulaInl {
@@ -376,20 +376,20 @@ span.charliteral {
 	color: #008080
 }
 
-span.vhdldigit { 
-	color: #ff00ff 
+span.vhdldigit {
+	color: #ff00ff
 }
 
-span.vhdlchar { 
-	color: #000000 
+span.vhdlchar {
+	color: #000000
 }
 
-span.vhdlkeyword { 
-	color: #700070 
+span.vhdlkeyword {
+	color: #700070
 }
 
-span.vhdllogic { 
-	color: #ff0000 
+span.vhdllogic {
+	color: #ff0000
 }
 
 blockquote {
@@ -583,9 +583,9 @@ table.memberdecls {
 }
 
 .memdoc, dl.reflist dd {
-        border-bottom: 1px solid #A8B8D9;      
-        border-left: 1px solid #A8B8D9;      
-        border-right: 1px solid #A8B8D9; 
+        border-bottom: 1px solid #A8B8D9;
+        border-left: 1px solid #A8B8D9;
+        border-right: 1px solid #A8B8D9;
         padding: 6px 10px 2px 10px;
         background-color: #FBFCFD;
         border-top-width: 0;
@@ -637,18 +637,18 @@ dl.reflist dd {
 .params, .retval, .exception, .tparams {
         margin-left: 0px;
         padding-left: 0px;
-}       
+}
 
 .params .paramname, .retval .paramname {
         font-weight: bold;
         vertical-align: top;
 }
-        
+
 .params .paramtype {
         font-style: italic;
         vertical-align: top;
-}       
-        
+}
+
 .params .paramdir {
         font-family: monospace;
         vertical-align: top;
@@ -900,8 +900,8 @@ table.fieldtable {
 
 .fieldtable td.fielddoc p:first-child {
         margin-top: 0px;
-}       
-        
+}
+
 .fieldtable td.fielddoc p:last-child {
         margin-bottom: 2px;
 }
@@ -1164,7 +1164,7 @@ table.fieldtable {
 	color: #283A5D;
 	font-family: 'Lucida Grande',Geneva,Helvetica,Arial,sans-serif;
 	text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9);
-	text-decoration: none;        
+	text-decoration: none;
 }
 
 .navpath li.navelem a:hover
@@ -1193,7 +1193,7 @@ div.summary
 	padding-right: 5px;
 	width: 50%;
 	text-align: right;
-}       
+}
 
 div.summary a
 {
@@ -1305,19 +1305,19 @@ dl.section dd {
 	vertical-align: bottom;
 	border-collapse: separate;
 }
- 
+
 #projectlogo img
-{ 
+{
 	border: 0px none;
 }
- 
+
 #projectname
 {
 	font: 300% Tahoma, Arial,sans-serif;
 	margin: 0px;
 	padding: 2px 0px;
 }
-    
+
 #projectbrief
 {
 	font: 120% Tahoma, Arial,sans-serif;
@@ -1420,7 +1420,7 @@ div.toc ul {
         list-style: none outside none;
         border: medium none;
         padding: 0px;
-}       
+}
 
 div.toc li.level1 {
         margin-left: 0px;

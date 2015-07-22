@@ -49,7 +49,7 @@ public:
     ~JointSet();
 
     // Somehow the following function is not exported from base template
-    JointSet(Model& model, const std::string &aFileName, 
+    JointSet(Model& model, const std::string &aFileName,
              bool aUpdateFromXMLNode = true)
     :   Super(model, aFileName, aUpdateFromXMLNode) {}
 

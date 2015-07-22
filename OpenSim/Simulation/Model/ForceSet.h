@@ -41,7 +41,7 @@ class Muscle;
  * A class for holding and managing a set of forces for a model.
  * This class is based on ModelComponentSet
  *
- * @authors Ajay Seth, Jack Middleton 
+ * @authors Ajay Seth, Jack Middleton
  * @version 1.0
  */
 
@@ -103,7 +103,7 @@ public:
     bool set(int aIndex, Force *aForce);
     bool insert(int aIndex, Force *aObject);
 
-    // subsets 
+    // subsets
     const Set<Actuator>& getActuators() const;
     Set<Actuator>& updActuators();
     const Set<Muscle>& getMuscles() const;

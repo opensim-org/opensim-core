@@ -1,4 +1,4 @@
-include_directories(${OpenSim_SOURCE_DIR} 
+include_directories(${OpenSim_SOURCE_DIR}
             ${OpenSim_SOURCE_DIR}/Vendors)
 
 
@@ -25,7 +25,7 @@ foreach(dataFile ${TEST_FILES})
     ARGS -E copy
     ${dataFile}
     ${OpenSim_BINARY_DIR}/Applications/ID/test)
- endforeach(dataFile) 
+ endforeach(dataFile)
 
 
 if(EXECUTABLE_OUTPUT_PATH)

@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// Author: Ayman Habib   
+// Author: Ayman Habib
 
 //==============================================================================
 //==============================================================================
@@ -42,9 +42,9 @@ class ExampleOptimizationSystem : public OptimizerSystem {
    public:
 
        /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
-       ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
+       ExampleOptimizationSystem(int numParameters, State& s, Model& aModel):
              numKnobs(numParameters), OptimizerSystem(numParameters), si(s), osimModel(aModel){}
-                
+
     int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const {
 
         // make a copy of out initial states
@@ -69,15 +69,15 @@ class ExampleOptimizationSystem : public OptimizerSystem {
         f = -bicShort.computeMomentArm(s, elbowFlexCoord);
 
         stepCount++;
-        
+
         if( f < bestSoFar){
             bestSoFar = f;
             cout << "\nobjective evaluation #: " << stepCount << " elbow flexion angle = " << newControls[0]*SimTK_RADIAN_TO_DEGREE <<  " BICshort moment arm  = " << -f << std::endl;
-        }           
+        }
 
       return(0);
 
-   }    
+   }
 
 private:
     int numKnobs;
@@ -87,18 +87,18 @@ private:
 
 //______________________________________________________________________________
 /**
- * Define an optimization problem that finds a set of muscle controls to maximize 
- * the forward velocity of the forearm/hand segment mass center. 
+ * Define an optimization problem that finds a set of muscle controls to maximize
+ * the forward velocity of the forearm/hand segment mass center.
  */
 int main()
 {
     try {
-        std::clock_t startTime = std::clock();  
-    
+        std::clock_t startTime = std::clock();
+
         // Create a new OpenSim model
         // Similar to arm26 model but without wrapping surfaces for better performance
         Model osimModel("Arm26_Optimize.osim");
-        
+
         // Initialize the system and get the state representing the state system
         State& si = osimModel.initSystem();
 
@@ -106,7 +106,7 @@ int main()
         const CoordinateSet& coords = osimModel.getCoordinateSet();
         coords.get("r_shoulder_elev").setValue(si, 0.0);
 
-        // Set the initial muscle activations 
+        // Set the initial muscle activations
         const Set<Muscle> &muscleSet = osimModel.getMuscles();
         for(int i=0; i< muscleSet.getSize(); i++ ){
             muscleSet[i].setActivation(si, 1.0);
@@ -118,11 +118,11 @@ int main()
         //osimModel.getMultibodySystem().realize(si, Stage::Velocity);
         // Make sure the muscles states are in equilibrium
         osimModel.equilibrateMuscles(si);
-        
+
         // Initialize the optimizer system we've defined.
         ExampleOptimizationSystem sys(1, si, osimModel);
         Real f = NaN;
-        
+
         /* Define initial values and bounds for the controls to optimize */
 
         Vector controls(1, 1.0); // 1 radian for default value
@@ -130,7 +130,7 @@ int main()
         Vector upper_bounds(1, elbowFlexCoord.getRangeMax());
 
         sys.setParameterLimits( lower_bounds, upper_bounds );
-        
+
         // Create an optimizer. Pass in our OptimizerSystem
         // and the name of the optimization algorithm.
         Optimizer opt(sys, SimTK::LBFGSB);
@@ -140,12 +140,12 @@ int main()
         opt.useNumericalGradient(true);
         opt.setMaxIterations(1000);
         opt.setLimitedMemoryHistory(500);
-            
+
         // Optimize it!
         f = opt.optimize(controls);
-            
+
         cout << "Elapsed time = " << (std::clock()-startTime)/CLOCKS_PER_SEC << "s" << endl;
-        
+
         ASSERT_EQUAL(f, -0.049390, 1e-5);
         cout << "OpenSim example completed successfully.\n";
     }
@@ -154,7 +154,7 @@ int main()
         std::cout << ex.what() << std::endl;
         return 1;
     }
-    
+
     // End of main() routine.
     return 0;
 }

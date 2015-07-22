@@ -60,7 +60,7 @@ LinearFunction::LinearFunction() :
  */
 LinearFunction::LinearFunction(double slope, double intercept) :
     _coefficients(_coefficientsProp.getValueDblArray())
-{   
+{
     setNull();
     setupProperties();
     setSlope(slope);
@@ -169,7 +169,7 @@ LinearFunction& LinearFunction::operator=(const LinearFunction &aLinearFunction)
 //=============================================================================
 // UTILITY
 //=============================================================================
-SimTK::Function* LinearFunction::createSimTKFunction() const 
+SimTK::Function* LinearFunction::createSimTKFunction() const
 {
     SimTK::Vector coeffs(_coefficients.getSize(), &_coefficients[0]);
     return new SimTK::Function::Linear(coeffs);

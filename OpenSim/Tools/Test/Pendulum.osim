@@ -31,7 +31,7 @@
 						<VisibleProperties name="">
 							<display_preference> 4 </display_preference>
 							<show_normals> false </show_normals>
-							
+
 							<material_name> DEFAULT </material_name>
 						</VisibleProperties>
 						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
@@ -88,7 +88,7 @@
 						<VisibleProperties name="">
 							<display_preference> 4 </display_preference>
 							<show_normals> false </show_normals>
-							
+
 							<material_name> DEFAULT </material_name>
 						</VisibleProperties>
 						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->

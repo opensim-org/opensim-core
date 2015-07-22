@@ -36,7 +36,7 @@
 
 #include "ActuatorForceTargetFast.h"
 #include "CMC_TaskSet.h"
-#include "CMC.h" 
+#include "CMC.h"
 #include "StateTrackingTask.h"
 
 #include <OpenSim/Common/Storage.h>
@@ -88,7 +88,7 @@ ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController):
     _recipAreaSquared.setSize(na);
     _recipOptForceSquared.setSize(na);
     _recipAvgActForceRangeSquared.setSize(na);
-    
+
     int nConstraints = _controller->getTaskSet().getNumActiveTaskFunctions();
 
     // NUMBERS OF CONSTRAINTS
@@ -109,7 +109,7 @@ ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController):
             _recipAreaSquared[j] = f[j]/musc->getMaxIsometricForce();
         else
             _recipAreaSquared[j] = f[j]/act->getOptimalForce();
-        
+
         _recipAreaSquared[j] *= _recipAreaSquared[j];
         j++;
     }
@@ -122,7 +122,7 @@ ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController):
 bool ActuatorForceTargetFast::
 prepareToOptimize(SimTK::State& s, double *x)
 {
-    // Keep around a "copy" of the state so we can use it in objective function 
+    // Keep around a "copy" of the state so we can use it in objective function
     // in cases where we're tracking states
     _saveState = s;
 #ifdef USE_LINEAR_CONSTRAINT_MATRIX
@@ -155,7 +155,7 @@ prepareToOptimize(SimTK::State& s, double *x)
 
     // COMPUTE MAX ISOMETRIC FORCE
     const Set<Actuator>& fSet = _controller->getActuatorSet();
-    
+
     double fOpt = SimTK::NaN;
 
     getController()->getModel().getMultibodySystem().realize(tempState, SimTK::Stage::Dynamics );
@@ -165,17 +165,17 @@ prepareToOptimize(SimTK::State& s, double *x)
         if(mus==NULL) {
             fOpt = act->getOptimalForce();
         }
-        else{   
+        else{
             fOpt = mus->calcInextensibleTendonActiveFiberForce(tempState,
                                                               activation);
         }
-        
+
         if( std::fabs(fOpt) < SimTK::TinyReal )
             fOpt = SimTK::TinyReal;
 
-        _recipOptForceSquared[i] = 1.0 / (fOpt*fOpt);   
+        _recipOptForceSquared[i] = 1.0 / (fOpt*fOpt);
     }
-    
+
     // return false to indicate that we still need to proceed with optimization (did not do a lapack direct solve)
     return false;
 }
@@ -328,7 +328,7 @@ computeConstraintVector(SimTK::State& s, const Vector &x,Vector &c) const
     for(int i=0; i<getNumConstraints(); i++)
         c[i]=w[i]*(aDes[i]-a[i]);
 
-    // reset the actuator control 
+    // reset the actuator control
     for(int i=0;i<fSet.getSize();i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
         act->overrideActuation(s, false);

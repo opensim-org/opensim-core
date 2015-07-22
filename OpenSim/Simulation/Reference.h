@@ -32,10 +32,10 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * This base (abstract) class defines the interface for objects repsonsible in 
+ * This base (abstract) class defines the interface for objects repsonsible in
  * identifying a model output and its Reference value to be achieved
- * via optimization and/or tracking. Also contains a weighting that identifies 
- * the relative importance of achieving one Reference relative to others. The 
+ * via optimization and/or tracking. Also contains a weighting that identifies
+ * the relative importance of achieving one Reference relative to others. The
  * specific value type to be defined by the concrete References.
  *
  * @author Ajay Seth
@@ -49,7 +49,7 @@ OpenSim_DECLARE_ABSTRACT_OBJECT_T(Reference_, T, Object);
 //=============================================================================
 protected:
     // DO NOT CACHE THE Reference VALUE AS A MEMBER VARIABLE
-    // In general the Reference is a function of the state, therefore it must be 
+    // In general the Reference is a function of the state, therefore it must be
     // evaluated.
     //
     // Concrete References can use Functions or Measures to supply values.
@@ -62,13 +62,13 @@ public:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
     virtual ~Reference_() {}
-    
+
     Reference_() {}
     Reference_(std::string name) { setName(name); }
 
     Reference_& operator=(const Reference_& source) {
         if (&source != this)
-            Super::operator=(source); 
+            Super::operator=(source);
         return *this;
     }
 
@@ -104,7 +104,7 @@ public:
         getWeights(s, weights);
         return weights;
     }
-    
+
 //=============================================================================
 };  // END of class templatized Reference_<T>
 //=============================================================================

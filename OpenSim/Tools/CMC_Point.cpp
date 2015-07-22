@@ -130,7 +130,7 @@ updateWorkVariables(const SimTK::State& s)
     if(_model) {
 
         BodySet& bs = _model->updBodySet();
-    
+
         _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
         if(_wrtBodyName == "center_of_mass") {
@@ -141,10 +141,10 @@ updateWorkVariables(const SimTK::State& s)
                 Body& body = bs.get(i);
                 const SimTK::Vec3& com = body.get_mass_center();
                 _model->getSimbodyEngine().getPosition(s, body,com,pVec);
-                if(pVec[0] != pVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
+                if(pVec[0] != pVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName()
                                             + "' references invalid acceleration components",__FILE__,__LINE__);
                 _model->getSimbodyEngine().getVelocity(s, body,com,vVec);
-                if(vVec[0] != vVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
+                if(vVec[0] != vVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName()
                                             + "' references invalid acceleration components",__FILE__,__LINE__);
                 // ADD TO WHOLE BODY MASS
                 Mass += body.get_mass();
@@ -161,10 +161,10 @@ updateWorkVariables(const SimTK::State& s)
             _wrtBody =  &bs.get(_wrtBodyName);
 
             _model->getSimbodyEngine().getPosition(s, *_wrtBody,_point,_p);
-            if(_p[0] != _p[0]) throw Exception("CMC_Point.updateWorkVariables: ERROR- point task '" + getName() 
+            if(_p[0] != _p[0]) throw Exception("CMC_Point.updateWorkVariables: ERROR- point task '" + getName()
                                                 + "' references invalid position components",__FILE__,__LINE__);
             _model->getSimbodyEngine().getVelocity(s, *_wrtBody,_point,_v);
-            if(_v[0] != _v[0]) throw Exception("CMC_Point.updateWorkVariables: ERROR- point task '" + getName() 
+            if(_v[0] != _v[0]) throw Exception("CMC_Point.updateWorkVariables: ERROR- point task '" + getName()
                                                 + "' references invalid velocity components",__FILE__,__LINE__);
 
         }
@@ -205,7 +205,7 @@ operator=(const CMC_Point &aTask)
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Initializes pointers to the Coordinate and Speed in the model given the 
+ * Initializes pointers to the Coordinate and Speed in the model given the
  * coordinate name assigned to this task.
  *
  * @param aModel Model.
@@ -248,7 +248,7 @@ getPoint() const
 /**
  * Compute the position and velocity errors.
  * This method assumes the states have been set for the model.
- * 
+ *
  * @param aT Current time in real time units.
  * @see Model::set()
  * @see Model::setStates()
@@ -441,7 +441,7 @@ computeAccelerations(const SimTK::State& s )
             Body& body = bs.get(i);
             com = body.get_mass_center();
             _model->getSimbodyEngine().getAcceleration(s, body,com,aVec);
-            if(aVec[0] != aVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
+            if(aVec[0] != aVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName()
                                             + "' references invalid acceleration components",__FILE__,__LINE__);
             // ADD TO WHOLE BODY MASS
             Mass += body.get_mass();
@@ -456,7 +456,7 @@ computeAccelerations(const SimTK::State& s )
         _wrtBody =  &bs.get(_wrtBodyName);
 
         _model->getSimbodyEngine().getAcceleration(s, *_wrtBody,_point,_a);
-        if(_a[0] != _a[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
+        if(_a[0] != _a[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName()
                                             + "' references invalid acceleration components",__FILE__,__LINE__);
     }
 }

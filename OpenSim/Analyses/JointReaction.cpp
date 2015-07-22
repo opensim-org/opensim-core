@@ -104,7 +104,7 @@ JointReaction::JointReaction(const std::string &aFileName):
     */
 }
 
-// Copy constrctor and virtual copy 
+// Copy constrctor and virtual copy
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -243,7 +243,7 @@ void JointReaction::setupReactionList()
     const JointSet& jointSet = _model->getJointSet();
     int numJoints = jointSet.getSize();
 
-    /* check if jointNames is specified to "ALL".  if yes, setup to 
+    /* check if jointNames is specified to "ALL".  if yes, setup to
     *  compute reactions loads for all joints*/
     std::string firstNameEntry = _jointNames.get(0);
     // convert to upper case
@@ -256,9 +256,9 @@ void JointReaction::setupReactionList()
         }
     }
     int numJointNames = _jointNames.getSize();
-    /* check that the _onBody Array and _inFrame Array are either the same length as 
-    *  the _jointNames Array or are of lenght 1.  If not, set lengths to default of 1 and 
-    *  set the values so that all reactions will be reported on the child body, expressed  
+    /* check that the _onBody Array and _inFrame Array are either the same length as
+    *  the _jointNames Array or are of lenght 1.  If not, set lengths to default of 1 and
+    *  set the values so that all reactions will be reported on the child body, expressed
     *  in the ground frame.*/
     if (_onBody.getSize() == 1);
     else if (_onBody.getSize() != numJointNames) {
@@ -273,9 +273,9 @@ void JointReaction::setupReactionList()
             <<"\n All reaction loads will be reported in the child body frames.\n";
         _inFrame.setSize(1);
         _inFrame[0] = "ground";}
-    
 
-    /* setup the JointReactionKey and, for valid joint names, determine and set the 
+
+    /* setup the JointReactionKey and, for valid joint names, determine and set the
     *  reactionIndex, onBodyIndex, and inFrameIndex of each JointReactionKey */
 
     _reactionList.setSize(0);
@@ -284,7 +284,7 @@ void JointReaction::setupReactionList()
         JointReactionKey currentKey;
         index = jointSet.getIndex(_jointNames[i], index + 1);
         if (index > -1) { // found the Joint in the model
-            // Add joint to JointReactionKey 
+            // Add joint to JointReactionKey
             const Joint& joint = jointSet[index];
             currentKey.jointIndex = index;
             currentKey.joint = &joint;
@@ -327,7 +327,7 @@ void JointReaction::setupReactionList()
         }
     }
 }
-    
+
 
 
 
@@ -346,7 +346,7 @@ constructDescription()
     descrip += "\nUnits are S.I. units (seconds, meters, Newtons, ...)";
 
     setDescription(descrip);
-    
+
 }
 
 //_____________________________________________________________________________
@@ -402,11 +402,11 @@ void JointReaction::loadForcesFromFile()
     delete _storeActuation; _storeActuation = NULL;
     // check if the forces storage file name is valid and, if so, load the file into storage
     if(_forcesFileNameProp.isValidFileName()) {
-        
+
         cout << "\nLoading actuator forces from file " << _forcesFileName << "." << endl;
         _storeActuation = new Storage(_forcesFileName);
         int storeSize = _storeActuation->getSmallestNumberOfStates();
-        
+
         cout << "Found " << storeSize << " actuator forces with time stamps ranging from "
             << _storeActuation->getFirstTime() << " to " << _storeActuation->getLastTime() << "." << endl;
 
@@ -453,7 +453,7 @@ void JointReaction::loadForcesFromFile()
  * Set up storage objects.
  *
  * The storage objects in the analysis are used to record
- * the results of the analysis and write them to file.  
+ * the results of the analysis and write them to file.
  */
 void JointReaction::
 setupStorage()
@@ -521,7 +521,7 @@ setModel(Model& aModel)
 int JointReaction::
 record(const SimTK::State& s)
 {
-    /** if a forces file is specified replace the computed actuation with the 
+    /** if a forces file is specified replace the computed actuation with the
         forces from storage.*/
     SimTK::State s_analysis = s;
 
@@ -553,15 +553,15 @@ record(const SimTK::State& s)
     const Ground& ground = _model->getGround();
     int numJoints = _model->getNumJoints();
 
-    /** define 2 variable length vectors of Vec3 vectors to contain calculated  
+    /** define 2 variable length vectors of Vec3 vectors to contain calculated
     *   forces and moments for all the bodies in the model */
     Vector_<Vec3> allForcesVec(numJoints);
     Vector_<Vec3> allMomentsVec(numJoints);
 
     /* Calculate All joint reaction forces and moments.
-    *  Applied to child bodies, expressed in ground frame.  
+    *  Applied to child bodies, expressed in ground frame.
     *  computeReactions realizes to the acceleration stage internally
-    *  so you don't have to call realize in this analysis.*/ 
+    *  so you don't have to call realize in this analysis.*/
     _model->getSimbodyEngine().computeReactions(s_analysis, allForcesVec, allMomentsVec);
 
     /* retrieved desired joint reactions, convert to desired bodies, and convert
@@ -574,14 +574,14 @@ record(const SimTK::State& s)
         Vec3 force = allForcesVec[currentKey.jointIndex];
         Vec3 moment = allMomentsVec[currentKey.jointIndex];
         const PhysicalFrame& expressedInBody = *currentKey.expressedInFrame;
-        
+
         // find the point of application of the joint load on the child
         const Vec3& childLocation = joint.getLocationInChild();
         // and find it's current location in the ground reference frame
         Vec3 childLocationInGlobal = joint.getChildFrame().getGroundTransform(s_analysis)*childLocation;
         // set the point of application to the joint location in the child body
         Vec3 pointOfApplication(0,0,0);
-        
+
         // check if the load on the child needs to be converted to an equivalent
         // load on the parent body.
         if(!currentKey.isAppliedOnChild){
@@ -635,7 +635,7 @@ record(const SimTK::State& s)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration 
+ * This method is meant to be called at the begining of an integration
  *
  * @param s reference to the current state
  *
@@ -707,7 +707,7 @@ end(SimTK::State& s)
 //_____________________________________________________________________________
 /**
  * Print results.
- * 
+ *
  * The file names are constructed as
  * aDir + "/" + aBaseName + "_" + ComponentName + aExtension
  *

@@ -37,10 +37,10 @@ class Body;
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Station. A Station is a point fixed to and defined with 
- * respect to a reference frame. The reference frame can be a Body (fixed 
- * to origin of a Body), a FixedFrame (affixed to another PhysicalFrame) or any 
- * other PhysicalFrame. The main functionality provided by Station is to find its 
+ * A class implementing a Station. A Station is a point fixed to and defined with
+ * respect to a reference frame. The reference frame can be a Body (fixed
+ * to origin of a Body), a FixedFrame (affixed to another PhysicalFrame) or any
+ * other PhysicalFrame. The main functionality provided by Station is to find its
  * location in any Frame.
  *
  * @author Ayman Habib

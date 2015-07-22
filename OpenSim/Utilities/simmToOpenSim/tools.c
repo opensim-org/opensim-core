@@ -325,7 +325,7 @@ int set_gencoord_value(ModelStruct* ms, GeneralizedCoord* gencoord, double value
       sol = solveLCAffectedByGC(ms, gencoord, &value);
       ms->constraintsOK = sol;// && ms->constraintsOK;
       ms->loopsOK = sol;// && ms->loopsOK;
-      
+
       gencoord->value = value;
       if (sol == no)
          return 0;
@@ -422,7 +422,7 @@ int set_gencoord_value(ModelStruct* ms, GeneralizedCoord* gencoord, double value
       sol = solveLCAffectedByGC(ms, gencoord, &value);
       ms->constraintsOK = sol;// && ms->constraintsOK;
       ms->loopsOK = sol;// && ms->loopsOK;
-      
+
       gencoord->value = value;
       if (sol == no)
          return 0;
@@ -628,7 +628,7 @@ void message(char message_str[], int format, int xoffset)
    simm_printf - this routine provides printf-style output to the simm
       message window.  The 'hilite_text' parameter specifies whether the
       text is displayed normal or hilited.
-   
+
    NOTE: this routine will buffer text until an end-of-line character is
       detected.  This allows you to build a single line message via multiple
       calls to this routine.  However, this means that you MUST TERMINATE
@@ -900,7 +900,7 @@ typedef struct {
 static void model_menu_cb(int item, void* userData)
 {
     TitleAreaMenuCBData* data = (TitleAreaMenuCBData*) userData;
-        
+
     int i, numstructs = 0;
 
     if (data->model && data->entry > 0)
@@ -961,7 +961,7 @@ static void plot_menu_cb(int item, void* userData)
             return;
         data->params.struct_ptr = (void*)(gPlot[i]);
     }
-        
+
     if (data->titleAreaCB)
         data->titleAreaCB(PLOT_SELECTED, &data->params);
 
@@ -1065,9 +1065,9 @@ int check_title_area(int title_mask, int mx, int my, WindowParams* win_params,
 void make_time_string(char** time_string)
 {
    time_t t = time(NULL);
-   
+
    strftime(buffer, CHARBUFFER, "%m/%d/%Y %I:%M:%S %p", localtime(&t));
-   
+
    mstrcpy(time_string, buffer);
 }
 
@@ -1135,7 +1135,7 @@ void simm_color(int index)
 
 void set_hourglass_cursor(double percent)
 {
-   int index, num_cursors = 11, new_cursor = 20; 
+   int index, num_cursors = 11, new_cursor = 20;
    GLshort junk = 0xfff;
 
    if (percent > 99.99)
@@ -1176,9 +1176,9 @@ FILE* simm_fopen (const char* name, const char* mode)
    if (mode && mode[0] == 'w')
       remove(name);
 #endif
-   
+
    errno = 0;
-   
+
    return fopen(name, mode);
 }
 
@@ -1194,9 +1194,9 @@ int simm_open (const char *name, int oflag, ...)
    if ((oflag & O_CREAT) && ((oflag & O_WRONLY) || (oflag & O_TRUNC)))
       remove(name);
 #endif
-   
+
    errno = 0;
-   
+
    return open(name, oflag);
 }
 
@@ -1206,7 +1206,7 @@ int simm_open (const char *name, int oflag, ...)
      through the list until the file is found or the list is exhausted.  If
      the file is found, it is opened using the specified 'mode', and the
      path+name of the file is returned in the buffer pointed to by 'pathList'.
-   
+
    NOTE:  this routine uses strtok() to parse the specified 'pathList'.
      strtok() will modify the pathList by inserting NUL characters.
 ------------------------------------------------------------------------------ */
@@ -1215,29 +1215,29 @@ FILE* simm_lookup_file (char* pathList, const char* fileName, const char* mode)
 #define PATH_SEPERATORS ",;"
 
    char* p;
-   
+
    if (pathList == NULL || fileName == NULL || mode == NULL)
       return NULL;
 
    for (p = strtok(pathList, PATH_SEPERATORS); p; p = strtok(NULL, PATH_SEPERATORS))
    {
       FILE* f;
-      
+
       char buf[CHARBUFFER] = "";
-      
+
       strcpy(buf, p);
-      
+
       if (buf[strlen(buf) - 1] != DIR_SEP_CHAR)
          strcat(buf, DIR_SEP_STRING);
-      
+
       strcat(buf, fileName);
-      
+
       f = simm_fopen(buf, mode);
-      
+
       if (f)
       {
          strcpy(pathList, buf); /* return path+file in 'pathList' */
-         
+
          return f;
       }
    }
@@ -1433,10 +1433,10 @@ void set_ortho2(double x1, double x2, double y1, double y2)
 ModelStruct* get_associated_model (int i)
 {
    ModelStruct* ms = NULL;
-   
+
    if (i < 0)
       return NULL;
-   
+
    if (root.window[i].type == SCENE)
    {
       // Assume that there is always at least one model in the scene
@@ -1446,7 +1446,7 @@ ModelStruct* get_associated_model (int i)
    else if (root.window[i].type == TOOL)
    {
       ToolStruct* tool = root.window[i].win_struct->tool;
-      
+
       if (tool && tool->query_handler)
          tool->query_handler(GET_TOOL_MODEL, &ms);
    }
@@ -1480,10 +1480,10 @@ ModelStruct* get_associated_model (int i)
 PlotStruct* get_associated_plot (int i)
 {
    PlotStruct* plot = NULL;
-   
+
    if (i < 0)
       return NULL;
-   
+
    if (root.window[i].type == PLOT)
    {
       plot = root.window[i].win_struct->plot;
@@ -1491,7 +1491,7 @@ PlotStruct* get_associated_plot (int i)
    else if (root.window[i].type == TOOL)
    {
       ToolStruct* tool = root.window[i].win_struct->tool;
-      
+
       if (tool && tool->query_handler)
          tool->query_handler(GET_TOOL_PLOT, &plot);
    }
@@ -1602,7 +1602,7 @@ public SBoolean is_absolute_path (const char* path)
 {
    if (path == NULL)
       return no;
-   
+
    while (path && *path && isspace(*path))
       path++;
 
@@ -1674,7 +1674,7 @@ void build_full_path(const char* prefPath, const char* filePath, char* fullPath)
 }
 
 /* -------------------------------------------------------------------------
-   get_filename_from_path - 
+   get_filename_from_path -
 ---------------------------------------------------------------------------- */
 const char* get_filename_from_path (const char* pathname)
 {
@@ -1716,7 +1716,7 @@ void get_pure_path_from_path (const char* fullPath, char** purePath)
 }
 
 /* -------------------------------------------------------------------------
-   upperstr - 
+   upperstr -
 ---------------------------------------------------------------------------- */
 public void upperstr (char* s)
 {
@@ -1725,7 +1725,7 @@ public void upperstr (char* s)
 }
 
 /* -------------------------------------------------------------------------
-   lowerstr - 
+   lowerstr -
 ---------------------------------------------------------------------------- */
 public void lowerstr (char* s)
 {
@@ -1737,7 +1737,7 @@ public void lowerstr (char* s)
    read_double - I've found that some implementations of scanf("%lf") do
       not read "NaN" correctly.  This routine reads any floating-point number
       including "NaN".    -- KMS 4/21/00
-   
+
    NOTE: this routine was originally static to analog.c.  In moving it here
       I had to replace the call to _read_token() with fscanf("%s").  I don't
       think this will have any side-effects.
@@ -1768,7 +1768,7 @@ public ReturnCode read_double (FILE* f, double* value)
    read_double_tab - I've found that some implementations of scanf("%lf") do
       not read "NaN" correctly.  This routine reads any floating-point number
       including "NaN".    -- KMS 4/21/00
-   
+
    This function is like read_double(), but is designed for reading tab-delimited
    numbers (e.g., from XLS files). In these files, two tabs in a row means that
    a number field is empty-- detect this, read just the first tab from the file,
@@ -2368,7 +2368,7 @@ static char simm_clipboard[CHARBUFFER];
 
 const char* get_clipboard_text(void)
 {
-    if (OpenClipboard(__mdiClientHwnd) && IsClipboardFormatAvailable(CF_TEXT)) 
+    if (OpenClipboard(__mdiClientHwnd) && IsClipboardFormatAvailable(CF_TEXT))
     {
         HANDLE clipboard_handle = GetClipboardData(CF_TEXT);
         const char* clip = (const char*)GlobalLock(clipboard_handle);
@@ -2383,32 +2383,32 @@ const char* get_clipboard_text(void)
 
 void set_clipboard_text(const char text[])
 {
-    if (OpenClipboard(__mdiClientHwnd) && IsClipboardFormatAvailable(CF_TEXT)) 
+    if (OpenClipboard(__mdiClientHwnd) && IsClipboardFormatAvailable(CF_TEXT))
     {
 #if 0
         strcpy(simm_clipboard, text);
-        SetClipboardData(CF_TEXT, simm_clipboard); 
+        SetClipboardData(CF_TEXT, simm_clipboard);
         CloseClipboard();
 #else
         // Allocate a global memory object for the text.
-        LPTSTR lptstrCopy; 
+        LPTSTR lptstrCopy;
         int len = strlen(text);
         HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, (len+1) * sizeof(TCHAR));
-        if (hglbCopy == NULL) 
-        { 
-            CloseClipboard(); 
-            return; 
-        } 
+        if (hglbCopy == NULL)
+        {
+            CloseClipboard();
+            return;
+        }
 
-        // Lock the handle and copy the text to the buffer. 
+        // Lock the handle and copy the text to the buffer.
         strcpy(simm_clipboard, text);
-        lptstrCopy = GlobalLock(hglbCopy); 
-        memcpy(lptstrCopy, simm_clipboard, len * sizeof(TCHAR)); 
+        lptstrCopy = GlobalLock(hglbCopy);
+        memcpy(lptstrCopy, simm_clipboard, len * sizeof(TCHAR));
         lptstrCopy[len] = (TCHAR) 0;
-        GlobalUnlock(hglbCopy); 
+        GlobalUnlock(hglbCopy);
 
-        // Place the handle on the clipboard. 
-        SetClipboardData(CF_TEXT, hglbCopy); 
+        // Place the handle on the clipboard.
+        SetClipboardData(CF_TEXT, hglbCopy);
 #endif
     }
 }

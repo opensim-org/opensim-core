@@ -36,10 +36,10 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
- * A class implementing a smooth function with a cubic spline as 
+ * A class implementing a smooth function with a cubic spline as
  * implemented in SIMM. Use a SIMM Spline if you want to reproduce
  * the behavior of a joint function created in SIMM.
  *

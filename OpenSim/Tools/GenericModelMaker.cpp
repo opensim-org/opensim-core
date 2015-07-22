@@ -103,7 +103,7 @@ void GenericModelMaker::setNull()
  */
 void GenericModelMaker::setupProperties()
 {
-    _fileNameProp.setComment("Model file (.osim) for the unscaled model."); 
+    _fileNameProp.setComment("Model file (.osim) for the unscaled model.");
     _fileNameProp.setName("model_file");
     _propertySet.append(&_fileNameProp);
 

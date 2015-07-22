@@ -34,7 +34,7 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * A class implementing a Function and a scale factor for the function's value.

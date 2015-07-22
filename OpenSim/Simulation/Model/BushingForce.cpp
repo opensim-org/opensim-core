@@ -48,15 +48,15 @@ BushingForce::BushingForce()
 }
 
 // Convenience constructor.
-BushingForce::BushingForce(const string&    body1Name, 
-                           const Vec3&      point1, 
+BushingForce::BushingForce(const string&    body1Name,
+                           const Vec3&      point1,
                            const Vec3&      orientation1,
-                           const string&    body2Name, 
-                           const Vec3&      point2, 
+                           const string&    body2Name,
+                           const Vec3&      point2,
                            const Vec3&      orientation2,
-                           const Vec3&      transStiffness, 
-                           const Vec3&      rotStiffness, 
-                           const Vec3&      transDamping, 
+                           const Vec3&      transStiffness,
+                           const Vec3&      rotStiffness,
+                           const Vec3&      transDamping,
                            const Vec3&      rotDamping)
 {
     setNull();
@@ -114,7 +114,7 @@ void BushingForce::extendConnectToModel(Model& aModel)
     // model. TODO: use Connectors
     const string& body1Name = get_body_1(); // error if unspecified
     const string& body2Name = get_body_2();
-    _body1 = 
+    _body1 =
         static_cast<const PhysicalFrame*>(&getModel().getComponent(body1Name));
     _body2 =
         static_cast<const PhysicalFrame*>(&getModel().getComponent(body2Name));
@@ -144,16 +144,16 @@ void BushingForce::extendAddToSystem(SimTK::MultibodySystem& system) const
     SimTK::Transform inb1(r1, locationInBody1);
     SimTK::Transform inb2(r2, locationInBody2);
 
-    Vec6 stiffness(rotStiffness[0], rotStiffness[1], rotStiffness[2], 
+    Vec6 stiffness(rotStiffness[0], rotStiffness[1], rotStiffness[2],
                    transStiffness[0], transStiffness[1], transStiffness[2]);
-    Vec6 damping(rotDamping[0], rotDamping[1], rotDamping[2], 
+    Vec6 damping(rotDamping[0], rotDamping[1], rotDamping[2],
                  transDamping[0], transDamping[1], transDamping[2]);
 
     // Now create a Simbody Force::LinearBushing
     SimTK::Force::LinearBushing simtkForce
        (_model->updForceSubsystem(), b1, inb1, b2, inb2, stiffness, damping);
-    
-    // Beyond the const Component get the index so we can access the 
+
+    // Beyond the const Component get the index so we can access the
     // SimTK::Force later.
     BushingForce* mutableThis = const_cast<BushingForce *>(this);
     mutableThis->_index = simtkForce.getForceIndex();
@@ -175,7 +175,7 @@ void BushingForce::setBody2ByName(const std::string& aBodyName)
 }
 
 /** Set the location and orientation (optional) for weld on body 1*/
-void BushingForce::setBody1BushingLocation(const Vec3& location, 
+void BushingForce::setBody1BushingLocation(const Vec3& location,
                                            const Vec3& orientation)
 {
     set_location_body_1(location);
@@ -183,7 +183,7 @@ void BushingForce::setBody1BushingLocation(const Vec3& location,
 }
 
 /** Set the location and orientation (optional) for weld on body 2*/
-void BushingForce::setBody2BushingLocation(const Vec3& location, 
+void BushingForce::setBody2BushingLocation(const Vec3& location,
                                            const Vec3& orientation)
 {
     set_location_body_2(location);
@@ -200,11 +200,11 @@ double BushingForce::computePotentialEnergy(const SimTK::State& s) const
 //=============================================================================
 // Reporting
 //=============================================================================
-/** 
+/**
  * Provide names of the quantities (column labels) of the force value(s) reported
- * 
+ *
  */
-OpenSim::Array<std::string> BushingForce::getRecordLabels() const 
+OpenSim::Array<std::string> BushingForce::getRecordLabels() const
 {
     const string& body1Name = get_body_1();
     const string& body2Name = get_body_2();
@@ -229,14 +229,14 @@ OpenSim::Array<std::string> BushingForce::getRecordLabels() const
  * Provide the value(s) to be reported that correspond to the labels
  */
 OpenSim::Array<double> BushingForce::
-getRecordValues(const SimTK::State& state) const 
+getRecordValues(const SimTK::State& state) const
 {
     const string& body1Name = get_body_1();
     const string& body2Name = get_body_2();
 
     OpenSim::Array<double> values(1);
 
-    const SimTK::Force::LinearBushing &simtkSpring = 
+    const SimTK::Force::LinearBushing &simtkSpring =
         (SimTK::Force::LinearBushing &)(_model->getForceSubsystem().getForce(_index));
 
     SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);

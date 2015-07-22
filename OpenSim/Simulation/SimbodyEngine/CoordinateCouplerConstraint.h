@@ -36,9 +36,9 @@ class Model;
 //=============================================================================
  /** @file
  * A class implementing a CoordinateCoupler Constraint.  The underlying SimTK
- * Constraint is a Constraint::CoordinateCoupler in Simbody, which relates 
+ * Constraint is a Constraint::CoordinateCoupler in Simbody, which relates
  * coordinates to one another at the position level (i.e. holonomic).
- * Relationship between coordinates is a specified by a function that equates 
+ * Relationship between coordinates is a specified by a function that equates
  * to zero only when the coordinates satisfy the constraint function.
  *
  * OpenSim::CoordinateCouplerConstraint assumes that there is one coordinate
@@ -63,16 +63,16 @@ protected:
         "to at least 2nd order. Constraint function must evaluate to zero when "
         "coordinates satisfy the constraint.");
 
-    OpenSim_DECLARE_LIST_PROPERTY(independent_coordinate_names, std::string, 
+    OpenSim_DECLARE_LIST_PROPERTY(independent_coordinate_names, std::string,
         "List of names of the right hand side (independent) coordinates. "
         "Note the conatraint function above, must be able to handle multiple "
         "coordinate values if more than one coordinate name is provided.");
 
-    OpenSim_DECLARE_PROPERTY(dependent_coordinate_name, std::string, 
+    OpenSim_DECLARE_PROPERTY(dependent_coordinate_name, std::string,
         "Name of the left-hand side (dependent) coordinate of the constraint "
         "coupling function.");
-    
-    OpenSim_DECLARE_PROPERTY(scale_factor, double, 
+
+    OpenSim_DECLARE_PROPERTY(scale_factor, double,
         "Scale factor for the coupling function.");
 
 //=============================================================================
@@ -84,30 +84,30 @@ public:
     virtual ~CoordinateCouplerConstraint();
 
     // GET AND SET
-    /** Access the list of names of the right hand side (independent) coordinates. 
-        Note the conatraint function, must be able to handle multiple 
+    /** Access the list of names of the right hand side (independent) coordinates.
+        Note the conatraint function, must be able to handle multiple
         coordinate values if more than one coordinate name is provided. */
-    void setIndependentCoordinateNames(const Array<std::string> &aCoordNames) 
+    void setIndependentCoordinateNames(const Array<std::string> &aCoordNames)
         { set_independent_coordinate_names(aCoordNames); }
-    const Array<std::string> getIndependentCoordinateNames() const { 
+    const Array<std::string> getIndependentCoordinateNames() const {
         Array<std::string> coords;
         for(int i = 0; i < getProperty_independent_coordinate_names().size(); i++) {
             coords.append(get_independent_coordinate_names(i));
         }
-        return coords; 
+        return coords;
     }
-    
+
     void setDependentCoordinateName(const std::string &aCoordName)
         { set_dependent_coordinate_name(aCoordName); }
-    
+
     const std::string& getDependentCoordinateName() const { return get_dependent_coordinate_name(); }
-    
+
     const Function& getFunction() const {
         const Property<Function>& function = getProperty_coupled_coordinates_function();
         if(function.empty()) {
             throw Exception("CoordinateCouplerConstraint::getFunction(): no Function is defined");
         }
-        return function.getValue(); 
+        return function.getValue();
     }
     void setFunction(const Function &aFunction)
         { set_coupled_coordinates_function(*aFunction.clone());}

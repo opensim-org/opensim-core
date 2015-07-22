@@ -50,7 +50,7 @@ class Storage;
  * A class implementing a set of parameters describing how to place markers
  * on a model (presumably after it has been scaled to fit a subject).
  *
- * MarkerPlacer is bundeled with ModelScaler and GenericModelMaker to 
+ * MarkerPlacer is bundeled with ModelScaler and GenericModelMaker to
  * form the ScaleTool
  *
  * @author Peter Loan
@@ -130,24 +130,24 @@ public:
     //--------------------------------------------------------------------------
 
     bool getApply() const { return _apply; }
-    void setApply(bool aApply) 
-    { 
-        _apply = aApply; 
-        _applyProp.setValueIsDefault(false); 
+    void setApply(bool aApply)
+    {
+        _apply = aApply;
+        _applyProp.setValueIsDefault(false);
     }
 
     const std::string &getStaticPoseFileName() const { return _markerFileName; }
-    void setStaticPoseFileName(const std::string &aFileName) 
+    void setStaticPoseFileName(const std::string &aFileName)
     {
         _markerFileName = aFileName;
         _markerFileNameProp.setValueIsDefault(false);
     }
 
    const Array<double> &getTimeRange() const { return _timeRange; }
-   void setTimeRange(const Array<double> &timeRange) 
+   void setTimeRange(const Array<double> &timeRange)
     {
-        _timeRange = timeRange; 
-        _timeRangeProp.setValueIsDefault(false); 
+        _timeRange = timeRange;
+        _timeRangeProp.setValueIsDefault(false);
     }
 
     IKTaskSet &getIKTaskSet() { return _ikTaskSet; }
@@ -158,7 +158,7 @@ public:
         _coordinateFileName = aCoordinateFileName;
         _coordinateFileNameProp.setValueIsDefault(false);
     }
-    
+
     double getMaxMarkerMovement() const { return _maxMarkerMovement; }
     void setMaxMarkerMovement(double aMaxMarkerMovement)
     {

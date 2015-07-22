@@ -34,7 +34,7 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * Class PropertyDblVec_ extends class Property.  It consists of a small
@@ -68,7 +68,7 @@ public:
         }
     /** Construct from name and value */
     PropertyDblVec_(const std::string &aName, const SimTK::Vec<M>& aVec)
-    :   Property_Deprecated(DblVec, aName) 
+    :   Property_Deprecated(DblVec, aName)
         { setAllowableListSize(M);
           _dblvec.setSize(M);
           setValue(aVec);
@@ -77,10 +77,10 @@ public:
     PropertyDblVec_(const std::string &aName, const Array<double> &anArray)
     :   Property_Deprecated(DblVec, aName)
         { setAllowableListSize(M);
-          _dblvec.setSize(M);    
+          _dblvec.setSize(M);
           setValue(anArray);
         }
-    
+
     // default destructor, copy constructor, copy assignment
 
     /* Return a copy of this property */
@@ -102,8 +102,8 @@ public:
 
     // VALUE
     /** set value of property from an equivalently sized Vec */
-    void setValue(const SimTK::Vec<M> &aVec) { 
-        SimTK::Vec<M>::updAs(&_dblvec[0])=aVec; 
+    void setValue(const SimTK::Vec<M> &aVec) {
+        SimTK::Vec<M>::updAs(&_dblvec[0])=aVec;
     }
     /** set value of this property from an array of doubles of equal or greater length */
     void setValue(const Array<double> &anArray) override {
@@ -116,7 +116,7 @@ public:
     /** get const (read-only) reference to the value */
     const SimTK::Vec<M>& getValueDblVec() const {return SimTK::Vec<M>::getAs(&_dblvec[0]); };
     /** set value from double array */ // to be used by the serialization code
-    void setValue(int aSize, const double aArray[]) override { 
+    void setValue(int aSize, const double aArray[]) override {
         assert(aSize == M);
         setValue(SimTK::Vec<M>::getAs(aArray));
     };

@@ -10,7 +10,7 @@
    All rights reserved.
    Portions of this source code are copyrighted by MusculoGraphics, Inc.
 
-   Description: 
+   Description:
 
    Routines:
 
@@ -1912,15 +1912,15 @@ void write_forparams(char filename[], ModelStruct* model)
    {
       if (model->segment[i].springFloor)
       {
-         fprintf(file,"spring_floor %s %s\t%s\n", 
-            model->segment[i].springFloor->name, 
+         fprintf(file,"spring_floor %s %s\t%s\n",
+            model->segment[i].springFloor->name,
             model->segment[i].springFloor->filename,
             model->segment[i].name);
       }
       for (j=0; j<model->segment[i].numSpringPoints; j++)
       {
          fprintf(file,"spring %s % 10.4f % 10.4f % 10.4f "
-            "%s % 10.4f % 12.4f % 12.4f % 12.4f % 12.4f % 12.4f % 12.4f\n", 
+            "%s % 10.4f % 12.4f % 12.4f % 12.4f % 12.4f % 12.4f % 12.4f\n",
             model->segment[i].name,
             model->segment[i].springPoint[j].point[0],
             model->segment[i].springPoint[j].point[1],
@@ -2034,9 +2034,9 @@ void write_forparams(char filename[], ModelStruct* model)
    fclose(file);
 
    sprintf(buffer, "Created: %s.", filename);
-   message(buffer, 0, DEFAULT_MESSAGE_X_OFFSET);   
+   message(buffer, 0, DEFAULT_MESSAGE_X_OFFSET);
 }
-         
+
 
 void write_dllparams(char filename[], ModelStruct* model)
 {
@@ -2101,7 +2101,7 @@ void write_dllparams(char filename[], ModelStruct* model)
    fclose(file);
 
    sprintf(buffer, "Created: %s.", filename);
-   message(buffer, 0, DEFAULT_MESSAGE_X_OFFSET);   
+   message(buffer, 0, DEFAULT_MESSAGE_X_OFFSET);
 }
 
 
@@ -2183,6 +2183,6 @@ void write_dllcontactparams(char filename[], ModelStruct* model)
    fclose(file);
 
    sprintf(buffer, "Created: %s.", filename);
-   message(buffer, 0, DEFAULT_MESSAGE_X_OFFSET);   
+   message(buffer, 0, DEFAULT_MESSAGE_X_OFFSET);
 }
-         
+

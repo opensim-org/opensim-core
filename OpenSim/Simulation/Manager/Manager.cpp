@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 #include <cstdio>
 #include "Manager.h"
@@ -71,7 +71,7 @@ Manager::~Manager()
  */
 Manager::Manager(Model& model):
        _model(&model),
-       _integ(NULL),               
+       _integ(NULL),
        _controllerSet(&model.updControllerSet() ),
        _stateStore(NULL),
        _performAnalyses(true),
@@ -95,7 +95,7 @@ Manager::Manager(Model& model):
  * @param aModel model to integrate.
  * @param integ integrator used to do the integration
  */
-Manager::Manager(Model& aModel, SimTK::Integrator& integ) {    
+Manager::Manager(Model& aModel, SimTK::Integrator& integ) {
     new(this) Manager(aModel);
     setIntegrator(integ);
 }
@@ -419,7 +419,7 @@ getTimeArray()
 }
 //_____________________________________________________________________________
 /**
- * Get the integration step (index) that occured prior to or at 
+ * Get the integration step (index) that occured prior to or at
  * a specified time.
  *
  * @param aTime Time of the integration step.
@@ -529,7 +529,7 @@ setModel(Model& aModel)
         // May need to issue a warning here that model was already set to avoid a leak.
     }
     _model = &aModel;
-    
+
     // STATES
     constructStates();
 
@@ -556,8 +556,8 @@ getIntegrator() const
  * Set the integrator.
  */
 void Manager::
-setIntegrator(SimTK::Integrator& integrator) 
-{   
+setIntegrator(SimTK::Integrator& integrator)
+{
     _integ = &integrator;
 }
 
@@ -659,7 +659,7 @@ setStateStorage(Storage& aStorage)
  * Get the storage buffer for the integration states.
  */
 Storage& Manager::
-getStateStorage() const 
+getStateStorage() const
 {
     if( _stateStore  == NULL )
         throw Exception("Manager::getStateStorage(): Storage is not set");
@@ -688,7 +688,7 @@ hasStateStorage() const
 bool Manager::
 integrate( SimTK::State& s, double dtFirst )
 {
-    
+
 
     int step = 0;
 
@@ -712,7 +712,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     dtPrev=dt;
 
     // CHECK SPECIFIED DT STEPPING
-    
+
     if(_specifiedDT) {
         if(_tArray.getSize()<=0) {
             string msg="IntegRKF.integrate: ERR- specified dt stepping not";
@@ -742,7 +742,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
 
     // If _system is has been set we should be integrating a CMC system
     // not the model's system.
-    const SimTK::System& sys = _system ? *_system 
+    const SimTK::System& sys = _system ? *_system
                                        : _model->getMultibodySystem();
     SimTK::TimeStepper ts(sys, *_integ);
 
@@ -753,17 +753,17 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     if( fixedStep ) {
         dt = getFixedStepSize(getTimeArrayStep(_ti));
     } else {
-        _integ->setReturnEveryInternalStep(true); 
+        _integ->setReturnEveryInternalStep(true);
     }
 
     if( s.getTime()+dt >= _tf ) dt = _tf - s.getTime();
-   
-    // We need to be at a valid stage to initialize the controls, but only when 
-    // we are integrating the complete model system, not the CMC system. This 
+
+    // We need to be at a valid stage to initialize the controls, but only when
+    // we are integrating the complete model system, not the CMC system. This
     // is very ugly and a cleaner solution is required- aseth
     if(_system == NULL)
-        sys.realize(s, SimTK::Stage::Velocity); // this is multibody system 
-    initialize(s, dt);  
+        sys.realize(s, SimTK::Stage::Velocity); // this is multibody system
+    initialize(s, dt);
 
     if( fixedStep){
         s.updTime() = time;
@@ -789,7 +789,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
               fixedStepSize = getNextTimeArrayTime( time ) - time;
              if( fixedStepSize + time  >= _tf )  fixedStepSize = _tf - time;
              _integ->setFixedStepSize( fixedStepSize );
-             stepToTime = time + fixedStepSize; 
+             stepToTime = time + fixedStepSize;
         }
 
         // stepTo() does not return if it fails. However, the final step
@@ -814,7 +814,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
         }
         else
             halt();
-        
+
         time = _integ->getState().getTime();
         // CHECK FOR INTERRUPT
         if(checkHalt()) break;
@@ -831,32 +831,32 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
 /**
  * return the step size when the integrator is taking fixed
  * step sizes
- * 
+ *
  * @param tArrayStep Step number
  */
 double Manager::getFixedStepSize(int tArrayStep) const {
-    if( _constantDT ) 
+    if( _constantDT )
         return( _dt );
-    else { 
-        if( tArrayStep >= _dtArray.getSize() ) 
+    else {
+        if( tArrayStep >= _dtArray.getSize() )
              return( _dtArray[ _dtArray.getSize()-1 ] );
-        else 
+        else
             return(_dtArray[tArrayStep]);
     }
 }
 //_____________________________________________________________________________
 /**
- * initialize storages and analyses 
- * 
+ * initialize storages and analyses
+ *
  * @param s system state before integration
  */
 void Manager::initialize(SimTK::State& s, double dt )
 {
     // skip initailizations for CMC's actutator system
-    if( _writeToStorage && _performAnalyses ) { 
+    if( _writeToStorage && _performAnalyses ) {
 
         double tReal = s.getTime();
-    
+
         // STORE STARTING CONTROLS
         if (_model->isControlled()){
             _controllerSet->setModel(*_model);
@@ -872,7 +872,7 @@ void Manager::initialize(SimTK::State& s, double dt )
             }
         }
 
-        // ANALYSES 
+        // ANALYSES
         AnalysisSet& analysisSet = _model->updAnalysisSet();
         analysisSet.begin(s);
     }
@@ -882,13 +882,13 @@ void Manager::initialize(SimTK::State& s, double dt )
 //_____________________________________________________________________________
 /**
  * finalize storages and analyses
- * 
+ *
  * @param s system state before integration
  */
 void Manager::finalize(SimTK::State& s )
 {
-        // ANALYSES 
-    if(  _performAnalyses ) { 
+        // ANALYSES
+    if(  _performAnalyses ) {
         AnalysisSet& analysisSet = _model->updAnalysisSet();
         analysisSet.end(s);
     }

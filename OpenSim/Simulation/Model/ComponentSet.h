@@ -37,9 +37,9 @@ class Model;
  * @authors Michael Sherman
  */
 
-class OSIMSIMULATION_API ComponentSet 
+class OSIMSIMULATION_API ComponentSet
 :   public ModelComponentSet<ModelComponent> {
-OpenSim_DECLARE_CONCRETE_OBJECT(ComponentSet, 
+OpenSim_DECLARE_CONCRETE_OBJECT(ComponentSet,
                                 ModelComponentSet<ModelComponent>);
 
 public:
@@ -47,7 +47,7 @@ public:
 
     explicit ComponentSet(Model& model) : Super(model) {}
 
-    ComponentSet(Model& model, const std::string &aFileName, 
+    ComponentSet(Model& model, const std::string &aFileName,
                  bool aUpdateFromXMLNode=true)
     :   Super(model, aFileName, aUpdateFromXMLNode) {}
 

@@ -74,7 +74,7 @@ void testAssembleModelWithConstraints(string modelFile)
     Model model(newModelFile);
 
     const CoordinateSet &coords = model.getCoordinateSet();
-    
+
     cout << "*********** Coordinates before initSystem ******************** " << endl;
     for(int i=0; i< coords.getSize(); i++) {
         cout << "Coordinate " << coords[i].getName() << " default value = " << coords[i].getDefaultValue() << endl;
@@ -82,7 +82,7 @@ void testAssembleModelWithConstraints(string modelFile)
 
     //model.setUseVisualizer(true);
     model.set_assembly_accuracy(accuracy);
-    
+
     State state = model.initSystem();
     model.equilibrateMuscles(state);
 
@@ -94,7 +94,7 @@ void testAssembleModelWithConstraints(string modelFile)
     // Initial coordinates after initial assembly
     Vector q0 = state.getQ();
 
-    // do assembly again- 
+    // do assembly again-
     model.assemble(state);
 
     Vector q0_1 = state.getQ();
@@ -146,7 +146,7 @@ void testAssembleModelWithConstraints(string modelFile)
     Vector_<SpatialVec> constraintBodyForces(constraints.getSize());
     Vector mobilityForces(0);
     double totalYforce = 0;
-    
+
     for(int i=0; i< constraints.getSize(); i++) {
         constraints[i].calcConstraintForces(state, constraintBodyForces, mobilityForces);
         cout << "Constraint " << i << ":  " << constraints[i].getName();
@@ -154,7 +154,7 @@ void testAssembleModelWithConstraints(string modelFile)
         //constraintBodyForces.dump("Constraint Body Forces");
         totalYforce += constraintBodyForces(1)(1)(1);
     }
-    
+
     cout << "Total Vertical Constraint Force:" << totalYforce << " N " << endl;
 
     double mass = model.getTotalMass(state);
@@ -207,7 +207,7 @@ void testAssembleModelWithConstraints(string modelFile)
     Vector q1ErrVec = (q1_1 - q1);
     //q1ErrVec.dump("Post simulation: q1_assembled - q1_sim");
     double q1Err = q1ErrVec.norm();
-    
+
     cout << "Norm change in q after simulation assembly: " << q1Err << endl;
     ASSERT_EQUAL(0.0, q1Err/q1.norm(), accuracy);
 
@@ -265,7 +265,7 @@ void testAssemblySatisfiesConstraints(string modelFile)
     const CoordinateSet &modelcoords = model.getCoordinateSet();
     cout << "*********** Coordinate defaults (before initSystem) ******************** " << endl;
     for(int i=0; i< modelcoords.getSize(); i++) {
-        cout << "Coordinate " << modelcoords[i].getName() 
+        cout << "Coordinate " << modelcoords[i].getName()
             << " default value = " << modelcoords[i].getDefaultValue() << endl
             << " is_free to_satisfy_constraints = " << modelcoords[i].get_is_free_to_satisfy_constraints()
             << endl;
@@ -277,26 +277,26 @@ void testAssemblySatisfiesConstraints(string modelFile)
     const CoordinateSet &coords = model.getCoordinateSet();
     cout << "***** Coordinate values (after initSystem including Assembly ********* " << endl;
     for(int i=0; i< coords.getSize(); i++) {
-        cout << "Coordinate " << coords[i].getName() << " value = " 
+        cout << "Coordinate " << coords[i].getName() << " value = "
             << coords[i].getValue(state) << endl;
     }
 
     double cerr = SimTK::Infinity;
-    double kneeAngle = -Pi/3; 
+    double kneeAngle = -Pi/3;
 
     int N = 100;
     double lower = -2*Pi/3, upper = Pi/18;
     double delta = (upper-lower)/N;
 
     double qerr = 0;
-    
+
     for(int i=0; i<N; ++i){
         kneeAngle = upper-i*delta;
         coords[0].setValue(state, kneeAngle, true);
         //model.getVisualizer().show(state);
         cerr = calcLigamentLengthError(state, model);
         qerr = coords[0].getValue(state)-kneeAngle;
-        //cout << "Assembly errors:: cerr = " << cerr << " m,  qerr = " 
+        //cout << "Assembly errors:: cerr = " << cerr << " m,  qerr = "
         //  << convertRadiansToDegrees(qerr) << " degrees" << endl;
         ASSERT_EQUAL(0.0, cerr, model.get_assembly_accuracy(),
             __FILE__, __LINE__, "Constraints NOT satisfied to within assembly accuracy");
@@ -310,7 +310,7 @@ double calcLigamentLengthError(const SimTK::State &s, const Model &model)
 
     ConstantDistanceConstraint* constraint =
         dynamic_cast<ConstantDistanceConstraint*>(&model.getConstraintSet()[0]);
-    
+
     if(constraint){
         Vec3 p1inB1, p2inB2, p1inG, p2inG;
         p1inB1 = constraint->get_location_body_1();

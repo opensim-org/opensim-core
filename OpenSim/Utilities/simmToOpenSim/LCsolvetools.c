@@ -97,13 +97,13 @@ void calculateLCResids(int numResid, int numQ, double q[], double residuals[],
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
 static void markAffectedLoopsAndConstraints(LCStruct *info, GeneralizedCoord* gencoord);
 static void markLoopsAndConstraintsAffected(LCStruct *info, int jnt);
-static void calculateGenCoordResiduals(void *data, int numQ, double q[], int numResid, double resid[], 
+static void calculateGenCoordResiduals(void *data, int numQ, double q[], int numResid, double resid[],
                                        int startIndex, int endIndex, double *weight, int *iflag);
-static void calculateLoopResiduals(void *data, int numQ, double q[], int numResid, double resid[], 
+static void calculateLoopResiduals(void *data, int numQ, double q[], int numResid, double resid[],
                                    int startIndex, int endIndex, double *weight, int *iflag);
 static void orderQs(ModelStruct *ms, int *nq, GeneralizedCoord* gc_list[], GeneralizedCoord* controlled_gc);
 static void evaluateLCSolution(LCStruct *info, int nq, double q[], int nres, double resid[]);
-static void updateModel(ModelStruct *ms, LCStruct *solveInfo, int nq, double q[], 
+static void updateModel(ModelStruct *ms, LCStruct *solveInfo, int nq, double q[],
                         double saved_q[], int nres, double resid[], SBoolean *changed);
 static void displayLCMessages(ModelStruct *ms, LoopStatus loopStatus, ConstraintStatus constraintStatus);
 static double calculateRMS(int n, double fvec[]);
@@ -165,8 +165,8 @@ void recalc_default_loops_and_constraints(ModelStruct *ms)
  * Solve all loops and constraints at once.  If enforce_constraints = yes,
  * solve constraints (if not, do not).  Return the status of loops and constraints
  */
-void solveAllLoopsAndConstraints(ModelStruct *ms, LoopStatus *loopStatus, 
-                                 ConstraintStatus *constraintStatus, 
+void solveAllLoopsAndConstraints(ModelStruct *ms, LoopStatus *loopStatus,
+                                 ConstraintStatus *constraintStatus,
                                  SBoolean enforce_constraints)
 {
    int i, j, nq, nres, index;
@@ -219,15 +219,15 @@ void solveAllLoopsAndConstraints(ModelStruct *ms, LoopStatus *loopStatus,
    numConstraintQs = 0;
    numConstraintResids = 0;
 
-   /* Calculate the total number of qs and residuals in loops. */ 
+   /* Calculate the total number of qs and residuals in loops. */
    for (i = 0; i < ms->numclosedloops; i++)
    {
       numLoopQs += ms->loop[i].num_qs;
       numLoopResids += ms->loop[i].num_resids;
       solveInfo->loopInfo->loopUsed[i] = yes;
-   }  
+   }
 
-   /* Calculate the total number of qs and residuals in constraints. */ 
+   /* Calculate the total number of qs and residuals in constraints. */
    for (i = 0; i < ms->num_constraint_objects; i++)
    {
       solveInfo->constraintInfo->consUsed[i] = no;
@@ -239,7 +239,7 @@ void solveAllLoopsAndConstraints(ModelStruct *ms, LoopStatus *loopStatus,
          solveInfo->constraintInfo->consUsed[i] = yes;
       }
    }
-   
+
    if ((numLoopQs == 0) && (numConstraintQs == 0))
    {
       goto cleanup;
@@ -248,7 +248,7 @@ void solveAllLoopsAndConstraints(ModelStruct *ms, LoopStatus *loopStatus,
    /* allocate space for list of gencoords in loops and constraints. */
    solveInfo->loopInfo->gencoord_list = (GeneralizedCoord**)simm_malloc(numLoopQs * sizeof(GeneralizedCoord*));
    solveInfo->constraintInfo->gencoord_list = (GeneralizedCoord**)simm_malloc(numConstraintQs * sizeof(GeneralizedCoord*));
-   
+
    /* Make a list of all loop gencoords used. */
    index = 0;
    for (i = 0; i < ms->numclosedloops; i++)
@@ -275,9 +275,9 @@ void solveAllLoopsAndConstraints(ModelStruct *ms, LoopStatus *loopStatus,
    }
 
    /* Rearrange the list of gencoords so each gencoord appears only once.
-    * Locked gencoords are not included in the list.  
+    * Locked gencoords are not included in the list.
     * Update the number of Qs and residuals (add one residual for each Q).
-    */   
+    */
    orderQs(ms, &numLoopQs, solveInfo->loopInfo->gencoord_list, NULL);
    orderQs(ms, &numConstraintQs, solveInfo->constraintInfo->gencoord_list, NULL);
 
@@ -291,9 +291,9 @@ void solveAllLoopsAndConstraints(ModelStruct *ms, LoopStatus *loopStatus,
       solveInfo->gencoord_list[i] = solveInfo->constraintInfo->gencoord_list[i-numLoopQs];
 
    /* Rearrange the list of gencoords so each gencoord appears only once.
-    * Locked gencoords are not included in the list.  
+    * Locked gencoords are not included in the list.
     * Update the number of Qs and residuals (add one residual for each Q).
-    */   
+    */
    orderQs(ms, &nq, solveInfo->gencoord_list, NULL);
    solveInfo->numQs = nq;
 //if nq or nres == 0???
@@ -310,7 +310,7 @@ void solveAllLoopsAndConstraints(ModelStruct *ms, LoopStatus *loopStatus,
    q = (double *)simm_malloc(nq * sizeof(double));
    saved_q = (double *)simm_malloc(nq * sizeof(double));
    resid = (double *)simm_malloc(nres * sizeof(double));
-   
+
    /* Copy gencoord values into q array, and save the original gencoord values. */
    for (i = 0; i < nq; i++)
       q[i] = saved_q[i] = solveInfo->gencoord_list[i]->value;
@@ -349,10 +349,10 @@ cleanup:
          *loopStatus = largeResidinLoop;
          *constraintStatus = gcOutOfRange;
       }
-      
+
       ms->loopsOK = solveInfo->loopClosed;
       ms->constraintsOK = solveInfo->constraintClosed;
-      
+
       FREE_IFNOTNULL(solveInfo->loopInfo->gencoord_list);
       FREE_IFNOTNULL(solveInfo->loopInfo->loopUsed);
       FREE_IFNOTNULL(solveInfo->loopInfo);
@@ -378,7 +378,7 @@ SBoolean solveLCAffectedByGC(ModelStruct *ms, GeneralizedCoord* controlled_gc, d
    LCStruct *solveInfo;
    ReturnCode rc;
    SBoolean validSolution = yes;
-    
+
    /* if there are no loops or constraints to solve */
    if ((!loopsToSolve(ms)) && (!constraintsToSolve(ms)))
       return validSolution;
@@ -423,8 +423,8 @@ SBoolean solveLCAffectedByGC(ModelStruct *ms, GeneralizedCoord* controlled_gc, d
 
    /* mark all loops that are affected by a change in the controlled gencoord */
    markAffectedLoopsAndConstraints(solveInfo, controlled_gc);
-   
-   /* Calculate the total number of qs and residuals in loops. */ 
+
+   /* Calculate the total number of qs and residuals in loops. */
    for (i = 0; i < ms->numclosedloops; i++)
    {
       if (solveInfo->loopInfo->loopUsed[i])
@@ -432,9 +432,9 @@ SBoolean solveLCAffectedByGC(ModelStruct *ms, GeneralizedCoord* controlled_gc, d
          numLoopQs += ms->loop[i].num_qs;
          numLoopResids += ms->loop[i].num_resids;
       }
-   }  
+   }
 
-   /* Calculate the total number of qs and residuals in constraints. */ 
+   /* Calculate the total number of qs and residuals in constraints. */
    for (i = 0; i < ms->num_constraint_objects; i++)
    {
       if (solveInfo->constraintInfo->consUsed[i])
@@ -443,11 +443,11 @@ SBoolean solveLCAffectedByGC(ModelStruct *ms, GeneralizedCoord* controlled_gc, d
          numConstraintResids += ms->constraintobj[i].numPoints;
       }
    }
-   
+
    /* allocate space for list of gencoords in loops and constraints. */
    solveInfo->loopInfo->gencoord_list = (GeneralizedCoord**)simm_malloc(numLoopQs * sizeof(GeneralizedCoord*));
    solveInfo->constraintInfo->gencoord_list = (GeneralizedCoord**)simm_malloc(numConstraintQs * sizeof(GeneralizedCoord*));
-   
+
    /* Make a list of all loop gencoords used. */
    index = 0;
    for (i = 0; i < ms->numclosedloops; i++)
@@ -490,9 +490,9 @@ SBoolean solveLCAffectedByGC(ModelStruct *ms, GeneralizedCoord* controlled_gc, d
       solveInfo->gencoord_list[i] = solveInfo->constraintInfo->gencoord_list[i-numLoopQs];
 
    /* Rearrange the list of gencoords so each gencoord appears only once.
-    * Locked gencoords are not included in the list.  
+    * Locked gencoords are not included in the list.
     * Update the number of Qs and residuals (add one residual for each Q).
-    */   
+    */
    orderQs(ms, &nq, solveInfo->gencoord_list, NULL);
    solveInfo->numQs = nq;
 
@@ -514,7 +514,7 @@ SBoolean solveLCAffectedByGC(ModelStruct *ms, GeneralizedCoord* controlled_gc, d
    q = (double *)simm_malloc(nq * sizeof(double));
    saved_q = (double *)simm_malloc(nq * sizeof(double));
    resid = (double *)simm_malloc(nres * sizeof(double));
-   
+
    /* Copy gencoord values into q array, and save the original gencoord values. */
    for (i = 0; i < nq; i++)
       q[i] = saved_q[i] = solveInfo->gencoord_list[i]->value;
@@ -571,7 +571,7 @@ SBoolean solveLCAffectedByGC(ModelStruct *ms, GeneralizedCoord* controlled_gc, d
             //        ms->gencoord[solveInfo->gencoord_list[i]].value = saved_q[i];
             set_gencoord_value(ms, solveInfo->gencoord_list[i], saved_q[i], no);
          }
-         
+
       }
       else
       {
@@ -587,7 +587,7 @@ SBoolean solveLCAffectedByGC(ModelStruct *ms, GeneralizedCoord* controlled_gc, d
             q[i] = saved_q[i];
       }
    }
-   
+
    /* If the controlled q is clamped and the new solution is out of range,
     * don't reset any q's return with original values.
     */
@@ -679,8 +679,8 @@ SBoolean solveLCAffectedByJNT(ModelStruct *ms, int joint, LoopStatus *loopStatus
 
     /* mark all loops that are affected by a change in the controlled gencoord */
    markLoopsAndConstraintsAffected(solveInfo, joint);
-   
-   /* Calculate the total number of qs and residuals in loops. */ 
+
+   /* Calculate the total number of qs and residuals in loops. */
    for (i = 0; i < ms->numclosedloops; i++)
    {
       if (solveInfo->loopInfo->loopUsed[i])
@@ -688,9 +688,9 @@ SBoolean solveLCAffectedByJNT(ModelStruct *ms, int joint, LoopStatus *loopStatus
          numLoopQs += ms->loop[i].num_qs;
          numLoopResids += ms->loop[i].num_resids;
       }
-   }  
+   }
 
-   /* Calculate the total number of qs and residuals in constraints. */ 
+   /* Calculate the total number of qs and residuals in constraints. */
    for (i = 0; i < ms->num_constraint_objects; i++)
    {
       if (solveInfo->constraintInfo->consUsed[i])
@@ -699,11 +699,11 @@ SBoolean solveLCAffectedByJNT(ModelStruct *ms, int joint, LoopStatus *loopStatus
          numConstraintResids += ms->constraintobj[i].numPoints;
       }
    }
-   
+
    /* allocate space for list of gencoords in loops and constraints. */
    solveInfo->loopInfo->gencoord_list = (GeneralizedCoord**)simm_malloc(numLoopQs * sizeof(GeneralizedCoord*));
    solveInfo->constraintInfo->gencoord_list = (GeneralizedCoord**)simm_malloc(numConstraintQs * sizeof(GeneralizedCoord*));
-   
+
    /* Make a list of all loop gencoords used. */
    index = 0;
    for (i = 0; i < ms->numclosedloops; i++)
@@ -745,9 +745,9 @@ SBoolean solveLCAffectedByJNT(ModelStruct *ms, int joint, LoopStatus *loopStatus
       solveInfo->gencoord_list[i] = solveInfo->constraintInfo->gencoord_list[i-numLoopQs];
 
    /* Rearrange the list of gencoords so each gencoord appears only once.
-    * Locked gencoords are not included in the list.  
+    * Locked gencoords are not included in the list.
     * Update the number of Qs and residuals (add one residual for each Q).
-    */   
+    */
    orderQs(ms, &nq, solveInfo->gencoord_list, NULL);
    solveInfo->numQs = nq;
 
@@ -780,7 +780,7 @@ SBoolean solveLCAffectedByJNT(ModelStruct *ms, int joint, LoopStatus *loopStatus
    q = (double *)simm_malloc(nq * sizeof(double));
    saved_q = (double *)simm_malloc(nq * sizeof(double));
    resid = (double *)simm_malloc(nres * sizeof(double));
-   
+
    /* Copy gencoord values into q array, and save the original gencoord values. */
    for (i = 0; i < nq; i++)
       q[i] = saved_q[i] = solveInfo->gencoord_list[i]->value;
@@ -799,7 +799,7 @@ SBoolean solveLCAffectedByJNT(ModelStruct *ms, int joint, LoopStatus *loopStatus
    }
    evaluateLCSolution(solveInfo, nq, q, nres, resid);
    updateModel(solveInfo->model, solveInfo, nq, q, saved_q, nres, resid, &changed);
-   
+
    if (solveInfo->loopClosed == no)
       *loopStatus = loopBroken;
    if (solveInfo->constraintClosed == no)
@@ -816,7 +816,7 @@ SBoolean solveLCAffectedByJNT(ModelStruct *ms, int joint, LoopStatus *loopStatus
       *loopStatus = largeResidinLoop;
       *constraintStatus = gcOutOfRange;
    }
-  
+
    if (solveInfo->loopClosed == yes && solveInfo->constraintClosed == yes)
       validSolution = yes;
    else
@@ -841,8 +841,8 @@ SBoolean solveLCAffectedByJNT(ModelStruct *ms, int joint, LoopStatus *loopStatus
  * Solve all loops and constraints at once.  If enforce_constraints = yes,
  * solve constraints (if not, do not).  Return the status of loops and constraints
  */
-void evaluateLoopsAndConstraintsInCurrentConfiguration(ModelStruct *ms, LoopStatus *loopStatus, 
-                                 ConstraintStatus *constraintStatus, 
+void evaluateLoopsAndConstraintsInCurrentConfiguration(ModelStruct *ms, LoopStatus *loopStatus,
+                                 ConstraintStatus *constraintStatus,
                                  SBoolean enforce_constraints)
 {
    int i, j, nq, nres, index;
@@ -854,7 +854,7 @@ void evaluateLoopsAndConstraintsInCurrentConfiguration(ModelStruct *ms, LoopStat
 
    if ((!loopsToSolve(ms)) && (!constraintsToSolve(ms)))
       goto cleanup;
-   
+
    solveInfo = (LCStruct *)simm_malloc(sizeof(LCStruct));
    solveInfo->model = ms;
    solveInfo->first_iter = yes;
@@ -892,15 +892,15 @@ void evaluateLoopsAndConstraintsInCurrentConfiguration(ModelStruct *ms, LoopStat
    numConstraintQs = 0;
    numConstraintResids = 0;
 
-   /* Calculate the total number of qs and residuals in loops. */ 
+   /* Calculate the total number of qs and residuals in loops. */
    for (i = 0; i < ms->numclosedloops; i++)
    {
       numLoopQs += ms->loop[i].num_qs;
       numLoopResids += ms->loop[i].num_resids;
       solveInfo->loopInfo->loopUsed[i] = yes;
-   }  
+   }
 
-   /* Calculate the total number of qs and residuals in constraints. */ 
+   /* Calculate the total number of qs and residuals in constraints. */
    for (i = 0; i < ms->num_constraint_objects; i++)
    {
       solveInfo->constraintInfo->consUsed[i] = no;
@@ -912,7 +912,7 @@ void evaluateLoopsAndConstraintsInCurrentConfiguration(ModelStruct *ms, LoopStat
          solveInfo->constraintInfo->consUsed[i] = yes;
       }
    }
-   
+
    if ((numLoopQs == 0) && (numConstraintQs == 0))
    {
       goto cleanup;
@@ -921,7 +921,7 @@ void evaluateLoopsAndConstraintsInCurrentConfiguration(ModelStruct *ms, LoopStat
    /* allocate space for list of gencoords in loops and constraints. */
    solveInfo->loopInfo->gencoord_list = (GeneralizedCoord**)simm_malloc(numLoopQs * sizeof(GeneralizedCoord*));
    solveInfo->constraintInfo->gencoord_list = (GeneralizedCoord**)simm_malloc(numConstraintQs * sizeof(GeneralizedCoord*));
-   
+
    /* Make a list of all loop gencoords used. */
    index = 0;
    for (i = 0; i < ms->numclosedloops; i++)
@@ -948,9 +948,9 @@ void evaluateLoopsAndConstraintsInCurrentConfiguration(ModelStruct *ms, LoopStat
    }
 
    /* Rearrange the list of gencoords so each gencoord appears only once.
-    * Locked gencoords are not included in the list.  
+    * Locked gencoords are not included in the list.
     * Update the number of Qs and residuals (add one residual for each Q).
-    */   
+    */
    orderQs(ms, &numLoopQs, solveInfo->loopInfo->gencoord_list, NULL);
    orderQs(ms, &numConstraintQs, solveInfo->constraintInfo->gencoord_list, NULL);
 
@@ -964,9 +964,9 @@ void evaluateLoopsAndConstraintsInCurrentConfiguration(ModelStruct *ms, LoopStat
       solveInfo->gencoord_list[i] = solveInfo->constraintInfo->gencoord_list[i-numLoopQs];
 
    /* Rearrange the list of gencoords so each gencoord appears only once.
-    * Locked gencoords are not included in the list.  
+    * Locked gencoords are not included in the list.
     * Update the number of Qs and residuals (add one residual for each Q).
-    */   
+    */
    orderQs(ms, &nq, solveInfo->gencoord_list, NULL);
    solveInfo->numQs = nq;
 //if nq or nres == 0???
@@ -983,7 +983,7 @@ void evaluateLoopsAndConstraintsInCurrentConfiguration(ModelStruct *ms, LoopStat
    q = (double *)simm_malloc(nq * sizeof(double));
    saved_q = (double *)simm_malloc(nq * sizeof(double));
    resid = (double *)simm_malloc(nres * sizeof(double));
-   
+
    /* Copy gencoord values into q array, and save the original gencoord values. */
    for (i = 0; i < nq; i++)
       q[i] = saved_q[i] = solveInfo->gencoord_list[i]->value;
@@ -1015,10 +1015,10 @@ cleanup:
          *loopStatus = largeResidinLoop;
          *constraintStatus = gcOutOfRange;
       }
-      
+
       ms->loopsOK = solveInfo->loopClosed;
       ms->constraintsOK = solveInfo->constraintClosed;
-      
+
       FREE_IFNOTNULL(solveInfo->loopInfo->gencoord_list);
       FREE_IFNOTNULL(solveInfo->loopInfo->loopUsed);
       FREE_IFNOTNULL(solveInfo->loopInfo);
@@ -1036,25 +1036,25 @@ cleanup:
 
 /* Set up the required work arrays and variables and call lmdif
  * to solve the least squares problem using the Levenberg-Marquart theory.
- * q: solution vector (initially contains estimate of soln in internal units) (x) 
+ * q: solution vector (initially contains estimate of soln in internal units) (x)
  * fvec: functions evaluated at output q (final residuals)
- * num_resid: number of functions (m) (nres) 
+ * num_resid: number of functions (m) (nres)
  * nq: number of variables (n) (ndofinp)
  */
-static int LeastSquaresSolver(LCStruct *solveInfo, int numQ, double q[], int numResid, 
+static int LeastSquaresSolver(LCStruct *solveInfo, int numQ, double q[], int numResid,
                                   double resid[])
-{   
+{
    int info, callsToCalcResid, ldfjac = numResid;
 
    /* solution parameters */
    int mode = 1, nprint = 0, max_iter = 500;
    double ftol = 1e-4, xtol = 1e-4, gtol = 0.0;
    double epsfcn = 0.0, step_factor = 0.2;
-   
+
    /* work arrays */
-   int *ipvt;  
+   int *ipvt;
    double *diag, *qtf, *wa1, *wa2, *wa3, *wa4, *fjac;
-      
+
    /* allocate space for necessary arrays */
    ipvt = (int *)simm_malloc(numQ * sizeof(int));
    diag = (double *)simm_malloc(numQ * sizeof(double));
@@ -1072,7 +1072,7 @@ static int LeastSquaresSolver(LCStruct *solveInfo, int numQ, double q[], int num
     */
    if (numResid < numQ)
    {
-      (void)sprintf(errorbuffer, 
+      (void)sprintf(errorbuffer,
          "Least Squares Error: num residuals (%d) < num q (%d)\n", numResid, numQ);
       error(none, errorbuffer);
    }
@@ -1170,7 +1170,7 @@ static void evaluateLCSolution(LCStruct *info, int nq, double q[], int nres, dou
    rms_total = calculateRMS(info->numLoopResids, loop_resid);
    if (rms_total > info->loopInfo->ms->loop_tolerance)
       info->loopClosed = no;
-   
+
    /* evaluate the constraint solution */
    index = 0;
    good = yes;
@@ -1201,14 +1201,14 @@ static void evaluateLCSolution(LCStruct *info, int nq, double q[], int nres, dou
    for (i = 0; i < nq; i++)
       if (resid[i] >= GENCOORD_TOLERANCE)
          info->largeGenCoordResids = yes;
-   
+
    FREE_IFNOTNULL(loop_resid);
    FREE_IFNOTNULL(cons_resid);
    FREE_IFNOTNULL(q_resid);
 
 }
 
-static void updateModel(ModelStruct *ms, LCStruct *solveInfo, int nq, double q[], 
+static void updateModel(ModelStruct *ms, LCStruct *solveInfo, int nq, double q[],
                  double saved_q[], int nres, double resid[], SBoolean *changed)
 {
    int i;
@@ -1255,7 +1255,7 @@ static void updateModel(ModelStruct *ms, LCStruct *solveInfo, int nq, double q[]
          solveInfo->gencoord_list[i]->value = saved_q[i];
       }
    }
-   /* set gencoords to new values.  Set the flag so loops and constraints are 
+   /* set gencoords to new values.  Set the flag so loops and constraints are
     * not solved to prevent recursion. */
    for (i = 0; i < nq; i++)
    {
@@ -1287,7 +1287,7 @@ static void displayLCMessages(ModelStruct *ms, LoopStatus loopStatus, Constraint
       glutMessageBox(GLUT_OK, 1, GLUT_ICON_INFORMATION,
          "LOAD MODEL: Gencoord Out of Range", gencoordResidualErrorMsg);
       ms->GEFuncOK = yes;
-      
+
       /* store new values as defaults (even though loops not closed) */
       for (i = 0; i < ms->numgencoords; i++)
          ms->gencoord[i]->default_value = ms->gencoord[i]->value;
@@ -1390,7 +1390,7 @@ static void markAffectedLoopsAndConstraints(LCStruct *info, GeneralizedCoord* ge
          }
       }
 
-      
+
       /* see if gencoords are used in any other constraints */
       for (i = 0; i < info->model->num_constraint_objects; i++)
       {
@@ -1531,7 +1531,7 @@ static void markLoopsAndConstraintsAffected(LCStruct *info, int jnt)
          }
       }
 
-      
+
       /* see if gencoords are used in any other constraints */
       for (i = 0; i < info->model->num_constraint_objects; i++)
       {
@@ -1602,7 +1602,7 @@ static void calculateGenCoordResiduals(void *data, int numQ, double q[], int num
 
    /* Update the gencoord records in the model structure to the new values stored in
     * the q array (using setGencoordValue2).  Set the values and invalidate the transform matrices so that these
-    * will be recalculated when necessary.  If a clamped gencoord is out of range, 
+    * will be recalculated when necessary.  If a clamped gencoord is out of range,
     * increase the weight so the loop residuals will be increased.
     */
    for (i = 0; i < numQ; i++)
@@ -1618,7 +1618,7 @@ static void calculateGenCoordResiduals(void *data, int numQ, double q[], int num
       rangeEnd = gc->range.end;
       toMax = rangeEnd - q[i];
       toMin = q[i] - rangeStart;
-      
+
       if (gc->clamped == yes)
       {
          if (gc->type == rotation_gencoord)
@@ -1631,7 +1631,7 @@ static void calculateGenCoordResiduals(void *data, int numQ, double q[], int num
             {
                rangeError = rangeStart - q[i] + CLAMPING_TOLERANCE;
             }
-            else 
+            else
             {
                if ((toMax > CLAMPING_TOLERANCE) && (fabs(toMin) > CLAMPING_TOLERANCE))
                   rangeError = 0.0;
@@ -1654,9 +1654,9 @@ static void calculateGenCoordResiduals(void *data, int numQ, double q[], int num
             {
                rangeError = rangeStart - q[i] + CLAMPING_TOL_TRANS;
             }
-            else 
+            else
             {
-               if ((toMax >= CLAMPING_TOL_TRANS) && 
+               if ((toMax >= CLAMPING_TOL_TRANS) &&
                   (fabs(toMin) >= CLAMPING_TOL_TRANS))
                   rangeError = 0.0;
                else if (toMax < toMin)
@@ -1689,7 +1689,7 @@ static void calculateGenCoordResiduals(void *data, int numQ, double q[], int num
             else if (q[i] > rangeEnd)
                rangeError = (q[i] - rangeEnd);
             else
-               rangeError = 0.0;            
+               rangeError = 0.0;
             resid[index] = rangeError;
 #endif
                 resid[index] = 0.0;
@@ -1710,7 +1710,7 @@ static void calculateGenCoordResiduals(void *data, int numQ, double q[], int num
  * from the "first" segment to the joint.  The coordinates of the points are
  * then subtracted and scaled by the given weight to find the residual.
  */
-static void calculateLoopResiduals(void *data, int numQ, double q[], int numResid, double resid[], 
+static void calculateLoopResiduals(void *data, int numQ, double q[], int numResid, double resid[],
                             int startIndex, int endIndex, double *weight, int *iflag)
 {
    int i, j, loop, seg, index;
@@ -1731,8 +1731,8 @@ static void calculateLoopResiduals(void *data, int numQ, double q[], int numResi
          /* allocate paths */
          pathA = (int *)simm_malloc(solveInfo->model->loop[loop].num_jnts * sizeof(int));
          pathB = (int *)simm_malloc(solveInfo->model->loop[loop].num_jnts * sizeof(int));
-         
-         /* calculate residuals 
+
+         /* calculate residuals
          * Find residuals for each joint in the loop, as though that joint were the
          * loop joint.  For each joint, "break" the loop and determine forward and inverse
          * paths from each segment to the "first" segment in the loop.  Transform the coords
@@ -1744,21 +1744,21 @@ static void calculateLoopResiduals(void *data, int numQ, double q[], int numResi
             /* initially, coordinates in each frame are 0.0 0.0 0.0 */
             clear_vector(coordsA, 3);
             clear_vector(coordsB, 3);
-            
+
             /* create paths going both ways from the segment to the "first" segment */
             pathLengthA = getLoopPath(seg, pathA, INVERSE, &solveInfo->model->loop[loop]);
             pathLengthB = getLoopPath(seg, pathB, FORWARD, &solveInfo->model->loop[loop]);
-            
+
             /* convert point to "first" segment in loop via INVERSE path, then to ground */
             convertNEW(solveInfo->model, coordsA, pathA, pathLengthA);
-            convert(solveInfo->model, coordsA, solveInfo->model->loop[loop].segs[0], 
+            convert(solveInfo->model, coordsA, solveInfo->model->loop[loop].segs[0],
                solveInfo->model->ground_segment);
-            
+
             /* convert point to "first" segment in loop via FORWARD path, then to ground */
             convertNEW(solveInfo->model, coordsB, pathB, pathLengthB);
-            convert(solveInfo->model, coordsB, solveInfo->model->loop[loop].segs[0], 
+            convert(solveInfo->model, coordsB, solveInfo->model->loop[loop].segs[0],
                solveInfo->model->ground_segment);
-            
+
             for (i = 0; i < 3; i++)
             {
                resid[index] = (coordsA[i] - coordsB[i]) * *weight;
@@ -1774,7 +1774,7 @@ static void calculateLoopResiduals(void *data, int numQ, double q[], int numResi
 }
 
 /* Reorganize the gencoord list so that a gencoord index appears only once.  Do not
- * include the controlled gencoord or any locked gencoords in the list.  Update the 
+ * include the controlled gencoord or any locked gencoords in the list.  Update the
  * number of qs needed (number of gencoords in the new list)
  */
 static void orderQs(ModelStruct *ms, int *nq, GeneralizedCoord* gc_list[], GeneralizedCoord* controlled_gc)
@@ -1793,7 +1793,7 @@ static void orderQs(ModelStruct *ms, int *nq, GeneralizedCoord* gc_list[], Gener
 
    if (controlled_gc)
       gc_used[getGencoordIndex(ms, controlled_gc)] = no;
-   
+
    for (i = 0; i < ms->numgencoords; i++)
       if (ms->gencoord[i]->locked == yes)
          gc_used[i] = no;
@@ -1909,7 +1909,7 @@ void approveNewDefaultGCs(ModelStruct *ms)
 #if ! ENGINE
    /* in all cases, defaults have been approved (whether or not they're accepted) */
    ms->defaultGCApproved = yes;
-   sprintf(buffer, 
+   sprintf(buffer,
          "The set of default values for the gencoords did not\n"
          "satisfy the constraints and/or loops.  SIMM calculated\n"
          "a new solution closing all loops/satisfying all constraints.\n"
@@ -1918,9 +1918,9 @@ void approveNewDefaultGCs(ModelStruct *ms)
    {
       if ((ms->gencoord[i]->used_in_model == yes)
          && (NOT_EQUAL_WITHIN_ERROR(ms->gencoord[i]->value,
-         ms->gencoord[i]->default_value)))            
+         ms->gencoord[i]->default_value)))
       {
-         sprintf(gc_info, "   %-20s: % 10.5f -> % 10.5f\n", 
+         sprintf(gc_info, "   %-20s: % 10.5f -> % 10.5f\n",
             ms->gencoord[i]->name, ms->gencoord[i]->default_value,
             ms->gencoord[i]->value);
          strcat(buffer, gc_info);
@@ -1951,7 +1951,7 @@ void approveNewDefaultGCs(ModelStruct *ms)
       LoopStatus loopStatus;
       ConstraintStatus constraintStatus;
 
-      /* keep and display original default values.  Set values without solving 
+      /* keep and display original default values.  Set values without solving
        * loops and constraints */
       //evaluate current situation to set values
       ms->defaultLoopsOK = no;

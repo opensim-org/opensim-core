@@ -51,8 +51,8 @@ ExpressionBasedPointToPointForce::ExpressionBasedPointToPointForce()
 //_____________________________________________________________________________
 // Convenience constructor for API users.
 ExpressionBasedPointToPointForce::ExpressionBasedPointToPointForce(
-                const string& body1Name, const SimTK::Vec3& point1, 
-                const string& body2Name, const SimTK::Vec3& point2, 
+                const string& body1Name, const SimTK::Vec3& point1,
+                const string& body2Name, const SimTK::Vec3& point2,
                 const string& expression)
 {
     setNull();
@@ -68,8 +68,8 @@ ExpressionBasedPointToPointForce::ExpressionBasedPointToPointForce(
     setExpression(expression);
 }
 
-// Set the expression for the force function and create it's lepton program 
-void ExpressionBasedPointToPointForce::setExpression(const string& expression) 
+// Set the expression for the force function and create it's lepton program
+void ExpressionBasedPointToPointForce::setExpression(const string& expression)
 {
     set_expression(expression);
 }
@@ -83,7 +83,7 @@ void ExpressionBasedPointToPointForce::setExpression(const string& expression)
  */
 void ExpressionBasedPointToPointForce::setNull()
 {
-    setAuthors("Ajay Seth"); 
+    setAuthors("Ajay Seth");
 }
 
 
@@ -126,9 +126,9 @@ void ExpressionBasedPointToPointForce::extendConnectToModel(Model& model)
 
     string& expression = upd_expression();
     expression.erase(
-            remove_if(expression.begin(), expression.end(), ::isspace), 
+            remove_if(expression.begin(), expression.end(), ::isspace),
                       expression.end() );
-    
+
     _forceProg = Lepton::Parser::parse(expression).optimize().createProgram();
 }
 
@@ -155,8 +155,8 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
 // Computing
 //=============================================================================
 // Compute and apply the force
-void ExpressionBasedPointToPointForce::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void ExpressionBasedPointToPointForce::computeForce(const SimTK::State& s,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const
 {
     using namespace SimTK;
@@ -203,9 +203,9 @@ const double& ExpressionBasedPointToPointForce::
 //=============================================================================
 // Reporting
 //=============================================================================
-// Provide names of the quantities (column labels) of the force value(s) 
+// Provide names of the quantities (column labels) of the force value(s)
 // reported.
-OpenSim::Array<std::string> ExpressionBasedPointToPointForce::getRecordLabels() const 
+OpenSim::Array<std::string> ExpressionBasedPointToPointForce::getRecordLabels() const
 {
     const string& body1Name = getBody1Name();
     const string& body2Name = getBody2Name();
@@ -229,7 +229,7 @@ OpenSim::Array<std::string> ExpressionBasedPointToPointForce::getRecordLabels() 
 
 // Provide the value(s) to be reported that correspond to the labels.
 OpenSim::Array<double> ExpressionBasedPointToPointForce::
-getRecordValues(const SimTK::State& state) const 
+getRecordValues(const SimTK::State& state) const
 {
     OpenSim::Array<double> values(1);
 
@@ -241,7 +241,7 @@ getRecordValues(const SimTK::State& state) const
     //get the net force added to the system contributed by the Spring
     _model->getForceSubsystem().getForce(_index)
         .calcForceContribution(state, bodyForces, particleForces, mobilityForces);
-    
+
     SimTK::Vec3 forces = bodyForces(_body1->getMobilizedBodyIndex())[1];
     values.append(3, &forces[0]);
 

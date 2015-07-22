@@ -109,7 +109,7 @@ void PointOnLineConstraint::constructProperties()
     // Default Point On Line
     constructProperty_point_on_line(origin);
 
-    // Point On Follower Body 
+    // Point On Follower Body
     constructProperty_point_on_follower(origin);
 }
 
@@ -138,7 +138,7 @@ void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) co
     // Now create a Simbody Constraint::PointOnLine
     SimTK::Constraint::PointOnLine simtkPointOnLine(bl, normLineDirection,
         get_point_on_line(), bf, get_point_on_follower());
-    
+
     // Beyond the const Component get the index so we can access the SimTK::Constraint later
     assignConstraintIndex(simtkPointOnLine.getConstraintIndex());
 }

@@ -103,7 +103,7 @@
   int inside_math = 0;
   int expression_value;
   double math_value;
-  
+
   extern FILE* fp_out;
 
   static jmp_buf parse_return_error;
@@ -371,10 +371,10 @@ static const unsigned char yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals. */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "INT", "CHAR", "NAME", "ERROR", "DVALUE", 
-  "'?'", "':'", "','", "OR", "AND", "'|'", "'^'", "'&'", "NOTEQUAL", 
-  "EQUAL", "'<'", "'>'", "GEQ", "LEQ", "RSH", "LSH", "'+'", "'-'", "'*'", 
-  "'/'", "'%'", "UNARY", "'!'", "'~'", "'('", "')'", "'{'", "'}'", 
+  "$end", "error", "$undefined", "INT", "CHAR", "NAME", "ERROR", "DVALUE",
+  "'?'", "':'", "','", "OR", "AND", "'|'", "'^'", "'&'", "NOTEQUAL",
+  "EQUAL", "'<'", "'>'", "GEQ", "LEQ", "RSH", "LSH", "'+'", "'-'", "'*'",
+  "'/'", "'%'", "UNARY", "'!'", "'~'", "'('", "')'", "'{'", "'}'",
   "$accept", "start", "exp1", "exp", "exp3", 0
 };
 #endif
@@ -717,7 +717,7 @@ int yydebug;
 # define YYMAXDEPTH 10000
 #endif
 
-
+
 
 #if YYERROR_VERBOSE
 
@@ -772,7 +772,7 @@ yystpcpy (yydest, yysrc)
 
 #endif /* !YYERROR_VERBOSE */
 
-
+
 
 #if YYDEBUG
 /*--------------------------------.
@@ -836,7 +836,7 @@ yydestruct (yytype, yyvaluep)
         break;
     }
 }
-
+
 
 /* Prevent warnings from -Wmissing-prototypes.  */
 
@@ -889,7 +889,7 @@ yyparse ()
 #endif
 #endif
 {
-  
+
   register int yystate;
   register int yyn;
   int yyresult;
@@ -1386,7 +1386,7 @@ yyreduce:
 
 /* Line 999 of yacc.c.  */
 #line 1372 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.tab.c"
-
+
   yyvsp -= yylen;
   yyssp -= yylen;
 
@@ -1593,7 +1593,7 @@ yyreturn:
 
 #line 250 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
 
-
+
 /* During parsing of a C expression, the pointer to the next character
    is in this variable.  */
 
@@ -1744,13 +1744,13 @@ yylex ()
   switch (c) {
   case 0:
     return 0;
-    
+
   case ' ':
   case '\t':
   case '\n':
     lexptr++;
     goto retry;
-    
+
 #ifdef sgi
   case 'L':
     {
@@ -1758,7 +1758,7 @@ yylex ()
         int c2;
         int i;
         for(i = 1, c2 = *(lexptr+i); is_hor_space[c2];
-             ++i,c2 = *(lexptr+i)) 
+             ++i,c2 = *(lexptr+i))
             /* do nothing on horiz space stuff */   {  }
         if(c2 != '\'') {
             /* Not a wide char const. An identifier */
@@ -1791,7 +1791,7 @@ yylex ()
       yyerror ("Invalid character constant in #if");
       return ERROR;
     }
-    
+
     return CHAR;
 
     /* some of these chars are invalid in constant expressions;
@@ -1822,7 +1822,7 @@ yylex ()
   case ',':
     lexptr++;
     return c;
-    
+
   case '"':
     yyerror ("double quoted strings not allowed in #if expressions");
     return ERROR;
@@ -1840,7 +1840,7 @@ yylex ()
      if (inside_math == 0)
      {
         for (namelen = 0;
-             c = tokstart[namelen], is_idchar[c] || c == '.'; 
+             c = tokstart[namelen], is_idchar[c] || c == '.';
              namelen++)
            ;
      }
@@ -1848,7 +1848,7 @@ yylex ()
      {
         int exp = 0;
         for (namelen = 0;
-             c = tokstart[namelen], is_idchar[c] || c == '.' || (exp == 1 && (c == '-' || c == '+')); 
+             c = tokstart[namelen], is_idchar[c] || c == '.' || (exp == 1 && (c == '-' || c == '+'));
              namelen++)
         {
            if (exp == 0 && (c == 'e' || c == 'E' || c == 'g' || c == 'G'))
@@ -1860,17 +1860,17 @@ yylex ()
 
      return parse_number (namelen);
   }
-  
+
   if (!is_idstart[c]) {
     yyerror ("Invalid token in expression");
     return ERROR;
   }
-  
+
   /* It is a name.  See how long it is.  */
-  
+
   for (namelen = 0; is_idchar[tokstart[namelen]]; namelen++)
     ;
-  
+
   lexptr += namelen;
   return NAME;
 }
@@ -1925,7 +1925,7 @@ parse_escape (string_ptr)
       if (c == '?')
     return 0177;
       return (c & 0200) | (c & 037);
-      
+
     case '0':
     case '1':
     case '2':
@@ -2008,14 +2008,14 @@ parse_assertion_extension (buf)
   int c;
   int negate = 0;
   int value = 0;
-  
+
   for(c = *buf; c != '#'; c = *buf++) {
     if (c == '!')
       negate = !negate;
     else if(!isspace(c))
       acpp_error("Unexpected character in assertion expression\n");
   }
-  
+
   /* buf is now one past the '#' character */
   lexptr = buf;
 
@@ -2037,7 +2037,7 @@ parse_c_expression (string)
      char *string;
 {
   lexptr = string;
-  
+
   if (lexptr == 0 || *lexptr == 0) {
     acpp_error("empty #if expression");
     return 0;           /* don't include the #if group */
@@ -2063,7 +2063,7 @@ parse_c_math_expression (string)
      char *string;
 {
   lexptr = string;
-  
+
   if (lexptr == 0 || *lexptr == 0) {
     acpp_error("empty #if expression");
     return 0;           /* don't include the #if group */

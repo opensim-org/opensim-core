@@ -40,7 +40,7 @@ namespace OpenSim {
 //               ACTIVATION FIBER LENGTH MUSCLE (DEPRECATED)
 //==============================================================================
 /**
- * A base class representing a muscle-tendon actuator. It adds states to the 
+ * A base class representing a muscle-tendon actuator. It adds states to the
  * Muscle class, but does not implement all of the necessary methods,
  * so it is abstract too. The path information for a muscle is contained
  * in this class, and the force-generating behavior should be defined in
@@ -48,7 +48,7 @@ namespace OpenSim {
  *
  * @author Peter Loan, Frank C. Anderson, Ajay Seth
  */
-class OSIMSIMULATION_API ActivationFiberLengthMuscle_Deprecated 
+class OSIMSIMULATION_API ActivationFiberLengthMuscle_Deprecated
 :   public Muscle {
 OpenSim_DECLARE_ABSTRACT_OBJECT(ActivationFiberLengthMuscle_Deprecated, Muscle);
 
@@ -71,7 +71,7 @@ public:
 public:
     ActivationFiberLengthMuscle_Deprecated();
 
-    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // Uses default (compiler-generated) destructor, copy constructor, copy
     // assignment operator.
 
     virtual void equilibrate(SimTK::State& state) const;
@@ -119,13 +119,13 @@ public:
     virtual double computeActuation( const SimTK::State& s ) const = 0;
     virtual double computeIsometricForce(SimTK::State& s, double activation) const = 0;
     //virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) const;
-    
-    virtual double calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
+
+    virtual double calcInextensibleTendonActiveFiberForce(SimTK::State& s,
                                                       double aActivation) const;
 
     virtual double evaluateForceLengthVelocityCurve(double aActivation, double aNormalizedLength, double aNormalizedVelocity) const;
     virtual double calcPennation( double aFiberLength, double aOptimalFiberLength, double aInitialPennationAngle) const;
- 
+
     //--------------------------------------------------------------------------
     // SCALING
     //--------------------------------------------------------------------------
@@ -135,8 +135,8 @@ protected:
     //--------------------------------------------------------------------------
     // FORCE APPLICATION
     //--------------------------------------------------------------------------
-    virtual void computeForce(const SimTK::State& state, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+    virtual void computeForce(const SimTK::State& state,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForce) const;
 
     virtual void extendAddToSystem(SimTK::MultibodySystem& system) const;

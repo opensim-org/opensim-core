@@ -1,5 +1,5 @@
 
-link_libraries( 
+link_libraries(
         debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
         debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
         debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators

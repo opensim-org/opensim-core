@@ -45,9 +45,9 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API ContDerivMuscle_Deprecated 
+class OSIMACTUATORS_API ContDerivMuscle_Deprecated
 :   public ActivationFiberLengthMuscle_Deprecated {
-OpenSim_DECLARE_CONCRETE_OBJECT(ContDerivMuscle_Deprecated, 
+OpenSim_DECLARE_CONCRETE_OBJECT(ContDerivMuscle_Deprecated,
                                 ActivationFiberLengthMuscle_Deprecated);
 
 //=============================================================================
@@ -55,7 +55,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ContDerivMuscle_Deprecated,
 //=============================================================================
 protected:
 
-    /** Activation time constant */  
+    /** Activation time constant */
     PropertyDbl _activationTimeConstantProp;
     double &_activationTimeConstant;
 

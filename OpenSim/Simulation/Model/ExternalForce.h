@@ -33,23 +33,23 @@ class Storage;
 class Function;
 
 /**
- * An ExternalForce is a Force class specialized at applying an external force 
+ * An ExternalForce is a Force class specialized at applying an external force
  * and/or torque to a body as described by arrays (columns) of a Storage object.
- * The source of the Storage may be experimental sensor recording or user 
- * generated data. The Storage must be able to supply (1) an array of time, (2) 
+ * The source of the Storage may be experimental sensor recording or user
+ * generated data. The Storage must be able to supply (1) an array of time, (2)
  * arrays for the x,y,z, components of force and/or torque in time. Optionaly,
- * (3) arrays for the point of force application in time. An ExternalForce 
+ * (3) arrays for the point of force application in time. An ExternalForce
  * must specify the identifier (e.g. Force1.x Force1.y Force1.z) for the force
  * components (columns) listed in the Storage either by individual labels or
  * collectively (e.g. as "Force1"). Similarly, identifiers for the applied
- * torque and optionally the point of force application must be specified. 
+ * torque and optionally the point of force application must be specified.
  *
- * If an identifier is supplied and it cannot uniquely identify the force data 
- * (e.g. the force, torque, or point) in the Storage, then an Excpetion is 
+ * If an identifier is supplied and it cannot uniquely identify the force data
+ * (e.g. the force, torque, or point) in the Storage, then an Excpetion is
  * thrown.
  *
- * An ExternalForce must apply at least a force or a torque and therefore both 
- * identifiers cannot be empty. 
+ * An ExternalForce must apply at least a force or a torque and therefore both
+ * identifiers cannot be empty.
  *
  * @author Ajay Seth
  */
@@ -83,16 +83,16 @@ public:
 // PUBLIC METHODS
 //==============================================================================
     /**
-     * Default Construct of an ExternalForce. 
+     * Default Construct of an ExternalForce.
      * By default ExternalForce has data source identified by name.
      * By setup() time, Tool or modeler must setDataSource() on this Force for
      * it to be able to apply any force. Otherwise, an exception is thrown.
-     * 
+     *
      */
     ExternalForce();
     /**
-     * Convenience Constructor of an ExternalForce. 
-     * 
+     * Convenience Constructor of an ExternalForce.
+     *
      * @param dataSource        a storage containing the pertinent force data through time
      * @param forceIdentifier   string used to access the force data in the dataSource
      * @param pointIdentifier   string used to access the point of application of the force in dataSource
@@ -101,16 +101,16 @@ public:
      * @param forceExpressedInBodyName  string used to define in which body the force is expressed
      * @param pointExpressedInBodyName  string used to define the body in which the point is expressed
      */
-    ExternalForce(const Storage& dataSource, 
-                  const std::string& forceIdentifier="force", 
-                  const std::string& pointIdentifier="point", 
+    ExternalForce(const Storage& dataSource,
+                  const std::string& forceIdentifier="force",
+                  const std::string& pointIdentifier="point",
                   const std::string& torqueIdentifier="torque",
-                  const std::string& appliedToBodyName="", 
-                  const std::string& forceExpressedInBodyName="ground", 
+                  const std::string& appliedToBodyName="",
+                  const std::string& forceExpressedInBodyName="ground",
                   const std::string& pointExpressedInBodyName="ground");
     explicit ExternalForce(SimTK::Xml::Element& aNode);
 
-    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // Uses default (compiler-generated) destructor, copy constructor, copy
     // assignment operator.
 
     // Copy properties from XML into member variables
@@ -123,49 +123,49 @@ public:
      */
     void setDataSource(const Storage& dataSource);
 
-    /** Get the name of the data source for the force data. **/ 
-    const std::string& getDataSourceName() const 
+    /** Get the name of the data source for the force data. **/
+    const std::string& getDataSourceName() const
     {   return get_data_source_name(); }
 
     /**
      *  Specify or obtain the body to which the force will be applied
      */
-    void setAppliedToBodyName(const std::string& applyToName) 
+    void setAppliedToBodyName(const std::string& applyToName)
     {   set_applied_to_body(applyToName); }
-    const std::string& getAppliedToBodyName() const 
+    const std::string& getAppliedToBodyName() const
     {   return get_applied_to_body(); }
 
     /**
      *  Specify or obtain the body in which the point of application is expressed
      */
-    void setPointExpressedInBodyName(const std::string& pointInBodyName) 
+    void setPointExpressedInBodyName(const std::string& pointInBodyName)
     {   set_point_expressed_in_body(pointInBodyName); }
-    const std::string& getPointExpressedInBodyName() const 
+    const std::string& getPointExpressedInBodyName() const
     {   return get_point_expressed_in_body(); }
 
     /**
      *  Specify or obtain the body in which the force is expressed
      */
-    void setForceExpressedInBodyName(const std::string &forceInBodyName) 
+    void setForceExpressedInBodyName(const std::string &forceInBodyName)
     {   set_force_expressed_in_body(forceInBodyName); }
-    const std::string& getForceExpressedInBodyName() const 
+    const std::string& getForceExpressedInBodyName() const
     {   return get_force_expressed_in_body(); }
 
     /**
      * Identifiers
      */
-    void setForceIdentifier(const std::string aForceIdentifier) 
+    void setForceIdentifier(const std::string aForceIdentifier)
     {   set_force_identifier(aForceIdentifier); }
-    void setPointIdentifier(const std::string aPointIdentifier) 
+    void setPointIdentifier(const std::string aPointIdentifier)
     {   set_point_identifier(aPointIdentifier); }
-    void setTorqueIdentifier(const std::string aTorqueIdentifier) 
+    void setTorqueIdentifier(const std::string aTorqueIdentifier)
     {   set_torque_identifier(aTorqueIdentifier); }
 
-    const std::string& getForceIdentifier() const 
+    const std::string& getForceIdentifier() const
     {   return get_force_identifier(); }
-    const std::string& getPointIdentifier() const 
+    const std::string& getPointIdentifier() const
     {   return get_point_identifier(); }
-    const std::string& getTorqueIdentifier() const 
+    const std::string& getTorqueIdentifier() const
     {   return get_torque_identifier(); }
     /**
      * Convenience methods to access external forces at a given time
@@ -180,48 +180,48 @@ public:
      */
     virtual OpenSim::Array<std::string> getRecordLabels() const;
     /**
-     * Given SimTK::State object extract all the values necessary to report 
-     * forces, application location frame, etc. used in conjunction with 
+     * Given SimTK::State object extract all the values necessary to report
+     * forces, application location frame, etc. used in conjunction with
      * getRecordLabels and should return same size Array.
      */
     virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const;
     /**
-     * Methods to query the force properties to find out if it's a body vs. 
-     * point force and/or if it applies a torque. 
+     * Methods to query the force properties to find out if it's a body vs.
+     * point force and/or if it applies a torque.
      */
-    bool appliesForce() const { 
+    bool appliesForce() const {
         if(getProperty_force_identifier().size() < 1)
             return false;
-        const std::string &forceIdentifier = get_force_identifier(); 
-        return !((forceIdentifier.find_first_not_of(" \t")==std::string::npos) 
+        const std::string &forceIdentifier = get_force_identifier();
+        return !((forceIdentifier.find_first_not_of(" \t")==std::string::npos)
                   || (forceIdentifier == "Unassigned"));
     }
     bool specifiesPoint() const {
         if(getProperty_point_identifier().size() < 1)
             return false;
-        const std::string &pointIdentifier = get_point_identifier(); 
-        return !((pointIdentifier.find_first_not_of(" \t")==std::string::npos) 
+        const std::string &pointIdentifier = get_point_identifier();
+        return !((pointIdentifier.find_first_not_of(" \t")==std::string::npos)
                   || (pointIdentifier == "Unassigned"));
     }
     bool appliesTorque() const {
         if(getProperty_torque_identifier().size() < 1)
             return false;
-        const std::string &torqueIdentifier = get_torque_identifier(); 
-        return !((torqueIdentifier.find_first_not_of(" \t")==std::string::npos) 
+        const std::string &torqueIdentifier = get_torque_identifier();
+        return !((torqueIdentifier.find_first_not_of(" \t")==std::string::npos)
                   || (torqueIdentifier == "Unassigned"));
     }
 
 
 protected:
 
-    /**  ModelComponent interface */ 
+    /**  ModelComponent interface */
     void extendConnectToModel(Model& model) override;
 
     /**
      * Compute the force.
      */
-    virtual void computeForce(const SimTK::State& state, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+    virtual void computeForce(const SimTK::State& state,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const;
 
 private:
@@ -242,7 +242,7 @@ private:
     /** Pointer to the body that point is expressed in */
     SimTK::ReferencePtr<const PhysicalFrame> _pointExpressedInBody;
 
-    /** Pointer to the data source owned by the caller/creator of this force. 
+    /** Pointer to the data source owned by the caller/creator of this force.
         Note that it is not a RefPtr because we want to point to the same data
         source when the ExternalForce is copied, without copying the data. */
     const Storage* _dataSource;

@@ -69,7 +69,7 @@ int main(int argc,char **argv)
 
             PrintUsage(argv[0], cout);
             return(0);
- 
+
         // PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
         } else if((option=="-PrintSetup")||(option=="-PS")) {
             AnalyzeTool *tool = new AnalyzeTool();

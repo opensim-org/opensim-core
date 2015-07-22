@@ -35,7 +35,7 @@ class Coordinate;
 //=============================================================================
 /**
  * Solve for the effective moment arms at all degrees-of-freedom due to one or
- * more point forces.  This may result from the underlying geometry of a Force 
+ * more point forces.  This may result from the underlying geometry of a Force
  * or Actuator with a complex path (like ligaments and muscles) but this solver
  * is only concerned with the set of points and unit forces that maps a scalar
  * force value (like tension) to the resulting generalized force.
@@ -61,8 +61,8 @@ public:
     explicit MomentArmSolver(const Model& model);
     virtual ~MomentArmSolver() {}
 
-    /** Solve for the effective moment-arm about the all coordinates (q) based 
-        on the geometric distribution of forces described by a GeometryPath. 
+    /** Solve for the effective moment-arm about the all coordinates (q) based
+        on the geometric distribution of forces described by a GeometryPath.
     @param  state               current state of the model
     @param  coordinate          Coordinate about which we want the moment-arm
     @param  path                GeometryPath for which to calculate a moment-arm
@@ -71,15 +71,15 @@ public:
     double solve(const SimTK::State& state, const Coordinate &coordinate,
         const GeometryPath &path) const;
 
-    /** Solve for the effective moment-arm about the specified coordinate based 
-        on the geometric distribution of forces described by the list of 
-        PointForceDirections. 
+    /** Solve for the effective moment-arm about the specified coordinate based
+        on the geometric distribution of forces described by the list of
+        PointForceDirections.
     @param  state               current state of the model
     @param  coordinate          Coordinate about which we want the moment-arm
     @param  pfds                PointForceDirections applied to the model
     @return ma                  resulting moment-arm as a double
     */
-    double solve(const SimTK::State& state, const Coordinate &coordinate, 
+    double solve(const SimTK::State& state, const Coordinate &coordinate,
         const Array<PointForceDirection *> &pfds) const;
 
 private:
@@ -96,7 +96,7 @@ private:
     mutable SimTK::Vector _coupling;
 
     // compute vector of constraint coupling factors
-    SimTK::Vector computeCouplingVector(SimTK::State &state, 
+    SimTK::Vector computeCouplingVector(SimTK::State &state,
         const Coordinate &coordinate) const;
 //=============================================================================
 };  // END of class MomentArmSolver

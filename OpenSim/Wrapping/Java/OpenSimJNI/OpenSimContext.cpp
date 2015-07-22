@@ -416,13 +416,13 @@ void OpenSimContext::realizeVelocity() {
 
 }
 
-void OpenSimContext::cacheModelAndState() 
+void OpenSimContext::cacheModelAndState()
 {
     clonedModel = _model->clone();
     clonedState = this->getCurrentStateCopy();
 }
 
-void OpenSimContext::restoreStateFromCachedModel() 
+void OpenSimContext::restoreStateFromCachedModel()
 {
     _model->initSystem();
     clonedModel->initSystem();

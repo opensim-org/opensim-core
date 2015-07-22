@@ -23,14 +23,14 @@
 
 //=============================================================================
 // testMomentArms loads various OpenSim models to compute and test moment arms
-// results from these models to the definition r*f = Tau , where r is the 
-// moment-arm about a coordinate, f is the scaler maginitude of the Force and 
-// Tau is the resulting generalized force. 
+// results from these models to the definition r*f = Tau , where r is the
+// moment-arm about a coordinate, f is the scaler maginitude of the Force and
+// Tau is the resulting generalized force.
 //
 //  Tests Include:
 //      1. ECU muscle from Tutorial 2
 //      2. Vasti from gait23 models with and without a patella
-//      
+//
 //     Add more test cases to address specific problems with moment-arms
 //
 //=============================================================================
@@ -44,8 +44,8 @@ using namespace std;
 // Common Parameters for the simulations are just global.
 const static double integ_accuracy = 1.0e-3;
 
-void testMomentArmDefinitionForModel(const string &filename, 
-                                     const string &coordName = "", 
+void testMomentArmDefinitionForModel(const string &filename,
+                                     const string &coordName = "",
                                      const string &muscleName = "",
                                      SimTK::Vec2 rom = SimTK::Vec2(-SimTK::Pi/2,0),
                                      double mass = -1.0, string errorMessage = "");
@@ -57,12 +57,12 @@ int main()
 
     try {
 
-        testMomentArmDefinitionForModel("BothLegs22.osim", "r_knee_angle", "VASINT", 
-            SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), 0.0, 
+        testMomentArmDefinitionForModel("BothLegs22.osim", "r_knee_angle", "VASINT",
+            SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), 0.0,
             "VASINT of BothLegs with no mass: FAILED");
         cout << "VASINT of BothLegs with no mass: PASSED\n" << endl;
 
-        testMomentArmDefinitionForModel("testMomentArmsConstraintB.osim", 
+        testMomentArmDefinitionForModel("testMomentArmsConstraintB.osim",
             "hip_flexion_r", "rect_fem_r", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3),
             -1.0, "Rectus Femoris at hip with muscle attachment on patella defined w.r.t Femur: FAILED");
         cout << "Rectus Femoris at hip with muscle attachment on patella defined w.r.t Femur: PASSED\n" << endl;
@@ -81,7 +81,7 @@ int main()
 
         testMomentArmDefinitionForModel("gait2354_simbody.osim", "knee_angle_r", "vas_int_r", SimTK::Vec2(-119*SimTK::Pi/180, 9*SimTK::Pi/180), -1.0, "Knee with moving muscle point (no patella): FAILED");
         cout << "Knee with moving muscle point (no patella): PASSED\n" << endl;
-        
+
         //massless should not break moment-arm solver
         testMomentArmDefinitionForModel("wrist_mass.osim", "flexion", "ECU_post-surgery", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3), 0.0, "WRIST ECU TEST with MASSLESS BODIES: FAILED");
         cout << "WRIST ECU TEST with MASSLESS BODIES: PASSED\n" << endl;
@@ -106,10 +106,10 @@ int main()
 
         testMomentArmDefinitionForModel("WrapPathCustomJointMomentArmTest.osim", "", "", SimTK::Vec2(-SimTK::Pi/2,0), -1.0, "Path with wrapping across CustomJoint: FAILED");
         cout << "Path with wrapping across CustomJoint: PASSED\n" << endl;
-        
+
         testMomentArmDefinitionForModel("PathOnConstrainedBodyMomentArmTest.osim", "", "", SimTK::Vec2(-SimTK::Pi/2,0), -1.0, "Path on constrained body across CustomJoint: FAILED");
         cout << "Path on constrained body across CustomJoint: PASSED\n" << endl;
-    
+
         testMomentArmDefinitionForModel("MultipleMPPsMomentArmTest.osim", "knee_angle_1", "vas_int_r", SimTK::Vec2(-1.99*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Multiple moving path points: FAILED");
         cout << "Multiple moving path points test 1: PASSED\n" << endl;
 
@@ -142,8 +142,8 @@ double computeMomentArmFromDefinition(const SimTK::State &s, const GeometryPath 
     coord.setLocked(s_ma, false);
     double theta = coord.getValue(s);
     double dtheta = 0.1*integ_accuracy;
-    
-    // Compute length 1 
+
+    // Compute length 1
     coord.setValue(s_ma, theta-dtheta, false);
 
     // satisfy contraints using project since we are close to the solution
@@ -171,7 +171,7 @@ double computeMomentArmFromDefinition(const SimTK::State &s, const GeometryPath 
 }
 
 
-SimTK::Vector computeGenForceScaling(const Model &osimModel, const SimTK::State &s, const Coordinate &coord, 
+SimTK::Vector computeGenForceScaling(const Model &osimModel, const SimTK::State &s, const Coordinate &coord,
                               const Array<string> &coupledCoords)
 {
     using namespace SimTK;
@@ -181,7 +181,7 @@ SimTK::Vector computeGenForceScaling(const Model &osimModel, const SimTK::State 
 
     osimModel.getMultibodySystem().realize(s_ma, SimTK::Stage::Instance);
 
-    // Calculate coupling matrix C to determine the influence of other coordinates 
+    // Calculate coupling matrix C to determine the influence of other coordinates
     // (mobilities) on the coordinate of interest due to constraints
 
     s_ma.updU() = 0;
@@ -189,40 +189,40 @@ SimTK::Vector computeGenForceScaling(const Model &osimModel, const SimTK::State 
     // affected by constraints respond
     coord.setSpeedValue(s_ma, 1);
 
-    // Satisfy velocity constraints. Note that the speed we just set may 
+    // Satisfy velocity constraints. Note that the speed we just set may
     // change here too so be sure to retrieve the modified value.
     osimModel.getMultibodySystem().realize(s_ma, SimTK::Stage::Velocity);
     osimModel.getMultibodySystem().projectU(s_ma, 1e-10);
-    
+
     // Now calculate C. by checking how speeds of other coordinates change
-    // normalized by how much the speed of the coordinate of interest changed. 
-    const Vector C = s_ma.getU() / coord.getSpeedValue(s_ma); 
-    
+    // normalized by how much the speed of the coordinate of interest changed.
+    const Vector C = s_ma.getU() / coord.getSpeedValue(s_ma);
+
     // Compute the scaling matrix for converting gen_forces to torques
     // Unlike C, ignore all coupling that are not explicit coordinate
     // coupling that defines theta = sum(q_i) or q_i = w_i*theta.
-    // Also do not consider coupled torques for coordinates not spanned by 
+    // Also do not consider coupled torques for coordinates not spanned by
     // the path of interest.
     Vector W(osimModel.getNumSpeeds(), 0.0);
 
     for(int i=0; i< osimModel.getCoordinateSet().getSize(); i++){
         Coordinate &ac = osimModel.getCoordinateSet()[i];
-        //If a coordinate is kinematically coupled  (ac.getName() == coord.getName()) || 
+        //If a coordinate is kinematically coupled  (ac.getName() == coord.getName()) ||
         bool found = ((ac.getName() == coord.getName()) || (coupledCoords.findIndex(ac.getName()) > -1));
 
         // and not translational (cannot contribute to torque)
-        if(found && (ac.getMotionType() != Coordinate::Translational) 
+        if(found && (ac.getMotionType() != Coordinate::Translational)
                 && (ac.getJoint().getName() != "tib_pat_r") ){
             MobilizedBodyIndex modbodIndex = ac.getBodyIndex();
             const MobilizedBody& mobod = osimModel.getMatterSubsystem().getMobilizedBody(modbodIndex);
             SpatialVec Hcol = mobod.getHCol(s, SimTK::MobilizerUIndex(0)); //ac.getMobilizerQIndex())); // get n’th column of H
 
             double thetaScale = Hcol[0].norm(); // magnitude of the rotational part of this column of H
-            
+
             double Ci = C[mobod.getFirstUIndex(s)+ac.getMobilizerQIndex()];
             double Wi = 1.0/thetaScale;
             //if(thetaScale)
-                W[mobod.getFirstUIndex(s)+ac.getMobilizerQIndex()] = Ci; 
+                W[mobod.getFirstUIndex(s)+ac.getMobilizerQIndex()] = Ci;
         }
     }
 
@@ -232,7 +232,7 @@ SimTK::Vector computeGenForceScaling(const Model &osimModel, const SimTK::State 
 //==========================================================================================================
 // Main test driver can be used on any model so test cases should be very easy to add
 //==========================================================================================================
-void testMomentArmDefinitionForModel(const string &filename, const string &coordName, 
+void testMomentArmDefinitionForModel(const string &filename, const string &coordName,
                                     const string &muscleName, SimTK::Vec2 rom,
                                     double mass, string errorMessage)
 {
@@ -302,7 +302,7 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
     double q = rom[0];
     int nsteps = 10;
     double dq = (rom[1]-rom[0])/nsteps;
-    
+
     cout << "___________________________________________________________________________________" << endl;
     cout << "MA  genforce/fm::dl/dtheta  joint angle       IDTorq :: EquiTorq  MA::MA_dl/dtheta" << endl;
     cout << "===================================================================================" << endl;
@@ -315,7 +315,7 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
         double ma = maSolver.solve(s, coord, muscle.getGeometryPath());
         double ma_dldtheta = computeMomentArmFromDefinition(s, muscle.getGeometryPath(), coord);
 
-        cout << "r's = " << ma << "::" << ma_dldtheta <<"  at q = " << coord.getValue(s)*180/Pi; 
+        cout << "r's = " << ma << "::" << ma_dldtheta <<"  at q = " << coord.getValue(s)*180/Pi;
 
         try {
             // Verify that the definition of the moment-arm is satisfied
@@ -332,13 +332,13 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
             osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
 
             double force = muscle.getActuation(s);
-        
-            // Get muscle's applied body forces 
+
+            // Get muscle's applied body forces
             const Vector_<SpatialVec>& appliedBodyForces = osimModel.getMultibodySystem().getRigidBodyForces(s, Stage::Dynamics);
             //appliedBodyForces.dump("Applied Body Force resulting from muscle");
 
             // And any applied mobility (gen) forces due to gearing (moving path point)
-            const Vector& appliedGenForce = osimModel.getMultibodySystem().getMobilityForces(s, Stage::Dynamics);       
+            const Vector& appliedGenForce = osimModel.getMultibodySystem().getMobilityForces(s, Stage::Dynamics);
 
             // Get current system accelerations
             const Vector& knownUDots = s.getUDot();
@@ -346,7 +346,7 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 
             // Convert body forces to equivalent mobility forces (joint torques)
             Vector equivalentGenForce(s.getNU(), 0.0);
-            osimModel.getMultibodySystem().getMatterSubsystem().calcTreeEquivalentMobilityForces(s, 
+            osimModel.getMultibodySystem().getMatterSubsystem().calcTreeEquivalentMobilityForces(s,
                 appliedBodyForces, equivalentGenForce);
             if(s.getSystemStage() < SimTK::Stage::Dynamics)
                 osimModel.getMultibodySystem().realize(s,SimTK::Stage::Dynamics);
@@ -359,14 +359,14 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
             Vector constraintMobilityForces;
 
             // Get all forces applied to model by constraints
-            osimModel.getMultibodySystem().getMatterSubsystem().calcConstraintForcesFromMultipliers(s, -s.getMultipliers(), 
+            osimModel.getMultibodySystem().getMatterSubsystem().calcConstraintForcesFromMultipliers(s, -s.getMultipliers(),
                 constraintForcesInParent, constraintMobilityForces);
-        
+
             // Perform inverse dynamics
             Vector ivdGenForces;
             osimModel.getMultibodySystem().getMatterSubsystem().calcResidualForceIgnoringConstraints(s,
                 constraintMobilityForces, constraintForcesInParent, knownUDots, ivdGenForces);
-            
+
             //constraintForcesInParent.dump("Constraint Body Forces");
             //constraintMobilityForces.dump("Constraint Mobility Forces");
 
@@ -375,12 +375,12 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
             double equivalentMuscleTorque = ~W*equivalentGenForce;
             double equivalentIvdMuscleTorque = ~W*(ivdGenForces); //+constraintMobilityForces);
 
-            cout << "  Tau = " << equivalentIvdMuscleTorque <<"::" << equivalentMuscleTorque 
+            cout << "  Tau = " << equivalentIvdMuscleTorque <<"::" << equivalentMuscleTorque
                  << "  r*fm = " << ma*force <<"::" << ma_dldtheta*force << endl;
 
 
-            try {   
-                // Resulting torque from ID (no constraints) + constraints = equivalent applied torque 
+            try {
+                // Resulting torque from ID (no constraints) + constraints = equivalent applied torque
                 ASSERT_EQUAL(0.0, (equivalentIvdMuscleTorque-equivalentMuscleTorque)/equivalentIvdMuscleTorque, integ_accuracy);
                 // verify that equivalent torque is in fact moment-arm*force
                 ASSERT_EQUAL(0.0, (ma*force-equivalentMuscleTorque)/equivalentMuscleTorque, integ_accuracy);

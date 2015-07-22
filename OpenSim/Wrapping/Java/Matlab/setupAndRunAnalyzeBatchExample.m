@@ -4,14 +4,14 @@
 % for more information. OpenSim is developed at Stanford University       %
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
-%                                                                         %   
+%                                                                         %
 % Copyright (c) 2005-2012 Stanford University and the Authors             %
-%                                                                         %   
+%                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
 % You may obtain a copy of the License at                                 %
 % http://www.apache.org/licenses/LICENSE-2.0.                             %
-%                                                                         % 
+%                                                                         %
 % Unless required by applicable law or agreed to in writing, software     %
 % distributed under the License is distributed on an "AS IS" BASIS,       %
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
@@ -40,7 +40,7 @@ results_folder = [subjectDir '\AnalyzeResults\'];
 % %
 % mail = 'youremailaddress@gmail.com'; %Your GMail email address
 % password = 'yourPassword'; %Your GMail password
-% 
+%
 % % Then this code will set up the preferences properly:
 % setpref('Internet','E_mail',mail);
 % setpref('Internet','SMTP_Server','smtp.gmail.com');
@@ -65,32 +65,32 @@ nTrials =length(trialsForAn);
 for trial= 1:nTrials;
     % get the name of the file for this trial
     motIKCoordsFile = trialsForAn(trial).name;
-    
+
     % create name of trial from .trc file name
     name = regexprep(motIKCoordsFile,'_ik.mot','');
-    
+
     % get .mot data to determine time range
     motCoordsData = Storage([ik_results_folder motIKCoordsFile]);
-    
+
     % for this example, column is time
     initial_time = motCoordsData.getFirstTime();
     final_time = motCoordsData.getLastTime();
-    
+
     analyzeTool.setName(name);
     analyzeTool.setResultsDir(results_folder);
     analyzeTool.setCoordinatesFileName([ik_results_folder motIKCoordsFile]);
     analyzeTool.setInitialTime(initial_time);
-    analyzeTool.setFinalTime(final_time);   
-    
+    analyzeTool.setFinalTime(final_time);
+
     outfile = ['Setup_Analyze_' name '.xml'];
     analyzeTool.print([setupfiles_folder outfile]);
-    
+
     analyzeTool.run();
     fprintf(['Performing IK on cycle # ' num2str(trial) '\n']);
-    
+
     % rename the out.log so that it doesn't get overwritten
     copyfile('out.log',[results_folder name '_out.log'])
-    
+
 end
 %sendmail(mail,subjectNumber, ['Hello! Analysis for ' subjectNumber '  is complete']);
 

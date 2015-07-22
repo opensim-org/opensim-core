@@ -240,7 +240,7 @@ bool OpenSim::readIntegerFromString(string &aString, int *rNumber)
    i = findFirstNonWhiteSpace(aString);
    if (i > 0)
       aString.erase(0, i);
-   
+
    if (buffer.empty())
       return false;
    *rNumber = atoi(buffer.c_str());
@@ -380,7 +380,7 @@ bool OpenSim::readCoordinatesFromString(string &aString, double rVec[3], bool al
          {
             rVec[numCoords++] = value;
             numTabs = 0;
-         }         
+         }
       }
       /* if you have 3 TABS in a row, coordinate data is missing */
       if (numTabs == 3)

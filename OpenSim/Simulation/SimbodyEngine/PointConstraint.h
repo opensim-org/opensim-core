@@ -71,7 +71,7 @@ public:
                     const PhysicalFrame& body2, const SimTK::Vec3& locationBody2);
     virtual ~PointConstraint();
 
-    //SET 
+    //SET
     void setBody1ByName(const std::string& aBodyName);
     void setBody1PointLocation(SimTK::Vec3 location);
     void setBody2ByName(const std::string& aBodyName);

@@ -137,7 +137,7 @@ void EllipsoidJoint::scale(const ScaleSet& aScaleSet)
     }
 
     SimTK::Vec3& ellipsoidRadii = upd_radii_x_y_z();
-    for(int i=0; i<3; i++){ 
+    for(int i=0; i<3; i++){
         // Scale the size of the mobilizer
         ellipsoidRadii[i] *= scaleFactors[i];
     }
@@ -160,14 +160,14 @@ void EllipsoidJoint::extendInitStateFromProperties(SimTK::State& s) const
     Super::extendInitStateFromProperties(s);
 
     const SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
-    
+
     if (!matter.getUseEulerAngles(s)){
         const CoordinateSet& coordinateSet = get_CoordinateSet();
 
         double xangle = coordinateSet[0].getDefaultValue();
         double yangle = coordinateSet[1].getDefaultValue();
         double zangle = coordinateSet[2].getDefaultValue();
-        Rotation r(BodyRotationSequence, xangle, XAxis, 
+        Rotation r(BodyRotationSequence, xangle, XAxis,
                                          yangle, YAxis, zangle, ZAxis);
 
         EllipsoidJoint* mutableThis = const_cast<EllipsoidJoint*>(this);
@@ -195,13 +195,13 @@ void EllipsoidJoint::extendSetPropertiesFromState(const SimTK::State& state)
 }
 
 void EllipsoidJoint::generateDecorations
-       (bool                                        fixed, 
+       (bool                                        fixed,
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const
     {
         // invoke parent class method, this draws 2 Frames
-        Super::generateDecorations(fixed,hints,state,geometryArray); 
+        Super::generateDecorations(fixed,hints,state,geometryArray);
 
         double dimension = get_radii_x_y_z().norm()/2;
 

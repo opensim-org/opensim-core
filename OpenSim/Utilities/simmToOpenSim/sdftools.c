@@ -9,7 +9,7 @@
    Copyright (c) 2004 MusculoGraphics, Inc.
    All rights reserved.
 
-   Description: 
+   Description:
 
    Routines:
 
@@ -1204,7 +1204,7 @@ dpModelStruct* copyModelToDPModel(ModelStruct* ms, int muscleList[])
             dp->function[index] = (dpFunction*)simm_calloc(1, sizeof(dpFunction));
             to = dp->function[index++];
             // DKB Sept 17, 2009 added malloc because copy expects coeff_array_size to be set and memory to be allocated
-            malloc_function(to, from->coefficient_array_size);  
+            malloc_function(to, from->coefficient_array_size);
             copy_function(from, to);
          }
       }
@@ -1220,7 +1220,7 @@ dpModelStruct* copyModelToDPModel(ModelStruct* ms, int muscleList[])
     */
    copyQsToDP(ms, dp);
 
-   /* Copy the muscles. */   
+   /* Copy the muscles. */
    if (copyMusclesToDP(ms, dp, muscleList) == code_bad)  //moved after the copy Qs because muscles may refer to Qs
    {
       sprintf(errorbuffer, "Unable to create dynamic simulation for %s - error in muscles", ms->name);
@@ -1433,15 +1433,15 @@ static ReturnCode copyMusclesToDP(ModelStruct* ms, dpModelStruct* dp, int muscle
 static dpWrapObject* getDPWrapObject(dpModelStruct* dp, char name[])
 {
    int i;
-   
+
    if (name == NULL)
       return NULL;
-   
+
    for (i = 0; i < dp->num_wrap_objects; i++)
       if (STRINGS_ARE_EQUAL(name, dp->wrap_object[i].name))
          return &dp->wrap_object[i];
-      
-   return NULL; 
+
+   return NULL;
 }
 
 
@@ -1596,7 +1596,7 @@ static void copyQsToDP(ModelStruct* ms, dpModelStruct* dp)
          q->output = dpYes;
 
       q->torque = 0.0;
-      
+
       if (q->type == dpUnconstrainedQ)
          dp->num_gencoords++;
    }
@@ -1744,7 +1744,7 @@ int find_nth_rotation(JointStruct* jnt, int n)
    for (i=1; i<4; i++)
       if (i != min_index && i != max_index)
      return i;
-   
+
    return -1;
 }
 

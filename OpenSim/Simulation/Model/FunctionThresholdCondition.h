@@ -46,8 +46,8 @@ class Function;
  * FunctionThresholdCondition is a concrete implementation of a Condition.
  * A FunctionThresholdCondition returns true if its associate function is above
  * a certain threshold and false otherwise.
- * 
- * Specific FunctionThresholdConditions should be derived from this class. 
+ *
+ * Specific FunctionThresholdConditions should be derived from this class.
  *
  * @author Ajay Seth
  * @version 1.0
@@ -82,10 +82,10 @@ public:
     FunctionThresholdCondition& operator=(const FunctionThresholdCondition &aFunctionThresholdCondition);
     void copyData(const FunctionThresholdCondition &aFunctionThresholdCondition);
 
-    // Implement Condition interface. 
+    // Implement Condition interface.
 
     /**
-     *  The defining FunctionThresholdCondition method  
+     *  The defining FunctionThresholdCondition method
      */
     bool calcCondition(const SimTK::State& s) const override;
 

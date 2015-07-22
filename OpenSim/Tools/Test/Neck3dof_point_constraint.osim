@@ -2902,7 +2902,7 @@
           <location_body_1>       -0.06365       0.88207       0.00000000 </location_body_1>
 					<body_2> load_cell </body_2>
           <location_body_2>       0.00000000       0.00000000       0.00000000 </location_body_2>
-        </PointConstraint>	
+        </PointConstraint>
 			</objects>
 			<groups/>
 		</ConstraintSet>

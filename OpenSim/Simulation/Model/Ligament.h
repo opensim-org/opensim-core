@@ -56,7 +56,7 @@ public:
 //=============================================================================
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
-    /**@{**/    OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath, 
+    /**@{**/    OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath,
         "the set of points defining the path of the ligament");
     OpenSim_DECLARE_PROPERTY(resting_length, double,
         "resting length of the ligament");
@@ -79,19 +79,19 @@ public:
     // GET
     //--------------------------------------------------------------------------
     // Properties
-    const GeometryPath& getGeometryPath() const 
+    const GeometryPath& getGeometryPath() const
     {   return get_GeometryPath(); }
-    GeometryPath& updGeometryPath() 
+    GeometryPath& updGeometryPath()
     {   return upd_GeometryPath(); }
     virtual bool hasGeometryPath() const { return true;};
     virtual double getLength(const SimTK::State& s) const;
-    virtual double getRestingLength() const 
+    virtual double getRestingLength() const
     {   return get_resting_length(); }
     virtual bool setRestingLength(double aRestingLength);
-    virtual double getMaxIsometricForce() const 
+    virtual double getMaxIsometricForce() const
     {   return get_pcsa_force(); }
     virtual bool setMaxIsometricForce(double aMaxIsometricForce);
-    virtual const Function& getForceLengthCurve() const 
+    virtual const Function& getForceLengthCurve() const
     {   return get_force_length_curve(); }
     virtual bool setForceLengthCurve(const Function& aForceLengthCurve);
 
@@ -102,8 +102,8 @@ public:
     // COMPUTATIONS
     //--------------------------------------------------------------------------
     virtual double computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const;
-    virtual void computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+    virtual void computeForce(const SimTK::State& s,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const;
 
     //--------------------------------------------------------------------------
@@ -115,19 +115,19 @@ public:
 
 protected:
     /** Override this method if you would like to calculate a color for use
-    when the %Ligament's path is displayed in the visualizer. You do not have 
+    when the %Ligament's path is displayed in the visualizer. You do not have
     to invoke the base class ("Super") method, just replace it completely. This
-    method will be invoked during realizeDynamics() so the supplied \a state has 
-    already been realized through Stage::Velocity and you can access time, 
-    position, and velocity dependent quantities. You must \e not attempt to 
-    realize the passed-in \a state any further since we are already in the 
-    middle of realizing here. Return SimTK::Vec3(SimTK::NaN) if you want to 
+    method will be invoked during realizeDynamics() so the supplied \a state has
+    already been realized through Stage::Velocity and you can access time,
+    position, and velocity dependent quantities. You must \e not attempt to
+    realize the passed-in \a state any further since we are already in the
+    middle of realizing here. Return SimTK::Vec3(SimTK::NaN) if you want to
     leave the color unchanged (that's what the base class implementation does).
 
-    @param[in] state    
-        A SimTK::State already realized through Stage::Velocity. Do not 
+    @param[in] state
+        A SimTK::State already realized through Stage::Velocity. Do not
         attempt to realize it any further.
-    @returns 
+    @returns
         The desired color for the path as an RGB vector with each
         component ranging from 0 to 1, or NaN to indicate that the color
         should not be changed. **/
@@ -142,7 +142,7 @@ protected:
     void extendRealizeDynamics(const SimTK::State& state) const override;
 
     //Force reporting
-    /** 
+    /**
      * Methods to query a Force for the value actually applied during simulation
      * The names of the quantities (column labels) is returned by this first function
      * getRecordLabels()

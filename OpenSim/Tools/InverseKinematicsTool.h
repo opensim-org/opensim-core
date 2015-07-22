@@ -49,7 +49,7 @@ class Storage;
  * A Tool that performs an Inverse Kinematics analysis with a given model.
  * Inverse kinematics is the solution of internal coordinates that poses
  * the model such that the landmark locations (markers), affixed to the model,
- * minimize the weighted least-squares error with observations of markers 
+ * minimize the weighted least-squares error with observations of markers
  * in spatial coordinates. Observations of coordinates can also be included.
  *
  * @author Ajay Seth
@@ -62,7 +62,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(InverseKinematicsTool, Tool);
 // MEMBER VARIABLES
 //=============================================================================
 private:
-    
+
     /** Pointer to the model being investigated. */
     Model *_model;
 
@@ -70,7 +70,7 @@ private:
     PropertyStr _modelFileNameProp;
     std::string &_modelFileName;
 
-    /** The relative weight of the constraints. Infinity is a strictly enforced constraint. 
+    /** The relative weight of the constraints. Infinity is a strictly enforced constraint.
         Any other non-zero positive scalar is the penalty factor for constraint violations. */
     PropertyDbl _constraintWeightProp;
     double &_constraintWeight;
@@ -138,7 +138,7 @@ public:
 
     void setCoordinateFileName(const std::string& coordDataFileName) { _coordinateFileName=coordDataFileName;};
     const std::string& getCoordinateFileName() const { return  _coordinateFileName;};
-    
+
     //const OpenSim::Storage& getOutputStorage() const;
 private:
     void setNull();

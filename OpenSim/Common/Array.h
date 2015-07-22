@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -36,7 +36,7 @@ static const int Array_CAPMIN = 1;
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * A class for storing an array of values of type T.  The capacity of the class
@@ -261,9 +261,9 @@ friend std::ostream& operator<<(std::ostream &aOut,const Array<T> &aArray)
 }
 
 friend
-std::istream& operator>>(std::istream& in, Array<T>& out) 
-{   
-    //return readArrayFromStream<T>(in, out); 
+std::istream& operator>>(std::istream& in, Array<T>& out)
+{
+    //return readArrayFromStream<T>(in, out);
     return in;
 }
 /*
@@ -354,7 +354,7 @@ bool ensureCapacity(int aCapacity)
     } else {
         for(i=0;i<aCapacity;i++) newArray[i] = _defaultValue;
     }
-    
+
     // REASSIGN
     _capacity = aCapacity;
     _array = newArray;

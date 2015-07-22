@@ -3074,16 +3074,16 @@ void split_large_polygon(PolyhedronStruct* ph, int poly_num, SBoolean realloc_ve
    normal[0] = p->normal[0];
    normal[1] = p->normal[1];
    normal[2] = p->normal[2];
-      
+
    for (i=0; i<p->num_vertices-1; i++)
    {
       v_index[0] = p->vertex_index[i];
       v_index[1] = p->vertex_index[i+1];
       v_index[2] = new_v;
-      
+
       make_new_polygon(ph,3,v_index,p->polyhedron_number,
                normal,p->d,realloc_polygons,no);
-      
+
       p = &ph->polygon[poly_num];
    }
 
@@ -3571,7 +3571,7 @@ int find_nth_polygon(PolyhedronStruct* bone, int vertex_num, int* n)
 
 
 /* This routine adds a vertex to the polygons that share the edge from e1 to e2
- * 
+ *
  */
 void add_vertex(PolyhedronStruct* ph, int poly, int e1, int e2, int v_new)
 {
@@ -3764,10 +3764,10 @@ int find_bisection_point(PolyhedronStruct* ph, int poly, int v1, double p_bisect
       else
          p2 = i + 1;
 
-      if ((p1 != v1) && (p2 != v1)) 
+      if ((p1 != v1) && (p2 != v1))
       {
          MAKE_3DVECTOR(ph->vertex[p->vertex_index[p1]].coord,
-            ph->vertex[p->vertex_index[p2]].coord,p1p2); 
+            ph->vertex[p->vertex_index[p2]].coord,p1p2);
          COPY_1X3VECTOR(ph->vertex[p->vertex_index[p1]].coord,p1vec);
          COPY_1X3VECTOR(ph->vertex[p->vertex_index[p2]].coord,p2vec);
 
@@ -4168,7 +4168,7 @@ void free_polyhedron(PolyhedronStruct* ph, SBoolean free_ph, ModelStruct* ms)
    {
       FREE_IFNOTNULL(ph->polygon[i].vertex_index);
       FREE_IFNOTNULL(ph->polygon[i].boolcode.seglst);
-//dkb crash sept 15, 2009      
+//dkb crash sept 15, 2009
       FREE_IFNOTNULL(ph->polygon[i].boolcode.seg_list.seg);
    }
 

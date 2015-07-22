@@ -45,7 +45,7 @@ class CMC;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /**
- * A Computed Muscle Control (CMC) optimization target for controlling 
+ * A Computed Muscle Control (CMC) optimization target for controlling
  * dynamic systems whose actuators may be themselves governed by differential
  * equations, meaning there may be non-linear behavior and delays in force
  * production.
@@ -63,7 +63,7 @@ class CMC;
  * to the model.  Althernatively, one can use a different optimization
  * target ActuatorForceTarget.  The benefits of using the fast
  * target are both speed and tracking accuracy.
- * 
+ *
  * @version 1.0
  * @author Frank C. Anderson
  */
@@ -88,12 +88,12 @@ private:
     Array<double> _recipAreaSquared;
     /** Reciprocal of optimal force squared accounting for force-length curve if actuator is a muscle. */
     Array<double> _recipOptForceSquared;
-    
+
     Array<double> _recipAvgActForceRangeSquared;
 
     SimTK::Matrix _constraintMatrix;
     SimTK::Vector _constraintVector;
-    
+
     // Save a (copy) of the state for state tracking purposes
     SimTK::State    _saveState;
 //==============================================================================

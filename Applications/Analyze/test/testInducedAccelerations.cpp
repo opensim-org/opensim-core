@@ -79,7 +79,7 @@ void testDoublePendulumWithSolver()
     statesStore.getDataForIdentifier("q", states);
 
     Model pendulum("double_pendulum.osim", true);
-    
+
     PrescribedController* controller=
         new PrescribedController();
 
@@ -101,11 +101,11 @@ void testDoublePendulumWithSolver()
         u[0]= (states[2])[i];
         u[1]= (states[3])[i];
 
-        // Compute velocity contribution 
-        Vector udot_vel = iaaSolver.solve(s, "velocity"); 
-        // velocity first, since other contributors set u's to zero and the state is not restored until next iteration. 
+        // Compute velocity contribution
+        Vector udot_vel = iaaSolver.solve(s, "velocity");
+        // velocity first, since other contributors set u's to zero and the state is not restored until next iteration.
         Vector udot = calcDoublePendulumUdot(pendulum, s, 0, 0, false, true);
-        
+
         ASSERT_EQUAL(udot[0], udot_vel[0], 1e-5, __FILE__, __LINE__, "Induced Accelerations of velocity for double pendulum q1 FAILED");
         ASSERT_EQUAL(udot[1], udot_vel[1], 1e-5, __FILE__, __LINE__, "Induced Accelerations of velocity for double pendulum q2 FAILED");
 
@@ -115,9 +115,9 @@ void testDoublePendulumWithSolver()
         ASSERT_EQUAL(udot[0], q1ddot, 1e-5, __FILE__, __LINE__, "Induced Accelerations of velocity for double pendulum q1 FAILED");
         ASSERT_EQUAL(udot[1], q2ddot, 1e-5, __FILE__, __LINE__, "Induced Accelerations of velocity for double pendulum q2 FAILED");
 
-        const SimTK::SpatialVec& rod1Acc = 
+        const SimTK::SpatialVec& rod1Acc =
             iaaSolver.getInducedBodyAcceleration(s, "rod1");
-        const SimTK::SpatialVec& rod2Acc = 
+        const SimTK::SpatialVec& rod2Acc =
             iaaSolver.getInducedBodyAcceleration(s, "rod2");
 
         // The z-component of the angular acc of the body should be equivalent
@@ -127,9 +127,9 @@ void testDoublePendulumWithSolver()
         ASSERT_EQUAL(udot[0]+udot[1], rod2Acc[0][2], 1e-5, __FILE__, __LINE__, "Induced rod2 Acceleration due to velocity FAILED");
 
         // Compute gravity contribution
-        Vector udot_grav = iaaSolver.solve(s, "gravity"); 
+        Vector udot_grav = iaaSolver.solve(s, "gravity");
         udot = calcDoublePendulumUdot(pendulum, s, 0, 0, true, false);
-                
+
         ASSERT_EQUAL(udot[0], udot_grav[0], 1e-5, __FILE__, __LINE__, "Induced Accelerations of gravity for double pendulum q1 FAILED");
         ASSERT_EQUAL(udot[1], udot_grav[1], 1e-5, __FILE__, __LINE__, "Induced Accelerations of gravity for double pendulum q2 FAILED");
 
@@ -137,16 +137,16 @@ void testDoublePendulumWithSolver()
         //cout << "CoM Acceleration due to gravity: " << comAcc << endl;
 
         // Compute Torq1 contribution
-        Vector udot_torq1 = iaaSolver.solve(s, "Torq1"); 
+        Vector udot_torq1 = iaaSolver.solve(s, "Torq1");
         udot = calcDoublePendulumUdot(pendulum, s, torq1, 0, false, false);
-        
+
         ASSERT_EQUAL(udot[0], udot_torq1[0], 1e-5, __FILE__, __LINE__, "Induced Accelerations of Torq1 for double pendulum q1 FAILED");
         ASSERT_EQUAL(udot[1], udot_torq1[1], 1e-5, __FILE__, __LINE__, "Induced Accelerations of Torq1 for double pendulum q2 FAILED");
 
         // Compute Torq2 contribution
-        Vector udot_torq2 = iaaSolver.solve(s, "Torq2"); 
+        Vector udot_torq2 = iaaSolver.solve(s, "Torq2");
         udot = calcDoublePendulumUdot(pendulum, s, 0, torq2, false, false);
-        
+
         ASSERT_EQUAL(udot[0], udot_torq2[0], 1e-5, __FILE__, __LINE__, "Induced Accelerations of Torq2 for double pendulum q1 FAILED");
         ASSERT_EQUAL(udot[1], udot_torq2[1], 1e-5, __FILE__, __LINE__, "Induced Accelerations of Torq2 for double pendulum q2 FAILED");
     }
@@ -192,8 +192,8 @@ void testDoublePendulum()
         u[0]= (states[2])[i];
         u[1]= (states[3])[i];
 
-        // Compute velocity contribution 
-        // velocity first, since other contributors set u's to zero and the state is not restored until next iteration. 
+        // Compute velocity contribution
+        // velocity first, since other contributors set u's to zero and the state is not restored until next iteration.
         Vector udot = calcDoublePendulumUdot(pendulum, s, 0, 0, false, true);
         ASSERT_EQUAL(udot[0], u1dot_vel[i], 1e-5, __FILE__, __LINE__, "Induced Accelerations of velocity for double pendulum q1 FAILED");
         ASSERT_EQUAL(udot[1], u2dot_vel[i], 1e-5, __FILE__, __LINE__, "Induced Accelerations of velocity for double pendulum q2 FAILED");
@@ -219,13 +219,13 @@ void testDoublePendulum()
 
 
 Vector calcDoublePendulumUdot(const Model &model, State &s, double Torq1, double Torq2, bool gravity, bool velocity)
-{   
+{
     if(gravity)
         model.getGravityForce().enable(s);
     else
         model.getGravityForce().disable(s);
 
-    
+
     if(!velocity)
         s.updU() = 0.0;
 

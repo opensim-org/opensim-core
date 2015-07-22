@@ -65,9 +65,9 @@ void Muscle::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
     if ( versionNumber < XMLDocument::getLatestVersion()) {
         if (Object::getDebugLevel()>=1)
             cout << "Updating Muscle object to latest format..." << endl;
-        
+
         if (versionNumber <= 20301){
-            SimTK::Xml::element_iterator pathIter = 
+            SimTK::Xml::element_iterator pathIter =
                                             aNode.element_begin("GeometryPath");
             if (pathIter != aNode.element_end()) {
                 XMLDocument::renameChildNode(*pathIter, "MusclePointSet", "PathPointSet");
@@ -213,28 +213,28 @@ double Muscle::getMaxIsometricForce() const
 double Muscle::getOptimalFiberLength() const
 {   return get_optimal_fiber_length(); }
 
-double Muscle::getTendonSlackLength() const 
+double Muscle::getTendonSlackLength() const
 {   return get_tendon_slack_length(); }
 
-double Muscle::getPennationAngleAtOptimalFiberLength() const 
+double Muscle::getPennationAngleAtOptimalFiberLength() const
 {   return get_pennation_angle_at_optimal(); }
 
-double Muscle::getMaxContractionVelocity() const 
+double Muscle::getMaxContractionVelocity() const
 {   return get_max_contraction_velocity(); }
 
 void Muscle::setMaxIsometricForce(double aMaxIsometricForce)
 {   set_max_isometric_force(aMaxIsometricForce); }
 
-void Muscle::setOptimalFiberLength(double aOptimalFiberLength) 
+void Muscle::setOptimalFiberLength(double aOptimalFiberLength)
 {   set_optimal_fiber_length(aOptimalFiberLength); }
 
-void Muscle::setTendonSlackLength(double aTendonSlackLength) 
+void Muscle::setTendonSlackLength(double aTendonSlackLength)
 {   set_tendon_slack_length(aTendonSlackLength); }
 
 void Muscle::setPennationAngleAtOptimalFiberLength(double aPennationAngle)
 {   set_pennation_angle_at_optimal(aPennationAngle); }
 
-void Muscle::setMaxContractionVelocity(double aMaxContractionVelocity) 
+void Muscle::setMaxContractionVelocity(double aMaxContractionVelocity)
 {   set_max_contraction_velocity(aMaxContractionVelocity); }
 
 
@@ -261,9 +261,9 @@ void Muscle::extendConnectToModel(Model& aModel)
 
     addModelingOption("ignore_tendon_compliance", 1);
     addModelingOption("ignore_activation_dynamics", 1);
-    
-    // Cache the calculated values for this muscle categorized by their realization stage 
-    
+
+    // Cache the calculated values for this muscle categorized by their realization stage
+
     //Matt.Millard: changed length info to the velocity stage, as I need to know
     //              both the position and velocity of the multibody system and
     //              the muscles path before solving for the fiber length and
@@ -289,13 +289,13 @@ void Muscle::extendSetPropertiesFromState(const SimTK::State& state)
 void  Muscle::extendInitStateFromProperties(SimTK::State& state) const {
     Super::extendInitStateFromProperties(state);
 
-    setIgnoreTendonCompliance(state, 
+    setIgnoreTendonCompliance(state,
         get_ignore_tendon_compliance());
-    setIgnoreActivationDynamics(state, 
+    setIgnoreActivationDynamics(state,
         get_ignore_activation_dynamics());
 }
 
-// Get/set runtime flag to ignore tendon compliance when computing muscle 
+// Get/set runtime flag to ignore tendon compliance when computing muscle
 // dynamics.
 bool Muscle::getIgnoreTendonCompliance(const SimTK::State& s) const
 {
@@ -326,14 +326,14 @@ void Muscle::setIgnoreActivationDynamics(SimTK::State& s, bool ignore) const
 //=============================================================================
 //_____________________________________________________________________________
 //**
-// * get the excitation value for this Muscle 
+// * get the excitation value for this Muscle
 // */
 double Muscle::getExcitation( const SimTK::State& s) const {
     return( getControl(s) );
 }
 
 
-/* get the activation level of the muscle, which modulates the active force of the muscle 
+/* get the activation level of the muscle, which modulates the active force of the muscle
     and has a normalized (0 to 1) value */
 double Muscle::getActivation(const SimTK::State& s) const
 {
@@ -341,7 +341,7 @@ double Muscle::getActivation(const SimTK::State& s) const
 }
 
 /* get the current working fiber length (m) for the muscle */
-double Muscle::getFiberLength(const SimTK::State& s) const 
+double Muscle::getFiberLength(const SimTK::State& s) const
 {
     return getMuscleLengthInfo(s).fiberLength;
 }
@@ -373,7 +373,7 @@ double Muscle::getNormalizedFiberLength(const SimTK::State& s) const
 /* get the current fiber length (m) projected (*cos(pennationAngle)) onto the tendon direction */
 double Muscle::getFiberLengthAlongTendon(const SimTK::State& s) const
 {
-    return getMuscleLengthInfo(s).fiberLength * getMuscleLengthInfo(s).cosPennationAngle; 
+    return getMuscleLengthInfo(s).fiberLength * getMuscleLengthInfo(s).cosPennationAngle;
 }
 
 /* get the current tendon strain (delta_l/lo is dimensionless)  */
@@ -388,13 +388,13 @@ double Muscle::getFiberPotentialEnergy(const SimTK::State& s) const
     return getMusclePotentialEnergyInfo(s).fiberPotentialEnergy;
 }
 
-/* the potential energy (J) stored in the tendon */ 
+/* the potential energy (J) stored in the tendon */
 double Muscle::getTendonPotentialEnergy(const SimTK::State& s) const
 {
     return getMusclePotentialEnergyInfo(s).tendonPotentialEnergy;
 }
 
-/* the total potential energy (J) stored in the muscle */   
+/* the total potential energy (J) stored in the muscle */
 double Muscle::getMusclePotentialEnergy(const SimTK::State& s) const
 {
     return getMusclePotentialEnergyInfo(s).musclePotentialEnergy;
@@ -425,7 +425,7 @@ double Muscle::getNormalizedFiberVelocity(const SimTK::State& s) const
 }
 
 /* get the current fiber velocity (m/s) projected onto the tendon direction */
-double Muscle::getFiberVelocityAlongTendon(const SimTK::State& s) const 
+double Muscle::getFiberVelocityAlongTendon(const SimTK::State& s) const
 {
     return getFiberVelocityInfo(s).fiberVelocityAlongTendon;
 }
@@ -457,7 +457,7 @@ double Muscle::getFiberForce(const SimTK::State& s) const
 /* get the current fiber force (N) applied to the tendon */
 double Muscle::getFiberForceAlongTendon(const SimTK::State& s) const
 {
-    return getMuscleDynamicsInfo(s).fiberForceAlongTendon; 
+    return getMuscleDynamicsInfo(s).fiberForceAlongTendon;
 }
 
 
@@ -468,7 +468,7 @@ double Muscle::getActiveFiberForce(const SimTK::State& s) const
 }
 
 /* get the current passive fiber force (N) passive_force_length relationship */
-double Muscle::getPassiveFiberForce(const SimTK::State& s) const 
+double Muscle::getPassiveFiberForce(const SimTK::State& s) const
 {
     return getMuscleDynamicsInfo(s).passiveFiberForce;
 }
@@ -480,7 +480,7 @@ double Muscle::getActiveFiberForceAlongTendon(const SimTK::State& s) const
 }
 
 /* get the current passive fiber force (N) projected onto the tendon direction */
-double Muscle::getPassiveFiberForceAlongTendon(const SimTK::State& s) const 
+double Muscle::getPassiveFiberForceAlongTendon(const SimTK::State& s) const
 {
     return getMuscleDynamicsInfo(s).passiveFiberForce * getMuscleLengthInfo(s).cosPennationAngle;
 }
@@ -499,7 +499,7 @@ double Muscle::getFiberStiffness(const SimTK::State& s) const
 }
 
 /* get the current fiber stiffness (N/m) defined as the partial derivative
-    of fiber force along the tendon w.r.t. small changes in fiber length 
+    of fiber force along the tendon w.r.t. small changes in fiber length
     along the tendon*/
 double Muscle::getFiberStiffnessAlongTendon(const SimTK::State& s) const
 {
@@ -558,7 +558,7 @@ const Muscle::MuscleLengthInfo& Muscle::getMuscleLengthInfo(const SimTK::State& 
         MuscleLengthInfo &umli = updMuscleLengthInfo(s);
         calcMuscleLengthInfo(s, umli);
         markCacheVariableValid(s,"lengthInfo");
-        // don't bother fishing it out of the cache since 
+        // don't bother fishing it out of the cache since
         // we just calculated it and still have a handle on it
         return umli;
     }
@@ -577,7 +577,7 @@ getFiberVelocityInfo(const SimTK::State& s) const
         FiberVelocityInfo& ufvi = updFiberVelocityInfo(s);
         calcFiberVelocityInfo(s, ufvi);
         markCacheVariableValid(s,"velInfo");
-        // don't bother fishing it out of the cache since 
+        // don't bother fishing it out of the cache since
         // we just calculated it and still have a handle on it
         return ufvi;
     }
@@ -597,7 +597,7 @@ getMuscleDynamicsInfo(const SimTK::State& s) const
         MuscleDynamicsInfo& umdi = updMuscleDynamicsInfo(s);
         calcMuscleDynamicsInfo(s, umdi);
         markCacheVariableValid(s,"dynamicsInfo");
-        // don't bother fishing it out of the cache since 
+        // don't bother fishing it out of the cache since
         // we just calculated it and still have a handle on it
         return umdi;
     }
@@ -616,7 +616,7 @@ getMusclePotentialEnergyInfo(const SimTK::State& s) const
         MusclePotentialEnergyInfo& umpei = updMusclePotentialEnergyInfo(s);
         calcMusclePotentialEnergyInfo(s, umpei);
         markCacheVariableValid(s,"potentialEnergyInfo");
-        // don't bother fishing it out of the cache since 
+        // don't bother fishing it out of the cache since
         // we just calculated it and still have a handle on it
         return umpei;
     }
@@ -633,7 +633,7 @@ updMusclePotentialEnergyInfo(const SimTK::State& s) const
 
 //_____________________________________________________________________________
 /**
- * Get the stress in this muscle actuator.  It is calculated as the force 
+ * Get the stress in this muscle actuator.  It is calculated as the force
  * divided by the maximum isometric force (which is proportional to its area).
  */
 double Muscle::getStress(const SimTK::State& s) const
@@ -661,7 +661,7 @@ void Muscle::calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi
         + "::calcFiberVelocityInfo() NOT IMPLEMENTED.");
 }
 
-/* calculate muscle's active and passive force-length, force-velocity, 
+/* calculate muscle's active and passive force-length, force-velocity,
     tendon force, relationships and their related values */
 void Muscle::calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
 {
@@ -670,7 +670,7 @@ void Muscle::calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& m
 }
 
 /* calculate muscle's fiber and tendon potential energy */
-void Muscle::calcMusclePotentialEnergyInfo(const SimTK::State& s, 
+void Muscle::calcMusclePotentialEnergyInfo(const SimTK::State& s,
     MusclePotentialEnergyInfo& mpei) const
 {
     throw Exception("ERROR- "+getConcreteClassName()
@@ -681,7 +681,7 @@ void Muscle::calcMusclePotentialEnergyInfo(const SimTK::State& s,
 //=============================================================================
 // Required by CMC and Static Optimization
 //=============================================================================
-double Muscle::calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
+double Muscle::calcInextensibleTendonActiveFiberForce(SimTK::State& s,
                                                   double activation) const
 {
     const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
@@ -698,14 +698,14 @@ double Muscle::calcInextensibleTendonActiveFiberForce(SimTK::State& s,
 /**
  * Apply the muscle's force at its points of attachment to the bodies.
  */
-void Muscle::computeForce(const SimTK::State& s, 
-                          SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void Muscle::computeForce(const SimTK::State& s,
+                          SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                           SimTK::Vector& generalizedForces) const
 {
     Super::computeForce(s, bodyForces, generalizedForces); // Calls compute actuation.
 
     // NOTE: Actuation could be negative, in particular during CMC, when the optimizer
-    // is computing gradients, but in those cases the actuation will be 
+    // is computing gradients, but in those cases the actuation will be
     // overridden and will not be computed by the muscle
     if (!isActuationOverriden(s) && (getActuation(s) < -SimTK::SqrtEps)) {
         string msg = getConcreteClassName()
@@ -722,7 +722,7 @@ double Muscle::computePotentialEnergy(const SimTK::State& s) const
 }
 
 SimTK::Vec3 Muscle::computePathColor(const SimTK::State& state) const {
-    const double activation = 
+    const double activation =
         SimTK::clamp(0., getActivation(state), 1.);
     const SimTK::Vec3 color(activation, 0, 1-activation); // blue to red
     return color;
@@ -752,7 +752,7 @@ void Muscle::updateGeometry(const SimTK::State& s)
         cout << "Muscle::calcPennationAngle() ERRROR- fiber length is zero." << endl;
         return SimTK::NaN;
     }
-    
+
     double value = _muscleWidth/aFiberLength;
 
     if(value >= 1.0){

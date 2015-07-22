@@ -28,7 +28,7 @@
 #include "BodySet.h"
 #include "Model.h"
 #include "GeometryPath.h"
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h> 
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 
@@ -207,7 +207,7 @@ void PathPoint::setBody(const PhysicalFrame& aBody)
 //_____________________________________________________________________________
 /**
  * Change the body that this point is attached to. It assumes that the body is
- * already set, so that connectToModelAndPath() needs to be called to update 
+ * already set, so that connectToModelAndPath() needs to be called to update
  * dependent information.
  *
  * @param s State.

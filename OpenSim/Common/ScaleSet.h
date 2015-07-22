@@ -23,21 +23,21 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
- * Author:  
+/*
+ * Author:
  */
 
 // INCLUDES
 #include "Scale.h"
 #include "Set.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
 //class Model;
 
 //=============================================================================
 /*
- * A set of scale factors to scale a model 
+ * A set of scale factors to scale a model
  *
  * @author Ayman Habib
  * @version 1.0

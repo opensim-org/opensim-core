@@ -45,10 +45,10 @@ namespace OpenSim {
  * A class implementing a RigidTendonMuscle actuator with no states.
  * The path information for a RigidTendonMuscle is contained
  * in the base class, and the force-generating behavior should is defined in
- * this class. The force (muscle tension) assumes rigid tendon so that 
+ * this class. The force (muscle tension) assumes rigid tendon so that
  * fiber-length and velocity are kinematics dependent and the force-length
  * force-velocity relationships are evaluated directly.
- * The control of this model is its activation. Force production is instantaneous  
+ * The control of this model is its activation. Force production is instantaneous
  * with no excitation-to-activation dynamics and excitation=activation.
  *
  * @author Ajay Seth
@@ -59,7 +59,7 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
+    /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(active_force_length_curve, Function,
@@ -80,7 +80,7 @@ public:
                       double                tendonSlackLength,
                       double                pennationAngle);
 
-    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // Uses default (compiler-generated) destructor, copy constructor, copy
     // assignment operator.
 
     /** activation level for this muscle */
@@ -96,7 +96,7 @@ protected:
         normalized velocities, pennation angular velocity, etc... */
     void  calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const;
 
-    /** calculate muscle's active and passive force-length, force-velocity, 
+    /** calculate muscle's active and passive force-length, force-velocity,
         tendon force, relationships and their related values */
     void  calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const;
 
@@ -104,7 +104,7 @@ protected:
     void calcMusclePotentialEnergyInfo(const SimTK::State& s,
         MusclePotentialEnergyInfo& mpei) const;
 
-    /** compute initial fiber length (velocity) such that muscle fiber and tendon are 
+    /** compute initial fiber length (velocity) such that muscle fiber and tendon are
         in static equilibrium and update the state */
     void computeInitialFiberEquilibrium(SimTK::State& s) const {}
 
@@ -114,7 +114,7 @@ protected:
     double computeActuation( const SimTK::State& s ) const;
     double computeIsometricForce(SimTK::State& s, double activation) const;
     void equilibrate(SimTK::State& s) const {}
-    
+
 
 private:
     void setNull();

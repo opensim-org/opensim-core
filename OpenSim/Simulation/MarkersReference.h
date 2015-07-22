@@ -44,13 +44,13 @@ private:
 public:
     MarkerWeight() : Object(), _weight(_weightProp.getValueDbl()) {}
 
-    MarkerWeight(std::string name, double weight) 
+    MarkerWeight(std::string name, double weight)
     :   Object(), _weight(_weightProp.getValueDbl())
     {   setName(name); _weight = weight; }
 
     //Copy
-    MarkerWeight(const MarkerWeight& source) 
-    :   Object(source), _weight(_weightProp.getValueDbl()) 
+    MarkerWeight(const MarkerWeight& source)
+    :   Object(source), _weight(_weightProp.getValueDbl())
     {   _weight = source._weight; }
 
     #ifndef SWIG
@@ -129,13 +129,13 @@ public:
     MarkersReference(MarkerData& aMarkerData, const Set<MarkerWeight>* aMarkerWeightSet=NULL);
 
     MarkersReference& operator=(const MarkersReference &aRef) {Reference_<SimTK::Vec3>::operator=(aRef); copyData(aRef); return(*this); };
-    
+
     virtual ~MarkersReference() {}
 
     void copyData(const MarkersReference &aRef) {
         _markersFile = aRef._markersFile;
         setMarkerWeightSet(aRef._markerWeightSet);
-        _defaultWeight = aRef._defaultWeight;  
+        _defaultWeight = aRef._defaultWeight;
     }
 
     /** load the marker data for this MarkersReference from markerFile  */

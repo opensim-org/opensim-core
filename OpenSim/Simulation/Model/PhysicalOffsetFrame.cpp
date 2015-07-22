@@ -34,7 +34,7 @@ PhysicalOffsetFrame::PhysicalOffsetFrame() : OffsetFrame<PhysicalFrame>()
 }
 
 PhysicalOffsetFrame::PhysicalOffsetFrame(const PhysicalFrame& parent,
-    const SimTK::Transform& offset) : 
+    const SimTK::Transform& offset) :
         OffsetFrame<PhysicalFrame>(parent, offset)
 {
     setAuthors("Ajay Seth");

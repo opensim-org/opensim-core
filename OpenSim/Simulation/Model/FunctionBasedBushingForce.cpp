@@ -48,11 +48,11 @@ FunctionBasedBushingForce::FunctionBasedBushingForce()
 }
 
 // Convenience constructor for zero value force functions.
-FunctionBasedBushingForce::FunctionBasedBushingForce(const string&    body1Name, 
-                           const Vec3&      point1, 
+FunctionBasedBushingForce::FunctionBasedBushingForce(const string&    body1Name,
+                           const Vec3&      point1,
                            const Vec3&      orientation1,
-                           const string&    body2Name, 
-                           const Vec3&      point2, 
+                           const string&    body2Name,
+                           const Vec3&      point2,
                            const Vec3&      orientation2)
 {
     setNull();
@@ -64,19 +64,19 @@ FunctionBasedBushingForce::FunctionBasedBushingForce(const string&    body1Name,
     set_orientation_body_1(orientation1);
     set_location_body_2(point2);
     set_orientation_body_2(orientation2);
-    
+
 }
 
 // Convenience constructor for linear functions.
-FunctionBasedBushingForce::FunctionBasedBushingForce(const string&    body1Name, 
-                           const Vec3&      point1, 
+FunctionBasedBushingForce::FunctionBasedBushingForce(const string&    body1Name,
+                           const Vec3&      point1,
                            const Vec3&      orientation1,
-                           const string&    body2Name, 
-                           const Vec3&      point2, 
+                           const string&    body2Name,
+                           const Vec3&      point2,
                            const Vec3&      orientation2,
-                           const Vec3&      transStiffness, 
-                           const Vec3&      rotStiffness, 
-                           const Vec3&      transDamping, 
+                           const Vec3&      transStiffness,
+                           const Vec3&      rotStiffness,
+                           const Vec3&      transDamping,
                            const Vec3&      rotDamping)
 {
     setNull();
@@ -130,10 +130,10 @@ void FunctionBasedBushingForce::constructProperties()
     constructProperty_f_x_delta_x_function( zeroFunc );
     constructProperty_f_y_delta_y_function( zeroFunc );
     constructProperty_f_z_delta_z_function( zeroFunc );
-    
+
     constructProperty_rotational_damping(Vec3(0));
     constructProperty_translational_damping(Vec3(0));
-    
+
     constructProperty_moment_visual_scale( 1.0 );
     constructProperty_force_visual_scale( 1.0 );
     constructProperty_visual_aspect_ratio(1.0);
@@ -202,7 +202,7 @@ void FunctionBasedBushingForce::setBody2ByName(const std::string& aBodyName)
 }
 
 /** Set the location and orientation (optional) for weld on body 1*/
-void FunctionBasedBushingForce::setBody1BushingLocation(const Vec3& location, 
+void FunctionBasedBushingForce::setBody1BushingLocation(const Vec3& location,
                                            const Vec3& orientation)
 {
     set_location_body_1(location);
@@ -210,7 +210,7 @@ void FunctionBasedBushingForce::setBody1BushingLocation(const Vec3& location,
 }
 
 /** Set the location and orientation (optional) for weld on body 2*/
-void FunctionBasedBushingForce::setBody2BushingLocation(const Vec3& location, 
+void FunctionBasedBushingForce::setBody2BushingLocation(const Vec3& location,
                                            const Vec3& orientation)
 {
     set_location_body_2(location);
@@ -234,7 +234,7 @@ SimTK::Vec6 FunctionBasedBushingForce::computeDeflection(const SimTK::State& s) 
     // Define the frame on body 2 as the "moving" frame, M
     Transform X_GM = X_GB2 * _inb2;
     // Express M in F
-    Transform X_FM = ~X_GF * X_GM;    
+    Transform X_FM = ~X_GF * X_GM;
 
     // the deviation of the two frames measured by dq
     Vec6 dq(0);
@@ -248,15 +248,15 @@ SimTK::Vec6 FunctionBasedBushingForce::computeDeflection(const SimTK::State& s) 
 
 /** compute the bushing force at the bushing location
 */
-void FunctionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& state, 
+void FunctionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& state,
     SpatialVec& forces_on_M_in_ground, SpatialVec& forces_on_F_in_ground) const
 {
     const Transform& X_GB1 = _b1->getBodyTransform(state);
     const Transform& X_GB2 = _b2->getBodyTransform(state);
 
-    Transform X_GF = X_GB1 * _inb1;   
-    Transform X_GM = X_GB2 * _inb2;   
-    Transform X_FM = ~X_GF * X_GM;    
+    Transform X_GF = X_GB1 * _inb1;
+    Transform X_GM = X_GB2 * _inb2;
+    Transform X_FM = ~X_GF * X_GM;
     const Rotation& R_GF = X_GF.R();
     const Rotation& R_GM = X_GM.R();
     const Rotation& R_FM = X_FM.R();
@@ -294,7 +294,7 @@ void FunctionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& state
 
     // To get derivative in F, we must remove the part due to the
     // angular velocity w_GF of F in G.
-    SpatialVec V_FM = ~R_GF * SpatialVec(V_FM_G[0], 
+    SpatialVec V_FM = ~R_GF * SpatialVec(V_FM_G[0],
                                  V_FM_G[1] - V_GF[0] % p_FM_G);
 
 
@@ -317,9 +317,9 @@ void FunctionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& state
         _dampingMatrix[i][i] = get_rotational_damping(0)[i];
         _dampingMatrix[i+3][i+3] = get_translational_damping(0)[i];
     }
-    
-    // velocity dependent force according to the speed of frame2 on 
-    // body2 relative to frame1 
+
+    // velocity dependent force according to the speed of frame2 on
+    // body2 relative to frame1
     Vec6 fv = _dampingMatrix * dqdot;
 
     Vec6 f = -(fk+fv); // generalized forces on body 2
@@ -335,7 +335,7 @@ void FunctionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& state
     const Vec3  mB2_M = ~N_FM * fB2_q; // moment acting on body 2, exp. in M
     const Vec3  mB2_G =  R_GM * mB2_M; // moment on body 2, now exp. in G
 
-    // Transform force from F frame to ground. This is the force to 
+    // Transform force from F frame to ground. This is the force to
     // apply to body 2 at point OM; -f goes on body 1 at the same
     // spatial location. Here we actually apply it at OF so we have to
     // account for the moment produced by the shift from OM.
@@ -355,25 +355,25 @@ void FunctionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& state
  * FunctionBasedBushingForce implementation based SimTK::Force::LinearBushing
  * developed and implemented by Michael Sherman.
  */
-void FunctionBasedBushingForce::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void FunctionBasedBushingForce::computeForce(const SimTK::State& s,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const
 {
-    
-    
+
+
     SpatialVec F_GM( Vec3(0.0),Vec3(0.0) );
     SpatialVec F_GF( Vec3(0.0),Vec3(0.0) );
-    
-    
+
+
     ComputeForcesAtBushing(s, F_GM, F_GF);
-    
+
 
     const Transform& X_GB1 = _b1->getBodyTransform(s);
     const Transform& X_GB2 = _b2->getBodyTransform(s);
 
-    Transform X_GF = X_GB1 * _inb1;   
-    Transform X_GM = X_GB2 * _inb2;   
-    Transform X_FM = ~X_GF * X_GM;    
+    Transform X_GF = X_GB1 * _inb1;
+    Transform X_GM = X_GB2 * _inb2;
+    Transform X_FM = ~X_GF * X_GM;
     const Rotation& R_GF = X_GF.R();
     const Rotation& R_GM = X_GM.R();
     const Rotation& R_FM = X_FM.R();
@@ -382,7 +382,7 @@ void FunctionBasedBushingForce::computeForce(const SimTK::State& s,
     Vec3 p_B1F_G =  X_GB1.R() * _inb1.p();   // 15 flops
     Vec3 p_B2M_G =  X_GB2.R() * _inb2.p();   // 15 flops
     Vec3 p_FM_G  =  X_GF.R()  * X_FM.p();    // 15 flops
-    
+
     // Shift forces to body origins.
     SpatialVec F_GB2(F_GM[0] + p_B2M_G % F_GM[1], F_GM[1]);
     SpatialVec F_GB1(F_GF[0] + p_B1F_G % F_GF[1], F_GF[1]);
@@ -415,11 +415,11 @@ double FunctionBasedBushingForce::computePotentialEnergy(const SimTK::State& s) 
 //=============================================================================
 // Reporting
 //=============================================================================
-/** 
+/**
  * Provide names of the quantities (column labels) of the force value(s) reported
- * 
+ *
  */
-OpenSim::Array<std::string> FunctionBasedBushingForce::getRecordLabels() const 
+OpenSim::Array<std::string> FunctionBasedBushingForce::getRecordLabels() const
 {
     const string& body1Name = get_body_1();
     const string& body2Name = get_body_2();
@@ -444,11 +444,11 @@ OpenSim::Array<std::string> FunctionBasedBushingForce::getRecordLabels() const
  * Provide the value(s) to be reported that correspond to the labels
  */
 OpenSim::Array<double> FunctionBasedBushingForce::
-getRecordValues(const SimTK::State& state) const 
+getRecordValues(const SimTK::State& state) const
 {
     SpatialVec F_GM( Vec3(0.0),Vec3(0.0) );
     SpatialVec F_GF( Vec3(0.0),Vec3(0.0) );
-    
+
     ComputeForcesAtBushing(state, F_GM, F_GF);
 
     OpenSim::Array<double> values(1);
@@ -466,7 +466,7 @@ getRecordValues(const SimTK::State& state) const
 
     OpenSim::Array<double> values(1);
 
-    const SimTK::Force::LinearBushing &simtkSpring = 
+    const SimTK::Force::LinearBushing &simtkSpring =
         (SimTK::Force::LinearBushing &)(_model->getForceSubsystem().getForce(_index));
 
     SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
@@ -497,13 +497,13 @@ getRecordValues(const SimTK::State& state) const
  */
 
 void FunctionBasedBushingForce::generateDecorations
-       (bool                                        fixed, 
+       (bool                                        fixed,
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const
     {
         // invoke parent class method
-        Super::generateDecorations(fixed,hints,state,geometryArray); 
+        Super::generateDecorations(fixed,hints,state,geometryArray);
         // the frame on body 1 will be red
         SimTK::Vec3 frame1color(1.0,0.0,0.0);
         // the frame on body 2 will be blue
@@ -536,7 +536,7 @@ void FunctionBasedBushingForce::generateDecorations
 
             SpatialVec F_GM( Vec3(0.0),Vec3(0.0) );
             SpatialVec F_GF( Vec3(0.0),Vec3(0.0) );
-        
+
             _model->getMultibodySystem().realize(state, Stage::Velocity );
             // calculate forces and moments the bushing applies to each body
             ComputeForcesAtBushing(state, F_GM, F_GF);
@@ -544,9 +544,9 @@ void FunctionBasedBushingForce::generateDecorations
             // location of the bushing on body 2
             SimTK::Vec3 p_b2M_b2 = _inb2.p();
             SimTK::Vec3 p_GM_G(0.0);
-            
+
             // fing the body2 location of the bushing in ground
-            _model->getSimbodyEngine().transformPosition(state, 
+            _model->getSimbodyEngine().transformPosition(state,
                 _model->getBodySet().get(get_body_2()), p_b2M_b2, p_GM_G);
 
             // Add moment on body2 as line vector starting at bushing location
@@ -567,7 +567,7 @@ void FunctionBasedBushingForce::generateDecorations
             SimTK::DecorativeCylinder body2Force(f_radius, f_length/2.0);
             body2Force.setTransform(X_f2cylinder);
             body2Force.setColor(force2color);
-            
+
             geometryArray.push_back(body2Force);
 
         }

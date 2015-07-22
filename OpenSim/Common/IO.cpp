@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -489,7 +489,7 @@ chDir(const string &aDirName)
 {
 
 #if defined __linux__ || defined __APPLE__
-    return chdir(aDirName.c_str()); 
+    return chdir(aDirName.c_str());
 #else
     return _chdir(aDirName.c_str());
 #endif
@@ -505,7 +505,7 @@ getCwd()
 {
     char buffer[PATH_MAX];
 #if defined __linux__ || defined __APPLE__
-    char* ptr = getcwd(buffer, PATH_MAX); 
+    char* ptr = getcwd(buffer, PATH_MAX);
 #else
     _getcwd(buffer, PATH_MAX);
 #endif
@@ -515,7 +515,7 @@ getCwd()
 //_____________________________________________________________________________
 /**
  * Get parent directory of the passed in fileName.
- * 
+ *
 */
 string IO::
 getParentDirectory(const string& fileName)
@@ -523,10 +523,10 @@ getParentDirectory(const string& fileName)
     string  result="";
 
     string::size_type dirSep = fileName.rfind('/'); // Unix/Mac dir separator
-    
+
     if (dirSep == string::npos)
         dirSep = fileName.rfind('\\'); // DOS dir separator
-    
+
     if (dirSep != string::npos) // if '_fileName' contains path information...
         result = fileName.substr(0,dirSep+1); // include trailing slashes
 
@@ -536,7 +536,7 @@ getParentDirectory(const string& fileName)
 //_____________________________________________________________________________
 /**
  * Get filename part of a passed in URI (also works if a dos/unix path is passed in)
- * 
+ *
 */
 string IO::
 GetFileNameFromURI(const string& aURI)
@@ -544,10 +544,10 @@ GetFileNameFromURI(const string& aURI)
     string  result=aURI;
 
     string::size_type dirSep = aURI.rfind('/'); // Unix/Mac dir separator
-    
+
     if (dirSep == string::npos)
         dirSep = aURI.rfind('\\'); // DOS dir separator
-    
+
     if (dirSep != string::npos) // if aURI contains path information...
         result = aURI.substr(dirSep+1);
 

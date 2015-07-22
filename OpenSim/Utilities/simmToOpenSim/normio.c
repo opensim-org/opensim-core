@@ -60,7 +60,7 @@ static void flip_bytes(char* buf, int size)
    for ( ; p < q; p++, q--)
    {
       char c = *p;
-      
+
       *p = *q;
       *q = c;
    }
@@ -83,7 +83,7 @@ static int read_binary_array(int fd, char* buf, int n, int size)
 {
    int nBytes = n * size;
    int bytes_read = read(fd, buf, nBytes);
-   
+
 #ifdef WIN32
    {
       char *p = buf, *end = buf + nBytes;
@@ -130,7 +130,7 @@ static int write_binary_array(int fd, char* buf, int n, int size)
 
 #ifdef WIN32
    p = buf;
-   
+
    for ( ; p < end; p += size)
       flip_bytes(p, size);
 #endif
@@ -607,7 +607,7 @@ ReturnCode read_ascii_file(PolyhedronStruct* ph, char filename[])
    }
 
    fclose(fp);
-   
+
    return code_fine;
 }
 
@@ -672,7 +672,7 @@ ReturnCode read_old_ascii_file(PolyhedronStruct* ph, char filename[])
    }
 
    fclose(fp);
-   
+
    return code_fine;
 }
 
@@ -1621,36 +1621,36 @@ ReturnCode write_ascii_separates(char filename[], PolyhedronStruct polyhedron[],
 void build_file_list_from_pattern (const char* pattern, char*** list, int* numFiles)
 {
    int n;
-   
+
    char* fileList = glutExpandFilenamePattern(pattern, &n);
-   
+
    if (fileList)
    {
       if (n > 0)
       {
          ReturnCode rc;
-         
+
          int i = *numFiles;
-         
+
          *numFiles += n;
-         
+
          if (list)
          {
             if (*list)
                *list = simm_realloc(*list, *numFiles * sizeof(char*), &rc);
             else
                *list = simm_malloc(*numFiles * sizeof(char*));
-            
+
             if (*list)
             {
                char* p = fileList;
-               
+
                /* build list of pointers to strings:
                 */
                for ( ; i < *numFiles; i++)
                {
                   mstrcpy(&(*list)[i], p);
-                  
+
                   p += strlen(p) + 1;
                }
             }

@@ -30,7 +30,7 @@
 #include "Model.h"
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Control/TrackingController.h>
-#include "Actuator.h" 
+#include "Actuator.h"
 #include <OpenSim/Common/Set.h>
 #include "SimTKsimbody.h"
 
@@ -176,7 +176,7 @@ bool ControllerSet::set(int aIndex,Controller *aController)
 }
 
 
-void ControllerSet::constructStorage() 
+void ControllerSet::constructStorage()
 {
     Array<string> columnLabels;
 
@@ -189,16 +189,16 @@ void ControllerSet::constructStorage()
         columnLabels.append(_actuatorSet->get(i).getName());
 
     _controlStore->setColumnLabels(columnLabels);
-        
+
 }
 
 void ControllerSet::storeControls( const SimTK::State& s, int step  )
 {
     int size = _actuatorSet->getSize();
-    
+
     if( size > 0 )
     {
-        _controlStore->store( step, s.getTime(), getModel().getNumControls(), 
+        _controlStore->store( step, s.getTime(), getModel().getNumControls(),
                               &(getModel().getControls(s)[0]) );
     }
 }
@@ -209,13 +209,13 @@ void ControllerSet::printControlStorage( const string& fileName)  const
    _controlStore->print(fileName);
 }
 
-void ControllerSet::setActuators( Set<Actuator>& as) 
+void ControllerSet::setActuators( Set<Actuator>& as)
 {
     _actuatorSet = &as;
     constructStorage();
 }
 
-// get the initial time for all the controllers 
+// get the initial time for all the controllers
 
 void ControllerSet::setDesiredStates( Storage* yStore)
 {
@@ -229,15 +229,15 @@ void ControllerSet::setDesiredStates( Storage* yStore)
 }
 
 
-void ControllerSet::printInfo() const 
+void ControllerSet::printInfo() const
 {
     std::cout << " Number of controllers = " << getSize() << std::endl;
 
     for(int i=0;i<getSize(); i++ ) {
       Controller& c = get(i);
       if( !c.isDisabled() ) {
-          printf(" controller %d =%llx %s model=%llx \n", 
-              i+1, (unsigned long long)&c, c.getName().c_str(), 
+          printf(" controller %d =%llx %s model=%llx \n",
+              i+1, (unsigned long long)&c, c.getName().c_str(),
               (unsigned long long)&c.getModel() );
 
           const Set<Actuator>& actSet = c.getActuatorSet();
@@ -247,9 +247,9 @@ void ControllerSet::printInfo() const
                    std::cout <<get(i).getActuatorSet().get(j).getName() << std::endl;
                }
            }
-      } else { 
-         printf(" controller %d =%llx %s model=%llx DISABLED \n", 
-             i+1, (unsigned long long)&c, c.getName().c_str(), 
+      } else {
+         printf(" controller %d =%llx %s model=%llx DISABLED \n",
+             i+1, (unsigned long long)&c, c.getName().c_str(),
              (unsigned long long)&c.getModel() );
       }
    }

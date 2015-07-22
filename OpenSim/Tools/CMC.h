@@ -79,7 +79,7 @@ class OSIMTOOLS_API CMC : public TrackingController {
 OpenSim_DECLARE_CONCRETE_OBJECT(CMC, TrackingController);
 
 //=============================================================================
-// MEMBER VARIABLES 
+// MEMBER VARIABLES
 //=============================================================================
 private:
     /* Corresponding index of an Actuator's controls in CMC's ControlSet */
@@ -125,7 +125,7 @@ protected:
     Array<int> _paramList;
     /** Flag to indicate whether to use verbose printing. */
     bool _verbose;
- 
+
     bool _useCurvatureFilter;
     CMC_TaskSet *_taskSet;
 
@@ -219,7 +219,7 @@ public:
      void extendConnectToModel(Model& model) override;
 
      // for adding any components to the underlying system
-     void extendAddToSystem( SimTK::MultibodySystem& system) const override; 
+     void extendAddToSystem( SimTK::MultibodySystem& system) const override;
 
 //=============================================================================
 };  // END of class CMC

@@ -286,7 +286,7 @@ The joint definitions describe the kinematics of a 7 segment, 7 degree-of-freedo
 
 The model is a right leg.
 
-The model represents a nominal adult male, and is based on the lower limb models developed by Delp et al. (1990) and A.S. Arnold (1999).  
+The model represents a nominal adult male, and is based on the lower limb models developed by Delp et al. (1990) and A.S. Arnold (1999).
 
 It includes the following modifications, relative to the Delp et al. model:
 
@@ -303,7 +303,7 @@ In the Delp model tendon lengths were set so that resultant passive moments matc
 In the Delp model the fiber lengths of soleus and the gastrocnemii were lengthened beyond the data reported by Wickiewicz et al.  This was necessary to achieve physiolgically reasonable results.  The plantarflexor fiber lengths measured by Ward et al. were longer and thus lengthening was not necessary.
 
 5.  Walker knee
-In this model, 3D tibiofemoral kinematics are based on experimental data published by Walker et al. (1988) and adapted from a SIMM model by A.S. Arnold et al. (2000) Knee flexion is positive and full extension is 0 degrees. 
+In this model, 3D tibiofemoral kinematics are based on experimental data published by Walker et al. (1988) and adapted from a SIMM model by A.S. Arnold et al. (2000) Knee flexion is positive and full extension is 0 degrees.
 Walker, P. S., J. S. Rovick, and D. D. Robertson. The effects of knee brace hinge design and placement on joint mechanics. J. Biomech. 21:965-974, 1988.
 
 6.  Altered wrapping and attachment points
@@ -311,27 +311,27 @@ Wrapping surfaces were added and some attachment points were modified to refine 
 
 7.  Right and left hemipelves and sacrum were re-oriented.
 Adapted from A.S. Arnold et al. (2000)
-In this model, spatial relationships between the hemipelves and sacrum are more consistent with pelves constructed from MR images.    
+In this model, spatial relationships between the hemipelves and sacrum are more consistent with pelves constructed from MR images.
 
-8.  Femur was re-digitized.  
+8.  Femur was re-digitized.
 Adapted from A.S. Arnold et al. (2000)
-The femur from Delp's model (Specimen A55, Stanford University) was digitized at higher resolution.  
+The femur from Delp's model (Specimen A55, Stanford University) was digitized at higher resolution.
 
-9.  Tibia was replaced. 
+9.  Tibia was replaced.
 Adapted from A.S. Arnold et al. (2000)
 The tibia in Delp's model did not match the Specimen A55 femur.
 The tibia from Specimen A55 was digitized and used in place of the tibia in Delp's model.
 
-10.  Fibula was scaled by 97% and re-oriented. 
-Adapted from A.S. Arnold et al. (2000) 
+10.  Fibula was scaled by 97% and re-oriented.
+Adapted from A.S. Arnold et al. (2000)
 
 11.  Pelvis coordinate system was revised.
-Adapted from A.S. Arnold et al. (2000)  
+Adapted from A.S. Arnold et al. (2000)
 In this model, the "neutral position" was defined such that the ASISs and pubic tubercle lie in the frontal plane.  In Delp's model, the "neutral position" was defined to be coincident with the anatomical position. This difference corresponds to an offset in pelvic tilt and hip flexion angle of about 5 degrees.  This may also differ from a gait lab convention and care should be taken to ensure appropriate interpretations according to the convention used.
-	
+
 JOURNAL ARTICLE REFERENCES
 
-The model of the lower limb is defined as an input file for OpenSim.  
+The model of the lower limb is defined as an input file for OpenSim.
 An overview of this software and its input file structure is given in:
 
 Delp SL, Anderson FC, Arnold AS, Loan P, Habib A, John CT, Guendelman E, Thelen DG. OpenSim: Open-source Software to Create and Analyze Dynamic Simulations of Movement. IEEE Transactions on Biomedical Engineering 54(11):1940-50, 2007.
@@ -354,11 +354,11 @@ Additional information on the model of the lower limb can be obtained by
 contacting Scott L. Delp.
 Bioengineering Department, Stanford University,
 Clark Center, Room S321
-Stanford, California 94305 
+Stanford, California 94305
 http://www.stanford.edu/group/nmbl/
 
 Additional information on the musculoskeletal modeling software (OpenSim) can be obtained from simtk.org at https://simtk.org/home/opensim
-     
+
 The muscle model used with the lower limb model is described in the following publications:
 
 Zajac, Muscle and tendon: Properties, models, scaling, and application to biomechanics and motor control, in CRC reviews in biomedical engineering vol.17, issue 4, pp. 359-411, 1989.
@@ -368,11 +368,11 @@ Delp, S.L. and Loan, J.P.: A software system to develop and analyze models of mu
 Buchanan and Lloyd Passive Curve
 
 Schutte LM  Passive Curve
-         
+
 
 REFERENCES FOR THE MUSCLE-TENDON PARAMETERS
-References are given for each musculotendon parameter in Table 1 of 
-Arnold, E.M., Ward, S.R., Lieber, R. L., and Delp, S.L., A model of the lower limb for analysis of human movement, 
+References are given for each musculotendon parameter in Table 1 of
+Arnold, E.M., Ward, S.R., Lieber, R. L., and Delp, S.L., A model of the lower limb for analysis of human movement,
 Annals of Biomedical Engineering, 2009, DOI: 10.1007/s10439-009-9852-5
 
 
@@ -380,18 +380,18 @@ LOCATION OF REFERENCE FRAMES
 Each musculotendon path is defined as series of three-dimensional coordinates.  Each coordinate is fixed in a body-segmental reference frame.  In the anatomical position, the X-axes point anteriorly, the Y-axes point
 superiorly, and the Z-axes point laterally.
 
-The location of these frames is as follows. 
+The location of these frames is as follows.
 PELVIS:  The pelvic reference frame is fixed at the midpoint of the line connecting the two ASIS.
 FEMUR:  The femoral frame is fixed at the center of the femoral head
 TIBIA:   The tibial segment is located at the midpoint of the line between the medial and lateral femoral epicondyles.
 PATELLA: The patellar frame is located at the most distal point of the patella.
 TALUS:   The talar frame is located at the midpoint of the line between the apeces of the medial and lateral maleoli.
 CALCANUS: The calcaneal frame is located at the most distal, inferior point on the posterior surface of the calcaneus.
-TOES:    The toe frame is located at the base of the second metatarsal 
+TOES:    The toe frame is located at the base of the second metatarsal
 
 Walker et al. used a different convention for the femur and tibia frame when describing the knee joint.  In the anatomical position the X-axis points medially (left), Y-axis points superiorly, Z-axis points anteriorly.  These frames are translated to the FEMUR and TIBIA frame via fixed joints.
-FEMUR_WLKR:  Located at the midpoint of the line between the medial and lateral femoral epicondyles.  
-TIBIA_WLKR:  Coincident with FEMUR_WLKR at knee_angle = 0 
+FEMUR_WLKR:  Located at the midpoint of the line between the medial and lateral femoral epicondyles.
+TIBIA_WLKR:  Coincident with FEMUR_WLKR at knee_angle = 0
 
 SHAFT_AXIS:  A fixed reference frame oriented along the line of the femur shaft used to simplify the placement of wrapping surfaces during model development. </publications>
 		<ForceSet name="">

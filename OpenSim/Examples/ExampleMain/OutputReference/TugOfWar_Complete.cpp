@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
- *  Below is an example of an OpenSim application that provides its own 
+/*
+ *  Below is an example of an OpenSim application that provides its own
  *  main() routine.  This application is a forward simulation of tug-of-war between two
  *  muscles pulling on a block.
  */
@@ -41,7 +41,7 @@ using namespace std;
 
 //______________________________________________________________________________
 /**
- * Run a simulation of block sliding with contact on by two muscles sliding with contact 
+ * Run a simulation of block sliding with contact on by two muscles sliding with contact
  */
 int main()
 {
@@ -101,7 +101,7 @@ int main()
         rightAnchorGeometry.setColor(SimTK::Vec3(1.0, 1.0, 0.0));
         rightAnchorGeometry.setOpacity(0.5);
 
-        // block is 0.1 by 0.1 by 0.1m cube and centered at origin. 
+        // block is 0.1 by 0.1 by 0.1m cube and centered at origin.
         // transform anchors to be placed at the two extremes of the sliding block (to come)
 
         // scale the anchors
@@ -112,7 +112,7 @@ int main()
         ground.addGeometry(leftAnchorGeometry);
         rightAnchorGeometry.setFrameName(rightAnchorFrame->getName());
         ground.addGeometry(rightAnchorGeometry);
-        
+
         Cylinder cylGeometry(0.2, .3);
         cylGeometry.setFrameName("CylAnchor");
         cylGeometry.setRepresentation(Geometry::DrawWireframe);
@@ -122,7 +122,7 @@ int main()
         ellipsoidGeometry.setColor(SimTK::Vec3(1.0, .5, 0.1));
         ellipsoidGeometry.setFrameName("EllipsoidAnchor");
         ground.addGeometry(ellipsoidGeometry);
-        
+
         // BLOCK BODY
         Vec3 blockMassCenter(0);
         Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
@@ -132,17 +132,17 @@ int main()
 
         // Add display geometry to the block to visualize in the GUI
         block->addMeshGeometry("block.vtp");
-        
+
         Sphere sphereGeometry(0.1);
         sphereGeometry.setFrameName(block->getName());
         block->addGeometry(sphereGeometry);
-        
+
         // FREE JOINT
 
         // Create a new free joint with 6 degrees-of-freedom (coordinates) between the block and ground bodies
         Vec3 locationInParent(0, blockSideLength/2, 0), orientationInParent(0), locationInBody(0), orientationInBody(0);
         FreeJoint *blockToGround = new FreeJoint("blockToGround", ground, locationInParent, orientationInParent, *block, locationInBody, orientationInBody);
-        
+
         // Get a reference to the coordinate set (6 degrees-of-freedom) between the block and ground bodies
         CoordinateSet& jointCoordinateSet = blockToGround->upd_CoordinateSet();
 
@@ -184,8 +184,8 @@ int main()
         Vec3 pointOnBlock(0, 0, 0);
 
         // Create a new constant distance constraint
-        ConstantDistanceConstraint *constDist = 
-            new ConstantDistanceConstraint(ground, 
+        ConstantDistanceConstraint *constDist =
+            new ConstantDistanceConstraint(ground,
                 pointOnGround, *block, pointOnBlock, constantDistance);
 
         // Add the new point on a line constraint to the model
@@ -194,10 +194,10 @@ int main()
         ///////////////////////////////////////
         // DEFINE FORCES ACTING ON THE MODEL //
         ///////////////////////////////////////
-    
+
         // MUSCLE FORCES
         // Create two new muscles with identical properties
-        double maxIsometricForce = 1000.0, optimalFiberLength = 0.25, tendonSlackLength = 0.1, pennationAngle = 0.0; 
+        double maxIsometricForce = 1000.0, optimalFiberLength = 0.25, tendonSlackLength = 0.1, pennationAngle = 0.0;
         Thelen2003Muscle *muscle1 = new Thelen2003Muscle("muscle1",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
         Thelen2003Muscle *muscle2 = new Thelen2003Muscle("muscle2",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
 
@@ -225,11 +225,11 @@ int main()
         osimModel.addContactGeometry(cube);
 
         // Define contact parameters for elastic foundation force
-        OpenSim::ElasticFoundationForce::ContactParameters *contactParams = 
+        OpenSim::ElasticFoundationForce::ContactParameters *contactParams =
             new OpenSim::ElasticFoundationForce::ContactParameters(stiffness, dissipation, friction, friction, viscosity);
         contactParams->addGeometry("cube");
         contactParams->addGeometry("floor");
-        
+
         // Create a new elastic foundation (contact) force between the floor and cube.
         OpenSim::ElasticFoundationForce *contactForce = new OpenSim::ElasticFoundationForce(contactParams);
         contactForce->setName("contactForce");
@@ -269,7 +269,7 @@ int main()
         slopeAndIntercept1[0] = -1.0/(finalTime-initialTime);  slopeAndIntercept1[1] = 1.0;
         // muscle2 control has slope of 0.95 starting 0.05 at t = 0
         slopeAndIntercept2[0] = 0.95/(finalTime-initialTime);  slopeAndIntercept2[1] = 0.05;
-        
+
         // Set the indiviudal muscle control functions for the prescribed muscle controller
         muscleController->prescribeControlForActuator("muscle1", new LinearFunction(slopeAndIntercept1));
         muscleController->prescribeControlForActuator("muscle2", new LinearFunction(slopeAndIntercept2));
@@ -320,7 +320,7 @@ int main()
         // Create the integrator for integrating system dynamics
         SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
         integrator.setAccuracy(1.0e-6);
-        
+
         // Create the manager managing the forward integration and its outputs
         Manager manager(osimModel,  integrator);
 

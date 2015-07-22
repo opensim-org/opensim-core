@@ -39,19 +39,19 @@ template <typename T> class ComponentListIterator;
 // Class used to help iterate over specific Components
 //
 /**
- A class to specify a filter to be used to iterate through components. More 
- flexible than filtering based on Type only. To write your custom filter, 
+ A class to specify a filter to be used to iterate through components. More
+ flexible than filtering based on Type only. To write your custom filter,
  extend this class and implement the isMatch() and clone() methods.
 */
 class ComponentFilter {
 protected:
-    /** Default constructor of ComponentFilter, does nothing.  
+    /** Default constructor of ComponentFilter, does nothing.
     For use by derived classes only. */
     ComponentFilter() {}
 public:
     /** Destructor of ComponentFilter, does nothing. */
     virtual ~ComponentFilter() {}
-    /** This is the meat of the ComponentFilter, returns false if the passed in 
+    /** This is the meat of the ComponentFilter, returns false if the passed in
     component should be skipped over. */
     virtual bool isMatch(const Component& comp) const = 0;
     /** clone() method needed to make a copy of the filter.  */
@@ -78,11 +78,11 @@ public:
 };
 /**
  Collection (linked list) of components to iterate through.  Typical use is to
- call getComponentList() on a component (e.g. model) to obtain an instance of 
+ call getComponentList() on a component (e.g. model) to obtain an instance of
  this class, then call begin() to get an
  iterator pointing to the first entry in the list then increment the iterator
- until end(). 
- The linked list is formed by tree pre-order traversal where each component is 
+ until end().
+ The linked list is formed by tree pre-order traversal where each component is
  visited followed by all its immediate subcomponents (recursively).
  The traversal order is wired at the end of initSystem().
 */
@@ -90,8 +90,8 @@ template <typename T>
 class ComponentList {
 public:
     /** A const forward iterator for iterating through ComponentList<T>.
-    The const indicates that the iterator provides only 
-    const references/pointers, and that components can't be modified 
+    The const indicates that the iterator provides only
+    const references/pointers, and that components can't be modified
     through this iterator. */
     typedef ComponentListIterator<T> const_iterator;
     /** Constructor that takes a Component to iterate over (itself and its
@@ -99,20 +99,20 @@ public:
     using the setFilter() method. The filter is cloned on
     construction and can only be changed using setFilter().
     */
-    ComponentList(const Component& root, const ComponentFilter& f) : 
+    ComponentList(const Component& root, const ComponentFilter& f) :
         _root(root), _filter(f){
     }
     /** Constructor that takes only a Component to iterate over (itself and its
     descendents). ComponentFilterMatchAll is used internally. You can
-    change the filter using setFilter() method. 
+    change the filter using setFilter() method.
     */
     ComponentList(const Component& root) : _root(root){
         setDefaultFilter();
     }
     /// Destructor of ComponentList.
     virtual ~ComponentList() {}
-    /** Return an iterator pointing to the first component in the tree 
-     traversal of components under and including the root component passed 
+    /** Return an iterator pointing to the first component in the tree
+     traversal of components under and including the root component passed
      to the ComponentList constructor.
      */
     ComponentListIterator<T> begin() {
@@ -133,9 +133,9 @@ public:
     }
 private:
     const Component& _root; // root of subtree to be iterated over
-    SimTK::ClonePtr<ComponentFilter> _filter; // filter to choose components 
+    SimTK::ClonePtr<ComponentFilter> _filter; // filter to choose components
     friend class ComponentListIterator<T>;
-    // Internal method to setFilter to ComponentFilterMatchAll if no user specified 
+    // Internal method to setFilter to ComponentFilterMatchAll if no user specified
     // filter is provided.
     void setDefaultFilter() { setFilter(ComponentFilterMatchAll()); }
 };
@@ -145,7 +145,7 @@ private:
 //==============================================================================
 /** Class used to iterate over subcomponents of a specific type (by default,
  any Component).
- This iterator is const_iterator as it returns only const ref or pointer upon 
+ This iterator is const_iterator as it returns only const ref or pointer upon
  dereferencing.
  This iterator works only in forward direction (not bidirectional)
 
@@ -158,12 +158,12 @@ for (const GeometryPath& gpath : geomPathList) {
 @endcode
 */
 template <typename T>
-class ComponentListIterator : 
+class ComponentListIterator :
     public std::iterator<std::forward_iterator_tag, Component>
 {
     friend class ComponentList<T>;
 public:
-    /// Check that the component under the cuurent iterator is same 
+    /// Check that the component under the cuurent iterator is same
     /// (has same address) as right-hand iter.
     bool operator==(const ComponentListIterator& iter) const {
         return this->equals(iter);
@@ -176,11 +176,11 @@ public:
     bool operator!=(const ComponentListIterator& iter) const {
          return _node != &*iter;
     }
-    /** Dereference the iterator to get a const ref to Component of proper 
-     type (matching Filter if specified) this is const iterator, use only 
-     const methods. 
+    /** Dereference the iterator to get a const ref to Component of proper
+     type (matching Filter if specified) this is const iterator, use only
+     const methods.
     */
-    const T& operator*() const { return *dynamic_cast<const T*>(_node); } 
+    const T& operator*() const { return *dynamic_cast<const T*>(_node); }
 
     /// Another dereferencing operator that returns a const pointer.
     const T* operator->() const { return dynamic_cast<const T*>(_node); }
@@ -213,8 +213,8 @@ private:
     Filter by type. */
     const ComponentFilter& _filter;
     /** Constructor that takes a Component and ComponentFilter.
-     The iterator contains a const ref to filter and doesn't take ownership 
-     of it. A pointer is used since iterator at end() doesn't have a valid 
+     The iterator contains a const ref to filter and doesn't take ownership
+     of it. A pointer is used since iterator at end() doesn't have a valid
      Component underneath it.
      */
     ComponentListIterator(const Component* node, const ComponentFilter& filter) :

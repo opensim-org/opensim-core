@@ -67,9 +67,9 @@ static bool mapCxxExceptionsToJava = true;
 /** Class intended to keep the SimTK::State under an OpenSim model to make it possible
 to get/set values in the SimTK::State without exposing the SimTK::State class itself.
 
-The class provides convenient methods to get/set various state entries and query the 
+The class provides convenient methods to get/set various state entries and query the
 state for cache values. The main function this class provides is an adaptor of various
-data types from Java and scripting supported primitive, wrapped and array types to the 
+data types from Java and scripting supported primitive, wrapped and array types to the
 corresponding possibly templatized or SimTK native data types.
 
 Most methods of this class are implementated by delegating the call to the SimTK::State
@@ -78,7 +78,7 @@ Context::isDisabled(const Force& force) -> force.isDisabled(state)
 
 The class also provides convenient services to recreateSystem and realize to various stages.
 
-@author Ayman Habib & Jack Middleton 
+@author Ayman Habib & Jack Middleton
 **/
 
 class OpenSimContext : public Object {
@@ -95,8 +95,8 @@ public:
     const SimTK::State& getCurrentStateRef() const { return (*_configState); };
     /** Return a "clone" of  the single instance of SimTK::State maintained by the Context object **/
     SimTK::State getCurrentStateCopy() const { return SimTK::State(*_configState); };
-        void recreateSystemAfterSystemExistsKeepStage(); 
-        void recreateSystemAfterSystemExists(); 
+        void recreateSystemAfterSystemExistsKeepStage();
+        void recreateSystemAfterSystemExists();
         void resetStateToDefault() {
              SimTK::Stage stageBeforeRecreatingSystem = _configState->getSystemStage();
              SimTK::State* newState = &_model->initSystem();
@@ -121,20 +121,20 @@ public:
     bool solveInverseKinematics( InverseKinematicsTool& ikTool);
     void setStatesFromMotion(AnalyzeTool& analyzeTool, const Storage &aMotion, bool aInDegrees);
     void loadStatesFromFile(AnalyzeTool& analyzeTool);
-    bool processModelScale(ModelScaler& modelScaler, 
+    bool processModelScale(ModelScaler& modelScaler,
         Model* aModel, const std::string& aPathToSubject="", double aFinalMass = -1.0);
-    bool processModelMarkerPlacer( MarkerPlacer& markerPlacer, 
+    bool processModelMarkerPlacer( MarkerPlacer& markerPlacer,
         Model* aModel, const std::string& aPathToSubject="");
-    double computeMeasurementScaleFactor(ModelScaler& modelScaler, 
+    double computeMeasurementScaleFactor(ModelScaler& modelScaler,
         const Model& aModel, const MarkerData& aMarkerData, const Measurement& aMeasurement) const;
    void replaceTransformAxisFunction(TransformAxis& aDof, OpenSim::Function& aFunction);
 
     // Utilities
     static bool isNaN( double v ) { return (SimTK::isNaN(v)); }
 
-    double getTime() { 
-        assert(_configState); 
-        return (_configState->getTime()); 
+    double getTime() {
+        assert(_configState);
+        return (_configState->getTime());
     }
     // Convert SimTK::Transform into a double[] array of 16 doubles
     static void getTransformAsDouble16(const SimTK::Transform& aTransform, double flattened[]){
@@ -143,7 +143,7 @@ public:
     }
     // Sets the property values in the model from the current state if there
     // are state variables that correspond to properties.
-    void setPropertiesFromState() { 
+    void setPropertiesFromState() {
         _model->setPropertiesFromState(*_configState);
     }
     /**
@@ -165,9 +165,9 @@ public:
 //=============================================================================
 
 private:
-    // SimTK::State supporting the OpenSim::Model 
+    // SimTK::State supporting the OpenSim::Model
     SimTK::State* _configState;
-    // The OpenSim::model 
+    // The OpenSim::model
     Model* _model;
 }; // class OpenSimContext
 
@@ -177,7 +177,7 @@ private:
 /**
 In some cases, the GUI ad/or scripting language needs to create objects that derive from OpenSim::Object
 The class OpenSim::Object however is not a concrete class, so we introduce OpenSimJavaObject
-for this purpose 
+for this purpose
 **/
 class OpenSimJavaObject : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(OpenSimJavaObject, Object);
@@ -214,7 +214,7 @@ public:
 /**
 Class used to handle interrupts (synchronously). Works by adding it as an analysis
 And when the client (GUI in most cases) decides to interrupt the simulation/analysis,
-it calls the interrupt() method. When the step method is invoked later, an exception 
+it calls the interrupt() method. When the step method is invoked later, an exception
 is thrown.
 **/
 // Class to handle interrupts
@@ -233,7 +233,7 @@ public:
             throw Exception("Operation Aborted");
         return 0;
     }
-    
+
 };
 
 //==============================================================================
@@ -258,64 +258,64 @@ public:
     // Recover boolean value from an AbstractProperty that was assumed to contain a boolean
     // Will throw exception if the assumption was wrong/invalid. Use index only if the
     // property contains an array of booleans.
-    static bool getValueBool(const AbstractProperty& p, int index=-1) 
+    static bool getValueBool(const AbstractProperty& p, int index=-1)
     {   return p.getValue<bool>(index); }
     // Set boolean value in an AbstractProperty that was assumed to hold a boolean
     // Will throw exception if the assumption was wrong/invalid. Use index only if the
     // property contains an array of booleans.
-    static void setValueBool(bool v, AbstractProperty& p, int index=-1) 
+    static void setValueBool(bool v, AbstractProperty& p, int index=-1)
     {   p.updValue<bool>(index) = v; }
     // Append a new boolean value to an AbstractProperty that was assumed to hold a variable size
-    // array of booleans. Will throw exception if the assumption was wrong/invalid. 
-    static void appendValueBool(bool v, AbstractProperty& p) 
+    // array of booleans. Will throw exception if the assumption was wrong/invalid.
+    static void appendValueBool(bool v, AbstractProperty& p)
     {   p.appendValue<bool>(v); }
     //=================Int Properties, see Boolean Properties for details ==================
-    static int getValueInt(const AbstractProperty& p, int index=-1) 
+    static int getValueInt(const AbstractProperty& p, int index=-1)
     {   return p.getValue<int>(index); }
-    static void setValueInt(int v, AbstractProperty& p, int index=-1) 
+    static void setValueInt(int v, AbstractProperty& p, int index=-1)
     {   p.updValue<int>(index) = v; }
-    static void appendValueInt(int v, AbstractProperty& p) 
+    static void appendValueInt(int v, AbstractProperty& p)
     {   p.appendValue<int>(v); }
     //=================Double Properties, see Boolean Properties for details ==================
-    static double getValueDouble(const AbstractProperty& p, int index=-1) 
+    static double getValueDouble(const AbstractProperty& p, int index=-1)
     {   return p.getValue<double>(index); }
-    static void setValueDouble(double v, AbstractProperty& p, int index=-1) 
+    static void setValueDouble(double v, AbstractProperty& p, int index=-1)
     {   p.updValue<double>(index) = v; }
-    static void appendValueDouble(double v, AbstractProperty& p) 
+    static void appendValueDouble(double v, AbstractProperty& p)
     {   p.appendValue<double>(v); }
     //=================String Properties, see Boolean Properties for details ==================
-    static std::string getValueString(const AbstractProperty& p, int index=-1) 
+    static std::string getValueString(const AbstractProperty& p, int index=-1)
     {   return p.getValue<std::string>(index); }
-    static void setValueString(const std::string& v, 
-                               AbstractProperty& p, int index=-1) 
+    static void setValueString(const std::string& v,
+                               AbstractProperty& p, int index=-1)
     {   p.updValue<std::string>(index) = v; }
-    static void appendValueString(const std::string& v, AbstractProperty& p) 
+    static void appendValueString(const std::string& v, AbstractProperty& p)
     {   p.appendValue<std::string>(v); }
     //=================Transform Properties, treated as six Doubles ==================
-    static double getValueTransform(const AbstractProperty& p, int index) 
-    {   
+    static double getValueTransform(const AbstractProperty& p, int index)
+    {
         const PropertyTransform& pd = dynamic_cast<const PropertyTransform&>(p);
         double array6[] = {0., 0., 0., 0., 0., 0.};
         pd.getRotationsAndTranslationsAsArray6(array6);
-        return array6[index]; 
+        return array6[index];
     }
-    static void setValueTransform(double v, AbstractProperty& p, int index) 
-    {   
+    static void setValueTransform(double v, AbstractProperty& p, int index)
+    {
         PropertyTransform& pd = dynamic_cast<PropertyTransform&>(p);
         double array6[] = {0., 0., 0., 0., 0., 0.};
         pd.getRotationsAndTranslationsAsArray6(array6);
-        array6[index] = v; 
+        array6[index] = v;
         pd.setValue(6, array6);
     }
     //=================Vec3 Properties, treated as three Doubles ==================
-    static double getValueVec3(const AbstractProperty& p, int index) 
-    {   
+    static double getValueVec3(const AbstractProperty& p, int index)
+    {
         const Property<SimTK::Vec3>& pd = dynamic_cast<const Property<SimTK::Vec3>&>(p);
         const SimTK::Vec3& vec3 = pd.getValue();
-        return vec3[index]; 
+        return vec3[index];
     }
-    static void setValueVec3(double v, AbstractProperty& p, int index) 
-    {   
+    static void setValueVec3(double v, AbstractProperty& p, int index)
+    {
         Property<SimTK::Vec3>& pd = dynamic_cast<Property<SimTK::Vec3>&>(p);
         pd.updValue()[index] = v;
      }

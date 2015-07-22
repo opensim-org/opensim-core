@@ -99,7 +99,7 @@ extendSetPropertiesFromState(const SimTK::State& s)
 void FirstOrderMuscleActivationDynamics::
 computeStateVariableDerivatives(const SimTK::State& s) const
 {
-     double adot = 
+     double adot =
          calcActivationDerivative(getExcitation(s), getActivation(s));
 
      setStateVariableDerivativeValue(s, STATE_NAME_ACTIVATION, adot);

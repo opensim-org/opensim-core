@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Abstract an interface out of the Storage class to be used by readers/writers of other file formats 
- * Author: Ayman Habib 
+/* Abstract an interface out of the Storage class to be used by readers/writers of other file formats
+ * Author: Ayman Habib
  */
 
 #include "osimCommonDLL.h"
@@ -35,7 +35,7 @@
  * @version 1.0
  * @author Ayman Habib
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 class StateVector;
 

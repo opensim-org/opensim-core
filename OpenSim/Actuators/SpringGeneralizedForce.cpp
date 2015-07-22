@@ -55,7 +55,7 @@ void SpringGeneralizedForce::setNull()
     setAuthors("Frank C. Anderson ");
 }
 
-    
+
 //_____________________________________________________________________________
 //
 /**
@@ -175,11 +175,11 @@ getStiffness() const
 /**
  * Compute all quantities necessary for applying the spring force to the
  * model.
- * Force applied = -stiffness * (_coordinateValue - restLength) 
+ * Force applied = -stiffness * (_coordinateValue - restLength)
  *                   - viscosity * _coordinateSpeed
  */
-void SpringGeneralizedForce::computeForce(const SimTK::State& s, 
-                                  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void SpringGeneralizedForce::computeForce(const SimTK::State& s,
+                                  SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                   SimTK::Vector& generalizedForces) const
 {
     if( !_model || !_coord ) return;
@@ -196,12 +196,12 @@ void SpringGeneralizedForce::extendAddToSystem(SimTK::MultibodySystem& system) c
     Super::extendAddToSystem(system);
 
     if (_model) {
-        SpringGeneralizedForce* mthis = 
+        SpringGeneralizedForce* mthis =
             const_cast<SpringGeneralizedForce*>(this);
         mthis->_coord = &_model->updCoordinateSet().get(get_coordinate());
     }
 }
-/** 
+/**
  * Methods to query a Force for the value actually applied during simulation
  * The names of the quantities (column labels) is returned by this first function
  * getRecordLabels()
@@ -231,7 +231,7 @@ computeForceMagnitude(const SimTK::State& s) const
 {
     double q = _coord->getValue(s);
     double speed =  _coord->getSpeedValue(s);
-    double force = -getStiffness()*(q - get_rest_length()) 
+    double force = -getStiffness()*(q - get_rest_length())
                         - get_viscosity()*speed;
     return force;
 }

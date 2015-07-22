@@ -31,7 +31,7 @@
 #include <OpenSim/Common/ArrayPtrs.h>
 
 
-namespace OpenSim { 
+namespace OpenSim {
 
 
 //=============================================================================
@@ -41,7 +41,7 @@ namespace OpenSim {
  * modeling and analysis steps. Its primary duty is to provide an interface
  * for use by the GUI or as a standalone command line executable. It includes
  * common methods for invoking the tool and performing routine I/O.
- * 
+ *
  *
  * @author Ajay Seth
  * @version 1.0
@@ -56,18 +56,18 @@ public:
 // DATA
 //=============================================================================
 protected:
-    
+
     /** Directory for reading inputs (model, settings, etc...) from. */
     PropertyStr _inputsDirProp;
     std::string &_inputsDir;
-    
+
     /** Directory for writing results (new model, states, etc...) to. */
     PropertyStr _resultsDirProp;
     std::string &_resultsDir;
-    
+
     /** How much details to put out while running. */
     VerboseLevel _verboseLevel;
-    
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -75,19 +75,19 @@ protected:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    
+
     /**
     * Destructor.
     */
     virtual ~Tool() {};
-    
+
     /**
     * Default constructor.
     */
     Tool() : _inputsDir(_inputsDirProp.getValueStr()),
         _resultsDir(_resultsDirProp.getValueStr())
         { setNull(); };
-    
+
     /**
     * Construct from file
     *
@@ -103,7 +103,7 @@ public:
             setNull();
             if(aUpdateFromXMLNode) updateFromXMLDocument();
         };
-    
+
     /**
     * Copy constructor.
     *
@@ -120,11 +120,11 @@ private:
     */
     void setNull() {
         setupProperties();
-        _resultsDir = "./"; 
+        _resultsDir = "./";
         _inputsDir = "";
         _verboseLevel = Progress;
     };
-    
+
     /**
     * Connect properties to local pointers.
     */
@@ -141,7 +141,7 @@ private:
         _inputsDirProp.setName("input_directory");
         _propertySet.append( &_inputsDirProp );
     };
-    
+
 
 
     //--------------------------------------------------------------------------
@@ -149,7 +149,7 @@ private:
     //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-    
+
     /**
     * Assignment operator.
     *
@@ -157,8 +157,8 @@ public:
     */
     Tool& operator=(const Tool& source) {
         if (&source != this) {
-            Super::operator=(source);   
-            _resultsDir   = source._resultsDir; 
+            Super::operator=(source);
+            _resultsDir   = source._resultsDir;
             _inputsDir    = source._inputsDir;
             _verboseLevel = source._verboseLevel;
         }
@@ -171,25 +171,25 @@ public:
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
-    /** The run() method of a Tool embodies what would be the main() routine 
+    /** The run() method of a Tool embodies what would be the main() routine
         for a standalone program.  Therefore, any OpenSim main program can
         become a Tool executable from the GUI by making it a run() method for
         a new Tool.
-        
-        It is expected that the run() method be composed of a sequence of calls  
-        to underlying computational and reporting objects and should 
+
+        It is expected that the run() method be composed of a sequence of calls
+        to underlying computational and reporting objects and should
     */
     virtual bool run() SWIG_DECLARE_EXCEPTION=0;
 
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
-    /** 
+    /**
     * Get/set Inputs Directory
     */
     const std::string& getInputsDir() const { return _inputsDir; }
     void setInputsDir(const std::string& aString) { _inputsDir = aString; }
-    /** 
+    /**
     * Get/set Results Directory
     */
     const std::string& getResultsDir() const { return _resultsDir; }

@@ -4,10 +4,10 @@
 	  <!--Name of the .osim file used to construct a model.-->
 	  <model_file> subject01_simbody.osim </model_file>
     <!-- A positive scalar that is used to weight the importance of satisfying constraints."
-		     A weighting of 'Infinity' or if it is unassigned results in the constraints being 
+		     A weighting of 'Infinity' or if it is unassigned results in the constraints being
          strictly enforced.-->
     <constraint_weight> 10.0 </constraint_weight>
-    <!--The accuracy of the solution in absolute terms. 
+    <!--The accuracy of the solution in absolute terms.
         I.e. the number of significantdigits to which the solution can be trusted.-->
     <accuracy>1e-5</accuracy>
 	  <!--Task set used to specify IK weights.-->
@@ -37,7 +37,7 @@
 	  <time_range> 0.4 1.6 </time_range>
 	  <!--Name of the motion file (.mot) to which the results should be written.-->
 	  <output_motion_file> subject01_walk1_ik_test.mot </output_motion_file>
-    <!--Flag (true or false) indicating whether or not to report marker 
+    <!--Flag (true or false) indicating whether or not to report marker
 		    errors from the inverse kinematics solution.-->
     <report_errors> false </report_errors>
     <!--Flag indicating whether or not to report model marker locations in ground.-->

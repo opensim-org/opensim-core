@@ -7,7 +7,7 @@ if(BUILD_STATIC_OSIM_LIBS)
     add_definitions(-DSTATIC_OSIM_LIBS)
 endif(BUILD_STATIC_OSIM_LIBS)
 
-link_libraries(debug xerces-c_2D optimized xerces-c_2 
+link_libraries(debug xerces-c_2D optimized xerces-c_2
     debug osimTools_d optimized osimTools
     debug osimSimbodyEngine_d optimized osimSimbodyEngine)
 

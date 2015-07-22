@@ -28,7 +28,7 @@
 //  Tests Include:
 //      1. Test a control set controller on a block with an ideal actuator
 //      2. Test a corrective controller on a block with an ideal actuator
-//      
+//
 //     Add tests here as new controller types are added to OpenSim
 //
 //==========================================================================================================
@@ -48,17 +48,17 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
 int main()
 {
     try {
-        cout << "Testing ControlSetController" << endl; 
+        cout << "Testing ControlSetController" << endl;
         testControlSetControllerOnBlock();
-        cout << "Testing PrescribedController" << endl; 
+        cout << "Testing PrescribedController" << endl;
         testPrescribedControllerOnBlock(false);
         testPrescribedControllerOnBlock(true);
-        cout << "Testing CorrectionController" << endl; 
+        cout << "Testing CorrectionController" << endl;
         testCorrectionControllerOnBlock();
         cout << "Testing PrescribedController from File" << endl;
         testPrescribedControllerFromFile("arm26.osim", "arm26_Reserve_Actuators.xml",
                                          "arm26_controls.xml");
-    }   
+    }
     catch (const Exception& e) {
         e.print(cerr);
         return 1;
@@ -89,7 +89,7 @@ void testControlSetControllerOnBlock()
     //Create a free joint with 6 degrees-of-freedom
     SimTK::Vec3 noRotation(0);
     SliderJoint blockToGround("",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
-    
+
     // Create coordinates (degrees-of-freedom) between the ground and block
     CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
     double posRange[2] = {-1, 1};
@@ -124,7 +124,7 @@ void testControlSetControllerOnBlock()
     actuatorControls.setControlValues(finalTime, controlForce);
     // Create a control set controller that simply applies controls from a ControlSet
     ControlSetController actuatorController;
-    // Make a copy and set it on the ControlSetController as it takes ownership of the 
+    // Make a copy and set it on the ControlSetController as it takes ownership of the
     // ControlSet passed in
     actuatorController.setControlSet((ControlSet*)Object::SafeCopy(&actuatorControls));
 
@@ -218,7 +218,7 @@ void testPrescribedControllerOnBlock(bool disabled)
 
     // add the controller to the model
     osimModel.addController(&actuatorController);
-    
+
     osimModel.print("blockWithPrescribedController.osim");
     Model modelfileFromFile("blockWithPrescribedController.osim");
 
@@ -370,8 +370,8 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     osimModel.updControllerSet().remove(0);
     cout << "Number of Controllers should be 0 is ";
         cout << osimModel.getControllerSet().getSize() << endl;
-    
-    
+
+
     //************* Rerun with a PrescribedController ***********************/
 
     PrescribedController prescribed(outfileName, 1);
@@ -406,13 +406,13 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     int nstates = osimModel.getNumStateVariables();
     int ncontrols = osimModel.getNumControls();
 
-    CHECK_STORAGE_AGAINST_STANDARD(states, std_states, 
+    CHECK_STORAGE_AGAINST_STANDARD(states, std_states,
         Array<double>(0.005, nstates), __FILE__, __LINE__,
         "testPrescribedControllerFromFile '"+modelName+"'states failed");
 
-    CHECK_STORAGE_AGAINST_STANDARD(controls, std_controls, 
+    CHECK_STORAGE_AGAINST_STANDARD(controls, std_controls,
         Array<double>(0.01, nstates), __FILE__, __LINE__,
         "testPrescribedControllerFromFile '"+modelName+"'controls failed");
-     
+
     osimModel.disownAllComponents();
 }

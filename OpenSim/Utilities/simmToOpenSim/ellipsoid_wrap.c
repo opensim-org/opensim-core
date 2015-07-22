@@ -7,42 +7,42 @@
    Copyright (c) 1994-2002 MusculoGraphics, Inc.
    All rights reserved.
 
-   Description: 
+   Description:
 
    The algorithm for wrapping muscles around an ellipsoid was originally
    developed in Fortran by Frans van der Helm, translated to C by Craig,
    modified by Pete, and modified again by Kenny.  Pete and Kenny spent
    quite a bit of time in early '99 trying to make the algorithm stable
    (i.e. eliminate all muscle skips & jumps during wrapping).
-   
+
    The routines contributed by Frans and still in use are:
-   
+
       calc_line_intersect_ellipsoid - the main routine, wraps a muscle
                                       around an ellipsoid
-      
+
       calc_r - find a tangent point on the ellipsoid surface
-      
+
       dell   - find wrapping line segments along ellipsoid surface
-   
+
    Another routine, afstll(), was conttributed by Frans but replaced by
    pt_to_ellipsoid() which was written by Dave Eberly and located by
    searching usenet for "ellipsoid ellipse plane".
-   
+
    ALGORITHM OVERVIEW
-   
+
    These are the basic steps taken in computing a wrap path around an
    ellipsoid:
-   
+
    1. Find the intersections of the line segment connecting the two
       muscle points (p1 & p2) with the ellipsoid.  Call the intersection
       points r1 & r2.  We sometimes refer to the line segment r1->r2 that
       passes through the ellipsoid as the "muscle line".
-   
+
    2. Find a third point, c1, to use with r1 and r2 to define a "wrapping
       plane".  Finding a good c1 such that it creates a desirable (i.e.
       short) wrapping path turns out to be one of the most difficult steps.
       This is described in more detail below.
-   
+
    3. Find two "tangent points" on the ellipsoid surface.  These points
       must lie in the wrapping plane found in step 2, and create line
       segments that are tangent to the ellipsoid when connected to their
@@ -55,10 +55,10 @@
       to search for a tangent point.  Therefore it is important to pass
       a good surface point into calc_r() (i.e. one that directs it to
       search in the direction of the shortest wrapping path).
-   
+
    4. Connect the two tangent points with a series of line segments.  The
       routine dell() does this.
-   
+
    CHOOSING A WRAPPING PLANE
 
    Choosing the plane that the wrapping path lies in ended up taking more
@@ -98,7 +98,7 @@
 
        We tried using the fan in various ways to deliver a good c1 point.
        Some of the things that we tried were:
-         
+
          a. binary searching the fan for the most perpendicular vector,
          b. choosing the longest vector,
          c. averaging all the vectors together.
@@ -123,13 +123,13 @@
        result.  We gradually fade from Frans to Fan solutions.  At 45 degrees the
        Fan solution momentarily takes over completely just as the Frans solution
        is switching its most-parallel major axes.
-       
+
        Another issue that we had to address was the situation where a Frans
        solution generated an sv point that was outside of the ellipsoid.  This
        created several problems.  Therefore we additionally reduce the strength
        of a Frans result as its sv point approaches the ends of the r1->r2
        muscle line.
-   
+
    (4) The Midpoint Solution:  For a while we used a solution that simply picked
        the midpoint of the muscle line as the sv point.  This worked well enough
        in most cases, but suffered when the fan became sharply discontinuous.
@@ -138,11 +138,11 @@
        from the three points.  Although RIC used several versions of SIMM with
        the midpoint solutions, we ultimately replaced it with the hybrid solution
        described above.
-   
+
    CONSTRAINING WRAPPING TO ONE HALF OF THE ELLIPSOID
-   
+
    FINDING THE CLOSEST POINT ON AN ELLIPSOID -- SPECIAL CASES
-   
+
 *******************************************************************************/
 
 #ifdef WRAP_LIB
@@ -192,7 +192,7 @@
           pt_to_ellipsoid(_A[0],_A[1],_A[2], \
                           _PT[0],_PT[1],_PT[2], \
                           &_P1A[0],&_P1A[1],&_P1A[2], _SPECIAL_CASE_AXIS)
-                          
+
 
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
 static const float red[] = { 1, 0, 0 }, green[] = { 0, 1, 0 }, blue[] = { 0, 0, 1 };
@@ -216,7 +216,7 @@ static double pt_to_ellipsoid(double a, double b, double c,
 static int calc_r(double p1e, double r1[], double p1[], double m[], double a[],
               double vs[], double vs4);
 
-static void dell(double r1[], double r2[], double m[], double a[], double vs[], 
+static void dell(double r1[], double r2[], double m[], double a[], double vs[],
              double vs4, SBoolean far_side_wrap, double *afst, double** wrap_pts, int* num_wrap_pts);
 
 /**** for constraints ****/
@@ -290,19 +290,19 @@ int calc_line_intersect_ellipsoid (
     dpWrapObject*   wo)
 {
    int i,j, bestMu;
-   
+
    double p1p2[3], p1m[3], p2m[3], ppm, f1[3], f2[3], aa, bb, cc, disc, l1, l2,
           vs[3], p1e, p2e, p1c1[3], vs4, dist, t[3], fanWeight = DBL_MIN;
 
    double r1r2[3], t_sv[3][3], t_c1[3][3];
    double mu[3];
-   
+
    SBoolean far_side_wrap = no;
-      
+
    *p_flag       = TRUE;
    *num_wrap_pts = 0;
    *wrap_pts     = NULL;
-   
+
 #if VISUAL_WRAPPING_DEBUG
    enable_debug_shapes(yes);
 
@@ -341,9 +341,9 @@ int calc_line_intersect_ellipsoid (
       /* p1 or p2 is inside the ellipsoid */
       *p_flag = FALSE;
       *rlen   = 0.0;
-      
+
       _UNFACTOR; /* transform back to starting coordinate system */
-      
+
       return E_INSIDE_RADIUS;
    }
 
@@ -360,9 +360,9 @@ int calc_line_intersect_ellipsoid (
       /* vector p1m and p2m are colinear */
       *p_flag = FALSE;
       *rlen   = 0.0;
-      
+
       _UNFACTOR; /* transform back to starting coordinate system */
-      
+
       return E_NO_WRAP;
    }
 
@@ -382,23 +382,23 @@ int calc_line_intersect_ellipsoid (
       /* no intersection */
       *p_flag = FALSE;
       *rlen = 0.0;
-      
+
       _UNFACTOR; /* transform back to starting coordinate system */
-      
+
       return E_NO_WRAP;
    }
 
    l1 = (-bb + sqrt(disc)) / (2.0 * aa);
    l2 = (-bb - sqrt(disc)) / (2.0 * aa);
-   
+
    if ( ! (0.0 < l1 && l1 < 1.0) || ! (0.0 < l2 && l2 < 1.0) )
    {
       /* no intersection */
       *p_flag = FALSE;
       *rlen   = 0.0;
-      
+
       _UNFACTOR; /* transform back to starting coordinate system */
-      
+
       return E_NO_WRAP;
    }
 
@@ -408,13 +408,13 @@ int calc_line_intersect_ellipsoid (
       r1[i] = p2[i] + l1 * p1p2[i];
       r2[i] = p2[i] + l2 * p1p2[i];
    }
-   
+
 #if VISUAL_WRAPPING_DEBUG
    add_debug_line(wo, factor, r1, r2, 2.0, "", "", yellow); /* the "muscle line" */
 #endif
 
    /* ==== COMPUTE WRAPPING PLANE (begin) ==== */
-   
+
    MAKE_3DVECTOR21(r2, r1, r1r2);
 
    /* (1) Frans technique: choose the most parallel coordinate axis, then set
@@ -425,16 +425,16 @@ int calc_line_intersect_ellipsoid (
     * c1 in situations where the "fan" has a sharp discontinuity.
     */
    normalize_vector(p1p2, mu);
-      
+
    for (i = 0; i < 3; i++)
    {
       mu[i] = fabs(mu[i]);
-      
+
       t[i] = (m[i] - r1[i]) / r1r2[i];
-      
+
       for (j = 0; j < 3; j++)
          t_sv[i][j] = r1[j] + t[i] * r1r2[j];
-      
+
       PT_TO_ELLIPSOID_2(t_sv[i], m, a, t_c1[i], i);
    }
 
@@ -460,24 +460,24 @@ int calc_line_intersect_ellipsoid (
           */
 
          double s = 1.0;
-         
+
          if (t[bestMu] < 0.0 || t[bestMu] > 1.0)
             s = 0.0;
-         
+
          else if (t[bestMu] < SV_BOUNDARY_BLEND)
             s = t[bestMu] / SV_BOUNDARY_BLEND;
-         
+
          else if (t[bestMu] > (1.0 - SV_BOUNDARY_BLEND))
             s = (1.0 - t[bestMu]) / SV_BOUNDARY_BLEND;
-         
+
          if (s < 1.0)
             mu[bestMu] = MU_BLEND_MIN + s * (mu[bestMu] - MU_BLEND_MIN);
 #if 0
          fprintf(stderr, mu[bestMu] < MU_BLEND_MAX ? "mu{%.3f} " : "mu[%.3f] ", mu[bestMu]);
          fprintf(stderr, s < 1.0 ? "t{%.2f}\n" : "t %.2f\n", s);
-#endif         
+#endif
       }
-      
+
       if (mwrap->wrap_algorithm == WE_AXIAL_ALGORITHM || mu[bestMu] > MU_BLEND_MIN)
       {
          /* if the Frans solution produced a strong result, copy it into
@@ -493,12 +493,12 @@ int calc_line_intersect_ellipsoid (
             add_debug_line(wo, factor, t_sv[bestMu], t_c1[bestMu], 1.0, "", "Frans", blue);
 #endif
       }
-#if 0 
+#if 0
       fprintf(stderr, bestMu == 0 ? "[%.3f] "  : "%.3f ",  mu[0]);
       fprintf(stderr, bestMu == 1 ? "[%.3f] "  : "%.3f ",  mu[1]);
       fprintf(stderr, bestMu == 2 ? "[%.3f]\n" : "%.3f\n", mu[2]);
-#endif         
-   
+#endif
+
       if (mwrap->wrap_algorithm == WE_FAN_ALGORITHM ||
           mwrap->wrap_algorithm == WE_HYBRID_ALGORITHM && mu[bestMu] < MU_BLEND_MAX)
       {
@@ -508,19 +508,19 @@ int calc_line_intersect_ellipsoid (
           * more jumpy c1 becomes.
           */
          double v_sum[3] = {0,0,0};
-         
+
          for (i = 0; i < 3; i++)
             t_sv[2][i] = r1[i] + 0.5 * r1r2[i];
-         
+
          for (i = 1; i < NUM_FAN_SAMPLES - 1; i++)
          {
             double v[3], tt = (double) i / NUM_FAN_SAMPLES;
-         
+
             for (j = 0; j < 3; j++)
                t_sv[0][j] = r1[j] + tt * r1r2[j];
 
             PT_TO_ELLIPSOID(t_sv[0], m, a, t_c1[0]);
-      
+
             MAKE_3DVECTOR21(t_c1[0], t_sv[0], v);
 
             normalize_vector(v, v);
@@ -536,35 +536,35 @@ int calc_line_intersect_ellipsoid (
          }
          /* use vector sum to determine c1 */
          normalize_vector(v_sum, v_sum);
-         
+
          for (i = 0; i < 3; i++)
            t_c1[0][i] = t_sv[2][i] + v_sum[i];
-         
+
          if (mwrap->wrap_algorithm == WE_FAN_ALGORITHM || mu[bestMu] <= MU_BLEND_MIN)
          {
             PT_TO_ELLIPSOID(t_c1[0], m, a, c1);
-            
+
             for (i = 0; i < 3; i++)
                sv[i] = t_sv[2][i];
-         
+
             fanWeight = 1.0;
          }
          else
          {
             double tt = (mu[bestMu] - MU_BLEND_MIN) / (MU_BLEND_MAX - MU_BLEND_MIN);
-            
+
             double oneMinusT = 1.0 - tt;
-            
+
             PT_TO_ELLIPSOID(t_c1[0], m, a, t_c1[1]);
-            
+
             for (i = 0; i < 3; i++)
             {
                t_c1[2][i] = tt * c1[i] + oneMinusT * t_c1[1][i];
-               
+
                sv[i] = tt * sv[i] + oneMinusT * t_sv[2][i];
             }
             PT_TO_ELLIPSOID(t_c1[2], m, a, c1);
-            
+
 #if VISUAL_WRAPPING_DEBUG && 0
             add_debug_line(wo, factor, t_sv[2], t_c1[1], 1.0, "", "fan", blue);
 #endif
@@ -576,7 +576,7 @@ int calc_line_intersect_ellipsoid (
    {
       for (i = 0; i < 3; i++)
          sv[i] = r1[i] + 0.5 * (r2[i] - r1[i]);
-      
+
       PT_TO_ELLIPSOID(sv, m, a, c1);
    }
 
@@ -595,15 +595,15 @@ int calc_line_intersect_ellipsoid (
     */
    {
       SBoolean use_c1_to_find_tangent_pts = yes;
-   
+
       if (mwrap->wrap_algorithm == WE_AXIAL_ALGORITHM)
          use_c1_to_find_tangent_pts = (SBoolean) (t[bestMu] > 0.0 && t[bestMu] < 1.0);
-   
+
       if (use_c1_to_find_tangent_pts)
          for (i = 0; i < 3; i++)
             r1[i] = r2[i] = c1[i];
    }
-   
+
    /* if wrapping is constrained to one half of the ellipsoid,
     * check to see if we need to flip c1 to the active side of
     * the ellipsoid.
@@ -611,38 +611,38 @@ int calc_line_intersect_ellipsoid (
    if (wrap_sign != 0)
    {
       dist = c1[wrap_axis] - m[wrap_axis];
-      
+
       if (DSIGN(dist) != wrap_sign)
       {
          double orig_c1[3];
-         
+
          for (i = 0; i < 3; i++)
             orig_c1[i] = c1[i];
-            
+
          c1[wrap_axis] = - c1[wrap_axis];
-         
+
          for (i = 0; i < 3; i++)
             r1[i] = r2[i] = c1[i];
 
 #if VISUAL_WRAPPING_DEBUG
          add_debug_line(wo, factor, sv, c1, 2.0, "", "c1\'", green);
 #endif
-         
+
          if (fanWeight == DBL_MIN)
             fanWeight = 1.0 - (mu[bestMu] - MU_BLEND_MIN) / (MU_BLEND_MAX - MU_BLEND_MIN);
-         
+
          if (fanWeight > 1.0)
             fanWeight = 1.0;
-         
+
          if (fanWeight > 0.0)
          {
             double tc1[3], bisection = (orig_c1[wrap_axis] + c1[wrap_axis]) / 2.0;
-               
+
             c1[wrap_axis] = c1[wrap_axis] + fanWeight * (bisection - c1[wrap_axis]);
-            
+
             for (i = 0; i < 3; i++)
                tc1[i] = c1[i];
-            
+
             PT_TO_ELLIPSOID(tc1, m, a, c1);
 
 #if VISUAL_WRAPPING_DEBUG
@@ -658,9 +658,9 @@ int calc_line_intersect_ellipsoid (
    MAKE_3DVECTOR21(p1, c1, p1c1);
    cross_vectors(p1p2, p1c1, vs);
    normalize_vector(vs, vs);
- 
+
    vs4 = - DOT_VECTORS(vs, c1);
-   
+
    /* find r1 & r2 by starting at c1 moving toward p1 & p2 */
 #if VISUAL_WRAPPING_DEBUG && 1
    add_debug_line(wo, factor, sv, r1, 3.0, "", "r1\'", white);
@@ -669,7 +669,7 @@ int calc_line_intersect_ellipsoid (
 
    calc_r(p1e, r1, p1, m, a, vs, vs4);
    calc_r(p2e, r2, p2, m, a, vs, vs4);
-   
+
 #if VISUAL_WRAPPING_DEBUG && 1
    add_debug_line(wo, factor, sv, r1, 3.0, "", "", pink);
    add_debug_line(wo, factor, sv, r2, 3.0, "", "", pink);
@@ -684,10 +684,10 @@ int calc_line_intersect_ellipsoid (
    if (wrap_sign != 0 && *num_wrap_pts > 2 && ! far_side_wrap)
    {
       double r1p1[3], r2p2[3], r1w1[3], r2w2[3];
-      
+
       double *w1 = &(*wrap_pts)[3];
       double *w2 = &(*wrap_pts)[(*num_wrap_pts - 2) * 3];
-      
+
       /* check for wrong-way wrap by testing angle of first and last
        * wrap path segments:
        */
@@ -708,7 +708,7 @@ int calc_line_intersect_ellipsoid (
           *  wrap.   -- KMS 9/3/99
           */
          far_side_wrap = yes;
-         
+
          goto calc_wrap_path;
       }
    }
@@ -723,12 +723,12 @@ int calc_line_intersect_ellipsoid (
 
    /* unfactor the output coordinates */
    *rlen /= factor;
-  
+
    for (i = 0; i < *num_wrap_pts * 3; i++)
       (*wrap_pts)[i] /= factor;
 
    _UNFACTOR; /* transform back to starting coordinate system */
-   
+
    return E_MANDATORY_WRAP;
 
 } /* calc_line_intersect_ellipsoid */
@@ -760,9 +760,9 @@ static void ellipsoid_normal_at_pt (const double m[], const double a[],
 /* -------------------------------------------------------------------------
    pt_to_ellipse - this routine is courtesy of Dave Eberly
       www.magic-software.com
-   
+
    Input:   Ellipse (x/a)^2+(y/b)^2 = 1, point (u,v).
-  
+
    Output:  Closest point (x,y) on ellipse to (u,v), function returns
             the distance sqrt((x-u)^2+(y-v)^2).
 ---------------------------------------------------------------------------- */
@@ -779,12 +779,12 @@ static double pt_to_ellipse (double a, double b, double u, double v, double* x, 
     double dx, dy, xda, ydb;
     int i, which;
     double t, P, Q, P2, Q2, f, fp;
-    
+
     SBoolean nearXOrigin = (SBoolean) EQUAL_WITHIN_ERROR(0.0,u);
     SBoolean nearYOrigin = (SBoolean) EQUAL_WITHIN_ERROR(0.0,v);
-    
+
     fan_color = pink;
-    
+
     /* handle points near the coordinate axes */
     if (nearXOrigin && nearYOrigin)
     {
@@ -853,9 +853,9 @@ static double pt_to_ellipse (double a, double b, double u, double v, double* x, 
     else
     {
         double max = a;
-        
+
         which = 1;
-        
+
         if ( b > max )
             max = b;
 
@@ -869,7 +869,7 @@ static double pt_to_ellipse (double a, double b, double u, double v, double* x, 
         Q = t+b2;
         Q2 = Q*Q;
         f = P2*Q2 - a2u2*Q2 - b2v2*P2;
-        
+
          if ( fabs(f) < 1e-09 )
             break;
 
@@ -893,9 +893,9 @@ static double pt_to_ellipse (double a, double b, double u, double v, double* x, 
 /* -------------------------------------------------------------------------
    pt_to_ellipsoid - this routine is courtesy of Dave Eberly
       www.magic-software.com
-   
+
    Input:   Ellipsoid (x/a)^2+(y/b)^2+(z/c)^2 = 1, point (u,v,w).
-  
+
    Output:  Closest point (x,y,z) on ellipsoid to (u,v,w), function returns
             the distance sqrt((x-u)^2+(y-v)^2+(z-w)^2).
 ---------------------------------------------------------------------------- */
@@ -910,7 +910,7 @@ static double pt_to_ellipsoid (double a, double b, double c,
      * of this code handles those points separately.
      */
     int i,j;
-    
+
 #if PREVENT_PT_TO_ELLIPSOID_SPECIAL_CASE_HANDLING
     /* handle points near the coordinate planes by preventing them from
      * getting too close to the coordinate planes.
@@ -924,7 +924,7 @@ static double pt_to_ellipsoid (double a, double b, double c,
     if (EQUAL_WITHIN_ERROR(w,0.0))
         w = (w < 0.0 ? - TINY_NUMBER : TINY_NUMBER);
 
-#else    
+#else
     /* handle points near the coordinate planes by reducing the problem
      * to a 2-dimensional pt-to-ellipse.
      *
@@ -934,7 +934,7 @@ static double pt_to_ellipsoid (double a, double b, double c,
     if (specialCaseAxis < 0)
     {
        double abc[3], uvw[3], minEllipseRadiiSum = FLT_MAX;
-       
+
        abc[0] = a; abc[1] = b; abc[2] = c;
        uvw[0] = u; uvw[1] = v; uvw[2] = w;
 
@@ -995,7 +995,7 @@ static double pt_to_ellipsoid (double a, double b, double c,
         else
         {
             double max = a;
-        
+
             if ( b > max )
                 max = b;
             if ( c > max )
@@ -1012,17 +1012,17 @@ static double pt_to_ellipsoid (double a, double b, double c,
             double PQ, PR, QR, PQR, fp;
 
             f = P2*Q2*_R2 - a2u2*Q2*_R2 - b2v2*P2*_R2 - c2w2*P2*Q2;
-        
+
             if ( fabs(f) < 1e-09 )
             {
                 *x = a2 * u / P;
                 *y = b2 * v / Q;
                 *z = c2 * w / R;
-            
+
                 dx = *x - u;
                 dy = *y - v;
                 dz = *z - w;
-            
+
                 return sqrt(dx*dx+dy*dy+dz*dz);
             }
 
@@ -1031,7 +1031,7 @@ static double pt_to_ellipsoid (double a, double b, double c,
             QR = Q*R;
             PQR = P*Q*R;
             fp = 2.0*(PQR*(QR+PR+PQ)-a2u2*QR*(Q+R)-b2v2*PR*(P+R)-c2w2*PQ*(P+Q));
-        
+
             t -= f/fp;
         }
 #if 0
@@ -1047,7 +1047,7 @@ static double pt_to_ellipsoid (double a, double b, double c,
    calc_r - this routine adjusts a point (r1) such that the point remains in
      a specified plane (vs, vs4), and creates a TANGENT line segment connecting
      it to a specified point (p1) outside of the ellipsoid.
-   
+
    Input:
      p1e   ellipsoid parameter for 'p1'?
      r1    point to be adjusted to satisfy tangency-within-a-plane constraint
@@ -1056,7 +1056,7 @@ static double pt_to_ellipsoid (double a, double b, double c,
      a     ellipsoid axis
      vs    plane vector
      vs4   plane coefficient
-   
+
    Output:
      r1    tangent point on ellipsoid surface and in vs plane
 ---------------------------------------------------------------------------- */
@@ -1126,7 +1126,7 @@ static int calc_r (double p1e, double r1[], double p1[], double m[], double a[],
      for (i = 0; i < 4; i++)
      {
         v[i] = 0.0;
-        
+
         for (j = 0; j < 4; j++)
            v[i] -= dedth[i][j] * ee[j];
      }
@@ -1136,7 +1136,7 @@ static int calc_r (double p1e, double r1[], double p1[], double m[], double a[],
         for (j = 0; j < 4; j++)
         {
            dedth2[i][j] = 0.0;
-           
+
            for (k = 0; k < 4; k++)
           dedth2[i][j] += dedth[i][k] * dedth[j][k];
         }
@@ -1146,7 +1146,7 @@ static int calc_r (double p1e, double r1[], double p1[], double m[], double a[],
         diag[i] = dedth2[i][i];
 
      nit2 = 0;
-     
+
      while ((ssq >= ssqo) && (nit2 < maxit2))
      {
         for (i = 0; i < 4; i++)
@@ -1157,19 +1157,19 @@ static int calc_r (double p1e, double r1[], double p1[], double m[], double a[],
         for (i = 0; i < 4; i++)
         {
            vt[i] = 0.0;
-           
+
            for (j = 0; j < 4; j++)
           vt[i] += dd * ddinv2[i][j] * v[j] / 16.0;
         }
 
         for (i = 0; i < 3; i++)
            r1[i] += vt[i];
-     
+
         d1 += vt[3];
 
         for (i = 0; i < 3; i++)
            nr1[i] = 2.0 * (r1[i] - m[i])/SQR(a[i]);
-        
+
         ee[0] = DOT_VECTORS(vs, r1) + vs4;
         ee[1] = -1.0;
 
@@ -1192,7 +1192,7 @@ static int calc_r (double p1e, double r1[], double p1[], double m[], double a[],
      fakt = 0.5;
 
      nit2 = 0;
-     
+
      while ((ssq <= ssqo) && (nit2 < maxit2))
      {
         fakt *= 2.0;
@@ -1207,15 +1207,15 @@ static int calc_r (double p1e, double r1[], double p1[], double m[], double a[],
 
         ee[0] = DOT_VECTORS(vs, r1) + vs4;
         ee[1] = -1.0;
-        
+
         for (i=0; i<3; i++)
            ee[1] += SQR((r1[i] - m[i]) / a[i]);
 
         ee[2] = DOT_VECTORS(nr1, r1) + d1;
         ee[3] = DOT_VECTORS(nr1, p1) + d1;
 
-        ssqo = ssq;     
-        
+        ssqo = ssq;
+
         ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
 
         nit2++;
@@ -1231,17 +1231,17 @@ static int calc_r (double p1e, double r1[], double p1[], double m[], double a[],
 
      ee[0] = DOT_VECTORS(vs, r1) + vs4;
      ee[1] = -1.0;
-     
+
      for (i = 0; i < 3; i++)
         ee[1] += SQR((r1[i] - m[i]) / a[i]);
-     
+
      ee[2] = DOT_VECTORS(nr1, r1) + d1;
      ee[3] = DOT_VECTORS(nr1, p1) + d1;
 
      ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
-     ssqo = ssq;        
+     ssqo = ssq;
       }
-   }   
+   }
    return 1;
 
 } /* calc_r */
@@ -1249,18 +1249,18 @@ static int calc_r (double p1e, double r1[], double p1[], double m[], double a[],
 /* -------------------------------------------------------------------------
    dell - calculate the distance between two points on the surface of an
      ellipsoid over the surface of the ellipsoid.
-   
+
    Input:
      r1, r2:   the points
      m:        center of the ellipsoid
      a:        axes of the ellipsoid
      vs:       orientation plane
-   
+
    Output:
      afst:     the distance over the surface of the ellipsoid
      wrap_pts: line segments connecting r1 to r2 along the ellipsoid surface
 ---------------------------------------------------------------------------- */
-static void dell (double r1[], double r2[], double m[], double a[], 
+static void dell (double r1[], double r2[], double m[], double a[],
               double vs[], double vs4, SBoolean far_side_wrap,
               double *afst,
               double** wrap_pts, int* num_wrap_pts)
@@ -1268,7 +1268,7 @@ static void dell (double r1[], double r2[], double m[], double a[],
    int i, j, k, l, imax, index, numPts = 101;
    int numSegs = numPts - 1;
    int numInteriorPts = numPts - 2;
-   
+
    double u[3], ux[3], mu, a0[3], ar1[3], ar2[3], phi, dphi, phi0, len,
       r0[3][3], vsy[3], vsz[3], rphi[3][3], t[3], r[3], f1[3], f2[3], dr[3],
       aa, bb, cc, mu3, s[100][3], dv[3], q[3], p[3];
@@ -1303,7 +1303,7 @@ static void dell (double r1[], double r2[], double m[], double a[],
    ux[2] = 0.0;
 
    imax = 0;
-   
+
    for (i = 1; i < 3; i++)
       if (fabs(vs[i]) > fabs(vs[imax]))
      imax = i;
@@ -1323,7 +1323,7 @@ static void dell (double r1[], double r2[], double m[], double a[],
    normalize_vector(ar2, ar2);
 
    phi0 = acos(DOT_VECTORS(ar1, ar2));
-   
+
    if (far_side_wrap)
       dphi = - (2 * M_PI - phi0) / (double)numSegs;
    else
@@ -1390,7 +1390,7 @@ static void dell (double r1[], double r2[], double m[], double a[],
    }
 
    *num_wrap_pts = numPts;
-   
+
    if (*wrap_pts == NULL)
       *wrap_pts = (double*) simm_malloc((*num_wrap_pts) * 3 * sizeof(double));
 
@@ -1405,7 +1405,7 @@ static void dell (double r1[], double r2[], double m[], double a[],
    for (i = 0; i < numInteriorPts; i++)
    {
       index = (i+1) * 3;
-      
+
       (*wrap_pts)[index]   = s[i][0];
       (*wrap_pts)[index+1] = s[i][1];
       (*wrap_pts)[index+2] = s[i][2];
@@ -1423,7 +1423,7 @@ static void dell (double r1[], double r2[], double m[], double a[],
       q[1] = (*wrap_pts)[(i+1)*3+1];
       q[2] = (*wrap_pts)[(i+1)*3+2];
 
-      MAKE_3DVECTOR21(q, p, dv); 
+      MAKE_3DVECTOR21(q, p, dv);
 
       *afst += VECTOR_MAGNITUDE(dv);
    }
@@ -1435,9 +1435,9 @@ static void dell (double r1[], double r2[], double m[], double a[],
 /* -------------------------------------------------------------------------
    pt_to_ellipse - this routine is courtesy of Dave Eberly
       www.magic-software.com
-   
+
    Input:   Ellipse (x/a)^2+(y/b)^2 = 1, point (u,v).
-  
+
    Output:  Closest point (x,y) on ellipse to (u,v), function returns
             the distance sqrt((x-u)^2+(y-v)^2).
 ---------------------------------------------------------------------------- */
@@ -1454,10 +1454,10 @@ static double pt_to_ellipse2 (double a, double b, double u, double v, double* x,
     double dx, dy, xda, ydb;
     int i, which;
     double t, P, Q, P2, Q2, f, fp;
-    
+
     SBoolean nearXOrigin = (SBoolean) EQUAL_WITHIN_ERROR(0.0,u);
     SBoolean nearYOrigin = (SBoolean) EQUAL_WITHIN_ERROR(0.0,v);
-    
+
     /* handle points near the coordinate axes */
     if (nearXOrigin && nearYOrigin)
     {
@@ -1520,9 +1520,9 @@ static double pt_to_ellipse2 (double a, double b, double u, double v, double* x,
     else
     {
         double max = a;
-        
+
         which = 1;
-        
+
         if ( b > max )
             max = b;
 
@@ -1536,7 +1536,7 @@ static double pt_to_ellipse2 (double a, double b, double u, double v, double* x,
         Q = t+b2;
         Q2 = Q*Q;
         f = P2*Q2 - a2u2*Q2 - b2v2*P2;
-        
+
         //dkb - in original (above) was: if ( fabs(f) < 1e-09 )
          if (fabs(f) < 1e-20)
             break;
@@ -1557,9 +1557,9 @@ static double pt_to_ellipse2 (double a, double b, double u, double v, double* x,
 /* -------------------------------------------------------------------------
    pt_to_ellipsoid - this routine is courtesy of Dave Eberly
       www.magic-software.com
-   
+
    Input:   Ellipsoid (x/a)^2+(y/b)^2+(z/c)^2 = 1, point (u,v,w).
-  
+
    Output:  Closest point (x,y,z) on ellipsoid to (u,v,w), function returns
             the distance sqrt((x-u)^2+(y-v)^2+(z-w)^2).
 ---------------------------------------------------------------------------- */
@@ -1574,7 +1574,7 @@ static double pt_to_ellipsoid2 (double a, double b, double c,
      * of this code handles those points separately.
      */
     int i,j;
-    
+
     /* handle points near the coordinate planes by reducing the problem
      * to a 2-dimensional pt-to-ellipse.
      *
@@ -1584,7 +1584,7 @@ static double pt_to_ellipsoid2 (double a, double b, double c,
     if (specialCaseAxis < 0)
     {
        double abc[3], uvw[3], minEllipseRadiiSum = FLT_MAX;
-       
+
        abc[0] = a; abc[1] = b; abc[2] = c;
        uvw[0] = u; uvw[1] = v; uvw[2] = w;
 
@@ -1639,7 +1639,7 @@ static double pt_to_ellipsoid2 (double a, double b, double c,
         else
         {
             double max = a;
-        
+
             if ( b > max )
                 max = b;
             if ( c > max )
@@ -1656,14 +1656,14 @@ static double pt_to_ellipsoid2 (double a, double b, double c,
             double PQ, PR, QR, PQR, fp;
 
             f = P2*Q2*_R2 - a2u2*Q2*_R2 - b2v2*P2*_R2 - c2w2*P2*Q2;
-        
+
          // dkb  - in original (above) was:  if ( fabs(f) < 1e-09 )
             if ( fabs(f) < 1e-20)
             {
                 *x = a2 * u / P;
                 *y = b2 * v / Q;
                 *z = c2 * w / R;
-            
+
                 dx = *x - u;
                 dy = *y - v;
                 dz = *z - w;
@@ -1675,7 +1675,7 @@ static double pt_to_ellipsoid2 (double a, double b, double c,
             QR = Q*R;
             PQR = P*Q*R;
             fp = 2.0*(PQR*(QR+PR+PQ)-a2u2*QR*(Q+R)-b2v2*PR*(P+R)-c2w2*PQ*(P+Q));
-        
+
             t -= f/fp;
         }
     }

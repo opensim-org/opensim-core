@@ -2,7 +2,7 @@
 <OpenSimDocument Version="30000">
 	<ForceSet name="gait10dof_Reserve_Actuators">
 		<objects>
-        <!-- Actuators on the base segement are called Residual actuators 
+        <!-- Actuators on the base segement are called Residual actuators
              whose forces account for the errors in the model, its kinematic
              that do not balance with experimental ground reaction forces -->
 			<PointActuator name="FX">
@@ -64,7 +64,7 @@
 				<optimal_force>1</optimal_force>
 			</TorqueActuator>
 
-      <!-- Actuators on the Coordinates are called Reserve actuators 
+      <!-- Actuators on the Coordinates are called Reserve actuators
            and are used the drive the model when the model excludes its muscles (i.e. RRA)
            or when muscles are insufficient to track desired kinematics (CMC) -->
 			<CoordinateActuator name="hip_flexion_r_reserve">

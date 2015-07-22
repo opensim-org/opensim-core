@@ -41,12 +41,12 @@
 #ifdef WIN32
   #define DIR_SEP_CHAR   '\\'
   #define DIR_SEP_STRING "\\"
-  
+
   #define COPY_COMMAND   "copy"
 #else
   #define DIR_SEP_CHAR   '/'
   #define DIR_SEP_STRING "/"
-  
+
   #define COPY_COMMAND   "cp"
 #endif
 

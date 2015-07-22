@@ -399,7 +399,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
                         <function/>
                         <coordinates> </coordinates>
                         <axis>       0.00000000       1.00000000       0.00000000 </axis>
-                      </TransformAxis>          
+                      </TransformAxis>
                       <TransformAxis name="translation1">
                         <function/>
                         <coordinates> </coordinates>

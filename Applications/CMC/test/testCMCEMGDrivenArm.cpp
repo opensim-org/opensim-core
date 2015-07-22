@@ -40,7 +40,7 @@ int main() {
     catch (const std::exception& e)
         {  cout << e.what() <<endl; failures.push_back("testEMGDrivenArm"); }
 
-    // redo with the Millard2012EquilibriumMuscle 
+    // redo with the Millard2012EquilibriumMuscle
     Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
 
     try {testEMGDrivenArm();}

@@ -74,13 +74,13 @@ private:
     PropertyStr _desiredPointsFileNameProp;
     std::string &_desiredPointsFileName;
 
-    /** Name of the file containing the desired kinematic trajectories. */       
-    PropertyStr _desiredKinematicsFileNameProp;          
+    /** Name of the file containing the desired kinematic trajectories. */
+    PropertyStr _desiredKinematicsFileNameProp;
     std::string &_desiredKinematicsFileName;
 
-    /** Name of the file containing the tracking tasks. */           
-    PropertyStr _taskSetFileNameProp;        
-    std::string &_taskSetFileName;       
+    /** Name of the file containing the tracking tasks. */
+    PropertyStr _taskSetFileNameProp;
+    std::string &_taskSetFileName;
 
       /** Name of the file containing the constraints on the controls. */
     PropertyStr _constraintsFileNameProp;
@@ -95,17 +95,17 @@ private:
     double &_lowpassCutoffFrequency;
 
     /** Time window over which the desired actuator forces are achieved */
-    PropertyDbl _targetDTProp;             
+    PropertyDbl _targetDTProp;
     double &_targetDT;
 
     /** Flag indicating whether to use the fast CMC optimization
-    target.  The fast target requires the desired accelerations to           
-    be met within the tolerance set by the convergence criterion.        
-    The optimizer fails if the acclerations constraints cannot be        
-    met, so the fast target is less robust.  The regular target          
-    does not require the acceleration constraints to be met; it          
-    meets them as well as it can. */         
-    PropertyBool _useFastTargetProp;         
+    target.  The fast target requires the desired accelerations to
+    be met within the tolerance set by the convergence criterion.
+    The optimizer fails if the acclerations constraints cannot be
+    met, so the fast target is less robust.  The regular target
+    does not require the acceleration constraints to be met; it
+    meets them as well as it can. */
+    PropertyBool _useFastTargetProp;
     bool &_useFastTarget;
 
     /** Preferred optimizer algorithm. */
@@ -174,10 +174,10 @@ public:
     const std::string &getDesiredKinematicsFileName() { return _desiredKinematicsFileName; }
     void setDesiredKinematicsFileName(const std::string &aFileName) { _desiredKinematicsFileName = aFileName; }
 
-    const std::string &getConstraintsFileName() { return _constraintsFileName; }         
-    void setConstraintsFileName(const std::string &aFileName) { _constraintsFileName = aFileName; }          
-         
-    const std::string &getTaskSetFileName() { return _taskSetFileName; }         
+    const std::string &getConstraintsFileName() { return _constraintsFileName; }
+    void setConstraintsFileName(const std::string &aFileName) { _constraintsFileName = aFileName; }
+
+    const std::string &getTaskSetFileName() { return _taskSetFileName; }
     void setTaskSetFileName(const std::string &aFileName) { _taskSetFileName = aFileName; }
 
     const std::string &getRRAControlsFileName() { return _rraControlsFileName; }
@@ -186,15 +186,15 @@ public:
     double getLowpassCutoffFrequency() const { return _lowpassCutoffFrequency; }
     void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) { _lowpassCutoffFrequency = aLowpassCutoffFrequency; }
 
-    double getTimeWindow() const { return _targetDT; }           
-    void setTimeWindow(double aTargetDT) { _targetDT = aTargetDT; }          
+    double getTimeWindow() const { return _targetDT; }
+    void setTimeWindow(double aTargetDT) { _targetDT = aTargetDT; }
 
     // External loads get/set
     const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
     void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
 
     // Target selection
-    bool getUseFastTarget() const { return _useFastTarget;};         
+    bool getUseFastTarget() const { return _useFastTarget;};
     void setUseFastTarget(bool useFastTarget) const {  _useFastTarget=useFastTarget; };
 
 

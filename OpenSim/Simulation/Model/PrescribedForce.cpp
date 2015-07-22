@@ -95,7 +95,7 @@ void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
     {
         throw Exception("PrescribedForce:: three components of the torque must be specified.");
     }
-}   
+}
 
 
 /*
@@ -144,8 +144,8 @@ void PrescribedForce::setTorqueFunctions(Function* torqueX, Function* torqueY, F
 }
 
 void PrescribedForce::setTorqueFunctionNames
-   (const OpenSim::Array<std::string>& aFunctionNames, 
-    const Storage& kineticsStore)  
+   (const OpenSim::Array<std::string>& aFunctionNames,
+    const Storage& kineticsStore)
 {
     FunctionSet& torqueFunctions = updTorqueFunctions();
 
@@ -166,8 +166,8 @@ void PrescribedForce::setTorqueFunctionNames
         torqueFunctions[i].setName(aFunctionNames.get(i));
 }
 void PrescribedForce::setForceFunctionNames
-   (const OpenSim::Array<std::string>& aFunctionNames, 
-    const Storage& kineticsStore)  
+   (const OpenSim::Array<std::string>& aFunctionNames,
+    const Storage& kineticsStore)
 {
     FunctionSet& forceFunctions = updForceFunctions();
 
@@ -188,8 +188,8 @@ void PrescribedForce::setForceFunctionNames
         forceFunctions[i].setName(aFunctionNames.get(i));
 }
 void PrescribedForce::setPointFunctionNames
-   (const OpenSim::Array<std::string>& aFunctionNames, 
-    const Storage& kineticsStore)  
+   (const OpenSim::Array<std::string>& aFunctionNames,
+    const Storage& kineticsStore)
 {
     FunctionSet& pointFunctions = updPointFunctions();
 
@@ -203,7 +203,7 @@ void PrescribedForce::setPointFunctionNames
     for(int i=0;i<aFunctionNames.getSize();i++)
     {
         kineticsStore.getDataColumn(aFunctionNames[i], column);
-        tSpline[i]= new SimmSpline((forceSize>10?10:forceSize), 
+        tSpline[i]= new SimmSpline((forceSize>10?10:forceSize),
                                            t, column, aFunctionNames[i]);
     }
     setPointFunctions(tSpline[0], tSpline[1], tSpline[2]);
@@ -217,8 +217,8 @@ void PrescribedForce::setPointFunctionNames
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 
-void PrescribedForce::computeForce(const SimTK::State& state, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void PrescribedForce::computeForce(const SimTK::State& state,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const
 {
     const bool pointIsGlobal = get_pointIsGlobal();
@@ -237,17 +237,17 @@ void PrescribedForce::computeForce(const SimTK::State& state,
 
     assert(_body!=0);
     if (hasForceFunctions) {
-        Vec3 force(forceFunctions[0].calcValue(timeAsVector), 
-                   forceFunctions[1].calcValue(timeAsVector), 
+        Vec3 force(forceFunctions[0].calcValue(timeAsVector),
+                   forceFunctions[1].calcValue(timeAsVector),
                    forceFunctions[2].calcValue(timeAsVector));
         if (!forceIsGlobal)
-            engine.transform(state, *_body,                 force, 
+            engine.transform(state, *_body,                 force,
                                     getModel().getGround(), force);
         Vec3 point(0); // Default is body origin.
         if (hasPointFunctions) {
             // Apply force to a specified point on the body.
-            point = Vec3(pointFunctions[0].calcValue(timeAsVector), 
-                         pointFunctions[1].calcValue(timeAsVector), 
+            point = Vec3(pointFunctions[0].calcValue(timeAsVector),
+                         pointFunctions[1].calcValue(timeAsVector),
                          pointFunctions[2].calcValue(timeAsVector));
             if (pointIsGlobal)
                 engine.transformPosition(state, getModel().getGround(), point,
@@ -256,11 +256,11 @@ void PrescribedForce::computeForce(const SimTK::State& state,
         applyForceToPoint(state, *_body, point, force, bodyForces);
     }
     if (hasTorqueFunctions){
-        Vec3 torque(torqueFunctions[0].calcValue(timeAsVector), 
-                    torqueFunctions[1].calcValue(timeAsVector), 
+        Vec3 torque(torqueFunctions[0].calcValue(timeAsVector),
+                    torqueFunctions[1].calcValue(timeAsVector),
                     torqueFunctions[2].calcValue(timeAsVector));
         if (!forceIsGlobal)
-            engine.transform(state, *_body,                 torque, 
+            engine.transform(state, *_body,                 torque,
                                     getModel().getGround(), torque);
         applyTorque(state, *_body, torque, bodyForces);
     }
@@ -269,7 +269,7 @@ void PrescribedForce::computeForce(const SimTK::State& state,
 /**
  * Conevenince methods to access prescribed force functions
  */
-Vec3 PrescribedForce::getForceAtTime(double aTime) const    
+Vec3 PrescribedForce::getForceAtTime(double aTime) const
 {
     const FunctionSet& forceFunctions = getForceFunctions();
 
@@ -277,8 +277,8 @@ Vec3 PrescribedForce::getForceAtTime(double aTime) const
         return Vec3(0);
 
     const SimTK::Vector timeAsVector(1, aTime);
-    const Vec3 force(forceFunctions[0].calcValue(timeAsVector), 
-                     forceFunctions[1].calcValue(timeAsVector), 
+    const Vec3 force(forceFunctions[0].calcValue(timeAsVector),
+                     forceFunctions[1].calcValue(timeAsVector),
                      forceFunctions[2].calcValue(timeAsVector));
     return force;
 }
@@ -291,8 +291,8 @@ Vec3 PrescribedForce::getPointAtTime(double aTime) const
         return Vec3(0);
 
     const SimTK::Vector timeAsVector(1, aTime);
-    const Vec3 point(pointFunctions[0].calcValue(timeAsVector), 
-                     pointFunctions[1].calcValue(timeAsVector), 
+    const Vec3 point(pointFunctions[0].calcValue(timeAsVector),
+                     pointFunctions[1].calcValue(timeAsVector),
                      pointFunctions[2].calcValue(timeAsVector));
     return point;
 }
@@ -305,8 +305,8 @@ Vec3 PrescribedForce::getTorqueAtTime(double aTime) const
         return Vec3(0);
 
     const SimTK::Vector timeAsVector(1, aTime);
-    const Vec3 torque(torqueFunctions[0].calcValue(timeAsVector), 
-                      torqueFunctions[1].calcValue(timeAsVector), 
+    const Vec3 torque(torqueFunctions[0].calcValue(timeAsVector),
+                      torqueFunctions[1].calcValue(timeAsVector),
                       torqueFunctions[2].calcValue(timeAsVector));
     return torque;
 }
@@ -372,21 +372,21 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
     const SimTK::Vector timeAsVector(1, time);
 
     if (appliesForce) {
-        Vec3 force(forceFunctions[0].calcValue(timeAsVector), 
-                   forceFunctions[1].calcValue(timeAsVector), 
+        Vec3 force(forceFunctions[0].calcValue(timeAsVector),
+                   forceFunctions[1].calcValue(timeAsVector),
                    forceFunctions[2].calcValue(timeAsVector));
         if (!forceIsGlobal)
-            engine.transform(state, *_body, force, 
+            engine.transform(state, *_body, force,
                              getModel().getGround(), force);
         if (!pointSpecified) {
             //applyForce(*_body, force);
             for (int i=0; i<3; i++) values.append(force[i]);
         } else {
-            Vec3 point(pointFunctions[0].calcValue(timeAsVector), 
-                       pointFunctions[1].calcValue(timeAsVector), 
+            Vec3 point(pointFunctions[0].calcValue(timeAsVector),
+                       pointFunctions[1].calcValue(timeAsVector),
                        pointFunctions[2].calcValue(timeAsVector));
             if (pointIsGlobal)
-                engine.transformPosition(state, getModel().getGround(), point, 
+                engine.transformPosition(state, getModel().getGround(), point,
                                          *_body, point);
             //applyForceToPoint(*_body, point, force);
             for (int i=0; i<3; i++) values.append(force[i]);
@@ -394,11 +394,11 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
         }
     }
     if (appliesTorque) {
-        Vec3 torque(torqueFunctions[0].calcValue(timeAsVector), 
-                    torqueFunctions[1].calcValue(timeAsVector), 
+        Vec3 torque(torqueFunctions[0].calcValue(timeAsVector),
+                    torqueFunctions[1].calcValue(timeAsVector),
                     torqueFunctions[2].calcValue(timeAsVector));
         if (!forceIsGlobal)
-            engine.transform(state, *_body, torque, 
+            engine.transform(state, *_body, torque,
                              getModel().getGround(), torque);
         for (int i=0; i<3; i++) values.append(torque[i]);
         //applyTorque(*_body, torque);

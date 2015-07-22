@@ -100,7 +100,7 @@ public:
 
     // Override PathPoint methods.
     bool isActive(const SimTK::State& s) const override;
-    void connectToModelAndPath(const Model& aModel, GeometryPath& aPath) 
+    void connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
                                                                 override;
 #endif
 private:

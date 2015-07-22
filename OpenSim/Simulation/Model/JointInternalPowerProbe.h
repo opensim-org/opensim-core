@@ -35,9 +35,9 @@ namespace OpenSim {
 //                        JOINT INTERNAL POWER PROBE
 //==============================================================================
 /**
- * JointInternalPowerProbe is a ModelComponent Probe for computing an operation on 
+ * JointInternalPowerProbe is a ModelComponent Probe for computing an operation on
  * internal joint power or sum of joint powers in the model during a simulation.
- * E.g. Joint internal work is the integral of joint internal power with respect to time, 
+ * E.g. Joint internal work is the integral of joint internal power with respect to time,
  * so by using the JointInternalPowerProbe with the 'integrate' operation, Joint internal
  * work may be computed.
  *
@@ -66,7 +66,7 @@ public:
         "Flag to specify whether to report the sum of all joint powers, "
         "or report each joint power value separately.");
 
-    /** Element-wise power exponent to apply to each joint power prior to the Probe operation. 
+    /** Element-wise power exponent to apply to each joint power prior to the Probe operation.
     For example, if two joints J1 and J2 are given in joint_names, then the
     Probe value will be equal to JointPower_J1^exponent + JointPower_J2^exponent.  **/
     OpenSim_DECLARE_PROPERTY(exponent, double,
@@ -83,10 +83,10 @@ public:
     /** Default constructor */
     JointInternalPowerProbe();
     /** Convenience constructor */
-    JointInternalPowerProbe(const Array<std::string>& joint_names, 
+    JointInternalPowerProbe(const Array<std::string>& joint_names,
         const bool sum_powers_together, const double exponent);
 
-    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // Uses default (compiler-generated) destructor, copy constructor, copy
     // assignment operator.
 
     //--------------------------------------------------------------------------
@@ -122,7 +122,7 @@ public:
     /** Returns the number of probe inputs in the vector returned by computeProbeInputs(). */
     int getNumProbeInputs() const override;
 
-    /** Returns the column labels of the probe values for reporting. 
+    /** Returns the column labels of the probe values for reporting.
         Currently uses the Probe name as the column label, so be sure
         to name your probe appropiately! */
     virtual OpenSim::Array<std::string> getProbeOutputLabels() const override;
@@ -140,7 +140,7 @@ private:
     // ModelComponent Interface
     //--------------------------------------------------------------------------
     void extendConnectToModel(Model& aModel) override;
-    
+
     void setNull();
     void constructProperties();
 

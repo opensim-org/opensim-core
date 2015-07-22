@@ -158,22 +158,22 @@ void CoupledBushingForce::setupProperties()
     //Default location and orientation (rotation sequence)
     SimTK::Vec3 origin(0.0, 0.0, 0.0);
 
-    // Location in Body 1 
+    // Location in Body 1
     _locationInBody1Prop.setName("location_body_1");
     _locationInBody1Prop.setValue(origin);
     _propertySet.append(&_locationInBody1Prop);
 
-    // Orientation in Body 1 
+    // Orientation in Body 1
     _orientationInBody1Prop.setName("orientation_body_1");
     _orientationInBody1Prop.setValue(origin);
     _propertySet.append(&_orientationInBody1Prop);
 
-    // Location in Body 2 
+    // Location in Body 2
     _locationInBody2Prop.setName("location_body_2");
     _locationInBody2Prop.setValue(origin);
     _propertySet.append(&_locationInBody2Prop);
 
-    // Orientation in Body 2 
+    // Orientation in Body 2
     _orientationInBody2Prop.setName("orientation_body_2");
     _orientationInBody2Prop.setValue(origin);
     _propertySet.append(&_orientationInBody2Prop);
@@ -323,7 +323,7 @@ SimTK::Vec6 CoupledBushingForce::computeDeflection(const SimTK::State& s) const
     // Define the frame on body 2 as the "moving" frame, M
     Transform X_GM = X_GB2 * _inb2;
     // Express M in F
-    Transform X_FM = ~X_GF * X_GM;    
+    Transform X_FM = ~X_GF * X_GM;
 
     // Calculate stiffness generalized forces of bushing by first computing
     // the deviation of the two frames measured by dq
@@ -342,16 +342,16 @@ SimTK::Vec6 CoupledBushingForce::computeDeflection(const SimTK::State& s) const
  * CoupledBushingForce implementation based SimTK::Force::LinearBushing
  * developed and implemented by Michael Sherman.
  */
-void CoupledBushingForce::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void CoupledBushingForce::computeForce(const SimTK::State& s,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const
 {
     const Transform& X_GB1 = _b1->getBodyTransform(s);
     const Transform& X_GB2 = _b2->getBodyTransform(s);
 
-    Transform X_GF = X_GB1 * _inb1;   
-    Transform X_GM = X_GB2 * _inb2;   
-    Transform X_FM = ~X_GF * X_GM;    
+    Transform X_GF = X_GB1 * _inb1;
+    Transform X_GM = X_GB2 * _inb2;
+    Transform X_FM = ~X_GF * X_GM;
     const Rotation& R_GF = X_GF.R();
     const Rotation& R_GM = X_GM.R();
     const Rotation& R_FM = X_FM.R();
@@ -360,7 +360,7 @@ void CoupledBushingForce::computeForce(const SimTK::State& s,
     // the deviation of the two frames measured by dq
     Vec6 dq = computeDeflection(s);
 
-    // Evaluate the force in the bushing frame affixed to body1 (F) 
+    // Evaluate the force in the bushing frame affixed to body1 (F)
     Vec6 fk = _stiffnessMatrix*dq;
 
     // Now evaluate velocities.
@@ -381,7 +381,7 @@ void CoupledBushingForce::computeForce(const SimTK::State& s,
 
     // To get derivative in F, we must remove the part due to the
     // angular velocity w_GF of F in G.
-    SpatialVec V_FM = ~R_GF * SpatialVec(V_FM_G[0], 
+    SpatialVec V_FM = ~R_GF * SpatialVec(V_FM_G[0],
                                  V_FM_G[1] - V_GF[0] % p_FM_G);
 
     // Need angular velocity in M frame for conversion to qdot.
@@ -391,8 +391,8 @@ void CoupledBushingForce::computeForce(const SimTK::State& s,
     dqdot.updSubVec<3>(0) = N_FM * w_FM_M;
     dqdot.updSubVec<3>(3) = V_FM[1];
 
-    // velocity dependent force according to the speed of frame2 on 
-    // body2 relative to frame1 
+    // velocity dependent force according to the speed of frame2 on
+    // body2 relative to frame1
     Vec6 fv = _dampingMatrix * dqdot;
 
     Vec6 f = -(fk+fv); // generalized forces on body 2
@@ -408,7 +408,7 @@ void CoupledBushingForce::computeForce(const SimTK::State& s,
     const Vec3  mB2_M = ~N_FM * fB2_q; // moment acting on body 2, exp. in M
     const Vec3  mB2_G =  R_GM * mB2_M; // moment on body 2, now exp. in G
 
-    // Transform force from F frame to ground. This is the force to 
+    // Transform force from F frame to ground. This is the force to
     // apply to body 2 at point OM; -f goes on body 1 at the same
     // spatial location. Here we actually apply it at OF so we have to
     // account for the moment produced by the shift from OM.
@@ -440,11 +440,11 @@ double CoupledBushingForce::computePotentialEnergy(const SimTK::State& s) const
 //=============================================================================
 // Reporting
 //=============================================================================
-/** 
+/**
  * Provide names of the quantities (column labels) of the force value(s) reported
- * 
+ *
  */
-OpenSim::Array<std::string> CoupledBushingForce::getRecordLabels() const 
+OpenSim::Array<std::string> CoupledBushingForce::getRecordLabels() const
 {
     OpenSim::Array<std::string> labels("");
     labels.append(getName()+"."+_body1Name+".force.X");
@@ -465,7 +465,7 @@ OpenSim::Array<std::string> CoupledBushingForce::getRecordLabels() const
 /**
  * Provide the value(s) to be reported that correspond to the labels
  */
-OpenSim::Array<double> CoupledBushingForce::getRecordValues(const SimTK::State& state) const 
+OpenSim::Array<double> CoupledBushingForce::getRecordValues(const SimTK::State& state) const
 {
     OpenSim::Array<double> values(1);
 

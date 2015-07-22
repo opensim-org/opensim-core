@@ -59,11 +59,11 @@ Joint::Joint() : Super()
 /**
  * API constructor.
  */
-Joint::Joint(const std::string &name, 
-    const PhysicalFrame& parent, 
+Joint::Joint(const std::string &name,
+    const PhysicalFrame& parent,
     const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-    const PhysicalFrame& child, 
-    const SimTK::Vec3& locationInChild, const SimTK::Vec3& orientationInChild, 
+    const PhysicalFrame& child,
+    const SimTK::Vec3& locationInChild, const SimTK::Vec3& orientationInChild,
     bool reverse) : Super()
 {
     setNull();
@@ -152,10 +152,10 @@ void Joint::extendFinalizeFromProperties()
 
     CoordinateSet& coordinateSet = upd_CoordinateSet();
 
-    // add all coordinates listed under this joint as 
+    // add all coordinates listed under this joint as
     // subcomponents as long as the number of coordinates
     // does not exceed the number of dofs.
-    SimTK_ASSERT1(numCoordinates() == coordinateSet.getSize(), 
+    SimTK_ASSERT1(numCoordinates() == coordinateSet.getSize(),
         "%s list of coordinates does not match Joint degrees-of-freedom.",
                   getConcreteClassName().c_str());
     for (int i = 0; i< coordinateSet.getSize(); ++i){
@@ -314,7 +314,7 @@ void Joint::scale(const ScaleSet& scaleSet)
     const string& bodyName = getChildFrame().getName();
     // Get scale factors
     bool found_p = false;
-    bool found_b = false; 
+    bool found_b = false;
     for (int i=0; i<scaleSet.getSize(); i++) {
         Scale& scale = scaleSet.get(i);
         if (!found_p && (scale.getSegmentName() == parentName)) {
@@ -367,7 +367,7 @@ void Joint::generateDecorations(bool fixed, const ModelDisplayHints& hints, cons
     parentFrame.setBodyId(getParentFrame().getMobilizedBodyIndex());
     parentFrame.setTransform(getParentTransform());
     parentFrame.setColor(frame2color);
-    
+
     appendToThis.push_back(childFrame);
     appendToThis.push_back(parentFrame);
 
@@ -397,10 +397,10 @@ const SimTK::MobilizedBodyIndex Joint::
     getMobilizedBodyIndex(const OpenSim::Body& body) const
 {
         return body.getMobilizedBodyIndex();
-} 
+}
 
 void Joint::setChildMobilizedBodyIndex(const SimTK::MobilizedBodyIndex index) const
-{ 
+{
     getChildFrame().setMobilizedBodyIndex(index);
 }
 
@@ -437,7 +437,7 @@ void Joint::extendSetPropertiesFromState(const SimTK::State& state)
 //=============================================================================
 // Computation
 //=============================================================================
-/* Calculate the equivalent spatial force, FB_G, acting on the body connected by this joint at 
+/* Calculate the equivalent spatial force, FB_G, acting on the body connected by this joint at
    its location B, expressed in ground.  */
 SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s, const SimTK::Vector &mobilityForces) const
 {
@@ -462,7 +462,7 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s, const
             mbds.insert(coordsMbx);
         }
     }
-    
+
     SimTK::SpatialVec FB_G = calcEquivalentSpatialForceForMobilizedBody(s, mbx, mobilityForces);
     SimTK::SpatialVec FBx_G;
 
@@ -476,23 +476,23 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s, const
     while(it != mbds.end()){
         FBx_G = calcEquivalentSpatialForceForMobilizedBody(s, *it, mobilityForces);
 
-        const SimTK::MobilizedBody &b = 
+        const SimTK::MobilizedBody &b =
             getModel().getMatterSubsystem().getMobilizedBody(*it);
 
-        
-        SimTK::Vec3 r_bG = 
+
+        SimTK::Vec3 r_bG =
             b.expressVectorInAnotherBodyFrame(s, b.getOutboardFrame(s).p(), G);
 
         // Torques add and include term due to offset in forces
         FB_G += FBx_G; // shiftForceFromTo(FBx_G, r_bG, r_BG);
         ++it;
     }
-    
+
     return FB_G;
 }
 
 /** Joints only produce power when internal constraint forces have components along
-    the mobilities of the joint (for example to satisfy prescribed motion). In 
+    the mobilities of the joint (for example to satisfy prescribed motion). In
     which case the joint power is the constraint forces projected onto the mobilities
     multiplied by the mobilities (internal coordinate velocities). Only constraints
     internal to the joint are accounted for, not external constrainst that effect
@@ -517,9 +517,9 @@ double Joint::calcPower(const SimTK::State &s) const
 //=============================================================================
 // Helper
 //=============================================================================
-/* Calculate the equivalent spatial force, FB_G, acting on a mobilized body specified 
+/* Calculate the equivalent spatial force, FB_G, acting on a mobilized body specified
    by index acting at its mobilizer frame B, expressed in ground.  */
-SimTK::SpatialVec Joint::calcEquivalentSpatialForceForMobilizedBody(const SimTK::State &s, 
+SimTK::SpatialVec Joint::calcEquivalentSpatialForceForMobilizedBody(const SimTK::State &s,
     const SimTK::MobilizedBodyIndex mbx, const SimTK::Vector &mobilityForces) const
 {
     // Get the mobilized body
@@ -537,7 +537,7 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForceForMobilizedBody(const SimTK:
     SimTK::Matrix transposeH_PB_v(nu, 3);
     // from individual columns
     SimTK::SpatialVec Hcol;
-    
+
     // To obtain the joint Jacobian, H_PB (H_FM in Simbody) need to be realized to at least position
     _model->getMultibodySystem().realize(s, SimTK::Stage::Position);
 
@@ -562,25 +562,25 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForceForMobilizedBody(const SimTK:
     //if rank = 0, body force cannot contribute to the mobility force
     if(pinvForce.getRank() > 0)
         pinvForce.solve(f, Fv);
-    
+
     // Now solve the pseudoinverse for torque for any unaccounted f: Fw = pinv(~H_PB_G_w)*(f - ~H_PB_G_v*Fv);
     SimTK::FactorQTZ pinvTorq(transposeH_PB_w);
 
     //if rank = 0, body torque cannot contribute to the mobility force
     if(pinvTorq.getRank() > 0)
         pinvTorq.solve(f, Fw);
-    
+
     // Now we have two solution with either the body force Fv or body torque accounting for some or all of f
     SimTK::Vector fv =  transposeH_PB_v*Fv;
-    SimTK::Vector fw =  transposeH_PB_w*Fw; 
+    SimTK::Vector fw =  transposeH_PB_w*Fw;
 
     // which to choose? Choose the more effective as fx.norm/Fx.norm
     if(fv.norm() > SimTK::SignificantReal){ // if body force can contributes at all
         // if body torque can contribute too and it is more effective
         if(fw.norm() > SimTK::SignificantReal){
-            if (fw.norm()/Fw.norm() > fv.norm()/Fv.norm() ){ 
+            if (fw.norm()/Fw.norm() > fv.norm()/Fv.norm() ){
                 // account for f using torque, Fw, so compute Fv with remainder
-                pinvForce.solve(f-fw, Fv);      
+                pinvForce.solve(f-fw, Fv);
             }else{
                 // account for f using force, Fv, first and Fw from remainder
                 pinvTorq.solve(f-fv, Fw);
@@ -601,7 +601,7 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForceForMobilizedBody(const SimTK:
     // Transform from parent joint frame, P into the parent body frame, Po
     const SimTK::Rotation R_PPo = (mbd.getInboardFrame(s).R());
 
-    // Re-express forces in ground, first by describing force in the parent, Po, 
+    // Re-express forces in ground, first by describing force in the parent, Po,
     // frame instead of joint frame
     SimTK::Vec3 vecFw = R_PPo*SimTK::Vec3::getAs(&Fw[0]);
     SimTK::Vec3 vecFv = R_PPo*SimTK::Vec3::getAs(&Fv[0]);
@@ -646,13 +646,13 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
     const int& numMobilities,
     const int& startingCoordinateIndex) const
 {
-    // If not OpenSim body provided as the one being mobilized assume it is 
+    // If not OpenSim body provided as the one being mobilized assume it is
     // and intermedidate body and ignore.
     if (mobilized){
         // Index can only be assigned to a parent or child body connected by this
         // Joint
 
-        SimTK_ASSERT3( ( (mobilized == &getParentFrame()) || 
+        SimTK_ASSERT3( ( (mobilized == &getParentFrame()) ||
                          (mobilized == &getChildFrame()) ||
                          (mobilized == _slaveBodyForParent) ||
                          (mobilized == _slaveBodyForChild) ),

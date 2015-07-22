@@ -46,7 +46,7 @@
 /* NOTE: the radio-button enum above *must* match the dpWrapObjectType
  *  enum in modelplot.h!!
  */
- 
+
 #define WE_X_QUADRANT 0
 #define WE_Y_QUADRANT 1
 #define WE_Z_QUADRANT 2

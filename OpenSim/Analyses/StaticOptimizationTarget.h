@@ -34,7 +34,7 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * This class provides an interface specification for static optimization Objective Function.
@@ -62,7 +62,7 @@ private:
     Array<double> _recipOptForceSquared;
     /** Optimal force accounting for force-length curve if desired and if actuator is a muscle. */
     Array<double> _optimalForce;
-    
+
     SimTK::Matrix _constraintMatrix;
     SimTK::Vector _constraintVector;
 

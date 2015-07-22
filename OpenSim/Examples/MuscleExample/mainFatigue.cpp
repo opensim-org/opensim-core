@@ -21,9 +21,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
- *  Below is an example of an OpenSim main() routine.  
- *  This program is a forward simulation of a tug-of-war between two muscles 
+/*
+ *  Below is an example of an OpenSim main() routine.
+ *  This program is a forward simulation of a tug-of-war between two muscles
  *  pulling on a block. One of the muscles fatigues and the other does not.
  */
 
@@ -38,7 +38,7 @@ using namespace SimTK;
 
 //_____________________________________________________________________________
 /**
- * Run a simulation of a sliding block being pulled by two muscle 
+ * Run a simulation of a sliding block being pulled by two muscle
  */
 int main()
 {
@@ -76,11 +76,11 @@ int main()
         // Specify properties of a 20 kg, 10cm length block body
         double blockMass = 20.0, blockSideLength = 0.1;
         Vec3 blockMassCenter(0);
-        Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, 
+        Inertia blockInertia = blockMass*Inertia::brick(blockSideLength,
             blockSideLength, blockSideLength);
 
         // Create a new block body with the specified properties
-        OpenSim::Body *block = new OpenSim::Body("block", blockMass, 
+        OpenSim::Body *block = new OpenSim::Body("block", blockMass,
             blockMassCenter, blockInertia);
 
         // Add display geometry to the block to visualize in the GUI
@@ -88,16 +88,16 @@ int main()
 
         // FREE JOINT
 
-        // Create a new free joint with 6 degrees-of-freedom (coordinates) 
+        // Create a new free joint with 6 degrees-of-freedom (coordinates)
         // between the block and ground bodies
         double halfLength = blockSideLength/2.0;
         Vec3 locationInParent(0, halfLength, 0), orientationInParent(0);
         Vec3 locationInBody(0, halfLength, 0), orientationInBody(0);
-        FreeJoint *blockToGround = new FreeJoint("blockToGround", ground, 
-            locationInParent, orientationInParent, 
+        FreeJoint *blockToGround = new FreeJoint("blockToGround", ground,
+            locationInParent, orientationInParent,
             *block, locationInBody, orientationInBody);
-        
-        // Get a reference to the coordinate set (6 degrees-of-freedom) 
+
+        // Get a reference to the coordinate set (6 degrees-of-freedom)
         // between the block and ground bodies
         CoordinateSet& jointCoordinateSet = blockToGround->upd_CoordinateSet();
 
@@ -121,30 +121,30 @@ int main()
         // MUSCLE FORCES
 
         // Create two new muscles
-        double maxIsometricForce = 1000.0, optimalFiberLength = 0.2, 
-               tendonSlackLength = 0.1,    pennationAngle = 0.0,  
+        double maxIsometricForce = 1000.0, optimalFiberLength = 0.2,
+               tendonSlackLength = 0.1,    pennationAngle = 0.0,
                fatigueFactor = 0.30, recoveryFactor = 0.20;
 
         // fatigable muscle (Millard2012EquilibriumMuscle with fatigue)
         FatigableMuscle* fatigable = new FatigableMuscle("fatigable",
-            maxIsometricForce, optimalFiberLength, tendonSlackLength, 
+            maxIsometricForce, optimalFiberLength, tendonSlackLength,
             pennationAngle, fatigueFactor, recoveryFactor);
 
         // original muscle model (muscle without fatigue)
-        Millard2012EquilibriumMuscle* original = 
+        Millard2012EquilibriumMuscle* original =
             new Millard2012EquilibriumMuscle("original",
                 maxIsometricForce, optimalFiberLength, tendonSlackLength,
                 pennationAngle);
 
         // Define the path of the muscles
-        fatigable->addNewPathPoint("fatigable-point1", ground, 
+        fatigable->addNewPathPoint("fatigable-point1", ground,
             Vec3(0.0, halfLength, -0.35));
-        fatigable->addNewPathPoint("fatigable-point2", *block, 
+        fatigable->addNewPathPoint("fatigable-point2", *block,
             Vec3(0.0, halfLength, -halfLength));
 
-        original->addNewPathPoint("original-point1", ground, 
+        original->addNewPathPoint("original-point1", ground,
             Vec3(0.0, halfLength, 0.35));
-        original->addNewPathPoint("original-point2", *block, 
+        original->addNewPathPoint("original-point2", *block,
             Vec3(0.0, halfLength, halfLength));
 
         // Define the default states for the two muscles
@@ -162,12 +162,12 @@ int main()
         ///////////////////////////////////
         // DEFINE CONTROLS FOR THE MODEL //
         ///////////////////////////////////
-        // Create a prescribed controller that simply supplies controls as 
+        // Create a prescribed controller that simply supplies controls as
         // a function of time.
         // For muscles, controls are normalized motor-neuron excitations
         PrescribedController *muscleController = new PrescribedController();
         muscleController->setActuators(osimModel.updActuators());
-    
+
         // Set the prescribed muscle controller to use the same muscle control function for each muscle
         muscleController->prescribeControlForActuator("fatigable", new Constant(1.0));
         muscleController->prescribeControlForActuator("original", new Constant(1.0));
@@ -198,13 +198,13 @@ int main()
         coordinates[1].setValue(si, 0);
         coordinates[2].setValue(si, 0);
         coordinates[3].setValue(si, 0);
-        coordinates[4].setValue(si, 0); 
+        coordinates[4].setValue(si, 0);
         coordinates[5].setValue(si, 0);
         coordinates[0].setLocked(si, true);
         coordinates[1].setLocked(si, true);
         coordinates[2].setLocked(si, true);
         // Last coordinate (index 5) is the Z translation of the block
-        coordinates[4].setLocked(si, true); 
+        coordinates[4].setLocked(si, true);
 
         // Compute initial conditions for muscles
         osimModel.equilibrateMuscles(si);
@@ -213,7 +213,7 @@ int main()
         // Create the integrator
         SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
         integrator.setAccuracy(1.0e-6);
-        
+
         // Create the force reporter
         ForceReporter* reporter = new ForceReporter(&osimModel);
         osimModel.updAnalysisSet().adoptAndAppend(reporter);

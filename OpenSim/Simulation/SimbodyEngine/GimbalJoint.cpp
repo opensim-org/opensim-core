@@ -112,7 +112,7 @@ void GimbalJoint::extendSetPropertiesFromState(const SimTK::State& state)
     if (!matter.getUseEulerAngles(state)) {
         Rotation r = getChildFrame().getMobilizedBody().getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
-    
+
         const CoordinateSet& coordinateSet = get_CoordinateSet();
 
         coordinateSet[0].setDefaultValue(angles[0]);

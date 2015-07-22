@@ -61,7 +61,7 @@ int main() {
         st->getDataColumn(1, col);
         ASSERT(col[0]==20.);
         ASSERT(col[1]==40.0);
-    
+
         ASSERT(st->getStateIndex("v2")==1);
 
         Storage st2("testDiff.sto");

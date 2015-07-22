@@ -34,7 +34,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static const Vec3 DefaultClutchedPathSpringColor(.9,.9,.9); // mostly white 
+static const Vec3 DefaultClutchedPathSpringColor(.9,.9,.9); // mostly white
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -121,7 +121,7 @@ void ClutchedPathSpring::setInitialStretch(double stretch0)
  {
      set_initial_stretch(getStretch(state));
  }
- 
+
 
 
 
@@ -154,11 +154,11 @@ double ClutchedPathSpring::getTension(const SimTK::State& s) const
 double ClutchedPathSpring::computeActuation(const SimTK::State& s) const
 {
     // clamp or cap the control input to [0, 1]
-    double control = SimTK::clamp(0.0, getControl(s), 1.0); 
+    double control = SimTK::clamp(0.0, getControl(s), 1.0);
     double tension = control *
                 (getStiffness()*getStretch(s) *                 //elastic force
-                (1+getDissipation()*getLengtheningSpeed(s)));   //dissipation 
-    
+                (1+getDissipation()*getLengtheningSpeed(s)));   //dissipation
+
     setActuation(s, tension);
     return tension;
 }
@@ -173,7 +173,7 @@ void ClutchedPathSpring::
     setStateVariableDerivativeValue(s, "stretch", zdot);
 }
 
-SimTK::Vec3 ClutchedPathSpring::computePathColor(const SimTK::State& state) const 
+SimTK::Vec3 ClutchedPathSpring::computePathColor(const SimTK::State& state) const
 {
     double shade = SimTK::clamp(0.1, getControl(state), 1.0);
     const SimTK::Vec3 color(shade, 0.9, 0.1); // green to yellow

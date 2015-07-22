@@ -46,7 +46,7 @@ int main(int argc,char **argv)
     //----------------------
     try {
     //----------------------
-    
+
     //LoadOpenSimLibrary("osimSdfastEngine");
     //LoadOpenSimLibrary("osimSimbodyEngine");
 
@@ -69,7 +69,7 @@ int main(int argc,char **argv)
         (option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
             PrintUsage(argv[0], cout);
             return(0);
- 
+
         // PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
         } else if((option=="-PrintSetup")||(option=="-PS")) {
             CMCTool *investigation = new CMCTool();

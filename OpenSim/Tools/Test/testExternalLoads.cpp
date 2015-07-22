@@ -49,8 +49,8 @@ void addLoadToStorage(Storage &forceStore, SimTK::Vec3 force, SimTK::Vec3 point,
     int nLoads = forceStore.getColumnLabels().getSize()/9;
     string labels[9] = { "forceX", "forceY", "forceZ", "pointX", "pointY", "pointZ","torqueX", "torqueY", "torqueZ"};
     char suffix[2];
-    sprintf(suffix, "%d", nLoads); 
-    
+    sprintf(suffix, "%d", nLoads);
+
     Array<string> col_labels;
     col_labels.append("time");
     StateVector dataRow;
@@ -98,7 +98,7 @@ void testExternalLoad()
     Model model("Pendulum.osim");
     State &s = model.initSystem();
 
-    // Simulate gravity 
+    // Simulate gravity
     double init_t =-1e-8;
     double final_t = 2.0;
     int nsteps = 10;
@@ -162,7 +162,7 @@ void testExternalLoad()
     pKin->setPoint(comInB);
     pKin->setPointName(pendulum.getName()+"_com_p");
     model.addAnalysis(pKin);
-    
+
     SimTK::State& s2 = model.initSystem();
 
     // Turn-off gravity in the model
@@ -200,7 +200,7 @@ void testExternalLoad()
     // force but this time with the point expressed in  ground and using
     // previous kinematics to transform point to pendulum.
 
-    // Construct a new Storage for ExternalForce data source with point 
+    // Construct a new Storage for ExternalForce data source with point
     // described in ground
     Storage forceStore2 = reporter->getForceStorage();
     forceStore2.print("ForcesTest.sto");

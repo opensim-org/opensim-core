@@ -86,17 +86,17 @@ CompiledExpression& CompiledExpression::operator=(const CompiledExpression& expr
 void CompiledExpression::compileExpression(const ExpressionTreeNode& node, vector<pair<ExpressionTreeNode, int> >& temps) {
     if (findTempIndex(node, temps) != -1)
         return; // We have already processed a node identical to this one.
-    
+
     // Process the child nodes.
-    
+
     vector<int> args;
     for (int i = 0; i < node.getChildren().size(); i++) {
         compileExpression(node.getChildren()[i], temps);
         args.push_back(findTempIndex(node.getChildren()[i], temps));
     }
-    
+
     // Process this node.
-    
+
     if (node.getOperation().getId() == Operation::VARIABLE) {
         variableIndices[node.getOperation().getName()] = (int) workspace.size();
         variableNames.insert(node.getOperation().getName());
@@ -110,7 +110,7 @@ void CompiledExpression::compileExpression(const ExpressionTreeNode& node, vecto
             arguments[stepIndex].push_back(0); // The value won't actually be used.  We just need something there.
         else {
             // If the arguments are sequential, we can just pass a pointer to the first one.
-            
+
             bool sequential = true;
             for (int i = 1; i < args.size(); i++)
                 if (args[i] != args[i-1]+1)
@@ -148,7 +148,7 @@ double CompiledExpression::evaluate() const {
     return ((double (*)()) jitCode)();
 #else
     // Loop over the operations and evaluate each one.
-    
+
     for (int step = 0; step < operation.size(); step++) {
         const vector<int>& args = arguments[step];
         if (args.size() == 1)
@@ -179,20 +179,20 @@ void CompiledExpression::generateJitCode() {
     X86GpVar argsPointer(c);
     c.mov(workspacePointer, imm_ptr(&workspace[0]));
     c.mov(argsPointer, imm_ptr(&argValues[0]));
-    
+
     // Load the arguments into variables.
-    
+
     for (set<string>::const_iterator iter = variableNames.begin(); iter != variableNames.end(); ++iter) {
         map<string, int>::iterator index = variableIndices.find(*iter);
         c.movsd(workspaceVar[index->second], x86::ptr(workspacePointer, 8*index->second, 0));
     }
 
     // Make a list of all constants that will be needed for evaluation.
-    
+
     vector<int> operationConstantIndex(operation.size(), -1);
     for (int step = 0; step < (int) operation.size(); step++) {
         // Find the constant value (if any) used by this operation.
-        
+
         Operation& op = *operation[step];
         double value;
         if (op.getId() == Operation::CONSTANT)
@@ -209,9 +209,9 @@ void CompiledExpression::generateJitCode() {
             value = 1.0;
         else
             continue;
-        
+
         // See if we already have a variable for this constant.
-        
+
         for (int i = 0; i < (int) constants.size(); i++)
             if (value == constants[i]) {
                 operationConstantIndex[step] = i;
@@ -222,9 +222,9 @@ void CompiledExpression::generateJitCode() {
             constants.push_back(value);
         }
     }
-    
+
     // Load constants into variables.
-    
+
     vector<X86XmmVar> constantVar(constants.size());
     if (constants.size() > 0) {
         X86GpVar constantsPointer(c);
@@ -234,21 +234,21 @@ void CompiledExpression::generateJitCode() {
             c.movsd(constantVar[i], x86::ptr(constantsPointer, 8*i, 0));
         }
     }
-    
+
     // Evaluate the operations.
-    
+
     for (int step = 0; step < (int) operation.size(); step++) {
         Operation& op = *operation[step];
         vector<int> args = arguments[step];
         if (args.size() == 1) {
             // One or more sequential arguments.  Fill out the list.
-            
+
             for (int i = 1; i < op.getNumArguments(); i++)
                 args.push_back(args[0]+i);
         }
-        
+
         // Generate instructions to execute this operation.
-        
+
         switch (op.getId()) {
             case Operation::CONSTANT:
                 c.movsd(workspaceVar[target[step]], constantVar[operationConstantIndex[step]]);
@@ -345,7 +345,7 @@ void CompiledExpression::generateJitCode() {
                 break;
             default:
                 // Just invoke evaluateOperation().
-                
+
                 for (int i = 0; i < (int) args.size(); i++)
                     c.movsd(x86::ptr(argsPointer, 8*i, 0), workspaceVar[args[i]]);
                 X86GpVar fn(c, kVarTypeIntPtr);

@@ -10,7 +10,7 @@
    All rights reserved.
    Portions of this source code are copyrighted by MusculoGraphics, Inc.
 
-   Description: 
+   Description:
 
    Routines:
       readworldobjects        : reads a world object from input file
@@ -115,7 +115,7 @@ ReturnCode read_world_object(ModelStruct* ms, FILE* fp)
             {
                 (void)sprintf(errorbuffer, "Error reading filename in definition of worldobject %s", obj->name);
                 error(abort_action, errorbuffer);
-                return code_bad;        
+                return code_bad;
             }
 #if ! ENGINE
             frc = lookup_polyhedron(obj->wobj, fname, ms);
@@ -226,7 +226,7 @@ ReturnCode read_world_object(ModelStruct* ms, FILE* fp)
             {
                 (void)sprintf(errorbuffer, "Error reading name of texture file in definition of worldobject %s", obj->name);
                 error(abort_action, errorbuffer);
-                return code_bad;        
+                return code_bad;
             }
 
             mstrcpy(&obj->texture_filename, fname);
@@ -238,7 +238,7 @@ ReturnCode read_world_object(ModelStruct* ms, FILE* fp)
             {
                 (void)sprintf(errorbuffer, "Error reading name of texture coordinates file in definition of worldobject %s", obj->name);
                 error(abort_action, errorbuffer);
-                return code_bad;        
+                return code_bad;
             }
 
             mstrcpy(&obj->texture_coords_filename, fname);

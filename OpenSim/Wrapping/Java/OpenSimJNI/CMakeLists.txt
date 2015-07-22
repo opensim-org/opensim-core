@@ -1,7 +1,7 @@
 set(KIT JavaJNI)
 set(UKIT JAVAJNI)
 
-if(BUILD_JAVA_WRAPPING) 
+if(BUILD_JAVA_WRAPPING)
 
 include(${CMAKE_ROOT}/Modules/FindJava.cmake)
 include(${CMAKE_ROOT}/Modules/FindJNI.cmake)
@@ -44,8 +44,8 @@ add_custom_command(
         -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
         ${swig_interface_file_fullname}
     DEPENDS "${swig_interface_file_fullname}")
-    
-# This target actually depends on a lot more (all the produced .java files); 
+
+# This target actually depends on a lot more (all the produced .java files);
 # but we will just use these two files as a proxy for all of those. All we need
 # is for this target to depend on outputs of the command above.
 add_custom_target(JavaWrap
@@ -59,8 +59,8 @@ set_target_properties(JavaWrap PROPERTIES
 set(SOURCE_FILES "${swig_generated_file_fullname}" OpenSimContext.cpp)
 set(INCLUDE_FILES "${swig_generated_header_fullname}" OpenSimContext.h)
 
-include_directories(${OpenSim_SOURCE_DIR} 
-                    ${OpenSim_SOURCE_DIR}/Vendors 
+include_directories(${OpenSim_SOURCE_DIR}
+                    ${OpenSim_SOURCE_DIR}/Vendors
                     ${JAVA_INCLUDE_PATH}
                     ${JAVA_INCLUDE_PATH2}
 )
@@ -70,7 +70,7 @@ set(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 link_libraries(osimCommon osimSimulation osimAnalyses osimTools
     osimSimmFileWriter)
 
-add_library(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
+add_library(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 
 set_target_properties(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}

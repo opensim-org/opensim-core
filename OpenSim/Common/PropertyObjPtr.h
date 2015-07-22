@@ -31,7 +31,7 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * Class PropertyObjPtr extends class Property.  It differs from ProprtyObj in
@@ -79,8 +79,8 @@ public:
     }
 
     virtual ~PropertyObjPtr()
-    { 
-        delete _value; 
+    {
+        delete _value;
     }
 
     int getNumValues() const override {return _value?1:0;}
@@ -108,7 +108,7 @@ public:
 
     virtual bool operator==(const Property_Deprecated& aProperty) const {
         bool equal = Property_Deprecated::operator==(aProperty);
-        if (equal){ 
+        if (equal){
             if (_value==NULL) return (((PropertyObjPtr&) aProperty)._value==NULL);
             return ((*_value) == (*((PropertyObjPtr&) aProperty)._value));
         }

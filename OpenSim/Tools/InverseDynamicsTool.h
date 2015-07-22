@@ -53,11 +53,11 @@ class JointSet;
  * functions as that are twice differntiable to estimate velocities and
  * accelerations.
  *
- * As an additional service, the InverseDynamicsTool can provide an equivalent 
+ * As an additional service, the InverseDynamicsTool can provide an equivalent
  * body force (torque and force) applied to the joint frame. Since generalized
  * forces include scaling (due to units conversion as well as coupling between
  * translations and rotations, for example) they are not necessarily joint torques
- * or forces.  OpenSim employs a pseudo inverse to find the smallest applied  
+ * or forces.  OpenSim employs a pseudo inverse to find the smallest applied
  * torque and/or force that will generate the equivalent generalized force.
  *
  * @author Ajay Seth
@@ -71,7 +71,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(InverseDynamicsTool, DynamicsTool);
 //=============================================================================
     Storage* _coordinateValues;
 protected:
-    
+
     /** name of storage file that contains coordinate values for inverse dynamics solving */
     PropertyStr _coordinatesFileNameProp;
     std::string &_coordinatesFileName;
@@ -84,7 +84,7 @@ protected:
     PropertyStr _outputGenForceFileNameProp;
     std::string &_outputGenForceFileName;
 
-    /** Idenitify the list of joints for which equivalent body forces acting 
+    /** Idenitify the list of joints for which equivalent body forces acting
         at the joint frames should be reported */
     PropertyStrArray _jointsForReportingBodyForcesProp;
     Array<std::string> &_jointsForReportingBodyForces;
@@ -126,7 +126,7 @@ public:
     InverseDynamicsTool& operator=(const InverseDynamicsTool &aInverseDynamicsTool);
 #endif
 
-    //--------------------------------------------------------------------------    
+    //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
     void setCoordinateValues(const OpenSim::Storage& aStorage);
@@ -142,7 +142,7 @@ public:
      * get/set the name of the file containing coordinates
      */
     const std::string& getCoordinatesFileName() const { return _coordinatesFileName;};
-    void setCoordinatesFileName(const std::string& aCoordinateFile)  { 
+    void setCoordinatesFileName(const std::string& aCoordinateFile)  {
         _coordinatesFileName=aCoordinateFile;
     };
     const double getLowpassCutoffFrequency() const {

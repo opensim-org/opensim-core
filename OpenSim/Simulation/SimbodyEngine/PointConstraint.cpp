@@ -62,9 +62,9 @@ PointConstraint::PointConstraint() :
     constructInfrastructure();
 }
 
-PointConstraint::PointConstraint(const PhysicalFrame& body1, 
+PointConstraint::PointConstraint(const PhysicalFrame& body1,
                                  const SimTK::Vec3& locationBody1,
-                                 const PhysicalFrame& body2, 
+                                 const PhysicalFrame& body2,
                                  const SimTK::Vec3& locationBody2) : Constraint()
 {
     setNull();
@@ -98,10 +98,10 @@ void PointConstraint::constructProperties()
     //Default location and orientation (rotation sequence)
     SimTK::Vec3 origin(0.0, 0.0, 0.0);
 
-    // Location in Body 1 
+    // Location in Body 1
     constructProperty_location_body_1(origin);
 
-    // Location in Body 2 
+    // Location in Body 2
     constructProperty_location_body_2(origin);
 }
 
@@ -128,7 +128,7 @@ void PointConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 
     // Now create a Simbody Constraint::Point
     SimTK::Constraint::Ball simtkPoint(b1, get_location_body_1(), b2, get_location_body_2());
-    
+
     // Beyond the const Component get the index so we can access the SimTK::Constraint later
     assignConstraintIndex(simtkPoint.getConstraintIndex());
 }

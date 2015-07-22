@@ -28,7 +28,7 @@
 
 extern "C" {
 
-OSIMACTUATORS_API void RegisterTypes_osimActuators(); 
+OSIMACTUATORS_API void RegisterTypes_osimActuators();
 
 }
 // Excluding this from Doxygen until it has better documentation! -Sam Hamner

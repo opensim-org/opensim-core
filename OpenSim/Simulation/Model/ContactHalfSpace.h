@@ -66,7 +66,7 @@ public:
      * @param body         the Body this half space is attached to
      * @param name         the name of this object
      */
-    ContactHalfSpace(const SimTK::Vec3& location, const SimTK::Vec3& orientation, 
+    ContactHalfSpace(const SimTK::Vec3& location, const SimTK::Vec3& orientation,
         PhysicalFrame& body, const std::string& name);
     ContactHalfSpace(const ContactHalfSpace& geom);
 

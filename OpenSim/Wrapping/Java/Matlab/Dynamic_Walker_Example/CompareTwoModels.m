@@ -1,11 +1,11 @@
-% ----------------------------------------------------------------------- 
+% -----------------------------------------------------------------------
 % This file is a sample client script to the following scripts in this
 % directory:
-%     AddCustomFeet.m                          
-%     AddExpressionPointToPointForceMagnets.m                
-%     IntegrateOpenSimPlant.m                            
-%     PlotOpensimData.m                                         
-% 
+%     AddCustomFeet.m
+%     AddExpressionPointToPointForceMagnets.m
+%     IntegrateOpenSimPlant.m
+%     PlotOpensimData.m
+%
 % The file compares the performance of the
 % DW2013_WalkerModelTerrainAddCustomFeet.osim and
 % DW2013_WalkerModelTerrainAddMagnet.osim models for initial conditions of
@@ -15,8 +15,8 @@
 % walker models that are based off of DW2013_WalkerModelTerrain.osim.
 %
 % Author: Chris Dembia
-% ----------------------------------------------------------------------- 
-% Import Java Library 
+% -----------------------------------------------------------------------
+% Import Java Library
 import org.opensim.modeling.*
 
 
@@ -57,7 +57,7 @@ if useReferenceCompleteModelGeneratingScripts
     % Creates DW2013_WalkerModelTerrainAddMagnet.osim in ../Model:
     run(fullfile(referenceDir, 'AddExpressionPointToPointForceMagnetsComplete.m'));
 else
-    AddCustomFeet; 
+    AddCustomFeet;
     AddExpressionPointToPointForceMagnets;
 end
 
@@ -73,26 +73,26 @@ models = {modelA, modelB};
 % For both models:
 
 for iM = 1:length(models)
-    
+
     % Values.
     models{iM}.updCoordinateSet().get('Pelvis_tx').setDefaultValue(Pelvis_tx);
     models{iM}.updCoordinateSet().get('Pelvis_ty').setDefaultValue(Pelvis_ty);
-    
+
     deg2rad = pi / 180.0;
     models{iM}.updCoordinateSet().get('LHip_rz').setDefaultValue(deg2rad * LHip_rz);
     models{iM}.updCoordinateSet().get('RHip_rz').setDefaultValue(deg2rad * RHip_rz);
     models{iM}.updCoordinateSet().get('LKnee_rz').setDefaultValue(deg2rad * LKnee_rz);
     models{iM}.updCoordinateSet().get('RKnee_rz').setDefaultValue(deg2rad * RKnee_rz);
-    
+
     % Speeds.
     models{iM}.updCoordinateSet().get('Pelvis_tx').setDefaultSpeedValue(Pelvis_tx_u);
     models{iM}.updCoordinateSet().get('Pelvis_ty').setDefaultSpeedValue(Pelvis_ty_u);
-    
+
     models{iM}.updCoordinateSet().get('LHip_rz').setDefaultSpeedValue(LHip_rz_u);
     models{iM}.updCoordinateSet().get('RHip_rz').setDefaultSpeedValue(RHip_rz_u);
     models{iM}.updCoordinateSet().get('LKnee_rz').setDefaultSpeedValue(LKnee_rz_u);
     models{iM}.updCoordinateSet().get('RKnee_rz').setDefaultSpeedValue(RKnee_rz_u);
-    
+
 end
 
 % Integrator Options

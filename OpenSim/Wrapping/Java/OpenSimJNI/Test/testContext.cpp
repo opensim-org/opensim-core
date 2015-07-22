@@ -85,7 +85,7 @@ int main()
     delete context;
     model = new Model("arm26_20.osim");
     context = new OpenSimContext(&model->initSystem(), model);
-    // Make a copy of state contained in context ad make sure content match 
+    // Make a copy of state contained in context ad make sure content match
     SimTK::State stateCopy = context->getCurrentStateCopy();
     assert(context->getCurrentStateRef().toString()==stateCopy.toString());
 
@@ -96,7 +96,7 @@ int main()
     context->setPropertiesFromState();
     OpenSim::Thelen2003Muscle* thelenMsl = dynamic_cast<Thelen2003Muscle*>(dTRIlong);
     AbstractProperty& dProp = thelenMsl->updPropertyByName("ignore_tendon_compliance");
-    
+
     PropertyHelper::setValueBool(true, dProp);
     cout << "Prop after is " << dProp.toString() << endl;
 
@@ -104,7 +104,7 @@ int main()
     try{// adding to the system should cause Muscle that do not handle
         // ignore_tendon_compliance to throw an exception
         context->recreateSystemKeepStage();
-    }   
+    }
     catch (const std::exception& e) {
         cout << e.what() << endl;
         exceptionThrown = true;
@@ -127,7 +127,7 @@ int main()
     cout << path.getSize() << endl;
     for(int i=0; i< path.getSize(); i++)
         cout << path.get(i)->getBodyName() << path.get(i)->getLocation() << endl;
-    // Compare to known path 
+    // Compare to known path
     const OpenSim::Body& dBody = model->getBodySet().get("r_ulna_radius_hand");
     Transform xform = context->getTransform(dBody);
     cout << xform << endl;
@@ -137,7 +137,7 @@ int main()
     double markerPosition[] = {.005000000000, -0.290400000000, 0.030000000000};
     double markerPositionInGround[3];
     context->transformPosition(dBody, markerPosition, markerPositionInGround);  // to display markers
-    cout << "Global frame position = " << markerPositionInGround[0] <<  
+    cout << "Global frame position = " << markerPositionInGround[0] <<
         markerPositionInGround[1] << markerPositionInGround[2]<< endl;
     // Check xformed point against known position
     const Coordinate& dr_elbow_flex = model->getCoordinateSet().get("r_elbow_flex");
@@ -157,7 +157,7 @@ int main()
     // Compare to known xform
     dTRIlong->updGeometryPath().updateGeometry(context->getCurrentStateRef());
     const OpenSim::Array<PathPoint*>& newPath = context->getCurrentPath(*dTRIlong);
-    // Compare to known path 
+    // Compare to known path
     cout << "New Muscle Path" << endl;
     cout << path.getSize() << endl;
     for(int i=0; i< path.getSize(); i++)

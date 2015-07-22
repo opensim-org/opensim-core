@@ -1,9 +1,9 @@
-myname																		
-version=1																		
-nRows=439																		
-nColumns=19																		
-inDegrees=yes																		
-endheader																		
+myname
+version=1
+nRows=439
+nColumns=19
+inDegrees=yes
+endheader
 time	ground_force_vx	ground_force_vy	ground_force_vz	ground_force_px	ground_force_py	ground_force_pz	1_ground_force_vx	1_ground_force_vy	1_ground_force_vz	1_ground_force_px	1_ground_force_py	1_ground_force_pz	ground_torque_x	ground_torque_y	ground_torque_z	1_ground_torque_x	1_ground_torque_y	1_ground_torque_z
 0.7	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
 0.7017	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0

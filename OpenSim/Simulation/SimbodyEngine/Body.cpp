@@ -96,7 +96,7 @@ void Body::extendFinalizeFromProperties()
 void Body::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
-    
+
     int nslaves = (int)_slaves.size();
 
     if (nslaves){
@@ -159,11 +159,11 @@ const SimTK::Inertia& Body::getInertia() const
             const SimTK::Vec6& Ivec = get_inertia();
             try {
                 _inertia = SimTK::Inertia(Ivec.getSubVec<3>(0), Ivec.getSubVec<3>(3));
-            } 
+            }
             catch (const std::exception& ex){
                 // Should throw an Exception but we have models we have released with
                 // bad intertias. E.g. early gait23 models had an error in the inertia
-                // of the toes Body. We cannot allow failures with our models so 
+                // of the toes Body. We cannot allow failures with our models so
                 // raise a warning and do something sensible with the values at hand.
                 cout << "WARNING: Body " + getName() + " has invalid inertia. " << endl;
                 cout << ex.what() << endl;
@@ -173,7 +173,7 @@ const SimTK::Inertia& Body::getInertia() const
 
                 // and then assume a spherical shape.
                 _inertia = SimTK::Inertia(Vec3(diag), Vec3(0));
-                
+
                 cout << getName() << " Body's inertia being reset to:" << endl;
                 cout << _inertia << endl;
             }
@@ -379,7 +379,7 @@ SimTK::MassProperties Body::getMassProperties() const
             // shift if com has nonzero distance from b
             Ib = Icom.shiftFromMassCenter(com, m);
         }
-    
+
         return SimTK::MassProperties(m, com, Ib);
     }
     catch (const std::exception& ex) {
@@ -416,7 +416,7 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             aNode.insertNodeAfter(aNode.element_end(), inertiaNode);
         }
         if (versionNumber < 30502){
-            // Find node for <VisibleObject> remove it then create Geometry for the 
+            // Find node for <VisibleObject> remove it then create Geometry for the
             SimTK::Xml::element_iterator iIter = aNode.element_begin("VisibleObject");
             if (iIter != aNode.element_end()){
                 SimTK::Xml::Element visObjElement = SimTK::Xml::Element::getAs(aNode.removeNode(iIter));
@@ -431,7 +431,7 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 if (outerTransformIter != visObjElement.element_end()){
                     outerTransform = outerTransformIter->getValueAs<SimTK::Vec6>();
                 }
-                
+
                 if (versionNumber < 20101) {
                     SimTK::Xml::element_iterator geometryIter = visObjElement.element_begin("geometry_files");
                     SimTK::Array_<SimTK::String> oldGeometryFiles;
@@ -485,7 +485,7 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 }
 
 void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
-    const SimTK::Vec3& outerScaleFactors, const SimTK::Vec6& outerTransform, 
+    const SimTK::Vec3& outerScaleFactors, const SimTK::Vec6& outerTransform,
     SimTK::Xml::Element& geomSetElement) const
 {
     std::string bodyName = bodyNode.getRequiredAttribute("name").getValue();
@@ -541,7 +541,7 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
                     frameSetObjectsIter = frameSetNode.element_begin("objects");
                 }
                 createFrameForXform(frameSetObjectsIter, frameName, localXform, bodyName);
-                                
+
                 XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", frameName);
             }
             else
@@ -555,7 +555,7 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
             // Now compose scale factors and xforms and create new node to insert into bodyNode
              SimTK::Xml::Element meshFileNode("mesh_file", geomFile);
              std::stringstream localScaleStr;
-             localScaleStr << localScale[0] * outerScaleFactors[0] << " " << localScale[1] * outerScaleFactors[1] 
+             localScaleStr << localScale[0] * outerScaleFactors[0] << " " << localScale[1] * outerScaleFactors[1]
                  << " " << localScale[2] * outerScaleFactors[2];
              SimTK::Xml::Element scaleFactorsNode("scale_factors", localScaleStr.str());
              meshNode.insertNodeAfter(meshNode.element_end(), scaleFactorsNode);

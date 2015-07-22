@@ -89,7 +89,7 @@ AnalyzeTool::AnalyzeTool(const string &aFileName, bool aLoadModelAndInput) :
         loadModel(aFileName);
         // Append to or replace model forces with those (i.e. actuators) specified by the analysis
         updateModelForces(*_model, aFileName);
-        setModel(*_model);  
+        setModel(*_model);
         setToolOwnsModel(true);
 
     }
@@ -99,11 +99,11 @@ AnalyzeTool::AnalyzeTool(const string &aFileName, bool aLoadModelAndInput) :
  * Construct with a passed in model.
  *
  * Typically used from the GUI where the model is readily available.
- * This special constructor avoid many steps/generalities in th AnalyzeTool 
+ * This special constructor avoid many steps/generalities in th AnalyzeTool
  * Analyses are added to the model beforehand.
  *
  * @param aModel model in the GUI.
- * 
+ *
  */
 AnalyzeTool::AnalyzeTool(Model& aModel) :
     AbstractTool(),
@@ -125,7 +125,7 @@ AnalyzeTool::AnalyzeTool(Model& aModel) :
         aModel.addAnalysis(muscleAnalysis);
         //this->getAnalysisSet().append(muscleAnalysis);
     }
-    
+
 }
 
 //_____________________________________________________________________________
@@ -290,7 +290,7 @@ createStatesStorageFromCoordinatesAndSpeeds(const Model& aModel, const Storage& 
     Array<string> uLabels = aUStore.getColumnLabels();
     stateNames = aModel.getStateVariableNames();
     stateNames.insert(0, "time");
-    
+
     // Preserve the labels from the data file which are typically abreviated
     // label[0] = time
     for(int i=1; i<=nq; ++i){
@@ -299,7 +299,7 @@ createStatesStorageFromCoordinatesAndSpeeds(const Model& aModel, const Storage& 
     for(int i=1; i<=nu; ++i){
         stateNames[i+nq] = uLabels[i];
     }
-    
+
     //Get the default state resulting from initializing the state after system creation
     const SimTK::State &s = aModel.getWorkingState();
 
@@ -373,7 +373,7 @@ loadStatesFromFile(SimTK::State& s)
         _statesStore = new Storage();
         _model->formStateStorage(temp, *_statesStore);
     } else {
-        if(!_coordinatesFileNameProp.isValidFileName()) 
+        if(!_coordinatesFileNameProp.isValidFileName())
             throw Exception("AnalyzeTool.initializeFromFiles: Either a states file or a coordinates file must be specified.",__FILE__,__LINE__);
 
         cout<<"\nLoading coordinates from file "<<_coordinatesFileName<<"."<<endl;
@@ -458,7 +458,7 @@ verifyControlsStates()
     }
 
     // States
-    
+
     int NY = _statesStore->getSmallestNumberOfStates();
     if(NY!=ny) {
         string msg = "AnalyzeTool.verifyControlsStates: ERROR- Number of states in " + _statesFileName;
@@ -528,7 +528,7 @@ bool AnalyzeTool::run(bool plotting)
     }
 
 
-    // Do the maneuver to change then restore working directory 
+    // Do the maneuver to change then restore working directory
     // so that the parsing code behaves properly if called from a different directory.
     string saveWorkingDirectory = IO::getCwd();
     if (getDocument())  // When the tool is created live from GUI it has no file/document association
@@ -627,14 +627,14 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
             // storage labels included time at index 0 so +1 to skip
             aModel.setStateVariableValue(s, stateNames[j+1], stateData[j]);
         }
-       
+
         // Adjust configuration to match constraints and other goals
         aModel.assemble(s);
 
         // equilibrateMuscles before realization as it may affect forces
         if(aSolveForEquilibrium){
             try{// might not be able to equilibrate if model is in
-                // a non-physical pose. For example, a pose where the 
+                // a non-physical pose. For example, a pose where the
                 // muscle length is shorter than the tendon slack-length.
                 // the muscle will throw an Exception in this case.
                 aModel.equilibrateMuscles(s);

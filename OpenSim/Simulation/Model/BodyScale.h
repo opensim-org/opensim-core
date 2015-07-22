@@ -72,7 +72,7 @@ public:
 #endif
     Array<std::string>& getAxisNames() { return _axisNames; }
 
-    void setAxisNames(const Array<std::string> &aAxisNames) { 
+    void setAxisNames(const Array<std::string> &aAxisNames) {
         _axisNames = aAxisNames;
         _axisNamesProp.setValueIsDefault(false);
     }

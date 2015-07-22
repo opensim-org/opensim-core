@@ -25,18 +25,18 @@
 
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Simulation/Model/OffsetFrame.h> 
-#include <OpenSim/Simulation/Model/PhysicalFrame.h> 
+#include <OpenSim/Simulation/Model/OffsetFrame.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 namespace OpenSim {
 
 //=============================================================================
 //=============================================================================
 /**
-* A PhysicalOffsetFrame is a PhysicalFrame whose transform is specified as a 
+* A PhysicalOffsetFrame is a PhysicalFrame whose transform is specified as a
 * constant offset from another PhysicalFrame. PhysicalOffsetFrames can be used
-* to specify the location of a Joint or Constraint on a Body or any other 
-* PhysicalFrame. For example, the location and orientation of the knee joint 
+* to specify the location of a Joint or Constraint on a Body or any other
+* PhysicalFrame. For example, the location and orientation of the knee joint
 * frame specified in the femur (thigh) and tibia (shank) Body reference frames.
 * This class has the methods of both the OffsetFrame (template) and the
 * PhysicalFrame class.
@@ -71,7 +71,7 @@ public:
                         const SimTK::Transform& offset);
 
 protected:
-    /** Extend Component interface for adding the PhysicalOffsetFrame to the 
+    /** Extend Component interface for adding the PhysicalOffsetFrame to the
         underlying multibody system */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 

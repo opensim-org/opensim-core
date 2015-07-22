@@ -67,7 +67,7 @@ public:
      */
     PolynomialFunction(){   constructProperties();  }
 
-    /** Construct a polynomial with provided Vector of coefficients 
+    /** Construct a polynomial with provided Vector of coefficients
      * {a, b, ..., c} where the polynomial order, n = size-1
     */
     PolynomialFunction(SimTK::Vector coefficients){
@@ -81,7 +81,7 @@ public:
     // SET AND GET Coefficients
     //--------------------------------------------------------------------------
     /** Set coefficients for the polynomial f of variable x:
-     * f(x) = a*x^n + b*x^(n-1) + ... + c 
+     * f(x) = a*x^n + b*x^(n-1) + ... + c
      * The size of the coffecient vector determines the order of the polynomial.
      * n = size-1;
      * @param[in] coefficients      Vector of polynomial coefficients
@@ -91,13 +91,13 @@ public:
     /** Get the polynomial function coefficients */
     const SimTK::Vector getCoefficients() const
     { return get_coefficients(); }
-    
+
 
     //--------------------------------------------------------------------------
     // EVALUATION
     //--------------------------------------------------------------------------
     /** Return the underlying SimTK::Function::Polynomial for direct use
-     *   at the SimTK::System level 
+     *   at the SimTK::System level
      * @return   Pointer to the underlying SimTK::Function
      */
     virtual SimTK::Function* createSimTKFunction() const

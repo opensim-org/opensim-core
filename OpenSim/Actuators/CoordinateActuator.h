@@ -30,7 +30,7 @@
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 
-namespace OpenSim { 
+namespace OpenSim {
 
 class Coordinate;
 class ForceSet;
@@ -69,7 +69,7 @@ public:
     provide it. **/
     explicit CoordinateActuator(const std::string& coordinateName="");
 
-    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // Uses default (compiler-generated) destructor, copy constructor, copy
     // assignment operator.
 
     /** Set the 'optimal_force' property. **/
@@ -98,8 +98,8 @@ private:
     //--------------------------------------------------------------------------
     // Implement Force interface
     //--------------------------------------------------------------------------
-    void computeForce(const SimTK::State& state, 
-                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+    void computeForce(const SimTK::State& state,
+                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                       SimTK::Vector& mobilityForces) const override;
 
 
@@ -123,7 +123,7 @@ private:
     void constructProperties();
 
 
-    // Note: reference pointers are automatically set to null on construction 
+    // Note: reference pointers are automatically set to null on construction
     // and also on copy construction and copy assignment.
 
     // Corresponding generalized coordinate to which the coordinate actuator

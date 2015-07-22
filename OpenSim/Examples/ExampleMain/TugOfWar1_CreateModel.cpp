@@ -22,8 +22,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
- *  Below is an example of an OpenSim application that provides its own 
+/*
+ *  Below is an example of an OpenSim application that provides its own
  *  main() routine.  This application is a forward simulation of tug-of-war between two
  *  muscles pulling on a block.
  */
@@ -39,7 +39,7 @@ using namespace SimTK;
 
 //______________________________________________________________________________
 /**
- * First exercise: create a model that does nothing. 
+ * First exercise: create a model that does nothing.
  */
 int main()
 {

@@ -39,11 +39,11 @@ class Model;
  * specified for each child Probe.  In addition, the Probe model component
  * interface allows <I> operations </I> to be performed on this value
  * (specified by the property: probe_operation), and then have this result
- * scaled (by the scalar property: 'scale_factor'). 
- * 
+ * scaled (by the scalar property: 'scale_factor').
+ *
  * The data flow of the Probe is shown below:
   \code
- 
+
   ===========================
   |  SimTK::Vector          |       DEVELOPER NEEDS TO IMPLEMENT THIS
   |  computeProbeInputs(s)  |
@@ -60,7 +60,7 @@ class Model;
   |   =========================         ======================           |
   |                                               |                      |
   |                                               V                      |
-  |                                     ========================         |  
+  |                                     ========================         |
   |                                     |  SimTK::Vector       |         |
   |                                     |  getProbeOutputs(s)  |---------------->
   |                                     ========================         |
@@ -149,7 +149,7 @@ public:
 //=============================================================================
     Probe();
 
-    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // Uses default (compiler-generated) destructor, copy constructor, copy
     // assignment operator.
 
     /** Reset (initialize) the underlying Probe SimTK::Measure. */
@@ -177,15 +177,15 @@ public:
     double getGain() const;
     /** Set the gain to apply to the probe output. */
     void setGain(double gain);
-    
+
 
 #ifndef SWIG
     // This is the Probe interface that must be implemented by concrete Probe
     // objects.
 
-    /** Returns the column labels of the Probe values for reporting. 
+    /** Returns the column labels of the Probe values for reporting.
         This method must be overridden for each subclass Probe to
-        provide meaningful names to the probe outputs. 
+        provide meaningful names to the probe outputs.
 
         @return         The Array<std::string> of Probe labels. **/
     virtual OpenSim::Array<std::string> getProbeOutputLabels() const=0;
@@ -194,7 +194,7 @@ public:
     /**Computes the values of the probe inputs prior to any operation being performed.
        This method must be overridden for each subclass Probe.
 
-    @param  state   System state from which value is computed.  
+    @param  state   System state from which value is computed.
     @return         The SimTK::Vector of Probe input values. **/
     virtual SimTK::Vector computeProbeInputs(const SimTK::State& state) const=0;
 
@@ -208,7 +208,7 @@ public:
 
     /** Returns the values of the probe after the operation has been performed.
 
-    @param  state   System state from which value is computed.  
+    @param  state   System state from which value is computed.
     @return         The SimTK::Vector of probe output values.**/
     SimTK::Vector getProbeOutputs(const SimTK::State& state) const;
 

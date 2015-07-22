@@ -53,7 +53,7 @@ union fooround {long x; double d;};
    to avoid multiple evaluation.  */
 
 struct obstack *_obstack;
-
+
 /* Initialize an obstack H for use.  Specify chunk size SIZE (0 means default).
    Objects start on multiples of ALIGNMENT (0 means use default).
    CHUNKFUN is the function to use to allocate chunks,
@@ -212,7 +212,7 @@ _obstack_free (h, obj)
   obstack_free (h, obj);
 }
 #endif
-
+
 #if 0
 /* These are now turned off because the applications do not use it
    and it uses bcopy via obstack_grow, which causes trouble on sysV.  */

@@ -56,13 +56,13 @@ void testCopyModel(string fileName)
         test = new Model();
         delete test;
     }
-    
-    
+
+
     Model* model = new Model(fileName, false);
     //model->print("clone_" + fileName);
 
     //SimTK::State& defaultState = model->initSystem();
-    
+
     Model* modelCopy = new Model(*model);
     // At this point properties should all match. assert that
     ASSERT(*model==*modelCopy);
@@ -79,7 +79,7 @@ void testCopyModel(string fileName)
     ASSERT(model->getActuators().getSize() == cloneModel->getActuators().getSize());
 
     // Compare state again
-    
+
     //SimTK::State& defaultStateOfCopy2 = newModel->initSystem();
     // Compare state
     //ASSERT ((defaultState.getY()-defaultStateOfCopy2.getY()).norm() < 1e-7);
@@ -92,6 +92,6 @@ void testCopyModel(string fileName)
     size_t mem2 = getCurrentRSS( );
     int64_t delta = mem2-mem1;
 
-    cout << "Memory change AFTER copy and init and delete:  " 
+    cout << "Memory change AFTER copy and init and delete:  "
          << double(delta)/mem1*100 << "%." << endl;
 }

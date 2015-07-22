@@ -21,9 +21,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
- *  Below is an extension example of an OpenSim application that provides its own 
- *  main() routine.  It applies a controller to the forward simulation of a tug-of-war 
+/*
+ *  Below is an extension example of an OpenSim application that provides its own
+ *  main() routine.  It applies a controller to the forward simulation of a tug-of-war
  *  between two muscles pulling on a block.
  */
 
@@ -91,7 +91,7 @@ public:
     //    of aKv.  Remember to add a line describing aKv in    //
     //    the comment above (below the line describing aKp).   //
     /////////////////////////////////////////////////////////////
-    TugOfWarController(double aKp) : Controller(), kp( aKp ) 
+    TugOfWarController(double aKp) : Controller(), kp( aKp )
     {
     }
 
@@ -321,7 +321,7 @@ int main()
         manager.getStateStorage().print( "tugOfWar_states.sto" );
     }
     catch (const std::exception &ex) {
-        
+
         // In case of an exception, print it out to the screen.
         std::cout << ex.what() << std::endl;
 

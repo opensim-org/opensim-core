@@ -1,24 +1,24 @@
-% ----------------------------------------------------------------------- 
-% The OpenSim API is a toolkit for musculoskeletal modeling and           
-% simulation. See http://opensim.stanford.edu and the NOTICE file         
-% for more information. OpenSim is developed at Stanford University       
-% and supported by the US National Institutes of Health (U54 GM072970,    
-% R24 HD065690) and by DARPA through the Warrior Web program.             
-%                                                                         
-% Copyright (c) 2005-2013 Stanford University and the Authors             
-% Author(s): Daniel A. Jacobs                                             
-%                                                                         
-% Licensed under the Apache License, Version 2.0 (the "License");         
-% you may not use this file except in compliance with the License.        
-% You may obtain a copy of the License at                                 
-% http://www.apache.org/licenses/LICENSE-2.0.                             
-%                                                                         
-% Unless required by applicable law or agreed to in writing, software     
-% distributed under the License is distributed on an "AS IS" BASIS,       
-% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         
-% implied. See the License for the specific language governing            
-% permissions and limitations under the License.                          
-% ----------------------------------------------------------------------- 
+% -----------------------------------------------------------------------
+% The OpenSim API is a toolkit for musculoskeletal modeling and
+% simulation. See http://opensim.stanford.edu and the NOTICE file
+% for more information. OpenSim is developed at Stanford University
+% and supported by the US National Institutes of Health (U54 GM072970,
+% R24 HD065690) and by DARPA through the Warrior Web program.
+%
+% Copyright (c) 2005-2013 Stanford University and the Authors
+% Author(s): Daniel A. Jacobs
+%
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the License at
+% http://www.apache.org/licenses/LICENSE-2.0.
+%
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+% implied. See the License for the specific language governing
+% permissions and limitations under the License.
+% -----------------------------------------------------------------------
 % This file demonstrates how to add feet to the model using a custom
 % object.
 %
@@ -28,8 +28,8 @@
 % e.g. (<OpenSim_Home>\Models)
 %
 % The allowed object extensions are .vtp, .stl, .obj
-% ----------------------------------------------------------------------- 
-% Import Java Library 
+% -----------------------------------------------------------------------
+% Import Java Library
 import org.opensim.modeling.*
 
 % Open the model
@@ -49,7 +49,7 @@ lContactIndex = walkerModel.getContactGeometrySet().getIndex('LFootContact');
 walkerModel.updContactGeometrySet().remove(lContactIndex);
 rContactIndex = walkerModel.getContactGeometrySet().getIndex('RFootContact');
 walkerModel.updContactGeometrySet().remove(rContactIndex);
-% ----------------------------------------------------------------------- 
+% -----------------------------------------------------------------------
 % Setup the new foot paramters
 footMass    = 0.0001;
 footInertia = Inertia(1,1,.0001,0,0,0);
@@ -64,7 +64,7 @@ footInertia = Inertia(1,1,.0001,0,0,0);
 % Set up the parameters for the Weld Joint connecting the feet to the
 % shanks
 % ***** WRITE YOUR CODE HERE:  *****
-% Task: Create the Vec3 for the location and orientation of the parent and 
+% Task: Create the Vec3 for the location and orientation of the parent and
 % child using the constructor Vec3(x,y,z)
 
 % Get a reference to each shank
@@ -78,15 +78,15 @@ rightShankBody = walkerModel.updBodySet().get('RightShank');
 %     orientationInParent, leftFoot, locationInChild, orientationInChild, false);
 % rFootToRShank    = WeldJoint('RFootToRShank', rightShankBody, locationInParent, ...
 %     orientationInParent, rightFoot, locationInChild, orientationInChild, false);
-% 
+%
 % % Add the Visual Object
 % leftFoot.addDisplayGeometry('ThinHalfCylinder100mmby50mm.obj');
 % rightFoot.addDisplayGeometry('ThinHalfCylinder100mmby50mm.obj');
-% 
+%
 % % Add the body to the Model
 % walkerModel.addBody(leftFoot);
 % walkerModel.addBody(rightFoot);
-% ----------------------------------------------------------------------- 
+% -----------------------------------------------------------------------
 % % Create a ContactMesh for each foot
 % footMeshLocation    = Vec3(0,0,0);
 % footMeshOrientation = Vec3(0,0,0);
@@ -94,31 +94,31 @@ rightShankBody = walkerModel.updBodySet().get('RightShank');
 %     footMeshLocation, footMeshOrientation, leftFoot, 'LFootContact');
 % rightFootContact = ContactMesh('ThinHalfCylinder100mmby50mm.obj', ...
 %     footMeshLocation, footMeshOrientation, rightFoot, 'RFootContact');
-% 
+%
 % % Add ContactGeometry
 % walkerModel.addContactGeometry(leftFootContact);
 % walkerModel.addContactGeometry(rightFootContact);
-% % ----------------------------------------------------------------------- 
+% % -----------------------------------------------------------------------
 % % Create an elastic foundation force for both feet
 % leftElasticFootForce = ElasticFoundationForce();
 % rightElasticFootForce = ElasticFoundationForce();
-% 
+%
 % % Set Names
 % leftElasticFootForce.setName('LeftElasticFootForce');
 % rightElasticFootForce.setName('RightElasticFootForce');
-% 
+%
 % % Set transition velocity
 % leftElasticFootForce.setTransitionVelocity(0.1);
 % rightElasticFootForce.setTransitionVelocity(0.1);
-% 
+%
 % % Define Contact Parameters
 % stiffness           = 1.0E6;
 % dissipation         = 2.0;
 % staticFriction      = 0.8;
 % dynamicFriction     = 0.4;
 % viscousFriction     = 0.4;
-% 
-% % Set the Contact parameters for the forces 
+%
+% % Set the Contact parameters for the forces
 % leftElasticFootForce.addGeometry('LFootContact');
 % leftElasticFootForce.addGeometry('PlatformContact');
 % leftElasticFootForce.setStiffness(stiffness);
@@ -126,7 +126,7 @@ rightShankBody = walkerModel.updBodySet().get('RightShank');
 % leftElasticFootForce.setStaticFriction(staticFriction);
 % leftElasticFootForce.setDynamicFriction(dynamicFriction);
 % leftElasticFootForce.setViscousFriction(viscousFriction);
-% 
+%
 % rightElasticFootForce.addGeometry('RFootContact');
 % rightElasticFootForce.addGeometry('PlatformContact');
 % rightElasticFootForce.setStiffness(stiffness);
@@ -134,10 +134,10 @@ rightShankBody = walkerModel.updBodySet().get('RightShank');
 % rightElasticFootForce.setStaticFriction(staticFriction);
 % rightElasticFootForce.setDynamicFriction(dynamicFriction);
 % rightElasticFootForce.setViscousFriction(viscousFriction);
-% 
+%
 % % Add Forces
 % walkerModel.addForce(leftElasticFootForce);
 % walkerModel.addForce(rightElasticFootForce);
-% % ----------------------------------------------------------------------- 
+% % -----------------------------------------------------------------------
 % % Save the new model
-% walkerModel.print('../Model/DW2013_WalkerModelTerrainAddCustomFeet.osim');                  
+% walkerModel.print('../Model/DW2013_WalkerModelTerrainAddCustomFeet.osim');

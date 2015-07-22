@@ -42,7 +42,7 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 class Model;
 class Joint;
@@ -50,9 +50,9 @@ class Joint;
 
 /**
  * An analysis for reporting the joint reaction loads from a model. For a given
- * joint, the reaction load is calculated as the forces and moments required to 
+ * joint, the reaction load is calculated as the forces and moments required to
  * constrain the body motions to satisfy the joint as if the joint did not exist.
- * The reaction load acts at the joint center (mobilizer frame) of both the parent 
+ * The reaction load acts at the joint center (mobilizer frame) of both the parent
  * and child bodies and either force can be reported and expressed in the either
  * the child, parent or ground frames. The default behavior is the the force
  * on the child expressed in the ground frame.
@@ -90,7 +90,7 @@ private:
 protected:
     //--------------------------------------------------------------------
     // Properties are the user-specified quantities that are read in from
-    // file 
+    // file
     //--------------------------------------------------------------------
 
     /** String containing the name of the optional forces storage file*/
@@ -133,11 +133,11 @@ protected:
     *   joints in the model*/
     Array<double> _allLoads;
 
-    /** Internal work array for holding the computed joint loads of all 
+    /** Internal work array for holding the computed joint loads of all
     *   joints specified in _jointNames*/
     Array<double> _Loads;
 
-    /** Internal work array for holding the JointReactionKeys to identify the 
+    /** Internal work array for holding the JointReactionKeys to identify the
     *   desired joints, onBody, and inFrame to be output*/
     Array<JointReactionKey> _reactionList;
 

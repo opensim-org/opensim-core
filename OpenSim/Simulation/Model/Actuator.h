@@ -46,7 +46,7 @@ class Coordinate;
 /**
  * Base class for an actuator (e.g., a torque motor, muscle, ...) that requires
  * a generic external input (a vector of controls) to generate force. This class
- * therefore covers scalarActautor as a special case with scalar control value. 
+ * therefore covers scalarActautor as a special case with scalar control value.
  *
  * @author Ajay Seth
  */
@@ -60,7 +60,7 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(Actuator, Force);
 // DATA
 //=============================================================================
 protected:
- 
+
     // index in Controls Vector shared system cache entry
     int _controlIndex;
 
@@ -94,12 +94,12 @@ public:
     virtual int numControls() const = 0;
 
     /** Actuator default controls are zero */
-    virtual const SimTK::Vector getDefaultControls() { return SimTK::Vector(numControls(), 0.0); } 
+    virtual const SimTK::Vector getDefaultControls() { return SimTK::Vector(numControls(), 0.0); }
 #ifndef SWIG
     // CONTROLS
     virtual const SimTK::VectorView_<double> getControls( const SimTK::State& s ) const;
 #endif
-    /** Convenience methods for getting, setting and adding to actuator controls from/into 
+    /** Convenience methods for getting, setting and adding to actuator controls from/into
         the model controls. These methods have no effect on the realization stage. */
     virtual void getControls(const SimTK::Vector& modelControls, SimTK::Vector& actuatorControls) const;
     /** set actuator controls subvector into the right slot in the system-wide model controls */
@@ -123,8 +123,8 @@ public:
 //==============================================================================
 
 /**
- * This is a derived class from the base class actuator (e.g., a torque motor, 
- * muscle, ...) that requires exactly one external input (control) to generate 
+ * This is a derived class from the base class actuator (e.g., a torque motor,
+ * muscle, ...) that requires exactly one external input (control) to generate
  * a scalar value force, such as a torque/force magnitude or a tension.
  *
  * @author Ajay Seth
@@ -135,7 +135,7 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
+    /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
     /** Default is -Infinity (no limit). **/
@@ -172,10 +172,10 @@ public:
     virtual double getOptimalForce() const;
 
     // manage bounds on Control
-    void setMinControl(const double& aMinControl) 
+    void setMinControl(const double& aMinControl)
     {   set_min_control(aMinControl); }
     double getMinControl() const { return get_min_control(); }
-    void setMaxControl(const double& aMaxControl) 
+    void setMaxControl(const double& aMaxControl)
     {   set_max_control(aMaxControl); }
     double getMaxControl() const { return get_max_control(); }
 
@@ -202,15 +202,15 @@ public:
     bool isActuationOverriden(const SimTK::State& s) const;
 
     /**
-    * set the actuation value used when the override is true 
-    * 
+    * set the actuation value used when the override is true
+    *
     * @param s      current state
-    * @param value  value of override actuation   
+    * @param value  value of override actuation
     */
     void setOverrideActuation(SimTK::State& s, double value) const;
 
     /**
-    * return override actuation 
+    * return override actuation
     */
     double getOverrideActuation(const SimTK::State& s) const;
 
@@ -226,8 +226,8 @@ protected:
     double computeOverrideActuation(const SimTK::State& s) const;
 
     //Actuation reporting
-    /** 
-     * Methods to query a actuation for the value actually applied during 
+    /**
+     * Methods to query a actuation for the value actually applied during
      * simulation. The names of the quantities (column labels) is returned
      * by this first function getRecordLabels()
      */
@@ -237,8 +237,8 @@ protected:
         return labels;
     }
     /**
-     * Given SimTK::State object extract all the values necessary to report 
-     * actuation, application location frame, etc. used in conjunction 
+     * Given SimTK::State object extract all the values necessary to report
+     * actuation, application location frame, etc. used in conjunction
      * with getRecordLabels and should return same size Array
      */
     OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {

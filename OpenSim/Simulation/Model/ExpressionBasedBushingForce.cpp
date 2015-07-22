@@ -58,11 +58,11 @@ ExpressionBasedBushingForce::ExpressionBasedBushingForce()
 }
 
 // Convenience constructor for zero value force functions.
-ExpressionBasedBushingForce::ExpressionBasedBushingForce(const string&    body1Name, 
-                           const Vec3&      point1, 
+ExpressionBasedBushingForce::ExpressionBasedBushingForce(const string&    body1Name,
+                           const Vec3&      point1,
                            const Vec3&      orientation1,
-                           const string&    body2Name, 
-                           const Vec3&      point2, 
+                           const string&    body2Name,
+                           const Vec3&      point2,
                            const Vec3&      orientation2)
 {
     setNull();
@@ -74,19 +74,19 @@ ExpressionBasedBushingForce::ExpressionBasedBushingForce(const string&    body1N
     set_orientation_body_1(orientation1);
     set_location_body_2(point2);
     set_orientation_body_2(orientation2);
-    
+
 }
 
 // Convenience constructor for linear functions.
-ExpressionBasedBushingForce::ExpressionBasedBushingForce(const string&    body1Name, 
-                           const Vec3&      point1, 
+ExpressionBasedBushingForce::ExpressionBasedBushingForce(const string&    body1Name,
+                           const Vec3&      point1,
                            const Vec3&      orientation1,
-                           const string&    body2Name, 
-                           const Vec3&      point2, 
+                           const string&    body2Name,
+                           const Vec3&      point2,
                            const Vec3&      orientation2,
-                           const Vec3&      transStiffness, 
-                           const Vec3&      rotStiffness, 
-                           const Vec3&      transDamping, 
+                           const Vec3&      transStiffness,
+                           const Vec3&      rotStiffness,
+                           const Vec3&      transDamping,
                            const Vec3&      rotDamping)
 {
     setNull();
@@ -99,7 +99,7 @@ ExpressionBasedBushingForce::ExpressionBasedBushingForce(const string&    body1N
     set_location_body_2(point2);
     set_orientation_body_2(orientation2);
     // populate moments and forces as linear (ramp) expressions based on stiffness
-    
+
     setMxExpression( to_string(rotStiffness[0]) + string("*theta_x") );
     setMyExpression( to_string(rotStiffness[1]) + string("*theta_y") );
     setMzExpression( to_string(rotStiffness[2]) + string("*theta_z") );
@@ -108,7 +108,7 @@ ExpressionBasedBushingForce::ExpressionBasedBushingForce(const string&    body1N
     setFzExpression( to_string(transStiffness[2]) + string("*delta_z") );
     set_rotational_damping(rotDamping);
     set_translational_damping(transDamping);
-    
+
 }
 
 //_____________________________________________________________________________
@@ -149,10 +149,10 @@ void ExpressionBasedBushingForce::constructProperties()
     setFxExpression( "0.0" );
     setFyExpression( "0.0" );
     setFzExpression( "0.0" );
-    
+
     constructProperty_rotational_damping(Vec3(0));
     constructProperty_translational_damping(Vec3(0));
-    
+
     constructProperty_moment_visual_scale( 1.0 );
     constructProperty_force_visual_scale( 1.0 );
     constructProperty_visual_aspect_ratio(1.0);
@@ -188,7 +188,7 @@ void ExpressionBasedBushingForce::extendConnectToModel(Model& aModel)
         // ?Keep a pointer to body1?
     }
     else {
-        errorMessage = "Invalid bushing body1 (" + body1Name 
+        errorMessage = "Invalid bushing body1 (" + body1Name
                         + ") specified in Force " + getName();
         throw OpenSim::Exception(errorMessage);
     }
@@ -197,7 +197,7 @@ void ExpressionBasedBushingForce::extendConnectToModel(Model& aModel)
         // ?Keep a pointer to body2?
     }
     else {
-        errorMessage = "Invalid bushing body2 (" + body2Name 
+        errorMessage = "Invalid bushing body2 (" + body2Name
                         + ") specified in Force " + getName();
         throw OpenSim::Exception(errorMessage);
     }
@@ -247,7 +247,7 @@ void ExpressionBasedBushingForce::setBody2ByName(const std::string& aBodyName)
 }
 
 /** Set the location and orientation (optional) for weld on body 1*/
-void ExpressionBasedBushingForce::setBody1BushingLocation(const Vec3& location, 
+void ExpressionBasedBushingForce::setBody1BushingLocation(const Vec3& location,
                                            const Vec3& orientation)
 {
     set_location_body_1(location);
@@ -255,7 +255,7 @@ void ExpressionBasedBushingForce::setBody1BushingLocation(const Vec3& location,
 }
 
 /** Set the location and orientation (optional) for weld on body 2*/
-void ExpressionBasedBushingForce::setBody2BushingLocation(const Vec3& location, 
+void ExpressionBasedBushingForce::setBody2BushingLocation(const Vec3& location,
                                            const Vec3& orientation)
 {
     set_location_body_2(location);
@@ -263,55 +263,55 @@ void ExpressionBasedBushingForce::setBody2BushingLocation(const Vec3& location,
 }
 
 /** Set the expression for the Mx function and create it's lepton program */
-void ExpressionBasedBushingForce::setMxExpression(std::string expression) 
+void ExpressionBasedBushingForce::setMxExpression(std::string expression)
 {
-    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace), 
+    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace),
                         expression.end() );
     set_Mx_expression(expression);
     MxProg = Lepton::Parser::parse(expression).optimize().createProgram();
 }
 
 /** Set the expression for the My function and create it's lepton program */
-void ExpressionBasedBushingForce::setMyExpression(std::string expression) 
+void ExpressionBasedBushingForce::setMyExpression(std::string expression)
 {
-    
-    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace), 
+
+    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace),
                         expression.end() );
     set_My_expression(expression);
     MyProg = Lepton::Parser::parse(expression).optimize().createProgram();
 }
 
 /** Set the expression for the Mz function and create it's lepton program */
-void ExpressionBasedBushingForce::setMzExpression(std::string expression) 
+void ExpressionBasedBushingForce::setMzExpression(std::string expression)
 {
-    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace), 
+    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace),
                         expression.end() );
     set_Mz_expression(expression);
     MzProg = Lepton::Parser::parse(expression).optimize().createProgram();
 }
 
 /** Set the expression for the Fx function and create it's lepton program */
-void ExpressionBasedBushingForce::setFxExpression(std::string expression) 
+void ExpressionBasedBushingForce::setFxExpression(std::string expression)
 {
-    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace), 
+    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace),
                         expression.end() );
     set_Fx_expression(expression);
     FxProg = Lepton::Parser::parse(expression).optimize().createProgram();
 }
 
 /** Set the expression for the Fy function and create it's lepton program */
-void ExpressionBasedBushingForce::setFyExpression(std::string expression) 
+void ExpressionBasedBushingForce::setFyExpression(std::string expression)
 {
-    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace), 
+    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace),
                         expression.end() );
     set_Fy_expression(expression);
     FyProg = Lepton::Parser::parse(expression).optimize().createProgram();
 }
 
 /** Set the expression for the Fz function and create it's lepton program */
-void ExpressionBasedBushingForce::setFzExpression(std::string expression) 
+void ExpressionBasedBushingForce::setFzExpression(std::string expression)
 {
-    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace), 
+    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace),
                         expression.end() );
     set_Fz_expression(expression);
     FzProg = Lepton::Parser::parse(expression).optimize().createProgram();
@@ -333,7 +333,7 @@ SimTK::Vec6 ExpressionBasedBushingForce::computeDeflection(const SimTK::State& s
     // Define the frame on body 2 as the "moving" frame, M
     Transform X_GM = X_GB2 * _inb2;
     // Express M in F
-    Transform X_FM = ~X_GF * X_GM;    
+    Transform X_FM = ~X_GF * X_GM;
 
     // the deviation of the two frames measured by dq
     Vec6 dq(0);
@@ -347,15 +347,15 @@ SimTK::Vec6 ExpressionBasedBushingForce::computeDeflection(const SimTK::State& s
 
 /** compute the bushing force at the bushing location
 */
-void ExpressionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& state, 
+void ExpressionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& state,
     SpatialVec& forces_on_M_in_ground, SpatialVec& forces_on_F_in_ground) const
 {
     const Transform& X_GB1 = _b1->getBodyTransform(state);
     const Transform& X_GB2 = _b2->getBodyTransform(state);
 
-    Transform X_GF = X_GB1 * _inb1;   
-    Transform X_GM = X_GB2 * _inb2;   
-    Transform X_FM = ~X_GF * X_GM;    
+    Transform X_GF = X_GB1 * _inb1;
+    Transform X_GM = X_GB2 * _inb2;
+    Transform X_FM = ~X_GF * X_GM;
     const Rotation& R_GF = X_GF.R();
     const Rotation& R_GM = X_GM.R();
     const Rotation& R_FM = X_FM.R();
@@ -376,7 +376,7 @@ void ExpressionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& sta
     deflectionVars["delta_y"] = dq[4];
     deflectionVars["delta_z"] = dq[5];
 
-    
+
     fk[0] = MxProg.evaluate(deflectionVars);
     fk[1] = MyProg.evaluate(deflectionVars);
     fk[2] = MzProg.evaluate(deflectionVars);
@@ -402,7 +402,7 @@ void ExpressionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& sta
 
     // To get derivative in F, we must remove the part due to the
     // angular velocity w_GF of F in G.
-    SpatialVec V_FM = ~R_GF * SpatialVec(V_FM_G[0], 
+    SpatialVec V_FM = ~R_GF * SpatialVec(V_FM_G[0],
                                  V_FM_G[1] - V_GF[0] % p_FM_G);
 
 
@@ -425,9 +425,9 @@ void ExpressionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& sta
         _dampingMatrix[i][i] = get_rotational_damping(0)[i];
         _dampingMatrix[i+3][i+3] = get_translational_damping(0)[i];
     }
-    
-    // velocity dependent force according to the speed of frame2 on 
-    // body2 relative to frame1 
+
+    // velocity dependent force according to the speed of frame2 on
+    // body2 relative to frame1
     Vec6 fv = _dampingMatrix * dqdot;
 
     Vec6 f = -(fk+fv); // generalized forces on body 2
@@ -443,7 +443,7 @@ void ExpressionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& sta
     const Vec3  mB2_M = ~N_FM * fB2_q; // moment acting on body 2, exp. in M
     const Vec3  mB2_G =  R_GM * mB2_M; // moment on body 2, now exp. in G
 
-    // Transform force from F frame to ground. This is the force to 
+    // Transform force from F frame to ground. This is the force to
     // apply to body 2 at point OM; -f goes on body 1 at the same
     // spatial location. Here we actually apply it at OF so we have to
     // account for the moment produced by the shift from OM.
@@ -463,25 +463,25 @@ void ExpressionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& sta
  * ExpressionBasedBushingForce implementation based SimTK::Force::LinearBushing
  * developed and implemented by Michael Sherman.
  */
-void ExpressionBasedBushingForce::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void ExpressionBasedBushingForce::computeForce(const SimTK::State& s,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const
 {
-    
-    
+
+
     SpatialVec F_GM( Vec3(0.0),Vec3(0.0) );
     SpatialVec F_GF( Vec3(0.0),Vec3(0.0) );
-    
-    
+
+
     ComputeForcesAtBushing(s, F_GM, F_GF);
-    
+
 
     const Transform& X_GB1 = _b1->getBodyTransform(s);
     const Transform& X_GB2 = _b2->getBodyTransform(s);
 
-    Transform X_GF = X_GB1 * _inb1;   
-    Transform X_GM = X_GB2 * _inb2;   
-    Transform X_FM = ~X_GF * X_GM;    
+    Transform X_GF = X_GB1 * _inb1;
+    Transform X_GM = X_GB2 * _inb2;
+    Transform X_FM = ~X_GF * X_GM;
     const Rotation& R_GF = X_GF.R();
     const Rotation& R_GM = X_GM.R();
     const Rotation& R_FM = X_FM.R();
@@ -490,7 +490,7 @@ void ExpressionBasedBushingForce::computeForce(const SimTK::State& s,
     Vec3 p_B1F_G =  X_GB1.R() * _inb1.p();   // 15 flops
     Vec3 p_B2M_G =  X_GB2.R() * _inb2.p();   // 15 flops
     Vec3 p_FM_G  =  X_GF.R()  * X_FM.p();    // 15 flops
-    
+
     // Shift forces to body origins.
     SpatialVec F_GB2(F_GM[0] + p_B2M_G % F_GM[1], F_GM[1]);
     SpatialVec F_GB1(F_GF[0] + p_B1F_G % F_GF[1], F_GF[1]);
@@ -515,11 +515,11 @@ double CoupledBushingForce::computePotentialEnergy(const SimTK::State& s) const
 //=============================================================================
 // Reporting
 //=============================================================================
-/** 
+/**
  * Provide names of the quantities (column labels) of the force value(s) reported
- * 
+ *
  */
-OpenSim::Array<std::string> ExpressionBasedBushingForce::getRecordLabels() const 
+OpenSim::Array<std::string> ExpressionBasedBushingForce::getRecordLabels() const
 {
     const string& body1Name = get_body_1();
     const string& body2Name = get_body_2();
@@ -544,11 +544,11 @@ OpenSim::Array<std::string> ExpressionBasedBushingForce::getRecordLabels() const
  * Provide the value(s) to be reported that correspond to the labels
  */
 OpenSim::Array<double> ExpressionBasedBushingForce::
-getRecordValues(const SimTK::State& state) const 
+getRecordValues(const SimTK::State& state) const
 {
     SpatialVec F_GM( Vec3(0.0),Vec3(0.0) );
     SpatialVec F_GF( Vec3(0.0),Vec3(0.0) );
-    
+
     ComputeForcesAtBushing(state, F_GM, F_GF);
 
     OpenSim::Array<double> values(1);
@@ -566,7 +566,7 @@ getRecordValues(const SimTK::State& state) const
 
     OpenSim::Array<double> values(1);
 
-    const SimTK::Force::LinearBushing &simtkSpring = 
+    const SimTK::Force::LinearBushing &simtkSpring =
         (SimTK::Force::LinearBushing &)(_model->getForceSubsystem().getForce(_index));
 
     SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
@@ -597,13 +597,13 @@ getRecordValues(const SimTK::State& state) const
  */
 
 void ExpressionBasedBushingForce::generateDecorations
-       (bool                                        fixed, 
+       (bool                                        fixed,
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const
     {
         // invoke parent class method
-        Super::generateDecorations(fixed,hints,state,geometryArray); 
+        Super::generateDecorations(fixed,hints,state,geometryArray);
         // the frame on body 1 will be red
         SimTK::Vec3 frame1color(1.0,0.0,0.0);
         // the frame on body 2 will be blue
@@ -636,7 +636,7 @@ void ExpressionBasedBushingForce::generateDecorations
 
             SpatialVec F_GM( Vec3(0.0),Vec3(0.0) );
             SpatialVec F_GF( Vec3(0.0),Vec3(0.0) );
-        
+
             _model->getMultibodySystem().realize(state, Stage::Velocity );
             // calculate forces and moments the bushing applies to each body
             ComputeForcesAtBushing(state, F_GM, F_GF);
@@ -644,9 +644,9 @@ void ExpressionBasedBushingForce::generateDecorations
             // location of the bushing on body 2
             SimTK::Vec3 p_b2M_b2 = _inb2.p();
             SimTK::Vec3 p_GM_G(0.0);
-            
+
             // fing the body2 location of the bushing in ground
-            _model->getSimbodyEngine().transformPosition(state, 
+            _model->getSimbodyEngine().transformPosition(state,
                 _model->getBodySet().get(get_body_2()), p_b2M_b2, p_GM_G);
 
             // Add moment on body2 as line vector starting at bushing location
@@ -667,7 +667,7 @@ void ExpressionBasedBushingForce::generateDecorations
             SimTK::DecorativeCylinder body2Force(f_radius, f_length/2.0);
             body2Force.setTransform(X_f2cylinder);
             body2Force.setColor(force2color);
-            
+
             geometryArray.push_back(body2Force);
 
         }

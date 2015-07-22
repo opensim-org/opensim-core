@@ -60,7 +60,7 @@
   lower spline derivatives will tend to be reliable estim-
   ates of the underlying signal's true derivatives.
 
-  (5) GCVSPL combines elements of subroutine CRVO5 by Utreras 
+  (5) GCVSPL combines elements of subroutine CRVO5 by Utreras
   (1980), subroutine SMOOTH by Lyche et al. (1983), and
   subroutine CUBGCV by Hutchinson (1985). The trace of the
   influence matrix is assessed in a similar way as described
@@ -642,7 +642,7 @@ doublereal splc(integer *m, integer *n, integer *k, doublereal *y, integer *
        dp = 1. / (*el * *eps);
        stat[4] = dp;
     }
-    
+
     i__1 = *n;
     for (i = 1; i <= i__1; ++i) {
        i__2 = *m, i__3 = i - 1;

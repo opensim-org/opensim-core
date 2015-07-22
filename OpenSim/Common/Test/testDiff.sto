@@ -2,9 +2,9 @@ testStorage
 nRows=2
 nColumns=3
 endheader
-		
-		  
- 
+
+
+
 time	v1 v2
 1.	10	20.
 2. 20		40

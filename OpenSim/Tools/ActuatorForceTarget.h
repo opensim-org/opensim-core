@@ -38,7 +38,7 @@ namespace OpenSim {
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /**
- * A Computed Muscle Control (CMC) optimization target for controlling 
+ * A Computed Muscle Control (CMC) optimization target for controlling
  * dynamic systems whose actuators may be themselves governed by differential
  * equations, meaning there may be non-linear behavior and delays in force
  * production.
@@ -58,7 +58,7 @@ namespace OpenSim {
  * Although this target is fairly robust (meaning the optimizer should not
  * fail to find a solution), it is a bit slower and less accurate than
  * the "fast" target @see ActuatorForceTargetFast.
- * 
+ *
  * @version 1.0
  * @author Frank C. Anderson
  */

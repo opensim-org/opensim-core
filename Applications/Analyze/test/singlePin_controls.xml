@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSimDocument Version="10600">
 	<ControlSet name="Control Set">
-		
+
 		<objects>
 		<!--
 			<ControlLinear name="TRIlong">

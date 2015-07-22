@@ -28,7 +28,7 @@
 
 extern "C" {
 
-OSIMCOMMON_API void RegisterTypes_osimCommon(); 
+OSIMCOMMON_API void RegisterTypes_osimCommon();
 
 }
 

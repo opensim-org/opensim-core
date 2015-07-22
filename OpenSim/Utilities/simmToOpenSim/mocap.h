@@ -51,7 +51,7 @@ enum {                       /* htr & htr2 column identifiers */
    _RX, _RY, _RZ,
    _BONE_SCALE,
    HTR_FRAME_NUM_COLS,
-   
+
    _HTR2_BONE_LEN = _BONE_SCALE
 };
 
@@ -106,7 +106,7 @@ enum {                       /* ---- analog channel type */
    EMG,
    OTHER_DATA
 };
-   
+
 STRUCT {                     /* ---- forceplate channel info: */
    int index;                     /* forceplate index (zero based) */
    int component;                 /* forceplate channel componant (see enums above) */
@@ -161,7 +161,7 @@ STRUCT {                          /* ---- forceplate record: */
    double   width;                     /* forceplate width (optional) */
    double   calibrationMatrix[64];     /* forceplate calibration matrix */
    DMatrix  localToWorldXform;         /* forceplate placement matrix */
-   
+
    struct {                            /* -- Kistler forceplate parameters: */
      double   a, b, az0;                 /* transducer placement: a, b, az0 */
      double   p[6];                      /* COP correction coefficients (optional) */

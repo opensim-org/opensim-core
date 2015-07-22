@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson, Ajay Seth 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson, Ajay Seth
  */
 
 
@@ -53,7 +53,7 @@ Analysis::Analysis(Model *aModel):
     _inDegrees(_inDegreesProp.getValueBool()),
     _statesStore(NULL)
 {
-    
+
     _model = aModel;
     setNull();
 
@@ -97,7 +97,7 @@ Analysis::Analysis(const string &aFileName, bool aUpdateFromXMLNode):
     _statesStore(NULL)
 {
     setNull();
-    SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
+    SimTK::Xml::Element e = updDocument()->getRootDataElement();
     if(aUpdateFromXMLNode) updateFromXMLNode(e, getDocument()->getDocumentVersion());
 }
 //_____________________________________________________________________________
@@ -480,7 +480,7 @@ getEndTime() const
  *
  * Override this method in derived classes.
  *
- * @param s SimTK state 
+ * @param s SimTK state
  *
  * @return -1 on error, 0 otherwise.
  */
@@ -497,11 +497,11 @@ begin( SimTK::State& s )
  *
  * Override this method in derived classes.
  *
- * @param s SimTK State 
+ * @param s SimTK State
  *
  * @return -1 on error, 0 otherwise.
  */
-int Analysis:: 
+int Analysis::
 step( const SimTK::State& s, int stepNumber )
 {
     //printf("Analysis.step: %s.\n",getName());
@@ -514,7 +514,7 @@ step( const SimTK::State& s, int stepNumber )
  *
  * Override this method in derived classes.
  *
- * @param s SimTK State 
+ * @param s SimTK State
  *
  * @return -1 on error, 0 otherwise.
  */

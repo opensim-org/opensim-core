@@ -375,7 +375,7 @@ SBoolean vector_intersects_polyhedron(double pt[], double vec[], PolyhedronStruc
 
 /* intersection between a line (pt1,pt2) and plane (plane,d)
  * will give the intersection point(inter) and where on the line
- * it is (t). Ratio t should does not have to lie within 0 and 1 
+ * it is (t). Ratio t should does not have to lie within 0 and 1
  */
 SBoolean intersect_line_plane(double pt1[], double pt2[],
                               double plane[], double d, double inter[], double* t)
@@ -400,9 +400,9 @@ SBoolean intersect_line_plane(double pt1[], double pt2[],
 
 /* intersection between a line (pt1,pt2) and plane (plane,d)
 ** will give the intersection point (inter) and where on the line it is (t)
-** ratio t should lie within 0 and 1 
+** ratio t should lie within 0 and 1
 */
-SBoolean intersect_line_plane01(double pt1[], double pt2[], 
+SBoolean intersect_line_plane01(double pt1[], double pt2[],
                                 double plane[], double d, double inter[], double* t)
 {
    double dotprod;
@@ -554,7 +554,7 @@ int polygon_ray_inter3d(PolyhedronStruct* newph, int poly_index, double pt[3], i
    double **mat;
    double amat[3][3];
 
-   poly = &newph->polygon[poly_index]; 
+   poly = &newph->polygon[poly_index];
    numpts = poly->num_vertices;
    poly_pts = (double**)simm_malloc(numpts*sizeof(double*));
    for (i=0; i<numpts; i++)
@@ -581,7 +581,7 @@ int polygon_ray_inter3d(PolyhedronStruct* newph, int poly_index, double pt[3], i
    for (i=0; i<numpts; i++)
    {
       COPY_1X3VECTOR(poly_pts[i],temppt);
-      mult_3x3matrix_by_vector(amat,temppt,poly_pts[i]); 
+      mult_3x3matrix_by_vector(amat,temppt,poly_pts[i]);
    }
    mult_3x3matrix_by_vector(amat,pt,rotpt);
 
@@ -612,7 +612,7 @@ int polygon_ray_inter_jordanstheorem(double** poly_pts, int numpts,
       if ((algstate = point_ray_relation(poly_pts[i],ptray,otheraxes)) != ON_RAY)
      break;
    }
-  
+
    if (algstate == ON_RAY)
       return (0);
 
@@ -632,7 +632,7 @@ int polygon_ray_inter_jordanstheorem(double** poly_pts, int numpts,
      current += 1;
      if (current == numpts)
         current = 0;
-     count++; 
+     count++;
      if (count == numpts || current == start)
      {
         quit = TRUE;
@@ -674,7 +674,7 @@ int polygon_ray_inter_jordanstheorem(double** poly_pts, int numpts,
 /* returns the relation between a ray and a given point
 ** returns 0,1,2
 ** 0= on the ray;  1= above ray, 2= below ray
-** the pt is either on, above or below the ray 
+** the pt is either on, above or below the ray
 */
 int point_ray_relation(double* pt, double ptray[], int axes)
 {
@@ -689,27 +689,27 @@ int point_ray_relation(double* pt, double ptray[], int axes)
 }
 
 /*****************************************************************************
-** DESCRIPTION:                                                               
+** DESCRIPTION:
 **
-** prepare a transformation martix to rotate such that Dir is   
-** parallel to the Z axes. Used to rotate the     
-** polygons to be XY plane parallel.                                          
+** prepare a transformation martix to rotate such that Dir is
+** parallel to the Z axes. Used to rotate the
+** polygons to be XY plane parallel.
 **
-**    Algorithm: form a 4 by 4 matrix from Dir as follows:                    
-**                |  tx  ty  tz  0 |   A transformation which takes the coord 
-**                |  bx  by  bz  0 |  system into t, b & n as required.       
-** [X  Y  Z  1] * |  nx  ny  nz  0 |                                          
-**                |  0   0   0   1 |                                          
-**   N is exactly Dir, but we got freedom on T & B which must be on           
-**   a plane perpendicular to N and perpendicular between them but thats all! 
-**   T is therefore selected using this (heuristic ?) algorithm:              
-**   Let P be the axis of which the absolute N coefficient is the smallest.   
-**   Let B be (N cross P) and T be (B cross N).                               
-**                                                                            
-** PARAMETERS:                                                                
-**   mat:     To place the constructed homogeneous transformation.           
-**   dir:     To derive a transformation such that Dir goes to Z axis.        
-**                                                                            
+**    Algorithm: form a 4 by 4 matrix from Dir as follows:
+**                |  tx  ty  tz  0 |   A transformation which takes the coord
+**                |  bx  by  bz  0 |  system into t, b & n as required.
+** [X  Y  Z  1] * |  nx  ny  nz  0 |
+**                |  0   0   0   1 |
+**   N is exactly Dir, but we got freedom on T & B which must be on
+**   a plane perpendicular to N and perpendicular between them but thats all!
+**   T is therefore selected using this (heuristic ?) algorithm:
+**   Let P be the axis of which the absolute N coefficient is the smallest.
+**   Let B be (N cross P) and T be (B cross N).
+**
+** PARAMETERS:
+**   mat:     To place the constructed homogeneous transformation.
+**   dir:     To derive a transformation such that Dir goes to Z axis.
+**
 */
 void make_rotation_matrix(double** mat, double normal[])
 {
@@ -739,7 +739,7 @@ void make_rotation_matrix(double** mat, double normal[])
   normalize_vector(b,b);
   cross_vectors(b,dir_n,t);  /* calc the tangent */
   normalize_vector(t,t);
-  
+
   for(i=0; i<3; i++)
   {
       mat[i][0] = t[i];
@@ -948,7 +948,7 @@ void make_3x3_xrot_matrix(double a, double m[][3])
    m[1][0] = 0.0;
    m[1][1] = cos(a);
    m[1][2] = sin(a);
-   
+
    m[2][0] = 0.0;
    m[2][1] = -sin(a);
    m[2][2] = cos(a);
@@ -1193,7 +1193,7 @@ double atan3 (double y, double x)
 void identity_matrix(double m[][4])
 {
    /* set matrix 'm' to the identity matrix */
-   
+
    m[0][0] = 1.0; m[0][1] = 0.0; m[0][2] = 0.0; m[0][3] = 0.0;
    m[1][0] = 0.0; m[1][1] = 1.0; m[1][2] = 0.0; m[1][3] = 0.0;
    m[2][0] = 0.0; m[2][1] = 0.0; m[2][2] = 1.0; m[2][3] = 0.0;
@@ -1204,7 +1204,7 @@ void x_rotate_matrix_bodyfixed(double m[][4], double radians)
 {
    /* append rotation about local x-axis to matrix 'm' */
    Quat q;
-   
+
    make_quaternion(q, m[0], radians);
    rotate_matrix_by_quat(m, q);
 }
@@ -1213,7 +1213,7 @@ void y_rotate_matrix_bodyfixed(double m[][4], double radians)
 {
    /* append rotation about local y-axis to matrix 'm' */
    Quat q;
-   
+
    make_quaternion(q, m[1], radians);
    rotate_matrix_by_quat(m, q);
 }
@@ -1222,7 +1222,7 @@ void z_rotate_matrix_bodyfixed(double m[][4], double radians)
 {
    /* append rotation about local z-axis to matrix 'm' */
    Quat q;
-   
+
    make_quaternion(q, m[2], radians);
    rotate_matrix_by_quat(m, q);
 }
@@ -1299,7 +1299,7 @@ void z_rotate_matrix_spacefixed(double m[][4], double radians)
 void translate_matrix(double m[][4], const double* delta)
 {
    /* append translation 'delta' to matrix 'm' */
-   
+
    m[0][0] += m[0][3] * delta[0];   m[0][1] += m[0][3] * delta[1];   m[0][2] += m[0][3] * delta[2];
    m[1][0] += m[1][3] * delta[0];   m[1][1] += m[1][3] * delta[1];   m[1][2] += m[1][3] * delta[2];
    m[2][0] += m[2][3] * delta[0];   m[2][1] += m[2][3] * delta[1];   m[2][2] += m[2][3] * delta[2];
@@ -1317,9 +1317,9 @@ void scale_matrix (double m[][4], const double* scaleBy)
 void append_matrix(DMatrix m, const DMatrix b)
 {
    /* append matrix 'b' to matrix 'm' */
-   
+
    double ta[4][4];
-   
+
    memcpy(ta, m, 16 * sizeof(double));
 
    m[0][0] = ta[0][0] * b[0][0] + ta[0][1] * b[1][0] + ta[0][2] * b[2][0] + ta[0][3] * b[3][0];
@@ -1346,7 +1346,7 @@ void append_matrix(DMatrix m, const DMatrix b)
 void transform_pt(double m[][4], double* pt)
 {
    /* apply a matrix transformation to a 3d point */
-   
+
    double tx = pt[XX] * m[0][0] + pt[YY] * m[1][0] + pt[ZZ] * m[2][0] + m[3][0];
    double ty = pt[XX] * m[0][1] + pt[YY] * m[1][1] + pt[ZZ] * m[2][1] + m[3][1];
 
@@ -1358,7 +1358,7 @@ void transform_pt(double m[][4], double* pt)
 void transform_vec(double m[][4], double* vec)
 {
    /* apply a matrix transformation to a 3d vector */
-   
+
    double tx = vec[XX] * m[0][0] + vec[YY] * m[1][0] + vec[ZZ] * m[2][0];
    double ty = vec[XX] * m[0][1] + vec[YY] * m[1][1] + vec[ZZ] * m[2][1];
 
@@ -1370,7 +1370,7 @@ void transform_vec(double m[][4], double* vec)
 static void quat_to_axis_angle_rot (const Quat q, dpCoord3D* axis, double* angle)
 {
    double sin_a2;
-      
+
    axis->xyz[XX] = q[XX];
    axis->xyz[YY] = q[YY];
    axis->xyz[ZZ] = q[ZZ];
@@ -1380,7 +1380,7 @@ static void quat_to_axis_angle_rot (const Quat q, dpCoord3D* axis, double* angle
 
    /* 0 <= angle <= PI , because 0 < sin_a2 */
    *angle = 2.0 * atan2(sin_a2, q[WW]);
-   
+
    if (EQUAL_WITHIN_ERROR(0.0,*angle))
    {
       axis->xyz[XX] = 1.0;
@@ -1437,11 +1437,11 @@ static void matrix_to_quat (double m[][4], Quat q)
 void extract_rotation(double m[][4], dpCoord3D* axis, double* angle)
 {
    /* extract matrix rotation in axis-angle format */
-   
+
    Quat q;
-   
+
    matrix_to_quat(m, q);
-   
+
    quat_to_axis_angle_rot(q, axis, angle);
 }
 
@@ -1459,7 +1459,7 @@ void extract_xyz_rot_spacefixed(double m[][4], double xyz_rot[3])
    normalize_vector(mat[2], mat[2]);
 
    xyz_rot[YY] = asin(-mat[0][2]);
-   
+
    if (NOT_EQUAL_WITHIN_ERROR(0.0,cos(xyz_rot[YY])))
    {
       xyz_rot[XX] = atan2(mat[1][2], mat[2][2]);
@@ -1469,7 +1469,7 @@ void extract_xyz_rot_spacefixed(double m[][4], double xyz_rot[3])
    {
       xyz_rot[XX] = atan2(mat[1][0], mat[1][1]);
       xyz_rot[ZZ] = 0.0;
-   } 
+   }
 }
 
 void extract_xyz_rot_bodyfixed(double m[][4], double xyz_rot[3])
@@ -1497,7 +1497,7 @@ void extract_xyz_rot_bodyfixed(double m[][4], double xyz_rot[3])
 #endif
 
    xyz_rot[YY] = asin(mat2[2][0]);
-   
+
    if (NOT_EQUAL_WITHIN_ERROR(0.0,cos(xyz_rot[YY])))
    {
       xyz_rot[XX] = atan2(-mat2[2][1], mat2[2][2]);
@@ -1507,7 +1507,7 @@ void extract_xyz_rot_bodyfixed(double m[][4], double xyz_rot[3])
    {
       xyz_rot[XX] = atan2(mat2[0][1], mat2[1][1]);
       xyz_rot[ZZ] = 0.0;
-   } 
+   }
    /* NOTE: a body-fixed sequence of rotations is equivalent to
     *  the same sequence of space-fixed rotation in the *opposite*
     *  order!!  (see: "Introduction to Robotics, 2nd Ed. by J. Craig,
@@ -1521,7 +1521,7 @@ static void make_quaternion(Quat q, const double axis[3], double angle)
     * (from java-based vecmath package)
     */
    double n, halfAngle;
-  
+
    q[XX] = axis[XX];
    q[YY] = axis[YY];
    q[ZZ] = axis[ZZ];
@@ -1543,7 +1543,7 @@ static void make_quaternion(Quat q, const double axis[3], double angle)
 static void quat_to_matrix (const Quat q, double m[][4])
 {
    /* make a rotation matrix from a quaternion */
-   
+
    double Nq = SQR(q[XX]) + SQR(q[YY]) + SQR(q[ZZ]) + SQR(q[WW]);
    double s = (Nq > 0.0) ? (2.0 / Nq) : 0.0;
 
@@ -1563,11 +1563,11 @@ static void quat_to_matrix (const Quat q, double m[][4])
 static void rotate_matrix_by_quat(double m[][4], const Quat q)
 {
    /* append a quaternion rotation to a matrix */
-   
+
    double n[4][4];
-   
+
    quat_to_matrix(q, n);
-   
+
    append_matrix(m, n);    /* append matrix 'n' onto matrix 'm' */
 }
 
@@ -1593,7 +1593,7 @@ void slerp(const dpCoord3D* axisStart, double angleStart,
 {
    Quat from, to, res;
    double to1[4], omega, cosom, sinom, scale0, scale1;
-   
+
    make_quaternion(from, axisStart->xyz, angleStart);
    make_quaternion(to,   axisEnd->xyz,   angleEnd);
 
@@ -1626,7 +1626,7 @@ void slerp(const dpCoord3D* axisStart, double angleStart,
       scale1 = sin(t * omega) / sinom;
    }
    else
-   {        
+   {
       /* "from" and "to" quaternions are very close, do a linear interpolation */
       scale0 = 1.0 - t;
       scale1 = t;
@@ -1636,7 +1636,7 @@ void slerp(const dpCoord3D* axisStart, double angleStart,
    res[YY] = scale0 * from[YY] + scale1 * to1[YY];
    res[ZZ] = scale0 * from[ZZ] + scale1 * to1[ZZ];
    res[WW] = scale0 * from[WW] + scale1 * to1[WW];
-   
+
    quat_to_axis_angle_rot(res, axisResult, angleResult);
 }
 

@@ -243,7 +243,7 @@ record(const SimTK::State& s)
         // CONVERT TO DEGREES?
         if(getInDegrees()) {
             angVec *= SimTK_RADIAN_TO_DEGREE;
-        }           
+        }
 
         // FILL KINEMATICS ARRAY
         int I=6*i;
@@ -252,7 +252,7 @@ record(const SimTK::State& s)
     }
     _storePos.append(s.getTime(),_bodypos.getSize(),&_bodypos[0]);
 
-    // VELOCITY 
+    // VELOCITY
 
     // ACCELERATIONS
 
@@ -361,7 +361,7 @@ end(SimTK::State& s)
 //_____________________________________________________________________________
 /**
  * Print results.
- * 
+ *
  * The file names are constructed as
  * aDir + "/" + aBaseName + "_" + ComponentName + aExtension
  *

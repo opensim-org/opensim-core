@@ -20,9 +20,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
- *  Below is an example of an OpenSim application that provides its own 
- *  main() routine.  
+/*
+ *  Below is an example of an OpenSim application that provides its own
+ *  main() routine.
  */
 
 //==============================================================================
@@ -34,7 +34,7 @@ using namespace SimTK;
 
 //______________________________________________________________________________
 /**
- * Create a model that does nothing. 
+ * Create a model that does nothing.
  */
 int main()
 {
@@ -77,7 +77,7 @@ int main()
         // Create a new free joint with 6 degrees-of-freedom (coordinates) between the block and ground bodies
         Vec3 locationInParent(0, blockSideLength/2, 0), orientationInParent(0), locationInBody(0), orientationInBody(0);
         FreeJoint *blockToGround = new FreeJoint("blockToGround", ground, locationInParent, orientationInParent, *block, locationInBody, orientationInBody);
-        
+
         // Get a reference to the coordinate set (6 degrees-of-freedom) between the block and ground bodies
         CoordinateSet& jointCoordinateSet = blockToGround->upd_CoordinateSet();
 
@@ -113,7 +113,7 @@ int main()
         Vec3 pointOnBlock(0, 0, 0);
 
         // Create a new constant distance constraint
-        ConstantDistanceConstraint *constDist = new ConstantDistanceConstraint(ground, 
+        ConstantDistanceConstraint *constDist = new ConstantDistanceConstraint(ground,
                                         pointOnGround, *block, pointOnBlock, distance);
 
         // Add the new point on a line constraint to the model
@@ -126,11 +126,11 @@ int main()
         // GRAVITY
         // Obtaine the default acceleration due to gravity
         Vec3 gravity = osimModel.getGravity();
-    
+
 
         // MUSCLE FORCES
         // Create two new muscles with identical properties
-        double maxIsometricForce = 1000.0, optimalFiberLength = 0.25, tendonSlackLength = 0.1, pennationAngle = 0.0; 
+        double maxIsometricForce = 1000.0, optimalFiberLength = 0.25, tendonSlackLength = 0.1, pennationAngle = 0.0;
         Thelen2003Muscle *muscle1 = new Thelen2003Muscle("muscle1",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
         Thelen2003Muscle *muscle2 = new Thelen2003Muscle("muscle2",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
 
@@ -179,7 +179,7 @@ int main()
         slopeAndIntercept1[0] = -1.0/(finalTime-initialTime);  slopeAndIntercept1[1] = 1.0;
         // muscle2 control has slope of 0.95 starting 0.05 at t = 0
         slopeAndIntercept2[0] = 0.95/(finalTime-initialTime);  slopeAndIntercept2[1] = 0.05;
-        
+
         // Set the indiviudal muscle control functions for the prescribed muscle controller
         muscleController->prescribeControlForActuator("muscle1", new LinearFunction(slopeAndIntercept1));
         muscleController->prescribeControlForActuator("muscle2", new LinearFunction(slopeAndIntercept2));
@@ -204,7 +204,7 @@ int main()
         //////////////////////////
         // PERFORM A SIMULATION //
         /////////////////////////
-        
+
         //osimModel.setUseVisualizer(true);
 
         // Initialize the system and get the default state
@@ -217,7 +217,7 @@ int main()
         modelCoordinateSet[3].setSpeedValue(si, 0.0); // set x-speed value
         double h_start = 0.5;
         modelCoordinateSet[4].setValue(si, h_start); // set y-translation which is height
-        
+
         std::cout << "Start height = "<< h_start << std::endl;
 
         osimModel.getMultibodySystem().realize(si, Stage::Velocity);

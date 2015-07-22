@@ -68,7 +68,7 @@ PistonActuator::PistonActuator( string aBodyNameA, string aBodyNameB) :
     if (_model) {
         _bodyA = &_model->updBodySet().get(get_bodyA());
         _bodyB = &_model->updBodySet().get(get_bodyB());
-    } 
+    }
 }
 
 //=============================================================================
@@ -120,7 +120,7 @@ void PistonActuator::setBodyA(Body* aBody)
 }
 //_____________________________________________________________________________
 /**
- * Set the generalized Body to which the equal and opposite Body actuation 
+ * Set the generalized Body to which the equal and opposite Body actuation
  * is applied.
  *
  * @param aBody Pointer to the generalized Body.
@@ -185,7 +185,7 @@ double PistonActuator::getOptimalForce() const
  */
 double PistonActuator::getStress( const SimTK::State& s) const
 {
-    return fabs(getActuation(s)/get_optimal_force()); 
+    return fabs(getActuation(s)/get_optimal_force());
 }
 
 
@@ -197,7 +197,7 @@ double PistonActuator::getStress( const SimTK::State& s) const
  * Compute all quantities necessary for applying the actuator force to the
  * model.
  *
- * @param s current SimTK::State 
+ * @param s current SimTK::State
  */
 
 double PistonActuator::computeActuation( const SimTK::State& s ) const
@@ -219,16 +219,16 @@ double PistonActuator::computeActuation( const SimTK::State& s ) const
  *
  * @param s current SimTK::State
  */
-void PistonActuator::computeForce(const SimTK::State& s, 
+void PistonActuator::computeForce(const SimTK::State& s,
                                     SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                     SimTK::Vector& generalizedForces) const
 {
     if(_model==NULL) return;
     const SimbodyEngine& engine = getModel().getSimbodyEngine();
-    
+
     if(_bodyA ==NULL || _bodyB ==NULL)
         return;
-    
+
     /* store _pointA and _pointB positions in the global frame.  If not
     ** alread in the body frame, transform _pointA and _pointB into their
     ** respective body frames. */
@@ -300,4 +300,4 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
     setBodyA(_bodyA);
     setBodyB(_bodyB);
     setOptimalForce(upd_optimal_force());
-}   
+}

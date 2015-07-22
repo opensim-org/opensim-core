@@ -83,12 +83,12 @@ ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aL
     setNull();
 
     if(aUpdateFromXMLNode) updateFromXMLDocument();
-    if(aLoadModel) { 
-        loadModel(aFileName); 
+    if(aLoadModel) {
+        loadModel(aFileName);
         // Append to or replace model forces with those (i.e. actuators) specified by the analysis
         updateModelForces(*_model, aFileName);
-        setModel(*_model);  
-        setToolOwnsModel(true); 
+        setModel(*_model);
+        setToolOwnsModel(true);
     }
 }
 //_____________________________________________________________________________
@@ -155,7 +155,7 @@ void ForwardTool::setNull()
     // INTERNAL WORK VARIABLES
     _yStore = NULL;
 
-    // Start parsing log as empty. 
+    // Start parsing log as empty.
     _parsingLog="";
 }
 //_____________________________________________________________________________
@@ -208,7 +208,7 @@ void ForwardTool::setupProperties()
 ForwardTool& ForwardTool::
 operator=(const ForwardTool &aTool)
 {
-   
+
     // BASE CLASS
     AbstractTool::operator=(aTool);
 
@@ -245,7 +245,7 @@ bool ForwardTool::run()
     // SET OUTPUT PRECISION
     IO::SetPrecision(_outputPrecision);
 
-    // Do the maneuver to change then restore working directory 
+    // Do the maneuver to change then restore working directory
     // so that the parsing code behaves properly if called from a different directory.
     string saveWorkingDirectory = IO::getCwd();
     string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
@@ -260,7 +260,7 @@ bool ForwardTool::run()
 
     loadStatesStorage(_statesFileName, _yStore);
 
-    // set the desired states for controllers  
+    // set the desired states for controllers
     _model->updControllerSet().setDesiredStates( _yStore );
 
     // INITIAL AND FINAL TIMES AND STATES INDEX
@@ -305,7 +305,7 @@ bool ForwardTool::run()
     }
     // SOLVE FOR EQUILIBRIUM FOR AUXILIARY STATES (E.G., MUSCLE FIBER LENGTHS)
     if(_solveForEquilibriumForAuxiliaryStates) {
-        _model->equilibrateMuscles(s);  
+        _model->equilibrateMuscles(s);
     }
 
 
@@ -338,13 +338,13 @@ bool ForwardTool::run()
     return completed;
 }
 //=============================================================================
-// PRINT RESULTS. 
-// This method needs to be private since it shouldn't be called except from 
+// PRINT RESULTS.
+// This method needs to be private since it shouldn't be called except from
 // within tool::run() otherwise will crash because Manager is out of scope
 //=============================================================================
-void ForwardTool::printResults() 
+void ForwardTool::printResults()
 {
-    // Do the maneuver to change then restore working directory 
+    // Do the maneuver to change then restore working directory
     // so that the parsing code behaves properly if called from a different directory.
     string saveWorkingDirectory = IO::getCwd();
     string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
@@ -362,7 +362,7 @@ void ForwardTool::printResults()
     }
 
 
-    
+
     IO::chDir(saveWorkingDirectory);
 }
 
@@ -489,7 +489,7 @@ SigmaDn(double tau,double to,double t)
 /**
  *  Set the current integration manager
  *
- * @param m   pointer to itegration manager  
+ * @param m   pointer to itegration manager
  */
 
 void ForwardTool::setManager( Manager& m ) {
@@ -516,7 +516,7 @@ const Manager& ForwardTool::getManager() const {
     if(getDocument()) {
         savedCwd = IO::getCwd();
         IO::chDir(IO::getParentDirectory(getDocument()->getFileName()));
-    }   
+    }
     if ( documentVersion < XMLDocument::getLatestVersion()){
             // Now check if we need to create a correction controller to replace springs
         if (documentVersion<10904){

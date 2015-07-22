@@ -361,7 +361,7 @@ void simulateModelWithPassiveMuscles(const string &modelFile, double finalTime)
     for (int i=0; i<muscles.getSize(); ++i){
         muscles[i].setActivation(si, 0); //setDisabled(si, true);
     }
-    osimModel.equilibrateMuscles(si); 
+    osimModel.equilibrateMuscles(si);
 
     const ModelVisualizer& modelViz = osimModel.getVisualizer();
     const Visualizer& viz = modelViz.getSimbodyVisualizer();

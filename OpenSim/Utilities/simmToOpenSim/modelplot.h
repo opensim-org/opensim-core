@@ -521,7 +521,7 @@ STRUCT {
 STRUCT {
    char *name;                /* name of point */
    int segment;               /* index of segment point is on */
-   int floorSegment;          /* index of segment floor is attached to */ 
+   int floorSegment;          /* index of segment floor is attached to */
    double point[3];           /* xyz coordinates of the point */
    double friction;           /* coefficient of friction with floor */
    double param_a;            /* parameters */
@@ -530,7 +530,7 @@ STRUCT {
    double param_d;
    double param_e;
    double param_f;
-   SBoolean visible;          /* is spring point visible? */   
+   SBoolean visible;          /* is spring point visible? */
    SBoolean active;           /* is spring point active? - not used yet */
    double radius;             /* radius used to display/draw point */
 } SpringPoint;
@@ -850,7 +850,7 @@ STRUCT{
     SBoolean flag;
     char* musc_name;
     char* segment_name;
-} DglValueStruct;                  
+} DglValueStruct;
 
 
 STRUCT {                             /* ---- motion object record: */
@@ -1096,7 +1096,7 @@ STRUCT pks {
    int plotnum;                      /*  */
    int numcurves;                    /*  */
    PlotStruct* plot;                 /*  */
-} PlotKeyStruct;    
+} PlotKeyStruct;
 
 
 STRUCT {

@@ -21,9 +21,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
+/*
  * Author:  Frank C. Anderson
- 
+
  */
 
 
@@ -120,7 +120,7 @@ GCVSpline(int aDegree,int aN,const double *aX,const double *aF,
 
     // WEIGHTS
     int i;
-    _weights.setSize(_x.getSize()); 
+    _weights.setSize(_x.getSize());
     int sz = _weights.getSize();
     for(i=0;i<sz;i++) _weights[i] = 1.0;
 
@@ -250,7 +250,7 @@ void GCVSpline::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
     // Weights may not have been specified in the XML file.
     int wSize = _weights.getSize();
     if (wSize < _x.getSize()) {
-        _weights.setSize(_x.getSize()); 
+        _weights.setSize(_x.getSize());
         for (int i=wSize; i<_x.getSize(); i++)
             _weights[i] = 1.0;
     }
@@ -258,7 +258,7 @@ void GCVSpline::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
     // Coefficients may not have been specified in the XML file.
     if (_coefficients.getSize() < _x.getSize())
         _coefficients.setSize(_x.getSize());
-}   
+}
 
 //_____________________________________________________________________________
 /**

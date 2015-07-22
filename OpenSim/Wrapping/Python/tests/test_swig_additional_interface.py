@@ -33,7 +33,7 @@ def test_markAdopted2():
     a.addProbe(osim.Umberger2010MuscleMetabolicsProbe())
     a.addAnalysis(osim.MuscleAnalysis())
     a.addController(osim.PrescribedController())
-    
+
     body = osim.Body('body1',
             1.0,
             osim.Vec3(0, 0, 0),
@@ -76,7 +76,7 @@ def test_markAdopted2():
 
 def test_Joint():
     a = osim.Model()
-    
+
     body = osim.Body('body',
             1.0,
             osim.Vec3(0, 0, 0),
@@ -201,7 +201,7 @@ def test_markAdoptedSets():
     del s
     del o
 
-    # TODO 
+    # TODO
     # s = osim.ProbeSet()
     # o = osim.Umberger2010MuscleMetabolicsProbe()
     # s.adoptAndAppend(o)

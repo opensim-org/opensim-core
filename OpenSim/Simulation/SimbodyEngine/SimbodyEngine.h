@@ -99,7 +99,7 @@ public:
 private:
     void setNull();
     void copyData(const SimbodyEngine &aEngine);
-    
+
 public:
 
 #ifndef SWIG
@@ -170,7 +170,7 @@ public:
 
     double calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1,
         const SimTK::Vec3& aPoint1, const PhysicalFrame& aBody2, const SimTK::Vec3& aPoint2) const;
-    double calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1, 
+    double calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1,
         const double aPoint1[3], const PhysicalFrame& aBody2, const double aPoint2[3]) const;
 
 

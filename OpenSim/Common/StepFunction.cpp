@@ -49,7 +49,7 @@ StepFunction::~StepFunction()
  * Default constructor.
  */
 StepFunction::StepFunction() :
-    _startTime(_startTimeProp.getValueDbl()), 
+    _startTime(_startTimeProp.getValueDbl()),
     _endTime(_endTimeProp.getValueDbl()),
     _startValue(_startValueProp.getValueDbl()),
     _endValue(_endValueProp.getValueDbl())
@@ -63,7 +63,7 @@ StepFunction::StepFunction() :
 /**
  */
 StepFunction::StepFunction(double startTime, double endTime, double startValue, double endValue) :
-    _startTime(_startTimeProp.getValueDbl()), 
+    _startTime(_startTimeProp.getValueDbl()),
     _endTime(_endTimeProp.getValueDbl()),
     _startValue(_startValueProp.getValueDbl()),
     _endValue(_endValueProp.getValueDbl())
@@ -86,7 +86,7 @@ StepFunction::StepFunction(double startTime, double endTime, double startValue, 
  * @param aStepFunction StepFunction object to be copied.
  */
 StepFunction::StepFunction(const StepFunction &aStepFunction) :
-    _startTime(_startTimeProp.getValueDbl()), 
+    _startTime(_startTimeProp.getValueDbl()),
     _endTime(_endTimeProp.getValueDbl()),
     _startValue(_startValueProp.getValueDbl()),
     _endValue(_endValueProp.getValueDbl())
@@ -179,7 +179,7 @@ StepFunction& StepFunction::operator=(const StepFunction &aStepFunction)
 //=============================================================================
 // UTILITY
 //=============================================================================
-SimTK::Function* StepFunction::createSimTKFunction() const 
+SimTK::Function* StepFunction::createSimTKFunction() const
 {
     return new SimTK::Function::Step(_startValue, _endValue, _startTime, _endTime);
 }

@@ -32,7 +32,7 @@ namespace OpenSim {
 //==============================================================================
 //                             MODEL COMPONENT
 //==============================================================================
-ModelComponent::ModelComponent() : _model(NULL) 
+ModelComponent::ModelComponent() : _model(NULL)
 {
     constructProperty_geometry();
 }
@@ -43,7 +43,7 @@ ModelComponent::ModelComponent(const std::string& fileName, bool updFromXMLNode)
     constructProperty_geometry();
 }
 
-ModelComponent::ModelComponent(SimTK::Xml::Element& element) 
+ModelComponent::ModelComponent(SimTK::Xml::Element& element)
 :   Component(element), _model(NULL)
 {
     constructProperty_geometry();
@@ -54,7 +54,7 @@ const Model& ModelComponent::getModel() const
     if(!_model)
         throw Exception("ModelComponent::getModel(): component '" + getName() +
         "' of type " + getConcreteClassName() + " does not belong to a model. "
-            "Have you called Model::initSystem()?"); 
+            "Have you called Model::initSystem()?");
     return *_model;
 }
 
@@ -121,7 +121,7 @@ void ModelComponent::addGeometry(OpenSim::Geometry& geom) {
             else
                 index++;
         }
-        
+
     }
     append_geometry(geom);
     return;

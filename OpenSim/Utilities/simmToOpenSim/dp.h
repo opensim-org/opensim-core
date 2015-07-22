@@ -642,7 +642,7 @@ typedef int (*dpGetVersionFunc)(void);
 
 typedef struct
 {
-   dpInitSimulationFunc dpInitSimulation; 
+   dpInitSimulationFunc dpInitSimulation;
    dpSetModelFunc dpSetModel;
    dpRunSimulationFunc dpRunSimulation;
    dpPauseSimulationFunc dpPauseSimulation;

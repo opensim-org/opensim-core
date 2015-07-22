@@ -141,9 +141,9 @@ public:
     //--------------------------------------------------------------------------
 
     bool getApply() const { return _apply; }
-    void setApply(bool aApply) { 
-        _apply = aApply; 
-        _applyProp.setValueIsDefault(false); 
+    void setApply(bool aApply) {
+        _apply = aApply;
+        _applyProp.setValueIsDefault(false);
     }
 
     MeasurementSet& getMeasurementSet() { return _measurementSet; }

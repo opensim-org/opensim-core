@@ -7198,7 +7198,7 @@
 							<reverse> false </reverse>
 							<SpatialTransform name="">
 								<!--3 Axes for rotations are listed first.-->
-								
+
 								<!--3 Axes for translations are listed next.-->
 								<TransformAxis name="rotation1">
 									<function>
@@ -7228,7 +7228,7 @@
 									<coordinates> </coordinates>
 									<axis>       0.00000000       0.00000000       1.00000000 </axis>
 								</TransformAxis>
-								
+
 								<TransformAxis name="translation1">
 									<function>
 										<Constant name="">

@@ -4,7 +4,7 @@
         <!--Name of the .osim file used to construct a model.-->
         <model_file>arm26.osim</model_file>
         <!--Directory used for writing results.-->
-        <results_directory>Results</results_directory>       
+        <results_directory>Results</results_directory>
         <!--Motion file (.mot) or storage file (.sto) containing the time history
 	          of the generalized coordinates for the model. These can be specified
 	          in place of the states file.-->

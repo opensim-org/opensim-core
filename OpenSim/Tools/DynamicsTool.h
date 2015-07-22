@@ -47,7 +47,7 @@ class Model;
 //=============================================================================
 //=============================================================================
 /**
- * An abstract Tool for defining tools for perfroming a dynamics analysis 
+ * An abstract Tool for defining tools for perfroming a dynamics analysis
  * with a given model. For example, InverseDynamics and ForwardDynamics Tools
  * derive from DynamicsTool, which provides convenient method for performing
  * and dynamics analysis over or to produce a trajectory in time.
@@ -62,7 +62,7 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(DynamicsTool, Tool);
 // MEMBER VARIABLES
 //=============================================================================
 protected:
-    
+
     /** Pointer to the model being investigated. */
     Model *_model;
 
@@ -100,13 +100,13 @@ public:
 
     /** Modify model to exclude specified forces by disabling those identified by name or group */
     void disableModelForces(Model &model, SimTK::State &s, const Array<std::string> &forcesByNameOrGroup);
-    
+
     const ExternalLoads& getExternalLoads() const { return _externalLoads; }
     ExternalLoads& updExternalLoads() { return _externalLoads; }
 
     // External loads get/set
     const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
-    void setExternalLoadsFileName(const std::string &aFileName) { 
+    void setExternalLoadsFileName(const std::string &aFileName) {
         _externalLoadsFileName = aFileName;
         _externalLoadsFileNameProp.setValueIsDefault(false);
     }

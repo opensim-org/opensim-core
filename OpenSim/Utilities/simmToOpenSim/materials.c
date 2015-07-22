@@ -10,7 +10,7 @@
    All rights reserved.
    Portions of this source code are copyrighted by MusculoGraphics, Inc.
 
-   Description: 
+   Description:
 
    Routines:
       read_material
@@ -472,7 +472,7 @@ void make_highlight_mat_display_list(MaterialStruct* mat)
    }
 
    glNewList(mat->highlighted_list, GL_COMPILE);
- 
+
    if (mat->diffuse[3] < 1.0)
    {
       glEnable(GL_BLEND);
@@ -519,7 +519,7 @@ ReturnCode read_material(ModelStruct* ms, FILE* fp)
    char name[CHARBUFFER];
 
    if (fscanf(fp, "%s", name) != 1)
-   { 
+   {
       error(abort_action, "Error reading name in material definition");
       return code_bad;
    }
@@ -1038,10 +1038,10 @@ FileReturnCode lookup_texture_coord_file(PolyhedronStruct* ph, char filename[], 
 /* -------------------------------------------------------------------------
    read_tiff_image - read the specified TIFF file into memory as a 32-bit
        RGBA image.
-       
+
    NOTE: if 'image' is NULL, then the image is not actually read, only the
        width and height of the image are returned.
-       
+
    NOTE: it is the caller's responsibility to deallocated the image when it
        finished with it.
 ---------------------------------------------------------------------------- */

@@ -4,7 +4,7 @@
 % for more information. OpenSim is developed at Stanford University       %
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
-%                                                                         %   
+%                                                                         %
 % Copyright (c) 2005-2012 Stanford University and the Authors             %
 % Author(s): Dominic Farris                                               %
 %                                                                         %
@@ -12,7 +12,7 @@
 % you may not use this file except in compliance with the License.        %
 % You may obtain a copy of the License at                                 %
 % http://www.apache.org/licenses/LICENSE-2.0.                             %
-%                                                                         % 
+%                                                                         %
 % Unless required by applicable law or agreed to in writing, software     %
 % distributed under the License is distributed on an "AS IS" BASIS,       %
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
@@ -20,7 +20,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-% prescribeMotionInModel.m                                                        
+% prescribeMotionInModel.m
 % Author: Dominic Farris
 
 function prescribeMotionInModel(Model_In, Mot_In, Model_Out)
@@ -53,15 +53,15 @@ if nargin < 1
     [Mot_In, motpath] = uigetfile('.mot', 'Please select a motion file');
     fileoutpath = [Model_In(1:end-5),'_Prescribed.osim'];
     modelfilepath = [modelpath Model_In];
-    motfilepath = [motpath Mot_In];    
+    motfilepath = [motpath Mot_In];
 elseif nargin < 2
     [Mot_In, motpath] = uigetfile('.mot', 'Please select a motion file');
-    fileoutpath = [Model_In(1:end-5),'_Prescribed.osim'];  
-    motfilepath = [motpath Mot_In];       
-    modelfilepath = Model_In;    
+    fileoutpath = [Model_In(1:end-5),'_Prescribed.osim'];
+    motfilepath = [motpath Mot_In];
+    modelfilepath = Model_In;
 elseif nargin < 3
     fileoutpath = [Model_In(1:end-5),'_Prescribed.osim'];
-    modelfilepath = Model_In;    
+    modelfilepath = Model_In;
     motfilepath = Mot_In;
 else
     modelfilepath = Model_In;
@@ -84,7 +84,7 @@ nCoords = modelCoordSet.getSize();
 
 % for all coordinates in the model, create a function and prescribe
 for i=0:nCoords-1
-    
+
     % construct ArrayDouble objects for time and coordinate values
     Time=ArrayDouble();
     coordvalue = ArrayDouble();
@@ -94,14 +94,14 @@ for i=0:nCoords-1
 
     % Get the Time stamps and Coordinate values
     coordinateSto.getTimeColumn(Time);
-    coordinateSto.getDataColumn(currentcoord.getName(),coordvalue); 
-    
+    coordinateSto.getDataColumn(currentcoord.getName(),coordvalue);
+
     % Check if it is a rotational or translational coordinate
     motion = currentcoord.getMotionType();
-    
+
     % construct a SimmSpline object (previously NaturalCubicSpline)
     Spline = SimmSpline();
-    
+
     %Now to write Time and coordvalue to Spline
     if strcmp(motion,'Rotational')
         % if the motion type is rotational we must convert to radians from degrees

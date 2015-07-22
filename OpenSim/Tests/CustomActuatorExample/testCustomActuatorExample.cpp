@@ -43,7 +43,7 @@ int main()
         cout << "spring actuated leg states degrees passed\n";
 
         Array<double> forceTol(1.0, 2); // piston actuator has a tolerance of 1N
-        forceTol[1] = 5.0; // spring has a tolerance of 5N 
+        forceTol[1] = 5.0; // spring has a tolerance of 5N
 
         Storage result2("actuator_forces.mot"), standard2("std_actuator_forces.mot");
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, forceTol, __FILE__, __LINE__, "actuator forces failed");

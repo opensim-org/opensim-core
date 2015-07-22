@@ -64,7 +64,7 @@ int main()
                 std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getName() << std::endl;
                 numComponents++;
         }
-        
+
         ComponentList<OpenSim::Body> bodiesList = model.getComponentList<OpenSim::Body>();
         int numBodies = 0;
         std::cout << "Bodies list begin: " << bodiesList.begin()->getName() << std::endl;
@@ -91,7 +91,7 @@ int main()
             std::cout << "Iterator is at muscle: " << muscle.getName() << std::endl;
             numMuscles++;
         }
-        
+
         int numGeomPaths = 0;
         ComponentList<GeometryPath> geomPathList = model.getComponentList<GeometryPath>();
         for (const GeometryPath& gpath : geomPathList) {
@@ -118,7 +118,7 @@ int main()
         int numJointsWithStateVariables = 0;
         ComponentList<Joint> jointsWithStates = model.getComponentList<Joint>();
         ComponentWithStateVariables myFilter;
-        jointsWithStates.setFilter(myFilter); 
+        jointsWithStates.setFilter(myFilter);
         for (const Joint& comp : jointsWithStates) {
             cout << comp.getConcreteClassName() << ":" << comp.getName() << endl;
             numJointsWithStateVariables++;
@@ -140,7 +140,7 @@ int main()
             countSkipComponent++;
         }
 
-        ASSERT(numComponents == 73); 
+        ASSERT(numComponents == 73);
         ASSERT(numBodies == model.getNumBodies());
         ASSERT(numBodiesPost == numBodies);
         ASSERT(numMuscles == model.getMuscles().getSize());

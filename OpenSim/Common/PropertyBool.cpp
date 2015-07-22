@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -45,7 +45,7 @@ using namespace std;
 /**
  * Constructor.
  */
-PropertyBool::PropertyBool(const string &aName,bool aValue) 
+PropertyBool::PropertyBool(const string &aName,bool aValue)
 :   Property_Deprecated(Property_Deprecated::Bool,aName)
 {
     _value = aValue;
@@ -55,7 +55,7 @@ PropertyBool::PropertyBool(const string &aName,bool aValue)
 /**
  * Default Constructor.
  */
-PropertyBool::PropertyBool() 
+PropertyBool::PropertyBool()
 :   Property_Deprecated(Property_Deprecated::Bool,"BoolPropertyName")
 {
     _value = false;
@@ -67,7 +67,7 @@ PropertyBool::PropertyBool()
  *
  * @param aProperty Property to be copied.
  */
-PropertyBool::PropertyBool(const PropertyBool &aProperty) 
+PropertyBool::PropertyBool(const PropertyBool &aProperty)
 :   Property_Deprecated(aProperty)
 {
     _value = aProperty.getValueBool();

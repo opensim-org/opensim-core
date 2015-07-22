@@ -33,7 +33,7 @@ class Model;
 //=============================================================================
 //=============================================================================
 /**
- * An OpenSim::Body is a PhysicalFrame (reference frame) with associated 
+ * An OpenSim::Body is a PhysicalFrame (reference frame) with associated
  * inertia specified by its mass, center-of-mass located in the PhysicalFrame,
  * and its moment of inertia tensor about the center-of-mass.
  *
@@ -46,16 +46,16 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
+    /** @name Property declarations
     These are the serializable properties associated with a Body. **/
     /**@{**/
-    OpenSim_DECLARE_PROPERTY(mass, double, 
+    OpenSim_DECLARE_PROPERTY(mass, double,
         "The mass of the body (kg)");
 
-    OpenSim_DECLARE_PROPERTY(mass_center, SimTK::Vec3, 
+    OpenSim_DECLARE_PROPERTY(mass_center, SimTK::Vec3,
         "The location (Vec3) of the mass center in the body frame.");
 
-    OpenSim_DECLARE_PROPERTY(inertia, SimTK::Vec6, 
+    OpenSim_DECLARE_PROPERTY(inertia, SimTK::Vec6,
         "The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] "
         "measured about the mass_center and not the body origin.");
     /**@}**/
@@ -71,7 +71,7 @@ public:
     /** default contructor*/
     Body();
 
-    /** Convenience constructor */  
+    /** Convenience constructor */
     Body(const std::string &aName, double aMass, const SimTK::Vec3& aMassCenter,
         const SimTK::Inertia& aInertia);
 
@@ -90,7 +90,7 @@ public:
     const SimTK::Inertia& getInertia() const;
     void setInertia(const SimTK::Inertia& aInertia);
 
-    /** Assemble body interial properties: mass, center of mass location, moment 
+    /** Assemble body interial properties: mass, center of mass location, moment
         of inertia about the origin of the body and return as
         SimTK::MassProperties.
      */
@@ -129,11 +129,11 @@ private:
     }
 
     /** Convert old format Geometry version 3.2 to recent 4.0 format */
-    void convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& aNode, 
-                                             const SimTK::Vec3& outerScaleFactors, 
-                                             const SimTK::Vec6& outerTransform, 
+    void convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& aNode,
+                                             const SimTK::Vec3& outerScaleFactors,
+                                             const SimTK::Vec6& outerTransform,
                                              SimTK::Xml::Element& geomSetElement) const;
-    void createFrameForXform(const SimTK::Xml::element_iterator&, const std::string& frameName, 
+    void createFrameForXform(const SimTK::Xml::element_iterator&, const std::string& frameName,
                                             const SimTK::Vec6& localXform, const std::string& bodyName) const;
     // mutable because fist get constructs tensor from properties
     mutable SimTK::Inertia _inertia;
@@ -143,7 +143,7 @@ private:
     // Internal use for a Master body. Differs from its public MassProperties
     // which is the "effective" mass of the Body including internal slave
     // Bodies. This is just the Rigid::Body of an individual master/ slave body,
-    // which will differ ONLY if there are slaves of a composite (master) Body 
+    // which will differ ONLY if there are slaves of a composite (master) Body
     // used to break loops.
     SimTK::Body::Rigid _internalRigidBody;
 

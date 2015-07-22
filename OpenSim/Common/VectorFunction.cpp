@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -234,7 +234,7 @@ setMinX(int aXIndex, double aMinX)
 //_____________________________________________________________________________
 /**
  * Get the minimum values of the independent variables.
- * 
+ *
  * @param aXIndex Index of the independent variable value to be set.
  * @return Array of minimum values of the independent variables.
  */

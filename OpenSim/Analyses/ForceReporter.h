@@ -39,7 +39,7 @@
 #endif
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * A class for recording the Forces applied to a model
@@ -71,7 +71,7 @@ protected:
 public:
     ForceReporter(Model *aModel=0);
     ForceReporter(const std::string &aFileName);
-    // Copy constrctor and virtual copy 
+    // Copy constrctor and virtual copy
     ForceReporter(const ForceReporter &aObject);
     virtual ~ForceReporter();
 

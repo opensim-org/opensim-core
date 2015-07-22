@@ -96,7 +96,7 @@ BodyKinematics::BodyKinematics(const std::string &aFileName):
 
 }
 
-// Copy constrctor and virtual copy 
+// Copy constrctor and virtual copy
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -311,7 +311,7 @@ updateBodiesToRecord()
             continue;
         }
         int index = bs.getIndex(_bodies[i]);
-        if(index<0) 
+        if(index<0)
             throw Exception("BodyKinematics: ERR- Cound not find body named '"+_bodies[i]+"'",__FILE__,__LINE__);
         _bodyIndices.append(index);
     }
@@ -406,7 +406,7 @@ setStorageCapacityIncrements(int aIncrement)
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set a flag indicating that the angular velocities should be output in the 
+ * Set a flag indicating that the angular velocities should be output in the
  * the body local reference frame.
  *
  * @param aTrueFalse  False will result in the angular velocities being output
@@ -419,7 +419,7 @@ setExpressResultsInLocalFrame(bool aTrueFalse)
 }
 
 /**
- * Get a flag indicating whether the angular velocities should be output in the 
+ * Get a flag indicating whether the angular velocities should be output in the
  * the body local reference frame.
  *
  * @param rTrueFalse  False indicates the angular velocities being output
@@ -443,7 +443,7 @@ int BodyKinematics::
 record(const SimTK::State& s)
 {
 
-    // Realize to Acceleration first since we'll ask for Accelerations 
+    // Realize to Acceleration first since we'll ask for Accelerations
     _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
     // VARIABLES
     double dirCos[3][3];
@@ -470,7 +470,7 @@ record(const SimTK::State& s)
             angVec[0] *= SimTK_RADIAN_TO_DEGREE;
             angVec[1] *= SimTK_RADIAN_TO_DEGREE;
             angVec[2] *= SimTK_RADIAN_TO_DEGREE;
-        }           
+        }
 
         // FILL KINEMATICS ARRAY
         int I=6*i;
@@ -498,7 +498,7 @@ record(const SimTK::State& s)
         int I = 6*_bodyIndices.getSize();
         memcpy(&_kin[I],rP,3*sizeof(double));
     }
-    
+
     _pStore->append(s.getTime(),_kin.getSize(),&_kin[0]);
 
     // VELOCITY
@@ -519,7 +519,7 @@ record(const SimTK::State& s)
             angVec[0] *= SimTK_RADIAN_TO_DEGREE;
             angVec[1] *= SimTK_RADIAN_TO_DEGREE;
             angVec[2] *= SimTK_RADIAN_TO_DEGREE;
-        }           
+        }
 
         // FILL KINEMATICS ARRAY
         int I = 6*i;
@@ -567,7 +567,7 @@ record(const SimTK::State& s)
             angVec[0] *= SimTK_RADIAN_TO_DEGREE;
             angVec[1] *= SimTK_RADIAN_TO_DEGREE;
             angVec[2] *= SimTK_RADIAN_TO_DEGREE;
-        }           
+        }
 
         // FILL KINEMATICS ARRAY
         int I = 6*i;
@@ -604,7 +604,7 @@ record(const SimTK::State& s)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration 
+ * This method is meant to be called at the begining of an integration
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -638,7 +638,7 @@ begin(SimTK::State& s )
  * the execution of a forward integrations or after the integration by
  * feeding it the necessary data.
  *
- * When called during an integration, this method is meant to be called 
+ * When called during an integration, this method is meant to be called
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -662,7 +662,7 @@ step(const SimTK::State& s, int stepNumber)
  * This method is called at the end of an analysis so that any
  * necessary finalizations may be performed.
  *
- * This method is meant to be called at the end of an integration 
+ * This method is meant to be called at the end of an integration
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -691,7 +691,7 @@ end(SimTK::State& s )
 //_____________________________________________________________________________
 /**
  * Print results.
- * 
+ *
  * The file names are constructed as
  * aDir + "/" + aBaseName + "_" + ComponentName + aExtension
  *

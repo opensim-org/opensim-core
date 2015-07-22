@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
+/*
  *  Below is an example of an OpenSim application that loads an OpenSim model
  *  and visualize it in the API visualizer.
  */
@@ -37,7 +37,7 @@ using namespace SimTK;
 using namespace std;
 //______________________________________________________________________________
 /**
- * First exercise: create a model that does nothing. 
+ * First exercise: create a model that does nothing.
  */
 int main(int argc, char **argv)
 {

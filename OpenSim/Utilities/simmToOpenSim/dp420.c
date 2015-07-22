@@ -343,17 +343,17 @@ void freeDP420ModelStruct(dp420ModelStruct* dp)
 
 static dp420WrapObject* getDP420WrapObject(dp420ModelStruct* dp, char name[])
 {
-   
+
    int i;
-   
+
    if (name == NULL)
       return NULL;
-   
+
    for (i = 0; i < dp->num_wrap_objects; i++)
       if (STRINGS_ARE_EQUAL(name, dp->wrap_object[i].name))
          return &dp->wrap_object[i];
-      
-   return NULL; 
+
+   return NULL;
 }
 
 static void copyConstraintsToDP420Constraints(ModelStruct* ms, dp420ModelStruct* dp)
@@ -638,7 +638,7 @@ static void copyQsToDP420(ModelStruct* ms, dp420ModelStruct* dp)
          q->output = dpYes;
 
       q->torque = 0.0;
-      
+
       if (q->type == dpUnconstrainedQ)
          dp->num_gencoords++;
    }

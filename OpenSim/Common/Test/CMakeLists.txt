@@ -13,8 +13,8 @@ foreach(TEST_PROG ${TEST_PROGS})
     add_executable(${TEST_ROOT} ${TEST_PROG})
     target_link_libraries(${TEST_ROOT} ${LINK_LIBRARIES} )
     add_test(${TEST_ROOT} ${EXECUTABLE_OUTPUT_PATH}/${TEST_ROOT})
-    set_target_properties(${TEST_ROOT} 
-        PROPERTIES 
+    set_target_properties(${TEST_ROOT}
+        PROPERTIES
         PROJECT_LABEL "Tests - ${TEST_ROOT}")
     # message( "Adding test "${TEST_PROG} )
 
@@ -34,5 +34,5 @@ foreach(dataFile ${TEST_FILES})
     ${dataFile}
     ${OpenSim_BINARY_DIR}/OpenSim/Common/Test)
     # message( "IN file "${dataFile} )
- endforeach(dataFile) 
+ endforeach(dataFile)
 

@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
-* Author: Frank C. Anderson 
+/*
+* Author: Frank C. Anderson
 */
 
 #include <OpenSim/Common/Array.h>
@@ -32,12 +32,12 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
 * An abstract class for representing a vector function.
 *
-* A vector function is a relation between some number of independent variables 
+* A vector function is a relation between some number of independent variables
 * and some number of dependent values such that for any particular set of
 * independent variables the correct number of dependent variables is returned.
 * Values of the function and its derivatives
@@ -50,7 +50,7 @@ namespace OpenSim {
 * @author Frank C. Anderson
 */
 class ExampleVectorFunctionUncoupledNxN : public VectorFunctionUncoupledNxN {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ExampleVectorFunctionUncoupledNxN, 
+    OpenSim_DECLARE_CONCRETE_OBJECT(ExampleVectorFunctionUncoupledNxN,
                                     VectorFunctionUncoupledNxN);
     //==========================================================================
     // DATA
@@ -134,7 +134,7 @@ public:
             // sin test function
             rY[i] = sum * sin(aX[i] - root);
             // parabolic test function
-            //rY[i] = sum *aX[i]*aX[i]*aX[i] - sum*root*root*root; 
+            //rY[i] = sum *aX[i]*aX[i]*aX[i] - sum*root*root*root;
         }
     }
     virtual void calcValue(const Array<double> &aX,Array<double> &rY){

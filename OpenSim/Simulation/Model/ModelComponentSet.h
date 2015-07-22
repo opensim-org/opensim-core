@@ -75,11 +75,11 @@ public:
      *
      * @param[in]   model       The Model to which this set is associated.
      * @param[in]   fileName    Name of the file.
-     * @param[in]   aUpdateFromXMLNode  
+     * @param[in]   aUpdateFromXMLNode
      *                          (Advanced) Used to avoid duplicate XML parsing.
      */
-    ModelComponentSet(Model& model, const std::string& fileName, 
-                      bool aUpdateFromXMLNode = true) 
+    ModelComponentSet(Model& model, const std::string& fileName,
+                      bool aUpdateFromXMLNode = true)
     :   Set<T>(fileName, aUpdateFromXMLNode), _model(&model)
     {
     }
@@ -144,7 +144,7 @@ public:
 
     /**
      * Set the Model this object is part of and allow each contained
-     * ModelComponent to connect itself to the Model by invoking its 
+     * ModelComponent to connect itself to the Model by invoking its
      * connectToModel() method.
      * @see ModelComponent::connectToModel()
      */
@@ -177,13 +177,13 @@ public:
             static_cast<ModelComponent&>(Set<T>::get(i)).setPropertiesFromState(state);
     }
 
-    /** 
-     * Invoke generateDecorations() on each of the contained 
-     * ModelComponent objects. 
+    /**
+     * Invoke generateDecorations() on each of the contained
+     * ModelComponent objects.
      * @see ModelComponent::generateDecorations()
      */
     virtual void invokeGenerateDecorations
-       (bool                                        fixed, 
+       (bool                                        fixed,
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const

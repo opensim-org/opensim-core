@@ -27,7 +27,7 @@
 // INCLUDES
 //=============================================================================
 #include "ToyReflexController.h"
-#include <OpenSim/Simulation/Model/Muscle.h> 
+#include <OpenSim/Simulation/Model/Muscle.h>
 
 // This allows us to use OpenSim functions, classes, etc., without having to
 // prefix the names of those things with "OpenSim::".
@@ -70,7 +70,7 @@ void ToyReflexController::extendConnectToModel(Model &model)
     Set<Actuator>& actuators = updActuators();
 
     int cnt=0;
- 
+
     while(cnt < actuators.getSize()){
         Muscle *musc = dynamic_cast<Muscle*>(&actuators[cnt]);
         // control muscles only
@@ -94,7 +94,7 @@ void ToyReflexController::extendConnectToModel(Model &model)
  * @param controls  system wide controls to which this controller can add
  */
 void ToyReflexController::computeControls(const State& s, Vector &controls) const
-{   
+{
     // get time
     double time = s.getTime();
 
@@ -111,7 +111,7 @@ void ToyReflexController::computeControls(const State& s, Vector &controls) cons
     for(int i=0; i<actuators.getSize(); ++i){
         const Muscle *musc = dynamic_cast<const Muscle*>(&actuators[i]);
         speed = musc->getLengtheningSpeed(s);
-        // unnormalize muscle's maximum contraction velocity (fib_lengths/sec) 
+        // unnormalize muscle's maximum contraction velocity (fib_lengths/sec)
         max_speed = musc->getOptimalFiberLength()*musc->getMaxContractionVelocity();
         control = 0.5*get_gain()*(fabs(speed)+speed)/max_speed;
 

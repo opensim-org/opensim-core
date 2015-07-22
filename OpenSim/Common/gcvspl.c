@@ -137,7 +137,7 @@
   lower spline derivatives will tend to be reliable estim-
   ates of the underlying signal's true derivatives.
 
-  (5) GCVSPL combines elements of subroutine CRVO5 by Utreras 
+  (5) GCVSPL combines elements of subroutine CRVO5 by Utreras
   (1980), subroutine SMOOTH by Lyche et al. (1983), and
   subroutine CUBGCV by Hutchinson (1985). The trace of the
   influence matrix is assessed in a similar way as described
@@ -247,14 +247,14 @@ void gcvspl(double *x, double *y, double *w, int m, int n,
    Compute the design matrices B and WE, their L1-norms,
    and check for zero variance
 */
-    basis(m, n, x, wk+ib-1, &bl, wk+ibwe-1) ;   
-    prep(m, n, x, w, wk+iwe-1, &el) ;           
+    basis(m, n, x, wk+ib-1, &bl, wk+ibwe-1) ;
+    prep(m, n, x, w, wk+iwe-1, &el) ;
     el /= bl ;
 
     if (var == zero)
     {
       /*
-         Calculate final spline coefficients 
+         Calculate final spline coefficients
       */
         r1 = zero ;
         gf1 = splc(m, n, y, w, var, r1, eps, c,
@@ -1086,13 +1086,13 @@ void bandet(double *e, int m, int n)
   This subroutine solves a system of linear equations given an LU
   decomposition of the design matrix. Such a decomposition is pro-
   vided by subroutine BANDET, in vectorized form. It is assumed
-  that the system is not singular. 
+  that the system is not singular.
 
  Calling convention:
  ******************
 
  void bansol(double *e, double *y, double *c, int m, int n)
- 
+
  Meaning of parameters:
  *********************
 
@@ -1408,7 +1408,7 @@ double splder(int ider, int m, int n, double t, double *x,
        Search for the interval value L
     */
     search(n, x, t, l) ;
-    
+
     /*
        Initialize parameters and the first row of the B-Spline
        coefficients tableau
@@ -1611,7 +1611,7 @@ double splder(int ider, int m, int n, double t, double *x,
   T      ( I ) Input argument whose knot interval is to
                be found.
   L      (I/O) Knot interval parameter. The search procedure
-               is facilitated if L has approximately the    
+               is facilitated if L has approximately the
                right value on entry.
 
  Remark:
@@ -1716,6 +1716,6 @@ void search(int n, double *x, double t, int *l)
      }
     /*
       ready
-    */  
+    */
 }
 

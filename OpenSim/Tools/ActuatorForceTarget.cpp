@@ -123,7 +123,7 @@ setStressTermWeight(double aWeight)
 bool ActuatorForceTarget::
 prepareToOptimize(SimTK::State& s, double *x)
 {
-    // Keep around a "copy" of the state so we can use it in objective function 
+    // Keep around a "copy" of the state so we can use it in objective function
     // in cases where we're tracking states
     _saveState = s;
 #ifdef USE_PRECOMPUTED_PERFORMANCE_MATRICES
@@ -156,7 +156,7 @@ prepareToOptimize(SimTK::State& s, double *x)
     }
 
 #ifdef USE_LAPACK_DIRECT_SOLVE
-    // 
+    //
     // Try to solve using lapack
     //
     int Am = nacc+nf;
@@ -166,7 +166,7 @@ prepareToOptimize(SimTK::State& s, double *x)
         _lapackB = new double[Am];
         _lapackSingularValues = new double[Am];
         // based on lapack documentation but multiplied by 10 to make it bigger yet (they recommended it be bigger than the minimum)
-        _lapackLWork = 10*(3*Am + max(2*nf,Am)); 
+        _lapackLWork = 10*(3*Am + max(2*nf,Am));
         _lapackWork = new double[_lapackLWork];
     }
 

@@ -152,9 +152,9 @@ std::vector<std::vector<int> > SpatialTransform::getCoordinateIndices() const
             if (ind > -1)
                 findex[j] = ind;
         }
-        coordIndices[i] = findex;   
+        coordIndices[i] = findex;
     }
-    
+
     return coordIndices;
 }
 std::vector<const SimTK::Function*> SpatialTransform::getFunctions() const
@@ -200,7 +200,7 @@ void SpatialTransform::scale(const SimTK::Vec3 scaleFactors)
             MultiplierFunction* mf = dynamic_cast<MultiplierFunction*>(&function);
             if (mf) {
                 mf->setScale(mf->getScale() * scaleFactor);
-            } 
+            }
             else {
                 mf = new MultiplierFunction();
                 mf->setScale(scaleFactor);
@@ -213,8 +213,8 @@ void SpatialTransform::scale(const SimTK::Vec3 scaleFactors)
     }
 }
 /**
- * constructIndependentAxes checks if the TransformAxis at indices startIndex, 
- * startIndex+1, startIndex+2 
+ * constructIndependentAxes checks if the TransformAxis at indices startIndex,
+ * startIndex+1, startIndex+2
  * are independent and fixes them otherwise. It assumes that the first nAxes are ok
  */
 void SpatialTransform::constructIndependentAxes(int nAxes, int startIndex)
@@ -235,6 +235,6 @@ void SpatialTransform::constructIndependentAxes(int nAxes, int startIndex)
         v2 = getTransformAxis(1+startIndex).getAxis();
         SimTK::Vec3 cross= (v2 % v1);
         cross.normalize();
-        updTransformAxis(2+startIndex).setAxis(cross);  
+        updTransformAxis(2+startIndex).setAxis(cross);
     }
 }

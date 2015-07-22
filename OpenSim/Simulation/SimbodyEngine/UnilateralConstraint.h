@@ -45,7 +45,7 @@ class SimbodyEngine;
 //=============================================================================
 /**
  * An abstract class defining an OpenSim UnilateralConstraint.
- * Specific UnilateralConstraints should be derived from this class. 
+ * Specific UnilateralConstraints should be derived from this class.
  *
  * It is expeced that constraints used to model contact will be unilateral.
  * Furthermore, complex contact constraints can themselves employ several

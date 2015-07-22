@@ -40,9 +40,9 @@ int main() {
     catch (const std::exception& e)
         {  cout << e.what() <<endl; failures.push_back("testArm26"); }
 
-    // redo with the Millard2012EquilibriumMuscle 
+    // redo with the Millard2012EquilibriumMuscle
     Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
-    
+
     try {testArm26();}
     catch (const std::exception& e)
         {  cout << e.what() <<endl; failures.push_back("testArm26_Millard"); }
@@ -80,9 +80,9 @@ void testArm26() {
         rms_tols[14] = 0.05;
     }
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, 
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__,
         base+" failed");
 
-    
+
     cout << "\n" << base <<" passed\n" << endl;
 }

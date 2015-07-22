@@ -33,8 +33,8 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a collection of rolling-without-slipping and 
- * non-penetration constraints on a surface.  
+ * A class implementing a collection of rolling-without-slipping and
+ * non-penetration constraints on a surface.
  * The underlying Constraints in Simbody are:
  *      PointInPlane to oppose penetration into the ground (unitlaterally)
  *      ConstantAngle about the normal to the enforce no twisting
@@ -47,14 +47,14 @@ namespace OpenSim {
  * that they generate indiviudally and collectively:
  *   PointInPlane normal force (Fn) must be positive (in the direction of the normal)
  *   ConstantAngle the reaction torque cannnot exceed contactRadius*mu*Fn
- *   Both NoSlip conditions are treated together, the magnitude of the combined  
+ *   Both NoSlip conditions are treated together, the magnitude of the combined
  *   reaction forces (in the plane) cannot exceed mu*Fn
 
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API RollingOnSurfaceConstraint 
+class OSIMSIMULATION_API RollingOnSurfaceConstraint
 :   public UnilateralConstraint {
-OpenSim_DECLARE_CONCRETE_OBJECT(RollingOnSurfaceConstraint, 
+OpenSim_DECLARE_CONCRETE_OBJECT(RollingOnSurfaceConstraint,
                                 UnilateralConstraint);
 
 //=============================================================================
@@ -138,7 +138,7 @@ public:
     std::vector<bool> unilateralConditionsSatisfied(const SimTK::State& state) override;
 
 
-    /** Set whether constraint is enabled or disabled but use cached values for 
+    /** Set whether constraint is enabled or disabled but use cached values for
         unilateral conditions instead of automatic reevaluation */
     bool setDisabledWithCachedUnilateralConditions(bool isDisabled,
         SimTK::State& state){
@@ -176,7 +176,7 @@ private:
     /** Construct RollingOnSurfaceConstraint's connectors */
     void constructConnectors() override;
 
-    // References to the PhysicalFrames on the 
+    // References to the PhysicalFrames on the
     SimTK::ReferencePtr<const PhysicalFrame> _rollingFrame;
     SimTK::ReferencePtr<const PhysicalFrame> _surfaceFrame;
 

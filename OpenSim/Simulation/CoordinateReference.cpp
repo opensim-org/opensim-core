@@ -57,9 +57,9 @@ CoordinateReference::CoordinateReference(const std::string name, Function &refer
 
 // Copy constructor
 CoordinateReference::CoordinateReference(const CoordinateReference& source)
-:   Super(source), 
+:   Super(source),
     _coordinateValueFunction(_coordinateValueFunctionProp.getValueObjPtrRef()),
-    _defaultWeight(_defaultWeightProp.getValueDbl()) 
+    _defaultWeight(_defaultWeightProp.getValueDbl())
 {
     copyData(source);
 }

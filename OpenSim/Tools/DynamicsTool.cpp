@@ -165,7 +165,7 @@ DynamicsTool& DynamicsTool::operator=(const DynamicsTool &aTool)
 
 /** Modify model to exclude specified forces by disabling those identified by name or group */
 void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array<std::string> &forcesByNameOrGroup)
-{   
+{
     ForceSet &modelForces = model.updForceSet();
     Array<string> groupNames;
     modelForces.getGroupNames(groupNames);
@@ -195,10 +195,10 @@ void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array
         }
 
         // index result when a name is not a force or group name for forces in the model
-        int k = -1;  
+        int k = -1;
         // It is possible to set ACTUATORS and/or MUSCLES and other forces by name or group
         // So check what else is in the list.
-        // see if name is a group name first    
+        // see if name is a group name first
         if(groupNames.getSize() > 0){
             k = groupNames.findIndex(forcesByNameOrGroup[i]);
             if(k > -1){ //found
@@ -228,7 +228,7 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         return false;
     }
 
-    // This is required so that the references to other files inside ExternalLoads file are interpretted 
+    // This is required so that the references to other files inside ExternalLoads file are interpretted
     // as relative paths
     std::string savedCwd = IO::getCwd();
     IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
@@ -248,9 +248,9 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     _externalLoads.invokeConnectToModel(aModel);
 
     string loadKinematicsFileName = _externalLoads.getExternalLoadsModelKinematicsFileName();
-    
+
     const Storage *loadKinematicsForPointTransformation = NULL;
-    
+
     //If the the Tool is already loading the storage allow it to pass it in for use rather than reloading and processing
     if(loadKinematics && loadKinematics->getName() == loadKinematicsFileName){
         loadKinematicsForPointTransformation = loadKinematics;
@@ -263,7 +263,7 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
             temp = new Storage(loadKinematicsFileName);
             if(!temp){
                 IO::chDir(savedCwd);
-                throw Exception("DynamicsTool: could not find external loads kinematics file '"+loadKinematicsFileName+"'."); 
+                throw Exception("DynamicsTool: could not find external loads kinematics file '"+loadKinematicsFileName+"'.");
             }
         }
         // if loading the data, do whatever filtering operations are also specified
@@ -274,12 +274,12 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         }
         loadKinematicsForPointTransformation = temp;
     }
-    
+
     // if load kinematics for performing re-expressing the point of application is provided
     // then perform the transformations
     if(loadKinematicsForPointTransformation){
         SimTK::State& s = aModel.initSystem();
-        
+
         // Form complete storage so that the kinematics match the state labels/ordering
         Storage *qStore=NULL;
         Storage *uStore=NULL;
@@ -292,7 +292,7 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         delete qStore;
         delete uStore;
     }
-    
+
     // Add external loads to the set of all model forces
     for(int i=0; i<_externalLoads.getSize(); ++i){
         aModel.updForceSet().adoptAndAppend(&_externalLoads[i]);

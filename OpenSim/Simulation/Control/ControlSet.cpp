@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -80,7 +80,7 @@ ControlSet::ControlSet(const string &aFileName) :
     Set<Control>(aFileName, false), _ptcMap(-1), _ptpMap(-1)
 {
     setNull();
-    SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
+    SimTK::Xml::Element e = updDocument()->getRootDataElement();
     updateFromXMLNode(e, getDocument()->getDocumentVersion());
     // removeInvalidObjects();
     generateParameterMaps();
@@ -177,7 +177,7 @@ setupProperties()
 #ifndef SWIG
 ControlSet& ControlSet::
 operator=(const ControlSet &aSet)
-{   
+{
     // BASE CLASS
     Set<Control>::operator=(aSet);
 
@@ -203,7 +203,7 @@ operator=(const ControlSet &aSet)
  *
  * @param aForModelControls Flag indicating whether or not to get the size
  * for only model controls or all controls in the set.  Model controls are
- * controls that are involved in controlling a model; 
+ * controls that are involved in controlling a model;
  * Example of non-model controls include the final time of a simulation or
  * an initial value for a joint angle; these quantities are for setting up
  * a simulation, they are not involved in controlling a model.  If
@@ -288,7 +288,7 @@ setControlValues(double aT,const double aX[],
     for(i=j=0;j<size;j++) {
         Control& control = get(j);
         if(aForModelControls) if(!control.getIsModelControl()) continue;
-    
+
         control.setControlValue(aT,aX[i]);
         i++;
     }
@@ -323,7 +323,7 @@ setControlValues(double aT,const Array<double> &aX,
     for(n=i=0;(n<aX.getSize())&&(i<size);i++) {
         Control& control = get(i);
         if(aForModelControls) if(!control.getIsModelControl()) continue;
-    
+
         control.setControlValue(aT,aX[n]);
         n++;
     }
@@ -351,7 +351,7 @@ getControlValues(double aT,double rX[],
     for(n=i=0;i<size;i++) {
         Control& control = get(i);
         if(aForModelControls) if(!control.getIsModelControl()) continue;
-    
+
         rX[n] = control.getControlValue(aT);
         n++;
     }
@@ -381,7 +381,7 @@ getControlValues(double aT,Array<double> &rX,
     for(i=0;i<size;i++) {
         Control& control = get(i);
         if(aForModelControls) if(!control.getIsModelControl()) continue;
-    
+
         rX.append(control.getControlValue(aT));
     }
 }
@@ -441,7 +441,7 @@ getParameterList(Array<int> &rList,bool aForModelControls) const
                 continue;
             rList.append(sp);
         }
-    }   
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -482,7 +482,7 @@ getParameterList(double aT,Array<int> &rList,
             rList.append(n+list[j]);
         }
         n += control.getNumParameters();
-    }   
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -540,7 +540,7 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList,
             rList.append(n+list[j]);
         }
         n += control.getNumParameters();
-    }   
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -590,7 +590,7 @@ getParameterMins(Array<double> &rMins,const Array<int> *aList) const
                 continue;
             }
             Control& control = get(c);
-        
+
             // GET PARAMETER MIN
             p = _ptpMap[sp];
             rMins.append(control.getParameterMin(p));
@@ -641,7 +641,7 @@ getParameterMaxs(Array<double> &rMaxs,const Array<int> *aList) const
                 continue;
             }
             Control& control = get(c);
-        
+
             // GET PARAMETER MAX
             p = _ptpMap[sp];
             rMaxs.append(control.getParameterMax(p));
@@ -695,7 +695,7 @@ getParameterValues(double rP[],const Array<int> *aList) const
                 continue;
             }
             Control& control = get(c);
-        
+
             // GET PARAMETER MAX
             p = _ptpMap[sp];
             rP[i] = control.getParameterValue(p);
@@ -746,7 +746,7 @@ getParameterValues(Array<double> &rP,const Array<int> *aList) const
                 continue;
             }
             Control& control = get(c);
-        
+
             // GET PARAMETER MAX
             p = _ptpMap[sp];
             rP.append(control.getParameterValue(p));
@@ -797,7 +797,7 @@ setParameterValues(const double *aP,const Array<int> *aList)
                 continue;
             }
             Control& control = get(c);
-        
+
             // SET PARAMETER
             p = _ptpMap[sp];
             control.setParameterValue(p,aP[i]);
@@ -860,7 +860,7 @@ setParameterValues(const Array<double> &aP,const Array<int> *aList)
                 continue;
             }
             Control& control = get(c);
-        
+
             // SET PARAMETER
             p = _ptpMap[sp];
             control.setParameterValue(p,aP[i]);
@@ -1043,7 +1043,7 @@ generateParameterMaps()
 //_____________________________________________________________________________
 /**
  * convert a column of a storage column into a ControlLinear object and return it
- * index is zero based after time (0 for 
+ * index is zero based after time (0 for
  */
 ControlLinear*
 ControlSet::ExtractControl(const Storage& storage,int index)

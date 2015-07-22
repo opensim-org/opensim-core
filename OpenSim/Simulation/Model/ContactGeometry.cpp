@@ -34,7 +34,7 @@ namespace OpenSim {
 //=============================================================================
 // CONSTRUCTOR
 //=============================================================================
-// Uses default (compiler-generated) destructor, copy constructor, copy 
+// Uses default (compiler-generated) destructor, copy constructor, copy
 // assignment operator.
 
 //_____________________________________________________________________________
@@ -47,7 +47,7 @@ ContactGeometry::ContactGeometry() : ModelComponent()
 
 //_____________________________________________________________________________
 // Convienience constructor.
-ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, 
+ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation,
     PhysicalFrame& body) : ModelComponent()
 {
     setNull();
@@ -77,7 +77,7 @@ void ContactGeometry::constructProperties()
     constructProperty_display_preference(1);
 
     Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
-    defaultColor[0] = 0.0; 
+    defaultColor[0] = 0.0;
     constructProperty_color(defaultColor);
 }
 

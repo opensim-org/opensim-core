@@ -28,7 +28,7 @@
 
 extern "C" {
 
-OSIMSIMULATION_API void RegisterTypes_osimSimulation(); 
+OSIMSIMULATION_API void RegisterTypes_osimSimulation();
 
 }
 
@@ -36,14 +36,14 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation();
  * A class intended for the purpose of automatically registering classes defined in this simulation Dll
  */
 // Excluding this from Doxygen until it has better documentation! -Sam Hamner
-    /// @cond 
-class osimSimulationInstantiator 
-{ 
-public: 
-        osimSimulationInstantiator(); 
-private: 
-        void registerDllClasses(); 
-}; 
+    /// @cond
+class osimSimulationInstantiator
+{
+public:
+        osimSimulationInstantiator();
+private:
+        void registerDllClasses();
+};
 /// @endcond
 
 #endif // __RegisterTypes_osimSimulation_h__

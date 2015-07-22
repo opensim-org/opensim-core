@@ -18,11 +18,11 @@ add_executable(${TEST_TARGET} ${TEST_TARGET}.cpp)
 
 target_link_libraries(${TEST_TARGET} ${LINK_LIBRARIES})
 
-file(GLOB TEST_FILES 
-    ${EXAMPLE_DIR}/*.obj 
-    ${EXAMPLE_DIR}/*.osim 
-    ${EXAMPLE_DIR}/*.xml 
-    ${EXAMPLE_DIR}/*.sto 
+file(GLOB TEST_FILES
+    ${EXAMPLE_DIR}/*.obj
+    ${EXAMPLE_DIR}/*.osim
+    ${EXAMPLE_DIR}/*.xml
+    ${EXAMPLE_DIR}/*.sto
     ${EXAMPLE_DIR}/*.mot
     *.obj *.osim *.xml *.sto *.mot)
 
@@ -36,7 +36,7 @@ foreach(dataFile ${TEST_FILES})
     ARGS -E copy
     ${dataFile}
     ${TEST_DIR})
-endforeach(dataFile) 
+endforeach(dataFile)
 
 #
 # Testing

@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -41,7 +41,7 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * An abstract class for representing a function.
@@ -103,7 +103,7 @@ public:
     //--------------------------------------------------------------------------
     /**
      * Calculate the value of this function at a particular point.
-     * 
+     *
      * @param x the Vector of input arguments.
      *          its size must equal the value returned by getArgumentSize().
      */
@@ -114,7 +114,7 @@ public:
      * a first derivative with respective to component 0.  If derivComponents=={0, 0, 0}, that indicates a third
      * derivative with respective to component 0.  If derivComponents=={4, 7}, that indicates a partial second derivative with
      * respect to components 4 and 7.
-     * 
+     *
      * @param derivComponents  the input components with respect to which the derivative should be taken.  Its size must be
      *                         less than or equal to the value returned by getMaxDerivativeOrder().
      * @param x                the Vector of input arguments.  Its size must equal the value returned by getArgumentSize().
@@ -136,7 +136,7 @@ public:
 
 protected:
     /**
-     * This should be called whenever this object has been modified.  It clears 
+     * This should be called whenever this object has been modified.  It clears
      * the internal SimTK::Function object used to evaluate it.
      */
     void resetFunction();

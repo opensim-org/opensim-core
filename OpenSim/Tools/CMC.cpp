@@ -50,7 +50,7 @@
 #include <OpenSim/Tools/CMC_TaskSet.h>
 #include <OpenSim/Tools/ActuatorForceTarget.h>
 #include <OpenSim/Tools/ForwardTool.h>
-#include "SimTKcommon.h" 
+#include "SimTKcommon.h"
 #include "MuscleStateTrackingTask.h"
 
 using namespace std;
@@ -98,7 +98,7 @@ public:
  */
 CMC::CMC() :
     TrackingController(),
-    _paramList(-1) , 
+    _paramList(-1) ,
     _f(0.0),
     _controlSet()
 {
@@ -152,7 +152,7 @@ CMC::CMC(Model *aModel,CMC_TaskSet *aTaskSet) :
     _stressTermWeightStore = new Storage(1000,"StressTermWeight");
 }
 
-void CMC::copyData( const CMC &aCmc ) 
+void CMC::copyData( const CMC &aCmc )
 {
    _dt                    = aCmc._dt;
    _tf                    = aCmc._tf;
@@ -519,7 +519,7 @@ getStressTermWeightStorage() const
 void CMC::
 computeInitialStates(SimTK::State& s, double &rTI)
 {
-    
+
     int i,j;
 
     int N = _predictor->getNX();
@@ -573,7 +573,7 @@ computeInitialStates(SimTK::State& s, double &rTI)
         cout<<"\n#1 act Equ.  CMC.computeInitialStates: ti="<< rTI << "  z's=" << s.getZ() <<endl;
         cout<<"=============================================\n";
     }
-    restoreConfiguration( s, initialState ); // set internal coord,speeds to initial vals. 
+    restoreConfiguration( s, initialState ); // set internal coord,speeds to initial vals.
 
     // 2
     obtainActuatorEquilibrium(s,tiReal,0.200,xmin,true);
@@ -620,7 +620,7 @@ computeInitialStates(SimTK::State& s, double &rTI)
 
     // GET NEW STATES
     _predictor->evaluate(s, &xi[0], &forces[0]);
-    
+
     rTI += newTargetDT;
 
     // CLEANUP
@@ -671,9 +671,9 @@ obtainActuatorEquilibrium(SimTK::State& s, double tiReal,double dtReal,
 
     _predictor->evaluate(s, &x[0], &f[0]);
     // update the muscle states
-    //_model->getForceSubsystem().updZ(s) = 
+    //_model->getForceSubsystem().updZ(s) =
     //_model->getForceSubsystem().getZ(_predictor->getCMCActSubsys()->getCompleteState());
-    _model->updMultibodySystem().updDefaultSubsystem().updZ(s) = 
+    _model->updMultibodySystem().updDefaultSubsystem().updZ(s) =
         _model->getMultibodySystem().getDefaultSubsystem().getZ(_predictor->getCMCActSubsys()->getCompleteState());
 
     // RELEASE COORDINATES
@@ -690,7 +690,7 @@ obtainActuatorEquilibrium(SimTK::State& s, double tiReal,double dtReal,
  */
 void CMC::
 restoreConfiguration(SimTK::State& s, const SimTK::State& initialState)
-{   
+{
     _model->getMatterSubsystem().updQ(s) = _model->getMatterSubsystem().getQ(initialState);
     _model->getMatterSubsystem().updU(s) = _model->getMatterSubsystem().getU(initialState);
 }
@@ -715,16 +715,16 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     _model->updAnalysisSet().setOn(false);
 
     // TIME STUFF
-    double tiReal = s.getTime(); 
-    double tfReal = _tf; 
+    double tiReal = s.getTime();
+    double tfReal = _tf;
 
     cout<<"CMC.computeControls:  t = "<<s.getTime()<<endl;
-    if(_verbose) { 
+    if(_verbose) {
         cout<<"\n\n----------------------------------\n";
         cout<<"integration step size = "<<_targetDT<<",  target time = "<<_tf<<endl;
     }
 
-    // SET CORRECTIONS 
+    // SET CORRECTIONS
     int nq = _model->getNumCoordinates();
     int nu = _model->getNumSpeeds();
     FunctionSet *qSet = _predictor->getCMCActSubsys()->getCoordinateTrajectories();
@@ -770,7 +770,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     if(_verbose) cout<<"\nErrors at time "<<s.getTime()<<":"<<endl;
     int e=0;
     for(i=0;i<_taskSet->getSize();i++) {
-        
+
         TrackingTask& task = _taskSet->get(i);
 
         if(_verbose) {
@@ -788,7 +788,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     for(i=0;i<vErr.getSize();i++) err[i] = vErr[i];
     _vErrStore->append(tiReal,vErr.getSize(),err);
 
-    
+
     // COMPUTE DESIRED ACCELERATIONS
     _taskSet->computeDesiredAccelerations(s, tiReal,tfReal);
 
@@ -798,7 +798,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     if(dynamic_cast<ActuatorForceTarget*>(_target)) {
         double relativeTau = 0.1;
         ActuatorForceTarget *realTarget = dynamic_cast<ActuatorForceTarget*>(_target);
-    
+
         Array<double> &pErr = _taskSet->getPositionErrors();
         double stressTermWeight = 1;
         for(i=0;i<_taskSet->getSize();i++) {
@@ -842,7 +842,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     _predictor->evaluate(s, &xmax[0], &fmax[0]);
 
     SimTK::State newState = _predictor->getCMCActSubsys()->getCompleteState();
-    
+
      if(_verbose) {
         cout<<endl<<endl;
         cout<<"\ntiReal = "<<tiReal<<"  tfReal = "<<tfReal<<endl;
@@ -860,7 +860,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
             cout << "CMC::computeControls WARNING- small force range for "
                  << getActuatorSet()[i].getName()
                  << " ("<<fmin[i]<<" to "<<fmax[i]<<")\n" << endl;
-            // if the force range is so small it means the control value, x, 
+            // if the force range is so small it means the control value, x,
             // is inconsequential and we might as well choose the smallest control
             // value possible, or else the RootSolver will choose the last value
             // it used to evaluate the force, which will be the maximum control
@@ -909,7 +909,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
             msg << "Possible issues: 1. not all model degrees-of-freedom are actuated, " << endl;
             msg << "2. there are tracking tasks for locked coordinates, and/or" << endl;
             msg << "3. there are unnecessary control constraints on reserve/residual actuators." << endl;
-                   
+
             cout<<"\n"<<msg.str()<<endl<<endl;
 
          throw(new OpenSim::Exception(msg.str(), __FILE__,__LINE__));
@@ -936,7 +936,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     if(_verbose) {
        cout<<"\n\nXXX t=" << _tf << "   Controls:" <<controls<<endl;
     }
-    
+
     // FILTER OSCILLATIONS IN CONTROL VALUES
     if(_useCurvatureFilter) FilterControls(s, controlSet,_targetDT,controls,_verbose);
 
@@ -1038,23 +1038,23 @@ FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
     double m1,m2;
     double curvature;
     double thresholdCurvature = 2.0 * 0.05 / (aDT * aDT);
-    
+
     //double thresholdSlopeDiff = 0.2 / aDT;
     for(i=0;i<size;i++) {
         m2 = (x2[i]-x1[i]) / aDT;
         m1 = (x1[i]-x0[i]) / aDT;
 
-                
+
         curvature = (m2 - m1) / aDT;
         curvature = fabs(curvature);
 
         if(curvature<=thresholdCurvature) continue;
-    
+
 //      diff = fabs(m2) - fabs(m1);
 //      cout<<"thresholdSlopeDiff="<<thresholdSlopeDiff<<"  slopeDiff="<<diff<<endl;
 //      if(diff>thresholdSlopeDiff) continue;
-        
-        
+
+
 
         // ALTER CONTROL VALUE
         rControls[i] = (3.0*x2[i] + 2.0*x1[i] + x0[i]) / 6.0;
@@ -1067,13 +1067,13 @@ FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
 }
 
 
-// Controller Interface. 
+// Controller Interface.
 // compute the control value for all actuators this Controller is responsible for
 void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
 {
-    SimTK_ASSERT( _controlSet.getSize() == getActuatorSet().getSize() , 
+    SimTK_ASSERT( _controlSet.getSize() == getActuatorSet().getSize() ,
         "CMC::computeControls number of controls does not match number of actuators.");
-    
+
     SimTK::Vector actControls(1, 0.0);
     for(int i=0; i<getActuatorSet().getSize(); i++){
         actControls[0] = _controlSet[_controlSetIndices[i]].getControlValue(s.getTime());
@@ -1108,9 +1108,9 @@ void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
 {
     Super::extendAddToSystem(system);
 
-    // add event handler for updating controls for next window 
+    // add event handler for updating controls for next window
     CMC* mutableThis = const_cast<CMC *>(this);
-    ComputeControlsEventHandler* computeControlsHandler = 
+    ComputeControlsEventHandler* computeControlsHandler =
         new ComputeControlsEventHandler(mutableThis);
 
     system.updDefaultSubsystem().addEventHandler(computeControlsHandler );
@@ -1124,12 +1124,12 @@ void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
     mutableThis->_controlSet.setName(_model->getName());
     mutableThis->_controlSet.setSize(0);
 
-    // Define the control set used to specify control bounds and to hold 
+    // Define the control set used to specify control bounds and to hold
     // the computed control values from the CMC algorithm
     double xmin =0, xmax=0;
 
     std::string actName = "";
-    
+
     for(int i=0; i < nActs; ++i ) {
 
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
@@ -1141,7 +1141,7 @@ void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
         xmin = act->getMinControl();
         if (xmin ==-SimTK::Infinity)
             xmin =-MAX_CONTROLS_FOR_RRA;
-        
+
         xmax =  act->getMaxControl();
         if (xmax ==SimTK::Infinity)
             xmax =MAX_CONTROLS_FOR_RRA;

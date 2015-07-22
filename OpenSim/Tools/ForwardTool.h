@@ -43,7 +43,7 @@
     #endif
 #endif
 
-namespace OpenSim { 
+namespace OpenSim {
 
 class Body;
 class PrescribedForce;
@@ -120,7 +120,7 @@ public:
     //--------------------------------------------------------------------------
 
     void setManager( Manager& m );
-    const Manager& getManager() const; 
+    const Manager& getManager() const;
 
     const std::string &getStatesFileName() const { return _statesFileName; }
     void setStatesFileName(const std::string &aFileName) { _statesFileName = aFileName; }
@@ -139,11 +139,11 @@ public:
     //--------------------------------------------------------------------------
     // UTILITY
     //--------------------------------------------------------------------------
-    static double Step(double t, double t0, double t1); 
+    static double Step(double t, double t0, double t1);
     static double SigmaUp(double tau,double to,double t);
     static double SigmaDn(double tau,double to,double t);
 
-    void loadStatesStorage (std::string& statesFileName, Storage*& rYStore) const; 
+    void loadStatesStorage (std::string& statesFileName, Storage*& rYStore) const;
     const std::string& getParsingLog() { return _parsingLog; };
 protected:
     void setDesiredStatesForControllers(Storage& rYStore);

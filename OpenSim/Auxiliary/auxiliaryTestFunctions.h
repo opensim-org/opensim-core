@@ -81,7 +81,7 @@ do { \
         throw OpenSim::Exception("TESTING: Expected exception " \
             #EXPECTED_EXCEPTION " but no exception thrown."); \
     } \
-} while(false) 
+} while(false)
 
 static OpenSim::Object* randomize(OpenSim::Object* obj)
 {
@@ -91,7 +91,7 @@ static OpenSim::Object* randomize(OpenSim::Object* obj)
     obj->setName(obj->getConcreteClassName()+stream.str());
     // Cycle thru properties and based on type, populate with a random valid value
      for (int p=0; p < obj->getNumProperties(); ++p) {
-        AbstractProperty& ap = obj->updPropertyByIndex(p); 
+        AbstractProperty& ap = obj->updPropertyByIndex(p);
         //cout << ap.getName() << "=" << ap.toString() << endl;
         // Check return values from Property API for debugging purposes
         bool isList = ap.isListProperty();
@@ -100,7 +100,7 @@ static OpenSim::Object* randomize(OpenSim::Object* obj)
         bool t4 = ap.isOneValueProperty();
         string ts = ap.getTypeName();
         //cout << ts << endl;
-        if (ap.isOptionalProperty()) 
+        if (ap.isOptionalProperty())
             continue;
         if (ts == "bool"&& !isList) ap.updValue<bool>() = !ap.getValue<bool>();
         else if (ts == "integer"&& !isList) ap.updValue<int>() = rand();
@@ -147,7 +147,7 @@ static OpenSim::Object* randomize(OpenSim::Object* obj)
                 Property<OpenSim::Function>& prop = Property<Function>::updAs(ap);
                 prop = LinearFunction();
             }
-            
+
         }
         else if (ap.isObjectProperty() && !isList){
             randomize(&ap.updValueAsObject(0));

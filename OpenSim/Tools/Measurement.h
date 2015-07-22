@@ -94,7 +94,7 @@ public:
     const MarkerPair& getMarkerPair(int aIndex) const { return _markerPairSet[aIndex]; }
 
     bool getApply() const { return _apply; }
-    void setApply(bool aApply) { 
+    void setApply(bool aApply) {
         _apply = aApply;
         _applyProp.setValueIsDefault(false);
     }

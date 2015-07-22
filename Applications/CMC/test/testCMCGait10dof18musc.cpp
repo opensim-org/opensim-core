@@ -36,7 +36,7 @@ int main() {
 
     SimTK::Array_<std::string> failures;
 
-    // redo with the Millard2012EquilibriumMuscle 
+    // redo with the Millard2012EquilibriumMuscle
     Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
 
     try {testGait10dof18musc();}
@@ -68,7 +68,7 @@ void testGait10dof18musc() {
 
     Array<double> rms_tols(0.02, 2*10+2*18); // activations within 2%
     for(int i=0; i<20; ++i){
-        rms_tols[i] = 0.01;  // angles and speeds within .6 degrees .6 degs/s 
+        rms_tols[i] = 0.01;  // angles and speeds within .6 degrees .6 degs/s
     }
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testArm26 failed");

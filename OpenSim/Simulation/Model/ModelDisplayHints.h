@@ -40,12 +40,12 @@ namespace OpenSim {
 //==============================================================================
 //                           MODEL DISPLAY HINTS
 //==============================================================================
-/** This class captures information indicating user or programmer preferences 
+/** This class captures information indicating user or programmer preferences
 to guide automatic display geometry generation by a Model. Fields here may be
-set programmatically or as a result of user choices made in the GUI or 
+set programmatically or as a result of user choices made in the GUI or
 ModelVisualizer. Any display-generating code including the GUI, ModelVisualizer,
-and any geometry-generating ModelComponent will be supplied with one of these 
-so that it can modify its behavior if there are any fields it recognizes. 
+and any geometry-generating ModelComponent will be supplied with one of these
+so that it can modify its behavior if there are any fields it recognizes.
 
 If you are writing a ModelComponent that generates some of its own geometry,
 and you would like people to consider it well-behaved, you should check whether
@@ -64,18 +64,18 @@ your component produces. The currently-supported flags are:
 This class is intended to provide some minimal user control over generated
 geometry in a form that is easy for a ModelComponent author to deal with, since
 the OpenSim user interface won't know anything about that component or its
-geometry. Nothing prevents a user interface from providing much more 
+geometry. Nothing prevents a user interface from providing much more
 sophisticated control of display features that it understands and the OpenSim
 GUI does that.
 
-If you would like to see some additional generally-useful flags or options 
-supported here, please file a feature request or post to the OpenSim forum on 
+If you would like to see some additional generally-useful flags or options
+supported here, please file a feature request or post to the OpenSim forum on
 SimTK.org.
 
 @note The "set" methods here return a reference to the object so they can
 be chained for convenience like assignment statements.
 
-@see ModelComponent::generateDecorations(), ModelVisualizer 
+@see ModelComponent::generateDecorations(), ModelVisualizer
 @author Michael Sherman **/
 class OSIMSIMULATION_API ModelDisplayHints : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModelDisplayHints, Object);

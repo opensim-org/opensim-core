@@ -33,7 +33,7 @@
 //      7. ExternalForce
 //      8. PathSpring
 //      9. ExpressionBasedPointToPointForce
-//      
+//
 //     Add tests here as Forces are added to OpenSim
 //
 //==============================================================================
@@ -72,7 +72,7 @@ int main()
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testPathSpring");
     }
-        
+
     try { testExternalForce(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testExternalForce");
@@ -82,7 +82,7 @@ int main()
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testP2PSpringMass");
     }
-    
+
     try { testBushingForce(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testBushingForce");
@@ -90,7 +90,7 @@ int main()
 
     try { testFunctionBasedBushingForce(); }
     catch (const std::exception& e){
-        cout << e.what() <<endl; 
+        cout << e.what() <<endl;
         failures.push_back("testFunctionBasedBushingForce");
     }
 
@@ -111,19 +111,19 @@ int main()
 
     try { testCoordinateLimitForceRotational(); }
     catch (const std::exception& e){
-        cout << e.what() <<endl; 
+        cout << e.what() <<endl;
         failures.push_back("testCoordinateLimitForceRotational");
     }
 
     try { testExpressionBasedPointToPointForce(); }
     catch (const std::exception& e){
-        cout << e.what() <<endl; 
+        cout << e.what() <<endl;
         failures.push_back("testExpressionBasedPointToPointForce");
     }
 
     try { testExpressionBasedCoordinateForce(); }
     catch (const std::exception& e){
-        cout << e.what() <<endl; 
+        cout << e.what() <<endl;
         failures.push_back("testExpressionBasedCoordinateForce");
     }
 
@@ -154,7 +154,7 @@ void testExpressionBasedCoordinateForce()
     double ball_radius = 0.25;
 
     double omega = sqrt(stiffness/mass);
-    // note: test case designed for 0 <= zeta < 1 (under damped system) 
+    // note: test case designed for 0 <= zeta < 1 (under damped system)
     double zeta = damp_coeff / (2*sqrt(mass*stiffness));
     double damp_freq = omega*sqrt(1-pow(zeta, 2));
 
@@ -201,7 +201,7 @@ void testExpressionBasedCoordinateForce()
 
     //==========================================================================
     // Compute the force at the specified times.
-    
+
     double final_t = 2.0;
     double nsteps = 10;
     double dt = final_t/nsteps;
@@ -217,7 +217,7 @@ void testExpressionBasedCoordinateForce()
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos;
         osimModel->updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
-        
+
         double height = exp(-1*zeta*omega*osim_state.getTime()) *
                         (
                             (start_h-dh)*cos(damp_freq*osim_state.getTime())
@@ -227,14 +227,14 @@ void testExpressionBasedCoordinateForce()
                                 *
                                 sin(damp_freq*osim_state.getTime())
                             )
-                        )  
+                        )
                         + dh;
 
         ASSERT_EQUAL(height, pos(1), 1e-6);
 
         manager.setInitialTime(dt*i);
     }
-    
+
     // Test copying
     ExpressionBasedCoordinateForce *copyOfSpring = spring.clone();
 
@@ -269,13 +269,13 @@ void testExpressionBasedPointToPointForce()
 
     // define body's joint
     FreeJoint free("free", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
-    
+
     model->addBody(&ball);
     model->addJoint(&free);
 
     string expression("2/(d^2)-3.0*(d-0.2)*(1+0.0123456789*ddot)");
 
-    ExpressionBasedPointToPointForce* p2pForce = 
+    ExpressionBasedPointToPointForce* p2pForce =
         new ExpressionBasedPointToPointForce("ground", p1, "ball", p2, expression);
     p2pForce->setName("P2PTestForce");
 
@@ -318,7 +318,7 @@ void testExpressionBasedPointToPointForce()
 
     // Now check that the force reported by spring
     double model_force = p2pForce->getForceMagnitude(state);
-    
+
     // Save the forces
     //reporter->getForceStorage().print("path_spring_forces.mot");
     double d = model->getSimbodyEngine().calcDistance(state, ground, p1, ball, p2);
@@ -330,7 +330,7 @@ void testExpressionBasedPointToPointForce()
 
     //string expression("2/(d^2)-3.0*(d-0.2)*(1+0.0123456789*ddot)");
     double analytical_force = 2/(d*d)-3.0*(d-0.2)*(1+0.0123456789*ddot);
-    
+
     // something is wrong if the block does not reach equilibrium
     ASSERT_EQUAL(analytical_force, model_force, 1e-5);
 
@@ -366,7 +366,7 @@ void testPathSpring()
     OpenSim::Body block("block", mass ,Vec3(0),  mass*SimTK::Inertia::brick(0.2, 0.1, 0.1));
     block.addMeshGeometry("box.vtp");
     block.scale(Vec3(0.2, 0.1, 0.1), false);
-    
+
     WrapCylinder* pulley = new WrapCylinder();
     pulley->setRadius(0.1);
     pulley->setLength(0.05);
@@ -395,7 +395,7 @@ void testPathSpring()
 
     PathSpring spring("spring", restlength, stiffness, dissipation);
     spring.updGeometryPath().appendNewPathPoint("origin", block, Vec3(-0.1, 0.0 ,0.0));
-    
+
     int N = 10;
     for(int i=1; i<N; ++i){
         double angle = i*Pi/N;
@@ -446,15 +446,15 @@ void testPathSpring()
     double analytical_force = -0.5*(gravity_vec(1)-hddot)*mass;
 
     // Save the forces
-    reporter->getForceStorage().print("path_spring_forces.mot");  
-    
+    reporter->getForceStorage().print("path_spring_forces.mot");
+
     // something is wrong if the block does not reach equilibrium
     ASSERT_EQUAL(analytical_force, model_force, 1e-3);
 
     // Before exiting lets see if copying the spring works
     PathSpring *copyOfSpring = spring.clone();
     ASSERT(*copyOfSpring == spring);
-    
+
     osimModel->disownAllComponents();
 }
 
@@ -497,11 +497,11 @@ void testSpringMass()
 
     osimModel->setGravity(gravity_vec);
 
-    PointToPointSpring spring(osimModel->updGround(), 
-        Vec3(0.,restlength,0.), 
-        ball, 
-        Vec3(0.), 
-        stiffness, 
+    PointToPointSpring spring(osimModel->updGround(),
+        Vec3(0.,restlength,0.),
+        ball,
+        Vec3(0.),
+        stiffness,
         restlength);
 
     osimModel->addForce(&spring);
@@ -535,7 +535,7 @@ void testSpringMass()
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos;
         osimModel->updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
-        
+
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-5);
 
@@ -636,7 +636,7 @@ void testBushingForce()
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos;
         osimModel->updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
-        
+
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-4);
 
@@ -654,7 +654,7 @@ void testBushingForce()
     manager.getStateStorage().print("bushing_model_states.sto");
 
     // Save the forces
-    reporter->getForceStorage().print("bushing_forces.mot");  
+    reporter->getForceStorage().print("bushing_forces.mot");
 
     // Before exiting lets see if copying the spring works
     BushingForce *copyOfSpring = spring.clone();
@@ -741,7 +741,7 @@ void testFunctionBasedBushingForce()
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos;
         osimModel->updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
-        
+
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-4);
 
@@ -761,7 +761,7 @@ void testFunctionBasedBushingForce()
     manager.getStateStorage().print("function_based_bushing_model_states.sto");
 
     // Save the forces
-    reporter->getForceStorage().print("function_based_bushing_forces.mot");  
+    reporter->getForceStorage().print("function_based_bushing_forces.mot");
 
     // Before exiting lets see if copying the spring works
     FunctionBasedBushingForce *copyOfSpring = spring.clone();
@@ -779,7 +779,7 @@ void testElasticFoundation()
 
     // Setup OpenSim model
     Model *osimModel = new Model("BouncingBallModelEF.osim");
-    
+
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(osimModel);
     osimModel->addAnalysis(reporter);
@@ -789,7 +789,7 @@ void testElasticFoundation()
     osimModel->getCoordinateSet().get("ball_ty").setValue(osim_state, start_h);
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
 
-    const OpenSim::Body &ball = osimModel->getBodySet().get("ball"); 
+    const OpenSim::Body &ball = osimModel->getBodySet().get("ball");
 
     //==========================================================================
     // Compute the force and torque at the specified times.
@@ -816,14 +816,14 @@ void testElasticFoundation()
 
     // Print out the motion for visualizing/debugging
     manager.getStateStorage().print("bouncing_ball_states.sto");
-        
+
     // Save the forces
-    reporter->getForceStorage().print("elastic_contact_forces.mot"); 
+    reporter->getForceStorage().print("elastic_contact_forces.mot");
 
     // Bouncing ball should have settled to rest on groun due to dissipation
     // In that case the force generated by contact should be identically body weight
     // in vertical and zero else where.
-    OpenSim::ElasticFoundationForce &contact = 
+    OpenSim::ElasticFoundationForce &contact =
         (OpenSim::ElasticFoundationForce &)osimModel->getForceSet().get("contact");
 
     Array<double> contact_force = contact.getRecordValues(osim_state);
@@ -838,7 +838,7 @@ void testElasticFoundation()
     OpenSim::ElasticFoundationForce *copyOfForce = contact.clone();
 
     bool isEqual = (*copyOfForce == contact);
-    
+
     if(!isEqual){
         contact.print("originalForce.xml");
         copyOfForce->print("copyOfForce.xml");
@@ -858,7 +858,7 @@ void testHuntCrossleyForce()
 
     // Setup OpenSim model
     Model *osimModel = new Model("BouncingBall_HuntCrossley.osim");
-    
+
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(osimModel);
     osimModel->addAnalysis(reporter);
@@ -868,7 +868,7 @@ void testHuntCrossleyForce()
     osimModel->getCoordinateSet()[4].setValue(osim_state, start_h);
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
 
-    const OpenSim::Body &ball = osimModel->getBodySet().get("ball"); 
+    const OpenSim::Body &ball = osimModel->getBodySet().get("ball");
 
     //==========================================================================
     // Compute the force and torque at the specified times.
@@ -881,7 +881,7 @@ void testHuntCrossleyForce()
     double final_t = 2.0;
 
     manager.setFinalTime(final_t);
-    
+
     // start timing
     clock_t startTime = clock();
 
@@ -889,15 +889,15 @@ void testHuntCrossleyForce()
 
     // end timing
     cout << "Hunt Crossley simulation time = " << 1.e3*(clock()-startTime)/CLOCKS_PER_SEC << "ms" << endl;
-    
+
     //make sure we can access dynamic variables
     osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
 
     // Print out the motion for visualizing/debugging
     manager.getStateStorage().print("bouncing_ball_HC_states.sto");
-        
+
     // Save the forces
-    reporter->getForceStorage().print("HuntCrossley_contact_forces.mot"); 
+    reporter->getForceStorage().print("HuntCrossley_contact_forces.mot");
 
     // Bouncing ball should have settled to rest on groun due to dissipation
     // In that case the force generated by contact should be identically body weight
@@ -916,7 +916,7 @@ void testHuntCrossleyForce()
     OpenSim::HuntCrossleyForce *copyOfForce = contact.clone();
 
     bool isEqual = (*copyOfForce == contact);
-    
+
     if(!isEqual){
         contact.print("originalForce.xml");
         copyOfForce->print("copyOfForce.xml");
@@ -962,7 +962,7 @@ void testCoordinateLimitForce()
     double K_lower = 1000.0;
     double damping = 0.01;
     double trans = 0.05;
-    CoordinateLimitForce limitForce("ball_h", positionRange[1],  K_upper, 
+    CoordinateLimitForce limitForce("ball_h", positionRange[1],  K_upper,
              positionRange[0], K_lower,  damping, trans, true);
 
     osimModel->addForce(&limitForce);
@@ -988,7 +988,7 @@ void testCoordinateLimitForce()
     delete osimModel;
 
     osimModel = copyModel;
-    
+
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(osimModel);
     osimModel->addAnalysis(reporter);
@@ -1032,7 +1032,7 @@ void testCoordinateLimitForce()
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        
+
         double h = q_h.getValue(osim_state);
         double v = q_h.getSpeedValue(osim_state);
 
@@ -1045,7 +1045,7 @@ void testCoordinateLimitForce()
         // EK + EM of mass alone
         double eMass = 0.5*mass*v*v - mass*gravity_vec[1]*h;
         double eSpringGuess = energy0-eMass;
-        double e = eMass+clfE; 
+        double e = eMass+clfE;
         // system KE + PE including strain energy in CLF
         double eSys = osimModel->getMultibodySystem().calcEnergy(osim_state)+ ediss;
 
@@ -1061,7 +1061,7 @@ void testCoordinateLimitForce()
             ASSERT_EQUAL(K_lower*(positionRange[0]-h)-damping*v, model_force[0], 1e-4);
         }
         else if( (h < positionRange[1]) && (h > positionRange[0])){
-            // Verify no force is being applied when within limits 
+            // Verify no force is being applied when within limits
             ASSERT_EQUAL(0.0, model_force[0], 1e-5);
         }
 
@@ -1112,7 +1112,7 @@ void testCoordinateLimitForceRotational()
     double K_lower = 20.0;
     double damping = 0.1;
     double trans = 0.05;
-    CoordinateLimitForce limitForce("theta", positionRange[1],  K_upper, 
+    CoordinateLimitForce limitForce("theta", positionRange[1],  K_upper,
              positionRange[0], K_lower,  damping, trans, true);
 
     osimModel->addForce(&limitForce);
@@ -1209,7 +1209,7 @@ void testExternalForce()
     double mass = 1;
     double angRange[2] = {-Pi, Pi};
     double posRange[2] = {-1, 1};
-    
+
     // construct a new OpenSim model
     Model model;
     model.setName("ExternalForceTest");
@@ -1245,7 +1245,7 @@ void testExternalForce()
     /***************************** CASE 1 ************************************/
     // Apply force with both force and point specified in ground and no torque
     ExternalForce xf(forces, "force", "point", "", "tower", "ground", "ground");
-    
+
     model.addForce(&xf);
     model.print("ExternalForceTest.osim");
     ForceReporter frp;
@@ -1325,9 +1325,9 @@ void testExternalForce()
     /***************************** CASE 3 ************************************/
     // Apply force with only force (and torque) in ground but point on body
     ExternalForce xf3(forces, "force", "point", "torque", "tower", "ground", "tower");
-    // Also Apply force with both force (and torque) and point in ground 
+    // Also Apply force with both force (and torque) and point in ground
     ExternalForce xf4(forces, "force", "point", "", "tower", "ground", "ground");
-    
+
     model.addForce(&xf3);
     model.addForce(&xf4);
 
@@ -1366,14 +1366,14 @@ void testExternalForce()
 
     // locate joint at 0.3m above tower COM
     WeldJoint weldJoint("sensorWeld", ground, Vec3(0, 0.8, 0), Vec3(0), sensor, Vec3(0), Vec3(0, 0, Pi/2));
-    
+
     // add the sensor body to the model
     model.addBody(&sensor);
     model.addJoint(&weldJoint);
 
-    // Apply force with both force and point in sensor body 
+    // Apply force with both force and point in sensor body
     ExternalForce xf5(forces, "force", "point", "", "tower", "sensor", "sensor");
-    // Counter-balance with torque only in tower body 
+    // Counter-balance with torque only in tower body
     ExternalForce xf6(forces, "", "", "torque", "tower", "tower", "");
 
     model.addForce(&xf5);

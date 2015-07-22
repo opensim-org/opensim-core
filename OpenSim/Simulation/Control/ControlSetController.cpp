@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*   
- * Author: Jack Middleton 
+/*
+ * Author: Jack Middleton
  */
 
 
@@ -95,7 +95,7 @@ void ControlSetController::setNull()
 }
 //_____________________________________________________________________________
 /**
- * Set name of ControlSet file 
+ * Set name of ControlSet file
  */
 //_____________________________________________________________________________
 /**
@@ -120,7 +120,7 @@ setupProperties()
  * Copy the member variables of the specified controller.
  */
 void ControlSetController::copyData(const ControlSetController &aController)
-{   
+{
     _controlsFileName = aController._controlsFileName;
 }
 
@@ -187,7 +187,7 @@ double ControlSetController::getFirstTime() const {
 
 //    std::cout << " ncontrols= "<< _controlSet->getSize() << std::endl<<std::endl;
     _controlSet->getControlList( "ControlLinear" , controlList );
-    
+
     if( controlList.getSize() < 1 ) {
        return( -SimTK::Infinity );
     } else {
@@ -199,7 +199,7 @@ double ControlSetController::getFirstTime() const {
 double ControlSetController::getLastTime() const {
     Array<int> controlList;
     _controlSet->getControlList( "ControlLinear" , controlList );
-    
+
     if(controlList.getSize() < 1 ) {
        return( SimTK::Infinity );
     } else {

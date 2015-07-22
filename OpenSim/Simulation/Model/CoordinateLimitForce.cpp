@@ -53,8 +53,8 @@ CoordinateLimitForce::CoordinateLimitForce()
 //_____________________________________________________________________________
 // Convenience constructor.
 CoordinateLimitForce::CoordinateLimitForce
-   (const string& coordName, double q_upper, 
-    double K_upper, double q_lower, double K_lower, double damping, double dq, 
+   (const string& coordName, double q_upper,
+    double K_upper, double q_lower, double K_lower, double damping, double dq,
     bool computeDissipationEnergy) : Force()
 {
     setNull();
@@ -82,8 +82,8 @@ void CoordinateLimitForce::setNull()
     setAuthors("Ajay Seth");
     _upStep = NULL;
     _loStep = NULL;
-    
-    // Scaling for coordinate values in m or degrees (rotational) 
+
+    // Scaling for coordinate values in m or degrees (rotational)
     _w = SimTK::NaN;
 
     // Coordinate limits in internal (SI) units (m or rad)
@@ -229,7 +229,7 @@ void CoordinateLimitForce::extendConnectToModel(Model& aModel)
     delete _upStep;
     delete _loStep;
 
-    // Define the transition from no stiffness to the upperStiffness as coordinate increases 
+    // Define the transition from no stiffness to the upperStiffness as coordinate increases
     // beyond the upper limit
     _upStep = new SimTK::Function::Step(0.0, _Kup, _qup, _qup+_w*transition);
     // Define the transition from lowerStiffness to zero as coordinate increases to the lower limit
@@ -257,8 +257,8 @@ void CoordinateLimitForce::extendAddToSystem(SimTK::MultibodySystem& system) con
  * Compute and apply the mobility force corrsponding to the passive limit force
  *
  */
-void CoordinateLimitForce::computeForce( const SimTK::State& s, 
-                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void CoordinateLimitForce::computeForce( const SimTK::State& s,
+                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                SimTK::Vector& mobilityForces) const
 {
     applyGeneralizedForce(s, *_coord, calcLimitForce(s), mobilityForces);
@@ -275,7 +275,7 @@ double CoordinateLimitForce::calcLimitForce( const SimTK::State& s) const
     double f_up = -K_up*(q - _qup);
     double f_low = K_low*(_qlow - q);
 
-    // dividing the stiffness by the constant yields the transition function that can 
+    // dividing the stiffness by the constant yields the transition function that can
     // also be appplied to damping
     double f_damp = -_damp*(K_up/_Kup + K_low/_Klow)*qdot;
 
@@ -309,7 +309,7 @@ double CoordinateLimitForce::computePotentialEnergy(const SimTK::State& s) const
         // no limits being hit
         return 0.0;
     }
-    
+
     const double &trans = _w*get_transition();
 
     if(delta >= trans){
@@ -319,7 +319,7 @@ double CoordinateLimitForce::computePotentialEnergy(const SimTK::State& s) const
     else{
         double x = delta/trans;
         // This is the integral of K(x)*x*dx evaluated at
-        // x = delta/trans, where 
+        // x = delta/trans, where
         // K(x) = K*(10*x^3-15*x^4+6*x^5) is the definition of an
         // S curve continuous step function defined in Simbody
         // SimTK/include/SimTKcommon/Scalar.h
@@ -347,13 +347,13 @@ void CoordinateLimitForce::
     computeStateVariableDerivatives(const SimTK::State& s) const
 {
     if (!isDisabled(s) && isComputingDissipationEnergy()){
-        setStateVariableDerivativeValue(s, "dissipatedEnergy", 
+        setStateVariableDerivativeValue(s, "dissipatedEnergy",
             getPowerDissipation(s));
     }
 }
 
 
-/** 
+/**
  * Methods to query a Force for the value actually applied during simulation
  * The names of the quantities (column labels) is returned by this first function
  * getRecordLabels()

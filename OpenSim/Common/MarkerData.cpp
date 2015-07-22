@@ -79,7 +79,7 @@ MarkerData::MarkerData(const string& aFileName) :
    int dot = (int)aFileName.find_last_of(".");
    suffix.assign(aFileName, dot+1, 3);
    SimTK::String sExtension(suffix);
-   if (sExtension.toLower() == "trc") 
+   if (sExtension.toLower() == "trc")
       readTRCFile(aFileName, *this);
    else if (sExtension.toLower() == "sto")
        readStoFile(aFileName);
@@ -287,7 +287,7 @@ void MarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileName, M
 
    /* read line 3 - header info */
    getline(aStream, line);
-   
+
    /* read first 5 parameters from file */
    ok = readDoubleFromString(line, &aSMD._dataRate);
    ok = ok && readDoubleFromString(line, &aSMD._cameraRate);
@@ -355,7 +355,7 @@ void MarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileName, M
   if (markersRead < aSMD._numMarkers)
    {
         string errorMessage;
-        errorMessage = "Could not read all marker names in TRC file " + aFileName + 
+        errorMessage = "Could not read all marker names in TRC file " + aFileName +
             ". Make sure there's exactly one tab per column & that Marker names are tab separated in header.\n";
         throw Exception(errorMessage);
 
@@ -485,7 +485,7 @@ void MarkerData::readStoFile(const string& aFileName)
 
     Storage store(aFileName);
 
-    // populate map between marker names and column numbers 
+    // populate map between marker names and column numbers
     std::map<int, std::string>  markerIndices;
     buildMarkerMap(store, markerIndices);
 
@@ -527,7 +527,7 @@ void MarkerData::readStoFile(const string& aFileName)
         }
         _frames.append(frame);
    }
-   
+
 }
 /**
  * Helper function to check column labels of passed in Storage for possibly being a MarkerName, and if true

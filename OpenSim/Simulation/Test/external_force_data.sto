@@ -1,7 +1,7 @@
-ExternalForces									
-nRows=49									
-nColumns=10									
-endheader									
+ExternalForces
+nRows=49
+nColumns=10
+endheader
 time	force.X	force.Y	force.Z	torque.X	torque.Y	torque.Z	point.X	point.Y	point.Z
 0	0	10	0	0	0	2	0.1	0	0
 0.01	0	10	0	0	0	2	0.1	0	0

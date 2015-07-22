@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
- * Author: Frank C. Anderson 
+/*
+ * Author: Frank C. Anderson
  */
 
 

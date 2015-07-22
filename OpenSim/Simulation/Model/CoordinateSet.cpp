@@ -70,7 +70,7 @@ CoordinateSet::CoordinateSet(const CoordinateSet& aCoordinateSet):
 void CoordinateSet::setNull()
 {
 }
-    
+
 /**
   * Populate this flat list of Coordinates given a Model that has been set up
   */

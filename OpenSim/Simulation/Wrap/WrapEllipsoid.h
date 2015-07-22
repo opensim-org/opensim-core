@@ -99,7 +99,7 @@ private:
     void setNull();
     int calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1, SimTK::Vec3& m,
                                                 SimTK::Vec3& a, SimTK::Vec3& vs, double vs4) const;
-    void CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, SimTK::Vec3& m, SimTK::Vec3& a, 
+    void CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, SimTK::Vec3& m, SimTK::Vec3& a,
                                                           SimTK::Vec3& vs, double vs4, bool far_side_wrap,
                                                           WrapResult& aWrapResult) const;
     double findClosestPoint(double a, double b, double c,

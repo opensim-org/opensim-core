@@ -140,7 +140,7 @@ int main(int argc,char **argv)
         {
             cout << "Scaling parameters disabled (apply is false) or not set. Model is not scaled." << endl;
         }
-        
+
         if (!subject->isDefaultMarkerPlacer())
         {
             MarkerPlacer& placer = subject->getMarkerPlacer();

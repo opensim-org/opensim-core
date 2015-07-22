@@ -20,8 +20,8 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-/*  
- * Author: Frank C. Anderson 
+/*
+ * Author: Frank C. Anderson
  */
 
 // INCLUDES
@@ -254,7 +254,7 @@ getCMCActSubsys()
  * @param aF Array of actuator force differences.
  */
 void VectorFunctionForActuators::
-evaluate( const SimTK::State& s, double *aX, double *rF) 
+evaluate( const SimTK::State& s, double *aX, double *rF)
 {
     int i;
     int N = getNX();
@@ -262,17 +262,17 @@ evaluate( const SimTK::State& s, double *aX, double *rF)
     CMC& controller=  dynamic_cast<CMC&>(_model->updControllerSet().get("CMC" ));
     controller.updControlSet().setControlValues(_tf, aX);
 
-    // create a Manager that will integrate just the actuator subsystem and use only the 
+    // create a Manager that will integrate just the actuator subsystem and use only the
     // CMC controller
 
     Manager manager(*_model, *_integrator);
     manager.setInitialTime(_ti);
     manager.setFinalTime(_tf);
     manager.setSystem( _CMCActuatorSystem );
-    // tell the mangager to not call the analayses or write to storage 
+    // tell the mangager to not call the analayses or write to storage
     // while the CMCSubsystem is being integrated.
-    manager.setPerformAnalyses(false); 
-    manager.setWriteToStorage(false); 
+    manager.setPerformAnalyses(false);
+    manager.setWriteToStorage(false);
     SimTK::State& actSysState = _CMCActuatorSystem->updDefaultState();
     getCMCActSubsys()->updZ(actSysState) = _model->getMultibodySystem()
                                             .getDefaultSubsystem().getZ(s);
@@ -297,7 +297,7 @@ evaluate( const SimTK::State& s, double *aX, double *rF)
 /**
  * Evaluate the vector function.
  *
- * @param s SimTK::State 
+ * @param s SimTK::State
  * @param aF Array of actuator force differences.
  */
 void VectorFunctionForActuators::

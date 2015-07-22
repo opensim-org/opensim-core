@@ -351,7 +351,7 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, doub
 //_____________________________________________________________________________
 /**
  * For measurement based scaling, we average the scale factors across the different marker pairs used.
- * For each marker pair, the scale factor is computed by dividing the average distance between the pair 
+ * For each marker pair, the scale factor is computed by dividing the average distance between the pair
  * in the experimental marker data by the distance between the pair on the model.
  */
 double ModelScaler::computeMeasurementScaleFactor(const SimTK::State& s, const Model& aModel, const MarkerData& aMarkerData, const Measurement& aMeasurement) const
@@ -407,7 +407,7 @@ double ModelScaler::takeExperimentalMarkerMeasurement(const MarkerData& aMarkerD
     int marker2 = experimentalMarkerNames.findIndex(aName2);
     if (marker1 >= 0 && marker2 >= 0) {
         int startIndex, endIndex;
-        if (_timeRange.getSize()<2) 
+        if (_timeRange.getSize()<2)
             throw Exception("ModelScaler::takeExperimentalMarkerMeasurement, time_range is unspecified.");
 
         aMarkerData.findFrameRange(_timeRange[0], _timeRange[1], startIndex, endIndex);

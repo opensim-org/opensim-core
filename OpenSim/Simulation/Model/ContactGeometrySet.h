@@ -41,9 +41,9 @@ class Model;
  * @version 1.0
  */
 
-class OSIMSIMULATION_API ContactGeometrySet 
+class OSIMSIMULATION_API ContactGeometrySet
 :   public ModelComponentSet<ContactGeometry> {
-OpenSim_DECLARE_CONCRETE_OBJECT(ContactGeometrySet, 
+OpenSim_DECLARE_CONCRETE_OBJECT(ContactGeometrySet,
                                 ModelComponentSet<ContactGeometry>);
 
 private:

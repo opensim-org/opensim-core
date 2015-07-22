@@ -34,12 +34,12 @@ using namespace OpenSim;
 //==============================================================================
 // CONSTRUCTORS
 //==============================================================================
-// Uses default (compiler-generated) destructor, copy constructor, copy 
+// Uses default (compiler-generated) destructor, copy constructor, copy
 // assignment operator.
 
 //_____________________________________________________________________________
 // Default constructor.
-SystemEnergyProbe::SystemEnergyProbe() 
+SystemEnergyProbe::SystemEnergyProbe()
 {
     setNull();
     constructProperties();
@@ -120,25 +120,25 @@ void SystemEnergyProbe::extendConnectToModel(Model& aModel)
 // COMPUTATION
 //==============================================================================
 //_____________________________________________________________________________
-/** 
+/**
  * Compute the System energy which the Probe operation will be based on.
  */
 SimTK::Vector SystemEnergyProbe::computeProbeInputs(const State& s) const
 {
     SimTK::Vector TotalE(1, 0.0);       // Initialize at zero
-    
+
     if (getComputeKineticEnergy())
         TotalE(0) += _model->getMultibodySystem().calcKineticEnergy(s);
 
     if (getComputePotentialEnergy())
         TotalE(0) += _model->getMultibodySystem().calcPotentialEnergy(s);
-    
+
     return TotalE;
 }
 
 
 //_____________________________________________________________________________
-/** 
+/**
  * Returns the number of probe inputs in the vector returned by computeProbeInputs().
  */
 int SystemEnergyProbe::getNumProbeInputs() const
@@ -148,10 +148,10 @@ int SystemEnergyProbe::getNumProbeInputs() const
 
 
 //_____________________________________________________________________________
-/** 
+/**
  * Provide labels for the probe values being reported.
  */
-Array<string> SystemEnergyProbe::getProbeOutputLabels() const 
+Array<string> SystemEnergyProbe::getProbeOutputLabels() const
 {
     Array<string> labels;
     labels.append(getName());

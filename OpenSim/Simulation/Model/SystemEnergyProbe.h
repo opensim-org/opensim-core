@@ -35,7 +35,7 @@ namespace OpenSim {
 //                         SYSTEM ENERGY PROBE
 //==============================================================================
 /**
- * SystemEnergyProbe is a ModelComponent Probe for computing an operation on a 
+ * SystemEnergyProbe is a ModelComponent Probe for computing an operation on a
  * total system energy during a simulation.
  * E.g. Work is the integral of power with respect to time.
  *
@@ -72,25 +72,25 @@ public:
     /** Convenience constructor */
     SystemEnergyProbe(bool computeKE, bool computePE);
 
-    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // Uses default (compiler-generated) destructor, copy constructor, copy
     // assignment operator.
 
     //--------------------------------------------------------------------------
     // Get and Set
     //--------------------------------------------------------------------------
-    /** Returns whether kinetic energy is to be included in the system energy 
+    /** Returns whether kinetic energy is to be included in the system energy
     computation. */
     bool getComputeKineticEnergy() const;
 
-    /** Returns whether potential energy is to be included in the system energy 
+    /** Returns whether potential energy is to be included in the system energy
     computation. */
     bool getComputePotentialEnergy() const;
 
-    /** Sets whether kinetic energy is to be included in the system energy 
+    /** Sets whether kinetic energy is to be included in the system energy
     computation. */
     void setComputeKineticEnergy(bool c);
 
-    /** Sets whether potential energy is to be included in the system energy 
+    /** Sets whether potential energy is to be included in the system energy
     computation. */
     void setComputePotentialEnergy(bool c);
 
@@ -104,7 +104,7 @@ public:
     /** Returns the number of probe inputs in the vector returned by computeProbeInputs(). */
     int getNumProbeInputs() const override;
 
-    /** Returns the column labels of the probe values for reporting. 
+    /** Returns the column labels of the probe values for reporting.
         Currently uses the Probe name as the column label, so be sure
         to name your probe appropiately! */
     virtual OpenSim::Array<std::string> getProbeOutputLabels() const override;
@@ -117,7 +117,7 @@ private:
     // Implement the ModelComponent Interface
     //--------------------------------------------------------------------------
     void extendConnectToModel(Model& aModel) override;
-    
+
     void setNull();
     void constructProperties();
 //==============================================================================

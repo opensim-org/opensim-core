@@ -67,7 +67,7 @@ ReturnCode makepaths(ModelStruct* ms)
       {
          nj++;
       }
-   }  
+   }
    segments = ms->numsegments;
    nsq = segments*segments;
    total = segments*segments - segments - 2*nj;
@@ -211,12 +211,12 @@ ReturnCode makepaths(ModelStruct* ms)
       for (i=0; i<ms->numsegments; i++)
       {
          ms->joint[k].in_seg_ground_path[i] = no;
-         
+
          if (i == ms->ground_segment)
             continue;
-         
+
          path = GET_PATH(ms->modelnum,ms->ground_segment,i);
-         
+
          for (j=0; path[j] != ms->numjoints+1; j++)
             if (ABS(path[j])-1 == k)
                ms->joint[k].in_seg_ground_path[i] = yes;

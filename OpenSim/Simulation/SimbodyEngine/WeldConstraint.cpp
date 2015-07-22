@@ -107,16 +107,16 @@ void WeldConstraint::constructProperties()
     //Default location and orientation (rotation sequence)
     SimTK::Vec3 origin(0.0, 0.0, 0.0);
 
-    // Location in Body 1 
+    // Location in Body 1
     constructProperty_location_body_1(origin);
 
-    // Orientation in Body 1 
+    // Orientation in Body 1
     constructProperty_orientation_body_1(origin);
 
-    // Location in Body 2 
+    // Location in Body 2
     constructProperty_location_body_2(origin);
 
-    // Orientation in Body 2 
+    // Orientation in Body 2
     constructProperty_orientation_body_2(origin);
 }
 
@@ -132,9 +132,9 @@ void WeldConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
     Super::extendAddToSystem(system);
 
     // Get underlying mobilized bodies
-    const PhysicalFrame& f1 = 
+    const PhysicalFrame& f1 =
         getConnector<PhysicalFrame>("body_1").getConnectee();
-    const PhysicalFrame& f2 = 
+    const PhysicalFrame& f2 =
         getConnector<PhysicalFrame>("body_2").getConnectee();
 
     SimTK::MobilizedBody b1 = f1.getMobilizedBody();
@@ -147,7 +147,7 @@ void WeldConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 
     // Now create a Simbody Constraint::Weld
     SimTK::Constraint::Weld simtkWeld(b1, inb1, b2, inb2);
-    
+
     // Beyond the const Component get the index so we can access the SimTK::Constraint later
     assignConstraintIndex(simtkWeld.getConstraintIndex());
 }
@@ -187,16 +187,16 @@ void WeldConstraint::setContactPointForInducedAccelerations(const SimTK::State &
     // make sure we are at the position stage
     getSystem().realize(s, SimTK::Stage::Position);
 
-    const PhysicalFrame& body1 = 
+    const PhysicalFrame& body1 =
         getConnector<PhysicalFrame>("body_1").getConnectee();
-    const PhysicalFrame& body2 = 
+    const PhysicalFrame& body2 =
         getConnector<PhysicalFrame>("body_2").getConnectee();
-    
+
     // For external forces we assume point position vector is defined wrt foot (i.e., _body2)
     // because we are passing it in from a prescribed force.
     // We must also get that point position vector wrt ground (i.e., _body1)
     Vec3 spoint = body2.findLocationInAnotherFrame(s, point, body1);
-    
+
     setBody1WeldLocation(spoint, body1.getGroundTransform(s).R().convertRotationToBodyFixedXYZ());
     setBody2WeldLocation(point, body2.getGroundTransform(s).R().convertRotationToBodyFixedXYZ());
 }

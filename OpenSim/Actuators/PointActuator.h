@@ -36,7 +36,7 @@
 #include "Simbody.h"
 
 
-namespace OpenSim { 
+namespace OpenSim {
 
 class Body;
 class Model;
@@ -57,10 +57,10 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
+    /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(body, std::string, 
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(body, std::string,
         "Name of Body to which this actuator is applied.");
     OpenSim_DECLARE_PROPERTY(point, SimTK::Vec3,
         "Location of application point; in body frame unless "
@@ -81,11 +81,11 @@ public:
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-    /** Default constructor or construct with body name given. An empty 
+    /** Default constructor or construct with body name given. An empty
     name ("") is treated as though it were unspecified. **/
     explicit PointActuator(const std::string& bodyName="");
 
-    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // Uses default (compiler-generated) destructor, copy constructor, copy
     // assignment operator.
 
     /** Set the 'optimal_force' property. **/
@@ -105,8 +105,8 @@ private:
     //--------------------------------------------------------------------------
     // Implement Force interface
     //--------------------------------------------------------------------------
-    void computeForce(const SimTK::State& state, 
-                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+    void computeForce(const SimTK::State& state,
+                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                       SimTK::Vector& mobilityForces) const override;
 
     //--------------------------------------------------------------------------
@@ -120,7 +120,7 @@ private:
     //--------------------------------------------------------------------------
     // Setup method to initialize Body reference
     void extendConnectToModel(Model& model) override;
-    
+
     //--------------------------------------------------------------------------
     // Implement Object interface.
     //--------------------------------------------------------------------------

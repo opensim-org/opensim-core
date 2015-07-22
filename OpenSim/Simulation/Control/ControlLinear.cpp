@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Signal.h>
@@ -258,7 +258,7 @@ getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const
     rTUpper = SimTK::NaN;
 
     // CHECK THAT THE NODE EXISTS
-    // An exception is thrown if aI is out of bounds. 
+    // An exception is thrown if aI is out of bounds.
     _xNodes.get(aI);
 
     // NEIGHBORING NODES
@@ -641,7 +641,7 @@ simplify(const PropertySet &aProperties)
     // INITIAL SIZE
     int size = _xNodes.getSize();
     cout<<"\nControlLinear.simplify: initial size = "<<size<<".\n";
-    
+
     // GET THE NODE TIMES
     int i;
     Array<double> t(0.0,size);
@@ -693,7 +693,7 @@ simplify(const PropertySet &aProperties)
         }
         cout<<"ControlLinear.simplify: lowpass filtering with a ";
         cout<<"cutoff frequency of "<<cutoffFrequency<<" and order of ";
-        cout<<order<<".\n"; 
+        cout<<order<<".\n";
         Signal::LowpassFIR(order,dtMin,cutoffFrequency,n,&x[0],&xFilt[0]);
     }
 
@@ -701,7 +701,7 @@ simplify(const PropertySet &aProperties)
     double distance = aProperties.get("distance")->getValueDbl();
     cout<<"ControlLinear.simplify: reducing points with distance tolerance = ";
     cout<<distance<<".\n";
-    Signal::ReduceNumberOfPoints(distance,t,xFilt); 
+    Signal::ReduceNumberOfPoints(distance,t,xFilt);
 
     // CLEAR OLD NODES
     _xNodes.trim();

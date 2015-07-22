@@ -82,7 +82,7 @@ void Actuator::extendAddToSystem(SimTK::MultibodySystem& system) const
 /**
  * Update the geometric representation of the Actuator if any.
  * The resulting geometry is maintained at the VisibleObject layer
- * 
+ *
  */
 void Actuator::updateGeometry()
 {
@@ -104,19 +104,19 @@ const VectorView_<Real> Actuator::getControls( const SimTK::State& s ) const
 
 void Actuator::getControls(const Vector& modelControls, Vector& actuatorControls) const
 {
-    SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
+    SimTK_ASSERT(modelControls.size() == _model->getNumControls(),
         "Actuator::getControls, input modelControls size does not match model.getNumControls().\n");
-    SimTK_ASSERT(actuatorControls.size() == numControls(), 
+    SimTK_ASSERT(actuatorControls.size() == numControls(),
         "Actuator::getControls, output actuatorControls incompatible with actuator's numControls().\n");
     actuatorControls = modelControls(_controlIndex, numControls());
 }
 
 void Actuator::setControls(const Vector& actuatorControls, Vector& modelControls) const
 {
-    SimTK_ASSERT(actuatorControls.size() == numControls(), 
+    SimTK_ASSERT(actuatorControls.size() == numControls(),
         "Actuator::setControls, input actuatorControls incompatible with actuator's numControls().\n");
 
-    SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
+    SimTK_ASSERT(modelControls.size() == _model->getNumControls(),
     "Actuator::setControls, output modelControls size does not match model.getNumControls()\n");
 
     modelControls(_controlIndex, numControls()) = actuatorControls;
@@ -124,10 +124,10 @@ void Actuator::setControls(const Vector& actuatorControls, Vector& modelControls
 
 void Actuator::addInControls(const Vector& actuatorControls, Vector& modelControls) const
 {
-    SimTK_ASSERT(actuatorControls.size() == numControls(), 
+    SimTK_ASSERT(actuatorControls.size() == numControls(),
         "Actuator::addInControls, input actuatorControls incompatible with actuator's numControls()\n");
 
-    SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
+    SimTK_ASSERT(modelControls.size() == _model->getNumControls(),
     "Actuator::addInControls, output modelControls size does not match model.getNumControls().\n");
 
     modelControls(_controlIndex, numControls()) += actuatorControls;
@@ -157,7 +157,7 @@ void ScalarActuator::constructProperties()
     constructProperty_max_control( Infinity);
 }
 
-void ScalarActuator::constructOutputs() 
+void ScalarActuator::constructOutputs()
 {
     constructOutput<double>("actuation", &ScalarActuator::getActuation, SimTK::Stage::Velocity);
     constructOutput<double>("speed", &ScalarActuator::getSpeed, SimTK::Stage::Velocity);
@@ -168,7 +168,7 @@ void ScalarActuator::constructOutputs()
 void ScalarActuator::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
-    // Add modeling flag to compute actuation with dynamic or by-pass with 
+    // Add modeling flag to compute actuation with dynamic or by-pass with
     // override actuation provided
     addModelingOption("override_actuation", 1);
 
@@ -225,7 +225,7 @@ bool ScalarActuator::isActuationOverriden(const SimTK::State& s) const
 {
     return (getModelingOption(s, "override_actuation") > 0);
 }
-       
+
 void ScalarActuator::setOverrideActuation(SimTK::State& s, double actuation) const
 {
     setDiscreteVariableValue(s, "override_actuation", actuation);;

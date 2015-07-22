@@ -1,8 +1,8 @@
-include_directories(${OpenSim_SOURCE_DIR} 
+include_directories(${OpenSim_SOURCE_DIR}
             ${OpenSim_SOURCE_DIR}/Vendors)
 
 
-link_libraries( 
+link_libraries(
         debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
         debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
         debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators
@@ -26,7 +26,7 @@ foreach(dataFile ${TEST_FILES})
     ARGS -E copy
     ${dataFile}
     ${OpenSim_BINARY_DIR}/OpenSim/Tests/Wrapping)
-endforeach(dataFile) 
+endforeach(dataFile)
 
 
 #

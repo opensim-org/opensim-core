@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
+/*
  * Author: Matt DeMers
  */
 
@@ -35,7 +35,7 @@
 
 using namespace OpenSim;
 using std::string;
-using SimTK::Vec3; using SimTK::Vector_; using SimTK::Vector; 
+using SimTK::Vec3; using SimTK::Vector_; using SimTK::Vector;
 using SimTK::SpatialVec; using SimTK::UnitVec3; using SimTK::State;
 
 //==============================================================================
@@ -50,7 +50,7 @@ PointToPointActuator::PointToPointActuator()
 }
 //_____________________________________________________________________________
 // Constructor with given body names.
-PointToPointActuator::PointToPointActuator(const string& bodyNameA, 
+PointToPointActuator::PointToPointActuator(const string& bodyNameA,
                                            const string& bodyNameB)
 {
     constructProperties();
@@ -92,7 +92,7 @@ void PointToPointActuator::setBodyA(Body* aBody)
 }
 //_____________________________________________________________________________
 /**
- * Set the generalized Body to which the equal and opposite Body actuation 
+ * Set the generalized Body to which the equal and opposite Body actuation
  * is applied.
  *
  * @param aBody Pointer to the generalized Body.
@@ -110,20 +110,20 @@ void PointToPointActuator::setBodyB(Body* aBody)
 //==============================================================================
 //_____________________________________________________________________________
 /**
- * Get the stress of the force. This would be the force or torque provided by 
+ * Get the stress of the force. This would be the force or torque provided by
  * this actuator divided by its optimal force.
  * @return Stress.
  */
 double PointToPointActuator::getStress( const SimTK::State& s) const
 {
-    return std::abs(getActuation(s) / getOptimalForce()); 
+    return std::abs(getActuation(s) / getOptimalForce());
 }
 //_____________________________________________________________________________
 /**
  * Compute all quantities necessary for applying the actuator force to the
  * model.
  *
- * @param s current SimTK::State 
+ * @param s current SimTK::State
  */
 
 double PointToPointActuator::computeActuation( const SimTK::State& s ) const
@@ -145,8 +145,8 @@ double PointToPointActuator::computeActuation( const SimTK::State& s ) const
  *
  * @param s current SimTK::State
  */
-void PointToPointActuator::computeForce(const SimTK::State& s, 
-                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void PointToPointActuator::computeForce(const SimTK::State& s,
+                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                 SimTK::Vector& generalizedForces) const
 {
     const bool pointsAreGlobal = getPointsAreGlobal();
@@ -155,33 +155,33 @@ void PointToPointActuator::computeForce(const SimTK::State& s,
 
     if(!_model) return;
     const SimbodyEngine& engine = getModel().getSimbodyEngine();
-    
+
     if( !_bodyA || !_bodyB )
         return;
-    
-    // Get pointA and pointB positions in both the global frame, and in 
+
+    // Get pointA and pointB positions in both the global frame, and in
     // the local frame of bodyA and bodyB, respectively. Points may have
     // been supplied either way.
 
-    SimTK::Vec3 pointA_inGround, pointB_inGround, 
+    SimTK::Vec3 pointA_inGround, pointB_inGround,
                 pointA_inBodyA, pointB_inBodyB;
 
     if (pointsAreGlobal)
     {
         pointA_inGround = pointA;
         pointB_inGround = pointB;
-        engine.transformPosition(s, getModel().getGround(), pointA_inGround, 
+        engine.transformPosition(s, getModel().getGround(), pointA_inGround,
                                  *_bodyA, pointA_inBodyA);
-        engine.transformPosition(s, getModel().getGround(), pointB_inGround, 
+        engine.transformPosition(s, getModel().getGround(), pointB_inGround,
                                  *_bodyB, pointB_inBodyB);
     }
     else
     {
         pointA_inBodyA = pointA;
         pointB_inBodyB = pointB;
-        engine.transformPosition(s, *_bodyA, pointA_inBodyA, 
+        engine.transformPosition(s, *_bodyA, pointA_inBodyA,
                                  getModel().getGround(), pointA_inGround);
-        engine.transformPosition(s, *_bodyB, pointB_inBodyB, 
+        engine.transformPosition(s, *_bodyB, pointB_inBodyB,
                                  getModel().getGround(), pointB_inGround);
     }
 
@@ -211,7 +211,7 @@ void PointToPointActuator::computeForce(const SimTK::State& s,
     engine.getVelocity(s, *_bodyA, pointA_inBodyA, velA_G);
     engine.getVelocity(s, *_bodyB, pointB_inBodyB, velB_G);
     velAB_G = velA_G-velB_G;
-    // Speed used to compute power is the speed along the line connecting 
+    // Speed used to compute power is the speed along the line connecting
     // the two bodies.
     setSpeed(s, ~velAB_G*direction);
 }

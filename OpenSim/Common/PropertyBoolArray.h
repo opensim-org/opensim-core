@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 // INCLUDES
@@ -70,9 +70,9 @@ public:
     PropertyBoolArray(const std::string &aName,
         int aSize,const bool aArray[]);
     PropertyBoolArray(const PropertyBoolArray &aProperty);
-    
+
     bool isArrayProperty() const override {return true;}
-    
+
     PropertyBoolArray* clone() const override ;
 
     int getNumValues() const override {return getArraySize();}

@@ -76,18 +76,18 @@ int main()
             failures.push_back(availableComponents[i]->getConcreteClassName());
         }
     }
-    
+
     if (!failures.empty()) {
         cout << "*******************************************************\n";
         cout << "Done, with failure(s): " << failures << endl;
-        cout << failures.size() << "/" << availableComponents.size() 
+        cout << failures.size() << "/" << availableComponents.size()
             << " components failed test." << endl;
         cout << 100 * (availableComponents.size() - failures.size()) / availableComponents.size()
             << "% components passed." << endl;
         cout << "*******************************************************\n" << endl;
         return 1;
     }
-    cout << "\ntestComponents PASSED. " << availableComponents.size() 
+    cout << "\ntestComponents PASSED. " << availableComponents.size()
         << " components were tested." << endl;
 }
 
@@ -109,7 +109,7 @@ void testComponent(const Component& instanceToTest)
     // 1. Set properties to random values.
     // -----------------------------------
     cout << "Randomizing the component's properties." << endl;
-    randomize(instance); 
+    randomize(instance);
 
     // 2. Ensure that cloning produces an exact copy.
     // ----------------------------------------------
@@ -129,7 +129,7 @@ void testComponent(const Component& instanceToTest)
     }
     // TODO should try to delete even if exception is thrown.
     delete copyInstance;
-    
+
     // 3. Serialize and de-serialize.
     // ------------------------------
     // This will find issues with serialization.
@@ -174,23 +174,23 @@ void testComponent(const Component& instanceToTest)
     for (int i = 0; i < nc; ++i){
         AbstractConnector& connector = instance->updConnector(i);
         string dependencyTypeName = connector.getConnectedToTypeName();
-        cout << "Connector '" << connector.getName() << 
+        cout << "Connector '" << connector.getName() <<
             "' has dependency on: " << dependencyTypeName << endl;
         Object* dependency =
             Object::newInstanceOfType(dependencyTypeName);
-        
+
         if (dependency == nullptr){
             // Get a concrete instance of a PhysicalFrame, which is a Body
             if (dependencyTypeName == "PhysicalFrame"){
                 dependency = Object::newInstanceOfType("Body");
             }
         }
-        
+
         //give it some random values including a name
         randomize(dependency);
         connector.set_connected_to_name(dependency->getName());
 
-        // add the dependency 
+        // add the dependency
         addObjectAsComponentToModel(dependency, model);
     }
 
@@ -302,7 +302,7 @@ void testComponent(const Component& instanceToTest)
 
         ASSERT_EQUAL(0.0,
                 (finalInitState.getY() - initState.getY()).norm(),
-                1e-7, __FILE__, __LINE__, "testComponents: " + 
+                1e-7, __FILE__, __LINE__, "testComponents: " +
                 instanceToTest.getConcreteClassName() + " initial state " +
                 "differs after repeated calls to initSystem().");
 
@@ -311,7 +311,7 @@ void testComponent(const Component& instanceToTest)
             << setprecision(3) << leakPercent << "%.";
 
         ASSERT(leakPercent < leakTol, __FILE__, __LINE__,
-            msg.str() + "\nExcceeds tolerance of " + to_string(leakTol) + "%.\n" 
+            msg.str() + "\nExcceeds tolerance of " + to_string(leakTol) + "%.\n"
             + "Initial memory: " +
             to_string(initMemory / 1024) + "KB increased by " +
             to_string(increaseInMemory / 1024) + "KB over " + to_string(nLoops) +

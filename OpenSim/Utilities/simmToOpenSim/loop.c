@@ -9,7 +9,7 @@
    Copyright (c) 2000 MusculoGraphics, Inc.
    All rights reserved.
 
-   Description: 
+   Description:
 
    Routines:
 
@@ -80,8 +80,8 @@ int getLoopPath(int seg, int *path, int dir, LoopStruct *loop)
 int setGencoordValue2(ModelStruct *ms, GeneralizedCoord* gencoord, double value)
 {
    int i;
-   
-   /* if the new value is the same as the old value, check if the value 
+
+   /* if the new value is the same as the old value, check if the value
     * is out of range and return.
     */
    if (DABS(value - gencoord->value) <= gencoord->tolerance)
@@ -92,7 +92,7 @@ int setGencoordValue2(ModelStruct *ms, GeneralizedCoord* gencoord, double value)
             return 2;
          if (value > gencoord->range.end)
             return 3;
-      }   
+      }
       return 0;
    }
 
@@ -103,16 +103,16 @@ int setGencoordValue2(ModelStruct *ms, GeneralizedCoord* gencoord, double value)
    /* invalidate all joint matrices that use the gencoord */
    for (i=0; i<gencoord->numjoints; i++)
       invalidate_joint_matrix(ms, &ms->joint[gencoord->jointnum[i]]);
-   
+
    if (gencoord->clamped == yes)
    {
       if (value < gencoord->range.start)
          return 2;
       if (value > gencoord->range.end)
          return 3;
-   }   
+   }
 
-   return 1;   
+   return 1;
 }
 
 /* convert a point from one frame to another across a loop joint.
@@ -122,14 +122,14 @@ int setGencoordValue2(ModelStruct *ms, GeneralizedCoord* gencoord, double value)
  * the transform */
 int convert2(ModelStruct *ms, double p[], int n1, int n2)
 {
-   
+
    int i;
    double result[3];
    DMatrix* mat;
-   
+
    if (n1 == n2)
       return (0);
-   
+
    /* If you want to convert a point in A to B, and the joint is defined A -> B,
     * then you need to use the inverse transformation matrix.
     */
@@ -139,7 +139,7 @@ int convert2(ModelStruct *ms, double p[], int n1, int n2)
       {
          mat = get_conversion(ms, i, INVERSE);
          break;
-      } 
+      }
       else if ((ms->joint[i].from == n2) && (ms->joint[i].to == n1))
       {
          mat = get_conversion(ms, i, FORWARD);
@@ -150,20 +150,20 @@ int convert2(ModelStruct *ms, double p[], int n1, int n2)
    {
       printf("No joint from %d to %d\n", n1, n2);
    }
-   
+
    result[0] = p[0]*(*mat)[0][0] + p[1]*(*mat)[1][0] +
       p[2]*(*mat)[2][0] + (*mat)[3][0];
    result[1] = p[0]*(*mat)[0][1] + p[1]*(*mat)[1][1] +
       p[2]*(*mat)[2][1] + (*mat)[3][1];
    result[2] = p[0]*(*mat)[0][2] + p[1]*(*mat)[1][2] +
       p[2]*(*mat)[2][2] + (*mat)[3][2];
-   
+
    p[0] = result[0];
    p[1] = result[1];
    p[2] = result[2];
-   
+
    return 1;
-   
+
 }
 
 
@@ -201,7 +201,7 @@ SBoolean changed;
          index = ms->joint[i].from * segments + ms->joint[i].to;
          for (j = 0; ms->pathptrs[index][j] != (ms->numjoints + 1); j++)
             num_jnts++;
-         
+
          num_jnts += 1;
          num_segs = num_jnts + 1;
          ms->loop[num_loops].segs = (int *)simm_malloc(num_segs * sizeof(int));
@@ -212,7 +212,7 @@ SBoolean changed;
       }
    }
 
-   /* if there are any closed loops in the model, store which 
+   /* if there are any closed loops in the model, store which
     * segments are used in the closed loop.  Look at the bodies in
     * the loop joint, and copy the path connecting the two bodies (m->n) (which
     * goes around the loop without going through loop joint), then add the
@@ -242,7 +242,7 @@ SBoolean changed;
          ms->loop[num_loops++].joints[j] = -(i + 1);
       }
    }
-   
+
    for (i = 0; i < num_loops; i++)
    {
       for (j = 0; j < ms->loop[i].num_jnts; j++)
@@ -303,7 +303,7 @@ SBoolean changed;
    /*
    for (i = 0; i < ms->numclosedloops; i++)
    {
-      printf("loopjoint%d\n", i); 
+      printf("loopjoint%d\n", i);
       for (j = 0; j < ms->loop[i].num_jnts; j++)
       {
          jnt = ms->loop[i].joints[j];
@@ -394,7 +394,7 @@ void updateLoopInfo(ModelStruct *ms)
 /* Determine whether any closed loops exist in the model.  If so, mark
  * one of the joints in the closed loop as the loop joint.  To determine
  * whether closed loops exist, go through the joint list and mark each segment
- * used in the joint.  If both segments in a joint have already been used, 
+ * used in the joint.  If both segments in a joint have already been used,
  * mark that joint as the loop joint.
  */
 void markLoopJoints(ModelStruct *ms)

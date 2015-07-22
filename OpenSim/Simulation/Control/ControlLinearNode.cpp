@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/IO.h>
@@ -42,7 +42,7 @@ using namespace OpenSim;
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Default constructor. 
+ * Default constructor.
  *
  * @param aT Time.
  * @param aX Control value.
@@ -288,7 +288,7 @@ getValue() const
 char* ControlLinearNode::
 toString()
 {
-    int size = 8*32; 
+    int size = 8*32;
     char *string = new char[size];
     char tmp[128];
     const char *format = IO::GetDoubleOutputFormat();

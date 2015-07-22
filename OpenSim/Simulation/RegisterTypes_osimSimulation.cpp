@@ -129,7 +129,7 @@
 using namespace std;
 using namespace OpenSim;
 
-static osimSimulationInstantiator instantiator; 
+static osimSimulationInstantiator instantiator;
 
 //_____________________________________________________________________________
 /**
@@ -275,30 +275,30 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::renameType("MovingMusclePoint", "MovingPathPoint");
     Object::renameType("MusclePointSet",    "PathPointSet");
 
-    Object::renameType("MuscleMetabolicPowerProbeUmberger2010",  
+    Object::renameType("MuscleMetabolicPowerProbeUmberger2010",
         "Umberger2010MuscleMetabolicsProbe");
 
-    Object::renameType("MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter",  
+    Object::renameType("MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter",
         "Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter");
 
-    Object::renameType("MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet",  
+    Object::renameType("MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet",
         "Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet");
 
   } catch (const std::exception& e) {
-    std::cerr 
+    std::cerr
         << "ERROR during osimSimulation Object registration:\n"
         << e.what() << "\n";
   }
 }
 
 
-osimSimulationInstantiator::osimSimulationInstantiator() 
-{ 
-        registerDllClasses(); 
-} 
-    
-void osimSimulationInstantiator::registerDllClasses() 
-{ 
-        RegisterTypes_osimSimulation(); 
-} 
-    
+osimSimulationInstantiator::osimSimulationInstantiator()
+{
+        registerDllClasses();
+}
+
+void osimSimulationInstantiator::registerDllClasses()
+{
+        RegisterTypes_osimSimulation();
+}
+

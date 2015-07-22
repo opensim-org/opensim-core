@@ -250,8 +250,8 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     double dist1, dist2;
     double t12, t00;
 
-    Vec3 pp, vv, uu, r1a, r1b, r2a, r2b, apex, plane_normal, sum_musc, 
-        r1am, r1bm, r2am, r2bm, p11, p22, r1p, r2p, axispt, near12, 
+    Vec3 pp, vv, uu, r1a, r1b, r2a, r2b, apex, plane_normal, sum_musc,
+        r1am, r1bm, r2am, r2bm, p11, p22, r1p, r2p, axispt, near12,
         vert1, vert2, mpt, apex1, apex2, l1, l2, near00;
 
     int i, return_code = wrapped;

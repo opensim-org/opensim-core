@@ -37,7 +37,7 @@ using namespace std;
 //==============================================================================
 // CONSTRUCTOR
 //==============================================================================
-// Uses default (compiler-generated) destructor, copy constructor, copy 
+// Uses default (compiler-generated) destructor, copy constructor, copy
 // assignment operator.
 
 //_____________________________________________________________________________
@@ -121,13 +121,13 @@ double CoordinateActuator::getOptimalForce() const
 }
 //_____________________________________________________________________________
 /**
- * Get the stress of the force. This would be the force or torque provided by 
+ * Get the stress of the force. This would be the force or torque provided by
  * this actuator divided by its optimal force.
  * @return Stress.
  */
 double CoordinateActuator::getStress( const SimTK::State& s) const
 {
-    return std::abs(getActuation(s) / getOptimalForce()); 
+    return std::abs(getActuation(s) / getOptimalForce());
 }
 
 
@@ -181,8 +181,8 @@ CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel
 /**
  * Apply the actuator force to BodyA and BodyB.
  */
-void CoordinateActuator::computeForce( const SimTK::State& s, 
-                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void CoordinateActuator::computeForce( const SimTK::State& s,
+                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                SimTK::Vector& mobilityForces) const
 {
     if(!_model) return;

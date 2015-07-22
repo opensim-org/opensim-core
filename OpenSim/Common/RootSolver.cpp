@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
- * Author: Frank C. Anderson 
+/*
+ * Author: Frank C. Anderson
  */
 
 
@@ -83,7 +83,7 @@ setNull()
 /**
  * Solve for the roots.
  *
- * 
+ *
  */
 Array<double> RootSolver::
 solve(const SimTK::State& s, const Array<double> &ax,const Array<double> &bx,
@@ -123,7 +123,7 @@ solve(const SimTK::State& s, const Array<double> &ax,const Array<double> &bx,
             // Continue?
             // If a function is already converged no need to do any manipulation.
             if(converged[i]) continue;
-   
+
             // Make c on opposite side of b.
             // (was down at very bottom)
              if( (fb[i]>0.0 && fc[i]>0.0) || (fb[i]<0.0 && fc[i]<0.0) ) {
@@ -194,9 +194,9 @@ solve(const SimTK::State& s, const Array<double> &ax,const Array<double> &bx,
 
 
             b[i] += new_step[i];
-             
+
         } // END ABSCISSAE LOOP
-     
+
 
         // NEW FUNCTION EVALUATION
         _function->evaluate(s, b,fb);
@@ -220,6 +220,6 @@ solve(const SimTK::State& s, const Array<double> &ax,const Array<double> &bx,
     //cout<<b<<endl<<endl;
     //cout<<"errors:\n";
     //cout<<fb<<endl;
-    
+
     return(b);
 }

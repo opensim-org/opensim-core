@@ -40,7 +40,7 @@
 			<default_max>  1.0 </default_max>
 			<use_steps> false </use_steps>
 		</ControlLinear>
-		
+
 		<!-- right -->
 		<ControlLinear name="hip_flexion_r_reserve.excitation">
 			<default_min> -1000 </default_min>
@@ -70,7 +70,7 @@
 			<default_min> -1 </default_min>
 			<default_max>  1 </default_max>
 		</ControlLinear>
-		
+
 		<!-- left -->
 		<ControlLinear name="hip_flexion_l_reserve.excitation">
 			<default_min> -1000 </default_min>
@@ -100,7 +100,7 @@
 			<default_min> -1 </default_min>
 			<default_max>  1 </default_max>
 		</ControlLinear>
-		
+
 		<!-- back -->
 		<ControlLinear name="lumbar_extension_reserve.excitation">
 			<default_min> -1000 </default_min>

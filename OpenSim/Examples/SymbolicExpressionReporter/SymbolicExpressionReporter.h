@@ -40,7 +40,7 @@
 #endif
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * A class for recording the states of a model
@@ -73,7 +73,7 @@ protected:
 public:
     SymbolicExpressionReporter(Model *aModel=0);
     SymbolicExpressionReporter(const std::string &aFileName);
-    // Copy constrctor and virtual copy 
+    // Copy constrctor and virtual copy
     SymbolicExpressionReporter(const SymbolicExpressionReporter &aObject);
 
     virtual ~SymbolicExpressionReporter();

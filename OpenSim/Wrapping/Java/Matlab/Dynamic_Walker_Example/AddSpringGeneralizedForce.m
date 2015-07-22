@@ -1,4 +1,4 @@
-% Import Java Library 
+% Import Java Library
 import org.opensim.modeling.*
 
 % NOTE: In this sample code, we've used arbitrary parameters. Tweak them to get

@@ -88,7 +88,7 @@ void Force::constructProperties()
     constructProperty_isDisabled(false);
 }
 
-// Create an underlying SimTK::Force to represent the OpenSim::Force in the 
+// Create an underlying SimTK::Force to represent the OpenSim::Force in the
 // computational system.  Create a SimTK::Force::Custom by default.
 void Force::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
@@ -165,24 +165,24 @@ double Force::computePotentialEnergy(const SimTK::State& state) const
 //-----------------------------------------------------------------------------
 // METHODS TO APPLY FORCES AND TORQUES
 //-----------------------------------------------------------------------------
-void Force::applyForceToPoint(const SimTK::State &s, const PhysicalFrame &aBody, const Vec3& aPoint, 
+void Force::applyForceToPoint(const SimTK::State &s, const PhysicalFrame &aBody, const Vec3& aPoint,
                                     const Vec3& aForce, Vector_<SpatialVec> &bodyForces) const
 {
     _model->getMatterSubsystem().addInStationForce(s, aBody.getMobilizedBodyIndex(),
                                                    aPoint, aForce, bodyForces);
 }
 
-void Force::applyTorque(const SimTK::State &s, const PhysicalFrame& aBody, 
+void Force::applyTorque(const SimTK::State &s, const PhysicalFrame& aBody,
                         const Vec3& aTorque, Vector_<SpatialVec> &bodyForces) const
 {
     _model->getMatterSubsystem().addInBodyTorque(s, aBody.getMobilizedBodyIndex(),
                                                  aTorque, bodyForces);
 }
 
-void Force::applyGeneralizedForce(const SimTK::State &s, const Coordinate &aCoord, 
+void Force::applyGeneralizedForce(const SimTK::State &s, const Coordinate &aCoord,
                                         double aForce, Vector &mobilityForces) const
 {
-    _model->getMatterSubsystem().addInMobilityForce(s, SimTK::MobilizedBodyIndex(aCoord.getBodyIndex()), 
+    _model->getMatterSubsystem().addInMobilityForce(s, SimTK::MobilizedBodyIndex(aCoord.getBodyIndex()),
                                     SimTK::MobilizerUIndex(aCoord.getMobilizerQIndex()), aForce, mobilityForces);
 }
 

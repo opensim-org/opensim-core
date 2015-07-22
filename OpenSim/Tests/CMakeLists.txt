@@ -1,4 +1,4 @@
-include_directories(${OpenSim_SOURCE_DIR} 
+include_directories(${OpenSim_SOURCE_DIR}
             ${OpenSim_SOURCE_DIR}/Vendors)
 
 if(WIN32)

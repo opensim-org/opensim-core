@@ -1,15 +1,15 @@
 /*******************************************************************************
 
  ENTER.C
- 
+
   Author: Peter Loan
-  
+
    Date: 8-DEC-88
-   
+
     Copyright (c) 1992-5 MusculoGraphics, Inc.
     All rights reserved.
     Portions of this source code are copyrighted by MusculoGraphics, Inc.
-    
+
      Description: This file contains routines that keep track of various
      model parameters, such as gencoords and segments. They store the user
      names and numbers for these parameters, but also generate internal
@@ -17,7 +17,7 @@
      if in a model file, function #17 is defined first, this function
      will internally be referred to as function #0, and all references
      to it (by the number 17) will be replaced by references to 0.
-     
+
       Routines:
       enter_gencoord    : stores a gencoord reference in a list and returns id
       enter_function    : stores a function reference in a list and returns id
@@ -25,7 +25,7 @@
       enter_segment     : stores a segment number in a list and returns id
       entergroup        : stores a muscle group name in a list and returns id
       enter_joint       : stores a joint number in a list and returns id
-      
+
 *******************************************************************************/
 
 #include "universal.h"
@@ -63,10 +63,10 @@ GeneralizedCoord* enter_gencoord(ModelStruct* model, const char username[], SBoo
 {
    int i, new_gc;
    ReturnCode rc = code_fine;
-   
+
    if (username == NULL)
       return NULL;
-   
+
    for (i = 0; i < model->numgencoords; i++)
       if (STRINGS_ARE_EQUAL(username, model->gencoord[i]->name))
          return model->gencoord[i];
@@ -108,7 +108,7 @@ dpWrapObject* get_wrap_object(ModelStruct* model, char username[])
       if (STRINGS_ARE_EQUAL(username, model->wrapobj[i]->name))
          return model->wrapobj[i];
 
-   return NULL; 
+   return NULL;
 }
 
 

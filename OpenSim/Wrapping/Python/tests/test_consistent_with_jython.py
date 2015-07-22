@@ -188,7 +188,7 @@ def test_addMetabolicProbes():
     twitchRatios = { 'hamstrings': 0.49, 'bifemsh': 0.53, 'glut_max': 0.55,
             'iliopsoas': 0.50, 'rect_fem': 0.39, 'vasti': 0.50, 'gastroc':
             0.54, 'soleus': 0.80, 'tib_ant': 0.70}
-    
+
     # Parameters used for all probes
     # ------------------------------
     # The following booleans are constructor arguments for the Umberger probe.
@@ -197,16 +197,16 @@ def test_addMetabolicProbes():
     shorteningRateOn = True
     basalRateOn = False
     mechanicalWorkRateOn = True
-    
+
     # The mass of each muscle will be calculated using data from the model:
     #   muscleMass = (maxIsometricForce / sigma) * rho * optimalFiberLength
     # where sigma = 0.25e6 is the specific tension of mammalian muscle (in
     # Pascals) and rho = 1059.7 is the density of mammalian muscle (in kg/m^3).
-    
+
     # The slow-twitch ratio used for muscles that either do not appear in the
     # file, or appear but whose proportion of slow-twitch fibers is unknown.
     defaultTwitchRatio = 0.5
-    
+
     # Whole-body probe
     # ----------------
     # Define a whole-body probe that will report the total metabolic energy
@@ -218,26 +218,26 @@ def test_addMetabolicProbes():
         mechanicalWorkRateOn)
     wholeBodyProbe.setOperation("value")
     wholeBodyProbe.set_report_total_metabolics_only(False);
-    
+
     # Add the probe to the model and provide a name.
     # TODO SEGFAULT AT THIS NEXT LINE:
     model.addProbe(wholeBodyProbe)
     wholeBodyProbe.setName("metabolic_power")
-    
+
     # Loop through all muscles, adding parameters for each into the whole-body
     # probe.
     for iMuscle in range(model.getMuscles().getSize()):
         thisMuscle = model.getMuscles().get(iMuscle)
-        
+
         # Get the slow-twitch ratio from the data we read earlier. Start with
         # the default value.
         slowTwitchRatio = defaultTwitchRatio
-        
+
         # Set the slow-twitch ratio to the physiological value, if it is known.
         for key, val in twitchRatios.items():
             if thisMuscle.getName().startswith(key) and val != -1:
                 slowTwitchRatio = val
-        
+
         # Add this muscle to the whole-body probe. The arguments are muscle
         # name, slow-twitch ratio, and muscle mass. Note that the muscle mass
         # is ignored unless we set useProvidedMass to True.

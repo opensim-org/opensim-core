@@ -121,7 +121,7 @@ _pointName(_pointNameProp.getValueStr())
     */
 }
 
-// Copy constrctor and virtual copy 
+// Copy constrctor and virtual copy
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -163,7 +163,7 @@ setNull()
 
     // POINT INFORMATION
     //_point.setSize(3);
-    Vec3 zero3(0.0);    
+    Vec3 zero3(0.0);
     _bodyNameProp.setName("body_name");
     _bodyNameProp.setValue("ground");
     _propertySet.append( &_bodyNameProp );
@@ -224,7 +224,7 @@ constructDescription()
 
     strcpy(descrip,"\nThis file contains the kinematics ");
     strcat(descrip,"(position, velocity, or acceleration) of\n");
-    
+
     if(_relativeToBody){
         sprintf(tmp,"point (%lf, %lf, %lf) on body %s relative to body %s of model %s.\n",
             _point[0],_point[1],_point[2],_body->getName().c_str(),
@@ -561,7 +561,7 @@ record(const SimTK::State& s)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration 
+ * This method is meant to be called at the begining of an integration
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -592,7 +592,7 @@ begin( SimTK::State& s)
  * the execution of a forward integrations or after the integration by
  * feeding it the necessary data.
  *
- * When called during an integration, this method is meant to be called 
+ * When called during an integration, this method is meant to be called
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -617,7 +617,7 @@ step(const SimTK::State& s, int stepNumber)
  * This method is called at the end of an analysis so that any
  * necessary finalizations may be performed.
  *
- * This method is meant to be called at the end of an integration 
+ * This method is meant to be called at the end of an integration
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -646,7 +646,7 @@ end( SimTK::State& s)
 //_____________________________________________________________________________
 /**
  * Print results.
- * 
+ *
  * The file names are constructed as
  * aDir + "/" + aBaseName + "_" + ComponentName + aExtension
  *

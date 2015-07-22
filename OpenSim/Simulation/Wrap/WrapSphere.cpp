@@ -229,12 +229,12 @@ WrapSphere& WrapSphere::operator=(const WrapSphere& aWrapSphere)
 int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                  const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
-   double l1, l2, disc, a, b, c, a1, a2, j1, j2, j3, j4, r1r2, ra[3][3], rrx[3][3], aa[3][3], mat[4][4], 
+   double l1, l2, disc, a, b, c, a1, a2, j1, j2, j3, j4, r1r2, ra[3][3], rrx[3][3], aa[3][3], mat[4][4],
             axis[4], vec[4], rotvec[4], angle, *r11, *r22;
     Vec3 ri, p2m, p1m, mp, r1n, r2n,
             p1p2, np2, hp2, r1m, r2m, y, z, n, r1a, r2a,
             r1b, r2b, r1am, r2am, r1bm, r2bm;
-            
+
    int i, j, maxit, return_code = wrapped;
    bool far_side_wrap = false;
    static SimTK::Vec3 origin(0,0,0);
@@ -275,7 +275,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    disc = b * b - 4.0 * a * c;
 
    // check if there is an intersection of p1p2 and the sphere
-   if (disc < 0.0) 
+   if (disc < 0.0)
    {
       aFlag = false;
         aWrapResult.wrap_path_length = 0.0;
@@ -286,14 +286,14 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    l2 = (-b - sqrt(disc)) / (2.0 * a);
 
    // check if the intersection is between p1 and p2
-   if ( ! (0.0 < l1 && l1 < 1.0) || ! (0.0 < l2 && l2 < 1.0))   
+   if ( ! (0.0 < l1 && l1 < 1.0) || ! (0.0 < l2 && l2 < 1.0))
    {
       aFlag = false;
       aWrapResult.wrap_path_length = 0.0;
       return noWrap;
    }
 
-   if (l1 < l2) 
+   if (l1 < l2)
    {
       aFlag = false;
       aWrapResult.wrap_path_length = 0.0;
@@ -330,7 +330,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
         y[i] = origin[i] - aPoint1[i];
     Mtx::Normalize(3, y, y);
     Mtx::CrossProduct(n, y, z);
-   
+
    for (i = 0; i < 3; i++)
    {
       ra[i][0] = n[i];
@@ -367,7 +367,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    }
 
    a2 = asin(_radius / Mtx::Magnitude(3, p2m));
-   
+
    WrapMath::Make3x3DirCosMatrix(a2, rrx);
     Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
 
@@ -392,14 +392,14 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     Mtx::Normalize(3, r1bm, r1bm);
     Mtx::Normalize(3, r2am, r2am);
     Mtx::Normalize(3, r2bm, r2bm);
-   
+
    {
       // check which of the tangential points results in the shortest distance
         j1 = Mtx::DotProduct(3, r1am, r2am);
       j2 = Mtx::DotProduct(3, r1am, r2bm);
       j3 = Mtx::DotProduct(3, r1bm, r2am);
       j4 = Mtx::DotProduct(3, r1bm, r2bm);
-       
+
       if (j1 > j2 && j1 > j3 && j1 > j4)
       {
             for (i = 0; i < 3; i++) {
@@ -544,10 +544,10 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     Mtx::Normalize(3, r2m, r2n);
 
     angle = acos(Mtx::DotProduct(3, r1n, r2n));
-   
+
    if (far_side_wrap)
         angle = -(2 * SimTK_PI - angle);
-   
+
    r1r2 = _radius * angle;
    aWrapResult.wrap_path_length = r1r2;
 

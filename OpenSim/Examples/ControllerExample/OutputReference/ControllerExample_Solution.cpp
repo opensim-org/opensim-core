@@ -21,9 +21,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
- *  Below is an extension example of an OpenSim application that provides its own 
- *  main() routine.  It applies a controller to the forward simulation of a tug-of-war 
+/*
+ *  Below is an extension example of an OpenSim application that provides its own
+ *  main() routine.  It applies a controller to the forward simulation of a tug-of-war
  *  between two muscles pulling on a block.
  */
 
@@ -88,7 +88,7 @@ public:
      * @param aModel Model to be controlled
      * @param aKp Position gain by which the position error will be multiplied
      */
-    TugOfWarController(double aKp, double aKv) : Controller(), kp( aKp ), kv( aKv ) 
+    TugOfWarController(double aKp, double aKv) : Controller(), kp( aKp ), kv( aKv )
     {
     }
 
@@ -129,7 +129,7 @@ public:
         // Get the current position of the block in the tug-of-war
         // model.
         double z  = zCoord.getValue(s);
-        
+
         // Get the current velocity of the block in the tug-of-war
         // model.
         double zv = zCoord.getSpeedValue(s);
@@ -138,7 +138,7 @@ public:
         // from the deviation of the block's current position from its
         // desired position (this deviation is the "position error").
         double pErrTerm = kp * ( zdes  - z  );
-        
+
         // Compute the total desired velocity based on the initial
         // desired velocity plus the position error term we
         // computed above.
@@ -223,7 +223,7 @@ int main()
         std::cout << std::endl;
         std::cout << "kp = " << kp << std::endl;
         std::cout << "kv = " << kv << std::endl;
-        
+
         // Create the controller.
         TugOfWarController *controller = new TugOfWarController(kp, kv);
 
@@ -289,7 +289,7 @@ int main()
         manager.getStateStorage().print( "tugOfWar_states.sto" );
     }
     catch (const std::exception &ex) {
-        
+
         // In case of an exception, print it out to the screen.
         std::cout << ex.what() << std::endl;
 

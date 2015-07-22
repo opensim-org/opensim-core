@@ -24,7 +24,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Currently we know of 2 MIPS machines: MIPS- M series, and DECStations.  */
 /* Therefore we discriminate by declaring DECStations with */
 /* #define DECSTATION */
-
+
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #define CPP_PREDEFINES "-Dmips -Dunix"
@@ -33,7 +33,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #else
 #define CPP_SPEC "-DR3000  -Dhost_mips -DMIPSEB -DSYSTYPE_BSD -DLANGUAGE_C "
 #endif
-
+
 /*----------------------------------------------------------------------
 
 SWITCHES:
@@ -80,7 +80,7 @@ WARNING:
 
 
 ***********************************************************************/
-
+
 
 /* Switch  Recognition by gcc.c   */
 
@@ -207,7 +207,7 @@ extern int target_flags;
                     : 1<< (i+6))
 */
 #define MIPS_GVALUE_DEFAULT 8
-
+
 /* Target machine storage layout */
 
 /* Define this if most significant bit is lowest numbered
@@ -265,7 +265,7 @@ extern int target_flags;
 /* Define this if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT
-
+
 /* Standard register usage.  */
 
 /* Number of actual hardware registers.
@@ -361,7 +361,7 @@ extern int target_flags;
 /* Register in which address to store a structure value
    is passed to a function.  */
 #define STRUCT_VALUE_REGNUM 3
-
+
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
 
@@ -468,7 +468,7 @@ enum reg_class  { NO_REGS, GR_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES } ;
 #define INDEX_REG_CLASS GR_REGS
 #define BASE_REG_CLASS  GR_REGS
 
-
+
                 /* REGISTER AND CONSTANT CLASSES
                  */
 
@@ -539,7 +539,7 @@ description.  */
   : ((MODE) == VOIDmode)? ((CLASS) == FP_REGS ? 2 :1)           \
   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
-
+
 /* Stack layout; function entry, exit and calling.  */
 
 /* Define this if pushing a word on the stack
@@ -588,7 +588,7 @@ description.  */
    */
 
 #define STACK_BOUNDARY 64
-
+
 /* For the MIPS, there seems to be a minimum to the amount of stack space
    used... for varargs using functions.
    evidence comes from the dis-assembled version of printf:
@@ -630,7 +630,7 @@ printf:
   else if (SIZE.constant < 16)                      \
     SIZE.constant = 16;                         \
 }
-
+
 /* Value is 1 if returning from a function call automatically
    pops the arguments described by the number-of-args field in the call.
    FUNTYPE is the data type of the function (as a tree),
@@ -667,7 +667,7 @@ printf:
 
 #define FUNCTION_ARG_REGNO_P(N) (((N) < 8 && (N) > 3)           \
                                 ||((N) < 48 && (N) > 44 && (0 == (N) % 2)))
-
+
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
    hold all necessary information about the function itself
@@ -754,7 +754,7 @@ extern  enum arg_state function_arg_advance();
 */
 
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) (0)
-
+
 
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.
@@ -769,7 +769,7 @@ extern  enum arg_state function_arg_advance();
 
 #define AL_ADJUST_ALIGN(LOC) (((LOC)+7) & 0xfffffff8)
 
-
+
 /* The problem of Varargs  comes from the register passing conventions
    for Floating Point data. There is a conflict when we send registers
    back  to stack between registers $4,$5 $6,$7 and $f12, $f14.
@@ -808,7 +808,7 @@ extern int  this_varargs_suspect ;
 #define THIS_VARARGS_SUSPECT(COND) this_varargs_suspect |= (COND)
 #define THIS_VARARGS_NOTSUSPECT    this_varargs_suspect = 0
 #define THIS_VARARGS_SUSPECTED    (this_varargs_suspect)
-
+
 
 #define FUNCTION_PROLOGUE(FILE, SIZE)                   \
 { register int regno;                           \
@@ -942,7 +942,7 @@ extern char *current_function_name;
                               ||( (regno == 31) && regs_ever_live[31])  \
                                  )
 
-
+
 /* This macro generates the assembly code for function exit,
    on machines that need it.  If FUNCTION_EPILOGUE is not defined
    then individual return instructions are generated for each
@@ -1063,7 +1063,7 @@ extern char *current_function_name;
   }
 
 
-
+
 /* Addressing modes, and classification of registers for them.  */
 
 /* #define HAVE_POST_INCREMENT */
@@ -1123,7 +1123,7 @@ extern char *current_function_name;
 /* 1 if X is an fp register.  */
 
 #define FP_REG_P(X) (REG_P (X) && REGNO_OK_FOR_FP_P (REGNO (X)))
-
+
 /* Maximum number of registers that can appear in a valid memory address.  */
 
 #define MAX_REGS_PER_ADDRESS 1
@@ -1205,7 +1205,7 @@ extern char *current_function_name;
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.
 */
-
+
                 /* See if this is of any use here */
 
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)            \
@@ -1289,13 +1289,13 @@ extern char *current_function_name;
     return 3;                               \
   case CONST_DOUBLE:                            \
     return 5;
-
+
 /* Tell final.c how to eliminate redundant test instructions.  */
 
 /* Here we define machine-dependent flags and fields in cc_status
    (see `conditions.h').  No extra ones are needed for the vax.  */
 /* Tell final.c how to eliminate redundant test instructions.  */
-
+
 /* Tell final.c how to eliminate redundant test instructions.  */
 
 /* Here we define machine-dependent flags and fields in cc_status
@@ -1313,7 +1313,7 @@ extern char *current_function_name;
 /* Here we define machine-dependent flags and fields in cc_status
    (see `conditions.h').   */
 
-
+
 /* Control the assembler format that we output.  */
 
 /* Output at beginning of assembler file.  */
@@ -1665,7 +1665,7 @@ extern char *current_function_name;
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)                  \
   fprintf (FILE, "\t.space %d\n", (SIZE))
-
+
 /* The support of .comm and .extern  below permits to take advantage
    of the SDATA/SBSS sections supported by the MIPS ASSEMBLER and LOADER
    However some problems have to be solved
@@ -1763,7 +1763,7 @@ sdata_section ()                            \
 /* This says what to print at the end of the assembly file */
 #define ASM_FILE_END(FILE)                      \
        mips_asm_file_end(FILE)
-
+
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
    LABELNO is an integer which is different for each call.  */
@@ -1823,7 +1823,7 @@ sdata_section ()                            \
 #define ASM_SHORT_OP ".half "
 #define ASM_CHAR_OP ".byte "
 
-
+
 #define DEBUG_LOG_INSN(X)  {                        \
             extern rtx al_log_insn_debug;               \
             al_log_insn_debug=(X); }

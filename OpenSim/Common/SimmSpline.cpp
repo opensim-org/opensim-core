@@ -316,7 +316,7 @@ void SimmSpline::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber
 {
     Function::updateFromXMLNode(aNode, versionNumber);
     calcCoefficients();
-}   
+}
 
 //=============================================================================
 // EVALUATION

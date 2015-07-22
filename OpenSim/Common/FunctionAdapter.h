@@ -31,7 +31,7 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 // Excluding this from Doxygen until it has better documentation! -Sam Hamner
 /// @cond

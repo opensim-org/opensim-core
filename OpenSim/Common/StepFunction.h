@@ -36,7 +36,7 @@ namespace OpenSim {
 /**
  * A class for representing a StepFunction.
  *
- *          {   start_value,    t <= start_time 
+ *          {   start_value,    t <= start_time
  * f(t) =   {   S-plolynomial(t), start_time < t < end_time
  *          {   end_value,      t >= end_time
  *

@@ -125,7 +125,7 @@ protected:
     // for any post XML deseraialization intialization
     void extendConnectToModel(Model& model) override;
 
-    // for any intialization requiring a state or the complete system 
+    // for any intialization requiring a state or the complete system
     void extendInitStateFromProperties( SimTK::State& s) const override;
 
 //=============================================================================

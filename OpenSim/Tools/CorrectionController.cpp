@@ -54,8 +54,8 @@ CorrectionController::~CorrectionController()
  * Default constructor
  */
 CorrectionController::CorrectionController() :
-    TrackingController(), 
-    _kp(_kpProp.getValueDbl()), 
+    TrackingController(),
+    _kp(_kpProp.getValueDbl()),
     _kv(_kvProp.getValueDbl())
 {
     // NULL
@@ -67,8 +67,8 @@ CorrectionController::CorrectionController() :
  */
 CorrectionController::
 CorrectionController(const string &aFileName, bool aUpdateFromXMLNode) :
-    TrackingController(), 
-   _kp(_kpProp.getValueDbl()), 
+    TrackingController(),
+   _kp(_kpProp.getValueDbl()),
    _kv(_kvProp.getValueDbl())
 {
 
@@ -83,8 +83,8 @@ CorrectionController(const string &aFileName, bool aUpdateFromXMLNode) :
  */
 CorrectionController::
 CorrectionController(const CorrectionController &aController) :
-    TrackingController(aController), 
-    _kp(_kpProp.getValueDbl()), 
+    TrackingController(aController),
+    _kp(_kpProp.getValueDbl()),
     _kv(_kvProp.getValueDbl())
 {
     setNull();
@@ -103,7 +103,7 @@ void CorrectionController::
 setNull()
 {
     setupProperties();
-    _model = NULL;  
+    _model = NULL;
 }
 /**
  ** Assignment operator.
@@ -120,7 +120,7 @@ CorrectionController& CorrectionController::operator=(const CorrectionController
 
     return(*this);
 }
-  
+
 
 //_____________________________________________________________________________
 /**
@@ -219,24 +219,24 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
     int nu = _model->getNumSpeeds();
 
     double t = s.getTime();
-    
+
     // GET CURRENT DESIRED COORDINATES AND SPEEDS
     // Note: yDesired[0..nq-1] will contain the generalized coordinates
     // and yDesired[nq..nq+nu-1] will contain the generalized speeds.
     Array<double> yDesired(0.0,nq+nu);
     getDesiredStatesStorage().getDataAtTime(t, nq+nu,yDesired);
-    
+
     SimTK::Vector actControls(1, 0.0);
 
     for(int i=0; i< getActuatorSet().getSize(); i++){
-        CoordinateActuator* act = 
+        CoordinateActuator* act =
             dynamic_cast<CoordinateActuator*>(&getActuatorSet().get(i));
         SimTK_ASSERT( act,  "CorrectionController::computeControls dynamic cast failed");
 
         Coordinate *aCoord = act->getCoordinate();
         if( aCoord->isConstrained(s) ) {
             actControls =  0.0;
-        } 
+        }
         else
         {
             double qval = aCoord->getValue(s);
@@ -251,7 +251,7 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
             actControls = -vErrTerm - pErrTerm;
         }
 
-        
+
         getActuatorSet()[i].addInControls(actControls, controls);
     }
 }
@@ -261,12 +261,12 @@ void CorrectionController::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
 
-    // create an actuator for each generalized coordinate in the model 
-    // add these actuators to the model and set their indexes 
+    // create an actuator for each generalized coordinate in the model
+    // add these actuators to the model and set their indexes
     const CoordinateSet& cs = _model->getCoordinateSet();
     for(int i=0; i<cs.getSize(); i++) {
-        std::cout << " CorrectionController::extendConnectToModel(): " 
-                  <<  cs.get(i).getName()+"_corrector" << "  added " 
+        std::cout << " CorrectionController::extendConnectToModel(): "
+                  <<  cs.get(i).getName()+"_corrector" << "  added "
                   << std::endl;
         std::string name = cs.get(i).getName()+"_corrector";
         CoordinateActuator *actuator = NULL;
@@ -279,9 +279,9 @@ void CorrectionController::extendConnectToModel(Model& model)
             actuator->setName(name);
             _model->addForce(actuator);
         }
-            
+
         actuator->setOptimalForce(1.0);
-        
+
         updActuators().adoptAndAppend(actuator);
    }
     setNumControls(getActuatorSet().getSize());
@@ -290,7 +290,7 @@ void CorrectionController::extendConnectToModel(Model& model)
         _model->getForceSet().getSize(), _kv, _kp );
 }
 
-// for any intialization requiring a state or the complete system 
+// for any intialization requiring a state or the complete system
 void CorrectionController::extendInitStateFromProperties(SimTK::State& s) const
 {
     Super::extendInitStateFromProperties(s);

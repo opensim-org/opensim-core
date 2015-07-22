@@ -250,7 +250,7 @@
 			<kv>  20.0 </kv>
 			<coordinate> ankle_angle_l </coordinate>
 		</CMC_Joint>
-	
+
 		<CMC_Joint name="subtalar_angle_l">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>

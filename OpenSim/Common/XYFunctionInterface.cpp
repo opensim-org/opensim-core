@@ -104,10 +104,10 @@ XYFunctionInterface::XYFunctionInterface(Function* f) :
         return;
     }
     _genericFunction = func;
-    
+
 }
 
-bool XYFunctionInterface::isSpecifiedByControlPoints() const 
+bool XYFunctionInterface::isSpecifiedByControlPoints() const
 {
     switch (_functionType)
     {

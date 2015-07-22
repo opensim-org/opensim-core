@@ -1,5 +1,5 @@
-#ifndef SimTK_SimTKCOMMON_ROTATION_H_ 
-#define SimTK_SimTKCOMMON_ROTATION_H_ 
+#ifndef SimTK_SimTKCOMMON_ROTATION_H_
+#define SimTK_SimTKCOMMON_ROTATION_H_
 
 /* -------------------------------------------------------------------------- *
  *                       Simbody(tm): SimTKcommon                             *
@@ -56,24 +56,24 @@ typedef InverseRotation_<double>   dInverseRotation;
 
 //------------------------------------------------------------------------------
 /**
- * The Rotation class is a Mat33 that guarantees that the matrix is a legitimate 
- * 3x3 array associated with the relative orientation of two right-handed, 
+ * The Rotation class is a Mat33 that guarantees that the matrix is a legitimate
+ * 3x3 array associated with the relative orientation of two right-handed,
  * orthogonal, unit vector bases. The Rotation class takes advantage of
- * known properties of orthogonal matrices. For example, multiplication by a 
- * rotation matrix preserves a vector's length so unit vectors are still unit 
+ * known properties of orthogonal matrices. For example, multiplication by a
+ * rotation matrix preserves a vector's length so unit vectors are still unit
  * vectors afterwards and don't need to be re-normalized.
- * 
- * A rotation is an orthogonal matrix whose columns and rows are directions 
- * (that is, unit vectors) that are mutually orthogonal. Furthermore, if the 
- * columns (or rows) are labeled x,y,z it always holds that z = x X y (rather 
- * than -(x X y)) ensuring that this is a right-handed rotation matrix and not 
+ *
+ * A rotation is an orthogonal matrix whose columns and rows are directions
+ * (that is, unit vectors) that are mutually orthogonal. Furthermore, if the
+ * columns (or rows) are labeled x,y,z it always holds that z = x X y (rather
+ * than -(x X y)) ensuring that this is a right-handed rotation matrix and not
  * a reflection. This is equivalent to saying that the determinant of a rotation
  * matrix is 1, not -1.
  *
- * Suppose there is a vector v_F expressed in terms of the right-handed, 
+ * Suppose there is a vector v_F expressed in terms of the right-handed,
  * orthogonal unit vectors Fx, Fy, Fz and one would like to express v instead
- * as v_G, in terms of a right-handed, orthogonal unit vectors Gx, Gy, Gz. To 
- * calculate it, we form a rotation matrix R_GF whose columns are the F unit 
+ * as v_G, in terms of a right-handed, orthogonal unit vectors Gx, Gy, Gz. To
+ * calculate it, we form a rotation matrix R_GF whose columns are the F unit
  * vectors re-expressed in G:
  * <pre>
  *             G F   (      |      |      )
@@ -82,20 +82,20 @@ typedef InverseRotation_<double>   dInverseRotation;
  * where
  *      Fx_G = ~( ~Fx*Gx, ~Fx*Gy, ~Fx*Gz ), etc.
  * </pre>
- * (~Fx*Gx means dot(Fx,Gx)). Note that we use "monogram" notation R_GF in 
- * code to represent the more typographically demanding superscripted notation 
- * for rotation matrices. Now we can re-express the vector v from frame F to 
+ * (~Fx*Gx means dot(Fx,Gx)). Note that we use "monogram" notation R_GF in
+ * code to represent the more typographically demanding superscripted notation
+ * for rotation matrices. Now we can re-express the vector v from frame F to
  * frame G via
  * <pre>
- *      v_G = R_GF * v_F. 
+ *      v_G = R_GF * v_F.
  * </pre>
  * Because a rotation is orthogonal, its transpose is its inverse. Hence
- * R_FG = ~R_GF (where ~ is the SimTK "transpose" operator). This transpose 
+ * R_FG = ~R_GF (where ~ is the SimTK "transpose" operator). This transpose
  * matrix can be used to expressed v_G in terms of Fx, Fy, Fz as
  * <pre>
  *      v_F = R_FG * v_G  or  v_F = ~R_GF * v_G
  * </pre>
- * In either direction, correct behavior can be obtained by using the 
+ * In either direction, correct behavior can be obtained by using the
  * recommended notation and then matching up the frame labels (after
  * interpreting the "~" operator as reversing the labels).
  */
@@ -118,9 +118,9 @@ class Rotation_ : public Mat33 {
 #endif
 public:
     // Default constructor and constructor-like methods
-    Rotation_() : Mat33(1) {}    
+    Rotation_() : Mat33(1) {}
     Rotation_&  setRotationToIdentityMatrix()  { Mat33::operator=(P(1));  return *this; }
-    Rotation_&  setRotationToNaN()             { Mat33::setToNaN();    return *this; } 
+    Rotation_&  setRotationToNaN()             { Mat33::setToNaN();    return *this; }
 
     // Default copy constructor and assignment operator
     Rotation_( const Rotation_& R ) : Mat33(R)  {}
@@ -166,17 +166,17 @@ public:
     /// Constructor for three-angle Body-fixed or Space-fixed rotation sequences (angles are in radians)
     Rotation_( BodyOrSpaceType bodyOrSpace, P angle1, const CoordinateAxis& axis1, P angle2, const CoordinateAxis& axis2, P angle3, const CoordinateAxis& axis3 )  { setRotationFromThreeAnglesThreeAxes(bodyOrSpace,angle1,axis1,angle2,axis2,angle3,axis3); }
     /// Set this Rotation_ object to a two-angle, two-axes, Body-fixed or Space-fixed rotation sequences (angles are in radians)
-    /* SimTK_SimTKCOMMON_EXPORT */ Rotation_&  setRotationFromTwoAnglesTwoAxes(     BodyOrSpaceType bodyOrSpace, P angle1, const CoordinateAxis& axis1, P angle2, const CoordinateAxis& axis2 ); 
+    /* SimTK_SimTKCOMMON_EXPORT */ Rotation_&  setRotationFromTwoAnglesTwoAxes(     BodyOrSpaceType bodyOrSpace, P angle1, const CoordinateAxis& axis1, P angle2, const CoordinateAxis& axis2 );
     /// Set this Rotation_ object to a three-angle Body-fixed or Space-fixed rotation sequences (angles are in radians)
     /* SimTK_SimTKCOMMON_EXPORT */ Rotation_&  setRotationFromThreeAnglesThreeAxes( BodyOrSpaceType bodyOrSpace, P angle1, const CoordinateAxis& axis1, P angle2, const CoordinateAxis& axis2, P angle3, const CoordinateAxis& axis3 );
 
     /// Set this Rotation_ to represent a rotation characterized by subsequent rotations of:
-    /// +v[0] about the body frame's X axis,      followed by a rotation of 
+    /// +v[0] about the body frame's X axis,      followed by a rotation of
     /// +v[1] about the body frame's NEW Y axis.  See Kane, Spacecraft Dynamics, pg. 423, body-three: 1-2-3.
     void setRotationToBodyFixedXY( const Vec2& v)   { setRotationFromTwoAnglesTwoAxes(     BodyRotationSequence, v[0], XAxis, v[1], YAxis ); }
     /// Set this Rotation_ to represent a rotation characterized by subsequent rotations of:
-    /// +v[0] about the body frame's X axis,      followed by a rotation of 
-    /// +v[1] about the body frame's NEW Y axis,  followed by a rotation of 
+    /// +v[0] about the body frame's X axis,      followed by a rotation of
+    /// +v[1] about the body frame's NEW Y axis,  followed by a rotation of
     /// +v[2] about the body frame's NEW Z axis.  See Kane, Spacecraft Dynamics, pg. 423, body-three: 1-2-3.
     void setRotationToBodyFixedXYZ( const Vec3& v)  { setRotationFromThreeAnglesThreeAxes( BodyRotationSequence, v[0], XAxis, v[1], YAxis, v[2], ZAxis ); }
 #ifndef SWIG
@@ -201,10 +201,10 @@ public:
     /* SimTK_SimTKCOMMON_EXPORT */ Rotation_&  setRotationFromOneAxis( const UnitVec3& uvec, const CoordinateAxis axis );
     //@}
 
-    /// Calculate R_AB by knowing one of B's unit vectors u1 (could be Bx, By, or Bz) 
-    /// expressed in A and a vector v (also expressed in A) that is approximately in 
-    /// the desired direction for a second one of B's unit vectors, u2 (!= u1). 
-    /// If v is not perpendicular to u1, no worries - we'll find a direction for u2 
+    /// Calculate R_AB by knowing one of B's unit vectors u1 (could be Bx, By, or Bz)
+    /// expressed in A and a vector v (also expressed in A) that is approximately in
+    /// the desired direction for a second one of B's unit vectors, u2 (!= u1).
+    /// If v is not perpendicular to u1, no worries - we'll find a direction for u2
     /// that is perpendicular to u1 and comes closest to v. The third vector u3
     /// is +/- u1 X u2, as appropriate for a right-handed rotation matrix.
     //@{
@@ -254,21 +254,21 @@ public:
     /// Return true if "this" Rotation is nearly identical to "R" within a specified pointing angle error
     //@{
     /* SimTK_SimTKCOMMON_EXPORT */ bool  isSameRotationToWithinAngle( const Rotation_& R, P okPointingAngleErrorRads ) const;
-    bool isSameRotationToWithinAngleOfMachinePrecision( const Rotation_& R) const       
+    bool isSameRotationToWithinAngleOfMachinePrecision( const Rotation_& R) const
     {   return isSameRotationToWithinAngle( R, NTraits<P>::getSignificant() ); }
     //@}
-    P  getMaxAbsDifferenceInRotationElements( const Rotation_& R ) const {            
-        const Mat33& A = asMat33();  const Mat33& B = R.asMat33();  P maxDiff = 0;  
-        for( int i=0;  i<=2; i++ ) for( int j=0; j<=2; j++ ) 
-        {   P absDiff = std::fabs(A[i][j] - B[i][j]);  
-            if( absDiff > maxDiff ) maxDiff = absDiff; }  
-        return maxDiff; 
-    } 
+    P  getMaxAbsDifferenceInRotationElements( const Rotation_& R ) const {
+        const Mat33& A = asMat33();  const Mat33& B = R.asMat33();  P maxDiff = 0;
+        for( int i=0;  i<=2; i++ ) for( int j=0; j<=2; j++ )
+        {   P absDiff = std::fabs(A[i][j] - B[i][j]);
+            if( absDiff > maxDiff ) maxDiff = absDiff; }
+        return maxDiff;
+    }
 
-    bool  areAllRotationElementsSameToEpsilon( const Rotation_& R, P epsilon ) const 
+    bool  areAllRotationElementsSameToEpsilon( const Rotation_& R, P epsilon ) const
     {   return getMaxAbsDifferenceInRotationElements(R) <= epsilon ; }
-    bool  areAllRotationElementsSameToMachinePrecision( const Rotation_& R ) const       
-    {   return areAllRotationElementsSameToEpsilon( R, NTraits<P>::getSignificant() ); } 
+    bool  areAllRotationElementsSameToMachinePrecision( const Rotation_& R ) const
+    {   return areAllRotationElementsSameToEpsilon( R, NTraits<P>::getSignificant() ); }
 
     /// Like copy constructor but for inverse rotation.  This allows implicit conversion from InverseRotation_ to Rotation_.
     inline Rotation_( const InverseRotation_<P>& );
@@ -320,12 +320,12 @@ public:
 
     /// Set the Rotation_ matrix directly - but you had better know what you are doing!
     //@{
-    Rotation_&  setRotationFromMat33TrustMe( const Mat33& m )  
-    {   Mat33& R = *this; R=m;  return *this; }   
-    Rotation_&  setRotationColFromUnitVecTrustMe( int colj, const UnitVec3& uvecj )  
-    {   Mat33& R = *this; R(colj)=uvecj.asVec3(); return *this; }   
-    Rotation_&  setRotationFromUnitVecsTrustMe( const UnitVec3& colA, const UnitVec3& colB, const UnitVec3& colC )  
-    {   Mat33& R = *this; R(0)=colA.asVec3(); R(1)=colB.asVec3(); R(2)=colC.asVec3(); return *this; }  
+    Rotation_&  setRotationFromMat33TrustMe( const Mat33& m )
+    {   Mat33& R = *this; R=m;  return *this; }
+    Rotation_&  setRotationColFromUnitVecTrustMe( int colj, const UnitVec3& uvecj )
+    {   Mat33& R = *this; R(colj)=uvecj.asVec3(); return *this; }
+    Rotation_&  setRotationFromUnitVecsTrustMe( const UnitVec3& colA, const UnitVec3& colB, const UnitVec3& colC )
+    {   Mat33& R = *this; R(0)=colA.asVec3(); R(1)=colB.asVec3(); R(2)=colC.asVec3(); return *this; }
     //@}
 #endif
 //--------------------------- PAUL CONTINUE FROM HERE --------------------------
@@ -405,11 +405,11 @@ public:
 
         return E*wdot_PB_B + Edot*w_PB_B;
     }
-    
-    /// Given Euler angles q forming a body-fixed X-Y-Z sequence return the 
-    /// block N_B of the system N matrix such that qdot=N_B(q)*w_PB_B where 
-    /// w_PB_B is the angular velocity of B in P EXPRESSED IN *B*!!! Note that 
-    /// N_B=N_P*R_PB. This matrix will be singular if Y (q[1]) gets near 90 
+
+    /// Given Euler angles q forming a body-fixed X-Y-Z sequence return the
+    /// block N_B of the system N matrix such that qdot=N_B(q)*w_PB_B where
+    /// w_PB_B is the angular velocity of B in P EXPRESSED IN *B*!!! Note that
+    /// N_B=N_P*R_PB. This matrix will be singular if Y (q[1]) gets near 90
     /// degrees!
     /// @note This version is very expensive because it has to calculate sines
     ///       and cosines. If you already have those, use the alternate form
@@ -425,9 +425,9 @@ public:
             Vec3(0, std::sin(q[1]), std::sin(q[2])));
     }
 
-    /// This faster version of calcNForBodyXYZInBodyFrame() assumes you have 
-    /// already calculated the cosine and sine of the three q's. Note that we 
-    /// only look at the cosines and sines of q[1] and q[2]; q[0] does not 
+    /// This faster version of calcNForBodyXYZInBodyFrame() assumes you have
+    /// already calculated the cosine and sine of the three q's. Note that we
+    /// only look at the cosines and sines of q[1] and q[2]; q[0] does not
     /// matter so you don't have to fill in the 0'th element of cq and sq.
     /// Cost is one divide plus 6 flops, say 12 flops.
     static Mat33 calcNForBodyXYZInBodyFrame(const Vec3& cq, const Vec3& sq) {
@@ -441,18 +441,18 @@ public:
                        -s1*c2oc1 , s1*s2oc1, 1 );
     }
 
-    /// Given Euler angles q forming a body-fixed X-Y-Z (123) sequence return 
-    /// the block N_P of the system N matrix such that qdot=N_P(q)*w_PB where 
-    /// w_PB is the angular velocity of B in P expressed in P (not the 
-    /// convention that Kane uses, where angular velocities are expressed in 
-    /// the outboard body B). Note that N_P = N_B*~R_PB. This matrix will be 
+    /// Given Euler angles q forming a body-fixed X-Y-Z (123) sequence return
+    /// the block N_P of the system N matrix such that qdot=N_P(q)*w_PB where
+    /// w_PB is the angular velocity of B in P expressed in P (not the
+    /// convention that Kane uses, where angular velocities are expressed in
+    /// the outboard body B). Note that N_P = N_B*~R_PB. This matrix will be
     /// singular if Y (q[1]) gets near 90 degrees!
     ///
     /// @note This version is very expensive because it has to calculate sines
     ///       and cosines. If you already have those, use the alternate form
     ///       of this method.
     ///
-    /// Cost: about 100 flops for sin/cos plus 12 to calculate N_P. 
+    /// Cost: about 100 flops for sin/cos plus 12 to calculate N_P.
     static Mat33 calcNForBodyXYZInParentFrame(const Vec3& q) {
         // Note: q[2] is not referenced so we won't waste time calculating
         // its cosine and sine here.
@@ -461,9 +461,9 @@ public:
             Vec3(std::sin(q[0]), std::sin(q[1]), 0));
     }
 
-    /// This faster version of calcNForBodyXYZInParentFrame() assumes you have 
-    /// already calculated the cosine and sine of the three q's. Note that we 
-    /// only look at the cosines and sines of q[0] and q[1]; q[2] does not 
+    /// This faster version of calcNForBodyXYZInParentFrame() assumes you have
+    /// already calculated the cosine and sine of the three q's. Note that we
+    /// only look at the cosines and sines of q[0] and q[1]; q[2] does not
     /// matter so you don't have to fill in the 3rd element of cq and sq.
     /// Cost is one divide plus 6 flops, say 12 flops.
     /// @see Paul Mitiguy
@@ -478,7 +478,7 @@ public:
                        0 ,  -s0oc1  ,  c0oc1 );
     }
 
-    /// This is the fastest way to form the product qdot=N_P*w_PB for a 
+    /// This is the fastest way to form the product qdot=N_P*w_PB for a
     /// body-fixed XYZ sequence where angular velocity of child in parent is
     /// expected to be expressed in the parent. Here we assume you have
     /// previously calculated sincos(qx), sincos(qy), and 1/cos(qy).
@@ -497,7 +497,7 @@ public:
         return Vec3( w0 + t*s1, c0*w1 + s0*w2, -t ); // qdot
     }
 
-    /// This is the fastest way to form the product v_P=~N_P*q=~(~q*N_P); 
+    /// This is the fastest way to form the product v_P=~N_P*q=~(~q*N_P);
     /// see the untransposed method multiplyByBodyXYZ_N_P() for information.
     /// Cost is 9 flops.
     static Vec3 multiplyByBodyXYZ_NT_P(const Vec2& cosxy,
@@ -514,7 +514,7 @@ public:
     }
 
     /// Calculate first time derivative qdot of body-fixed XYZ Euler angles q
-    /// given sines and cosines of the Euler angles and the angular velocity 
+    /// given sines and cosines of the Euler angles and the angular velocity
     /// w_PB of child B in parent P, expressed in P. Cost is 10 flops.
     ///
     /// Theory: calculate qdot=N_P(q)*w_PB using multiplyByBodyXYZ_N_P().
@@ -528,15 +528,15 @@ public:
         return multiplyByBodyXYZ_N_P(cosxy,sinxy,oocosy,w_PB);
     }
 
-    /// Calculate second time derivative qdotdot of body-fixed XYZ Euler 
-    /// angles q given sines and cosines of the Euler angles, the first 
-    /// derivative qdot and the angular acceleration b_PB of child B in 
+    /// Calculate second time derivative qdotdot of body-fixed XYZ Euler
+    /// angles q given sines and cosines of the Euler angles, the first
+    /// derivative qdot and the angular acceleration b_PB of child B in
     /// parent P, expressed in P. Cost is 22 flops.
     ///
-    /// Theory: we have qdot=N_P*w_PB, which we differentiate in P to 
-    /// get qdotdot=N_P*b_PB + NDot_P*w_PB. Note that NDot_P=NDot_P(q,qdot) 
+    /// Theory: we have qdot=N_P*w_PB, which we differentiate in P to
+    /// get qdotdot=N_P*b_PB + NDot_P*w_PB. Note that NDot_P=NDot_P(q,qdot)
     /// and w_PB=NInv_P*qdot (because N_P is invertible). We can then rewrite
-    /// qdotdot=N_P*b_PB + NDot_P*(NInv_P*qdot) which can be calculated very 
+    /// qdotdot=N_P*b_PB + NDot_P*(NInv_P*qdot) which can be calculated very
     /// efficiently. The second term is just an acceleration remainder term
     /// quadratic in qdot.
     static Vec3 convertAngAccInParentToBodyXYZDotDot
@@ -573,11 +573,11 @@ public:
         const P c1q2 = c1*q2;
 
         return Vec3( q0 + s1*q2,           // w_PB
-                      c0*q1 - s0*c1q2, 
+                      c0*q1 - s0*c1q2,
                       s0*q1 + c0*c1q2 );
     }
 
-    /// Fastest way to form the product q=~NInv_P*v_P=~(~v_P*NInv_P). 
+    /// Fastest way to form the product q=~NInv_P*v_P=~(~v_P*NInv_P).
     /// This is never singular. Cost is 10 flops.
     static Vec3 multiplyByBodyXYZ_NInvT_P(const Vec2& cosxy,
                                            const Vec2& sinxy,
@@ -592,11 +592,11 @@ public:
                       s1*w0 - s0*c1*w1 + c0*c1*w2);
     }
 
-    /// Given Euler angles forming a body-fixed X-Y-Z (123) sequence q, and 
-    /// their time derivatives qdot, return the block of the NDot matrix such 
-    /// that qdotdot=N(q)*wdot + NDot(q,u)*w where w is the angular velocity 
-    /// of B in P EXPRESSED IN *B*!!! This matrix will be singular if Y (q[1]) 
-    /// gets near 90 degrees! See calcNForBodyXYZInBodyFrame() for the matrix 
+    /// Given Euler angles forming a body-fixed X-Y-Z (123) sequence q, and
+    /// their time derivatives qdot, return the block of the NDot matrix such
+    /// that qdotdot=N(q)*wdot + NDot(q,u)*w where w is the angular velocity
+    /// of B in P EXPRESSED IN *B*!!! This matrix will be singular if Y (q[1])
+    /// gets near 90 degrees! See calcNForBodyXYZInBodyFrame() for the matrix
     /// we're differentiating here.
     /// @note This version is very expensive because it has to calculate sines
     ///       and cosines. If you already have those, use the alternate form
@@ -611,13 +611,13 @@ public:
             qdot);
     }
 
-    /// This faster version of calcNDotForBodyXYZInBodyFrame() assumes you 
-    /// have already calculated the cosine and sine of the three q's. Note 
-    /// that we only look at the cosines and sines of q[1] and q[2]; q[0] does 
+    /// This faster version of calcNDotForBodyXYZInBodyFrame() assumes you
+    /// have already calculated the cosine and sine of the three q's. Note
+    /// that we only look at the cosines and sines of q[1] and q[2]; q[0] does
     /// not matter so you don't have to fill in the 0'th element of cq and sq.
     /// Cost is one divide plus 21 flops.
     static Mat33 calcNDotForBodyXYZInBodyFrame
-       (const Vec3& cq, const Vec3& sq, const Vec3& qdot) 
+       (const Vec3& cq, const Vec3& sq, const Vec3& qdot)
     {
         const P s1 = sq[1], c1 = cq[1];
         const P s2 = sq[2], c2 = cq[2];
@@ -633,11 +633,11 @@ public:
                       -(s1*b + qdot[1]*c2) , s1*a + qdot[1]*s2 , 0 );
     }
 
-    /// Given Euler angles forming a body-fixed X-Y-Z (123) sequence q, and 
-    /// their time derivatives qdot, return the block of the NDot matrix such 
+    /// Given Euler angles forming a body-fixed X-Y-Z (123) sequence q, and
+    /// their time derivatives qdot, return the block of the NDot matrix such
     /// that qdotdot=N(q)*wdot + NDot(q,u)*w where w is the angular velocity of
     /// B in P expressed in P. This matrix will be singular if Y (q[1]) gets
-    /// near 90 degrees! See calcNForBodyXYZInParentFrame() for the matrix 
+    /// near 90 degrees! See calcNForBodyXYZInParentFrame() for the matrix
     /// we're differentiating here.
     /// @note This version is very expensive because it has to calculate sines
     ///       and cosines. If you already have those, use the alternate form
@@ -648,12 +648,12 @@ public:
         // its cosine and sine here.
         const P cy = std::cos(q[1]); // cos(y)
         return calcNDotForBodyXYZInParentFrame
-           (Vec2(std::cos(q[0]), cy), 
+           (Vec2(std::cos(q[0]), cy),
             Vec2(std::sin(q[0]), std::sin(q[1])),
             1/cy, qdot);
     }
 
-    /// This faster version of calcNDotForBodyXYZInParentFrame() assumes you 
+    /// This faster version of calcNDotForBodyXYZInParentFrame() assumes you
     /// have already calculated the cosine and sine of the three q's. Note that
     /// we only look at the cosines and sines of q[0] and q[1].
     /// Cost is 21 flops.
@@ -667,15 +667,15 @@ public:
         const P a = t*s0oc1 + qdot[0]*c0oc1; // d/dt s0oc1
         const P b = t*c0oc1 - qdot[0]*s0oc1; // d/dt c0oc1
 
-        return Mat33( 0,  s1*a + qdot[1]*s0, -(s1*b + qdot[1]*c0), 
+        return Mat33( 0,  s1*a + qdot[1]*s0, -(s1*b + qdot[1]*c0),
                        0,    -qdot[0]*s0    ,     qdot[0]*c0      ,
                        0,        -a         ,         b            );
     }
 
-    /// Inverse of routine calcNForBodyXYZInBodyFrame(). Return the inverse 
+    /// Inverse of routine calcNForBodyXYZInBodyFrame(). Return the inverse
     /// NInv_B of the N_B block computed above, such that w_PB_B=NInv_B(q)*qdot
-    /// where w_PB_B is the angular velocity of B in P EXPRESSED IN *B*!!! 
-    /// (Kane's convention.) Note that NInv_B=~R_PB*NInv_P. This matrix is 
+    /// where w_PB_B is the angular velocity of B in P EXPRESSED IN *B*!!!
+    /// (Kane's convention.) Note that NInv_B=~R_PB*NInv_P. This matrix is
     /// never singular.
     /// @note This version is very expensive because it has to calculate sines
     ///       and cosines. If you already have those, use the alternate form
@@ -689,8 +689,8 @@ public:
     }
 
     /// This faster version of calcNInvForBodyXYZInBodyFrame() assumes you have
-    /// already calculated the cosine and sine of the three q's. Note that we 
-    /// only look at the cosines and sines of q[1] and q[2]; q[0] does not 
+    /// already calculated the cosine and sine of the three q's. Note that we
+    /// only look at the cosines and sines of q[1] and q[2]; q[0] does not
     /// matter so you don't have to fill in the 0'th element of cq and sq.
     /// Cost is 3 flops.
     static Mat33 calcNInvForBodyXYZInBodyFrame
@@ -703,9 +703,9 @@ public:
                         s1   ,  0  , 1 );
     }
 
-    /// Inverse of the above routine. Return the inverse NInv_P of the N_P 
-    /// block computed above, such that w_PB=NInv_P(q)*qdot where w_PB is the 
-    /// angular velocity of B in P (expressed in P). Note that 
+    /// Inverse of the above routine. Return the inverse NInv_P of the N_P
+    /// block computed above, such that w_PB=NInv_P(q)*qdot where w_PB is the
+    /// angular velocity of B in P (expressed in P). Note that
     /// NInv_P=R_PB*NInv_B. This matrix is never singular.
     /// @note This version is very expensive because it has to calculate sines
     ///       and cosines. If you already have those, use the alternate form
@@ -718,9 +718,9 @@ public:
             Vec3(std::sin(q[0]), std::sin(q[1]), 0));
     }
 
-    /// This faster version of calcNInvForBodyXYZInParentFrame() assumes you 
+    /// This faster version of calcNInvForBodyXYZInParentFrame() assumes you
     /// have already calculated the cosine and sine of the three q's. Note that
-    /// we only look at the cosines and sines of q[0] and q[1]; q[2] does not 
+    /// we only look at the cosines and sines of q[0] and q[1]; q[2] does not
     /// matter so you don't have to fill in the 3rd element of cq and sq.
     /// Cost is 3 flops.
     static Mat33 calcNInvForBodyXYZInParentFrame
@@ -733,30 +733,30 @@ public:
                        0 ,  s0 ,  c0*c1 );
     }
 
-    /// Given Euler angles forming a body-fixed X-Y-Z (123) sequence, and the 
-    /// relative angular velocity vector w_PB_B of B in the parent frame, 
-    /// <em>BUT EXPRESSED IN THE BODY FRAME</em>, return the Euler angle 
+    /// Given Euler angles forming a body-fixed X-Y-Z (123) sequence, and the
+    /// relative angular velocity vector w_PB_B of B in the parent frame,
+    /// <em>BUT EXPRESSED IN THE BODY FRAME</em>, return the Euler angle
     /// derivatives. You are dead if q[1] gets near 90 degrees!
     /// @note This version is very expensive because it has to calculate sines
     ///       and cosines. If you already have those, use the alternate form
     ///       of this method.
     /// @see Kane's Spacecraft Dynamics, page 427, body-three: 1-2-3.
     static Vec3 convertAngVelInBodyFrameToBodyXYZDot
-       (const Vec3& q, const Vec3& w_PB_B) {  
+       (const Vec3& q, const Vec3& w_PB_B) {
         return convertAngVelInBodyFrameToBodyXYZDot
            (Vec3(0, std::cos(q[1]), std::cos(q[2])),
             Vec3(0, std::sin(q[1]), std::sin(q[2])),
-            w_PB_B); 
+            w_PB_B);
     }
 
-    /// This faster version of convertAngVelInBodyFrameToBodyXYZDot() assumes 
+    /// This faster version of convertAngVelInBodyFrameToBodyXYZDot() assumes
     /// you have already calculated the cosine and sine of the three q's. Note
-    /// that we only look at the cosines and sines of q[1] and q[2]; q[0] does 
+    /// that we only look at the cosines and sines of q[1] and q[2]; q[0] does
     /// not matter so you don't have to fill in the 0'th element of cq and sq.
     /// Cost is XXX.
     //TODO: reimplement
     static Vec3 convertAngVelInBodyFrameToBodyXYZDot
-       (const Vec3& cq, const Vec3& sq, const Vec3& w_PB_B) 
+       (const Vec3& cq, const Vec3& sq, const Vec3& w_PB_B)
     {   return calcNForBodyXYZInBodyFrame(cq,sq)*w_PB_B; }
 
     /// Inverse of the above routine. Returned angular velocity is B in P,
@@ -765,21 +765,21 @@ public:
     ///       and cosines. If you already have those, use the alternate form
     ///       of this method.
     static Vec3 convertBodyXYZDotToAngVelInBodyFrame
-       (const Vec3& q, const Vec3& qdot) {   
+       (const Vec3& q, const Vec3& qdot) {
            return convertBodyXYZDotToAngVelInBodyFrame
                        (Vec3(0, std::cos(q[1]), std::cos(q[2])),
                         Vec3(0, std::sin(q[1]), std::sin(q[2])),
-                        qdot); 
+                        qdot);
     }
 
     /// This faster version of convertBodyXYZDotToAngVelInBodyFrame() assumes
-    /// you have already calculated the cosine and sine of the three q's. Note 
-    /// that we only look at the cosines and sines of q[1] and q[2]; q[0] does 
+    /// you have already calculated the cosine and sine of the three q's. Note
+    /// that we only look at the cosines and sines of q[1] and q[2]; q[0] does
     /// not matter so you don't have to fill in the 0'th element of cq and sq.
     /// Cost is XXX flops.
     // TODO: reimplement
     static Vec3 convertBodyXYZDotToAngVelInBodyFrame
-       (const Vec3& cq, const Vec3& sq, const Vec3& qdot) 
+       (const Vec3& cq, const Vec3& sq, const Vec3& qdot)
     {   return calcNInvForBodyXYZInBodyFrame(cq,sq)*qdot; }
 
     /// TODO: sherm: is this right? Warning: everything is measured in the
@@ -798,10 +798,10 @@ public:
                     w_PB_B, wdot_PB_B);
     }
 
-    /// This faster version of convertAngVelDotInBodyFrameToBodyXYZDotDot() 
-    /// assumes you have already calculated the cosine and sine of the three 
-    /// q's. Note that we only look at the cosines and sines of q[1] and q[2]; 
-    /// q[0] does not matter so you don't have to fill in the 0'th element of 
+    /// This faster version of convertAngVelDotInBodyFrameToBodyXYZDotDot()
+    /// assumes you have already calculated the cosine and sine of the three
+    /// q's. Note that we only look at the cosines and sines of q[1] and q[2];
+    /// q[0] does not matter so you don't have to fill in the 0'th element of
     /// cq and sq.
     /// Cost is XXX flops.
     // TODO: reimplement
@@ -862,7 +862,7 @@ public:
 
 #endif
     /// Given a possibly unnormalized quaternion (0th element is the scalar) and the
-    /// relative angular velocity vector of B in its parent, expressed 
+    /// relative angular velocity vector of B in its parent, expressed
     /// in the *PARENT*, return the quaternion derivatives. This is never singular.
     /// Cost is 27 flops.
     static Vec4 convertAngVelToQuaternionDot(const Vec4& q, const Vec3& w_PB_P) {
@@ -877,7 +877,7 @@ public:
     }
 
     /// We want to differentiate qdot=N(q)*w to get qdotdot=N*b+NDot*w where
-    /// b is angular acceleration wdot. Note that NDot=NDot(qdot), but it is 
+    /// b is angular acceleration wdot. Note that NDot=NDot(qdot), but it is
     /// far better to calculate the matrix-vector product NDot(N*w)*w directly
     /// rather than calculate NDot separately. That gives
     /// <pre>NDot*w = -(w^2)/4 * q</pre>
@@ -893,8 +893,8 @@ public:
 
 
 private:
-    // This is only for the most trustworthy of callers, that is, methods of 
-    // the Rotation_ class.  There are a lot of ways for this NOT to be a 
+    // This is only for the most trustworthy of callers, that is, methods of
+    // the Rotation_ class.  There are a lot of ways for this NOT to be a
     // legitimate rotation matrix -- be careful!!
     // Note that these are supplied in rows.
     Rotation_( const P& xx, const P& xy, const P& xz,
@@ -902,20 +902,20 @@ private:
                const P& zx, const P& zy, const P& zz )
     :   Mat33( xx,xy,xz, yx,yy,yz, zx,zy,zz ) {}
 
-    // These next methods are highly-efficient power-user methods. Read the 
+    // These next methods are highly-efficient power-user methods. Read the
     // code to understand them.
     /* SimTK_SimTKCOMMON_EXPORT */ Rotation_&  setTwoAngleTwoAxesBodyFixedForwardCyclicalRotation(     P cosAngle1, P sinAngle1, const CoordinateAxis& axis1, P cosAngle2, P sinAngle2, const CoordinateAxis& axis2 );
     /* SimTK_SimTKCOMMON_EXPORT */ Rotation_&  setThreeAngleTwoAxesBodyFixedForwardCyclicalRotation(   P cosAngle1, P sinAngle1, const CoordinateAxis& axis1, P cosAngle2, P sinAngle2, const CoordinateAxis& axis2, P cosAngle3, P sinAngle3 );
     /* SimTK_SimTKCOMMON_EXPORT */ Rotation_&  setThreeAngleThreeAxesBodyFixedForwardCyclicalRotation( P cosAngle1, P sinAngle1, const CoordinateAxis& axis1, P cosAngle2, P sinAngle2, const CoordinateAxis& axis2, P cosAngle3, P sinAngle3, const CoordinateAxis& axis3 );
 
-    // These next methods are highly-efficient power-user methods to convert 
+    // These next methods are highly-efficient power-user methods to convert
     // Rotation matrices to orientation angles.  Read the code to understand them.
     /* SimTK_SimTKCOMMON_EXPORT */ Vec2  convertTwoAxesBodyFixedRotationToTwoAngles(     const CoordinateAxis& axis1, const CoordinateAxis& axis2 ) const;
     /* SimTK_SimTKCOMMON_EXPORT */ Vec3  convertTwoAxesBodyFixedRotationToThreeAngles(   const CoordinateAxis& axis1, const CoordinateAxis& axis2 ) const;
     /* SimTK_SimTKCOMMON_EXPORT */ Vec3  convertThreeAxesBodyFixedRotationToThreeAngles( const CoordinateAxis& axis1, const CoordinateAxis& axis2, const CoordinateAxis& axis3 ) const;
 
 //------------------------------------------------------------------------------
-// These are obsolete names from a previous release, listed here so that 
+// These are obsolete names from a previous release, listed here so that
 // users will get a decipherable compilation error. (sherm 091101)
 //------------------------------------------------------------------------------
 private:
@@ -932,10 +932,10 @@ private:
     static Mat<3,4,P> calcUnnormalizedQInvBlockForQuaternion(const Vec4& q)
     {   return calcUnnormalizedNInvForQuaternion(q); }
     // REPLACED BY: convertAngVelInBodyFrameToBodyXYZDot
-    static Vec3 convertAngVelToBodyFixed123Dot(const Vec3& q, const Vec3& w_PB_B) 
+    static Vec3 convertAngVelToBodyFixed123Dot(const Vec3& q, const Vec3& w_PB_B)
     {   return convertAngVelInBodyFrameToBodyXYZDot(q,w_PB_B); }
     // REPLACED BY: convertBodyXYZDotToAngVelInBodyFrame
-    static Vec3 convertBodyFixed123DotToAngVel(const Vec3& q, const Vec3& qdot) 
+    static Vec3 convertBodyFixed123DotToAngVel(const Vec3& q, const Vec3& qdot)
     {   return convertBodyXYZDotToAngVelInBodyFrame(q,qdot); }
     // REPLACED BY: convertAngVelDotInBodyFrameToBodyXYZDotDot
     static Vec3 convertAngVelDotToBodyFixed123DotDot
@@ -943,7 +943,7 @@ private:
     {   return convertAngVelDotInBodyFrameToBodyXYZDotDot(q,w_PB_B,wdot_PB_B); }
 
 //------------------------------------------------------------------------------
-// The following code is obsolete - it is here temporarily for backward 
+// The following code is obsolete - it is here temporarily for backward
 // compatibility (Mitiguy 9/5/2007)
 //------------------------------------------------------------------------------
 private:
@@ -981,40 +981,40 @@ private:
     static Rotation_ aboutYThenNewZ(const P& yInRad, const P& zInRad) { return aboutZThenOldY(zInRad, yInRad); }
     static Rotation_ aboutZThenNewY(const P& zInRad, const P& yInRad) { return aboutYThenOldZ(yInRad, zInRad); }
 
-    /// Create a Rotation_ matrix by specifying only its z axis. 
+    /// Create a Rotation_ matrix by specifying only its z axis.
     /// This will work for any stride UnitVec because there is always an implicit conversion available to the packed form used as the argument.
     explicit Rotation_( const UnitVec3& uvecZ )  { setRotationFromOneAxis(uvecZ,ZAxis); }
 
-    /// Create a Rotation_ matrix by specifying its x axis, and a "y like" axis. 
-    //  We will take x seriously after normalizing, but use the y only to create z = normalize(x X y), 
+    /// Create a Rotation_ matrix by specifying its x axis, and a "y like" axis.
+    //  We will take x seriously after normalizing, but use the y only to create z = normalize(x X y),
     //  then y = z X x. Bad things happen if x and y are aligned but we may not catch it.
     Rotation_( const Vec3& x, const Vec3& yish )  { setRotationFromTwoAxes( UnitVec3(x), XAxis, yish, YAxis ); }
 
     /// Set this Rotation_ to represent the same rotation as the passed-in quaternion.
     void setToQuaternion( const QuaternionP& q )  { setRotationFromQuaternion(q); }
 
-    /// Set this Rotation_ to represent a rotation of +q0 about the body frame's Z axis, 
-    /// followed by a rotation of +q1 about the body frame's NEW Y axis, 
+    /// Set this Rotation_ to represent a rotation of +q0 about the body frame's Z axis,
+    /// followed by a rotation of +q1 about the body frame's NEW Y axis,
     /// followed by a rotation of +q3 about the body frame's NEW X axis.
     /// See Kane, Spacecraft Dynamics, pg. 423, body-three: 3-2-1.
     //  Similarly for BodyFixed123.
     void setToBodyFixed321( const Vec3& v)  { setRotationFromThreeAnglesThreeAxes( BodyRotationSequence, v[0], ZAxis, v[1], YAxis, v[2], XAxis ); }
     void setToBodyFixed123( const Vec3& v)  { setRotationToBodyFixedXYZ(v); }
 
-    /// Convert this Rotation_ matrix to an equivalent (angle,axis) representation: 
+    /// Convert this Rotation_ matrix to an equivalent (angle,axis) representation:
     /// The returned Vec4 is [angleInRadians, unitVectorX, unitVectorY, unitVectorZ].
     Vec4 convertToAngleAxis() const  { return convertRotationToAngleAxis(); }
 #ifndef SWIG
     /// Convert this Rotation_ matrix to equivalent quaternion representation.
     QuaternionP convertToQuaternion() const  { return convertRotationToQuaternion(); }
 #endif
-    /// Set this Rotation_ to represent a rotation of +q0 about the base frame's X axis, 
+    /// Set this Rotation_ to represent a rotation of +q0 about the base frame's X axis,
     /// followed by a rotation of +q1 about the base frame's (unchanged) Y axis.
     void setToSpaceFixed12( const Vec2& q ) { setRotationFromTwoAnglesTwoAxes( SpaceRotationSequence, q[0], XAxis, q[1], YAxis ); }
 
     /// Convert this Rotation_ matrix to the equivalent 1-2-3 body fixed Euler angle sequence.
-    /// Similarly, convert Rotation_ matrix to the equivalent 1-2 body  fixed Euler angle sequence. 
-    /// Similarly, convert Rotation_ matrix to the equivalent 1-2 space fixed Euler angle sequence. 
+    /// Similarly, convert Rotation_ matrix to the equivalent 1-2 body  fixed Euler angle sequence.
+    /// Similarly, convert Rotation_ matrix to the equivalent 1-2 space fixed Euler angle sequence.
     Vec3  convertToBodyFixed123() const  { return convertRotationToBodyFixedXYZ(); }
     Vec2  convertToBodyFixed12() const   { return convertRotationToBodyFixedXY(); }
     Vec2  convertToSpaceFixed12() const  { return convertTwoAxesRotationToTwoAngles( SpaceRotationSequence, XAxis, YAxis ); }
@@ -1022,7 +1022,7 @@ private:
 
 
 ///-----------------------------------------------------------------------------
-///  This InverseRotation class is the inverse of a Rotation 
+///  This InverseRotation class is the inverse of a Rotation
 ///  See the Rotation class for information.
 ///-----------------------------------------------------------------------------
 template <class P=double>
@@ -1043,7 +1043,7 @@ public:
     /// This is the type of the underlying 3x3 matrix; note that it will have
     /// unusual row and column spacing since we're viewing it as transposed.
     typedef typename Mat<3,3,P>::TransposeType  BaseMat;
-    
+
 #ifndef SWIG
     /// Note that the unit vectors representing the rows and columns of this
     /// matrix do not necessarily have unit stride.
@@ -1054,7 +1054,7 @@ public:
     typedef  UnitRow<P,BaseMat::ColSpacing>  RowType;
     //@}
 #endif
-    /// You should not ever construct one of these as they should only occur as expression 
+    /// You should not ever construct one of these as they should only occur as expression
     /// intermediates resulting from use of the "~" operator on a Rotation.
     /// But if you must, the default will produce an identity rotation.
     InverseRotation_() : BaseMat(1) {}
@@ -1062,10 +1062,10 @@ public:
     /// This is an explicit implementation of the default copy constructor.
     InverseRotation_( const InverseRotation_& R ) : BaseMat(R) {}
     /// This is an explicit implementation of the default copy assignment operator.
-    InverseRotation_&  operator=( const InverseRotation_& R )  
+    InverseRotation_&  operator=( const InverseRotation_& R )
     {   BaseMat::operator=(R.asMat33());  return *this; }
 
-    /// Assuming this InverseRotation_ is R_AB, and given a symmetric dyadic matrix S_BB expressed 
+    /// Assuming this InverseRotation_ is R_AB, and given a symmetric dyadic matrix S_BB expressed
     /// in B, we can reexpress it in A using S_AA=R_AB*S_BB*R_BA. The matrix should be one
     /// that is formed as products of vectors expressed in A, such as inertia, gyration or
     /// covariance matrices. This can be done efficiently exploiting properties of R and S.
@@ -1121,38 +1121,38 @@ public:
 
 #ifndef SWIG
 /// Write a Rotation matrix to an output stream by writing out its underlying Mat33.
-template <class P> SimTK_SimTKCOMMON_EXPORT std::ostream& 
+template <class P> SimTK_SimTKCOMMON_EXPORT std::ostream&
 operator<<(std::ostream&, const Rotation_<P>&);
 /// Write an InverseRotation matrix to an output stream by writing out its underlying Mat33.
-template <class P> SimTK_SimTKCOMMON_EXPORT std::ostream& 
+template <class P> SimTK_SimTKCOMMON_EXPORT std::ostream&
 operator<<(std::ostream&, const InverseRotation_<P>&);
 
 /// Rotating a unit vector leaves it unit length, saving us from having to perform
 /// an expensive normalization. So we override the multiply operators here changing
 /// the return type to UnitVec or UnitRow.
 //@{
-template <class P, int S> inline UnitVec<P,1>  
+template <class P, int S> inline UnitVec<P,1>
 operator*(const Rotation_<P>& R, const UnitVec<P,S>& v)        {return UnitVec<P,1>(R.asMat33()* v.asVec3(),  true);}
-template <class P, int S> inline UnitRow<P,1>  
+template <class P, int S> inline UnitRow<P,1>
 operator*(const UnitRow<P,S>& r, const Rotation_<P>& R)        {return UnitRow<P,1>(r.asRow3() * R.asMat33(), true);}
-template <class P, int S> inline UnitVec<P,1>  
+template <class P, int S> inline UnitVec<P,1>
 operator*(const InverseRotation_<P>& R, const UnitVec<P,S>& v) {return UnitVec<P,1>(R.asMat33()* v.asVec3(),  true);}
-template <class P, int S> inline UnitRow<P,1>  
+template <class P, int S> inline UnitRow<P,1>
 operator*(const UnitRow<P,S>& r, const InverseRotation_<P>& R) {return UnitRow<P,1>(r.asRow3() * R.asMat33(), true);}
 //@}
 
 // Couldn't implement these Rotation_ methods until InverseRotation_ was defined.
 template <class P> inline
 Rotation_<P>::Rotation_(const InverseRotation_<P>& R) : Mat<3,3,P>( R.asMat33() ) {}
-template <class P> inline Rotation_<P>&  
+template <class P> inline Rotation_<P>&
 Rotation_<P>::operator=(const InverseRotation_<P>& R)  {static_cast<Mat<3,3,P>&>(*this)  = R.asMat33();    return *this;}
-template <class P> inline Rotation_<P>&  
+template <class P> inline Rotation_<P>&
 Rotation_<P>::operator*=(const Rotation_<P>& R)        {static_cast<Mat<3,3,P>&>(*this) *= R.asMat33();    return *this;}
-template <class P> inline Rotation_<P>&  
+template <class P> inline Rotation_<P>&
 Rotation_<P>::operator/=(const Rotation_<P>& R)        {static_cast<Mat<3,3,P>&>(*this) *= (~R).asMat33(); return *this;}
-template <class P> inline Rotation_<P>&  
+template <class P> inline Rotation_<P>&
 Rotation_<P>::operator*=(const InverseRotation_<P>& R) {static_cast<Mat<3,3,P>&>(*this) *= R.asMat33();    return *this;}
-template <class P> inline Rotation_<P>&  
+template <class P> inline Rotation_<P>&
 Rotation_<P>::operator/=(const InverseRotation_<P>& R) {static_cast<Mat<3,3,P>&>(*this) *= (~R).asMat33(); return *this;}
 
 /// Composition of Rotation matrices via operator*.

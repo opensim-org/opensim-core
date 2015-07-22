@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
- * Author:  
+/*
+ * Author:
  */
 
 
@@ -43,7 +43,7 @@
  * @author Ayman Habib
  * @version 1.0
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 class OSIMCOMMON_API Scale : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(Scale, Object);
@@ -82,7 +82,7 @@ public:
     //--------------------------------------------------------------------------
 #ifndef SWIG
     Scale& operator=(const Scale &aMarker);
-#endif  
+#endif
 private:
     void setNull();
     void setupProperties();

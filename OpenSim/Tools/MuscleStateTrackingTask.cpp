@@ -100,7 +100,7 @@ setupProperties()
 void MuscleStateTrackingTask::
 copyData(const MuscleStateTrackingTask &aTask)
 {
-    
+
 }
 
 

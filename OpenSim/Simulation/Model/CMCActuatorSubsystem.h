@@ -46,9 +46,9 @@ class Model;
 class CMCActuatorSystemRep : public System::Guts {
     public:
     CMCActuatorSystemRep() : SimTK::System::Guts( "CMCActuatorSystem", "2.0") {}
-    
+
     // Required by the System::Guts interface.
-    /*virtual*/ CMCActuatorSystemRep* cloneImpl() const 
+    /*virtual*/ CMCActuatorSystemRep* cloneImpl() const
     {   return new CMCActuatorSystemRep(*this); }
 
     // This system doesn't have constraints, prescribed motion, or events so
@@ -87,7 +87,7 @@ class CMCActuatorSubsystemRep : public Subsystem::Guts {
   FunctionSet* getCoordinateTrajectories() const ;
   FunctionSet* getSpeedTrajectories() const ;
   Model* getModel() const ;
-  
+
   void holdCoordinatesConstant( double t );
   void releaseCoordinates();
 

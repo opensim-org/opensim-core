@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
+/*
  *  Example of an OpenSim program that optimizes the performance of a model.
  *  The main() loads the arm26 model and maximizes the forward velocity of
  *  the hand during a muscle-driven forward simulation by finding the set
@@ -48,7 +48,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
    public:
 
        /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
-       ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
+       ExampleOptimizationSystem(int numParameters, State& s, Model& aModel):
              numControls(numParameters), OptimizerSystem(numParameters), si(s), osimModel(aModel)
        {
            // Create the integrator for the simulation.
@@ -56,7 +56,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
            p_integrator->setAccuracy(1.0e-7);
            p_manager = new Manager(osimModel, *p_integrator);
        }
-                
+
     int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const {
 
         // make a copy of the initial states
@@ -64,7 +64,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 
         // Update the control values
         osimModel.updDefaultControls() = newControls;
-                
+
         // Integrate from initial time to final time
         p_manager->setInitialTime(initialTime);
         p_manager->setFinalTime(finalTime);
@@ -73,9 +73,9 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 
         p_manager->integrate(s);
 
-        /* Calculate the scalar quantity we want to minimize or maximize. 
-        *  In this case, we’re maximizing forward velocity of the 
-        *  forearm/hand mass center, so to maximize, compute velocity 
+        /* Calculate the scalar quantity we want to minimize or maximize.
+        *  In this case, we’re maximizing forward velocity of the
+        *  forearm/hand mass center, so to maximize, compute velocity
         *  and multiply it by -1.
         */
         Vec3 massCenter = osimModel.getBodySet().get("r_ulna_radius_hand").getMassCenter();
@@ -83,11 +83,11 @@ class ExampleOptimizationSystem : public OptimizerSystem {
         osimModel.getMultibodySystem().realize(s, Stage::Velocity);
         osimModel.getSimbodyEngine().getVelocity(s, osimModel.getBodySet()
             .get("r_ulna_radius_hand"), massCenter, velocity);
-        
+
         f = -velocity[0];
         stepCount++;
-        
-        // Use an if statement to only store and print the results of an 
+
+        // Use an if statement to only store and print the results of an
         //  optimization step if it is better than a previous result.
         if(f < bestSoFar) {
             bestSoFar = f;
@@ -97,7 +97,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 
       return 0;
 
-   }    
+   }
 
 private:
     int numControls;
@@ -110,22 +110,22 @@ private:
 
 //______________________________________________________________________________
 /**
- * Define an optimization problem that finds a set of muscle controls to maximize 
- * the forward velocity of the forearm/hand segment mass center. 
+ * Define an optimization problem that finds a set of muscle controls to maximize
+ * the forward velocity of the forearm/hand segment mass center.
  */
 int main()
 {
     try {
-        std::clock_t startTime = std::clock();  
+        std::clock_t startTime = std::clock();
 
         // Use Millard2012Equilibrium muscles with rigid tendons for better
         // performance.
         Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
-    
+
         // Create a new OpenSim model. This model is similar to the arm26 model,
         // but without wrapping surfaces for better performance.
         Model osimModel("Arm26_Optimize.osim");
-        
+
         // Initialize the system and get the state representing the state system
         State& si = osimModel.initSystem();
 
@@ -139,17 +139,17 @@ int main()
             muscleSet[i].setActivation(si, 0.01);
             muscleSet[i].setIgnoreTendonCompliance(si, true);
         }
-    
+
         // Make sure the muscles states are in equilibrium
         osimModel.equilibrateMuscles(si);
 
         // The number of controls will equal the number of muscles in the model!
         int numControls = osimModel.getNumControls();
-        
+
         // Initialize the optimizer system we've defined.
         ExampleOptimizationSystem sys(numControls, si, osimModel);
         Real f = NaN;
-        
+
         /* Define initial values and bounds for the controls to optimize */
         Vector controls(numControls, 0.01);
         controls[3] = 0.99;
@@ -160,7 +160,7 @@ int main()
         Vector upper_bounds(numControls, 0.99);
 
         sys.setParameterLimits( lower_bounds, upper_bounds );
-        
+
         // Create an optimizer. Pass in our OptimizerSystem
         // and the name of the optimization algorithm.
         Optimizer opt(sys, SimTK::LBFGSB);
@@ -174,9 +174,9 @@ int main()
 
         // Optimize it!
         f = opt.optimize(controls);
-            
+
         cout << "Elapsed time = " << (std::clock()-startTime)/CLOCKS_PER_SEC << "s" << endl;
-        
+
         const Set<Actuator>& actuators = osimModel.getActuators();
         for(int i=0; i<actuators.getSize(); ++i){
             cout << actuators[i].getName() << " control value = " << controls[i] << endl;
@@ -185,14 +185,14 @@ int main()
         cout << "\nMaximum hand velocity = " << -f << "m/s" << endl;
 
         cout << "OpenSim example completed successfully." << endl;
-        
+
         // Dump out optimization results to a text file for testing
-        ofstream ofile; 
-        ofile.open("Arm26_optimization_result"); 
+        ofstream ofile;
+        ofile.open("Arm26_optimization_result");
         for(int i=0; i<actuators.getSize(); ++i)
             ofile << controls[i] << endl;
         ofile << -f <<endl;
-        ofile.close(); 
+        ofile.close();
 
         // Re-run simulation with optimal controls.
         RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
@@ -212,7 +212,7 @@ int main()
         std::cout << ex.what() << std::endl;
         return 1;
     }
-    
+
     // End of main() routine.
     return 0;
 }

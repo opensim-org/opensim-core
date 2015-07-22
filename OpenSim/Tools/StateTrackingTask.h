@@ -98,7 +98,7 @@ public:
         return (_pTrk[0]->calcValue(SimTK::Vector(1,s.getTime()))- val);
     }
     /**
-     * Return the gradient of the tracking error as a vector, whose length 
+     * Return the gradient of the tracking error as a vector, whose length
      * is the number of _controller->getModel().getActuators()
      */
     virtual SimTK::Vector getTaskErrorGradient(const SimTK::State& s) {

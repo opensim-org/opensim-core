@@ -74,7 +74,7 @@ int main()
 
         ASSERT(resVec.size() == ARM26_DESIGN_SPACE_DIM+1, __FILE__, __LINE__,
                "Optimization result size mismatch" );
-        
+
         // Ensure the optimizer found a local minimum we expect.
         for (int i = 0; i < ARM26_DESIGN_SPACE_DIM-1; ++i) {
             ASSERT(fabs(resVec[i] - refControls[i])/refControls[i] < 0.2 ||

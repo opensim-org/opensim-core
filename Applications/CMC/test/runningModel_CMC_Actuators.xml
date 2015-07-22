@@ -138,7 +138,7 @@
 			<coordinate> ankle_angle_l </coordinate>
 			<optimal_force> 1.0 </optimal_force>
 		</GeneralizedForce>
-		
+
 
 		<!-- Back Joint -->
 		<GeneralizedForce name="lumbar_extension_reserve">
@@ -155,54 +155,54 @@
 			<coordinate> lumbar_rotation </coordinate>
 			<optimal_force> 1.0 </optimal_force>
 		</GeneralizedForce>
-		
+
 		<!--Right Arm-->
 		<GeneralizedForce name="arm_flex_r">
 			<coordinate> arm_flex_r </coordinate>
 			<optimal_force> 1000.0 </optimal_force>
 		</GeneralizedForce>
-		
+
 		<GeneralizedForce name="arm_add_r">
 			<coordinate> arm_add_r </coordinate>
 			<optimal_force> 1000.0 </optimal_force>
 		</GeneralizedForce>
-		
+
 		<GeneralizedForce name="arm_rot_r">
 			<coordinate> arm_rot_r </coordinate>
 			<optimal_force> 1000.0 </optimal_force>
 		</GeneralizedForce>
-		
+
 		<GeneralizedForce name="elbow_flex_r">
 			<coordinate> elbow_flex_r </coordinate>
 			<optimal_force> 1000.0 </optimal_force>
 		</GeneralizedForce>
-		
+
 		<GeneralizedForce name="pro_sup_r">
 			<coordinate> pro_sup_r </coordinate>
 			<optimal_force> 1000.0 </optimal_force>
 		</GeneralizedForce>
-		
+
 		<!--Left Arm-->
 		<GeneralizedForce name="arm_flex_l">
 			<coordinate> arm_flex_l </coordinate>
 			<optimal_force> 1000.0 </optimal_force>
 		</GeneralizedForce>
-		
+
 		<GeneralizedForce name="arm_add_l">
 			<coordinate> arm_add_l </coordinate>
 			<optimal_force> 1000.0 </optimal_force>
 		</GeneralizedForce>
-		
+
 		<GeneralizedForce name="arm_rot_l">
 			<coordinate> arm_rot_l </coordinate>
 			<optimal_force> 1000.0 </optimal_force>
 		</GeneralizedForce>
-		
+
 		<GeneralizedForce name="elbow_flex_l">
 			<coordinate> elbow_flex_l </coordinate>
 			<optimal_force> 1000.0 </optimal_force>
 		</GeneralizedForce>
-		
+
 		<GeneralizedForce name="pro_sup_l">
 			<coordinate> pro_sup_l </coordinate>
 			<optimal_force> 1000.0 </optimal_force>

@@ -90,9 +90,9 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WrapDoubleCylinderObst, WrapObject);
 
     PropertyDbl _lengthProp;
     double& _length;
-    
+
     // State of activity of each or both cylinders:  0=inactive, 1=U-Cylinder, 2=V-Cylinder, 3=Both Cylinders
-    int _activeState;   
+    int _activeState;
     Model* _model;
 
 //=============================================================================

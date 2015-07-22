@@ -98,7 +98,7 @@ void MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    std::string errorLocation = getName() + 
+    std::string errorLocation = getName() +
         " MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties";
 
     // Ensure property values are within appropriate ranges.

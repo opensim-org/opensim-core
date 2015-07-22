@@ -31,7 +31,7 @@
 
 using namespace OpenSim;
 using std::string;
-using SimTK::Vec3; using SimTK::Vector_; using SimTK::Vector; 
+using SimTK::Vec3; using SimTK::Vector_; using SimTK::Vector;
 using SimTK::SpatialVec; using SimTK::UnitVec3; using SimTK::State;
 
 
@@ -75,7 +75,7 @@ void McKibbenActuator::constructProperties()
  * Compute all quantities necessary for applying the actuator force to the
  * model.
  *
- * @param s current SimTK::State 
+ * @param s current SimTK::State
  */
 
 double McKibbenActuator::computeActuation( const SimTK::State& s ) const
@@ -86,11 +86,11 @@ double McKibbenActuator::computeActuation( const SimTK::State& s ) const
     double pressure = getControl(s);
     double B = getThreadLength();
     double N = getNumberOfTurns();
-    
-    
+
+
     double force = (pressure / (4*pow(N,2)*SimTK::Pi)) * (3*pow(length, 2) - pow(B,2));
     setActuation(s, force);
-    
+
     return force;
 }
 
@@ -103,8 +103,8 @@ double McKibbenActuator::computeActuation( const SimTK::State& s ) const
  *
  * @param s current SimTK::State
  */
-void McKibbenActuator::computeForce(const SimTK::State& s, 
-                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void McKibbenActuator::computeForce(const SimTK::State& s,
+                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                 SimTK::Vector& generalizedForces) const
 {
 

@@ -504,19 +504,19 @@ void update_we_forms(void)
 {
    Form*           form = &we->optionsform;
    WEModelOptions* weop = &we->weop[we->model->modelnum];
-   
+
    if (weop->wrap_object)
    {
       dpWrapObject* wo = weop->wrap_object;
-      
+
       storeStringInForm(&form->option[WE_OBJECT_NAME], wo->name);
       storeDoubleInForm(&form->option[WE_RADIUS_X], wo->radius[0], 4);
-      
+
       if (wo->wrap_type == dpWrapCylinder)
          storeDoubleInForm(&form->option[WE_RADIUS_Y], wo->height, 4);
       else
          storeDoubleInForm(&form->option[WE_RADIUS_Y], wo->radius[1], 4);
-      
+
       storeDoubleInForm(&form->option[WE_RADIUS_Z], wo->radius[2], 4);
    }
    else {
@@ -525,17 +525,17 @@ void update_we_forms(void)
       storeStringInForm(&form->option[WE_RADIUS_Y], NULL);
       storeStringInForm(&form->option[WE_RADIUS_Z], NULL);
    }
-   
+
    if (weop->translate.xyz[0] != 0.0)
       storeDoubleInForm(&form->option[WE_TRANSLATE_X], weop->translate.xyz[0], 4);
    else
       storeStringInForm(&form->option[WE_TRANSLATE_X], NULL);
-   
+
    if (weop->translate.xyz[1] != 0.0)
       storeDoubleInForm(&form->option[WE_TRANSLATE_Y], weop->translate.xyz[1], 4);
    else
       storeStringInForm(&form->option[WE_TRANSLATE_Y], NULL);
-   
+
    if (weop->translate.xyz[2] != 0.0)
       storeDoubleInForm(&form->option[WE_TRANSLATE_Z], weop->translate.xyz[2], 4);
    else
@@ -546,12 +546,12 @@ void update_we_forms(void)
       storeDoubleInForm(&form->option[WE_ROTATE_X], weop->rotate.xyz[0], 3);
    else
       storeStringInForm(&form->option[WE_ROTATE_X], NULL);
-   
+
    if (weop->rotate.xyz[1] != 0.0)
       storeDoubleInForm(&form->option[WE_ROTATE_Y], weop->rotate.xyz[1], 3);
    else
       storeStringInForm(&form->option[WE_ROTATE_Y], NULL);
-   
+
    if (weop->rotate.xyz[2] != 0.0)
       storeDoubleInForm(&form->option[WE_ROTATE_Z], weop->rotate.xyz[2], 3);
    else
@@ -568,7 +568,7 @@ void we_entervalue(SimmEvent se)
    WEModelOptions* weop = &we->weop[we->model->modelnum];
    dpWrapObject* wo = weop->wrap_object;
    TextFieldAction tfa;
-   
+
    switch (we->selected_item)
    {
       case WE_OBJECT_NAME:
@@ -602,7 +602,7 @@ void we_entervalue(SimmEvent se)
           rd = get_double(form, se, &tfa);
           if (rd == DOUBLE_NOT_DONE)
              return;
-         
+
          if (rd != KEEPOLDDOUBLE && wo)
          {
             switch (we->selected_item)
@@ -619,7 +619,7 @@ void we_entervalue(SimmEvent se)
                     error(none, "Value must be greater than zero.");
                  }
                   break;
-               
+
                case WE_RADIUS_Y:
                  if (rd > 0.0)
                  {
@@ -634,7 +634,7 @@ void we_entervalue(SimmEvent se)
                     error(none, "Value must be greater than zero.");
                  }
                   break;
-               
+
                case WE_RADIUS_Z:
                  if (rd > 0.0)
                  {
@@ -647,16 +647,16 @@ void we_entervalue(SimmEvent se)
                     error(none, "Value must be greater than zero.");
                  }
                   break;
-               
+
                case WE_TRANSLATE_X: weop->translate.xyz[0] = rd; break;
                case WE_TRANSLATE_Y: weop->translate.xyz[1] = rd; break;
                case WE_TRANSLATE_Z: weop->translate.xyz[2] = rd; break;
-               
+
                case WE_ROTATE_X: weop->rotate.xyz[0] = rd; break;
                case WE_ROTATE_Y: weop->rotate.xyz[1] = rd; break;
                case WE_ROTATE_Z: weop->rotate.xyz[2] = rd; break;
             }
-            
+
          }
          break;
    }
@@ -676,7 +676,7 @@ void we_entervalue(SimmEvent se)
       form->cursor_position = 0;
       form->highlight_start = form->cursor_position;
    }
-   
+
    /* send WRAP_OBJECT_CHANGED event to tell the Muscle Editor about the change. */
    make_and_queue_simm_event(WRAP_OBJECT_CHANGED, we->model->modelnum, wo, NULL, ZERO, ZERO);
    update_we_forms();
@@ -725,40 +725,40 @@ void apply_xform_to_wrapobj (double factor)
    if (we->model)
    {
       WEModelOptions* weop = &we->weop[we->model->modelnum];
-      
+
       if (weop->wrap_object)
       {
          dpCoord3D translate = { 0.0, 0.0, 0.0 };
          dpCoord3D rotate    = { 0.0, 0.0, 0.0 };
          DMatrix m;
-         
+
          dpWrapObject* wo = weop->wrap_object;
-         
+
          /* collect transform input from form fields:
           */
          if (*we->optionsform.option[WE_TRANSLATE_X].valuestr)
             sscanf(we->optionsform.option[WE_TRANSLATE_X].valuestr, "%lf", &translate.xyz[0]);
-         
+
          if (*we->optionsform.option[WE_TRANSLATE_Y].valuestr)
             sscanf(we->optionsform.option[WE_TRANSLATE_Y].valuestr, "%lf", &translate.xyz[1]);
-         
+
          if (*we->optionsform.option[WE_TRANSLATE_Z].valuestr)
             sscanf(we->optionsform.option[WE_TRANSLATE_Z].valuestr, "%lf", &translate.xyz[2]);
-         
+
          if (*we->optionsform.option[WE_ROTATE_X].valuestr)
             sscanf(we->optionsform.option[WE_ROTATE_X].valuestr, "%lf", &rotate.xyz[0]);
-         
+
          if (*we->optionsform.option[WE_ROTATE_Y].valuestr)
             sscanf(we->optionsform.option[WE_ROTATE_Y].valuestr, "%lf", &rotate.xyz[1]);
-         
+
          if (*we->optionsform.option[WE_ROTATE_Z].valuestr)
             sscanf(we->optionsform.option[WE_ROTATE_Z].valuestr, "%lf", &rotate.xyz[2]);
-         
+
          /* build transform matrix:
           */
          identity_matrix(m);
          rotate_matrix_axis_angle(m, wo->rotation_axis.xyz, wo->rotation_angle);
-         
+
          if (weop->xform_frame == WE_LOCAL_FRAME)
          {
              x_rotate_matrix_bodyfixed(m, factor * rotate.xyz[0] * DTOR);
@@ -770,7 +770,7 @@ void apply_xform_to_wrapobj (double factor)
              z_rotate_matrix_spacefixed(m, factor * rotate.xyz[2] * DTOR);
          }
          extract_rotation(m, &wo->rotation_axis, &wo->rotation_angle);
-         
+
          if (weop->xform_frame == WE_LOCAL_FRAME)
          {
              dpCoord3D v;
@@ -780,11 +780,11 @@ void apply_xform_to_wrapobj (double factor)
              v.xyz[2] = factor * translate.xyz[2];
 
              transform_vec(m, v.xyz);
-             
+
              wo->translation.xyz[0] += v.xyz[0];
              wo->translation.xyz[1] += v.xyz[1];
              wo->translation.xyz[2] += v.xyz[2];
-             
+
              wo->undeformed_translation.xyz[0] += v.xyz[0];
              wo->undeformed_translation.xyz[1] += v.xyz[1];
              wo->undeformed_translation.xyz[2] += v.xyz[2];
@@ -792,12 +792,12 @@ void apply_xform_to_wrapobj (double factor)
              wo->translation.xyz[0] += factor * translate.xyz[0];
              wo->translation.xyz[1] += factor * translate.xyz[1];
              wo->translation.xyz[2] += factor * translate.xyz[2];
-             
+
              wo->undeformed_translation.xyz[0] += factor * translate.xyz[0];
              wo->undeformed_translation.xyz[1] += factor * translate.xyz[1];
              wo->undeformed_translation.xyz[2] += factor * translate.xyz[2];
          }
-         
+
          /* apply transform to wrap object:
           */
          wo->xforms_valid = no;
@@ -815,19 +815,19 @@ void clear_we_xform_form ()
    storeStringInForm(&we->optionsform.option[WE_TRANSLATE_X], NULL);
    storeStringInForm(&we->optionsform.option[WE_TRANSLATE_Y], NULL);
    storeStringInForm(&we->optionsform.option[WE_TRANSLATE_Z], NULL);
-   
+
    storeStringInForm(&we->optionsform.option[WE_ROTATE_X], NULL);
    storeStringInForm(&we->optionsform.option[WE_ROTATE_Y], NULL);
    storeStringInForm(&we->optionsform.option[WE_ROTATE_Z], NULL);
-   
+
    if (we->model)
    {
       WEModelOptions* weop = &we->weop[we->model->modelnum];
-      
+
       weop->translate.xyz[0] = 0.0;
       weop->translate.xyz[1] = 0.0;
       weop->translate.xyz[2] = 0.0;
-      
+
       weop->rotate.xyz[0] = 0.0;
       weop->rotate.xyz[1] = 0.0;
       weop->rotate.xyz[2] = 0.0;
@@ -842,23 +842,23 @@ void reset_wrapobj_xform ()
    if (we->model)
    {
       WEModelOptions* weop = &we->weop[we->model->modelnum];
-      
+
       if (weop->wrap_object)
       {
          dpWrapObject* wo = weop->wrap_object;
-         
+
          wo->undeformed_translation.xyz[0] = wo->translation.xyz[0] = 0.0;
          wo->undeformed_translation.xyz[1] = wo->translation.xyz[1] = 0.0;
          wo->undeformed_translation.xyz[2] = wo->translation.xyz[2] = 0.0;
-         
+
          wo->rotation_axis.xyz[0] = 1.0;
          wo->rotation_axis.xyz[1] = 0.0;
          wo->rotation_axis.xyz[2] = 0.0;
-         
+
          wo->rotation_angle = 0.0;
-         
+
          wo->xforms_valid = no;
-         
+
          recalc_xforms(wo);
          inval_model_wrapping(we->model, weop->wrap_object);
          /* send WRAP_OBJECT_CHANGED event to tell the Muscle Editor about the change. */
@@ -959,20 +959,20 @@ void we_track_cb(void* data, SimmEvent se)
    double   angle, origin[4], new_origin[4], naxis[4], axis[4], x_percent, cursor_movement;
 
    getDev(we->numdevs, we->devs, we_vals);
-   
+
    for (count = 0, i = 0; i < we->numdevs; i++)
    {
       if (we_vals[i] == 1)
          count++;
-   }  
+   }
    if (count == 0)
    {
       REMOVE_TRACKER();
       return;
    }
-   
+
    wo = weop->wrap_object;
-   
+
    if (wo->visible == no)
       return;
 #if 1
@@ -984,21 +984,21 @@ void we_track_cb(void* data, SimmEvent se)
       return;
    }
 #endif
-   
+
    if (we_vals[WE_MOVE_WRAP_OBJECT_KEY])
    {
       mx_new = se.mouse_x;
       my_new = se.mouse_y;
-      
+
       if (weop->trackball_rotation)
       {
          if (we_vals[WE_TRACKBALL_KEY])
          {
             z_dist = scene->tz;
-            
+
             find_world_coords(scene, mx_new, my_new,
                z_dist, &wx_new, &wy_new, &wz_new);
-            
+
             if (tracker->mx_old == -1 || tracker->my_old == -1)
             {
                tracker->mx_old = mx_new;
@@ -1011,53 +1011,53 @@ void we_track_cb(void* data, SimmEvent se)
             {
                origin[0] = origin[1] = origin[2] = 0.0;
                origin[3] = 1.0;
-               
+
                axis[0] = tracker->wy_old - wy_new;
                axis[1] = wx_new - tracker->wx_old;
                axis[2] = 0.0;
-               
+
                normalize_vector(axis, naxis);
                naxis[3] = 1.0;
-               
+
                invert_4x4transform(scene->transform_matrix, tmp_matrix);
                mult_4x4matrix_by_vector(tmp_matrix, naxis, axis);
                mult_4x4matrix_by_vector(tmp_matrix, origin, new_origin);
-               
+
                axis[0] -= new_origin[0];
                axis[1] -= new_origin[1];
                axis[2] -= new_origin[2];
-               
+
                normalize_vector(axis, naxis);
-               
+
                naxis[0] -= origin[0];
                naxis[1] -= origin[1];
                naxis[2] -= origin[2];
-               
+
                normalize_vector(naxis, naxis);
                convert_vector(ms, naxis, ms->ground_segment, wo->segment);
                normalize_vector(naxis, naxis);
-               
+
                /* if cursor moves a full screen width, rotate by 90 degrees */
                cursor_movement = sqrt((mx_new-tracker->mx_old)*(mx_new-tracker->mx_old) +
                   (my_new-tracker->my_old)*(my_new-tracker->my_old));
-               
+
                x_percent = cursor_movement / (double)(scene->viewport[2]);
-               
+
                angle = x_percent * 90.0;
-               
+
                if (angle >= 0.0 && angle <= 180.0)
                {
                   DMatrix m;
-                  
+
                   identity_matrix(m);
                   rotate_matrix_axis_angle(m, wo->rotation_axis.xyz,
                      wo->rotation_angle);
                   rotate_matrix_axis_angle(m, naxis, angle * DTOR);
-                  
+
                   extract_rotation(m, &wo->rotation_axis, &wo->rotation_angle);
-                  
+
                   redraw = yes;
-                  
+
                   tracker->mx_old = mx_new;
                   tracker->my_old = my_new;
                   tracker->wx_old = wx_new;
@@ -1071,23 +1071,23 @@ void we_track_cb(void* data, SimmEvent se)
             tracker->wx_old = tracker->wy_old = tracker->wz_old = -1.0;
             tracker->mx_old = tracker->my_old = -1;
          }
-         
+
          if (we_vals[WE_PAN_WRAP_OBJECT_KEY])
          {
             wpt[0] = wpt[1] = wpt[2] = 0.0;
             convert_from_wrap_object_frame(wo, wpt);
             wpt[3] = 1.0;
-            
+
             convert(ms, wpt, wo->segment, ms->ground_segment);
             mult_4x4matrix_by_vector(scene->transform_matrix, wpt, wpt2);
-            
+
             z_dist = wpt2[2];
             bpan_mx_new = se.mouse_x;
             bpan_my_new = se.mouse_y;
-            
+
             find_world_coords(scene, bpan_mx_new, bpan_my_new,
                z_dist, &bpan_wx_new, &bpan_wy_new, &bpan_wz_new);
-            
+
             if (tracker->bpan_mx_old == -1 || tracker->bpan_my_old == -1)
             {
                tracker->bpan_mx_old = bpan_mx_new;
@@ -1103,9 +1103,9 @@ void we_track_cb(void* data, SimmEvent se)
                wpt[1] = bpan_wy_new;
                wpt[2] = bpan_wz_new;
                wpt[3] = 1.0;
-               
+
                invert_4x4transform(scene->transform_matrix, inv_view_matrix);
-               
+
 #if !STEADYCAM
                if (dis->camera_segment >= 0)
                   copy_4x4matrix(*get_ground_conversion(ms->modelnum,
@@ -1116,23 +1116,23 @@ void we_track_cb(void* data, SimmEvent se)
 #endif
                mult_4x4matrix_by_vector(inv_view_matrix,wpt,wpt2);
                convert(ms, wpt2, ms->ground_segment, wo->segment);
-               
+
                owpt[0] = tracker->bpan_wx_old;
                owpt[1] = tracker->bpan_wy_old;
                owpt[2] = tracker->bpan_wz_old;
                owpt[3] = 1.0;
-               
+
                mult_4x4matrix_by_vector(inv_view_matrix,owpt,owpt2);
                convert(ms, owpt2, ms->ground_segment, wo->segment);
-               
+
                wo->translation.xyz[0] += (wpt2[XX] - owpt2[XX]);
                wo->translation.xyz[1] += (wpt2[YY] - owpt2[YY]);
                wo->translation.xyz[2] += (wpt2[ZZ] - owpt2[ZZ]);
-               
+
                wo->undeformed_translation.xyz[0] += (wpt2[XX] - owpt2[XX]);
                wo->undeformed_translation.xyz[1] += (wpt2[YY] - owpt2[YY]);
                wo->undeformed_translation.xyz[2] += (wpt2[ZZ] - owpt2[ZZ]);
-               
+
                tracker->bpan_mx_old = bpan_mx_new;
                tracker->bpan_my_old = bpan_my_new;
                tracker->bpan_wx_old = bpan_wx_new;
@@ -1146,32 +1146,32 @@ void we_track_cb(void* data, SimmEvent se)
             tracker->bpan_wx_old = tracker->bpan_wy_old = tracker->bpan_wz_old = -1.0;
             tracker->bpan_mx_old = tracker->bpan_my_old = -1;
          }
-         
+
          if (we_vals[WE_ZOOM_WRAP_OBJECT_KEY])
          {
             if (tracker->zoom_mx_old == -1 || tracker->zoom_my_old == -1)
             {
                tracker->zoom_mx_old = mx_new;
                tracker->zoom_my_old = my_new;
-               
+
                wpt[0] = wpt[1] = 0.0;
                wpt[2] = wpt[3] = 1.0;
-               
+
                invert_4x4transform(scene->transform_matrix, tmp_matrix);
-               
+
                mult_4x4matrix_by_vector(tmp_matrix, wpt, wpt2);
                convert(ms, wpt2, ms->ground_segment, wo->segment);
-               
+
                tracker->zoom_vec.xyz[0] = wpt2[0];
                tracker->zoom_vec.xyz[1] = wpt2[1];
                tracker->zoom_vec.xyz[2] = wpt2[2];
-               
+
                wpt[0] = wpt[1] = wpt[2] = 0.0;
                wpt[3] = 1.0;
-               
+
                mult_4x4matrix_by_vector(tmp_matrix, wpt, wpt2);
                convert(ms, wpt2, ms->ground_segment, wo->segment);
-               
+
                tracker->zoom_vec.xyz[0] -= wpt2[0];
                tracker->zoom_vec.xyz[1] -= wpt2[1];
                tracker->zoom_vec.xyz[2] -= wpt2[2];
@@ -1179,17 +1179,17 @@ void we_track_cb(void* data, SimmEvent se)
             else if (tracker->zoom_mx_old != mx_new || tracker->zoom_my_old != my_new)
             {
                double netmove = (mx_new - tracker->zoom_mx_old) * 0.002;
-               
+
                wo->translation.xyz[0] += netmove * tracker->zoom_vec.xyz[0];
                wo->translation.xyz[1] += netmove * tracker->zoom_vec.xyz[1];
                wo->translation.xyz[2] += netmove * tracker->zoom_vec.xyz[2];
-               
+
                wo->undeformed_translation.xyz[0] += netmove * tracker->zoom_vec.xyz[0];
                wo->undeformed_translation.xyz[1] += netmove * tracker->zoom_vec.xyz[1];
                wo->undeformed_translation.xyz[2] += netmove * tracker->zoom_vec.xyz[2];
-               
+
                redraw = yes;
-               
+
                tracker->zoom_mx_old = mx_new;
                tracker->zoom_my_old = my_new;
             }
@@ -1201,21 +1201,21 @@ void we_track_cb(void* data, SimmEvent se)
        {
           double  new_rot_angle;
           DMatrix m;
-          
+
           identity_matrix(m);
           rotate_matrix_axis_angle(m, wo->rotation_axis.xyz, wo->rotation_angle);
-          
+
           if (we_vals[WE_ROTATE_X_KEY])
           {
              if (CURSOR_IN_VIEWPORT(mx_new, my_new, scene->viewport))
              {
                 new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, scene->viewport) * 0.1;
-                
+
                 if (weop->xform_frame == WE_LOCAL_FRAME)
                    x_rotate_matrix_bodyfixed(m, new_rot_angle * DTOR);
                 else
                    x_rotate_matrix_spacefixed(m, new_rot_angle * DTOR);
-                
+
                 redraw = yes;
              }
           }
@@ -1224,12 +1224,12 @@ void we_track_cb(void* data, SimmEvent se)
              if (CURSOR_IN_VIEWPORT(mx_new, my_new, scene->viewport))
              {
                 new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, scene->viewport) * 0.1;
-                
+
                 if (weop->xform_frame == WE_LOCAL_FRAME)
                    y_rotate_matrix_bodyfixed(m, new_rot_angle * DTOR);
                 else
                    y_rotate_matrix_spacefixed(m, new_rot_angle * DTOR);
-                
+
                 redraw = yes;
              }
           }
@@ -1238,12 +1238,12 @@ void we_track_cb(void* data, SimmEvent se)
              if (CURSOR_IN_VIEWPORT(mx_new, my_new, scene->viewport))
              {
                 new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, scene->viewport) * 0.1;
-                
+
                 if (weop->xform_frame == WE_LOCAL_FRAME)
                    z_rotate_matrix_bodyfixed(m, new_rot_angle * DTOR);
                 else
                    z_rotate_matrix_spacefixed(m, new_rot_angle * DTOR);
-                
+
                 redraw = yes;
              }
           }
@@ -1251,7 +1251,7 @@ void we_track_cb(void* data, SimmEvent se)
              extract_rotation(m, &wo->rotation_axis, &wo->rotation_angle);
        }
    }
-   
+
    if (redraw == yes)
    {
       wo->xforms_valid = no;
@@ -1294,7 +1294,7 @@ void add_debug_point (
 
    if (i >= MAX_DEBUG_GLYPHS)
       return;
-   
+
    wo->glyph[i].isLine = no;
    wo->glyph[i].p1[0] = pt[0] / factor;
    wo->glyph[i].p1[1] = pt[1] / factor;
@@ -1303,7 +1303,7 @@ void add_debug_point (
    wo->glyph[i].name1 = name;
    wo->glyph[i].name2 = NULL;
    wo->glyph[i].color = color;
-   
+
    wo->num_debug_glyphs++;
 }
 
@@ -1324,10 +1324,10 @@ void add_debug_line (
 
    if ( ! sEnableDebugShapes)
        return;
-   
+
    if (i >= MAX_DEBUG_GLYPHS)
       return;
-   
+
    wo->glyph[i].isLine = yes;
    wo->glyph[i].p1[0] = pt1[0] / factor;
    wo->glyph[i].p1[1] = pt1[1] / factor;
@@ -1339,7 +1339,7 @@ void add_debug_line (
    wo->glyph[i].name1 = name1;
    wo->glyph[i].name2 = name2;
    wo->glyph[i].color = color;
-   
+
    wo->num_debug_glyphs++;
 }
 
@@ -1381,11 +1381,11 @@ void recalc_xforms(dpWrapObject* wo)
 
       if (wo->rotation_angle != 0.0)
          rotate_matrix_axis_angle(wo->from_local_xform, wo->rotation_axis.xyz, wo->rotation_angle);
-   
+
       translate_matrix(wo->from_local_xform, wo->translation.xyz);
-   
+
       invert_4x4transform(wo->from_local_xform, wo->to_local_xform);
-   
+
       wo->xforms_valid = yes;
    }
 }
@@ -1409,10 +1409,10 @@ const char* get_wrap_type_name (int i)
 const char* get_wrap_algorithm_name (int i)
 {
    static char* names[WE_NUM_WRAP_ALGORITHMS] = { "hybrid", "midpoint", "axial" };
-   
+
    if (i >= 0 && i < WE_NUM_WRAP_ALGORITHMS)
       return names[i];
-   
+
    return NULL;
 }
 

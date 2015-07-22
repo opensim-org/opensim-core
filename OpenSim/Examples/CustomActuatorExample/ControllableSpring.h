@@ -33,7 +33,7 @@
 //=============================================================================
 //=============================================================================
 /**
- * A class that implements a variable stiffness spring actuator acting between 
+ * A class that implements a variable stiffness spring actuator acting between
  * two points on two bodies.
  * This actuator has no states; the control simply scales the optimal force
  * so that control*optimalForce = stiffness.
@@ -96,22 +96,22 @@ public:
     // COMPUTATIONS
     //--------------------------------------------------------------------------
 
-/* The computeForce method is the meat of this simple actuator example.  It 
+/* The computeForce method is the meat of this simple actuator example.  It
 ** computes the direction and distance between the two application points.  It
 ** then uses the difference between it's current length and rest length to determine
 ** the force magnitude, then applies the force at the application points, in the
 ** direction between them. */
-void computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void computeForce(const SimTK::State& s,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const
 {
     // make sure the model and bodies are instantiated
     if (!_model) return;
     const SimbodyEngine& engine = getModel().getSimbodyEngine();
-    
+
     if(_bodyA ==NULL || _bodyB ==NULL)
         return;
-    
+
     /* store _pointA and _pointB positions in the global frame.  If not
     ** alread in the body frame, transform _pointA and _pointB into their
     ** respective body frames. */
@@ -155,7 +155,7 @@ void computeForce(const SimTK::State& s,
 }
 
 //=============================================================================
-};  // END of class ControllableSpring  
+};  // END of class ControllableSpring
 
 } //Namespace
 //=============================================================================

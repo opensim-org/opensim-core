@@ -53,8 +53,8 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
         PROPERTIES COMPILE_FLAGS "-Wno-deprecated")
 endif()
 
-include_directories(${OpenSim_SOURCE_DIR} 
-                    ${OpenSim_SOURCE_DIR}/Vendors 
+include_directories(${OpenSim_SOURCE_DIR}
+                    ${OpenSim_SOURCE_DIR}/Vendors
                     ${PYTHON_INCLUDE_PATH}
 )
 

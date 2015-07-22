@@ -38,7 +38,7 @@ class OSIMCOMMON_API StreamLogCallback : public LogCallback
 private:
     std::ostream *_out;
     bool _ownsStream;
-    
+
 public:
     StreamLogCallback(const std::string &aFilename);
     StreamLogCallback(std::ostream *aOut, bool aOwnsStream = true);

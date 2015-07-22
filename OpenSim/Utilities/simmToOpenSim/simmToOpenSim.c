@@ -8,7 +8,7 @@
 
    Description:
     Reads in SIMM joint and muscle files and writes an OpenSim model file.
-    
+
    Routines:
 
 *******************************************************************************/
@@ -61,27 +61,27 @@ int main(int argc, char* argv[])
             if (STRINGS_ARE_EQUAL_CI(argv[i], "-J"))
             {
                 jointIn = argv[i+1];
-                i++; 
+                i++;
             }
             else if (STRINGS_ARE_EQUAL_CI(argv[i], "-M"))
             {
                 muscleIn = argv[i+1];
-                i++; 
+                i++;
             }
             else if (STRINGS_ARE_EQUAL_CI(argv[i], "-X"))
             {
                 xmlOut = argv[i+1];
-                i++; 
+                i++;
             }
             else if (STRINGS_ARE_EQUAL_CI(argv[i], "-MS"))
             {
                 markerSetOut = argv[i+1];
-                i++; 
+                i++;
             }
             else if (STRINGS_ARE_EQUAL_CI(argv[i], "-G"))
             {
                 geometryDirectory = argv[i+1];
-                i++; 
+                i++;
             }
             else if (STRINGS_ARE_EQUAL_CI(argv[i], "-A"))
             {
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
                     angleUnits = RADIANS;
                 else
                     printf("Parameter after \"-a\" must be one of: degrees, DEGREES, radians, RADIANS.\n");
-                i++; 
+                i++;
             }
             else
             {

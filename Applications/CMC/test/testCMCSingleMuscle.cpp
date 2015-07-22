@@ -40,14 +40,14 @@ int main() {
     catch (const std::exception& e)
         {  cout << e.what() <<endl; failures.push_back("testSingleMuscle"); }
 
-    // redo with the Millard2012EquilibriumMuscle 
+    // redo with the Millard2012EquilibriumMuscle
     Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
 
     try {testSingleMuscle();}
     catch (const std::exception& e)
-        {   cout << e.what() <<endl; 
+        {   cout << e.what() <<endl;
             failures.push_back("testSingleMuscle_Millard"); }
-    
+
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
@@ -76,6 +76,6 @@ void testSingleMuscle() {
     string base = "testSingleMuscle "+ muscleType;
 
     CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, tols, __FILE__, __LINE__, base+" failed");
-    
+
     cout << "\n" << base << " passed\n" << endl;
 }

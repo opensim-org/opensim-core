@@ -199,13 +199,13 @@ setFunctions(FunctionSet &aFuncSet)
                 sTask.setTaskFunctions(&aFuncSet.get(sTask.getName()));
             }
             else{
-                cout << "State tracking task " << sTask.getName() 
+                cout << "State tracking task " << sTask.getName()
                     << "has no data to track and will be ignored" << std::endl;
             }
             continue;
         }
         // If CMC_Task process same way as pre 2.0.2
-        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL)
             continue;
 
         CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
@@ -271,7 +271,7 @@ setFunctionsForVelocity(FunctionSet &aFuncSet)
     string name;
     Function *f[3];
 
-    const CoordinateSet& coords = getModel()->getCoordinateSet(); 
+    const CoordinateSet& coords = getModel()->getCoordinateSet();
 
     for(i=0;i<getSize();i++) {
 
@@ -279,7 +279,7 @@ setFunctionsForVelocity(FunctionSet &aFuncSet)
         TrackingTask& ttask = get(i);
 
         // If CMC_Task process same way as pre 2.0.2
-        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL)
             continue;
 
         CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
@@ -332,7 +332,7 @@ getNumActiveTaskFunctions() const
         TrackingTask& ttask = get(i);
 
         // If CMC_Task process same way as pre 2.0.2
-        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL)
             continue;
 
         CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
@@ -368,7 +368,7 @@ setFunctionsForAcceleration(FunctionSet &aFuncSet)
     string name;
     Function *f[3];
 
-    const CoordinateSet& coords = getModel()->getCoordinateSet(); 
+    const CoordinateSet& coords = getModel()->getCoordinateSet();
 
     for(i=0;i<getSize();i++) {
 
@@ -376,7 +376,7 @@ setFunctionsForAcceleration(FunctionSet &aFuncSet)
         TrackingTask& ttask = get(i);
 
         // If CMC_Task process same way as pre 2.0.2
-        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL)
             continue;
 
         CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
@@ -434,7 +434,7 @@ getTaskPositions(double aT)
         TrackingTask& ttask = get(i);
 
         // If CMC_Task process same way as pre 2.0.2
-        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL)
             continue;
 
         CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
@@ -465,7 +465,7 @@ getTaskVelocities(double aT)
         TrackingTask& ttask = get(i);
 
         // If CMC_Task process same way as pre 2.0.2
-        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL)
             continue;
 
         CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
@@ -496,7 +496,7 @@ getTaskAccelerations(double aT)
         TrackingTask& ttask = get(i);
 
         // If CMC_Task process same way as pre 2.0.2
-        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL)
             continue;
 
         CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
@@ -531,7 +531,7 @@ getPositionGains()
         TrackingTask& ttask = get(i);
 
         // If CMC_Task process same way as pre 2.0.2
-        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL)
             continue;
 
         CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
@@ -562,7 +562,7 @@ getVelocityGains()
         TrackingTask& ttask = get(i);
 
         // If CMC_Task process same way as pre 2.0.2
-        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL)
             continue;
 
         CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
@@ -593,7 +593,7 @@ getAccelerationGains()
         TrackingTask& ttask = get(i);
 
         // If CMC_Task process same way as pre 2.0.2
-        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL)
             continue;
 
         CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
@@ -670,7 +670,7 @@ getWeights()
         TrackingTask& ttask = get(i);
 
         // If CMC_Task process same way as pre 2.0.2
-        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL)
             continue;
 
         CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
@@ -738,11 +738,11 @@ recordErrorsAsLastErrors()
         TrackingTask& ttask = get(i);
 
         // If CMC_Task process same way as pre 2.0.2
-        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL)
             continue;
 
         CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-        
+
         // POSITION ERRORS
         e0 = task.getPositionError(0);
         e1 = task.getPositionError(1);
@@ -782,11 +782,11 @@ computeErrors(const SimTK::State& s, double aT)
         TrackingTask& ttask = get(i);
 
         // If CMC_Task process same way as pre 2.0.2
-        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL)
             continue;
 
         CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-        
+
         // COMPUTE
         task.computeErrors(s, aT);
 
@@ -818,11 +818,11 @@ computeDesiredAccelerations(const SimTK::State& s, double aT)
         TrackingTask& ttask = get(i);
 
         // If CMC_Task process same way as pre 2.0.2
-        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL)
             continue;
 
         CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-        
+
         // COMPUTE
         task.computeDesiredAccelerations(s, aT);
 
@@ -862,11 +862,11 @@ computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF)
         TrackingTask& ttask = get(i);
 
         // If CMC_Task process same way as pre 2.0.2
-        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL)
             continue;
 
         CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-        
+
         // COMPUTE
         task.computeDesiredAccelerations(s, aTI,aTF);
 
@@ -899,11 +899,11 @@ computeAccelerations(const SimTK::State& s)
         TrackingTask& ttask = get(i);
 
         // If CMC_Task process same way as pre 2.0.2
-        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL)
             continue;
 
         CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-        
+
         // COMPUTE
         task.computeAccelerations(s);
 

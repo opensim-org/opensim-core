@@ -261,7 +261,7 @@ ReturnCode read_muscle_file(ModelStruct* ms, char filename[], SBoolean* file_exi
 
    (void)fclose(fp);
    (void)unlink((const char*)tempFileName);
-   
+
    /* check that all functions used in muscle points are defined */
    for (i=0; i<ms->func_array_size; i++)
    {
@@ -320,9 +320,9 @@ static int _compare_muscle_names (const void* elem1, const void* elem2)
 static void sort_muscle_groups (ModelStruct* ms)
 {
    int i;
-   
+
    sSortingMuscGroupsForModel = ms;
-   
+
    for (i = 0; i < ms->numgroups; i++)
       qsort(ms->muscgroup[i].muscle_index,
             ms->muscgroup[i].num_muscles, sizeof(int), _compare_muscle_names);
@@ -764,7 +764,7 @@ static ReturnCode read_muscle(ModelStruct* ms, FILE* fp, dpMuscleStruct* muscle,
       {
          if (read_string(fp, buffer) == EOF)
             break;
-         
+
          if (STRINGS_ARE_EQUAL(buffer, "no") || STRINGS_ARE_EQUAL(buffer, "false"))
             muscle->display = no;
          else if (STRINGS_ARE_EQUAL(buffer, "yes") || STRINGS_ARE_EQUAL(buffer, "true"))
@@ -774,7 +774,7 @@ static ReturnCode read_muscle(ModelStruct* ms, FILE* fp, dpMuscleStruct* muscle,
       {
          if (read_string(fp, buffer) == EOF)
             break;
-         
+
          if (STRINGS_ARE_EQUAL(buffer, "no") || STRINGS_ARE_EQUAL(buffer, "false"))
             muscle->output = no;
          else if (STRINGS_ARE_EQUAL(buffer, "yes") || STRINGS_ARE_EQUAL(buffer, "true"))
@@ -1325,7 +1325,7 @@ static ReturnCode read_ligament(FILE* fp, ModelStruct* ms)
    }
    else
    {
-      mstrcpy(&lig->name, buffer);      
+      mstrcpy(&lig->name, buffer);
    }
 
    while (1)

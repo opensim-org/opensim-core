@@ -36,7 +36,7 @@ namespace OpenSim
 
 /**
 * McKibben Pneumatic Actuator Model based on the simple cylindrical
-* formulation described in J. Dyn. Sys., Meas., Control 122, 386-388 
+* formulation described in J. Dyn. Sys., Meas., Control 122, 386-388
 * (1998) (3 pages); doi:10.1115/1.482478.
 *
 * Pressure is used as a control signal. There is an optional 'cord'
@@ -56,7 +56,7 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
+    /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(thread_length, double,
@@ -66,7 +66,7 @@ public:
     OpenSim_DECLARE_PROPERTY(cord_length, double,
         "The length of the flexible cord attaching the actuator to the last point.");
     /**@}**/
-    
+
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
@@ -79,16 +79,16 @@ public:
     void setNumberOfTurns(double val)
     {   set_number_of_turns(val); }
     /** Get the current value of the 'number of turns' property. **/
-    double getNumberOfTurns() const 
+    double getNumberOfTurns() const
     {   return get_number_of_turns(); }
-    
+
     /** Set the 'thread length' property. **/
     void setThreadLength(double val)
     {   set_thread_length(val); }
     /** Get the current value of the 'thread length' property. **/
     double getThreadLength() const
     {   return get_thread_length(); }
-    
+
     /** Set the 'cord length' property. **/
     void setCordLength(double val)
     {   set_cord_length(val); }
@@ -108,8 +108,8 @@ private:
     //--------------------------------------------------------------------------
     // Implement Force interface
     //--------------------------------------------------------------------------
-    void computeForce(const SimTK::State& state, 
-                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+    void computeForce(const SimTK::State& state,
+                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                       SimTK::Vector& mobilityForces) const override;
 
 

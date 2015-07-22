@@ -38,7 +38,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include "ForwardTool.h"
 #include <OpenSim/Common/DebugUtilities.h>
-#include "CMC.h" 
+#include "CMC.h"
 #include "CMC_TaskSet.h"
 #include "ActuatorForceTarget.h"
 #include "ActuatorForceTargetFast.h"
@@ -110,7 +110,7 @@ RRATool::RRATool(const string &aFileName, bool aLoadModel) :
         loadModel(aFileName, &_originalForceSet);
         // Append to or replace model forces with those (i.e. actuators) specified by the analysis
         updateModelForces(*_model, aFileName);
-        setModel(*_model);  
+        setModel(*_model);
         setToolOwnsModel(true);
     }
 }
@@ -223,9 +223,9 @@ void RRATool::setupProperties()
     _desiredKinematicsFileNameProp.setName("desired_kinematics_file");
     _propertySet.append( &_desiredKinematicsFileNameProp );
 
-    comment = "File containing the tracking tasks. Which coordinates are tracked and with what weights are specified here.";         
-    _taskSetFileNameProp.setComment(comment);        
-    _taskSetFileNameProp.setName("task_set_file");       
+    comment = "File containing the tracking tasks. Which coordinates are tracked and with what weights are specified here.";
+    _taskSetFileNameProp.setComment(comment);
+    _taskSetFileNameProp.setName("task_set_file");
     _propertySet.append( &_taskSetFileNameProp );
 
     comment = "DEPRECATED File containing the constraints on the controls.";
@@ -322,7 +322,7 @@ operator=(const RRATool &aTool)
     _taskSetFileName = aTool._taskSetFileName;
     _constraintsFileName = aTool._constraintsFileName;
     _lowpassCutoffFrequency = aTool._lowpassCutoffFrequency;
-    _targetDT = aTool._targetDT;         
+    _targetDT = aTool._targetDT;
     _numericalDerivativeStepSize = aTool._numericalDerivativeStepSize;
     _optimizationConvergenceTolerance = aTool._optimizationConvergenceTolerance;
     _optimizerAlgorithm = aTool._optimizerAlgorithm;
@@ -359,7 +359,7 @@ bool RRATool::run()
         throw(Exception(msg,__FILE__,__LINE__));
     }
     // OUTPUT DIRECTORY
-    // Do the maneuver to change then restore working directory 
+    // Do the maneuver to change then restore working directory
     // so that the parsing code behaves prope()rly if called from a different directory
     string saveWorkingDirectory = IO::getCwd();
     string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
@@ -383,10 +383,10 @@ bool RRATool::run()
 
     bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
 
-    CMC_TaskSet taskSet(_taskSetFileName);           
-    cout<<"\n\n taskSet size = "<<taskSet.getSize()<<endl<<endl;         
+    CMC_TaskSet taskSet(_taskSetFileName);
+    cout<<"\n\n taskSet size = "<<taskSet.getSize()<<endl<<endl;
 
-    CMC* controller = new CMC(_model,&taskSet); // Need to make it a pointer since Model takes ownership 
+    CMC* controller = new CMC(_model,&taskSet); // Need to make it a pointer since Model takes ownership
     controller->setName( "CMC" );
     controller->setActuators(_model->updActuators());
     _model->addController(controller );
@@ -400,7 +400,7 @@ bool RRATool::run()
     _model->getMultibodySystem().realize(s, Stage::Position );
      taskSet.setModel(*_model);
     _model->equilibrateMuscles(s);
-  
+
     // ---- INPUT ----
     // DESIRED POINTS AND KINEMATICS
     if(_desiredPointsFileName=="" && _desiredKinematicsFileName=="") {
@@ -501,10 +501,10 @@ bool RRATool::run()
     }
 
      // TASK SET
-    if(_taskSetFileName=="") {           
-        cout<<"ERROR- a task set was not specified\n\n";         
-        IO::chDir(saveWorkingDirectory);         
-        return false;        
+    if(_taskSetFileName=="") {
+        cout<<"ERROR- a task set was not specified\n\n";
+        IO::chDir(saveWorkingDirectory);
+        return false;
     }
 
     _model->printDetailedInfo(s, cout);
@@ -532,7 +532,7 @@ bool RRATool::run()
     string massAdjMsg;
     if(desiredKinFlag) {
         if(_adjustCOMToReduceResiduals) {
-        
+
             massAdjMsg = adjustCOMToReduceResiduals(s, *qStore,*uStore);
 
             // If not adjusting kinematics, we don't proceed with CMC, and just stop here.
@@ -561,7 +561,7 @@ bool RRATool::run()
         if (_verbose) {
             Storage *accStore=posSet->constructStorage(2);
             accStore->print("desiredPoints_splinefit_accelerations.sto");
-            delete accStore; accStore=NULL; 
+            delete accStore; accStore=NULL;
         }
     }
 
@@ -616,12 +616,12 @@ bool RRATool::run()
     taskSet.setFunctions(*qAndPosSet);
     taskSet.setFunctionsForVelocity(*uSet);
     taskSet.setFunctionsForAcceleration(*uDotSet);
- 
+
     // CONSTRAINTS ON THE CONTROLS
     ControlSet *controlConstraints = NULL;
     if(_constraintsFileName!="") {
         controlConstraints = new ControlSet(_constraintsFileName);
-        cout << "WARNING: Using DEPRECATED Control Constrails file "<< _constraintsFileName << 
+        cout << "WARNING: Using DEPRECATED Control Constrails file "<< _constraintsFileName <<
             " in RRA, generally unnecessary.\nSupport will be dropped in the future." << endl;
     }
 
@@ -644,18 +644,18 @@ bool RRATool::run()
     // Actuator force predictor
     // This requires the trajectories of the generalized coordinates
     // to be specified.
-    
+
     string rraControlName;
     CMCActuatorSystem actuatorSystem;
     CMCActuatorSubsystem cmcActSubsystem(actuatorSystem, _model);
     cmcActSubsystem.setCoordinateTrajectories(qSet);
     actuatorSystem.realizeTopology();
-    // initialize the actuator states 
-    SimTK::State& actuatorSystemState = actuatorSystem.updDefaultState(); 
-    
+    // initialize the actuator states
+    SimTK::State& actuatorSystemState = actuatorSystem.updDefaultState();
+
     SimTK::Vector &actSysZ = actuatorSystemState.updZ();
     const SimTK::Vector &modelZ = _model->getForceSubsystem().getZ(s);
-    
+
     int nra = actSysZ.size();
     int nrm = modelZ.size();
 
@@ -727,7 +727,7 @@ bool RRATool::run()
     integrator.setMinimumStepSize(_minDT);
     integrator.setAccuracy(_errorTolerance);
     Manager manager(*_model, integrator);
-    
+
     _model->setAllControllersEnabled( true );
 
     manager.setSessionName(getName());
@@ -767,7 +767,7 @@ bool RRATool::run()
         }
         time(&finishTime);
         cout<<endl;
-        // copy the final states from the last integration 
+        // copy the final states from the last integration
         s.updY() = cmcActSubsystem.getCompleteState().getY();
         cout<<"----------------------------------------------------------------\n";
         cout<<"Finished computing initial states:\n";
@@ -782,7 +782,7 @@ bool RRATool::run()
         cout<<"================================================================\n";
     } else {
         cmcActSubsystem.setCompleteState( s );
-        actuatorSystemState.updTime() = _ti; 
+        actuatorSystemState.updTime() = _ti;
         s.updTime() = _ti;
         actuatorSystem.realize(actuatorSystemState, Stage::Time );
         controller->setTargetDT(1.0e-8);
@@ -898,7 +898,7 @@ bool RRATool::run()
         x.print(cout);
         IO::chDir(saveWorkingDirectory);
         // close open files if we die prematurely (e.g. Opt fail)
-        
+
         return false;
     }
 
@@ -912,7 +912,7 @@ bool RRATool::run()
 // UTILITY
 //=============================================================================
 void RRATool::
-writeAdjustedModel() 
+writeAdjustedModel()
 {
     if(_outputModelFile=="") {
         cerr<<"Warning: A name for the output model was not set.\n";
@@ -960,7 +960,7 @@ computeAverageResiduals(const Storage &aForceStore,OpenSim::Array<double> &rFAve
     Array<double> ave(0.0);
     ave.setSize(size);
     aForceStore.computeAverage(size,&ave[0]);
-  
+
 
     // GET INDICES
       iFX = aForceStore.getStateIndex("FX");
@@ -978,7 +978,7 @@ computeAverageResiduals(const Storage &aForceStore,OpenSim::Array<double> &rFAve
     if(iFX>=0) rFAve[0] = ave[iFX];
     if(iFY>=0) rFAve[1] = ave[iFY];
     if(iFZ>=0) rFAve[2] = ave[iFZ];
-    
+
     // GET AVE MOMENTS
     if(iMX>=0) rMAve[0] = ave[iMX];
     if(iMY>=0) rMAve[1] = ave[iMY];
@@ -1025,7 +1025,7 @@ adjustCOMToReduceResiduals(SimTK::State& s, const Storage &qStore, const Storage
 
     si.updY() = restoreStates;
     _model->getMultibodySystem().realize(si, Stage::Position );
-    
+
     computeAverageResiduals(si, *_model, ti, tf, *statesStore, FAve, MAve);
 
     resMsg <<  "* Average residuals after adjusting "<<_adjustedCOMBody<<" COM:"<<endl;
@@ -1061,7 +1061,7 @@ computeAverageResiduals(SimTK::State& s, Model &aModel,double aTi,double aTf,con
     aStatesStore.getTime(iInitial,aTi);
     aStatesStore.getTime(iFinal,aTf);
 
-    
+
     aModel.getMultibodySystem().realize(s, Stage::Position );
 
     cout << "\nComputing average residuals between " << aTi << " and " << aTf << endl;
@@ -1107,7 +1107,7 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
         cout<<_adjustedCOMBody<<" has no weight.\n";
         return "";
     }
-    
+
     //---- COM CHANGE ----
     double limit = 0.100;
     double dx =  aMAve[2] / bodyWeight;
@@ -1158,7 +1158,7 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
     msg <<  "* New COM location: " << com << endl;
     msg <<  "************************************************************" << endl;
     msg <<  "* Recommended mass adjustments:                             "  <<endl;
-    msg <<  "*  Total mass change: " << dmass << endl; 
+    msg <<  "*  Total mass change: " << dmass << endl;
 
     for(i=0;i<nb;i++) {
         massChange[i] = dmass * mass[i]/massTotal;
@@ -1167,7 +1167,7 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
             <<mass[i]<<", new mass = "<<massNew[i] << endl;
     }
     msg <<  "************************************************************" << endl;
-    msg <<  "* Note: Edit the model to make recommended adjustments to  *" << endl; 
+    msg <<  "* Note: Edit the model to make recommended adjustments to  *" << endl;
     msg <<  "*       mass properties.                                   *" << endl;
     msg <<  "************************************************************" << endl;
 
@@ -1185,7 +1185,7 @@ addNecessaryAnalyses()
     AnalysisSet& as = _model->updAnalysisSet();
     // Add Actuation if necessary
     Actuation *act = NULL;
-    for(int i=0; i<as.getSize(); i++) 
+    for(int i=0; i<as.getSize(); i++)
         if(as.get(i).getConcreteClassName() == "Actuation") { act = (Actuation*)&as.get(i); break; }
     if(!act) {
         std::cout << "No Actuation analysis found in analysis set -- adding one" << std::endl;
@@ -1194,11 +1194,11 @@ addNecessaryAnalyses()
         act->setStepInterval(stepInterval);
         _model->addAnalysis(act);
     }
-    
+
     // Add Kinematics if necessary
     // NOTE: also checks getPrintResultFiles() so that the Kinematics analysis added from the GUI does not count
     Kinematics *kin = NULL;
-    for(int i=0; i<as.getSize(); i++) 
+    for(int i=0; i<as.getSize(); i++)
         if(as.get(i).getConcreteClassName() == "Kinematics" && as.get(i).getPrintResultFiles()) { kin = (Kinematics*)&as.get(i); break; }
     if(!kin) {
         std::cout << "No Kinematics analysis found in analysis set -- adding one" << std::endl;
@@ -1212,7 +1212,7 @@ addNecessaryAnalyses()
         kin->setInDegrees(true);
         //kin->getPositionStorage()->setWriteSIMMHeader(true);
     }
-    
+
 }
 
 //_____________________________________________________________________________
@@ -1232,18 +1232,18 @@ initializeControlSetUsingConstraints(
     const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints, ControlSet& rControlSet)
 {
     // Initialize control set with control constraints file
-    
+
     int size = rControlSet.getSize();
     if(aControlConstraints) {
         for(int i=0;i<size;i++) {
             int index = aControlConstraints->getIndex(rControlSet.get(i).getName());
             if(index == -1) {
-                // backwards compatibility with old version of OpenSim that appended the 
+                // backwards compatibility with old version of OpenSim that appended the
                 //                 //  control suffix to the name of the control
                 index = aControlConstraints->getIndex(rControlSet.get(i).getName()+".excitation");
             }
-            if( index > -1 ) { // if we have an associated control constraint 
-                // then, use it initialize the model's control 
+            if( index > -1 ) { // if we have an associated control constraint
+                // then, use it initialize the model's control
                 rControlSet.set(i, aControlConstraints->get(index).clone() );
             }
         }
@@ -1268,16 +1268,16 @@ initializeControlSetUsingConstraints(
             cout<<"Set "<<rraControlName<<" to use linear interpolation.\n";
         }
 #endif
-    }   
+    }
 }
 
 //_____________________________________________________________________________
 /**
- * Get a pointer to the Storage object holding forces. This's a utility routine used 
+ * Get a pointer to the Storage object holding forces. This's a utility routine used
  * by the SimTrack GUI primarily to get access to residuals while running RRA.
  *
- * User-beware, the storage will get out of scope and potentially get deleted when the 
- * analysis is done, so no assumptions about the lifetime of the returned storage object 
+ * User-beware, the storage will get out of scope and potentially get deleted when the
+ * analysis is done, so no assumptions about the lifetime of the returned storage object
  * outside the owning analysis should be made.
  */
 Storage& RRATool::getForceStorage(){

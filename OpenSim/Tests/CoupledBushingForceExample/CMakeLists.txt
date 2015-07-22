@@ -3,9 +3,9 @@
 set(EXAMPLE_TARGET exampleCoupledBushingForcePlugin)
 set(EXAMPLE_DIR ${OpenSim_SOURCE_DIR}/OpenSim/Examples/Plugins/CoupledBushingForceExample)
 
-include_directories(${OpenSim_SOURCE_DIR} 
+include_directories(${OpenSim_SOURCE_DIR}
             ${OpenSim_SOURCE_DIR}/Vendors)
-            
+
 file(GLOB SOURCE_FILES ${EXAMPLE_DIR}/*.h ${EXAMPLE_DIR}/*.cpp)
 add_library(${EXAMPLE_TARGET} SHARED ${SOURCE_FILES})
 

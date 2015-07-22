@@ -94,12 +94,12 @@ You can read this in from an XML file or create it programmatically, and
 modify it via the API.
 
 A Model contains ModelComponents, and is itself a ModelComponent so must
-satisfy the ModelComponent interface, as well as the Object interface from 
-which ModelComponent derives. This allows a Model to allocate "global" 
+satisfy the ModelComponent interface, as well as the Object interface from
+which ModelComponent derives. This allows a Model to allocate "global"
 resources using ModelComponent resource-allocation facilities.
 
 Computation using a Model is done by creating a computational representation
-of the Model, called a System (SimTK::System), using Simbody. Creation of the 
+of the Model, called a System (SimTK::System), using Simbody. Creation of the
 System is initiated by a call to the Model's initSystem() method. The System and
 related objects are maintained in a runtime section of the Model object. You
 can also ask a Model to provide visualization using the setUseVisualizer()
@@ -123,9 +123,9 @@ public:
     "should be. This translates to the number of signficant digits in the "
     "resulting coordinate values. Therefore, if you require initial conditions "
     "accurate to four significant digits, use a minimum of 1e-4 as the accuracy."
-    "The default setting is 1e-9 as to satisfy the most stringent requirements by " 
+    "The default setting is 1e-9 as to satisfy the most stringent requirements by "
     "default. NOTE: Failure for a model to satisfy the assembly accuracy often "
-    "indicates inconsistency in the constraints. For example, the feet are welded " 
+    "indicates inconsistency in the constraints. For example, the feet are welded "
     "at locations measured to five significant digits while the model lacks dofs "
     "to change stance width, in which case it cannot achieve 1e-9 accuracy." );
 
@@ -147,8 +147,8 @@ public:
     OpenSim_DECLARE_PROPERTY(force_units,std::string,
         "Units for all forces.");
 
-    OpenSim_DECLARE_UNNAMED_PROPERTY(ControllerSet, 
-        "Controllers that provide the control inputs for Actuators.");  
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ControllerSet,
+        "Controllers that provide the control inputs for Actuators.");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(ConstraintSet,
         "Constraints in the model.");
@@ -193,11 +193,11 @@ public:
     and a set of default properties. */
     Model();
 
-    /** Constructor from an OpenSim XML model file. 
+    /** Constructor from an OpenSim XML model file.
     @param filename     Name of a file containing an OpenSim model in XML
-                        format; suffix is typically ".osim". 
-                        
-    @param finalize  whether to extendFinalizeFromProperties to create a valid OpenSim Model or not on exit, 
+                        format; suffix is typically ".osim".
+
+    @param finalize  whether to extendFinalizeFromProperties to create a valid OpenSim Model or not on exit,
                      defaults to true. If set to false only deserialization is performed.
     **/
     explicit Model(const std::string& filename, bool finalize=true) SWIG_DECLARE_EXCEPTION;
@@ -211,8 +211,8 @@ public:
     void setup() SWIG_DECLARE_EXCEPTION;
 
     /**
-     * Perform some clean up functions that are normally done 
-     * from the destructor however this gives the GUI a way to 
+     * Perform some clean up functions that are normally done
+     * from the destructor however this gives the GUI a way to
      * proactively do the cleaning without waiting for garbage
      * collection to do the actual cleanup.
      */
@@ -224,12 +224,12 @@ public:
     //--------------------------------------------------------------------------
     /** @name                     Visualization
     Methods in this group affect visualization of this Model, which may be
-    through the OpenSim GUI or through the use of a ModelVisualizer which can 
+    through the OpenSim GUI or through the use of a ModelVisualizer which can
     provide limited run-time display and user interaction capability for an
-    OpenSim API-based program. If you enable visualization at the API level, 
-    the %Model will create a ModelVisualizer that you can use to control 
-    display and user interaction. In turn, the ModelVisualizer makes use of a 
-    Simbody SimTK::Visualizer; for advanced features you can ask the 
+    OpenSim API-based program. If you enable visualization at the API level,
+    the %Model will create a ModelVisualizer that you can use to control
+    display and user interaction. In turn, the ModelVisualizer makes use of a
+    Simbody SimTK::Visualizer; for advanced features you can ask the
     ModelVisualizer to give you direct access to the SimTK::Visualizer; consult
     Simbody documentation for more details. **/
     /**@{**/
@@ -242,13 +242,13 @@ public:
     /** Get writable access to the ModelDisplayHints object stored with this
     %Model. The GUI or ModelVisualizer can update these as a result of user
     requests, or an OpenSim API program can set them programmatically. **/
-    ModelDisplayHints& updDisplayHints() { 
+    ModelDisplayHints& updDisplayHints() {
         return upd_ModelVisualPreferences().upd_ModelDisplayHints(); }
 
     /** Request or suppress visualization of this %Model. This flag is checked
     during initSystem() and if set causes the %Model to allocate a
     ModelVisualizer that provides visualization and interaction with the %Model
-    as it is executing. The default is no visualization. 
+    as it is executing. The default is no visualization.
     @see getModelVisualizer() **/
     void setUseVisualizer(bool visualize) {_useVisualizer=visualize;}
     /** Return the current setting of the "use visualizer" flag, which will
@@ -262,7 +262,7 @@ public:
     unpleasant exception. **/
     bool hasVisualizer() const {return _modelViz != 0;}
 
-    /** Obtain read-only access to the ModelVisualizer. This will throw an 
+    /** Obtain read-only access to the ModelVisualizer. This will throw an
     exception if visualization was not requested or initSystem() not yet
     called.
     @return A const reference to the allocated ModelVisualizer. **/
@@ -271,15 +271,15 @@ public:
             throw Exception("Model::getVisualizer(): no visualizer present.");
         return *_modelViz;
     }
-    /** Obtain writable access to the ModelVisualizer. This will throw an 
+    /** Obtain writable access to the ModelVisualizer. This will throw an
     exception if visualization was not requested or initSystem() not yet
-    called. Writable access to the ModelVisualizer requires that you have 
+    called. Writable access to the ModelVisualizer requires that you have
     writable access to this containing Model.
     @return A non-const reference to the allocated ModelVisualizer. **/
     ModelVisualizer& updVisualizer() {
         if (!hasVisualizer())
             throw Exception("Model::updVisualizer(): no visualizer present.");
-        return *_modelViz; 
+        return *_modelViz;
     }
     /**@}**/
 
@@ -287,30 +287,30 @@ public:
     interconnect the components and then create the Simbody
     MultibodySystem needed to represent the %Model computationally. The
     extendConnectToModel() method of each contained ModelComponent will be invoked,
-    and then their addToSystem() methods are invoked.   
-    The resulting MultibodySystem is maintained internally by the %Model. After 
-    this call, you may obtain a writable reference to the System using 
-    updMultibodySystem() which you can use to make any additions you want. Then 
-    when the System is complete, call initializeState() to finalize it and 
+    and then their addToSystem() methods are invoked.
+    The resulting MultibodySystem is maintained internally by the %Model. After
+    this call, you may obtain a writable reference to the System using
+    updMultibodySystem() which you can use to make any additions you want. Then
+    when the System is complete, call initializeState() to finalize it and
     obtain an initial State. **/
     void buildSystem();
 
     /** After buildSystem() has been called, and any additional modifications
-    to the Simbody MultibodySystem have been made, call this method to finalize 
-    the MultibodySystem (by calling its realizeTopology() method), obtain an 
-    initial state, and assemble it so that position constraints are 
+    to the Simbody MultibodySystem have been made, call this method to finalize
+    the MultibodySystem (by calling its realizeTopology() method), obtain an
+    initial state, and assemble it so that position constraints are
     satisified. The initStateFromProperties() method of each contained
     ModelComponent will be invoked. A reference to the writable internally-
-    maintained model State is returned (note that this does not affect the 
+    maintained model State is returned (note that this does not affect the
     system's default state (which is part of the model and hence read only).
     The model's state can be reset to the system's default state at any time
     by re-executing initializeState(). **/
     SimTK::State& initializeState();
 
-    
-    /** Convenience method that invokes buildSystem() and then 
+
+    /** Convenience method that invokes buildSystem() and then
     initializeState(). This returns a reference to the writable internally-
-    maintained model State. Note that this does not affect the 
+    maintained model State. Note that this does not affect the
     system's default state (which is part of the model and hence read-only). **/
     SimTK::State& initSystem() SWIG_DECLARE_EXCEPTION {
         buildSystem();
@@ -319,7 +319,7 @@ public:
 
 
     /** Convenience method that returns a reference to the model's 'working'
-    state. This is just returning the reference that was returned by 
+    state. This is just returning the reference that was returned by
     initSystem() and initializeState() -- note that either of these methods
     must be called prior to getWorkingState(), otherwise an empty state will
     be returned. **/
@@ -328,9 +328,9 @@ public:
 
     /**
      * This is called after the Model is fully created but before starting a simulation.
-     * It ONLY initializes the computational system used to simulate the model and 
-     * addToSystem() has been called already. This method should only be used if 
-     * if additional SimTK::System components are being added using the SimTK API 
+     * It ONLY initializes the computational system used to simulate the model and
+     * addToSystem() has been called already. This method should only be used if
+     * if additional SimTK::System components are being added using the SimTK API
      * and the programmer is certain that the model's system has been created.
      */
     void initStateWithoutRecreatingSystem(SimTK::State& state) const { initStateFromProperties(state); };
@@ -342,7 +342,7 @@ public:
      */
     void invalidateSystem();
 
-    /** Check that the underlying computational system representing the model is valid. 
+    /** Check that the underlying computational system representing the model is valid.
         That is, is the system ready for performing calculations. */
     bool isValidSystem() const;
     /**
@@ -352,7 +352,7 @@ public:
      */
     void formStateStorage(const Storage& originalStorage, Storage& statesStorage);
     void formQStorage(const Storage& originalStorage, Storage& qStorage);
-    
+
     /**
      * Update the AssemblySolver to the latest coordinate locking/constraints
      */
@@ -374,58 +374,58 @@ public:
     /**@name       Access to the Simbody System and components
 
     Methods in this section provide advanced users access to the underlying
-    Simbody System and associated subcomponents that are constructed and 
+    Simbody System and associated subcomponents that are constructed and
     maintained by this %Model. Note that these are not available until after
     initSystem() has been invoked on this %Model. Be very careful if you
     call any of the upd() methods since modifying a System after the %Model
-    creates it can require reinitialization. 
+    creates it can require reinitialization.
     @see initStateWithoutRecreatingSystem() **/
     /**@{**/
 
     /** Get read-only access to the internal Simbody MultibodySystem that was
-    created by this %Model at the last initSystem() call. **/    
-    const SimTK::MultibodySystem& getMultibodySystem() const {return *_system; } 
-    /** (Advanced) Get writable access to the internal Simbody MultibodySystem 
+    created by this %Model at the last initSystem() call. **/
+    const SimTK::MultibodySystem& getMultibodySystem() const {return *_system; }
+    /** (Advanced) Get writable access to the internal Simbody MultibodySystem
     that was created by this %Model at the last initSystem() call. Be careful
-    if you make modifications to the System because that will invalidate 
-    initialization already performed by the Model. 
-    @see initStateWithoutRecreatingSystem() **/    
-    SimTK::MultibodySystem& updMultibodySystem() const {return *_system; } 
+    if you make modifications to the System because that will invalidate
+    initialization already performed by the Model.
+    @see initStateWithoutRecreatingSystem() **/
+    SimTK::MultibodySystem& updMultibodySystem() const {return *_system; }
 
     /** Get read-only access to the internal DefaultSystemSubsystem allocated
     by this %Model's Simbody MultibodySystem. **/
-    const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const 
+    const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const
     {   return getMultibodySystem().getDefaultSubsystem(); }
-    /** (Advanced) Get writable access to the internal DefaultSystemSubsystem 
+    /** (Advanced) Get writable access to the internal DefaultSystemSubsystem
     allocated by this %Model's Simbody MultibodySystem. **/
-    SimTK::DefaultSystemSubsystem& updDefaultSubsystem() 
+    SimTK::DefaultSystemSubsystem& updDefaultSubsystem()
     {   return updMultibodySystem().updDefaultSubsystem(); }
 
     /** Get read-only access to the internal SimbodyMatterSubsystem allocated
     by this %Model. **/
-    const SimTK::SimbodyMatterSubsystem& getMatterSubsystem() const 
+    const SimTK::SimbodyMatterSubsystem& getMatterSubsystem() const
     {   return _system->getMatterSubsystem(); }
-    /** (Advanced) Get writable access to the internal SimbodyMatterSubsystem 
+    /** (Advanced) Get writable access to the internal SimbodyMatterSubsystem
     allocated by this %Model. **/
-    SimTK::SimbodyMatterSubsystem& updMatterSubsystem() 
+    SimTK::SimbodyMatterSubsystem& updMatterSubsystem()
     {   return _system->updMatterSubsystem(); }
 
-    /** Get read-only access to the Simbody Force::Gravity element that was 
+    /** Get read-only access to the Simbody Force::Gravity element that was
     allocated by this %Model. **/
-    const SimTK::Force::Gravity& getGravityForce() const 
+    const SimTK::Force::Gravity& getGravityForce() const
     {   return *_gravityForce; }
-    /** (Advanced) Get writable access to the Simbody Force::Gravity element 
+    /** (Advanced) Get writable access to the Simbody Force::Gravity element
     that was allocated by this %Model. **/
-    SimTK::Force::Gravity& updGravityForce() 
+    SimTK::Force::Gravity& updGravityForce()
     {   return *_gravityForce; }
 
-    /** Get read-only access to the internal Simbody GeneralForceSubsystem 
+    /** Get read-only access to the internal Simbody GeneralForceSubsystem
     allocated by this %Model. **/
-    const SimTK::GeneralForceSubsystem& getForceSubsystem() const 
+    const SimTK::GeneralForceSubsystem& getForceSubsystem() const
     {   return *_forceSubsystem; }
-    /** (Advanced) Get writable access to the internal Simbody 
+    /** (Advanced) Get writable access to the internal Simbody
     GeneralForceSubsystem allocated by this %Model. **/
-    SimTK::GeneralForceSubsystem& updForceSubsystem() 
+    SimTK::GeneralForceSubsystem& updForceSubsystem()
     {   return *_forceSubsystem; }
 
     /**@}**/
@@ -480,14 +480,14 @@ public:
     //--------------------------------------------------------------------------
     // FILE NAME
     //--------------------------------------------------------------------------
-    /** 
-     * Get the XML file name used to construct the model. 
+    /**
+     * Get the XML file name used to construct the model.
      *
-     * @return XML file name string.    
+     * @return XML file name string.
      */
     const std::string& getInputFileName() const { return _fileName; }
 
-    /** 
+    /**
      * Set the XML file name used to construct the model.
      *
      * @param fileName The XML file name.
@@ -498,29 +498,29 @@ public:
     // CREDITS
     //--------------------------------------------------------------------------
 
-    /** 
-     * Get the credits (e.g., model author names) associated with the model. 
+    /**
+     * Get the credits (e.g., model author names) associated with the model.
      *
      * @return Credits string.
      */
     const std::string& getCredits() const { return get_credits(); }
 
-    /** 
+    /**
      * Set the credits (e.g., model author names) associated with the model.
      *
      * @param aCredits The string of credits.
      */
     void setAuthors(const std::string& aCredits) { upd_credits() = aCredits; }
 
-    /** 
-     * Get the publications associated with the model. 
+    /**
+     * Get the publications associated with the model.
      *
      * @return Publications string.
      */
     const std::string& getPublications() const { return get_publications(); }
-    
-    /** 
-     * Set the publications associated with the model. 
+
+    /**
+     * Set the publications associated with the model.
      *
      * @param aPublications The string of publications.
      */
@@ -529,15 +529,15 @@ public:
     //--------------------------------------------------------------------------
     // UNITS
     //--------------------------------------------------------------------------
-    /** 
-     * Get the length units associated with the model. 
+    /**
+     * Get the length units associated with the model.
      *
      * @return Length units.
      */
     const Units& getLengthUnits() const { return _lengthUnits; }
-    
-    /** 
-     * Get the force units associated with the model. 
+
+    /**
+     * Get the force units associated with the model.
      *
      * @return Force units
      */
@@ -552,7 +552,7 @@ public:
      * @return The XYZ gravity vector in the global frame.
      */
     SimTK::Vec3 getGravity() const;
-    
+
     /**
      * Set the gravity vector in the gloabl frame.
      *
@@ -646,9 +646,9 @@ public:
      * Get the subst of misc ModelComponents in the model
      * @return The set of misc ModelComponents
      */
-    const ComponentSet& getMiscModelComponentSet() const 
+    const ComponentSet& getMiscModelComponentSet() const
     {   return get_ComponentSet(); };
-    ComponentSet& updMiscModelComponentSet() 
+    ComponentSet& updMiscModelComponentSet()
     {   return upd_ComponentSet(); };
 
     /**
@@ -668,7 +668,7 @@ public:
      */
     int getNumControls() const;
 
-    /** Writable access to the default values for controls. These values are used for 
+    /** Writable access to the default values for controls. These values are used for
         control value during a simulation unless updated, for example, by a Controller */
     SimTK::Vector& updDefaultControls() const { return _defaultControls; }
     void setDefaultControls(const SimTK::Vector& controls) const
@@ -686,16 +686,16 @@ public:
      * @return      writable controls Vector
      */
     SimTK::Vector& updControls(const SimTK::State& s) const;
-    
+
     /**
      * Mark controls as valid after an update at a given state.
      * Indicates that controls are valid for use at the dynamics stage.
      * If the stage is Velocity or lower the controls will remain invalid.
-     * @param[in]   s         System state in which the controls are updated 
+     * @param[in]   s         System state in which the controls are updated
      */
     void markControlsAsValid(const SimTK::State& s) const;
 
-    /** 
+    /**
      * Alternatively, set the controls on the model at a given state.
      * Note, this method will invalidate the dynamics of the model,
      * but will mark the controls as valid. (E.g. controllers will not be invoked)
@@ -708,11 +708,11 @@ public:
     const SimTK::Vector& getControls(const SimTK::State &s) const;
 
     /** Compute the controls for the model.
-    Calls down to the Controllers to make their contributions to the controls. 
-    
+    Calls down to the Controllers to make their contributions to the controls.
+
     @param[in]   state       System state from which Controllers should draw
                              when computing their control outputs.
-    @param[out]  controls    The complete vector of controls into which 
+    @param[out]  controls    The complete vector of controls into which
                              individual controller contributions should be
                              added. **/
     void computeControls(const SimTK::State& state, SimTK::Vector& controls) const;
@@ -768,17 +768,17 @@ public:
     //--------------------------------------------------------------------------
     // COORDINATES
     //--------------------------------------------------------------------------
-    CoordinateSet& updCoordinateSet() { 
-       return _coordinateSet; 
+    CoordinateSet& updCoordinateSet() {
+       return _coordinateSet;
     }
-    const CoordinateSet& getCoordinateSet() const { 
-       return _coordinateSet; 
+    const CoordinateSet& getCoordinateSet() const {
+       return _coordinateSet;
     }
 
     BodySet& updBodySet() { return upd_BodySet(); }
     const BodySet& getBodySet() const { return get_BodySet(); }
 
-    JointSet& updJointSet(); 
+    JointSet& updJointSet();
     const JointSet& getJointSet() const;
 
     AnalysisSet& updAnalysisSet() {return _analysisSet; }
@@ -815,7 +815,7 @@ public:
     void writeMarkerFile(const std::string& aFileName);
     void updateMarkerSet(MarkerSet& aMarkerSet);
     int deleteUnusedMarkers(const Array<std::string>& aMarkerNames);
- 
+
     /**
      * Add an Analysis to the %Model.
      *
@@ -837,7 +837,7 @@ public:
 
     //--------------------------------------------------------------------------
     // DERIVATIVES
-    //--------------------------------------------------------------------------    
+    //--------------------------------------------------------------------------
     //--------------------------------------------------------------------------
     // OPERATIONS
     //--------------------------------------------------------------------------
@@ -845,18 +845,18 @@ public:
     /**
      * Scale the model.
      *
-     * @param state     State containing parameter values that might be 
+     * @param state     State containing parameter values that might be
      *                  modified here.
      * @param scaleSet  The set of XYZ scale factors for the bodies.
      * @param finalMass The mass that the scaled model should have.
-     * @param preserveMassDist 
-     *                  Whether or not the masses of the individual bodies 
+     * @param preserveMassDist
+     *                  Whether or not the masses of the individual bodies
      *                  should be scaled with the body scale factors.
      * @returns         Whether or not scaling was successful.
      */
-    bool scale(SimTK::State&    state, 
-               const ScaleSet&  scaleSet, 
-               double           finalMass = -1.0, 
+    bool scale(SimTK::State&    state,
+               const ScaleSet&  scaleSet,
+               double           finalMass = -1.0,
                bool             preserveMassDist = false);
 
     //--------------------------------------------------------------------------
@@ -879,13 +879,13 @@ public:
     void printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) const;
 
     /**
-     * Model relinquishes ownership of all components such as: Bodies, Constraints, Forces, 
+     * Model relinquishes ownership of all components such as: Bodies, Constraints, Forces,
      * ConactGeometry and so on. That means the freeing of the memory of these objects is up
      * to the caller.
      */
     void disownAllComponents();
     /**
-     * Convenice function to turn on/off overriding the force for all actuators 
+     * Convenice function to turn on/off overriding the force for all actuators
      */
     void overrideAllActuators( SimTK::State& s, bool flag);
 
@@ -909,7 +909,7 @@ public:
     /**@name            Implementation of Object interface
 
     These methods are %Model's implementation of virtual methods defined in
-    the Object class from which %Model derives (indirectly through 
+    the Object class from which %Model derives (indirectly through
     ModelComponent). **/
     /**@{**/
 
@@ -917,7 +917,7 @@ public:
     ~Model();
 
     /** Override of the default implementation to account for versioning. */
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, 
+    void updateFromXMLNode(SimTK::Xml::Element& aNode,
                            int versionNumber = -1) override;
     /**@}**/
 
@@ -930,12 +930,12 @@ public:
     void extendFinalizeFromProperties() override;
 
     void extendConnectToModel(Model& model)  override;
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override; 
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendInitStateFromProperties(SimTK::State& state) const override;
     /**@}**/
 
     /**
-     * Given a State, set all default values for this Model to match those 
+     * Given a State, set all default values for this Model to match those
      * found in the State.
      */
     void extendSetPropertiesFromState(const SimTK::State& state) override;
@@ -947,13 +947,13 @@ public:
     the ModelComponent class from which %Model derives. **/
     /**@{**/
     void generateDecorations
-       (bool                                        fixed, 
+       (bool                                        fixed,
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const 
+        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
                                                                 override;
     /**@}**/
-    
+
     //--------------------------------------------------------------------------
 
 private:
@@ -975,14 +975,14 @@ private:
     void createAssemblySolver(const SimTK::State& s);
 
     // To provide access to private _modelComponents member.
-    friend class Component; 
+    friend class Component;
 
 //==============================================================================
 // DATA MEMBERS
 //==============================================================================
 private:
     //--------------------------------------------------------------------------
-    //                              MODELING 
+    //                              MODELING
     //--------------------------------------------------------------------------
     // These data members are concerned with the structure and contents of the
     // model and must be given values prior to initiating computation.
@@ -991,7 +991,7 @@ private:
     // set to "Unassigned".
     std::string _fileName;
 
-    // Private place to save some deserialization/error checking info in case 
+    // Private place to save some deserialization/error checking info in case
     // needed later.
     std::string _validationLog;
 
@@ -1000,7 +1000,7 @@ private:
     Units _lengthUnits;
     //Units for forces
     Units _forceUnits;
-   
+
     // Other Model data structures that are derived from the properties
     // or added programmatically.
 
@@ -1024,7 +1024,7 @@ private:
 
 
     //--------------------------------------------------------------------------
-    //                              RUN TIME 
+    //                              RUN TIME
     //--------------------------------------------------------------------------
 
     // If this flag is set when initSystem() is called, we'll allocate
@@ -1037,12 +1037,12 @@ private:
 
     //                      SIMBODY MULTIBODY SYSTEM
     // The model owns the MultibodySystem, but the
-    // subsystems and force elements are owned by the MultibodySystem so 
+    // subsystems and force elements are owned by the MultibodySystem so
     // should not be deleted in the destructor.
     SimTK::ReferencePtr<SimTK::MultibodySystem>  _system; // owned by Model; must destruct
 
     // These are just references pointing into _system; don't destruct.
-    SimTK::ReferencePtr<SimTK::SimbodyMatterSubsystem>  _matter;     
+    SimTK::ReferencePtr<SimTK::SimbodyMatterSubsystem>  _matter;
     SimTK::ReferencePtr<SimTK::Force::Gravity>          _gravityForce;
     SimTK::ReferencePtr<SimTK::GeneralForceSubsystem>   _forceSubsystem;
     SimTK::ReferencePtr<SimTK::GeneralContactSubsystem> _contactSubsystem;
@@ -1066,7 +1066,7 @@ private:
     // current user interface (GUI or ModelVisualizer) or programmatically.
     ModelDisplayHints   _displayHints;
 
-    // If visualization has been requested at the API level, we'll allocate 
+    // If visualization has been requested at the API level, we'll allocate
     // a ModelVisualizer. The Model owns this object.
     //ModelVisualizer*    _modelViz; // owned by Model; must destruct
     SimTK::ReferencePtr<ModelVisualizer> _modelViz;

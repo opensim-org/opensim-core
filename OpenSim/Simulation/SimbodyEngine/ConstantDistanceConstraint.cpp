@@ -130,7 +130,7 @@ void ConstantDistanceConstraint::extendAddToSystem(SimTK::MultibodySystem& syste
     SimTK::Constraint::Rod simtkRod(b1, get_location_body_1(),
                                     b2, get_location_body_2(),
                                     get_constant_distance() );
-    
+
     // Beyond the const Component get the index so we can access the SimTK::Constraint later
     assignConstraintIndex(simtkRod.getConstraintIndex());
 }

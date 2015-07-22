@@ -30,8 +30,8 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
-* Ground is a PhysicalFrame in which all Frames (transforms) and Points 
-* (locations) can be expressed. As a PhysicalFrame it supports physical 
+* Ground is a PhysicalFrame in which all Frames (transforms) and Points
+* (locations) can be expressed. As a PhysicalFrame it supports physical
 * connections (e.g. Joints, Constraints) and forces can be applied to it.
 *
 * @author Ajay Seth

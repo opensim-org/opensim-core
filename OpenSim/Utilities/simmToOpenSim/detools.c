@@ -42,7 +42,7 @@ extern WinUnion*         de_win_union;
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
 
 /* -------------------------------------------------------------------------
-   init_deform - 
+   init_deform -
 ---------------------------------------------------------------------------- */
 void init_deform (DeformObject* dfm)
 {
@@ -56,7 +56,7 @@ void init_deform (DeformObject* dfm)
    dfm->innerMax.xyz[0] = dfm->innerMax.xyz[1] = dfm->innerMax.xyz[2] =  0.03;
    dfm->outerMin.xyz[0] = dfm->outerMin.xyz[1] = dfm->outerMin.xyz[2] = -0.04;
    dfm->outerMax.xyz[0] = dfm->outerMax.xyz[1] = dfm->outerMax.xyz[2] =  0.04;
-   
+
    dfm->position.rotation_axis.xyz[0] = 1.0;
    dfm->position.rotation_axis.xyz[1] = 0.0;
    dfm->position.rotation_axis.xyz[2] = 0.0;
@@ -67,15 +67,15 @@ void init_deform (DeformObject* dfm)
    dfm->position.xforms_valid = no;
    identity_matrix(dfm->position.from_local_xform);
    identity_matrix(dfm->position.to_local_xform);
-   
+
    dfm->deform_start = dfm->deform_end = dfm->position;
-   
+
    dfm->deform_factor = 0.0;
-   
+
    identity_matrix(dfm->delta_xform);
    identity_matrix(dfm->delta_xform2);
    identity_matrix(dfm->delta_xform3);
-   
+
    dfm->innerBox = dfm->innerBoxUndeformed = NULL;
    dfm->outerBox = dfm->outerBoxUndeformed = NULL;
 
@@ -85,7 +85,7 @@ void init_deform (DeformObject* dfm)
 }
 
 /* -------------------------------------------------------------------------
-   init_deformity - 
+   init_deformity -
 ---------------------------------------------------------------------------- */
 void init_deformity (Deformity* dty)
 {
@@ -120,22 +120,22 @@ static double calc_transition_factor (DeformObject* dfm, const double pt[3])
 {
    double factors[3], factor = 0.0;
    int    i, n = 0;
-   
+
    if (pt[0] >= dfm->outerMin.xyz[0] && pt[0] <= dfm->innerMin.xyz[0])
       factors[n++] = (pt[0] - dfm->innerMin.xyz[0]) / (dfm->outerMin.xyz[0] - dfm->innerMin.xyz[0]);
    else if (pt[0] <= dfm->outerMax.xyz[0] && pt[0] >= dfm->innerMax.xyz[0])
       factors[n++] = (pt[0] - dfm->innerMax.xyz[0]) / (dfm->outerMax.xyz[0] - dfm->innerMax.xyz[0]);
-   
+
    if (pt[1] >= dfm->outerMin.xyz[1] && pt[1] <= dfm->innerMin.xyz[1])
       factors[n++] = (pt[1] - dfm->innerMin.xyz[1]) / (dfm->outerMin.xyz[1] - dfm->innerMin.xyz[1]);
    else if (pt[1] <= dfm->outerMax.xyz[1] && pt[1] >= dfm->innerMax.xyz[1])
       factors[n++] = (pt[1] - dfm->innerMax.xyz[1]) / (dfm->outerMax.xyz[1] - dfm->innerMax.xyz[1]);
-   
+
    if (pt[2] >= dfm->outerMin.xyz[2] && pt[2] <= dfm->innerMin.xyz[2])
       factors[n++] = (pt[2] - dfm->innerMin.xyz[2]) / (dfm->outerMin.xyz[2] - dfm->innerMin.xyz[2]);
    else if (pt[2] <= dfm->outerMax.xyz[2] && pt[2] >= dfm->innerMax.xyz[2])
       factors[n++] = (pt[2] - dfm->innerMax.xyz[2]) / (dfm->outerMax.xyz[2] - dfm->innerMax.xyz[2]);
-   
+
    for (i = 0; i < n; i++)
       if (factor < factors[i])
          factor = factors[i];
@@ -152,26 +152,26 @@ static double calc_transition_factor (DeformObject* dfm, const double pt[3])
 static void deform_mesh (DeformObject* dfm, PolyhedronStruct* mesh)
 {
    int i;
-   
+
    if ( ! dfm->active)
       return;
-   
+
    for (i = 0; i < mesh->num_vertices; i++)
       deform_vert(dfm, mesh->undeformed[i].coord, mesh->vertex[i].coord, NULL);
 }
 
 
 /* -------------------------------------------------------------------------
-   deform_deform_boxes - 
+   deform_deform_boxes -
 ---------------------------------------------------------------------------- */
 static void deform_deform_boxes (ModelStruct* ms, DeformObject* dfm, DeformObject* deformer)
 {
-   
+
    int i, n = 3 * VERTS_PER_BOX;
-   
+
    if ( ! deformer->active)
       return;
-   
+
    for (i = 0; i < n; i += 3)
    {
       double pt[3];
@@ -189,10 +189,10 @@ static void deform_deform_boxes (ModelStruct* ms, DeformObject* dfm, DeformObjec
       _COPY_VERT(undeformedPt, &dfm->innerBoxUndeformed[i]);
       transform_pt(xform->from_local_xform, undeformedPt);
       transform_pt(deformer->position.to_local_xform, undeformedPt);
-      
+
       inInnerBox = pt_in_box(undeformedPt, &deformer->innerMin, &deformer->innerMax);
       inOuterBox = pt_in_box(undeformedPt, &deformer->outerMin, &deformer->outerMax);
-      
+
       if (inInnerBox || inOuterBox)
       {
          _COPY_VERT(pt, &dfm->innerBox[i]);
@@ -203,10 +203,10 @@ static void deform_deform_boxes (ModelStruct* ms, DeformObject* dfm, DeformObjec
          else
          {
             double pt2[3], delta[3], t = calc_transition_factor(deformer, undeformedPt);
-            
+
             _COPY_VERT(pt2, pt);
             transform_pt(deformer->delta_xform, pt2);
-            
+
             _MAKE_VEC(delta, pt2, pt);
             _SCALE_VEC(delta, t);
             _ADD_VEC(pt, delta);
@@ -221,11 +221,11 @@ static void deform_deform_boxes (ModelStruct* ms, DeformObject* dfm, DeformObjec
 #if ! SIMM_DEMO_VERSION && ! SIMM_VIEWER
 
 /* -------------------------------------------------------------------------
-   de_track_cb - 
+   de_track_cb -
 ---------------------------------------------------------------------------- */
 void de_track_cb (void* data, SimmEvent se)
 {
-   int i, count, de_vals[DE_MAX_DEVS];   
+   int i, count, de_vals[DE_MAX_DEVS];
    DeformEditorTracker* tracker = (DeformEditorTracker*) data;
    DEModelOptions* deop = NULL;
    Scene* scene = NULL;
@@ -259,11 +259,11 @@ void de_track_cb (void* data, SimmEvent se)
    deop = &de->deop[ms->modelnum];
    seg = &ms->segment[deop->segment];
    dfm = &seg->deform[deop->deform];
-   
+
    if (!dfm)
       return;
    xform = get_deform_xform(dfm, deop->deformMode);
-   
+
    recalc_deform_xforms(seg, dfm);
 
    if (de_vals[DE_MOVE_DEFORM_KEY] && deop->deformMode <= DE_DEFORM_END_MODE)
@@ -279,7 +279,7 @@ void de_track_cb (void* data, SimmEvent se)
 
                find_world_coords(scene, mx_new, my_new,
                                  z_dist, &wx_new, &wy_new, &wz_new);
-     
+
                if (tracker->mx_old == -1 || tracker->my_old == -1)
                {
                    tracker->mx_old = mx_new;
@@ -334,7 +334,7 @@ void de_track_cb (void* data, SimmEvent se)
                        rotate_matrix_axis_angle(m, xform->rotation_axis.xyz,
                                                 xform->rotation_angle);
                        rotate_matrix_axis_angle(m, naxis, angle * DTOR);
-               
+
                        extract_rotation(m, &xform->rotation_axis, &xform->rotation_angle);
 
                        redraw = yes;
@@ -358,17 +358,17 @@ void de_track_cb (void* data, SimmEvent se)
                wpt[0] = wpt[1] = wpt[2] = 0.0;
                transform_pt(xform->from_local_xform, wpt);
                wpt[3] = 1.0;
-       
+
                convert(ms, wpt, dfm->segment, ms->ground_segment);
                mult_4x4matrix_by_vector(scene->transform_matrix, wpt, wpt2);
-       
+
                z_dist = wpt2[2];
                bpan_mx_new = se.mouse_x;
                bpan_my_new = se.mouse_y;
-       
+
                find_world_coords(scene, bpan_mx_new, bpan_my_new,
                                  z_dist, &bpan_wx_new, &bpan_wy_new, &bpan_wz_new);
-       
+
                if (tracker->bpan_mx_old == -1 || tracker->bpan_my_old == -1)
                {
                    tracker->bpan_mx_old = bpan_mx_new;
@@ -430,7 +430,7 @@ void de_track_cb (void* data, SimmEvent se)
           {
              tracker->zoom_mx_old = mx_new;
              tracker->zoom_my_old = my_new;
-          
+
                  wpt[0] = wpt[1] = 0.0;
                  wpt[2] = wpt[3] = 1.0;
 
@@ -438,7 +438,7 @@ void de_track_cb (void* data, SimmEvent se)
 
                  mult_4x4matrix_by_vector(tmp_matrix, wpt, wpt2);
                  convert(ms, wpt2, ms->ground_segment, dfm->segment);
-                 
+
                  tracker->zoom_vec.xyz[0] = wpt2[0];
                  tracker->zoom_vec.xyz[1] = wpt2[1];
                  tracker->zoom_vec.xyz[2] = wpt2[2];
@@ -448,7 +448,7 @@ void de_track_cb (void* data, SimmEvent se)
 
                  mult_4x4matrix_by_vector(tmp_matrix, wpt, wpt2);
                  convert(ms, wpt2, ms->ground_segment, dfm->segment);
-                 
+
                  tracker->zoom_vec.xyz[0] -= wpt2[0];
                  tracker->zoom_vec.xyz[1] -= wpt2[1];
                  tracker->zoom_vec.xyz[2] -= wpt2[2];
@@ -456,13 +456,13 @@ void de_track_cb (void* data, SimmEvent se)
               else if (tracker->zoom_mx_old != mx_new || tracker->zoom_my_old != my_new)
           {
              double netmove = (mx_new - tracker->zoom_mx_old) * 0.002;
-             
+
                  xform->translation.xyz[0] += netmove * tracker->zoom_vec.xyz[0];
                  xform->translation.xyz[1] += netmove * tracker->zoom_vec.xyz[1];
                  xform->translation.xyz[2] += netmove * tracker->zoom_vec.xyz[2];
 
              redraw = yes;
-             
+
              tracker->zoom_mx_old = mx_new;
              tracker->zoom_my_old = my_new;
           }
@@ -483,12 +483,12 @@ void de_track_cb (void* data, SimmEvent se)
                if (CURSOR_IN_VIEWPORT(mx_new, my_new, scene->viewport))
                {
                    new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, scene->viewport) * 0.1;
-                   
+
                    if (deop->xform_frame == DE_LOCAL_FRAME)
                        x_rotate_matrix_bodyfixed(m, new_rot_angle * DTOR);
                    else
                        x_rotate_matrix_spacefixed(m, new_rot_angle * DTOR);
-                   
+
                    redraw = yes;
                }
            }
@@ -497,12 +497,12 @@ void de_track_cb (void* data, SimmEvent se)
                if (CURSOR_IN_VIEWPORT(mx_new, my_new, scene->viewport))
                {
                    new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, scene->viewport) * 0.1;
-                   
+
                    if (deop->xform_frame == DE_LOCAL_FRAME)
                        y_rotate_matrix_bodyfixed(m, new_rot_angle * DTOR);
                    else
                        y_rotate_matrix_spacefixed(m, new_rot_angle * DTOR);
-                   
+
                    redraw = yes;
                }
            }
@@ -511,12 +511,12 @@ void de_track_cb (void* data, SimmEvent se)
                if (CURSOR_IN_VIEWPORT(mx_new, my_new, scene->viewport))
                {
                    new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, scene->viewport) * 0.1;
-                   
+
                    if (deop->xform_frame == DE_LOCAL_FRAME)
                        z_rotate_matrix_bodyfixed(m, new_rot_angle * DTOR);
                    else
                        z_rotate_matrix_spacefixed(m, new_rot_angle * DTOR);
-                   
+
                    redraw = yes;
                }
            }
@@ -524,13 +524,13 @@ void de_track_cb (void* data, SimmEvent se)
               extract_rotation(m, &xform->rotation_axis, &xform->rotation_angle);
        }
    }
-   
+
    if (redraw == yes)
    {
       if (deop->deformMode == DE_POSITION_MODE)
       {
          dfm->deform_start = dfm->deform_end = dfm->position;
-         
+
          de->deform_slider.sl[0].value = dfm->deform_factor = 0.0;
       }
       xform->xforms_valid = no;
@@ -547,50 +547,50 @@ void de_track_cb (void* data, SimmEvent se)
 #define FOG_DEFORM_BOXES 0
 
 /* -------------------------------------------------------------------------
-   set_fog_near_and_far - 
+   set_fog_near_and_far -
 ---------------------------------------------------------------------------- */
 static void set_fog_near_and_far(const float* box)
 {
    double fogNear = FLT_MAX, fogFar = 0.0;
    int j,k,l;
    DMatrix m, n;
-   
+
    glGetDoublev(GL_MODELVIEW_MATRIX, (double*) m);
    invert_4x4transform(m, n);
-   
+
       for (j = 0, l = 0; j < 12; j++)
       {
          for (k = 0; k < VERTS_PER_BOX_EDGE; k++)
          {
             double pt[3];
-            
+
             pt[0] = box[l++];
             pt[1] = box[l++];
             pt[2] = box[l++];
-            
+
             transform_pt(n, pt);
-            
+
             if (pt[2] > 0.0 && fogNear > pt[2])
                fogNear = pt[2];
-            
+
             if (fogFar < pt[2])
                fogFar = pt[2];
          }
       }
-   
+
    if (fogNear == FLT_MAX)
       fogNear = 0.0;
-   
+
    glFogf(GL_FOG_START, fogNear);
    glFogf(GL_FOG_END,   fogFar + 0.5 * (fogFar - fogNear));
-   
+
 #if 1
    fprintf(stderr, "%f  %f\n", fogNear, fogFar);
 #endif
 }
 
 /* -------------------------------------------------------------------------
-   draw_deform_objects - 
+   draw_deform_objects -
 ---------------------------------------------------------------------------- */
 void draw_deform_objects(ModelStruct* model, SegmentStruct* seg, int segment_index, ModelDrawOptions* mdo)
 {
@@ -796,7 +796,7 @@ void draw_deform_objects(ModelStruct* model, SegmentStruct* seg, int segment_ind
 
 
 /* -------------------------------------------------------------------------
-   get_deform_xform - 
+   get_deform_xform -
 ---------------------------------------------------------------------------- */
 XForm* get_deform_xform (DeformObject* dfm, int deformMode)
 {
@@ -810,12 +810,12 @@ XForm* get_deform_xform (DeformObject* dfm, int deformMode)
          return &dfm->deform_end;
    }
 /*   assert(0);*/
-   
+
    return NULL;
 }
 
 /* -------------------------------------------------------------------------
-   get_deform_xform2 - 
+   get_deform_xform2 -
 ---------------------------------------------------------------------------- */
 XForm* get_deform_xform2 (DeformObject* dfm, int deformMode, double factor)
 {
@@ -823,7 +823,7 @@ XForm* get_deform_xform2 (DeformObject* dfm, int deformMode, double factor)
    {
       case DE_POSITION_MODE:
          return &dfm->position;
-         
+
       default:
          if (EQUAL_WITHIN_ERROR(factor,0.0))
             return &dfm->deform_start;
@@ -835,12 +835,12 @@ XForm* get_deform_xform2 (DeformObject* dfm, int deformMode, double factor)
             return &dfm->deform_end;
    }
 /*   assert(0);*/
-   
+
    return NULL;
 }
 
 /* -------------------------------------------------------------------------
-   get_deform_xform3 - 
+   get_deform_xform3 -
 ---------------------------------------------------------------------------- */
 XForm* get_deform_xform3 (DeformObject* dfm, int deformMode, double factor)
 {
@@ -849,7 +849,7 @@ XForm* get_deform_xform3 (DeformObject* dfm, int deformMode, double factor)
       //dkb - removed this because it messed up display of object using slider
  //     case DE_POSITION_MODE:
  //        return &dfm->position;
-         
+
       default:
 #if 0
          if (factor == 0.0)
@@ -860,7 +860,7 @@ XForm* get_deform_xform3 (DeformObject* dfm, int deformMode, double factor)
 #endif
          {
             static XForm xform;
-            
+
             copy_4x4matrix(dfm->delta_xform3, xform.from_local_xform);
 
             return &xform;
@@ -873,7 +873,7 @@ XForm* get_deform_xform3 (DeformObject* dfm, int deformMode, double factor)
 }
 
 /* -------------------------------------------------------------------------
-   deform_segment - 
+   deform_segment -
 ---------------------------------------------------------------------------- */
 void deform_segment (ModelStruct* ms, int segment)
 {
@@ -890,7 +890,7 @@ void deform_segment (ModelStruct* ms, int segment)
 
    if (ms == NULL)
       return;
-   
+
 #if ! SIMM_VIEWER
    if (segment < 0)
        segment = de->deop[ms->modelnum].segment;
@@ -898,28 +898,28 @@ void deform_segment (ModelStruct* ms, int segment)
 
    if (segment < 0)
       return;
-   
+
    seg = &ms->segment[segment];
-   
+
    if (seg->num_deforms <= 0)
       return;
 
-#if 0   
+#if 0
    /* prepare any auto-reset transforms */
    calc_auto_reset_deform(seg, NULL);
 #endif
-   
+
    /* deform all bones in the segment */
    for (i = 0; i < seg->numBones; i++)
    {
       PolyhedronStruct* bone = &seg->bone[i];
-      
+
       int nBytes = bone->num_vertices * sizeof(VertexStruct);
-      
+
       if (bone->undeformed == NULL)
       {
          bone->undeformed = (VertexStruct*) simm_malloc(nBytes);
-         
+
          if (bone->undeformed)
             memcpy(bone->undeformed, bone->vertex, nBytes);
       }
@@ -939,7 +939,7 @@ void deform_segment (ModelStruct* ms, int segment)
          /*if (deop->deformMode != DE_POSITION_MODE)*/
             for (j = 0; j < seg->num_deforms; j++)
                deform_mesh(&seg->deform[j], bone);
-         
+
          sBoneScale = NULL;
       }
    }
@@ -948,15 +948,15 @@ void deform_segment (ModelStruct* ms, int segment)
    for (i = 0; i < ms->nummuscles; i++)
    {
       dpMuscleStruct* msc = ms->muscle[i];
-      
+
       for (j = 0; j < msc->path->num_orig_points; j++)
       {
          dpMusclePoint* mp = &msc->path->mp_orig[j];
-         
+
          if (mp->segment == segment)
          {
             _COPY_VERT(mp->point, mp->undeformed_point);
-            
+
             /*if (deop->deformMode != DE_POSITION_MODE)*/
                for (k = 0; k < seg->num_deforms; k++)
                   if (seg->deform[k].active)
@@ -966,45 +966,45 @@ void deform_segment (ModelStruct* ms, int segment)
          }
       }
    }
-   
+
    /* deform any muscle wrapping objects attached to the segment */
    for (i = 0; i < ms->num_wrap_objects; i++)
    {
       if (ms->wrapobj[i]->segment == segment)
       {
          dpWrapObject* wo = ms->wrapobj[i];
-         
+
          _COPY_VERT(wo->translation.xyz, wo->undeformed_translation.xyz);
-         
+
          /*if (deop->deformMode != DE_POSITION_MODE)*/
             for (k = 0; k < seg->num_deforms; k++)
                if (seg->deform[k].active)
                   deform_vert(&seg->deform[k],
                               wo->undeformed_translation.xyz,
                               wo->translation.xyz, NULL);
-         
+
          wo->xforms_valid = no;
          recalc_xforms(wo);
          inval_model_wrapping(ms, ms->wrapobj[i]);
       }
    }
-   
+
    /* deform any constraint objects attached to the segment */
    for (i = 0; i < ms->num_constraint_objects; i++)
    {
       if (ms->constraintobj[i].segment == segment)
       {
          ConstraintObject* co = &ms->constraintobj[i];
-         
+
          _COPY_VERT(co->translation.xyz, co->undeformed_translation.xyz);
-         
+
          /*if (deop->deformMode != DE_POSITION_MODE)*/
             for (k = 0; k < seg->num_deforms; k++)
                if (seg->deform[k].active)
                   deform_vert(&seg->deform[k],
                               co->undeformed_translation.xyz,
                               co->translation.xyz, NULL);
-         
+
          co->xforms_valid = no;
          recalc_constraint_xforms(co);
          ce_recalc_loops_and_constraints(ms, i, no);
@@ -1029,12 +1029,12 @@ void deform_segment (ModelStruct* ms, int segment)
 #endif
          convert(ms, jointOrigin, ms->joint[i].to, ms->joint[i].from);
          _COPY_VERT(pt, jointOrigin);
-         
+
          /* determine the joint's deformed origin */
          for (k = 0; k < seg->num_deforms; k++)
             if (seg->deform[k].active)
                deform_vert(&seg->deform[k], jointOrigin, pt, &didDeform);
-         
+
          /* if the joint is subject to deformation, then activate its pretransform */
          if (didDeform)
          {
@@ -1050,13 +1050,13 @@ void deform_segment (ModelStruct* ms, int segment)
    {
       DeformObject* dfm = &seg->deform[i];
       int nBytes = VERTS_PER_BOX * 3 * sizeof(float);
-      
+
       memcpy(dfm->innerBox, dfm->innerBoxUndeformed, nBytes);
       memcpy(dfm->outerBox, dfm->outerBoxUndeformed, nBytes);
 
 #if 0
       deform_deform_boxes(ms, dfm, dfm);
-#elif 0         
+#elif 0
       /*if (deop->deformMode != DE_POSITION_MODE)*/
          for (j = 0; j < seg->num_deforms; j++)
             deform_deform_boxes(ms, dfm, &seg->deform[j]);
@@ -1074,7 +1074,7 @@ void deform_segment (ModelStruct* ms, int segment)
 /* ------------------------------------------------------------------------
    reorthogonalize_matrix - given a 4x4 matrix before and after deformation,
       remove any shearing added to the upper 3x3 submatrix during deformation.
-      
+
       The rows of the before and after matrices are treated as three mutually
       orthogonal vectors.  The dot-product between each before and after vector
       is computed to determine which vector has changed the most under deformation.
@@ -1106,10 +1106,10 @@ static void reorthogonalize_matrix (double before[][4], double after[][4])
       map[i].after[XX] = after[i][XX];
       map[i].after[YY] = after[i][YY];
       map[i].after[ZZ] = after[i][ZZ];
-      
+
       normalize_vector(map[i].after, map[i].after);
       normalize_vector(before[i], before[i]);
-      
+
       map[i].dot = 1.0 - DOT_VECTORS(before[i], map[i].after);
       map[i].idx = i;
    }
@@ -1131,11 +1131,11 @@ static void reorthogonalize_matrix (double before[][4], double after[][4])
       after[_LEAST_DEFORMED][YY] = - after[_LEAST_DEFORMED][YY];
       after[_LEAST_DEFORMED][ZZ] = - after[_LEAST_DEFORMED][ZZ];
    }
-   
+
    /* normalize the reorthogonalized vectors */
    for (i = 0; i < 3; i++)
       normalize_vector(after[i], after[i]);
-   
+
 #undef _MOST_DEFORMED
 #undef _MIDDLE_DEFORMED
 #undef _LEAST_DEFORMED
@@ -1145,7 +1145,7 @@ static void reorthogonalize_matrix (double before[][4], double after[][4])
 /* -------------------------------------------------------------------------
    calc_joint_pretransform - compute a "pretransform" matrix for the specified
      joint that contains the current deformation at the joint origin.
-   
+
    NOTE: We create the joint pretransform matrix by deforming a "mini reference
      frame" whose major axis are each 0.1 mm long.
 ---------------------------------------------------------------------------- */
@@ -1156,32 +1156,32 @@ void calc_joint_pretransform (ModelStruct* ms, JointStruct* jnt)
       { 0.0, 1.0, 0.0, 0.0 },
       { 0.0, 0.0, 1.0, 0.0 },
       { 0.0, 0.0, 0.0, 1.0 }};
-   
+
    DMatrix m = {
       { 0.0001, 0.0000, 0.0000, 0.0 },   /* mini reference frame */
       { 0.0000, 0.0001, 0.0000, 0.0 },
       { 0.0000, 0.0000, 0.0001, 0.0 },
       { 0.0000, 0.0000, 0.0000, 1.0 }};
-   
+
    jnt->pretransform_active = no;
    jnt->pretransform_condition = invalid;
-   
+
    if (deform_joint_pt(ms, jnt, m[3]))
    {
       int i;
-      
+
       for (i = 0; i < 3; i++)
       {
          deform_joint_pt(ms, jnt, m[i]);
          _MAKE_VEC(m[i], m[i], m[3]);
          normalize_vector(m[i], m[i]);
       }
-      
+
       /* NOTE:  the deformed reference frame may have lost its orthogonality
        *   at this point.  We straighten it out by calling reorthogonalize_matrix():
        */
       reorthogonalize_matrix(n, m);
-      
+
       copy_4x4matrix(m, jnt->pretransform);
       invert_4x4transform(jnt->pretransform, jnt->pretransform_inverse);
    }
@@ -1198,18 +1198,18 @@ void calc_joint_pretransform (ModelStruct* ms, JointStruct* jnt)
    deform_vert - apply the specified deformation to the specified 3d point.
       The point must be specified in the reference frame of the deform's
       parent segment.
-   
+
    Parameters:
       dfm           The deform to be applied.
-      
+
       undeformed    This is the point in its completely undeformed
                     position.  This value is necessary to test for inclusion
                     in the specified deform's inner & outer boxes.
-      
+
       pt_to_deform  This is the point in its current (possibly already
                     deformed) position.  This point may get (further)
                     deformed by the specified deform.
-      
+
       didDeform     A boolean flag that is set to TRUE if the point lies
                     inside the deform's inner or outer boxes.  NOTE: this
                     flag is only set to TRUE.  If the point is not effected
@@ -1221,7 +1221,7 @@ void deform_vert (DeformObject* dfm, const double undeformed[3], double pt_to_de
    SBoolean inInnerBox, inOuterBox;
 
    _COPY_VERT(undeformedPt, undeformed);
-   
+
    if (sBoneScale)
    {
       undeformedPt[0] *= sBoneScale[0];
@@ -1229,10 +1229,10 @@ void deform_vert (DeformObject* dfm, const double undeformed[3], double pt_to_de
       undeformedPt[2] *= sBoneScale[2];
    }
    transform_pt(dfm->position.to_local_xform, undeformedPt);
-   
+
    inInnerBox = pt_in_box(undeformedPt, &dfm->innerMin, &dfm->innerMax);
    inOuterBox = pt_in_box(undeformedPt, &dfm->outerMin, &dfm->outerMax);
-   
+
    if (inInnerBox || inOuterBox)
    {
       if (sBoneScale)
@@ -1241,23 +1241,23 @@ void deform_vert (DeformObject* dfm, const double undeformed[3], double pt_to_de
          pt_to_deform[1] *= sBoneScale[1];
          pt_to_deform[2] *= sBoneScale[2];
       }
-      
+
       if (inInnerBox)
          transform_pt(dfm->delta_xform, pt_to_deform);
       else
       {
          double pt[3], delta[3], t = calc_transition_factor(dfm, undeformedPt);
-      
+
          _COPY_VERT(pt, pt_to_deform);
          transform_pt(dfm->delta_xform, pt);
-         
+
          _MAKE_VEC(delta, pt, pt_to_deform);
          _SCALE_VEC(delta, t);
          _ADD_VEC(pt_to_deform, delta);
       }
       if (didDeform)
          *didDeform = yes;
-      
+
       if (sBoneScale)
       {
          pt_to_deform[0] /= sBoneScale[0];
@@ -1269,26 +1269,26 @@ void deform_vert (DeformObject* dfm, const double undeformed[3], double pt_to_de
 
 
 /* -------------------------------------------------------------------------
-   deform_frame_pt - 
+   deform_frame_pt -
 ---------------------------------------------------------------------------- */
 static SBoolean deform_frame_pt (SegmentStruct* seg, double* pt, DeformObject* ignoreDfm)
 {
    double undeformedPt[3];
    int i;
    SBoolean didDeform = no;
-   
+
    _COPY_VERT(undeformedPt, pt);
-   
+
    for (i = 0; i < seg->num_deforms; i++)
       if (seg->deform[i].active && &seg->deform[i] != ignoreDfm)
          deform_vert(&seg->deform[i], undeformedPt, pt, &didDeform);
-   
+
    return didDeform;
 }
 
 
 /* -------------------------------------------------------------------------
-   deform_joint_pt - 
+   deform_joint_pt -
 ---------------------------------------------------------------------------- */
 static SBoolean deform_joint_pt (ModelStruct* ms, JointStruct* jnt, double* pt)
 {
@@ -1298,27 +1298,27 @@ static SBoolean deform_joint_pt (ModelStruct* ms, JointStruct* jnt, double* pt)
    SBoolean didDeform = no;
 
    convert(ms, pt, jnt->to, jnt->from);
-   
+
    _COPY_VERT(undeformedPt, pt);
-   
+
    for (i = 0; i < seg->num_deforms; i++)
       if (seg->deform[i].active)
          deform_vert(&seg->deform[i], undeformedPt, pt, &didDeform);
-   
+
    convert(ms, pt, jnt->from, jnt->to);
-   
+
    return didDeform;
 }
 /* -------------------------------------------------------------------------
-   deform_frame_pt2 - 
+   deform_frame_pt2 -
 ---------------------------------------------------------------------------- */
 static SBoolean deform_frame_pt2 (DeformObject* dfm, const double* undeformed, double* pt)
 {
    SBoolean didDeform = no;
-   
+
    if (dfm->active)
       deform_vert(dfm, undeformed, pt, &didDeform);
-   
+
    return didDeform;
 }
 
@@ -1333,38 +1333,38 @@ static void deform_deform_reference_frame (SegmentStruct* seg, DeformObject* dfm
       { 0.0000, 0.0005, 0.0000, 0.0 },
       { 0.0000, 0.0000, 0.0005, 0.0 },
       { 0.0000, 0.0000, 0.0000, 1.0 }};
-      
+
    DMatrix m2 = {
       { 0.0005, 0.0000, 0.0000, 0.0 },   /* mini reference frame */
       { 0.0000, 0.0005, 0.0000, 0.0 },
       { 0.0000, 0.0000, 0.0005, 0.0 },
       { 0.0000, 0.0000, 0.0000, 1.0 }};
-      
+
    int i,j;
-   
+
    for (i = 0; i < seg->num_deforms; i++)
    {
       DeformObject* deformer = &seg->deform[i];
-      
+
       if (deformer == dfm)
          break;
-      
+
       if (deform_frame_pt2(deformer, m1[3], m2[3]))
          for (j = 0; j < 3; j++)
             deform_frame_pt2(deformer, m1[j], m2[j]);
    }
-   
+
    if (includeAutoResetDfm)
    {
       DeformObject* autoDfm = NULL;
-      
+
       for (i = 0; i < seg->num_deforms; i++)
          if (seg->deform[i].autoReset)
             break;
-   
+
       if (i < seg->num_deforms)
          autoDfm = &seg->deform[i];
-      
+
       if (autoDfm)
          if (deform_frame_pt2(autoDfm, m1[3], m2[3]))
             for (j = 0; j < 3; j++)
@@ -1376,7 +1376,7 @@ static void deform_deform_reference_frame (SegmentStruct* seg, DeformObject* dfm
       _MAKE_VEC(m2[j], m2[j], m2[3]);
       normalize_vector(m2[j], m2[j]);
    }
-   
+
    copy_4x4matrix(m2, result);
 }
 
@@ -1388,17 +1388,17 @@ static void deform_deform_reference_frame (SegmentStruct* seg, DeformObject* dfm
 static void calc_auto_reset_deform (SegmentStruct* seg, DeformObject* autoDfm)
 {
    int i;
-   
+
    if (autoDfm == NULL)
    {
       for (i = 0; i < seg->num_deforms; i++)
          if (seg->deform[i].autoReset)
             break;
-   
+
       if (i < seg->num_deforms)
          autoDfm = &seg->deform[i];
    }
-   
+
    if (autoDfm)
    {
       DMatrix m = {
@@ -1406,7 +1406,7 @@ static void calc_auto_reset_deform (SegmentStruct* seg, DeformObject* autoDfm)
          { 0.0000, 0.0001, 0.0000, 0.0 },
          { 0.0000, 0.0000, 0.0001, 0.0 },
          { 0.0000, 0.0000, 0.0000, 1.0 }};
-      
+
       if (deform_frame_pt(seg, m[3], autoDfm))
       {
          for (i = 0; i < 3; i++)
@@ -1416,16 +1416,16 @@ static void calc_auto_reset_deform (SegmentStruct* seg, DeformObject* autoDfm)
               deform_frame_pt(seg, m[i], autoDfm);
               _MAKE_VEC(m[i], m[i], m[3]);
             }
-            
+
             normalize_vector(m[i], m[i]);
          }
-      
+
          /* NOTE:  the deformed reference frame may have lost its orthogonality
           *   at this point.  We should write a routine to straighten it out:
           *
           * reorthogonalize_matrix(m);
           */
-         
+
          invert_4x4transform(m, autoDfm->delta_xform);
       }
       else
@@ -1434,18 +1434,18 @@ static void calc_auto_reset_deform (SegmentStruct* seg, DeformObject* autoDfm)
 }
 
 /* -------------------------------------------------------------------------
-   lookup_deform - 
+   lookup_deform -
 ---------------------------------------------------------------------------- */
 DeformObject* lookup_deform (ModelStruct* ms, const char* deformName)
 {
    int i,j;
-   
+
    for (i = 0; i < ms->numsegments; i++)
-      
+
       for (j = 0; j < ms->segment[i].num_deforms; j++)
-         
+
          if (ms->segment[i].deform[j].name && STRINGS_ARE_EQUAL(deformName, ms->segment[i].deform[j].name))
-            
+
             return &ms->segment[i].deform[j];
 
    return NULL;
@@ -1464,15 +1464,15 @@ void recalc_deform_xforms (SegmentStruct* seg, DeformObject* dfm)
 
       if (dfm->position.rotation_angle != 0.0)
          rotate_matrix_axis_angle(dfm->position.from_local_xform, dfm->position.rotation_axis.xyz, dfm->position.rotation_angle);
-   
+
       translate_matrix(dfm->position.from_local_xform, dfm->position.translation.xyz);
-   
+
       invert_4x4transform(dfm->position.from_local_xform, dfm->position.to_local_xform);
-   
+
       dfm->position.xforms_valid = yes;
    }
 
-#if 0   
+#if 0
    /* SPECIAL-CASE: auto-reset deforms can be used to automatically deform
     *  a segment's origin back to its original (undeformed) position.  There
     *  should only be one auto-reset deform per segment, and it should be
@@ -1485,7 +1485,7 @@ void recalc_deform_xforms (SegmentStruct* seg, DeformObject* dfm)
       return;
    }
 #endif
-   
+
    if ( ! dfm->deform_start.xforms_valid && ! dfm->autoReset)
    {
       /* calculate the deform start transform */
@@ -1493,14 +1493,14 @@ void recalc_deform_xforms (SegmentStruct* seg, DeformObject* dfm)
 
       if (dfm->deform_start.rotation_angle != 0.0)
          rotate_matrix_axis_angle(dfm->deform_start.from_local_xform, dfm->deform_start.rotation_axis.xyz, dfm->deform_start.rotation_angle);
-   
+
       translate_matrix(dfm->deform_start.from_local_xform, dfm->deform_start.translation.xyz);
-   
+
       invert_4x4transform(dfm->deform_start.from_local_xform, dfm->deform_start.to_local_xform);
-   
+
       dfm->deform_start.xforms_valid = yes;
    }
-   
+
    if ( ! dfm->deform_end.xforms_valid && ! dfm->autoReset)
    {
       /* calculate the deform end transform */
@@ -1508,11 +1508,11 @@ void recalc_deform_xforms (SegmentStruct* seg, DeformObject* dfm)
 
       if (dfm->deform_end.rotation_angle != 0.0)
          rotate_matrix_axis_angle(dfm->deform_end.from_local_xform, dfm->deform_end.rotation_axis.xyz, dfm->deform_end.rotation_angle);
-   
+
       translate_matrix(dfm->deform_end.from_local_xform, dfm->deform_end.translation.xyz);
-   
+
       invert_4x4transform(dfm->deform_end.from_local_xform, dfm->deform_end.to_local_xform);
-   
+
       dfm->deform_end.xforms_valid = yes;
    }
 
@@ -1521,7 +1521,7 @@ void recalc_deform_xforms (SegmentStruct* seg, DeformObject* dfm)
       dpCoord3D axis, translation;
       double  angle;
       DMatrix ref_frame_xform, ref_frame_xform_inv;
-      
+
       if (dfm->deform_factor == 0.0)
       {
          axis        = dfm->deform_start.rotation_axis;
@@ -1546,12 +1546,12 @@ void recalc_deform_xforms (SegmentStruct* seg, DeformObject* dfm)
          lerp_pt(dfm->deform_start.translation.xyz,
                  dfm->deform_end.translation.xyz,
                  dfm->deform_factor, translation.xyz);
-   
+
          slerp(&dfm->deform_start.rotation_axis, dfm->deform_start.rotation_angle,
                &dfm->deform_end.rotation_axis,   dfm->deform_end.rotation_angle,
                dfm->deform_factor, &axis, &angle);
       }
-      
+
       /* NOTE: the code below to build 'delta_xform' and 'delta_xform2' is
        *  not that clear, and unfortunately not that well understood by its
        *  author (me, Kenny).  I arrived at it by partial understanding and
@@ -1560,9 +1560,9 @@ void recalc_deform_xforms (SegmentStruct* seg, DeformObject* dfm)
 
       /* compute ref_frame_xform & ref_frame_xform_inv */
       deform_deform_reference_frame(seg, dfm, ref_frame_xform, no);
-      
+
       invert_4x4transform(ref_frame_xform, ref_frame_xform_inv);
-      
+
       /* compute delta_xform */
       if (dfm->autoReset)
          calc_auto_reset_deform(seg, dfm);
@@ -1571,12 +1571,12 @@ void recalc_deform_xforms (SegmentStruct* seg, DeformObject* dfm)
          identity_matrix(dfm->delta_xform);
 
          append_matrix(dfm->delta_xform, ref_frame_xform_inv);
-      
+
          append_matrix(dfm->delta_xform, dfm->position.to_local_xform);
-      
+
          if (angle != 0.0)
             rotate_matrix_axis_angle(dfm->delta_xform, axis.xyz, angle);
-      
+
          translate_matrix(dfm->delta_xform, translation.xyz);
 
          append_matrix(dfm->delta_xform, ref_frame_xform);
@@ -1588,34 +1588,34 @@ void recalc_deform_xforms (SegmentStruct* seg, DeformObject* dfm)
     */
    {
       static SBoolean sRecursionBlock = no;
-      
+
       if ( ! sRecursionBlock)
       {
          int i;
-         
+
          sRecursionBlock = yes;
-         
+
          for (i = 0; i < seg->num_deforms; i++)
             if (&seg->deform[i] == dfm)
                break;
-         
+
          for (i++; i < seg->num_deforms; i++)
             recalc_deform_xforms(seg, &seg->deform[i]);
-      
+
          /* compute delta_xform2 and delta_xform3 */
          identity_matrix(dfm->delta_xform2);
-      
+
          if (angle != 0.0)
             rotate_matrix_axis_angle(dfm->delta_xform2, axis.xyz, angle);
-      
+
          translate_matrix(dfm->delta_xform2, translation.xyz);
-      
+
          copy_4x4matrix(dfm->delta_xform2, dfm->delta_xform3);
-      
+
          deform_deform_reference_frame(seg, dfm, ref_frame_xform, yes);
-      
+
          append_matrix(dfm->delta_xform3, ref_frame_xform);
-         
+
          sRecursionBlock = no;
       }
    }
@@ -1627,24 +1627,24 @@ void recalc_deform_xforms (SegmentStruct* seg, DeformObject* dfm)
  */
 
 /* -------------------------------------------------------------------------
-   build_deform_box_edge - 
+   build_deform_box_edge -
 ---------------------------------------------------------------------------- */
 static void build_deform_box_edge (const double* c0, const double* c1,
                                    float** vert, int** edge, int* nVerts)
 {
    double delta[3];
    int i,j;
-   
+
    delta[0] = (c1[0] - c0[0]) / SEGMENTS_PER_BOX_EDGE;
    delta[1] = (c1[1] - c0[1]) / SEGMENTS_PER_BOX_EDGE;
    delta[2] = (c1[2] - c0[2]) / SEGMENTS_PER_BOX_EDGE;
-   
+
    for (i = 0; i <= SEGMENTS_PER_BOX_EDGE; i++)
    {
       for (j = 0; j < 3; j++)
       {
          *(*vert)++ = c0[j] + i * delta[j];
-         
+
          if (edge)
             *(*edge)++ = (*nVerts)++;
       }
@@ -1652,12 +1652,12 @@ static void build_deform_box_edge (const double* c0, const double* c1,
 }
 
 /* -------------------------------------------------------------------------
-   init_deform_box_verts - 
+   init_deform_box_verts -
 ---------------------------------------------------------------------------- */
 void init_deform_box_verts (DeformObject* dfm)
 {
    enum { MINX, MINY, MINZ, MAXX, MAXY, MAXZ };
-   
+
    static const char m[12][6] = { { MINX, MINY, MINZ,  MAXX, MINY, MINZ },
                                   { MINX, MAXY, MINZ,  MAXX, MAXY, MINZ },
                                   { MINX, MAXY, MAXZ,  MAXX, MAXY, MAXZ },
@@ -1670,50 +1670,50 @@ void init_deform_box_verts (DeformObject* dfm)
                                   { MAXX, MAXY, MAXZ,  MAXX, MAXY, MINZ },
                                   { MINX, MAXY, MAXZ,  MINX, MAXY, MINZ },
                                   { MINX, MINY, MINZ,  MINX, MINY, MAXZ } };
-   
+
    double *corner, start[3], end[3];
    float  *vert;
    int    i, nBytes = VERTS_PER_BOX * 3 * sizeof(float);
-   
+
    /* alloc (if necessary) and init inner box vertices */
    if (dfm->innerBox == NULL)
       dfm->innerBox = (float*) simm_malloc(nBytes);
-   
+
    if (dfm->innerBoxUndeformed == NULL)
       dfm->innerBoxUndeformed = (float*) simm_malloc(nBytes);
-   
+
    if (dfm->innerBox && dfm->innerBoxUndeformed)
    {
       corner = &dfm->innerMin.xyz[0];
       vert   = dfm->innerBoxUndeformed;
-    
+
       for (i = 0; i < 12; i++)
       {
          _SET_VERT(start, corner[m[i][0]], corner[m[i][1]], corner[m[i][2]]);
          _SET_VERT(end,   corner[m[i][3]], corner[m[i][4]], corner[m[i][5]]);
-         
+
          build_deform_box_edge(start, end, &vert, NULL, NULL);
       }
       memcpy(dfm->innerBox, dfm->innerBoxUndeformed, nBytes);
    }
-   
+
    /* alloc (if necessary) and init outer box vertices */
    if (dfm->outerBox == NULL)
       dfm->outerBox = (float*) simm_malloc(nBytes);
-   
+
    if (dfm->outerBoxUndeformed == NULL)
       dfm->outerBoxUndeformed = (float*) simm_malloc(nBytes);
-   
+
    if (dfm->outerBox && dfm->outerBoxUndeformed)
    {
       corner = &dfm->outerMin.xyz[0];
       vert   = dfm->outerBoxUndeformed;
-    
+
       for (i = 0; i < 12; i++)
       {
          _SET_VERT(start, corner[m[i][0]], corner[m[i][1]], corner[m[i][2]]);
          _SET_VERT(end,   corner[m[i][3]], corner[m[i][4]], corner[m[i][5]]);
-         
+
          build_deform_box_edge(start, end, &vert, NULL, NULL);
       }
       memcpy(dfm->outerBox, dfm->outerBoxUndeformed, nBytes);

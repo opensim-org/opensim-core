@@ -40,11 +40,11 @@ class Model;
 //=============================================================================
 //=============================================================================
 /**
- A class that holds the Visual Preferences of a full OpenSim Model 
- displayed in Visualizer. Initially these are serializable ModelDisplayHints 
- but in the future can be expanded to include search paths for Mesh files, 
+ A class that holds the Visual Preferences of a full OpenSim Model
+ displayed in Visualizer. Initially these are serializable ModelDisplayHints
+ but in the future can be expanded to include search paths for Mesh files,
  Texture, Renderer preferences, lights, cameras etc. attached to Model.
- 
+
  * @author Ayman Habib
  * @version 1.0
  */

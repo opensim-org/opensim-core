@@ -20,8 +20,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
- * Author:  
+/*
+ * Author:
  */
 
 
@@ -37,7 +37,7 @@
 using namespace std;
 using namespace OpenSim;
 
-//Synchronization stuff 
+//Synchronization stuff
 //int SimtkAnimationCallback::_turn = 1;
 //bool SimtkAnimationCallback::_flag[] = {false, false};
 //=============================================================================
@@ -135,7 +135,7 @@ setNull()
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * This method is called from ui code to give user feedback about how far along 
+ * This method is called from ui code to give user feedback about how far along
  * is the simulation
  */
 const double SimtkAnimationCallback::
@@ -175,7 +175,7 @@ step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double a
         if(_modelForDisplayCompatibleStates) getModelForDisplay()->setStates(aY);
         else getModelForDisplay()->getDynamicsEngine().setConfiguration(&aY[0], &aY[getModelForDisplay()->getNumCoordinates()]);
     }
-    
+
     //mutex_begin(0);   // Intention is to make sure xforms that are cached are consistent from the same time
     getTransformsFromKinematicsEngine(*getModelForDisplay());
     // update muscle geometry
@@ -189,14 +189,14 @@ const Transform* SimtkAnimationCallback::getBodyTransform(int index) const
     return &_transforms[index];
 }
 /**
- * Cache Coms for bodies so that we can get the xform for the bodies from SDFast in one go with 
+ * Cache Coms for bodies so that we can get the xform for the bodies from SDFast in one go with
  * minimal computation on our side. If displaying a SimmModel for example in IK then offsets are set to 0
  */
 void SimtkAnimationCallback::extractOffsets(Model& displayModel)
 {
 }
 /*------------------------------------------------------------------
- * getTransformsFromKinematicsEngine is a utility used to filll the 
+ * getTransformsFromKinematicsEngine is a utility used to filll the
  * _transforms array from a SimmKinematicsEngine
  * @param dModel: The model to use with associated kinematicsEngine
  */

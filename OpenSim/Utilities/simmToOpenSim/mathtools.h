@@ -27,7 +27,7 @@ void   make_4x4dircos_matrix(double angle, double axis[], double mat[][4]);
 SBoolean vector_intersects_polyhedron(double pt[], double vec[], PolyhedronStruct* ph, double inter[]);
 SBoolean intersect_line_plane(double pt1[], double pt2[],
                               double plane[], double d, double inter[], double* t);
-SBoolean intersect_line_plane01(double pt1[], double pt2[], 
+SBoolean intersect_line_plane01(double pt1[], double pt2[],
                 double plane[], double d, double inter[], double* t);
 SBoolean point_in_polygon3D(double pt[], PolyhedronStruct* ph, int polygon_index);
 int    point_in_polygon2D(double point[], double pgon[][2], int numverts);

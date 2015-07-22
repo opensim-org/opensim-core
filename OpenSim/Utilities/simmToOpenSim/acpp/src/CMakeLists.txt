@@ -7,8 +7,8 @@ file(GLOB SOURCE_FILES cccp.c obstack.c version.c y_linux.tab.c)
 endif(WIN32)
 
 file(GLOB INCLUDE_FILES *.h)
-                
-add_library(acpp ${SOURCE_FILES} ${INCLUDE_FILES}) 
+
+add_library(acpp ${SOURCE_FILES} ${INCLUDE_FILES})
 
 set_target_properties(acpp PROPERTIES PROJECT_LABEL "Vendor Libraries - acpp")
 

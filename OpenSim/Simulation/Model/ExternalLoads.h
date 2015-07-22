@@ -47,26 +47,26 @@ class Model;
  * "mapping" which is beyond the scope of an individual ExternalForce, but is
  * too much detail to have each Tool implement.
  *
- * An indiviudal ExternalForce has a property for its data source name, but 
+ * An indiviudal ExternalForce has a property for its data source name, but
  * under the management of ExternalLoads, the data source identified by
- * ExternalLoads is used to set the data source on each ExternalForce. 
+ * ExternalLoads is used to set the data source on each ExternalForce.
  * If multiple data sources are required for different groups of external forces
  * then use multiple ExternalLoads.
  *
- * @authors Ajay Seth, Ayman Habib 
+ * @authors Ajay Seth, Ayman Habib
  */
 
 //=============================================================================
-class OSIMSIMULATION_API ExternalLoads 
+class OSIMSIMULATION_API ExternalLoads
 :   public ModelComponentSet<ExternalForce> {
-OpenSim_DECLARE_CONCRETE_OBJECT(ExternalLoads, 
+OpenSim_DECLARE_CONCRETE_OBJECT(ExternalLoads,
                                 ModelComponentSet<ExternalForce>);
 
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
-    /** Data source for all forces in this ExternalLoads, where individual 
+    /** Data source for all forces in this ExternalLoads, where individual
      *  external forces identify which subsets of the data they will acceess.*/
     PropertyStr _dataFileNameProp;
     std::string &_dataFileName;

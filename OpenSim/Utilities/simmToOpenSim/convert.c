@@ -384,7 +384,7 @@ DMatrix* get_conversion(ModelStruct* ms, int joint, Direction dir)
    }
 
    make_conversion(ms,joint);
-   
+
    if (dir == FORWARD)
       return (&ms->joint[joint].conversion.forward);
    else /* if (dir == INVERSE) */
@@ -420,7 +420,7 @@ DMatrix* get_ground_conversion(ModelStruct* ms, int seg, GroundDirection gd)
       make_ground_conversion(ms,seg);
 
    if (gd == from_ground)
-      return (&ms->segment[seg].from_ground); 
+      return (&ms->segment[seg].from_ground);
    else /* if (gd == to_ground) */
       return (&ms->segment[seg].to_ground);
 
@@ -438,7 +438,7 @@ GLfloat* get_float_ground_conversion(ModelStruct* ms, int seg, GroundDirection g
       make_ground_conversion(ms,seg);
 
    if (gd == from_ground)
-      return (ms->segment[seg].float_from_ground); 
+      return (ms->segment[seg].float_from_ground);
    else /* if (gd == to_ground) */
       return (ms->segment[seg].float_to_ground);
 
@@ -487,7 +487,7 @@ void make_conversion(ModelStruct* ms, int joint)
    {
       return;
    }
-   
+
    /* if the kinematic transform is invalid and the pretransform is active,
     * then we need to invalidate the pretransform as well because the change
     * in kinematic transform may move the joint origin to a new location,
@@ -506,17 +506,17 @@ void make_conversion(ModelStruct* ms, int joint)
           * deforming transforms, if any:
           */
          DMatrix m;
-      
+
          if (jnt->pretransform_condition == invalid)
          {
             calc_joint_pretransform(ms, jnt);
-            
+
             jnt->pretransform_condition = valid;
          }
-   
+
          copy_4x4matrix(jnt->conversion.forward, m);
          mult_4x4matrices(jnt->pretransform, m, jnt->conversion.forward);
-   
+
          copy_4x4matrix(jnt->conversion.inverse, m);
          mult_4x4matrices(m, jnt->pretransform_inverse, jnt->conversion.inverse);
       }
@@ -530,9 +530,9 @@ void make_conversion(ModelStruct* ms, int joint)
    for (i=0, index=0; i<4; i++)
       for (j=0; j<4; j++)
       {
-         ms->joint[joint].conversion.gl_forward[index] = 
+         ms->joint[joint].conversion.gl_forward[index] =
             ms->joint[joint].conversion.forward[i][j];
-         ms->joint[joint].conversion.gl_inverse[index++] = 
+         ms->joint[joint].conversion.gl_inverse[index++] =
             ms->joint[joint].conversion.inverse[i][j];
       }
 #endif
@@ -545,7 +545,7 @@ static void make_joint_conversion(ModelStruct* ms, int joint)
    int order[4];
    double dofvalue[6];
    double x[4], y[4], z[4], ra1[4], ra2[4], ra3[4];
-   
+
    /* calculate the values of the 6 dof variables for this joint */
    for (i=0; i<6; i++)
       dofvalue[i] = evaluate_dof(ms,&ms->joint[joint].dofs[i]);
@@ -772,7 +772,7 @@ void calc_joint_transform(int order[], double dofs[], double rmat[][4], double x
             COPY_1X4VECTOR(xaxis,joint->childinterframe[0]);
             COPY_1X4VECTOR(yaxis,joint->childinterframe[1]);
             COPY_1X4VECTOR(zaxis,joint->childinterframe[2]);
-         } 
+         }
          else if (i == absorder[ROT1])
             COPY_1X4VECTOR(axis1,joint->childinterrotaxes[0])
          else if (i == absorder[ROT2])

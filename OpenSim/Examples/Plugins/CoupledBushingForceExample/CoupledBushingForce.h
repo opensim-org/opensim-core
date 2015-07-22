@@ -37,8 +37,8 @@ namespace OpenSim {
 //=================================================================================
 /**
  * A class implementing a Coupled Bushing Force.
- * A Couple Bushing Force is the force proportional to the deviation of two frames, 
- * where components of the resulting BodyForce are coupled to all any or all 
+ * A Couple Bushing Force is the force proportional to the deviation of two frames,
+ * where components of the resulting BodyForce are coupled to all any or all
  * deviations, such that the general stiffness and damping matrices are 6x6.
  *
  * Deviations of a frame1 on body1 and another (frame2) on body2 are represents in
@@ -129,7 +129,7 @@ public:
     CoupledBushingForce& operator=(const CoupledBushingForce &aForce);
     void copyData(const CoupledBushingForce &aForce);
 
-    //SET 
+    //SET
     void setBody1ByName(std::string aBodyName);
     void setBody1BushingLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
     void setBody2ByName(std::string aBodyName);
@@ -146,15 +146,15 @@ public:
 
     /** Compute the bushing force contribution to the system and add in to appropriate
       * bodyForce and/or system generalizedForce. The bushing force is [K]*dq + [D]*dqdot
-      * where, [K] is the spatial 6dof stiffness matrix between the two frames 
+      * where, [K] is the spatial 6dof stiffness matrix between the two frames
                dq is the deflection in body spatial coordinates with rotations in Euler angles
       *        [D] is the spatial 6dof damping matrix opposing the velocity between the frames
       *        dqdot is the relative spatial velocity of the two frames
       * CoupledBushingForce implementation based SimTK::Force::LinearBushing
       * developed and implemented by Michael Sherman.
       */
-    virtual void computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+    virtual void computeForce(const SimTK::State& s,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const;
 
     /** Potential energy is determined by the elastic energy storage of the bushing.
@@ -164,7 +164,7 @@ public:
     //-----------------------------------------------------------------------------
     // Reporting
     //-----------------------------------------------------------------------------
-    /** 
+    /**
      * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
      */
     virtual OpenSim::Array<std::string> getRecordLabels() const ;

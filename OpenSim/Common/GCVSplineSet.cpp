@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
  * Author: Frank C. Anderson
  */
 
@@ -169,7 +169,7 @@ construct(int aDegree,const Storage *aStore,double aErrorVariance)
         //printf("%s\t",name);
         spline = new GCVSpline(aDegree,nData,times,data,name,aErrorVariance);
         SimTK::Function* fp = spline->createSimTKFunction();
-        delete fp;  
+        delete fp;
 
         // ADD SPLINE
         adoptAndAppend(spline);

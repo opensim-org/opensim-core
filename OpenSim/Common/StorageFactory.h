@@ -23,16 +23,16 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Factory to create Storage like objects, objects created depend on the extension 
+/* Factory to create Storage like objects, objects created depend on the extension
  * passed to the createStorage method. Initially this is as follows
  *
  * ".sto", ".mot" -> Storage
  * ".trc" -> Storage
- * 
- * There's support for users plugging in their own classes and having them handle arbitrary 
+ *
+ * There's support for users plugging in their own classes and having them handle arbitrary
  * extensions for example ".c3d", ".trb" files
  *
- * Author: Ayman Habib 
+ * Author: Ayman Habib
  */
 
 #include "osimCommonDLL.h"
@@ -43,7 +43,7 @@
  * @version 1.0
  * @author Ayman Habib
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 abstract class StorageCreator {
     virtual StorageInterface* createStorage(std::string& fileNameWithExtension)=0;
@@ -51,7 +51,7 @@ abstract class StorageCreator {
 };
 typedef std::map<std::string, OpenSim::StorageCreator*, std::less<std::string> > mapExtensionsToCreators;
 
-// StorageCreator is a class that 
+// StorageCreator is a class that
 class OSIMCOMMON_API StorageFactory
 {
 //=============================================================================
@@ -81,7 +81,7 @@ public:
     }
     static void registerStorageCreator(std::string& ext, StorageCreator* newCreator) {
         _mapExtensionsToCreators[ext]= newCreator;
-    };  
+    };
 //=============================================================================
 };  // END of class StorageFactory
 

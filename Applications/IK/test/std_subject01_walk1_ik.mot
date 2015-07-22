@@ -1,14 +1,14 @@
-first trial																							
-nRows=73																							
-nColumns=24																							
-																							
-# SIMM Motion File Header:																							
-name first trial																							
-datacolumns 24																							
-datarows 73																							
-otherdata 1																							
-range 0.400000 1.600000																							
-endheader																							
+first trial
+nRows=73
+nColumns=24
+
+# SIMM Motion File Header:
+name first trial
+datacolumns 24
+datarows 73
+otherdata 1
+range 0.400000 1.600000
+endheader
 time	pelvis_tilt	pelvis_list	pelvis_rotation	pelvis_tx	pelvis_ty	pelvis_tz	hip_flexion_r	hip_adduction_r	hip_rotation_r	knee_angle_r	ankle_angle_r	subtalar_angle_r	hip_flexion_l	hip_adduction_l	hip_rotation_l	knee_angle_l	ankle_angle_l	subtalar_angle_l	lumbar_extension	lumbar_bending	lumbar_rotation	mtp_angle_r	mtp_angle_l
 0.4	5.21211788	-1.90606861	-0.87064439	0.60176933	1.04547006	-0.02167826	19.67986891	-2.81547267	-6.54743948	-55.15907196	2.77144862	0.01353125	-6.26933486	1.25769946	-0.90428342	-7.26185614	5.425119	-0.00008378	-16.77970596	-0.24849451	-5.24973036	0	0
 0.417	5.19040076	-1.79281414	-0.72719721	0.59905633	1.04456937	-0.02302733	20.1704694	-3.0099434	-7.02786216	-50.29830241	2.78678039	0.01321517	-7.73853432	1.45769557	-0.7247911	-6.27683521	5.66724026	-0.0001467	-17.07117509	-0.19829415	-5.54417829	0	0

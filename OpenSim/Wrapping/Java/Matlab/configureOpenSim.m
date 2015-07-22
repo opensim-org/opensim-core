@@ -1,25 +1,25 @@
  function configureOpenSim
 %% configureOpenSim() adds OpenSim library paths to MATLAB path files
 %    Allows user to select the location of the OpenSim install directory
-%    and add these paths to the matlab library paths. Will allow MATLAB 
+%    and add these paths to the matlab library paths. Will allow MATLAB
 %    users to run OpenSim calls in Matlab.
 %    Build Data: 10.17.2013
 %    Tested with Matlab 2012a and OpenSim 3.1 on Windows 7
-%    Authors: The OpenSim Team (James Dunne, Chris Dembia & Ayman Habib)  
+%    Authors: The OpenSim Team (James Dunne, Chris Dembia & Ayman Habib)
 % #----------------------------------------------------------------------- %
 % #The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % #simulation. See http://opensim.stanford.edu and the NOTICE file         %
 % #for more information. OpenSim is developed at Stanford University       %
 % #and supported by the US National Institutes of Health (U54 GM072970,    %
 % #R24 HD065690) and by DARPA through the Warrior Web program.             %
-% #                                                                        %   
+% #                                                                        %
 % #Copyright (c) 2005-2013 Stanford University and the Authors             %
-% #                                                                        %   
+% #                                                                        %
 % #Licensed under the Apache License, Version 2.0 (the "License");         %
 % #you may not use this file except in compliance with the License.        %
 % #You may obtain a copy of the License at                                 %
 % #http://www.apache.org/licenses/LICENSE-2.0.                             %
-% #                                                                        % 
+% #                                                                        %
 % #Unless required by applicable law or agreed to in writing, software     %
 % #distributed under the License is distributed on an "AS IS" BASIS,       %
 % #WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
@@ -45,7 +45,7 @@
         else
             correctFolder = 1;
             % Check if Matlab and OpenSim are compatible (64 vs 32 bit)
-            checkSystemInfo(openSimFolder) 
+            checkSystemInfo(openSimFolder)
         end
     end
 %% Edit the classpath.txt file (need full path for print)
@@ -99,10 +99,10 @@ function [newC] = searchForOpenSimString(C)
     [Cnrows,Cncols] = cellfun(@size, C);
     for i=1:Cnrows
         if isempty(strfind(lower(C{1}{i}),'opensim'))
-           if i==1 
+           if i==1
               newC{1}{1,1}=C{1}{1,1};
            else
-              [newCnrows,k] = cellfun(@size, newC); 
+              [newCnrows,k] = cellfun(@size, newC);
                newC{1}{newCnrows+1,1} = C{1}{i,1};
            end
         end
@@ -128,16 +128,16 @@ function checkSystemInfo(openSimFolder)
     % get the last two digits of the text string ie '86' or '64'
     OsimInstallBuild= platformID(length(platformID)-1:end);
     % matlab is 64 and OpenSim is 32
-    if strncmp(computer('arch'),'win64',5) &&  ~strncmp(OsimInstallBuild,'64',2) 
+    if strncmp(computer('arch'),'win64',5) &&  ~strncmp(OsimInstallBuild,'64',2)
         h = msgbox('Matlab version is 64 bit while OpenSim is 32 bit. Please install OpenSim 64bit','Error');
         uiwait(h)
         error('Program exit')
     end
     % matlab is 32 and OpenSIm is 64
-     if ~strncmp(computer('arch'),'win64',5) &&  strncmp(OsimInstallBuild,'64',2) 
+     if ~strncmp(computer('arch'),'win64',5) &&  strncmp(OsimInstallBuild,'64',2)
         h = msgbox('Matlab version is 32 bit while OpenSim is 64 bit. Please install OpenSim 32bit','Error');
         uiwait(h)
-        error('Program exit') 
+        error('Program exit')
      end
  end
 end
@@ -149,26 +149,26 @@ function cleanMatlabSearchPath
  % the strings 'OpenSim' and 'bin' in them. This is to clean out older bin
  % folders.
 
- % get the matlab path    
+ % get the matlab path
  matlabPath         = path;
  % matlab path is just 1 long string soindex location of ';'
  matLabFoldersIndex = strfind(matlabPath,';');
  matLabFoldersIndex = [0 matLabFoldersIndex];
  % How many folders?
- nFoldersInPath     = length(matLabFoldersIndex); 
- 
+ nFoldersInPath     = length(matLabFoldersIndex);
+
  % for each folder
  for i = 1:nFoldersInPath-1
-     % get the start end end index for each folder name   
+     % get the start end end index for each folder name
      startString = matLabFoldersIndex(i);
      finishString = matLabFoldersIndex(i+1);
      % ouput the folder string
      folderName = matlabPath(startString+1 : finishString-1);
-     
+
      % check to see if the folder string contains 'OpenSim' or 'bin'
      if ~isempty(strfind(lower(folderName), 'opensim')) && ~isempty(strfind(folderName, 'bin'))
          rmpath(folderName)
-     end     
+     end
  end
 end
 

@@ -46,7 +46,7 @@
 #endif
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * A class for reporting the outputs of all model-connected Probes to file during
@@ -59,7 +59,7 @@ namespace OpenSim {
  * (diagram below assumes a single probe, but ProbeReporter will cycle through every
  * Probe in the Model):
    \verbatim
-                                
+
                                 DEVELOPER NEEDS TO IMPLEMENT
                                 THIS INSIDE THE CHILD PROBE
                                 ============================
@@ -78,11 +78,11 @@ namespace OpenSim {
                                 THIS INSIDE THE CHILD PROBE
 
   \endverbatim
- * 
+ *
  *
  * @author Tim Dorn
  */
-class OSIMANALYSES_API ProbeReporter : public Analysis 
+class OSIMANALYSES_API ProbeReporter : public Analysis
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(ProbeReporter, Analysis);
 //=============================================================================
@@ -102,10 +102,10 @@ public:
     //--------------------------------------------------------------------------
     ProbeReporter(Model *aModel=0);
     ProbeReporter(const std::string &aFileName);
-    // Copy constrctor and virtual copy 
+    // Copy constrctor and virtual copy
     ProbeReporter(const ProbeReporter &aObject);
     virtual ~ProbeReporter();
-    
+
 private:
     void setNull();
     void constructDescription();

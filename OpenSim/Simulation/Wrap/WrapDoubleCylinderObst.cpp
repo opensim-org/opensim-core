@@ -194,7 +194,7 @@ void WrapDoubleCylinderObst::connectToModelAndBody(Model& aModel, OpenSim::Body&
         string errorMessage = "Error: wrapVcylDirection for wrap obstacle " + getName() + " was specified incorrectly.  Use \"righthand\" or \"lefthand\".";
         throw Exception(errorMessage);
     }
-    
+
     // Initialize value of _activeState
     _activeState = 3;   // By default assume both cylinders are active
     _wrapUcylHomeBody = &aBody; // Save this for use in wrapLine
@@ -206,7 +206,7 @@ void WrapDoubleCylinderObst::connectToModelAndBody(Model& aModel, OpenSim::Body&
         throw Exception(errorMessage);
     }
     _wrapVcylHomeBody = &aModel.updBodySet().get(_wrapVcylHomeBodyName);
-    
+
 }
 
 //_____________________________________________________________________________
@@ -506,7 +506,7 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
 
     double P[3],q[3],Q[3],Pq,qQ,QT,ru;      P[0]=aPoint1[0];    P[1]=aPoint1[1];    P[2]=aPoint1[2];
     double S[3],t[3],T[3],Tt,tS,L,rv;       S[0]=aPoint2[0];    S[1]=aPoint2[1];    S[2]=aPoint2[2];
-    
+
     // CONSTRUCT SOME ROTATION MATRICES
     double VcylObstToUcylObst[9];   // DEFINE M As Rotation Matrix from V-Cylinder to U-Cyllinder Frame
     double xyzBodyRotation[3] = { _xyzBodyRotation[0], _xyzBodyRotation[1], _xyzBodyRotation[2] };
@@ -564,11 +564,11 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
     // Register results and return
     aFlag = true;
     aWrapResult.wrap_path_length = qQ + QT + Tt;    // PQ + TS + QT;
-    aWrapResult.r1[0]=q[0];  aWrapResult.r1[1]=q[1];  aWrapResult.r1[2]=q[2];  
+    aWrapResult.r1[0]=q[0];  aWrapResult.r1[1]=q[1];  aWrapResult.r1[2]=q[2];
     aWrapResult.r2[0]=t[0];  aWrapResult.r2[1]=t[1];  aWrapResult.r2[2]=t[2];
-//  aWrapResult.c1[0]=Q[0];  aWrapResult.c1[1]=Q[1];  aWrapResult.c1[2]=Q[2];  
+//  aWrapResult.c1[0]=Q[0];  aWrapResult.c1[1]=Q[1];  aWrapResult.c1[2]=Q[2];
 //  aWrapResult.sv[0]=T[0];  aWrapResult.sv[1]=T[1];  aWrapResult.sv[2]=T[2];
-    
+
     // Generate wrap_pts sequence of points tracing out wrapping path
     aWrapResult.wrap_pts.append(aWrapResult.r1);
 //  SimmPoint wppt2(aWrapResult.c1);    aWrapResult.wrap_pts.append(wppt2);
@@ -597,7 +597,7 @@ getVcylToUcylRotationMatrix(const SimTK::State& s, double VcylObstToUcylObst[9])
 }
 /*============================================================================*/
 
-    
+
 
 /*============================================================================*/
 /*==== DETERMINE WHETHER 2D PATH FROM P TO S WOULD COME WITHIN R OF ORIGIN ===*/
@@ -753,7 +753,7 @@ static int double_cylinder(double U[3],double Ru,double V[3],double Rv,double M[
         /*===============================================================*/
         /*======= COMPUTE CONSTRAINTS WHICH REPRESENT CONVERGENCE =======*/
         /*===============================================================*/
-        quick_mul_vec_by_mtx(x,M,TnU);  quick_add_vec_to_vec(TnU,V,TnU);    
+        quick_mul_vec_by_mtx(x,M,TnU);  quick_add_vec_to_vec(TnU,V,TnU);
         /*===============================================================*/
         Td=TnU[0]*TnU[0]+TnU[1]*TnU[1]; Trt=Td-Ru*Ru;   Td=Ru/Td;
         if(Trt<0.0) return(-1); Trt=sqrt(Trt);
@@ -783,9 +783,9 @@ static int double_cylinder(double U[3],double Ru,double V[3],double Rv,double M[
         /*===============================================================*/
         C[0]=T[0]-x[0]; C[1]=T[1]-x[1]; C[2]=T[2]-x[2];
         /*===============================================================*/
-    
+
         if(fabs(C[0])+fabs(C[1])+fabs(C[2])<1.0e-12) break; /* CONVERGED */
-    
+
         /*===============================================================*/
         /*========= COMPUTE ANALYTICAL GRADIENTS OF CONSTRAINTS =========*/
         /*===============================================================*/

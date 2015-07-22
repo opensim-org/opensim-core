@@ -33,7 +33,7 @@ class PhysicalFrame;
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Point On Line Constraint.  The underlying Constraint 
+ * A class implementing a Point On Line Constraint.  The underlying Constraint
  * in Simbody is a Constraint::PointOnLine
  *
  * @author Samuel Hamner
@@ -64,7 +64,7 @@ public:
 
     virtual ~PointOnLineConstraint();
 
-    //SET 
+    //SET
     void setLineBodyByName(const std::string& aBodyName);
     void setFollowerBodyByName(const std::string& aBodyName);
     void setLineDirection(SimTK::Vec3 direction);

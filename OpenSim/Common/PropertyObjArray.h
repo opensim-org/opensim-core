@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -38,7 +38,7 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * Class PropertyObjArray extends class Property.
@@ -65,9 +65,9 @@ private:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    PropertyObjArray(const std::string &aName = "",const ArrayPtrs<T> &aArray = ArrayPtrs<T>()) 
+    PropertyObjArray(const std::string &aName = "",const ArrayPtrs<T> &aArray = ArrayPtrs<T>())
     :   Property_Deprecated(ObjArray, aName), _array(aArray) {}
-    PropertyObjArray(const PropertyObjArray<T> &aProperty) 
+    PropertyObjArray(const PropertyObjArray<T> &aProperty)
     :   Property_Deprecated(aProperty) { _array = aProperty._array; }
 
     bool isArrayProperty() const override {return true;}
@@ -114,8 +114,8 @@ public:
     int getArraySize() const override { return _array.getSize(); }
     // VALUE
     const Object* getValueObjPtr(int index) const override { return (Object*)_array.get(index); }
-    void appendValue(Object *obj) override { 
-        if(!isValidObject(obj)) 
+    void appendValue(Object *obj) override {
+        if(!isValidObject(obj))
             throw Exception("PropertyObjArray: ERR- Attempting to append invalid object of type "
             + obj->getConcreteClassName(), __FILE__,__LINE__);
         _array.append(static_cast<T*>(obj));
@@ -132,7 +132,7 @@ public:
         bool equal=(Property_Deprecated::operator==(aProperty));
         if (equal) {
             PropertyObjArray& other = ((PropertyObjArray&)aProperty);
-            if (_array.getSize()>0 && other._array.getSize()>0){    
+            if (_array.getSize()>0 && other._array.getSize()>0){
                 if (_array.getSize()==other._array.getSize()){
                     for(int i=0; i<_array.getSize() && equal; i++){
                         equal = (*(_array.get(i)))==(*(other._array.get(i)));
@@ -142,7 +142,7 @@ public:
                 else
                     return false;
             }
-            else 
+            else
                 return ((_array.getSize()==0) && (other._array.getSize()==0));
         }
         return equal;

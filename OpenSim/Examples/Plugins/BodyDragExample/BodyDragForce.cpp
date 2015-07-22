@@ -95,7 +95,7 @@ void BodyDragForce::connectToModel(Model& aModel)
     // Base class
     Super::connectToModel(aModel);
 
-    // Look up the body and report an error if it is not found 
+    // Look up the body and report an error if it is not found
     if (!aModel.updBodySet().contains(get_body_name())) {
         errorMessage = "Invalid bodyName (" + get_body_name() + ") specified in Force " + getName();
         throw (Exception(errorMessage.c_str()));
@@ -107,8 +107,8 @@ void BodyDragForce::connectToModel(Model& aModel)
 // COMPUTATION
 //=============================================================================
 
-void BodyDragForce::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void BodyDragForce::computeForce(const SimTK::State& s,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const
 {
     if(!_model) return;     // some minor error checking
@@ -173,11 +173,11 @@ double BodyDragForce::computePotentialEnergy(const SimTK::State& s) const
 //=============================================================================
 // REPORTING
 //=============================================================================
-/** 
+/**
  * Provide names of the quantities (column labels) of the force value(s) reported
- * 
+ *
  */
-OpenSim::Array<std::string> BodyDragForce::getRecordLabels() const 
+OpenSim::Array<std::string> BodyDragForce::getRecordLabels() const
 {
     OpenSim::Array<std::string> labels("");
     labels.append(getName()+"."+get_body_name()+".force.X");
@@ -188,7 +188,7 @@ OpenSim::Array<std::string> BodyDragForce::getRecordLabels() const
 /**
  * Provide the value(s) to be reported that correspond to the labels
  */
-OpenSim::Array<double> BodyDragForce::getRecordValues(const SimTK::State& s) const 
+OpenSim::Array<double> BodyDragForce::getRecordValues(const SimTK::State& s) const
 {
     OpenSim::Array<double> values(3);
 

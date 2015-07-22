@@ -222,7 +222,7 @@ void MovingPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
         XMLDocument::renameChildNode(aNode,"YAttachment", "y_location");
         XMLDocument::renameChildNode(aNode,"ZAttachment", "z_location");
         }
-    
+
     // Call base class now assuming _node has been corrected for current version
     Object::updateFromXMLNode(aNode, versionNumber);
 }
@@ -327,7 +327,7 @@ connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
     if (aModel.getCoordinateSet().contains(_zCoordinateName))
         _zCoordinate = &aModel.getCoordinateSet().get(_zCoordinateName);
     // Update the XYZ location of the point (stored in _location).
-    
+
     // As OpenSim 3.2 with corrections to the work and corresponding torque
     // generate by the "gearing" that moves the point under tension,
     // we no longer support independent components.
@@ -335,13 +335,13 @@ connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
         string msg = "MovingPathPoint:: Components of the same path point ";
         msg += "must depend on same the coordinate. Condition: ";
         msg += "x_coordinate == y_coordinate == z_coordinate  FAILED.";
-        throw Exception(msg, __FILE__, __LINE__);       
+        throw Exception(msg, __FILE__, __LINE__);
     }
 
     if(_xCoordinate == NULL){
         string msg = "MovingPathPoint:: Coordinate '";
         msg += _xCoordinateName + "' governing the moving point was not found.";
-        throw Exception(msg, __FILE__, __LINE__);   
+        throw Exception(msg, __FILE__, __LINE__);
     }
 }
 
@@ -449,17 +449,17 @@ SimTK::Vec3 MovingPathPoint::getdPointdQ(const SimTK::State& s) const
 
     if (_xCoordinate){
         //Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
-        dPdq_B[0] = _xLocation->calcDerivative(derivComponents, 
+        dPdq_B[0] = _xLocation->calcDerivative(derivComponents,
             SimTK::Vector(1, _xCoordinate->getValue(s)));
     }
     if (_yCoordinate){
         //Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
-        dPdq_B[1] = _yLocation->calcDerivative(derivComponents, 
+        dPdq_B[1] = _yLocation->calcDerivative(derivComponents,
             SimTK::Vector(1, _yCoordinate->getValue(s)));
     }
     if (_zCoordinate){
         //Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
-        dPdq_B[2] = _zLocation->calcDerivative(derivComponents, 
+        dPdq_B[2] = _zLocation->calcDerivative(derivComponents,
             SimTK::Vector(1, _zCoordinate->getValue(s)));
     }
 

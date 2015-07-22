@@ -40,7 +40,7 @@ int main()
         cout << "tugOfWar states passed\n";
 
         Storage result3("tugOfWar_forces.mot"), standard3("std_tugOfWar_forces.mot");
-        
+
         Array<double> tols(1.0, 20);
         // 10N is 1% of the muscles maximum isometric force
         tols[0] = tols[1] = 10;

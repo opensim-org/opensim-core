@@ -36,12 +36,12 @@ using namespace OpenSim;
 //=============================================================================
 // CONSTRUCTOR(S) AND SETUP
 //=============================================================================
-// Uses default (compiler-generated) destructor, copy constructor, copy 
+// Uses default (compiler-generated) destructor, copy constructor, copy
 // assignment operator.
 
 //_____________________________________________________________________________
 // Default constructor.
-JointInternalPowerProbe::JointInternalPowerProbe() 
+JointInternalPowerProbe::JointInternalPowerProbe()
 {
     setNull();
     constructProperties();
@@ -49,7 +49,7 @@ JointInternalPowerProbe::JointInternalPowerProbe()
 
 //_____________________________________________________________________________
 // Convenience constructor.
-JointInternalPowerProbe::JointInternalPowerProbe(const Array<string>& joint_names, 
+JointInternalPowerProbe::JointInternalPowerProbe(const Array<string>& joint_names,
     const bool sum_powers_together, const double exponent)
 {
     setNull();
@@ -171,7 +171,7 @@ void JointInternalPowerProbe::extendConnectToModel(Model& aModel)
         const string& jointName = getJointNames()[i];
         const int k = _model->getJointSet().getIndex(jointName);
         if (k<0) {
-            string errorMessage = getConcreteClassName() + ": Invalid Joint '" 
+            string errorMessage = getConcreteClassName() + ": Invalid Joint '"
                     + jointName + "' specified in <joint_names>.";
             std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
             setDisabled(true);
@@ -207,7 +207,7 @@ SimTK::Vector JointInternalPowerProbe::computeProbeInputs(const State& s) const
     {
         // Get the "Joint" power from the Joint object.
         const double jointPower = _model->getJointSet()[_jointIndex[i]].calcPower(s);
-        
+
         // Append to output vector.
         if (getSumPowersTogether())
             TotalP(0) += std::pow(jointPower, getExponent());
@@ -220,7 +220,7 @@ SimTK::Vector JointInternalPowerProbe::computeProbeInputs(const State& s) const
 
 
 //_____________________________________________________________________________
-/** 
+/**
  * Returns the number of probe inputs in the vector returned by computeProbeInputs().
  */
 int JointInternalPowerProbe::getNumProbeInputs() const
@@ -233,10 +233,10 @@ int JointInternalPowerProbe::getNumProbeInputs() const
 
 
 //_____________________________________________________________________________
-/** 
+/**
  * Provide labels for the probe values being reported.
  */
-Array<string> JointInternalPowerProbe::getProbeOutputLabels() const 
+Array<string> JointInternalPowerProbe::getProbeOutputLabels() const
 {
     Array<string> labels;
 

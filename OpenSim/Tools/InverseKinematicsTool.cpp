@@ -234,7 +234,7 @@ operator=(const InverseKinematicsTool &aTool)
     _ikTaskSet = aTool._ikTaskSet;
     _markerFileName = aTool._markerFileName;
     _timeRange = aTool._timeRange;
-    _reportErrors = aTool._reportErrors; 
+    _reportErrors = aTool._reportErrors;
     _coordinateFileName = aTool._coordinateFileName;
     _reportErrors = aTool._reportErrors;
     _outputMotionFileName = aTool._outputMotionFileName;
@@ -261,7 +261,7 @@ bool InverseKinematicsTool::run()
     bool modelFromFile=true;
     try{
         //Load and create the indicated model
-        if (!_model) 
+        if (!_model)
             _model = new Model(_modelFileName);
         else
             modelFromFile = false;
@@ -269,7 +269,7 @@ bool InverseKinematicsTool::run()
         _model->printBasicInfo(cout);
 
 
-        // Do the maneuver to change then restore working directory 
+        // Do the maneuver to change then restore working directory
         // so that the parsing code behaves properly if called from a different directory.
         string saveWorkingDirectory = IO::getCwd();
         string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
@@ -370,13 +370,13 @@ bool InverseKinematicsTool::run()
         int nm = markerWeights.getSize();
         SimTK::Array_<double> squaredMarkerErrors(nm, 0.0);
         SimTK::Array_<Vec3> markerLocations(nm, Vec3(0));
-        
+
         Storage *modelMarkerLocations = _reportMarkerLocations ? new Storage(Nframes, "ModelMarkerLocations") : NULL;
 
         for (int i = 0; i < Nframes; i++) {
             s.updTime() = start_time + i*dt;
             ikSolver.track(s);
-            
+
             if(_reportErrors){
                 double totalSquaredMarkerError = 0.0;
                 double maxSquaredMarkerError = 0.0;
@@ -412,7 +412,7 @@ bool InverseKinematicsTool::run()
             analysisSet.step(s, i);
         }
 
-        // Do the maneuver to change then restore working directory 
+        // Do the maneuver to change then restore working directory
         // so that output files are saved to same folder as setup file.
         if (_outputMotionFileName!= "" && _outputMotionFileName!="Unassigned"){
             kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
@@ -430,7 +430,7 @@ bool InverseKinematicsTool::run()
             }
             modelMarkerLocations->setColumnLabels(labels);
             modelMarkerLocations->setName("Model Marker Locations from IK");
-    
+
             IO::makeDir(getResultsDir());
             Storage::printResult(modelMarkerLocations, "ik_model_marker_locations", getResultsDir(), -1, ".sto");
 
@@ -480,8 +480,8 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
                 if (optIter!= iter->element_end())
                     iter->eraseNode(optIter);
 
-                Xml::element_iterator objIter(toolIter->element_begin("objects")); 
-                Xml::element_iterator trialIter(objIter->element_begin("IKTrial")); 
+                Xml::element_iterator objIter(toolIter->element_begin("objects"));
+                Xml::element_iterator trialIter(objIter->element_begin("IKTrial"));
                 // Move children of (*trialIter) to root
                 Xml::node_iterator p = trialIter->node_begin();
                 for (; p!= trialIter->node_end(); ++p) {
@@ -493,7 +493,7 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
                 iter->insertNodeAfter( iter->node_end(), Xml::Comment(_accuracyProp.getComment()));
                 iter->insertNodeAfter( iter->node_end(), Xml::Element("accuracy", "1e-4"));
                 // erase node for IKTrialSet
-                iter->eraseNode(toolIter);  
+                iter->eraseNode(toolIter);
                 Xml::Document newDocument;
                 Xml::Element docElement= newDocument.getRootElement();
                 docElement.setAttributeValue("Version", "20300");
@@ -504,7 +504,7 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
                 setDocument(new XMLDocument(newFileName));
                 aNode = updDocument()->getRootDataElement();
             }
-            else { 
+            else {
                 if (root.getElementTag()=="IKTool"){
                     root.setElementTag("InverseKinematicsTool");
                     Xml::element_iterator toolIter(root.element_begin("IKTrialSet"));
@@ -515,8 +515,8 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
                     if (optIter!= root.element_end())
                     root.eraseNode(optIter);
 
-                    Xml::element_iterator objIter(toolIter->element_begin("objects")); 
-                    Xml::element_iterator trialIter(objIter->element_begin("IKTrial")); 
+                    Xml::element_iterator objIter(toolIter->element_begin("objects"));
+                    Xml::element_iterator trialIter(objIter->element_begin("IKTrial"));
                     // Move children of (*trialIter) to root
                     Xml::node_iterator p = trialIter->node_begin();
                     for (; p!= trialIter->node_end(); ++p) {
@@ -529,7 +529,7 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
                     root.insertNodeAfter( root.node_end(), Xml::Element("accuracy", "1e-5"));
                     // erase node for IKTrialSet
                     root.eraseNode(toolIter);
-                    
+
                     // Create an OpenSimDocument node and move root inside it
                     Xml::Document newDocument;
                     Xml::Element docElement= newDocument.getRootElement();

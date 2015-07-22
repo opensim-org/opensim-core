@@ -20,7 +20,7 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  In other words, you are welcome to use, share and improve this program.
  You are forbidden to forbid anyone else to use, share and improve
  what you give them.   Help stamp out software-hoarding!  */
-
+
 
 /*JPL*/
 #define GCC_INCLUDE_DIR "/usr/include"
@@ -103,7 +103,7 @@ typedef unsigned char U_CHAR;
 #include <fcntl.h>
 #endif /* USG */
 #endif /* not VMS */
-  
+
 /* VMS-specific definitions */
 #ifdef VMS
 #include <time.h>
@@ -133,7 +133,7 @@ typedef unsigned char U_CHAR;
   #ifdef __MWERKS__
     #define fileno(F) ((F)->handle)
   #endif
-  
+
   #ifndef F_DUPFD
     #define F_DUPFD 0x0
   #endif
@@ -190,7 +190,7 @@ char *macarg ();
 
 U_CHAR *skip_to_end_of_comment ();
 U_CHAR *skip_quoted_string ();
-
+
 #ifndef FATAL_EXIT_CODE
 #define FATAL_EXIT_CODE 33  /* gnu cc command understands this */
 #endif
@@ -288,7 +288,7 @@ int traditional;
    are still obeyed.  */
 
 int no_output;
-
+
 /* I/O buffer structure.
    The `fname' field is nonzero for source files and #include files
    and for the dummy text used for -D and -U.
@@ -320,7 +320,7 @@ struct file_buf {
     if(instack[indepth].endif_cruft_message_issued == 0) {\
         s;\
     } instack[indepth].endif_cruft_message_issued += 1; }
-    
+
 #endif
 
 /* Current nesting level of input sources.
@@ -402,7 +402,7 @@ struct file_name_list *dont_repeat_files = 0;
 
 /* List of other included files.  */
 struct file_name_list *all_include_files = 0;
-
+
 /* Structure allocated for every #define.  For a simple replacement
    such as
     #define foo bar ,
@@ -571,7 +571,7 @@ U_CHAR is_space[256];
 
 #define SKIP_WHITE_SPACE(p) do { while (is_hor_space[*p]) p++; } while (0)
 #define SKIP_ALL_WHITE_SPACE(p) do { while (is_space[*p]) p++; } while (0)
-  
+
 int errors = 0;         /* Error counter for exit code */
 
 /* Zero means dollar signs are punctuation.
@@ -620,7 +620,7 @@ int deps_column;
 /* Nonzero means -I- has been seen,
    so don't look for #include "foo" the source-file directory.  */
 int ignore_srcdir;
-
+
 /* Handler for SIGPIPE.  */
 
 static void
@@ -630,8 +630,8 @@ pipe_closed ()
 }
 
 #ifdef sgi
-/* This is for output on names like b.p or a.c++ etc etc 
-   Generates the same sort of output as cpp does 
+/* This is for output on names like b.p or a.c++ etc etc
+   Generates the same sort of output as cpp does
    for the dependency (.o) name.  16 is too much extra, but
    we do need room for the .o (sometimes) and the :space ...
 */
@@ -672,7 +672,7 @@ static int default_message_proc (const char* format, ...)
 
    va_list ap;
    int n;
-   
+
    va_start(ap, format);
    n = vfprintf(stderr, format, ap);
    va_end(ap);
@@ -695,28 +695,28 @@ static _msg_proc sMessageProc = default_message_proc;
 static void reset_acpp ()
 {
    int i, n = 0;
-   
+
    for (i = 0; i < HASHSIZE; i++)
    {
       if (hashtab[i])
       {
          HASHNODE* node = hashtab[i];
-         
+
          while (node)
          {
             HASHNODE* next = node->next;
-            
+
             free(node);
-            
+
             /* NOTE:  If we want to be ambitious here we can also determine
              *  when to free the hash node's "value" (i.e. cpval, or defn).
              *  This seemed tricky however, and I decided that a small
              *  memory leak was better than a possible invalid free().
              *  -- KMS 8/24/99
              */
-            
+
             node = next;
-            
+
             n++;
          }
          hashtab[i] = NULL;
@@ -758,9 +758,9 @@ int acpp_main(int argc, char** argv, _msg_proc msg)
 #endif
 
   /* KMS: allow caller to specify message procedure */
-  
+
   sMessageProc = msg ? msg : default_message_proc;
-  
+
   /* JPL: re-initialize global variables */
 
   include = 0;
@@ -770,9 +770,9 @@ int acpp_main(int argc, char** argv, _msg_proc msg)
   indepth = -1;
   system_include_depth = 0;
   if_stack = NULL;
-  
+
   /* KMS: empty residual hash-table entries from previous call to acpp_main() */
-  
+
   reset_acpp();
 
 #ifdef RLIMIT_STACK
@@ -1199,7 +1199,7 @@ int acpp_main(int argc, char** argv, _msg_proc msg)
       deps_target = 0;
       output_file = spec;
     }
-      
+
       deps_stream = fopen (output_file, "a");
       if (deps_stream == 0)
     pfatal_with_name (output_file);
@@ -1315,7 +1315,7 @@ int acpp_main(int argc, char** argv, _msg_proc msg)
   }
   fp->bufp = fp->buf;
   fp->if_stack = if_stack;
-  
+
   /* Unless inhibited, convert trigraphs in the input.  */
 
   if (!no_trigraphs)
@@ -1371,7 +1371,7 @@ int acpp_main(int argc, char** argv, _msg_proc msg)
 #endif
 
   fclose(fp_out);
-  
+
   if (f != 0)
      close(f);
 
@@ -1380,7 +1380,7 @@ int acpp_main(int argc, char** argv, _msg_proc msg)
     fatal ("I/O error on output");
 */
   reset_acpp();
-  
+
   if (errors)
      return (FATAL_EXIT_CODE);
   return (SUCCESS_EXIT_CODE);
@@ -1399,7 +1399,7 @@ print_def_undef(FILE_BUF *op,U_CHAR *type, U_CHAR *name,int namelen)
     U_CHAR *fname;
     FILE_BUF *fp;
     int len;
-    
+
     fp = &instack[indepth];
     fname = fp->fname;
     fnamelen = strlen(fname);
@@ -1420,7 +1420,7 @@ print_def_undef(FILE_BUF *op,U_CHAR *type, U_CHAR *name,int namelen)
     free(lname);
 }
 #endif
-
+
 /* Pre-C-Preprocessor to translate ANSI trigraph idiocy in BUF
    before main CCCP processing.  Name `pcp' is also in honor of the
    drugs the trigraph designers must have been on.
@@ -1495,7 +1495,7 @@ trigraph_pcp (buf)
                                                          )
     warning ("%d trigraph(s) encountered", (fptr - bptr) / 2);
 }
-
+
 /* Move all backslash-newline pairs out of embarrassing places.
    Exchange all such pairs following BP
    with any potentially-embarrasing characters that follow them.
@@ -1569,7 +1569,7 @@ void name_newline_fix (bp)
     *bp++ = '\n';
   }
 }
-
+
 /*
  * The main loop of the program.
  *
@@ -2364,7 +2364,7 @@ hashcollision:
   }
   if_stack = ip->if_stack;
 }
-
+
 /*
  * Rescan a string into a temporary buffer and return the result
  * as a FILE_BUF.  Note this function returns a struct, not a pointer.
@@ -2440,7 +2440,7 @@ expand_to_temp_buffer (buf, limit, output_marks)
 
   return obuf;
 }
-
+
 /*
  * Process a # directive.  Expects IP->bufp to point to the '#', as in
  * `#define foo bar'.  Passes to the command handler
@@ -3033,7 +3033,7 @@ static const char* _get_filename_without_path (const char* filename)
 #endif
 
    const char* p = strrchr(filename, DIR_SEP_CHAR);
-   
+
    return p ? ++p : filename;
 }
 
@@ -3192,7 +3192,7 @@ oops:
   return;
 }
 
-
+
 /* Routines to handle #directives */
 
 /*
@@ -3349,7 +3349,7 @@ get_filename:
 #endif /* VMS */
 #if 0
       USER_MESSAGE("acpp include: %s\n", fname);
-#endif      
+#endif
       if ((f = _OPEN (fname, O_RDONLY, 0666)) >= 0)
     break;
     }
@@ -3363,7 +3363,7 @@ get_filename:
     if (print_deps > (system_header_p || (system_include_depth > 0))) {
       if (system_header_p) {
 #if defined sgi || defined WIN32 || defined __linux__ || defined __APPLE__
-    if(warnings_off == 0) 
+    if(warnings_off == 0)
 #endif
         warning ("nonexistent file <%.*s> omitted from dependency output",
          fend - fbeg, fbeg);
@@ -3426,7 +3426,7 @@ get_filename:
 /*  MDupdate(deps_file, ptr->fname);*/
       }
 #endif
-    }   
+    }
 
     if (system_header_p)
       system_include_depth++;
@@ -3551,7 +3551,7 @@ nope:
 
   close (f);
 }
-
+
 /* The arglist structure is built by do_define to tell
    collect_definition where the argument names begin.  That
    is, for a define like "#define f(x,y,z) foo+x-bar*y", the arglist
@@ -3682,7 +3682,7 @@ do_define (buf, limit, op, keyword)
      if(pedantic)
        for(atemp = arg_ptrs->next;  atemp; atemp = atemp->next) {
         if(arg_ptrs->length == atemp->length &
-          atemp->duplicate_warned == 0 && 
+          atemp->duplicate_warned == 0 &&
           strncmp(arg_ptrs->name,atemp->name,atemp->length) == 0) {
             U_CHAR *str;
             str = (U_CHAR *)xmalloc(atemp->length+1);
@@ -3852,7 +3852,7 @@ comp_def_part (first, beg1, len1, beg2, len2, last)
    in that list, or -1 for a macro name that wants no argument list.
    MACRONAME is the macro name itself (so we can avoid recursive expansion)
    and NAMELEN is its length in characters.
-   
+
 Note that comments and backslash-newlines have already been deleted
 from the argument.  */
 
@@ -4126,7 +4126,7 @@ collect_expansion (buf, end, nargs, arglist)
 
   return defn;
 }
-
+
 /*
  * interpret #line command.  Remembers previously seen fnames
  * in its very own hash table.
@@ -4168,7 +4168,7 @@ do_line (buf, limit, op, keyword)
     error ("invalid format #line command");
     return 1;
   }
-    
+
   SKIP_WHITE_SPACE (bp);
 
   if (*bp == '\"') {
@@ -4297,7 +4297,7 @@ do_undef (buf, limit, op, keyword)
   }
 #endif
 }
-
+
 /*
  * Report a fatal error detected by the program we are processing.
  * Use the text of the line in the error message, then terminate.
@@ -4398,7 +4398,7 @@ do_sccs ()
   if (pedantic)
     error ("ANSI C does not allow #sccs");
 }
-
+
 /*
  * handle #if command by
  *   1) inserting special `defined' keyword into the hash table
@@ -4526,7 +4526,7 @@ eval_if_expression (buf, length)
 #else
   value = parse_c_expression (temp_obuf.buf);
 #endif
-  
+
   free (temp_obuf.buf);
 
   return value;
@@ -4544,7 +4544,7 @@ do_xifdef (buf, limit, op, keyword)
 {
   int skip;
   FILE_BUF *ip = &instack[indepth];
-  U_CHAR *end; 
+  U_CHAR *end;
 
   /* Discard leading and trailing whitespace.  */
   SKIP_WHITE_SPACE (buf);
@@ -4694,8 +4694,8 @@ skip_if_group (ip, any)
     else if (*bp == '\\' && bp[1] == '\n')
       bp += 2;
 #ifdef sgi
-    /*  cypress 66662.   
-        In false if, comment after # before endif not handled before 
+    /*  cypress 66662.
+        In false if, comment after # before endif not handled before
     */
     else if (*bp == '/' && bp[1] == '*') {
       bp += 2;
@@ -4909,7 +4909,7 @@ validate_else (p)
     warning ("text following #else or #endif violates ANSI standard");
 #endif
 }
-
+
 /*
  * Skip a comment, assuming the input ptr immediately follows the
  * initial slash-star.  Bump line counter as necessary.
@@ -5053,7 +5053,7 @@ skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p,
   }
   return bp;
 }
-
+
 /*
  * write out a #line command, for instance, after an #include file.
  * If CONDITIONAL is nonzero, we can omit the #line if it would
@@ -5114,7 +5114,7 @@ output_line_command (ip, op, conditional, file_change)
   op->bufp += len;
   op->lineno = ip->lineno;
 }
-
+
 /* This structure represents one parsed argument in a macro call.
    `raw' points to the argument text as written (`raw_length' is its length).
    `expanded' points to the argument's macro-expansion
@@ -5398,7 +5398,7 @@ macroexpand (hp, op)
       hp->type = T_DISABLED;
   }
 }
-
+
 /*
  * Parse a macro argument and store the info on it into *ARGPTR.
  * Return nonzero to indicate a syntax error.
@@ -5652,7 +5652,7 @@ macarg1 (start, limit, depthptr, newlines, comments)
 /* Discard comments and duplicate newlines
    in the string of length LENGTH at START,
    except inside of string constants.
-   The string is copied into itself with its beginning staying fixed.  
+   The string is copied into itself with its beginning staying fixed.
 
    NEWLINES is the number of newlines that must be duplicated.
    We assume that that much extra space is available past the end
@@ -5747,7 +5747,7 @@ discard_comments (start, length, newlines)
 
   return obp - start;
 }
-
+
 
 /* Error including a message from `errno'.  */
 
@@ -5803,7 +5803,7 @@ warning (msg, arg1, arg2, arg3)
 
   if (ip != NULL)
     USER_MESSAGE("%s:%d: warning: ", _get_filename_without_path(ip->fname), ip->lineno);
-  
+
   USER_MESSAGE(msg, arg1, arg2, arg3);
   USER_MESSAGE("\n");
   return 0;
@@ -5826,7 +5826,7 @@ error_with_line (line, msg, arg1, arg2, arg3)
 
   if (ip != NULL)
     USER_MESSAGE("%s:%d: ", _get_filename_without_path(ip->fname), line);
-  
+
   USER_MESSAGE(msg, arg1, arg2, arg3);
   USER_MESSAGE("\n");
   errors++;
@@ -5892,7 +5892,7 @@ grow_outbuf (obuf, needed)
   obuf->bufp = p + (obuf->bufp - obuf->buf);
   obuf->buf = p;
 }
-
+
 /* Symbol table for macro names and special symbols */
 
 /*
@@ -6049,7 +6049,7 @@ hashf (name, len, hashsize)
 
   return MAKE_POS (r) % hashsize;
 }
-
+
 /* Dump all macro definitions as #defines to stdout.  */
 
 void
@@ -6155,7 +6155,7 @@ dump_arg_n (defn, argnum)
     p++;
   }
 }
-
+
 /* Initialize syntactic classifications of characters.  */
 
 initialize_char_syntax ()
@@ -6205,14 +6205,14 @@ initialize_builtins ()
   install ("__INCLUDE_LEVEL__", -1, T_INCLUDE_LEVEL, 0, -1);
   install ("__VERSION__", -1, T_VERSION, 0, -1);
   install ("__TIME__", -1, T_TIME, 0, -1);
-  install ("__ANSI_CPP__", -1, T_CONST, 1, -1); 
+  install ("__ANSI_CPP__", -1, T_CONST, 1, -1);
 /*if (!traditional)
     install ("__STDC__", -1, T_CONST, 1, -1); */
 /*  install ("__GNU__", -1, T_CONST, 1, -1);  */
 /*  This is supplied using a -D by the compiler driver
     so that it is present only when truly compiling with GNU C.  */
 }
-
+
 /*
  * process a given definition string, for initialization
  * If STR is just an identifier, define it with value 1.
@@ -6234,7 +6234,7 @@ make_definition (str)
     strcpy (buf, str);
     strcat (buf, " 1");
   }
-  
+
   ip = &instack[++indepth];
   ip->fname = "*Initialization*";
 
@@ -6277,7 +6277,7 @@ make_undef (str)
   do_undef (str,str + strlen (str) - 1, NULL, kt);
   --indepth;
 }
-
+
 /* Add output to `deps_buffer' for the -M switch.
    STRING points to the text to be output.
    SIZE is the number of bytes, or 0 meaning output until a null.
@@ -6310,7 +6310,7 @@ deps_output (string, size)
   deps_column += size;
   deps_buffer[deps_size] = 0;
 }
-
+
 #if !defined BSD && !defined __APPLE__
 #ifndef BSTRING
 
@@ -6379,7 +6379,7 @@ bcmp (b1, b2, length)   /* This could be a macro! */
 #endif /* not BSTRING */
 #endif /* not BSD */
 
-
+
 void
 fatal (str, arg)
      char *str, *arg;
@@ -6394,7 +6394,7 @@ void
 perror_with_name (name)
      char *name;
 {
-#if !defined WIN32 && !defined __linux__ && !defined __APPLE__ 
+#if !defined WIN32 && !defined __linux__ && !defined __APPLE__
    extern int errno, sys_nerr;
    extern char *sys_errlist[];
 #endif
@@ -6421,7 +6421,7 @@ pfatal_with_name (name)
 /*  return (FATAL_EXIT_CODE);*/
 }
 
-
+
 void
 memory_full ()
 {
@@ -6490,7 +6490,7 @@ savestring (input)
   strcpy (output, input);
   return output;
 }
-
+
 /* Get the file-mode and data size of the file open on FD
    and store them in *MODE_POINTER and *SIZE_POINTER.  */
 
@@ -6507,7 +6507,7 @@ file_size_and_mode (fd, mode_pointer, size_pointer)
   if (size_pointer) *size_pointer = sbuf.st_size;
   return 0;
 }
-
+
 #ifdef  VMS
 
 /* Under VMS we need to fix up the "include" specification
@@ -6588,7 +6588,7 @@ hack_vms_include_specification (fname)
   return;
 }
 #endif  /* VMS */
-
+
 #ifdef  VMS
 
 /* These are the read/write replacement routines for

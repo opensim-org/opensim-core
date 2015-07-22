@@ -60,7 +60,7 @@ public:
     ConstraintSet();
     ConstraintSet(Model& model);
 
-    ConstraintSet(Model& model, const std::string &aFileName, 
+    ConstraintSet(Model& model, const std::string &aFileName,
                   bool aUpdateFromXMLNode=true)
     :   Super(model, aFileName, aUpdateFromXMLNode) {}
     ConstraintSet(const ConstraintSet& aAbsConstraintSet);

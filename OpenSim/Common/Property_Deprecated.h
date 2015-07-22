@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -37,7 +37,7 @@
 
 #include <string>
 
-namespace OpenSim { 
+namespace OpenSim {
 /**
  * A property consists of a type, name, and a value or an array of values.
  *
@@ -82,7 +82,7 @@ class Object;
     #ifdef final
         #undef final
     #endif
-    #define final 
+    #define final
 #endif
 
 #ifdef WIN32
@@ -137,7 +137,7 @@ public:
     specified for the property. Note that this is handled differently in
     the new Property system. */
     void setMatchName(bool aMatchName) { _matchName = aMatchName; }
-    /** Return the value of the matchName flag for this (deprecated) 
+    /** Return the value of the matchName flag for this (deprecated)
     property. **/
     bool getMatchName() const { return _matchName; }
 
@@ -148,7 +148,7 @@ public:
         return operator==(dynamic_cast<const Property_Deprecated&>(other));
     }
 
-    // Property_Deprecated does not implement AbstractProperty::clone(); that 
+    // Property_Deprecated does not implement AbstractProperty::clone(); that
     // is left to concrete Property_Deprecated objects like PropertyInt.
     Property_Deprecated* clone() const override = 0;
 

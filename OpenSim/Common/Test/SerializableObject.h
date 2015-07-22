@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
-* Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+* Author: Frank C. Anderson
 */
 
 // INCLUDES
@@ -46,7 +46,7 @@
 * @version 1.0
 */
 using std::string;
-namespace OpenSim { 
+namespace OpenSim {
 
 class SerializableObject : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(SerializableObject, Object);
@@ -54,7 +54,7 @@ public:
     //=============================================================================
     // PROPERTIES
     //=============================================================================
-    OpenSim_DECLARE_PROPERTY(Test_Bool_2, bool, "Comment on a bool"); 
+    OpenSim_DECLARE_PROPERTY(Test_Bool_2, bool, "Comment on a bool");
     // Int
     OpenSim_DECLARE_PROPERTY(Test_Int_2, int, "Comment on a int");
     // Dbl
@@ -70,10 +70,10 @@ public:
         "Comment on a double not a number");
     // Str
     OpenSim_DECLARE_PROPERTY(Test_Str_2, std::string,
-        "Comment on a string");         
+        "Comment on a string");
     // Obj
     OpenSim_DECLARE_PROPERTY(Test_Obj_2, SerializableObject3,
-        "Comment on an Object");            
+        "Comment on an Object");
     // IntArray
     OpenSim_DECLARE_LIST_PROPERTY(Test_IntArray_2, int,
         "Comment on an int-array");
@@ -102,12 +102,12 @@ public:
         setNull();
         setupSerializedMembers();
     }
-    SerializableObject(const std::string &aFileName) 
+    SerializableObject(const std::string &aFileName)
     :   Object(aFileName,false)
     {
         setNull();
         setupSerializedMembers();
-        SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
+        SimTK::Xml::Element e = updDocument()->getRootDataElement();
         updateFromXMLNode(e, getDocument()->getDocumentVersion());
     }
     SerializableObject(const SerializableObject& source)
@@ -217,9 +217,9 @@ private:
             new PropertyTransform("MyTransformProperty", xform);
         transformP->setComment("Comment on deprecated Transform");
         _propertySet.append(transformP);
-            
+
         // Vec3
-        PropertyDblVec3* propPoint = 
+        PropertyDblVec3* propPoint =
             new PropertyDblVec3("Test_DblVec3",SimTK::Vec3(3., 5., 7.));
         propPoint->setComment("deprecated Point at 3,5,7");
         _propertySet.append(propPoint);

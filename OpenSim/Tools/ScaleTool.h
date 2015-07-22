@@ -82,7 +82,7 @@ protected:
      * where the subject file is. Need to keep track of that in case absolute
      * path is needed later.
      */
-    std::string  _pathToSubject;    
+    std::string  _pathToSubject;
 
 //=============================================================================
 // METHODS
@@ -146,8 +146,8 @@ public:
         _pathToSubject=aPath;
     }
     //std::string getParentDirectory(const std::string& fileName);
-    
-    void setPrintResultFiles(bool aToWrite) { 
+
+    void setPrintResultFiles(bool aToWrite) {
         _modelScaler.setPrintResultFiles(aToWrite);
         _markerPlacer.setPrintResultFiles(aToWrite);
     }

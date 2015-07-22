@@ -4,7 +4,7 @@
 % for more information. OpenSim is developed at Stanford University       %
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
-%                                                                         %   
+%                                                                         %
 % Copyright (c) 2005-2012 Stanford University and the Authors             %
 % Author(s): Ayman Habib, Lorenzo Flores                                  %
 %                                                                         %
@@ -12,7 +12,7 @@
 % you may not use this file except in compliance with the License.        %
 % You may obtain a copy of the License at                                 %
 % http://www.apache.org/licenses/LICENSE-2.0.                             %
-%                                                                         % 
+%                                                                         %
 % Unless required by applicable law or agreed to in writing, software     %
 % distributed under the License is distributed on an "AS IS" BASIS,       %
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
@@ -20,7 +20,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-% simpleOptimizationExample.m                                                        
+% simpleOptimizationExample.m
 % Author: Ayman Habib, Lorenzo Flores
 
 import org.opensim.modeling.*
@@ -35,7 +35,7 @@ coords = osimModel.getCoordinateSet();
 coords.get('r_shoulder_elev').setValue(state, 0.0);
 
 % Get the set of muscles that are in the original model
-muscles = osimModel.getMuscles(); 
+muscles = osimModel.getMuscles();
 nMuscles = muscles.getSize();
 
 for i = 0:nMuscles-1

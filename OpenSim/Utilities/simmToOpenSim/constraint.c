@@ -9,7 +9,7 @@
    Copyright (c) 2000 MusculoGraphics, Inc.
    All rights reserved.
 
-   Description: 
+   Description:
 
    Routines:
    markAffectedGencoords:
@@ -128,14 +128,14 @@ void markAffectedGencoords(ModelStruct *ms)
 }
 
 
-/* CALCULATE CONSTRAINT RESIDUALS: 
+/* CALCULATE CONSTRAINT RESIDUALS:
  * assume gencoords have already been set to the values in the Q array.
  * Determine the residuals for each constraint point in each constraint
- * object that is being solved.  The residual for each point equals the 
+ * object that is being solved.  The residual for each point equals the
  * shortest distance from the point to its constraint object.  If the
  * projected point is not within the active quadrant, residuals are increased.
  */
-void calculateConstraintResids(void *data, int numQ, double q[], int numResid, double resid[], 
+void calculateConstraintResids(void *data, int numQ, double q[], int numResid, double resid[],
                                int startIndex, int endIndex,
                                int *iflag)
 {
@@ -163,7 +163,7 @@ void calculateConstraintResids(void *data, int numQ, double q[], int numResid, d
 
          if (solveInfo->model->constraintobj[i].xforms_valid == no)
             recalc_constraint_xforms(&solveInfo->model->constraintobj[i]);
-         
+
          plane.a = solveInfo->model->constraintobj[i].plane.a;
          plane.b = solveInfo->model->constraintobj[i].plane.b;
          plane.c = solveInfo->model->constraintobj[i].plane.c;
@@ -211,7 +211,7 @@ void calculateConstraintResids(void *data, int numQ, double q[], int numResid, d
                if (solveInfo->model->constraintobj[i].constraintSign != 0)
                {
                   double vec[3];
-                  
+
                   /* find projected point */
                   vec[0] = pt[0];
                   vec[1] = pt[1];
@@ -329,9 +329,9 @@ void recalc_constraint_xforms(ConstraintObject* co)
 
       if (co->rotationAngle != 0.0)
          rotate_matrix_axis_angle(co->from_local_xform, co->rotationAxis.xyz, co->rotationAngle);
-   
+
       translate_matrix(co->from_local_xform, co->translation.xyz);
-   
+
       invert_4x4transform(co->from_local_xform, co->to_local_xform);
 
       /* if have a plane, transform the plane normal and its offset - translation from
@@ -342,7 +342,7 @@ void recalc_constraint_xforms(ConstraintObject* co)
       {
          transformConstraintPlane(co);
       }
-   
+
       co->xforms_valid = yes;
    }
 }
@@ -359,7 +359,7 @@ void convert_to_constraint_object_frame(ConstraintObject* co, double* pt)
    if (co && pt)
    {
       CHECK_CO_XFORMS(co);
-   
+
       transform_pt(co->to_local_xform, pt);
    }
 }
@@ -369,14 +369,14 @@ void convert_from_constraint_object_frame(ConstraintObject* co, double* pt)
    if (co && pt)
    {
       CHECK_CO_XFORMS(co);
-   
+
       transform_pt(co->from_local_xform, pt);
    }
 }
 
 /* recalculate the constraint functions if constraint objects have changed.  If errorMsg is
  * set to yes, display any error messages if they occur. */
-void ce_recalc_loops_and_constraints(ModelStruct* ms, int constraint_object, 
+void ce_recalc_loops_and_constraints(ModelStruct* ms, int constraint_object,
                                      SBoolean displayErrorMsg)
 {
    int i, j;

@@ -121,7 +121,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
     //Object::RenameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 
   } catch (const std::exception& e) {
-    std::cerr 
+    std::cerr
         << "ERROR during osimActuators Object registration:\n"
         << e.what() << "\n";
   }

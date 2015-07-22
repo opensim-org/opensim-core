@@ -208,7 +208,7 @@ ReturnCode add_model(char jointfilename[], char musclefilename[],
       return code_bad;
    }
 
-   /* create structure to hold loop information and store all info 
+   /* create structure to hold loop information and store all info
     * If the loop joint was changed (user had entered a different one),
     * recalculate the paths and remake the loops */
    if (makeLoops(ms) == yes)
@@ -217,7 +217,7 @@ ReturnCode add_model(char jointfilename[], char musclefilename[],
       {
          free_model(ms->modelnum);
          return code_bad;
-      }      
+      }
       makeLoops(ms);
    }
    updateLoopInfo(ms);
@@ -241,7 +241,7 @@ ReturnCode add_model(char jointfilename[], char musclefilename[],
          message(buffer, 0, DEFAULT_MESSAGE_X_OFFSET);
       }
    }
-   
+
    /* try to load muscle file, first check for a muscle file specified
     * within the joint file.
     */
@@ -287,7 +287,7 @@ ReturnCode add_model(char jointfilename[], char musclefilename[],
    {
       fullpath[0] = '\0';
    }
-   
+
    /* if a muscle file was found, try to load it:
     */
    if (fullpath[0] && read_muscle_file(ms, fullpath, &muscle_file_exists, showTopLevelMessages) == code_bad)
@@ -373,7 +373,7 @@ ReturnCode add_model(char jointfilename[], char musclefilename[],
 
    /* solve any loops or constraints in the system */
    solve_initial_loops_and_constraints(ms);
-   
+
    if (make_muscle_menus(ms) == code_bad)
    {
       free_model(ms->modelnum);
@@ -561,7 +561,7 @@ ReturnCode add_model(char jointfilename[], char musclefilename[],
 
    if (modelIndex)
      *modelIndex = ms->modelnum;
-   
+
    return code_fine;
 }
 #endif /* CORTEX_PLUGIN */
@@ -755,12 +755,12 @@ static void make_modelpopups(ModelStruct* ms)
    if (is_module_present(MOTION_REAL))
    {
       const char* evaHost = get_preference("EVART_MACHINE");
-      
+
       if (evaHost)
          sprintf(buffer, "realtime connection to %s", evaHost);
       else
          sprintf(buffer, "realtime connection");
-   
+
       glueAddMenuEntryWithValue(ms->motionwithrealtimemenu, buffer, REALTIME_MENU_ITEM);
       glueAddMenuEntryWithValue(ms->motionwithrealtimemenu, "---", REALTIME_MENU_ITEM + 1);
    }
@@ -839,7 +839,7 @@ void make_gencoord_popup_menus(ModelStruct* model)
       glueAddMenuEntryWithValue(model->gencoordmenu, "all on",  4 * MAX_GENCOORDS);
       glueAddMenuEntryWithValue(model->gencoordmenu, "all off", 4 * MAX_GENCOORDS + 1);
    }
-   
+
    // Make the x-var menu (for plotting).
    if (model->xvarmenu != -1)
       glutDestroyMenu(model->xvarmenu);
@@ -982,9 +982,9 @@ void update_drawmode_menus(ModelStruct* ms)
       for (i = 0; i < ms->numseggroups; i++)
       {
          ms->seggroup[i].displaymodemenu = glueCreateMenu(ms->seggroup[i].name);
-         
+
          item_count++;
-         
+
          glueAddMenuEntryWithValue(ms->seggroup[i].displaymodemenu,"gouraud shaded", 10*item_count);
          glueAddMenuEntryWithValue(ms->seggroup[i].displaymodemenu,"flat shaded", 10*item_count+1);
          glueAddMenuEntryWithValue(ms->seggroup[i].displaymodemenu,"solid fill", 10*item_count+2);
@@ -996,7 +996,7 @@ void update_drawmode_menus(ModelStruct* ms)
          glueAddMenuEntryWithValue(ms->seggroup[i].displaymodemenu,"normal vectors", 10*item_count+8);
          glueAddMenuEntryWithValue(ms->seggroup[i].displaymodemenu,"---", 10*item_count+10);
          glueAddMenuEntryWithValue(ms->seggroup[i].displaymodemenu,"segment axes GRP", 10*item_count+9);
-         
+
          glueAddSubmenuEntry(ms->dis.maindrawmodemenu, ms->seggroup[i].name, ms->seggroup[i].displaymodemenu);
       }
 
@@ -1372,7 +1372,7 @@ public void size_model(Scene* scene, ModelStruct* ms, BoundingCube* bc)
       ms->max_dimension2 = ymax - ymin;
    if (zmax-zmin > ms->max_dimension2)
       ms->max_dimension2 = zmax - zmin;
-   
+
    // Compute max_diagonal of all model segments and world objects.
    pnt[0] = xmax - xmin;
    pnt[1] = ymax - ymin;
@@ -1493,32 +1493,32 @@ public void calc_near_and_far_clip_planes(Scene* scene, double viewVecLen)
 #if WIN32
 
 /* -------------------------------------------------------------------------
-   _read_token - 
+   _read_token -
 ---------------------------------------------------------------------------- */
 static SBoolean _read_token (FILE* file, char* token)
 {
    SBoolean didReadToken = yes;
-   
+
   restart:
    /* ignore any preceeding whitespace:
     */
    token[0] = fgetc(file);
-   
+
    while (isspace(token[0]) && token[0] != (char) EOF)
       token[0] = fgetc(file);
-   
+
    /* check for comments:
     */
    if (token[0] == '#')
    {
       _read_til(file, '\n');
-      
+
       if (feof(file) || ferror(file))
          token[0] = EOF;
       else
          goto restart;
    }
-   
+
    /* read the rest of the token:
     */
    if (token[0] == (char) EOF)
@@ -1530,13 +1530,13 @@ static SBoolean _read_token (FILE* file, char* token)
    else
    {
       int i = 0;
-      
+
       while ( ! isspace(token[i]) && token[i] != (char) EOF)
          token[++i] = fgetc(file);
-      
+
       token[i] = '\0';
    }
-   
+
    return didReadToken;
 }
 
@@ -1557,7 +1557,7 @@ STRUCT {
 static void scan_htr_header (const char* htrFile, HtrHeaderInfo* htrInfo)
 {
    FILE* file = simm_fopen(htrFile, "r");
-   
+
    if (file)
    {
       while (_read_token(file, buffer))
@@ -1636,11 +1636,11 @@ public ReturnCode open_motion_analysis_file(
       lowerstr(extension);
 
       *extension++ = '\0';
-      
+
       isHtr2 = (SBoolean) STRINGS_ARE_EQUAL(extension, "htr2");
    }
    p = strrchr(htrPathBuf, DIR_SEP_CHAR);
-   
+
    if (p)
    {
       baseName = p + 1;
@@ -1840,10 +1840,10 @@ public ReturnCode open_motion_analysis_file(
     * muscle, and motion files:
     */
    rc = mocap_to_simm(&options, &modelIndex);
-   
+
    if (rc != code_fine)
       goto cleanup;
-   
+
    //resize_model_display(gModel[modelIndex]); TODO_SCENE: mocap_to_simm should return scene index?
 
 #if 0

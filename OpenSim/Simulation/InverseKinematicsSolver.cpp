@@ -34,14 +34,14 @@ namespace OpenSim {
 
 //______________________________________________________________________________
 /**
- * An implementation of the InverseKinematicsSolver 
+ * An implementation of the InverseKinematicsSolver
  *
  * @param model to assemble
  */
 InverseKinematicsSolver::InverseKinematicsSolver(const Model &model, MarkersReference &markersReference,
                             SimTK::Array_<CoordinateReference> &coordinateReferences,
                             double constraintWeight) : AssemblySolver(model, coordinateReferences, constraintWeight),
-                            _markersReference(markersReference) 
+                            _markersReference(markersReference)
 {
     setAuthors("Ajay Seth");
 
@@ -55,7 +55,7 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model &model, MarkersRefe
         std::cout << "InverseKinematicsSolver: Model has no markers!"  << std::endl;
         throw Exception("InverseKinematicsSolver: Model has no markers!");
     }
-    
+
     const SimTK::Array_<std::string> &markerNames = _markersReference.getNames(); // size and content as in trc file
 
     if(markerNames.size() < 1){
@@ -79,7 +79,7 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model &model, MarkersRefe
 
 }
 
-/** Change the weighting of a marker to take affect when assemble or track is called next. 
+/** Change the weighting of a marker to take affect when assemble or track is called next.
     Update a marker's weight by name. */
 void InverseKinematicsSolver::updateMarkerWeight(const std::string &markerName, double value)
 {
@@ -201,7 +201,7 @@ std::string InverseKinematicsSolver::getMarkerNameForIndex(int markerIndex) cons
 }
 
 
-/** Internal method to convert the MarkerReferences into additional goals of the 
+/** Internal method to convert the MarkerReferences into additional goals of the
     of the base assembly solver, that is going to do the assembly.  */
 void InverseKinematicsSolver::setupGoals(SimTK::State &s)
 {
@@ -213,14 +213,14 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
     // Setup markers goals
     // Get lists of all markers by names and corresponding weights from the MarkersReference
     const SimTK::Array_<SimTK::String> &markerNames = _markersReference.getNames();
-    SimTK::Array_<double> markerWeights;  
+    SimTK::Array_<double> markerWeights;
     _markersReference.getWeights(s, markerWeights);
-    // get markers defined by the model 
+    // get markers defined by the model
     const MarkerSet &modelMarkerSet = getModel().getMarkerSet();
 
     // get markers with specified tasks/weights
     const Set<MarkerWeight>& mwSet = _markersReference.updMarkerWeightSet();
-    
+
     int index = -1;
     int wIndex = -1;
     SimTK::Transform X_BF;

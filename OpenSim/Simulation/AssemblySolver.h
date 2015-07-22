@@ -35,7 +35,7 @@ class CoordinateReference;
 /**
  * Solve for the coordinates (degrees-of-freedom) of the model that satisfy the
  * set of constraints imposed on the model as well as set of desired coordinate
- * values.  The AssembleSolver provides the option to convert the problem to an 
+ * values.  The AssembleSolver provides the option to convert the problem to an
  * approximate one where the constraint violations are treated as penalties to
  * to be minimized rather than strictly enforced. This can speed up the time
  * solution and can be used to seed the constrained problem near to a solution.
@@ -44,7 +44,7 @@ class CoordinateReference;
  * iff Wc == Infinity, second term is not included, but
  *  A is subject to the constraint equations:  G(q)-Go = 0
  *
- * When the model (and the number of goals) is guaranteed not to change and the 
+ * When the model (and the number of goals) is guaranteed not to change and the
  * the initial state is close to the assembly solution (from initial assembly(),
  * then track() is a efficient method for updating the configuration to track
  * the small change to the desired coorindate value.
@@ -87,7 +87,7 @@ public:
     /** Construct an Assembly solver with the coordinate references as the goal
         of the assembly and (optional)constraint weight. Default is infinity
         constraint weighting (i.e. rigidly enforced) during assembly. */
-    AssemblySolver(const Model &model, 
+    AssemblySolver(const Model &model,
                    const SimTK::Array_<CoordinateReference> &coordinateReferences,
                    double constraintWeight = SimTK::Infinity);
 
@@ -97,27 +97,27 @@ public:
         many significant digits the solution should be resolved to.*/
     void setAccuracy(double accuracy) {_accuracy = accuracy; }
 
-    /** Set the relative weighting for constraints. Use Infinity to identify the 
+    /** Set the relative weighting for constraints. Use Infinity to identify the
         strict enforcement of constraints, otherwise any positive weighting will
         append the constraint errors to the assembly cost which the solver will
         minimize.*/
     void setConstraintWeight(double weight) {_constraintWeight = weight; }
-    
+
     /** Specify which coordinates to match, each with a desired value and a
         relative weighting. */
     const SimTK::Array_<CoordinateReference>& getCoordinateReferences() const
     {   return _coordinateReferencesp; };
-    /** Once a set of coordinates has been specified its reference value and 
+    /** Once a set of coordinates has been specified its reference value and
         weight can be updated directly */
-    void updateCoordinateReference(const std::string &coordName, double value, 
+    void updateCoordinateReference(const std::string &coordName, double value,
                                    double weight=1.0);
 
-    /** Assemble a model configuration that meets the assembly conditions  
-        (desired values and constraints) starting from an initial state that  
+    /** Assemble a model configuration that meets the assembly conditions
+        (desired values and constraints) starting from an initial state that
         does not have to satisfy the constraints. */
     virtual void assemble(SimTK::State &s);
 
-    /** Obtain a model configuration that meets the assembly conditions  
+    /** Obtain a model configuration that meets the assembly conditions
         (desired values and constraints) given a state that satisfies or
         is close to satisfying the constraints. Note there can be no change
         in the number of constrainst or desired coordinates. Desired
@@ -126,12 +126,12 @@ public:
     virtual void track(SimTK::State &s);
 
 protected:
-    /** Internal method to convert the CoordinateReferences into goals of the 
-        assembly solver. Subclasses, can add and override to include other goals  
+    /** Internal method to convert the CoordinateReferences into goals of the
+        assembly solver. Subclasses, can add and override to include other goals
         such as point of interest matching (Marker tracking). This method is
         automatically called by assemble. */
     virtual void setupGoals(SimTK::State &s);
-    /** Internal method to update the time, reference values and/or their 
+    /** Internal method to update the time, reference values and/or their
         weights that define the goals, based on the passed in state. This method
         is called at the end of setupGoals() and beginning of track()*/
     virtual void updateGoals(const SimTK::State &s);

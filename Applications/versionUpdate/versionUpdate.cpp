@@ -57,7 +57,7 @@ int main(int argc,char **argv)
         PrintUsage(argv[0], cout);
         return(-1);
     }
-    
+
     string::size_type extSep = inputFileName.rfind(".");
 
     if (extSep == string::npos) {

@@ -59,8 +59,8 @@ public:
     ~BodySet(void);
 
     // Somehow the following function is not exported from base template
-    BodySet(Model& model, const std::string &aFileName, 
-            bool aUpdateFromXMLNode = true) 
+    BodySet(Model& model, const std::string &aFileName,
+            bool aUpdateFromXMLNode = true)
     :   Super(model, aFileName, aUpdateFromXMLNode) {}
 
     //--------------------------------------------------------------------------

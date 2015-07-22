@@ -187,7 +187,7 @@ void open_main_window()
    sprintf(buffer,"%s (%s)", program_name, program_version);
 #elif defined WIN32
    strcpy(buffer, program_with_version);
-   
+
    if (is_in_demo_mode())
       strcat(buffer, " - Demo Mode");
 #else
@@ -403,16 +403,16 @@ ReturnCode init_model(ModelStruct* ms)
    ms->dis.num_file_views = 0;
 //   ms->dis.muscle_array_size = 0;//dkb = MUSCLE_ARRAY_INCREMENT;
    ms->dis.muscle_array_size = MUSCLE_ARRAY_INCREMENT;
-   
+
    ms->dis.fast_muscle_drawing = no;
-   
+
 #if ! ENGINE
    ms->dis.fast_muscle_drawing = is_preference_on(get_preference("FASTER_MUSCLE_DRAWING"));
 
 #if INCLUDE_MSL_LENGTH_COLOR
    ms->dis.muscle_color_factor = 0.0;
 #endif
-   
+
    for (i=0; i<MAXSAVEDVIEWS; i++)
    {
       ms->dis.view_used[i] = no;
@@ -508,7 +508,7 @@ void init_segment(ModelStruct* ms, SegmentStruct* seg)
 #endif
    seg->show_masscenter = ms->global_show_masscenter;//no;
    seg->show_inertia = ms->global_show_inertia;//no;
-   
+
    seg->numgroups = 0;
    seg->group = NULL;
 
@@ -599,7 +599,7 @@ ReturnCode init_model_display(ModelStruct* ms)
       else
          ms->dis.muscleson[i] = 0;
    }
-   
+
    for (i=0; i<COLUMNBUFFER; i++)
       ms->dis.menucolumns[i] = EMPTY;
 
@@ -1125,7 +1125,7 @@ void initwrapobject(dpWrapObject* wo)
    wo->height = 0.1;
    wo->wrap_axis = 0;
    wo->wrap_sign = 0;
-   
+
    wo->rotation_axis.xyz[0] = 1.0;
    wo->rotation_axis.xyz[1] = 0.0;
    wo->rotation_axis.xyz[2] = 0.0;
@@ -1133,14 +1133,14 @@ void initwrapobject(dpWrapObject* wo)
    wo->translation.xyz[0] = 0.0;
    wo->translation.xyz[1] = 0.0;
    wo->translation.xyz[2] = 0.0;
-   
+
    wo->undeformed_translation.xyz[0] = 0.0;
    wo->undeformed_translation.xyz[1] = 0.0;
    wo->undeformed_translation.xyz[2] = 0.0;
-   
+
    identity_matrix(wo->from_local_xform);
    identity_matrix(wo->to_local_xform);
-   
+
    wo->xforms_valid = yes;
 
 #if VISUAL_WRAPPING_DEBUG
@@ -1158,7 +1158,7 @@ void initconstraintobject(ConstraintObject* co)
    co->segment = 0;
    co->display_list = 0;
    co->display_list_is_stale = no;
-   co->active = yes;               
+   co->active = yes;
    co->visible = yes;
    co->radius.xyz[0] = 0.05;
    co->radius.xyz[1] = 0.1;
@@ -1166,7 +1166,7 @@ void initconstraintobject(ConstraintObject* co)
    co->height = 0.1;
    co->constraintAxis = 0;
    co->constraintSign = 0;
-   
+
    co->plane.a = 0.0;
    co->plane.b = 0.0;
    co->plane.c = 1.0;
@@ -1179,14 +1179,14 @@ void initconstraintobject(ConstraintObject* co)
    co->translation.xyz[0] = 0.0;
    co->translation.xyz[1] = 0.0;
    co->translation.xyz[2] = 0.0;
-   
+
    co->undeformed_translation.xyz[0] = 0.0;
    co->undeformed_translation.xyz[1] = 0.0;
    co->undeformed_translation.xyz[2] = 0.0;
-   
+
    identity_matrix(co->from_local_xform);
    identity_matrix(co->to_local_xform);
-   
+
    co->xforms_valid = yes;
 
    co->num_qs = 0;
@@ -1271,7 +1271,7 @@ void make_message_port(void)
    glueSetWindowPlacement(GLUT_NORMAL_WINDOW, GLUE_SOUTHWEST,
               hp->window_width, hp->window_height,
               0, 0, NULL);
-   
+
 #if defined WIN32 && SIMM_DEMO_VERSION
    iconified = is_in_demo_mode();
 #else
@@ -1292,11 +1292,11 @@ void make_message_port(void)
       error(exit_program,tool_message);
 
    glutSetWindowData(mwin.id, windex);
-   
+
    if (expirationMessage)
    {
       error(none, expirationMessage);
-      
+
       FREE_IFNOTNULL(expirationMessage);
    }
 }
@@ -1324,7 +1324,7 @@ public void update_message_window(WindowParams* win_parameters, WinUnion* win_st
 
    make_slider(&hp->sl,vertical_slider,bbox,0,hp->sl.value,
       (double)(hp->lines_per_page)*20.0,(double)(hp->num_lines)*20.0,4.0,NULL,NULL);
-   
+
    if (hp->num_lines <= hp->lines_per_page)
    {
       hp->starting_line = 0;
@@ -1429,27 +1429,27 @@ static int           sSimmStateNumVars = 0;
 static SimmStateVar* sSimmStateVars = NULL;
 
 /* ---------------------------------------------------------------------------
-  _free_simm_state - 
+  _free_simm_state -
 ------------------------------------------------------------------------------ */
 static void _free_simm_state ()
 {
    if (sSimmStateVars)
    {
       int i;
-      
+
       for (i = 0; i < sSimmStateNumVars; i++)
       {
          FREE_IFNOTNULL(sSimmStateVars[i].name);
          FREE_IFNOTNULL(sSimmStateVars[i].value);
       }
       FREE_IFNOTNULL(sSimmStateVars);
-      
+
       sSimmStateNumVars = 0;
    }
 }
 
 /* ---------------------------------------------------------------------------
-  load_simm_state - 
+  load_simm_state -
 ------------------------------------------------------------------------------ */
 public void load_simm_state ()
 {
@@ -1471,15 +1471,15 @@ public void load_simm_state ()
 }
 
 /* ---------------------------------------------------------------------------
-  save_simm_state - 
+  save_simm_state -
 ------------------------------------------------------------------------------ */
 public void save_simm_state ()
 {
-   
+
 }
 
 /* ---------------------------------------------------------------------------
-  get_simm_state_value - 
+  get_simm_state_value -
 ------------------------------------------------------------------------------ */
 public const char* get_simm_state_value (const char* name)
 {
@@ -1487,11 +1487,11 @@ public const char* get_simm_state_value (const char* name)
 }
 
 /* ---------------------------------------------------------------------------
-  set_simm_state_value - 
+  set_simm_state_value -
 ------------------------------------------------------------------------------ */
 public void set_simm_state_value (const char* name, const char* value)
 {
-   
+
 }
 
 #endif /* INCLUDE_PERSISTENT_SIMM_STATE */

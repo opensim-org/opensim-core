@@ -65,13 +65,13 @@ private:
     PropertyStr _desiredPointsFileNameProp;
     std::string &_desiredPointsFileName;
 
-    /** Name of the file containing the desired kinematic trajectories. */       
-    PropertyStr _desiredKinematicsFileNameProp;          
+    /** Name of the file containing the desired kinematic trajectories. */
+    PropertyStr _desiredKinematicsFileNameProp;
     std::string &_desiredKinematicsFileName;
 
-   /** Name of the file containing the tracking tasks. */        
-    PropertyStr _taskSetFileNameProp;        
-    std::string &_taskSetFileName;       
+   /** Name of the file containing the tracking tasks. */
+    PropertyStr _taskSetFileNameProp;
+    std::string &_taskSetFileName;
 
       /** Name of the file containing the constraints on the controls. */
     PropertyStr _constraintsFileNameProp;
@@ -155,10 +155,10 @@ public:
     const std::string &getDesiredKinematicsFileName() { return _desiredKinematicsFileName; }
     void setDesiredKinematicsFileName(const std::string &aFileName) { _desiredKinematicsFileName = aFileName; }
 
-    const std::string &getConstraintsFileName() { return _constraintsFileName; }         
-    void setConstraintsFileName(const std::string &aFileName) { _constraintsFileName = aFileName; }          
-         
-    const std::string &getTaskSetFileName() { return _taskSetFileName; }         
+    const std::string &getConstraintsFileName() { return _constraintsFileName; }
+    void setConstraintsFileName(const std::string &aFileName) { _constraintsFileName = aFileName; }
+
+    const std::string &getTaskSetFileName() { return _taskSetFileName; }
     void setTaskSetFileName(const std::string &aFileName) { _taskSetFileName = aFileName; }
 
     const std::string &getOutputModelFileName() { return _outputModelFile; }

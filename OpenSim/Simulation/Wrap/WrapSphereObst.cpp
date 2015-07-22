@@ -125,7 +125,7 @@ void WrapSphereObst::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
         string errorMessage = "Error: radius for WrapSphereObst " + getName() + " was either not specified, or is negative.";
         throw Exception(errorMessage);
     }
-    
+
 /*  Sphere* sph = new Sphere(_radius);
     setGeometryQuadrants(sph);
 */
@@ -216,7 +216,7 @@ int WrapSphereObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK:
     aFlag = false;
     aWrapResult.wrap_path_length = 0.0;
     aWrapResult.wrap_pts.setSize(0);
-    
+
     // Establish a local wrap coordinate system aligned with wrapping plane
     SimTK::Vec3 aXvec = aPointP;                aXvec = aXvec.normalize();  // X = P
     SimTK::Vec3 aZvec = aPointP % aPointS;
@@ -225,7 +225,7 @@ int WrapSphereObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK:
         return insideRadius;
     }                                           aZvec = aZvec.normalize();  // Z = P x S
     SimTK::Vec3 aYvec = aZvec % aXvec;          aYvec = aYvec.normalize();  // Y = Z x X
-    
+
     // Compute displacements of P and S from sphere center within wrap coordinate system
     double Px=aPointP.norm(), Py=0.0, Pz=0.0,               dP=Px*Px+Py*Py,  rootP=dP-R*R;
     double Sx=~aPointS*aXvec, Sy=~aPointS*aYvec, Sz=0.0,    dS=Sx*Sx+Sy*Sy,  rootS=dS-R*R;
@@ -244,7 +244,7 @@ int WrapSphereObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK:
     double TS = sqrt( (Tx-Sx)*(Tx-Sx) + (Ty-Sy)*(Ty-Sy) );
     double QT = R*acos( 1.0 - 0.5*( (Qx-Tx)*(Qx-Tx) + (Qy-Ty)*(Qy-Ty) )/(R*R) );
     if(QT<0.0) QT=-QT;
-    
+
     // Transform Q and T from wrap coordinate system back into obstacle coordinate system
     SimTK::Vec3 aPointQ = (aXvec*Qx) + (aYvec*Qy);
     SimTK::Vec3 aPointT = (aXvec*Tx) + (aYvec*Ty);
@@ -252,9 +252,9 @@ int WrapSphereObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK:
     // Register results and return
     aFlag = true;
     aWrapResult.wrap_path_length = QT;  // PQ + TS + QT;
-    aWrapResult.r1=aPointQ;     //SimmPoint wppt1(aWrapResult.r1);  
+    aWrapResult.r1=aPointQ;     //SimmPoint wppt1(aWrapResult.r1);
     aWrapResult.wrap_pts.append(aWrapResult.r1);
-    aWrapResult.r2=aPointT;     //SimmPoint wppt2(aWrapResult.r2);  
+    aWrapResult.r2=aPointT;     //SimmPoint wppt2(aWrapResult.r2);
     aWrapResult.wrap_pts.append(aWrapResult.r2);
 
     return wrapped;

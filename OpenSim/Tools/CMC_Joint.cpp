@@ -145,10 +145,10 @@ updateWorkVariables()
             _q = &_model->updCoordinateSet().get(_coordinateName);
         }
         catch (const Exception&) {
-            throw Exception("CMC_Joint.updateWorkVariables: ERROR- joint task '" + getName() 
+            throw Exception("CMC_Joint.updateWorkVariables: ERROR- joint task '" + getName()
                                     + "' references invalid coordinate '" + _coordinateName + "'",__FILE__,__LINE__);
         }
-    } 
+    }
 }
 
 
@@ -187,7 +187,7 @@ operator=(const CMC_Joint &aTask)
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Initializes pointers to the Coordinate and Speed in the model given the 
+ * Initializes pointers to the Coordinate and Speed in the model given the
  * coordinate name assigned to this task.
  *
  * @param aModel Model.
@@ -244,7 +244,7 @@ getLimit() const
 /**
  * Compute the position and velocity errors.
  * This method assumes the states have been set for the model.
- * 
+ *
  * @param aT Current time in real time units.
  * @see Model::set()
  * @see Model::setStates()
@@ -332,7 +332,7 @@ computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF)
     // DESIRED ACCELERATION
     double p = (_kp)[0]*_pErr[0];
     double v = (_kv)[0]*_vErr[0];
-    
+
     if(_aTrk[0]==NULL) {
         std::vector<int> derivComponents(2);
         derivComponents[0]=0;

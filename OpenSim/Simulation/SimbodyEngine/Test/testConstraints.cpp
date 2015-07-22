@@ -31,7 +31,7 @@
 //      1. Test locking (constraint) mechansim on coordinates
 //      2. Test WelConstraint against Simbody Constraint::Weld
 //      3. PointOnLineConstraint against Simbody built-in PointOnLine constraint (samner)
-//      4. CoordinateCouplerConstraint as a custom knee 
+//      4. CoordinateCouplerConstraint as a custom knee
 //      5. RollingOnSurfaceConstraint as foot on floor against SimTK NoSlip1D
 //     Add tests here as new constraint types are added to OpenSim
 //
@@ -162,7 +162,7 @@ int main()
 }
 
 //==========================================================================================================
-// Common Functions 
+// Common Functions
 //==========================================================================================================
 int initTestStates(SimTK::Vector &qi, SimTK::Vector &ui)
 {
@@ -177,7 +177,7 @@ int initTestStates(SimTK::Vector &qi, SimTK::Vector &ui)
 
     for(int i = 0; i<ui.size(); i++)
         ui[i] = randomSpeed.getValue();
-    
+
     return qi.size();
 }
 
@@ -190,7 +190,7 @@ void integrateSimbodySystem(SimTK::MultibodySystem &system, SimTK::State &state)
 
     RungeKuttaMersonIntegrator integ(system);
     integ.setAccuracy(integ_accuracy);
-    
+
     TimeStepper ts(system, integ);
     ts.initialize(state);
     ts.stepTo(duration);
@@ -228,7 +228,7 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
 void compareSimulationStates(SimTK::Vector q_sb, SimTK::Vector u_sb, SimTK::Vector q_osim, SimTK::Vector u_osim, string errorMessagePrefix = "")
 {
     using namespace SimTK;
-    
+
     Vector q_err = q_sb;
     Vector u_err = u_sb;
 
@@ -289,9 +289,9 @@ void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state, Mod
             osim_state.updY()[nq] = state.getY()[nq_sb];
             osim_state.updY()[nq+1] = state.getY()[nq_sb+1];
         }
-        else    
+        else
             osim_state.updY() = state.getY();
-    
+
 
     //==========================================================================================================
     // Integrate Simbody system
@@ -344,9 +344,9 @@ void testPointConstraint()
     SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
 
     // Create a free joint between the foot and ground
-    MobilizedBody::Free foot(matter.Ground(), Transform(Vec3(0)), 
+    MobilizedBody::Free foot(matter.Ground(), Transform(Vec3(0)),
         SimTK::Body::Rigid(footMass), Transform(Vec3(0)));
-    
+
     // Constrain foot to point on ground
     SimTK::Constraint::Ball simtkBall(matter.Ground(), pointOnGround, foot, pointOnFoot);
 
@@ -367,7 +367,7 @@ void testPointConstraint()
 
     // create foot as a free joint
     FreeJoint footJoint("footToGround", ground, Vec3(0), Vec3(0), osim_foot, Vec3(0), Vec3(0));
-    
+
     // Add the thigh body which now also contains the hip joint to the model
     osimModel->addBody(&osim_foot);
     osimModel->addJoint(&footJoint);
@@ -407,11 +407,11 @@ void testConstantDistanceConstraint()
     Random::Uniform randomLocation(-1, 1);
     Vec3 pointOnFoot(randomLocation.getValue(), randomLocation.getValue(), randomLocation.getValue());
     Vec3 pointOnGround(0,0,0);
-    /** for some reason, adding another Random::Uniform causes testWeldConstraint to fail.  
+    /** for some reason, adding another Random::Uniform causes testWeldConstraint to fail.
     Why doesn't it cause this test to fail???? */
     //Random::Uniform randomLength(0.01, 0.2);
     //randomLength.setSeed(1024);
-    //double rodLength = randomLength.getValue(); 
+    //double rodLength = randomLength.getValue();
     double rodLength = 0.05;
 
     //std::cout << "Random Length = " << rodLength2 << ", used length = " << rodLength << std::endl;
@@ -423,9 +423,9 @@ void testConstantDistanceConstraint()
     SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
 
     // Create a free joint between the foot and ground
-    MobilizedBody::Free foot(matter.Ground(), Transform(Vec3(0)), 
+    MobilizedBody::Free foot(matter.Ground(), Transform(Vec3(0)),
         SimTK::Body::Rigid(footMass), Transform(Vec3(0)));
-    
+
     // Constrain foot to point on ground
     SimTK::Constraint::Rod simtkRod(matter.Ground(), pointOnGround, foot, pointOnFoot, rodLength);
 
@@ -447,7 +447,7 @@ void testConstantDistanceConstraint()
 
     // create foot as a free joint
     FreeJoint footJoint("footToGround", ground, Vec3(0), Vec3(0), osim_foot, Vec3(0), Vec3(0));
-    
+
     // Add the thigh body which now also contains the hip joint to the model
     osimModel->addBody(&osim_foot);
     osimModel->addJoint(&footJoint);
@@ -493,8 +493,8 @@ void testCoordinateLocking()
 
     // Rename hip coordinates for a pin joint
     hip.getCoordinateSet()[0].setName("hip_flex");
-    
-    // Add the thigh body 
+
+    // Add the thigh body
     osimModel->addBody(&osim_thigh);
     osimModel->addJoint(&hip);
 
@@ -536,7 +536,7 @@ void testCoordinateLocking()
     State& si2 = osimModel->initSystem();
 
     osimModel->getMultibodySystem().realize(si2, Stage::Velocity );
- 
+
     // Create the integrator and manager for the simulation.
     RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem());
     integrator.setMaximumStepSize(1.0e-3);
@@ -586,7 +586,7 @@ void testWeldConstraint()
     SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
 
     // Thigh connected by hip
-    MobilizedBody::Pin thigh(matter.Ground(), SimTK::Transform(hipInGround), 
+    MobilizedBody::Pin thigh(matter.Ground(), SimTK::Transform(hipInGround),
         SimTK::Body::Rigid(MassProperties(femurMass, femurCOM, femurInertiaAboutCOM.shiftFromMassCenter(femurCOM, femurMass))), Transform(hipInFemur));
     // Pin knee connects shank
     MobilizedBody::Pin shank(thigh, Transform(kneeInFemur), SimTK::Body::Rigid(tibiaMass), Transform(kneeInTibia));
@@ -682,9 +682,9 @@ void testPointOnLineConstraint()
     SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
 
     // Create a free joint between the foot and ground
-    MobilizedBody::Free foot(matter.Ground(), Transform(Vec3(0)), 
+    MobilizedBody::Free foot(matter.Ground(), Transform(Vec3(0)),
         SimTK::Body::Rigid(footMass), Transform(Vec3(0)));
-    
+
     // Constrain foot to line on ground
     SimTK::Constraint::PointOnLine simtkPointOnLine(matter.Ground(), normLineDirection, pointOnLine, foot, pointOnFollower);
 
@@ -705,7 +705,7 @@ void testPointOnLineConstraint()
 
     // create foot as a free joint
     FreeJoint footJoint("footToGround", ground, Vec3(0), Vec3(0), osim_foot, Vec3(0), Vec3(0));
-    
+
     // Add the thigh body which now also contains the hip joint to the model
     osimModel->addBody(&osim_foot);
     osimModel->addJoint(&footJoint);
@@ -753,7 +753,7 @@ void testCoordinateCouplerConstraint()
 
     for(int i = 0; i<npy; i++) {
         // Spline data points from experiment w.r.t. hip location. Change to make it w.r.t knee location
-        kneeY[i] += (-kneeInFemur[1]+hipInFemur[1]); 
+        kneeY[i] += (-kneeInFemur[1]+hipInFemur[1]);
     }
 
     SimmSpline tx(npx, angX, kneeX);
@@ -784,7 +784,7 @@ void testCoordinateCouplerConstraint()
             else
                 functions.push_back(ty.createSimTKFunction());
 
-            coordIndices.push_back(findex); 
+            coordIndices.push_back(findex);
         }
         else{
             std::vector<int> findex(0);
@@ -801,7 +801,7 @@ void testCoordinateCouplerConstraint()
     //system.updDefaultSubsystem().addEventReporter(new VTKEventReporter(system, 0.01));
 
     // Thigh connected by hip
-    MobilizedBody::Pin thigh(matter.Ground(), Transform(hipInGround), 
+    MobilizedBody::Pin thigh(matter.Ground(), Transform(hipInGround),
         SimTK::Body::Rigid(MassProperties(femurMass, femurCOM, femurInertiaAboutCOM.shiftFromMassCenter(femurCOM, femurMass))), Transform(hipInFemur));
     //Function-based knee connects shank
     MobilizedBody::FunctionBased shank(thigh, Transform(kneeInFemur), SimTK::Body::Rigid(tibiaMass), Transform(kneeInTibia), nm, functions, coordIndices);
@@ -818,7 +818,7 @@ void testCoordinateCouplerConstraint()
     Model *osimModel = new Model;
     //OpenSim bodies
     const Ground& ground = osimModel->getGround();;
-    
+
     OpenSim::Body osim_thigh("thigh", femurMass, femurCOM, femurInertiaAboutCOM);
 
     // create hip as a pin joint
@@ -826,7 +826,7 @@ void testCoordinateCouplerConstraint()
 
     // Rename hip coordinates for a pin joint
     hip.getCoordinateSet()[0].setName("hip_flex");
-    
+
     // Add the thigh body which now also contains the hip joint to the model
     osimModel->addBody(&osim_thigh);
     osimModel->addJoint(&hip);
@@ -903,7 +903,7 @@ void testCoordinateCouplerConstraint()
 
     // reconstruct from the model file
     osimModel = new Model("testCouplerConstraint.osim");
-    
+
     ForceReporter *forceReport = new ForceReporter(osimModel);
     forceReport->includeConstraintForces(true);
     osimModel->addAnalysis(forceReport);
@@ -952,7 +952,7 @@ void testRollingOnSurfaceConstraint()
     SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
 
     // Create a free joint between the rod and ground
-    MobilizedBody::Planar rod(matter.Ground(), Transform(Vec3(0)), 
+    MobilizedBody::Planar rod(matter.Ground(), Transform(Vec3(0)),
         SimTK::Body::Rigid(rodMass), Transform());
 
     // Get underlying mobilized bodies
@@ -964,10 +964,10 @@ void testRollingOnSurfaceConstraint()
     // Constrain the rod to move on the ground surface
     SimTK::Constraint::PointInPlane contactY(surface, surfaceNormal, planeHeight, rod, contactPointOnRod);
     SimTK::Constraint::ConstantAngle contactTorqueAboutY(surface, SimTK::UnitVec3(1, 0, 0), rod, SimTK::UnitVec3(0, 0, 1));
-    // Constrain the rod to roll on surface and not slide 
+    // Constrain the rod to roll on surface and not slide
     SimTK::Constraint::NoSlip1D contactPointXdir(cb, SimTK::Vec3(0), SimTK::UnitVec3(1, 0, 0), surface, rod);
     SimTK::Constraint::NoSlip1D contactPointZdir(cb, SimTK::Vec3(0), SimTK::UnitVec3(0, 0, 1), surface, rod);
-    
+
     // Simbody model state setup
     system.realizeTopology();
     State state = system.getDefaultState();
@@ -1021,7 +1021,7 @@ void testRollingOnSurfaceConstraint()
     roll->setSurfaceBodyByName("ground");
 
     double h = roll->get_surface_height();
-    
+
     osimModel->addConstraint(roll);
     osimModel->setGravity(gravity_vec);
 

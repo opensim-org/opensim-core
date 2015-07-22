@@ -30,8 +30,8 @@
 using namespace OpenSim;
 using namespace std;
 
-static dllPluginObjectInstantiator dInstantiator; 
-     
+static dllPluginObjectInstantiator dInstantiator;
+
 //_____________________________________________________________________________
 /**
  * The purpose of this routine is to register all class types exported by
@@ -43,12 +43,12 @@ OSIMEXPPLUGIN_API void RegisterTypes_osimPlugin()
     Object::registerType( SymbolicExpressionReporter() );
 }
 
-dllPluginObjectInstantiator::dllPluginObjectInstantiator() 
-{ 
-        registerDllClasses(); 
-} 
-    
-void dllPluginObjectInstantiator::registerDllClasses() 
-{ 
-        RegisterTypes_osimPlugin(); 
-} 
+dllPluginObjectInstantiator::dllPluginObjectInstantiator()
+{
+        registerDllClasses();
+}
+
+void dllPluginObjectInstantiator::registerDllClasses()
+{
+        RegisterTypes_osimPlugin();
+}

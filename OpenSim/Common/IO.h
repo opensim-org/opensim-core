@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -36,7 +36,7 @@
 const int IO_STRLEN = 2048;
 
 
-namespace OpenSim { 
+namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
@@ -56,7 +56,7 @@ private:
     static bool _Scientific;
     /** Specifies whether number output is in %g format or not. */
     static bool _GFormatForDoubleOutput;
-    /** Specifies number of digits of padding in number output. */ 
+    /** Specifies number of digits of padding in number output. */
     static int _Pad;
     /** Specifies the precision of number output. */
     static int _Precision;

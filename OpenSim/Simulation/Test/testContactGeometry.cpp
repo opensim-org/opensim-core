@@ -28,9 +28,9 @@
 //  less than 10x integration error tolerance)
 //
 //  Tests Include:
-//      1. Analytical contact sphere-plane geometry 
+//      1. Analytical contact sphere-plane geometry
 //      2. Mesh-based sphere on analytical plane geometry
-//      3. 
+//      3.
 //
 //==========================================================================================================
 #include <iostream>
@@ -83,7 +83,7 @@ int main()
         testBallToBallContact(false, false, false);
         testBallToBallContact(true, true, false);
         testBallToBallContact(true, false, true);
-        testBallToBallContact(true, true, true); 
+        testBallToBallContact(true, true, true);
         compareHertzAndMeshContactResults();
     }
     catch (const OpenSim::Exception& e) {
@@ -194,7 +194,7 @@ int testBouncingBall(bool useMesh)
         }
         else
         {
-            cout << "In contact at time = " << time << endl; 
+            cout << "In contact at time = " << time << endl;
             ASSERT(pos[1] < 5.0 && pos[1] > 0);
         }
         ASSERT_EQUAL(0.0, pos[0], 1e-4);
@@ -214,7 +214,7 @@ int testBouncingBall(bool useMesh)
 }
 
 
-// test sphere to sphere contact using elastic foundation with and without 
+// test sphere to sphere contact using elastic foundation with and without
 // meshes and their combination
 int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh2)
 {
@@ -250,7 +250,7 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
         ball2 = new ContactMesh(mesh_file, Vec3(0), Vec3(0), ball, "ball2");
     else
         ball2 = new ContactSphere(radius, Vec3(0), ball, "ball2");
-    
+
     osimModel->addContactGeometry(ball1);
     osimModel->addContactGeometry(ball2);
 
@@ -258,10 +258,10 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
 
     std::string prefix;
     if (useElasticFoundation){
-        
+
     }
     else{
-        
+
     }
     if (useElasticFoundation)
     {
@@ -273,7 +273,7 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
         prefix = "EF_";
         prefix += useMesh1 ?"Mesh":"noMesh";
         prefix += useMesh2 ? "_to_Mesh":"_to_noMesh";
-        
+
     }
     else
     {
@@ -283,7 +283,7 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
         contactParams->addGeometry("ball2");
         force = new OpenSim::HuntCrossleyForce(contactParams);
         prefix = "Hertz";
-        
+
     }
 
     force->setName("contact");

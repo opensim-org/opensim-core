@@ -105,7 +105,7 @@ const string& Marker::getFrameName() const
 //_____________________________________________________________________________
 /**
  * Change the PhysicalFrame that this marker is attached to. It assumes that the frame is
- * already set, so that extendConnectToModel() needs to be called to update 
+ * already set, so that extendConnectToModel() needs to be called to update
  * dependent information.
  *
  * @param aFrame Reference to the PhysicalFrame.
@@ -124,7 +124,7 @@ void Marker::changeFrame(const OpenSim::PhysicalFrame& aPhysicalFrame)
 //_____________________________________________________________________________
 /**
  * Change the PhysicalFrame that this marker is attached to. It assumes that the body is
- * already set, so that extendConnectToModel() needs to be called to update 
+ * already set, so that extendConnectToModel() needs to be called to update
  * dependent information.
  *
  * @param s State.
@@ -195,7 +195,7 @@ void Marker::generateDecorations(bool fixed, const ModelDisplayHints& hints, con
 {
     Super::generateDecorations(fixed, hints, state, appendToThis);
     if (!fixed) return;
-    if (hints.get_show_markers()) { 
+    if (hints.get_show_markers()) {
         // @TODO default color, size, shape should be obtained from hints
         const Vec3 pink(1, .6, .8);
         const OpenSim::PhysicalFrame& frame = getReferenceFrame();

@@ -31,15 +31,15 @@
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Common/Set.h>
 
-namespace OpenSim { 
+namespace OpenSim {
 
 // Forward declarations of classes that are used by the controller implementation
 class Model;
 class Actuator;
 
 /**
- * Controller is an abstract ModelComponent that defines the interface for   
- * an OpenSim Controller. A controller computes and sets the values of the  
+ * Controller is an abstract ModelComponent that defines the interface for
+ * an OpenSim Controller. A controller computes and sets the values of the
  * controls for the actuators under its control.
  * The defining method of a Controller is its computeControls() method.
  * @see computeControls()
@@ -53,11 +53,11 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
+    /** @name Property declarations
     These are the serializable properties associated with a Controller. **/
     /**@{**/
 
-    OpenSim_DECLARE_PROPERTY(isDisabled, bool, 
+    OpenSim_DECLARE_PROPERTY(isDisabled, bool,
         "Flag (true or false) indicating whether or not the controller is disabled." );
 
     OpenSim_DECLARE_LIST_PROPERTY(actuator_list, std::string,
@@ -75,7 +75,7 @@ public:
     /** Default constructor. */
     Controller();
 
-    // Uses default (compiler-generated) destructor, copy constructor and copy 
+    // Uses default (compiler-generated) destructor, copy constructor and copy
     // assignment operator.
 
     //--------------------------------------------------------------------------
@@ -101,10 +101,10 @@ public:
     Set<Actuator>& updActuators();
 
     /** Compute the control for actuator
-     *  This method defines the behavior for any concrete controller 
+     *  This method defines the behavior for any concrete controller
      *  and therefore must be implemented by concrete subclasses.
      *
-     * @param s         system state 
+     * @param s         system state
      * @param controls  writable model controls (all actuators)
      */
     virtual void computeControls(const SimTK::State& s,
@@ -116,10 +116,10 @@ protected:
 
     /** Model component interface that permits the controller to be "wired" up
        to its actuators. Subclasses can override to perform additional setup. */
-    void extendConnectToModel(Model& model) override;  
+    void extendConnectToModel(Model& model) override;
 
     /** Model component interface that creates underlying computational components
-        in the SimTK::MultibodySystem. This includes adding states, creating 
+        in the SimTK::MultibodySystem. This includes adding states, creating
         measures, etc... required by the controller. */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
@@ -127,10 +127,10 @@ protected:
     void setNumControls(int numControls) {_numControls = numControls; }
 
 private:
-    // number of controls this controller computes 
+    // number of controls this controller computes
     int _numControls;
 
-    // the (sub)set of Model actuators that this controller controls */ 
+    // the (sub)set of Model actuators that this controller controls */
     Set<Actuator> _actuatorSet;
 
     // construct and initialize properties

@@ -29,19 +29,19 @@
 		<AnalysisSet name="Analyses">
 			<objects>
 				<MuscleAnalysis>
-					<on> true</on> 
-					<start_time> 0</start_time> 
-					<!--End time.--> 
-					<end_time> 100</end_time> 
-					<!--Specifies how often to store results during a simulation. More specifically, the interval (a positive integer) specifies how many successful integration steps should be taken before results are recorded again.--> 
-					<step_interval> 1</step_interval> 
-					<!--Flag (true or false) indicating whether the results are in degrees or not.--> 
-					<in_degrees> true</in_degrees> 
-					<!--List of muscles for which to perform the analysis. Use 'all' to perform the analysis for all muscles.--> 
-					<muscle_list> RF VASINT</muscle_list> 
-					<!--List of generalized coordinates for which to compute moment arms. Use 'all' to compute for all coordinates.--> 
-					<moment_arm_coordinate_list>r_knee_angle</moment_arm_coordinate_list> 
-					<!--Flag indicating whether moments should be computed.--> 
+					<on> true</on>
+					<start_time> 0</start_time>
+					<!--End time.-->
+					<end_time> 100</end_time>
+					<!--Specifies how often to store results during a simulation. More specifically, the interval (a positive integer) specifies how many successful integration steps should be taken before results are recorded again.-->
+					<step_interval> 1</step_interval>
+					<!--Flag (true or false) indicating whether the results are in degrees or not.-->
+					<in_degrees> true</in_degrees>
+					<!--List of muscles for which to perform the analysis. Use 'all' to perform the analysis for all muscles.-->
+					<muscle_list> RF VASINT</muscle_list>
+					<!--List of generalized coordinates for which to compute moment arms. Use 'all' to compute for all coordinates.-->
+					<moment_arm_coordinate_list>r_knee_angle</moment_arm_coordinate_list>
+					<!--Flag indicating whether moments should be computed.-->
 					<compute_moments>false</compute_moments>
 				</MuscleAnalysis>
 			</objects>

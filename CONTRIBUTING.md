@@ -22,7 +22,7 @@ Ways to Contribute
 ------------------
 There are lots of ways to contribute to the OpenSim project, and people with widely varying skill sets can make meaningful contributions. Please don't think your contribution has to be momentous to be appreciated. See a typo? Tell us about it or fix it! Here are some contribution ideas:
 
-- Use OpenSim and let us know how you're using it by posting to the [OpenSim user forum](https://simtk.org/forums/viewforum.php?f=91).  
+- Use OpenSim and let us know how you're using it by posting to the [OpenSim user forum](https://simtk.org/forums/viewforum.php?f=91).
 - Ask and/or answer questions on the forum.
 - File bug reports, documentation problems, feature requests, and developer discussion topics using the GitHub [Issue tracker](https://github.com/opensim-org/opensim-core/issues).
 - Submit GitHub Pull Requests providing new features, examples, or bug fixes to code or documentation (see below).
@@ -199,7 +199,7 @@ We have some conventional starting verbs; you should use the same ones when they
 `find`    | Perform a small calculation (e.g., find the distance between two points) and return the result without changing anything else.
 `calc`    | (calculate) Perform an expensive calculation and return the result. Does not cause any other changes.
 `realize` | Initiate state-dependent computations and cache results internally; no result returned.
-`add`     | Add the object (Component) to an internal list of references. Should not take over ownership. 
+`add`     | Add the object (Component) to an internal list of references. Should not take over ownership.
 `adopt`   | Take over ownership (e.g., `Set::adoptAndAppend()`).
 `extend`  | A virtual method intended to extend a defining capability of a Base class. The first line of the derived class implementation must be `Super::extend<DoSomething>()`. For example, a ModelComponent knows how to ``connectToModel``, but the details of how each concrete ModelComponent type does this is implemented by the derived class.
 

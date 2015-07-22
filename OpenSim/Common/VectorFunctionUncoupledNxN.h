@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
- * Author: Frank C. Anderson 
+/*
+ * Author: Frank C. Anderson
  */
 
 
@@ -38,12 +38,12 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * An abstract class for representing a vector function.
  *
- * A vector function is a relation between some number of independent variables 
+ * A vector function is a relation between some number of independent variables
  * and some number of dependent values such that for any particular set of
  * independent variables the correct number of dependent variables is returned.
  * Values of the function and its derivatives
@@ -91,11 +91,11 @@ public:
     //--------------------------------------------------------------------------
     // SET AND GET
     //--------------------------------------------------------------------------
-    
+
     //--------------------------------------------------------------------------
     // EVALUATE
     //--------------------------------------------------------------------------
-    virtual void evaluate( const SimTK::State& s, const double *aX, double *rF) { 
+    virtual void evaluate( const SimTK::State& s, const double *aX, double *rF) {
         std::cout << "VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( const SimTK::State&, const double*, double*)" << std::endl;
     }
     virtual void evaluate( const SimTK::State& s, const Array<double> &aX, Array<double> &rF){

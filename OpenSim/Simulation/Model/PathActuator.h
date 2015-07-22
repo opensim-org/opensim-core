@@ -29,15 +29,15 @@
 //=============================================================================
 //=============================================================================
 
-namespace OpenSim { 
+namespace OpenSim {
 
 class Coordinate;
 class ForceSet;
 class Model;
 
 /**
- * This is the base class for actuators that apply controllable tension along 
- * a geometry path. %PathActuator has no states; the control is simply the 
+ * This is the base class for actuators that apply controllable tension along
+ * a geometry path. %PathActuator has no states; the control is simply the
  * tension to be applied along a geometry path (i.e. tensionable rope).
  *
  * @author Ajay Seth
@@ -71,7 +71,7 @@ public:
     //--------------------------------------------------------------------------
     // Path
     GeometryPath& updGeometryPath() { return upd_GeometryPath(); }
-    const GeometryPath& getGeometryPath() const 
+    const GeometryPath& getGeometryPath() const
     {   return get_GeometryPath(); }
     virtual bool hasGeometryPath() const { return true;};
 
@@ -85,7 +85,7 @@ public:
 
     // Power: Since lengthening is positive and tension always shortens, positive power
     // is when muscle is shortening under tension.
-    virtual double getPower(const SimTK::State& s) const 
+    virtual double getPower(const SimTK::State& s) const
     {   return -getActuation(s)*getSpeed(s); }
 
 
@@ -101,8 +101,8 @@ public:
     //--------------------------------------------------------------------------
     // APPLICATION
     //--------------------------------------------------------------------------
-    virtual void computeForce( const SimTK::State& state, 
-                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+    virtual void computeForce( const SimTK::State& state,
+                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                SimTK::Vector& mobilityForces) const;
 
     //--------------------------------------------------------------------------
@@ -125,19 +125,19 @@ public:
 
 protected:
     /** Override this method if you would like to calculate a color for use when
-    the %PathActuator's path is displayed in the visualizer. You do not have 
+    the %PathActuator's path is displayed in the visualizer. You do not have
     to invoke the base class ("Super") method, just replace it completely. This
-    method will be invoked during realizeDynamics() so the supplied \a state has 
-    already been realized through Stage::Velocity and you can access time, 
-    position, and velocity dependent quantities. You must \e not attempt to 
-    realize the passed-in \a state any further since we are already in the 
-    middle of realizing here. Return SimTK::Vec3(SimTK::NaN) if you want to 
+    method will be invoked during realizeDynamics() so the supplied \a state has
+    already been realized through Stage::Velocity and you can access time,
+    position, and velocity dependent quantities. You must \e not attempt to
+    realize the passed-in \a state any further since we are already in the
+    middle of realizing here. Return SimTK::Vec3(SimTK::NaN) if you want to
     leave the color unchanged (that's what the base class implementation does).
 
-    @param[in] state    
-        A SimTK::State already realized through Stage::Velocity. Do not 
+    @param[in] state
+        A SimTK::State already realized through Stage::Velocity. Do not
         attempt to realize it any further.
-    @returns 
+    @returns
         The desired color for the path as an RGB vector with each
         component ranging from 0 to 1, or NaN to indicate that the color
         should not be changed. **/

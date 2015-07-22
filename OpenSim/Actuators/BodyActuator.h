@@ -35,14 +35,14 @@ class Model;
 //                              BODY ACTUATOR
 //=============================================================================
 /**
- * Apply a spatial force (that is, [torque, force]) on a given point of the 
+ * Apply a spatial force (that is, [torque, force]) on a given point of the
  * given body. That is, the force is applied at the given point; torques don't
- * have associated points. This actuator has no states; the control signal  
- * should provide a 6D vector including [torque(3D), force(3D)] that is supposed 
+ * have associated points. This actuator has no states; the control signal
+ * should provide a 6D vector including [torque(3D), force(3D)] that is supposed
  * to be applied to the body.
  * The associated controller can generate the spatial force [torque, force] both
- * in the body and global (ground) frame. The default is assumed to be global 
- * frame. The point of application can be specified both in the body and global 
+ * in the body and global (ground) frame. The default is assumed to be global
+ * frame. The point of application can be specified both in the body and global
  * (ground) frame. The default is assumed to be the body frame.
  *
  * @author Soha Pouya, Michael Sherman
@@ -75,7 +75,7 @@ public:
     BodyActuator();
 
     /** Convenience Constructor.
-    Create a body actuator that applies a vector of spatial forces in the form 
+    Create a body actuator that applies a vector of spatial forces in the form
     of [torque, force] on a body. The torque is applied about the axis specified
     in ground frame.
 
@@ -101,7 +101,7 @@ public:
     {return get_point();}
 
 
-    /** Set the 'point_is_global' property that determines whether the point is  
+    /** Set the 'point_is_global' property that determines whether the point is
     specified in inertial coordinates or in the body's local coordinates. **/
     void setPointForceIsGlobal(bool isGlobal)
     {set_point_is_global(isGlobal); }
@@ -110,8 +110,8 @@ public:
     {return get_point_is_global();  }
 
 
-    /** Set the 'spatial_force_is_global' property that determines how to 
-    interpret the 'axis' vector; if not global (Ground frame) it is in body's  
+    /** Set the 'spatial_force_is_global' property that determines how to
+    interpret the 'axis' vector; if not global (Ground frame) it is in body's
     frame. **/
     void setSpatialForceIsGlobal(bool isGlobal)
     {set_spatial_force_is_global(isGlobal);}

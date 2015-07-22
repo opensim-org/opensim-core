@@ -48,9 +48,9 @@ namespace OpenSim {
  *
  * @author Peter Loan
  */
-class OSIMACTUATORS_API Schutte1993Muscle_Deprecated 
+class OSIMACTUATORS_API Schutte1993Muscle_Deprecated
 :   public ActivationFiberLengthMuscle_Deprecated {
-OpenSim_DECLARE_CONCRETE_OBJECT(Schutte1993Muscle_Deprecated, 
+OpenSim_DECLARE_CONCRETE_OBJECT(Schutte1993Muscle_Deprecated,
                                 ActivationFiberLengthMuscle_Deprecated);
 public:
 //=============================================================================
@@ -89,7 +89,7 @@ public:
                                  double             aOptimalFiberLength,
                                  double             aTendonSlackLength,
                                  double             aPennationAngle);
-    
+
     // default destructor, copy constructor, copy assignment
 
     //--------------------------------------------------------------------------

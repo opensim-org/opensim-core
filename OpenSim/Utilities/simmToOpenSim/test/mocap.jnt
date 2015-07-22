@@ -15,7 +15,7 @@
 
    Scott Delp, Ph.D., Stanford University
    Wendy Murray, Ph.D., Stanford University
-   Silvia Salinas Blemker, M.S., Stanford University 
+   Silvia Salinas Blemker, M.S., Stanford University
    Anita Vasavada, Ph.D., Washington State University
    Srikanth Suryanarayanan, M.S., Rehabilitation Institute of Chicago
    Frans van der Helm, Ph.D., Delft University
@@ -185,7 +185,7 @@ solver_max_iterations 100
 
 /* If you want to make the ground-reaction force vector
  * in the SIMM model window bigger/smaller/thinner/thicker,
- * change the scaling factors shown below. The length of the 
+ * change the scaling factors shown below. The length of the
  * vector (in meters) is the Y scale factor multiplied
  * by the magnitude of the force in Newtons.
  */
@@ -203,7 +203,7 @@ beginsegment pelvic_frame
 begingroups spine torso right leg_r hip_r left leg_l hip_l endgroups
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 0.001 0.0 
+htr_y 0.0 0.001 0.0
 endsegment
 #endif
 
@@ -514,7 +514,7 @@ gait_scale R_UPPER_ARM UPPER_ARM_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment elbow_marker_r
@@ -529,7 +529,7 @@ gait_scale R_UPPER_ARM UPPER_ARM_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment ulna_r
@@ -542,7 +542,7 @@ gait_scale R_LOWER_ARM LOWER_ARM_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment radius_r
@@ -553,7 +553,7 @@ gait_scale R_LOWER_ARM LOWER_ARM_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment wrist_marker_r
@@ -573,7 +573,7 @@ gait_scale R_LOWER_ARM LOWER_ARM_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 /*************************** Right Wrist and Hand ************/
@@ -586,7 +586,7 @@ gait_scale R_LOWER_ARM LOWER_ARM_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment hand_r
@@ -613,7 +613,7 @@ bone ring_distal_rvs.asc
 bone metacarpal5_rvs.asc
 bone little_proximal_rvs.asc
 bone little_medial_rvs.asc
-bone little_distal_rvs.asc 
+bone little_distal_rvs.asc
 bone metacarpal1_rvs.asc
 bone thumb_proximal_rvs.asc
 bone thumb_distal_rvs.asc
@@ -625,7 +625,7 @@ gait_scale R_LOWER_ARM LOWER_ARM_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.1 0.0 
+htr_y 0.0 -0.1 0.0
 endsegment
 
 #endif
@@ -685,7 +685,7 @@ gait_scale L_UPPER_ARM UPPER_ARM_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment elbow_marker_l
@@ -701,7 +701,7 @@ gait_scale L_UPPER_ARM UPPER_ARM_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment ulna_l
@@ -714,7 +714,7 @@ gait_scale L_LOWER_ARM LOWER_ARM_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment radius_l
@@ -725,7 +725,7 @@ gait_scale L_LOWER_ARM LOWER_ARM_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment wrist_marker_l
@@ -745,7 +745,7 @@ gait_scale L_LOWER_ARM LOWER_ARM_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 0.001 0.0 
+htr_y 0.0 0.001 0.0
 endsegment
 
 /*********************** Left Wrist and Hand ****************/
@@ -759,7 +759,7 @@ gait_scale L_LOWER_ARM LOWER_ARM_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment hand_l
@@ -798,7 +798,7 @@ gait_scale L_LOWER_ARM LOWER_ARM_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.1 0.0 
+htr_y 0.0 -0.1 0.0
 endsegment
 
 #endif
@@ -836,7 +836,7 @@ gait_scale R_THIGH THIGH_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment tibia_r
@@ -869,7 +869,7 @@ gait_scale R_SHANK SHANK_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment patella_r
@@ -880,7 +880,7 @@ gait_scale R_SHANK SHANK_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 #if VARUS_VALGUS
@@ -891,7 +891,7 @@ gait_scale R_SHANK SHANK_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment tibia_vv_med_r
@@ -901,7 +901,7 @@ gait_scale R_SHANK SHANK_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment tibia_vv_norm_r
@@ -911,7 +911,7 @@ gait_scale R_SHANK SHANK_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment patella_vv_tmp_r
@@ -921,7 +921,7 @@ gait_scale R_SHANK SHANK_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 #endif
 
@@ -933,7 +933,7 @@ gait_scale R_FOOT FOOT_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment foot_r
@@ -1027,7 +1027,7 @@ gait_scale L_THIGH THIGH_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment tibia_l
@@ -1060,7 +1060,7 @@ gait_scale L_SHANK SHANK_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment patella_l
@@ -1071,7 +1071,7 @@ gait_scale L_SHANK SHANK_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 #if VARUS_VALGUS
@@ -1082,7 +1082,7 @@ gait_scale L_SHANK SHANK_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment tibia_vv_med_l
@@ -1092,7 +1092,7 @@ gait_scale L_SHANK SHANK_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment tibia_vv_norm_l
@@ -1102,7 +1102,7 @@ gait_scale L_SHANK SHANK_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment patella_vv_tmp_l
@@ -1112,7 +1112,7 @@ gait_scale L_SHANK SHANK_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 #endif
 
@@ -1124,7 +1124,7 @@ gait_scale L_FOOT FOOT_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment foot_l
@@ -1254,7 +1254,7 @@ endjoint
 #if UPPER_EXTREMITY
 
 /*************************** Lumbar Joints *****************/
-beginjoint pelvis_lum5          
+beginjoint pelvis_lum5
 segments pelvis lumbar5
 order t r3 r1 r2
 DEFAULT_RIGHT_AXES
@@ -1339,9 +1339,9 @@ r2  function f372(neck_yaw)
 r3  function f373(neck_pitch)
 endjoint
 
-beginjoint cerv7_cerv6  
+beginjoint cerv7_cerv6
 segments cerv7 cerv6
-order t r3 r1 r2        
+order t r3 r1 r2
 DEFAULT_RIGHT_AXES
 tx  constant 0.005620
 ty  constant 0.018030
@@ -1353,7 +1353,7 @@ endjoint
 
 beginjoint cerv6_cerv5
 segments cerv6 cerv5
-order t r3 r1 r2        
+order t r3 r1 r2
 DEFAULT_RIGHT_AXES
 tx  constant 0.004760
 ty  constant 0.016180
@@ -1365,7 +1365,7 @@ endjoint
 
 beginjoint cerv5_cerv4
 segments cerv5 cerv4
-order t r3 r1 r2        
+order t r3 r1 r2
 DEFAULT_RIGHT_AXES
 tx  constant 0.002760
 ty  constant 0.015600
@@ -1377,7 +1377,7 @@ endjoint
 
 beginjoint cerv4_cerv3
 segments cerv4 cerv3
-order t r3 r1 r2        
+order t r3 r1 r2
 DEFAULT_RIGHT_AXES
 tx  constant 0.002300
 ty  constant 0.018100
@@ -1389,7 +1389,7 @@ endjoint
 
 beginjoint cerv3_cerv2
 segments cerv3 cerv2
-order t r3 r1 r2        
+order t r3 r1 r2
 DEFAULT_RIGHT_AXES
 tx  constant 0.000540
 ty  constant 0.014080
@@ -1401,7 +1401,7 @@ endjoint
 
 beginjoint cerv2_cerv1
 segments cerv2 cerv1
-order t r3 r1 r2        
+order t r3 r1 r2
 DEFAULT_RIGHT_AXES
 tx  constant 0.001460
 ty  constant 0.032510
@@ -1770,7 +1770,7 @@ tx constant  0.0
 ty constant -0.030
 tz constant  0.025
 r1 function f1610(knee_vv_r)
-r2 constant 0.0 
+r2 constant 0.0
 r3 constant 0.0
 endjoint
 
@@ -1951,7 +1951,7 @@ tx constant  0.0
 ty constant -0.030
 tz constant -0.025
 r1 function f1710(knee_vv_l)
-r2 constant 0.0 
+r2 constant 0.0
 r3 constant 0.0
 endjoint
 
@@ -2217,7 +2217,7 @@ endgencoord
 
 #if UPPER_EXTREMITY
 
-begingencoord lumbar_pitch              
+begingencoord lumbar_pitch
 range -45.0 45.0
 begingroups lumbar spine endgroups
 default_value 13.0
@@ -2232,14 +2232,14 @@ clamped yes
 visible no
 endgencoord
 
-begingencoord lumbar_yaw       
+begingencoord lumbar_yaw
 range -60.0  60.0
 begingroups lumbar spine endgroups
 clamped yes
 visible no
 endgencoord
 
-begingencoord neck_pitch                
+begingencoord neck_pitch
 range -50.0 72.0
 begingroups neck spine endgroups
 clamped yes
@@ -2631,81 +2631,81 @@ endfunction
 
 /********** Lumbar *************/
 /* LUM1 about LUM2 */
-beginfunction f111      
+beginfunction f111
 (-100.0, -20.7)
 ( 100.0,  20.7)
 endfunction
 
-beginfunction f112        
+beginfunction f112
 (-100.0, -22.2)
 ( 100.0,  22.2)
 endfunction
 
-beginfunction f113       
+beginfunction f113
 (-100.0, -16.2)
 ( 100.0,  16.2)
 endfunction
 
 /* LUM2 about LUM3 */
-beginfunction f121      
+beginfunction f121
 (-100.0, -20.7)
 ( 100.0,  20.7)
 endfunction
 
-beginfunction f122      
+beginfunction f122
 (-100.0, -22.2)
 ( 100.0,  22.2)
 endfunction
 
-beginfunction f123     
+beginfunction f123
 (-100.0, -18.9)
 ( 100.0,  18.9)
 endfunction
 
 /* LUM3 about LUM4 */
-beginfunction f131       
+beginfunction f131
 (-100.0, -27.6)
 ( 100.0,  27.6)
 endfunction
 
-beginfunction f132      
+beginfunction f132
 (-100.0, -22.2)
 ( 100.0,  22.2)
 endfunction
 
-beginfunction f133     
+beginfunction f133
 (-100.0, -20.3)
 ( 100.0,  20.3)
 endfunction
 
 /* LUM4 about LUM5 */
-beginfunction f141      
+beginfunction f141
 (-100.0, -20.7)
 ( 100.0,  20.7)
 endfunction
 
-beginfunction f142      
+beginfunction f142
 (-100.0, -22.2)
 ( 100.0,  22.2)
 endfunction
 
-beginfunction f143     
+beginfunction f143
 (-100.0, -21.6)
 ( 100.0,  21.6)
 endfunction
 
 /* LUM5 about pelvis */
-beginfunction f151      
+beginfunction f151
 (-100.0, -10.3)
 ( 100.0,  10.3)
 endfunction
 
-beginfunction f152     
+beginfunction f152
 (-100.0, -11.1)
 ( 100.0,  11.1)
 endfunction
 
-beginfunction f153     
+beginfunction f153
 (-100.0, -23.0)
 ( 100.0,  23.0)
 endfunction
@@ -3048,7 +3048,7 @@ beginfunction f1601
 (120.0, -0.4226)
 endfunction
 
-/* TX for right tib_pat joint */ 
+/* TX for right tib_pat joint */
 beginfunction f1602
 (  0.0, 0.0496)
 ( 10.0, 0.0484)
@@ -3333,7 +3333,7 @@ beginfunction f1701
 (120.0, -0.4226)
 endfunction
 
-/* TX for left tib_pat joint */ 
+/* TX for left tib_pat joint */
 beginfunction f1702
 (  0.0, 0.0496)
 ( 10.0, 0.0484)
@@ -3458,12 +3458,12 @@ endconstraintobject
         -1.0  0.0   0.0  0.0
          0.0 -1.0 -5.0  1.0
         endview
-        
+
         beginview motion
-        -0.7046 -0.0060  0.7096 0.0000 
-         0.0366  0.9983  0.0448 0.0000 
-        -0.7087  0.0575 -0.7032 0.0000 
-         0.3181 -0.8978 -4.5020 1.0000 
+        -0.7046 -0.0060  0.7096 0.0000
+         0.0366  0.9983  0.0448 0.0000
+        -0.7087  0.0575 -0.7032 0.0000
+         0.3181 -0.8978 -4.5020 1.0000
         endview
 
         beginview front
@@ -3472,14 +3472,14 @@ endconstraintobject
         -1.0  0.0   0.0  0.0
          0.0 -1.0 -5.0  1.0
         endview
-        
+
         beginview side
          1.0  0.0   0.0  0.0
          0.0  1.0   0.0  0.0
          0.0  0.0   1.0  0.0
          0.0 -1.0 -5.0  1.0
         endview
-        
+
         beginview top
         1.0  0.0   0.0  0.0
         0.0  0.0   1.0  0.0
@@ -3494,28 +3494,28 @@ endconstraintobject
         0.0  1.0   0.0  0.0
         0.0 -1.0 -5.0  1.0
         endview
-        
+
         beginview motion
         -0.3906 -0.0806  0.9170  0.0000
          0.9205 -0.0301  0.3895  0.0000
         -0.0038  0.9963  0.0860  0.0000
          0.5573 -1.0410 -3.6453  1.0000
         endview
-        
+
         beginview front
         0.0  0.0   1.0  0.0
         1.0  0.0   0.0  0.0
         0.0  1.0   0.0  0.0
         0.0 -1.0 -5.0  1.0
         endview
-        
+
         beginview side
          1.0  0.0   0.0  0.0
          0.0  0.0  -1.0  0.0
          0.0  1.0   0.0  0.0
          0.0 -1.0 -5.0  1.0
         endview
-        
+
         beginview top
          1.0   0.0   0.0  0.0
          0.0   1.0   0.0  0.0
@@ -3530,28 +3530,28 @@ endconstraintobject
          0.0  0.0   1.0  0.0
          0.0 -0.5  -5.0  1.0
         endview
-        
+
         beginview motion
-        -0.0016  0.9994 -0.0347 0.0000 
-        -0.7450 -0.0243 -0.6666 0.0000 
-        -0.6670  0.0248  0.7446 0.0000 
-         0.5645 -0.8547 -6.0538 1.0000 
+        -0.0016  0.9994 -0.0347 0.0000
+        -0.7450 -0.0243 -0.6666 0.0000
+        -0.6670  0.0248  0.7446 0.0000
+         0.5645 -0.8547 -6.0538 1.0000
         endview
-        
+
         beginview front
         0.0  1.0   0.0  0.0
        -1.0  0.0   0.0  0.0
         0.0  0.0   1.0  0.0
         0.0 -0.5  -5.0  1.0
         endview
-        
+
         beginview side
          0.0  1.0   0.0  0.0
          0.0  0.0   1.0  0.0
          1.0  0.0   0.0  0.0
          0.0 -0.5  -5.0  1.0
         endview
-        
+
         beginview top
          0.0  0.0   1.0  0.0
          0.0 -1.0   0.0  0.0
@@ -3825,7 +3825,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment dist_carpals_r
@@ -3846,7 +3846,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment rotaxis_r
@@ -3858,7 +3858,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment prox_flex_CR_r
@@ -3870,7 +3870,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment prox_dev_CR_r
@@ -3882,7 +3882,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment dist_flex_CR_r
@@ -3894,7 +3894,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment dist_dev_CR_r
@@ -3906,7 +3906,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment scaph_aux1_r
@@ -3918,7 +3918,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment scaph_aux2_r
@@ -3930,7 +3930,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment cap_aux1_r
@@ -3942,7 +3942,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment cap_aux2_r
@@ -3954,7 +3954,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment ham_aux1_r
@@ -3966,7 +3966,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment trpzd_aux1_r
@@ -3978,7 +3978,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment trpzm_aux1_r
@@ -3990,7 +3990,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment trpzm_aux2_r
@@ -4002,7 +4002,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment mc1_aux1_r
@@ -4014,7 +4014,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment carp_metacarp_r
@@ -4026,7 +4026,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment carp_thumb_r
@@ -4039,7 +4039,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment metacarpal2_r
@@ -4056,7 +4056,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment index_1_r
@@ -4074,7 +4074,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment index_2_r
@@ -4092,7 +4092,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment index_3_r
@@ -4110,7 +4110,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.02 0.0 
+htr_y 0.0 -0.02 0.0
 endsegment
 
 beginsegment metacarpal3_r
@@ -4128,7 +4128,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment middle_1_r
@@ -4146,7 +4146,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment middle_2_r
@@ -4164,7 +4164,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment middle_3_r
@@ -4182,7 +4182,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.02 0.0 
+htr_y 0.0 -0.02 0.0
 endsegment
 
 beginsegment metacarpal4_r
@@ -4199,7 +4199,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment ring_1_r
@@ -4217,7 +4217,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment ring_2_r
@@ -4235,7 +4235,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment ring_3_r
@@ -4253,7 +4253,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.02 0.0 
+htr_y 0.0 -0.02 0.0
 endsegment
 
 beginsegment metacarpal5_r
@@ -4270,7 +4270,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment little_1_r
@@ -4288,7 +4288,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment little_2_r
@@ -4306,7 +4306,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment little_3_r
@@ -4324,7 +4324,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.02 0.0 
+htr_y 0.0 -0.02 0.0
 endsegment
 
 beginsegment metacarpal1_r
@@ -4342,7 +4342,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment thumb_2_r
@@ -4360,7 +4360,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment thumb_3_r
@@ -4378,7 +4378,7 @@ gait_scale R_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.02 0.0 
+htr_y 0.0 -0.02 0.0
 endsegment
 
 
@@ -5586,7 +5586,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment dist_carpals_l
@@ -5607,7 +5607,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment rotaxis_l
@@ -5619,7 +5619,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment prox_flex_CR_l
@@ -5631,7 +5631,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment prox_dev_CR_l
@@ -5643,7 +5643,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment dist_flex_CR_l
@@ -5655,7 +5655,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment dist_dev_CR_l
@@ -5667,7 +5667,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment scaph_aux1_l
@@ -5679,7 +5679,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment scaph_aux2_l
@@ -5691,7 +5691,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment cap_aux1_l
@@ -5703,7 +5703,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment cap_aux2_l
@@ -5715,7 +5715,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment ham_aux1_l
@@ -5727,7 +5727,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment trpzd_aux1_l
@@ -5739,7 +5739,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment trpzm_aux1_l
@@ -5751,7 +5751,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment trpzm_aux2_l
@@ -5763,7 +5763,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment mc1_aux1_l
@@ -5775,7 +5775,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment carp_metacarp_l
@@ -5787,7 +5787,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment carp_thumb_l
@@ -5800,7 +5800,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment metacarpal2_l
@@ -5817,7 +5817,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment index_1_l
@@ -5835,7 +5835,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment index_2_l
@@ -5853,7 +5853,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment index_3_l
@@ -5871,7 +5871,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.02 0.0 
+htr_y 0.0 -0.02 0.0
 endsegment
 
 beginsegment metacarpal3_l
@@ -5889,7 +5889,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment middle_1_l
@@ -5907,7 +5907,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment middle_2_l
@@ -5925,7 +5925,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment middle_3_l
@@ -5943,7 +5943,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.02 0.0 
+htr_y 0.0 -0.02 0.0
 endsegment
 
 beginsegment metacarpal4_l
@@ -5960,7 +5960,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment ring_1_l
@@ -5978,7 +5978,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment ring_2_l
@@ -5996,7 +5996,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment ring_3_l
@@ -6014,7 +6014,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.02 0.0 
+htr_y 0.0 -0.02 0.0
 endsegment
 
 beginsegment metacarpal5_l
@@ -6031,7 +6031,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment little_1_l
@@ -6049,7 +6049,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment little_2_l
@@ -6067,7 +6067,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment little_3_l
@@ -6085,7 +6085,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.02 0.0 
+htr_y 0.0 -0.02 0.0
 endsegment
 
 beginsegment metacarpal1_l
@@ -6103,7 +6103,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x -1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment thumb_2_l
@@ -6121,7 +6121,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x -1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment thumb_3_l
@@ -6139,7 +6139,7 @@ gait_scale L_HAND HAND_SIZE
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x -1.0 0.0 0.0
-htr_y 0.0 -0.02 0.0 
+htr_y 0.0 -0.02 0.0
 endsegment
 
 

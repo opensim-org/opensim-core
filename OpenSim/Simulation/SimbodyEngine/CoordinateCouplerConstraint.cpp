@@ -41,7 +41,7 @@ private:
     const double scale;
 
 public:
-    
+
     CompoundFunction(const SimTK::Function *cf, double scale) : f1(cf), scale(scale) {
     }
 
@@ -52,7 +52,7 @@ public:
     }
 
     double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const {
-        return calcDerivative(SimTK::ArrayViewConst_<int>(derivComponents),x); 
+        return calcDerivative(SimTK::ArrayViewConst_<int>(derivComponents),x);
     }
 
     double calcDerivative(const SimTK::Array_<int>& derivComponents, const SimTK::Vector& x) const {
@@ -230,7 +230,7 @@ void CoordinateCouplerConstraint::extendAddToSystem(SimTK::MultibodySystem& syst
 
     // Now create a Simbody Constraint::CoordinateCoupler
     SimTK::Constraint::CoordinateCoupler simtkCoordinateCoupler(system.updMatterSubsystem() ,
-                                                                simtkCouplerFunction, 
+                                                                simtkCouplerFunction,
                                                                 mob_bodies, mob_qs);
 
     // Beyond the const Component get the index so we can access the SimTK::Constraint later
@@ -242,7 +242,7 @@ void CoordinateCouplerConstraint::extendAddToSystem(SimTK::MultibodySystem& syst
 //=============================================================================
 /**
  * Scale the coordinate coupler constraint according to the mobilized body that
- * the dependent coordinate belongs too. The scale factor is determined by 
+ * the dependent coordinate belongs too. The scale factor is determined by
  * dotting the coordinate axis with that of the translation. Rotations are NOT
  * scaled.
  *
@@ -251,13 +251,13 @@ void CoordinateCouplerConstraint::extendAddToSystem(SimTK::MultibodySystem& syst
 void CoordinateCouplerConstraint::scale(const ScaleSet& aScaleSet)
 {
     Coordinate& depCoordinate = _model->updCoordinateSet().get(get_dependent_coordinate_name());
-    
+
     // Only scale if the dependent coordinate is a translation
     if (depCoordinate.getMotionType() == Coordinate::Translational){
         // Constraint scale factor
         double scaleFactor = 1.0;
         // Get appropriate scale factors from parent body
-        Vec3 bodyScaleFactors(1.0); 
+        Vec3 bodyScaleFactors(1.0);
         const string& parentName = depCoordinate.getJoint().getParentFrameName();
 
         // Cycle through the scale set to get the appropriate factors
@@ -288,7 +288,7 @@ void CoordinateCouplerConstraint::scale(const ScaleSet& aScaleSet)
             }
         }
 
-        // scale the user-defined OpenSim 
+        // scale the user-defined OpenSim
         set_scale_factor(get_scale_factor() * scaleFactor);
     }
 }

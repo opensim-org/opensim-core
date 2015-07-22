@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 // INCLUDES
@@ -35,7 +35,7 @@
 #include "ObjectGroup.h"
 #include "PropertyObjArray.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
 //=============================================================================
 //=============================================================================
@@ -189,7 +189,7 @@ public:
  */
 #ifndef SWIG
 Set<T>& operator=(const Set<T> &aSet)
-{   
+{
     Super::operator=(aSet);
     _objects = aSet._objects;
     _objectGroups = aSet._objectGroups;
@@ -443,7 +443,7 @@ virtual int getIndex(const std::string &aName,int aStartIndex=0) const
 }
 //_____________________________________________________________________________
 /**
- * Get names of groups containing a given object 
+ * Get names of groups containing a given object
  */
 void getGroupNamesContaining(const std::string &aObjectName, Array<std::string> &rGroupNames) const
 {
@@ -471,8 +471,8 @@ virtual bool adoptAndAppend(T *aObject)
 
 //_____________________________________________________________________________
 /**
- * cloneAndAppend creates a clone of the passed in object and appends the clone to the array.  
- * The original object is unaffected and is not associated with the Set. The clone is created 
+ * cloneAndAppend creates a clone of the passed in object and appends the clone to the array.
+ * The original object is unaffected and is not associated with the Set. The clone is created
  * using the method clone() available to OpenSim::Object
  *
  * @param aObject Object whose clone is to be appended.
@@ -792,7 +792,7 @@ void removeGroup(const std::string& aGroupName)
 //_____________________________________________________________________________
 /**
  * Rename a group.
- * 
+ *
  */
 void renameGroup(const std::string& oldGroupName, const std::string& newGroupName)
 {

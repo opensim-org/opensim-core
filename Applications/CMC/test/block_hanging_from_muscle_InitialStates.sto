@@ -1,6 +1,6 @@
-initial_states				
-nRows=1				
-nColumns=5				
-endheader				
+initial_states
+nRows=1
+nColumns=5
+endheader
 time	block_ty	block_ty_u	muscle.activation	muscle.fiber_length
 0	-0.42462006920006	0	0.02	0.122100534303908

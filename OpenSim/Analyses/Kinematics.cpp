@@ -198,9 +198,9 @@ updateCoordinatesToRecord()
             for(int j=0;j<coordSet.getSize();j++) _coordinateIndices[j]=j;
             break;
         }
-        
+
         int index = coordSet.getIndex(get_coordinates(i));
-        if(index<0) 
+        if(index<0)
             throw Exception("Kinematics: ERR- Cound not find coordinate named '"+get_coordinates(i)+"'",__FILE__,__LINE__);
         _coordinateIndices[i] = index;
     }
@@ -402,7 +402,7 @@ int Kinematics::record(const SimTK::State& s)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration 
+ * This method is meant to be called at the begining of an integration
  *
  * @param s current state of System
  *
@@ -414,7 +414,7 @@ begin( SimTK::State& s )
     if(!proceed()) return(0);
 
     double time = s.getTime();
-    
+
     // RESET STORAGE
     _pStore->reset(time);
     _vStore->reset(time);
@@ -423,7 +423,7 @@ begin( SimTK::State& s )
     // RECORD
     int status = 0;
     if(_pStore->getSize()<=0) {
-        if(_recordAccelerations && s.getSystemStage() < SimTK::Stage::Acceleration ) 
+        if(_recordAccelerations && s.getSystemStage() < SimTK::Stage::Acceleration )
             _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
         else
             _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
@@ -439,7 +439,7 @@ begin( SimTK::State& s )
  * the execution of a forward integrations or after the integration by
  * feeding it the necessary data.
  *
- * When called during an integration, this method is meant to be called 
+ * When called during an integration, this method is meant to be called
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -461,7 +461,7 @@ step(const SimTK::State& s, int stepNumber )
  * This method is called at the end of an analysis so that any
  * necessary finalizations may be performed.
  *
- * This method is meant to be called at the end of an integration 
+ * This method is meant to be called at the end of an integration
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -490,7 +490,7 @@ end( SimTK::State& s )
 //_____________________________________________________________________________
 /**
  * Print results.
- * 
+ *
  * The file names are constructed as
  * aDir + "/" + aBaseName + "_" + ComponentName + aExtension
  *

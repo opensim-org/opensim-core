@@ -264,21 +264,21 @@ using namespace SimTK;
     return equal;
   }
   private int cacheId=-1;  // cache the Id to avoid recomputation for hashing purposes
- 
+
   public int hashCode() {
      if (cacheId==-1)
         cacheId=(int)swigCPtr;
-     
+
     return( cacheId );
   }
   // Flag to indicate if an object is pickable in the GUI
   // Example of a non-pickable object would be a PathWrapPoint
   private boolean pickable=true;
-  
+
   public boolean isPickable() {
 	 return pickable;
   }
-  
+
   public void setPickable(boolean onOff) {
 	 pickable=onOff;
   }
@@ -286,7 +286,7 @@ using namespace SimTK;
     if (swigCPtr != 0) {
       if (swigCMemOwn) swigCMemOwn = false;
     }
-  }  
+  }
 
 %}
 
@@ -296,7 +296,7 @@ using namespace SimTK;
   public double[] getTimeRange() { return new double[]{getStartFrameTime(), getLastFrameTime()}; }
 %}
 
-%newobject *::clone; 
+%newobject *::clone;
 
 %typemap(javacode) OpenSim::Array<double> %{
 	public void fromString(String string) {
@@ -435,8 +435,8 @@ public:
   public void addProbe(Probe aProbe) {
 	aProbe.markAdopted();
     private_addProbe(aProbe);
-  }  
-  
+  }
+
   public void addContactGeometry(ContactGeometry aContactGeometry) {
 	aContactGeometry.markAdopted();
     private_addContactGeometry(aContactGeometry);
@@ -496,7 +496,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         System.loadLibrary("osimJavaJNI");		// All OpenSim classes required for GUI operation.
       }
       catch(UnsatisfiedLinkError e){
-           new JOptionPane("Required library failed to load. Check that the dynamic library osimJavaJNI is in your PATH\n"+e, 
+           new JOptionPane("Required library failed to load. Check that the dynamic library osimJavaJNI is in your PATH\n"+e,
 				JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
       }
   }
@@ -545,7 +545,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 
 	};
 	void setInertia(Array<double>& aInertia) {
-		self->setInertia(SimTK::Inertia(aInertia[0], 
+		self->setInertia(SimTK::Inertia(aInertia[0],
 		aInertia[1], aInertia[2], aInertia[3], aInertia[4], aInertia[5]));
 	}
 };
@@ -560,19 +560,19 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 	SimTK::Vec3 getAsVec3() {
 		return SimTK::Vec3::getAs(self->get());
 	};
-	
+
 	static SimTK::Vec3 createVec3(double e1, double e2, double e3) {
 		Array<double>* arr = new Array<double>(e1, 3);
 		arr->set(1, e2);
 		arr->set(2, e3);
 		return SimTK::Vec3::getAs(arr->get());
 	};
-  
+
    static SimTK::Vec3 createVec3(double e1) {
 		Array<double>* arr = new Array<double>(e1, 3);
 		return SimTK::Vec3::getAs(arr->get());
   };
-   
+
    static SimTK::Vec3  createVec3(double es[3]) {
 		Array<double>* arr = new Array<double>(es[0], 3);
 		arr->set(1, es[1]);
@@ -595,12 +595,12 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 		for (int i=0; i<3; i++) arr[i] = vec3[i];
 		return arr;
   };
-  
+
   std::string toString() const {
 		std::stringstream stream;
 		for (int i=0; i< self->getSize(); i++)
 			stream <<  self->get(i) << " ";
-		return stream.str(); 
+		return stream.str();
   }
 
 };
@@ -628,7 +628,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 		  Object::getRegisteredObjectsOfGivenType<OpenSim::Function>(rArray);
 		  for (int i=0;i<rArray.size(); i++)
 			availableClassNames.append(rArray[i]->getConcreteClassName());
-		  
+
 		  return availableClassNames;
 	}
 }
@@ -710,8 +710,8 @@ typedef int SystemUErrIndex;
 typedef int SystemUDotErrIndex;
 
 namespace SimTK {
-%template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>; 
-%template(ArrayIndexInt) ArrayIndexTraits<int>; 
+%template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>;
+%template(ArrayIndexInt) ArrayIndexTraits<int>;
 }
 
 %include <SWIGSimTK/DecorativeGeometry.h>
@@ -835,7 +835,7 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/PhysicalFrame.h>
 %include <OpenSim/Simulation/Model/Ground.h>
 %include <OpenSim/Simulation/Model/OffsetFrame.h>
-%template(PhysicalFrameWithOffset)   OpenSim::OffsetFrame<OpenSim::PhysicalFrame>; 
+%template(PhysicalFrameWithOffset)   OpenSim::OffsetFrame<OpenSim::PhysicalFrame>;
 %include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 %template(SetFrames) OpenSim::Set<OpenSim::Frame>;
 %template(ModelComponentSetFrames) OpenSim::ModelComponentSet<OpenSim::Frame>;

@@ -110,7 +110,7 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
     Object::RenameType("IKTool", "InverseKinematicsTool");
 
   } catch (const std::exception& e) {
-    std::cerr 
+    std::cerr
         << "ERROR during osimTools Object registration:\n"
         << e.what() << "\n";
   }

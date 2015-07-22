@@ -49,7 +49,7 @@ AbstractProperty::AbstractProperty()
 /**
  * Constructor.
  */
-AbstractProperty::AbstractProperty(const std::string& name, 
+AbstractProperty::AbstractProperty(const std::string& name,
                                    const std::string& comment)
 {
     setNull();
@@ -85,7 +85,7 @@ void AbstractProperty::setAllPropertiesUseDefault(bool shouldUseDefault) {
         updValueAsObject(i).setAllPropertiesUseDefault(shouldUseDefault);
 }
 
-// Implement the policy that locates a property value's element within its 
+// Implement the policy that locates a property value's element within its
 // parent element and then ask the concrete property to deserialize itself from
 // that element.
 void AbstractProperty::readFromXMLParentElement(Xml::Element& parent,
@@ -105,7 +105,7 @@ void AbstractProperty::readFromXMLParentElement(Xml::Element& parent,
     }
 
     // Didn't find a property element by its name (or it didn't have one).
-    // There is still hope: If this is an object property, restricted to 
+    // There is still hope: If this is an object property, restricted to
     // contain exactly one Object, then it is allowed to have an alternate
     // form.
 
@@ -114,8 +114,8 @@ void AbstractProperty::readFromXMLParentElement(Xml::Element& parent,
         return;
     }
 
-    // The property contains just a single object so we can look for the 
-    // abbreviated form: 
+    // The property contains just a single object so we can look for the
+    // abbreviated form:
     //      <ObjectTypeTag name=propName> contents </ObjectTypeTag>
     // In case this is an unnamed property, only the type has to be right in
     // the source XML file, and any name (or no name attribute) is acceptable.
@@ -127,30 +127,30 @@ void AbstractProperty::readFromXMLParentElement(Xml::Element& parent,
     // type; we don't care about its name attribute in that case.
     // As a final loophole, if we fail to find a matching name, but there is
     // an unnamed object in the file whose type is acceptable, we'll use that
-    // rather than report an error. That allows us to add a name to a 
-    // formerly unnamed one-object property in the code yet still read old 
+    // rather than report an error. That allows us to add a name to a
+    // formerly unnamed one-object property in the code yet still read old
     // files that contain unnamed objects.
 
     // If we find a promising element, we'll canonicalize by adding a parent
     // property element temporarily to produce:
-    //     <propName> 
-    //         <ObjectTypeTag name=propName> contents </ObjectTypeTag> 
+    //     <propName>
+    //         <ObjectTypeTag name=propName> contents </ObjectTypeTag>
     //     </propName>
     // or
-    //     <Unnamed> 
-    //         <ObjectTypeTag> contents </ObjectTypeTag> 
+    //     <Unnamed>
+    //         <ObjectTypeTag> contents </ObjectTypeTag>
     //     </Unnamed>
     // and then delegate to the concrete property the job of reading in the
     // property value.
     Xml::element_iterator prev = parent.element_end();
     Xml::element_iterator iter = parent.element_begin();
     if (isUnnamedProperty()) {
-        for (; iter != parent.element_end(); prev=iter++) 
+        for (; iter != parent.element_end(); prev=iter++)
             if (isAcceptableObjectTag(iter->getElementTag()))
                 break; // Found a good tag; name doesn't matter.
     } else { // this property has a name
         // First pass: look for an object with that name attribute
-        for (; iter != parent.element_end(); prev=iter++) 
+        for (; iter != parent.element_end(); prev=iter++)
             if (iter->getOptionalAttributeValue("name") == getName()) {
                 // Found the right name; tag must be acceptable.
                 if (!isAcceptableObjectTag(iter->getElementTag())) {
@@ -181,7 +181,7 @@ void AbstractProperty::readFromXMLParentElement(Xml::Element& parent,
         return;
     }
 
-    // Found a match. Borrow the object node briefly and canonicalize it 
+    // Found a match. Borrow the object node briefly and canonicalize it
     // into a conventional <propName> object </propName> structure.
     std::string propName = isUnnamedProperty() ? "Unnamed" : getName();
     Xml::Element dummy(propName);
@@ -190,7 +190,7 @@ void AbstractProperty::readFromXMLParentElement(Xml::Element& parent,
 
     readFromXMLElement(dummy, versionNumber);
     // Now put the node back where we found it.
-    parent.insertNodeBefore(prev, 
+    parent.insertNodeBefore(prev,
                             dummy.removeNode(dummy.element_begin()));
     setValueIsDefault(false);
     parent.removeNode(parent.element_begin(dummy.getElementTag()));
@@ -214,10 +214,10 @@ void AbstractProperty::writeToXMLParentElement(Xml::Element& parent) const {
     }
 
     // This is a one-object property. It will be represented by an Xml
-    // element 
+    // element
     //      <ObjectTypeTag name=propName ...> value </ObjectTypeTag>
-    // (if the property has a name), or 
-    //      <ObjectTypeTag ...> value </ObjectTypeTag> 
+    // (if the property has a name), or
+    //      <ObjectTypeTag ...> value </ObjectTypeTag>
     // otherwise.
 
     const Object& obj = getValueAsObject();
@@ -225,7 +225,7 @@ void AbstractProperty::writeToXMLParentElement(Xml::Element& parent) const {
     // If this is a named property then the lone object must have its
     // name attribute set to the property name.
     //
-    // KLUDGE: We shouldn't const_cast here to change obj name, instead the 
+    // KLUDGE: We shouldn't const_cast here to change obj name, instead the
     // name of the object should be set ahead of time. Revisit when DeprecatedProperties are gone.
     // -Ayman 09/14
     (const_cast<Object&>(obj)).setName(isUnnamedProperty() ? "" : getName());

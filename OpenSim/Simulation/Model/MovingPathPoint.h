@@ -121,12 +121,12 @@ public:
 
     // Override methods from PathPoint.
     bool isActive(const SimTK::State& s) const override { return true; }
-    void connectToModelAndPath(const Model& aModel, GeometryPath& aPath) 
+    void connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
                                                                 override;
     void update(const SimTK::State& s) override;
     void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity) override;
 #endif
-    SimTK::Vec3 getdPointdQ(const SimTK::State& s) const override; 
+    SimTK::Vec3 getdPointdQ(const SimTK::State& s) const override;
 
     const std::string& getXCoordinateName() const { return _xCoordinateName; }
     const std::string& getYCoordinateName() const { return _yCoordinateName; }

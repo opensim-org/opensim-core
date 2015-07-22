@@ -67,7 +67,7 @@ PinJoint::PinJoint(const std::string &name, const PhysicalFrame& parent,
     const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
     const PhysicalFrame& child,
     const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-    bool reverse) : 
+    bool reverse) :
         Super(name, parent, locationInParent, orientationInParent,
             child, locationInchild, orientationInChild, reverse)
 {

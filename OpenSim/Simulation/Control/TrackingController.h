@@ -33,7 +33,7 @@
 //=============================================================================
 //=============================================================================
 
-namespace OpenSim { 
+namespace OpenSim {
 
 class TrackingTask;
 class Storage;
@@ -41,13 +41,13 @@ class Storage;
 /**
  * TrackingController is an abstract class from which all tracking type of
  * controllers should be derived. This class implements convenience methods
- * to construct dsired trajectories of desired model state values, like joint 
- * angles, from Storage (file) or user-supplied functions and provides methods 
+ * to construct dsired trajectories of desired model state values, like joint
+ * angles, from Storage (file) or user-supplied functions and provides methods
  * for obtaining the error between model and desired state values.
  *
- * Derive classes need only to implement the tracking control law based on 
+ * Derive classes need only to implement the tracking control law based on
  * the error signals computed by this base class.
- * 
+ *
  * @author  Ajay Seth
  * @version 1.0
  */
@@ -67,7 +67,7 @@ public:
     TrackingController();
 
     /**
-     * Destructor.  
+     * Destructor.
      */
     virtual ~TrackingController();
 
@@ -85,7 +85,7 @@ public:
      * simulation.
      */
     virtual void setDesiredStatesStorage(const Storage* aYDesStore);
-    virtual const Storage& getDesiredStatesStorage() const; 
+    virtual const Storage& getDesiredStatesStorage() const;
 
     // ON/OFF
 

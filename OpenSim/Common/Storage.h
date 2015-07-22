@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 #include "osimCommonDLL.h"
@@ -37,12 +37,12 @@
 const int Storage_DEFAULT_CAPACITY = 256;
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 typedef std::map<std::string, std::string, std::less<std::string> > MapKeysToValues;
 
 //static std::string[] simmReservedKeys;
- 
+
 /**
  * A class for storing an array of statevectors.  A statevector is an
  * array of data that has an associated time stamp (see StateVector).
@@ -131,7 +131,7 @@ public:
     void setDescription(const std::string& aDescription) { _description = aDescription; };
     //--------------------------------------------------------------------------
     // VERSIONING /BACKWARD COMPATIBILITY SUPPORT
-    //--------------------------------------------------------------------------    
+    //--------------------------------------------------------------------------
     static const int& getLatestVersion() { return LatestVersion; };
     const int& getFileVersion() const { return _fileVersion; };
 private:
@@ -187,17 +187,17 @@ public:
     int getDataAtTime(double aTime,int aN,SimTK::Vector& v) const;
     int getDataColumn(int aStateIndex,double *&rData) const;
     int getDataColumn(int aStateIndex,Array<double> &rData) const;
-    // Set entries in a column of the storage to a fixed value, 
+    // Set entries in a column of the storage to a fixed value,
     void setDataColumnToFixedValue(const std::string& columnName, double newValue);
     void setDataColumn(int aStateIndex,const Array<double> &aData);
     int getDataColumn(const std::string& columnName,double *&rData) const;
     void getDataColumn(const std::string& columnName, Array<double>& data, double startTime=0.0);
 #ifndef SWIG
     /** A data block, like a vector for a force, point, etc... will span multiple "columns"
-        It is desirable to access the block as a single entity provided an identifier that is common 
+        It is desirable to access the block as a single entity provided an identifier that is common
        to all components (such as prefix in the column label).
-     @param identifier  string identifying a single block of data 
-     @param rData       Array<Array<double>> of data belonging to the identifier 
+     @param identifier  string identifying a single block of data
+     @param rData       Array<Array<double>> of data belonging to the identifier
      @param startTime   at what time to begin (if not 0) */
     void getDataForIdentifier(const std::string& identifier, Array< Array<double> >& rData, double startTime=0.0) const;
 #endif
@@ -284,10 +284,10 @@ public:
     void findFrameRange(double aStartTime, double aEndTime, int& oStartFrame, int& oEndFrame) const;
     double resample(double aDT, int aDegree);
     double resampleLinear(double aDT);
-    double compareColumn(Storage& aOtherStorage, 
+    double compareColumn(Storage& aOtherStorage,
                          const std::string& aColumnName,
                          double startTime, double endTime=-1.0);
-    double compareColumnRMS(Storage& aOtherStorage, 
+    double compareColumnRMS(Storage& aOtherStorage,
                          const std::string& aColumnName,
                          double startTime=SimTK::NaN, double endTime=SimTK::NaN);
     //void checkAgainstStandard(Storage standard, Array<double> &tolerances, std::string testFile = "", int testFileLine = -1, std::string errorMessage = "Exception");

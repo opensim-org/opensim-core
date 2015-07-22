@@ -21,9 +21,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
- *  Below is an example of an OpenSim application that provides its own 
- *  main() routine.  This application acts as an example for utilizing the 
+/*
+ *  Below is an example of an OpenSim application that provides its own
+ *  main() routine.  This application acts as an example for utilizing the
  *  ControllabeSpring actuator.
  */
 
@@ -40,7 +40,7 @@ using namespace SimTK;
 
 //______________________________________________________________________________
 /**
- * Run a simulation of block sliding with contact on by two muscles sliding with contact 
+ * Run a simulation of block sliding with contact on by two muscles sliding with contact
  */
 int main()
 {
@@ -51,15 +51,15 @@ int main()
         osimModel.setName("osimModel");
 
         double Pi = SimTK::Pi;
-        
-        
+
+
         // Get the ground body
         OpenSim::Body& ground = osimModel.getGroundBody();
         ground.addDisplayGeometry("checkered_floor.vtp");
 
         // create linkage body
         double linkageMass = 0.001, linkageLength = 0.5, linkageDiameter = 0.06;
-        
+
         Vec3 linkageDimensions(linkageDiameter, linkageLength, linkageDiameter);
         Vec3 linkageMassCenter(0,linkageLength/2,0);
         Inertia linkageInertia = Inertia::cylinderAlongY(linkageDiameter/2.0, linkageLength/2.0);
@@ -76,7 +76,7 @@ int main()
         linkage1->addDisplayGeometry("sphere.vtp");
         //This sphere.vtp is 1 meter in diameter.  Scale it.
         geometry[1].setScaleFactors(Vec3(0.1));
-        
+
         // Creat a second linkage body
         OpenSim::Body* linkage2 = new OpenSim::Body(*linkage1);
         linkage2->setName("linkage2");
@@ -91,10 +91,10 @@ int main()
         block->updDisplayer()->updGeometrySet()[0].setScaleFactors(Vec3(2.0));
 
         // Create 1 degree-of-freedom pin joints between the bodies to creat a kinematic chain from ground through the block
-        
+
         Vec3 orientationInGround(0), locationInGround(0), locationInParent(0.0, linkageLength, 0.0), orientationInChild(0), locationInChild(0);
 
-        PinJoint *ankle = new PinJoint("ankle", ground, locationInGround, orientationInGround, *linkage1, 
+        PinJoint *ankle = new PinJoint("ankle", ground, locationInGround, orientationInGround, *linkage1,
             locationInChild, orientationInChild);
 
         PinJoint *knee = new PinJoint("knee", *linkage1, locationInParent, orientationInChild, *linkage2,
@@ -102,7 +102,7 @@ int main()
 
         PinJoint *hip = new PinJoint("hip", *linkage2, locationInParent, orientationInChild, *block,
             locationInChild, orientationInChild);
-        
+
         double range[2] = {-SimTK::Pi*2, SimTK::Pi*2};
         CoordinateSet& ankleCoordinateSet = ankle->upd_CoordinateSet();
         ankleCoordinateSet[0].setName("q1");
@@ -173,8 +173,8 @@ int main()
         legController->prescribeControlForActuator("spring", new PiecewiseLinearFunction(5, t, x));
 
         // add the controller to the model
-        osimModel.addController(legController);     
-        
+        osimModel.addController(legController);
+
         // define the acceration due to gravity
         osimModel.setGravity(Vec3(0, -9.80665, 0));
 
@@ -184,7 +184,7 @@ int main()
 
         // Initialize system
         SimTK::State& si = osimModel.initSystem();
-        
+
         // Pin joint initial states
         double q1_i = -Pi/4;
         double q2_i = - 2*q1_i;
@@ -196,10 +196,10 @@ int main()
         SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
         integrator.setAccuracy(1.0e-3);
 
-        ForceReporter *forces = new ForceReporter(&osimModel);  
+        ForceReporter *forces = new ForceReporter(&osimModel);
         osimModel.updAnalysisSet().adoptAndAppend(forces);
         Manager manager(osimModel, integrator);
-    
+
         //Examine the model
         osimModel.printDetailedInfo(si, std::cout);
         // Save the model
@@ -223,7 +223,7 @@ int main()
         statesDegrees.print("SpringActuatedLeg_states_degrees.mot");
 
         forces->getForceStorage().print("actuator_forces.mot");
-        
+
     }
     catch (const std::exception& ex)
     {

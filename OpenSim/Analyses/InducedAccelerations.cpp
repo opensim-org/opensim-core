@@ -78,7 +78,7 @@ InducedAccelerations::InducedAccelerations(Model *aModel) :
     _bodySet(*new BodySet()),
     _coordSet(*new CoordinateSet())
 {
-    // make sure members point to NULL if not valid. 
+    // make sure members point to NULL if not valid.
     setNull();
     if(_model==NULL) return;
 
@@ -112,7 +112,7 @@ InducedAccelerations::InducedAccelerations(const std::string &aFileName):
     updateFromXMLDocument();
 }
 
-// Copy constrctor and virtual copy 
+// Copy constrctor and virtual copy
 //_____________________________________________________________________________
 /*
  * Copy constructor.
@@ -263,7 +263,7 @@ void InducedAccelerations:: assembleContributors()
     for(int i=0; i< actuatorSet.getSize(); i++) {
         contribs.append(actuatorSet.get(i).getName()) ;
     }
- 
+
     contribs.append("gravity");
     contribs.append("velocity");
 
@@ -273,7 +273,7 @@ void InducedAccelerations:: assembleContributors()
 /**
  * Construct column labels for the output results.
  *
- * For analyses that run during a simulation, the first column is 
+ * For analyses that run during a simulation, the first column is
  * always time.  For the purpose of example, the code below adds labels
  * for each contributor
  * This method needs to be called as necessary to update the column labels.
@@ -290,9 +290,9 @@ Array<string> InducedAccelerations:: constructColumnLabelsForCoordinate()
 /**
  * Construct column labels for the body acceleration results.
  *
- * For analyses that run during a simulation, the first column is 
+ * For analyses that run during a simulation, the first column is
  * always time.  For the purpose of example, the code below adds labels
- * appropriate for recording the translation and orientation of the 
+ * appropriate for recording the translation and orientation of the
  * desired body.
  *
  * This method needs to be called as necessary to update the column labels.
@@ -337,9 +337,9 @@ Array<string> InducedAccelerations:: constructColumnLabelsForCOM()
  * Construct column labels for constraint reaction forces that correspond
  * to the induced accelerations for each contributor.
  *
- * For analyses that run during a simulation, the first column is 
+ * For analyses that run during a simulation, the first column is
  * always time.  For the purpose of example, the code below adds labels
- * appropriate for recording the translation and orientation of the 
+ * appropriate for recording the translation and orientation of the
  * desired body.
  *
  * This method needs to be called as necessary to update the column labels.
@@ -546,11 +546,11 @@ int InducedAccelerations::record(const SimTK::State& s)
     _model->initStateWithoutRecreatingSystem(s_analysis);
 
     // Cycle through the force contributors to the system acceleration
-    for(int c=0; c< _contributors.getSize(); c++){          
+    for(int c=0; c< _contributors.getSize(); c++){
         //cout << "Solving for contributor: " << _contributors[c] << endl;
         // Need to be at the dynamics stage to disable a force
         _model->getMultibodySystem().realize(s_analysis, SimTK::Stage::Dynamics);
-        
+
         if(_contributors[c] == "total"){
             // Set gravity ON
             _model->getGravityForce().enable(s_analysis);
@@ -587,7 +587,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 
             const SimTK::Vector &appliedMobilityForces = _model->getMultibodySystem().getMobilityForces(s_analysis, SimTK::Stage::Dynamics);
             appliedMobilityForces.dump("All Applied Mobility Forces");
-        
+
             // Get all applied body forces like those from conact
             const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces = _model->getMultibodySystem().getRigidBodyForces(s_analysis, SimTK::Stage::Dynamics);
             appliedBodyForces.dump("All Applied Body Forces");
@@ -616,7 +616,7 @@ int InducedAccelerations::record(const SimTK::State& s)
             constraintBodyForces.dump("Constraint Body Forces");
             constraintMobilityForces.dump("Constraint Mobility Forces");
             // ******************************* end ERROR CHECKING *******************************/
-    
+
             for(int i=0; i<constraintOn.getSize(); i++) {
                 _constraintSet.get(i).setDisabled(s_analysis, !constraintOn[i]);
                 // Make sure we stay at Dynamics so each constraint can evaluate its conditions
@@ -644,7 +644,7 @@ int InducedAccelerations::record(const SimTK::State& s)
                 _model->updActuators().get(f).setDisabled(s_analysis, true);
             }
         }
-        else if(_contributors[c] == "velocity"){        
+        else if(_contributors[c] == "velocity"){
             // Set gravity off
             _model->updForceSubsystem().setForceIsDisabled(s_analysis, _model->getGravityForce().getForceIndex(), true);
 
@@ -654,7 +654,7 @@ int InducedAccelerations::record(const SimTK::State& s)
             // non-zero velocity
             s_analysis.setU(s.getU());
             s_analysis.setZ(s.getZ());
-            
+
             // zero actuator forces
             for(int f=0; f<_model->getActuators().getSize(); f++){
                 _model->updActuators().get(f).setDisabled(s_analysis, true);
@@ -662,7 +662,7 @@ int InducedAccelerations::record(const SimTK::State& s)
             // Set the configuration (gen. coords and speeds) of the model.
             _model->getMultibodySystem().realize(s_analysis, SimTK::Stage::Velocity);
         }
-        else{ //The rest are actuators      
+        else{ //The rest are actuators
             // Set gravity OFF
             _model->updForceSubsystem().setForceIsDisabled(s_analysis, _model->getGravityForce().getForceIndex(), true);
 
@@ -683,7 +683,7 @@ int InducedAccelerations::record(const SimTK::State& s)
             int ai = _model->getActuators().getIndex(_contributors[c]);
             if(ai<0)
                 throw Exception("InducedAcceleration: ERR- Could not find actuator '"+_contributors[c],__FILE__,__LINE__);
-            
+
             Actuator &actuator = _model->getActuators().get(ai);
             ScalarActuator* act = dynamic_cast<ScalarActuator*>(&actuator);
             act->setDisabled(s_analysis, false);
@@ -700,7 +700,7 @@ int InducedAccelerations::record(const SimTK::State& s)
             _model->getMultibodySystem().realize(s_analysis, SimTK::Stage::Model);
             _model->getMultibodySystem().realize(s_analysis, SimTK::Stage::Velocity);
 
-        }// End of if to select contributor 
+        }// End of if to select contributor
 
         // cout << "Constraint 0 is of "<< _constraintSet[0].getConcreteClassName() << " and should be " << constraintOn[0] << " and is actually " <<  (_constraintSet[0].isDisabled(s_analysis) ? "off" : "on") << endl;
         // cout << "Constraint 1 is of "<< _constraintSet[1].getConcreteClassName() << " and should be " << constraintOn[1] << " and is actually " <<  (_constraintSet[1].isDisabled(s_analysis) ? "off" : "on") << endl;
@@ -729,8 +729,8 @@ int InducedAccelerations::record(const SimTK::State& s)
         for(int i=0;i<_coordSet.getSize();i++) {
             double acc = _coordSet.get(i).getAccelerationValue(s_analysis);
 
-            if(getInDegrees()) 
-                acc *= SimTK_RADIAN_TO_DEGREE;  
+            if(getInDegrees())
+                acc *= SimTK_RADIAN_TO_DEGREE;
             _coordIndAccs[i]->append(1, &acc);
         }
 
@@ -741,14 +741,14 @@ int InducedAccelerations::record(const SimTK::State& s)
             Body &body = _bodySet.get(i);
             // cout << "Body Name: "<< body->getName() << endl;
             const SimTK::Vec3& com = body.get_mass_center();
-            
+
             // Get the body acceleration
             _model->getSimbodyEngine().getAcceleration(s_analysis, body, com, vec);
-            _model->getSimbodyEngine().getAngularAcceleration(s_analysis, body, angVec);    
+            _model->getSimbodyEngine().getAngularAcceleration(s_analysis, body, angVec);
 
             // CONVERT TO DEGREES?
-            if(getInDegrees()) 
-                angVec *= SimTK_RADIAN_TO_DEGREE;   
+            if(getInDegrees())
+                angVec *= SimTK_RADIAN_TO_DEGREE;
 
             // FILL KINEMATICS ARRAY
             _bodyIndAccs[i]->append(3, &vec[0]);
@@ -803,7 +803,7 @@ int InducedAccelerations::record(const SimTK::State& s)
  * @param s SimTK:State
  */
 void InducedAccelerations::initialize(const SimTK::State& s)
-{   
+{
     // Go forward with a copy of the model so Analysis can add to model if necessary
     _model = _model->clone();
 
@@ -812,7 +812,7 @@ void InducedAccelerations::initialize(const SimTK::State& s)
 
     _externalForces.setSize(0);
 
-    //add constraint to set 
+    //add constraint to set
     for(int i=0; i<_constraintSet.getSize(); i++){
         Constraint* contactConstraint = &_constraintSet.get(i);
         if(contactConstraint)
@@ -922,7 +922,7 @@ int InducedAccelerations::end(SimTK::State &s)
 //_____________________________________________________________________________
 /**
  * Print results.
- * 
+ *
  * The file names are constructed as
  * aDir + "/" + aBaseName + "_" + ComponentName + aExtension
  *
@@ -967,7 +967,7 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
         SimTK::Vec3 point, force, gpoint;
 
         force = exf->getForceAtTime(t);
-        
+
         // If the applied force is "significant" replace it with a constraint
         if (force.norm() > _forceThreshold){
             // get the point of contact from applied external force

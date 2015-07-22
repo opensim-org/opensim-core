@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -48,7 +48,7 @@ using SimTK::Real;
 
 const double StaticOptimizationTarget::SMALLDX = 1.0e-14;
 //const double StaticOptimizationTarget::_activationExponent = 2.0;
- 
+
 //==============================================================================
 // CONSTRUCTOR
 //==============================================================================
@@ -100,7 +100,7 @@ prepareToOptimize(SimTK::State& s, double *x)
 {
     // COMPUTE MAX ISOMETRIC FORCE
     const ForceSet& fSet = _model->getForceSet();
-    
+
     for(int i=0, j=0;i<fSet.getSize();i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet.get(i));
          if( act ) {
@@ -229,7 +229,7 @@ setNumConstraints(const int aNC)
     // There are only linear equality constraints.
     setNumEqualityConstraints(aNC);
     setNumLinearEqualityConstraints(aNC);
-}   
+}
 
 //------------------------------------------------------------------------------
 // DERIVATIVE PERTURBATION SIZES
@@ -324,7 +324,7 @@ printPerformance(const SimTK::State& s, double *parameters)
     SimTK::Vector constraints(getNumConstraints());
     constraintFunc(SimTK::Vector(getNumParameters(),parameters,true),true,constraints);
     cout << endl;
-    cout << "time = " << s.getTime() <<" Performance =" << p << 
+    cout << "time = " << s.getTime() <<" Performance =" << p <<
     " Constraint violation = " << sqrt(~constraints*constraints) << endl;
 }
 
@@ -638,7 +638,7 @@ constraintJacobian(const SimTK::Vector &parameters, const bool new_parameters, S
 
 #ifndef USE_LINEAR_CONSTRAINT_MATRIX
 
-    // Compute gradient 
+    // Compute gradient
     StaticOptimizationTarget::CentralDifferencesConstraint(this,&_dx[0],parameters,jac);
 
 #else
@@ -665,7 +665,7 @@ void StaticOptimizationTarget::
 computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vector &rAccel) const
 {
     double time = s.getTime();
-    
+
 
     const ForceSet& fs = _model->getForceSet();
     for(int i=0,j=0;i<fs.getSize();i++)  {
@@ -680,7 +680,7 @@ computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vect
 
     SimTK::Vector udot = _model->getMatterSubsystem().getUDot(s);
 
-    for(int i=0; i<_accelerationIndices.getSize(); i++) 
+    for(int i=0; i<_accelerationIndices.getSize(); i++)
         rAccel[i] = udot[_accelerationIndices[i]];
 
     //QueryPerformanceCounter(&stop);

@@ -172,4 +172,4 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream<<"-Setup, -S         SetupFileName    Specify an xml setup file for solving an inverse kinematics problem.\n";
     aOStream<<"-PropertyInfo, -PI                  Print help information for properties in setup files.\n";
 }
-    
+

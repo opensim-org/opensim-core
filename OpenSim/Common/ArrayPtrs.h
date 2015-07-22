@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -56,7 +56,7 @@
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 template<class T> class ArrayPtrs
 {
@@ -159,7 +159,7 @@ public:
 void clearAndDestroy()
 {
     if(_array==NULL) return;
-    
+
     int i;
     for(i=0;i<_size;i++) {
         delete _array[i];  _array[i]=NULL;
@@ -407,7 +407,7 @@ bool ensureCapacity(int aCapacity)
     } else {
         for(i=0;i<aCapacity;i++) newArray[i] = NULL;
     }
-    
+
     // REASSIGN
     _capacity = aCapacity;
     _array = newArray;

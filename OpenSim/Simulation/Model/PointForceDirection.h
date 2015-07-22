@@ -53,7 +53,7 @@ private:
     const Body &_body;
     /** Direction of the force at the point, defined in ground */
     SimTK::Vec3 _direction;
-    /** Optional parameter to scale the force that results from a scalar 
+    /** Optional parameter to scale the force that results from a scalar
         (tension) multiplies the direction */
     double _scale;
 //=============================================================================
@@ -67,7 +67,7 @@ public:
     /** Default constructor takes the point, body, direction and scale
         as arguments */
     PointForceDirection(SimTK::Vec3 point, Body &body, SimTK::Vec3 direction, double scale=1):
-        _point(point), _direction(direction), _body(body), _scale(scale) 
+        _point(point), _direction(direction), _body(body), _scale(scale)
     {};
 
     /** get point of "conact" with on a body defined in the body frame */

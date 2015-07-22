@@ -255,7 +255,7 @@ int WrapCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimT
     aFlag = false;
     aWrapResult.wrap_path_length = 0.0;
     aWrapResult.wrap_pts.setSize(0);
-    
+
     // Compute displacements of P and S from cylinder axis
     double Px=aPointP[0], Py=aPointP[1], Pz=aPointP[2], dP=Px*Px+Py*Py, rootP=dP-R*R;
     double Sx=aPointS[0], Sy=aPointS[1], Sz=aPointS[2], dS=Sx*Sx+Sy*Sy, rootS=dS-R*R;
@@ -274,17 +274,17 @@ int WrapCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimT
     double QtoTang = acos( 1.0 - 0.5*( (Qx-Tx)*(Qx-Tx) + (Qy-Ty)*(Qy-Ty) )/(R*R) );
     double QT = R*QtoTang;
     if(QT<0.0) QT=-QT;
-    
+
     // Assign z-axis components of wrap points Q and T
     Qz = Pz + (Sz-Pz)*(PQ) / (PQ+TS+QT);
     Tz = Sz + (Pz-Sz)*(TS) / (PQ+TS+QT);
-    
+
     // Register results and return
     aFlag = true;
     aWrapResult.wrap_path_length = QT;  // PQ + TS + QT;
-    aWrapResult.r1[0]=Qx;  aWrapResult.r1[1]=Qy;  aWrapResult.r1[2]=Qz;  
+    aWrapResult.r1[0]=Qx;  aWrapResult.r1[1]=Qy;  aWrapResult.r1[2]=Qz;
     aWrapResult.r2[0]=Tx;  aWrapResult.r2[1]=Ty;  aWrapResult.r2[2]=Tz;
-    
+
     // Generate wrap_pts sequence of points tracing out wrapping path
     aWrapResult.wrap_pts.append(aWrapResult.r1);
     double Qang=atan2(Qy,Qx);               // Angle of point Q

@@ -39,7 +39,7 @@ class Coordinate;
 
 /**
  * A Force that exerts a generalized force based on spring-like
- * characteristics (stiffness and viscosity).  
+ * characteristics (stiffness and viscosity).
  *
  * @author Frank C. Anderson, Ajay Seth
  * @version 2.0
@@ -50,7 +50,7 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
+    /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
     OpenSim_DECLARE_OPTIONAL_PROPERTY(coordinate, std::string,
@@ -71,7 +71,7 @@ public:
     name. A name of "" is treated as though unspecified. **/
     SpringGeneralizedForce(const std::string& coordinateName="");
 
-    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // Uses default (compiler-generated) destructor, copy constructor, copy
     // assignment operator.
 
     //--------------------------------------------------------------------------
@@ -87,7 +87,7 @@ public:
     // VISCOSITY
     void setViscosity(double aViscosity);
     double getViscosity() const;
-    /** 
+    /**
      * Methods to query a Force for the value actually applied during simulation
      * The names of the quantities (column labels) is returned by this first function
      * getRecordLabels()
@@ -103,10 +103,10 @@ public:
     // COMPUTATIONS
 protected:
     // Force interface.
-    void computeForce(  const SimTK::State& state, 
-                        SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+    void computeForce(  const SimTK::State& state,
+                        SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                         SimTK::Vector& mobilityForces) const override;
-    
+
     // ModelComponent interface.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
@@ -123,7 +123,7 @@ private:
     void setCoordinate(Coordinate* coordinate);
     Coordinate* getCoordinate() const;
 
-    // Note: reference pointers are automatically set to null on construction 
+    // Note: reference pointers are automatically set to null on construction
     // and also on copy construction and copy assignment.
 
     // Corresponding generalized coordinate to which the coordinate actuator

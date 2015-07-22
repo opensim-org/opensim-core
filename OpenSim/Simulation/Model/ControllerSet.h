@@ -40,7 +40,7 @@ class Storage;
 /**
  * A class for holding and managing a set of controllers for a model.
  *
- * @authors Jack Middleton, Ajay Seth 
+ * @authors Jack Middleton, Ajay Seth
  * @version 2.0
  */
 
@@ -70,7 +70,7 @@ private:
      SimTK::ReferencePtr<Storage> _controlStore;
 
     /**
-     *   set of actuators controlled by the set of controllers 
+     *   set of actuators controlled by the set of controllers
      */
      SimTK::ReferencePtr<Set<Actuator> > _actuatorSet;
 
@@ -96,10 +96,10 @@ public:
     void printControlStorage( const std::string& fileName) const;
     void setActuators(Set<Actuator>& actuators);
 
-    void setDesiredStates( Storage* yStore); 
+    void setDesiredStates( Storage* yStore);
 
     // Controller interface
-    virtual void computeControls(const SimTK::State& s, SimTK::Vector &controls) const; 
+    virtual void computeControls(const SimTK::State& s, SimTK::Vector &controls) const;
 
     virtual void printInfo() const;
 //=============================================================================

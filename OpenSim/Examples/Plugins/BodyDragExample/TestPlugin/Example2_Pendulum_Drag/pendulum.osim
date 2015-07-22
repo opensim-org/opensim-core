@@ -5,20 +5,20 @@
 		</defaults>
 		<credits> Tim Dorn </credits>
 		<publications> List of publications related to model... </publications>
-		
+
 		<ForceSet name="">
 			<objects>
-			
+
 				<BodyDragForce name="pend_drag">
 					<body_name> pend </body_name>
 					<coefficient> 0.3 </coefficient>
 					<exponent> 2 </exponent>
 				</BodyDragForce>
-				
+
 			</objects>
 			<groups/>
 		</ForceSet>
-		
+
 		<length_units> meters </length_units>
 		<force_units> N </force_units>
 		<!--Acceleration due to gravity.-->
@@ -52,7 +52,7 @@
 						<groups/>
 					</WrapObjectSet>
 				</Body>
-				
+
 				<Body name="pend">
 					<mass>       0.75000000000000000000 </mass>
 					<mass_center>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </mass_center>

@@ -32,33 +32,33 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * This class extends a Millard2012EquilibriumMuscle by including three 
- * additional states to model the fatigue and recovery of muscle fibers. 
+ * This class extends a Millard2012EquilibriumMuscle by including three
+ * additional states to model the fatigue and recovery of muscle fibers.
  * The equations for these states are (loosely) based on the following paper:
  * Liu, Jing Z., Brown, Robert, Yue, Guang H., "A Dynamical Model of Muscle
  * Activation, Fatigue, and Recovery," Biophysical Journal, Vol. 82, Issue 5,
  * pp. 2344-2359, 2002.
  *
  * NOTE: The primary purpose of this muscle model is to serve as an example
- *       for extending existing OpenSim muscle models and it is not intended 
- *       for research. The implementation of the fatigue dynamics have not 
+ *       for extending existing OpenSim muscle models and it is not intended
+ *       for research. The implementation of the fatigue dynamics have not
  *       been tested.
  *
  * @author Ajay Seth (based on Millard2012EquilibriumMuscle)
  * @contributor Peter Loan (originally based on Thelen2003Muscle)
  *
- * The Muscle base class, specifies the interface that must be implemented 
+ * The Muscle base class, specifies the interface that must be implemented
  * by derived muscle classes. The FatigableMuscle derives from
- * Millard2012EquilibriumMuscle, which is a concrete implementation of the 
- * Muscle interface. The dynamics for fatigue are added by overriding methods 
- * extendAddToSystem() which allocates the additional states and 
- * computeStateVariableDerivatives() to specify their dynamics (derivatives). 
+ * Millard2012EquilibriumMuscle, which is a concrete implementation of the
+ * Muscle interface. The dynamics for fatigue are added by overriding methods
+ * extendAddToSystem() which allocates the additional states and
+ * computeStateVariableDerivatives() to specify their dynamics (derivatives).
  *
  * @see Millard2012EquilibriumMuscle
  * @see Muscle
  */
 class FatigableMuscle : public Millard2012EquilibriumMuscle {
-OpenSim_DECLARE_CONCRETE_OBJECT(FatigableMuscle, 
+OpenSim_DECLARE_CONCRETE_OBJECT(FatigableMuscle,
                                 Millard2012EquilibriumMuscle);
 public:
 //=============================================================================
@@ -67,15 +67,15 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
-    OpenSim_DECLARE_PROPERTY(fatigue_factor, double, 
+    OpenSim_DECLARE_PROPERTY(fatigue_factor, double,
         "percentage of active motor units that fatigue in unit time");
-    OpenSim_DECLARE_PROPERTY(recovery_factor, double, 
+    OpenSim_DECLARE_PROPERTY(recovery_factor, double,
         "percentage of fatigued motor units that recover in unit time");
     OpenSim_DECLARE_PROPERTY(default_target_activation, double,
         "default state value used to initialize the muscle's target activation");
-    OpenSim_DECLARE_PROPERTY(default_active_motor_units, double, 
+    OpenSim_DECLARE_PROPERTY(default_active_motor_units, double,
         "default state value for the fraction of motor units that are active");
-    OpenSim_DECLARE_PROPERTY(default_fatigued_motor_units, double, 
+    OpenSim_DECLARE_PROPERTY(default_fatigued_motor_units, double,
         "default state value for the fraction of motor units that are fatigued");
     /**@}**/
 
@@ -87,12 +87,12 @@ public:
     // CONSTRUCTION
     //-------------------------------------------------------------------------
     FatigableMuscle();
-    FatigableMuscle(const std::string &name, double maxIsometricForce, 
+    FatigableMuscle(const std::string &name, double maxIsometricForce,
                     double optimalFiberLength, double tendonSlackLength,
-                    double pennationAngle, double fatigueFactor, 
+                    double pennationAngle, double fatigueFactor,
                     double recoveryFactor);
 
-    // employs the default destructor, copy constructor and copy assignment 
+    // employs the default destructor, copy constructor and copy assignment
     // that are automatically supplied by the compiler if none are defined
 
     //-------------------------------------------------------------------------
@@ -109,10 +109,10 @@ public:
         return get_default_target_activation();
     }
     void setDefaultTargetActivation(double targetActivation);
-    
+
     double getDefaultActiveMotorUnits() const;
     void setDefaultActiveMotorUnits(double activeMotorUnits);
-    
+
     double getDefaultFatiguedMotorUnits() const;
     void setDefaultFatiguedMotorUnits(double fatiguedMotorUnits);
 
@@ -133,10 +133,10 @@ public:
                                   double activeMotorUnitsDeriv) const;
     /** Fatigued motor units state accessors */
     double getFatiguedMotorUnits(const SimTK::State& s) const;
-    void setFatiguedMotorUnits(SimTK::State& s, 
+    void setFatiguedMotorUnits(SimTK::State& s,
                                double fatiguedMotorUnits) const;
     double getFatiguedMotorUnitsDeriv(const SimTK::State& s) const;
-    void setFatiguedMotorUnitsDeriv(const SimTK::State& s, 
+    void setFatiguedMotorUnitsDeriv(const SimTK::State& s,
                                     double fatiguedMotorUnitsDeriv) const;
 
 protected:
@@ -144,10 +144,10 @@ protected:
     /** add new dynamical states to the multibody system corresponding
         to this muscle */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    /** initialize muscle state variables from properties. For example, any 
+    /** initialize muscle state variables from properties. For example, any
         properties that contain default state values */
     void extendInitStateFromProperties(SimTK::State& s) const override;
-    /** use the current values in the state to update any properties such as 
+    /** use the current values in the state to update any properties such as
         default values for state variables */
     void extendSetPropertiesFromState(const SimTK::State& s) override;
 

@@ -19,13 +19,13 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-% This script uses a ExpressionBasedPointToPointForce to realize a magnet 
-% force model.  The ExpressionPointToPointForce calculates the relative 
-% translation and relative velocity between two points in the global frame 
-% and allows the user to specify a force based on a string of the symbols 
-% d and ddot. 
+% This script uses a ExpressionBasedPointToPointForce to realize a magnet
+% force model.  The ExpressionPointToPointForce calculates the relative
+% translation and relative velocity between two points in the global frame
+% and allows the user to specify a force based on a string of the symbols
+% d and ddot.
 
-% Import Java Library 
+% Import Java Library
 import org.opensim.modeling.*
 
 % Open the model
@@ -47,7 +47,7 @@ rightKneeMagnet.setName('RightKneeMagnet')
 % Set the first body and the reference frame properties
 % ***** WRITE YOUR CODE HERE:  *****
 % Task: Navigate to your local doxygen and find the methods to set the name
-% of Body1 and set the location of Point1.  
+% of Body1 and set the location of Point1.
 
 
 % Set the second body and the location of the reference point
@@ -57,7 +57,7 @@ rightKneeMagnet.setName('RightKneeMagnet')
 
 % Set the expression to represent a magnet (1/d^2) force
 % ***** WRITE YOUR CODE HERE:  *****
-% Task: Use the setExpression method for each magnet and pass an char type 
+% Task: Use the setExpression method for each magnet and pass an char type
 % argument of the desired function (0.01/d^2).
 
 % ***** WRITE YOUR CODE HERE:  *****

@@ -37,9 +37,9 @@ class ForceAdapter;
 
 
 /**
- * This abstract class represents a force applied to bodies or generalized 
- * coordinates during a simulation. Each subclass represents a different type 
- * of force. The actual force computation is done by a SimTK::Force, which is 
+ * This abstract class represents a force applied to bodies or generalized
+ * coordinates during a simulation. Each subclass represents a different type
+ * of force. The actual force computation is done by a SimTK::Force, which is
  * created by extendAddToSystem().
  *
  * @author Peter Eastman
@@ -66,19 +66,19 @@ public:
 
     // Constructors are protected; has default destructor.
 
-    /** Implements a copy constructor just so it can invalidate the 
+    /** Implements a copy constructor just so it can invalidate the
     SimTK::Force index after copying. **/
     Force(const Force &aForce);
 
 #ifndef SWIG
-    /** Implements a copy assignment operator just so it can invalidate the 
+    /** Implements a copy assignment operator just so it can invalidate the
     SimTK::Force index after the assignment. **/
     Force& operator=(const Force &aForce);
 #endif
 
     /**
-    * Tell SimBody to parallelize this force. Should be 
-    * set to true for any forces that will take time to 
+    * Tell SimBody to parallelize this force. Should be
+    * set to true for any forces that will take time to
     * complete thier calcForce method. Note that all forces
     * that set this flag to false will be put in series on a
     * thread that is running in parallel with other forces
@@ -95,16 +95,16 @@ public:
     void setDisabled(SimTK::State& s, bool disabled) const;
 
     /**
-     * Methods to query a Force for the value actually applied during 
-     * simulation. The names of the quantities (column labels) is returned by 
+     * Methods to query a Force for the value actually applied during
+     * simulation. The names of the quantities (column labels) is returned by
      * this first function getRecordLabels().
      */
     virtual OpenSim::Array<std::string> getRecordLabels() const {
         return OpenSim::Array<std::string>();
     }
     /**
-     * Given SimTK::State object extract all the values necessary to report 
-     * forces, application location frame, etc. used in conjunction with 
+     * Given SimTK::State object extract all the values necessary to report
+     * forces, application location frame, etc. used in conjunction with
      * getRecordLabels and should return same size Array.
      */
     virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {
@@ -122,29 +122,29 @@ protected:
     called from a derived class constructor. **/
     Force();
 
-    /** Deserialization from XML, necessary so that derived classes can 
+    /** Deserialization from XML, necessary so that derived classes can
     (de)serialize. **/
-    Force(SimTK::Xml::Element& node) : Super(node) 
+    Force(SimTK::Xml::Element& node) : Super(node)
     {   setNull(); constructProperties(); }
 
     //--------------------------------------------------------------------------
     // ModelComponent interface.
     //--------------------------------------------------------------------------
 
-    /** Subclass should override; be sure to invoke 
+    /** Subclass should override; be sure to invoke
     Super::extendInitStateFromProperties() at the
     beginning of the overriding method. **/
     void extendInitStateFromProperties(SimTK::State& state) const override;
 
     /** Default is to create a ForceAdapter which is a SimTK::Force::Custom
-    as the underlying computational component. Subclasses override to employ 
+    as the underlying computational component. Subclasses override to employ
     other SimTK::Forces; be sure to invoke Force::extendAddToSystem() at the
     beginning of the overriding method. **/
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    /** Subclass should override; be sure to invoke 
+    /** Subclass should override; be sure to invoke
     Force::extendSetPropertiesFromState() at the beginning of the overriding method. **/
     void extendSetPropertiesFromState(const SimTK::State& state) override;
-    
+
     //--------------------------------------------------------------------------
     // Force interface.
     //--------------------------------------------------------------------------
@@ -171,58 +171,58 @@ protected:
      * result in a torque acting on the body when looking at the resultant at
      * some other point.
      *
-     * This method may only be called from inside computeForce(). Invoking it 
+     * This method may only be called from inside computeForce(). Invoking it
      * at any other time will produce an exception.
      *
-     * @param state      state used only to determine which element of 
+     * @param state      state used only to determine which element of
      *                      \a bodyForces to modify
      * @param body       the body to apply the force to
-     * @param point      the point at which to apply the force, specifieid in 
+     * @param point      the point at which to apply the force, specifieid in
      *                      the body's frame
-     * @param force      the force to apply, specified in the inertial 
+     * @param force      the force to apply, specified in the inertial
      *                      (ground) reference frame
-     * @param bodyForces the set of system bodyForces to which this force 
+     * @param bodyForces the set of system bodyForces to which this force
      *                      is added
      */
-    void applyForceToPoint(const SimTK::State&                state, 
-                           const PhysicalFrame&               body, 
+    void applyForceToPoint(const SimTK::State&                state,
+                           const PhysicalFrame&               body,
                            const SimTK::Vec3&                 point,
-                           const SimTK::Vec3&                 force, 
+                           const SimTK::Vec3&                 force,
                            SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
     /**
      * Apply a torque to a particular body.
      *
-     * This method may only be called from inside computeForce(). Invoking it 
+     * This method may only be called from inside computeForce(). Invoking it
      * at any other time will produce an exception.
      *
-     * @param state      state used only to determine which element of 
+     * @param state      state used only to determine which element of
      *                      \a bodyForces to modify
      * @param body       the body to apply the force to
      * @param torque     the torque to apply, specified in the inertial frame
-     * @param bodyForces the set of system bodyForces to which this force 
+     * @param bodyForces the set of system bodyForces to which this force
      *                      is added
      */
-    void applyTorque(const SimTK::State&                state, 
+    void applyTorque(const SimTK::State&                state,
                      const PhysicalFrame&               body,
-                     const SimTK::Vec3&                 torque, 
+                     const SimTK::Vec3&                 torque,
                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
     /**
      * Apply a generalized force.
      *
-     * This method may only be called from inside computeForce(). Invoking it 
+     * This method may only be called from inside computeForce(). Invoking it
      * at any other time will produce an exception.
      *
-     * @param state              state used only to determine which element of 
+     * @param state              state used only to determine which element of
      *                              \a generalizedForces to modify
-     * @param coord              the generalized coordinate to to which the 
+     * @param coord              the generalized coordinate to to which the
      *                              force should be applied
      * @param force              the (scalar) force to apply
      * @param generalizedForces  the set of system generalizedForces to which
      *                              the force is to be added
      */
-    void applyGeneralizedForce(const SimTK::State&  state, 
+    void applyGeneralizedForce(const SimTK::State&  state,
                                const Coordinate&    coord,
-                               double               force, 
+                               double               force,
                                SimTK::Vector&       generalizedForces) const;
 
 protected:

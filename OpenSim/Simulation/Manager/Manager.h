@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -34,7 +34,7 @@
 #include "SimTKsimbody.h"
 
 
-namespace OpenSim { 
+namespace OpenSim {
 
 class Model;
 class Storage;
@@ -66,7 +66,7 @@ private:
     double _tf;
     /** First dt in an integration. */
     double _firstDT;
-    
+
     /** Storage for the states. */
     Storage *_stateStore;
 
@@ -122,7 +122,7 @@ public:
     /** Constructor that takes a model only and builds integrator internally */
     Manager(Model& aModel) ;
     /** A Constructor that does not take a model or controllerSet */
-    Manager();  
+    Manager();
 
 private:
     void setNull();
@@ -173,8 +173,8 @@ public:
 
 
     // SYSTEM
-    // only called when need to integrate a different set of equations 
-    // then what is defined by the model 
+    // only called when need to integrate a different set of equations
+    // then what is defined by the model
     void setSystem(SimTK::System* system) { _system = system; }
 
     //--------------------------------------------------------------------------

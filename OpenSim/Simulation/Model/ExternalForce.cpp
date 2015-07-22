@@ -43,7 +43,7 @@ using namespace std;
 //==============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //==============================================================================
-// Uses default (compiler-generated) destructor, copy constructor, copy 
+// Uses default (compiler-generated) destructor, copy constructor, copy
 // assignment operator.
 
 //_____________________________________________________________________________
@@ -57,13 +57,13 @@ ExternalForce::ExternalForce() : Force()
 }
 
 /**
- * Convenience Constructor of an ExternalForce. 
- * 
+ * Convenience Constructor of an ExternalForce.
+ *
  */
 ExternalForce::ExternalForce
-   (const Storage &dataSource, const string& forceIdentifier, 
-    const string& pointIdentifier, const string& torqueIdentifier, 
-    const string& appliedToBodyName, const string& forceExpressedInBodyName, 
+   (const Storage &dataSource, const string& forceIdentifier,
+    const string& pointIdentifier, const string& torqueIdentifier,
+    const string& appliedToBodyName, const string& forceExpressedInBodyName,
     const string& pointExpressedInBodyName)
 {
     setNull();
@@ -97,7 +97,7 @@ void ExternalForce::setNull()
     _dataSource = NULL;
     _appliedToBody = NULL;
     _forceExpressedInBody = NULL;
-    _pointExpressedInBody = NULL; 
+    _pointExpressedInBody = NULL;
 }
 
 
@@ -114,11 +114,11 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
     // Base class
     Force::updateFromXMLNode(aNode, versionNumber);
 
-    if( getProperty_force_identifier().empty() 
+    if( getProperty_force_identifier().empty()
         && getProperty_torque_identifier().empty()){
         throw Exception("ExternalForce:: no force or torque identified.");
     }
-}   
+}
 
 
 /**
@@ -136,7 +136,7 @@ void ExternalForce::constructProperties()
 }
 
 void ExternalForce::setDataSource(const Storage &dataSource)
-{ 
+{
     _dataSource = &dataSource;
 
     cout << "ExternalForce::" << getName() << endl;
@@ -161,11 +161,11 @@ void ExternalForce::extendConnectToModel(Model& model)
 
     // hook up body pointers from names
     if (_model){
-        _appliedToBody = 
+        _appliedToBody =
             static_cast<const PhysicalFrame*>(&_model->getComponent(appliedToBodyName));
-        _forceExpressedInBody = 
+        _forceExpressedInBody =
             static_cast<const PhysicalFrame*>(&_model->getComponent(forceExpressedInBodyName));
-        _pointExpressedInBody = _specifiesPoint ? 
+        _pointExpressedInBody = _specifiesPoint ?
             static_cast<const PhysicalFrame*>(&_model->getComponent(get_point_expressed_in_body()))
             : nullptr;
     }
@@ -215,13 +215,13 @@ void ExternalForce::extendConnectToModel(Model& model)
 
     // have to apply either a force or a torque
     if(!_appliesForce && !_appliesTorque)
-        throw(Exception("ExternalForce:"+getName()+" does not apply neither a force nor a torque.")); 
+        throw(Exception("ExternalForce:"+getName()+" does not apply neither a force nor a torque."));
 
     // if a force is not being applied then specifying a point makes no sense
     if(!_appliesForce && _specifiesPoint)
-        throw(Exception("ExternalForce:"+getName()+" Point is specified for no applied force.")); 
+        throw(Exception("ExternalForce:"+getName()+" Point is specified for no applied force."));
 
-    
+
     if(_appliesForce){ // if applying force MUST have 3 components
         _dataSource->getDataForIdentifier(get_force_identifier(), force);
         if(force.getSize() != 3)
@@ -266,7 +266,7 @@ void ExternalForce::extendConnectToModel(Model& model)
                     break;
                 default:
                     _forceFunctions.append(new GCVSpline( 3, force[i].getSize(), &time[0], &(force[i][0])) );
-            }   
+            }
         }
 
         if(_specifiesPoint){
@@ -313,8 +313,8 @@ void ExternalForce::extendConnectToModel(Model& model)
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 
-void ExternalForce::computeForce(const SimTK::State& state, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void ExternalForce::computeForce(const SimTK::State& state,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const
 {
     double time = state.getTime();
@@ -324,12 +324,12 @@ void ExternalForce::computeForce(const SimTK::State& state,
 
     if (_appliesForce) {
         Vec3 force = getForceAtTime(time);
-        engine.transform(state, *_forceExpressedInBody, force, 
+        engine.transform(state, *_forceExpressedInBody, force,
                                 getModel().getGround(), force);
         Vec3 point(0); // Default is body origin.
         if (_specifiesPoint) {
             point = getPointAtTime(time);
-            engine.transformPosition(state, *_pointExpressedInBody, point, 
+            engine.transformPosition(state, *_pointExpressedInBody, point,
                                             *_appliedToBody,        point);
         }
         applyForceToPoint(state, *_appliedToBody, point, force, bodyForces);
@@ -337,7 +337,7 @@ void ExternalForce::computeForce(const SimTK::State& state,
 
     if (_appliesTorque) {
         Vec3 torque = getTorqueAtTime(time);
-        engine.transform(state, *_forceExpressedInBody, torque, 
+        engine.transform(state, *_forceExpressedInBody, torque,
                                 getModel().getGround(), torque);
         applyTorque(state, *_appliedToBody, torque, bodyForces);
     }
@@ -346,7 +346,7 @@ void ExternalForce::computeForce(const SimTK::State& state,
 /**
  * Conevenince methods to access prescribed force functions
  */
-Vec3 ExternalForce::getForceAtTime(double aTime) const  
+Vec3 ExternalForce::getForceAtTime(double aTime) const
 {
     SimTK::Vector timeAsVector(1, aTime);
     const Function* forceX=NULL;
@@ -355,8 +355,8 @@ Vec3 ExternalForce::getForceAtTime(double aTime) const
     if (_forceFunctions.size()==3){
         forceX=_forceFunctions[0];  forceY=_forceFunctions[1];  forceZ=_forceFunctions[2];
     }
-    Vec3 force(forceX?forceX->calcValue(timeAsVector):0.0, 
-        forceY?forceY->calcValue(timeAsVector):0.0, 
+    Vec3 force(forceX?forceX->calcValue(timeAsVector):0.0,
+        forceY?forceY->calcValue(timeAsVector):0.0,
         forceZ?forceZ->calcValue(timeAsVector):0.0);
     return force;
 }
@@ -370,8 +370,8 @@ Vec3 ExternalForce::getPointAtTime(double aTime) const
     if (_pointFunctions.size()==3){
         pointX=_pointFunctions[0];  pointY=_pointFunctions[1];  pointZ=_pointFunctions[2];
     }
-    Vec3 point(pointX?pointX->calcValue(timeAsVector):0.0, 
-        pointY?pointY->calcValue(timeAsVector):0.0, 
+    Vec3 point(pointX?pointX->calcValue(timeAsVector):0.0,
+        pointY?pointY->calcValue(timeAsVector):0.0,
         pointZ?pointZ->calcValue(timeAsVector):0.0);
     return point;
 }
@@ -385,8 +385,8 @@ Vec3 ExternalForce::getTorqueAtTime(double aTime) const
     if (_torqueFunctions.size()==3){
         torqueX=_torqueFunctions[0];    torqueY=_torqueFunctions[1];    torqueZ=_torqueFunctions[2];
     }
-    Vec3 torque(torqueX?torqueX->calcValue(timeAsVector):0.0, 
-        torqueY?torqueY->calcValue(timeAsVector):0.0, 
+    Vec3 torque(torqueX?torqueX->calcValue(timeAsVector):0.0,
+        torqueY?torqueY->calcValue(timeAsVector):0.0,
         torqueZ?torqueZ->calcValue(timeAsVector):0.0);
     return torque;
 }
@@ -434,7 +434,7 @@ OpenSim::Array<double> ExternalForce::getRecordValues(const SimTK::State& state)
         engine.transform(state, *_forceExpressedInBody, force, getModel().getGround(), force);
         for(int i=0; i<3; ++i)
             values.append(force[i]);
-    
+
         if (_specifiesPoint) {
             Vec3 point = getPointAtTime(time);
             engine.transformPosition(state, *_pointExpressedInBody, point, *_appliedToBody, point);

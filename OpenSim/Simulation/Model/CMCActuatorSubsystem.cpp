@@ -47,7 +47,7 @@ void CMCActuatorSubsystemRep::setCoordinateCorrections(const double* aCorrection
     for(i=0;i<size;i++) {
          _qCorrections[i] = aCorrections[i];
     }
-  
+
 }
 
 void CMCActuatorSubsystemRep::setSpeedCorrections(const double* aCorrections) {
@@ -57,7 +57,7 @@ void CMCActuatorSubsystemRep::setSpeedCorrections(const double* aCorrections) {
          _uCorrections[i] = aCorrections[i];
     }
 }
-  
+
 void CMCActuatorSubsystemRep::setCoordinateTrajectories(FunctionSet *aSet) {
     // ERROR CHECKING
     if(aSet == NULL) {
@@ -88,7 +88,7 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
 
     _uSet = aSet;
 }
-   CMCActuatorSubsystemRep::CMCActuatorSubsystemRep(Model* model) 
+   CMCActuatorSubsystemRep::CMCActuatorSubsystemRep(Model* model)
        : SimTK::Subsystem::Guts( "CMCActuatorSubsystem", "2.0"),
        _holdCoordinatesConstant(false),
        _holdTime(0.0),
@@ -159,7 +159,7 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
 
      _model->getMultibodySystem().realize(_completeState, SimTK::Stage::Acceleration);
 
-     /* copy 1st derivatives of muscle states from complete system to actuator system */ 
+     /* copy 1st derivatives of muscle states from complete system to actuator system */
      s.updZDot() = _completeState.getZDot();
 
 /*
@@ -168,12 +168,12 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
     cout << "q=" << q << endl;
     cout << "u=" << u << endl;
     cout << "actuatorStates=" << s.getZ() << endl;
-    cout << " CMCrealize:Dynamics  time=" <<  s.getTime(); 
+    cout << " CMCrealize:Dynamics  time=" <<  s.getTime();
     cout << " Actuator dydt=" << _completeState.getZDot() << endl;
-  
+
 */
      return 0;
-  }      
+  }
 
    CMCActuatorSubsystem::CMCActuatorSubsystem(CMCActuatorSystem& system, Model* model) {
        adoptSubsystemGuts( rep = new CMCActuatorSubsystemRep(model) );

@@ -172,8 +172,8 @@ void FrameGeometry::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeom
 void Mesh::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const std::string& file = get_mesh_file();
-    // TODO: when API visualizer changes to use DecorativeGeometry::MeshFile instead of 
-    // DecorativeGeometry::DecorativeMesh with PolygonalMesh underneath it, the logic below 
+    // TODO: when API visualizer changes to use DecorativeGeometry::MeshFile instead of
+    // DecorativeGeometry::DecorativeMesh with PolygonalMesh underneath it, the logic below
     // to locate the files will need to be transferred there. -Ayman 05/15
 #if 0
     bool isAbsolutePath; string directory, fileName, extension;

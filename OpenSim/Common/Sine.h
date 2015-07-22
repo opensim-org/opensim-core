@@ -71,12 +71,12 @@ public:
     // Convenience Constructor
     Sine(double amplitude, double omega, double phase) : _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_phaseProp.getValueDbl()) {
         setupProperties();
-        _amplitude = amplitude;  _omega = omega;  _phase = phase; 
+        _amplitude = amplitude;  _omega = omega;  _phase = phase;
     }
     // Copy Constructor
     Sine(const Sine &aFunc): _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_phaseProp.getValueDbl()) {
             setupProperties();
-            _amplitude = aFunc._amplitude;  _omega = aFunc._omega;  _phase = aFunc._phase; 
+            _amplitude = aFunc._amplitude;  _omega = aFunc._omega;  _phase = aFunc._phase;
     };
     virtual ~Sine() {};
 
@@ -105,7 +105,7 @@ public:
     Sine& operator=(const Sine &func)
     {
         Function::operator=(func);
-        _amplitude = func._amplitude;  _omega = func._omega;  _phase = func._phase; 
+        _amplitude = func._amplitude;  _omega = func._omega;  _phase = func._phase;
         return(*this);
     }
     //--------------------------------------------------------------------------
@@ -120,7 +120,7 @@ public:
     {
         return _amplitude*sin(_omega*x[0] + _phase);
     }
-    
+
     double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const
     {
         int n = (int)derivComponents.size();
@@ -131,7 +131,7 @@ public:
     SimTK::Function* createSimTKFunction() const {
         return new FunctionAdapter(*this);
     }
-   
+
     int getArgumentSize() const {return 1;}
     int getMaxDerivativeOrder() const {return 10;}
 

@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -109,7 +109,7 @@ setNull()
 }
 void AnalysisSet::
 setupProperties() {
-    
+
     _enableProp.setComment("enable/disable for AnalysisSet");
     _enableProp.setName("enable");
 //    _propertySet.append( &_enableProp );
@@ -119,7 +119,7 @@ AnalysisSet& AnalysisSet::
 operator=(const  AnalysisSet &aSet)
 {
      Set<Analysis>::operator=(aSet);
- 
+
      _enable = aSet._enable;
      return(*this);
 }
@@ -171,7 +171,7 @@ setOn(bool aTrueFalse)
 }
 
 void AnalysisSet::
-setOn(const OpenSim::Array<bool> &aOn) 
+setOn(const OpenSim::Array<bool> &aOn)
 {
     if(aOn.getSize()!=getSize()) throw Exception("AnalysisSet.setOn: ERROR- incompatible array sizes",__FILE__,__LINE__);
     for(int i=0; i<getSize(); i++) get(i).setOn(aOn[i]);
@@ -195,7 +195,7 @@ getOn() const
  * called at the beginning of an integration and is intended to be used for
  * any initializations that are necessary.
  *
- * @param s Current state 
+ * @param s Current state
  */
 void AnalysisSet::
 begin(SimTK::State& s )
@@ -212,7 +212,7 @@ begin(SimTK::State& s )
  * after each successful integration time step and is intended to be used for
  * conducting analyses, driving animations, etc.
  *
- * @param s Current state 
+ * @param s Current state
  */
 void AnalysisSet::
 step( const SimTK::State& s, int stepNumber )
@@ -229,7 +229,7 @@ step( const SimTK::State& s, int stepNumber )
  * after an integration has been completed and is intended to be used for
  * performing any finalizations necessary.
  *
- * @param s Current state 
+ * @param s Current state
  */
 void AnalysisSet::
 end(SimTK::State& s)

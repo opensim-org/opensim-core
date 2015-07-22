@@ -29,7 +29,7 @@
 
 
 /*************** DEFINES (for this file only) *********************************/
-    
+
 
 
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
@@ -598,7 +598,7 @@ void free_checkbox_panel(CheckBoxPanel* panel)
 }
 
 /* -------------------------------------------------------------------------
-   free_motion_object - 
+   free_motion_object -
 ---------------------------------------------------------------------------- */
 public void free_motion_object(MotionObject* mo, ModelStruct* ms)
 {
@@ -612,7 +612,7 @@ public void free_motion_object(MotionObject* mo, ModelStruct* ms)
 }
 
 /* -------------------------------------------------------------------------
-   free_motion_object_instance - 
+   free_motion_object_instance -
 ---------------------------------------------------------------------------- */
 public void free_motion_object_instance(MotionObjectInstance* mi, ModelStruct* model)
 {
@@ -620,7 +620,7 @@ public void free_motion_object_instance(MotionObjectInstance* mi, ModelStruct* m
    {
       FREE_IFNOTNULL(mi->name);
       mi->num_channels = 0;
-      
+
 #if ! ENGINE
       if (mi->currentMaterial.normal_list)
          glDeleteLists(mi->currentMaterial.normal_list, 1);

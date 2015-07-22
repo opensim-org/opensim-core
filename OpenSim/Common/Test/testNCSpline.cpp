@@ -45,14 +45,14 @@ using namespace std;
 
 /**
 * This function computes a standard central difference dy/dx. If extrap_endpoints is set to 1, then
-* the derivative at the end points is estimated by linearly extrapolating the dy/dx values beside the 
+* the derivative at the end points is estimated by linearly extrapolating the dy/dx values beside the
 * end points
 *
 * @param x domain vector
 * @param y range vector
 & @param extrap_endpoints: (false)  Endpoints of the returned vector will be zero, because a central difference
 *                                   is undefined at these endpoints
-*                           (true)  Endpoints are computed by linearly extrapolating using a first difference from 
+*                           (true)  Endpoints are computed by linearly extrapolating using a first difference from
 *                                   the neighboring 2 points
 * @returns dy/dx computed using central differences
 */
@@ -100,14 +100,14 @@ void printMatrixToFile(SimTK::Vector col0,SimTK::Matrix data, string filename){
                 datafile << data(i,j) << ",";
             else
                 datafile << data(i,j) << "\n";
-        }   
+        }
     }
     datafile.close();
-} 
+}
 
 /**
-* This function will compute the value and first two derivatives of 
-* an analytic function at the point x. 
+* This function will compute the value and first two derivatives of
+* an analytic function at the point x.
 *
 * @params x         the input value to compute values at
 * @params fcnType   the function to compute. There are currently 5 choices (see below)
@@ -162,14 +162,14 @@ SimTK::Vector getAnalyticFunction(double x,int fcnType){
 *       -Error between spline and input data at the knots (should be zero)
 *   b.  The first derivatives are continuous at the knot points
 *       -Error between the value of the first derivative at the knot point, and
-*        what a linear extrapolation would predict just to the left and right of 
+*        what a linear extrapolation would predict just to the left and right of
 *        the knot point. (should be zero, within a tolerace affected by the step size in xD)
 *   c.  The second derivatives are continuous at the knots points
 *       -Error between the value of the numerically calculated derivative at the knot point, and
-*        what a linear extrapolation would predict just to the left and right of 
+*        what a linear extrapolation would predict just to the left and right of
 *        the knot point. (should be zero, within a tolerace affected by the step size in xD)
 *   d.  The second derivative is zero at the end points.
-*       -Numerically calculated extrapolation of the 2nd derivative should be zero 
+*       -Numerically calculated extrapolation of the 2nd derivative should be zero
 *        at the end points within some tolerance
 *
 *
@@ -191,8 +191,8 @@ SimTK::Vector testNCSpline(SimTK::Function* sp, SimTK::Vector xK, SimTK::Vector 
 
     vector<int> derOrder(1);
     derOrder[0] = 0;
-    
-    
+
+
 
     ///////////////////////////////////////////
     //1. Evaluate the spline at the knots, the mid points and then a dense sample
@@ -204,7 +204,7 @@ SimTK::Vector testNCSpline(SimTK::Function* sp, SimTK::Vector xK, SimTK::Vector 
             tmpV1(0)=xK(i);
             ysp_K(i,0) = sp->calcValue(tmpV1);
             ysp_K(i,1) = sp->calcDerivative(derOrder,tmpV1);
-        }           
+        }
         for(int i=0;i<size-1;i++){
             xVal = xM(i);
             tmpV1(0) = xM(i);
@@ -219,8 +219,8 @@ SimTK::Vector testNCSpline(SimTK::Function* sp, SimTK::Vector xK, SimTK::Vector 
         }
 
     //////////////////////////////////////
-    //2.    Compute the second derivative of the spline (using central differences), and linearly 
-    //      interpolate to get the end points. The end points should go to exactly zero because the 
+    //2.    Compute the second derivative of the spline (using central differences), and linearly
+    //      interpolate to get the end points. The end points should go to exactly zero because the
     //      second derivative is linear in a cubic spline, as is the linear extrapolation
     //
     //      Also compute the 3rd derivative using the same method. The 3rd derivative is required in the
@@ -239,7 +239,7 @@ SimTK::Vector testNCSpline(SimTK::Function* sp, SimTK::Vector xK, SimTK::Vector 
         //* a.  Spline passes through all knot points given
                     tmpK = yK-ysp_K(0);
                 errVec(0) = tmpK.norm();
-            
+
         //  b. The first derivative is continuous at the knot points. Apply a continuity test
         //      to the data points that define the second derivative
         //
@@ -256,10 +256,10 @@ SimTK::Vector testNCSpline(SimTK::Function* sp, SimTK::Vector xK, SimTK::Vector 
                     ykR = y0R - dydxR*deltaD;
                 errVec(1) = (ysp_D(i*sizeDK,1)-ykL)+(ysp_D(i*sizeDK,1)-ykR);
             }
-            
-            
+
+
         //  c. The second derivative is continuous at the knot points. Apply a continuity test
-        //      to the data points that define the second derivative. This also tests if the 
+        //      to the data points that define the second derivative. This also tests if the
         //      first derivative is smooth.
         //
         //      Continuity test:    a linear extrapolation of first derivative of the curve in interest
@@ -272,7 +272,7 @@ SimTK::Vector testNCSpline(SimTK::Function* sp, SimTK::Vector xK, SimTK::Vector 
                 ykL = y0L + dydxL*deltaD;
                 ykR = y0R - dydxR*deltaD;
                 errVec(2) = (ysp_D(i*sizeDK,2)-ykL)+(ysp_D(i*sizeDK,2)-ykR);
-            }   
+            }
 
         //////////////////////////////////////
         //* d.  The second derivative is zero at the end points
@@ -280,7 +280,7 @@ SimTK::Vector testNCSpline(SimTK::Function* sp, SimTK::Vector xK, SimTK::Vector 
 
         errVec(3) = abs(ysp_D(0,2)) + abs(ysp_D(sizeD-1,2));
 
-        
+
 
         //////////////////////////////////////
         //print the data for analysis
@@ -314,10 +314,10 @@ SimTK::Vector testNCSpline(SimTK::Function* sp, SimTK::Vector xK, SimTK::Vector 
 *       c. Choose the density of a high resolution interpolation
 *
 * Test Script Steps:
-* 0. Initialize the input vectors xK, xM, and xD for the knot locations, 
+* 0. Initialize the input vectors xK, xM, and xD for the knot locations,
 *    mid knot location and high resolution step locations respectively
 * 1. Initialize the analytically computed output yK, yM and yD
-* 2. Create each of the spline objects. 
+* 2. Create each of the spline objects.
 * 3. Evaluate the numerical accuracy of the splines by calling testNCSpline
 */
 int main() {
@@ -325,8 +325,8 @@ int main() {
     /////////////////////////////
     //Configuration Variables
     ////////////////////////////
-        bool printData = false;     //Set to true to print the knot, mid knot, and 
-                                    //dense vector values, first derivatives, and 
+        bool printData = false;     //Set to true to print the knot, mid knot, and
+                                    //dense vector values, first derivatives, and
                                     //second derivatives (for the splines) for analysis
                                     //outside of this script.
         int fcnType = 5;    //Chooses what kind of analytical test function to use
@@ -340,7 +340,7 @@ int main() {
         xmin = Pi/4;            //Value of first knot
         xmax = Pi/2;            //Value of the final knot
 
-        deltaX = (xmax-xmin)/(size-1);  
+        deltaX = (xmax-xmin)/(size-1);
         deltaD = (xmax-xmin)/(sizeD-1);
 
     /////////////////////////////
@@ -356,8 +356,8 @@ int main() {
         testResults = -1;
         SimTK::Vector tmpV1(1);
 
-        //Generate initialization knot points (denoted by a 'K') 
-        //      and the mid points (denoted by a 'M')       
+        //Generate initialization knot points (denoted by a 'K')
+        //      and the mid points (denoted by a 'M')
         //      and for the densely sampled interpolation vector (denoted by a 'D')
         SimTK::Vector xK(size), xM(size-1), xD(sizeD);
         SimTK::Matrix yK(size,3), yM(size-1,3), yD(sizeD,3);
@@ -376,7 +376,7 @@ int main() {
         for(int i = 0; i < sizeD; i++)
             xD(i) = xmin + deltaD*(double)i;
 
-    ///////////////////////////////////////////     
+    ///////////////////////////////////////////
     //1.    Initialize the analytic function vector data to interpolate
     //      Let the user know which function is being used
     ///////////////////////////////////////////
@@ -431,14 +431,14 @@ int main() {
         //OpenSim:NaturalCubicSplines
         SimTK::Vector ncsDerivs1(xK.size());
         vector<int> derOrder(1);
-        derOrder[0] = 0;        
-        //NaturalCubicSpline ncs(xK.size(), &xK[0], &yKVal[0],"test");                  
+        derOrder[0] = 0;
+        //NaturalCubicSpline ncs(xK.size(), &xK[0], &yKVal[0],"test");
         //SimTK::Function* ncs_simtkfcn = ncs.createSimTKFunction();
 
         //SimTK::SplineFitter
         SimTK::Vector sfDerivs1(xK.size());
         SimTK::Spline_<Real> sTK = SimTK::SplineFitter<Real>::fitForSmoothingParameter(3,xK,yKVal,0.0).getSpline();
-            
+
     ///////////////////////////////////////////
     //3. Test the splines
     ///////////////////////////////////////////
@@ -460,9 +460,9 @@ int main() {
 
             double tol = 0;
             SimTK_START_TEST("Testing natural cubic splines");
-            
+
             for(int k=0;k</*testResults.ncol()*/1;k++){
-                for(int i=0;i<testResults.nrow();i++){                  
+                for(int i=0;i<testResults.nrow();i++){
                     switch(i){
                         case 0: //Equal at knots
                             tol = 1e-14;
@@ -472,7 +472,7 @@ int main() {
                             break;
                         case 2: //Continuous 2nd derivative
                             tol = 10*deltaD;
-                            break;  
+                            break;
                         case 3: //2nd derivative zero at end points
                             tol = deltaD/10;
                             break;
@@ -493,7 +493,7 @@ int main() {
         e.print(cerr);
         return 1;
     }
-    
+
 
     return 0;
 }

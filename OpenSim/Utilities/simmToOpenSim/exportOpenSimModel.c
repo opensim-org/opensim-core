@@ -8,7 +8,7 @@
 
    Description:
     Reads in SIMM joint and muscle files and writes an OpenSim model file.
-    
+
    Routines:
 
 *******************************************************************************/

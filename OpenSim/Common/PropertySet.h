@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson, Ajay Seth 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson, Ajay Seth
  */
 #ifdef WIN32
 #pragma warning( disable : 4251 )
@@ -52,7 +52,7 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Property_Deprecated>;
 #endif
 
 
-namespace OpenSim { 
+namespace OpenSim {
 
 // convenient abbreviations
 typedef PropertyDblVec_<2> PropertyDblVec2;
@@ -71,7 +71,7 @@ typedef PropertyDblVec_<6> PropertyDblVec6;
  * @author Frank C. Anderson
  * @see Property
  */
-class OSIMCOMMON_API PropertySet  
+class OSIMCOMMON_API PropertySet
 {
 
 //=============================================================================

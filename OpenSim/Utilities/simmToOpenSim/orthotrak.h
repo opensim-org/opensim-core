@@ -18,7 +18,7 @@ STRUCT
    char **markerNames;
 } MarkerNameStruct;
 
-STRUCT 
+STRUCT
 {
    double inferior;
    double lateral;

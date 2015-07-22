@@ -33,7 +33,7 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 class Model;
 /**
@@ -76,7 +76,7 @@ protected:
 public:
     BodyKinematics(Model *aModel=0, bool aInDegrees=true);
     BodyKinematics(const std::string &aFileName);
-    // Copy constrctor and virtual copy 
+    // Copy constrctor and virtual copy
     BodyKinematics(const BodyKinematics &aObject);
     virtual ~BodyKinematics();
 

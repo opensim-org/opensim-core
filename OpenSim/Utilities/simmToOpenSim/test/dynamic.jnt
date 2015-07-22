@@ -12,7 +12,7 @@
 
    Scott Delp, Ph.D., Stanford University
    Wendy Murray, Ph.D., Stanford University
-   Silvia Salinas Blemker, M.S., Stanford University 
+   Silvia Salinas Blemker, M.S., Stanford University
    Anita Vasavada, Ph.D., Washington State University
    Srikanth Suryanarayanan, M.S., Rehabilitation Institute of Chicago
    Frans van der Helm, Ph.D., Delft University
@@ -489,7 +489,7 @@ inertia UPPER_ARM_INERTIA_X 0.0 0.0
         0.0 0.0 UPPER_ARM_INERTIA_Z
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment elbow_marker_r
@@ -510,7 +510,7 @@ inertia 0.0 0.0 0.0
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment ulna_r
@@ -527,7 +527,7 @@ inertia ULNA_INERTIA_X 0.0 0.0
         0.0 0.0 ULNA_INERTIA_Z
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment radius_r
@@ -543,7 +543,7 @@ inertia RADIUS_INERTIA_X 0.0 0.0
         0.0 0.0 RADIUS_INERTIA_Z
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment wrist_marker_r
@@ -568,7 +568,7 @@ inertia 0.0 0.0 0.0
         0.0 0.0 0.0
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment hand_r
@@ -611,7 +611,7 @@ inertia HAND_INERTIA_X 0.0 0.0
         0.0 0.0 HAND_INERTIA_Z
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.1 0.0 
+htr_y 0.0 -0.1 0.0
 endsegment
 
 beginsegment clavicle_marker_l
@@ -647,7 +647,7 @@ inertia UPPER_ARM_INERTIA_X 0.0 0.0
         0.0 0.0 UPPER_ARM_INERTIA_Z
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment elbow_marker_l
@@ -668,7 +668,7 @@ inertia 0.0 0.0 0.0
 SHADOW_PARAMS
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment ulna_l
@@ -685,7 +685,7 @@ inertia ULNA_INERTIA_X 0.0 0.0
         0.0 0.0 ULNA_INERTIA_Z
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment radius_l
@@ -701,7 +701,7 @@ inertia RADIUS_INERTIA_X 0.0 0.0
         0.0 0.0 RADIUS_INERTIA_Z
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment wrist_marker_l
@@ -726,7 +726,7 @@ inertia 0.0 0.0 0.0
         0.0 0.0 0.0
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 0.001 0.0 
+htr_y 0.0 0.001 0.0
 endsegment
 
 beginsegment hand_l
@@ -769,7 +769,7 @@ inertia HAND_INERTIA_X 0.0 0.0
         0.0 0.0 HAND_INERTIA_Z
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 #else /* UPPER_EXTREMITY */
@@ -835,7 +835,7 @@ inertia THIGH_INERTIA_X 0.0 0.0
         0.0 0.0 THIGH_INERTIA_Z
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment tibia_r
@@ -863,7 +863,7 @@ inertia SHANK_INERTIA_X 0.0 0.0
         0.0 0.0 SHANK_INERTIA_Z
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment patella_r
@@ -879,7 +879,7 @@ inertia PATELLA_INERTIA_X 0.0 0.0
         0.0 0.0 PATELLA_INERTIA_Z
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 #if VARUS_VALGUS
@@ -895,7 +895,7 @@ inertia 0.0000001 0.0 0.0
         0.0 0.0 0.0000001
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 #endif
 
@@ -912,7 +912,7 @@ inertia TALUS_INERTIA_X 0.0 0.0
         0.0 0.0 TALUS_INERTIA_Z
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment foot_r
@@ -1016,7 +1016,7 @@ inertia THIGH_INERTIA_X 0.0 0.0
         0.0 0.0 THIGH_INERTIA_Z
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 #if VARUS_VALGUS
@@ -1030,7 +1030,7 @@ inertia 0.0000001 0.0 0.0
         0.0 0.0 0.0000001
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 #endif
 
@@ -1059,7 +1059,7 @@ inertia SHANK_INERTIA_X 0.0 0.0
         0.0 0.0 SHANK_INERTIA_Z
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -1.0 0.0 
+htr_y 0.0 -1.0 0.0
 endsegment
 
 beginsegment patella_l
@@ -1075,7 +1075,7 @@ inertia PATELLA_INERTIA_X 0.0 0.0
         0.0 0.0 PATELLA_INERTIA_Z
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 #if VARUS_VALGUS
@@ -1091,7 +1091,7 @@ inertia 0.0000001 0.0 0.0
         0.0 0.0 0.0000001
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 #endif
 
@@ -1108,7 +1108,7 @@ inertia TALUS_INERTIA_X 0.0 0.0
         0.0 0.0 TALUS_INERTIA_Z
 htr_o 0.0 0.0 0.0
 htr_x 1.0 0.0 0.0
-htr_y 0.0 -0.001 0.0 
+htr_y 0.0 -0.001 0.0
 endsegment
 
 beginsegment foot_l
@@ -2540,12 +2540,12 @@ endworldobject
         -1.0  0.0   0.0  0.0
          0.0 -1.0 -5.0  1.0
         endview
-        
+
         beginview motion
-        -0.7046 -0.0060  0.7096 0.0000 
-         0.0366  0.9983  0.0448 0.0000 
-        -0.7087  0.0575 -0.7032 0.0000 
-         0.3181 -0.8978 -4.5020 1.0000 
+        -0.7046 -0.0060  0.7096 0.0000
+         0.0366  0.9983  0.0448 0.0000
+        -0.7087  0.0575 -0.7032 0.0000
+         0.3181 -0.8978 -4.5020 1.0000
         endview
 
         beginview front
@@ -2554,14 +2554,14 @@ endworldobject
         -1.0  0.0   0.0  0.0
          0.0 -1.0 -5.0  1.0
         endview
-        
+
         beginview side
          1.0  0.0   0.0  0.0
          0.0  1.0   0.0  0.0
          0.0  0.0   1.0  0.0
          0.0 -1.0 -5.0  1.0
         endview
-        
+
         beginview top
         1.0  0.0   0.0  0.0
         0.0  0.0   1.0  0.0
@@ -2576,28 +2576,28 @@ endworldobject
         0.0  1.0   0.0  0.0
         0.0 -1.0 -5.0  1.0
         endview
-        
+
         beginview motion
         -0.3906 -0.0806  0.9170  0.0000
          0.9205 -0.0301  0.3895  0.0000
         -0.0038  0.9963  0.0860  0.0000
          0.5573 -1.0410 -3.6453  1.0000
         endview
-        
+
         beginview front
         0.0  0.0   1.0  0.0
         1.0  0.0   0.0  0.0
         0.0  1.0   0.0  0.0
         0.0 -1.0 -5.0  1.0
         endview
-        
+
         beginview side
          1.0  0.0   0.0  0.0
          0.0  0.0  -1.0  0.0
          0.0  1.0   0.0  0.0
          0.0 -1.0 -5.0  1.0
         endview
-        
+
         beginview top
          1.0   0.0   0.0  0.0
          0.0   1.0   0.0  0.0
@@ -2612,28 +2612,28 @@ endworldobject
          0.0  0.0   1.0  0.0
          0.0 -0.5  -5.0  1.0
         endview
-        
+
         beginview motion
-        -0.0016  0.9994 -0.0347 0.0000 
-        -0.7450 -0.0243 -0.6666 0.0000 
-        -0.6670  0.0248  0.7446 0.0000 
-         0.5645 -0.8547 -6.0538 1.0000 
+        -0.0016  0.9994 -0.0347 0.0000
+        -0.7450 -0.0243 -0.6666 0.0000
+        -0.6670  0.0248  0.7446 0.0000
+         0.5645 -0.8547 -6.0538 1.0000
         endview
-        
+
         beginview front
         0.0  1.0   0.0  0.0
        -1.0  0.0   0.0  0.0
         0.0  0.0   1.0  0.0
         0.0 -0.5  -5.0  1.0
         endview
-        
+
         beginview side
          0.0  1.0   0.0  0.0
          0.0  0.0   1.0  0.0
          1.0  0.0   0.0  0.0
          0.0 -0.5  -5.0  1.0
         endview
-        
+
         beginview top
          0.0  0.0   1.0  0.0
          0.0 -1.0   0.0  0.0

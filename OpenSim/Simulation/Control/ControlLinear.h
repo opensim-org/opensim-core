@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -40,7 +40,7 @@
 //=============================================================================
 //=============================================================================
 
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * A class that represents a piece-wise linear control curve.
@@ -109,7 +109,7 @@ protected:
      * Connect properties to local pointers.
      */
     virtual void setupProperties();
-    
+
 private:
     /**
      * Set the member data to their NULL values.
@@ -300,7 +300,7 @@ public:
      * case the parameters of that control node are changed.
      */
     virtual void setControlValueMax(double aT,double aX);
-    
+
     // NODE ARRAY
     void clearControlNodes();
     ArrayPtrs<ControlLinearNode>& getControlValues() {

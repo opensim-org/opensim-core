@@ -39,11 +39,11 @@ static void indent(int nSpaces) {
 // Recursively dump out contents of an object and its properties.
 static void dumpObj(const Object& obj, int nSpaces) {
     indent(nSpaces);
-    cout << obj.getConcreteClassName() << " Object " 
+    cout << obj.getConcreteClassName() << " Object "
          << (obj.getName().empty()?"NONAME":obj.getName())
          << endl;
     for (int p=0; p < obj.getNumProperties(); ++p) {
-        const AbstractProperty& ap = obj.getPropertyByIndex(p); 
+        const AbstractProperty& ap = obj.getPropertyByIndex(p);
         indent(nSpaces+2);
         cout << ap.getName() << "=" << ap.toString() << endl;
         // Check return values from Property API for debugging purposes
@@ -122,8 +122,8 @@ int main()
         testModel.print("allComponents.osim");
 
         Model deserializedModel("allComponents.osim", false);
-        ASSERT(testModel == deserializedModel,  
-            "deserializedModel FAILED to match original model.");       
+        ASSERT(testModel == deserializedModel,
+            "deserializedModel FAILED to match original model.");
     }
     catch (const Exception& e) {
         e.print(cerr);

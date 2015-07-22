@@ -30,15 +30,15 @@
 #include "Controller.h"
 
 
-namespace OpenSim { 
+namespace OpenSim {
 
 //=============================================================================
 //=============================================================================
 /**
  * ToyReflexController is a concrete controller that excites muscles in response
- * to muscle lengthening to simulate a simple stretch reflex. This controller is 
+ * to muscle lengthening to simulate a simple stretch reflex. This controller is
  * meant to serve as an example how to implement a controller in
- * OpenSim. It is intended for demonstrative purposes only. 
+ * OpenSim. It is intended for demonstrative purposes only.
  *
  * @author  Ajay Seth
  */
@@ -49,10 +49,10 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    /** @name Property declarations 
+    /** @name Property declarations
     These are the serializable properties associated with a ToyReflexController.*/
-    /**@{**/    
-    OpenSim_DECLARE_PROPERTY(gain, double, 
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(gain, double,
         "Factor by which the stretch reflex is scaled." );
 
 //=============================================================================
@@ -64,18 +64,18 @@ public:
     /** Default constructor. */
     ToyReflexController();
 
-    // Uses default (compiler-generated) destructor, copy constructor and copy 
+    // Uses default (compiler-generated) destructor, copy constructor and copy
     // assignment operator.
 
-    /** Convenience constructor 
+    /** Convenience constructor
     * @param gain       gain on the stretch response
     */
     ToyReflexController(double gain);
 
     /** Compute the controls for actuators (muscles)
-     *  This method defines the behavior of the ToyReflexController 
+     *  This method defines the behavior of the ToyReflexController
      *
-     * @param s         system state 
+     * @param s         system state
      * @param controls  writable model controls
      */
     void computeControls(const SimTK::State& s, SimTK::Vector &controls) const override;

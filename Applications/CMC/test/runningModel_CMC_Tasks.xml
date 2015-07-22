@@ -227,7 +227,7 @@
 			<kv>  20.0 </kv>
 			<coordinate> ankle_angle_l </coordinate>
 		</rdCMC_Joint>
-		
+
 		<!-- Back Joint -->
 
 		<rdCMC_Joint name="lumbar_extension">
@@ -262,7 +262,7 @@
 			<kv>  20.0 </kv>
 			<coordinate> lumbar_rotation </coordinate>
 		</rdCMC_Joint>
-		
+
 		<!--Right Arm-->
 		<rdCMC_Joint name="arm_flex_r">
 			<wrt_body> -1 </wrt_body>
@@ -274,7 +274,7 @@
 			<kv>  20.0 </kv>
 			<coordinate> arm_flex_r </coordinate>
 		</rdCMC_Joint>
-		
+
 		<rdCMC_Joint name="arm_add_r">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
@@ -285,7 +285,7 @@
 			<kv>  20.0 </kv>
 			<coordinate> arm_add_r </coordinate>
 		</rdCMC_Joint>
-		
+
 		<rdCMC_Joint name="arm_rot_r">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
@@ -296,7 +296,7 @@
 			<kv>  20.0 </kv>
 			<coordinate> arm_rot_r </coordinate>
 		</rdCMC_Joint>
-		
+
 		<rdCMC_Joint name="elbow_flex_r">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
@@ -307,7 +307,7 @@
 			<kv>  20.0 </kv>
 			<coordinate> elbow_flex_r </coordinate>
 		</rdCMC_Joint>
-		
+
 		<rdCMC_Joint name="pro_sup_r">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
@@ -318,7 +318,7 @@
 			<kv>  20.0 </kv>
 			<coordinate> pro_sup_r </coordinate>
 		</rdCMC_Joint>
-		
+
 		<!--Left Arm-->
 		<rdCMC_Joint name="arm_flex_l">
 			<wrt_body> -1 </wrt_body>
@@ -330,7 +330,7 @@
 			<kv>  20.0 </kv>
 			<coordinate> arm_flex_l </coordinate>
 		</rdCMC_Joint>
-		
+
 		<rdCMC_Joint name="arm_add_l">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
@@ -341,7 +341,7 @@
 			<kv>  20.0 </kv>
 			<coordinate> arm_add_l </coordinate>
 		</rdCMC_Joint>
-		
+
 		<rdCMC_Joint name="arm_rot_l">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
@@ -352,7 +352,7 @@
 			<kv>  20.0 </kv>
 			<coordinate> arm_rot_l </coordinate>
 		</rdCMC_Joint>
-				
+
 		<rdCMC_Joint name="elbow_flex_l">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
@@ -363,7 +363,7 @@
 			<kv>  20.0 </kv>
 			<coordinate> elbow_flex_l </coordinate>
 		</rdCMC_Joint>
-		
+
 		<rdCMC_Joint name="pro_sup_l">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>

@@ -41,13 +41,13 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 class ControlSet;
 
 /**
  * ControlSetController that simply assigns controls from a ControlSet
- * @author Jack Middleton, Ajay Seth 
+ * @author Jack Middleton, Ajay Seth
  * @version 1.0
  */
 class OSIMSIMULATION_API ControlSetController : public Controller {
@@ -86,13 +86,13 @@ public:
      */
     virtual ~ControlSetController();
 
-    const ControlSet *getControlSet() {return _controlSet;} 
+    const ControlSet *getControlSet() {return _controlSet;}
     ControlSet *updControlSet() {return _controlSet;}
 
     void setControlSet(ControlSet *aControlSet) {_controlSet = aControlSet;}
 
 
-    
+
 private:
     // A "private" method is one that can be called only by this class,
     // and not even by subclasses of this class.
@@ -102,7 +102,7 @@ private:
 protected:
 
     /**
-     * Connect properties to local pointers.  
+     * Connect properties to local pointers.
      */
     virtual void setupProperties();
 
@@ -125,7 +125,7 @@ public:
 #ifndef SWIG
 
     /**
-     * Assignment operator.  
+     * Assignment operator.
      */
     ControlSetController& operator=(const ControlSetController &aController);
 
@@ -138,8 +138,8 @@ public:
      * Compute the control values for all actuators under the control of this
      * Controller
      *
-     * @param s         system state 
-     * @param controls  return control values 
+     * @param s         system state
+     * @param controls  return control values
      */
     virtual void computeControls(const SimTK::State& s, SimTK::Vector& controls) const;
 
@@ -148,9 +148,9 @@ public:
         return _controlsFileName;
     }
 
-   /** 
-    *   return the min an max times that a controller knows how to supply controlls for 
-    */ 
+   /**
+    *   return the min an max times that a controller knows how to supply controlls for
+    */
    double getFirstTime() const;
    double getLastTime() const;
 

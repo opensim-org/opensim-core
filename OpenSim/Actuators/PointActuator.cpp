@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
+/*
  * Author: Ajay Seth
  */
 
@@ -48,7 +48,7 @@ using SimTK::Vec3;
 //=============================================================================
 // CONSTRUCTORS
 //=============================================================================
-// Uses default (compiler-generated) destructor, copy constructor, copy 
+// Uses default (compiler-generated) destructor, copy constructor, copy
 // assignment operator.
 
 //_____________________________________________________________________________
@@ -125,11 +125,11 @@ double PointActuator::getOptimalForce() const
     return get_optimal_force();
 }
 //_____________________________________________________________________________
-// Get the stress of the force. This would be the force or torque provided by 
+// Get the stress of the force. This would be the force or torque provided by
 // this actuator divided by its optimal force.
 double PointActuator::getStress( const SimTK::State& s) const
 {
-    return std::abs(getActuation(s) / getOptimalForce()); 
+    return std::abs(getActuation(s) / getOptimalForce());
 }
 
 
@@ -158,8 +158,8 @@ double PointActuator::computeActuation( const SimTK::State& s ) const
 /**
  * Apply the actuator force to BodyA and BodyB.
  */
-void PointActuator::computeForce(const SimTK::State& s, 
-                                 SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void PointActuator::computeForce(const SimTK::State& s,
+                                 SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                  SimTK::Vector& generalizedForces) const
 {
     const SimbodyEngine& engine = getModel().getSimbodyEngine();
@@ -175,14 +175,14 @@ void PointActuator::computeForce(const SimTK::State& s,
     }
     setActuation(s, force);
 
-    
+
     Vec3 forceVec = force*SimTK::UnitVec3(get_direction());
     Vec3 lpoint = get_point();
     if (!get_force_is_global())
-        engine.transform(s, *_body, forceVec, 
+        engine.transform(s, *_body, forceVec,
                          getModel().getGround(), forceVec);
     if (get_point_is_global())
-        engine.transformPosition(s, getModel().getGround(), lpoint, 
+        engine.transformPosition(s, getModel().getGround(), lpoint,
                                  *_body, lpoint);
     applyForceToPoint(s, *_body, lpoint, forceVec, bodyForces);
 
@@ -190,7 +190,7 @@ void PointActuator::computeForce(const SimTK::State& s,
     Vec3 velocity(0);
     engine.getVelocity(s, *_body, lpoint, velocity);
 
-    // the speed of the point is the "speed" of the actuator used to compute 
+    // the speed of the point is the "speed" of the actuator used to compute
     // power
     setSpeed(s, velocity.norm());
 }
@@ -207,7 +207,7 @@ void PointActuator::extendConnectToModel(Model& model)
     const string& bodyName = get_body();
 
     if (!model.updBodySet().contains(bodyName)) {
-        errorMessage = "PointActuator: Unknown body (" + bodyName 
+        errorMessage = "PointActuator: Unknown body (" + bodyName
                         + ") specified in Actuator " + getName();
         throw OpenSim::Exception(errorMessage);
     }
@@ -252,5 +252,5 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
         const std::string& bodyName = get_body();
         _body = &_model->updBodySet().get(bodyName);
     }
-}   
+}
 

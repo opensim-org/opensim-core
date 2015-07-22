@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -35,7 +35,7 @@
 #include "SimTKcommon.h"
 
 
-namespace OpenSim { 
+namespace OpenSim {
 
 /** @cond **/ // hide from Doxygen
 

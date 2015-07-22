@@ -28,8 +28,8 @@ Tests Include:
     2. PhysicalOffsetFrame on a Body computations
     3. PhysicalOffsetFrame on a Body serialization
     4. PhysicalOffsetFrame on a PhysicalOffsetFrame computations
-    5. Station on a PhysicalFrame computations 
-      
+    5. Station on a PhysicalFrame computations
+
      Add tests here as Frames are added to OpenSim
 
 //=============================================================================*/
@@ -67,19 +67,19 @@ int main()
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testBody");
     }
-        
+
     try { testPhysicalOffsetFrameOnBody(); }
     catch (const std::exception& e){
-        cout << e.what() <<endl; 
+        cout << e.what() <<endl;
         failures.push_back("testPhysicalOffsetFrameOnBody");
     }
 
     try { testPhysicalOffsetFrameOnBodySerialize(); }
     catch (const std::exception& e){
-        cout << e.what() << endl; 
+        cout << e.what() << endl;
         failures.push_back("testPhysicalOffsetFrameOnBodySerialize");
     }
-    
+
     try { testPhysicalOffsetFrameOnPhysicalOffsetFrame(); }
     catch (const std::exception& e){
         cout << e.what() << endl;
@@ -149,7 +149,7 @@ void testBody()
         // The rotation part is a pure bodyfixed Z-rotation by radAngle.
         SimTK::Vec3 angles = xform.R().convertRotationToBodyFixedXYZ();
         SimTK::Vec3 angs_known(0, 0, radAngle);
-        ASSERT_EQUAL(angs_known, angles, SimTK::Vec3(SimTK::Eps), 
+        ASSERT_EQUAL(angs_known, angles, SimTK::Vec3(SimTK::Eps),
             __FILE__, __LINE__,
             "testBody(): incorrect rod1 orientation in ground.");
     }
@@ -185,7 +185,7 @@ void testPhysicalOffsetFrameOnBody()
 
     // Offsets should be identical expressed in ground or in the Body
     ASSERT_EQUAL(X_RO.p(), X_RO_2.p(), tolerance,
-        __FILE__, __LINE__, 
+        __FILE__, __LINE__,
         "testPhysicalOffsetFrameOnBody(): incorrect expression of offset in ground.");
     ASSERT_EQUAL(angs_known, angles, tolerance,
         __FILE__, __LINE__,
@@ -193,12 +193,12 @@ void testPhysicalOffsetFrameOnBody()
     // make sure that this PhysicalOffsetFrame knows that it is rigidly fixed to the
     // same MobilizedBody as Body rod1
     ASSERT(rod1.getMobilizedBodyIndex() == offsetFrame->getMobilizedBodyIndex(),
-        __FILE__, __LINE__, 
+        __FILE__, __LINE__,
         "testPhysicalOffsetFrameOnBody(): incorrect MobilizedBodyIndex");
 
     Transform X_RO_3 = offsetFrame->findTransformBetween(s, rod1);
     SimTK::Vec3 angles3 = X_RO_3.R().convertRotationToBodyFixedXYZ();
-    // Transform should be identical to the original offset 
+    // Transform should be identical to the original offset
     ASSERT_EQUAL(X_RO.p(), X_RO_3.p(), tolerance,
         __FILE__, __LINE__,
         "testPhysicalOffsetFrameOnBody(): incorrect transform between offset and rod.");
@@ -207,7 +207,7 @@ void testPhysicalOffsetFrameOnBody()
         "testPhysicalOffsetFrameOnBody(): incorrect transform between offset and rod.");
 
     SimTK::Vec3 f_R(10.1, 20.2, 30.3);
-    SimTK::Vec3 f_RG = rod1.expressVectorInAnotherFrame(s, f_R, 
+    SimTK::Vec3 f_RG = rod1.expressVectorInAnotherFrame(s, f_R,
                                                     pendulum->getGround());
 
     ASSERT_EQUAL(f_R.norm(), f_RG.norm(), tolerance(0),
@@ -220,9 +220,9 @@ void testPhysicalOffsetFrameOnBody()
         "testPhysicalOffsetFrameOnBody(): incorrect re-expression of vector.");
 
     SimTK::Vec3 p_R(0.333, 0.222, 0.111);
-    SimTK::Vec3 p_G = 
+    SimTK::Vec3 p_G =
         rod1.findLocationInAnotherFrame(s, p_R, pendulum->getGround());
-    SimTK::Vec3 p_G_2 = 
+    SimTK::Vec3 p_G_2 =
         rod1.getMobilizedBody().findStationLocationInGround(s, p_R);
 
     ASSERT_EQUAL(p_G_2, p_G, tolerance,
@@ -237,17 +237,17 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
     cout << "Running testPhysicalOffsetFrameOnPhysicalOffsetFrame" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
-    
+
     SimTK::Transform X_RO;
     //offset position by some random vector
     X_RO.setP(SimTK::Vec3(1.2, 2.5, 3.3));
-    // rotate the frame 
+    // rotate the frame
     X_RO.updR().setRotationToBodyFixedXYZ(SimTK::Vec3(0.33, 0.22, 0.11));
     PhysicalOffsetFrame* offsetFrame = new PhysicalOffsetFrame(rod1, X_RO);
     offsetFrame->setName("first");
     pendulum->addFrame(offsetFrame);
 
-    //connect a second frame to the first PhysicalOffsetFrame 
+    //connect a second frame to the first PhysicalOffsetFrame
     PhysicalOffsetFrame* secondFrame = offsetFrame->clone();
     secondFrame->setName("second");
     secondFrame->setParentFrame(*offsetFrame);
@@ -272,21 +272,21 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
 
     // Offsets should be identical expressed in ground or in the Body
     ASSERT_EQUAL(XinBase.p(), X_RO_2.p(), tolerance,
-        __FILE__, __LINE__, 
+        __FILE__, __LINE__,
         "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): incorrect expression of offset in ground.");
     ASSERT_EQUAL(angs_known, angles, tolerance,
-        __FILE__, __LINE__, 
+        __FILE__, __LINE__,
         "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): incorrect expression of offset in ground.");
 
     // make sure that this PhysicalOffsetFrame knows that it is rigidly fixed to the
     // same MobilizedBody as Body rod1
     ASSERT(rod1.getMobilizedBodyIndex() == secondFrame->getMobilizedBodyIndex(),
-        __FILE__, __LINE__, 
+        __FILE__, __LINE__,
         "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): incorrect MobilizedBodyIndex");
 
     // test base Frames are identical
     const Frame& baseRod = rod1.findBaseFrame();
-    ASSERT(base == baseRod, __FILE__, __LINE__, 
+    ASSERT(base == baseRod, __FILE__, __LINE__,
         "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): incorrect base frame for PhysicalOffsetFrame");
     const Frame& base1 = offsetFrame->findBaseFrame();
     ASSERT(base1 == base, __FILE__, __LINE__,
@@ -324,7 +324,7 @@ void testPhysicalOffsetFrameOnBodySerialize()
     const SimTK::Transform& X_GO_2 = myExtraFrame.getGroundTransform(s2);
     ASSERT_EQUAL(X_GO_2.p(), X_GO_1.p(), tolerance, __FILE__, __LINE__,
         "testPhysicalOffsetFrameOnBodySerialize(): incorrect expression of offset in ground.");
-    ASSERT_EQUAL(X_GO_2.R().convertRotationToBodyFixedXYZ(), 
+    ASSERT_EQUAL(X_GO_2.R().convertRotationToBodyFixedXYZ(),
         X_GO_1.R().convertRotationToBodyFixedXYZ(), tolerance,
         __FILE__, __LINE__,
         "testPhysicalOffsetFrameOnBodySerialize(): incorrect expression of offset in ground.");
@@ -344,7 +344,7 @@ void testFilterByFrameType()
     SimTK::Transform X_RO_2;
     X_RO_2.setP(SimTK::Vec3(0.1, 0.22, 0.333));
     X_RO_2.updR().setRotationToBodyFixedXYZ(SimTK::Vec3(1.2, -0.7, 0.48));
-    OrdinaryOffsetFrame* anOffset = 
+    OrdinaryOffsetFrame* anOffset =
         new OrdinaryOffsetFrame(rod2, X_RO_2);
 
     // add OffsetFrame to the model
@@ -378,11 +378,11 @@ void testFilterByFrameType()
 
     ASSERT_EQUAL(2, i, 0, __FILE__, __LINE__,
         "testFilterByFrameType failed to find the 2 Bodies in the model.");
-    
+
 
     i = 0;
     std::cout << "\nList the PhyscicalOffsetFrame in the model." << std::endl;
-    for (auto& component : 
+    for (auto& component :
             pendulumWFrame->getComponentList<PhysicalOffsetFrame>()) {
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
@@ -415,9 +415,9 @@ void testStationOnFrame()
         const Coordinate& coord = pendulum->getCoordinateSet().get("q1");
         coord.setValue(s, radAngle);
 
-        SimTK::Vec3 comInGround = 
+        SimTK::Vec3 comInGround =
             myStation->findLocationInFrame(s, pendulum->getGround());
-        SimTK::Vec3 comBySimbody = 
+        SimTK::Vec3 comBySimbody =
             rod1.getMobilizedBody().findStationLocationInGround(s, com);
         ASSERT_EQUAL(comInGround, comBySimbody, tolerance, __FILE__, __LINE__,
             "testStationOnFrame(): failed to resolve station position in ground.");

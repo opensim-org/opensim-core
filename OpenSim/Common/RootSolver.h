@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
- * Author: Frank C. Anderson 
+/*
+ * Author: Frank C. Anderson
  */
 
 
@@ -38,13 +38,13 @@
 
 //template class OSIMCOMMON_API Array<double>;
 
-namespace OpenSim { 
+namespace OpenSim {
 
 //=============================================================================
 //=============================================================================
 /**
  * A class for finding the N roots of N one-dimensional non-linear equations.
- * 
+ *
  * The rational for making this class solve for the roots of N equations
  * simultaneously is that, for some problems, it is more computationally
  * efficient to evaluate the N equations at the same time, as opposed to one
@@ -67,7 +67,7 @@ class OSIMCOMMON_API RootSolver
 // MEMBER VARIABLES
 //=============================================================================
 private:
-    
+
     VectorFunctionUncoupledNxN *_function;
 
 

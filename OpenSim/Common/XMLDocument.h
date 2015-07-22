@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -38,7 +38,7 @@
 
 
 
-namespace OpenSim { 
+namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
@@ -47,7 +47,7 @@ namespace OpenSim {
  * XML source or 2) created locally in memory.
  *
  * @version 1.0
- * @author Ayman Habib, Frank C. Anderson, 
+ * @author Ayman Habib, Frank C. Anderson,
  */
 #ifdef WIN32
 #pragma warning( disable : 4251 )   // VC2010 no-dll export of std::string
@@ -85,13 +85,13 @@ public:
     void writeDefaultObjects(SimTK::Xml::Element& elmt);
     //--------------------------------------------------------------------------
     // VERSIONING /BACKWARD COMPATIBILITY SUPPORT
-    //--------------------------------------------------------------------------    
+    //--------------------------------------------------------------------------
     static const int& getLatestVersion() { return LatestVersion; };
     static void renameChildNode(SimTK::Xml::Element& aNode, std::string oldElementName, std::string newElementName);
     const int& getDocumentVersion() const { return _documentVersion; };
-    static void getVersionAsString(const int aVersion, std::string& aString); 
+    static void getVersionAsString(const int aVersion, std::string& aString);
     Xml::Element getRootDataElement();
-    bool isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoubles=1e-6, 
+    bool isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoubles=1e-6,
         bool compareDefaults=false, bool compareVersionNumbers=false);
     static void addConnector(SimTK::Xml::Element& element, const std::string& connectorTag, const std::string& connectorName, const std::string& connectorValue);
 private:

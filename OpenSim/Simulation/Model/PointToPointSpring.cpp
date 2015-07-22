@@ -44,7 +44,7 @@ PointToPointSpring::PointToPointSpring()
 //_____________________________________________________________________________
 // Convenience constructor for API users.
 PointToPointSpring::
-    PointToPointSpring(const PhysicalFrame& body1, SimTK::Vec3 point1, 
+    PointToPointSpring(const PhysicalFrame& body1, SimTK::Vec3 point1,
                        const PhysicalFrame& body2, SimTK::Vec3 point2,
                        double stiffness, double restlength )
 {
@@ -77,7 +77,7 @@ void PointToPointSpring::constructConnectors()
  */
 void PointToPointSpring::setNull()
 {
-    setAuthors("Ajay Seth"); 
+    setAuthors("Ajay Seth");
 }
 
 
@@ -142,10 +142,10 @@ void PointToPointSpring::extendAddToSystem(SimTK::MultibodySystem& system) const
 
     // Now create a Simbody Force::TwoPointLinearSpring
     SimTK::Force::TwoPointLinearSpring simtkSpring
-       (_model->updForceSubsystem(), b1, getPoint1(), b2, getPoint2(), 
+       (_model->updForceSubsystem(), b1, getPoint1(), b2, getPoint2(),
         getStiffness(), getRestlength());
-    
-    // Beyond the const Component get the index so we can access the 
+
+    // Beyond the const Component get the index so we can access the
     // SimTK::Force later.
     PointToPointSpring* mutableThis = const_cast<PointToPointSpring *>(this);
     mutableThis->_index = simtkSpring.getForceIndex();
@@ -156,9 +156,9 @@ void PointToPointSpring::extendAddToSystem(SimTK::MultibodySystem& system) const
 //=============================================================================
 // Reporting
 //=============================================================================
-// Provide names of the quantities (column labels) of the force value(s) 
+// Provide names of the quantities (column labels) of the force value(s)
 // reported.
-OpenSim::Array<std::string> PointToPointSpring::getRecordLabels() const 
+OpenSim::Array<std::string> PointToPointSpring::getRecordLabels() const
 {
     const string& body1Name = getBody1().getName();
     const string& body2Name = getBody2().getName();
@@ -182,11 +182,11 @@ OpenSim::Array<std::string> PointToPointSpring::getRecordLabels() const
 
 // Provide the value(s) to be reported that correspond to the labels.
 OpenSim::Array<double> PointToPointSpring::
-getRecordValues(const SimTK::State& state) const 
+getRecordValues(const SimTK::State& state) const
 {
     OpenSim::Array<double> values(1);
 
-    const SimTK::Force::TwoPointLinearSpring& 
+    const SimTK::Force::TwoPointLinearSpring&
         simtkSpring = SimTK::Force::TwoPointLinearSpring::downcast
                                 (_model->getForceSubsystem().getForce(_index));
 
@@ -198,7 +198,7 @@ getRecordValues(const SimTK::State& state) const
     const PhysicalFrame& body2 = getBody2();
 
     //get the net force added to the system contributed by the Spring
-    simtkSpring.calcForceContribution(state, bodyForces, particleForces, 
+    simtkSpring.calcForceContribution(state, bodyForces, particleForces,
                                       mobilityForces);
     SimTK::Vec3 forces = bodyForces(body1.getMobilizedBodyIndex())[1];
     values.append(3, &forces[0]);

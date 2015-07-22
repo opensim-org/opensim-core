@@ -26,15 +26,15 @@
 
 /** @file
  * This file defines the client side of the SimTK::Matrix classes, which
- * hold medium to large, variable-sized matrices whose elements are packed 
- * SimTK "Composite Numerical Types" (CNTs). Unlike CNTs, the implemention here 
- * is opaque, and almost all properties are captured in the implementation at 
- * run time rather than in the type at compile time. 
+ * hold medium to large, variable-sized matrices whose elements are packed
+ * SimTK "Composite Numerical Types" (CNTs). Unlike CNTs, the implemention here
+ * is opaque, and almost all properties are captured in the implementation at
+ * run time rather than in the type at compile time.
  *
- * Every Matrix consists logically of three pieces: 
- *  - the matrix handle 
+ * Every Matrix consists logically of three pieces:
+ *  - the matrix handle
  *  - the matrix helper
- *  - and the matrix data. 
+ *  - and the matrix data.
  *
  * They are organized like this:
  * <pre>
@@ -55,12 +55,12 @@
  * owns the helper to which it points and must destruct the helper when
  * the handle's destructor is called.
  *
- * The helper, on the other hand, is parameterized only by the underlying scalar 
- * type. There are exactly 12 SimTK scalar types, so all can be instantiated on 
+ * The helper, on the other hand, is parameterized only by the underlying scalar
+ * type. There are exactly 12 SimTK scalar types, so all can be instantiated on
  * the library side leaving the implementation opaque and thus flexible from
- * release to release without compromising binary compatibility. (The scalar 
- * types are: the four C++ standard types float and double, 
- * complex<float>, and complex<double>; the SimTK numbers conjugate<float> and 
+ * release to release without compromising binary compatibility. (The scalar
+ * types are: the four C++ standard types float and double,
+ * complex<float>, and complex<double>; the SimTK numbers conjugate<float> and
  * conjugate<double>; and negator<> types templatized by any of the six
  * numeric types.) The helper contains several kinds of information:
  *  - the underlying scalar type S (as its template parameter)
@@ -71,15 +71,15 @@
  *  - the actual characteristics of the matrix currently represented by
  *      the helper
  *  - a virtual function table full of methods which are aware of the
- *      logical structure of the Matrix and the physical structure of 
+ *      logical structure of the Matrix and the physical structure of
  *      the data to support operations such as element indexing
- *  - a pointer to the underlying data, which may be shared with other 
+ *  - a pointer to the underlying data, which may be shared with other
  *      helpers
  *
  * The data itself consists only of scalars
- * S of the same type as the helper's template argument, but different 
+ * S of the same type as the helper's template argument, but different
  * helpers can look at the same data differently. For examples, when the
- * elements are composite consisting of k scalars, the helper will provide a 
+ * elements are composite consisting of k scalars, the helper will provide a
  * view of the data in which its scalars are interpreted in groups of k.
  * Many other reinterpretations of the data are possible and useful, such
  * as a real-valued helper viewing only the real or imaginary part of
@@ -88,27 +88,27 @@
  *
  * At most \e one matrix helper owns the matrix data and is responsible
  * for deleting that data when no longer needed. That is called an "owner"
- * helper and its associated handle is an owner handle. Normally the owner 
+ * helper and its associated handle is an owner handle. Normally the owner
  * is the handle (and helper) that allocated the data, and
  * in most cases an owner can resize the data at will. Many other handles
  * may reference the same data; those non-owner handles are called "views".
  * Every view may present a different picture of the underlying data. The
- * default view is "whole" meaning that all the elements of the data are 
- * visible, and appear in their normal order. A "transpose" view also shows 
- * all the elements but the matrix dimensions and indices are reversed. 
- * Other common views are "block" to select a sub-block of a matrix, and 
- * "diagonal" which shows only the diagonal of a matrix (as a vector). 
+ * default view is "whole" meaning that all the elements of the data are
+ * visible, and appear in their normal order. A "transpose" view also shows
+ * all the elements but the matrix dimensions and indices are reversed.
+ * Other common views are "block" to select a sub-block of a matrix, and
+ * "diagonal" which shows only the diagonal of a matrix (as a vector).
  *
  * NOTE: Destruction of an owner destructs the data it owns
  * *regardless* of the presence of other views into that data! I.e., these
  * are not reference counted. TODO: should we change that?
- * 
- * In some cases there may be no owner helper for a particular piece of 
+ *
+ * In some cases there may be no owner helper for a particular piece of
  * matrix data. That occurs when pre-existing memory, such as a Fortran
  * array, is used to construct a Matrix. In that case all the helpers are
  * views and the data will persist after the destruction of the last
  * referencing helper.
- *                 
+ *
  * A Matrix that is the owner of its data will be resized whenever
  * necessary, unless you take active steps to prevent that. For example, if
  * you declare a Vector, the number of rows can resize but the number of
@@ -197,13 +197,13 @@ template <class ELT, class VECTOR_CLASS> class VectorIterator;
 //  -------------------------------- MatrixBase --------------------------------
 /// Variable-size 2d matrix of Composite Numerical Type (ELT) elements. This is
 /// a container of such elements, it is NOT a Composite Numerical Type itself.
-/// MatrixBase<ELT> uses MatrixHelper<S> for implementation, where S is 
+/// MatrixBase<ELT> uses MatrixHelper<S> for implementation, where S is
 /// ELT::Scalar, that is, the underlying float, double, long double,
-/// complex<float>, negator<conjugate<double>>, 
+/// complex<float>, negator<conjugate<double>>,
 /// etc. from which ELT is constructed. This is a finite set of which all
-/// members are explicitly instantiated in the implementation code, so 
+/// members are explicitly instantiated in the implementation code, so
 /// clients don't have to know how anything is implemented.
-/// 
+///
 /// MatrixBase is the only class in the Matrix/Vector family which has any
 /// data members (it has exactly one MatrixHelper, which itself consists only
 /// of a single pointer to an opaque class). Thus all other objects
@@ -215,12 +215,12 @@ template <class ELT, class VECTOR_CLASS> class VectorIterator;
 /// Unlike the small matrix classes, very little is encoded in the type.
 /// Only the element type, and matrix vs. vector vs. row are in the type;
 /// everything else like shape, storage layout, and writability are handled
-/// at run time. 
+/// at run time.
 //  ----------------------------------------------------------------------------
 #endif
-template <class ELT=double> class MatrixBase {  
+template <class ELT=double> class MatrixBase {
 public:
-    // These typedefs are handy, but despite appearances you cannot 
+    // These typedefs are handy, but despite appearances you cannot
     // treat a MatrixBase as a composite numerical type. That is,
     // CNT<MatrixBase> will not compile, or if it does it won't be
     // meaningful.
@@ -231,7 +231,7 @@ public:
     typedef typename CNT<E>::TReal              EReal;
     typedef typename CNT<E>::TImag              EImag;
     typedef typename CNT<E>::TComplex           EComplex;
-    typedef typename CNT<E>::THerm              EHerm;       
+    typedef typename CNT<E>::THerm              EHerm;
     typedef typename CNT<E>::TPosTrans          EPosTrans;
 
     typedef typename CNT<E>::TAbs               EAbs;
@@ -259,7 +259,7 @@ public:
     typedef MatrixBase<EReal>            TReal;
     typedef MatrixBase<EImag>            TImag;
     typedef MatrixBase<EComplex>         TComplex;
-    typedef MatrixBase<EHerm>            THerm; 
+    typedef MatrixBase<EHerm>            THerm;
     typedef MatrixBase<E>                TPosTrans;
 
     typedef MatrixBase<EAbs>             TAbs;
@@ -272,14 +272,14 @@ public:
     const MatrixCommitment& getCharacterCommitment() const {return helper.getCharacterCommitment();}
     const MatrixCharacter& getMatrixCharacter()     const {return helper.getMatrixCharacter();}
 
-    /// Change the handle commitment for this matrix handle; only allowed if the 
+    /// Change the handle commitment for this matrix handle; only allowed if the
     /// handle is currently clear.
     void commitTo(const MatrixCommitment& mc)
     {   helper.commitTo(mc); }
 
     // This gives the resulting matrix type when (m(i,j) op P) is applied to each element.
     // It will have element types which are the regular composite result of E op P.
-    template <class P> struct EltResult { 
+    template <class P> struct EltResult {
         typedef MatrixBase<typename CNT<E>::template Result<P>::Mul> Mul;
         typedef MatrixBase<typename CNT<E>::template Result<P>::Dvd> Dvd;
         typedef MatrixBase<typename CNT<E>::template Result<P>::Add> Add;
@@ -295,7 +295,7 @@ public:
     /// This has nothing to do with how many elements are actually stored;
     /// it is simply the product of the logical number of rows and columns,
     /// that is, nrow()*ncol(). Note that although each dimension is limited
-    /// to a 32 bit size, the product of those dimensions may be > 32 bits 
+    /// to a 32 bit size, the product of those dimensions may be > 32 bits
     /// on a 64 bit machine so the return type may be larger than that of
     /// nrow() and ncol().
     ptrdiff_t nelt() const {return helper.nelt();}
@@ -303,11 +303,11 @@ public:
     /// Return true if either dimension of this Matrix is resizable.
     bool isResizeable() const {return getCharacterCommitment().isResizeable();}
 
-    enum { 
+    enum {
         NScalarsPerElement    = CNT<E>::NActualScalars,
         CppNScalarsPerElement = sizeof(E) / sizeof(Scalar)
     };
-  
+
     /// The default constructor builds a 0x0 matrix managed by a helper that
     /// understands how many scalars there are in one of our elements but is
     /// otherwise uncommitted.
@@ -315,28 +315,28 @@ public:
 
     /// This constructor allocates the default matrix a completely uncommitted
     /// matrix commitment, given particular initial dimensions.
-    MatrixBase(int m, int n) 
+    MatrixBase(int m, int n)
     :   helper(NScalarsPerElement,CppNScalarsPerElement,MatrixCommitment(),m,n) {}
 #ifndef SWIG
     /// This constructor takes a handle commitment and allocates the default
-    /// matrix for that kind of commitment. If a dimension is set to a 
+    /// matrix for that kind of commitment. If a dimension is set to a
     /// particular (unchangeable) value in the commitment then the initial
     /// allocation will use that value. Unlocked dimensions are given the
     /// smallest value consistent with other committed attributes, typically 0.
-    explicit MatrixBase(const MatrixCommitment& commitment) 
+    explicit MatrixBase(const MatrixCommitment& commitment)
     :   helper(NScalarsPerElement,CppNScalarsPerElement,commitment) {}
 
 
     /// This constructor takes a handle commitment and allocates the default
     /// matrix for that kind of commitment given particular initial minimum
-    /// dimensions, which cannot be larger than those permitted by the 
+    /// dimensions, which cannot be larger than those permitted by the
     /// commitment.
-    MatrixBase(const MatrixCommitment& commitment, int m, int n) 
+    MatrixBase(const MatrixCommitment& commitment, int m, int n)
     :   helper(NScalarsPerElement,CppNScalarsPerElement,commitment,m,n) {}
 
-    /// Copy constructor is a deep copy (not appropriate for views!).    
+    /// Copy constructor is a deep copy (not appropriate for views!).
     MatrixBase(const MatrixBase& b)
-      : helper(b.helper.getCharacterCommitment(), 
+      : helper(b.helper.getCharacterCommitment(),
                b.helper, typename MatrixHelper<Scalar>::DeepCopy()) { }
 
     /// Implicit conversion from matrix with negated elements (otherwise this
@@ -344,8 +344,8 @@ public:
     MatrixBase(const TNeg& b)
       : helper(b.helper.getCharacterCommitment(),
                b.helper, typename MatrixHelper<Scalar>::DeepCopy()) { }
-    
-    /// Copy assignment is a deep copy but behavior depends on type of lhs: if 
+
+    /// Copy assignment is a deep copy but behavior depends on type of lhs: if
     /// view, rhs must match. If owner, we reallocate and copy rhs.
     MatrixBase& copyAssign(const MatrixBase& b) {
         helper.copyAssign(b.helper);
@@ -354,10 +354,10 @@ public:
     MatrixBase& operator=(const MatrixBase& b) { return copyAssign(b); }
 
 
-    /// View assignment is a shallow copy, meaning that we disconnect the MatrixBase 
+    /// View assignment is a shallow copy, meaning that we disconnect the MatrixBase
     /// from whatever it used to refer to (destructing as necessary), then make it a new view
     /// for the data descriptor referenced by the source.
-    /// CAUTION: we always take the source as const, but that is ignored in 
+    /// CAUTION: we always take the source as const, but that is ignored in
     /// determining whether the resulting view is writable. Instead, that is
     /// inherited from the writability status of the source. We have to do this
     /// in order to allow temporary view objects to be writable -- the compiler
@@ -371,13 +371,13 @@ public:
 
     /// Initializing constructor with all of the initially-allocated elements
     /// initialized to the same value. The given dimensions are treated as
-    /// minimum dimensions in case the commitment requires more. So it is 
+    /// minimum dimensions in case the commitment requires more. So it is
     /// always permissible to set them both to 0 in which case you'll get
     /// the smallest matrix that satisfies the commitment, with each of its
     /// elements (if any) set to the given initial value.
-    MatrixBase(const MatrixCommitment& commitment, int m, int n, const ELT& initialValue) 
+    MatrixBase(const MatrixCommitment& commitment, int m, int n, const ELT& initialValue)
     :   helper(NScalarsPerElement, CppNScalarsPerElement, commitment, m, n)
-    {   helper.fillWith(reinterpret_cast<const Scalar*>(&initialValue)); }  
+    {   helper.fillWith(reinterpret_cast<const Scalar*>(&initialValue)); }
 
     /// Initializing constructor with the initially-allocated elements
     /// initialized from a C++ array of elements, which is provided in
@@ -389,14 +389,14 @@ public:
     /// more tightly in some cases). So you should not use this constructor
     /// to copy elements from one Simmatrix matrix to another; this is
     /// exclusively for initializing a Simmatrix from a C++ array.
-    MatrixBase(const MatrixCommitment& commitment, int m, int n, 
-               const ELT* cppInitialValuesByRow) 
+    MatrixBase(const MatrixCommitment& commitment, int m, int n,
+               const ELT* cppInitialValuesByRow)
     :   helper(NScalarsPerElement, CppNScalarsPerElement, commitment, m, n)
     {   helper.copyInByRowsFromCpp(reinterpret_cast<const Scalar*>(cppInitialValuesByRow)); }
-     
+
     /// @name           Matrix view of pre-exising data
     ///
-    /// Non-resizeable view of someone else's already-allocated 
+    /// Non-resizeable view of someone else's already-allocated
     /// memory of a size and storage type indicated by the supplied
     /// MatrixCharacter. The \a spacing argument has different interpretations
     /// depending on the storage format. Typically it is the leading
@@ -407,32 +407,32 @@ public:
     /// @{
 
     /// Construct a read-only view of pre-existing data.
-    MatrixBase(const MatrixCommitment& commitment, 
-               const MatrixCharacter&  character, 
+    MatrixBase(const MatrixCommitment& commitment,
+               const MatrixCharacter&  character,
                int spacing, const Scalar* data) // read only data
-    :   helper(NScalarsPerElement, CppNScalarsPerElement, 
-               commitment, character, spacing, data) {}  
+    :   helper(NScalarsPerElement, CppNScalarsPerElement,
+               commitment, character, spacing, data) {}
 
     /// Construct a writable view of pre-existing data.
-    MatrixBase(const MatrixCommitment& commitment, 
-               const MatrixCharacter&  character, 
+    MatrixBase(const MatrixCommitment& commitment,
+               const MatrixCharacter&  character,
                int spacing, Scalar* data) // writable data
-    :   helper(NScalarsPerElement, CppNScalarsPerElement, 
-               commitment, character, spacing, data) {}  
+    :   helper(NScalarsPerElement, CppNScalarsPerElement,
+               commitment, character, spacing, data) {}
     /// @}
-        
+
     // Create a new MatrixBase from an existing helper. Both shallow and deep copies are possible.
-    MatrixBase(const MatrixCommitment& commitment, 
-               MatrixHelper<Scalar>&   source, 
-               const typename MatrixHelper<Scalar>::ShallowCopy& shallow) 
+    MatrixBase(const MatrixCommitment& commitment,
+               MatrixHelper<Scalar>&   source,
+               const typename MatrixHelper<Scalar>::ShallowCopy& shallow)
     :   helper(commitment, source, shallow) {}
-    MatrixBase(const MatrixCommitment&      commitment, 
-               const MatrixHelper<Scalar>&  source, 
-               const typename MatrixHelper<Scalar>::ShallowCopy& shallow) 
+    MatrixBase(const MatrixCommitment&      commitment,
+               const MatrixHelper<Scalar>&  source,
+               const typename MatrixHelper<Scalar>::ShallowCopy& shallow)
     :   helper(commitment, source, shallow) {}
-    MatrixBase(const MatrixCommitment&      commitment, 
-               const MatrixHelper<Scalar>&  source, 
-               const typename MatrixHelper<Scalar>::DeepCopy& deep)    
+    MatrixBase(const MatrixCommitment&      commitment,
+               const MatrixHelper<Scalar>&  source,
+               const typename MatrixHelper<Scalar>::DeepCopy& deep)
     :   helper(commitment, source, deep) {}
 #endif
     /// This restores the MatrixBase to the state it would be in had it
@@ -443,30 +443,30 @@ public:
     MatrixBase& operator*=(const StdNumber& t)  { helper.scaleBy(t);              return *this; }
     MatrixBase& operator/=(const StdNumber& t)  { helper.scaleBy(StdNumber(1)/t); return *this; }
     MatrixBase& operator+=(const MatrixBase& r) { helper.addIn(r.helper);         return *this; }
-    MatrixBase& operator-=(const MatrixBase& r) { helper.subIn(r.helper);         return *this; }  
+    MatrixBase& operator-=(const MatrixBase& r) { helper.subIn(r.helper);         return *this; }
 
     template <class EE> MatrixBase(const MatrixBase<EE>& b)
       : helper(MatrixCommitment(),b.helper, typename MatrixHelper<Scalar>::DeepCopy()) { }
 
-    template <class EE> MatrixBase& operator=(const MatrixBase<EE>& b) 
+    template <class EE> MatrixBase& operator=(const MatrixBase<EE>& b)
       { helper = b.helper; return *this; }
-    template <class EE> MatrixBase& operator+=(const MatrixBase<EE>& b) 
+    template <class EE> MatrixBase& operator+=(const MatrixBase<EE>& b)
       { helper.addIn(b.helper); return *this; }
-    template <class EE> MatrixBase& operator-=(const MatrixBase<EE>& b) 
+    template <class EE> MatrixBase& operator-=(const MatrixBase<EE>& b)
       { helper.subIn(b.helper); return *this; }
 
     /// Matrix assignment to an element sets only the *diagonal* elements to
     /// the indicated value; everything else is set to zero. This is particularly
     /// useful for setting a Matrix to zero or to the identity; for other values
     /// it creates a Matrix which acts like the scalar. That is, if the scalar
-    /// is s and we do M=s, then multiplying another Matrix B by the resulting 
+    /// is s and we do M=s, then multiplying another Matrix B by the resulting
     /// diagonal matrix M gives the same result as multiplying B by s. That is
     /// (M=s)*B == s*B.
     ///
     /// NOTE: this must be overridden for Vector and RowVector since then scalar
     /// assignment is defined to copy the scalar to every element.
-    MatrixBase& operator=(const ELT& t) { 
-        setToZero(); updDiag().setTo(t); 
+    MatrixBase& operator=(const ELT& t) {
+        setToZero(); updDiag().setTo(t);
         return *this;
     }
 
@@ -539,25 +539,25 @@ public:
 
     /// M = diag(r) * M; r must have nrow() elements.
     /// That is, M[i] *= r[i].
-    template <class EE> inline MatrixBase& 
+    template <class EE> inline MatrixBase&
     rowScaleInPlace(const VectorBase<EE>&);
 
     /// Return type is a new matrix which will have the same dimensions as 'this' but
     /// will have element types appropriate for the elementwise multiply being performed.
-    template <class EE> inline void 
+    template <class EE> inline void
     rowScale(const VectorBase<EE>& r, typename EltResult<EE>::Mul& out) const;
 
-    template <class EE> inline typename EltResult<EE>::Mul 
+    template <class EE> inline typename EltResult<EE>::Mul
     rowScale(const VectorBase<EE>& r) const {
         typename EltResult<EE>::Mul out(nrow(), ncol()); rowScale(r,out); return out;
     }
 
     /// M = M * diag(c); c must have ncol() elements.
     /// That is, M(j) *= c[j].
-    template <class EE> inline MatrixBase& 
+    template <class EE> inline MatrixBase&
     colScaleInPlace(const VectorBase<EE>&);
 
-    template <class EE> inline void 
+    template <class EE> inline void
     colScale(const VectorBase<EE>& c, typename EltResult<EE>::Mul& out) const;
 
     template <class EE> inline typename EltResult<EE>::Mul
@@ -570,17 +570,17 @@ public:
     /// That is, M(i,j) *= r[i]*c[j].
     /// Having a combined row & column scaling operator means we can go through the matrix
     /// memory once instead of twice.
-    template <class ER, class EC> inline MatrixBase& 
+    template <class ER, class EC> inline MatrixBase&
     rowAndColScaleInPlace(const VectorBase<ER>& r, const VectorBase<EC>& c);
 
-    template <class ER, class EC> inline void 
-    rowAndColScale(const VectorBase<ER>& r, const VectorBase<EC>& c, 
+    template <class ER, class EC> inline void
+    rowAndColScale(const VectorBase<ER>& r, const VectorBase<EC>& c,
                    typename EltResult<typename VectorBase<ER>::template EltResult<EC>::Mul>::Mul& out) const;
 
     template <class ER, class EC> inline typename EltResult<typename VectorBase<ER>::template EltResult<EC>::Mul>::Mul
     rowAndColScale(const VectorBase<ER>& r, const VectorBase<EC>& c) const {
-        typename EltResult<typename VectorBase<ER>::template EltResult<EC>::Mul>::Mul 
-            out(nrow(), ncol()); 
+        typename EltResult<typename VectorBase<ER>::template EltResult<EC>::Mul>::Mul
+            out(nrow(), ncol());
         rowAndColScale(r,c,out); return out;
     }
 
@@ -662,7 +662,7 @@ public:
 
     template <class S> inline void
     elementwiseSubtractFromScalar(
-        const S&, 
+        const S&,
         typename MatrixBase<S>::template EltResult<E>::Sub&) const;
 
     template <class S> inline typename MatrixBase<S>::template EltResult<E>::Sub
@@ -673,62 +673,62 @@ public:
     }
 
     /// M(i,j) *= R(i,j); R must have same dimensions as this.
-    template <class EE> inline MatrixBase& 
+    template <class EE> inline MatrixBase&
     elementwiseMultiplyInPlace(const MatrixBase<EE>&);
 
-    template <class EE> inline void 
+    template <class EE> inline void
     elementwiseMultiply(const MatrixBase<EE>&, typename EltResult<EE>::Mul&) const;
 
-    template <class EE> inline typename EltResult<EE>::Mul 
+    template <class EE> inline typename EltResult<EE>::Mul
     elementwiseMultiply(const MatrixBase<EE>& m) const {
-        typename EltResult<EE>::Mul out(nrow(), ncol()); 
-        elementwiseMultiply<EE>(m,out); 
+        typename EltResult<EE>::Mul out(nrow(), ncol());
+        elementwiseMultiply<EE>(m,out);
         return out;
     }
 
     /// M(i,j) = R(i,j) * M(i,j); R must have same dimensions as this.
-    template <class EE> inline MatrixBase& 
+    template <class EE> inline MatrixBase&
     elementwiseMultiplyFromLeftInPlace(const MatrixBase<EE>&);
 
-    template <class EE> inline void 
+    template <class EE> inline void
     elementwiseMultiplyFromLeft(
-        const MatrixBase<EE>&, 
+        const MatrixBase<EE>&,
         typename MatrixBase<EE>::template EltResult<E>::Mul&) const;
 
-    template <class EE> inline typename MatrixBase<EE>::template EltResult<E>::Mul 
+    template <class EE> inline typename MatrixBase<EE>::template EltResult<E>::Mul
     elementwiseMultiplyFromLeft(const MatrixBase<EE>& m) const {
-        typename EltResult<EE>::Mul out(nrow(), ncol()); 
-        elementwiseMultiplyFromLeft<EE>(m,out); 
+        typename EltResult<EE>::Mul out(nrow(), ncol());
+        elementwiseMultiplyFromLeft<EE>(m,out);
         return out;
     }
 
     /// M(i,j) /= R(i,j); R must have same dimensions as this.
-    template <class EE> inline MatrixBase& 
+    template <class EE> inline MatrixBase&
     elementwiseDivideInPlace(const MatrixBase<EE>&);
 
-    template <class EE> inline void 
+    template <class EE> inline void
     elementwiseDivide(const MatrixBase<EE>&, typename EltResult<EE>::Dvd&) const;
 
-    template <class EE> inline typename EltResult<EE>::Dvd 
+    template <class EE> inline typename EltResult<EE>::Dvd
     elementwiseDivide(const MatrixBase<EE>& m) const {
-        typename EltResult<EE>::Dvd out(nrow(), ncol()); 
-        elementwiseDivide<EE>(m,out); 
+        typename EltResult<EE>::Dvd out(nrow(), ncol());
+        elementwiseDivide<EE>(m,out);
         return out;
     }
 
     /// M(i,j) = R(i,j) / M(i,j); R must have same dimensions as this.
-    template <class EE> inline MatrixBase& 
+    template <class EE> inline MatrixBase&
     elementwiseDivideFromLeftInPlace(const MatrixBase<EE>&);
 
-    template <class EE> inline void 
+    template <class EE> inline void
     elementwiseDivideFromLeft(
         const MatrixBase<EE>&,
         typename MatrixBase<EE>::template EltResult<E>::Dvd&) const;
 
-    template <class EE> inline typename MatrixBase<EE>::template EltResult<EE>::Dvd 
+    template <class EE> inline typename MatrixBase<EE>::template EltResult<EE>::Dvd
     elementwiseDivideFromLeft(const MatrixBase<EE>& m) const {
-        typename MatrixBase<EE>::template EltResult<E>::Dvd out(nrow(), ncol()); 
-        elementwiseDivideFromLeft<EE>(m,out); 
+        typename MatrixBase<EE>::template EltResult<E>::Dvd out(nrow(), ncol());
+        elementwiseDivideFromLeft<EE>(m,out);
         return out;
     }
 #endif
@@ -737,7 +737,7 @@ public:
     MatrixBase& setToNaN() {helper.fillWithScalar(CNT<StdNumber>::getNaN()); return *this;}
     MatrixBase& setToZero() {helper.fillWithScalar(StdNumber(0)); return *this;}
  #ifndef SWIG
-    // View creating operators. TODO: these should be DeadMatrixViews  
+    // View creating operators. TODO: these should be DeadMatrixViews
     inline RowVectorView_<ELT> row(int i) const;   // select a row
     inline RowVectorView_<ELT> updRow(int i);
     inline VectorView_<ELT>    col(int j) const;   // select a column
@@ -747,7 +747,7 @@ public:
     RowVectorView_<ELT> operator[](int i)       {return updRow(i);}
     VectorView_<ELT>    operator()(int j) const {return col(j);}
     VectorView_<ELT>    operator()(int j)       {return updCol(j);}
-     
+
     // Select a block.
     inline MatrixView_<ELT> block(int i, int j, int m, int n) const;
     inline MatrixView_<ELT> updBlock(int i, int j, int m, int n);
@@ -756,7 +756,7 @@ public:
       { return block(i,j,m,n); }
     MatrixView_<ELT> operator()(int i, int j, int m, int n)
       { return updBlock(i,j,m,n); }
- 
+
     // Hermitian transpose.
     inline MatrixView_<EHerm> transpose() const;
     inline MatrixView_<EHerm> updTranspose();
@@ -785,7 +785,7 @@ public:
     //MatrixView_<EReal> imag() {return updImag();}
 
     // TODO: this routine seems ill-advised but I need it for the IVM port at the moment
-    TInvert invert() const {  // return a newly-allocated inverse; dump negator 
+    TInvert invert() const {  // return a newly-allocated inverse; dump negator
         TInvert m(*this);
         m.helper.invertInPlace();
         return m;   // TODO - bad: makes an extra copy
@@ -801,7 +801,7 @@ public:
 
     // This routine is useful for implementing friendlier Matrix expressions and operators.
     // It maps closely to the Level-3 BLAS family of pxxmm() routines like sgemm(). The
-    // operation performed assumes that "this" is the result, and that "this" has 
+    // operation performed assumes that "this" is the result, and that "this" has
     // already been sized correctly to receive the result. We'll compute
     //     this = beta*this + alpha*A*B
     // If beta is 0 then "this" can be uninitialized. If alpha is 0 we promise not
@@ -834,7 +834,7 @@ public:
     const ELT& getElt(int i, int j) const { return *reinterpret_cast<const ELT*>(helper.getElt(i,j)); }
 #ifndef SWIG
     ELT&       updElt(int i, int j)       { return *reinterpret_cast<      ELT*>(helper.updElt(i,j)); }
- 
+
     const ELT& operator()(int i, int j) const {return getElt(i,j);}
     ELT&       operator()(int i, int j)       {return updElt(i,j);}
 
@@ -853,7 +853,7 @@ public:
     ScalarNormSq scalarNormSqr() const {
         const int nr=nrow(), nc=ncol();
         ScalarNormSq sum(0);
-        for(int j=0;j<nc;++j) 
+        for(int j=0;j<nc;++j)
             for (int i=0; i<nr; ++i)
                 sum += CNT<E>::scalarNormSqr((*this)(i,j));
         return sum;
@@ -867,13 +867,13 @@ public:
     void abs(TAbs& mabs) const {
         const int nr=nrow(), nc=ncol();
         mabs.resize(nr,nc);
-        for(int j=0;j<nc;++j) 
+        for(int j=0;j<nc;++j)
             for (int i=0; i<nr; ++i)
                 mabs(i,j) = CNT<E>::abs((*this)(i,j));
     }
 
-    /// abs() with the result as a function return. More convenient than the 
-    /// other abs() member function, but may involve an additional copy of the 
+    /// abs() with the result as a function return. More convenient than the
+    /// other abs() member function, but may involve an additional copy of the
     /// matrix.
     TAbs abs() const { TAbs mabs; abs(mabs); return mabs; }
 
@@ -881,7 +881,7 @@ public:
     /// with the element type converted to one based on the standard
     /// C++ scalar types: float, double, complex<float>,
     /// complex<double>. That is, negator<>
-    /// and conjugate<> are eliminated from the element type by 
+    /// and conjugate<> are eliminated from the element type by
     /// performing any needed negations computationally.
     /// Note that this is actually producing a new matrix with new data;
     /// you can also do this for free by reinterpreting the current
@@ -890,24 +890,24 @@ public:
     TStandard standardize() const {
         const int nr=nrow(), nc=ncol();
         TStandard mstd(nr, nc);
-        for(int j=0;j<nc;++j) 
+        for(int j=0;j<nc;++j)
             for (int i=0; i<nr; ++i)
                 mstd(i,j) = CNT<E>::standardize((*this)(i,j));
         return mstd;
     }
 
-    /// This is the scalar Frobenius norm, and its square. Note: if this is a 
+    /// This is the scalar Frobenius norm, and its square. Note: if this is a
     /// Matrix then the Frobenius norm is NOT the same as the 2-norm, although
     /// they are equivalent for Vectors.
     ScalarNormSq normSqr() const { return scalarNormSqr(); }
     // TODO -- not good; unnecessary overflow
-    typename CNT<ScalarNormSq>::TSqrt 
+    typename CNT<ScalarNormSq>::TSqrt
         norm() const { return CNT<ScalarNormSq>::sqrt(scalarNormSqr()); }
 
-    /// We only allow RMS norm if the elements are scalars. If there are no 
-    /// elements in this Matrix, we'll define its RMS norm to be 0, although 
+    /// We only allow RMS norm if the elements are scalars. If there are no
+    /// elements in this Matrix, we'll define its RMS norm to be 0, although
     /// NaN might be a better choice.
-    typename CNT<ScalarNormSq>::TSqrt 
+    typename CNT<ScalarNormSq>::TSqrt
     normRMS() const {
         if (!CNT<ELT>::IsScalar)
             SimTK_THROW1(Exception::Cant, "normRMS() only defined for scalar elements");
@@ -945,7 +945,7 @@ public:
     TNeg&             operator-()       {return updNegate();}
 #endif
     MatrixBase& negateInPlace() {(*this) *= EPrecision(-1); return *this;}
- 
+
     /// Change the size of this matrix. This is only allowed for owner matrices. The
     /// current storage format is retained, but all the data is lost. If you want
     /// to keep the old data, use resizeKeep().
@@ -967,38 +967,38 @@ public:
     // that is already unlocked, but it is not allowed to call this on a Matrix which
     // *never* allowed resizing. An exception will be thrown in that case.
     void unlockShape() {helper.unlockShape();}
- #ifndef SWIG  
+ #ifndef SWIG
     // An assortment of handy conversions
     const MatrixView_<ELT>& getAsMatrixView() const { return *reinterpret_cast<const MatrixView_<ELT>*>(this); }
-    MatrixView_<ELT>&       updAsMatrixView()       { return *reinterpret_cast<      MatrixView_<ELT>*>(this); } 
+    MatrixView_<ELT>&       updAsMatrixView()       { return *reinterpret_cast<      MatrixView_<ELT>*>(this); }
     const Matrix_<ELT>&     getAsMatrix()     const { return *reinterpret_cast<const Matrix_<ELT>*>(this); }
     Matrix_<ELT>&           updAsMatrix()           { return *reinterpret_cast<      Matrix_<ELT>*>(this); }
-         
-    const VectorView_<ELT>& getAsVectorView() const 
+
+    const VectorView_<ELT>& getAsVectorView() const
       { assert(ncol()==1); return *reinterpret_cast<const VectorView_<ELT>*>(this); }
-    VectorView_<ELT>&       updAsVectorView()       
-      { assert(ncol()==1); return *reinterpret_cast<      VectorView_<ELT>*>(this); } 
-    const Vector_<ELT>&     getAsVector()     const 
+    VectorView_<ELT>&       updAsVectorView()
+      { assert(ncol()==1); return *reinterpret_cast<      VectorView_<ELT>*>(this); }
+    const Vector_<ELT>&     getAsVector()     const
       { assert(ncol()==1); return *reinterpret_cast<const Vector_<ELT>*>(this); }
-    Vector_<ELT>&           updAsVector()           
+    Vector_<ELT>&           updAsVector()
       { assert(ncol()==1); return *reinterpret_cast<      Vector_<ELT>*>(this); }
-    const VectorBase<ELT>& getAsVectorBase() const 
+    const VectorBase<ELT>& getAsVectorBase() const
       { assert(ncol()==1); return *reinterpret_cast<const VectorBase<ELT>*>(this); }
-    VectorBase<ELT>&       updAsVectorBase()       
-      { assert(ncol()==1); return *reinterpret_cast<      VectorBase<ELT>*>(this); } 
-                
-    const RowVectorView_<ELT>& getAsRowVectorView() const 
+    VectorBase<ELT>&       updAsVectorBase()
+      { assert(ncol()==1); return *reinterpret_cast<      VectorBase<ELT>*>(this); }
+
+    const RowVectorView_<ELT>& getAsRowVectorView() const
       { assert(nrow()==1); return *reinterpret_cast<const RowVectorView_<ELT>*>(this); }
-    RowVectorView_<ELT>&       updAsRowVectorView()       
-      { assert(nrow()==1); return *reinterpret_cast<      RowVectorView_<ELT>*>(this); } 
-    const RowVector_<ELT>&     getAsRowVector()     const 
+    RowVectorView_<ELT>&       updAsRowVectorView()
+      { assert(nrow()==1); return *reinterpret_cast<      RowVectorView_<ELT>*>(this); }
+    const RowVector_<ELT>&     getAsRowVector()     const
       { assert(nrow()==1); return *reinterpret_cast<const RowVector_<ELT>*>(this); }
-    RowVector_<ELT>&           updAsRowVector()           
-      { assert(nrow()==1); return *reinterpret_cast<      RowVector_<ELT>*>(this); }        
-    const RowVectorBase<ELT>& getAsRowVectorBase() const 
+    RowVector_<ELT>&           updAsRowVector()
+      { assert(nrow()==1); return *reinterpret_cast<      RowVector_<ELT>*>(this); }
+    const RowVectorBase<ELT>& getAsRowVectorBase() const
       { assert(nrow()==1); return *reinterpret_cast<const RowVectorBase<ELT>*>(this); }
-    RowVectorBase<ELT>&       updAsRowVectorBase()       
-      { assert(nrow()==1); return *reinterpret_cast<      RowVectorBase<ELT>*>(this); } 
+    RowVectorBase<ELT>&       updAsRowVectorBase()
+      { assert(nrow()==1); return *reinterpret_cast<      RowVectorBase<ELT>*>(this); }
 
     // Access to raw data. We have to return the raw data
     // pointer as pointer-to-scalar because we may pack the elements tighter
@@ -1036,7 +1036,7 @@ public:
 
     /// Helper rep-stealing constructor. We take over ownership of this rep here. Note
     /// that this \e defines the handle commitment for this handle. This is intended
-    /// for internal use only -- don't call this constructor unless you really 
+    /// for internal use only -- don't call this constructor unless you really
     /// know what you're doing.
     explicit MatrixBase(MatrixHelperRep<Scalar>* hrep) : helper(hrep) {}
 
@@ -1071,7 +1071,7 @@ template <class ELT=double> class VectorBase : public MatrixBase<ELT> {
     typedef VectorBase<typename CNT<ELT>::TNeg>         TNeg;
     typedef RowVectorView_<typename CNT<ELT>::THerm>    THerm;
 #endif
-public:  
+public:
     //  ------------------------------------------------------------------------
     /// @name       VectorBase "owner" construction
     ///
@@ -1099,7 +1099,7 @@ public:
     /// Construct an owner vector of length m, with each element initialized to
     /// the given value.
     VectorBase(int m, const ELT& initialValue)
-    :   Base(MatrixCommitment::Vector(),m,1,initialValue) {}  
+    :   Base(MatrixCommitment::Vector(),m,1,initialValue) {}
 
     /// Construct an owner vector of length m, with the elements initialized sequentially
     /// from a C++ array of elements which is assumed to be of length m. Note that we
@@ -1114,7 +1114,7 @@ public:
     ///
     /// Construct a non-resizeable, VectorBase view of externally supplied data. Note that
     /// stride should be interpreted as "the number of scalars between elements" and
-    /// for composite elements may have a different value if the source is a C++ array 
+    /// for composite elements may have a different value if the source is a C++ array
     /// of elements vs. a Simmatrix packed data array. We provide constructors for
     /// both read-only and writable external data.
     /// @{
@@ -1126,29 +1126,29 @@ public:
     VectorBase(int m, int stride, Scalar* s)
     :   Base(MatrixCommitment::Vector(m), MatrixCharacter::Vector(m),stride,s) { }
     /// @}
-        
+
     //  ------------------------------------------------------------------------
     /// @name       VectorBase construction from an existing Helper.
     ///
-    /// Create a new VectorBase from an existing helper. Both shallow (view) and deep 
+    /// Create a new VectorBase from an existing helper. Both shallow (view) and deep
     /// copies are possible. For shallow copies, there is a constructor providing a read-only
     /// view of the original data and one providing a writable view into the original data.
     /// @{
 
     /// Construct a writable view into the source data.
-    VectorBase(MatrixHelper<Scalar>& h, const typename MatrixHelper<Scalar>::ShallowCopy& s) 
+    VectorBase(MatrixHelper<Scalar>& h, const typename MatrixHelper<Scalar>::ShallowCopy& s)
     :   Base(MatrixCommitment::Vector(), h,s) { }
     /// Construct a read-only view of the source data.
-    VectorBase(const MatrixHelper<Scalar>& h, const typename MatrixHelper<Scalar>::ShallowCopy& s) 
+    VectorBase(const MatrixHelper<Scalar>& h, const typename MatrixHelper<Scalar>::ShallowCopy& s)
     :   Base(MatrixCommitment::Vector(), h,s) { }
     /// Construct a new owner vector initialized with the data from the source.
-    VectorBase(const MatrixHelper<Scalar>& h, const typename MatrixHelper<Scalar>::DeepCopy& d)    
+    VectorBase(const MatrixHelper<Scalar>& h, const typename MatrixHelper<Scalar>::DeepCopy& d)
     :   Base(MatrixCommitment::Vector(), h,d) { }
     /// @}
 
     // This gives the resulting vector type when (v[i] op P) is applied to each element.
     // It will have element types which are the regular composite result of ELT op P.
-    template <class P> struct EltResult { 
+    template <class P> struct EltResult {
         typedef VectorBase<typename CNT<ELT>::template Result<P>::Mul> Mul;
         typedef VectorBase<typename CNT<ELT>::template Result<P>::Dvd> Dvd;
         typedef VectorBase<typename CNT<ELT>::template Result<P>::Add> Add;
@@ -1167,21 +1167,21 @@ public:
     VectorBase& operator*=(const StdNumber& t)  { Base::operator*=(t); return *this; }
     VectorBase& operator/=(const StdNumber& t)  { Base::operator/=(t); return *this; }
     VectorBase& operator+=(const VectorBase& r) { Base::operator+=(r); return *this; }
-    VectorBase& operator-=(const VectorBase& r) { Base::operator-=(r); return *this; }  
+    VectorBase& operator-=(const VectorBase& r) { Base::operator-=(r); return *this; }
 
 
-    template <class EE> VectorBase& operator=(const VectorBase<EE>& b) 
-      { Base::operator=(b);  return *this; } 
-    template <class EE> VectorBase& operator+=(const VectorBase<EE>& b) 
-      { Base::operator+=(b); return *this; } 
-    template <class EE> VectorBase& operator-=(const VectorBase<EE>& b) 
-      { Base::operator-=(b); return *this; } 
+    template <class EE> VectorBase& operator=(const VectorBase<EE>& b)
+      { Base::operator=(b);  return *this; }
+    template <class EE> VectorBase& operator+=(const VectorBase<EE>& b)
+      { Base::operator+=(b); return *this; }
+    template <class EE> VectorBase& operator-=(const VectorBase<EE>& b)
+      { Base::operator-=(b); return *this; }
 
 
-    /// Fill current allocation with copies of element. Note that this is not the 
+    /// Fill current allocation with copies of element. Note that this is not the
     /// same behavior as assignment for Matrices, where only the diagonal is set (and
     /// everything else is set to zero.)
-    VectorBase& operator=(const ELT& t) { Base::setTo(t); return *this; }  
+    VectorBase& operator=(const ELT& t) { Base::setTo(t); return *this; }
 
     /// There's only one column here so it's a bit weird to use rowScale rather than
     /// elementwiseMultiply, but there's nothing really wrong with it. Using colScale
@@ -1194,14 +1194,14 @@ public:
     template <class EE> inline typename EltResult<EE>::Mul rowScale(const VectorBase<EE>& v) const
     { typename EltResult<EE>::Mul out(nrow()); Base::rowScale(v,out); return out; }
 
-    /** Return the root-mean-square (RMS) norm of a Vector of scalars, with 
-    optional return of the index of the element of largest absolute value. 
+    /** Return the root-mean-square (RMS) norm of a Vector of scalars, with
+    optional return of the index of the element of largest absolute value.
     The RMS norm of a Vector v of length n is rms=sqrt(~v*v/n). If n==0 we
     define the RMS norm to be zero but return the element index as -1. **/
-    typename CNT<ScalarNormSq>::TSqrt 
+    typename CNT<ScalarNormSq>::TSqrt
     normRMS(int* worstOne=0) const {
         if (!CNT<ELT>::IsScalar)
-            SimTK_THROW1(Exception::Cant, 
+            SimTK_THROW1(Exception::Cant,
                 "Vector::normRMS() only defined for scalar elements.");
         const int n = nelt();
         if (n == 0) {
@@ -1212,7 +1212,7 @@ public:
         ScalarNormSq sumsq = 0;
         if (worstOne) {
             *worstOne = 0;
-            ScalarNormSq maxsq = 0; 
+            ScalarNormSq maxsq = 0;
             for (int i=0; i<n; ++i) {
                 const ScalarNormSq v2 = square((*this)[i]);
                 if (v2 > maxsq) maxsq=v2, *worstOne=i;
@@ -1228,16 +1228,16 @@ public:
         return CNT<ScalarNormSq>::sqrt(sumsq/n);
     }
 
-    /** Return the weighted root-mean-square (WRMS) norm of a Vector of 
-    scalars, with optional return of the index of the weighted element of 
+    /** Return the weighted root-mean-square (WRMS) norm of a Vector of
+    scalars, with optional return of the index of the weighted element of
     largest absolute value. The WRMS norm of a Vector v of length n with
     weights w is wrms=sqrt(sum_i((w_i*v_i)^2))/n). If n==0 we
     define the WRMS norm to be zero but return the element index as -1. **/
     template <class EE>
-    typename CNT<ScalarNormSq>::TSqrt 
+    typename CNT<ScalarNormSq>::TSqrt
     weightedNormRMS(const VectorBase<EE>& w, int* worstOne=0) const {
         if (!CNT<ELT>::IsScalar || !CNT<EE>::IsScalar)
-            SimTK_THROW1(Exception::Cant, 
+            SimTK_THROW1(Exception::Cant,
             "Vector::weightedNormRMS() only defined for scalar elements"
             " and weights.");
         const int n = nelt();
@@ -1250,7 +1250,7 @@ public:
         ScalarNormSq sumsq = 0;
         if (worstOne) {
             *worstOne = 0;
-            ScalarNormSq maxsq = 0; 
+            ScalarNormSq maxsq = 0;
             for (int i=0; i<n; ++i) {
                 const ScalarNormSq wv2 = square(w[i]*(*this)[i]);
                 if (wv2 > maxsq) maxsq=wv2, *worstOne=i;
@@ -1266,13 +1266,13 @@ public:
         return CNT<ScalarNormSq>::sqrt(sumsq/n);
     }
 
-    /** Return the infinity norm (max absolute value) of a Vector of scalars, 
-    with optional return of the index of the element of largest absolute value. 
+    /** Return the infinity norm (max absolute value) of a Vector of scalars,
+    with optional return of the index of the element of largest absolute value.
     The Inf norm of a Vector v is inf=max_i(|v_i|). If n==0 we
     define the Inf norm to be zero but return the element index as -1. **/
     EAbs normInf(int* worstOne=0) const {
         if (!CNT<ELT>::IsScalar)
-            SimTK_THROW1(Exception::Cant, 
+            SimTK_THROW1(Exception::Cant,
                 "Vector::normInf() only defined for scalar elements.");
         const int n = nelt();
         if (n == 0) {
@@ -1298,14 +1298,14 @@ public:
     }
 
     /** Return the weighted infinity norm (max absolute value) WInf of a Vector
-    of scalars, with optional return of the index of the weighted element of 
+    of scalars, with optional return of the index of the weighted element of
     largest absolute value. The WInf norm of a Vector v of length n with
     weights w is winf=max_i(|w_i*v_i|). If n==0 we
     define the WInf norm to be zero but return the element index as -1. **/
     template <class EE>
     EAbs weightedNormInf(const VectorBase<EE>& w, int* worstOne=0) const {
         if (!CNT<ELT>::IsScalar || !CNT<EE>::IsScalar)
-            SimTK_THROW1(Exception::Cant, 
+            SimTK_THROW1(Exception::Cant,
             "Vector::weightedNormInf() only defined for scalar elements"
             " and weights.");
         const int n = nelt();
@@ -1361,18 +1361,18 @@ public:
     // elementwise multiply from left
     template <class EE> VectorBase& elementwiseMultiplyFromLeftInPlace(const VectorBase<EE>& r)
     { Base::template elementwiseMultiplyFromLeftInPlace<EE>(r); return *this; }
-    template <class EE> inline void 
+    template <class EE> inline void
     elementwiseMultiplyFromLeft(
-        const VectorBase<EE>& v, 
+        const VectorBase<EE>& v,
         typename VectorBase<EE>::template EltResult<ELT>::Mul& out) const
-    { 
+    {
         Base::template elementwiseMultiplyFromLeft<EE>(v,out);
     }
-    template <class EE> inline typename VectorBase<EE>::template EltResult<ELT>::Mul 
+    template <class EE> inline typename VectorBase<EE>::template EltResult<ELT>::Mul
     elementwiseMultiplyFromLeft(const VectorBase<EE>& v) const
-    { 
-        typename VectorBase<EE>::template EltResult<ELT>::Mul out(nrow()); 
-        Base::template elementwiseMultiplyFromLeft<EE>(v,out); 
+    {
+        typename VectorBase<EE>::template EltResult<ELT>::Mul out(nrow());
+        Base::template elementwiseMultiplyFromLeft<EE>(v,out);
         return out;
     }
 
@@ -1387,36 +1387,36 @@ public:
     // elementwise divide from left
     template <class EE> VectorBase& elementwiseDivideFromLeftInPlace(const VectorBase<EE>& r)
     { Base::template elementwiseDivideFromLeftInPlace<EE>(r); return *this; }
-    template <class EE> inline void 
+    template <class EE> inline void
     elementwiseDivideFromLeft(
-        const VectorBase<EE>& v, 
+        const VectorBase<EE>& v,
         typename VectorBase<EE>::template EltResult<ELT>::Dvd& out) const
-    { 
+    {
         Base::template elementwiseDivideFromLeft<EE>(v,out);
     }
-    template <class EE> inline typename VectorBase<EE>::template EltResult<ELT>::Dvd 
+    template <class EE> inline typename VectorBase<EE>::template EltResult<ELT>::Dvd
     elementwiseDivideFromLeft(const VectorBase<EE>& v) const
-    { 
-        typename VectorBase<EE>::template EltResult<ELT>::Dvd out(nrow()); 
-        Base::template elementwiseDivideFromLeft<EE>(v,out); 
+    {
+        typename VectorBase<EE>::template EltResult<ELT>::Dvd out(nrow());
+        Base::template elementwiseDivideFromLeft<EE>(v,out);
         return out;
     }
 
-    // Implicit conversions are allowed to Vector or Matrix, but not to RowVector.   
+    // Implicit conversions are allowed to Vector or Matrix, but not to RowVector.
     operator const Vector_<ELT>&()     const { return *reinterpret_cast<const Vector_<ELT>*>(this); }
     operator       Vector_<ELT>&()           { return *reinterpret_cast<      Vector_<ELT>*>(this); }
     operator const VectorView_<ELT>&() const { return *reinterpret_cast<const VectorView_<ELT>*>(this); }
     operator       VectorView_<ELT>&()       { return *reinterpret_cast<      VectorView_<ELT>*>(this); }
-    
+
     operator const Matrix_<ELT>&()     const { return *reinterpret_cast<const Matrix_<ELT>*>(this); }
-    operator       Matrix_<ELT>&()           { return *reinterpret_cast<      Matrix_<ELT>*>(this); } 
+    operator       Matrix_<ELT>&()           { return *reinterpret_cast<      Matrix_<ELT>*>(this); }
     operator const MatrixView_<ELT>&() const { return *reinterpret_cast<const MatrixView_<ELT>*>(this); }
-    operator       MatrixView_<ELT>&()       { return *reinterpret_cast<      MatrixView_<ELT>*>(this); } 
+    operator       MatrixView_<ELT>&()       { return *reinterpret_cast<      MatrixView_<ELT>*>(this); }
 
 #endif
     // size() for Vectors is Base::nelt() but returns int instead of ptrdiff_t.
-    int size() const { 
-    assert(Base::nelt() <= (ptrdiff_t)std::numeric_limits<int>::max()); 
+    int size() const {
+    assert(Base::nelt() <= (ptrdiff_t)std::numeric_limits<int>::max());
     assert(Base::ncol()==1);
     return (int)Base::nelt();
     }
@@ -1427,33 +1427,33 @@ public:
 
     // Override MatrixBase operators to return the right shape
     TAbs abs() const {TAbs result; Base::abs(result); return result;}
-    
-    // Override MatrixBase indexing operators          
+
+    // Override MatrixBase indexing operators
     const ELT& operator[](int i) const {return *reinterpret_cast<const ELT*>(Base::getHelper().getElt(i));}
     ELT&       operator[](int i)       {return *reinterpret_cast<ELT*>      (Base::updHelper().updElt(i));}
     const ELT& operator()(int i) const {return *reinterpret_cast<const ELT*>(Base::getHelper().getElt(i));}
     ELT&       operator()(int i)       {return *reinterpret_cast<ELT*>      (Base::updHelper().updElt(i));}
-         
-    // Block (contiguous subvector) view creation      
+
+    // Block (contiguous subvector) view creation
     VectorView_<ELT> operator()(int i, int m) const {return Base::operator()(i,0,m,1).getAsVectorView();}
     VectorView_<ELT> operator()(int i, int m)       {return Base::operator()(i,0,m,1).updAsVectorView();}
 
-    // Indexed view creation (arbitrary subvector). Indices must be 
+    // Indexed view creation (arbitrary subvector). Indices must be
     // monotonically increasing.
     VectorView_<ELT> index(const Array_<int>& indices) const {
-        MatrixHelper<Scalar> h(Base::getHelper().getCharacterCommitment(), 
+        MatrixHelper<Scalar> h(Base::getHelper().getCharacterCommitment(),
                                Base::getHelper(), indices);
         return VectorView_<ELT>(h);
     }
     VectorView_<ELT> updIndex(const Array_<int>& indices) {
-        MatrixHelper<Scalar> h(Base::getHelper().getCharacterCommitment(), 
+        MatrixHelper<Scalar> h(Base::getHelper().getCharacterCommitment(),
                                Base::updHelper(), indices);
         return VectorView_<ELT>(h);
     }
 
     VectorView_<ELT> operator()(const Array_<int>& indices) const {return index(indices);}
     VectorView_<ELT> operator()(const Array_<int>& indices)       {return updIndex(indices);}
- 
+
     // Hermitian transpose.
     THerm transpose() const {return Base::transpose().getAsRowVectorView();}
     THerm updTranspose()    {return Base::updTranspose().updAsRowVectorView();}
@@ -1477,7 +1477,7 @@ public:
     //TODO: this is not re-locking the number of columns at 1.
     void clear() {Base::clear(); Base::resize(0,1);}
 
-    ELT sum() const {ELT s; Base::getHelper().sum(reinterpret_cast<Scalar*>(&s)); return s; } // add all the elements   
+    ELT sum() const {ELT s; Base::getHelper().sum(reinterpret_cast<Scalar*>(&s)); return s; } // add all the elements
 #ifndef SWIG
     VectorIterator<ELT, VectorBase<ELT> > begin() {
         return VectorIterator<ELT, VectorBase<ELT> >(*this, 0);
@@ -1487,7 +1487,7 @@ public:
     }
 
 protected:
-    // Create a VectorBase handle using a given helper rep. 
+    // Create a VectorBase handle using a given helper rep.
     explicit VectorBase(MatrixHelperRep<Scalar>* hrep) : Base(hrep) {}
 
 private:
@@ -1511,7 +1511,7 @@ template <class ELT> class RowVectorBase : public MatrixBase<ELT> {
     typedef RowVectorBase<typename CNT<ELT>::TAbs>      TAbs;
     typedef RowVectorBase<typename CNT<ELT>::TNeg>      TNeg;
     typedef VectorView_<typename CNT<ELT>::THerm>       THerm;
-public: 
+public:
     //  ------------------------------------------------------------------------
     /// @name       RowVectorBase "owner" construction
     ///
@@ -1526,10 +1526,10 @@ public:
     /// Default constructor makes a 1x0 matrix locked at 1 row; you can
     /// provide an initial allocation if you want.
     explicit RowVectorBase(int n=0) : Base(MatrixCommitment::RowVector(), 1, n) {}
-    
+
     /// Copy constructor is a deep copy (not appropriate for views!). That
     /// means it creates a new, densely packed vector whose elements are
-    /// initialized from the source object.    
+    /// initialized from the source object.
     RowVectorBase(const RowVectorBase& source) : Base(source) {}
 
     /// Implicit conversion from compatible row vector with negated elements.
@@ -1538,7 +1538,7 @@ public:
     /// Construct an owner row vector of length n, with each element initialized to
     /// the given value.
     RowVectorBase(int n, const ELT& initialValue)
-    :   Base(MatrixCommitment::RowVector(),1,n,initialValue) {}  
+    :   Base(MatrixCommitment::RowVector(),1,n,initialValue) {}
 
     /// Construct an owner vector of length n, with the elements initialized sequentially
     /// from a C++ array of elements which is assumed to be of length n. Note that we
@@ -1553,7 +1553,7 @@ public:
     ///
     /// Construct a non-resizeable, RowVectorBase view of externally supplied data. Note that
     /// stride should be interpreted as "the number of scalars between elements" and
-    /// for composite elements may have a different value if the source is a C++ array 
+    /// for composite elements may have a different value if the source is a C++ array
     /// of elements vs. a Simmatrix packed data array. We provide constructors for
     /// both read-only and writable external data.
     /// @{
@@ -1569,25 +1569,25 @@ public:
     //  ------------------------------------------------------------------------
     /// @name       RowVectorBase construction from an existing Helper.
     ///
-    /// Create a new RowVectorBase from an existing helper. Both shallow (view) and deep 
+    /// Create a new RowVectorBase from an existing helper. Both shallow (view) and deep
     /// copies are possible. For shallow copies, there is a constructor providing a read-only
     /// view of the original data and one providing a writable view into the original data.
     /// @{
 
     /// Construct a writable view into the source data.
-    RowVectorBase(MatrixHelper<Scalar>& h, const typename MatrixHelper<Scalar>::ShallowCopy& s) 
+    RowVectorBase(MatrixHelper<Scalar>& h, const typename MatrixHelper<Scalar>::ShallowCopy& s)
     :   Base(MatrixCommitment::RowVector(), h,s) { }
     /// Construct a read-only view of the source data.
-    RowVectorBase(const MatrixHelper<Scalar>& h, const typename MatrixHelper<Scalar>::ShallowCopy& s) 
+    RowVectorBase(const MatrixHelper<Scalar>& h, const typename MatrixHelper<Scalar>::ShallowCopy& s)
     :   Base(MatrixCommitment::RowVector(), h,s) { }
     /// Construct a new owner vector initialized with the data from the source.
-    RowVectorBase(const MatrixHelper<Scalar>& h, const typename MatrixHelper<Scalar>::DeepCopy& d)    
+    RowVectorBase(const MatrixHelper<Scalar>& h, const typename MatrixHelper<Scalar>::DeepCopy& d)
     :   Base(MatrixCommitment::RowVector(), h,d) { }
     /// @}
 
     // This gives the resulting rowvector type when (r(i) op P) is applied to each element.
     // It will have element types which are the regular composite result of ELT op P.
-    template <class P> struct EltResult { 
+    template <class P> struct EltResult {
         typedef RowVectorBase<typename CNT<ELT>::template Result<P>::Mul> Mul;
         typedef RowVectorBase<typename CNT<ELT>::template Result<P>::Dvd> Dvd;
         typedef RowVectorBase<typename CNT<ELT>::template Result<P>::Add> Add;
@@ -1605,21 +1605,21 @@ public:
     RowVectorBase& operator*=(const StdNumber& t)     {Base::operator*=(t); return *this;}
     RowVectorBase& operator/=(const StdNumber& t)     {Base::operator/=(t); return *this;}
     RowVectorBase& operator+=(const RowVectorBase& r) {Base::operator+=(r); return *this;}
-    RowVectorBase& operator-=(const RowVectorBase& r) {Base::operator-=(r); return *this;}  
+    RowVectorBase& operator-=(const RowVectorBase& r) {Base::operator-=(r); return *this;}
 
-    template <class EE> RowVectorBase& operator=(const RowVectorBase<EE>& b) 
-      { Base::operator=(b);  return *this; } 
-    template <class EE> RowVectorBase& operator+=(const RowVectorBase<EE>& b) 
-      { Base::operator+=(b); return *this; } 
-    template <class EE> RowVectorBase& operator-=(const RowVectorBase<EE>& b) 
-      { Base::operator-=(b); return *this; } 
+    template <class EE> RowVectorBase& operator=(const RowVectorBase<EE>& b)
+      { Base::operator=(b);  return *this; }
+    template <class EE> RowVectorBase& operator+=(const RowVectorBase<EE>& b)
+      { Base::operator+=(b); return *this; }
+    template <class EE> RowVectorBase& operator-=(const RowVectorBase<EE>& b)
+      { Base::operator-=(b); return *this; }
 
     // default destructor
- 
-    /// Fill current allocation with copies of element. Note that this is not the 
+
+    /// Fill current allocation with copies of element. Note that this is not the
     /// same behavior as assignment for Matrices, where only the diagonal is set (and
     /// everything else is set to zero.)
-    RowVectorBase& operator=(const ELT& t) { Base::setTo(t); return *this; } 
+    RowVectorBase& operator=(const ELT& t) { Base::setTo(t); return *this; }
 
     /// There's only one row here so it's a bit wierd to use colScale rather than
     /// elementwiseMultiply, but there's nothing really wrong with it. Using rowScale
@@ -1644,18 +1644,18 @@ public:
     // elementwise multiply from left
     template <class EE> RowVectorBase& elementwiseMultiplyFromLeftInPlace(const RowVectorBase<EE>& r)
     { Base::template elementwiseMultiplyFromLeftInPlace<EE>(r); return *this; }
-    template <class EE> inline void 
+    template <class EE> inline void
     elementwiseMultiplyFromLeft(
-        const RowVectorBase<EE>& v, 
+        const RowVectorBase<EE>& v,
         typename RowVectorBase<EE>::template EltResult<ELT>::Mul& out) const
-    { 
+    {
         Base::template elementwiseMultiplyFromLeft<EE>(v,out);
     }
-    template <class EE> inline 
-    typename RowVectorBase<EE>::template EltResult<ELT>::Mul 
+    template <class EE> inline
+    typename RowVectorBase<EE>::template EltResult<ELT>::Mul
     elementwiseMultiplyFromLeft(const RowVectorBase<EE>& v) const {
-        typename RowVectorBase<EE>::template EltResult<ELT>::Mul out(nrow()); 
-        Base::template elementwiseMultiplyFromLeft<EE>(v,out); 
+        typename RowVectorBase<EE>::template EltResult<ELT>::Mul out(nrow());
+        Base::template elementwiseMultiplyFromLeft<EE>(v,out);
         return out;
     }
 
@@ -1670,35 +1670,35 @@ public:
     // elementwise divide from left
     template <class EE> RowVectorBase& elementwiseDivideFromLeftInPlace(const RowVectorBase<EE>& r)
     { Base::template elementwiseDivideFromLeftInPlace<EE>(r); return *this; }
-    template <class EE> inline void 
+    template <class EE> inline void
     elementwiseDivideFromLeft
-       (const RowVectorBase<EE>& v, 
-        typename RowVectorBase<EE>::template EltResult<ELT>::Dvd& out) const { 
+       (const RowVectorBase<EE>& v,
+        typename RowVectorBase<EE>::template EltResult<ELT>::Dvd& out) const {
         Base::template elementwiseDivideFromLeft<EE>(v,out);
     }
-    template <class EE> inline 
-    typename RowVectorBase<EE>::template EltResult<ELT>::Dvd 
-    elementwiseDivideFromLeft(const RowVectorBase<EE>& v) const { 
-        typename RowVectorBase<EE>::template EltResult<ELT>::Dvd out(nrow()); 
-        Base::template elementwiseDivideFromLeft<EE>(v,out); 
+    template <class EE> inline
+    typename RowVectorBase<EE>::template EltResult<ELT>::Dvd
+    elementwiseDivideFromLeft(const RowVectorBase<EE>& v) const {
+        typename RowVectorBase<EE>::template EltResult<ELT>::Dvd out(nrow());
+        Base::template elementwiseDivideFromLeft<EE>(v,out);
         return out;
     }
 
-    // Implicit conversions are allowed to RowVector or Matrix, but not to Vector.   
+    // Implicit conversions are allowed to RowVector or Matrix, but not to Vector.
     operator const RowVector_<ELT>&()     const {return *reinterpret_cast<const RowVector_<ELT>*>(this);}
     operator       RowVector_<ELT>&()           {return *reinterpret_cast<      RowVector_<ELT>*>(this);}
     operator const RowVectorView_<ELT>&() const {return *reinterpret_cast<const RowVectorView_<ELT>*>(this);}
     operator       RowVectorView_<ELT>&()       {return *reinterpret_cast<      RowVectorView_<ELT>*>(this);}
-    
+
     operator const Matrix_<ELT>&()     const {return *reinterpret_cast<const Matrix_<ELT>*>(this);}
-    operator       Matrix_<ELT>&()           {return *reinterpret_cast<      Matrix_<ELT>*>(this);} 
+    operator       Matrix_<ELT>&()           {return *reinterpret_cast<      Matrix_<ELT>*>(this);}
     operator const MatrixView_<ELT>&() const {return *reinterpret_cast<const MatrixView_<ELT>*>(this);}
-    operator       MatrixView_<ELT>&()       {return *reinterpret_cast<      MatrixView_<ELT>*>(this);} 
-    
+    operator       MatrixView_<ELT>&()       {return *reinterpret_cast<      MatrixView_<ELT>*>(this);}
+
 
     // size() for RowVectors is Base::nelt() but returns int instead of ptrdiff_t.
-    int size() const { 
-        assert(Base::nelt() <= (ptrdiff_t)std::numeric_limits<int>::max()); 
+    int size() const {
+        assert(Base::nelt() <= (ptrdiff_t)std::numeric_limits<int>::max());
         assert(Base::nrow()==1);
         return (int)Base::nelt();
     }
@@ -1711,13 +1711,13 @@ public:
         TAbs result; Base::abs(result); return result;
     }
 
-    // Override MatrixBase indexing operators          
+    // Override MatrixBase indexing operators
     const ELT& operator[](int j) const {return *reinterpret_cast<const ELT*>(Base::getHelper().getElt(j));}
     ELT&       operator[](int j)       {return *reinterpret_cast<ELT*>      (Base::updHelper().updElt(j));}
     const ELT& operator()(int j) const {return *reinterpret_cast<const ELT*>(Base::getHelper().getElt(j));}
     ELT&       operator()(int j)       {return *reinterpret_cast<ELT*>      (Base::updHelper().updElt(j));}
-         
-    // Block (contiguous subvector) creation      
+
+    // Block (contiguous subvector) creation
     RowVectorView_<ELT> operator()(int j, int n) const {return Base::operator()(0,j,1,n).getAsRowVectorView();}
     RowVectorView_<ELT> operator()(int j, int n)       {return Base::operator()(0,j,1,n).updAsRowVectorView();}
 
@@ -1733,7 +1733,7 @@ public:
 
     RowVectorView_<ELT> operator()(const Array_<int>& indices) const {return index(indices);}
     RowVectorView_<ELT> operator()(const Array_<int>& indices)       {return updIndex(indices);}
- 
+
     // Hermitian transpose.
     THerm transpose() const {return Base::transpose().getAsVectorView();}
     THerm updTranspose()    {return Base::updTranspose().updAsVectorView();}
@@ -1757,7 +1757,7 @@ public:
     //TODO: this is not re-locking the number of rows at 1.
     void clear() {Base::clear(); Base::resize(1,0);}
 
-    ELT sum() const {ELT s; Base::getHelper().sum(reinterpret_cast<Scalar*>(&s)); return s; } // add all the elements        
+    ELT sum() const {ELT s; Base::getHelper().sum(reinterpret_cast<Scalar*>(&s)); return s; } // add all the elements
     VectorIterator<ELT, RowVectorBase<ELT> > begin() {
         return VectorIterator<ELT, RowVectorBase<ELT> >(*this, 0);
     }
@@ -1766,7 +1766,7 @@ public:
     }
 
 protected:
-    // Create a RowVectorBase handle using a given helper rep. 
+    // Create a RowVectorBase handle using a given helper rep.
     explicit RowVectorBase(MatrixHelperRep<Scalar>* hrep) : Base(hrep) {}
 
 private:
@@ -1780,7 +1780,7 @@ private:
 /// for when copy constructors are called by introducing a separate type to
 /// prevent certain allowed optimizations from occuring when we don't want them.
 /// Despite the name, this may be an owner if a Matrix_ is recast to a MatrixView_.
-/// However, there are no owner constructors for MatrixView_. 
+/// However, there are no owner constructors for MatrixView_.
 //  ----------------------------------------------------------------------------
 template <class ELT> class MatrixView_ : public MatrixBase<ELT> {
     typedef MatrixBase<ELT>                 Base;
@@ -1790,15 +1790,15 @@ public:
     // Default construction is suppressed.
     // Uses default destructor.
 
-    // Create a MatrixView_ handle using a given helper rep. 
+    // Create a MatrixView_ handle using a given helper rep.
     explicit MatrixView_(MatrixHelperRep<S>* hrep) : Base(hrep) {}
 
     // Copy constructor is shallow. CAUTION: despite const argument, this preserves writability
     // if it was present in the source. This is necessary to allow temporary views to be
     // created and used as lvalues.
-    MatrixView_(const MatrixView_& m) 
+    MatrixView_(const MatrixView_& m)
       : Base(MatrixCommitment(),
-             const_cast<MatrixHelper<S>&>(m.getHelper()), 
+             const_cast<MatrixHelper<S>&>(m.getHelper()),
              typename MatrixHelper<S>::ShallowCopy()) {}
 
     // Copy assignment is deep but not reallocating.
@@ -1810,7 +1810,7 @@ public:
     MatrixView_(DeadMatrixView_<ELT>&);
     MatrixView_& operator=(DeadMatrixView_<ELT>&);
 
-    // Ask for shallow copy    
+    // Ask for shallow copy
     MatrixView_(const MatrixHelper<S>& h) : Base(MatrixCommitment(), h, typename MatrixHelper<S>::ShallowCopy()) { }
     MatrixView_(MatrixHelper<S>&       h) : Base(MatrixCommitment(), h, typename MatrixHelper<S>::ShallowCopy()) { }
 
@@ -1827,10 +1827,10 @@ public:
     MatrixView_& operator*=(const StdNumber& t) { Base::operator*=(t); return *this; }
     MatrixView_& operator/=(const StdNumber& t) { Base::operator/=(t); return *this; }
     MatrixView_& operator+=(const ELT& r)       { this->updDiag() += r; return *this; }
-    MatrixView_& operator-=(const ELT& r)       { this->updDiag() -= r; return *this; }  
+    MatrixView_& operator-=(const ELT& r)       { this->updDiag() -= r; return *this; }
 
     operator const Matrix_<ELT>&() const { return *reinterpret_cast<const Matrix_<ELT>*>(this); }
-    operator Matrix_<ELT>&()             { return *reinterpret_cast<Matrix_<ELT>*>(this); }      
+    operator Matrix_<ELT>&()             { return *reinterpret_cast<Matrix_<ELT>*>(this); }
 
 private:
     // NO DATA MEMBERS ALLOWED
@@ -1851,7 +1851,7 @@ template <class ELT> class DeadMatrixView_ : public MatrixView_<ELT> {
 public:
     // Default construction is suppressed.
     // Uses default destructor.
-    
+
     // All functionality is passed through to MatrixView_.
     explicit DeadMatrixView_(MatrixHelperRep<S>* hrep) : Base(hrep) {}
     DeadMatrixView_(const Base& m) : Base(m) {}
@@ -1859,7 +1859,7 @@ public:
         Base::operator=(m); return *this;
     }
 
-    // Ask for shallow copy    
+    // Ask for shallow copy
     DeadMatrixView_(const MatrixHelper<S>& h) : Base(h) {}
     DeadMatrixView_(MatrixHelper<S>&       h) : Base(h) {}
 
@@ -1876,18 +1876,18 @@ public:
     DeadMatrixView_& operator*=(const StdNumber& t) { Base::operator*=(t); return *this; }
     DeadMatrixView_& operator/=(const StdNumber& t) { Base::operator/=(t); return *this; }
     DeadMatrixView_& operator+=(const ELT& r)       { this->updDiag() += r; return *this; }
-    DeadMatrixView_& operator-=(const ELT& r)       { this->updDiag() -= r; return *this; }  
+    DeadMatrixView_& operator-=(const ELT& r)       { this->updDiag() -= r; return *this; }
 
 private:
     // NO DATA MEMBERS ALLOWED
     DeadMatrixView_(); // default constructor suppressed (what's it a view of?)
 };
 
-template <class ELT> inline 
-MatrixView_<ELT>::MatrixView_(DeadMatrixView_<ELT>& dead) 
+template <class ELT> inline
+MatrixView_<ELT>::MatrixView_(DeadMatrixView_<ELT>& dead)
 :   Base(dead.updHelper().stealRep()) {}
 
-template <class ELT> inline MatrixView_<ELT>& 
+template <class ELT> inline MatrixView_<ELT>&
 MatrixView_<ELT>::operator=(DeadMatrixView_<ELT>& dead) {
     if (Base::getHelper().getCharacterCommitment().isSatisfiedBy(dead.getMatrixCharacter()))
         Base::updHelper().replaceRep(dead.updHelper().stealRep());
@@ -1898,7 +1898,7 @@ MatrixView_<ELT>::operator=(DeadMatrixView_<ELT>& dead) {
 
 #endif
 //  ---------------------------------- Matrix_ ---------------------------------
-/// This is the Matrix class intended to appear in user code. It can be a 
+/// This is the Matrix class intended to appear in user code. It can be a
 /// fixed-size view of someone else's data, or can be a resizable data owner itself.
 //  ----------------------------------------------------------------------------
 template <class ELT> class Matrix_ : public MatrixBase<ELT> {
@@ -1928,7 +1928,7 @@ public:
 #ifndef SWIG
     // Assignment is a deep copy and will also allow reallocation if this Matrix
     // doesn't have a view.
-    Matrix_& operator=(const Matrix_& src) { 
+    Matrix_& operator=(const Matrix_& src) {
         Base::operator=(src); return *this;
     }
 
@@ -1946,19 +1946,19 @@ public:
 
     Matrix_(int m, int n) : Base(MatrixCommitment(), m, n) {}
 #ifndef SWIG
-    Matrix_(int m, int n, const ELT* cppInitialValuesByRow) 
+    Matrix_(int m, int n, const ELT* cppInitialValuesByRow)
     :   Base(MatrixCommitment(), m, n, cppInitialValuesByRow) {}
 #endif
-    Matrix_(int m, int n, const ELT& initialValue) 
+    Matrix_(int m, int n, const ELT& initialValue)
     :   Base(MatrixCommitment(), m, n, initialValue) {}
-#ifndef SWIG    
+#ifndef SWIG
     Matrix_(int m, int n, int leadingDim, const S* data) // read only
-    :   Base(MatrixCommitment(), MatrixCharacter::LapackFull(m,n), 
+    :   Base(MatrixCommitment(), MatrixCharacter::LapackFull(m,n),
              leadingDim, data) {}
     Matrix_(int m, int n, int leadingDim, S* data) // writable
-    :   Base(MatrixCommitment(), MatrixCharacter::LapackFull(m,n), 
+    :   Base(MatrixCommitment(), MatrixCharacter::LapackFull(m,n),
              leadingDim, data) {}
-   
+
     /// Convert a Mat to a Matrix_.
     template <int M, int N, int CS, int RS>
     explicit Matrix_(const Mat<M,N,ELT,CS,RS>& mat)
@@ -1979,20 +1979,20 @@ public:
     Matrix_& operator*=(const StdNumber& t) { Base::operator*=(t); return *this; }
     Matrix_& operator/=(const StdNumber& t) { Base::operator/=(t); return *this; }
     Matrix_& operator+=(const ELT& r)       { this->updDiag() += r; return *this; }
-    Matrix_& operator-=(const ELT& r)       { this->updDiag() -= r; return *this; }  
+    Matrix_& operator-=(const ELT& r)       { this->updDiag() -= r; return *this; }
 
     const TNeg& negate()    const {return *reinterpret_cast<const TNeg*>(this); }
     TNeg&       updNegate()       {return *reinterpret_cast<TNeg*>(this); }
 
     const TNeg& operator-() const {return negate();}
     TNeg&       operator-()       {return updNegate();}
-#endif  
+#endif
     // Functions to be used for Scripting in MATLAB and languages that do not support operator overloading
     // toString() returns a string representation of the Matrix_. Please refer to operator<< for details.
     std::string toString() const {
         std::stringstream stream;
         stream <<  (*this) ;
-        return stream.str(); 
+        return stream.str();
     }
     /** Variant of indexing operator that's scripting friendly to get entry (i, j) **/
     const ELT& get(int i,int j) const { return getElt(i,j); }
@@ -2009,7 +2009,7 @@ private:
 /// for when copy constructors are called by introducing a separate type to
 /// prevent certain allowed optimizations from occuring when we don't want them.
 /// Despite the name, this may be an owner if a Vector_ is recast to a VectorView_.
-/// However, there are no owner constructors for VectorView_. 
+/// However, there are no owner constructors for VectorView_.
 //  ----------------------------------------------------------------------------
 template <class ELT> class VectorView_ : public VectorBase<ELT> {
     typedef VectorBase<ELT>                             Base;
@@ -2023,13 +2023,13 @@ public:
     // Default construction is suppressed.
     // Uses default destructor.
 
-    // Create a VectorView_ handle using a given helper rep. 
+    // Create a VectorView_ handle using a given helper rep.
     explicit VectorView_(MatrixHelperRep<S>* hrep) : Base(hrep) {}
 
     // Copy constructor is shallow. CAUTION: despite const argument, this preserves writability
     // if it was present in the source. This is necessary to allow temporary views to be
     // created and used as lvalues.
-    VectorView_(const VectorView_& v) 
+    VectorView_(const VectorView_& v)
       : Base(const_cast<MatrixHelper<S>&>(v.getHelper()), typename MatrixHelper<S>::ShallowCopy()) { }
 
     // Copy assignment is deep but not reallocating.
@@ -2037,13 +2037,13 @@ public:
         Base::operator=(v); return *this;
     }
 
-    // Ask for shallow copy    
+    // Ask for shallow copy
     explicit VectorView_(const MatrixHelper<S>& h) : Base(h, typename MatrixHelper<S>::ShallowCopy()) { }
     explicit VectorView_(MatrixHelper<S>&       h) : Base(h, typename MatrixHelper<S>::ShallowCopy()) { }
-    
+
     VectorView_& operator=(const Base& b) { Base::operator=(b); return *this; }
 
-    VectorView_& operator=(const ELT& v) { Base::operator=(v); return *this; } 
+    VectorView_& operator=(const ELT& v) { Base::operator=(v); return *this; }
 
     template <class EE> VectorView_& operator=(const VectorBase<EE>& m)
       { Base::operator=(m); return*this; }
@@ -2065,8 +2065,8 @@ private:
 #endif
 
 //  ---------------------------------- Vector_ ---------------------------------
-/// This is the Vector class intended to appear in user code. It can be a 
-/// fixed-size view of someone else's data, or can be a resizable data owner 
+/// This is the Vector class intended to appear in user code. It can be a
+/// fixed-size view of someone else's data, or can be a resizable data owner
 /// itself, although of course it will always have just one column.
 //  ----------------------------------------------------------------------------
 #ifndef SWIG
@@ -2115,7 +2115,7 @@ public:
     Vector_(int m,       S* cppData, bool): Base(m, Base::CppNScalarsPerElement, cppData) {}
 
     /// Borrowed-space construction with explicit stride supplied as
-    /// "number of scalars between elements". Last parameter is a 
+    /// "number of scalars between elements". Last parameter is a
     /// dummy to avoid overload conflicts; pass it as "true".
     Vector_(int m, int stride, const S* data, bool) : Base(m, stride, data) {}
     Vector_(int m, int stride,       S* data, bool) : Base(m, stride, data) {}
@@ -2127,7 +2127,7 @@ public:
             this->updElt(i, 0) = v(i);
     }
 
-    Vector_& operator=(const ELT& v) { Base::operator=(v); return *this; } 
+    Vector_& operator=(const ELT& v) { Base::operator=(v); return *this; }
 
     template <class EE> Vector_& operator=(const VectorBase<EE>& m)
       { Base::operator=(m); return*this; }
@@ -2146,13 +2146,13 @@ public:
     std::string toString() const {
         std::stringstream stream;
         stream <<  (*this) ;
-        return stream.str(); 
+        return stream.str();
     }
     /** Variant of operator[] that's scripting friendly to get ith entry **/
     const ELT& get(int i) const { return (*this)[i]; }
     /** Variant of operator[] that's scripting friendly to set ith entry **/
     void  set (int i, const ELT& value)  { (*this)[i]=value; }
-    
+
 private:
     // NO DATA MEMBERS ALLOWED
 
@@ -2161,11 +2161,11 @@ private:
 #ifndef SWIG
 
 //  ------------------------------ RowVectorView_ ------------------------------
-/// This class is identical to a RowVector_; it is used only to manage the C++ 
+/// This class is identical to a RowVector_; it is used only to manage the C++
 /// rules for when copy constructors are called by introducing a separate type to
 /// prevent certain allowed optimizations from occuring when we don't want them.
-/// Despite the name, this may be an owner if a RowVector_ is recast to a 
-/// RowVectorView_. However, there are no owner constructors for RowVectorView_. 
+/// Despite the name, this may be an owner if a RowVector_ is recast to a
+/// RowVectorView_. However, there are no owner constructors for RowVectorView_.
 //  ----------------------------------------------------------------------------
 template <class ELT> class RowVectorView_ : public RowVectorBase<ELT> {
     typedef RowVectorBase<ELT>                              Base;
@@ -2179,13 +2179,13 @@ public:
     // Default construction is suppressed.
     // Uses default destructor.
 
-    // Create a RowVectorView_ handle using a given helper rep. 
+    // Create a RowVectorView_ handle using a given helper rep.
     explicit RowVectorView_(MatrixHelperRep<S>* hrep) : Base(hrep) {}
 
     // Copy constructor is shallow. CAUTION: despite const argument, this preserves writability
     // if it was present in the source. This is necessary to allow temporary views to be
     // created and used as lvalues.
-    RowVectorView_(const RowVectorView_& r) 
+    RowVectorView_(const RowVectorView_& r)
       : Base(const_cast<MatrixHelper<S>&>(r.getHelper()), typename MatrixHelper<S>::ShallowCopy()) { }
 
     // Copy assignment is deep but not reallocating.
@@ -2193,13 +2193,13 @@ public:
         Base::operator=(r); return *this;
     }
 
-    // Ask for shallow copy    
+    // Ask for shallow copy
     explicit RowVectorView_(const MatrixHelper<S>& h) : Base(h, typename MatrixHelper<S>::ShallowCopy()) { }
     explicit RowVectorView_(MatrixHelper<S>&       h) : Base(h, typename MatrixHelper<S>::ShallowCopy()) { }
-    
+
     RowVectorView_& operator=(const Base& b) { Base::operator=(b); return *this; }
 
-    RowVectorView_& operator=(const ELT& v) { Base::operator=(v); return *this; } 
+    RowVectorView_& operator=(const ELT& v) { Base::operator=(v); return *this; }
 
     template <class EE> RowVectorView_& operator=(const RowVectorBase<EE>& m)
       { Base::operator=(m); return*this; }
@@ -2221,9 +2221,9 @@ private:
 
 
 //  -------------------------------- RowVector_ --------------------------------
-/// RowVectors are much less common than Vectors. However, if a Simmatrix user 
-/// wants one, this is the class intended to appear in user code. It can be a 
-/// fixed-size view of someone else's data, or can be a resizable data owner 
+/// RowVectors are much less common than Vectors. However, if a Simmatrix user
+/// wants one, this is the class intended to appear in user code. It can be a
+/// fixed-size view of someone else's data, or can be a resizable data owner
 /// itself, although of course it will always have just one row.
 //  ----------------------------------------------------------------------------
 template <class ELT> class RowVector_ : public RowVectorBase<ELT> {
@@ -2243,7 +2243,7 @@ public:
 
     // Implicit conversions.
     RowVector_(const Base& src) : Base(src) {}    // e.g., RowVectorView
-    RowVector_(const BaseNeg& src) : Base(src) {}  
+    RowVector_(const BaseNeg& src) : Base(src) {}
 
     // Copy assignment is deep and can be reallocating if this RowVector
     // has no View.
@@ -2264,11 +2264,11 @@ public:
     RowVector_(int n,       S* cppData, bool): Base(n, Base::CppNScalarsPerElement, cppData) {}
 
     /// Borrowed-space construction with explicit stride supplied as
-    /// "number of scalars between elements". Last parameter is a 
+    /// "number of scalars between elements". Last parameter is a
     /// dummy to avoid overload conflicts; pass it as "true".
     RowVector_(int n, int stride, const S* data, bool) : Base(n, stride, data) {}
     RowVector_(int n, int stride,       S* data, bool) : Base(n, stride, data) {}
-    
+
     /// Convert a Row to a RowVector_.
     template <int M>
     explicit RowVector_(const Row<M,ELT>& v) : Base(M) {
@@ -2276,7 +2276,7 @@ public:
             this->updElt(0, i) = v(i);
     }
 
-    RowVector_& operator=(const ELT& v) { Base::operator=(v); return *this; } 
+    RowVector_& operator=(const ELT& v) { Base::operator=(v); return *this; }
 
     template <class EE> RowVector_& operator=(const RowVectorBase<EE>& b)
       { Base::operator=(b); return*this; }
@@ -2298,97 +2298,97 @@ private:
 
 //  ------------------------ MatrixBase definitions ----------------------------
 
-template <class ELT> inline MatrixView_<ELT> 
-MatrixBase<ELT>::block(int i, int j, int m, int n) const { 
+template <class ELT> inline MatrixView_<ELT>
+MatrixBase<ELT>::block(int i, int j, int m, int n) const {
     SimTK_INDEXCHECK(i,nrow()+1,"MatrixBase::block()");
     SimTK_INDEXCHECK(j,ncol()+1,"MatrixBase::block()");
     SimTK_SIZECHECK(i+m,nrow(),"MatrixBase::block()");
     SimTK_SIZECHECK(j+n,ncol(),"MatrixBase::block()");
 
-    MatrixHelper<Scalar> h(MatrixCommitment(),helper,i,j,m,n);    
-    return MatrixView_<ELT>(h.stealRep()); 
+    MatrixHelper<Scalar> h(MatrixCommitment(),helper,i,j,m,n);
+    return MatrixView_<ELT>(h.stealRep());
 }
-    
+
 template <class ELT> inline MatrixView_<ELT>
-MatrixBase<ELT>::updBlock(int i, int j, int m, int n) { 
+MatrixBase<ELT>::updBlock(int i, int j, int m, int n) {
     SimTK_INDEXCHECK(i,nrow()+1,"MatrixBase::updBlock()");
     SimTK_INDEXCHECK(j,ncol()+1,"MatrixBase::updBlock()");
     SimTK_SIZECHECK(i+m,nrow(),"MatrixBase::updBlock()");
     SimTK_SIZECHECK(j+n,ncol(),"MatrixBase::updBlock()");
 
-    MatrixHelper<Scalar> h(MatrixCommitment(),helper,i,j,m,n);        
-    return MatrixView_<ELT>(h.stealRep()); 
+    MatrixHelper<Scalar> h(MatrixCommitment(),helper,i,j,m,n);
+    return MatrixView_<ELT>(h.stealRep());
 }
 
 template <class E> inline MatrixView_<typename CNT<E>::THerm>
-MatrixBase<E>::transpose() const { 
-    MatrixHelper<typename CNT<Scalar>::THerm> 
+MatrixBase<E>::transpose() const {
+    MatrixHelper<typename CNT<Scalar>::THerm>
         h(MatrixCommitment(),
           helper, typename MatrixHelper<typename CNT<Scalar>::THerm>::TransposeView());
-    return MatrixView_<typename CNT<E>::THerm>(h.stealRep()); 
+    return MatrixView_<typename CNT<E>::THerm>(h.stealRep());
 }
-    
+
 template <class E> inline MatrixView_<typename CNT<E>::THerm>
-MatrixBase<E>::updTranspose() {     
-    MatrixHelper<typename CNT<Scalar>::THerm> 
+MatrixBase<E>::updTranspose() {
+    MatrixHelper<typename CNT<Scalar>::THerm>
         h(MatrixCommitment(),
           helper, typename MatrixHelper<typename CNT<Scalar>::THerm>::TransposeView());
-    return MatrixView_<typename CNT<E>::THerm>(h.stealRep()); 
+    return MatrixView_<typename CNT<E>::THerm>(h.stealRep());
 }
 
 template <class E> inline VectorView_<E>
-MatrixBase<E>::diag() const { 
-    MatrixHelper<Scalar> h(MatrixCommitment::Vector(),
-                           helper, typename MatrixHelper<Scalar>::DiagonalView());
-    return VectorView_<E>(h.stealRep()); 
-}
-    
-template <class E> inline VectorView_<E>
-MatrixBase<E>::updDiag() {     
+MatrixBase<E>::diag() const {
     MatrixHelper<Scalar> h(MatrixCommitment::Vector(),
                            helper, typename MatrixHelper<Scalar>::DiagonalView());
     return VectorView_<E>(h.stealRep());
 }
 
-template <class ELT> inline VectorView_<ELT> 
-MatrixBase<ELT>::col(int j) const { 
+template <class E> inline VectorView_<E>
+MatrixBase<E>::updDiag() {
+    MatrixHelper<Scalar> h(MatrixCommitment::Vector(),
+                           helper, typename MatrixHelper<Scalar>::DiagonalView());
+    return VectorView_<E>(h.stealRep());
+}
+
+template <class ELT> inline VectorView_<ELT>
+MatrixBase<ELT>::col(int j) const {
     SimTK_INDEXCHECK(j,ncol(),"MatrixBase::col()");
 
     MatrixHelper<Scalar> h(MatrixCommitment::Vector(),
-                           helper,0,j,nrow(),1);    
-    return VectorView_<ELT>(h.stealRep()); 
+                           helper,0,j,nrow(),1);
+    return VectorView_<ELT>(h.stealRep());
 }
-    
+
 template <class ELT> inline VectorView_<ELT>
 MatrixBase<ELT>::updCol(int j) {
     SimTK_INDEXCHECK(j,ncol(),"MatrixBase::updCol()");
 
     MatrixHelper<Scalar> h(MatrixCommitment::Vector(),
-                           helper,0,j,nrow(),1);        
-    return VectorView_<ELT>(h.stealRep()); 
+                           helper,0,j,nrow(),1);
+    return VectorView_<ELT>(h.stealRep());
 }
 
-template <class ELT> inline RowVectorView_<ELT> 
-MatrixBase<ELT>::row(int i) const { 
+template <class ELT> inline RowVectorView_<ELT>
+MatrixBase<ELT>::row(int i) const {
     SimTK_INDEXCHECK(i,nrow(),"MatrixBase::row()");
 
     MatrixHelper<Scalar> h(MatrixCommitment::RowVector(),
-                           helper,i,0,1,ncol());    
-    return RowVectorView_<ELT>(h.stealRep()); 
+                           helper,i,0,1,ncol());
+    return RowVectorView_<ELT>(h.stealRep());
 }
-    
+
 template <class ELT> inline RowVectorView_<ELT>
-MatrixBase<ELT>::updRow(int i) { 
+MatrixBase<ELT>::updRow(int i) {
     SimTK_INDEXCHECK(i,nrow(),"MatrixBase::updRow()");
 
     MatrixHelper<Scalar> h(MatrixCommitment::RowVector(),
-                           helper,i,0,1,ncol());        
-    return RowVectorView_<ELT>(h.stealRep()); 
+                           helper,i,0,1,ncol());
+    return RowVectorView_<ELT>(h.stealRep());
 }
 
 // M = diag(v) * M; v must have nrow() elements.
 // That is, M[i] *= v[i].
-template <class ELT> template <class EE> inline MatrixBase<ELT>& 
+template <class ELT> template <class EE> inline MatrixBase<ELT>&
 MatrixBase<ELT>::rowScaleInPlace(const VectorBase<EE>& v) {
     assert(v.nrow() == nrow());
     for (int i=0; i < nrow(); ++i)
@@ -2407,7 +2407,7 @@ MatrixBase<ELT>::rowScale(const VectorBase<EE>& v, typename MatrixBase<ELT>::tem
 
 // M = M * diag(v); v must have ncol() elements
 // That is, M(i) *= v[i]
-template <class ELT> template <class EE>  inline MatrixBase<ELT>& 
+template <class ELT> template <class EE>  inline MatrixBase<ELT>&
 MatrixBase<ELT>::colScaleInPlace(const VectorBase<EE>& v) {
     assert(v.nrow() == ncol());
     for (int j=0; j < ncol(); ++j)
@@ -2426,7 +2426,7 @@ MatrixBase<ELT>::colScale(const VectorBase<EE>& v, typename MatrixBase<ELT>::tem
 
 
 // M(i,j) *= r[i]*c[j]; r must have nrow() elements; c must have ncol() elements
-template <class ELT> template <class ER, class EC> inline MatrixBase<ELT>& 
+template <class ELT> template <class ER, class EC> inline MatrixBase<ELT>&
 MatrixBase<ELT>::rowAndColScaleInPlace(const VectorBase<ER>& r, const VectorBase<EC>& c) {
     assert(r.nrow()==nrow() && c.nrow()==ncol());
     for (int j=0; j<ncol(); ++j)
@@ -2437,9 +2437,9 @@ MatrixBase<ELT>::rowAndColScaleInPlace(const VectorBase<ER>& r, const VectorBase
 
 template <class ELT> template <class ER, class EC> inline void
 MatrixBase<ELT>::rowAndColScale(
-    const VectorBase<ER>& r, 
+    const VectorBase<ER>& r,
     const VectorBase<EC>& c,
-    typename EltResult<typename VectorBase<ER>::template EltResult<EC>::Mul>::Mul& 
+    typename EltResult<typename VectorBase<ER>::template EltResult<EC>::Mul>::Mul&
                           out) const
 {
     assert(r.nrow()==nrow() && c.nrow()==ncol());
@@ -2450,7 +2450,7 @@ MatrixBase<ELT>::rowAndColScale(
 }
 
 // M(i,j) = s
-template <class ELT> template <class S> inline MatrixBase<ELT>& 
+template <class ELT> template <class S> inline MatrixBase<ELT>&
 MatrixBase<ELT>::elementwiseAssign(const S& s) {
     for (int j=0; j<ncol(); ++j)
     for (int i=0; i<nrow(); ++i)
@@ -2459,7 +2459,7 @@ MatrixBase<ELT>::elementwiseAssign(const S& s) {
 }
 
 // Set M(i,j) = M(i,j)^-1.
-template <class ELT> inline MatrixBase<ELT>& 
+template <class ELT> inline MatrixBase<ELT>&
 MatrixBase<ELT>::elementwiseInvertInPlace() {
     const int nr=nrow(), nc=ncol();
     for (int j=0; j<nc; ++j)
@@ -2480,7 +2480,7 @@ MatrixBase<ELT>::elementwiseInvert(MatrixBase<typename CNT<E>::TInvert>& out) co
 }
 
 // M(i,j) += s
-template <class ELT> template <class S> inline MatrixBase<ELT>& 
+template <class ELT> template <class S> inline MatrixBase<ELT>&
 MatrixBase<ELT>::elementwiseAddScalarInPlace(const S& s) {
     for (int j=0; j<ncol(); ++j)
         for (int i=0; i<nrow(); ++i)
@@ -2488,7 +2488,7 @@ MatrixBase<ELT>::elementwiseAddScalarInPlace(const S& s) {
     return *this;
 }
 
-template <class ELT> template <class S> inline void 
+template <class ELT> template <class S> inline void
 MatrixBase<ELT>::elementwiseAddScalar(
     const S& s,
     typename MatrixBase<ELT>::template EltResult<S>::Add& out) const
@@ -2501,7 +2501,7 @@ MatrixBase<ELT>::elementwiseAddScalar(
 }
 
 // M(i,j) -= s
-template <class ELT> template <class S> inline MatrixBase<ELT>& 
+template <class ELT> template <class S> inline MatrixBase<ELT>&
 MatrixBase<ELT>::elementwiseSubtractScalarInPlace(const S& s) {
     for (int j=0; j<ncol(); ++j)
         for (int i=0; i<nrow(); ++i)
@@ -2509,7 +2509,7 @@ MatrixBase<ELT>::elementwiseSubtractScalarInPlace(const S& s) {
     return *this;
 }
 
-template <class ELT> template <class S> inline void 
+template <class ELT> template <class S> inline void
 MatrixBase<ELT>::elementwiseSubtractScalar(
     const S& s,
     typename MatrixBase<ELT>::template EltResult<S>::Sub& out) const
@@ -2522,7 +2522,7 @@ MatrixBase<ELT>::elementwiseSubtractScalar(
 }
 
 // M(i,j) = s - M(i,j)
-template <class ELT> template <class S> inline MatrixBase<ELT>& 
+template <class ELT> template <class S> inline MatrixBase<ELT>&
 MatrixBase<ELT>::elementwiseSubtractFromScalarInPlace(const S& s) {
     const int nr=nrow(), nc=ncol();
     for (int j=0; j<nc; ++j)
@@ -2533,7 +2533,7 @@ MatrixBase<ELT>::elementwiseSubtractFromScalarInPlace(const S& s) {
     return *this;
 }
 
-template <class ELT> template <class S> inline void 
+template <class ELT> template <class S> inline void
 MatrixBase<ELT>::elementwiseSubtractFromScalar(
     const S& s,
     typename MatrixBase<S>::template EltResult<ELT>::Sub& out) const
@@ -2546,7 +2546,7 @@ MatrixBase<ELT>::elementwiseSubtractFromScalar(
 }
 
 // M(i,j) *= R(i,j); R must have same dimensions as this
-template <class ELT> template <class EE> inline MatrixBase<ELT>& 
+template <class ELT> template <class EE> inline MatrixBase<ELT>&
 MatrixBase<ELT>::elementwiseMultiplyInPlace(const MatrixBase<EE>& r) {
     const int nr=nrow(), nc=ncol();
     assert(r.nrow()==nr && r.ncol()==nc);
@@ -2556,9 +2556,9 @@ MatrixBase<ELT>::elementwiseMultiplyInPlace(const MatrixBase<EE>& r) {
     return *this;
 }
 
-template <class ELT> template <class EE> inline void 
+template <class ELT> template <class EE> inline void
 MatrixBase<ELT>::elementwiseMultiply(
-    const MatrixBase<EE>& r, 
+    const MatrixBase<EE>& r,
     typename MatrixBase<ELT>::template EltResult<EE>::Mul& out) const
 {
     const int nr=nrow(), nc=ncol();
@@ -2570,7 +2570,7 @@ MatrixBase<ELT>::elementwiseMultiply(
 }
 
 // M(i,j) = R(i,j) * M(i,j); R must have same dimensions as this
-template <class ELT> template <class EE> inline MatrixBase<ELT>& 
+template <class ELT> template <class EE> inline MatrixBase<ELT>&
 MatrixBase<ELT>::elementwiseMultiplyFromLeftInPlace(const MatrixBase<EE>& r) {
     const int nr=nrow(), nc=ncol();
     assert(r.nrow()==nr && r.ncol()==nc);
@@ -2582,9 +2582,9 @@ MatrixBase<ELT>::elementwiseMultiplyFromLeftInPlace(const MatrixBase<EE>& r) {
     return *this;
 }
 
-template <class ELT> template <class EE> inline void 
+template <class ELT> template <class EE> inline void
 MatrixBase<ELT>::elementwiseMultiplyFromLeft(
-    const MatrixBase<EE>& r, 
+    const MatrixBase<EE>& r,
     typename MatrixBase<EE>::template EltResult<ELT>::Mul& out) const
 {
     const int nr=nrow(), nc=ncol();
@@ -2596,7 +2596,7 @@ MatrixBase<ELT>::elementwiseMultiplyFromLeft(
 }
 
 // M(i,j) /= R(i,j); R must have same dimensions as this
-template <class ELT> template <class EE> inline MatrixBase<ELT>& 
+template <class ELT> template <class EE> inline MatrixBase<ELT>&
 MatrixBase<ELT>::elementwiseDivideInPlace(const MatrixBase<EE>& r) {
     const int nr=nrow(), nc=ncol();
     assert(r.nrow()==nr && r.ncol()==nc);
@@ -2606,7 +2606,7 @@ MatrixBase<ELT>::elementwiseDivideInPlace(const MatrixBase<EE>& r) {
     return *this;
 }
 
-template <class ELT> template <class EE> inline void 
+template <class ELT> template <class EE> inline void
 MatrixBase<ELT>::elementwiseDivide(
     const MatrixBase<EE>& r,
     typename MatrixBase<ELT>::template EltResult<EE>::Dvd& out) const
@@ -2619,7 +2619,7 @@ MatrixBase<ELT>::elementwiseDivide(
             out(i,j) = (*this)(i,j) / r(i,j);
 }
 // M(i,j) = R(i,j) / M(i,j); R must have same dimensions as this
-template <class ELT> template <class EE> inline MatrixBase<ELT>& 
+template <class ELT> template <class EE> inline MatrixBase<ELT>&
 MatrixBase<ELT>::elementwiseDivideFromLeftInPlace(const MatrixBase<EE>& r) {
     const int nr=nrow(), nc=ncol();
     assert(r.nrow()==nr && r.ncol()==nc);
@@ -2631,7 +2631,7 @@ MatrixBase<ELT>::elementwiseDivideFromLeftInPlace(const MatrixBase<EE>& r) {
     return *this;
 }
 
-template <class ELT> template <class EE> inline void 
+template <class ELT> template <class EE> inline void
 MatrixBase<ELT>::elementwiseDivideFromLeft(
     const MatrixBase<EE>& r,
     typename MatrixBase<EE>::template EltResult<ELT>::Dvd& out) const
@@ -2645,15 +2645,15 @@ MatrixBase<ELT>::elementwiseDivideFromLeft(
 }
 
 /*
-template <class ELT> inline MatrixView_< typename CNT<ELT>::TReal > 
-MatrixBase<ELT>::real() const { 
+template <class ELT> inline MatrixView_< typename CNT<ELT>::TReal >
+MatrixBase<ELT>::real() const {
     if (!CNT<ELT>::IsComplex) { // known at compile time
         return MatrixView_< typename CNT<ELT>::TReal >( // this is just ELT
             MatrixHelper(helper,0,0,nrow(),ncol()));    // a view of the whole matrix
     }
     // Elements are complex -- helper uses underlying precision (real) type.
-    MatrixHelper<Precision> h(helper,typename MatrixHelper<Precision>::RealView);    
-    return MatrixView_< typename CNT<ELT>::TReal >(h); 
+    MatrixHelper<Precision> h(helper,typename MatrixHelper<Precision>::RealView);
+    return MatrixView_< typename CNT<ELT>::TReal >(h);
 }
 */
 
@@ -2704,28 +2704,28 @@ Matrix_<E> operator-(const typename CNT<E>::T& l, const MatrixBase<E>& r) {
 // E2 would match not only scalar types but everything else including
 // matrices.
 template <class E> Matrix_<E>
-operator*(const MatrixBase<E>& l, const typename CNT<E>::StdNumber& r) 
+operator*(const MatrixBase<E>& l, const typename CNT<E>::StdNumber& r)
   { return Matrix_<E>(l)*=r; }
 
 template <class E> Matrix_<E>
-operator*(const typename CNT<E>::StdNumber& l, const MatrixBase<E>& r) 
+operator*(const typename CNT<E>::StdNumber& l, const MatrixBase<E>& r)
   { return Matrix_<E>(r)*=l; }
 
 template <class E> Matrix_<E>
-operator/(const MatrixBase<E>& l, const typename CNT<E>::StdNumber& r) 
+operator/(const MatrixBase<E>& l, const typename CNT<E>::StdNumber& r)
   { return Matrix_<E>(l)/=r; }
 
 // Handle ints explicitly.
 template <class E> Matrix_<E>
-operator*(const MatrixBase<E>& l, int r) 
+operator*(const MatrixBase<E>& l, int r)
   { return Matrix_<E>(l)*= typename CNT<E>::StdNumber(r); }
 
 template <class E> Matrix_<E>
-operator*(int l, const MatrixBase<E>& r) 
+operator*(int l, const MatrixBase<E>& r)
   { return Matrix_<E>(r)*= typename CNT<E>::StdNumber(l); }
 
 template <class E> Matrix_<E>
-operator/(const MatrixBase<E>& l, int r) 
+operator/(const MatrixBase<E>& l, int r)
   { return Matrix_<E>(l)/= typename CNT<E>::StdNumber(r); }
 
 /// @}
@@ -2766,110 +2766,110 @@ Vector_<E> operator-(const typename CNT<E>::T& l, const VectorBase<E>& r) {
 // Scalar multiply and divide.
 
 template <class E> Vector_<E>
-operator*(const VectorBase<E>& l, const typename CNT<E>::StdNumber& r) 
+operator*(const VectorBase<E>& l, const typename CNT<E>::StdNumber& r)
   { return Vector_<E>(l)*=r; }
 
 template <class E> Vector_<E>
-operator*(const typename CNT<E>::StdNumber& l, const VectorBase<E>& r) 
+operator*(const typename CNT<E>::StdNumber& l, const VectorBase<E>& r)
   { return Vector_<E>(r)*=l; }
 
 template <class E> Vector_<E>
-operator/(const VectorBase<E>& l, const typename CNT<E>::StdNumber& r) 
+operator/(const VectorBase<E>& l, const typename CNT<E>::StdNumber& r)
   { return Vector_<E>(l)/=r; }
 
 // Handle ints explicitly
 template <class E> Vector_<E>
-operator*(const VectorBase<E>& l, int r) 
+operator*(const VectorBase<E>& l, int r)
   { return Vector_<E>(l)*= typename CNT<E>::StdNumber(r); }
 
 template <class E> Vector_<E>
-operator*(int l, const VectorBase<E>& r) 
+operator*(int l, const VectorBase<E>& r)
   { return Vector_<E>(r)*= typename CNT<E>::StdNumber(l); }
 
 template <class E> Vector_<E>
-operator/(const VectorBase<E>& l, int r) 
+operator/(const VectorBase<E>& l, int r)
   { return Vector_<E>(l)/= typename CNT<E>::StdNumber(r); }
 
 // These are fancier "scalars"; whether they are allowed depends on
 // whether the element type and the CNT are compatible.
 
 // Vector * Vec
-template <class E1, int M, class E2, int S> 
+template <class E1, int M, class E2, int S>
 Vector_<typename CNT<E1>::template Result< Vec<M,E2,S> >::Mul>
 operator*(const VectorBase<E1>& v, const Vec<M,E2,S>& s) {
     Vector_<typename CNT<E1>::template Result< Vec<M,E2,S> >::Mul> res(v.nrow());
     for (int i=0; i < v.nrow(); ++i)
-        res[i] = v[i]*s; 
+        res[i] = v[i]*s;
     return res;
 }
 
 // Vec * Vector
-template <class E1, int M, class E2, int S> 
+template <class E1, int M, class E2, int S>
 Vector_<typename Vec<M,E2,S>::template Result<E1>::Mul>
 operator*(const Vec<M,E2,S>& s, const VectorBase<E1>& v) {
     Vector_<typename Vec<M,E2,S>::template Result<E1>::Mul> res(v.nrow());
     for (int i=0; i < v.nrow(); ++i)
-        res[i] = s*v[i]; 
+        res[i] = s*v[i];
     return res;
 }
 
 // Vector * Row
-template <class E1, int N, class E2, int S> 
+template <class E1, int N, class E2, int S>
 Vector_<typename CNT<E1>::template Result< Row<N,E2,S> >::Mul>
 operator*(const VectorBase<E1>& v, const Row<N,E2,S>& s) {
     Vector_<typename CNT<E1>::template Result< Row<N,E2,S> >::Mul> res(v.nrow());
     for (int i=0; i < v.nrow(); ++i)
-        res[i] = v[i]*s; 
+        res[i] = v[i]*s;
     return res;
 }
 
 // Row * Vector
-template <class E1, int N, class E2, int S> 
+template <class E1, int N, class E2, int S>
 Vector_<typename Row<N,E2,S>::template Result<E1>::Mul>
 operator*(const Row<N,E2,S>& s, const VectorBase<E1>& v) {
     Vector_<typename Row<N,E2,S>::template Result<E1>::Mul> res(v.nrow());
     for (int i=0; i < v.nrow(); ++i)
-        res[i] = s*v[i]; 
+        res[i] = s*v[i];
     return res;
 }
 
 // Vector * Mat
-template <class E1, int M, int N, class E2, int S1, int S2> 
+template <class E1, int M, int N, class E2, int S1, int S2>
 Vector_<typename CNT<E1>::template Result< Mat<M,N,E2,S1,S2> >::Mul>
 operator*(const VectorBase<E1>& v, const Mat<M,N,E2,S1,S2>& s) {
     Vector_<typename CNT<E1>::template Result< Mat<M,N,E2,S1,S2> >::Mul> res(v.nrow());
     for (int i=0; i < v.nrow(); ++i)
-        res[i] = v[i]*s; 
+        res[i] = v[i]*s;
     return res;
 }
 
 // Mat * Vector
-template <class E1, int M, int N, class E2, int S1, int S2> 
+template <class E1, int M, int N, class E2, int S1, int S2>
 Vector_<typename Mat<M,N,E2,S1,S2>::template Result<E1>::Mul>
 operator*(const Mat<M,N,E2,S1,S2>& s, const VectorBase<E1>& v) {
     Vector_<typename Mat<M,N,E2,S1,S2>::template Result<E1>::Mul> res(v.nrow());
     for (int i=0; i < v.nrow(); ++i)
-        res[i] = s*v[i]; 
+        res[i] = s*v[i];
     return res;
 }
 
 // Vector * SymMat
-template <class E1, int M, class E2, int S> 
+template <class E1, int M, class E2, int S>
 Vector_<typename CNT<E1>::template Result< SymMat<M,E2,S> >::Mul>
 operator*(const VectorBase<E1>& v, const SymMat<M,E2,S>& s) {
     Vector_<typename CNT<E1>::template Result< SymMat<M,E2,S> >::Mul> res(v.nrow());
     for (int i=0; i < v.nrow(); ++i)
-        res[i] = v[i]*s; 
+        res[i] = v[i]*s;
     return res;
 }
 
 // SymMat * Vector
-template <class E1, int M, class E2, int S> 
+template <class E1, int M, class E2, int S>
 Vector_<typename SymMat<M,E2,S>::template Result<E1>::Mul>
 operator*(const SymMat<M,E2,S>& s, const VectorBase<E1>& v) {
     Vector_<typename SymMat<M,E2,S>::template Result<E1>::Mul> res(v.nrow());
     for (int i=0; i < v.nrow(); ++i)
-        res[i] = s*v[i]; 
+        res[i] = s*v[i];
     return res;
 }
 
@@ -2908,31 +2908,31 @@ RowVector_<E> operator-(const typename CNT<E>::T& l, const RowVectorBase<E>& r) 
     return (temp -= r);
 }
 
-// Scalar multiply and divide 
+// Scalar multiply and divide
 
 template <class E> RowVector_<E>
-operator*(const RowVectorBase<E>& l, const typename CNT<E>::StdNumber& r) 
+operator*(const RowVectorBase<E>& l, const typename CNT<E>::StdNumber& r)
   { return RowVector_<E>(l)*=r; }
 
 template <class E> RowVector_<E>
-operator*(const typename CNT<E>::StdNumber& l, const RowVectorBase<E>& r) 
+operator*(const typename CNT<E>::StdNumber& l, const RowVectorBase<E>& r)
   { return RowVector_<E>(r)*=l; }
 
 template <class E> RowVector_<E>
-operator/(const RowVectorBase<E>& l, const typename CNT<E>::StdNumber& r) 
+operator/(const RowVectorBase<E>& l, const typename CNT<E>::StdNumber& r)
   { return RowVector_<E>(l)/=r; }
 
 // Handle ints explicitly.
 template <class E> RowVector_<E>
-operator*(const RowVectorBase<E>& l, int r) 
+operator*(const RowVectorBase<E>& l, int r)
   { return RowVector_<E>(l)*= typename CNT<E>::StdNumber(r); }
 
 template <class E> RowVector_<E>
-operator*(int l, const RowVectorBase<E>& r) 
+operator*(int l, const RowVectorBase<E>& r)
   { return RowVector_<E>(r)*= typename CNT<E>::StdNumber(l); }
 
 template <class E> RowVector_<E>
-operator/(const RowVectorBase<E>& l, int r) 
+operator/(const RowVectorBase<E>& l, int r)
   { return RowVector_<E>(l)/= typename CNT<E>::StdNumber(r); }
 
 
@@ -2940,82 +2940,82 @@ operator/(const RowVectorBase<E>& l, int r)
 // whether the element type and the CNT are compatible.
 
 // RowVector * Vec
-template <class E1, int M, class E2, int S> 
+template <class E1, int M, class E2, int S>
 RowVector_<typename CNT<E1>::template Result< Vec<M,E2,S> >::Mul>
 operator*(const RowVectorBase<E1>& v, const Vec<M,E2,S>& s) {
     RowVector_<typename CNT<E1>::template Result< Vec<M,E2,S> >::Mul> res(v.ncol());
     for (int i=0; i < v.ncol(); ++i)
-        res[i] = v[i]*s; 
+        res[i] = v[i]*s;
     return res;
 }
 
 // Vec * RowVector
-template <class E1, int M, class E2, int S> 
+template <class E1, int M, class E2, int S>
 RowVector_<typename Vec<M,E2,S>::template Result<E1>::Mul>
 operator*(const Vec<M,E2,S>& s, const RowVectorBase<E1>& v) {
     RowVector_<typename Vec<M,E2,S>::template Result<E1>::Mul> res(v.ncol());
     for (int i=0; i < v.ncol(); ++i)
-        res[i] = s*v[i]; 
+        res[i] = s*v[i];
     return res;
 }
 
 // RowVector * Row
-template <class E1, int N, class E2, int S> 
+template <class E1, int N, class E2, int S>
 RowVector_<typename CNT<E1>::template Result< Row<N,E2,S> >::Mul>
 operator*(const RowVectorBase<E1>& v, const Row<N,E2,S>& s) {
     RowVector_<typename CNT<E1>::template Result< Row<N,E2,S> >::Mul> res(v.ncol());
     for (int i=0; i < v.ncol(); ++i)
-        res[i] = v[i]*s; 
+        res[i] = v[i]*s;
     return res;
 }
 
 // Row * RowVector
-template <class E1, int N, class E2, int S> 
+template <class E1, int N, class E2, int S>
 RowVector_<typename Row<N,E2,S>::template Result<E1>::Mul>
 operator*(const Row<N,E2,S>& s, const RowVectorBase<E1>& v) {
     RowVector_<typename Row<N,E2,S>::template Result<E1>::Mul> res(v.ncol());
     for (int i=0; i < v.ncol(); ++i)
-        res[i] = s*v[i]; 
+        res[i] = s*v[i];
     return res;
 }
 
 // RowVector * Mat
-template <class E1, int M, int N, class E2, int S1, int S2> 
+template <class E1, int M, int N, class E2, int S1, int S2>
 RowVector_<typename CNT<E1>::template Result< Mat<M,N,E2,S1,S2> >::Mul>
 operator*(const RowVectorBase<E1>& v, const Mat<M,N,E2,S1,S2>& s) {
     RowVector_<typename CNT<E1>::template Result< Mat<M,N,E2,S1,S2> >::Mul> res(v.ncol());
     for (int i=0; i < v.ncol(); ++i)
-        res[i] = v[i]*s; 
+        res[i] = v[i]*s;
     return res;
 }
 
 // Mat * RowVector
-template <class E1, int M, int N, class E2, int S1, int S2> 
+template <class E1, int M, int N, class E2, int S1, int S2>
 RowVector_<typename Mat<M,N,E2,S1,S2>::template Result<E1>::Mul>
 operator*(const Mat<M,N,E2,S1,S2>& s, const RowVectorBase<E1>& v) {
     RowVector_<typename Mat<M,N,E2,S1,S2>::template Result<E1>::Mul> res(v.ncol());
     for (int i=0; i < v.ncol(); ++i)
-        res[i] = s*v[i]; 
+        res[i] = s*v[i];
     return res;
 }
 
 // RowVector * SymMat
-template <class E1, int M, class E2, int S> 
+template <class E1, int M, class E2, int S>
 RowVector_<typename CNT<E1>::template Result< SymMat<M,E2,S> >::Mul>
 operator*(const RowVectorBase<E1>& v, const SymMat<M,E2,S>& s) {
     RowVector_<typename CNT<E1>::template Result< SymMat<M,E2,S> >::Mul> res(v.ncol());
     for (int i=0; i < v.ncol(); ++i)
-        res[i] = v[i]*s; 
+        res[i] = v[i]*s;
     return res;
 }
 
 // SymMat * RowVector
-template <class E1, int M, class E2, int S> 
+template <class E1, int M, class E2, int S>
 RowVector_<typename SymMat<M,E2,S>::template Result<E1>::Mul>
 operator*(const SymMat<M,E2,S>& s, const RowVectorBase<E1>& v) {
     RowVector_<typename SymMat<M,E2,S>::template Result<E1>::Mul> res(v.ncol());
     for (int i=0; i < v.ncol(); ++i)
-        res[i] = s*v[i]; 
+        res[i] = s*v[i];
     return res;
 }
 
@@ -3030,7 +3030,7 @@ operator*(const SymMat<M,E2,S>& s, const RowVectorBase<E1>& v) {
     // TODO: these should use LAPACK!
 
 // Dot product
-template <class E1, class E2> 
+template <class E1, class E2>
 typename CNT<E1>::template Result<E2>::Mul
 operator*(const RowVectorBase<E1>& r, const VectorBase<E2>& v) {
     assert(r.ncol() == v.nrow());
@@ -3040,7 +3040,7 @@ operator*(const RowVectorBase<E1>& r, const VectorBase<E2>& v) {
     return sum;
 }
 
-template <class E1, class E2> 
+template <class E1, class E2>
 
 Vector_<typename CNT<E1>::template Result<E2>::Mul>
 operator*(const MatrixBase<E1>& m, const VectorBase<E2>& v) {
@@ -3051,11 +3051,11 @@ operator*(const MatrixBase<E1>& m, const VectorBase<E2>& v) {
     return res;
 }
 
-template <class E1, class E2> 
+template <class E1, class E2>
 Matrix_<typename CNT<E1>::template Result<E2>::Mul>
 operator*(const MatrixBase<E1>& m1, const MatrixBase<E2>& m2) {
     assert(m1.ncol() == m2.nrow());
-    Matrix_<typename CNT<E1>::template Result<E2>::Mul> 
+    Matrix_<typename CNT<E1>::template Result<E2>::Mul>
         res(m1.nrow(),m2.ncol());
 
     for (int j=0; j < res.ncol(); ++j)
@@ -3067,20 +3067,20 @@ operator*(const MatrixBase<E1>& m1, const MatrixBase<E2>& m2) {
 
 /// @}
 
-// This "private" static method is used to implement VectorView's 
-// fillVectorViewFromStream() and Vector's readVectorFromStream() 
-// namespace-scope static methods, which are in turn used to implement 
-// VectorView's and 
-// Vector's stream extraction operators ">>". This method has to be in the 
-// header file so that we don't need to pass streams through the API, but it 
-// is not intended for use by users and has no Doxygen presence, unlike 
+// This "private" static method is used to implement VectorView's
+// fillVectorViewFromStream() and Vector's readVectorFromStream()
+// namespace-scope static methods, which are in turn used to implement
+// VectorView's and
+// Vector's stream extraction operators ">>". This method has to be in the
+// header file so that we don't need to pass streams through the API, but it
+// is not intended for use by users and has no Doxygen presence, unlike
 // fillArrayFromStream() and readArrayFromStream() and (more commonly)
 // the extraction operators.
-template <class T> static inline 
+template <class T> static inline
 std::istream& readVectorFromStreamHelper
    (std::istream& in, bool isFixedSize, Vector_<T>& out)
 {
-    // If already failed, bad, or eof, set failed bit and return without 
+    // If already failed, bad, or eof, set failed bit and return without
     // touching the Vector.
     if (!in.good()) {in.setstate(std::ios::failbit); return in;}
 
@@ -3105,13 +3105,13 @@ std::istream& readVectorFromStreamHelper
             in.setstate(std::ios_base::failbit); // zero elements not OK
         return in;
     }
-    
+
     // Here the stream is good and the next character is non-white.
     assert(in.good());
 
     // Use this for raw i/o (peeks and gets).
     typename       std::iostream::int_type ch;
-    const typename std::iostream::int_type EOFch = 
+    const typename std::iostream::int_type EOFch =
         std::iostream::traits_type::eof();
 
     // First we'll look for the optional "~". If found, the brackets become
@@ -3175,11 +3175,11 @@ std::istream& readVectorFromStreamHelper
     while (true) {
         char c;
 
-        // Here at the top of this loop, we have already successfully read 
+        // Here at the top of this loop, we have already successfully read
         // n=nextIndex values of type T. For fixed-size reads, it might be
         // the case that n==numRequired already, but we still may need to
         // look for a closing bracket before we can declare victory.
-        // The stream is good() (not at eof) but it might be the case that 
+        // The stream is good() (not at eof) but it might be the case that
         // there is nothing but white space left; we don't know yet because
         // if we have satisfied the fixed-size count and are not expecting
         // a terminator then we should quit without absorbing the trailing
@@ -3193,15 +3193,15 @@ std::istream& readVectorFromStreamHelper
             ch = in.peek(); assert(ch != EOFch);
             if (!in.good()) break;
             c = (char)ch;
-            if (c == closeBracket) {   
+            if (c == closeBracket) {
                 in.get(); // absorb the closing bracket
-                terminatorSeen = true; 
-                break; 
+                terminatorSeen = true;
+                break;
             }
             // next char not a closing bracket; fall through
         }
 
-        // We didn't look or didn't find a closing bracket. The istream is good 
+        // We didn't look or didn't find a closing bracket. The istream is good
         // but we might be looking at white space.
 
         // If we already got all the elements we want, break for final checks.
@@ -3219,14 +3219,14 @@ std::istream& readVectorFromStreamHelper
                 in.get(); // absorb comma
                 commaRequired = true; // all commas from now on
             } else { // next char not a comma
-                if (commaRequired) // bad, e.g.: v1, v2, v3 v4 
+                if (commaRequired) // bad, e.g.: v1, v2, v3 v4
                 {   in.setstate(std::ios::failbit); break; }
                 else commaOK = false; // saw: v1 v2 (no commas now)
             }
             if (!in.good()) break; // might be eof
         }
 
-        // No closing bracket yet; don't have enough elements; skipped comma 
+        // No closing bracket yet; don't have enough elements; skipped comma
         // if any; istream is good; might be looking at white space.
         assert(in.good());
 
@@ -3266,19 +3266,19 @@ std::istream& readVectorFromStreamHelper
 //------------------------------------------------------------------------------
 //                          RELATED GLOBAL OPERATORS
 //------------------------------------------------------------------------------
-// These are logically part of the Matrix_<T> class but are not actually 
+// These are logically part of the Matrix_<T> class but are not actually
 // class members; that is, they are in the SimTK namespace.
 
 /**@name             Matrix_<T> serialization and I/O
 These methods are at namespace scope but are logically part of the Vector
 classes. These deal with reading and writing Vectors from and to streams,
-which places an additional requirement on the element type T: the element 
-must support the same operation you are trying to do on the Vector as a 
+which places an additional requirement on the element type T: the element
+must support the same operation you are trying to do on the Vector as a
 whole. **/
 /*@{*/
 
 /** Specialize for VectorBase<E> to delegate to element type E, with spaces
-separating the elements. 
+separating the elements.
 @relates SimTK::VectorBase **/
 template <class E> inline void
 writeUnformatted(std::ostream& o, const VectorBase<E>& v) {
@@ -3287,36 +3287,36 @@ writeUnformatted(std::ostream& o, const VectorBase<E>& v) {
         if (i != 0) o << " ";
         writeUnformatted(o, v[i]);
     }
-} 
+}
 /** Raw serialization of VectorView_<E>; same as VectorBase<E>.
 @relates SimTK::VectorView_ **/
 template <class E> inline void
-writeUnformatted(std::ostream& o, const VectorView_<E>& v) 
+writeUnformatted(std::ostream& o, const VectorView_<E>& v)
 {   writeUnformatted(o, static_cast< const VectorBase<E> >(v)); }
 
 /** Raw serialization of Vector_<E>; same as VectorBase<E>.
 @relates SimTK::Vector_ **/
 template <class E> inline void
-writeUnformatted(std::ostream& o, const Vector_<E>& v) 
+writeUnformatted(std::ostream& o, const Vector_<E>& v)
 {   writeUnformatted(o, static_cast< const VectorBase<E> >(v)); }
 
 /** Specialize for RowVectorBase<E> to delegate to element type E, with spaces
-separating the elements; raw output is same as VectorBase. 
+separating the elements; raw output is same as VectorBase.
 @relates SimTK::RowVectorBase **/
 template <class E> inline void
-writeUnformatted(std::ostream& o, const RowVectorBase<E>& v) 
+writeUnformatted(std::ostream& o, const RowVectorBase<E>& v)
 {   writeUnformatted(o, ~v); }
 
 /** Raw serialization of RowVectorView_<E>; same as VectorView_<E>.
 @relates SimTK::RowVectorView_ **/
 template <class E> inline void
-writeUnformatted(std::ostream& o, const RowVectorView_<E>& v) 
+writeUnformatted(std::ostream& o, const RowVectorView_<E>& v)
 {   writeUnformatted(o, static_cast< const RowVectorBase<E> >(v)); }
 
 /** Raw serialization of RowVector_<E>; same as Vector_<E>.
 @relates SimTK::RowVector_ **/
 template <class E> inline void
-writeUnformatted(std::ostream& o, const RowVector_<E>& v) 
+writeUnformatted(std::ostream& o, const RowVector_<E>& v)
 {   writeUnformatted(o, static_cast< const RowVectorBase<E> >(v)); }
 
 /** Specialize for MatrixBase<E> delegating to RowVectorBase<E> with newlines
@@ -3333,13 +3333,13 @@ writeUnformatted(std::ostream& o, const MatrixBase<E>& v) {
 /** Raw serialization of MatrixView_<E>; same as MatrixBase<E>.
 @relates SimTK::MatrixView_ **/
 template <class E> inline void
-writeUnformatted(std::ostream& o, const MatrixView_<E>& v) 
+writeUnformatted(std::ostream& o, const MatrixView_<E>& v)
 {   writeUnformatted(o, static_cast< const MatrixBase<E> >(v)); }
 
 /** Raw serialization of Vector_<E>; same as VectorBase<E>.
 @relates SimTK::Matrix_ **/
 template <class E> inline void
-writeUnformatted(std::ostream& o, const Matrix_<E>& v) 
+writeUnformatted(std::ostream& o, const Matrix_<E>& v)
 {   writeUnformatted(o, static_cast< const MatrixBase<E> >(v)); }
 
 /** Read fixed-size VectorView from input stream. It is an error if there
@@ -3368,23 +3368,23 @@ readUnformatted(std::istream& in, Vector_<E>& v) {
 /** Read fixed-size RowVectorView from input stream. It is an error if there
 aren't enough elements. **/
 template <class E> inline bool
-readUnformatted(std::istream& in, RowVectorView_<E>& v) 
+readUnformatted(std::istream& in, RowVectorView_<E>& v)
 {   VectorView_<E> vt(~v);
     return readUnformatted<E>(in, vt); }
 
-/** Read variable-size RowVector from unformatted (whitespace-separated) 
+/** Read variable-size RowVector from unformatted (whitespace-separated)
 input stream. Reads until error or eof. **/
 template <class E> inline bool
-readUnformatted(std::istream& in, RowVector_<E>& v) 
+readUnformatted(std::istream& in, RowVector_<E>& v)
 {   Vector_<E> vt(~v);
     return readUnformatted<E>(in, vt); }
 
 /** Read fixed-size MatrixView in row order from unformatted (whitespace-
 separated) input stream. Newlines in the input have no special meaning --
-we'll read them as whitespace. It is an error if there aren't enough 
+we'll read them as whitespace. It is an error if there aren't enough
 elements. **/
 template <class E> inline bool
-readUnformatted(std::istream& in, MatrixView_<E>& v) { 
+readUnformatted(std::istream& in, MatrixView_<E>& v) {
     for (int row=0; row < v.nrow(); ++row) {
         RowVectorView_<E> oneRow(v[row]);
         if (!readUnformatted<E>(in, oneRow)) return false;
@@ -3393,8 +3393,8 @@ readUnformatted(std::istream& in, MatrixView_<E>& v) {
 }
 
 /** Read in new values for a Matrix without changing its size, from a stream
-of whitespace-separated tokens with no other formatting recognized. Newlines in 
-the input have no special meaning -- we'll read them as whitespace. It is an 
+of whitespace-separated tokens with no other formatting recognized. Newlines in
+the input have no special meaning -- we'll read them as whitespace. It is an
 error if there aren't enough elements. **/
 template <class E> inline bool
 fillUnformatted(std::istream& in, Matrix_<E>& v) {
@@ -3405,49 +3405,49 @@ fillUnformatted(std::istream& in, Matrix_<E>& v) {
 of row; use fillUnformatted() instead. **/
 template <class E> inline bool
 readUnformatted(std::istream& in, Matrix_<E>& v) {
-    SimTK_ASSERT_ALWAYS(!"implemented", 
+    SimTK_ASSERT_ALWAYS(!"implemented",
         "SimTK::readUnformatted(istream, Matrix) is not implemented; try"
         " SimTK::fillUnformatted(istream, Matrix) instead.");
     return false;
 }
-  
+
 /** Output a human readable representation of a Vector to an std::ostream
-(like std::cout). The format is ~[ \e elements ] where \e elements is a 
-space-separated list of the Vector's contents output by invoking the "<<" 
-operator on the elements. This function will not compile if the element type 
+(like std::cout). The format is ~[ \e elements ] where \e elements is a
+space-separated list of the Vector's contents output by invoking the "<<"
+operator on the elements. This function will not compile if the element type
 does not support the "<<" operator. No newline is issued before
 or after the output. @relates Vector_ **/
 template <class T> inline std::ostream&
 operator<<(std::ostream& o, const VectorBase<T>& v)
-{   o << "~["; 
+{   o << "~[";
     if (v.size()) {
         o << v[0];
         for (int i=1; i < v.size(); ++i) o << " " << v[i];
     }
-    return o << "]"; 
+    return o << "]";
 }
 
 /** Output a human readable representation of a RowVector to an std::ostream
-(like std::cout). The format is [ \e elements ] where \e elements is a 
-space-separated list of the RowVector's contents output by invoking the "<<" 
-operator on the elements. This function will not compile if the element type 
+(like std::cout). The format is [ \e elements ] where \e elements is a
+space-separated list of the RowVector's contents output by invoking the "<<"
+operator on the elements. This function will not compile if the element type
 does not support the "<<" operator. No newline is issued before
 or after the output. @relates RowVector_ **/
 template <class T> inline std::ostream&
 operator<<(std::ostream& o, const RowVectorBase<T>& v)
-{   o << "["; 
+{   o << "[";
     if (v.size()) {
         o << v[0];
         for (int i=1; i < v.size(); ++i) o << " " << v[i];
     }
-    return o << "]"; 
+    return o << "]";
 }
 
 /** Output a human readable representation of a Matrix to an std::ostream
 (like std::cout). The format is one row per line, with each row output as
-[ \e elements ] where \e elements is a 
-space-separated list of the row's contents output by invoking the "<<" 
-operator on the elements. This function will not compile if the element type 
+[ \e elements ] where \e elements is a
+space-separated list of the row's contents output by invoking the "<<"
+operator on the elements. This function will not compile if the element type
 does not support the "<<" operator. A newline is issued before each row and
 at the end. @relates Matrix_ **/
 template <class T> inline std::ostream&
@@ -3455,28 +3455,28 @@ operator<<(std::ostream& o, const MatrixBase<T>& m) {
     for (int i=0;i<m.nrow();++i)
         o << std::endl << m[i];
     if (m.nrow()) o << std::endl;
-    return o; 
+    return o;
 }
 
 
 /** Read in a Vector_<T> from a stream, as a sequence of space-separated or
-comma-separated values optionally surrounded by parentheses (), or square 
+comma-separated values optionally surrounded by parentheses (), or square
 brackets [], or the "transposed" ~() or ~[]. In the case that the transpose
 operator is present, the parentheses or brackets are required, otherwise they
-are optional. We will continue to read elements of 
-type T from the stream until we find a reason to stop, using type T's stream 
+are optional. We will continue to read elements of
+type T from the stream until we find a reason to stop, using type T's stream
 extraction operator>>() to read in each element and resizing the Vector as
-necessary. If the data is bracketed, we'll read until we hit the closing 
+necessary. If the data is bracketed, we'll read until we hit the closing
 bracket. If it is not bracketed, we'll read until we hit eof() or get an error
-such as the element extractor setting the stream's fail bit due to bad 
-formatting. On successful return, the stream will be positioned right after 
-the final read-in element or terminating bracket, and the stream's status will 
-be good() or eof(). We will not consume trailing whitespace after bracketed 
-elements; that means the stream might actually be empty even if we don't 
-return eof(). If you want to know whether there is anything else in the 
+such as the element extractor setting the stream's fail bit due to bad
+formatting. On successful return, the stream will be positioned right after
+the final read-in element or terminating bracket, and the stream's status will
+be good() or eof(). We will not consume trailing whitespace after bracketed
+elements; that means the stream might actually be empty even if we don't
+return eof(). If you want to know whether there is anything else in the
 stream, follow this call with the STL whitespace skipper std::ws() like this:
 @code
-    if (readVectorFromStream(in,vec) && !in.eof()) 
+    if (readVectorFromStream(in,vec) && !in.eof())
         std::ws(in); // might take us to eof
     if (in.fail()) {...} // probably a formatting error
     else {
@@ -3485,27 +3485,27 @@ stream, follow this call with the STL whitespace skipper std::ws() like this:
     }
 @endcode
 A compilation error will occur if you try to use this method on an Vector_<T>
-for a type T for which there is no stream extraction operator>>(). 
-@note If you want to fill a resizeable Vector_<T> with a fixed amount of data 
-from the stream, resize() the Vector to the appropriate length and then use 
+for a type T for which there is no stream extraction operator>>().
+@note If you want to fill a resizeable Vector_<T> with a fixed amount of data
+from the stream, resize() the Vector to the appropriate length and then use
 fillVectorFromStream() instead. @see fillVectorFromStream()
 @relates Vector_ **/
-template <class T> static inline 
+template <class T> static inline
 std::istream& readVectorFromStream(std::istream& in, Vector_<T>& out)
 {   return readVectorFromStreamHelper<T>(in, false /*variable sizez*/, out); }
 
 
 
-/** Read in a fixed number of elements from a stream into a Vector. We expect 
-to read in exactly size() elements of type T, using type T's stream extraction 
-operator>>(). This will stop reading when we've read size() elements, or set 
-the fail bit in the stream if we run out of elements or if any element's 
-extract operator sets the fail bit. On successful return, all size() elements 
-will have been set, the stream will be positioned right after the final 
+/** Read in a fixed number of elements from a stream into a Vector. We expect
+to read in exactly size() elements of type T, using type T's stream extraction
+operator>>(). This will stop reading when we've read size() elements, or set
+the fail bit in the stream if we run out of elements or if any element's
+extract operator sets the fail bit. On successful return, all size() elements
+will have been set, the stream will be positioned right after the final
 read-in element or terminating bracket, and the stream's status will be good()
-or eof(). We will not consume trailing whitespace after reading all the 
-elements; that means the stream might actually be empty even if we don't 
-return eof(). If you want to know whether there is anything else in the 
+or eof(). We will not consume trailing whitespace after reading all the
+elements; that means the stream might actually be empty even if we don't
+return eof(). If you want to know whether there is anything else in the
 stream, follow this call with std::ws() like this:
 @code
     if (fillVectorFromStream(in,vec))
@@ -3516,11 +3516,11 @@ stream, follow this call with std::ws() like this:
 @endcode
 A compilation error will occur if you try to use this method on a Vector_<T>
 for a type T for which there is no stream extraction operator>>().
-@note If you want to read in a variable number of elements and have the 
+@note If you want to read in a variable number of elements and have the
 Vector_<T> resized as needed, use readVectorFromStream() instead.
 @see readVectorFromStream()
 @relates Vector_ **/
-template <class T> static inline 
+template <class T> static inline
 std::istream& fillVectorFromStream(std::istream& in, Vector_<T>& out)
 {   return readVectorFromStreamHelper<T>(in, true /*fixed size*/, out); }
 
@@ -3528,33 +3528,33 @@ std::istream& fillVectorFromStream(std::istream& in, Vector_<T>& out)
 fillVectorFromStream() for more information; this works the same way.
 @see fillVectorFromStream()
 @relates VectorView_ **/
-template <class T> static inline 
+template <class T> static inline
 std::istream& fillVectorViewFromStream(std::istream& in, VectorView_<T>& out)
 {   return readVectorFromStreamHelper<T>(in, true /*fixed size*/, out); }
 
 
 /** Read Vector_<T> from a stream as a sequence of space- or comma-separated
 values of type T, optionally delimited by parentheses, or brackets, and
-preceded by "~". The Vector_<T> may be an owner (variable size) or a view 
-(fixed size n). In the case of an owner, we'll read all the elements in 
-brackets or until eof if there are no brackets. In the case of a view, there 
-must be exactly n elements in brackets, or if there are no brackets we'll 
-consume exactly n elements and then stop. Each element is read in with its 
-own operator ">>" so this won't work if no such operator is defined for 
+preceded by "~". The Vector_<T> may be an owner (variable size) or a view
+(fixed size n). In the case of an owner, we'll read all the elements in
+brackets or until eof if there are no brackets. In the case of a view, there
+must be exactly n elements in brackets, or if there are no brackets we'll
+consume exactly n elements and then stop. Each element is read in with its
+own operator ">>" so this won't work if no such operator is defined for
 type T. @relates Vector_ **/
 template <class T> inline
-std::istream& operator>>(std::istream& in, Vector_<T>& out) 
+std::istream& operator>>(std::istream& in, Vector_<T>& out)
 {   return readVectorFromStream<T>(in, out); }
 
-/** Read a (fixed size n) VectorView_<T> from a stream as a sequence of space- 
-or comma-separated values of type T, optionally delimited by parentheses or 
-square brackets, and preceded by "~". If there are no delimiters then we will 
-read size() values and then stop. Otherwise, there must be exactly size() 
-values within the brackets. Each element is read in with its own 
+/** Read a (fixed size n) VectorView_<T> from a stream as a sequence of space-
+or comma-separated values of type T, optionally delimited by parentheses or
+square brackets, and preceded by "~". If there are no delimiters then we will
+read size() values and then stop. Otherwise, there must be exactly size()
+values within the brackets. Each element is read in with its own
 operator ">>" so  this won't work if no such operator is defined for type T.
 @relates VectorView_ **/
 template <class T> inline
-std::istream& operator>>(std::istream& in, VectorView_<T>& out) 
+std::istream& operator>>(std::istream& in, VectorView_<T>& out)
 {   return fillVectorViewFromStream<T>(in, out); }
 
 /*@}                     End of Matrix serialization. **/

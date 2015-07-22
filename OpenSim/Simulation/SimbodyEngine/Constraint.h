@@ -34,7 +34,7 @@ class ScaleSet;
 //=============================================================================
 /**
  * A parent class for implementing a Simbody Constraint.
- * Specific constraints should be derived from this class. 
+ * Specific constraints should be derived from this class.
  *
  * @author Frank C. Anderson
  * @author Ajay Seth
@@ -48,7 +48,7 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(Constraint, ModelComponent);
 //=============================================================================
 public:
 
-    OpenSim_DECLARE_PROPERTY(isDisabled, bool, 
+    OpenSim_DECLARE_PROPERTY(isDisabled, bool,
         "Flag indicating whether the constraint is disabled or not."
         "Disabled means that the constraint is not active in subsequent "
         "dynamics realizations.");
@@ -66,10 +66,10 @@ public:
     virtual bool isDisabled(const SimTK::State& s) const;
     virtual bool setDisabled(SimTK::State& s, bool isDisabled);
 
-    virtual void calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor, 
+    virtual void calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor,
                                       SimTK::Vector& mobilityForces) const;
 
-    /** 
+    /**
      * Methods to query a Constraint forces (defaults to the Lagrange mulipliers) applied
      * The names of the quantities (column labels) is returned by this first function
      * getRecordLabels()

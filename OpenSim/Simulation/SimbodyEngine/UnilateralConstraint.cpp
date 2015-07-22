@@ -41,7 +41,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-UnilateralConstraint::UnilateralConstraint() 
+UnilateralConstraint::UnilateralConstraint()
 {
     setNull();
 }

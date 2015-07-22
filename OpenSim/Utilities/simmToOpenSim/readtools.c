@@ -90,10 +90,10 @@ FILE* preprocess_file(char infile[], const char outfile[])
 #endif
 
    fp = simm_fopen(outfile, "r");
-   
+
    if (fp == NULL)
       perror("Unable to open acpp output");
-   
+
    return fp;
 }
 
@@ -519,7 +519,7 @@ ReturnCode read_muscle_path(ModelStruct* ms, FILE* fp, dpMusclePathStruct* path)
             {
                return code_bad;
             }
-            
+
             if (i == 0) // only store first range
             {
                if (enter_gencoord(ms, gencoord_name, no) == NULL)
@@ -561,29 +561,29 @@ ReturnCode read_muscle_path(ModelStruct* ms, FILE* fp, dpMusclePathStruct* path)
 public int count_remaining_lines (FILE* file, SBoolean countEmptyLines)
 {
    SBoolean lineHasContent = no;
-   
+
    long fpos = ftell(file);
-   
+
    int c, n = 0;
-   
+
    for (c = fgetc(file); c != EOF; c = fgetc(file))
    {
       if (isgraph(c))
          lineHasContent = yes;
-      
+
       if (c == '\n')
       {
          if (lineHasContent || countEmptyLines)
             n++;
-         
+
          lineHasContent = no;
       }
    }
    if (lineHasContent)
       n++;
-   
+
    fseek(file, fpos, SEEK_SET);
-   
+
    return n;
 }
 
@@ -652,7 +652,7 @@ ReturnCode read_double_array(FILE* fp, const char ending[], const char name[], d
          error(abort_action,errorbuffer);
          return code_bad;
       }
-      
+
       (func->numpoints)++;
    }
 
@@ -1558,17 +1558,17 @@ static char* sAcppOptions[128]      = { "acpp", "-P" };
 public void clear_preprocessor_options ()
 {
    int i;
-   
+
    for (i = sNumDefaultAcppOptions; i < sNumTotalAcppOptions; i++)
       free(sAcppOptions[i]);
-   
+
    sNumTotalAcppOptions = sNumDefaultAcppOptions;
 }
 
 /* -------------------------------------------------------------------------
    add_preprocessor_option - format and append the specified string to the
       list of command-line options passed to acpp().
-   
+
    NOTE: "default" options must precede "non-default" option in the list,
       therefore be certain to call clear_preprocessor_options() before
       calling this routine with 'isDefaultOption' equal to 'yes'.
@@ -1576,7 +1576,7 @@ public void clear_preprocessor_options ()
 public void add_preprocessor_option (SBoolean isDefaultOption, const char* format, ...)
 {
    va_list ap;
-   
+
    va_start(ap, format);
      vsprintf(buffer, format, ap);
    va_end(ap);
@@ -1590,25 +1590,25 @@ public void add_preprocessor_option (SBoolean isDefaultOption, const char* forma
 #else
    mstrcpy(&sAcppOptions[sNumTotalAcppOptions++], buffer);
 #endif
-   
+
    if (isDefaultOption)
       sNumDefaultAcppOptions++;
 }
 
 /* -------------------------------------------------------------------------
-   acpp_message_proc - 
+   acpp_message_proc -
 ---------------------------------------------------------------------------- */
 static int acpp_message_proc (const char* format, ...)
 {
    va_list ap;
    int n;
-   
+
    va_start(ap, format);
    n = vsprintf(buffer, format, ap);
    va_end(ap);
-   
+
    simm_printf(yes, buffer);
-   
+
    return n;
 }
 
@@ -1617,7 +1617,7 @@ typedef int (*_msg_proc)(const char* format, ...);
 int acpp_main(int argc, char** argv, _msg_proc);
 
 /* -------------------------------------------------------------------------
-   acpp - 
+   acpp -
 ---------------------------------------------------------------------------- */
 static void acpp (char in_file[], const char out_file[])
 {
@@ -1657,14 +1657,14 @@ static void acpp (char in_file[], const char out_file[])
    if (acpp_main(argc, sAcppOptions, acpp_message_proc) != 0)
    {
       const char* infile = strrchr(in_file, DIR_SEP_CHAR);
-      
+
       if (infile)
          infile++;
       else
          infile = in_file;
-      
+
       sprintf(errorbuffer, "Error running preproccesor on %s.", infile);
-      
+
       error(none, errorbuffer);
    }
 
@@ -1681,7 +1681,7 @@ static void acpp (char in_file[], const char out_file[])
 } /* acpp */
 
 /* -------------------------------------------------------------------------
-   read_deform - 
+   read_deform -
 ---------------------------------------------------------------------------- */
 ReturnCode read_deform (FILE* fp, SegmentStruct* seg, int segmentnum)
 {
@@ -1689,14 +1689,14 @@ ReturnCode read_deform (FILE* fp, SegmentStruct* seg, int segmentnum)
    double xyz[3];
    int i = seg->num_deforms;
    DMatrix m;
-   
+
    if (seg->num_deforms >= seg->deform_obj_array_size)
    {
       ReturnCode rc = code_fine;
-      
+
       /* expand deform object array if necessary */
       seg->deform_obj_array_size += 2;
-      
+
       if (seg->deform == NULL)
       {
          seg->deform = (DeformObject*) simm_malloc(
@@ -1707,7 +1707,7 @@ ReturnCode read_deform (FILE* fp, SegmentStruct* seg, int segmentnum)
          seg->deform = (DeformObject*) simm_realloc(seg->deform,
                seg->deform_obj_array_size * sizeof(DeformObject), &rc);
       }
-      
+
       if (rc == code_bad || seg->deform == NULL)
       {
          seg->deform_obj_array_size -= 2;
@@ -1716,12 +1716,12 @@ ReturnCode read_deform (FILE* fp, SegmentStruct* seg, int segmentnum)
    }
 
    seg->num_deforms++;
-   
+
    /* initialize the new deform */
    dfm = &seg->deform[i];
-   
+
    init_deform(dfm);
-   
+
    dfm->segment = segmentnum;
 
    if (fscanf(fp,"%s", buffer) != 1)
@@ -1731,7 +1731,7 @@ ReturnCode read_deform (FILE* fp, SegmentStruct* seg, int segmentnum)
    }
    else
       mstrcpy(&dfm->name,buffer);
-   
+
    while (1)
    {
       if (read_string(fp,buffer) == EOF)
@@ -1747,7 +1747,7 @@ ReturnCode read_deform (FILE* fp, SegmentStruct* seg, int segmentnum)
       {
          if (read_string(fp,buffer) == EOF)
             break;
-         
+
          if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"false"))
             dfm->active = no;
       }
@@ -1755,7 +1755,7 @@ ReturnCode read_deform (FILE* fp, SegmentStruct* seg, int segmentnum)
       {
          if (read_string(fp,buffer) == EOF)
             break;
-         
+
          if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"false"))
             dfm->visible = no;
       }
@@ -1763,7 +1763,7 @@ ReturnCode read_deform (FILE* fp, SegmentStruct* seg, int segmentnum)
       {
          if (read_string(fp,buffer) == EOF)
             break;
-         
+
          if (STRINGS_ARE_EQUAL(buffer,"yes") || STRINGS_ARE_EQUAL(buffer,"true"))
             dfm->autoReset = yes;
       }
@@ -1771,7 +1771,7 @@ ReturnCode read_deform (FILE* fp, SegmentStruct* seg, int segmentnum)
       {
          if (read_string(fp,buffer) == EOF)
             break;
-         
+
          if (STRINGS_ARE_EQUAL(buffer,"yes") || STRINGS_ARE_EQUAL(buffer,"true"))
             dfm->translationOnly = yes;
       }
@@ -1948,7 +1948,7 @@ ReturnCode read_deform (FILE* fp, SegmentStruct* seg, int segmentnum)
    }
 
    /* NOTE: 'xyz_body_rotation_DEFORM' and 'translation_DEFORM' specify the
-    * *delta* transformation from the "position" frame to the "deform_start" 
+    * *delta* transformation from the "position" frame to the "deform_start"
     * frame.  The code below converts this into the DeformObject's true
     * "deform_start" transform which is measured relative to the parent segment's
     * frame.
@@ -1957,40 +1957,40 @@ ReturnCode read_deform (FILE* fp, SegmentStruct* seg, int segmentnum)
    dfm->deform_start.xforms_valid = no;
    dfm->deform_end.xforms_valid = no;
    recalc_deform_xforms(seg, dfm);
-   
+
    /* deform start */
    copy_4x4matrix(dfm->deform_start.from_local_xform, m);
    append_matrix(m, dfm->position.from_local_xform);
-   
+
    extract_rotation(m, &dfm->deform_start.rotation_axis, &dfm->deform_start.rotation_angle);
    dfm->deform_start.translation.xyz[0] = m[3][0];
    dfm->deform_start.translation.xyz[1] = m[3][1];
    dfm->deform_start.translation.xyz[2] = m[3][2];
    dfm->deform_start.xforms_valid = no;
-   
+
    /* deform end */
    copy_4x4matrix(dfm->deform_end.from_local_xform, m);
    append_matrix(m, dfm->position.from_local_xform);
-   
+
    extract_rotation(m, &dfm->deform_end.rotation_axis, &dfm->deform_end.rotation_angle);
    dfm->deform_end.translation.xyz[0] = m[3][0];
    dfm->deform_end.translation.xyz[1] = m[3][1];
    dfm->deform_end.translation.xyz[2] = m[3][2];
    dfm->deform_end.xforms_valid = no;
-   
+
    recalc_deform_xforms(seg, dfm);
 
 #if ! ENGINE
    init_deform_box_verts(dfm);
 #endif
-   
+
    return code_fine;
 
 } /* read_deform */
 
 
 /* -------------------------------------------------------------------------
-   read_deformity - 
+   read_deformity -
 ---------------------------------------------------------------------------- */
 ReturnCode read_deformity (ModelStruct* ms, FILE* fp)
 {
@@ -2066,11 +2066,11 @@ ReturnCode read_deformity (ModelStruct* ms, FILE* fp)
       {
           int nk;
           char key1[64], key2[64];
-     
+
           read_line(fp, buffer);
-     
+
           nk = sscanf(buffer,"%s %s", key1, key2);
-     
+
           if (nk == 1)
              dty->keys[0] = dty->keys[1] = lookup_simm_key(key1);
           else if (nk == 2)
@@ -2113,7 +2113,7 @@ ReturnCode read_deformity (ModelStruct* ms, FILE* fp)
             if (dty->deform && dty->deform_name && rc == code_fine)
             {
                dty->deform[dty->num_deforms] = lookup_deform(ms, dfmName);
-               
+
                if (dty->deform[dty->num_deforms])
                {
                   mstrcpy(&dty->deform_name[dty->num_deforms], dfmName);
@@ -2174,10 +2174,10 @@ ReturnCode read_deformity (ModelStruct* ms, FILE* fp)
 SBoolean _read_til (FILE* file, int c)
 {
    int t = fgetc(file);
-   
+
    while (t != c && t != EOF)
        t = fgetc(file);
-   
+
    return (SBoolean) (t == EOF);
 }
 
@@ -2222,7 +2222,7 @@ int _read_til_tokens (FILE* file, char* buf, const char* delimiters)
 }
 
 /* -------------------------------------------------------------------------
-   _strip_outer_whitespace - 
+   _strip_outer_whitespace -
 ---------------------------------------------------------------------------- */
 void _strip_outer_whitespace (char* str)
 {
@@ -2256,7 +2256,7 @@ void strip_brackets_from_string(char name[])
    while (1)
    {
       if (buffer[i] == '(')
-      { 
+      {
          i++;
          continue;
       }

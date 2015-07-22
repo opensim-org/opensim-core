@@ -1,6 +1,6 @@
-S26pre_CMC_states																
-nRows=1																
-nColumns=17																
-endheader																
+S26pre_CMC_states
+nRows=1
+nColumns=17
+endheader
 time	r_shoulder_elev	r_elbow_flex	r_shoulder_elev_u	r_elbow_flex_u	TRIlong.activation	TRIlong.fiber_length	TRIlat.activation	TRIlat.fiber_length	TRImed.activation	TRImed.fiber_length	BIClong.activation	BIClong.fiber_length	BICshort.activation	BICshort.fiber_length	BRA.activation	BRA.fiber_length
 0	0	0	0	0	0.01	0.134	0.01	0.1138	0.01	0.1138	0.01	0.1157	0.01	0.1321	0.01	0.0858

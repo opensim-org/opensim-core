@@ -248,11 +248,11 @@ typedef enum
    smFirstFrame    /* the first frame of data from the motion TRC file */
 } smBasePosition;
 
-typedef enum 
+typedef enum
 {
-   smConstraintPlane, 
-   smConstraintEllipsoid, 
-   smConstraintSphere, 
+   smConstraintPlane,
+   smConstraintEllipsoid,
+   smConstraintSphere,
    smConstraintCylinder,
    smOtherConstraint
 } smConstraintObjectType;
@@ -477,7 +477,7 @@ typedef struct
    smMarkerType type;      /* critical, optional, fixed, etc. */
    int index;              /* index of marker in global marker array (smModel.marker[]) */
    double weight;          /* marker weight for each segment */
-   double localOffset[3];  /* offset in segment's local reference frame */ 
+   double localOffset[3];  /* offset in segment's local reference frame */
 } smMarkerLink;
 
 typedef struct
@@ -593,7 +593,7 @@ typedef struct
 
 typedef struct
 {
-   int type;                                     /* type not currently used */ 
+   int type;                                     /* type not currently used */
    smOwner owner;                                /* which program created the model: SIMM, EVaRT, Solver or Other? */
    smSource source;                              /* what format is the model derived from SIMM joint file or MOD file? */
    char *name;                                   /* name of this model */
@@ -714,7 +714,7 @@ typedef struct
    int frameIncrement;        /* amount to increment when solving */
    smBoolean cropEnds;        /* crop ends of TRC file when not all markers present? */
    smBoolean markerNamesFromDescriptions; /* used only for C3D files */
-   smBoolean fgContactOn;      /* is foot ground contact on or off */ 
+   smBoolean fgContactOn;      /* is foot ground contact on or off */
 } smTRCOptions;
 
 
@@ -957,7 +957,7 @@ DLL smReturnCode smCreateModelFromSIMMJointFile(smModel *model, const char filen
 DLL smReturnCode smCreateModelFromMODFile(smModel *model, const char filename[],
                                           smModelID *modelID,
                                           smTRCOptions staticOptions);
-DLL smReturnCode smCreateScaledModel(smModel *model, smModelID *modelID, 
+DLL smReturnCode smCreateScaledModel(smModel *model, smModelID *modelID,
                                      const char modelFilename[],
                                      const char staticPoseFilename[],
                                      const char personalDataFilename[],
@@ -1002,7 +1002,7 @@ DLL smReturnCode smScanC3DHeader(const char filename[], smC3DHeader* head);
 
 /******************************** write functions *****************************/
 DLL smReturnCode smWriteMODFile(smModelID modelID, const char filename[]);
-DLL smReturnCode smWriteJointFile(smModelID modelID, const char filename[]);   
+DLL smReturnCode smWriteJointFile(smModelID modelID, const char filename[]);
 DLL smReturnCode smWriteHTRFile(const char filename[], smHTRData* data);
 DLL smReturnCode smSetupMotionFile(smModelID modelID, const char filename[],
                                    int first, int last, const char trcfilename[]);
@@ -1040,7 +1040,7 @@ DLL smReturnCode smSetPoseTransforms(smModelID modelID, int numSegments, smTrans
 DLL smReturnCode smSetMarkerOrder(smModelID modelID, int numMarkers, char *markerNameList[]);
 DLL smReturnCode smSetOptions(smModelID modelID, smOptions *options);
 DLL smReturnCode smSetSolverMethod(smModelID modelID, smSolverMethod method);
-DLL smReturnCode smSetMarkerWeight(smModelID modelID, const char segName[], 
+DLL smReturnCode smSetMarkerWeight(smModelID modelID, const char segName[],
                                    const char markerName[], double weight);
 DLL smReturnCode smSetGravityDirection(smModelID modelID, smModel *smmodel, smAxes gravity);
 DLL smReturnCode smSetAllSegmentSolveStates(smModelID modelID, int numSegments, smBoolean segmentStates[]);

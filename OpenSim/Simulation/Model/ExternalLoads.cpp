@@ -59,7 +59,7 @@ _lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematic
     setNull();
 }
 
-ExternalLoads::ExternalLoads(Model& model) : 
+ExternalLoads::ExternalLoads(Model& model) :
     ModelComponentSet<ExternalForce>(model),
     _dataFileName(_dataFileNameProp.getValueStr()),
     _externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
@@ -203,7 +203,7 @@ void ExternalLoads::invokeConnectToModel(Model& aModel)
 }
 
 //-----------------------------------------------------------------------------
-// RE-EXPRESS POINT DATA 
+// RE-EXPRESS POINT DATA
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
@@ -234,7 +234,7 @@ void ExternalLoads::transformPointsExpressedInGroundToAppliedBodies(const Storag
 ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const ExternalForce &exForce, const Storage &kinematics, double startTime, double endTime)
 {
     if(!&getModel() || !getModel().isValidSystem()) // no model and no system underneath, cannot proceed
-        throw Exception("ExternalLoads::transformPointExpressedInGroundToAppliedBody() requires a model with a valid system."); 
+        throw Exception("ExternalLoads::transformPointExpressedInGroundToAppliedBody() requires a model with a valid system.");
 
     if(!exForce._specifiesPoint){ // The external force does not apply a force to a point
         cout << "ExternalLoads: WARNING ExternalForce '"<< exForce.getName() <<"' does not specify a point of application." << endl;
@@ -261,7 +261,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
     if (nt > 0){
         if (startTime!= -SimTK::Infinity){  // Start time was actually specified.
             // since splining relevant data, make sure we don't truncate user specified time by starting one index back
-            findex = kinematics.findIndex(startTime)-1; 
+            findex = kinematics.findIndex(startTime)-1;
             startIndex = findex >= 0 ? findex : 0;
         }
         if (endTime!= SimTK::Infinity){ // Final time was actually specified.
@@ -271,14 +271,14 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
         }
     }
     else{
-        cout << "ExternalLoads: WARNING specified load kinematics contains no coordinate values. " 
+        cout << "ExternalLoads: WARNING specified load kinematics contains no coordinate values. "
             << "Point of force application cannot be transformed." << endl;
         return NULL;
     }
 
     nt = lastIndex-startIndex+1;
 
-    // Construct a new storage to contain the re-expressed point data for the 
+    // Construct a new storage to contain the re-expressed point data for the
     // new external force.
     Storage *newDataSource = new Storage(nt);
     Array<string> labels;
@@ -310,13 +310,13 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 
     Vec3 pGround(SimTK::NaN);
     Vec3 pAppliedBody(SimTK::NaN);
-    Vec3 force(SimTK::NaN); 
+    Vec3 force(SimTK::NaN);
     Vec3 torque(SimTK::NaN);
-    
+
     // Checked that we had a model with a valid system, so get its working state
     SimTK::State& s = updModel().updWorkingState();
 
-    // get from (ground) and to (applied) bodies 
+    // get from (ground) and to (applied) bodies
     const Ground& ground = getModel().getGround();
     const Body& appliedToBody = getModel().getBodySet().get(exForce.getAppliedToBodyName());
 
@@ -347,7 +347,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
         force = exForce.getForceAtTime(time);
         if(exForce._appliesTorque)
             torque = exForce.getTorqueAtTime(time);
-        
+
         // get the untransformed point expressed in ground in the ExternalForce specified in  ground (check made above)
         pGround = exForce.getPointAtTime(time);
         getModel().getSimbodyEngine().transformPosition(s, ground, pGround, appliedToBody, pAppliedBody);
@@ -360,7 +360,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
                 datarow[j+6] = torque[j];
         }
 
-        newDataSource->append(time, datarow); 
+        newDataSource->append(time, datarow);
     }
 
     // assign a name to the new data source
@@ -432,7 +432,7 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
                 dataSource->print(_dataFileName);
             }
             if(changeWorkingDir) IO::chDir(savedCwd);
-            
+
             const Array<string> &labels = dataSource->getColumnLabels();
             // Populate data file and other things that haven't changed
             // Create a ForceSet out of this XML node, this will create a set of PrescribedForces then we can reassign at a higher level to ExternalForces
@@ -461,7 +461,7 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
             }
             delete dataSource;
         }
-    else 
+    else
         // Call base class now assuming _node has been corrected for current version
         ModelComponentSet<ExternalForce>::updateFromXMLNode(aNode, versionNumber);
 }
@@ -480,5 +480,5 @@ std::string ExternalLoads::createIdentifier(OpenSim::Array<std::string>&oldFunct
         fullIdentifier = labels[columnOrder];
     }
     return fullIdentifier.substr(0, fullIdentifier.length()-1);
-    
+
 }

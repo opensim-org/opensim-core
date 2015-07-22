@@ -36,7 +36,7 @@ namespace OpenSim {
 //==============================================================================
 /**
  * A class implementing a Bushing Force.
- * A Bushing Force is the force proportional to the deviation of two frames. 
+ * A Bushing Force is the force proportional to the deviation of two frames.
  * One can think of the Bushing as being composed of 3 linear and 3 torsional
  * spring-dampers, which act along or about the bushing frames. Orientations
  * are measured as x-y-z body-fixed Euler rotations, which are treated as
@@ -83,17 +83,17 @@ public:
     /** Default constructor leaves bodies unspecified, sets the bushing frames
     to be at their body origins, and sets all bushing parameters to zero. **/
     BushingForce();
-    /** This constructor provides everything needed to create a real 
+    /** This constructor provides everything needed to create a real
     bushing. See property declarations for more information. **/
-    BushingForce(const std::string& body1Name, 
-                 const SimTK::Vec3& point1, 
+    BushingForce(const std::string& body1Name,
+                 const SimTK::Vec3& point1,
                  const SimTK::Vec3& orientation1,
-                 const std::string& body2Name, 
-                 const SimTK::Vec3& point2, 
+                 const std::string& body2Name,
+                 const SimTK::Vec3& point2,
                  const SimTK::Vec3& orientation2,
-                 const SimTK::Vec3& transStiffness, 
-                 const SimTK::Vec3& rotStiffness, 
-                 const SimTK::Vec3& transDamping, 
+                 const SimTK::Vec3& transStiffness,
+                 const SimTK::Vec3& rotStiffness,
+                 const SimTK::Vec3& transDamping,
                  const SimTK::Vec3& rotDamping);
 
     // Uses default (compiler-generated) destructor, copy constructor, and copy
@@ -101,26 +101,26 @@ public:
 
     /** Set the name of the Body that will serve as body 1 for this bushing. **/
     void setBody1ByName(const std::string& aBodyName);
-    /** Set the location and orientation (optional) for bushing frame on 
+    /** Set the location and orientation (optional) for bushing frame on
     body 1. **/
-    void setBody1BushingLocation(const SimTK::Vec3& location, 
+    void setBody1BushingLocation(const SimTK::Vec3& location,
                                  const SimTK::Vec3& orientation=SimTK::Vec3(0));
     /** Set the name of the Body that will serve as body 2 for this bushing. **/
     void setBody2ByName(const std::string& aBodyName);
-    /** Set the location and orientation (optional) for bushing frame on 
+    /** Set the location and orientation (optional) for bushing frame on
     body 2. **/
-    void setBody2BushingLocation(const SimTK::Vec3& location, 
+    void setBody2BushingLocation(const SimTK::Vec3& location,
                                  const SimTK::Vec3& orientation=SimTK::Vec3(0));
 
-    /** Potential energy is determine by the elastic energy storage of the 
+    /** Potential energy is determine by the elastic energy storage of the
     bushing. **/
     virtual double computePotentialEnergy(const SimTK::State& s) const;
 
     //--------------------------------------------------------------------------
     // Reporting
     //--------------------------------------------------------------------------
-    /** 
-     * Provide name(s) of the quantities (column labels) of the force value(s) 
+    /**
+     * Provide name(s) of the quantities (column labels) of the force value(s)
      * to be reported.
      */
     virtual OpenSim::Array<std::string> getRecordLabels() const ;

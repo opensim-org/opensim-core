@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
- * Author: Frank C. Anderson 
+/*
+ * Author: Frank C. Anderson
  */
 
 #include <OpenSim/Common/Array.h>
@@ -33,12 +33,12 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * An abstract class for representing a vector function.
  *
- * A vector function is a relation between some number of independent variables 
+ * A vector function is a relation between some number of independent variables
  * and some number of dependent values such that for any particular set of
  * independent variables the correct number of dependent variables is returned.
  * Values of the function and its derivatives
@@ -51,7 +51,7 @@ namespace OpenSim {
  * @author Frank C. Anderson
  */
 class VectorFunctionForActuators : public VectorFunctionUncoupledNxN {
-OpenSim_DECLARE_CONCRETE_OBJECT(VectorFunctionForActuators, 
+OpenSim_DECLARE_CONCRETE_OBJECT(VectorFunctionForActuators,
                                 VectorFunctionUncoupledNxN);
 
 //=============================================================================
@@ -108,26 +108,26 @@ public:
     void getTargetForces(double *rF) const;
     CMCActuatorSubsystem* getCMCActSubsys();
 
-    
+
     //--------------------------------------------------------------------------
     // EVALUATE
     //--------------------------------------------------------------------------
 
     virtual void calcValue( const double *aX, double *rF, int aSize) {
-        std::cout << "Unimplemented evaluate method" << std::endl; 
+        std::cout << "Unimplemented evaluate method" << std::endl;
 //      exit(0);
     }
     virtual void calcValue( const Array<double> &aX, Array<double> &rF) {
-        std::cout << "Unimplemented evaluate method" << std::endl; 
+        std::cout << "Unimplemented evaluate method" << std::endl;
 //      exit(0);
     }
     virtual void calcValue( const Array<double> &aX, Array<double> &rF, const Array<int> &aDerivWRT) {
-        std::cout << "Unimplemented evaluate method" << std::endl; 
+        std::cout << "Unimplemented evaluate method" << std::endl;
 //      exit(0);
     }
     virtual void calcDerivative(const Array<double> &aX,Array<double> &rY,
         const Array<int> &aDerivWRT) {
-        std::cout << "Unimplemented calcDerivative method" << std::endl; 
+        std::cout << "Unimplemented calcDerivative method" << std::endl;
     }
 
     virtual void evaluate( const SimTK::State& s,  double *aX, double *rF);

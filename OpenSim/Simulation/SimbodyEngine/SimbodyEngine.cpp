@@ -58,7 +58,7 @@ SimbodyEngine::~SimbodyEngine()
 }
 //_____________________________________________________________________________
 /**
- * Default constructor.  
+ * Default constructor.
  */
 SimbodyEngine::SimbodyEngine() :
     Object()
@@ -116,7 +116,7 @@ void SimbodyEngine::setNull()
     setAuthors("Frank C. Anderson, Ajay Seth");
     _model = NULL;
 }
-    
+
 
 //_____________________________________________________________________________
 /**
@@ -286,7 +286,7 @@ void SimbodyEngine::getAngularVelocityBodyLocal(const SimTK::State& s,
 
 //_____________________________________________________________________________
 /**
- * Get the inertial angular acceleration of a body in the ground reference 
+ * Get the inertial angular acceleration of a body in the ground reference
  * frame.
  *
  * @param aBody Pointer to body.
@@ -335,7 +335,7 @@ SimTK::Transform SimbodyEngine::getTransform(const SimTK::State& s,
  * Both vectors are expressed in the ground reference frame.
  *
  * It is necessary to call computeAccelerations() before this method
- * to get valid results.  The cost to calculate joint forces and moments is 114 
+ * to get valid results.  The cost to calculate joint forces and moments is 114
  * flops/body.
  *
  * @param rForces Matrix of reaction forces.  The size should be
@@ -347,7 +347,7 @@ void SimbodyEngine::computeReactions(const SimTK::State& s, Vector_<Vec3>& rForc
 {
     // get the number of mobilized bodies in the underlying SimbodyMatterSubsystem
     int nmb = _model->getMatterSubsystem().getNumBodies();
-    
+
     // get the number of bodies in the OpenSim model
     int nj = _model->getNumJoints();
 
@@ -369,12 +369,12 @@ void SimbodyEngine::computeReactions(const SimTK::State& s, Vector_<Vec3>& rForc
 
     const JointSet &joints = _model->getJointSet();
 
-    //Separate SimTK SpatialVecs to Forces and Torques  
+    //Separate SimTK SpatialVecs to Forces and Torques
     // SpatialVec = Vec2<Vec3 torque, Vec3 force>
     for(int i=0; i<nj; i++){
-        const SimTK::MobilizedBodyIndex& ix = 
+        const SimTK::MobilizedBodyIndex& ix =
             joints[i].getChildFrame().getMobilizedBodyIndex();
-         
+
         rTorques[i] = reactionForces[ix](0);
         rForces[i] = reactionForces[ix](1);
     }
@@ -398,7 +398,7 @@ void SimbodyEngine::transform(const SimTK::State& s, const PhysicalFrame &aBodyF
     const Body* bFrom = (const Body*)&aBodyFrom;
     const Body* bTo = (const Body*)&aBodyTo;
 
-    //Get input vector as a Vec3 to make the call down to Simbody and update the output vector 
+    //Get input vector as a Vec3 to make the call down to Simbody and update the output vector
     Vec3::updAs(rVec) = _model->getMatterSubsystem().getMobilizedBody(bFrom->getMobilizedBodyIndex()).expressVectorInAnotherBodyFrame(s, Vec3::getAs(aVec), _model->getMatterSubsystem().getMobilizedBody(bTo->getMobilizedBodyIndex()));
 }
 
@@ -413,10 +413,10 @@ void SimbodyEngine::transform(const SimTK::State& s, const PhysicalFrame &aBodyF
  */
 void SimbodyEngine::transform(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const Vec3& aVec, const PhysicalFrame &aBodyTo, Vec3& rVec) const
 {
-    if(&aBodyFrom == &aBodyTo) { rVec=aVec; return; }   
+    if(&aBodyFrom == &aBodyTo) { rVec=aVec; return; }
 
     // Get input vector as a Vec3 to make the call down to Simbody and update
-    // the output vector 
+    // the output vector
     rVec = aBodyFrom.getMobilizedBody().expressVectorInAnotherBodyFrame(s, aVec,
             aBodyTo.getMobilizedBody());
 }
@@ -554,7 +554,7 @@ double SimbodyEngine::calcDistance(const SimTK::State& s, const PhysicalFrame&
 void SimbodyEngine::convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double rDirCos[3][3]) const
 {
     Vec3 angs(aE1, aE2, aE3);
-    Rotation aRot; 
+    Rotation aRot;
     aRot.setRotationToBodyFixedXYZ(angs);
     Mat33::updAs(&rDirCos[0][0]) = aRot.asMat33();
 }
@@ -570,9 +570,9 @@ void SimbodyEngine::convertAnglesToDirectionCosines(double aE1, double aE2, doub
 void SimbodyEngine::convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double *rDirCos) const
 {
     if(rDirCos==NULL) return;
-    
+
     Vec3 angs(aE1, aE2, aE3);
-    Rotation aRot; 
+    Rotation aRot;
     aRot.setRotationToBodyFixedXYZ(angs);
     Mat33::updAs(&rDirCos[0]) = aRot.asMat33();
 }
@@ -730,7 +730,7 @@ bool SimbodyEngine::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFi
     _model->updBodySet().scale(aScaleSet, !aPreserveMassDist);
 
     // When bodies are scaled, the properties of the model are changed.
-    // The general rule is that you MUST recreate and initialize the system 
+    // The general rule is that you MUST recreate and initialize the system
     // when properties of the model change. We must do that here or
     // we will be querying a stale system (e.g. wrong body properties!).
     s = _model->initSystem();
@@ -749,21 +749,21 @@ bool SimbodyEngine::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFi
             for (int i = 0; i < _model->getBodySet().getSize(); i++){
                 _model->getBodySet().get(i).scaleMass(factor);
             }
-            
+
             // recreate system and update state after updating masses
             s = _model->initSystem();
 
             double newMass = _model->getTotalMass(s);
             double normDiffMass = abs(aFinalMass - newMass) / aFinalMass;
 
-            // check if the difference in after scale mass and the specified 
+            // check if the difference in after scale mass and the specified
             // subject (target) mass is significant
             if (normDiffMass > SimTK::SignificantReal) {
                 throw Exception("Model::scale() scaled model mass does not match specified subject mass.");
             }
         }
     }
-    
+
     // Now scale the joints.
     _model->updJointSet().scale(aScaleSet);
 
@@ -890,9 +890,9 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
         rQComplete->append(time,nq,&qu[0]);
         rUComplete->append(time,nu,&qu[nq]);
     }
-    
+
     delete qStore;
-    
+
     // Compute storage object for simulation
     // Need to set column labels before converting rad->deg
     rQComplete->setColumnLabels(columnLabels);
@@ -923,7 +923,7 @@ void SimbodyEngine::scaleRotationalDofColumns(Storage &rStorage, double factor) 
     std::string prefix = "";
     int index = -1;
     const CoordinateSet& coordinateSet = _model->getCoordinateSet();
-    
+
     // first column is time, so skip
     for (int i = 1; i < ncols; i++) {
         const std::string& name = columnLabels[i];

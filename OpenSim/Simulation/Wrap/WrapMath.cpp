@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 //=============================================================================
@@ -132,7 +132,7 @@ IntersectLines(SimTK::Vec3& p1, SimTK::Vec3& p2, SimTK::Vec3& p3, SimTK::Vec3& p
  * @return true if line segment and plane intersect, false otherwise
  */
 bool WrapMath::
-IntersectLineSegPlane(SimTK::Vec3& pt1, SimTK::Vec3& pt2, 
+IntersectLineSegPlane(SimTK::Vec3& pt1, SimTK::Vec3& pt2,
                              SimTK::Vec3& plane, double d,
                              SimTK::Vec3& inter)
 {
@@ -312,7 +312,7 @@ RotateMatrixAxisAngle(double matrix[][4], const SimTK::Vec3& axis, double angle)
  * @param angle the amount to rotate, in radians
  */
 void WrapMath::
-ConvertQuaternionToMatrix(const double quat[4], double matrix[][4]) 
+ConvertQuaternionToMatrix(const double quat[4], double matrix[][4])
 {
     double Nq = quat[0] * quat[0] + quat[1] * quat[1] + quat[2] * quat[2] + quat[3] * quat[3];
     double s = (Nq > 0.0) ? (2.0 / Nq) : 0.0;

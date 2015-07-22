@@ -16,7 +16,7 @@
 				<!--Name of the coordinate to be tracked.-->
 				<coordinate>pelvis_tx</coordinate>
 			</CMC_Joint>
-      
+
 			<CMC_Joint name="pelvis_ty">
 				<!--Flag (true or false) indicating whether or not a task is enabled.-->
 				<on>true</on>
@@ -31,7 +31,7 @@
 				<!--Name of the coordinate to be tracked.-->
 				<coordinate>pelvis_ty</coordinate>
 			</CMC_Joint>
-      
+
 			<CMC_Joint name="pelvis_tilt">
 				<!--Flag (true or false) indicating whether or not a task is enabled.-->
 				<on>true</on>
@@ -65,7 +65,7 @@
 				<!--Name of the coordinate to be tracked.-->
 				<coordinate>hip_flexion_r</coordinate>
 			</CMC_Joint>
-      
+
 			<CMC_Joint name="knee_angle_r">
 				<!--Flag (true or false) indicating whether or not a task is enabled.-->
 				<on>true</on>
@@ -80,7 +80,7 @@
 				<!--Name of the coordinate to be tracked.-->
 				<coordinate>knee_angle_r</coordinate>
 			</CMC_Joint>
-      
+
 			<CMC_Joint name="ankle_angle_r">
 				<!--Flag (true or false) indicating whether or not a task is enabled.-->
 				<on>true</on>
@@ -110,7 +110,7 @@
 				<!--Name of the coordinate to be tracked.-->
 				<coordinate>hip_flexion_l</coordinate>
 			</CMC_Joint>
-      
+
 			<CMC_Joint name="knee_angle_l">
 				<!--Flag (true or false) indicating whether or not a task is enabled.-->
 				<on>true</on>
@@ -125,7 +125,7 @@
 				<!--Name of the coordinate to be tracked.-->
 				<coordinate>knee_angle_l</coordinate>
 			</CMC_Joint>
-      
+
 			<CMC_Joint name="ankle_angle_l">
 				<!--Flag (true or false) indicating whether or not a task is enabled.-->
 				<on>true</on>

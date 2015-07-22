@@ -34,7 +34,7 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * Class PropertyTransform extends class Property.  It consists of a

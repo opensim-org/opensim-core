@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -62,34 +62,34 @@ SmoothSpline(int degree,double T,double fc,int N,double *times,double *sig,doubl
 {
     /* Background for choice of smoothing parameter (by Ton van den Bogert):
 
-    In the GCVSPL software, VAL is the "smoothing parameter" of the spline, 
-    which occurs as a weighting factor in a cost function which is 
-    minimized.  This produces a compromise between how well the spline 
-    fits the measurements and its smoothness (for a more detailed 
-    explanation, see Ton van den Bogert's notes in 
+    In the GCVSPL software, VAL is the "smoothing parameter" of the spline,
+    which occurs as a weighting factor in a cost function which is
+    minimized.  This produces a compromise between how well the spline
+    fits the measurements and its smoothness (for a more detailed
+    explanation, see Ton van den Bogert's notes in
     http://isbweb.org/software/sigproc/bogert/filter.pdf).
 
-    Woltring describes the relationship between VAL and frequency domain 
-    filter characteristics in his release notes: 
-    http://isbweb.org/software/sigproc/gcvspl/gcvspl.memo.  
-    This states that a smoothing spline is equivalent to a 
+    Woltring describes the relationship between VAL and frequency domain
+    filter characteristics in his release notes:
+    http://isbweb.org/software/sigproc/gcvspl/gcvspl.memo.
+    This states that a smoothing spline is equivalent to a
 
-          "double, phase-symmetric Butterworth filter, with transfer function 
-          H(w) = [1 + (w/wo)^2M]^-1, where  w  is  the  frequency, 
-          wo = (p*T)^(-0.5/M) the filter's cut-off frequency, p the smoothing 
-          parameter, T the sampling interval, and  2M the  order  of the spline.  
-          If T is expressed in seconds, the frequencies are expressed in 
+          "double, phase-symmetric Butterworth filter, with transfer function
+          H(w) = [1 + (w/wo)^2M]^-1, where  w  is  the  frequency,
+          wo = (p*T)^(-0.5/M) the filter's cut-off frequency, p the smoothing
+          parameter, T the sampling interval, and  2M the  order  of the spline.
+          If T is expressed in seconds, the frequencies are expressed in
           radians/second."
 
-    The VAL calculations can be derived from this.  The equation for the 
-    transfer function has the property H(w0)= 0.5.  This is because it is 
-    a double Butterworth filter (applied twice).  Cut-off frequency is 
-    usually defined as the frequency at which H=1/sqrt(2), and this is why 
+    The VAL calculations can be derived from this.  The equation for the
+    transfer function has the property H(w0)= 0.5.  This is because it is
+    a double Butterworth filter (applied twice).  Cut-off frequency is
+    usually defined as the frequency at which H=1/sqrt(2), and this is why
     Tony Reina and Ton van den Bogert have an extra factor in the equation.
 
-    You can easily verify the correctness of your spline smoothing by 
-    processing a sine wave signal at the cut-off frequency.  If it comes 
-    out as a sine wave with its amplitude reduced by a factor 1.41 (=sqrt(2)), 
+    You can easily verify the correctness of your spline smoothing by
+    processing a sine wave signal at the cut-off frequency.  If it comes
+    out as a sine wave with its amplitude reduced by a factor 1.41 (=sqrt(2)),
     you have used the correct VAL.
 
     */
@@ -103,9 +103,9 @@ SmoothSpline(int degree,double T,double fc,int N,double *times,double *sig,doubl
 
     int M = (degree+1)/2; // Half-order
     SimTK::Real p; // Smoothing parameter
-    p = (1.0/T) / 
-        (pow( 
-            (2.0*SimTK_PI*fc) / 
+    p = (1.0/T) /
+        (pow(
+            (2.0*SimTK_PI*fc) /
             (pow(
                 (sqrt(2.0)-1),
                 (0.5/M)
@@ -192,8 +192,8 @@ double *sigr;
     a[2] = 3*wa3 / denom;
     a[3] = wa3 / denom;
     b[0] = 1;
-    b[1] = (3*wa3 + 2*wa2 - 2*wa - 3) / denom; 
-    b[2] = (3*wa3 - 2*wa2 - 2*wa + 3) / denom; 
+    b[1] = (3*wa3 + 2*wa2 - 2*wa - 3) / denom;
+    b[2] = (3*wa3 - 2*wa2 - 2*wa + 3) / denom;
     b[3] = (wa - 1) * (wa2 - wa + 1) / denom;
 
     // ALLOCATE MEMORY FOR sigr[]
@@ -214,7 +214,7 @@ double *sigr;
     }
 
     // REVERSE THE FILTERED ARRAY
-    for (i=0,j=N-1;i<N;i++,j--)  sigr[i] = sigf[j]; 
+    for (i=0,j=N-1;i<N;i++,j--)  sigr[i] = sigf[j];
 
     // FILL THE 1ST THREE TERMS OF sigf
     for (i=0;i<=3;i++) sigf[i] = sigr[i];
@@ -226,7 +226,7 @@ double *sigr;
     }
 
     // REVERSE THE FILTERED ARRAY AGAIN
-    for (i=0,j=N-1;i<N;i++,j--)  sigr[i] = sigf[j]; 
+    for (i=0,j=N-1;i<N;i++,j--)  sigr[i] = sigf[j];
 
     // ASSIGN sigf TO sigr
     for (i=0;i<N;i++)  sigf[i] = sigr[i];
@@ -281,10 +281,10 @@ LowpassFIR(int M,double T,double f,int N,double *sig,double *sigf)
     for(n=0;n<N;n++) {
         sum_coef = 0.0;
         sigf[n] = 0.0;
-        for(k=-M;k<=M;k++) {   
+        for(k=-M;k<=M;k++) {
             x = (double)k*w*T; // k*T = time (seconds) and w scales sinc input argument using filter cutoff
             coef = (sinc(x)*T*w/SimTK_PI)*hamming(k,M); // scale lowpass sinc amplitude by 2*f*T = T*w/pi
-            sigf[n] = sigf[n] + coef*s[M+n-k]; 
+            sigf[n] = sigf[n] + coef*s[M+n-k];
             sum_coef = sum_coef + coef;
         }
         sigf[n] = sigf[n] / sum_coef; // normalize for unity gain at DC
@@ -368,14 +368,14 @@ double *s;
     for (i=0,j=M;i<M;i++,j--)          s[i] = sig[j];
     for (i=M,j=0;i<M+N;i++,j++)        s[i] = sig[j];
     for (i=M+N,j=N-2;i<M+M+N;i++,j--)  s[i] = sig[j];
-  
+
 
     // FILTER THE DATA
     double sum_coef,coef;
     for (n=0;n<N;n++) {
         sum_coef = 0.0;
         sigf[n] = 0.0;
-        for (k=-M;k<=M;k++) {   
+        for (k=-M;k<=M;k++) {
             x1 = (double)k*w1*T;  // k*T = time (seconds) and w scales sinc input argument using filter cutoff
             x2 = (double)k*w2*T;  // k*T = time (seconds) and w scales sinc input argument using filter cutoff
             coef = (sinc(x2)*T*w2/SimTK_PI - sinc(x1)*T*w1/SimTK_PI)*hamming(k,M); // scale lowpass sinc amplitude by 2*f*T = T*w/pi
@@ -437,7 +437,7 @@ Pad(int aPad,int aN,const double aSignal[])
     // APPEND
     for(i=aPad+aN,j=aN-2;i<aPad+aPad+aN;i++,j--)  s[i] = aSignal[j];
     for(i=aPad+aN;i<aPad+aPad+aN;i++)  s[i] = 2.0*aSignal[aN-1] - s[i];
- 
+
     return(s);
 }
 //_____________________________________________________________________________
@@ -500,7 +500,7 @@ Pad(int aPad,Array<double> &rSignal)
 /**
  * Remove points in a signal based on the angle between adjacent segments in
  * the signal.  The end points of the signal are always retained.
- * 
+ *
  * @param aAngle If the angle between two adjacent segments is less than
  * aAngle the point in common between the two segments is removed.  This
  * is evaluate for each point in the signal.
@@ -563,7 +563,7 @@ ReduceNumberOfPoints(double aDistance,
 
         mv1 = v1.norm(); //Mtx::Magnitude(3,v1);
         mv2 = v2.norm(); //Mtx::Magnitude(3,v2);
-        cos = (~v1*v2)/(mv1*mv2); //Mtx::DotProduct(3,v1,v2) / (mv1*mv2); 
+        cos = (~v1*v2)/(mv1*mv2); //Mtx::DotProduct(3,v1,v2) / (mv1*mv2);
 
         dsq = mv1 * mv1 * (1.0 - cos*cos);
 
@@ -614,7 +614,7 @@ hamming(int k,int M)
 {
   double x = (double)k * SimTK_PI / (double)M;
   double d = 0.54 + 0.46*cos(x);
-  return(d); 
+  return(d);
 }
 
 

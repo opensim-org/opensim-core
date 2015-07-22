@@ -42,7 +42,7 @@ static void *LoadLibrary(const std::string &name, std::string &actualNameLoaded)
         if(libName.size()<3 || libName.substr(0,3)!="lib") { // if it doesn't already have lib prefix
             libName = OpenSim::IO::getParentDirectory(name) + "lib" + libName;
             //std::cout << "Loading " << name << " failed, trying " << libName << " (for linux compatibility)" << std::endl;
-            lib = dlopen(libName.c_str(), RTLD_LAZY | RTLD_GLOBAL); 
+            lib = dlopen(libName.c_str(), RTLD_LAZY | RTLD_GLOBAL);
         }
     }
     return lib;
@@ -150,7 +150,7 @@ OpenSim::LoadOpenSimLibrary(const std::string &aLibraryName)
  * @see LoadOpenSimLibrary()
  */
 
-OSIMCOMMON_API void 
+OSIMCOMMON_API void
 OpenSim::LoadOpenSimLibraries(int argc,char **argv)
 {
     int i;

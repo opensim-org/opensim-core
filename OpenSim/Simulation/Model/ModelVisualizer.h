@@ -38,7 +38,7 @@ namespace SimTK {
 //                           DEFAULT GEOMETRY
 //==============================================================================
 // This class implements a SimTK DecorationGenerator. We'll add one to the
-// Visualizer so it can invoke the generateDecorations() dispatcher to pick up 
+// Visualizer so it can invoke the generateDecorations() dispatcher to pick up
 // per-frame geometry.
 class DefaultGeometry : public DecorationGenerator {
 public:
@@ -50,7 +50,7 @@ public:
         _dispContactOpacity = 0.75;
         _dispContactResolution = 2.0;
     }
-     void generateDecorations(const SimTK::State& state, 
+     void generateDecorations(const SimTK::State& state,
                              SimTK::Array_<SimTK::DecorativeGeometry>& geometry);
     double getDispMarkerRadius() {return _dispMarkerRadius;}
     void   setDispMarkerRadius(double a) {_dispMarkerRadius=a;}
@@ -89,14 +89,14 @@ private:
 
 namespace OpenSim {
 
-/** This class manages runtime visualization of a Model that is being 
+/** This class manages runtime visualization of a Model that is being
 manipulated through the OpenSim API. You should not allocate one of these
 yourself; instead, call the Model's setUseVisualizer() method and let the
 Model allocate one for itself. You may find the defaults to be adequate, but
 you can also get access to the %ModelVisualizer if you need it by calling
-the Model's getVisualizer() method. 
+the Model's getVisualizer() method.
 
-The %ModelVisualizer consults the Model's ModelDisplayHints object for 
+The %ModelVisualizer consults the Model's ModelDisplayHints object for
 instructions on what to display.
 
 @author Michael Sherman
@@ -127,12 +127,12 @@ public:
 
     /** If you want access to the underlying Simbody SimTK::Visualizer, you
     can get a const reference here. **/
-    const SimTK::Visualizer& getSimbodyVisualizer() const 
+    const SimTK::Visualizer& getSimbodyVisualizer() const
     {   assert(_viz); return *_viz; }
     /** If you want writable access to the underlying Simbody SimTK::Visualizer,
     you can get a non-const reference here, provided that you have non-const
     access to the %ModelVisualizer. **/
-    SimTK::Visualizer& updSimbodyVisualizer() 
+    SimTK::Visualizer& updSimbodyVisualizer()
     {   assert(_viz); return *_viz; }
     /**@}**/
 
@@ -140,27 +140,27 @@ public:
     Most users will not need to use these methods. **/
     /**@{**/
 
-    /** Return a pointer to the DefaultGeometry decoration generator used by 
+    /** Return a pointer to the DefaultGeometry decoration generator used by
     this %ModelVisualizer. **/
     SimTK::DefaultGeometry* getGeometryDecorationGenerator() {return _decoGen;}
 
     /** Return a const reference to the Model for which this %ModelVisualizer
     was constructed. **/
     const Model& getModel() const {return _model;}
-   
+
     /** Return a writable reference to the Model for which this %ModelVisualizer
     was constructed. **/
     Model& updModel() {return _model;}
 
     /** Given the name of a geometry file, this method will attempt to
     find it in a series of locations using the same algorithm as is done
-    internally by the %ModelVisualizer. 
-    
-    @param[in]      geoFile 
+    internally by the %ModelVisualizer.
+
+    @param[in]      geoFile
         Name of file to look for; can be absolute or relative path name or just
         a file name and the extension must be supplied.
     @param[out]     isAbsolute
-        This output parameter is set to true on return if the supplied 
+        This output parameter is set to true on return if the supplied
         \a geoFile was an absolute path name; in that case no searching was
         done.
     @param[out]     attempts
@@ -168,7 +168,7 @@ public:
         If \a geoFile was found, attempts.back() (the last entry) is the
         absolute path name of \a geoFile.
     @returns \c true if \a geoFile was located and is readable.
-        
+
     The search rule is as follows:
       - If \a geoFile is an absolute pathname no search is done.
       - Otherwise, define modelDir as the directory from which the current
@@ -176,8 +176,8 @@ public:
       - Try modelDir/geoFile, then modelDir/Geometry/geoFile.
       - Finally, try installDir/geoFile where installDir is taken from
         the OPENSIM_HOME environment variable if it exists, otherwise
-        a default installation directory. 
-    
+        a default installation directory.
+
     No attempt is made to validate the contents of the file or whether it
     has a supported extension; we're just looking for a file of the given
     name that exists and is readable. **/
@@ -192,14 +192,14 @@ private:
     friend class Model;
 
     // Only Model is permitted to create or destruct one of these. Note that
-    // this will cause modifications to System that must occur prior to 
+    // this will cause modifications to System that must occur prior to
     // realizeTopology().
     ModelVisualizer(Model& model) : _model(model), _viz(0) {
         clear();
         createVisualizer();
     }
 
-    // Called from Model's initSystem() method; state must be realized 
+    // Called from Model's initSystem() method; state must be realized
     // through Instance stage.
     void collectFixedGeometry(const SimTK::State& state) const;
 
@@ -217,7 +217,7 @@ private:
     SimTK::Visualizer*           _viz;
     SimTK::DefaultGeometry*      _decoGen;
 
-    // This is just a reference -- it is owned by the Simbody Visualizer so 
+    // This is just a reference -- it is owned by the Simbody Visualizer so
     // don't delete it!
     SimTK::Visualizer::InputSilo*   _silo;
 };

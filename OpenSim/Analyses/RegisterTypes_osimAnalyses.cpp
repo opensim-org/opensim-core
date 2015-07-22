@@ -31,8 +31,8 @@
 using namespace OpenSim;
 using namespace std;
 
-static osimAnalysesInstantiator instantiator; 
-     
+static osimAnalysesInstantiator instantiator;
+
 //_____________________________________________________________________________
 /**
  * The purpose of this routine is to register all class types exported by
@@ -56,17 +56,17 @@ OSIMANALYSES_API void RegisterTypes_osimAnalyses()
     Object::RegisterType( ProbeReporter() );
 
   } catch (const std::exception& e) {
-    std::cerr 
+    std::cerr
         << "ERROR during osimAnalyses Object registration:\n"
         << e.what() << "\n";
   }
 }
 
-osimAnalysesInstantiator::osimAnalysesInstantiator() 
-{ 
-        registerDllClasses(); 
-} 
-void osimAnalysesInstantiator::registerDllClasses() 
-{ 
-        RegisterTypes_osimAnalyses(); 
-} 
+osimAnalysesInstantiator::osimAnalysesInstantiator()
+{
+        registerDllClasses();
+}
+void osimAnalysesInstantiator::registerDllClasses()
+{
+        RegisterTypes_osimAnalyses();
+}

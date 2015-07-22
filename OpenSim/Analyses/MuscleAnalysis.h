@@ -43,7 +43,7 @@
 
 
 
-namespace OpenSim { 
+namespace OpenSim {
 
 
 //=============================================================================
@@ -52,7 +52,7 @@ namespace OpenSim {
  * A class for recording and computting basic quantities (length, shortening
  * velocity, tendon length, ...) for muscles during a simulation.
  *
- * @author Ajay Seth, Matthew Millard, Katherine Holzbaur, Frank C. Anderson 
+ * @author Ajay Seth, Matthew Millard, Katherine Holzbaur, Frank C. Anderson
  * @version 1.0
  */
 class OSIMANALYSES_API MuscleAnalysis : public Analysis {
@@ -69,7 +69,7 @@ public:
         Coordinate *q;
         Storage *momentArmStore;
         Storage *momentStore;
-    }  
+    }
 // Excluding this from Doxygen until it has better documentation! -Sam Hamner
     /// @cond
 
@@ -169,44 +169,44 @@ public:
     virtual void setModel(Model& aModel);
     void setStorageCapacityIncrements(int aIncrement);
 
-    Storage* getPennationAngleStorage() const { 
+    Storage* getPennationAngleStorage() const {
         return _pennationAngleStore; }
-    Storage* getMuscleTendonLengthStorage() const { 
+    Storage* getMuscleTendonLengthStorage() const {
         return _lengthStore; }
-    Storage* getFiberLengthStorage() const { 
+    Storage* getFiberLengthStorage() const {
         return _fiberLengthStore; }
-    Storage* getNormalizedFiberLengthStorage() const { 
+    Storage* getNormalizedFiberLengthStorage() const {
         return _normalizedFiberLengthStore; }
-    Storage* getTendonLengthStorage() const { 
+    Storage* getTendonLengthStorage() const {
         return _tendonLengthStore; }
 
-    Storage* getFiberVelocityStorage() const { 
+    Storage* getFiberVelocityStorage() const {
         return _fiberVelocityStore; }
-    Storage* getNormalizedFiberVelocityStorage() const { 
+    Storage* getNormalizedFiberVelocityStorage() const {
         return _normFiberVelocityStore; }
-    Storage* getPennationAngularVelocityStorage() const { 
+    Storage* getPennationAngularVelocityStorage() const {
         return _pennationAngularVelocityStore; }
 
-    Storage* getForceStorage() const { 
+    Storage* getForceStorage() const {
         return _forceStore; }
-    Storage* getFiberForceStorage() const { 
+    Storage* getFiberForceStorage() const {
         return _fiberForceStore; }
-    Storage* getActiveFiberForceStorage() const { 
+    Storage* getActiveFiberForceStorage() const {
         return _activeFiberForceStore; }
-    Storage* getPassiveFiberForceStorage() const { 
+    Storage* getPassiveFiberForceStorage() const {
         return _passiveFiberForceStore; }
-    Storage* getActiveFiberForceAlongTendonStorage() const { 
+    Storage* getActiveFiberForceAlongTendonStorage() const {
         return _activeFiberForceAlongTendonStore; }
-    Storage* getPassiveFiberForceAlongTendonStorage() const { 
+    Storage* getPassiveFiberForceAlongTendonStorage() const {
         return _passiveFiberForceAlongTendonStore; }
-    
-    Storage* getFiberActivePowerStorage() const { 
+
+    Storage* getFiberActivePowerStorage() const {
         return _fiberActivePowerStore; }
-    Storage* getFiberPassivePowerStorage() const { 
+    Storage* getFiberPassivePowerStorage() const {
         return _fiberPassivePowerStore; }
-    Storage* getTendonPowerStorage() const { 
+    Storage* getTendonPowerStorage() const {
         return _tendonPowerStore; }
-    Storage* getMusclePowerStorage() const { 
+    Storage* getMusclePowerStorage() const {
         return _musclePowerStore; }
 
     void setMuscles(Array<std::string>& aMuscles);
@@ -240,7 +240,7 @@ public:
     virtual int
         printResults(const std::string &aBaseName,const std::string &aDir="",
         double aDT=-1.0,const std::string &aExtension=".sto");
-    /** 
+    /**
      * Intended for use only by GUI that holds one MuscleAnalysis and keeps changing attributes to generate various plots
      * For all other use cases, the code handles the allocation/deallocation of resources internally.
      */

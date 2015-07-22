@@ -36,7 +36,7 @@
 #include <OpenSim/Analyses/Actuation.h>
 #include "ForwardTool.h"
 #include <OpenSim/Common/DebugUtilities.h>
-#include "CMC.h" 
+#include "CMC.h"
 #include "CMC_TaskSet.h"
 #include "ActuatorForceTarget.h"
 #include "ActuatorForceTargetFast.h"
@@ -72,7 +72,7 @@ CMCTool::CMCTool() :
     _rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
     //_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-    _targetDT(_targetDTProp.getValueDbl()),          
+    _targetDT(_targetDTProp.getValueDbl()),
     //_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
     _useFastTarget(_useFastTargetProp.getValueBool()),
     _optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
@@ -102,7 +102,7 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
     _rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
     //_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-    _targetDT(_targetDTProp.getValueDbl()),          
+    _targetDT(_targetDTProp.getValueDbl()),
     //_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
     _useFastTarget(_useFastTargetProp.getValueBool()),
     _optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
@@ -118,7 +118,7 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
         loadModel(aFileName, &_originalForceSet);
         // Append to or replace model forces with those (i.e. actuators) specified by the analysis
         updateModelForces(*_model, aFileName);
-        setModel(*_model);  
+        setModel(*_model);
         setToolOwnsModel(true);
     }
 }
@@ -172,7 +172,7 @@ CMCTool(const CMCTool &aTool) :
     _rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
     //_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-    _targetDT(_targetDTProp.getValueDbl()),          
+    _targetDT(_targetDTProp.getValueDbl()),
     //_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
     _useFastTarget(_useFastTargetProp.getValueBool()),
     _optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
@@ -204,8 +204,8 @@ setNull()
     _rraControlsFileName = "";
     _lowpassCutoffFrequency = -1.0;
     //_lowpassCutoffFrequencyForLoadKinematics = -1.0;
-    _targetDT = 0.010;           
-    //_useCurvatureFilter = false;       
+    _targetDT = 0.010;
+    //_useCurvatureFilter = false;
     _useFastTarget = true;
     _optimizerAlgorithm = "ipopt";
     _numericalDerivativeStepSize = 1.0e-4;
@@ -247,9 +247,9 @@ void CMCTool::setupProperties()
     //_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
     //_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
 
-    comment = "File containing the tracking tasks. Which coordinates are tracked and with what weights are specified here.";         
-    _taskSetFileNameProp.setComment(comment);        
-    _taskSetFileNameProp.setName("task_set_file");       
+    comment = "File containing the tracking tasks. Which coordinates are tracked and with what weights are specified here.";
+    _taskSetFileNameProp.setComment(comment);
+    _taskSetFileNameProp.setName("task_set_file");
     _propertySet.append( &_taskSetFileNameProp );
 
     comment = "File containing the constraints on the controls.";
@@ -276,27 +276,27 @@ void CMCTool::setupProperties()
     //_lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
     //_propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
 
-    comment = "Time window over which the desired actuator forces are achieved. "        
-                    "Muscles forces cannot change instantaneously, so a finite time window must be allowed. "        
-                       "The recommended time window for RRA is about 0.001 sec, and for CMC is about 0.010 sec.";        
-    _targetDTProp.setComment(comment);       
-    _targetDTProp.setName("cmc_time_window");        
-    _propertySet.append( &_targetDTProp );       
-         
-    comment = "Flag (true or false) indicating whether or not to use the curvature filter. "         
-                       "Setting this flag to true can reduce oscillations in the computed muscle excitations.";          
-    //_useCurvatureFilterProp.setComment(comment);       
-    //_useCurvatureFilterProp.setName("use_curvature_filter");       
+    comment = "Time window over which the desired actuator forces are achieved. "
+                    "Muscles forces cannot change instantaneously, so a finite time window must be allowed. "
+                       "The recommended time window for RRA is about 0.001 sec, and for CMC is about 0.010 sec.";
+    _targetDTProp.setComment(comment);
+    _targetDTProp.setName("cmc_time_window");
+    _propertySet.append( &_targetDTProp );
+
+    comment = "Flag (true or false) indicating whether or not to use the curvature filter. "
+                       "Setting this flag to true can reduce oscillations in the computed muscle excitations.";
+    //_useCurvatureFilterProp.setComment(comment);
+    //_useCurvatureFilterProp.setName("use_curvature_filter");
     //_propertySet.append( &_useCurvatureFilterProp );
 
-    comment = "Flag (true or false) indicating whether to use the fast CMC optimization target. ";           
-    comment += "The fast target requires the desired accelerations to be met. ";         
-    comment += "The optimizer fails if the acclerations constraints cannot be ";         
-    comment += "met, so the fast target can be less robust.  The regular target ";       
-    comment += "does not require the acceleration constraints to be met; it ";       
-    comment += "meets them as well as it can, but it is slower and less accurate.";          
-    _useFastTargetProp.setComment(comment);          
-    _useFastTargetProp.setName("use_fast_optimization_target");          
+    comment = "Flag (true or false) indicating whether to use the fast CMC optimization target. ";
+    comment += "The fast target requires the desired accelerations to be met. ";
+    comment += "The optimizer fails if the acclerations constraints cannot be ";
+    comment += "met, so the fast target can be less robust.  The regular target ";
+    comment += "does not require the acceleration constraints to be met; it ";
+    comment += "meets them as well as it can, but it is slower and less accurate.";
+    _useFastTargetProp.setComment(comment);
+    _useFastTargetProp.setName("use_fast_optimization_target");
     _propertySet.append( &_useFastTargetProp );
 
     comment = "Preferred optimizer algorithm (currently support \"ipopt\" or \"cfsqp\", "
@@ -361,7 +361,7 @@ operator=(const CMCTool &aTool)
     _rraControlsFileName = aTool._rraControlsFileName;
     _lowpassCutoffFrequency = aTool._lowpassCutoffFrequency;
     //_lowpassCutoffFrequencyForLoadKinematics = aTool._lowpassCutoffFrequencyForLoadKinematics;
-    _targetDT = aTool._targetDT;         
+    _targetDT = aTool._targetDT;
     //_useCurvatureFilter = aTool._useCurvatureFilter;
     _numericalDerivativeStepSize = aTool._numericalDerivativeStepSize;
     _optimizationConvergenceTolerance = aTool._optimizationConvergenceTolerance;
@@ -397,7 +397,7 @@ bool CMCTool::run()
         throw(Exception(msg,__FILE__,__LINE__));
     }
     // OUTPUT DIRECTORY
-    // Do the maneuver to change then restore working directory 
+    // Do the maneuver to change then restore working directory
     // so that the parsing code behaves prope()rly if called from a different directory
     string saveWorkingDirectory = IO::getCwd();
     string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
@@ -410,11 +410,11 @@ bool CMCTool::run()
 
     bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
 
-    CMC_TaskSet taskSet(_taskSetFileName);           
+    CMC_TaskSet taskSet(_taskSetFileName);
     //taskSet.print("cmcTasksRT.xml");
-    cout<<"\n\n taskSet size = "<<taskSet.getSize()<<endl<<endl;         
+    cout<<"\n\n taskSet size = "<<taskSet.getSize()<<endl<<endl;
 
-    CMC* controller = new CMC(_model,&taskSet); // Need to make it a pointer since Model takes ownership 
+    CMC* controller = new CMC(_model,&taskSet); // Need to make it a pointer since Model takes ownership
     controller->setName( "CMC" );
 
     // Don't automatically give CMC all the model actuators
@@ -433,7 +433,7 @@ bool CMCTool::run()
     _model->getMultibodySystem().realize(s, Stage::Position );
      taskSet.setModel(*_model);
     _model->equilibrateMuscles(s);
-  
+
     // ---- INPUT ----
     // DESIRED POINTS AND KINEMATICS
     if(_desiredPointsFileName=="" && _desiredKinematicsFileName=="") {
@@ -533,10 +533,10 @@ bool CMCTool::run()
     }
 
      // TASK SET
-    if(_taskSetFileName=="") {           
-        cout<<"ERROR- a task set was not specified\n\n";         
-        IO::chDir(saveWorkingDirectory);         
-        return false;        
+    if(_taskSetFileName=="") {
+        cout<<"ERROR- a task set was not specified\n\n";
+        IO::chDir(saveWorkingDirectory);
+        return false;
     }
 
     _model->printDetailedInfo(s, cout);
@@ -573,7 +573,7 @@ bool CMCTool::run()
         // Print acc for debugging
         Storage *accStore=posSet->constructStorage(2);
         accStore->print("desiredPoints_splinefit_accelerations.sto");
-        delete accStore; accStore=NULL; 
+        delete accStore; accStore=NULL;
     }
 
     GCVSplineSet *qSet=NULL;
@@ -656,19 +656,19 @@ bool CMCTool::run()
     // Actuator force predictor
     // This requires the trajectories of the generalized coordinates
     // to be specified.
-    
+
     string rraControlName;
     CMCActuatorSystem actuatorSystem;
     CMCActuatorSubsystem cmcActSubsystem(actuatorSystem, _model);
     cmcActSubsystem.setCoordinateTrajectories(qSet);
     actuatorSystem.realizeTopology();
-    // initialize the actuator states 
-    SimTK::State& actuatorSystemState = actuatorSystem.updDefaultState(); 
-    
+    // initialize the actuator states
+    SimTK::State& actuatorSystemState = actuatorSystem.updDefaultState();
+
     SimTK::Vector &actSysZ = actuatorSystemState.updZ();
     const SimTK::Vector &modelZ = _model->getMultibodySystem()
                                             .getDefaultSubsystem().getZ(s);
-    
+
     int nra = actSysZ.size();
     int nrm = modelZ.size();
 
@@ -740,7 +740,7 @@ bool CMCTool::run()
     integrator.setMinimumStepSize(_minDT);
     integrator.setAccuracy(_errorTolerance);
     Manager manager(*_model, integrator);
-    
+
     _model->setAllControllersEnabled( true );
 
     manager.setSessionName(getName());
@@ -780,7 +780,7 @@ bool CMCTool::run()
         }
         time(&finishTime);
         cout<<endl;
-        // copy the final states from the last integration 
+        // copy the final states from the last integration
         s.updY() = cmcActSubsystem.getCompleteState().getY();
         cout<<"----------------------------------------------------------------\n";
         cout<<"Finished computing initial states:\n";
@@ -795,7 +795,7 @@ bool CMCTool::run()
         cout<<"================================================================\n";
     } else {
         cmcActSubsystem.setCompleteState( s );
-        actuatorSystemState.updTime() = _ti; 
+        actuatorSystemState.updTime() = _ti;
         s.updTime() = _ti;
         actuatorSystem.realize(actuatorSystemState, Stage::Time );
         controller->setTargetDT(1.0e-8);
@@ -879,7 +879,7 @@ bool CMCTool::run()
         x.print(cout);
         IO::chDir(saveWorkingDirectory);
         // close open files if we die prematurely (e.g. Opt fail)
-        
+
         return false;
     }
 
@@ -903,7 +903,7 @@ addNecessaryAnalyses()
     AnalysisSet& as = _model->updAnalysisSet();
     // Add Actuation if necessary
     Actuation *act = NULL;
-    for(int i=0; i<as.getSize(); i++) 
+    for(int i=0; i<as.getSize(); i++)
         if(as.get(i).getConcreteClassName() == "Actuation") { act = (Actuation*)&as.get(i); break; }
     if(!act) {
         std::cout << "No Actuation analysis found in analysis set -- adding one" << std::endl;
@@ -912,11 +912,11 @@ addNecessaryAnalyses()
         act->setStepInterval(stepInterval);
         _model->addAnalysis(act);
     }
-    
+
     // Add Kinematics if necessary
     // NOTE: also checks getPrintResultFiles() so that the Kinematics analysis added from the GUI does not count
     Kinematics *kin = NULL;
-    for(int i=0; i<as.getSize(); i++) 
+    for(int i=0; i<as.getSize(); i++)
         if(as.get(i).getConcreteClassName() == "Kinematics" && as.get(i).getPrintResultFiles()) { kin = (Kinematics*)&as.get(i); break; }
     if(!kin) {
         std::cout << "No Kinematics analysis found in analysis set -- adding one" << std::endl;
@@ -949,18 +949,18 @@ initializeControlSetUsingConstraints(
     const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints, ControlSet& rControlSet)
 {
     // Initialize control set with control constraints file
-    
+
     int size = rControlSet.getSize();
     if(aControlConstraints) {
         for(int i=0;i<size;i++) {
             int index = aControlConstraints->getIndex(rControlSet.get(i).getName());
             if(index == -1) {
-                // backwards compatibility with old version of OpenSim that appended the 
+                // backwards compatibility with old version of OpenSim that appended the
                 //                 //  control suffix to the name of the control
                 index = aControlConstraints->getIndex(rControlSet.get(i).getName()+".excitation");
             }
-            if( index > -1 ) { // if we have an associated control constraint 
-                // then, use it initialize the model's control 
+            if( index > -1 ) { // if we have an associated control constraint
+                // then, use it initialize the model's control
                 rControlSet.set(i, aControlConstraints->get(index).clone() );
             }
         }
@@ -985,15 +985,15 @@ initializeControlSetUsingConstraints(
             cout<<"Set "<<rraControlName<<" to use linear interpolation.\n";
         }
 #endif
-    }   
+    }
 }
 //_____________________________________________________________________________
 /**
  * Create a set of control constraints based on an RRA solution.
- * If RRA (Residual Reduction Algorithm) was run to compute or reduce the 
- * residuals as a preprocessing step, those residuals need to be applied 
+ * If RRA (Residual Reduction Algorithm) was run to compute or reduce the
+ * residuals as a preprocessing step, those residuals need to be applied
  * during the CMC run.  They are applied by reading in the residuals computed
- * during RRA and then using these controls to place narrow constraints on 
+ * during RRA and then using these controls to place narrow constraints on
  * the controls for the residual actuators active during the CMC run.
  *
  * @param aControlConstraints Constraints based on a previous RRA solution
@@ -1003,7 +1003,7 @@ ControlSet* CMCTool::
 constructRRAControlSet(ControlSet *aControlConstraints)
 {
     if(_rraControlsFileName=="") return(NULL);
-    
+
     OPENSIM_FUNCTION_NOT_IMPLEMENTED();
     // Need to make sure code below still works after changes to controls/control constraints
 #if 0
@@ -1029,7 +1029,7 @@ constructRRAControlSet(ControlSet *aControlConstraints)
         //int index = _model->getControlIndex(rraControlName);
         int index = 0;
 
-        // Add a constraint based on the rra control 
+        // Add a constraint based on the rra control
         if(index>=0) {
 
             // Create control constraint set if necessary
@@ -1077,11 +1077,11 @@ constructRRAControlSet(ControlSet *aControlConstraints)
 
 //_____________________________________________________________________________
 /**
- * Get a pointer to the Storage object holding forces. This's a utility routine used 
+ * Get a pointer to the Storage object holding forces. This's a utility routine used
  * by the SimTrack GUI primarily to get access to residuals while running RRA.
  *
- * User-beware, the storage will get out of scope and potentially get deleted when the 
- * analysis is done, so no assumptions about the lifetime of the returned storage object 
+ * User-beware, the storage will get out of scope and potentially get deleted when the
+ * analysis is done, so no assumptions about the lifetime of the returned storage object
  * outside the owning analysis should be made.
  */
 Storage& CMCTool::getForceStorage(){
@@ -1097,7 +1097,7 @@ void CMCTool::setOriginalForceSet(const ForceSet &aForceSet) {
 /* Get the Set of model actuators for CMC that exclude user specified Actuators */
 Set<Actuator> CMCTool::
     getActuatorsForCMC(const Array<std::string> &actuatorsByNameOrGroup)
-{   
+{
     Set<Actuator> actuatorsForCMC = _model->getActuators();
     for (int i=actuatorsForCMC.getSize()-1; i>0; i--){
         if (actuatorsForCMC.get(i).get_isDisabled())
@@ -1109,9 +1109,9 @@ Set<Actuator> CMCTool::
     /* The search for inidividual group or force names IS case-sensitive BUT keywords are not*/
     for(int i=0; i<actuatorsByNameOrGroup.getSize(); i++){
         // index result when a name is not a force or group name for forces in the model
-        int k = -1;  
+        int k = -1;
         // It is possible to list actuators by name and group
-        // So check if name is a group name first   
+        // So check if name is a group name first
         if(groupNames.getSize() > 0){
             k = groupNames.findIndex(actuatorsByNameOrGroup[i]);
             if(k > -1){ //found

@@ -35,7 +35,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static const Vec3 DefaultPathSpringColor(.9,.9,.9); // mostly white 
+static const Vec3 DefaultPathSpringColor(.9,.9,.9); // mostly white
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -47,7 +47,7 @@ PathSpring::PathSpring()
     constructInfrastructure();
 }
 
-PathSpring::PathSpring(const string& name, double restLength, 
+PathSpring::PathSpring(const string& name, double restLength,
                        double stiffness, double dissipation)
 {
     constructInfrastructure();
@@ -72,7 +72,7 @@ void PathSpring::constructProperties()
 
 void PathSpring::constructOutputs()
 {
-    constructOutput<double>("stretch", 
+    constructOutput<double>("stretch",
            std::bind(&PathSpring::getStretch, this, std::placeholders::_1),
                       SimTK::Stage::Position);
 }
@@ -162,7 +162,7 @@ double PathSpring::getTension(const SimTK::State& s) const
     // damping opposes lengthening, which is positive lengthening speed
     // there for stretch and lengthening speed increase tension
     return getStiffness()*getStretch(s) *                   //elastic force
-                (1+getDissipation()*getLengtheningSpeed(s));   //dissipation 
+                (1+getDissipation()*getLengtheningSpeed(s));   //dissipation
 }
 
 
@@ -227,8 +227,8 @@ double PathSpring::computeMomentArm(const SimTK::State& s, Coordinate& aCoord) c
 
 
 
-void PathSpring::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void PathSpring::computeForce(const SimTK::State& s,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const
 {
     const GeometryPath& path = getGeometryPath();
@@ -238,7 +238,7 @@ void PathSpring::computeForce(const SimTK::State& s,
     path.getPointForceDirections(s, &PFDs);
 
     for (int i=0; i < PFDs.getSize(); i++) {
-        applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), 
+        applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(),
                           tension*PFDs[i]->direction(), bodyForces);
     }
 

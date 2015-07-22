@@ -52,7 +52,7 @@ public:
     OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
         "Location of the weld in second body specified in body2 reference frame.");
     OpenSim_DECLARE_PROPERTY(orientation_body_1, SimTK::Vec3,
-        "Orientation of the weld axes on body1 specified in body1's reference frame."  
+        "Orientation of the weld axes on body1 specified in body1's reference frame."
         "Euler XYZ body-fixed rotation angles are used to express the orientation.");
     OpenSim_DECLARE_PROPERTY(orientation_body_2, SimTK::Vec3,
         "Orientation of the weld axes on body2 specified in body2's reference frame."
@@ -65,7 +65,7 @@ public:
     // CONSTRUCTION
     WeldConstraint();
     // Convenience constructors
-    WeldConstraint(const std::string &name, 
+    WeldConstraint(const std::string &name,
         const PhysicalFrame& body1, SimTK::Vec3 locationInBody1, SimTK::Vec3 orientationInBody1,
         const PhysicalFrame& body2, SimTK::Vec3 locationInBody2, SimTK::Vec3 orientationInBody2);
     WeldConstraint(const std::string &name,
@@ -74,7 +74,7 @@ public:
 
     virtual ~WeldConstraint();
 
-    //SET 
+    //SET
     void setBody1ByName(const std::string& aBodyName);
     void setBody1WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
     void setBody2ByName(const std::string& aBodyName);

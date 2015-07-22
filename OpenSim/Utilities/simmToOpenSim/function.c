@@ -478,7 +478,7 @@ void calc_function_coefficients(dpFunction* sf)
       else
          val = sampling_rate / pow(2.0*M_PI*sf->cutoff_frequency/pow(sqrt(2.0)-1.0,0.5/half_order), 2.0*half_order);
 
-      gcvspl(sf->x, sf->y, &sf->numpoints, weight_x, weight_y, &half_order, 
+      gcvspl(sf->x, sf->y, &sf->numpoints, weight_x, weight_y, &half_order,
              &sf->numpoints, &k, &mode, &val, sf->c, &sf->numpoints, work, &ier);
 
         free(weight_x);

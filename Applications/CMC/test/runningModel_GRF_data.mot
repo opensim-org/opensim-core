@@ -1,8 +1,8 @@
-name runningModel_GRF_data.mot																		
-datacolumns 19																		
-datarows 691																		
-range 0.860000 1.550000																		
-endheader																		
+name runningModel_GRF_data.mot
+datacolumns 19
+datarows 691
+range 0.860000 1.550000
+endheader
                 time	   R_ground_force_vx	   R_ground_force_vy	   R_ground_force_vz	   R_ground_force_px	   R_ground_force_py	   R_ground_force_pz	   L_ground_force_vx	   L_ground_force_vy	   L_ground_force_vz	   L_ground_force_px	   L_ground_force_py	   L_ground_force_pz	   R_ground_torque_x	   R_ground_torque_y	   R_ground_torque_z	   L_ground_torque_x	   L_ground_torque_y	   L_ground_torque_z
 0.86	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
 0.861	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0

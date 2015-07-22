@@ -43,9 +43,9 @@ class Model;
  * A parent class for implementing an OpenSim Condition. Condition objects
  * are useful for encapulating logic that is commonly used to make decisions.
  * A Condition returns whether or not a particular condition is true or not,
- * based on the current state. 
- * 
- * Specific Conditions should be derived from this class. 
+ * based on the current state.
+ *
+ * Specific Conditions should be derived from this class.
  *
  * @author Ajay Seth
  * @version 1.0
@@ -58,7 +58,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(Condition, Object);
 //=============================================================================
 
 protected:
-    /** Flag indicating whether the Condition is disabled or not.  Disabled 
+    /** Flag indicating whether the Condition is disabled or not.  Disabled
     means that the Condition is not active when */
     PropertyBool _isDisabledProp;
     bool &_isDisabled;
@@ -86,7 +86,7 @@ public:
     virtual void setDisabled(bool isDisabled) {_isDisabled = isDisabled; } ;
 
     /**
-     *  The defining condition method that subclasses must override 
+     *  The defining condition method that subclasses must override
      */
     virtual bool calcCondition(const SimTK::State& s) const {return true; };
 

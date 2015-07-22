@@ -35,7 +35,7 @@
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/FunctionSet.h> 
+#include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/Constant.h>
 #include "AnalyzeTool.h"
@@ -55,7 +55,7 @@ using namespace SimTK;
 InverseDynamicsTool::~InverseDynamicsTool()
 {
     if (_coordinateValues) {
-        delete _coordinateValues; _coordinateValues=NULL; 
+        delete _coordinateValues; _coordinateValues=NULL;
     }
 }
 //_____________________________________________________________________________
@@ -204,7 +204,7 @@ void InverseDynamicsTool::setCoordinateValues(const OpenSim::Storage& aStorage)
 
 /** Build the list of Joints for computing and reporting equivalent body forces */
 void InverseDynamicsTool::getJointsByName(Model &model, const Array<std::string> &jointNames, JointSet &joints) const
-{   
+{
     const JointSet &modelJoints = model.getJointSet();
     Array<string> groupNames;
     modelJoints.getGroupNames(groupNames);
@@ -217,8 +217,8 @@ void InverseDynamicsTool::getJointsByName(Model &model, const Array<std::string>
                 joints.adoptAndAppend(&modelJoints[j]);
             }
             break;
-        } 
-        
+        }
+
         int k = modelJoints.getIndex(jointNames[i]);
         if (k >= 0){
             joints.adoptAndAppend(&modelJoints[k]);
@@ -243,7 +243,7 @@ bool InverseDynamicsTool::run()
     bool modelFromFile=true;
     try{
         //Load and create the indicated model
-        if (!_model) 
+        if (!_model)
             _model = new Model(_modelFileName);
         else
             modelFromFile = false;
@@ -253,7 +253,7 @@ bool InverseDynamicsTool::run()
 
         _model->setup();
 
-        // Do the maneuver to change then restore working directory 
+        // Do the maneuver to change then restore working directory
         // so that the parsing code behaves properly if called from a different directory.
         string saveWorkingDirectory = IO::getCwd();
         string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
@@ -287,7 +287,7 @@ bool InverseDynamicsTool::run()
                 else{
                     coordFunctions->insert(i,new Constant(coords[i].getDefaultValue()));
                     std::cout << "InverseDynamicsTool: coordinate file does not contain coordinate "
-                        << coords[i].getName() << " assuming default value" 
+                        << coords[i].getName() << " assuming default value"
                         << std::endl;
                 }
             }
@@ -323,7 +323,7 @@ bool InverseDynamicsTool::run()
         const clock_t start = clock();
 
         int nt = final_index-start_index+1;
-        
+
         Array_<double> times(nt, 0.0);
         for(int i=0; i<nt; i++){
             times[i]=_coordinateValues->getStateVector(start_index+i)->getTime();
@@ -332,7 +332,7 @@ bool InverseDynamicsTool::run()
         // Preallocate results
         Array_<Vector> genForceTraj(nt, Vector(nq, 0.0));
 
-        // solve for the trajectory of generalized forces that correspond to the 
+        // solve for the trajectory of generalized forces that correspond to the
         // coordinate trajectories provided
         ivdSolver.solve(s, *coordFunctions, times, genForceTraj);
 
@@ -340,7 +340,7 @@ bool InverseDynamicsTool::run()
         success = true;
 
         cout << "InverseDynamicsTool: " << nt << " time frames in " <<(double)(clock()-start)/CLOCKS_PER_SEC << "s\n" <<endl;
-    
+
         JointSet jointsForEquivalentBodyForces;
         getJointsByName(*_model, _jointsForReportingBodyForces, jointsForEquivalentBodyForces);
         int nj = jointsForEquivalentBodyForces.getSize();
@@ -383,12 +383,12 @@ bool InverseDynamicsTool::run()
                     q[j] = coordFunctions->evaluate(j, 0, times[i]);
                     u[j] = coordFunctions->evaluate(j, 1, times[i]);
                 }
-            
+
                 for(int j=0; j<nj; ++j){
                     equivalentBodyForceAtJoint = jointsForEquivalentBodyForces[j].calcEquivalentSpatialForce(s, genForceTraj[i]);
                     for(int k=0; k<3; ++k){
                         // body force components
-                        bodyForcesVec.setDataValue(6*j+k, equivalentBodyForceAtJoint[1][k]); 
+                        bodyForcesVec.setDataValue(6*j+k, equivalentBodyForceAtJoint[1][k]);
                         // body torque components
                         bodyForcesVec.setDataValue(6*j+k+3, equivalentBodyForceAtJoint[0][k]);
                     }

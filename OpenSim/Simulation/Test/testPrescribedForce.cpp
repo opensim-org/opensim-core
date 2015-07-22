@@ -30,7 +30,7 @@
 //      3. Force at a point
 //      4. Torque on a body
 //      4. Forces from a file.
-//     Add tests here 
+//     Add tests here
 //
 //==========================================================================================================
 #include <iostream>

@@ -29,14 +29,14 @@
 #include <OpenSim/Common/FunctionSet.h>
 
 
-namespace OpenSim { 
+namespace OpenSim {
 
 class Function;
 
 //=============================================================================
 //=============================================================================
 /**
- * PrescribedController is a concrete Controller that specifies functions that 
+ * PrescribedController is a concrete Controller that specifies functions that
  * prescribe the control values of its actuators as a function of time.
  *
  * @author  Ajay Seth
@@ -76,11 +76,11 @@ public:
     PrescribedController();
 
     /** Convenience constructor get controls from file
-     * @param controlsFileName  string containing the controls storage (.sto) 
+     * @param controlsFileName  string containing the controls storage (.sto)
      * @param interpMethodType  int 0-constant, 1-linear, 3-cubic, 5-quintic
      *                          defaults to linear.
      */
-    PrescribedController(const std::string& controlsFileName, 
+    PrescribedController(const std::string& controlsFileName,
                          int interpMethodType = 1);
 
     /** Destructor */
@@ -93,14 +93,14 @@ public:
      * Compute the control values for all actuators under the control of this
      * Controller.
      *
-     * @param s             system state 
-     * @param controls      model controls  
+     * @param s             system state
+     * @param controls      model controls
      */
-    void computeControls(const SimTK::State& s, 
+    void computeControls(const SimTK::State& s,
                          SimTK::Vector& controls) const override;
 
     /**
-     *  Assign a prescribe control function for the desired actuator identified 
+     *  Assign a prescribe control function for the desired actuator identified
      *  by its index. Controller takes ownership of the function.
      *  @param index                the actuator's index in the controller's set
      *  @param prescribedFunction   the actuator's control function

@@ -51,7 +51,7 @@ MarkerSet::MarkerSet(Model& aModel, const string& aMarkersFileName) :
 ModelComponentSet<Marker>(aModel, aMarkersFileName, false)
 {
     setNull();
-    SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
+    SimTK::Xml::Element e = updDocument()->getRootDataElement();
     updateFromXMLNode(e, getDocument()->getDocumentVersion());
 }
 
@@ -175,7 +175,7 @@ Marker* MarkerSet::addMarker(const string& aName, const SimTK::Vec3& aOffset, Op
     m->set_location(aOffset);
     // Frame will be based on this name when marker is connected to Model.
 
-    m->setFrameName(aPhysicalFrame.getName()); 
+    m->setFrameName(aPhysicalFrame.getName());
     aPhysicalFrame.updModel().addMarker(m);
 
     return m;

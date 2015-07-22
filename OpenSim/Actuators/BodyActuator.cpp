@@ -38,7 +38,7 @@ using SimTK::Vec3;
 //=============================================================================
 // CONSTRUCTORS
 //=============================================================================
-// Uses default (compiler-generated) destructor, copy constructor, copy 
+// Uses default (compiler-generated) destructor, copy constructor, copy
 // assignment operator.
 //_____________________________________________________________________________
 /**
@@ -54,7 +54,7 @@ BodyActuator::BodyActuator()
 /**
 * Convenience constructor.
 */
-BodyActuator::BodyActuator(const Body& body, 
+BodyActuator::BodyActuator(const Body& body,
                            const SimTK::Vec3& point,
                            bool pointIsGlobal,
                            bool spatialForceIsGlobal)
@@ -128,11 +128,11 @@ void BodyActuator::computeForce(const SimTK::State& s,
 
     const SimbodyEngine& engine = getModel().getSimbodyEngine();
     const bool spatialForceIsGlobal = getSpatialForceIsGlobal();
-    
+
     const Body& body = getConnector<Body>("body").getConnectee();
     const SimTK::MobilizedBody& body_mb = body.getMobilizedBody();
 
-    Vec3 pointOfApplication = get_point(); 
+    Vec3 pointOfApplication = get_point();
 
     // get the control signals
     const SimTK::Vector bodyForceVals = getControls(s);
@@ -150,7 +150,7 @@ void BodyActuator::computeForce(const SimTK::State& s,
         engine.transform(s, body, forceVec, getModel().getGround(), forceVec);
     }
 
-    // if the point of applying force is not in body frame (which is the default 
+    // if the point of applying force is not in body frame (which is the default
     // case) transform it to body frame
     if (get_point_is_global())
         engine.transformPosition(s, getModel().getGround(), pointOfApplication,

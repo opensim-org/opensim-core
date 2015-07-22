@@ -40,8 +40,8 @@ namespace OpenSim {
 //                    ACTIVATION FIBER LENGTH MUSCLE
 //==============================================================================
 /**
- * A base class representing a two-state muscle-tendon actuator. 
- * It adds activation and fiber-length states and dynamics to the 
+ * A base class representing a two-state muscle-tendon actuator.
+ * It adds activation and fiber-length states and dynamics to the
  * Muscle class, but does not implement all of the necessary methods,
  * so it is abstract as well. The path information for a muscle is contained
  * in the Muscle class, and the force-generating behavior should be defined in
@@ -98,7 +98,7 @@ public:
     // State Variable Derivative
     //--------------------------------------------------------------------------
     double getActivationRate(const SimTK::State& s) const;
-    
+
     //--------------------------------------------------------------------------
     // SCALING
     //--------------------------------------------------------------------------
@@ -108,17 +108,17 @@ protected:
     //--------------------------------------------------------------------------
     // FORCE APPLICATION
     //--------------------------------------------------------------------------
-    virtual void computeForce(const SimTK::State& state, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+    virtual void computeForce(const SimTK::State& state,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForce) const;
 
     /** Calculate activation rate */
     virtual double calcActivationRate(const SimTK::State& s) const = 0;
 
-    /* compute initial fiber length (velocity) such that muscle fiber and tendon are 
+    /* compute initial fiber length (velocity) such that muscle fiber and tendon are
         in static equilibrium and update the state */
     //virtual void computeInitialFiberEquilibrium(SimTK::State& s) const;
-    
+
     /** Model Component Interface */
     void extendConnectToModel(Model& aModel) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
@@ -127,7 +127,7 @@ protected:
     void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
     static const std::string STATE_ACTIVATION_NAME;
-    static const std::string STATE_FIBER_LENGTH_NAME;   
+    static const std::string STATE_FIBER_LENGTH_NAME;
 
 private:
     void constructProperties();

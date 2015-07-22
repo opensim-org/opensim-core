@@ -98,7 +98,7 @@ Analysis(aFileName, false)
     allocateStorage();
 }
 
-// Copy constrctor and virtual copy 
+// Copy constrctor and virtual copy
 //_____________________________________________________________________________
 /**
 * Copy constructor.

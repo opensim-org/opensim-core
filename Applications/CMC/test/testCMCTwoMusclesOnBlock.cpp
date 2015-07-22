@@ -40,14 +40,14 @@ int main() {
     catch (const std::exception& e)
         {  cout << e.what() <<endl; failures.push_back("testTwoMusclesOnBlock"); }
 
-    // redo with the Millard2012EquilibriumMuscle 
+    // redo with the Millard2012EquilibriumMuscle
     Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
 
     try {testTwoMusclesOnBlock();}
     catch (const std::exception& e)
-        {   cout << e.what() <<endl; 
+        {   cout << e.what() <<endl;
             failures.push_back("testTwoMusclesOnBlock_Millard"); }
-    
+
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
@@ -73,7 +73,7 @@ void testSingleRigidTendonMuscle() {
     forward.run();
 
     // Use copy of the model because forward adds a ControlSetController to the model and the controls from CMC
-    // are added in with those "feedforward" controls. Instead we want to verify that CMC can compute these 
+    // are added in with those "feedforward" controls. Instead we want to verify that CMC can compute these
     // samecontrols
     CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
     cmc.setModel(*modelCopy);
@@ -84,7 +84,7 @@ void testSingleRigidTendonMuscle() {
 
     // Tolerance of 2mm or position error and 2mm/s translational velocity of the block
     CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.0025, 4), __FILE__, __LINE__, "testSingleRigidTendonMuscle failed");
-    
+
     cout << "testSingleRigidTendonMuscle passed\n" << endl;
 }
 
@@ -118,7 +118,7 @@ void testTwoMusclesOnBlock() {
 
     ForwardTool forward("twoMusclesOnBlock_Setup_Forward.xml");
     forward.run();
-    
+
     CMCTool cmc("twoMusclesOnBlock_Setup_CMC.xml");
     cmc.run();
 
@@ -128,16 +128,16 @@ void testTwoMusclesOnBlock() {
     Array<double> rms_tols(0.0025, 6);
     rms_tols[1] = 0.001; // block_u
     rms_tols[2] = 0.05;  // muscle 1 activation
-    rms_tols[3] = 0.001; // muscle 1 fiber length 
+    rms_tols[3] = 0.001; // muscle 1 fiber length
     rms_tols[4] = 0.05;  // muscle 2 activation
-    rms_tols[5] = 0.001; // muscle 2 fiber length 
+    rms_tols[5] = 0.001; // muscle 2 fiber length
 
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
     string base = "testTwoMusclesOnBlock "+ muscleType;
 
     CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, rms_tols, __FILE__, __LINE__,
         base+" failed");
-    
+
     cout << "\n" << base << " passed\n" << endl;
 }
 

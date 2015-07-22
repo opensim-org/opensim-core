@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -43,7 +43,7 @@
  * @author Ayman Habib (After rdmAnimationCallback)
  * @version 1.0
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 class SimtkAnimationCallback : public IntegCallback
 {
@@ -51,7 +51,7 @@ class SimtkAnimationCallback : public IntegCallback
 // DATA
 //=============================================================================
 protected:
-    
+
     Transform*      _transforms;
     /** Current simulation time for feedback purposes */
     double          _currentTime;
@@ -111,19 +111,19 @@ public:
     static int _turn;
     static bool _flag[2];
 public:
-    void mutex_begin(int i) { 
-        int j = 1-i; // i=me, j=other 
-        _flag[i] = true;                         
-        _turn = j;                               
-        //std::cout << "In mutex_begin:" << i << j 
-        //  << _flag[0] << _flag[1] 
+    void mutex_begin(int i) {
+        int j = 1-i; // i=me, j=other
+        _flag[i] = true;
+        _turn = j;
+        //std::cout << "In mutex_begin:" << i << j
+        //  << _flag[0] << _flag[1]
         //  << _turn << std::endl;
-        while (_flag[j] && _turn==j) ;// skip 
+        while (_flag[j] && _turn==j) ;// skip
         //std::cout << "Leave mutex_begin:" << i << std::endl;
 
     }
     void mutex_end(int i){
-        _flag[i] = false;                         
+        _flag[i] = false;
     }
 */
 //=============================================================================

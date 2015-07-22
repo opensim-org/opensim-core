@@ -10,7 +10,7 @@
    All rights reserved.
    Portions of this source code are copyrighted by MusculoGraphics, Inc.
 
-   Description: 
+   Description:
 
    Routines:
       delete_model            : deletes a model
@@ -290,7 +290,7 @@ double check_gencoord_wrapping(GeneralizedCoord* gc, double change)
 #if ! ENGINE
 
 /* MAKEGENCFORM: this routine makes the form for changing gencoord values.
- * It also makes the checkbox panel for setting clamp/unclamp 
+ * It also makes the checkbox panel for setting clamp/unclamp
  * for the gencoords and lock/unlock for the gencoords.
  */
 

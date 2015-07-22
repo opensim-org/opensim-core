@@ -1,7 +1,7 @@
 /*******************************************************************************
 
    CEFUNCTIONS.H - this header declares the Constraint Editor's public functions
-      
+
    Author: Krystyne Blaikie (based on wefunctions.h by Kenny Smith)
 
    Date: 8-APR-02
@@ -22,7 +22,7 @@ void   move_ce_help_text(int dummy_int, double slider_value, double delta);
 
 void   ce_track_cb(void* data, SimmEvent se);
 
-void   ce_recalc_loops_and_constraints(ModelStruct* ms, int constraint_object, 
+void   ce_recalc_loops_and_constraints(ModelStruct* ms, int constraint_object,
                              SBoolean displayErrorMsg);
 
 

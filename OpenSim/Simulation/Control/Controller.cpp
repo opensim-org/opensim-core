@@ -45,7 +45,7 @@ using namespace std;
 /**
  * Default constructor.
  */
-Controller::Controller() 
+Controller::Controller()
 {
     constructProperties();
 }

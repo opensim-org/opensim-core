@@ -38,9 +38,9 @@ class Model;
 //                         ACTIVE FIBER POWER PROBE
 //===============================================================================
 /**
-MuscleActiveFiberPowerProbe is a ModelComponent probe for computing an 
-operation on the active fiber power of a muscle.  
-  
+MuscleActiveFiberPowerProbe is a ModelComponent probe for computing an
+operation on the active fiber power of a muscle.
+
   @author Matt Millard
  */
 class OSIMSIMULATION_API MuscleActiveFiberPowerProbe : public Probe {
@@ -92,7 +92,7 @@ public:
     /** Returns the number of probe inputs in the vector returned by computeProbeInputs(). */
     int getNumProbeInputs() const override;
 
-    /** Returns the column labels of the probe values for reporting. 
+    /** Returns the column labels of the probe values for reporting.
         Currently uses the Probe name as the column label, so be sure
         to name your probe appropiately! */
     virtual OpenSim::Array<std::string> getProbeOutputLabels() const override;
@@ -106,7 +106,7 @@ private:
     // ModelComponent Interface
     //--------------------------------------------------------------------------
     void extendConnectToModel(Model& aModel) override;
-    
+
     void setNull();
     void constructProperties();
 

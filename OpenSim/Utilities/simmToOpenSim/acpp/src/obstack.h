@@ -108,7 +108,7 @@ Summary:
 
 #ifndef __OBSTACKS__
 #define __OBSTACKS__
-
+
 /* We use subtraction of (char *)0 instead of casting to int
    because on word-addressable machines a simple cast to int
    may ignore the byte-within-word field of the pointer.  */
@@ -140,7 +140,7 @@ struct obstack      /* control current object in current chunk */
   struct _obstack_chunk *(*chunkfun) (); /* User's fcn to allocate a chunk.  */
   void (*freefun) ();       /* User's function to free a chunk.  */
 };
-
+
 #ifdef __STDC__
 
 /* Do the function-declarations after the structs
@@ -183,7 +183,7 @@ int obstack_chunk_size (struct obstack *obstack);
 
 /* Non-ANSI C cannot really support alternative functions for these macros,
    so we do not declare them.  */
-
+
 /* Pointer to beginning of object being allocated or to be allocated next.
    Note that this might not be the final address of the object
    because a new chunk might be needed to hold the final size.  */
@@ -211,7 +211,7 @@ int obstack_chunk_size (struct obstack *obstack);
 #define obstack_1grow_fast(h,achar) (*((h)->next_free)++ = achar)
 
 #define obstack_blank_fast(h,n) ((h)->next_free += (n))
-
+
 #if defined (__GNUC__) && defined (__STDC__)
 
 /* For GNU C, if not -traditional,
@@ -256,7 +256,7 @@ int obstack_chunk_size (struct obstack *obstack);
 /* These assume that the obstack alignment is good enough for pointers or ints,
    and that the data added so far to the current object
    shares that much alignment.  */
-   
+
 #define obstack_ptr_grow(OBSTACK,datum)                 \
 ({ struct obstack *__o = (OBSTACK);                 \
    ((__o->next_free + sizeof (void *) > __o->chunk_limit)       \
@@ -315,7 +315,7 @@ int obstack_chunk_size (struct obstack *obstack);
    if (__obj >= (void *)__o->chunk && __obj < (void *)__o->chunk_limit) \
      __o->next_free = __o->object_base = __obj;             \
    else (obstack_free) (__o, __obj); })
-
+
 #else /* not __GNUC__ or not __STDC__ */
 
 /* The non-GNU macros copy the obstack-pointer into this global variable

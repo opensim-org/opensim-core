@@ -243,7 +243,7 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
      * frames in the user-specified time range.
      */
     MarkerData staticPose(aPathToSubject + _markerFileName);
-    if (_timeRange.getSize()<2) 
+    if (_timeRange.getSize()<2)
         throw Exception("MarkerPlacer::processModel, time_range is unspecified.");
 
     staticPose.averageFrames(_maxMarkerMovement, _timeRange[0], _timeRange[1]);
@@ -256,7 +256,7 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 
     // Construct the system and get the working state when done changing the model
     SimTK::State& s = aModel->initSystem();
-    
+
     // Create references and WeightSets needed to initialize InverseKinemaicsSolver
     Set<MarkerWeight> markerWeightSet;
     _ikTaskSet.createMarkerWeightSet(markerWeightSet); // order in tasks file
@@ -273,7 +273,7 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
         haveCoordinateFile = true;
         coordFunctions = new GCVSplineSet(5,&coordinateValues);
     }
-    
+
     int index = 0;
     for(int i=0; i< _ikTaskSet.getSize(); i++){
         IKCoordinateTask *coordTask = dynamic_cast<IKCoordinateTask *>(&_ikTaskSet[i]);
@@ -300,8 +300,8 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 
             // We have a valid coordinate reference so now set its weight according to the task
             coordRef->setWeight(coordTask->getWeight());
-            coordinateReferences.push_back(*coordRef);      
-        }           
+            coordinateReferences.push_back(*coordRef);
+        }
     }
     double constraintWeight = std::numeric_limits<SimTK::Real>::infinity();
 
@@ -311,7 +311,7 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 
     // Call realize Position so that the transforms are updated and  markers can be moved correctly
     aModel->getMultibodySystem().realize(s, SimTK::Stage::Position);
-    // Report marker errors to assess the quality 
+    // Report marker errors to assess the quality
     int nm = markerWeightSet.getSize();
     SimTK::Array_<double> squaredMarkerErrors(nm, 0.0);
     SimTK::Array_<Vec3> markerLocations(nm, Vec3(0));
@@ -344,7 +344,7 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
     Storage motionData;
     StatesReporter statesReporter(aModel);
     statesReporter.begin(s);
-    
+
     _outputStorage = new Storage(statesReporter.updStatesStorage());
     _outputStorage->setName("static pose");
     //_outputStorage->print("statesReporterOutput.sto");
@@ -366,10 +366,10 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
             aModel->writeMarkerFile(aPathToSubject + _outputMarkerFileName);
             cout << "Wrote marker file " << _outputMarkerFileName << " from model " << aModel->getName() << endl;
         }
-        
+
         if (!_outputMotionFileNameProp.getValueIsDefault())
         {
-            _outputStorage->print(aPathToSubject + _outputMotionFileName, 
+            _outputStorage->print(aPathToSubject + _outputMotionFileName,
                 "w", "File generated from solving marker data for model "+aModel->getName());
         }
     }
@@ -427,7 +427,7 @@ void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel, Marker
     cout << "Moved markers in model " << aModel.getName() << " to match locations in marker file " << aPose.getFileName() << endl;
 }
 
-Storage *MarkerPlacer::getOutputStorage() 
+Storage *MarkerPlacer::getOutputStorage()
 {
     return _outputStorage; ;
 }

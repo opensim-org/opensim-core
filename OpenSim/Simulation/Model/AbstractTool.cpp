@@ -322,7 +322,7 @@ operator=(const AbstractTool &aTool)
     _externalLoadsFileName = aTool._externalLoadsFileName;
     // CONTROLLER
     _controllerSet = aTool._controllerSet;
-    
+
     return(*this);
 }
 
@@ -562,7 +562,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         return false;
     }
 
-    // This is required so that the references to other files inside ExternalLoads file are interpretted 
+    // This is required so that the references to other files inside ExternalLoads file are interpretted
     // as relative paths
     std::string savedCwd = IO::getCwd();
     IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
@@ -583,9 +583,9 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     _externalLoads.invokeConnectToModel(aModel);
 
     string loadKinematicsFileName = _externalLoads.getExternalLoadsModelKinematicsFileName();
-    
+
     const Storage *loadKinematicsForPointTransformation = NULL;
-    
+
     //If the the Tool is already loading the storage allow it to pass it in for use rather than reloading and processing
     if(loadKinematics && loadKinematics->getName() == loadKinematicsFileName){
         loadKinematicsForPointTransformation = loadKinematics;
@@ -598,7 +598,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
             temp = new Storage(loadKinematicsFileName);
             if(!temp){
                 IO::chDir(savedCwd);
-                throw Exception("DynamicsTool: could not find external loads kinematics file '"+loadKinematicsFileName+"'."); 
+                throw Exception("DynamicsTool: could not find external loads kinematics file '"+loadKinematicsFileName+"'.");
             }
         }
         // if loading the data, do whatever filtering operations are also specified
@@ -609,12 +609,12 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         }
         loadKinematicsForPointTransformation = temp;
     }
-    
+
     // if load kinematics for performing re-expressing the point of application is provided
     // then perform the transformations
     if(loadKinematicsForPointTransformation){
         SimTK::State& s = aModel.initSystem();
-        
+
         // Form complete storage so that the kinematics match the state labels/ordering
         Storage *qStore=NULL;
         Storage *uStore=NULL;
@@ -629,7 +629,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 
         aModel.invalidateSystem();
     }
-    
+
     // Add external loads to the set of all model forces
     for(int i=0; i<_externalLoads.getSize(); ++i){
         aModel.updForceSet().adoptAndAppend(&_externalLoads[i]);
@@ -665,19 +665,19 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
                 SimTK::String transcoded=controlsFileNode->getValueAs<SimTK::String>();
                 if (transcoded.length()>0)
                     controlsFileName = transcoded;
-            
+
                 aNode.eraseNode(controlsFileNode);
                     }
                 }
         if (versionNumber<20001){
-            // if external loads .mot file has been speified, create 
+            // if external loads .mot file has been speified, create
             // an XML file corresponding to it and set it as new external loads file
             SimTK::Xml::element_iterator it = aNode.element_begin("external_loads_file");
             if (it != aNode.element_end()){
                 string oldFile = it->getValueAs<string>();
             if (oldFile!="" && oldFile!="Unassigned"){
                 if (oldFile.substr(oldFile.length()-4, 4)!=".xml"){
-                    // get names of bodies for external loads and create an xml file for the forceSet 
+                    // get names of bodies for external loads and create an xml file for the forceSet
                     string body1, body2;
                         body1 = aNode.element_begin("external_loads_body1")->getValueAs<string>();
                         body2 = aNode.element_begin("external_loads_body2")->getValueAs<string>();
@@ -692,7 +692,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         }
         if (versionNumber<20201){
             // Move ExternalLoadKinematics and Filtering into ExternalLoads object
-            // Get nodes for "external_loads_model_kinematics_file" and 
+            // Get nodes for "external_loads_model_kinematics_file" and
             // "lowpass_cutoff_frequency_for_load_kinematics" and if either is not null
             // AND "external_loads_file" is not null then move these two nodes under it
             // and change top level object type from ForceSet to ExternalLoads
@@ -851,8 +851,8 @@ std::string AbstractTool::getNextAvailableForceName(const std::string prefix) co
     return candidateName;
 }
 
-std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile, 
-                                          const std::string& body1, 
+std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
+                                          const std::string& body1,
                                           const std::string& body2)
 {
     bool oldFileValid = !(oldFile=="" || oldFile=="Unassigned");
@@ -874,8 +874,8 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
     const Array<string>& labels=dataFile.getColumnLabels();
     bool body1Valid = !(body1=="" || body1=="Unassigned");
     bool body2Valid = !(body2=="" || body2=="Unassigned");
-    std::string forceLabels[9] = {"ground_force_vx", "ground_force_vy", "ground_force_vz", 
-        "ground_force_px", "ground_force_py", "ground_force_pz", 
+    std::string forceLabels[9] = {"ground_force_vx", "ground_force_vy", "ground_force_vz",
+        "ground_force_px", "ground_force_py", "ground_force_pz",
         "ground_torque_x", "ground_torque_y", "ground_torque_z"};
     // We'll create upto 2 PrescribedForces
     if (body1Valid && body2Valid){
@@ -883,7 +883,7 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
         int indices[9][2];
         for(int i=0; i<9; i++){
             indices[i][0]= labels.findIndex(forceLabels[i]);
-            if (indices[i][0]==-1){ // Something went wrong, abort here 
+            if (indices[i][0]==-1){ // Something went wrong, abort here
                 if(getDocument()) IO::chDir(savedCwd);
                 string msg =
                     "Object: ERR- Could not find label "+forceLabels[i]+ "in file " + oldFile+ ". Aborting.";

@@ -142,8 +142,8 @@
 										<prescribed_function />
 										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
 										<prescribed>false</prescribed>
-                    <!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints. When true, 
-                        the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which 
+                    <!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints. When true,
+                        the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which
                         have this flag set to false, to dictate the value of unimportant coordinates if they are linked via constraints.-->
                     <is_free_to_satisfy_constraints>true</is_free_to_satisfy_constraints>
                   </Coordinate>
@@ -231,8 +231,8 @@
                     <prescribed_function />
                     <!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
                     <prescribed>false</prescribed>
-                    <!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints. When true, 
-                        the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which 
+                    <!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints. When true,
+                        the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which
                         have this flag set to false, to dictate the value of unimportant coordinates if they are linked via constraints.-->
                     <is_free_to_satisfy_constraints>true</is_free_to_satisfy_constraints>
                   </Coordinate>
@@ -329,8 +329,8 @@
                     <locked>false</locked>
                     <!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
                     <prescribed_function />
-                    <!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints. When true, 
-                        the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which 
+                    <!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints. When true,
+                        the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which
                         have this flag set to false, to dictate the value of unimportant coordinates if they are linked via constraints.-->
                     <is_free_to_satisfy_constraints>true</is_free_to_satisfy_constraints>
                   </Coordinate>
@@ -349,8 +349,8 @@
                     <locked>false</locked>
                     <!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
                     <prescribed_function />
-                    <!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints. When true, 
-                        the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which 
+                    <!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints. When true,
+                        the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which
                         have this flag set to false, to dictate the value of unimportant coordinates if they are linked via constraints.-->
                     <is_free_to_satisfy_constraints>true</is_free_to_satisfy_constraints>
                   </Coordinate>
@@ -397,7 +397,7 @@
             <groups />
           </WrapObjectSet>
         </Body>
-        
+
 
 			</objects>
 			<groups />

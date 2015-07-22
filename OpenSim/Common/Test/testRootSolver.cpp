@@ -62,7 +62,7 @@ int main()
         Array<double> a(-1.0,N), b(1.0,N), tol(1.0e-6,N);
         Array<double> roots(0.0,N);
         RootSolver solver(&function);
-        //roots = solver.solve(a,b,tol);  NOTE: JACKM need to pass in state or change CMC 
+        //roots = solver.solve(a,b,tol);  NOTE: JACKM need to pass in state or change CMC
         cout<<endl<<endl<<"-------------"<<endl;
         cout<<"roots:\n";
         cout<<roots<<endl<<endl;

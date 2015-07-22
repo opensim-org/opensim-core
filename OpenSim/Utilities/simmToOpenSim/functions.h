@@ -435,8 +435,8 @@ ReturnCode make_selectors(void);
 void   make_slider(Slider* sl, SliderType type, IntBox bbox, int thumb_thickness,
            double value, double min_value, double max_value,
            double arrow_step, char label[], void* data);
-void make_cropslider(CropSlider* sl, int originX, int originY, IntBox bbox, int thumb_thickness, double start_value, 
-                     double end_value, double min_value, double max_value, double arrow_step, 
+void make_cropslider(CropSlider* sl, int originX, int originY, IntBox bbox, int thumb_thickness, double start_value,
+                     double end_value, double min_value, double max_value, double arrow_step,
                      char start_label[], char end_label[], void* data);
 #endif
 void   make_string_lower_case(char str_buffer[]);
@@ -929,19 +929,19 @@ int countUsedFunctions(ModelStruct* ms);
 
 /********************** Function Prototypes in IK_solver *******************/
 int lmdif_(int (*fcn) (void *data, int *m, int *n, double x[], double fvec[],
-           int *iflag), integer *m, integer *n, doublereal *x, 
-           doublereal *fvec, 
-           doublereal *ftol, doublereal *xtol, doublereal *gtol, 
-           integer *maxfev, 
-    doublereal *epsfcn, doublereal *diag, integer *mode, doublereal *factor, 
-   integer *nprint, integer *info, 
-   integer *nfev, doublereal *fjac, integer *ldfjac, integer *ipvt, 
-    doublereal *qtf, doublereal *wa1, doublereal *wa2, doublereal *wa3, 
-   doublereal *wa4, logical *firstframe, doublereal *qrjac, 
+           int *iflag), integer *m, integer *n, doublereal *x,
+           doublereal *fvec,
+           doublereal *ftol, doublereal *xtol, doublereal *gtol,
+           integer *maxfev,
+    doublereal *epsfcn, doublereal *diag, integer *mode, doublereal *factor,
+   integer *nprint, integer *info,
+   integer *nfev, doublereal *fjac, integer *ldfjac, integer *ipvt,
+    doublereal *qtf, doublereal *wa1, doublereal *wa2, doublereal *wa3,
+   doublereal *wa4, logical *firstframe, doublereal *qrjac,
    doublereal *rdiag, void *data);
 int hessian_(integer *nres, int *nq);
 int hessdecomp_(integer *ierror, int *nq);
-int dpodi_(doublereal *a, integer *lda, integer *n, doublereal *det, 
+int dpodi_(doublereal *a, integer *lda, integer *n, doublereal *det,
            integer *job);
 int dpofa_(doublereal *a, integer *lda, integer *n, integer *info);
 
@@ -952,7 +952,7 @@ SBoolean constraintsToSolve(ModelStruct *model);
 
 /************** Function Prototypes in IK.c **********************/
 SBoolean resolveClosedLoops(ModelStruct *ms, int q_num, double *q_value);
-void calculateResiduals(void *data, int *nres, int *ndof, double q[], 
+void calculateResiduals(void *data, int *nres, int *ndof, double q[],
                     double resid[], int *iflag);
 
 /**************** Function Prototypes in Loop.c ************************/
@@ -963,7 +963,7 @@ SBoolean makeLoops(ModelStruct *ms);
 void markLoopJoints(ModelStruct *ms);
 
 /**************** Function Prototypes in constraint.c ************************/
-void calculateConstraintResids(void *data, int numQ, double q[], int numResid, 
+void calculateConstraintResids(void *data, int numQ, double q[], int numResid,
                                double resid[], int startIndex, int endIndex,
                                int *iflag);
 void updateConstraintInfo(ModelStruct *ms);
@@ -973,14 +973,14 @@ void markAffectedGencoords(ModelStruct *ms);
 /**************** Function Prototypes in LCSolver.c ************************/
 void solve_initial_loops_and_constraints(ModelStruct *model);
 void recalc_default_loops_and_constraints(ModelStruct *ms);
-void solveAllLoopsAndConstraints(ModelStruct *ms, LoopStatus *loopStatus,  
-                                 ConstraintStatus *constraintStatus, 
+void solveAllLoopsAndConstraints(ModelStruct *ms, LoopStatus *loopStatus,
+                                 ConstraintStatus *constraintStatus,
                                  SBoolean enforce_constraints);
 SBoolean solveLCAffectedByJNT(ModelStruct *ms, int joint, LoopStatus *loopStatus,  ConstraintStatus *constraintStatus);
 SBoolean solveLCAffectedByGC(ModelStruct *ms, GeneralizedCoord* controlled_gc, double *gc_value);
 void approveNewDefaultGCs(ModelStruct *ms);
-void evaluateLoopsAndConstraintsInCurrentConfiguration(ModelStruct *ms, LoopStatus *loopStatus, 
-                                 ConstraintStatus *constraintStatus, 
+void evaluateLoopsAndConstraintsInCurrentConfiguration(ModelStruct *ms, LoopStatus *loopStatus,
+                                 ConstraintStatus *constraintStatus,
                                  SBoolean enforce_constraints);
 int convert2(ModelStruct *ms, double p[], int n1, int n2);
 

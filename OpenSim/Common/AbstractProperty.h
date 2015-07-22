@@ -37,12 +37,12 @@ template <class T> class Property;
 //                            ABSTRACT PROPERTY
 //==============================================================================
 /** An abstract property is a serializable (name,value) pair, for which we
-do not know the type of the value. Values may be simple types like int or 
+do not know the type of the value. Values may be simple types like int or
 string, or may be serializable objects derived from the %OpenSim Object class.
 
 %AbstractProperty is an abstract base class that provides the functionality
 common to all properties that does not involve knowledge of the value
-type. Property\<T> derives from %AbstractProperty to represent properties 
+type. Property\<T> derives from %AbstractProperty to represent properties
 where the type is known.
 
 @see Property, Object
@@ -55,15 +55,15 @@ public:
 
     /** Require that the number of values n in the value list of this property
     be in the range aMin <= n <= aMax. */
-    void setAllowableListSize(int aMin, int aMax) 
-    {   assert(0 <= aMin && aMin <= aMax); 
+    void setAllowableListSize(int aMin, int aMax)
+    {   assert(0 <= aMin && aMin <= aMax);
        _minListSize = aMin; _maxListSize = aMax; }
 
     /** Require that the number of values n in the value list of this property
     be exactly n=aNum values. **/
-    void setAllowableListSize(int aNum) 
+    void setAllowableListSize(int aNum)
     {   assert(aNum >= 1); _minListSize = _maxListSize = aNum; }
-    
+
     // Default copy constructor and copy assignment operator.
 
     /** Return all heap space used by this property. **/
@@ -74,13 +74,13 @@ public:
     allocated on the heap and it is up to the caller to delete it when done. **/
     virtual AbstractProperty* clone() const = 0;
 
-    /** For relatively simple types, return the current value of this property 
+    /** For relatively simple types, return the current value of this property
     in a string suitable for displaying to a user in the GUI. Objects just
     return something like "(Object)". **/
     // TODO: replace this with something more reasonable
     virtual std::string toString() const = 0;
 
-    /** This returns a string representation of this property's value type 
+    /** This returns a string representation of this property's value type
     which will be the same as T::getClassName() for Object-derived types T, and
     some reasonably nice name for simple types, including at least "bool",
     "int", "double", "string", "Vec3", "Vector", and "Transform". **/
@@ -88,7 +88,7 @@ public:
 
     /** Return true if this is an "object property", meaning that its values
     are all concrete objects of types that ultimately derive from the %OpenSim
-    serializable base class Object. If this returns true then it is safe to 
+    serializable base class Object. If this returns true then it is safe to
     call getValueAsObject(). Otherwise this property contains only simple types
     like "int" or "std::string", and you'll need to know the actual type in
     order to access the values. **/
@@ -100,23 +100,23 @@ public:
     object, with name attribute ignored if there is one. **/
     virtual bool isUnnamedProperty() const = 0;
 
-    /** Compare this property with another one; this is primarily used 
+    /** Compare this property with another one; this is primarily used
     for testing. The properties must be of the identical concrete type, and
     their names and other base class attributes must
     be identical (including the comment). If they both have the "use default"
     flag set then we consider the values identical without looking. Otherwise,
-    we delegate to the concrete property to determine if the values are equal; 
-    the meaning is determined by the concrete property depending on its type. 
-    Floating point values should be compared to a tolerance, and should be 
+    we delegate to the concrete property to determine if the values are equal;
+    the meaning is determined by the concrete property depending on its type.
+    Floating point values should be compared to a tolerance, and should be
     considered equal if both are the same infinity or both are NaN (the latter
     in contrast to normal IEEE floating point behavior, where NaN!=NaN). **/
     bool equals(const AbstractProperty& other) const
-    {   if (!isSamePropertyClass(other)) return false;       
+    {   if (!isSamePropertyClass(other)) return false;
         if (getName() != other.getName()) return false;
         if (getComment() != other.getComment()) return false;
         if (getMinListSize() != other.getMinListSize()) return false;
         if (getMaxListSize() != other.getMaxListSize()) return false;
-     
+
         if (size() != other.size()) return false;
         // Note: we're delegating comparison of the "use default" flags
         // because only the new Property system copies them correctly, so
@@ -124,7 +124,7 @@ public:
         return isEqualTo(other); // delegate to concrete property
     }
 
-    /** Return true if the \a other property is an object of exactly the same 
+    /** Return true if the \a other property is an object of exactly the same
     concrete class as this one. **/
     bool isSamePropertyClass(const AbstractProperty& other) const
     {   return typeid(*this) == typeid(other); }
@@ -147,7 +147,7 @@ public:
     int size() const {return getNumValues();}
     /** Return true if this property's value list is currently empty. **/
     bool empty() const {return size()==0;}
-    /** Empty the value list for this property; fails if zero is not an 
+    /** Empty the value list for this property; fails if zero is not an
     allowable size for this property. **/
     void clear();
 
@@ -160,12 +160,12 @@ public:
     that case.
 
     @param[in] index    If supplied must be 0 <= index < getNumValues().
-    @returns const reference to the value as an Object 
+    @returns const reference to the value as an Object
     @see updValueAsObject(), getValue\<T>() **/
     virtual const Object& getValueAsObject(int index=-1) const = 0;
-    /** Get writable access to an existing object value. Note that you can't 
+    /** Get writable access to an existing object value. Note that you can't
     use this to install a different concrete object; see setValueAsObject()
-    if you want to do that. 
+    if you want to do that.
     @param[in] index    If supplied must be 0 <= index < getNumValues().
     @returns writable reference to the value as an Object
     @see getValueAsObject(), updValue\<T>() **/
@@ -174,27 +174,27 @@ public:
     If you already have a heap-allocated object you're willing to give up and
     want to avoid the extra copy, use adoptValueObject(). **/
     virtual void setValueAsObject(const Object& obj, int index=-1) = 0;
-    // Implementation of these non-virtual templatized methods must be 
-    // deferred until the concrete property declarations are known. 
+    // Implementation of these non-virtual templatized methods must be
+    // deferred until the concrete property declarations are known.
     // See Object.h.
 
-    /** Return one of the values in this property as type T; this works only 
-    if the underlying concrete property stores type T and if the indexed 
+    /** Return one of the values in this property as type T; this works only
+    if the underlying concrete property stores type T and if the indexed
     element is present, otherwise throws an exception. **/
     template <class T> const T& getValue(int index=-1) const;
-    /** Return a writable reference to one of the values in this property as 
-    type T; this works only if the underlying concrete property is actually of 
+    /** Return a writable reference to one of the values in this property as
+    type T; this works only if the underlying concrete property is actually of
     type T and the indexed element is present. Otherwise it throws an exception. **/
     template <class T> T& updValue(int index=-1);
     /** Append a new value of type T to the end of the list of values currently
     contained in this property. This works only if the underlying concrete
     property is of type T, the property holds a variable-length list, and the
-    list isn't already of maximum size. 
+    list isn't already of maximum size.
     @returns The index assigned to this value in the list. **/
     template <class T> int appendValue(const T& value);
     /**@}**/
 
-    /** This method sets the "use default" flag for this property and the 
+    /** This method sets the "use default" flag for this property and the
     properties of any objects it contains to the given value. **/
     void setAllPropertiesUseDefault(bool shouldUseDefault);
 
@@ -202,7 +202,7 @@ public:
     property as an immediate child element, find that property element and set
     the property value from it. If no such property element can be found, the
     "use default value" attribute of this property will be set on return; that
-    is not an error. However, if the property element is found but is 
+    is not an error. However, if the property element is found but is
     malformed or unsuitable in some way, an exception will be thrown with
     a message explaining what is wrong. **/
     void readFromXMLParentElement(SimTK::Xml::Element& parent,
@@ -235,11 +235,11 @@ public:
     bool getValueIsDefault() const { return _valueIsDefault; }
 
     /** Get the minimum number of values allowed in this property's value
-    list. Will be zero for optional properties, zero for list properties 
+    list. Will be zero for optional properties, zero for list properties
     (unless explicitly changed), and one for one-value properties. **/
     int getMinListSize() const { return _minListSize; }
     /** Get the maximum number of values allowed in this property's value
-    list. Will be unlimited for list properties (unless explicitly changed), 
+    list. Will be unlimited for list properties (unless explicitly changed),
     and one for optional and one-value properties. **/
     int getMaxListSize() const { return _maxListSize; }
 
@@ -266,25 +266,25 @@ public:
     by the Object::addProperty\<T> method when T is a type derived from
     %OpenSim's Object serializable base class. One-object properties have
     a special, compact representation in XML. **/
-    bool isOneObjectProperty() const 
+    bool isOneObjectProperty() const
     {   return isOneValueProperty() && isObjectProperty(); }
 
 
 protected:
     AbstractProperty();
-    AbstractProperty(const std::string& name, 
+    AbstractProperty(const std::string& name,
                      const std::string& comment);
 
     // This is the remainder of the interface that a concrete Property class
     // must implement, hidden from AbstractProperty users.
     //--------------------------------------------------------------------------
     /** The base class equals() method will have already done a lot of checking
-    prior to calling this method, including verifying that both values are 
-    non-default and that the value lists are the same size; the concrete 
+    prior to calling this method, including verifying that both values are
+    non-default and that the value lists are the same size; the concrete
     property need only compare the values.**/
     virtual bool isEqualTo(const AbstractProperty& other) const = 0;
 
-    /** Read in a new value for this property from the XML element 
+    /** Read in a new value for this property from the XML element
     \a propertyElement. The element is expected to have the form
     @code
         <propertyName> value(s) </propertyName>
@@ -295,15 +295,15 @@ protected:
     representation for one-object properties, it will have been canonicalized
     into the above form for the purpose of reading, so concrete properties may
     assume the above form always.
-    
-    The format for the property value (and any of its contained objects) is 
+
+    The format for the property value (and any of its contained objects) is
     assumed to be the one that was in use when the given ".osim" file version
-    number was current; if necessary the in-memory version will be updated to 
-    the now-current format. 
-    
-    If this is an object property, the contained objects will be asked 
-    recursively to read themselves in from the same document. However, any 
-    object that has the "file" attribute will read in its contents from that 
+    number was current; if necessary the in-memory version will be updated to
+    the now-current format.
+
+    If this is an object property, the contained objects will be asked
+    recursively to read themselves in from the same document. However, any
+    object that has the "file" attribute will read in its contents from that
     file rather than from the supplied XML document, and the version number
     will be taken from that file rather than the argument supplied here. **/
     virtual void readFromXMLElement
@@ -311,15 +311,15 @@ protected:
         int                  versionNumber) = 0;
 
     /** Output a serialized representation of this property by writing its
-    value to the given XML property element. If the "use default value" 
-    attribute is set for this property (meaning we don't have a meaningful 
-    value for it) then you should not call this method unless you are trying 
-    to serialize the defaults. Note that this method unconditionally 
-    serializes the property; it does not check to see whether it should. 
-    
+    value to the given XML property element. If the "use default value"
+    attribute is set for this property (meaning we don't have a meaningful
+    value for it) then you should not call this method unless you are trying
+    to serialize the defaults. Note that this method unconditionally
+    serializes the property; it does not check to see whether it should.
+
     This method is not called for the special case of a one-object property,
     in which case only the object is written to the XML file (without the
-    property element). In all other cases (simple property or property 
+    property element). In all other cases (simple property or property
     containing an array of objects), the format is
     @code
         <propertyName> value(s) </propertyName>

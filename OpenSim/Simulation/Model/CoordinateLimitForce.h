@@ -83,7 +83,7 @@ public:
         "Transition region width in the units of the coordinate (rotations "
         "in degrees). Dictates the transition from zero to constant stiffness "
         "as coordinate exceeds its limit.");
-    OpenSim_DECLARE_PROPERTY(compute_dissipation_energy, bool, 
+    OpenSim_DECLARE_PROPERTY(compute_dissipation_energy, bool,
         "Option to compute the dissipation energy due to damping in the "
         "CoordinateLimitForce. If true the dissipation power is automatically "
         "integrated to provide energy. Default is false.");
@@ -110,7 +110,7 @@ public:
     @param[in]  damping     Damping factor when coordinate is beyond the limits
     @param[in]  dq          Transition region (displacement) for force to be
                             engaged.
-    @param[in]  computeDissipationEnergy  
+    @param[in]  computeDissipationEnergy
                             Whether to compute dissipated energy (false).
     **/
     CoordinateLimitForce(const std::string& coordName, double q_upper,
@@ -127,47 +127,47 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
     // Properties
-    /** Stiffness of the passive limit force when coordinate exceeds upper 
+    /** Stiffness of the passive limit force when coordinate exceeds upper
     limit. Note, rotational stiffness expected in N*m/degree. */
     void setUpperStiffness(double aUpperStiffness);
     double getUpperStiffness() const;
-    
+
     /** Upper limit of the coordinate range of motion (rotations in degrees).*/
     void setUpperLimit(double aUpperLimit);
     double getUpperLimit() const;
-    
-    /** Stiffness of the passive limit force when coordinate exceeds lower 
+
+    /** Stiffness of the passive limit force when coordinate exceeds lower
     limit. Note, rotational stiffness expected in N*m/degree. */
     void setLowerStiffness(double aLowerStiffness);
     double getLowerStiffness() const;
-    
+
     /** Lower limit of the coordinate range of motion (rotations in degrees).*/
     void setLowerLimit(double aLowerLimit);
     double getLowerLimit() const;
-    
-    /** Damping factor on the coordinate's speed applied only when limit is 
-    exceeded. For translational has units N/(m/s) and rotational has 
+
+    /** Damping factor on the coordinate's speed applied only when limit is
+    exceeded. For translational has units N/(m/s) and rotational has
     Nm/(degree/s). */
     void setDamping(double aDamping);
     double getDamping() const;
 
     /** Transition region width with lengths is m and angles in degrees).
-    Specifies the transition from zero to a constant stiffness as 
+    Specifies the transition from zero to a constant stiffness as
     coordinate exceeds its limit.*/
     void setTransition(double aTransition);
     double getTransition() const;
 
-    /** Option to compute the dissipation energy due to damping in the 
-    CoordinateLimitForce. If true the dissipation power is automatically 
+    /** Option to compute the dissipation energy due to damping in the
+    CoordinateLimitForce. If true the dissipation power is automatically
     integrated to provide energy. Default is false. */
     void setComputeDissipationEnergy(bool flag);
     bool isComputingDissipationEnergy() const;
 
-    /** Obtain the rate at which energy is being dissipated by this 
-    CoordinateLimit, that is, the power being lost. This is in units of 
-    energy/time which is watts in J/s. 
-    @param[in]          s    
-        The State from which to obtain the current value of the power 
+    /** Obtain the rate at which energy is being dissipated by this
+    CoordinateLimit, that is, the power being lost. This is in units of
+    energy/time which is watts in J/s.
+    @param[in]          s
+        The State from which to obtain the current value of the power
         dissipation.
     @return
         The dissipated power (a nonnegative scalar).
@@ -175,10 +175,10 @@ public:
     double getPowerDissipation(const SimTK::State& s) const;
 
     /** Obtain energy dissipated by this CoordinateLimitForce over time
-    in units of energy in J. 
-    @param[in]          s    
-        The State from which to obtain the current value of 
-        dissipated energy 
+    in units of energy in J.
+    @param[in]          s
+        The State from which to obtain the current value of
+        dissipated energy
     @return
         The dissipated energy (a nonnegative scalar). **/
     double getDissipatedEnergy(const SimTK::State& s) const;
@@ -197,7 +197,7 @@ public:
     //--------------------------------------------------------------------------
     // REPORTING
     //--------------------------------------------------------------------------
-    /** 
+    /**
      * Methods to query a Force for the value actually applied during simulation
      * The names of quantities (column labels) are  returned by getRecordLabels()
      */
@@ -213,7 +213,7 @@ protected:
     // Model Component Interface
     //--------------------------------------------------------------------------
     /** Setup this CoordinateLimitForce as part of the model.
-        This were the existence of the coordinate to limit is checked. */ 
+        This were the existence of the coordinate to limit is checked. */
     void extendConnectToModel(Model& aModel) override;
     /** Create the underlying Force that is part of the multibodysystem. */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
@@ -221,8 +221,8 @@ protected:
     //--------------------------------------------------------------------------
     // Force Interface
     //--------------------------------------------------------------------------
-    void computeForce(const SimTK::State& s, 
-                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+    void computeForce(const SimTK::State& s,
+                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                       SimTK::Vector& mobilityForces) const override;
 
 private:
@@ -233,13 +233,13 @@ private:
     // Model Component Interface when computing energy
     void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
-    // Smooth step functions for continuous transition from no stiffness and 
+    // Smooth step functions for continuous transition from no stiffness and
     // damping to constant values beyond the limits. These are heap allocated
     // and owned here so must be deleted in destructor.
     SimTK::ReferencePtr<SimTK::Function::Step> _upStep;
     SimTK::ReferencePtr<SimTK::Function::Step> _loStep;
 
-    // Scaling for coordinate values in m or degrees (rotational) 
+    // Scaling for coordinate values in m or degrees (rotational)
     double _w;
 
     // Coordinate limits in internal (SI) units (m or rad)

@@ -28,20 +28,20 @@
 
 //==============================================================================
 //==============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * A point-to-point Force who's force magnitude is determined by a user-defined
- * expression, with the distance (d) and its time derivative (ddot) as variables. 
- * The direction of the force is directed along the line connecting the two 
- * points. 
+ * expression, with the distance (d) and its time derivative (ddot) as variables.
+ * The direction of the force is directed along the line connecting the two
+ * points.
  *
  * "d" and "ddot" are the variables names expected by the expression parser.
  * Common C math library functions such as: exp(), pow(), sqrt(), sin(), ...
  * are permitted. See Lepton/Operation.h for a complete list.
- * 
+ *
  * For example: string expression = "-1.5*exp(10*(d-0.25)^2)*(1 + 2.0*ddot)"
- *              provides a model of a nonlinear point-to point spring, while 
+ *              provides a model of a nonlinear point-to point spring, while
  *              expression = "1.25/(rd^2)" is an electric field force between
  *              charged particles at points separated by the distance, d.
  *              i.e. K*q1*q2 = 1.25
@@ -85,27 +85,27 @@ public:
     @param expression   the expression used to compute the force action at points
     **/
     ExpressionBasedPointToPointForce(
-                const std::string& body1Name, const SimTK::Vec3& point1, 
-                const std::string& body2Name, const SimTK::Vec3& point2, 
+                const std::string& body1Name, const SimTK::Vec3& point1,
+                const std::string& body2Name, const SimTK::Vec3& point2,
                 const std::string& expression );
 
     // default destructor, copy constructor, copy assignment
-    
+
     //-----------------------------------------------------------------------------
     // GET and SET Spring parameters
     //-----------------------------------------------------------------------------
     /**
-    * Force end point bodies 
+    * Force end point bodies
     */
-    void setBody1Name(const std::string& body1Name) 
+    void setBody1Name(const std::string& body1Name)
     {   set_body1(body1Name); }
-    void setBody2Name(const std::string& body2Name) 
+    void setBody2Name(const std::string& body2Name)
     {   set_body2(body2Name); }
     const std::string& getBody1Name() const {return get_body1();}
     const std::string& getBody2Name() const {return get_body2();}
 
     /**
-    * Force end points 
+    * Force end points
     */
     void setPoint1(SimTK::Vec3 aPosition) { set_point1(aPosition); }
     const SimTK::Vec3& getPoint1() const { return get_point1(); }
@@ -116,17 +116,17 @@ public:
     * Set the mathematical expression that defines the force magnitude of this
     * point-to-point force in terms of the point-to-point distance (d) and its
     * time derivative (ddot). Expressions with C-mathematical operations
-    * such as +,-,*,/ and common functions: exp, pow, sqrt, sin, cos, tan, 
+    * such as +,-,*,/ and common functions: exp, pow, sqrt, sin, cos, tan,
     * and so on are acceptable.
     * NOTE: a limitation is that the expression may not contain whitespace
     * @param expression    string containing the mathematical expression that
-    *                      defines the point-to-point force 
+    *                      defines the point-to-point force
     */
     void setExpression(const std::string& expression);
 
 
-    /** 
-    * Get the computed Force magnitude determined by evaluating the 
+    /**
+    * Get the computed Force magnitude determined by evaluating the
     * expression above. Note, computeForce must be evaluated first,
     * and this is done automatically if the system is realized to Dynamics
     * @param state    const state (reference) for the model
@@ -138,17 +138,17 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATION
     //--------------------------------------------------------------------------
-    /** Compute the point-to-point force based on the user-defined expression 
+    /** Compute the point-to-point force based on the user-defined expression
         and apply it to the model */
-    void computeForce(const SimTK::State& state, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+    void computeForce(const SimTK::State& state,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const override;
 
 
     //-----------------------------------------------------------------------------
     // Reporting
     //-----------------------------------------------------------------------------
-    /** 
+    /**
      * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
      */
     OpenSim::Array<std::string> getRecordLabels() const override;
@@ -175,7 +175,7 @@ private:
     // Temporary solution until implemented with Connectors
     SimTK::ReferencePtr<const PhysicalFrame> _body1;
     SimTK::ReferencePtr<const PhysicalFrame> _body2;
-    SimTK::ReferencePtr<const SimTK::MobilizedBody> _b1; 
+    SimTK::ReferencePtr<const SimTK::MobilizedBody> _b1;
     SimTK::ReferencePtr<const SimTK::MobilizedBody> _b2;
 
 //==============================================================================

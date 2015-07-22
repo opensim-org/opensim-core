@@ -37,7 +37,7 @@ void testPendulum();    // test manager/integration process
 void testPendulumExternalLoad(); // test application of external loads point in pendulum
 void testPendulumExternalLoadWithPointInGround(); // test application of external loads point in ground
 void testArm26();       // now add computation of controls and generation of muscle forces
-void testGait2354();    // controlled muscles and ground reactions forces 
+void testGait2354();    // controlled muscles and ground reactions forces
 void testGait2354WithController(); // included additional controller
 
 int main() {
@@ -46,39 +46,39 @@ int main() {
     SimTK::Array_<std::string> failures;
 
     // test manager/integration process
-    try { testPendulum(); cout << "\nPendulum test PASSED " << endl; }  
+    try { testPendulum(); cout << "\nPendulum test PASSED " << endl; }
     catch (const std::exception& e)
         { cout << e.what() <<endl; failures.push_back("testPendulum"); }
-    
+
     // test application of external loads
-    try { testPendulumExternalLoad(); 
+    try { testPendulumExternalLoad();
         cout << "\nPendulum with external load test PASSED " << endl; }
     catch (const std::exception& e)
         { cout << e.what() <<endl; failures.push_back("testPendulumExternalLoad"); }
-    
+
     // test application of external loads
-    try { testPendulumExternalLoadWithPointInGround(); 
+    try { testPendulumExternalLoadWithPointInGround();
         cout << "\nPendulum with external load and point in ground PASSED " << endl; }
     catch (const std::exception& e)
         { cout << e.what() <<endl; failures.push_back("testPendulumExternalLoadWithPointInGround"); }
-    
+
     // now add computation of controls and generation of muscle forces
-    try { testArm26(); 
+    try { testArm26();
         cout << "\narm26 test PASSED " << endl; }
     catch (const std::exception& e)
         { cout << e.what() <<endl; failures.push_back("testArm26"); }
-        
-    // include applied ground reactions forces 
-    try { testGait2354(); 
+
+    // include applied ground reactions forces
+    try { testGait2354();
         cout << "\ngait2354 test PASSED " << endl; }
     catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testGait2354"); }        
+        { cout << e.what() <<endl; failures.push_back("testGait2354"); }
 
     // finally include a controller
-    try { testGait2354WithController(); 
+    try { testGait2354WithController();
         cout << "\ngait2354 with correction controller test PASSED " << endl; }
     catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testGait2354WithController"); }  
+        { cout << e.what() <<endl; failures.push_back("testGait2354WithController"); }
 
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
@@ -121,7 +121,7 @@ void testPendulumExternalLoad() {
     ASSERT(results.getLastTime() == 1.0);
 
     Storage standard("Results/pendulum_states.sto");
- 
+
 
     Array<double> data;
     int i = results.getSize() - 1;
@@ -130,7 +130,7 @@ void testPendulumExternalLoad() {
     data.setSize(state->getSize());
     standard.getDataAtTime(time, state->getSize(), data);
     int nc = forward.getModel().getNumCoordinates();
-    for (int j = 0; j < nc; ++j) {      
+    for (int j = 0; j < nc; ++j) {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard.getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j];
         ASSERT_EQUAL(data[j], state->getData()[j], 1e-2, __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
@@ -147,7 +147,7 @@ void testPendulumExternalLoadWithPointInGround() {
     ASSERT(results.getLastTime() == 1.0);
 
     Storage standard("Results/pendulum_states.sto");
- 
+
 
     Array<double> data;
     int i = results.getSize() - 1;
@@ -156,7 +156,7 @@ void testPendulumExternalLoadWithPointInGround() {
     data.setSize(state->getSize());
     standard.getDataAtTime(time, state->getSize(), data);
     int nc = forward.getModel().getNumCoordinates();
-    for (int j = 0; j < nc; ++j) {      
+    for (int j = 0; j < nc; ++j) {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard.getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j];
         ASSERT_EQUAL(data[j], state->getData()[j], 1e-2, __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
@@ -208,7 +208,7 @@ void testGait2354()
     Storage* standard = new Storage();
     string statesFileName("std_subject01_walk1_states.sto");
     forward.loadStatesStorage( statesFileName, standard );
-    
+
     int nstates = forward.getModel().getNumStateVariables();
     int nq = forward.getModel().getNumCoordinates();
     Array<double> rms_tols(0.001, 2*nstates); //activations and fiber-lengths
@@ -217,7 +217,7 @@ void testGait2354()
         rms_tols[2*i] = 0.035; // coordinates at less than 2degrees
         rms_tols[2*i+1] = 2.5; // speeds can deviate by a lot due to open-loop test
     }
-    
+
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testGait2354 failed");
 }
 
@@ -238,6 +238,6 @@ void testGait2354WithController() {
         rms_tols[2*i] = 0.01; // coordinates at less than 0.6 degree
         rms_tols[2*i+1] = 0.1; // speeds should deviate less with feedback controller
     }
-    
+
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testGait2354WithController failed");
 }

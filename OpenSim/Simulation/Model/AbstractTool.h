@@ -36,7 +36,7 @@
 #include "ForceSet.h"
 #include "ExternalLoads.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
 class PrescribedForce;
 class GCVSpline;
@@ -68,64 +68,64 @@ protected:
     /** Name of the xml file used to deserialize or construct a model. */
     PropertyStr _modelFileProp;
     std::string &_modelFile;
-    
-    /** Whether the force set included in the model file is replaced 
+
+    /** Whether the force set included in the model file is replaced
     (if true) or appended to (if false) with force sets read in from file */
     PropertyBool _replaceForceSetProp;
     bool &_replaceForceSet;
-    
+
     /** Names of the xml files used to construct an force set for the
     model. */
     PropertyStrArray _forceSetFilesProp;
     Array<std::string> &_forceSetFiles;
-    
+
     /** Directory used for writing results. */
     PropertyStr _resultsDirProp;
     std::string &_resultsDir;
-    
+
     /** Output precision. */
     PropertyInt _outputPrecisionProp;
     int &_outputPrecision;
-    
+
     /** Initial time for the investigation. */
     PropertyDbl _tiProp;
     double &_ti;
-    
+
     /** Final time for the investigation. */
     PropertyDbl _tfProp;
     double &_tf;
-    
+
     /** A flag used to specify whether or not equilibrium is solved for for
     the auxiliary states.  This often needs to be done auxiliary sates whose
     starting values are unknown (e.g., muscle fiber lengths). */
     OpenSim::PropertyBool _solveForEquilibriumForAuxiliaryStatesProp;
     bool &_solveForEquilibriumForAuxiliaryStates;
-    
+
     /** Maximum number of steps for the integrator. */
     PropertyInt _maxStepsProp;
     int &_maxSteps;
-        
+
     /** Maximum integration step size. */
     PropertyDbl _maxDTProp;
     double &_maxDT;
-    
+
     /** Minimum integration step size. */
     PropertyDbl _minDTProp;
     double &_minDT;
-    
-    /** Integrator error tolerance. When the error is greater, the 
+
+    /** Integrator error tolerance. When the error is greater, the
     integrator step size is decreased. */
     PropertyDbl _errorToleranceProp;
     double &_errorTolerance;
-    
+
     /** Set of analyses to be run during the study. */
     PropertyObj _analysisSetProp;
     AnalysisSet &_analysisSet;
-    
+
     // CONTROLLERS
     PropertyObj _controllerSetProp;
     ControllerSet& _controllerSet;
-    
+
     /** Whether the tool owns the model it operates on. Important for cleanup when done */
     bool _toolOwnsModel;
 
@@ -143,17 +143,17 @@ protected:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    
+
     /**
     * Destructor.
     */
     virtual ~AbstractTool();
-    
+
     /**
     * Default constructor.
     */
     AbstractTool();
-    
+
     /**
     * Construct from file, and an optional GuiModel
     *
@@ -164,15 +164,15 @@ public:
     * @param aUpdateFromXMLNode
     */
     AbstractTool(const std::string &aFileName, bool aUpdateFromXMLNode = true);
-    
+
     /**
     * Copy constructor.
     *
     * Copy constructors for all SimulationTools only copy the non-XML variable
     * members of the object; that is, the object's DOMnode and XMLDocument
-    * are not copied but set to NULL.  This is because the object and all its 
-    * derived classes need to establish the correct connection to the XML 
-    * document nodes. Thus the object needs to reconstruct based on the XML 
+    * are not copied but set to NULL.  This is because the object and all its
+    * derived classes need to establish the correct connection to the XML
+    * document nodes. Thus the object needs to reconstruct based on the XML
     * document, not the values of the object's member variables.
     *
     * There are three proper ways to generate an XML document for a AbstractTool:
@@ -203,25 +203,25 @@ public:
 
 private:
     // Keep pointers to analyses being added to model so that they can be removed later
-    AnalysisSet _analysisCopies;     
-    ControllerSet _controllerCopies;     
+    AnalysisSet _analysisCopies;
+    ControllerSet _controllerCopies;
 
     /**
     * Set all member variables to their null or default values.
     */
     void setNull();
-    
+
     /**
     * Connect properties to local pointers.
     */
     void setupProperties();
-    
+
     /**
     * Verify that column labels are unique.
     */
     bool verifyUniqueColumnLabels(const Storage& aStorage) const;
-    std::string createExternalLoadsFile(const std::string& oldFile, 
-                                          const std::string& body1, 
+    std::string createExternalLoadsFile(const std::string& oldFile,
+                                          const std::string& body1,
                                           const std::string& body2);
 
     //--------------------------------------------------------------------------
@@ -229,7 +229,7 @@ private:
     //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-    
+
     /**
     * Assignment operator.
     *
@@ -242,13 +242,13 @@ public:
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
-    
+
     /**
     * Set the model to be investigated.
     * NOTE: setup() should have been called on the model prior to calling this method
     */
     virtual void setModel(Model& aModel) SWIG_DECLARE_EXCEPTION;
-    
+
     /**
     * Get the model to be investigated.
     */
@@ -258,7 +258,7 @@ public:
     void setReplaceForceSet(bool aReplace) { _replaceForceSet = aReplace; }
 
     std::string getNextAvailableForceName(const std::string prefix="Force") const;
-    
+
     const ExternalLoads& getExternalLoads() const { return _externalLoads; }
     ExternalLoads& updExternalLoads() { return _externalLoads; }
     void setExternalLoads(ExternalLoads& el) { _externalLoads = el; }
@@ -275,7 +275,7 @@ public:
 
     AnalysisSet& getAnalysisSet() const;
 
-    /** 
+    /**
     * Get Results Directory
     */
     const std::string& getResultsDir() const { return _resultsDir; }
@@ -286,7 +286,7 @@ public:
     double getFinalTime() const { return _tf; }
     void setInitialTime(const double aInitialTime) { _ti=aInitialTime; }
     void setFinalTime(const double aFinalTime) { _tf=aFinalTime; }
-    
+
     // DEPRACATED: should use "initial" instead of "start"
     double getStartTime() const { return _ti; }
     void setStartTime(const double aStartTime) { _ti=aStartTime; } // depracated: should use "initial" instead of "start"
@@ -314,18 +314,18 @@ public:
     //--------------------------------------------------------------------------
     // MODEL LOADING
     //--------------------------------------------------------------------------
-    
+
     /**
     * Load and construct a model based on the property settings of
     * this investigation.
     */
     void loadModel(const std::string &aToolSetupFileName, ForceSet *rOriginalForceSet = 0 );
-    
+
     /**
     * Update the forces applied to a model.
     */
     void updateModelForces(Model& model, const std::string &aToolSetupFileName, ForceSet *rOriginalForceSet = 0 )  SWIG_DECLARE_EXCEPTION;
-    
+
     /**
     * Adds Analysis objects from analysis set to model.
     *
@@ -338,7 +338,7 @@ public:
     */
     void addAnalysisSetToModel();
     void addControllerSetToModel();
-    
+
     /**
     * Remove Analysis objects that were added earlier from analysis set to model.
     */
@@ -354,7 +354,7 @@ public:
     // INTERFACE
     //--------------------------------------------------------------------------
     virtual bool run() SWIG_DECLARE_EXCEPTION=0;
-    
+
     /**
     * Print the results of the analysis.
     *

@@ -37,7 +37,7 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_LIST_PROPERTY(components, Component, 
+    OpenSim_DECLARE_LIST_PROPERTY(components, Component,
         "List of internal components");
 
     TheWorld() : Component() {
@@ -50,7 +50,7 @@ public:
         // have to construct this Component's properties so that deserialization from
         // XML has a place to go.
         constructInfrastructure();
-        // Propogate XML file values to properties 
+        // Propogate XML file values to properties
         updateFromXMLDocument();
         // add components listed as properties as sub components.
         finalizeFromProperties();
@@ -64,7 +64,7 @@ public:
 
 
     // Top level connection method for all encompassing Component
-    void buildComponentTreeAndConnect() { 
+    void buildComponentTreeAndConnect() {
         initComponentTreeTraversal(*this);
         connect(*this);
     }
@@ -85,7 +85,7 @@ protected:
             addComponent(&upd_components(i));
         }
     }
-    
+
     void extendAddToSystem(MultibodySystem& system) const override {
         if (system.hasMatterSubsystem()){
             matter = system.updMatterSubsystem();
@@ -112,7 +112,7 @@ private:
     }
 
 private:
-    // Keep track of pointers to the underlying computational subsystems. 
+    // Keep track of pointers to the underlying computational subsystems.
     mutable ReferencePtr<SimbodyMatterSubsystem> matter;
     mutable ReferencePtr<GeneralForceSubsystem> forces;
 
@@ -231,7 +231,7 @@ private:
     mutable MobilizedBodyIndex bindex;
     ReferencePtr<TheWorld> world;
 
-    
+
 }; // End of class Foo
 
 class Bar : public Component {
@@ -242,9 +242,9 @@ public:
     double getPotentialEnergy(const SimTK::State& state) const {
         const GeneralForceSubsystem& forces = world->getForceSubsystem();
         const Force& force = forces.getForce(fix);
-        const Force::TwoPointLinearSpring& spring = 
+        const Force::TwoPointLinearSpring& spring =
             Force::TwoPointLinearSpring::downcast(force);
-    
+
         return spring.calcPotentialEnergyContribution(state);
     }
 
@@ -276,7 +276,7 @@ protected:
             const MobilizedBody& b1 = matter.getMobilizedBody(MobilizedBodyIndex(1));
             const MobilizedBody& b2 = matter.getMobilizedBody(MobilizedBodyIndex(2));
 
-            Force::TwoPointLinearSpring 
+            Force::TwoPointLinearSpring
                 spring(forces, b1, Vec3(0.5,0,0), b2, Vec3(0.5,0,0), 10.0, 0.1);
             fix = spring.getForceIndex();
         }
@@ -295,7 +295,7 @@ protected:
     void computeStateVariableDerivatives(const SimTK::State& state) const override {
         setStateVariableDerivativeValue(state, "fiberLength", 2.0);
         setStateVariableDerivativeValue(state, "activation", 3.0 * state.getTime());
-        setStateVariableDerivativeValue(state, "hiddenStateVar", 
+        setStateVariableDerivativeValue(state, "hiddenStateVar",
                                           exp(-0.5 * state.getTime()));
     }
 
@@ -345,7 +345,7 @@ protected:
         // Mark components listed in properties as subcomponents
         Foo& foo1 = upd_Foo1();
         Foo& foo2 = upd_Foo2();
-        
+
         // clear sub component designation of any previous components
         clearComponents();
         //now add them
@@ -369,7 +369,7 @@ private:
         constructProperty_Foo2(Foo());
         constructProperty_scale1(1.0);
         constructProperty_scale2(2.0);
-    }   
+    }
 }; // End of Class CompoundFoo
 
 SimTK_NICETYPENAME_LITERAL(Foo);
@@ -390,7 +390,7 @@ int main() {
 
         TheWorld theWorld;
         theWorld.setName("World");
-        
+
         // let component add its stuff to the system
         Foo& foo = *new Foo();
         foo.setName("Foo");
@@ -407,7 +407,7 @@ int main() {
         //Will get resolved and connected automatically at Component connect
         bar.updConnector<Foo>("parentFoo").set_connected_to_name("Foo");
         bar.updConnector<Foo>("childFoo").set_connected_to_name("Foo");
-        
+
         // add a subcomponent
         // connect internals
         try{
@@ -427,7 +427,7 @@ int main() {
             std::cout << "Iterator is at: " << it->getName() << std::endl;
         }
 
-        
+
         std::cout << "Using range-for loop: " << std::endl;
         for (const Component& component : worldTreeAsList) {
             std::cout << "Iterator is at: " << component.getName() << std::endl;
@@ -435,12 +435,12 @@ int main() {
         for (auto& component : worldTreeAsList) {
             std::cout << "Iterator is at: " << component.getName() << std::endl;
         }
-        
+
         std::cout << "Iterate over only Foo's." << std::endl;
         for (auto& component : theWorld.getComponentList<Foo>()) {
             std::cout << "Iterator is at: " << component.getName() << std::endl;
         }
-        
+
 
         Foo& foo2 = *new Foo();
         foo2.setName("Foo2");
@@ -463,7 +463,7 @@ int main() {
 
         // do any other input/output connections
         foo.getInput("input1").connect(bar.getOutput("PotentialEnergy"));
-    
+
         // check how this model serializes
         string modelFile("testComponentInterfaceModel.osim");
         theWorld.print(modelFile);
@@ -477,7 +477,7 @@ int main() {
         //viz.drawFrameNow(s);
         const Vector q = Vector(s.getNQ(), SimTK::Pi/2);
         const Vector u = Vector(s.getNU(), 1.0);
-        
+
         for (int i = 0; i < 10; ++i){
             s.updTime() = i*0.01234;
             s.updQ() = (i+1)*q/10.0;
@@ -493,12 +493,12 @@ int main() {
             cout << out1.getName() <<"|"<< out1.getTypeName() <<"|"<< out1.getValueAsString(s) << endl;
             cout << out2.getName() <<"|"<< out2.getTypeName() <<"|"<< out2.getValueAsString(s) << endl;
             cout << out3.getName() <<"|"<< out3.getTypeName() <<"|"<< out3.getValueAsString(s) << endl;
-            
+
             system.realize(s, Stage::Acceleration);
             cout << out4.getName() <<"|"<< out4.getTypeName() <<"|"<< out4.getValueAsString(s) << endl;
             cout << out5.getName() <<"|"<< out5.getTypeName() <<"|"<< out5.getValueAsString(s) << endl;
 
-            //viz.report(s); 
+            //viz.report(s);
             system.realize(s, Stage::Report);
 
             cout << "foo.input1 = " << foo.getInputValue<double>(s, "input1") << endl;
@@ -506,7 +506,7 @@ int main() {
 
         MultibodySystem system2;
         TheWorld *world2 = new TheWorld(modelFile);
-        
+
         world2->updComponent("Bar").getConnector<Foo>("childFoo");
         // We haven't called connect yet, so this connection isn't made yet.
         ASSERT_THROW(OpenSim::Exception,
@@ -525,7 +525,7 @@ int main() {
 
         world2->buildUpSystem(system2);
         s = system2.realizeTopology();
-    
+
         world2->print("clone_" + modelFile);
 
         // Test copy assignment
@@ -533,7 +533,7 @@ int main() {
         world3= *world2;
         world3.getComponent("Bar").getConnector<Foo>("parentFoo");
 
-        ASSERT(world3 == (*world2), __FILE__, __LINE__, 
+        ASSERT(world3 == (*world2), __FILE__, __LINE__,
             "Model copy assignment FAILED");
 
         // Add second world as the internal model of the first
@@ -548,7 +548,7 @@ int main() {
         compFoo.set_Foo1(foo);
         compFoo.set_Foo2(foo2);
         compFoo.finalizeFromProperties();
-    
+
         world3.add(&compFoo);
         world3.add(&bar2);
 

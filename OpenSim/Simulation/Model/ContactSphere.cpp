@@ -92,10 +92,10 @@ SimTK::ContactGeometry ContactSphere::createSimTKContactGeometry()
 //=============================================================================
 // VISUALIZER GEOMETRY
 //=============================================================================
-void ContactSphere::generateDecorations(bool fixed, const ModelDisplayHints& hints, 
+void ContactSphere::generateDecorations(bool fixed, const ModelDisplayHints& hints,
     const SimTK::State& s, SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
 {
-    Super::generateDecorations(fixed, hints, s, geometry); 
+    Super::generateDecorations(fixed, hints, s, geometry);
 
     // There is no fixed geometry to generate here.
     if (fixed) { return; }

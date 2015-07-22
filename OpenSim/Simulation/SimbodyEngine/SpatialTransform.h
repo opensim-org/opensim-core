@@ -34,7 +34,7 @@ class CustomJoint;
 //                           SPATIAL TRANSFORM
 //==============================================================================
 /**
- * A class encapsulating the spatial transformation between two bodies that 
+ * A class encapsulating the spatial transformation between two bodies that
  * defines the behaviour of a custom joint.
  *
  * @authors Ajay Seth
@@ -49,7 +49,7 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
-    /** Define the individual transform axes (6) that specify the spatial 
+    /** Define the individual transform axes (6) that specify the spatial
     transform; each is a TransformAxis object. **/
     OpenSim_DECLARE_PROPERTY(rotation1, TransformAxis,
         "3 Axes for rotations are listed first.");
@@ -109,7 +109,7 @@ public:
     const TransformAxis& operator[](int whichAxis) const
     {   return getTransformAxis(whichAxis); }
     /** Same as updTransformAxis(). **/
-    TransformAxis& operator[](int whichAxis) 
+    TransformAxis& operator[](int whichAxis)
     {   return updTransformAxis(whichAxis); }
     #endif
 

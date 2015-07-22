@@ -5,16 +5,16 @@ Chand T. John and Ajay Seth
 March 14, 2011
 --------------
 
-0) <OPENSIM_INSTALL_DIR> is the directory where you installed OpenSim, 
+0) <OPENSIM_INSTALL_DIR> is the directory where you installed OpenSim,
    such as "C:\OpenSim" or "C:\Program Files\OpenSim".
    It is a good idea to copy the example out of:
      <OPENSIM_INSTALL_DIR>\sdk\APIExamples\ControllerExample
    and into your own workspace, which we will refer to <WORKSPACE_DIR>, e.g.
    C:\Users\myAccount\OpenSimAPIExamples\ControllerExample
-   
+
 
 1) Make sure your PATH contains <OPENSIM_INSTALL_DIR>\bin; if not, add
-   this to your PATH.   Whenever you see <OPENSIM_INSTALL_DIR> substitute it with 
+   this to your PATH.   Whenever you see <OPENSIM_INSTALL_DIR> substitute it with
    the full path as above.
    Also, make sure that no other OpenSim "\bin" directory
    is in your PATH.  If you've ever built OpenSim from source code, make sure
@@ -40,7 +40,7 @@ March 14, 2011
 7) Another dialog box will open up entitled "cmake-gui" - in the drop-down
    menu, select the version of Visual Studio you will use to compile the
    Controller Example program.  For example a release of OpenSim is compatible
-   with Visual Studio 10 Express.  
+   with Visual Studio 10 Express.
 
    Leave "Use default native compilers" selected in the option menu below the
    drop-down box.

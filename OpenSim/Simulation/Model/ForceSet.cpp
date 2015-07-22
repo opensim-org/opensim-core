@@ -61,7 +61,7 @@ ForceSet::ForceSet()
     setNull();
 }
 
-ForceSet::ForceSet(Model& model) : 
+ForceSet::ForceSet(Model& model) :
 ModelComponentSet<Force>(model)
 {
     setNull();
@@ -248,7 +248,7 @@ bool ForceSet::append(ForceSet &aForceSet, bool aAllowDuplicateNames)
             }
         }
         if(!nameExists) {
-            if(!ModelComponentSet<Force>::adoptAndAppend(&aForceSet.get(i))) 
+            if(!ModelComponentSet<Force>::adoptAndAppend(&aForceSet.get(i)))
                 success = false;
         }
     }
@@ -306,7 +306,7 @@ const Set<Actuator>& ForceSet::getActuators() const
     return _actuators;
 }
 
-Set<Actuator>& ForceSet::updActuators() 
+Set<Actuator>& ForceSet::updActuators()
 {
     updateActuators();
     return _actuators;
@@ -334,7 +334,7 @@ const Set<Muscle>& ForceSet::getMuscles() const
 {
     return _muscles;
 }
-Set<Muscle>& ForceSet::updMuscles() 
+Set<Muscle>& ForceSet::updMuscles()
 {
     updateMuscles();
     return _muscles;
@@ -370,7 +370,7 @@ getStateVariableNames(OpenSim::Array<std::string> &rNames) const
 {
     for(int i=0;i<getSize();i++) {
         ScalarActuator *act = dynamic_cast<ScalarActuator*>(&get(i));
-       
+
         if(act) {
             rNames.append(act->getStateVariableNames());
         }

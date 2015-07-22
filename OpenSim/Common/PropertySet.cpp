@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -179,7 +179,7 @@ get(const string &aName) throw(Exception)
     for(i=0;i<_array.getSize();i++) {
         if((*_array[i]) == prop) return(_array[i]);
     }
-        
+
     // NO SUCH PROPERTY - THROW EXCEPTION
     string msg = "PropertySet.get: No property named " + aName;
     throw Exception(msg,__FILE__,__LINE__);
@@ -199,7 +199,7 @@ get(const string &aName) const
     for(i=0;i<_array.getSize();i++) {
         if((*_array[i]) == prop) return(_array[i]);
     }
-        
+
     // NO SUCH PROPERTY - THROW EXCEPTION
     string msg = "PropertySet.get: No property named " + aName;
     throw Exception(msg,__FILE__,__LINE__);
@@ -288,7 +288,7 @@ remove(const string &aName)
             return;
         }
     }
-        
+
     // NO SUCH PROPERTY - THROW EXCEPTION
     string msg = "PropertySet.get: No property named " + aName;
     throw Exception(msg,__FILE__,__LINE__);

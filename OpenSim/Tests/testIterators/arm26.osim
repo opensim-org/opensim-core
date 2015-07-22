@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="20303">
 	<Model name="arm26">
-  <!--See the credits section below for information about this model's authors, data sources, intended uses, and more. See the publications 
-	section for the paper(s) you should cite when using this model. Do not remove either section if you modify or add to this model. 
+  <!--See the credits section below for information about this model's authors, data sources, intended uses, and more. See the publications
+	section for the paper(s) you should cite when using this model. Do not remove either section if you modify or add to this model.
 	If you are this model's author(s), add or update the credits and publications sections before distributing your model.-->
 		<credits>
       The OpenSim Development Team (Reinbolt, J; Seth, A; Habib, A; Hamner, S) adapted from a model originally created by Kate Holzbaur (11/22/04)
-      
+
       License:
       Creative Commons (CCBY 3.0). You are free to distribute, remix, tweak, and build upon this work, even commercially,
       as long as you credit us for the original creation.

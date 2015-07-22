@@ -199,7 +199,7 @@ void ContDerivMuscle_Deprecated::extendConnectToModel(Model& aModel)
     Super::extendConnectToModel(aModel);
 }
 
-   
+
 void ContDerivMuscle_Deprecated::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
@@ -324,7 +324,7 @@ void ContDerivMuscle_Deprecated::computeEquilibrium(SimTK::State& s) const
  * This function is based on muscle_deriv_func9 from derivs.c (old pipeline code)
  */
 double ContDerivMuscle_Deprecated::computeActuation(const SimTK::State& s) const
-{ 
+{
    double normState[2], normStateDeriv[2], norm_tendon_length, ca;
    double norm_muscle_tendon_length, pennation_angle;
    double tendonForce, activeForce, passiveForce;
@@ -355,11 +355,11 @@ double ContDerivMuscle_Deprecated::computeActuation(const SimTK::State& s) const
     passiveForce = calcPassiveForce(s,normState[STATE_FIBER_LENGTH]);
     activeForce  =  calcActiveForce(s,normState[STATE_FIBER_LENGTH]);
 
-    
+
 //cout << tendon_length << "," << _length << endl;
     // NOTE: SimmZajacMuscle has this check, but Darryl's muscle didn't seem to
     // if (_activeForce < 0.0) _activeForce = 0.0;
- 
+
    /* If pennation equals 90 degrees, fiber length equals muscle width and fiber
     * velocity goes to zero.  Pennation will stay at 90 until tendon starts to
     * pull, then "stiff tendon" approximation is used to calculate approximate
@@ -372,7 +372,7 @@ double ContDerivMuscle_Deprecated::computeActuation(const SimTK::State& s) const
          normStateDeriv[STATE_FIBER_LENGTH] = 0.0;
             // ms->fiber_velocity = 0.0;
       }
-      else 
+      else
       {
          double h = norm_muscle_tendon_length - _tendonSlackLength;
          double w = _optimalFiberLength * sin(_pennationAngleAtOptimal);
@@ -454,7 +454,7 @@ double ContDerivMuscle_Deprecated::calcTendonForce(const SimTK::State& s, double
  * This equation is parameterized using the following dynamic parameters
  * which must be specified in the muscle file
  * Dynamic Parameters:
- *   FmaxMuscleStrain - passive muscle strain due to the application of 
+ *   FmaxMuscleStrain - passive muscle strain due to the application of
  *                      maximum isometric muscle force
  *   KshapePassive - exponential shape factor
  *
@@ -571,7 +571,7 @@ double ContDerivMuscle_Deprecated::getStress(const SimTK::State& s ) const
  * fiber and tendon lengths so that the forces in each match. This routine
  * takes pennation angle into account, so its definition of static equilibrium
  * is when tendon_force = fiber_force * cos(pennation_angle). This funcion
- * will modify the object's values for _length, _fiberLength, _activeForce, 
+ * will modify the object's values for _length, _fiberLength, _activeForce,
  * and _passiveForce.
  *
  * @param aActivation Activation of the muscle.
@@ -588,7 +588,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
    double cos_factor, fiber_stiffness;
    double old_fiber_length, length_change, tendon_stiffness, percent;
    double error_force = 0.0, old_error_force, tendon_force, norm_tendon_length;
-   
+
    // If the muscle has no fibers, then treat it as a ligament.
    if (_optimalFiberLength < ROUNDOFF_ERROR) {
         // ligaments should be a separate class, so _optimalFiberLength should
@@ -640,7 +640,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
       return 0.0;
    } else {
       setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  _optimalFiberLength);
-      cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngleAtOptimal));  
+      cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngleAtOptimal));
       tendon_length = length - getFiberLength(s) * cos_factor;
 
       /* Check to make sure tendon is not shorter than its slack length. If it
@@ -681,7 +681,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
         setActuation(s, tendon_force);
 
         old_error_force = error_force;
- 
+
       error_force = tendon_force - fiber_force;
 
       if (DABS(error_force) <= ERROR_LIMIT) // muscle-tendon force found!

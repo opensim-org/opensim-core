@@ -33,7 +33,7 @@
    apices of the medial and lateral maleoli.
    CALCANEUS: The calcaneal frame is located at the most distal, inferior
    point on the posterior surface of the calcaneus.
-   TOES:    The toe frame is located at the base of the second metatarsal 
+   TOES:    The toe frame is located at the base of the second metatarsal
 
    In the anatomical position, the X-axes point anteriorly, the Y-axes point
    superiorly, and the Z-axes point laterally.  Also note that this muscle
@@ -167,8 +167,8 @@ beginmuscle glut_max1_r
 beginpoints
 -0.11441  0.02747  0.06060 segment pelvis
 -0.11422 -0.03160  0.08360 segment pelvis
--0.0457 -0.0248 0.0392 segment femur_r 
--0.0277 -0.0566 0.0470 segment femur_r 
+-0.0457 -0.0248 0.0392 segment femur_r
+-0.0277 -0.0566 0.0470 segment femur_r
 endpoints
 begingroups
 	right leg_r hip_r
@@ -183,8 +183,8 @@ beginmuscle glut_max2_r
 beginpoints
 -0.12356 -0.01693  0.05130 segment pelvis
 -0.11053 -0.08535  0.08640 segment pelvis
--0.0426 -0.0530 0.0293 segment femur_r 
--0.0156 -0.1016 0.0419 segment femur_r 
+-0.0426 -0.0530 0.0293 segment femur_r
+-0.0156 -0.1016 0.0419 segment femur_r
 endpoints
 begingroups
 	right leg_r hip_r
@@ -200,7 +200,7 @@ beginpoints
 -0.12494 -0.09986  0.00740 segment pelvis
 -0.11347 -0.14063  0.03530 segment pelvis
 -0.0299 -0.1041 0.0135 segment femur_r
--0.0060 -0.1419 0.0411 segment femur_r 
+-0.0060 -0.1419 0.0411 segment femur_r
 endpoints
 begingroups
 	right leg_r hip_r
@@ -243,7 +243,7 @@ endmuscle
 beginmuscle glut_med3_r
 beginpoints
 -0.10968 -0.02101  0.05980 segment pelvis
--0.0309 -0.0047 0.0518 segment femur_r 
+-0.0309 -0.0047 0.0518 segment femur_r
 endpoints
 begingroups
 	right leg_r hip_r
@@ -251,14 +251,14 @@ endgroups
 max_force               435.0   /* source: Brand */
 optimal_fiber_length    0.0646  /* source: Friederich */
 tendon_slack_length     0.0530  /* source: Delp */
-pennation_angle         19.0    /* source: Friederich*/ 
+pennation_angle         19.0    /* source: Friederich*/
 endmuscle
 
 /* GLUTEUS MINIMUS */
-beginmuscle glut_min1_r 
+beginmuscle glut_min1_r
 beginpoints
 -0.03186 -0.02203  0.10060 segment pelvis
--0.0072 -0.0104 0.0560 segment femur_r 
+-0.0072 -0.0104 0.0560 segment femur_r
 endpoints
 begingroups
 	right leg_r hip_r
@@ -266,13 +266,13 @@ endgroups
 max_force               180.0   /* source: Brand */
 optimal_fiber_length    0.0680  /* source: Friederich */
 tendon_slack_length     0.0160  /* source: Delp */
-pennation_angle         10.0    /* source: Friederich */ 
+pennation_angle         10.0    /* source: Friederich */
 endmuscle
 
 beginmuscle glut_min2_r
 beginpoints
 -0.04837 -0.02430  0.09410 segment pelvis
--0.0096 -0.0104 0.0560 segment femur_r 
+-0.0096 -0.0104 0.0560 segment femur_r
 endpoints
 begingroups
 	right leg_r hip_r
@@ -280,13 +280,13 @@ endgroups
 max_force               190.0   /* source: Brand */
 optimal_fiber_length    0.0560  /* source: Friederich */
 tendon_slack_length     0.0260  /* source: LOAN (was 0.10) */
-pennation_angle         0.0     /* source: Friederich */ 
+pennation_angle         0.0     /* source: Friederich */
 endmuscle
 
-beginmuscle glut_min3_r 
+beginmuscle glut_min3_r
 beginpoints
 -0.06800 -0.02863  0.08060 segment pelvis
--0.0135 -0.0083 0.0550 segment femur_r 
+-0.0135 -0.0083 0.0550 segment femur_r
 endpoints
 begingroups
 	right leg_r hip_r
@@ -294,7 +294,7 @@ endgroups
 max_force               215.0   /* source: Brand */
 optimal_fiber_length    0.0380  /* source: Friederich */
 tendon_slack_length     0.0510  /* source: Delp */
-pennation_angle         21.0    /* source: Friederich */ 
+pennation_angle         21.0    /* source: Friederich */
 endmuscle
 
 /* ADDUCTOR LONGUS */
@@ -391,7 +391,7 @@ beginpoints
 -0.06352  0.01551  0.08280 segment pelvis
  0.00297 -0.06223  0.08010 segment pelvis
  0.0017 -0.0543 0.0057 segment femur_r
--0.0193 -0.0621 0.0129 segment femur_r 
+-0.0193 -0.0621 0.0129 segment femur_r
 endpoints
 begingroups
 	right leg_r hip_r
@@ -454,7 +454,7 @@ beginmuscle piri_r
 beginpoints
 -0.13606 -0.06815  0.02910 segment pelvis
 -0.10070 -0.06748  0.06050 segment pelvis
--0.0148 -0.0036 0.0437 segment femur_r 
+-0.0148 -0.0036 0.0437 segment femur_r
 endpoints
 begingroups
 	right leg_r hip_r
@@ -469,9 +469,9 @@ endmuscle
 beginmuscle TFL_r
 beginpoints
 -0.02327  0.01012  0.11910 segment pelvis
- 0.0294 -0.0995 0.0597 segment femur_r 
+ 0.0294 -0.0995 0.0597 segment femur_r
  0.0054 -0.4049 0.0357 segment femur_r
- 0.0060 -0.0487 0.0297 segment tibia_r 
+ 0.0060 -0.0487 0.0297 segment tibia_r
 endpoints
 begingroups
 	right leg_r hip_r
@@ -486,8 +486,8 @@ endmuscle
 beginmuscle gracilis_r
 beginpoints
 -0.01966 -0.11754  0.00290 segment pelvis
--0.0154 -0.0475 -0.0358 segment tibia_r 
- 0.0060 -0.0836 -0.0228 segment tibia_r 
+-0.0154 -0.0475 -0.0358 segment tibia_r
+ 0.0060 -0.0836 -0.0228 segment tibia_r
 endpoints
 begingroups
 	right leg_r hip_r knee_r
@@ -517,9 +517,9 @@ endmuscle
 beginmuscle semiten_r
 beginpoints
 -0.08522 -0.13318  0.05530 segment pelvis
--0.0314 -0.0545 -0.0146 segment tibia_r 
--0.0113 -0.0746 -0.0245 segment tibia_r 
- 0.0027 -0.0956 -0.0193 segment tibia_r 
+-0.0314 -0.0545 -0.0146 segment tibia_r
+-0.0113 -0.0746 -0.0245 segment tibia_r
+ 0.0027 -0.0956 -0.0193 segment tibia_r
 endpoints
 begingroups
 	right leg_r hip_r knee_r
@@ -564,26 +564,26 @@ endmuscle
 beginmuscle sartorius_r
 beginpoints
 -0.00755 -0.00995  0.11980 segment pelvis
--0.0030 -0.3568 -0.0421 segment femur_r 
--0.0056 -0.0419 -0.0399 segment tibia_r 
- 0.0060 -0.0589 -0.0383 segment tibia_r 
- 0.0243 -0.0840 -0.0252 segment tibia_r 
+-0.0030 -0.3568 -0.0421 segment femur_r
+-0.0056 -0.0419 -0.0399 segment tibia_r
+ 0.0060 -0.0589 -0.0383 segment tibia_r
+ 0.0243 -0.0840 -0.0252 segment tibia_r
 endpoints
 begingroups
 	right leg_r hip_r knee_r
 endgroups
 max_force               104.0   /* source: Wick */
 optimal_fiber_length    0.5790  /* source: Wick */
-tendon_slack_length     0.0400  /* source: Delp */ 
+tendon_slack_length     0.0400  /* source: Delp */
 pennation_angle         0.0     /* source: Wick */
 endmuscle
 
 /* RECTUS FEMORIS */
 beginmuscle rectus_fem_r
-beginpoints 
+beginpoints
 -0.00990 -0.04067  0.09180 segment pelvis
  0.0334 -0.4030  0.0019 segment femur_r ranges 1 knee_flex_r (83.65, 150.0)
- 0.0121  0.0437 -0.0010 segment patella_r 
+ 0.0121  0.0437 -0.0010 segment patella_r
 endpoints
 begingroups
 	right leg_r hip_r knee_r
@@ -597,11 +597,11 @@ endmuscle
 /* VASTUS MEDIALIS */
 beginmuscle vas_med_r
 beginpoints
-0.0140 -0.2099  0.0188  segment femur_r 
-0.0356 -0.2769  0.0009  segment femur_r 
+0.0140 -0.2099  0.0188  segment femur_r
+0.0356 -0.2769  0.0009  segment femur_r
 0.0370 -0.4048 -0.0125  segment femur_r ranges 1 knee_flex_r (69.32, 150.0)
 0.0274 -0.4255 -0.0131  segment femur_r ranges 1 knee_flex_r (101.99, 150.0)
-0.0063  0.0445 -0.0170  segment patella_r 
+0.0063  0.0445 -0.0170  segment patella_r
 endpoints
 begingroups
 	right leg_r knee_r
@@ -615,10 +615,10 @@ endmuscle
 /* VASTUS INTERMEDIUS */
 beginmuscle vas_int_r
 beginpoints
-0.0290 -0.1924  0.0310   segment femur_r 
+0.0290 -0.1924  0.0310   segment femur_r
 0.0335 -0.2084  0.0285   segment femur_r
 0.0343 -0.4030  0.0055   segment femur_r ranges 1 knee_flex_r (81.36, 150.0)
-0.0058  0.0480 -0.0006   segment patella_r 
+0.0058  0.0480 -0.0006   segment patella_r
 endpoints
 begingroups
 	right leg_r knee_r
@@ -632,11 +632,11 @@ endmuscle
 /* VASTUS LATERALIS */
 beginmuscle vas_lat_r
 beginpoints
-0.0048 -0.1854 0.0349  segment femur_r 
-0.0269 -0.2591 0.0409  segment femur_r 
+0.0048 -0.1854 0.0349  segment femur_r
+0.0269 -0.2591 0.0409  segment femur_r
 0.0361 -0.4030 0.0205  segment femur_r ranges 1 knee_flex_r (69.32, 150.0)
 0.0253 -0.4243 0.0184  segment femur_r ranges 1 knee_flex_r (110.0, 150.0)
-0.0103  0.0423 0.0141  segment patella_r 
+0.0103  0.0423 0.0141  segment patella_r
 endpoints
 begingroups
 	right leg_r knee_r
@@ -650,7 +650,7 @@ endmuscle
 /* PATELLAR LIGAMENT */
 beginmuscle pat_lig_r
 beginpoints
-0.0390 -0.0822 0.0000   segment tibia_r 
+0.0390 -0.0822 0.0000   segment tibia_r
 0.0021  0.0015 0.0001   segment patella_r
 endpoints
 begingroups
@@ -714,10 +714,10 @@ endmuscle
 /* TIBIALIS POSTERIOR */
 beginmuscle tib_post_r
 beginpoints
--0.0094 -0.1348  0.0019  segment tibia_r 
--0.0144 -0.4051 -0.0229  segment tibia_r 
- 0.0417  0.0334 -0.0286  segment foot_r 
- 0.0772  0.0159 -0.0281  segment foot_r 
+-0.0094 -0.1348  0.0019  segment tibia_r
+-0.0144 -0.4051 -0.0229  segment tibia_r
+ 0.0417  0.0334 -0.0286  segment foot_r
+ 0.0772  0.0159 -0.0281  segment foot_r
 endpoints
 begingroups
 	right leg_r ankle_r
@@ -731,9 +731,9 @@ endmuscle
 /* TIBIALIS ANTERIOR */
 beginmuscle tib_ant_r
 beginpoints
-0.0179 -0.1624  0.0115  segment tibia_r 
-0.0329 -0.3951 -0.0177  segment tibia_r 
-0.1166  0.0178 -0.0305  segment foot_r 
+0.0179 -0.1624  0.0115  segment tibia_r
+0.0329 -0.3951 -0.0177  segment tibia_r
+0.1166  0.0178 -0.0305  segment foot_r
 endpoints
 begingroups
 	right leg_r ankle_r
@@ -845,13 +845,13 @@ endmuscle
 /* PERONEUS LONGUS */
 beginmuscle per_long_r
 beginpoints
- 0.0005 -0.1568  0.0362  segment tibia_r 
--0.0207 -0.4205  0.0286  segment tibia_r 
--0.0162 -0.4319  0.0289  segment tibia_r 
- 0.0438  0.0230  0.0221  segment foot_r 
- 0.0681  0.0106  0.0284  segment foot_r 
- 0.0852  0.0069  0.0118  segment foot_r 
- 0.1203  0.0085 -0.0184  segment foot_r 
+ 0.0005 -0.1568  0.0362  segment tibia_r
+-0.0207 -0.4205  0.0286  segment tibia_r
+-0.0162 -0.4319  0.0289  segment tibia_r
+ 0.0438  0.0230  0.0221  segment foot_r
+ 0.0681  0.0106  0.0284  segment foot_r
+ 0.0852  0.0069  0.0118  segment foot_r
+ 0.1203  0.0085 -0.0184  segment foot_r
 endpoints
 begingroups
 	right leg_r ankle_r
@@ -865,9 +865,9 @@ endmuscle
 /* PERONEUS TERTIUS */
 beginmuscle per_tert_r
 beginpoints
-0.0010 -0.2804 0.0231  segment tibia_r  
-0.0229 -0.4069 0.0159  segment tibia_r  
-0.0857  0.0228 0.0299  segment foot_r  
+0.0010 -0.2804 0.0231  segment tibia_r
+0.0229 -0.4069 0.0159  segment tibia_r
+0.0857  0.0228 0.0299  segment foot_r
 endpoints
 begingroups
 	right leg_r ankle_r

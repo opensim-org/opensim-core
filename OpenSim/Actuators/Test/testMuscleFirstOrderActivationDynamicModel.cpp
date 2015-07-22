@@ -34,20 +34,20 @@ using namespace SimTK;
 
 void printMatrixToFile( const SimTK::Matrix& data, const std::string& filename);
 
-SimTK::Vector calcCentralDifference(const SimTK::Vector& x, 
+SimTK::Vector calcCentralDifference(const SimTK::Vector& x,
         const SimTK::Vector& y, bool extrap_endpoints);
 
 bool isFunctionContinuous(const SimTK::Vector& xV, const SimTK::Vector& yV,
         const SimTK::Vector& dydxV, const SimTK::Vector& d2ydx2V, double minTol,
         double taylorErrorMult);
 
-SimTK::Matrix calcFunctionTimeIntegral( 
-        const SimTK::Vector& timeV, 
-        const SimTK::Matrix& xM, 
+SimTK::Matrix calcFunctionTimeIntegral(
+        const SimTK::Vector& timeV,
+        const SimTK::Matrix& xM,
         const MuscleFirstOrderActivationDynamicModel& yF,
-        double ic, 
-        int dim, 
-        double startTime, 
+        double ic,
+        int dim,
+        double startTime,
         double endTime,
         double intAcc);
 
@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
                 xM(i,1) = 0;
             }else{
                 xM(i,1) = 1;
-            }                 
+            }
         }
 
 
@@ -152,12 +152,12 @@ int main(int argc, char* argv[])
         cout << endl;
 
 
-        SimTK::Matrix stepResponse = calcFunctionTimeIntegral(  timeV, 
-                xM, 
+        SimTK::Matrix stepResponse = calcFunctionTimeIntegral(  timeV,
+                xM,
                 actMdl,
-                amin, 
-                0, 
-                0, 
+                amin,
+                0,
+                0,
                 1,
                 1e-12);
 
@@ -211,8 +211,8 @@ int main(int argc, char* argv[])
         double normFallTime = (ft10-ft90)/tauD;
 
         //Checking for causality
-        SimTK_TEST(  (rt10>stepStart) && (rt90>rt10) 
-                && (ft90>rt90) && (ft90>stepEnd) && (ft10>ft90)); 
+        SimTK_TEST(  (rt10>stepStart) && (rt90>rt10)
+                && (ft90>rt90) && (ft90>stepEnd) && (ft10>ft90));
         SimTK_TEST_EQ_TOL(normRiseTime,3,0.3);
         SimTK_TEST_EQ_TOL(normFallTime,2.17,0.2);
 
@@ -264,7 +264,7 @@ int main(int argc, char* argv[])
                 xM(j,1) = uV(j);
                 dx(j) = actMdl.calcDerivative(actV(i), uV(j));
             }
-            d2x = calcCentralDifference(xM(1), dx,true);                  
+            d2x = calcCentralDifference(xM(1), dx,true);
 
             for(int j=1;j<uV.size();j++){
                 tmp = abs(d2x(j)-d2x(j-1));
@@ -272,9 +272,9 @@ int main(int argc, char* argv[])
                     maxDxDiff = tmp;
             }
 
-            d3x = calcCentralDifference(xM(1), d2x, true);  
+            d3x = calcCentralDifference(xM(1), d2x, true);
 
-            continuous = isFunctionContinuous(xM(1), dx, d2x, d3x, 
+            continuous = isFunctionContinuous(xM(1), dx, d2x, d3x,
                     minTol,taylorMult);
             SimTK_TEST(continuous);
         }
@@ -310,9 +310,9 @@ int main(int argc, char* argv[])
                 xM(j,0) = actV(j);
                 xM(j,1) = uV(i);
                 dx(j) = actMdl.calcDerivative(actV(j), uV(i));
-            }                
+            }
 
-            d2x = calcCentralDifference(xM(0), dx,true);                  
+            d2x = calcCentralDifference(xM(0), dx,true);
 
 
 
@@ -322,9 +322,9 @@ int main(int argc, char* argv[])
                     maxDxDiff = tmp;
             }
 
-            d3x = calcCentralDifference(xM(0), d2x, true);  
+            d3x = calcCentralDifference(xM(0), d2x, true);
 
-            continuous = isFunctionContinuous(xM(0), dx, d2x, d3x, 
+            continuous = isFunctionContinuous(xM(0), dx, d2x, d3x,
                     minTol,taylorMult);
             SimTK_TEST(continuous);
         }
@@ -335,7 +335,7 @@ int main(int argc, char* argv[])
                 ,minTol,taylorMult,maxDxDiff);
 
         cout<<"*****************************************************"<<endl;
-        cout<<"TEST: Exceptions thrown correctly.                   "<<endl;           
+        cout<<"TEST: Exceptions thrown correctly.                   "<<endl;
         cout << endl;
 
         SimTK_END_TEST();
@@ -349,7 +349,7 @@ int main(int argc, char* argv[])
     catch (const std::exception& ex)
     {
         cout << ex.what() << endl;
-        cin.get();      
+        cin.get();
         return 1;
     }
     catch (...)
@@ -366,7 +366,7 @@ int main(int argc, char* argv[])
 }
 
 /**
-  This function will print cvs file of the matrix 
+  This function will print cvs file of the matrix
   data
 
   @params data: A matrix of data
@@ -383,19 +383,19 @@ void printMatrixToFile( const SimTK::Matrix& data, const std::string& filename)
                 datafile << data(i,j) << ",";
             else
                 datafile << data(i,j) << "\n";
-        }   
+        }
     }
     datafile.close();
 }
 
 /**
-  This function tests numerically for continuity of a curve. The test is 
-  performed by taking a point on the curve, and then two points (called the 
+  This function tests numerically for continuity of a curve. The test is
+  performed by taking a point on the curve, and then two points (called the
   shoulder points) to the left and right of the point in question. The value
   of the functions derivative is evaluated at each of the shoulder points and
-  used to linearly extrapolate from the shoulder points back to the original 
-  point. If the original point and the linear extrapolations of each of the 
-  shoulder points agree within tol, then the curve is assumed to be 
+  used to linearly extrapolate from the shoulder points back to the original
+  point. If the original point and the linear extrapolations of each of the
+  shoulder points agree within tol, then the curve is assumed to be
   continuous.
 
 
@@ -417,7 +417,7 @@ void printMatrixToFile( const SimTK::Matrix& data, const std::string& filename)
   term.
   */
 bool isFunctionContinuous(const SimTK::Vector& xV, const SimTK::Vector& yV,
-        const SimTK::Vector& dydxV, const SimTK::Vector& d2ydx2V, 
+        const SimTK::Vector& dydxV, const SimTK::Vector& d2ydx2V,
         double minTol, double taylorErrorMult)
 {
     bool flag_continuous = true;
@@ -494,22 +494,22 @@ bool isFunctionContinuous(const SimTK::Vector& xV, const SimTK::Vector& yV,
 }
 
 /**
-  This function computes a standard central difference dy/dx. If 
-  extrap_endpoints is set to 1, then the derivative at the end points is 
+  This function computes a standard central difference dy/dx. If
+  extrap_endpoints is set to 1, then the derivative at the end points is
   estimated by linearly extrapolating the dy/dx values beside the end points
 
   @param x domain vector
   @param y range vector
-  @param extrap_endpoints: (false)   Endpoints of the returned vector will be 
+  @param extrap_endpoints: (false)   Endpoints of the returned vector will be
   zero, because a central difference
   is undefined at these endpoints
-  (true)  Endpoints are computed by linearly 
-  extrapolating using a first difference from 
+  (true)  Endpoints are computed by linearly
+  extrapolating using a first difference from
   the neighboring 2 points
   @returns dy/dx computed using central differences
   */
-SimTK::Vector calcCentralDifference(const SimTK::Vector& x, 
-        const SimTK::Vector& y,                                          
+SimTK::Vector calcCentralDifference(const SimTK::Vector& x,
+        const SimTK::Vector& y,
         bool extrap_endpoints){
 
 
@@ -544,10 +544,10 @@ public:
     const MuscleFirstOrderActivationDynamicModel& m_func;
     SimTK::Array_<SimTK::Spline_<double> > m_splinedInput;
 
-    double m_ic;        
+    double m_ic;
     int m_intDim;
 
-    mutable SimTK::Vector m_tmpXV; //A temporary variable   
+    mutable SimTK::Vector m_tmpXV; //A temporary variable
 
     FunctionData(const MuscleFirstOrderActivationDynamicModel& func):m_func(func)
     {};
@@ -619,7 +619,7 @@ class MySystemGuts : public SimTK::System::Guts {
     // Disable prescribe and project since we have no constraints or
     // prescribed state variables to worry about.
     int prescribeImpl(State&, Stage) const {return 0;}
-    int projectImpl(State&, Real, const Vector&, const Vector&, 
+    int projectImpl(State&, Real, const Vector&, const Vector&,
             Vector&, SimTK::ProjectOptions) const {return 0;}
 private:
     /**The Bezier curve data that is being integrated*/
@@ -627,8 +627,8 @@ private:
 };
 
 /**
-  This is the implementation of the nice user interface class to MySystemGuts, 
-  which creates a System object that is required to use SimTK's integrators to 
+  This is the implementation of the nice user interface class to MySystemGuts,
+  which creates a System object that is required to use SimTK's integrators to
   integrate the Bezier curve sets. Used in function
   SegmentedQuinticBezierToolkit::calcNumIntBezierYfcnX
   */
@@ -641,7 +641,7 @@ public:
 };
 
 /**
-  @param timeV A nx1 time vector to integrate along, which must monotonic 
+  @param timeV A nx1 time vector to integrate along, which must monotonic
   and increasing
   @param xM    A nxm matrix of row vectors, each corresponding to the row vector
   that should be applied to yF at time t
@@ -650,13 +650,13 @@ public:
   @param intAcc The accuracy of the integral
   @returns an nx2 matrix, time in column 0, integral of y in column 1
   */
-SimTK::Matrix calcFunctionTimeIntegral( 
+SimTK::Matrix calcFunctionTimeIntegral(
         const SimTK::Vector& timeV,
-        const SimTK::Matrix& xM, 
+        const SimTK::Matrix& xM,
         const MuscleFirstOrderActivationDynamicModel& yF,
-        double ic, 
-        int dim, 
-        double startTime, 
+        double ic,
+        int dim,
+        double startTime,
         double endTime,
         double intAcc)
 {
@@ -672,7 +672,7 @@ SimTK::Matrix calcFunctionTimeIntegral(
     SimTK::Array_< SimTK::Spline_<double> > splinedInput(xM.ncol());
 
     //Now spline xM over time
-    for(int i=0; i<xM.ncol(); i++){        
+    for(int i=0; i<xM.ncol(); i++){
 
         splinedInput[i] = SimTK::SplineFitter<Real>::
             fitForSmoothingParameter(1,timeV,xM(i),0).getSpline();
@@ -683,7 +683,7 @@ SimTK::Matrix calcFunctionTimeIntegral(
 
     //Set up system
     //double startTime = timeV(0);
-    //double endTime   = timeV(timeV.nelt()-1);   
+    //double endTime   = timeV(timeV.nelt()-1);
     MySystem sys(fdata);
     State initState = sys.realizeTopology();
     initState.setTime(startTime);
@@ -695,11 +695,11 @@ SimTK::Matrix calcFunctionTimeIntegral(
     integ.setReturnEveryInternalStep(false);
     integ.initialize(initState);
 
-    int idx = 0;    
+    int idx = 0;
     double nextTimeInterval = 0;
     Integrator::SuccessfulStepStatus status;
 
-    while (idx < timeV.nelt()) {      
+    while (idx < timeV.nelt()) {
         nextTimeInterval = timeV(idx);
 
         status=integ.stepTo(nextTimeInterval);
@@ -713,7 +713,7 @@ SimTK::Matrix calcFunctionTimeIntegral(
         const State& state = integ.getState();
 
         intXY(idx,0) = nextTimeInterval;
-        intXY(idx,1) = (double)state.getZ()[0];                        
+        intXY(idx,1) = (double)state.getZ()[0];
 
         idx++;
 

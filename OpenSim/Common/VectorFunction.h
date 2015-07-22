@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -37,18 +37,18 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * An abstract class for representing a vector function.
  *
- * A vector function is a relation between some number of independent variables 
+ * A vector function is a relation between some number of independent variables
  * and some number of dependent values such that for any particular set of
  * independent variables the correct number of dependent variables is returned.
  * Values of the function and its derivatives
  * are obtained by calling the evaluate() method.  The curve may or may not
  * be finite or diferentiable; the evaluate method returns values between
- * - %SimTK::Infinity and %SimTK::Infinity, or it returns SimTK::NaN 
+ * - %SimTK::Infinity and %SimTK::Infinity, or it returns SimTK::NaN
  * (not a number) if the curve is not defined.
  * Currently, functions of up to 3 variables (x,y,z) are supported.
  *
@@ -113,7 +113,7 @@ public:
     const Array<double>& getMaxX() const;
     void setMaxX(int aXIndex, double aMaxX);
     double getMaxX(int aXIndex) const;
-    
+
     //--------------------------------------------------------------------------
     // EVALUATE
     //--------------------------------------------------------------------------

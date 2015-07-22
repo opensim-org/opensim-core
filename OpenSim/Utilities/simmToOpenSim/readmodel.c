@@ -627,10 +627,10 @@ ReturnCode read_model_file(Scene* scene, ModelStruct* ms, char filename[], SBool
    }
 
    goto cleanup;
-   
+
  input_error:
    status = code_bad;
-   
+
  cleanup:
    (void)fclose(fp);
    (void)unlink((const char*)tempFileName);
@@ -754,7 +754,7 @@ static ReturnCode read_gencoord(ModelStruct* ms, FILE* fp)
       {
          if (read_string(fp,buffer) == EOF)
             break;
-         
+
          if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"off")
             || STRINGS_ARE_EQUAL(buffer, "false"))
             gc->clamped = gc->clamped_save = no;
@@ -766,7 +766,7 @@ static ReturnCode read_gencoord(ModelStruct* ms, FILE* fp)
       {
          if (read_string(fp,buffer) == EOF)
             break;
-         
+
          if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"off")
             || STRINGS_ARE_EQUAL(buffer, "false"))
             gc->locked = gc->locked_save = no;
@@ -789,7 +789,7 @@ static ReturnCode read_gencoord(ModelStruct* ms, FILE* fp)
       {
          if (read_string(fp,buffer) == EOF)
             break;
-         
+
          if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"off")
             || STRINGS_ARE_EQUAL(buffer, "false"))
             gc->restraintFuncActive = no;
@@ -842,7 +842,7 @@ static ReturnCode read_gencoord(ModelStruct* ms, FILE* fp)
       else if (STRINGS_ARE_EQUAL(buffer,"mocap_value"))
       {
         char componentName[32];
-        
+
         if (fscanf(fp, "%s %s", buffer, componentName) != 2)
         {
            sprintf(errorbuffer, "Error reading mocap info for %s gencoord.", gc->name);
@@ -1375,7 +1375,7 @@ static ReturnCode read_joint(ModelStruct* ms, FILE* fp)
           * it is useful for testing the joint pretransform mechanism.  -- KMS
           */
          int i,j;
-         
+
          for (i=0; i<4; i++)
          {
             for (j=0; j<4; j++)
@@ -1391,7 +1391,7 @@ static ReturnCode read_joint(ModelStruct* ms, FILE* fp)
          invert_4x4transform(jnt->pretransform, jnt->pretransform_inverse);
          continue;
       }
-      
+
 #if INCLUDE_MOCAP_MODULE
       if (STRINGS_ARE_EQUAL(buffer,"mocap_segment"))
       {
@@ -1405,7 +1405,7 @@ static ReturnCode read_joint(ModelStruct* ms, FILE* fp)
          continue;
       }
 #endif
-      
+
       if ((jointvarnum = getjointvarnum(buffer)) == -1)
       {
          (void)sprintf(errorbuffer,
@@ -1414,7 +1414,7 @@ static ReturnCode read_joint(ModelStruct* ms, FILE* fp)
          error(recover,errorbuffer);
          continue;
       }
-      
+
       if (jointvarnum >= 0 && jointvarnum < 6)
       {
          if (read_refeq(ms,fp,&jnt->dofs[jointvarnum]) == code_bad)
@@ -1459,14 +1459,14 @@ static ReturnCode read_joint(ModelStruct* ms, FILE* fp)
          }
       }
    }
-   
+
    /* Each time a dof is properly defined, the corresponding bit in the 'check'
     * variable is set to 1. Thus when we see 'endjoint,' we can examine this
     * variable to see if the lower 6 bits are all 1s (which means check = 63).
     * If check != 63, then not all 6 of the dofs have been properly defined,
     * so print an error message.
     */
-   
+
    if (check < 63)
    {
       (void)sprintf(errorbuffer, "Incomplete definition of joint %s:", jnt->name);
@@ -1482,7 +1482,7 @@ static ReturnCode read_joint(ModelStruct* ms, FILE* fp)
       error(abort_action,NULL);
       return code_bad;
    }
-   
+
    return code_fine;
 
 }
@@ -1602,7 +1602,7 @@ static ReturnCode read_segment(ModelStruct* ms, FILE* fp)
          if (read_segment_groups(ms, fp, segmentnum) != code_fine)
          {
             seg->numgroups = 0;
-            
+
             sprintf(errorbuffer,"Error reading groups for segment %s.", seg->name);
             error(recover,errorbuffer);
          }
@@ -1887,7 +1887,7 @@ static ReturnCode read_segment(ModelStruct* ms, FILE* fp)
             return code_bad;
          }
          mstrcpy(&seg->gait_scale_segment, buffer);
-      }         
+      }
       else if (STRINGS_ARE_EQUAL(buffer,"mocap_segment"))
       {
          if (fscanf(fp, "%s", buffer) != 1)
@@ -1904,7 +1904,7 @@ static ReturnCode read_segment(ModelStruct* ms, FILE* fp)
             error(abort_action, errorbuffer);
             return code_bad;
          }
-         
+
          if (STRINGS_ARE_EQUAL(buffer, "inherit_scale"))
             seg->mocap_scaling_method = INHERIT_SCALE;
          else if (STRINGS_ARE_EQUAL(buffer, "scale_one_to_one"))
@@ -1912,7 +1912,7 @@ static ReturnCode read_segment(ModelStruct* ms, FILE* fp)
          else if (STRINGS_ARE_EQUAL(buffer, "scale_chain"))
          {
             seg->mocap_scaling_method = SCALE_CHAIN;
-            
+
             /* read the first mocap scale chain end name:
             */
             if (fscanf(fp, "%s", buffer) != 1)
@@ -1922,7 +1922,7 @@ static ReturnCode read_segment(ModelStruct* ms, FILE* fp)
                return code_bad;
             }
             mstrcpy(&seg->mocap_scale_chain_end1, buffer);
-            
+
             /* read the second mocap scale chain end name:
             */
             if (fscanf(fp, "%s", buffer) != 1)
@@ -1947,19 +1947,19 @@ static ReturnCode read_segment(ModelStruct* ms, FILE* fp)
       else if (STRINGS_ARE_EQUAL(buffer,"mocap_adjustment_xform"))
       {
          double axis[3], angle;
-         
+
          if (fscanf(fp, "%lg %lg %lg %lg", &axis[XX], &axis[YY], &axis[ZZ], &angle) != 4)
          {
             sprintf(errorbuffer, "Error reading mocap adjustment for %s segment.", seg->name);
             error(abort_action, errorbuffer);
             return code_bad;
          }
-         
+
          fprintf(stderr, "MOCAP ADJUST: %s [%.3f %.3f %.3f] %.1f\n",
             seg->name, axis[XX], axis[YY], axis[ZZ], angle);
-         
+
          angle *= DTOR;
-         
+
          rotate_matrix_axis_angle(seg->mocap_adjustment_xform, axis, angle);
       }
 #endif
@@ -2206,13 +2206,13 @@ static ReturnCode read_modelview(Scene* scene, ModelStruct* ms, FILE* fp)
 static ReturnCode read_gencoord_groups (ModelStruct* ms, FILE* fp, GeneralizedCoord* gencoord)
 {
    int num_malloced_so_far = 10;
-   
+
    ReturnCode rc = code_fine;
 
    gencoord->numgroups = 0;
 
    gencoord->group = (int*)simm_malloc(num_malloced_so_far * sizeof(int));
-   
+
    if (gencoord->group == NULL)
       return code_bad;
 
@@ -2230,18 +2230,18 @@ static ReturnCode read_gencoord_groups (ModelStruct* ms, FILE* fp, GeneralizedCo
       if (gencoord->numgroups > num_malloced_so_far)
       {
          num_malloced_so_far += 10;
-         
+
          gencoord->group = (int*)simm_realloc(gencoord->group, num_malloced_so_far * sizeof(int), &rc);
-         
+
          if (rc == code_bad)
             break;
       }
 
       gencoord->group[gencoord->numgroups] = enter_gencoord_group(ms, buffer, gencoord);
-      
+
       if (gencoord->group[gencoord->numgroups] == -1)
          return code_bad;
-      
+
       gencoord->numgroups++;
    }
    return rc;
@@ -2257,7 +2257,7 @@ static ReturnCode read_segment_groups (ModelStruct* ms, FILE* fp, int segnum)
    seg->numgroups = 0;
 
    seg->group = (int*) simm_malloc(num_malloced_so_far * sizeof(int));
-   
+
    if (seg->group == NULL)
       return code_bad;
 
@@ -2276,18 +2276,18 @@ static ReturnCode read_segment_groups (ModelStruct* ms, FILE* fp, int segnum)
       if (seg->numgroups > num_malloced_so_far)
       {
          num_malloced_so_far += 10;
-         
+
          seg->group = (int*) simm_realloc(seg->group, num_malloced_so_far * sizeof(int), &rc);
-         
+
          if (rc == code_bad)
             break;
       }
 
       seg->group[seg->numgroups] = enter_segment_group(ms, buffer, segnum);
-      
+
       if (seg->group[seg->numgroups] == -1)
          return code_bad;
-      
+
       seg->numgroups++;
    }
    return rc;
@@ -2303,7 +2303,7 @@ ReturnCode read_drawmode (FILE* fp, DrawingMode* dm)
 
    if (*dm == -1)
       *dm = gouraud_shading;
-   
+
    return code_fine;
 }
 
@@ -2596,7 +2596,7 @@ static ReturnCode read_force_matte(ModelStruct* ms, SegmentStruct* seg, FILE* fp
          seg->forceMatte->visible = yes;
          mstrcpy(&seg->forceMatte->name, str1);
          mstrcpy(&seg->forceMatte->filename, str2);
-         
+
 #if ! ENGINE || OPENSMAC
          seg->forceMatte->poly = (PolyhedronStruct*)simm_malloc(sizeof(PolyhedronStruct));
          frc = lookup_polyhedron(seg->forceMatte->poly, seg->forceMatte->filename, ms);
@@ -2657,7 +2657,7 @@ static ReturnCode read_contact_object(ModelStruct* ms, FILE* fp)
       return code_bad;
    }
    else  //count = 3 or 4
-   {      
+   {
       segnum = enter_segment(ms, segname, yes);
       seg = &ms->segment[segnum];
 
@@ -2963,22 +2963,22 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE* fp)
    double xyz[3];
    DMatrix m;
    int i;
-   
+
    if (ms->num_constraint_objects == ms->constraint_object_array_size)
    {
       ms->constraint_object_array_size += CONSTRAINT_OBJECT_ARRAY_INCREMENT;
       ms->constraintobj = (ConstraintObject*)simm_realloc(ms->constraintobj,
          ms->constraint_object_array_size*sizeof(ConstraintObject),&rc);
-      
+
       if (rc == code_bad)
       {
          ms->constraint_object_array_size -= CONSTRAINT_OBJECT_ARRAY_INCREMENT;
          return code_bad;
       }
    }
-   
+
    co = &ms->constraintobj[ms->num_constraint_objects];
-   
+
    initconstraintobject(co);
 
    /* read constraint name */
@@ -2995,7 +2995,7 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE* fp)
    {
       if (read_string(fp,buffer) == EOF)
          break;
-      
+
       if (buffer[0] == '#')
       {
          read_nonempty_line(fp,buffer);
@@ -3006,7 +3006,7 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE* fp)
       {
          if (read_string(fp,buffer) == EOF)
             break;
-         
+
          if (STRINGS_ARE_EQUAL(buffer,"sphere"))
             co->constraintType = constraint_sphere;
          else if (STRINGS_ARE_EQUAL(buffer,"cylinder"))
@@ -3028,7 +3028,7 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE* fp)
          else
          {
             co->segment = enter_segment(ms,buffer,yes);
-            
+
             if (co->segment == -1)
                return code_bad;
          }
@@ -3037,7 +3037,7 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE* fp)
       {
          if (read_string(fp,buffer) == EOF)
             break;
-         
+
          if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"false"))
             co->active = no;
       }
@@ -3045,7 +3045,7 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE* fp)
       {
          if (read_string(fp,buffer) == EOF)
             break;
-         
+
          if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"false"))
             co->visible = no;
       }
@@ -3143,7 +3143,7 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE* fp)
                rc = code_bad;
             }
          }
-         
+
          if (rc == code_bad)
          {
             (void)sprintf(errorbuffer, "Error reading radius for constraint object %s",
@@ -3174,7 +3174,7 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE* fp)
       {
          if (read_string(fp,buffer) == EOF)
             break;
-         
+
          set_constraint_specs(co, buffer);
       }
 /*      else if (STRINGS_ARE_EQUAL(buffer, "plane"))
@@ -3191,7 +3191,7 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE* fp)
          else
          {
             co->constraintType = constraint_plane;
-            
+
 //            co->plane.segment = enter_segment(ms, buffer, yes);
 //            co->plane.plane.a = a;
 //            co->plane.plane.b = b;
@@ -3231,7 +3231,7 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE* fp)
       }
    }
    co->undeformed_translation = co->translation;
-   
+
    co->xforms_valid = no;
    /* set constraint point activations and visibility to that of co if co is inactive/invisible*/
 //dkb nov 2009
@@ -3243,7 +3243,7 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE* fp)
       if (co->active == no)
          co->points[i].active = co->active;
    }*/
-   
+
    if (co->constraintType == constraint_none)
    {
       (void)sprintf(errorbuffer, "No constraint type (plane, constraint_object) specified for %s.",
@@ -3252,9 +3252,9 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE* fp)
 //      return code_bad;
    }
    ms->num_constraint_objects++;
-   
+
    return code_fine;
-   
+
 }
 
 static ConstraintPoint* read_constraint_points(ModelStruct* ms, FILE* fp, int *numpoints,
@@ -3272,7 +3272,7 @@ static ConstraintPoint* read_constraint_points(ModelStruct* ms, FILE* fp, int *n
    cp = (ConstraintPoint*)simm_malloc((*cp_array_size)*sizeof(ConstraintPoint));
    if (cp == NULL)
       return (NULL);
-   
+
    while (1)
    {
       if (read_nonempty_line(fp, buffer) == EOF)
@@ -3280,11 +3280,11 @@ static ConstraintPoint* read_constraint_points(ModelStruct* ms, FILE* fp, int *n
          error(none, "EOF while reading constraint points");
          return (NULL);
       }
-      
+
       sscanf(buffer, "%s", buf2);
       if (STRINGS_ARE_EQUAL(buf2, "endpoints"))
          return (cp);
-      
+
       /* Check to see if you need to increase the size of the muscle-point
        * array before reading any more points.
        */
@@ -3299,7 +3299,7 @@ static ConstraintPoint* read_constraint_points(ModelStruct* ms, FILE* fp, int *n
          }
       }
       initconstraintpoint(&cp[*numpoints]);
-     
+
       /* If the string you just read was not "endpoints" then it must
        * be the start of a new point. */
       /* read point name, offset, weight, and segment name and tolerance */
@@ -3329,7 +3329,7 @@ static ConstraintPoint* read_constraint_points(ModelStruct* ms, FILE* fp, int *n
 }
 
 /* -------------------------------------------------------------------------
-   read_motion_object - 
+   read_motion_object -
 ---------------------------------------------------------------------------- */
 static ReturnCode read_motion_object(ModelStruct* ms, FILE* fp)
 {
@@ -3344,20 +3344,20 @@ static ReturnCode read_motion_object(ModelStruct* ms, FILE* fp)
       error(abort_action, "Error reading name in motion object definition");
       return code_bad;
    }
-   
+
    /* scan the list of existing motion objects to see if one already exists
     * with the name we just read:
     */
    for (i = 0; i < ms->num_motion_objects; i++)
       if (STRINGS_ARE_EQUAL(buffer, ms->motion_objects[i].name))
          break;
-   
+
    /* create a new motion object if necessary:
     */
    if (i == ms->num_motion_objects)
    {
       i = ms->num_motion_objects++;
-   
+
       if (ms->motion_objects == NULL)
          ms->motion_objects = (MotionObject*) simm_malloc(ms->num_motion_objects * sizeof(MotionObject));
       else
@@ -3370,11 +3370,11 @@ static ReturnCode read_motion_object(ModelStruct* ms, FILE* fp)
          return code_bad;
       }
       mo = &ms->motion_objects[i];
-      
+
       memset(mo, 0, sizeof(MotionObject));
-   
+
       mstrcpy(&mo->name, buffer);
-      
+
       mstrcpy(&mo->materialname, "def_motion");
       mo->material = enter_material(ms, mo->materialname, declaring_element);
 
@@ -3389,9 +3389,9 @@ static ReturnCode read_motion_object(ModelStruct* ms, FILE* fp)
    }
    else
       mo = &ms->motion_objects[i];
-      
+
    mo->defined_in_file = yes;
-   
+
    /* read the motion object's parameters:
     */
    while (1)

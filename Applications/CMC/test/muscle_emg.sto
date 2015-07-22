@@ -1,7 +1,7 @@
-muscle_emg	
-nRows=11	
-nColumns=2	
-endheader	
+muscle_emg
+nRows=11
+nColumns=2
+endheader
 time	BIClong.activation
 0	0.05
 0.1	0.05

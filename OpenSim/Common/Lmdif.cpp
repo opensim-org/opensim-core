@@ -105,7 +105,7 @@ void lmpar(
 #define MACHEP 1.2e-16
 #define DWARF  1.0e-38
 
- 
+
 
 /*
 *     **********
@@ -347,11 +347,11 @@ void lmdif_C(
    static double p0001 = 1.0e-4;
    static double zero = 0.0;
    static double p05 = 0.05;
-   
+
    *info = 0;
    iflag = 0;
    *nfev = 0;
-   
+
    /*
     *     check the input parameters for errors.
     */
@@ -359,7 +359,7 @@ void lmdif_C(
       || (xtol < zero) || (gtol < zero) || (maxfev <= 0)
       || (factor <= zero))
       goto L300;
-   
+
    if (mode == 2)
    {
       /* scaling by diag[] */
@@ -367,13 +367,13 @@ void lmdif_C(
       {
          if (diag[j] <= 0.0)
             goto L300;
-      }   
+      }
    }
-   
+
 #ifdef BUG
    printf( "lmdif\n" );
 #endif
-   
+
    /* evaluate the function at the starting point
     * and calculate its norm.
     */
@@ -382,7 +382,7 @@ void lmdif_C(
    *nfev = 1;
    if (iflag < 0)
       goto L300;
-   
+
    fnorm = enorm(m,fvec);
    /* initialize levenberg-marquardt parameter and iteration counter. */
    par = zero;
@@ -390,11 +390,11 @@ void lmdif_C(
 
    /* beginning of the outer loop. */
 L30:
-   
+
    /* calculate the jacobian matrix. */
    iflag = 2;
    fdjac2(fcn, m,n,x,fvec,fjac,ldfjac,&iflag,epsfcn,wa4, data);
-   // commented out DKB   
+   // commented out DKB
    //    *nfev += n;
    if (iflag < 0)
       goto L300;
@@ -407,7 +407,7 @@ L30:
       {
          fcn(m,n,x,fvec,&iflag, data);
          if (iflag < 0)
-            goto L300;        
+            goto L300;
      //    printf( "fnorm %.15e\n", enorm(m,fvec));
       }
    }
@@ -434,13 +434,13 @@ L30:
                diag[j] = one;
          }
       }
-      
+
       /* on the first iteration, calculate the norm of the scaled x
        * and initialize the step bound delta.
        */
       for (j=0; j<n; j++)
          wa3[j] = diag[j] * x[j];
-      
+
       xnorm = enorm(n,wa3);
       delta = factor*xnorm;
      // printf("iter1: xnorm = %e, delta = %e\n", xnorm, delta);
@@ -449,11 +449,11 @@ L30:
 //      if (delta == zero)
          delta = factor;
    }
-   
+
    /* form (q transpose)*fvec and store the first n components in qtf. */
    for (i=0; i<m; i++)
       wa4[i] = fvec[i];
-   
+
    jj = 0;
    for (j=0; j<n; j++)
    {
@@ -479,7 +479,7 @@ L30:
       jj += m+1;  /* fjac[j+m*j] */
       qtf[j] = wa4[j];
    }
-   
+
    /* compute the norm of the scaled gradient. */
    gnorm = zero;
    if (fnorm != zero)
@@ -502,13 +502,13 @@ L30:
          jj += m;
       }
    }
-   
+
    /* test for convergence of the gradient norm. */
    if (gnorm <= gtol)
       *info = 4;
    if (*info != 0)
       goto L300;
-   
+
 //for (j = 0; j < n; j++)
 //   printf("diag[%d] = %e, wa2[%d] = %e\n", j, diag[j], j, wa2[j]);
    /* rescale if necessary. */
@@ -517,10 +517,10 @@ L30:
       for (j=0; j<n; j++)
          diag[j] = dmax1(diag[j],wa2[j]);
    }
-   
+
    /* beginning of the inner loop. */
 L200:
-   
+
    /* determine the levenberg-marquardt parameter. */
    lmpar(n,fjac,ldfjac,ipvt,diag,qtf,delta,&par,wa1,wa2,wa3,wa4);
    /* store the direction p and x + p. calculate the norm of p. */
@@ -535,7 +535,7 @@ L200:
    /* on the first iteration, adjust the initial step bound. */
    if (iter == 1)
       delta = dmin1(delta,pnorm);
-      
+
    /* evaluate the function at x + p and calculate its norm. */
    iflag = 1;
    //printf("evaluate at:\n");
@@ -545,13 +545,13 @@ L200:
    *nfev += 1;
    if (iflag < 0)
       goto L300;
-   
+
    fnorm1 = enorm(m,wa4);
-   
-#ifdef BUG 
+
+#ifdef BUG
    printf( "pnorm %.10e  fnorm1 %.10e\n", pnorm, fnorm1 );
 #endif
-   
+
    /* compute the scaled actual reduction. */
    actred = -one;
    if ((p1*fnorm1) < fnorm)
@@ -593,7 +593,7 @@ L200:
          temp = p5*dirder/(dirder + p5*actred);
       if (((p1*fnorm1) >= fnorm) || (temp < p1))
          temp = p1;
-      
+
       delta = temp*dmin1(delta,pnorm/p1);
       par = par/temp;
    }
@@ -616,7 +616,7 @@ L200:
       }
       for (i=0; i<m; i++)
          fvec[i] = wa4[i];
-      
+
       xnorm = enorm(n,wa2);
       fnorm = fnorm1;
       iter += 1;
@@ -626,50 +626,50 @@ L200:
    {
       *info = 1;
    }
-   
+
    if (delta <= xtol*xnorm)
       *info = 2;
-   
+
    if ((fabs(actred) <= ftol) && (prered <= ftol)
       && (p5*ratio <= one) && (*info == 2))
    {
       *info = 3;
    }
-   
+
    if (*info != 0)
       goto L300;
-   
+
    /* tests for termination and stringent tolerances. */
    if (*nfev >= maxfev)
       *info = 5;
-   
+
    if ((fabs(actred) <= MACHEP) && (prered <= MACHEP) && (p5*ratio <= one))
    {
       *info = 6;
    }
-   
+
    if (delta <= MACHEP*xnorm)
       *info = 7;
-   
+
    if (gnorm <= MACHEP)
       *info = 8;
-   
+
    if (*info != 0)
       goto L300;
-   
+
    /* end of the inner loop. repeat if iteration unsuccessful. */
    if (ratio < p0001)
       goto L200;
-   
+
    /*  end of the outer loop. */
    goto L30;
-   
+
 L300:
 
    /* termination, either normal or user imposed. */
    if (iflag < 0)
       *info = iflag;
-   
+
    iflag = 0;
    if (nprint > 0)
       fcn(m,n,x,fvec,&iflag, data);
@@ -807,11 +807,11 @@ void lmpar(
    static double one = 1.0;
    static double p1 = 0.1;
    static double p001 = 0.001;
-   
+
 #ifdef BUG
    printf( "lmpar\n" );
 #endif
-   
+
    /* compute and store in x the gauss-newton direction. if the
     * jacobian is rank-deficient, obtain a least squares solution.
     */
@@ -822,17 +822,17 @@ void lmpar(
       wa1[j] = qtb[j];
       if ((r[jj] == zero) && (nsing == n))
          nsing = j;
-      
+
       if (nsing < n)
          wa1[j] = zero;
-      
+
       jj += ldr+1; /* [j+ldr*j] */
    }
-   
+
 #ifdef BUG
    printf( "nsing %d ", nsing );
 #endif
-   
+
    if (nsing >= 1)
    {
       for (k=0; k<nsing; k++)
@@ -852,7 +852,7 @@ void lmpar(
          }
       }
    }
-   
+
    for (j=0; j<n; j++)
    {
       l = ipvt[j];
@@ -865,7 +865,7 @@ void lmpar(
    iter = 0;
    for (j=0; j<n; j++)
       wa2[j] = diag[j]*x[j];
-   
+
    dxnorm = enorm(n,wa2);
    fp = dxnorm - delta;
    if (fp <= p1*delta)
@@ -873,10 +873,10 @@ void lmpar(
 #ifdef BUG
       printf( "going to L220\n" );
 #endif
-      
+
       goto L220;
    }
-   
+
    /* if the jacobian is not rank deficient, the newton
     * step provides a lower bound, parl, for the zero of
     * the function. otherwise set this bound to zero.
@@ -928,7 +928,7 @@ void lmpar(
    paru = gnorm/delta;
    if(paru == zero)
       paru = DWARF/dmin1(delta,p1);
-   
+
    /* if the input par lies outside of the interval (parl,paru),
     * set par to the closer endpoint.
     */
@@ -936,20 +936,20 @@ void lmpar(
    *par = dmin1(*par,paru);
    if (*par == zero)
       *par = gnorm/dxnorm;
-   
+
 #ifdef BUG
    printf( "parl %.4e  par %.4e  paru %.4e\n", parl, *par, paru );
 #endif
-   
+
    /* beginning of an iteration. */
-   
+
 L150:
-   
+
    iter += 1;
    /*  evaluate the function at the current value of par. */
    if (*par == zero)
       *par = dmax1(DWARF,p001*paru);
-   
+
    temp = sqrt(*par);
    for (j=0; j<n; j++)
       wa1[j] = temp*diag[j];
@@ -957,7 +957,7 @@ L150:
    qrsolv(n,r,ldr,ipvt,wa1,qtb,x,sdiag,wa2);
    for (j=0; j<n; j++)
       wa2[j] = diag[j]*x[j];
-   
+
    dxnorm = enorm(n,wa2);
    temp = fp;
    fp = dxnorm - delta;
@@ -996,25 +996,25 @@ L150:
    }
    temp = enorm(n,wa1);
    parc = ((fp/delta)/temp)/temp;
-   
+
    /* depending on the sign of the function, update parl or paru. */
    if (fp > zero)
       parl = dmax1(parl, *par);
-   
+
    if (fp < zero)
       paru = dmin1(paru, *par);
-   
+
    /* compute an improved estimate for par. */
    *par = dmax1(parl, *par + parc);
-   
+
    /* end of an iteration. */
-   
+
    goto L150;
-   
+
 L220:
-   
+
 /* termination. */
-   
+
    if (iter == 0)
       *par = zero;
 }
@@ -1122,7 +1122,7 @@ void qrfac(int m,
    static double zero = 0.0;
    static double one = 1.0;
    static double p05 = 0.05;
-   
+
    /* compute the initial column norms and initialize several arrays. */
    //printf("\nqrfac\n");
    ij = 0;
@@ -1133,24 +1133,24 @@ void qrfac(int m,
       wa[j] = rdiag[j];
       if (pivot != 0)
          ipvt[j] = j;
-      
+
       ij += m; /* m*j */
      // printf("acnorm[%d] = %e\n", j, acnorm[j]);
      // printf("rdiag[%d] = %e\n", j, rdiag[j]);
    }
-   
+
 #ifdef BUG
    printf( "qrfac\n" );
 #endif
-   
+
    /* reduce a to r with householder transformations. */
-   
+
    minmn = min0(m,n);
    for (j=0; j<minmn; j++)
    {
       if (pivot == 0)
          goto L40;
-      
+
       /* bring the column of largest norm into the pivot position. */
       kmax = j;
       for (k=j; k<n; k++)
@@ -1160,7 +1160,7 @@ void qrfac(int m,
       }
       if (kmax == j)
          goto L40;
-      
+
       ij = m * j;
       jj = m * kmax;
       for (i=0; i<m; i++)
@@ -1176,9 +1176,9 @@ void qrfac(int m,
       k = ipvt[j];
       ipvt[j] = ipvt[kmax];
       ipvt[kmax] = k;
-      
+
 L40:
-      
+
       /* compute the householder transformation to reduce the
        * j-th column of a to a multiple of the j-th unit vector.
        */
@@ -1186,10 +1186,10 @@ L40:
       ajnorm = enorm(m-j,&a[jj]);
       if (ajnorm == zero)
          goto L100;
-      
+
       if (a[jj] < zero)
          ajnorm = -ajnorm;
-      
+
       ij = jj;
       for (i=j; i<m; i++)
       {
@@ -1197,7 +1197,7 @@ L40:
          ij += 1; /* [i+m*j] */
       }
       a[jj] += one;
-      
+
       /* apply the transformation to the remaining columns
        * and update the norms.
        */
@@ -1238,9 +1238,9 @@ L40:
             }
          }
       }
-      
+
 L100:
-      
+
       rdiag[j] = -ajnorm;
    }
 }
@@ -1357,7 +1357,7 @@ void qrsolv(int n,
    static double p25 = 0.25;
    static double p5 = 0.5;
    //double fabs(), sqrt();
-   
+
    /* copy r and (q transpose)*b to preserve input and initialize s.
     * in particular, save the diagonal elements of r in x.
     */
@@ -1388,10 +1388,10 @@ void qrsolv(int n,
       l = ipvt[j];
       if (diag[l] == zero)
          goto L90;
-      
+
       for (k=j; k<n; k++)
          sdiag[k] = zero;
-      
+
       sdiag[j] = diag[l];
 
       /* the transformations to eliminate the row of d
@@ -1406,7 +1406,7 @@ void qrsolv(int n,
           */
          if (sdiag[k] == zero)
             continue;
-         
+
          kk = k + ldr * k;
          if (fabs(r[kk]) < fabs(sdiag[k]))
          {
@@ -1441,7 +1441,7 @@ void qrsolv(int n,
             }
          }
       }
-      
+
 L90:
       /* store the diagonal element of s and restore
        * the corresponding diagonal element of r.
@@ -1463,7 +1463,7 @@ L90:
    }
    if(nsing < 1)
       goto L150;
-   
+
    for (k=0; k<nsing; k++)
    {
       j = nsing - k - 1;
@@ -1480,7 +1480,7 @@ L90:
       }
       wa[j] = (wa[j] - sum)/sdiag[j];
    }
-   
+
 L150:
    /* permute the components of z back to components of x. */
    for (j=0; j<n; j++)
@@ -1549,7 +1549,7 @@ double enorm(int n, double x[])
    static double zero = 0.0;
    static double one = 1.0;
    //double fabs(), sqrt();
-   
+
    s1 = zero;
    s2 = zero;
    s3 = zero;
@@ -1557,7 +1557,7 @@ double enorm(int n, double x[])
    x3max = zero;
    floatn = n;
    agiant = rgiant/floatn;
-   
+
    for (i=0; i<n; i++)
    {
       xabs = fabs(x[i]);
@@ -1567,7 +1567,7 @@ double enorm(int n, double x[])
          s2 += xabs*xabs;
          continue;
       }
-      
+
       if (xabs > rdwarf)
       {
          /* sum for large components. */
@@ -1738,7 +1738,7 @@ void fdjac2(void (*fcn)(int, int, double[], double[], int *, void *),
       temp = x[j];
       //        h = eps * fabs(temp);
       //        if (h == zero)
-      //            h = eps;      
+      //            h = eps;
       h = eps; // added dkb
       x[j] = temp + h;
 
@@ -1753,7 +1753,7 @@ void fdjac2(void (*fcn)(int, int, double[], double[], int *, void *),
          ij += 1;    /* fjac[i+m*j] */
       }
    }
-   
+
 #ifdef BUG
    printf("jacobian:\n");
    pmat( m, n, fjac );
@@ -1801,7 +1801,7 @@ void pmat(int m, int n, double y[])
    int i;
    int j;
    int k;
-   
+
    k = 0;
    for (i=0; i<m; i++)
    {
@@ -1814,4 +1814,4 @@ void pmat(int m, int n, double y[])
       }
       printf( "\n" );
    }
-}   
+}

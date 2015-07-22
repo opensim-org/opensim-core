@@ -1,9 +1,9 @@
-test_external_loads_point_in_ground.sto									
-version=1									
-nRows=14									
-nColumns=10									
-inDegrees=no									
-endheader									
+test_external_loads_point_in_ground.sto
+version=1
+nRows=14
+nColumns=10
+inDegrees=no
+endheader
 time	forceX	forceY	forceZ	pointX	pointY	pointZ	torqueX	torqueY	torqueZ
 0	0	-98.0665	0	-0.07821723	-0.49384417	0	0	0	0
 0.01	0	-98.0665	0	-0.07814148	-0.49385616	0	0	0	0

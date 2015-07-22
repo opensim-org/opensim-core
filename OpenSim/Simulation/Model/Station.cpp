@@ -72,7 +72,7 @@ void Station::constructProperties()
 {
     //Default location
     SimTK::Vec3 origin(0.0, 0.0, 0.0);
-    // Location in Body 
+    // Location in Body
     constructProperty_location(origin);
 }
 
@@ -93,8 +93,8 @@ const PhysicalFrame& Station::getReferenceFrame() const
 /**
  * setReferenceFrame sets the "reference_frame" connection
  *
- * @param aFrame a frame to be used as reference. 
- * 
+ * @param aFrame a frame to be used as reference.
+ *
  */
 // TODO: Connection is based on name so it may make more sense to pass in name instead
 // TODO: Not clear what to do when connection is re-established or who would trigger it

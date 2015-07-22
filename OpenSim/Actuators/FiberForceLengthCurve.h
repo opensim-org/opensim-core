@@ -104,7 +104,7 @@ namespace OpenSim {
     but not the others will throw an exception when the curve is built. The
     optional parameters can be used to vary the shape of the curve from a close
     approximation of a line to a sharply-bent curve.
-    
+
     The advantage of this curve over the typical exponential curve used in the
     literature is that it is continuous to the second derivative; the usual
     linearly-extrapolated exponential curve is only C0-continuous. The improved

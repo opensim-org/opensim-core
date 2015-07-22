@@ -40,14 +40,14 @@
 //=============================================================================
 /**
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 class Model;
 class ForceSet;
 
 /**
- * This class implements static optimization to compute Muscle Forces and 
- * activations. 
+ * This class implements static optimization to compute Muscle Forces and
+ * activations.
  *
  * @author Jeff Reinbolt
  */

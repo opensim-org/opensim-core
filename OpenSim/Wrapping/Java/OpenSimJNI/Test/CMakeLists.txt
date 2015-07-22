@@ -1,4 +1,4 @@
-if(BUILD_JAVA_WRAPPING) 
+if(BUILD_JAVA_WRAPPING)
 
 # Automatically create tests using files named "test*.cpp"  // Adopted from SimTK core
 file(GLOB TEST_PROGS "test*.cpp")
@@ -12,8 +12,8 @@ foreach(TEST_PROG ${TEST_PROGS})
     add_executable(${TEST_ROOT} ${TEST_PROG} "../OpenSimContext.cpp")
     target_link_libraries(${TEST_ROOT} ${LINK_LIBRARIES} )
     add_test(${TEST_ROOT} ${EXECUTABLE_OUTPUT_PATH}/${TEST_ROOT})
-    set_target_properties(${TEST_ROOT} 
-        PROPERTIES 
+    set_target_properties(${TEST_ROOT}
+        PROPERTIES
         PROJECT_LABEL "Tests - ${TEST_ROOT}")
     # message( "Adding test "${TEST_PROG} )
 endforeach(TEST_PROG ${TEST_PROGS})
@@ -31,5 +31,5 @@ foreach(dataFile ${TEST_FILES})
     ARGS -E copy
     ${dataFile}
     ${OpenSim_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/Test)
- endforeach(dataFile) 
+ endforeach(dataFile)
 endif(BUILD_JAVA_WRAPPING)

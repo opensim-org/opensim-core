@@ -48,7 +48,7 @@ namespace OpenSim {
     static const char *OpenSimVersion = GET_OSIM_VERSION;
 
 #if defined(__cplusplus) || defined(SWIG)
-    std::string GetVersionAndDate() { 
+    std::string GetVersionAndDate() {
         char buffer[256];
         sprintf(buffer,"version %s, build date %s %s", OpenSimVersion, __TIME__, __DATE__);
         return std::string(buffer);
@@ -100,7 +100,7 @@ namespace OpenSim {
         } else {
             str = GET_COMPILER_INFO;
         }
-    
+
         return str;
     }
 

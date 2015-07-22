@@ -57,13 +57,13 @@ static void indent(int nSpaces) {
 // Recursively dump out contents of an object and its properties.
 static void dumpObj(const Object& obj, int nSpaces) {
     indent(nSpaces);
-    cout << obj.getConcreteClassName() << " Object " 
+    cout << obj.getConcreteClassName() << " Object "
          << (obj.getName().empty()?"NONAME":obj.getName())
          << endl;
     for (int p=0; p < obj.getNumProperties(); ++p) {
-        const AbstractProperty& ap = obj.getPropertyByIndex(p); 
+        const AbstractProperty& ap = obj.getPropertyByIndex(p);
         indent(nSpaces+2);
-        cout << ap.getName() << "=" << ap.toString() 
+        cout << ap.getName() << "=" << ap.toString()
             << " typeName=" << ap.getTypeName() << endl;
         if (ap.isObjectProperty()) {
             for (int i=0; i < ap.size(); ++i)
@@ -99,7 +99,7 @@ int main()
             break;
         cout << res << "\n";
     }
-   
+
 
     try {
         // TYPE REGISTRATION
@@ -112,7 +112,7 @@ int main()
 
         SimTK_TEST(objSet.getClassName() == "ObjSet");
         // Cannot serialize name containing "<T>" into valid XML code
-        // template <T> have been replaced by "_T_" as serialized name 
+        // template <T> have been replaced by "_T_" as serialized name
         SimTK_TEST(baseSet.getClassName() == "Set_SerializableObject_");
         SimTK_TEST(baseSet.getConcreteClassName() == "ObjSet");
 
@@ -161,9 +161,9 @@ int main()
         ASSERT(((PropertyBool*) propSet1.get(0))->getValueBool() == ((PropertyBool*) propSet2.get(0))->getValueBool(), __FILE__, __LINE__, "bool property");
 
         ASSERT(((PropertyInt*) propSet1.get(1))->getValueInt() == ((PropertyInt*) propSet2.get(1))->getValueInt(), __FILE__, __LINE__, "int property");
-        
+
         ASSERT(((PropertyDbl*) propSet1.get(2))->getValueDbl() == ((PropertyDbl*) propSet2.get(2))->getValueDbl(), __FILE__, __LINE__, "double property");
-        
+
         /* The following actually fails due to extra spaces when we read back from file!.*/
         string& str1 = ((PropertyStr*) propSet1.get(6))->getValueStr();
         string& str2 = ((PropertyStr*) propSet2.get(6))->getValueStr();
@@ -173,7 +173,7 @@ int main()
         }
 
         for (int i=0; i < obj1.getNumProperties(); ++i) {
-            const AbstractProperty& ap = obj1.getPropertyByIndex(i); 
+            const AbstractProperty& ap = obj1.getPropertyByIndex(i);
             std::cout << ap.getName() << "=" << ap.toString() << std::endl;
         }
 

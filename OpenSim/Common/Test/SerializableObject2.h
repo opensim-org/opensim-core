@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
-* Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+* Author: Frank C. Anderson
 */
 
 #include <OpenSim/Common/Object.h>
@@ -40,7 +40,7 @@
 * @author Frank C. Anderson
 * @version 1.0
 */
-namespace OpenSim { 
+namespace OpenSim {
 
 class SerializableObject2 : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(SerializableObject2, Object);
@@ -71,7 +71,7 @@ public:
     //}
 
     OpenSim_DECLARE_PROPERTY(Test_Bool2, bool, "obj2's bool prop");
-    OpenSim_DECLARE_LIST_PROPERTY(Test_DblArray2, double, 
+    OpenSim_DECLARE_LIST_PROPERTY(Test_DblArray2, double,
         "obj2's double array prop");
 
 private:
@@ -101,7 +101,7 @@ public:
  //           aObject.getPropertyByIndex(0).getValue<bool>();
  //       AbstractProperty& prop = updPropertyByIndex(1);
  //       for (int i=0; i < prop.size(); ++i)
- //           prop.updValue<double>(i)= 
+ //           prop.updValue<double>(i)=
  //               aObject.getPropertyByIndex(1).getValue<double>(i);
     //  return(*this);
     //}
@@ -162,7 +162,7 @@ public:
             aObject.getPropertyByIndex(0).getValue<bool>();
         AbstractProperty& prop = updPropertyByIndex(1);
         for (int i=0; i < prop.size(); ++i)
-            prop.updValue<double>(i)= 
+            prop.updValue<double>(i)=
                 aObject.getPropertyByIndex(1).getValue<double>(i);
         return(*this);
     }

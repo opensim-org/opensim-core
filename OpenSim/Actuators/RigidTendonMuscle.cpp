@@ -41,7 +41,7 @@ static int counter=0;
 //==============================================================================
 // CONSTRUCTOR
 //==============================================================================
-// Uses default (compiler-generated) destructor, copy constructor, copy 
+// Uses default (compiler-generated) destructor, copy constructor, copy
 // assignment operator.
 
 //_____________________________________________________________________________
@@ -93,7 +93,7 @@ void RigidTendonMuscle::constructProperties()
     double passiveForceLengthCurveX[] = {-5.00000000,  0.99800000,  0.99900000,  1.00000000,  1.10000000,  1.20000000,  1.30000000,  1.40000000,  1.50000000,  1.60000000,  1.60100000,  1.60200000,  5.00000000};
     double passiveForceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.03500000,  0.12000000,  0.26000000,  0.55000000,  1.17000000,  2.00000000,  2.00000000,  2.00000000,  2.00000000};
     SimmSpline passiveForceLengthCurve
-       (passiveForceLengthCurvePoints, passiveForceLengthCurveX, 
+       (passiveForceLengthCurvePoints, passiveForceLengthCurveX,
         passiveForceLengthCurveY);
     constructProperty_passive_force_length_curve(passiveForceLengthCurve);
 
@@ -103,7 +103,7 @@ void RigidTendonMuscle::constructProperties()
     double forceVelocityLengthCurveY[] = {0.000000000000, 0.000000000000, 0.010417000000, 0.021739000000, 0.034091000000, 0.047619000000, 0.062500000000, 0.078947000000, 0.097222000000, 0.117647000000, 0.140625000000, 0.166667000000, 0.196429000000, 0.230769000000, 0.270833000000, 0.318182000000, 0.375000000000, 0.444444000000, 0.531250000000, 0.642857000000, 0.791667000000, 1.000000000000,
         1.482014000000, 1.601571000000, 1.655791000000, 1.686739000000, 1.706751000000, 1.720753000000, 1.731099000000, 1.739055000000, 1.745365000000, 1.750490000000, 1.754736000000, 1.758312000000, 1.761364000000, 1.763999000000, 1.766298000000, 1.768321000000, 1.770115000000, 1.771717000000, 1.773155000000, 1.774455000000};
     SimmSpline forceVelocityLengthCurve
-       (forceVelocityLengthCurvePoints, forceVelocityLengthCurveX, 
+       (forceVelocityLengthCurvePoints, forceVelocityLengthCurveX,
         forceVelocityLengthCurveY);
     constructProperty_force_velocity_curve(forceVelocityLengthCurve);
 }
@@ -127,16 +127,16 @@ calcMuscleLengthInfo(const State& s, MuscleLengthInfo& mli) const
 
     mli.fiberLength = sqrt(square(zeroPennateLength) + square(_muscleWidth))
                         + Eps;
-    
+
     mli.cosPennationAngle = zeroPennateLength/mli.fiberLength;
     mli.pennationAngle = acos(mli.cosPennationAngle);
-    
+
     mli.normFiberLength = mli.fiberLength/getOptimalFiberLength();
 
     const Vector arg(1, mli.normFiberLength);
-    mli.fiberActiveForceLengthMultiplier = 
+    mli.fiberActiveForceLengthMultiplier =
         get_active_force_length_curve().calcValue(arg);
-    mli.fiberPassiveForceLengthMultiplier = 
+    mli.fiberPassiveForceLengthMultiplier =
         SimTK::clamp(0, get_passive_force_length_curve().calcValue(arg), 10);
 
     mli.normTendonLength = 1.0;
@@ -157,13 +157,13 @@ void RigidTendonMuscle::calcFiberVelocityInfo(const State& s, FiberVelocityInfo&
 {
     const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
     fvi.fiberVelocity = getGeometryPath().getLengtheningSpeed(s);
-    fvi.normFiberVelocity = fvi.fiberVelocity / 
+    fvi.normFiberVelocity = fvi.fiberVelocity /
                             (getOptimalFiberLength()*getMaxContractionVelocity());
-    fvi.fiberForceVelocityMultiplier = 
+    fvi.fiberForceVelocityMultiplier =
         get_force_velocity_curve().calcValue(Vector(1, fvi.normFiberVelocity));
 }
 
-/* calculate muscle's active and passive force-length, force-velocity, 
+/* calculate muscle's active and passive force-length, force-velocity,
     tendon force, relationships and their related values */
 void RigidTendonMuscle::
 calcMuscleDynamicsInfo(const State& s, MuscleDynamicsInfo& mdi) const
@@ -172,8 +172,8 @@ calcMuscleDynamicsInfo(const State& s, MuscleDynamicsInfo& mdi) const
     const FiberVelocityInfo &fvi = getFiberVelocityInfo(s);
 
     mdi.activation = getControl(s);
-    double normActiveForce = mdi.activation 
-                             * mli.fiberActiveForceLengthMultiplier 
+    double normActiveForce = mdi.activation
+                             * mli.fiberActiveForceLengthMultiplier
                              * fvi.fiberForceVelocityMultiplier;
     mdi.activeFiberForce =  getMaxIsometricForce()*normActiveForce;
     mdi.passiveFiberForce = getMaxIsometricForce()
@@ -198,7 +198,7 @@ calcMuscleDynamicsInfo(const State& s, MuscleDynamicsInfo& mdi) const
 //--------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Compute the actuation (i.e. activation causing tenson) of this muscle. 
+ * Compute the actuation (i.e. activation causing tenson) of this muscle.
  */
 double RigidTendonMuscle::computeActuation(const State& s) const
 {
@@ -217,9 +217,9 @@ double RigidTendonMuscle::computeIsometricForce(State& s, double activation) con
     const double &aNormFiberLength = getNormalizedFiberLength(s);
 
     const Vector arg(1, aNormFiberLength);
-    double activeForceLength = 
+    double activeForceLength =
         get_active_force_length_curve().calcValue(arg);
-    double passiveForceLength = 
+    double passiveForceLength =
         get_passive_force_length_curve().calcValue(arg);
 
     // Isometric means velocity is zero, so velocity "factor" is 1

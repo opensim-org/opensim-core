@@ -41,14 +41,14 @@ int main() {
     catch (const std::exception& e)
         {  cout << e.what() <<endl; failures.push_back("testSingleRigidTendonMuscle"); }
 
-    // redo with the Millard2012EquilibriumMuscle 
+    // redo with the Millard2012EquilibriumMuscle
     Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
 
     try {testSingleMillardRigidTendonMuscle();}
     catch (const std::exception& e)
         {   cout << e.what() <<endl;
             failures.push_back("testSingleMillardRigidTendonMuscle"); }
-    
+
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
@@ -82,7 +82,7 @@ void testSingleRigidTendonMuscle() {
 
     // Tolerance of 2mm or position error and 2mm/s translational velocity of the block
     CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.002, 4), __FILE__, __LINE__, "testSingleRigidTendonMuscle failed");
-    
+
     cout << "testSingleRigidTendonMuscle passed\n" << endl;
 }
 

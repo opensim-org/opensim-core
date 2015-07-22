@@ -24,13 +24,13 @@
  * -------------------------------------------------------------------------- */
 
 /** @file
- * This file defines the Connector class, which formalizes the dependency of 
- * of a Component on another Object/Component in order to operate, BUT it does 
- * not own it. While Components can be composites (of multiple components) 
+ * This file defines the Connector class, which formalizes the dependency of
+ * of a Component on another Object/Component in order to operate, BUT it does
+ * not own it. While Components can be composites (of multiple components)
  * they often depend on unrelated objects/components that are define elsewhere.
  * For example a Joint connects two bodies together, neither or at best the
  * child body can own the joint. It must have a "Connector" to a parent body
- * that already exists. The maintenance of the dependency and the run-time 
+ * that already exists. The maintenance of the dependency and the run-time
  * verification of the existance of the parent is the task of the Connector.
  */
 
@@ -47,17 +47,17 @@ namespace OpenSim {
 /**
  * A Connector formalizes the need for a connection between a Component and a
  * dependent object, without owning the object it is connected to. The purpose
- * of a Connector is to specify: 1) the object type that the Component is 
+ * of a Connector is to specify: 1) the object type that the Component is
  * dependent on, 2) by when (what stage) the connector must be connected in
  * order for the component to function, 3) the name of object to connect to and
  * 4) whether it is connected or not. The specific instance that satisfies the
  * connector's requirement is maintained by the Component's list of Connections.
  *
  * For example, a Joint has one Connector for the parent Body that it joins
- * its owning Body to. The type for the connector is Body and any attempt to 
+ * its owning Body to. The type for the connector is Body and any attempt to
  * connect to a non-Body object will throw an exception.
- * The connectAt Stage is Topology. That is the Joint's connection to a Body 
- * must be performed at the Topology system stage, and any attempt to change 
+ * The connectAt Stage is Topology. That is the Joint's connection to a Body
+ * must be performed at the Topology system stage, and any attempt to change
  * the connection status will invalidate that Stage and above.
  *
  * Other Components like a Marker or a Probe that do not change the system
@@ -89,10 +89,10 @@ public:
 
     // default destructor, copy constructor
 
-    /** Convenience constructor 
+    /** Convenience constructor
         Create a Connector with specified name and stage at which it
         should be connected.
-    @param name             name of the connector, usually desribes its dependency. 
+    @param name             name of the connector, usually desribes its dependency.
     @param connectAtStage   Stage at which Connector should be connected. */
     AbstractConnector(const std::string& name, const SimTK::Stage& connectAtStage) :
         connectAtStage(connectAtStage) {
@@ -146,11 +146,11 @@ public:
     // default destructor, copy constructor
 
     /** Convenience constructor
-    Create a Connector that can only connect to Object of type T with specified 
+    Create a Connector that can only connect to Object of type T with specified
     name and stage at which it should be connected.
     @param name             name of the connector used to describe its dependency.
     @param connectAtStage   Stage at which Connector should be connected. */
-    Connector(const std::string& name, const SimTK::Stage& connectAtStage) : 
+    Connector(const std::string& name, const SimTK::Stage& connectAtStage) :
         AbstractConnector(name, connectAtStage), connectee(nullptr) {}
 
     virtual ~Connector() {}
@@ -161,7 +161,7 @@ public:
     }
 
     /** Temporary access to the connectee for testing purposes. Real useage
-        will be through the Connector (and Input) interfaces. 
+        will be through the Connector (and Input) interfaces.
         For example, Input should short circuit to its Output's getValue()
         once it is connected.
     Return a const reference to the object connected to this Connector */
@@ -189,7 +189,7 @@ public:
     void disconnect() override {
         connectee.clear();
     }
-    
+
     /** Derived classes must satisfy this Interface */
     /** get the type of object this connector connects to*/
     std::string getConnectedToTypeName() const override
@@ -203,7 +203,7 @@ private:
 
 
 /** A specialized Connector that connects to an Output signal is an Input.
-    An AbstractInput enables maintenance of a list of unconnected Inputs. 
+    An AbstractInput enables maintenance of a list of unconnected Inputs.
 */
 
 class OSIMCOMMON_API AbstractInput : public AbstractConnector{

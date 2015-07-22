@@ -31,11 +31,11 @@ namespace OpenSim {
 
 //______________________________________________________________________________
 /**
- * An implementation of the MarkersReference 
+ * An implementation of the MarkersReference
  *
  * @param model to assemble
  */
-MarkersReference::MarkersReference() : Reference_<SimTK::Vec3>(), 
+MarkersReference::MarkersReference() : Reference_<SimTK::Vec3>(),
         _markersFile(_markersFileProp.getValueStr()),
         _markerWeightSetProp(PropertyObj("", Set<MarkerWeight>())),
         _markerWeightSet((Set<MarkerWeight>&)_markerWeightSetProp.getValueObj()),
@@ -45,7 +45,7 @@ MarkersReference::MarkersReference() : Reference_<SimTK::Vec3>(),
     setAuthors("Ajay Seth");
 }
 
-MarkersReference::MarkersReference(const std::string markerFile, Units modelUnits) : Reference_<SimTK::Vec3>(), 
+MarkersReference::MarkersReference(const std::string markerFile, Units modelUnits) : Reference_<SimTK::Vec3>(),
         _markersFile(_markersFileProp.getValueStr()),
         _markerWeightSetProp(PropertyObj("", Set<MarkerWeight>())),
         _markerWeightSet((Set<MarkerWeight>&)_markerWeightSetProp.getValueObj()),
@@ -57,11 +57,11 @@ MarkersReference::MarkersReference(const std::string markerFile, Units modelUnit
 }
 
 /**
- * Convenience constructor to be used for Marker placement. 
+ * Convenience constructor to be used for Marker placement.
  *
  * @param aMarkerData: MarkerData, assumed to be in the correct units already
  */
-MarkersReference::MarkersReference(MarkerData& aMarkerData, const Set<MarkerWeight>* aMarkerWeightSet) : Reference_<SimTK::Vec3>(), 
+MarkersReference::MarkersReference(MarkerData& aMarkerData, const Set<MarkerWeight>* aMarkerWeightSet) : Reference_<SimTK::Vec3>(),
         _markersFile(_markersFileProp.getValueStr()),
         _markerWeightSetProp(PropertyObj("", Set<MarkerWeight>())),
         _markerWeightSet((Set<MarkerWeight>&)_markerWeightSetProp.getValueObj()),
@@ -119,7 +119,7 @@ SimTK::Vec2 MarkersReference::getValidTimeRange() const
     return Vec2(_markerData->getStartFrameTime(), _markerData->getLastFrameTime());
 }
 
-// utility to define object properties including their tags, comments and 
+// utility to define object properties including their tags, comments and
 // default values.
 void MarkersReference::setupProperties()
 {
@@ -145,7 +145,7 @@ void  MarkersReference::getValues(const SimTK::State &s, SimTK::Array_<Vec3> &va
     double time =  s.getTime();
 
     int before=0, after=0;
-    // get index for time 
+    // get index for time
     _markerData->findFrameRange(time, time, before, after);
     if(before > after || after < 0)
         throw Exception("MarkersReference: No index corresponding to time of frame.");

@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -69,7 +69,7 @@ string Storage::simmReservedKeys[] = {
 int numSimmReservedKeys=10; // Keep this number in sync with above array size
 
 // up version to 20301 for separation of RRATool, CMCTool
-const int Storage::LatestVersion = 1;   
+const int Storage::LatestVersion = 1;
 
 //=============================================================================
 // DESTRUCTOR
@@ -145,7 +145,7 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
     parseColumnLabels(line.c_str());
 
     if (_columnLabels.getSize()!= nc){
-        std::cout << "Storage: Warning- inconsistent headers in file " << 
+        std::cout << "Storage: Warning- inconsistent headers in file " <<
             aFileName << ". nColumns=" << nc << " but "
             << _columnLabels.getSize() << " were found" << std::endl;
     }
@@ -163,7 +163,7 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
     int indexRange = currentLabels.findIndex("range");
 
 
-    // DATA 
+    // DATA
     if(indexTime != -1 || indexRange != -1){ //MM edit
         int ny = nc-1;
         double time;
@@ -178,7 +178,7 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
         // CLOSE FILE
         delete fp;
     }else{  //MM the modifications below are to make the Storage class
-            //well behaved when it is given data that does not contain a 
+            //well behaved when it is given data that does not contain a
             //time or a range column
         int ny = nc;
         double time;
@@ -193,7 +193,7 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
         // CLOSE FILE
         delete fp;
     }
-    // If what we read was really a sIMM motion file, adjust the data 
+    // If what we read was really a sIMM motion file, adjust the data
     // to account for different assumptions between SIMM.mot OpenSim.sto
 
     //MM if this is a SIMM Motion file, post process it as one. Else don't touch the data
@@ -277,7 +277,7 @@ Storage(const Storage &aStorage,int aStateIndex,int aN,
     _columnLabels.setSize(0);
     if(originalNumCol) {
         _columnLabels.append(aStorage.getColumnLabels()[0]);
-        for(int i=0;i<aN && aStateIndex+1+i<originalNumCol;i++) 
+        for(int i=0;i<aN && aStateIndex+1+i<originalNumCol;i++)
             _columnLabels.append(aStorage.getColumnLabels()[aStateIndex+1+i]);
     }
 }
@@ -386,7 +386,7 @@ getWriteSIMMHeader() const
  * Set the header token.
  * The header token is used to mark the end of the header
  * portion of an Storage when an Storage is saved in a file.
- * 
+ *
  * If the header token is NULL, a default header token is used.
  *
  * @param aToken Header token.
@@ -422,7 +422,7 @@ getHeaderToken() const
  * time) -1 would be returned.  For the second column in a storage (the first
  * state) 0 would be returned.
  * @todo Rename this method getStateIndex()
- * 
+ *
  * added a default Parameter for startIndex. -Ayman
  */
 const int Storage::
@@ -430,11 +430,11 @@ getStateIndex(const std::string &aColumnName, int startIndex) const
 {
     int thisColumnIndex = _columnLabels.findIndex(aColumnName);
     if (thisColumnIndex >= 0)
-        // subtract 1 because time is included in the labels but not 
+        // subtract 1 because time is included in the labels but not
         // in the "state vector"
         return thisColumnIndex-1;
 
-    // Assume a mismatch between earlier and the latest component state variable 
+    // Assume a mismatch between earlier and the latest component state variable
     // labeling mechanism and redo find with the just the ending substring instead
     // of its full path name
     std::string::size_type back = aColumnName.rfind("/");
@@ -466,7 +466,7 @@ getStateIndex(const std::string &aColumnName, int startIndex) const
             thisColumnIndex = _columnLabels.findIndex(shortName);
         }
     }
-    // subtract 1 because time is included in the labels but not 
+    // subtract 1 because time is included in the labels but not
     // in the "state vector"
     return thisColumnIndex-1;
 }
@@ -475,11 +475,11 @@ getStateIndex(const std::string &aColumnName, int startIndex) const
 //_____________________________________________________________________________
 /**
  * Set a labels string for the columns in this Storage instance.
- * 
+ *
  * A character string is used to label the columns.  Each separate column
  * label is usually delimited by a tab ("\t"), but any delimeter may
  * be used.
- * 
+ *
  * The first column is almost always "Time."  The other columns
  * correspond to the separate elements of a state vector (StateVector).
  *
@@ -504,22 +504,22 @@ parseColumnLabels(const char *aLabels)
 
     // SET NEW
     char *labelsCopy = new char[len+1];
-    if(aLabels[len-1]=='\n') { 
-        // strip carriage return 
+    if(aLabels[len-1]=='\n') {
+        // strip carriage return
         strncpy(labelsCopy,aLabels,len-1);
         labelsCopy[len-1] = 0;
     } else {
         strcpy(labelsCopy,aLabels);
     }
 
-    // Parse 
+    // Parse
     char *token = strtok(labelsCopy,DEFAULT_HEADER_SEPARATOR );
     while(token!=NULL)
     {
         // Append column label
         _columnLabels.append(token);
 
-        // Get next label 
+        // Get next label
         token = strtok( NULL, DEFAULT_HEADER_SEPARATOR );
     }
 
@@ -1039,9 +1039,9 @@ getDataAtTime(double aT,int aN,double **rData) const
     }
 
     // ASSIGN FOR RETURN
-    *rData = y; 
+    *rData = y;
 
-    return(ns); 
+    return(ns);
 }
 //_____________________________________________________________________________
 /**
@@ -1223,9 +1223,9 @@ getDataColumn(const std::string& aColumnName,double *&rData) const
         return getDataColumn(getStateIndex(aColumnName), rData);
 }
 
-/** It is desirable to access the block as a single entity provided an identifier that is common 
+/** It is desirable to access the block as a single entity provided an identifier that is common
     to all components (such as prefix in the column label).
-     @param identifier  string identifying a single block of data 
+     @param identifier  string identifying a single block of data
      @param rData       Array<Array<double>> of data belonging to the identifier */
 void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<double> >& rData, double startTime) const
 {
@@ -1236,7 +1236,7 @@ void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<do
         cout << "WARNING: Storage "+getName()+" could not locate data for identifier "+identifier+"." << endl;
         return;
     }
-    /* a row of "data" can be shorter than number of columns if time is the first column, since 
+    /* a row of "data" can be shorter than number of columns if time is the first column, since
        that is not considered a state by storage. Need to fix this! -aseth */
     int nd = getLastStateVector()->getSize();
     int off = _columnLabels.getSize()-nd;
@@ -1322,9 +1322,9 @@ reset(double aTime)
 void Storage::
 crop(const double newStartTime, const double newFinalTime)
 {
-    int startindex = findIndex(newStartTime); 
-    int finalindex = findIndex(newFinalTime); 
-    // Since underlying Array is packed we'll just move what we need up then 
+    int startindex = findIndex(newStartTime);
+    int finalindex = findIndex(newFinalTime);
+    // Since underlying Array is packed we'll just move what we need up then
     // delete remaining rows in reverse order.
     int numRowsToKeep=finalindex-startindex+1;
     if (numRowsToKeep <=0){
@@ -2461,7 +2461,7 @@ findIndex(double aT) const
     return(_lastI);
 }
 //_____________________________________________________________________________
-/** 
+/**
  * Find the range of frames that is between start time and end time
  * (inclusive). Return the indices of the bounding frames.
  */
@@ -2578,12 +2578,12 @@ void Storage::interpolateAt(const Array<double> &targetTimes)
         double actualTime=0.0;
         if (tIndex < getSize()-1){
             getTime(tIndex+1, actualTime);
-            if (fabs(actualTime - t)<1e-6) 
+            if (fabs(actualTime - t)<1e-6)
                     continue;
         }
         // or could be the following one too
         getTime(tIndex, actualTime);
-        if (fabs(actualTime - t)<1e-6) 
+        if (fabs(actualTime - t)<1e-6)
                 continue;
         // create a StateVector and add it
         double *y=NULL;
@@ -2633,7 +2633,7 @@ setOutputFileName(const std::string& aFileName)
  * a negative number is returned.
  *
  * @param aFileName Name of file to which to save.
- * @param aMode Writing mode: "w" means write and "a" means append.  The 
+ * @param aMode Writing mode: "w" means write and "a" means append.  The
  * default is "w".
  * @param aComment string to be written to the file header (preceded by # per SIMM)
  * @return true on success
@@ -2663,7 +2663,7 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
             return(false);
         }
     }
-    
+
     // WRITE THE DESCRIPTION
     n = writeDescription(fp);
     if(n<0) {
@@ -2690,7 +2690,7 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
             cout << "Storage.print(const string&,const string&): error printing to " << aFileName;
             return(false);
         }
-        nTotal += n;        
+        nTotal += n;
     }
 
     // CLOSE
@@ -2781,7 +2781,7 @@ print(const string &aFileName,double aDT,const string &aMode) const
             cout << "Storage.print(const string&,const string&): error printing to " << aFileName;
             return(n);
         }
-        nTotal += n;        
+        nTotal += n;
     }
 
     // CLEANUP
@@ -2870,7 +2870,7 @@ writeSIMMHeader(FILE *rFP,double aDT, const char *aComment) const
 
     // RANGE
     fprintf(rFP,"range %lf %lf\n",getFirstTime(),getLastTime());
-    
+
     // Other data from the map
     MapKeysToValues::const_iterator iter;
 
@@ -3076,14 +3076,14 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
             setName(rest);
         }
         else if (key== "nr" || key== "nRows" || key== "datarows"){
-            rNumRows = atoi(rest.c_str());          
+            rNumRows = atoi(rest.c_str());
         }
         else if (key== "nc" || key== "nColumns" || key== "datacolumns"){
-            rNumColumns = atoi(rest.c_str());           
+            rNumColumns = atoi(rest.c_str());
         }
         else if (isSimmReservedToken(key)) {
                 _keyValueMap[key]= rest;
-        } 
+        }
         else if (key== "units") {
                 _units = Units(rest);
         }
@@ -3101,8 +3101,8 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
             else if (line == "Angles are in radians.")
                 setInDegrees(false);
         }
-        else if(key== DEFAULT_HEADER_TOKEN){                
-            break;          
+        else if(key== DEFAULT_HEADER_TOKEN){
+            break;
         }
         else if (firstLine){    // Storage file have their names without "name prefix on first line"
             setName(line);
@@ -3122,7 +3122,7 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
 }
 //_____________________________________________________________________________
 /**
- * This function exchanges the time column (including the label) with the column    
+ * This function exchanges the time column (including the label) with the column
  * at the passed in aColumnIndex. The index is zero based relative to the Data
  */
 void Storage::
@@ -3150,7 +3150,7 @@ exchangeTimeColumnWith(int aColumnIndex)
  *
  * This is all untested since all motion files we deal with so far do not exhibit this behavior.
  */
-void Storage::postProcessSIMMMotion() 
+void Storage::postProcessSIMMMotion()
 {
     Array<std::string> currentLabels = getColumnLabels();
     // If time is not first column check if it exists somewhere else and exchange
@@ -3159,7 +3159,7 @@ void Storage::postProcessSIMMMotion()
         if (timeColumnIndx!=-1){ // Exchange column timeColumnIndx with time
             exchangeTimeColumnWith(timeColumnIndx);
         }
-        else {  
+        else {
             // There was no time column altogether. make one based on
             // range (if specified) and number of entries
             MapKeysToValues::iterator iter;
@@ -3239,7 +3239,7 @@ double Storage::compareColumn(Storage& aOtherStorage, const std::string& aColumn
     if ((endIndex -startIndex)!= (endIndexOther -startIndexOther)) return (theDiff);
 
     for(int i=startIndex; i< endIndex; i++){
-        if (abs(thisTime[i]-otherTime[startIndexOther+i-startIndex]) > 1E-3) 
+        if (abs(thisTime[i]-otherTime[startIndexOther+i-startIndex]) > 1E-3)
             return SimTK::Infinity;
         theDiff = std::max(theDiff, fabs(thisData[i]-otherData[startIndexOther+i-startIndex]));
     }
@@ -3275,7 +3275,7 @@ double Storage::compareColumnRMS(Storage& aOtherStorage, const std::string& aCol
     if (SimTK::isNaN(endTime))
         endTime = min(thisTime.getLast(), otherTime.getLast());
     int endIndex = findIndex(endTime);
-    
+
     // create spline in case time values do not match up
     GCVSpline spline(3, otherTime.getSize(), &otherTime[0], &otherData[0]);
 

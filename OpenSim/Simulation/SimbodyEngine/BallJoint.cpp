@@ -58,10 +58,10 @@ BallJoint::BallJoint() : Joint()
 /**
  * Convenience Constructor.
  */
-BallJoint::BallJoint(const std::string &name, const PhysicalFrame& parent, 
+BallJoint::BallJoint(const std::string &name, const PhysicalFrame& parent,
                      const Vec3& locationInParent, const Vec3& orientationInParent,
                      const OpenSim::Body& body,
-                     const Vec3& locationInBody, const Vec3& orientationInBody, 
+                     const Vec3& locationInBody, const Vec3& orientationInBody,
                      bool reverse) :
             Joint(name, parent, locationInParent,orientationInParent,
                     body, locationInBody, orientationInBody, reverse)
@@ -109,7 +109,7 @@ void BallJoint::extendSetPropertiesFromState(const SimTK::State& state)
     if (!matter.getUseEulerAngles(state)) {
         Rotation r = getChildFrame().getMobilizedBody().getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
-    
+
         const CoordinateSet& coordinateSet = get_CoordinateSet();
 
         coordinateSet[0].setDefaultValue(angles[0]);

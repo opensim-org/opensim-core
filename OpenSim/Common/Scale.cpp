@@ -110,12 +110,12 @@ void Scale::setNull()
 }
 //_____________________________________________________________________________
 /**
- * Set up the serialized member variables.  
+ * Set up the serialized member variables.
  */
 void Scale::
 setupProperties()
 {
-    Vec3 one3(1.0); 
+    Vec3 one3(1.0);
 
     // scale factors
     _propScaleFactors.setName("scales");

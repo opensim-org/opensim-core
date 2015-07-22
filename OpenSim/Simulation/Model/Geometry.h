@@ -29,7 +29,7 @@
 #include "ModelComponent.h"
 #include "Appearance.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
 class PhysicalFrame;
 class Model;
@@ -39,7 +39,7 @@ class ModelComponent;
 //=============================================================================
 /**
  Class Geometry is intended to be used as the base class for all
- geometry that needs to be represented in the system, including mesh files, 
+ geometry that needs to be represented in the system, including mesh files,
  and built in analytic shapes. Any ModelComponent can specify a list of
  Geometry items to represent itself in graphics window. The relation between
  a ModelComponent and specific Geometry utilizes the Component mechanism, as
@@ -51,7 +51,7 @@ class ModelComponent;
  available to OpenSim component writers to express the Geometry of interest.
  The Geometry class handles serialization and also the translation to a set of
  DecorativeGeometry objects that gets passed to the Visualization system to be
- rendered. 
+ rendered.
 
  @author Ayman Habib
  */
@@ -119,14 +119,14 @@ public:
     //==========================================================================
     // METHODS
     //==========================================================================
-    /// Compute Transform of this geometry relative to its base frame, utilizing 
-    /// passed in state. Both transform and body_id are set in the passed-in 
+    /// Compute Transform of this geometry relative to its base frame, utilizing
+    /// passed in state. Both transform and body_id are set in the passed-in
     /// decorations as a side effect.
     void setDecorativeGeometryTransform(
-                        SimTK::Array_<SimTK::DecorativeGeometry>& decorations, 
+                        SimTK::Array_<SimTK::DecorativeGeometry>& decorations,
                         const SimTK::State& state) const;
 
-    /// Manage Appearance (how the Geometry is rendered) by applying Appearance 
+    /// Manage Appearance (how the Geometry is rendered) by applying Appearance
     /// from Geometry to DecorativeGeometry.
     void setDecorativeGeometryAppearance(
         SimTK::DecorativeGeometry& decoration) const {
@@ -137,40 +137,40 @@ public:
                 get_Appearance().get_representation());
     };
     /// Convenient access to set Appearance/Color
-    void setColor(const SimTK::Vec3& color) { 
-        upd_Appearance().set_color(color); 
+    void setColor(const SimTK::Vec3& color) {
+        upd_Appearance().set_color(color);
     };
     /// Convenient access to get Appearance/Color
-    const SimTK::Vec3& getColor() const { 
-        return get_Appearance().get_color(); 
+    const SimTK::Vec3& getColor() const {
+        return get_Appearance().get_color();
     };
 
     /// Convenient access to set Appearance/Opacity
-    void setOpacity(const double opacity) { 
-        upd_Appearance().set_opacity(opacity); 
+    void setOpacity(const double opacity) {
+        upd_Appearance().set_opacity(opacity);
     };
     /// Convenient access to get Appearance/Opacity
-    const double getOpacity() { 
-        return get_Appearance().get_opacity(); 
+    const double getOpacity() {
+        return get_Appearance().get_opacity();
     };
 
     /// Convenient access to set Appearance/representation
-    void setRepresentation(const DisplayPreference& rep) { 
-        upd_Appearance().set_representation(rep); 
+    void setRepresentation(const DisplayPreference& rep) {
+        upd_Appearance().set_representation(rep);
     };
     /// Convenient access to get Appearance/representation
-    const DisplayPreference& getRepresentation() { return 
-        (const DisplayPreference&)get_Appearance().get_representation(); 
+    const DisplayPreference& getRepresentation() { return
+        (const DisplayPreference&)get_Appearance().get_representation();
     };
 
-    /// Map this Geometry into a list of primitives aka SimTK::DecorativeGeometry 
+    /// Map this Geometry into a list of primitives aka SimTK::DecorativeGeometry
     /// and return it in the passed in Array.
     virtual void createDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>&) const {};
-    /// Implement method from Component interface. Subclasses only need to 
-    /// implement createDecorativeGeometry to generate an Array of 
-    /// SimTK::DecorativeGeometry. From then on, setting Transforms & Appearance 
-    /// is handled by the base class Geometry to avoid duplication. 
+    /// Implement method from Component interface. Subclasses only need to
+    /// implement createDecorativeGeometry to generate an Array of
+    /// SimTK::DecorativeGeometry. From then on, setting Transforms & Appearance
+    /// is handled by the base class Geometry to avoid duplication.
     void generateDecorations
         (bool                                       fixed,
         const ModelDisplayHints&                    hints,
@@ -181,7 +181,7 @@ public:
     void constructConnectors();
 
 private:
-    
+
     void setNull()
     {
         setAuthors("Ayman Habib");
@@ -193,7 +193,7 @@ private:
  * It is used by muscle segments so that it's as small and useful as possible.
  */
 class OSIMSIMULATION_API LineGeometry : public Geometry
-{   
+{
     OpenSim_DECLARE_CONCRETE_OBJECT(LineGeometry, Geometry);
 public:
     // Property start_point
@@ -220,7 +220,7 @@ public:
     /// destructor
     virtual ~LineGeometry() {}
     /// Get end points as Vec3 in passed in arguments
-    void getPoints(SimTK::Vec3& rPoint1, SimTK::Vec3& rPoint2) const 
+    void getPoints(SimTK::Vec3& rPoint1, SimTK::Vec3& rPoint2) const
     {
         rPoint1 = get_start_point();
         rPoint2 = get_end_point();
@@ -245,31 +245,31 @@ private:
 /**
 * Arrow is a Geometry subclass used to represent an arrow. The arrow goes from
 * start_point (Property) and has direction (Property) and length (Property)
-* 
+*
 */
 class OSIMSIMULATION_API Arrow : public Geometry
-{   
+{
     OpenSim_DECLARE_CONCRETE_OBJECT(Arrow, Geometry);
 public:
     // Property start_point
     OpenSim_DECLARE_PROPERTY(start_point, SimTK::Vec3,
         "Arrow start point.");
-    // Property direction 
-    OpenSim_DECLARE_PROPERTY(direction, SimTK::Vec3, 
+    // Property direction
+    OpenSim_DECLARE_PROPERTY(direction, SimTK::Vec3,
         "direction of Arrow");
 
     OpenSim_DECLARE_PROPERTY(length, double, "length of Arrow");
     /// constructor that takes startPoint, direction vector and length
-    Arrow(SimTK::Vec3& aPoint1, SimTK::UnitVec3& aUnitDir, double aLength) 
+    Arrow(SimTK::Vec3& aPoint1, SimTK::UnitVec3& aUnitDir, double aLength)
     {
         constructProperties();
         updProperty_start_point() = aPoint1;
         updProperty_direction() = aUnitDir;
         updProperty_length() = aLength;
     }
-    /// Default constructor that creates Arrow of length 1 starting at origin 
+    /// Default constructor that creates Arrow of length 1 starting at origin
     /// in the direction (1,1,1)
-    Arrow() 
+    Arrow()
     {
         constructProperties();
     }
@@ -290,18 +290,18 @@ private:
 
 
 /**
- * Utility class used to abstract anayltic geometry. This will need to be 
+ * Utility class used to abstract anayltic geometry. This will need to be
  * revisited when wrapping is re-done to handle quadrants or analytic shapes
- * that were supported in earlier releases before 4.0. 
+ * that were supported in earlier releases before 4.0.
  *
  * TODO: using start/end angle may be a better choice.
  */
 class OSIMSIMULATION_API AnalyticGeometry : public Geometry
-{    
+{
     OpenSim_DECLARE_ABSTRACT_OBJECT(AnalyticGeometry, Geometry);
     // Amended with a quadrants array to support pieces of analytic geometry (for wrapping)
     OpenSim_DECLARE_LIST_PROPERTY(quadrants, std::string,
-        "Quadrants to use: combination of +X -X +Y -Y +Z -Z space separated."); 
+        "Quadrants to use: combination of +X -X +Y -Y +Z -Z space separated.");
 private:
     bool                    _bounds[6];     //-X, +X, -Y, +Y, -Z, +Z
     bool                    _piece;
@@ -337,14 +337,14 @@ private:
     }
 };
 /**
- * A class to represent Sphere geometry. 
+ * A class to represent Sphere geometry.
  */
 class OSIMSIMULATION_API Sphere : public AnalyticGeometry
 {
 OpenSim_DECLARE_CONCRETE_OBJECT(Sphere, AnalyticGeometry);
 public:
     OpenSim_DECLARE_PROPERTY(radius, double,
-        "Radius of sphere, defaults to 1.0"); 
+        "Radius of sphere, defaults to 1.0");
     /// Default constructor, creates a sphere of radius 1.0
     Sphere() :
     AnalyticGeometry()
@@ -382,7 +382,7 @@ class OSIMSIMULATION_API Ellipsoid : public AnalyticGeometry
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(Ellipsoid, AnalyticGeometry);
 public:
-    OpenSim_DECLARE_PROPERTY(radii, SimTK::Vec3, "Radii of Ellipsoid."); 
+    OpenSim_DECLARE_PROPERTY(radii, SimTK::Vec3, "Radii of Ellipsoid.");
     /// Default constructor, creates an Ellipsoid of radii 0.5, 1., 2.
     Ellipsoid() :
     AnalyticGeometry()
@@ -403,7 +403,7 @@ public:
         upd_radii()[0] = radius1;
         upd_radii()[1] = radius2;
         upd_radii()[2] = radius3;
-    } 
+    }
     /// Virtual method to map Ellipsoid to Array of SimTK::DecorativeGeometry.
     /// Appearance, Transforms are handled by base Geometry class
     void createDecorativeGeometry(
@@ -533,7 +533,7 @@ public:
     }
     virtual ~Torus() {}
     /// Method to map Cone to Array of SimTK::DecorativeGeometry.
-    /// Appearance, Transforms are handled by base Geometry class    
+    /// Appearance, Transforms are handled by base Geometry class
     void createDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override {};
 };
@@ -545,7 +545,7 @@ class OSIMSIMULATION_API Brick : public Geometry
     OpenSim_DECLARE_CONCRETE_OBJECT(Brick, Geometry);
 public:
     /// Half lengths in X,Y,Z directions respectively
-    OpenSim_DECLARE_PROPERTY(half_lengths, SimTK::Vec3, 
+    OpenSim_DECLARE_PROPERTY(half_lengths, SimTK::Vec3,
         "Half lengths in X, Y, Z respectively.");
 
 public:

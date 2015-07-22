@@ -92,22 +92,22 @@ void FreeJoint::setNull()
     // Replace default names _coord_? with more meaningful names
 
     const CoordinateSet& coordinateSet = get_CoordinateSet();
-    
+
     string dirStrings[] = {"x", "y", "z"};
     for (int i=0; i< 3; i++){
         string oldName = coordinateSet.get(i).getName();
-        int pos=(int)oldName.find("_coord_"); 
+        int pos=(int)oldName.find("_coord_");
         if (pos != string::npos){
-            oldName.replace(pos, 8, ""); 
+            oldName.replace(pos, 8, "");
             coordinateSet.get(i).setName(oldName+"_"+dirStrings[i]+"Rotation");
             coordinateSet.get(i).setMotionType(Coordinate::Rotational);
         }
     }
     for (int i=3; i< 6; i++){
         string oldName = coordinateSet.get(i).getName();
-        int pos=(int)oldName.find("_coord_"); 
+        int pos=(int)oldName.find("_coord_");
         if (pos != string::npos){
-            oldName.replace(pos, 8, ""); 
+            oldName.replace(pos, 8, "");
             coordinateSet.get(i).setName(oldName+"_"+dirStrings[i-3]+"Translation");
             coordinateSet.get(i).setMotionType(Coordinate::Translational);
         }
@@ -161,14 +161,14 @@ void FreeJoint::extendSetPropertiesFromState(const SimTK::State& state)
 
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
         int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
-        
+
         const CoordinateSet& coordinateSet = get_CoordinateSet();
- 
+
         coordinateSet.get(zero).setDefaultValue(angles[0]);
         coordinateSet.get(1).setDefaultValue(angles[1]);
         coordinateSet.get(2).setDefaultValue(angles[2]);
-        coordinateSet.get(3).setDefaultValue(t[0]); 
-        coordinateSet.get(4).setDefaultValue(t[1]); 
+        coordinateSet.get(3).setDefaultValue(t[0]);
+        coordinateSet.get(4).setDefaultValue(t[1]);
         coordinateSet.get(5).setDefaultValue(t[2]);
     }
 }

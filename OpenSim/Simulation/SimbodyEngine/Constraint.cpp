@@ -42,7 +42,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-Constraint::Constraint() 
+Constraint::Constraint()
 {
     setNull();
     constructProperties();
@@ -89,7 +89,7 @@ void Constraint::extendConnectToModel(Model& aModel)
 void Constraint::extendInitStateFromProperties(SimTK::State& s) const
 {
     Super::extendInitStateFromProperties(s);
-    SimTK::Constraint& simConstraint = 
+    SimTK::Constraint& simConstraint =
         _model->updMatterSubsystem().updConstraint(_index);
 
     // Otherwise we have to change the status of the constraint
@@ -154,7 +154,7 @@ bool Constraint::setDisabled(SimTK::State& s, bool isDisabled)
     SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
     bool modelConstraintIsDisabled = simConstraint.isDisabled(s);
 
-    // Check if we already have the correct enabling of the constraint then do nothing 
+    // Check if we already have the correct enabling of the constraint then do nothing
     if(isDisabled == modelConstraintIsDisabled)
         return true;
 
@@ -166,7 +166,7 @@ bool Constraint::setDisabled(SimTK::State& s, bool isDisabled)
 
     _model->updateAssemblyConditions(s);
     set_isDisabled(isDisabled);
-    
+
     return true;
 }
 
@@ -180,14 +180,14 @@ bool Constraint::setDisabled(SimTK::State& s, bool isDisabled)
  * Simbody multibody system must be realized to at least position
  * Returns: the bodyForces on those bodies being constrained (constrainedBodies)
  *              a SpatialVec (6 components) describing resulting torque and force
- *          mobilityForces acting along constrained mobilities  
+ *          mobilityForces acting along constrained mobilities
  *
  * @param state State of model
  * @param bodyForcesInAncestor is a Vector of SpatialVecs contain constraint forces
  * @param mobilityForces is a Vector of forces that act along the constrained
  *         mobilitities associated with this constraint
  */
-void Constraint::calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor, 
+void Constraint::calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor,
                                       SimTK::Vector& mobilityForces) const
 {
     SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
@@ -197,7 +197,7 @@ void Constraint::calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimT
     }
 }
 
-/** 
+/**
  * Methods to query a Constraint forces for the value actually applied during simulation
  * The names of the quantities (column labels) is returned by this first function
  * getRecordLabels()
@@ -213,7 +213,7 @@ Array<std::string> Constraint::getRecordLabels() const
     int ncm = simConstraint.getNumConstrainedU(ds);
 
     const BodySet &bodies = _model->getBodySet();
-    
+
     Array<std::string> labels("");
 
     for(int i=0; i<ncb; ++i){
@@ -243,12 +243,12 @@ Array<std::string> Constraint::getRecordLabels() const
         sprintf(c, "%d", i);
         labels.append(getName()+"_mobility_F"+c);
     }
-    
+
     return labels;
 }
 
 /**
- * Given SimTK::State object extract all the values necessary to report constraint forces, application 
+ * Given SimTK::State object extract all the values necessary to report constraint forces, application
  * location frame, etc. used in conjunction with getRecordLabels and should return same size Array
  */
 Array<double> Constraint::getRecordValues(const SimTK::State& state) const
@@ -270,7 +270,7 @@ Array<double> Constraint::getRecordValues(const SimTK::State& state) const
     Array<double> values(0.0,6*ncb+ncm);
 
     calcConstraintForces(state, bodyForcesInAncestor, mobilityForces);
-    
+
     for(int i=0; i<ncb; ++i){
         for(int j=0; j<3; ++j){
             // Simbody constraints have reaction moments first and OpenSim reports forces first

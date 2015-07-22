@@ -46,7 +46,7 @@ const int PointKinematicsBUFFER_LENGTH = 2048;
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 class Model;
 class Body;
@@ -136,7 +136,7 @@ public:
     const std::string &getPointName();
     // MODEL
     virtual void setModel(Model& aModel);
-    
+
     // STORAGE
     void setStorageCapacityIncrements(int aIncrement);
     Storage* getAccelerationStorage();

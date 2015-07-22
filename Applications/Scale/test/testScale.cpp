@@ -46,7 +46,7 @@ void scaleGait2354_GUI(bool useMarkerPlacement);
 int main()
 {
     try {
- 
+
         scaleGait2354();
         scaleGait2354_GUI(false);
         //scaleGait2354_GUI(true);
@@ -69,13 +69,13 @@ void compareModel(const Model& resultModel, const std::string& stdFileName, doub
     const SimTK::State& s = resultModel.getWorkingState();
     resultModel.getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
-    ASSERT(sStd.getNQ()==s.getNQ());    
+    ASSERT(sStd.getNQ()==s.getNQ());
     // put them in same configuration
     sStd.updQ() = s.getQ();
     refModel->getMultibodySystem().realize(sStd, SimTK::Stage::Velocity);
 
-    ASSERT(sStd.getNU()==s.getNU());    
-    ASSERT(sStd.getNZ()==s.getNZ());    
+    ASSERT(sStd.getNU()==s.getNU());
+    ASSERT(sStd.getNZ()==s.getNZ());
 
     // Now cycle thru ModelComponents recursively
 
@@ -132,7 +132,7 @@ void scaleGait2354()
     const ScaleSet& computedScaleSet = ScaleSet(setupFilePath+"subject01_scaleSet_applied.xml");
 
     ASSERT(computedScaleSet == stdScaleSet);
-    
+
     delete model;
     delete subject;
 }
@@ -153,7 +153,7 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
     fclose(file2Remove);
 
     Model guiModel("gait2354_simbody.osim");
-    
+
     // Keep track of the folder containing setup file, wil be used to locate results to comapre against
     guiModel.initSystem();
     MarkerSet *markerSet = new MarkerSet(guiModel, setupFilePath + subject->getGenericModelMaker().getMarkerSetFileName());
@@ -163,7 +163,7 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
     guiModel.getMultibodySystem().realizeTopology();
     SimTK::State* configState=&guiModel.updWorkingState();
     bool retValue= subject->getModelScaler().processModel(&guiModel, setupFilePath, subject->getSubjectMass());
-    // Model has changed need to recreate a valid state 
+    // Model has changed need to recreate a valid state
     guiModel.getMultibodySystem().realizeTopology();
     configState=&guiModel.updWorkingState();
     guiModel.getMultibodySystem().realize(*configState, SimTK::Stage::Position);
@@ -171,7 +171,7 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
 
     if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply()) {
         MarkerPlacer& placer = subject->getMarkerPlacer();
-        if( false == placer.processModel(&guiModel, subject->getPathToSubject())) 
+        if( false == placer.processModel(&guiModel, subject->getPathToSubject()))
             throw Exception("testScale failed to place markers");
     }
 

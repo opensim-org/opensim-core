@@ -26,7 +26,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-// Headers define the various property types that OpenSim objects can read 
+// Headers define the various property types that OpenSim objects can read
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/PropertyDbl.h>
@@ -35,7 +35,7 @@
 // Header to define analysis (DLL) interface
 #include "osimAnalysesDLL.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
 class Model;
 class BodySet;
@@ -51,7 +51,7 @@ class ExternalForce;
  * the contributions of actuators to external reaction forces and thus
  * model accelerations including that of the center-of-mass.
  * The analysis reports the contributions of all forces to user identified
- * accelerations of coordinates, bodies and/or center-of-mass. 
+ * accelerations of coordinates, bodies and/or center-of-mass.
  *
  * Induced Accelerations can apply any OpenSim::Constraint that implements
  * setContactPointForInducedAccelerations() to replace external forces, which
@@ -81,13 +81,13 @@ protected:
     PropertyStrArray _coordNamesProp;
     Array<std::string> &_coordNames;
 
-    /** Specifies the list of bodies which includes center_of_mass 
+    /** Specifies the list of bodies which includes center_of_mass
         for which induced accelerations are reported */
     PropertyStrArray _bodyNamesProp;
     Array<std::string> &_bodyNames;
 
     /** Set containing the constraints used to represent contact in the analysis.
-        These must correspond to the number of external forces and involve the 
+        These must correspond to the number of external forces and involve the
         same bodies in contact with ground. */
     PropertyObj _constraintSetProp;
     ConstraintSet &_constraintSet;
@@ -191,7 +191,7 @@ public:
     //-------------------------------------------------------------------------
     // INTEGRATION
     //-------------------------------------------------------------------------
-    virtual void initialize(const SimTK::State& s); 
+    virtual void initialize(const SimTK::State& s);
     virtual int begin( SimTK::State& s);
     virtual int step( const SimTK::State& s, int stepNumber);
     virtual int end( SimTK::State& s);

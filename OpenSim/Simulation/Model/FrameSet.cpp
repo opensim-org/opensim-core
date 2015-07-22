@@ -45,13 +45,13 @@ FrameSet::~FrameSet(void)
  */
 FrameSet::FrameSet()
 {
-    
+
 }
 
 FrameSet::FrameSet(Model& model) :
     ModelComponentSet<Frame>(model)
 {
-    
+
 }
 
 

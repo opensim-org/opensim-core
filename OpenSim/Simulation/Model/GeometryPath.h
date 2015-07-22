@@ -65,7 +65,7 @@ private:
     OpenSim_DECLARE_UNNAMED_PROPERTY(PathPointSet, "The set of points defining the path");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(PathWrapSet, "The wrap objecs that are associated with this path");
-    
+
     OpenSim_DECLARE_OPTIONAL_PROPERTY(default_color, SimTK::Vec3, "Used to initialize the colour cache variable");
 
     // used for scaling tendon and fiber lengths
@@ -76,7 +76,7 @@ private:
 
     // solver used to compute moment-arms
     mutable SimTK::ReferencePtr<MomentArmSolver> _maSolver;
-    
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -96,15 +96,15 @@ public:
     // UTILITY
     //--------------------------------------------------------------------------
     PathPoint* addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& aBody);
-    PathPoint* appendNewPathPoint(const std::string& proposedName, 
+    PathPoint* appendNewPathPoint(const std::string& proposedName,
         PhysicalFrame& aBody, const SimTK::Vec3& aPositionOnBody);
     bool canDeletePathPoint( int aIndex);
     bool deletePathPoint(const SimTK::State& s, int aIndex);
-    
+
     void moveUpPathWrap(const SimTK::State& s, int aIndex);
     void moveDownPathWrap(const SimTK::State& s, int aIndex);
     void deletePathWrap(const SimTK::State& s, int aIndex);
-    bool replacePathPoint(const SimTK::State& s, PathPoint* aOldPathPoint, PathPoint* aNewPathPoint); 
+    bool replacePathPoint(const SimTK::State& s, PathPoint* aOldPathPoint, PathPoint* aNewPathPoint);
 
     //--------------------------------------------------------------------------
     // GET
@@ -123,8 +123,8 @@ public:
 
     /** Set the value of the color cache variable owned by this %GeometryPath
     object, in the cache of the given state. The value of this variable is used
-    as the color when the path is drawn, which occurs with the state realized 
-    to Stage::Dynamics. So you must call this method during realizeDynamics() or 
+    as the color when the path is drawn, which occurs with the state realized
+    to Stage::Dynamics. So you must call this method during realizeDynamics() or
     earlier in order for it to have any effect. **/
     void setColor(const SimTK::State& s, const SimTK::Vec3& color) const;
 
@@ -149,18 +149,18 @@ public:
 
     /** get the the path as PointForceDirections directions, which can be used
         to apply tension to bodies the points are connected to.*/
-    void getPointForceDirections(const SimTK::State& s, 
+    void getPointForceDirections(const SimTK::State& s,
         OpenSim::Array<PointForceDirection*> *rPFDs) const;
 
-    /** add in the equivalent body and generalized forces to be applied to the 
-        multibody system resulting from a tension along the GeometryPath 
+    /** add in the equivalent body and generalized forces to be applied to the
+        multibody system resulting from a tension along the GeometryPath
     @param state    state used to evaluate forces
-    @param[in]  tension      scalar (double) of the applied (+ve) tensile force 
+    @param[in]  tension      scalar (double) of the applied (+ve) tensile force
     @param[in,out] bodyForces   Vector of SpatialVec's (torque, force) on bodies
-    @param[in,out] mobilityForces  Vector of generalized forces, one per mobility   
+    @param[in,out] mobilityForces  Vector of generalized forces, one per mobility
     */
     void addInEquivalentForces(const SimTK::State& state,
-                               const double& tension, 
+                               const double& tension,
                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                SimTK::Vector& mobilityForces) const;
 
@@ -203,9 +203,9 @@ private:
     void computePath(const SimTK::State& s ) const;
     void computeLengtheningSpeed(const SimTK::State& s) const;
     void applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path ) const;
-    double calcPathLengthChange(const SimTK::State& s, const WrapObject& wo, 
-                                const WrapResult& wr, 
-                                const Array<PathPoint*>& path) const; 
+    double calcPathLengthChange(const SimTK::State& s, const WrapObject& wo,
+                                const WrapResult& wr,
+                                const Array<PathPoint*>& path) const;
     double calcLengthAfterPathComputation
        (const SimTK::State& s, const Array<PathPoint*>& currentPath) const;
 
@@ -214,7 +214,7 @@ private:
     void constructProperties();
     void updateDisplayPath(const SimTK::State& s) const;
     void namePathPoints(int aStartingIndex);
-    void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, 
+    void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset,
                            int aIndex, const PhysicalFrame& aBody);
 
 //=============================================================================

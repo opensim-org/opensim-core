@@ -54,7 +54,7 @@ TransformAxis::TransformAxis() {
 
 //_____________________________________________________________________________
 // Constructor with coordinate names and axis.
-TransformAxis::TransformAxis(const Array<string>& coordNames, 
+TransformAxis::TransformAxis(const Array<string>& coordNames,
                              const Vec3&          axis) {
     setNull();
     constructProperties();
@@ -86,7 +86,7 @@ void TransformAxis::connectToJoint(const Joint& aJoint)
     int nc = coordNames.size();
     const CoordinateSet& coords = _joint->getCoordinateSet();
 
-    // If a Function has been assigned then we have to insist that any 
+    // If a Function has been assigned then we have to insist that any
     // specified coordinates actually exist in this joint.
     // TODO: (sherm 20120418) Why do we allow unrecognized coordinate names
     // if there is no Function?
@@ -96,9 +96,9 @@ void TransformAxis::connectToJoint(const Joint& aJoint)
 
     for(int i=0; i< nc; ++i) {
         if (!coords.contains(coordNames[i])) {
-            errorMessage += "Invalid coordinate (" 
-                            + coordNames[i] 
-                            + ") specified for TransformAxis " 
+            errorMessage += "Invalid coordinate ("
+                            + coordNames[i]
+                            + ") specified for TransformAxis "
                             + getName() + " in joint " + aJoint.getName();
             throw (Exception(errorMessage));
         }

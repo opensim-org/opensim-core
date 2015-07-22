@@ -62,7 +62,7 @@ public:
     /**
     * Coordinate
     */
-    void setCoordinateName(const std::string& coord) 
+    void setCoordinateName(const std::string& coord)
     {   set_coordinate(coord); }
     const std::string& getCoordinateName() const {return get_coordinate();}
 
@@ -70,17 +70,17 @@ public:
     * Set the mathematical expression that defines the force magnitude of this
     * coordinate force in terms of the coordinate value (q) and its
     * time derivative (qdot). Expressions with C-mathematical operations
-    * such as +,-,*,/ and common functions: exp, pow, sqrt, sin, cos, tan, 
+    * such as +,-,*,/ and common functions: exp, pow, sqrt, sin, cos, tan,
     * and so on are acceptable.
     * NOTE: a limitation is that the expression may not contain whitespace
     * @param expression    string containing the mathematical expression that
-    *                      defines the coordinate force 
+    *                      defines the coordinate force
     */
     void setExpression(const std::string& expression);
 
 
-    /** 
-    * Get the computed Force magnitude determined by evaluating the 
+    /**
+    * Get the computed Force magnitude determined by evaluating the
     * expression above. Note, computeForce must be evaluated first,
     * and this is done automatically if the system is realized to Dynamics
     * @param state    const state (reference) for the model
@@ -92,10 +92,10 @@ public:
 //==============================================================================
 // COMPUTATION
 //==============================================================================
-    /** Compute the coordinate force based on the user-defined expression 
+    /** Compute the coordinate force based on the user-defined expression
         and apply it to the model */
-    void computeForce(const SimTK::State& state, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+    void computeForce(const SimTK::State& state,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const override;
 
     //--------------------------------------------------------------------------
@@ -107,7 +107,7 @@ public:
 //==============================================================================
 // Reporting
 //==============================================================================
-    /** 
+    /**
      * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
      */
     OpenSim::Array<std::string> getRecordLabels() const override;
@@ -116,7 +116,7 @@ public:
     */
     OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
-    
+
 
 protected:
 //==============================================================================

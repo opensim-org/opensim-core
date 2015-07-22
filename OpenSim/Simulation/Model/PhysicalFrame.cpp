@@ -63,14 +63,14 @@ const SimTK::MobilizedBody& PhysicalFrame::getMobilizedBody() const
     return getModel().getMatterSubsystem().getMobilizedBody(_mbIndex);
 }
 
-SimTK::MobilizedBody& PhysicalFrame::updMobilizedBody() 
+SimTK::MobilizedBody& PhysicalFrame::updMobilizedBody()
 {
     return updModel().updMatterSubsystem().updMobilizedBody(_mbIndex);
 }
 
 /*
 * Implementation of Frame interface by PhysicalFrame.
-* 
+*
 */
 SimTK::Transform PhysicalFrame::
     calcGroundTransform(const SimTK::State& s) const
@@ -123,7 +123,7 @@ void PhysicalFrame::scale(const SimTK::Vec3& aScaleFactors)
     for (int i = 0; i<3; i++) {
         oldScaleFactors[i] *= aScaleFactors[i];
     }
-    // TODO: When we revamp scaling and solve the issue with where scale factors 
+    // TODO: When we revamp scaling and solve the issue with where scale factors
     // are maintained, we need to fix this or remove it completely -Ayman 5/15
     // Update scale factors for displayer
     //NewGeometry updDisplayer()->setScaleFactors(oldScaleFactors);

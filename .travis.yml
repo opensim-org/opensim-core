@@ -22,7 +22,7 @@ env:
     # for Clang to work with ccache.
     - CCACHE_CPP2=1
 
-cache: 
+cache:
   - directories: $HOME/.ccache
 
 addons:

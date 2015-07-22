@@ -186,7 +186,7 @@ static int column_is_marker_data(MotionSequence* motion, int column);
 
 
 /* -------------------------------------------------------------------------
-   add_default_motion_objects - 
+   add_default_motion_objects -
 ---------------------------------------------------------------------------- */
 void add_default_motion_objects(ModelStruct* model)
 {
@@ -921,14 +921,14 @@ int name_is_forceplate(ModelStruct* model, char name[], int* motion_object, int*
 
 
 /* -------------------------------------------------------------------------
-   motion_object_instance_contains_component - 
+   motion_object_instance_contains_component -
 ---------------------------------------------------------------------------- */
 static SBoolean motion_object_instance_contains_component(MotionObjectInstance* mi, int component)
 {
    if (mi->channels)
    {
       int i;
-      
+
       for (i = 0; i < mi->num_channels; i++)
          if (mi->channels[i].component == component)
             return yes;
@@ -937,7 +937,7 @@ static SBoolean motion_object_instance_contains_component(MotionObjectInstance* 
 }
 
 /* -------------------------------------------------------------------------
-   store_motion_object_instance - 
+   store_motion_object_instance -
 ---------------------------------------------------------------------------- */
 static MotionObjectInstance* store_motion_object_instance(ModelStruct* model,
    MotionModelOptions* mopt, int seg, int motion_object, int motion_component, int column)
@@ -985,7 +985,7 @@ static MotionObjectInstance* store_motion_object_instance(ModelStruct* model,
          MotionObject* mo = &model->motion_objects[motion_object];
 
          mi = mopt->motion_object_instance[i] = (MotionObjectInstance*)simm_calloc(1, sizeof(MotionObjectInstance));
-         
+
          mi->type          = UnknownMotionObject;
          mi->object        = motion_object;
          mi->segment       = seg;
@@ -1057,7 +1057,7 @@ double check_motion_wrapping(ModelStruct* model, MotionSequence* motion, double 
    circularize_motion_index - this interesting routine was added to allow
       realtime motion to continuously stream into a fixed-duration
       MotionSequence, by wrapping the samples around the end of the buffer.
-      
+
       -- KMS 2/23/00
 ---------------------------------------------------------------------------- */
 static int circularize_motion_index(MotionSequence* motion, int i)
@@ -1065,7 +1065,7 @@ static int circularize_motion_index(MotionSequence* motion, int i)
    if (motion->is_realtime && motion->realtime_circular_index > 0)
    {
       i += motion->realtime_circular_index;
-      
+
       if (i >= motion->number_of_datarows)
          i -= motion->number_of_datarows;
    }
@@ -1182,7 +1182,7 @@ int apply_motion_to_model(ModelStruct* model, MotionSequence* motion, double val
    {
       LoopStatus loopStatus;
       ConstraintStatus consStatus;
-      /* if the gencoord is in the motion file, set it to the value in the 
+      /* if the gencoord is in the motion file, set it to the value in the
        * motion file.  If it's not in the motion file and is in a loop, set it
        * to zero.  Then invalidate all the joint matrices, and solve all the
        * loops.  Gencoords get set to whatever new values are calculated by
@@ -1217,7 +1217,7 @@ int apply_motion_to_model(ModelStruct* model, MotionSequence* motion, double val
        * to whatever values are calculated by the constraint solver (may not
        * be the values in the motion file. Don't change any values if the
        * gencoord is locked.  If the constraints are unchanged, the gencoord
-       * values must be set (set_gencoord_value was not called in solveall. 
+       * values must be set (set_gencoord_value was not called in solveall.
        */
       for (i = 0; i < model->numgencoords; i++)
       {
@@ -1286,7 +1286,7 @@ int apply_motion_to_model(ModelStruct* model, MotionSequence* motion, double val
    {
       if (motion->mopt.muscles[i] != NULL)
          model->muscle[i]->dynamic_activation = motion->mopt.muscles[i][motion->mopt.current_frame];
-   }  
+   }
 
    for (i=0; i<model->numligaments; i++)
    {
@@ -1516,16 +1516,16 @@ ReturnCode write_motion(MotionSequence *motion, const char filename[])
    }
 
    fprintf(file, "endheader\n\n");
-   
+
    for (j = 0; j < motion->number_of_datacolumns; j++)
       fprintf(file, "%s\t", motion->columnname[j]);
    fprintf(file, "\n");
-   
+
    for (i = 0; i < motion->number_of_datarows; i++)
    {
       for (j = 0; j < motion->number_of_datacolumns; j++)
          fprintf(file, "%lf\t", motion->motiondata[j][i]);
-      
+
       fprintf(file, "\n");
    }
    fclose(file);

@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 //============================================================================
@@ -38,7 +38,7 @@
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Array.h>
 
-namespace OpenSim { 
+namespace OpenSim {
 
 class Model;
 
@@ -221,13 +221,13 @@ public:
      *
      * @param aBaseName Base name of file to which to print the data.
      * @param aDir      Directory name.
-     * @param aDT       Time interval between results (linear interpolation 
-     *                  is used). If not supplied as an argument or negative, 
+     * @param aDT       Time interval between results (linear interpolation
+     *                  is used). If not supplied as an argument or negative,
      *                  all time steps are printed without interpolation.
      * @param aExtension    File extension if not the default ".sto".
      *
      * @return -1 on error, 0 otherwise.
-     */ 
+     */
     virtual int
         printResults(const std::string &aBaseName,const std::string &aDir="",
         double aDT=-1.0,const std::string &aExtension=".sto");

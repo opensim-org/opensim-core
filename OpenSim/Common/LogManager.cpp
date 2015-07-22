@@ -73,7 +73,7 @@ bool LogBuffer::
 addLogCallback(LogCallback *aLogCallback)
 {
     if(_logCallbacks.findIndex(aLogCallback) >= 0) return false;
-    _logCallbacks.append(aLogCallback); 
+    _logCallbacks.append(aLogCallback);
     return true;
 }
 
@@ -82,7 +82,7 @@ removeLogCallback(LogCallback *aLogCallback)
 {
     int index = _logCallbacks.findIndex(aLogCallback);
     if(index < 0) return false;
-    _logCallbacks.remove(index); 
+    _logCallbacks.remove(index);
     return true;
 }
 

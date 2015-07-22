@@ -80,7 +80,7 @@ void opensim_version_simulation(int* major, int* minor, int* build) {
     if (minor) *minor = OPENSIM_SIMULATION_MINOR_VERSION;
     if (build) *build = OPENSIM_SIMULATION_BUILD_VERSION;
 
-    // Force statics to be present in the binary (Release mode otherwise 
+    // Force statics to be present in the binary (Release mode otherwise
     // optimizes them away).
     volatile int i=0;
     if (i) { // never true, but compiler doesn't know ...

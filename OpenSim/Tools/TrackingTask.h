@@ -63,7 +63,7 @@ protected:
     /** Number of functions for this target. */
     int _nTrk;
 
-    /** Position task functions.  Different types of tasks can 
+    /** Position task functions.  Different types of tasks can
     require different numbers of task functions.  For example, to track
     a joint angle, only one task function is needed.  However, to track
     a position, up to three task functions may be needed. */

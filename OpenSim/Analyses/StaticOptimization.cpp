@@ -78,7 +78,7 @@ StaticOptimization::StaticOptimization(Model *aModel) :
     if(aModel) setModel(*aModel);
     else allocateStorage();
 }
-// Copy constrctor and virtual copy 
+// Copy constrctor and virtual copy
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -168,7 +168,7 @@ setupProperties()
     _activationExponentProp.setName("activation_exponent");
     _propertySet.append(&_activationExponentProp);
 
-    
+
     _useMusclePhysiologyProp.setComment(
         "If true muscle force-length curve is observed while running optimization.");
     _useMusclePhysiologyProp.setName("use_muscle_physiology");
@@ -208,7 +208,7 @@ constructColumnLabels()
 {
     Array<string> labels;
     labels.append("time");
-    if(_model) 
+    if(_model)
         for (int i=0; i < _forceSet->getSize(); i++) labels.append(_forceSet->get(i).getName());
     setColumnLabels(labels);
 }
@@ -318,7 +318,7 @@ record(const SimTK::State& s)
     // Set model to whatever defaults have been updated to from the last iteration
     SimTK::State& sWorkingCopy = _modelWorkingCopy->updWorkingState();
     sWorkingCopy.setTime(s.getTime());
-    _modelWorkingCopy->initStateWithoutRecreatingSystem(sWorkingCopy); 
+    _modelWorkingCopy->initStateWithoutRecreatingSystem(sWorkingCopy);
 
     // update Q's and U's
     sWorkingCopy.setQ(s.getQ());
@@ -379,7 +379,7 @@ record(const SimTK::State& s)
         upperBounds(j) = act.getMaxControl();
         j++;
     }
-    
+
     target.setParameterLimits(lowerBounds, upperBounds);
 
     _parameters = 0; // Set initial guess to zeros
@@ -432,7 +432,7 @@ record(const SimTK::State& s)
                         msgWeak += oUpper.str();
                         msgWeak += "\n";
                         weakModel = true;
-                    } 
+                    }
                 } else {
                     if(_parameters(a) > (upperBounds(a)-tolBounds)) {
                         msgWeak += "   ";
@@ -503,7 +503,7 @@ record(const SimTK::State& s)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration 
+ * This method is meant to be called at the begining of an integration
  *
  * @param s Current state .
  *
@@ -538,7 +538,7 @@ begin(SimTK::State& s )
             _modelWorkingCopy->setAllControllersEnabled(false);
             _numCoordinateActuators = _forceSet->getSize();
             // Copy whatever forces that are not muscles back into the model
-            
+
             for(int i=0; i<saveForces->getSize(); i++){
                 const Force& f=saveForces->get(i);
                 if ((dynamic_cast<const Muscle*>(&saveForces->get(i)))==NULL)
@@ -561,7 +561,7 @@ begin(SimTK::State& s )
         sWorkingCopy.setZ(s.getZ());
         _modelWorkingCopy->getMultibodySystem().realize(s,SimTK::Stage::Velocity);
         _modelWorkingCopy->equilibrateMuscles(sWorkingCopy);
-        // Gather indices into speed set corresponding to the unconstrained degrees of freedom 
+        // Gather indices into speed set corresponding to the unconstrained degrees of freedom
         // (for which we will set acceleration constraints)
         _accelerationIndices.setSize(0);
         const CoordinateSet& coordSet = _model->getCoordinateSet();
@@ -577,7 +577,7 @@ begin(SimTK::State& s )
         int na = _forceSet->getSize();
         int nacc = _accelerationIndices.getSize();
 
-        if(na < nacc) 
+        if(na < nacc)
             throw(Exception("StaticOptimization: ERROR- overconstrained "
                 "system -- need at least as many forces as there are degrees of freedom.\n") );
 
@@ -648,7 +648,7 @@ step(const SimTK::State& s, int stepNumber )
  * This method is called at the end of an analysis so that any
  * necessary finalizations may be performed.
  *
- * @param s Current state 
+ * @param s Current state
  *
  * @return -1 on error, 0 otherwise.
  */
@@ -669,7 +669,7 @@ end( SimTK::State& s )
 //_____________________________________________________________________________
 /**
  * Print results.
- * 
+ *
  * The file names are constructed as
  * aDir + "/" + aBaseName + "_" + ComponentName + aExtension
  *

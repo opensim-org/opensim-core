@@ -39,7 +39,7 @@ namespace OpenSim {
 //=============================================================================
 /**
  * A class implementing a constraint that maintains a constant distance between
- * between two points on separate PhysicalFrames. 
+ * between two points on separate PhysicalFrames.
  * The underlying SimTK::Constraint in Simbody is a Constraint::Rod
  *
  * @author Matt DeMers
@@ -81,7 +81,7 @@ public:
     * @param distance       nonzero fixed distance between the points
     */
     ConstantDistanceConstraint(
-        const PhysicalFrame& body1, const SimTK::Vec3& locationBody1, 
+        const PhysicalFrame& body1, const SimTK::Vec3& locationBody1,
         const PhysicalFrame& body2, const SimTK::Vec3& locationBody2,
         const double& distance);
 
@@ -91,7 +91,7 @@ public:
         acessible after connectToModel() has been called on the Model. */
     const PhysicalFrame& getBody1() const;
     const PhysicalFrame& getBody2() const;
-    //SET 
+    //SET
     void setBody1ByName(const std::string& aBodyName);
     void setBody1PointLocation(SimTK::Vec3 location);
     void setBody2ByName(const std::string& aBodyName);

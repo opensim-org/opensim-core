@@ -68,11 +68,11 @@ IKTask::IKTask(const IKTask &aIKTask) :
  */
 void IKTask::setupProperties()
 {
-    _applyProp.setComment("Whether or not this task will be used during inverse kinematics solve."); 
+    _applyProp.setComment("Whether or not this task will be used during inverse kinematics solve.");
     _applyProp.setName("apply");
     _propertySet.append(&_applyProp);
 
-    _weightProp.setComment("Weight given to a marker or coordinate for solving inverse kinematics problems."); 
+    _weightProp.setComment("Weight given to a marker or coordinate for solving inverse kinematics problems.");
     _weightProp.setName("weight");
     _propertySet.append(&_weightProp);
 }

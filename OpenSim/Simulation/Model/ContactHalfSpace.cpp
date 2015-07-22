@@ -40,7 +40,7 @@ ContactHalfSpace::ContactHalfSpace(const SimTK::Vec3& location,
     setNull();
 }
 
-ContactHalfSpace::ContactHalfSpace(const SimTK::Vec3& location, 
+ContactHalfSpace::ContactHalfSpace(const SimTK::Vec3& location,
     const SimTK::Vec3& orientation, PhysicalFrame& body, const std::string& name) :
         ContactGeometry(location, orientation, body)
 {

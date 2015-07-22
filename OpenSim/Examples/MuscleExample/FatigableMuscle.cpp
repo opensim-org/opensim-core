@@ -48,11 +48,11 @@ FatigableMuscle::FatigableMuscle()
 /*
  * Constructor.
  */
-FatigableMuscle::FatigableMuscle(const std::string &name, 
-                    double maxIsometricForce, double optimalFiberLength, 
-                    double tendonSlackLength, double pennationAngle, 
-                    double fatigueFactor, double recoveryFactor) : 
-    Super(name, maxIsometricForce, optimalFiberLength, tendonSlackLength, 
+FatigableMuscle::FatigableMuscle(const std::string &name,
+                    double maxIsometricForce, double optimalFiberLength,
+                    double tendonSlackLength, double pennationAngle,
+                    double fatigueFactor, double recoveryFactor) :
+    Super(name, maxIsometricForce, optimalFiberLength, tendonSlackLength,
           pennationAngle)
 {
     constructProperties();
@@ -148,33 +148,33 @@ void FatigableMuscle::setDefaultFatiguedMotorUnits(double fatiguedMotorUnits) {
 //--------------------------------------------------------------------------
 // GET & SET States and their derivatives
 //--------------------------------------------------------------------------
-double FatigableMuscle::getTargetActivation(const SimTK::State& s) const 
+double FatigableMuscle::getTargetActivation(const SimTK::State& s) const
 {   return getStateVariableValue(s, "target_activation"); }
 
 void FatigableMuscle::setTargetActivation(SimTK::State& s,
                                           double fatiguedAct) const
 {   setStateVariableValue(s, "target_activation", fatiguedAct); }
 
-double FatigableMuscle::getTargetActivationDeriv(const SimTK::State& s) const 
+double FatigableMuscle::getTargetActivationDeriv(const SimTK::State& s) const
 {   return getStateVariableDerivativeValue(s, "target_activation"); }
 
 void FatigableMuscle::setTargetActivationDeriv(const SimTK::State& s,
-                                        double fatiguedActDeriv) const 
+                                        double fatiguedActDeriv) const
 {   setStateVariableDerivativeValue(s, "target_activation", fatiguedActDeriv); }
 
 
-double FatigableMuscle::getActiveMotorUnits(const SimTK::State& s) const 
+double FatigableMuscle::getActiveMotorUnits(const SimTK::State& s) const
 {   return getStateVariableValue(s, "active_motor_units"); }
 
 void FatigableMuscle::setActiveMotorUnits(SimTK::State& s,
                                           double activeMotorUnits) const
 {   setStateVariableValue(s, "active_motor_units", activeMotorUnits); }
 
-double FatigableMuscle::getActiveMotorUnitsDeriv(const SimTK::State& s) const 
+double FatigableMuscle::getActiveMotorUnitsDeriv(const SimTK::State& s) const
 {   return getStateVariableDerivativeValue(s, "active_motor_units"); }
 
 void FatigableMuscle::setActiveMotorUnitsDeriv(const SimTK::State& s,
-                                        double activeMotorUnitsDeriv) const 
+                                        double activeMotorUnitsDeriv) const
 {   setStateVariableDerivativeValue(s, "active_motor_units", activeMotorUnitsDeriv); }
 
 double FatigableMuscle::getFatiguedMotorUnits(const SimTK::State& s) const
@@ -184,7 +184,7 @@ void FatigableMuscle::setFatiguedMotorUnits(SimTK::State& s,
                                             double fatiguedMotorUnits) const
 {   setStateVariableValue(s, "fatigued_motor_units", fatiguedMotorUnits); }
 
-double FatigableMuscle::getFatiguedMotorUnitsDeriv(const SimTK::State& s) const 
+double FatigableMuscle::getFatiguedMotorUnitsDeriv(const SimTK::State& s) const
 {    return getStateVariableDerivativeValue(s, "fatigued_motor_units"); }
 
 void FatigableMuscle::setFatiguedMotorUnitsDeriv(const SimTK::State& s,
@@ -213,10 +213,10 @@ void FatigableMuscle::computeStateVariableDerivatives(const SimTK::State& s) con
 
     // compute the rates at which motor units are converted to/from active
     // and fatigued states based on Liu et al. 2008
-    double activeMotorUnitsDeriv = - getFatigueFactor()*getActiveMotorUnits(s) 
+    double activeMotorUnitsDeriv = - getFatigueFactor()*getActiveMotorUnits(s)
             + getRecoveryFactor() * getFatiguedMotorUnits(s);
 
-    double fatigueMotorUnitsDeriv = getFatigueFactor()* getActiveMotorUnits(s) 
+    double fatigueMotorUnitsDeriv = getFatigueFactor()* getActiveMotorUnits(s)
             - getRecoveryFactor() * getFatiguedMotorUnits(s);
 
     // compute the target activation rate
@@ -225,11 +225,11 @@ void FatigableMuscle::computeStateVariableDerivatives(const SimTK::State& s) con
     double targetActivationRate = calcActivationDerivative(targetActivation,
                                                            excitation);
 
-    // specify the activation derivative based on the amount of active motor 
+    // specify the activation derivative based on the amount of active motor
     // units and the rate at which motor units are becoming active.
     // we assume that the actual activation = Ma*a       then,
     // activationRate = dMa/dt*a + Ma*da/dt  where a is the target activation
-    double activationRate = activeMotorUnitsDeriv*targetActivation + 
+    double activationRate = activeMotorUnitsDeriv*targetActivation +
                             getActiveMotorUnits(s)*targetActivationRate;
 
     // cache the results for fast access by reporting, etc...

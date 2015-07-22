@@ -1,7 +1,7 @@
 /*******************************************************************************
 
    DPFUNCTIONS.H - this header declares the DPTool Editor's public functions
-      
+
    Author: Krystyne Blaikie (based on cefunctions.h by Kenny Smith)
 
    Date: 25-NOV-03
