@@ -129,3 +129,15 @@ void Frame::extendRealizeTopology(SimTK::State& s) const
     Super::extendRealizeTopology(s);
     groundTransformIndex = getCacheVariableIndex("ground_transform");
 }
+void Frame::extendRealizeVelocity(const SimTK::State& s) const
+{
+  Super::extendRealizeVelocity(s);
+
+  SimTK::Value<SimTK::Transform>::downcast(
+      getSystem().getDefaultSubsystem().
+      updCacheEntry(s, groundTransformIndex)).upd()
+          = calcGroundTransform(s);
+  // mark cache as up-to-date
+  getSystem().getDefaultSubsystem().
+      markCacheValueRealized(s, groundTransformIndex);
+}

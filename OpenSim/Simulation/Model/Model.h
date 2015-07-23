@@ -46,7 +46,7 @@
 #include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 #include "Simbody.h"
-
+#include <mutex>
 
 
 namespace OpenSim {
@@ -457,6 +457,7 @@ public:
     /** Perform computations that may depend on anything but are only used
     for reporting and cannot affect subsequent simulation behavior. **/
     void realizeReport(const SimTK::State& state) const;
+    void extendRealizeVelocity(const SimTK::State& state) const override;
 
     /**@}**/
 
@@ -976,6 +977,11 @@ private:
 
     // To provide access to private _modelComponents member.
     friend class Component; 
+    
+    // Mutex lock to prevent multiple threads from accessing the shared controlsCache
+    std::mutex* controlsCacheLock;
+
+    mutable SimTK::Measure_<SimTK::Vector>::Result m_controlsCache;
 
 //==============================================================================
 // DATA MEMBERS

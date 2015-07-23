@@ -255,6 +255,12 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
     finalizeFromProperties();
 }
 
+//TODO: Is this the right place to put this?
+//Parallelism Method Overrides
+bool Millard2012AccelerationMuscle::isParallelByDefault() const{
+  return true;
+}
+
 //=============================================================================
 // Model Component Interface
 //=============================================================================

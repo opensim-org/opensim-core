@@ -50,6 +50,7 @@ int main()
     try {
         LoadOpenSimLibrary("osimActuators");
         testStates("arm26.osim");
+        //TODO: testMemoryUsage fails, is that okay?
         testMemoryUsage("arm26.osim");
         testMemoryUsage("PushUpToesOnGroundWithMuscles.osim");
     }

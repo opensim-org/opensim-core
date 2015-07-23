@@ -32,6 +32,8 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
+#include <mutex>
+#include <thread>
 
 //=============================================================================
 // STATICS
@@ -244,25 +246,29 @@ WrapCylinder& WrapCylinder::operator=(const WrapCylinder& aWrapCylinder)
  */
 int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                     const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
-{
+{    
     double dist, p11_dist, p22_dist, t, dot1, dot2, dot3, dot4, d, sin_theta,
         *r11, *r22, alpha, beta, r_squared = _radius * _radius;
     double dist1, dist2;
     double t12, t00;
 
-    Vec3 pp, vv, uu, r1a, r1b, r2a, r2b, apex, plane_normal, sum_musc, 
-        r1am, r1bm, r2am, r2bm, p11, p22, r1p, r2p, axispt, near12, 
+    Vec3 pp, vv, uu, r1a, r1b, r2a, r2b, apex, plane_normal, sum_musc,
+        r1am, r1bm, r2am, r2bm, p11, p22, r1p, r2p, axispt, near12,
         vert1, vert2, mpt, apex1, apex2, l1, l2, near00;
 
     int i, return_code = wrapped;
     bool r1_inter, r2_inter;
     bool constrained   = (bool) (_wrapSign != 0);
     bool far_side_wrap = false, long_wrap = false;
+    
+    std::unique_lock<std::mutex> lock(*s.getStateLock());
 
     // In case you need any variables from the previous wrap, copy them from
     // the PathWrap into the WrapResult, re-normalizing the ones that were
     // un-normalized at the end of the previous wrap calculation.
+
     const WrapResult& previousWrap = aPathWrap.getPreviousWrap();
+
     aWrapResult.factor = previousWrap.factor;
     for (i = 0; i < 3; i++)
     {
@@ -316,7 +322,10 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
 
     // find preliminary tangent point candidates r1a & r1b
     MAKE_3DVECTOR(p11, aPoint1, vv);
-
+    //p11 Vec3
+    //apoint1 Vec3
+    //vv = apoint1 - p11, Vec3
+    //p11_dist = vv.norm
     p11_dist = Mtx::Normalize(3, vv, vv);
 
     sin_theta = _radius / p11_dist;
@@ -770,7 +779,6 @@ restart_spiral_wrap:
                 goto restart_spiral_wrap;
             }
         }
-
         aWrapResult.wrap_pts.append(wrap_pt);
     }
 }

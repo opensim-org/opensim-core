@@ -148,6 +148,10 @@ public:
         "The model governing the fiber and tendon kinematics.");
 
     /**@}**/
+    //Parallelism Method Override
+    //Note: Forces cannot be flagged as parallel if they modify (recalculate) system controls
+    //during calcForces
+    bool isParallelByDefault() const override;
 
     enum CurveType{FiberActiveForceLength,
                     FiberPassiveForceLength,

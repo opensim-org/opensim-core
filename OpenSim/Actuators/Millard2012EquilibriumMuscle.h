@@ -223,7 +223,12 @@ public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(TendonForceLengthCurve,
         "Tendon-force-length curve.");
     /**@}**/
-
+    
+    //TODO: Is this the right place to put this method?
+    //Parallelism Method Override
+    //Note: Forces cannot be flagged as parallel if they modify (recalculate) system controls
+    //during calcForces
+    bool isParallelByDefault() const override;
 //==============================================================================
 // CONSTRUCTORS
 //==============================================================================

@@ -130,7 +130,13 @@ public:
     virtual void setFiberVelocityDeriv(const SimTK::State& s, double fiberVelocityDeriv) const { setStateVariableDeriv(s, "fiber_velocity", fiberVelocityDeriv); }
     virtual void setActiveForce(const SimTK::State& s, double aForce) const;
     virtual double getActiveForce(const SimTK::State& s) const;
-
+    
+    //TODO: Is this the right place to put this method?
+    //Parallelism Method Override
+    //Note: Forces cannot be flagged as parallel if they modify (recalculate) system controls
+    //during calcForces
+    bool isParallelByDefault() const override;
+   
     //--------------------------------------------------------------------------
     // COMPUTATION
     //--------------------------------------------------------------------------

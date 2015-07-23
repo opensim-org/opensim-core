@@ -465,7 +465,12 @@ public:
     @returns the stiffness of the muscle fibers along the tendon (N/m)
     */
     double getFiberStiffnessAlongTendon(const SimTK::State& s) const;
-
+    
+    //TODO: Is this the right place to put this method?
+    //Parallelism Method Override
+    //Note: Forces cannot be flagged as parallel if they modify (recalculate) system controls
+    //during calcForces
+    bool isParallelByDefault() const override;
 //==============================================================================
 // Set Properties
 //==============================================================================

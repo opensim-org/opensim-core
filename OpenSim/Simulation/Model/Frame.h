@@ -199,6 +199,7 @@ protected:
     /**@{**/
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendRealizeTopology(SimTK::State& s) const override;
+    void extendRealizeVelocity(const SimTK::State& s) const override;
 
     /// override default extendAddGeometry to set Frame to this Object
     void extendAddGeometry(OpenSim::Geometry& geom) override;

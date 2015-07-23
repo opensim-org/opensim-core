@@ -84,7 +84,7 @@ public:
     * thread that is running in parallel with other forces
     * that marked this flag as true.
     */
-    virtual bool shouldBeParallelized() const
+    virtual bool isParallelByDefault() const
     {
         return false;
     }

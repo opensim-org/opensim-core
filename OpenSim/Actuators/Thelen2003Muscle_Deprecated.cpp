@@ -83,7 +83,10 @@ void Thelen2003Muscle_Deprecated::constructProperties()
     constructProperty_Flen(1.8);
 }
 
-
+//Parallelism Method Overrides
+bool Thelen2003Muscle_Deprecated::isParallelByDefault() const{
+  return true;
+}
 //==============================================================================
 // GET
 //==============================================================================

@@ -170,6 +170,10 @@ void Thelen2003Muscle::constructProperties()
     //acos(0.05) = 84.26 degrees    
 }
 
+//Parallelism Method Overrides
+bool Thelen2003Muscle::isParallelByDefault() const{
+  return true;
+}
 //=============================================================================
 // GET
 //=============================================================================

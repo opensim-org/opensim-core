@@ -117,6 +117,11 @@ Delp1990Muscle_Deprecated::Delp1990Muscle_Deprecated(const Delp1990Muscle_Deprec
 // CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
+//TODO: Is this the right place to put this?
+//Parallelism Method Overrides
+bool Delp1990Muscle_Deprecated::isParallelByDefault() const{
+  return true;
+}
 /**
  * Copy data members from one Delp1990Muscle_Deprecated to another.
  *

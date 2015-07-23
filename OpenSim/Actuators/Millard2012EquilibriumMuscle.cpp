@@ -182,6 +182,10 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
     buildMuscle();
 }
 
+//Parallelism Method Overrides
+bool Millard2012EquilibriumMuscle::isParallelByDefault() const{
+  return true;
+}
 //==============================================================================
 // CONSTRUCTORS
 //==============================================================================

@@ -101,6 +101,11 @@ void Schutte1993Muscle_Deprecated::constructProperties()
         passiveForceLengthCurveY);
     constructProperty_passive_force_length_curve(passiveForceLengthCurve);
 }
+//_____________________________________________________________________________
+//Parallelism Method Overrides
+bool Schutte1993Muscle_Deprecated::isParallelByDefault() const{
+  return true;
+}
 
 //_____________________________________________________________________________
 /**
