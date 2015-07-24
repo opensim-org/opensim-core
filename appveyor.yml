@@ -31,7 +31,7 @@ nuget:
   account_feed: true
 
 install:
-  choco -y install cmake
+  - choco -y install cmake
   
   ## Use Chocolatey to install SWIG.
   ###- choco -y install swig
