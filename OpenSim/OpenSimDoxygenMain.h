@@ -33,18 +33,19 @@ OpenSim source and it is not installed with OpenSim. **/
 \if user
 This documentation is for people who want to use the OpenSim application
 programming interface (API) with the MATLAB, Python, Java or C++ languages.
-Therefore, internal (public/private) methods are hidden from this
-documentation. If you want to extend the OpenSim library by writing your own
+Therefore, internal ("protected") methods are hidden from this
+documentation. If you want to extend the OpenSim libraries by writing your own
 C++ plugin or you want to contribute directly to the OpenSim library, see
 the *developer* API documentation.
 \endif
 
 \if developer
-This documentation is for people who want to extend the OpenSim library by, for
-example, writing a C++ plugin or creating new Components.  Therefore, this
+This documentation is for people who want to extend the OpenSim libraries by,
+for example, writing a C++ plugin or creating new Components.  Therefore, this
 site contains documentation for protected methods that you might need to
 implement. If you simply want to make use of the API in MATLAB or Python, then
-check out the *user* API documentation.
+this documentation contains excessive information and you should check
+out the *user* API documentation.
 \endif
 
 \htmlonly

@@ -21,7 +21,7 @@
 # for a project that appears at the top of each page and should give viewer 
 # a quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = "Application programming interface for C++ developers"
+PROJECT_BRIEF          = "For C++ developers"
 
 # The INTERNAL_DOCS tag determines if documentation 
 # that is typed after a \internal command is included. If the tag is set 
@@ -49,3 +49,21 @@ LAYOUT_FILE            = "@CMAKE_CURRENT_SOURCE_DIR@/doxygen-layout-developer.xm
 # put in front of it. If left blank `html' will be used as the default path.
 
 HTML_OUTPUT            = html_developer
+
+# The HTML_STYLESHEET tag can be used to specify a user-defined cascading 
+# style sheet that is used by each HTML page. It can be used to 
+# fine-tune the look of the HTML output. If the tag is left blank doxygen 
+# will generate a default style sheet. Note that doxygen will try to copy 
+# the style sheet file to the HTML output directory, so don't put your own 
+# style sheet in the HTML output directory as well, or it will be erased!
+
+HTML_STYLESHEET        = "@CMAKE_CURRENT_SOURCE_DIR@/doxygen_developer.css"
+
+# The HTML_EXTRA_FILES tag can be used to specify one or more extra images or 
+# other source files which should be copied to the HTML output directory. Note 
+# that these files will be copied to the base HTML output directory. Use the 
+# $relpath$ marker in the HTML_HEADER and/or HTML_FOOTER files to load these 
+# files. In the HTML_STYLESHEET file, use the file name only. Also note that 
+# the files will be copied as-is; there are no commands or markers available.
+
+HTML_EXTRA_FILES       = "@CMAKE_CURRENT_SOURCE_DIR@/doxygen_shared.css"
