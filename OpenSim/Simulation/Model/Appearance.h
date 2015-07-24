@@ -43,10 +43,9 @@ class Model;
  * Appearance objects contain properties that are common to all geometry.
  * Geometry that have a surface so that it can be textured can use the subclass
  * SurfaceAppearance, while schematic line drawings (e.g. Arrows, Frames) can use 
- * CurveAppearance which offers thickness, style etc. 
+ * DrawingAppearance which offers thickness, style etc. 
  *
- * TODO: Add Resolution or Quality to Appearance from DecorativeGeometry and 
- * utilize CurveAppearance for Arrow, Line, and Frame (unused for now)
+ * TODO: Add Resolution or Quality to Appearance from DecorativeGeometry 
  *
  * @author Ayman Habib
  * @version 1.0
@@ -116,8 +115,8 @@ public:
 //=============================================================================
 
 //=============================================================================
-class OSIMSIMULATION_API CurveAppearance : public Appearance {
-    OpenSim_DECLARE_CONCRETE_OBJECT(CurveAppearance, Object);
+class OSIMSIMULATION_API Appearance2D : public Appearance {
+    OpenSim_DECLARE_CONCRETE_OBJECT(Appearance2D, Object);
 public:
     //==============================================================================
     // PROPERTIES
@@ -126,24 +125,56 @@ public:
     These are the serializable properties associated with CurveAppearance. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(thickness, double,
-        "The thickness used to visualize a LineGeometry. ");
+        "The thickness used to visualize the curve or drawing. ");
     /**@}**/
 
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    CurveAppearance() {
+    Appearance2D() {
         constructProperties();
     }
-    virtual ~CurveAppearance() {};
+    virtual ~Appearance2D() {};
 
 private:
     void constructProperties() {
         constructProperty_thickness(.05);
     }
     //=============================================================================
-};  // END of class CurveAppearance
+};  // END of class Appearance2D
+//=============================================================================
+
+
+class OSIMSIMULATION_API DrawingAppearance : public Appearance2D {
+    OpenSim_DECLARE_CONCRETE_OBJECT(DrawingAppearance, Appearance2D);
+public:
+    //==============================================================================
+    // PROPERTIES
+    //==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with DrawingAppearance. **/
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(size, double,
+        "A number representing the size for an object or drawing.");
+    /**@}**/
+
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+public:
+    DrawingAppearance(double size = 1.0) {
+        constructProperties();
+        updProperty_size() = size;
+    }
+    virtual ~DrawingAppearance() {};
+
+private:
+    void constructProperties() {
+        constructProperty_size(1.0);
+    }
+    //=============================================================================
+};  // END of class DrawingAppearance
 } // end of namespace OpenSim
 
 #endif // OPENSIM_APPEARANCE_H_
