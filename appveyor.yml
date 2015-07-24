@@ -33,7 +33,7 @@ nuget:
 install:
 
   ## Use Chocolatey to install SWIG.
-  - choco install swig
+  - choco install swig -y
   
   ## Install python-nose for python testing.
   - pip install nose
