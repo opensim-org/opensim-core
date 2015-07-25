@@ -99,7 +99,7 @@ private:
     std::unique_ptr<Storage> _controlStore;
 
     // Set of actuators controlled by the set of controllers.
-    SimTK::ReferencePtr<Set<Actuator> > _actuatorSet;
+    SimTK::ReferencePtr<Set<Actuator>> _actuatorSet;
 //=============================================================================
 };  // END of class ControllerSet
 //=============================================================================
