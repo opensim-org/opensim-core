@@ -30,6 +30,8 @@
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
 #include "SimTKsimbody.h"
 
+#include <memory>
+
 namespace OpenSim {
 
 class Model;
