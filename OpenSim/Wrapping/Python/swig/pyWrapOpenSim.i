@@ -938,14 +938,8 @@ SET_ADOPT_HELPER(Force);
 %}
 };
 
-%extend OpenSim::FrameSet {
-%pythoncode %{
-    def adoptAndAppend(self, aFrame):
-        aFrame._markAdopted()
-        return super(FrameSet, self).adoptAndAppend(aFrame)
-%}
-};
-
+// Attempt to solve segfault when calling ForceSet::append()
+// from scripting.
 %extend OpenSim::ForceSet {
 %pythoncode %{
     def append(self, aForce):

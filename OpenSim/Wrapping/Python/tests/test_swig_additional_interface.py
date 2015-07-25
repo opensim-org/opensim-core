@@ -201,6 +201,12 @@ def test_markAdoptedSets():
     del s
     del o
 
+    s = osim.FrameSet()
+    o = osim.Body()
+    s.adoptAndAppend(o)
+    del s
+    del o
+
     s = osim.ForceSet()
     o = osim.CoordinateLimitForce()
     s.adoptAndAppend(o)
