@@ -47,7 +47,7 @@ PhysicalFrame::PhysicalFrame() : Frame()
     constructProperties();
     FrameGeometry frm(0.2);
     frm.setName("frame_geometry");
-    frm.set_display_radius(.004);
+    frm.updAppearance().set_thickness(.004);
     frm.setRepresentation(Geometry::Hide);
     append_geometry(frm);
 

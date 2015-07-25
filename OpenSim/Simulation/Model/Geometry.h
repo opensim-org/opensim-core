@@ -187,21 +187,22 @@ private:
     }    //=====================================================================
 };  // END of class Geometry
 
-class OSIMSIMULATION_API CurveGeometry : public Geometry
+class OSIMSIMULATION_API DrawingGeometry : public Geometry
 {
-    OpenSim_DECLARE_CONCRETE_OBJECT(CurveGeometry, Geometry);
+    OpenSim_DECLARE_CONCRETE_OBJECT(DrawingGeometry, Geometry);
+public:
+    // Overrides to enable common interface to Appearance
+    const DrawingAppearance& getAppearance() const override { return get_DrawingAppearance(); }
+    DrawingAppearance& updAppearance() override { return upd_DrawingAppearance(); }
 protected:
     // Default display properiies e.g. Representation, color, texture, etc.
-    OpenSim_DECLARE_UNNAMED_PROPERTY(CurveAppearance,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(DrawingAppearance,
         "Default appearance for this Geometry");
     // Constructor
-    CurveGeometry()
+    DrawingGeometry()
     {
-        constructProperty_CurveAppearance(CurveAppearance());
+        constructProperty_DrawingAppearance(DrawingAppearance());
     }
-    // Overrides to enable common interface to Appearance
-    const CurveAppearance& getAppearance() const override { return get_CurveAppearance(); }
-    CurveAppearance& updAppearance() override { return upd_CurveAppearance(); }
 }; // END of class CurveGeometry
 
 
@@ -209,9 +210,9 @@ protected:
  * LineGeometry is a utility class used to abstract a line segment.
  * It is used by muscle segments so that it's as small and useful as possible.
  */
-class OSIMSIMULATION_API LineGeometry : public CurveGeometry
+class OSIMSIMULATION_API LineGeometry : public DrawingGeometry
 {   
-    OpenSim_DECLARE_CONCRETE_OBJECT(LineGeometry, CurveGeometry);
+    OpenSim_DECLARE_CONCRETE_OBJECT(LineGeometry, DrawingGeometry);
 public:
     // Property start_point
     OpenSim_DECLARE_PROPERTY(start_point, SimTK::Vec3,
@@ -221,7 +222,7 @@ public:
         "Line end point.");
     /// Convenience constructor that takes two end points
     LineGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2):
-        CurveGeometry()
+        DrawingGeometry()
     {
         constructProperties();
         setPoints(aPoint1, aPoint2);
@@ -230,7 +231,7 @@ public:
     }
     /// default constructor, creates line (0,0,0)-(1,1,1)
     LineGeometry():
-        CurveGeometry()
+        DrawingGeometry()
     {
         constructProperties();
     }
@@ -264,9 +265,9 @@ private:
 * start_point (Property) and has direction (Property) and length (Property)
 * 
 */
-class OSIMSIMULATION_API Arrow : public CurveGeometry
+class OSIMSIMULATION_API Arrow : public DrawingGeometry
 {   
-    OpenSim_DECLARE_CONCRETE_OBJECT(Arrow, CurveGeometry);
+    OpenSim_DECLARE_CONCRETE_OBJECT(Arrow, DrawingGeometry);
 public:
     // Property start_point
     OpenSim_DECLARE_PROPERTY(start_point, SimTK::Vec3,
@@ -644,28 +645,22 @@ public:
 * A class to represent Frame geometry. Knobs that can be changed
 * are in Appearance::Representation, size, thickness.
 */
-class OSIMSIMULATION_API FrameGeometry : public CurveGeometry
+class OSIMSIMULATION_API FrameGeometry : public DrawingGeometry
 {
-    OpenSim_DECLARE_CONCRETE_OBJECT(FrameGeometry, CurveGeometry);
+    OpenSim_DECLARE_CONCRETE_OBJECT(FrameGeometry, DrawingGeometry);
 public:
-    OpenSim_DECLARE_PROPERTY(display_radius, double,
-        "The radius of the arrow-shaft used to display the frame.");
     /// Default constructor
     FrameGeometry(double scale=1.0) :
-        CurveGeometry()
+        DrawingGeometry()
     {
-       constructInfrastructure();
-       set_scale_factors(SimTK::Vec3(scale));
+       updAppearance().set_size(scale);
+       updAppearance().set_thickness(.005);
     }
     /// destructor
     virtual ~FrameGeometry() {};
     /// Method to map FrameGeometry to Array of SimTK::DecorativeGeometry.
     void createDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
-private:
-    void constructInfrastructure() {
-        constructProperty_display_radius(.005);
-    }
 };
 }; //namespace
 //=============================================================================

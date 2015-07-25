@@ -139,8 +139,8 @@ void Arrow::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& d
     const Vec3 netScale = get_scale_factors();
     SimTK::Vec3 endPt(get_length()*get_direction());
     DecorativeArrow deco(SimTK::Vec3(0), endPt);
-    deco.setLineThickness(0.05);
-    deco.setScaleFactors(netScale);
+    deco.setLineThickness(getAppearance().get_thickness());
+    deco.setScale(getAppearance().get_size());
     decoGeoms.push_back(deco);
 }
 
@@ -164,8 +164,8 @@ void FrameGeometry::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeom
 {
     const Vec3 netScale = get_scale_factors();
     DecorativeFrame deco(1.0);
-    deco.setLineThickness(get_display_radius());
-    deco.setScaleFactors(netScale);
+    deco.setLineThickness(getAppearance().get_thickness());
+    deco.setScaleFactors(SimTK::Vec3(getAppearance().get_size()));
     decoGeoms.push_back(deco);
 }
 
