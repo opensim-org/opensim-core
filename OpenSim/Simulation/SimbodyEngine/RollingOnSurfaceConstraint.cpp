@@ -66,8 +66,8 @@ void RollingOnSurfaceConstraint::setNull()
 {
     setAuthors("Ajay Seth");
     _defaultUnilateralConditions = std::vector<bool>(4, false);
-    _rollingFrame.clear();
-    _surfaceFrame.clear();
+    _rollingFrame.reset(nullptr);
+    _surfaceFrame.reset(nullptr);
 }
 
 //_____________________________________________________________________________

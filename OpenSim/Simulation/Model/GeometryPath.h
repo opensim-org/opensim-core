@@ -109,7 +109,7 @@ public:
     //--------------------------------------------------------------------------
     // GET
     //--------------------------------------------------------------------------
-    Object* getOwner() const { return _owner; }
+    Object* getOwner() const { return _owner.get(); }
     void setOwner(Object *anObject) {_owner = anObject; };
 
     /** If you call this prior to extendAddToSystem() it will be used to initialize

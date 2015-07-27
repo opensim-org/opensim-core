@@ -1,19 +1,19 @@
-SET(KIT acpp)
+set(KIT acpp)
 
-IF(WIN32)
-FILE(GLOB SOURCE_FILES alloca.c cccp.c obstack.c version.c y.tab.c)
-ELSE(WIN32)
-FILE(GLOB SOURCE_FILES cccp.c obstack.c version.c y_linux.tab.c)
-ENDIF(WIN32)
+if(WIN32)
+file(GLOB SOURCE_FILES alloca.c cccp.c obstack.c version.c y.tab.c)
+else(WIN32)
+file(GLOB SOURCE_FILES cccp.c obstack.c version.c y_linux.tab.c)
+endif(WIN32)
 
-FILE(GLOB INCLUDE_FILES *.h)
+file(GLOB INCLUDE_FILES *.h)
                 
-ADD_LIBRARY(acpp ${SOURCE_FILES} ${INCLUDE_FILES}) 
+add_library(acpp ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
-SET_TARGET_PROPERTIES(acpp PROPERTIES PROJECT_LABEL "Vendor Libraries - acpp")
+set_target_properties(acpp PROPERTIES PROJECT_LABEL "Vendor Libraries - acpp")
 
-IF (WIN32)
-    INSTALL_TARGETS(/sdk/lib/ acpp)
-ELSE(WIN32)
-    INSTALL_TARGETS(/bin/ acpp)
-ENDIF(WIN32)
+if(WIN32)
+    install_targets(/sdk/lib/ acpp)
+else(WIN32)
+    install_targets(/bin/ acpp)
+endif(WIN32)

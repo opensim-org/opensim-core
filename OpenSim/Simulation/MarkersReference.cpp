@@ -40,7 +40,7 @@ MarkersReference::MarkersReference() : Reference_<SimTK::Vec3>(),
         _markerWeightSetProp(PropertyObj("", Set<MarkerWeight>())),
         _markerWeightSet((Set<MarkerWeight>&)_markerWeightSetProp.getValueObj()),
         _defaultWeight(_defaultWeightProp.getValueDbl()),
-        _markerData(NULL)
+        _markerData(nullptr)
 {
     setAuthors("Ajay Seth");
 }
@@ -50,7 +50,7 @@ MarkersReference::MarkersReference(const std::string markerFile, Units modelUnit
         _markerWeightSetProp(PropertyObj("", Set<MarkerWeight>())),
         _markerWeightSet((Set<MarkerWeight>&)_markerWeightSetProp.getValueObj()),
         _defaultWeight(_defaultWeightProp.getValueDbl()),
-        _markerData(NULL)
+        _markerData(nullptr)
 {
     setAuthors("Ajay Seth");
     loadMarkersFile(markerFile, modelUnits);
@@ -66,9 +66,9 @@ MarkersReference::MarkersReference(MarkerData& aMarkerData, const Set<MarkerWeig
         _markerWeightSetProp(PropertyObj("", Set<MarkerWeight>())),
         _markerWeightSet((Set<MarkerWeight>&)_markerWeightSetProp.getValueObj()),
         _defaultWeight(_defaultWeightProp.getValueDbl()),
-        _markerData(NULL)
+        _markerData(nullptr)
 {
-    if (aMarkerWeightSet!=NULL) _markerWeightSet= *aMarkerWeightSet;
+    if (aMarkerWeightSet!=nullptr) _markerWeightSet= *aMarkerWeightSet;
     populateFromMarkerData(aMarkerData);
 }
 

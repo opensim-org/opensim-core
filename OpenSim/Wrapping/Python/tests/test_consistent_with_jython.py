@@ -220,7 +220,6 @@ def test_addMetabolicProbes():
     wholeBodyProbe.set_report_total_metabolics_only(False);
     
     # Add the probe to the model and provide a name.
-    # TODO SEGFAULT AT THIS NEXT LINE:
     model.addProbe(wholeBodyProbe)
     wholeBodyProbe.setName("metabolic_power")
     

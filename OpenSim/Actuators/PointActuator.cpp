@@ -105,7 +105,7 @@ void PointActuator::setBody(Body* aBody)
 // Get the generalized Body to which the Body actuator is applied.
 Body* PointActuator::getBody() const
 {
-    return _body;
+    return _body.get();
 }
 
 //-----------------------------------------------------------------------------

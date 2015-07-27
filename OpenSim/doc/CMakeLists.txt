@@ -1,15 +1,15 @@
-INSTALL_FILES(/sdk/doc FILES "BuildOpenSimPluginSteps.pdf")
+install_files(/sdk/doc FILES "BuildOpenSimPluginSteps.pdf")
 
-INCLUDE(FindDoxygen)
+include(FindDoxygen)
 
-IF(DOXYGEN_EXECUTABLE-NOTFOUND)
-ELSE(DOXYGEN_EXECUTABLE-NOTFOUND)
-    SET(DOXY_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile")
+if(DOXYGEN_EXECUTABLE-NOTFOUND)
+else(DOXYGEN_EXECUTABLE-NOTFOUND)
+    set(DOXY_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile")
 
     # Configure linking to Simbody documentation.
     # This variable must be a STRING; a PATH variable resolves //'s as a single
     # /, but we need to use double slashes for URL's.
-    SET(OPENSIM_SIMBODY_DOXYGEN_LOCATION "${Simbody_DOXYGEN_DIR}"
+    set(OPENSIM_SIMBODY_DOXYGEN_LOCATION "${Simbody_DOXYGEN_DIR}"
         CACHE STRING "The location of Simbody's doxygen documentation.
         To link to Simbody Doxygen documentation, you must build
         *and* install Simbody Doxygen documentation. By default,
@@ -24,18 +24,18 @@ ELSE(DOXYGEN_EXECUTABLE-NOTFOUND)
         variable from your CMakeCache.txt, and it will be 
         automatically populated again.")
 
-    MARK_AS_ADVANCED(OPENSIM_SIMBODY_DOXYGEN_LOCATION)
+    mark_as_advanced(OPENSIM_SIMBODY_DOXYGEN_LOCATION)
 
     # This variable is used in Doxyfile.in.
-    SET(OPENSIM_SIMBODY_TAGFILE_CONFIG "")
-    IF(Simbody_DOXYGEN_TAGFILE)
+    set(OPENSIM_SIMBODY_TAGFILE_CONFIG "")
+    if(Simbody_DOXYGEN_TAGFILE)
         # The variable above is only defined if Simbody's Doxygen documentation
         # was (built and) installed.
-        SET(OPENSIM_SIMBODY_TAGFILE_CONFIG
+        set(OPENSIM_SIMBODY_TAGFILE_CONFIG
             "${Simbody_DOXYGEN_TAGFILE}=${OPENSIM_SIMBODY_DOXYGEN_LOCATION}")
-    ENDIF()
+    endif()
 
-    CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in 
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in 
           ${DOXY_CONFIG}
           @ONLY )
 
@@ -48,7 +48,7 @@ ELSE(DOXYGEN_EXECUTABLE-NOTFOUND)
     # need to copy over the binary html directory into sdk/doc.
     # (sherm 20120127)
 
-    FILE(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/html/")
+    file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/html/")
 
     ###############
     # RUN DOXYGEN #
@@ -57,11 +57,11 @@ ELSE(DOXYGEN_EXECUTABLE-NOTFOUND)
     # Doxfile.in should take care of directing the output of Doxygen
     # to ${PROJECT_BINARY_DIR}/html. Note that you have to invoke this
     # "doxygen" target directly; it isn't run by default.
-    ADD_CUSTOM_TARGET(doxygen ${DOXYGEN_EXECUTABLE} ${DOXY_CONFIG}) 
+    add_custom_target(doxygen ${DOXYGEN_EXECUTABLE} ${DOXY_CONFIG}) 
 
     # There is an "images" directory containing the pictures needed by
     # the main page Copy all the files into html/images.
-    ADD_CUSTOM_COMMAND(TARGET doxygen PRE_BUILD
+    add_custom_command(TARGET doxygen PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_CURRENT_SOURCE_DIR}/images"
         "${PROJECT_BINARY_DIR}/html/images" 
@@ -70,10 +70,10 @@ ELSE(DOXYGEN_EXECUTABLE-NOTFOUND)
     ################
     # INSTALLATION #
     ################
-    INSTALL(DIRECTORY "${PROJECT_BINARY_DIR}/html/"
+    install(DIRECTORY "${PROJECT_BINARY_DIR}/html/"
             DESTINATION "sdk/doc/html"
             )
     # This is just a shortcut to the Doxygen index.html.
-    INSTALL(FILES "OpenSimAPI.html" DESTINATION "sdk/doc")
+    install(FILES "OpenSimAPI.html" DESTINATION "sdk/doc")
 
-ENDIF(DOXYGEN_EXECUTABLE-NOTFOUND)
+endif(DOXYGEN_EXECUTABLE-NOTFOUND)

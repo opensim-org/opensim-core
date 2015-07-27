@@ -233,6 +233,12 @@ own project.
 #include <OpenSim/Tools/DynamicsTool.h>
 #include <OpenSim/Tools/InverseDynamicsTool.h>
 
+#include <OpenSim/Tools/TrackingTask.h>
+#include <OpenSim/Tools/CMC_Task.h>
+#include <OpenSim/Tools/CMC_Joint.h>
+#include <OpenSim/Tools/CMC_Point.h>
+#include <OpenSim/Tools/CMC_TaskSet.h>
+
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Tools/RRATool.h>
 #include <OpenSim/Tools/ScaleTool.h>
@@ -263,6 +269,8 @@ using namespace SimTK;
 %rename(printToXML) OpenSim::XMLDocument::print(const std::string&);
 %rename(printToXML) OpenSim::XMLDocument::print();
 %rename(printToFile) OpenSim::Storage::print;
+
+%rename(appendNative) OpenSim::ForceSet::append(Force* aForce);
 
 /* If needed %extend will be used, these operators are not supported.*/
 %ignore *::operator[];
@@ -770,6 +778,7 @@ namespace SimTK {
 %include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 %include <OpenSim/Simulation/Model/ConditionalPathPoint.h>
 %include <OpenSim/Simulation/Model/MovingPathPoint.h>
+
 %template(SetPathPoint) OpenSim::Set<OpenSim::PathPoint>;
 %template(ArrayPathPoint) OpenSim::Array<OpenSim::PathPoint*>;
 %include <OpenSim/Simulation/Model/PathPointSet.h>
@@ -866,6 +875,14 @@ namespace SimTK {
 %include <OpenSim/Tools/DynamicsTool.h>
 %include <OpenSim/Tools/InverseDynamicsTool.h>
 %include <OpenSim/Tools/ForwardTool.h>
+
+%include <OpenSim/Tools/TrackingTask.h>
+%include <OpenSim/Tools/CMC_Task.h>
+%include <OpenSim/Tools/CMC_Joint.h>
+%include <OpenSim/Tools/CMC_Point.h>
+%template (SetTrackingTasks) OpenSim::Set<OpenSim::TrackingTask>;
+%include <OpenSim/Tools/CMC_TaskSet.h>
+
 %include <OpenSim/Tools/CMCTool.h>
 %include <OpenSim/Tools/RRATool.h>
 %include <OpenSim/Tools/AnalyzeTool.h>
@@ -900,7 +917,8 @@ SET_ADOPT_HELPER(MarkerPair);
 SET_ADOPT_HELPER(Measurement);
 SET_ADOPT_HELPER(Marker);
 SET_ADOPT_HELPER(Control);
-
+SET_ADOPT_HELPER(Frame);
+SET_ADOPT_HELPER(Force);
 
 // These didn't work with the macro for some reason. I got complaints about
 // multiple definitions of, e.g.,  Function in the target language.
@@ -920,10 +938,12 @@ SET_ADOPT_HELPER(Control);
 %}
 };
 
-%extend OpenSim::FrameSet {
+// Attempt to solve segfault when calling ForceSet::append()
+// from scripting.
+%extend OpenSim::ForceSet {
 %pythoncode %{
-    def adoptAndAppend(self, aFrame):
-        aFrame._markAdopted()
-        return super(FrameSet, self).adoptAndAppend(aFrame)
+    def append(self, aForce):
+        aForce._markAdopted()
+        return self.appendNative(aForce)
 %}
 };

@@ -9,14 +9,14 @@ sudo: false
 matrix:
   include:
     - compiler: clang
-      env: BUILD_WRAPPING=on NPROC=4
+      env: BUILD_WRAPPING=on NPROC=1
     - compiler: gcc
       env: BUILD_WRAPPING=off NPROC=3
 
 env:
   global:
     # The python tests look for OPENSIM_HOME.
-    - OPENSIM_HOME=~/opensim-install SWIG=swig-2.0.10
+    - OPENSIM_HOME=~/opensim-install SWIG_VER=2.0.10
     - USE_CCACHE=1
     - CCACHE_COMPRESS=1
     # for Clang to work with ccache.
@@ -83,9 +83,11 @@ before_install:
 
   ## Install SWIG to build Java/python wrapping.
   - mkdir ~/swig-source && cd ~/swig-source
-  - wget http://prdownloads.sourceforge.net/swig/$SWIG.tar.gz
-  - tar xzf $SWIG.tar.gz && cd $SWIG
-  - ./configure --prefix=$HOME/swig && make && make -j8 install
+  - wget https://github.com/swig/swig/archive/rel-$SWIG_VER.tar.gz
+  #- wget http://prdownloads.sourceforge.net/swig/$SWIG.tar.gz
+  - tar xzf rel-$SWIG_VER.tar.gz && cd swig-rel-$SWIG_VER
+  - sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache && make && make -j8 install
+  #- ./configure --prefix=$HOME/swig && make && make -j8 install
 
   ## Detect if we should check memory leaks with valgrind.
   - cd $TRAVIS_BUILD_DIR
@@ -95,9 +97,12 @@ before_install:
 install:
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
   # Configure OpenSim.
-  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$BUILD_WRAPPING -DBUILD_PYTHON_WRAPPING=$BUILD_WRAPPING -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME
+  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$BUILD_WRAPPING -DBUILD_PYTHON_WRAPPING=$BUILD_WRAPPING -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS="-Werror -Wno-error=deprecated-declarations" -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME
   # Build OpenSim.
-  - make -j$NPROC
+  # Build java and python C++ wrapper separately to avoid going over the memory limit.
+  - if [[ "$BUILD_WRAPPING" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PyWrap; fi
+  # Build whatever remains (at least _opensim, tests and examples).
+  - make -j$NPROC;
 
 script:
   # Test OpenSim.
