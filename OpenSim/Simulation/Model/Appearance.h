@@ -115,14 +115,14 @@ public:
 //=============================================================================
 
 //=============================================================================
-class OSIMSIMULATION_API Appearance2D : public Appearance {
-    OpenSim_DECLARE_CONCRETE_OBJECT(Appearance2D, Object);
+class OSIMSIMULATION_API OneDimensionalAppearance : public Appearance {
+    OpenSim_DECLARE_CONCRETE_OBJECT(OneDimensionalAppearance, Object);
 public:
     //==============================================================================
     // PROPERTIES
     //==============================================================================
     /** @name Property declarations
-    These are the serializable properties associated with CurveAppearance. **/
+    These are the serializable properties associated with OneDimensionalAppearance. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(thickness, double,
         "The thickness used to visualize the curve or drawing. ");
@@ -132,22 +132,22 @@ public:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    Appearance2D() {
+    OneDimensionalAppearance() {
         constructProperties();
     }
-    virtual ~Appearance2D() {};
+    virtual ~OneDimensionalAppearance() {};
 
 private:
     void constructProperties() {
         constructProperty_thickness(.05);
     }
     //=============================================================================
-};  // END of class Appearance2D
+};  // END of class OneDimensionalAppearance
 //=============================================================================
 
 
-class OSIMSIMULATION_API DrawingAppearance : public Appearance2D {
-    OpenSim_DECLARE_CONCRETE_OBJECT(DrawingAppearance, Appearance2D);
+class OSIMSIMULATION_API DrawingAppearance : public OneDimensionalAppearance {
+    OpenSim_DECLARE_CONCRETE_OBJECT(DrawingAppearance, OneDimensionalAppearance);
 public:
     //==============================================================================
     // PROPERTIES
