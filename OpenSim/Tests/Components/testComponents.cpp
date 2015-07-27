@@ -45,14 +45,13 @@ int main()
     // get all registered Components
     SimTK::Array_<Component*> availableComponents;
 
-    /*
     // starting with type Frame
     ArrayPtrs<Frame> availableFrames;
     Object::getRegisteredObjectsOfGivenType(availableFrames);
     for (int i = 0; i < availableFrames.size(); ++i) {
         availableComponents.push_back(availableFrames[i]);
     }
-*/
+
     // then type Joint
     ArrayPtrs<Joint> availableJoints;
     Object::getRegisteredObjectsOfGivenType(availableJoints);
@@ -60,8 +59,8 @@ int main()
         availableComponents.push_back(availableJoints[i]);
     }
 
-    // continue with Constraint, Actuator, Frame, ...
-    //Example of an updated force that passes
+    // continue with Constraint, Force, Actuator, ...
+    //Examples of updated forces that pass
     ArrayPtrs<PointToPointSpring> availablePointToPointSpring;
     Object::getRegisteredObjectsOfGivenType(availablePointToPointSpring);
     availableComponents.push_back(availablePointToPointSpring[0]);
@@ -148,10 +147,9 @@ void testComponent(const Component& instanceToTest)
     if (!(*deserializedInstance == *instance))
     {
         cout << "XML for serialized instance:" << endl;
-        instance->dump();
-        cout << "XML for seriaization of deseralized instance:" <<
-            endl;
-        deserializedInstance->dump();
+        cout << instance->dump() << endl;
+        cout << "XML for serialization of deserialized instance:" << endl;
+        cout << deserializedInstance->dump() << endl;
         throw Exception(
             "testComponents: for " + className +
             ", deserialization did not produce an identical object.",
@@ -173,7 +171,7 @@ void testComponent(const Component& instanceToTest)
     // ------------------------------------------------
     addObjectAsComponentToModel(instance, model);
 
-    //model.finalizeFromProperties();
+    
 
     // 6. Connect up the aggregate; check that connections are correct.
     // ----------------------------------------------------------------
@@ -214,8 +212,6 @@ void testComponent(const Component& instanceToTest)
         it++;
     }
 
-    model.print("testComponentsTempModel_beforeSetup.osim");
-
     // This method calls connect().
     cout << "Call Model::setup()." << endl;
     try{
@@ -228,8 +224,6 @@ void testComponent(const Component& instanceToTest)
         cout << " having structural dependencies that are not specified as Connectors.";
         cout << endl;
     }
-
-    model.print("testComponentsTempModel_afterSetup.osim");
 
 
     // 7. Build the system.
@@ -379,8 +373,13 @@ void addObjectAsComponentToModel(Object* instance, Model& model)
     }
 
     try {
+        // Current Component iterator requirement to build the component list (tree)
+        // forces us to connect the model so we can traverse subcomponents
         model.connect(model);
     }
+    // It is more than likely that connect() will fail, but the subcomponents tree
+    // will be traversable, so we can continue to resolve dependencies by visiting
+    // subcomponents' connectors
     catch (const std::exception& e) {
         cout << "testComponents: Model unable to connect after adding ";
         cout << instance->getName() << endl;
