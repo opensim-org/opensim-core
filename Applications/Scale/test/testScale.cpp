@@ -195,7 +195,7 @@ void scaleModelWithLigament()
     ScaleTool* scaleTool;
     Model* model;
 
-    // Remove old model if any
+    // Truncate old model if any
     FILE* file2Remove = IO::OpenFile(setupFilePath + "toyLigamentModelScaled.osim", "w");
     fclose(file2Remove);
 
