@@ -28,6 +28,7 @@
 // INCLUDES
 //=============================================================================
 #include "osimAnalysesDLL.h"
+#include <memory>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyInt.h>
@@ -93,8 +94,6 @@ protected:
     double _numericalDerivativeStepSize;
     std::string _optimizerAlgorithm;
     int _printLevel;
-    //double _optimizationConvergenceTolerance;
-    //int _maxIterations;
 
     Model *_modelWorkingCopy;
 

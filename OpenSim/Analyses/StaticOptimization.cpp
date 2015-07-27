@@ -27,7 +27,6 @@
 //=============================================================================
 #include <iostream>
 #include <string>
-#include <memory>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
@@ -60,7 +59,6 @@ StaticOptimization::~StaticOptimization()
     deleteStorage();
     delete _modelWorkingCopy;
     if(_ownsForceSet) delete _forceSet;
-    _forceReporter.reset(nullptr);
 }
 //_____________________________________________________________________________
 /**
