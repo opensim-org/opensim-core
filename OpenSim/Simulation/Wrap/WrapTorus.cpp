@@ -277,7 +277,7 @@ int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3
     bool far_side_wrap = false;
     aFlag = true;
     
-    std::unique_lock<std::mutex> lock(*s.getStateLock());
+    std::unique_lock<std::mutex> lock(s.getStateLock());
 
     if (findClosestPoint(_outerRadius, &aPoint1[0], &aPoint2[0], &closestPt[0], &closestPt[1], &closestPt[2], _wrapSign, _wrapAxis) == 0)
         return noWrap;

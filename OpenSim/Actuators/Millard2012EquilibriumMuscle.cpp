@@ -183,7 +183,7 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
 }
 
 //Parallelism Method Overrides
-bool Millard2012EquilibriumMuscle::isParallelByDefault() const{
+bool Millard2012EquilibriumMuscle::shouldBeParallelIfPossible() const{
   return true;
 }
 //==============================================================================

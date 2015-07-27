@@ -40,7 +40,12 @@ class ForceAdapter;
  * This abstract class represents a force applied to bodies or generalized 
  * coordinates during a simulation. Each subclass represents a different type 
  * of force. The actual force computation is done by a SimTK::Force, which is 
- * created by extendAddToSystem().
+ * created by extendAddToSystem(). Forces can also override a method,
+ * shouldBeParallelIfPossible() to run the calculations for that specific 
+ * force class in parallel. It is recommended only to override this method 
+ * if (1) the force is costly to calculate and (2) the force is thread-safe
+ * and does not write to any shared variables such as a shared caches in the 
+ * state.
  *
  * @author Peter Eastman
  * @author Ajay Seth
@@ -77,14 +82,15 @@ public:
 #endif
 
     /**
-    * Tell SimBody to parallelize this force. Should be 
-    * set to true for any forces that will take time to 
-    * complete thier calcForce method. Note that all forces
-    * that set this flag to false will be put in series on a
-    * thread that is running in parallel with other forces
-    * that marked this flag as true.
+    * Method to tell Simbody whether to parallelize a type of force. By default,
+    * this method is set to false. This method should only be overriden by force
+    * subclasses if (1) the force is costly to calculate and (2) the force is 
+    * thread-safe and does not write to any shared variables such as a shared 
+    * caches in the state. Non-parallel forces will run on a single thread
+    * alongside (at the same time) parallel forces that will run on seperate 
+    * threads.
     */
-    virtual bool isParallelByDefault() const
+    virtual bool shouldBeParallelIfPossible() const
     {
         return false;
     }

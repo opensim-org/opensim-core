@@ -82,7 +82,7 @@ public:
     //Parallelism Method Override
     //Note: Forces cannot be flagged as parallel if they modify (recalculate) system controls
     //during calcForces
-    bool isParallelByDefault() const override;
+    bool shouldBeParallelIfPossible() const override;
     
 //==============================================================================
 // PUBLIC METHODS

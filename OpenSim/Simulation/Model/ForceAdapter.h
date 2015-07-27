@@ -63,7 +63,7 @@ public:
     SimTK::Real calcPotentialEnergy(const SimTK::State& state) const;   
 
     // SIMBODY PARALLELISM FLAG 
-    bool isParallelByDefault() const;
+    bool shouldBeParallelIfPossible() const;
 
     // No need to override realize() methods; we don't provide that service
     // to OpenSim Force elements.

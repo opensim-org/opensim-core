@@ -130,14 +130,15 @@ void Frame::extendRealizeTopology(SimTK::State& s) const
     groundTransformIndex = getCacheVariableIndex("ground_transform");
 }
 void Frame::extendRealizeVelocity(const SimTK::State& s) const
-{
-  Super::extendRealizeVelocity(s);
+{   
+    //Evaluate the lazy cache for the groundTransform so it doesn't get
+    //needlesly calculated by each one of the threads while realizing
+    //dynamics. (Also for thread-safety reasons)
+    Super::extendRealizeVelocity(s);
 
-  SimTK::Value<SimTK::Transform>::downcast(
-      getSystem().getDefaultSubsystem().
-      updCacheEntry(s, groundTransformIndex)).upd()
-          = calcGroundTransform(s);
-  // mark cache as up-to-date
-  getSystem().getDefaultSubsystem().
-      markCacheValueRealized(s, groundTransformIndex);
+    SimTK::Value<SimTK::Transform>::downcast(getSystem().getDefaultSubsystem().
+        updCacheEntry(s, groundTransformIndex)).upd() = calcGroundTransform(s);
+    
+    getSystem().getDefaultSubsystem().
+        markCacheValueRealized(s, groundTransformIndex);
 }

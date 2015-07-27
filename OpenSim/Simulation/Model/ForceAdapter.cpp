@@ -54,6 +54,6 @@ SimTK::Real ForceAdapter::calcPotentialEnergy(const SimTK::State& state) const
     return _force->computePotentialEnergy(state);
 }
 
-bool ForceAdapter::isParallelByDefault() const {
-    return _force->isParallelByDefault(); 
+bool ForceAdapter::shouldBeParallelIfPossible() const {
+    return _force->shouldBeParallelIfPossible(); 
 }

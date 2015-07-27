@@ -103,8 +103,8 @@ void Schutte1993Muscle_Deprecated::constructProperties()
 }
 //_____________________________________________________________________________
 //Parallelism Method Overrides
-bool Schutte1993Muscle_Deprecated::isParallelByDefault() const{
-  return true;
+bool Schutte1993Muscle_Deprecated::shouldBeParallelIfPossible() const{
+    return true;
 }
 
 //_____________________________________________________________________________
