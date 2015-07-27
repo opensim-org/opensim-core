@@ -124,7 +124,7 @@ void PhysicalFrame::scale(const SimTK::Vec3& aScaleFactors)
     // Scale the Geometry if any
     for (int i = 0; i < getNumGeometry(); ++i){
         const SimTK::Vec3& oldScaleFactor = get_geometry(i).get_scale_factors();
-        // Recompute scale factors fro Geometry
+        // Recompute scale factors for Geometry
         SimTK::Vec3 newScaleFactor = oldScaleFactor.elementwiseMultiply(aScaleFactors);
         upd_geometry(i).set_scale_factors(newScaleFactor);
     }
