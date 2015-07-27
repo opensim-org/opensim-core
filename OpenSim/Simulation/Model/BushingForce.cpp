@@ -119,7 +119,6 @@ BushingForce::BushingForce(const string&    frame1Name,
     setNull();
     constructProperties();
 
-    //upd_frame1().setName(frame1Name + "_offset");
     upd_offset_frame1().updConnector<PhysicalFrame>("parent")
         .set_connected_to_name(frame1Name);
     Rotation rotation1(BodyRotationSequence,
@@ -128,7 +127,6 @@ BushingForce::BushingForce(const string&    frame1Name,
         orientation1[2], ZAxis);
     upd_offset_frame1().setOffsetTransform(Transform(rotation1, point1));
 
-    //upd_frame2().setName(frame2Name + "_offset");
     upd_offset_frame2().updConnector<PhysicalFrame>("parent")
         .set_connected_to_name(frame2Name);
     Rotation rotation2(BodyRotationSequence,
