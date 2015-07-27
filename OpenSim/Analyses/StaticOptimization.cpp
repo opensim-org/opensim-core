@@ -71,8 +71,7 @@ StaticOptimization::StaticOptimization(Model *aModel) :
     _convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
     _maximumIterations(_maximumIterationsProp.getValueInt()),
     _modelWorkingCopy(NULL),
-    _numCoordinateActuators(0),
-    _forceReporter(nullptr)
+    _numCoordinateActuators(0)
 {
     setNull();
 
