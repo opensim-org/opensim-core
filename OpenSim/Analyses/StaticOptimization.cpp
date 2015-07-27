@@ -27,6 +27,7 @@
 //=============================================================================
 #include <iostream>
 #include <string>
+#include <memory>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
@@ -59,7 +60,7 @@ StaticOptimization::~StaticOptimization()
     deleteStorage();
     delete _modelWorkingCopy;
     if(_ownsForceSet) delete _forceSet;
-    delete _forceReporter;
+    _forceReporter.reset(nullptr);
 }
 //_____________________________________________________________________________
 /**
@@ -582,8 +583,7 @@ begin(SimTK::State& s )
             throw(Exception("StaticOptimization: ERROR- overconstrained "
                 "system -- need at least as many forces as there are degrees of freedom.\n") );
 
-        delete _forceReporter;
-        _forceReporter = new ForceReporter(_modelWorkingCopy);
+        _forceReporter.reset(new ForceReporter(_modelWorkingCopy));
         _forceReporter->begin(sWorkingCopy);
         _forceReporter->updForceStorage().reset();
 

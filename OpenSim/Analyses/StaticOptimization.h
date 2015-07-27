@@ -60,7 +60,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(StaticOptimization, Analysis);
 private:
     int _numCoordinateActuators;
 
-    ForceReporter* _forceReporter;
+    std::unique_ptr<ForceReporter> _forceReporter;
 
 protected:
     /** Use force set from model. */
