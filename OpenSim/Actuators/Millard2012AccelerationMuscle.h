@@ -467,8 +467,6 @@ public:
     double getFiberStiffnessAlongTendon(const SimTK::State& s) const;
     
     //Parallelism Method Override
-    //Note: Forces cannot be flagged as parallel if they modify (recalculate) system controls
-    //during calcForces
     bool shouldBeParallelIfPossible() const override;
 //==============================================================================
 // Set Properties

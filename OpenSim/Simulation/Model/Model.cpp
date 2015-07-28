@@ -2084,7 +2084,7 @@ void Model::extendRealizeVelocity(const SimTK::State& state) const
 void Model::computeStateVariableDerivatives(const SimTK::State &s) const
 {
     try {
-        extendRealizeAcceleration(s);
+        realizeAcceleration(s);
     }
     catch (const std::exception& e){
         string exmsg = e.what();

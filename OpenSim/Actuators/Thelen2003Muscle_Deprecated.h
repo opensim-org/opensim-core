@@ -80,8 +80,6 @@ public:
         "maximum normalized lengthening force");
     /**@}**/
     //Parallelism Method Override
-    //Note: Forces cannot be flagged as parallel if they modify (recalculate) system controls
-    //during calcForces
     bool shouldBeParallelIfPossible() const override;
     
 //==============================================================================
