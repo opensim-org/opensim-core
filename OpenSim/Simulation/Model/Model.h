@@ -25,6 +25,7 @@
 
 // INCLUDES
 #include <string>
+#include <mutex>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/ArrayPtrs.h>
@@ -46,7 +47,6 @@
 #include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 #include "Simbody.h"
-#include <mutex>
 
 
 namespace OpenSim {
@@ -683,6 +683,11 @@ public:
      * This call invalidates the dynamics of the model and invalidates the
      * value of the controls until they are marked as valid when the update
      * is completed (@see markControlsAsValid)
+     *
+     * Note: This method cannot be called during the realization of Dynamics
+     * due to the non-thread-safe controlsCache. If this method must be called
+     * during realizeDynamics, put a lock on the State. (See SimTK::State for
+     * more information)
      * @param[in]   s         System state at which to apply the controls
      * @return      writable controls Vector
      */
@@ -692,6 +697,11 @@ public:
      * Mark controls as valid after an update at a given state.
      * Indicates that controls are valid for use at the dynamics stage.
      * If the stage is Velocity or lower the controls will remain invalid.
+     *
+     * Note: This method cannot be called during the realization of Dynamics
+     * due to the non-thread-safe controlsCache. If this method must be called
+     * during realizeDynamics, put a lock on the State. (See SimTK::State for
+     * more information)
      * @param[in]   s         System state in which the controls are updated 
      */
     void markControlsAsValid(const SimTK::State& s) const;
@@ -700,6 +710,11 @@ public:
      * Alternatively, set the controls on the model at a given state.
      * Note, this method will invalidate the dynamics of the model,
      * but will mark the controls as valid. (E.g. controllers will not be invoked)
+     *
+     * Note: This method cannot be called during the realization of Dynamics
+     * due to the non-thread-safe controlsCache. If this method must be called
+     * during realizeDynamics, put a lock on the State. (See SimTK::State for
+     * more information)
      * @param[in]   s         System state at which to apply the controls
      * @param[in]   controls  The complete Vector of controls to be applied
      */
@@ -977,11 +992,6 @@ private:
 
     // To provide access to private _modelComponents member.
     friend class Component; 
-    
-    // Mutex lock to prevent multiple threads from accessing the shared controlsCache
-    std::mutex* controlsCacheLock;
-
-    mutable SimTK::Measure_<SimTK::Vector>::Result m_controlsCache;
 
 //==============================================================================
 // DATA MEMBERS
@@ -1027,8 +1037,10 @@ private:
     // _workingState will be set to the system default state when
     // initializeState() or initSystem() is called.
     SimTK::State _workingState;
-
-
+    
+    //Local reference of the State's controlsCache to avoid the cost of fetching
+    //the unchanging cache from the State
+    SimTK::Measure_<SimTK::Vector>::Result _controlsCache;
     //--------------------------------------------------------------------------
     //                              RUN TIME 
     //--------------------------------------------------------------------------

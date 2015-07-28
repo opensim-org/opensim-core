@@ -322,10 +322,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
 
     // find preliminary tangent point candidates r1a & r1b
     MAKE_3DVECTOR(p11, aPoint1, vv);
-    //p11 Vec3
-    //apoint1 Vec3
-    //vv = apoint1 - p11, Vec3
-    //p11_dist = vv.norm
+    
     p11_dist = Mtx::Normalize(3, vv, vv);
 
     sin_theta = _radius / p11_dist;
