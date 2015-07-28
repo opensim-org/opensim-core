@@ -77,14 +77,25 @@ void testRealizeDynamics(const string& modelFile)
 
     //==========================================================================
     // Test Accuracy of Dynamics
-
-    for(int x = 0; x < 20; x++)
+    
+    //Realize to Stage::Dynamics once to obtain a Dyanmics "answer"
+    State& state = model.initSystem();
+    model.getSystem().realize(state, Stage::Dynamics);
+    const MultibodySystem& mbs = model.getMultibodySystem();
+    Vector_<SpatialVec>&   rigidBodyForcesAnswer = mbs.updRigidBodyForces(state,
+                                                               Stage::Dynamics);
+    
+    string answerString = rigidBodyForcesAnswer.toString(); 
+    //Constantly realize to Stage::Dynamics to make sure that our answers are
+    //consistent
+    for(int x = 0; x < 100; x++)
     {
       State& state = model.initSystem();
 
       model.getSystem().realize(state, Stage::Dynamics);
       const MultibodySystem& mbs = model.getMultibodySystem();
-      Vector_<SpatialVec>&   rigidBodyForces = mbs.updRigidBodyForces(state, Stage::Dynamics);
-      cout << rigidBodyForces << endl;
+      Vector_<SpatialVec>   tempRigidBodyForces = mbs.updRigidBodyForces(state,
+                                                               Stage::Dynamics);
+      ASSERT((int)(answerString == tempRigidBodyForces.toString()) == 1);
     }
 }
