@@ -2060,7 +2060,8 @@ void Model::realizeReport(const SimTK::State& state) const
 void Model::extendRealizeVelocity(const SimTK::State& state) const
 {
     Super::extendRealizeVelocity(state);
-    Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
+    Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(
+               _system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
 
     //Calculate the controls cache before we realize dynamics and call calcForces (possibly in parallel).
     //Note: If the shared controls cache is calculated inside of calcForces and the force in which it is
