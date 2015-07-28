@@ -37,13 +37,15 @@ namespace OpenSim {
 /**
  * A class implementing a Coupled Bushing Force.
  * A Couple Bushing Force is the force proportional to the deviation of two frames, 
- * where components of the resulting BodyForce are coupled to all any or all 
+ * where components of the resulting BodyForce are coupled to any or all 
  * deviations, such that the general stiffness and damping matrices are 6x6.
  *
- * Deviations of a frame1 on frame1 and another (frame2) on body2 are represents
- * in terms of x-y-z Euler angle sequence and x,y,z position of frame2 in frame1.
- * Damping is applied to the relative angular velocity and linear velocity of
- * frame2 in frame1.
+ * Deviations of an offset_frame (1) (on a PhysicalFrame e.g. a Body) and another 
+ * offset_frame2 (on another PhysicalFrame) are expressed in terms of and x-y-z 
+ * Euler angle sequence (for rotational deviation in radians) and x,y,z (distance
+ * in m) of the bushing's offset_frame2 w.r.t. offset_frame1.
+ * Damping is applied to the relative angular velocity (rad/s) and linear velocity 
+ * (m/s) of offset_frame2 in offset_frame1.
  *
  * @author Ajay Seth
  * @version 1.0
@@ -58,8 +60,10 @@ public:
     These are the serializable properties associated with the CoupleBushingForce. **/
     /**@{**/
     /// The frames that are connected by the bushing force
-    OpenSim_DECLARE_PROPERTY(frame_1, PhysicalOffsetFrame, "Bushing frame 1.");
-    OpenSim_DECLARE_PROPERTY(frame_2, PhysicalOffsetFrame, "Bushing frame 2.");
+    OpenSim_DECLARE_PROPERTY(offset_frame1, PhysicalOffsetFrame,
+        "Bushing offset on frame 1.");
+    OpenSim_DECLARE_PROPERTY(offset_frame2, PhysicalOffsetFrame,
+        "Bushing offset on frame 2.");
 
     /** Stiffness of the bushing related to Euler XYZ body-fixed angular and
         translational deviations that express frame2 in frame1. Force is zero
@@ -98,6 +102,11 @@ public:
 public:
     // CONSTRUCTION
     CoupledBushingForce();
+    /** Construct the CoupleBushingForce given the two offset frames to which
+    it attaches by name. Stiffness and damping properties are supplied by 6x6
+    matrices. Rotational stiffness (damping) in N/rad(/s) and translational in
+    N/m(/s). Off-diagonals represent the coupling terms.
+    See property declarations for more information. **/
     CoupledBushingForce(const std::string& frame1Name,
                             SimTK::Vec3 point1, SimTK::Vec3 orientation1,
                         const std::string& body2Name,
@@ -108,12 +117,6 @@ public:
 
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.
-
-    //SET 
-    void setFrame1ByName(std::string frameName);
-    void setFrame1BushingLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
-    void setFrame2ByName(std::string frameName);
-    void setFrame2BushingLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
 
 
     //--------------------------------------------------------------------------

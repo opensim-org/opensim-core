@@ -64,23 +64,23 @@ CoupledBushingForce::CoupledBushingForce( const std::string& frame1Name,
 {
     setNull();
 
-    upd_frame_1().setName(frame1Name + "_offset");
-    upd_frame_1().updConnector<PhysicalFrame>("parent")
+    upd_offset_frame1().setName(frame1Name + "_offset");
+    upd_offset_frame1().updConnector<PhysicalFrame>("parent")
         .set_connected_to_name(frame1Name);
     Rotation rotation1(BodyRotationSequence,
         orientation1[0], XAxis,
         orientation1[1], YAxis,
         orientation1[2], ZAxis);
-    upd_frame_1().setOffsetTransform(Transform(rotation1, point1));
+    upd_offset_frame1().setOffsetTransform(Transform(rotation1, point1));
 
-    upd_frame_2().setName(frame2Name + "_offset");
-    upd_frame_2().updConnector<PhysicalFrame>("parent")
+    upd_offset_frame2().setName(frame2Name + "_offset");
+    upd_offset_frame2().updConnector<PhysicalFrame>("parent")
         .set_connected_to_name(frame2Name);
     Rotation rotation2(BodyRotationSequence,
         orientation2[0], XAxis,
         orientation2[1], YAxis,
         orientation2[2], ZAxis);
-    upd_frame_2().setOffsetTransform(Transform(rotation2, point2));
+    upd_offset_frame2().setOffsetTransform(Transform(rotation2, point2));
 
 
     _stiffnessMatrix = stiffnessMat;
@@ -106,8 +106,13 @@ void CoupledBushingForce::setNull()
 void CoupledBushingForce::constructProperties()
 {
     //Default frames
-    constructProperty_frame_1(PhysicalOffsetFrame()); // frame 1 
-    constructProperty_frame_2(PhysicalOffsetFrame()); // frame 2 
+    PhysicalOffsetFrame frame1;
+    PhysicalOffsetFrame frame2;
+    frame1.setName("offset_frame1");
+    frame2.setName("offset_frame2");
+
+    constructProperty_offset_frame1(frame1);
+    constructProperty_offset_frame2(frame2);
     // default bushing material properties
     // 6x6 stiffness matrix
     constructProperty_stiffness_row1(Vec6(0));
@@ -130,8 +135,8 @@ void CoupledBushingForce::extendFinalizeFromProperties()
     Super::extendFinalizeFromProperties();
 
     //mark the two PhysicalOffsetFrames as subcomponents 
-    addComponent(&upd_frame_1());
-    addComponent(&upd_frame_2());
+    addComponent(&upd_offset_frame1());
+    addComponent(&upd_offset_frame2());
 }
 
 
@@ -144,9 +149,9 @@ void CoupledBushingForce::extendFinalizeFromProperties()
 SimTK::Vec6 CoupledBushingForce::computeDeflection(const SimTK::State& s) const
 {
     // Define the frame on body 1 is the "fixed" frame, F
-    Transform X_GF = get_frame_1().getGroundTransform(s);
+    Transform X_GF = get_offset_frame1().getGroundTransform(s);
     // Define the frame on body 2 as the "moving" frame, M
-    Transform X_GM = get_frame_2().getGroundTransform(s);
+    Transform X_GM = get_offset_frame2().getGroundTransform(s);
     // Express M in F
     Transform X_FM = ~X_GF * X_GM;    
 
@@ -171,11 +176,11 @@ void CoupledBushingForce::computeForce(const SimTK::State& s,
                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
                               SimTK::Vector& generalizedForces) const
 {
-    const Transform& X_GB1 = get_frame_1().getMobilizedBody().getBodyTransform(s);
-    const Transform& X_GB2 = get_frame_2().getMobilizedBody().getBodyTransform(s);
+    const Transform& X_GB1 = get_offset_frame1().getMobilizedBody().getBodyTransform(s);
+    const Transform& X_GB2 = get_offset_frame2().getMobilizedBody().getBodyTransform(s);
 
-    Transform X_GF = get_frame_1().getGroundTransform(s);
-    Transform X_GM = get_frame_2().getGroundTransform(s);
+    Transform X_GF = get_offset_frame1().getGroundTransform(s);
+    Transform X_GM = get_offset_frame2().getGroundTransform(s);
     Transform X_FM = ~X_GF * X_GM;    
     const Rotation& R_GF = X_GF.R();
     const Rotation& R_GM = X_GM.R();
@@ -189,12 +194,12 @@ void CoupledBushingForce::computeForce(const SimTK::State& s,
     Vec6 fk = _stiffnessMatrix*dq;
 
     // Now evaluate velocities.
-    const SpatialVec& V_GB1 = get_frame_1().getMobilizedBody().getBodyVelocity(s);
-    const SpatialVec& V_GB2 = get_frame_2().getMobilizedBody().getBodyVelocity(s);
+    const SpatialVec& V_GB1 = get_offset_frame1().getMobilizedBody().getBodyVelocity(s);
+    const SpatialVec& V_GB2 = get_offset_frame2().getMobilizedBody().getBodyVelocity(s);
 
     // Re-express local vectors in the Ground frame.
-    Vec3 p_B1F_G = X_GB1.R() * get_frame_1().getOffsetTransform().p();   // 15 flops
-    Vec3 p_B2M_G = X_GB2.R() * get_frame_2().getOffsetTransform().p();   // 15 flops
+    Vec3 p_B1F_G = X_GB1.R() * get_offset_frame1().getOffsetTransform().p();   // 15 flops
+    Vec3 p_B2M_G = X_GB2.R() * get_offset_frame2().getOffsetTransform().p();   // 15 flops
     Vec3 p_FM_G  =  X_GF.R()  * X_FM.p();    // 15 flops
 
     SpatialVec V_GF(V_GB1[0], V_GB1[1] + V_GB1[0] % p_B1F_G);
@@ -247,8 +252,8 @@ void CoupledBushingForce::computeForce(const SimTK::State& s,
     SpatialVec F_GB1(F_GF[0] + p_B1F_G % F_GF[1], F_GF[1]);
 
     // Apply (add-in) the body forces to the system set of body forces
-    bodyForces[get_frame_2().getMobilizedBodyIndex()] += F_GB2;
-    bodyForces[get_frame_1().getMobilizedBodyIndex()] += F_GB1;
+    bodyForces[get_offset_frame2().getMobilizedBodyIndex()] += F_GB2;
+    bodyForces[get_offset_frame1().getMobilizedBodyIndex()] += F_GB1;
 }
 
 /** Potential energy stored in the bushing is purely a function of the deflection
@@ -273,8 +278,8 @@ OpenSim::Array<std::string> CoupledBushingForce::getRecordLabels() const
     OpenSim::Array<std::string> labels("");
 
     // Forces applied to underlying MobilizedBody which is a base PhysicalFrame
-    std::string base1Name = get_frame_1().findBaseFrame().getName();
-    std::string base2Name = get_frame_2().findBaseFrame().getName();
+    std::string base1Name = get_offset_frame1().findBaseFrame().getName();
+    std::string base2Name = get_offset_frame2().findBaseFrame().getName();
 
     labels.append(getName() + "." + base1Name + ".force.X");
     labels.append(getName() + "." + base1Name + ".force.Y");
@@ -306,13 +311,13 @@ OpenSim::Array<double> CoupledBushingForce::getRecordValues(const SimTK::State& 
 
     //get the net force added to the system contributed by the bushing
     simtkSpring.calcForceContribution(state, bodyForces, particleForces, mobilityForces);
-    SimTK::Vec3 forces = bodyForces(get_frame_1().getMobilizedBodyIndex())[1];
-    SimTK::Vec3 torques = bodyForces(get_frame_1().getMobilizedBodyIndex())[0];
+    SimTK::Vec3 forces = bodyForces(get_offset_frame1().getMobilizedBodyIndex())[1];
+    SimTK::Vec3 torques = bodyForces(get_offset_frame1().getMobilizedBodyIndex())[0];
     values.append(3, &forces[0]);
     values.append(3, &torques[0]);
 
-    forces = bodyForces(get_frame_2().getMobilizedBodyIndex())[1];
-    torques = bodyForces(get_frame_2().getMobilizedBodyIndex())[0];
+    forces = bodyForces(get_offset_frame2().getMobilizedBodyIndex())[1];
+    torques = bodyForces(get_offset_frame2().getMobilizedBodyIndex())[0];
 
     values.append(3, &forces[0]);
     values.append(3, &torques[0]);
