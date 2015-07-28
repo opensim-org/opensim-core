@@ -1566,19 +1566,19 @@ private:
     //the return type, @see addOutput()
     virtual void constructOutputs() {}
 
-    /// Invoke finalizeFromProperties() on the (sub)components of this Component.*/
+    /// Invoke finalizeFromProperties() on the (sub)components of this Component.
     void componentsFinalizeFromProperties() const;
 
-    /// Invoke connect() on the (sub)components of this Component.*/
+    /// Invoke connect() on the (sub)components of this Component.
     void componentsConnect(Component& root) const;
 
-    /// Invoke addToSystem() on the (sub)components of this Component.*/
+    /// Invoke addToSystem() on the (sub)components of this Component.
     void componentsAddToSystem(SimTK::MultibodySystem& system) const;
 
-    /// Invoke initStateFromProperties() on (sub)components of this Component */
+    /// Invoke initStateFromProperties() on (sub)components of this Component
     void componentsInitStateFromProperties(SimTK::State& state) const;
 
-    /// Invoke setPropertiesFromState() on (sub)components of this Component */
+    /// Invoke setPropertiesFromState() on (sub)components of this Component
     void componentsSetPropertiesFromState(const SimTK::State& state);
 
     // Get the number of continuous states that the Component added to the 
