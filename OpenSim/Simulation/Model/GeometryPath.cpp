@@ -64,15 +64,6 @@ GeometryPath::GeometryPath() :
     constructProperties();
  }
 
-//_____________________________________________________________________________
-/*
- * Destructor.
- */
-GeometryPath::~GeometryPath()
-{
-    delete _maSolver;
-}
-
 
 //_____________________________________________________________________________
 /*
@@ -81,7 +72,7 @@ GeometryPath::~GeometryPath()
 void GeometryPath::setNull()
 {
     setAuthors("Peter Loan");
-    _maSolver = NULL;
+    _maSolver.reset();
 }
 
 //_____________________________________________________________________________
@@ -232,7 +223,7 @@ void GeometryPath::namePathPoints(int aStartingIndex)
     {
         sprintf(indx,"%d",i+1);
         PathPoint& point = get_PathPointSet().get(i);
-        if(point.getName()=="" && _owner) {
+        if (point.getName()=="" && _owner) {
             point.setName(_owner->getName() + "-P" + indx);
         }
     }
@@ -1278,10 +1269,10 @@ calcLengthAfterPathComputation(const SimTK::State& s,
 double GeometryPath::
 computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const
 {
-    if(!_maSolver)
-        _maSolver = new MomentArmSolver(*_model);
+    if (!_maSolver)
+        const_cast<Self*>(this)->_maSolver.reset(new MomentArmSolver(*_model));
 
-    return  _maSolver->solve(s, aCoord,  *this);
+    return _maSolver->solve(s, aCoord,  *this);
 }
 
 //_____________________________________________________________________________
