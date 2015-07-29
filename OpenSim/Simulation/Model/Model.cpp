@@ -2067,12 +2067,12 @@ void Model::extendRealizeVelocity(const SimTK::State& state) const
     //Note: If the shared controls cache is calculated inside of calcForces and the force in which it is
     //being calculated is parallel, a data race may occur to mark the controlsCache as valid/invalid.
     if(!controlsCache.isValid(state)){
-      // Always reset controls to their default values before computing controls
-      // since default behavior is for controllors to "addInControls" so there should be valid
-      // values to begin with.
-      controlsCache.updValue(state) = _defaultControls;
-      computeControls(state, controlsCache.updValue(state));
-      controlsCache.markAsValid(state);
+        // Always reset controls to their default values before computing controls
+        // since default behavior is for controllors to "addInControls" so there should be valid
+        // values to begin with.
+        controlsCache.updValue(state) = _defaultControls;
+        computeControls(state, controlsCache.updValue(state));
+        controlsCache.markAsValid(state);
     }
     //TODO: How often do we have to set the controlsCache?
     const_cast<Model*>(this)->_controlsCache = controlsCache;
