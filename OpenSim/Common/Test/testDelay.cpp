@@ -179,7 +179,7 @@ void testDelaySimulation(Model& model, double delayTime = 0.017,
 
     const Coordinate& coord = model.getCoordinateSet()[0];
     auto* controller = dynamic_cast<PendulumController*>(
-            &model.updControllerSet()[0]);
+            &model.updControllerSet().get("mycontroller"));
 
     // First simulate without controller delay.
     double finalCoordValue_noControllerDelay;
@@ -281,10 +281,7 @@ void testDelaySimulation(Model& model, double delayTime = 0.017,
     }
 }
 
-void testDelay() {
-    // This type is not registered in osimCommon.
-    Object::registerType(Delay_<SimTK::Vec3>());
-    Object::registerType(PendulumController());
+void testWithController() {
 
     // Test the use of the Delay within a controller.
     // ==============================================
@@ -300,6 +297,7 @@ void testDelay() {
 
         // Add controller.
         PendulumController* controller = new PendulumController();
+        controller->setName("mycontroller");
         controller->addActuator(*act);
         model.addController(controller);
 
@@ -340,7 +338,7 @@ void testDelay() {
         */
 
         // Test using a delay of 0.
-        // TODO doesn't work testDelaySimulation(model, 0.0, false);
+        // TODO testDelaySimulation(model, 0.0, false);
 
         /* TODO will not pass until input/output copying is fixed.
         // Run same test after copying the model that contains the Delay.
@@ -425,6 +423,9 @@ void testDelay() {
         */
     }
 
+}
+
+void testNegativeDelayDurationException() {
     // Check for exception when delay is negative.
     // ===========================================
     {
@@ -444,12 +445,17 @@ void testDelay() {
         model.addController(controller);
 
         SimTK_TEST_MUST_THROW_EXC(model.initSystem(),
-                SimTK::Exception::ValueWasNegative);
+                                  SimTK::Exception::ValueWasNegative);
     }
 }
 
 int main() {
+
     SimTK_START_TEST("testDelay");
-        SimTK_SUBTEST(testDelay);
+        // This type is not registered in osimCommon.
+        Object::registerType(Delay_<SimTK::Vec3>());
+        Object::registerType(PendulumController());
+        SimTK_SUBTEST(testWithController);
+        SimTK_SUBTEST(testNegativeDelayDurationException);
     SimTK_END_TEST();
 }
