@@ -172,7 +172,7 @@ void Thelen2003Muscle::constructProperties()
 
 //Parallelism Method Overrides
 bool Thelen2003Muscle::shouldBeParallelIfPossible() const{
-  return true;
+    return true;
 }
 //=============================================================================
 // GET

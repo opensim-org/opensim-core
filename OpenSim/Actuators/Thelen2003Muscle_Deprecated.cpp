@@ -85,7 +85,7 @@ void Thelen2003Muscle_Deprecated::constructProperties()
 
 //Parallelism Method Overrides
 bool Thelen2003Muscle_Deprecated::shouldBeParallelIfPossible() const{
-  return true;
+    return true;
 }
 //==============================================================================
 // GET

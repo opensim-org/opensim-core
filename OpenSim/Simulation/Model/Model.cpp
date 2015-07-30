@@ -315,7 +315,7 @@ SimTK::State& Model::initializeState() {
     getMultibodySystem().invalidateSystemTopologyCache();
     getMultibodySystem().realizeTopology();
 
-    // Set the model's operating state (internal member variable) to thed
+    // Set the model's operating state (internal member variable) to the
     // default state that is stored inside the System.
     _workingState = getMultibodySystem().getDefaultState();
 
