@@ -28,7 +28,6 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "OpenSim/Simulation/Model/ModelComponent.h"
 #include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Common/VisibleObject.h>
 #include "PathPointSet.h"
 #include <OpenSim/Simulation/Wrap/PathWrapSet.h>
 #include <OpenSim/Simulation/MomentArmSolver.h>
@@ -65,8 +64,6 @@ OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, ModelComponent);
 private:
     OpenSim_DECLARE_UNNAMED_PROPERTY(PathPointSet, "The set of points defining the path");
 
-    OpenSim_DECLARE_PROPERTY(display, VisibleObject, "Used to display the path in the 3D window");
-
     OpenSim_DECLARE_UNNAMED_PROPERTY(PathWrapSet, "The wrap objecs that are associated with this path");
     
     OpenSim_DECLARE_OPTIONAL_PROPERTY(default_color, SimTK::Vec3, "Used to initialize the colour cache variable");
@@ -74,11 +71,13 @@ private:
     // used for scaling tendon and fiber lengths
     double _preScaleLength;
 
-    // object that owns this GeometryPath object
+    // Pointer to the Object that owns this GeometryPath object.
     SimTK::ReferencePtr<Object> _owner;
 
-    // solver used to compute moment-arms
-    mutable SimTK::ReferencePtr<MomentArmSolver> _maSolver;
+    // Solver used to compute moment-arms. The GeometryPath owns this object,
+    // but we cannot simply use a unique_ptr because we want the pointer to be
+    // cleared on copy.
+    SimTK::NullOnCopyUniquePtr<MomentArmSolver> _maSolver;
     
 //=============================================================================
 // METHODS
@@ -88,7 +87,9 @@ private:
     //--------------------------------------------------------------------------
 public:
     GeometryPath();
-    virtual ~GeometryPath();
+#ifndef SWIG
+    ~GeometryPath() override = default;
+#endif
 
     const PathPointSet& getPathPointSet() const { return get_PathPointSet(); }
     PathPointSet& updPathPointSet() { return upd_PathPointSet(); }
@@ -112,7 +113,7 @@ public:
     //--------------------------------------------------------------------------
     // GET
     //--------------------------------------------------------------------------
-    Object* getOwner() const { return _owner; }
+    Object* getOwner() const { return _owner.get(); }
     void setOwner(Object *anObject) {_owner = anObject; };
 
     /** If you call this prior to extendAddToSystem() it will be used to initialize
@@ -181,16 +182,10 @@ public:
     void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 
     //--------------------------------------------------------------------------
-    // Visible Object Support
+    // Visualization Support
     //--------------------------------------------------------------------------
-    virtual const VisibleObject* getDisplayer() const { 
-        return &get_display(); 
-    }
-    
-    void updateDisplayer(const SimTK::State& s) const override;
-
-    // Update the geometry attached to the path (location of path points and connecting segments
-    //  all in global/interial frame)
+    // Update the geometry attached to the path (location of path points and
+    // connecting segments all in global/interial frame)
     virtual void updateGeometry(const SimTK::State& s) const;
 
 protected:
@@ -218,12 +213,8 @@ private:
     double calcLengthAfterPathComputation
        (const SimTK::State& s, const Array<PathPoint*>& currentPath) const;
 
-
-    void setNull();
     void constructProperties();
     void updateDisplayPath(const SimTK::State& s) const;
-    void updateGeometrySize(const SimTK::State& ) const;
-    void updateGeometryLocations(const SimTK::State& s) const;
     void namePathPoints(int aStartingIndex);
     void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, 
                            int aIndex, const PhysicalFrame& aBody);

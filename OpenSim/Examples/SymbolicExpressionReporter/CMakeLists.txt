@@ -1,17 +1,17 @@
 ###########################################
 ## For building with the rest of OpenSim ##
 ###########################################
-IF(BUILD_API_EXAMPLES)
+if(BUILD_API_EXAMPLES)
 
-SET(EXAMPLE_EXPRESSION_REPORTER_PLUGIN exampleExpressionReporterPlugin)
+set(EXAMPLE_EXPRESSION_REPORTER_PLUGIN exampleExpressionReporterPlugin)
 
-INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
+include_directories(${OpenSim_SOURCE_DIR}
             ${OpenSim_SOURCE_DIR}/OpenSim
             ${OpenSim_SOURCE_DIR}/Vendors
             ${OpenSim_SOURCE_DIR}/Vendors/lepton/include
             )
 
-ADD_LIBRARY(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN} SHARED
+add_library(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN} SHARED
     osimExpPluginDLL.cpp
     osimExpPluginDLL.h
     RegisterTypes_osimExpPlugin.cpp
@@ -19,11 +19,11 @@ ADD_LIBRARY(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN} SHARED
     SymbolicExpressionReporter.cpp
     SymbolicExpressionReporter.h
     )
-TARGET_LINK_LIBRARIES(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN}
+target_link_libraries(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN}
     osimSimulation osimActuators osimCommon osimAnalyses osimTools osimLepton
-    ${SIMTK_ALL_LIBS}
+    ${Simbody_LIBRARIES}
 )
-SET_TARGET_PROPERTIES(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN}
+set_target_properties(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN}
     PROPERTIES
     DEFINE_SYMBOL OSIMEXPPLUGIN_EXPORTS
     PROJECT_LABEL "Examples - ${EXAMPLE_EXPRESSION_REPORTER_PLUGIN}"
@@ -34,19 +34,19 @@ SET_TARGET_PROPERTIES(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN}
 ################################################
 ## For building with existing OpenSim install ##
 ################################################
-ELSE(BUILD_API_EXAMPLES)
+else(BUILD_API_EXAMPLES)
 
-PROJECT(ExpressionReporterPlugin)
+project(ExpressionReporterPlugin)
 
 cmake_minimum_required(VERSION 2.8.6)
 
-SET(KIT plugin)
-SET(UKIT PLUGIN)
-SET(PLUGIN_NAME "osimExpressionReporter")
+set(KIT plugin)
+set(UKIT PLUGIN)
+set(PLUGIN_NAME "osimExpressionReporter")
 
 # Settings.
 # ---------
-SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
+set(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
         CACHE PATH "Top-level directory of OpenSim install")
 
 
@@ -62,38 +62,41 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR
             set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
             set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
         else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+            if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+            endif()
         endif()
     else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     endif()
 endif()
 
-FIND_PACKAGE(OpenSim REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")
+find_package(OpenSim REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")
 
-INCLUDE_DIRECTORIES(${OpenSim_INCLUDE_DIRS})
-LINK_DIRECTORIES(${OpenSim_LIB_DIR})
+include_directories(${OpenSim_INCLUDE_DIRS})
+link_directories(${OpenSim_LIB_DIR})
 
 # Configure this project.
 # -----------------------
-FILE(GLOB SOURCE_FILES *.cpp)
-FILE(GLOB INCLUDE_FILES *.h)
-ADD_LIBRARY(${PLUGIN_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
+file(GLOB SOURCE_FILES *.cpp)
+file(GLOB INCLUDE_FILES *.h)
+add_library(${PLUGIN_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 
-TARGET_LINK_LIBRARIES(${PLUGIN_NAME} ${OpenSim_LIBRARIES})
+target_link_libraries(${PLUGIN_NAME} ${OpenSim_LIBRARIES})
 
-SET(EXPORT_MACRO OSIMEXPPLUGIN_EXPORTS)
-SET_TARGET_PROPERTIES(
+set(EXPORT_MACRO OSIMEXPPLUGIN_EXPORTS)
+set_target_properties(
     ${PLUGIN_NAME} PROPERTIES
     DEFINE_SYMBOL ${EXPORT_MACRO}
     PROJECT_LABEL "Libraries - ${PLUGIN_NAME}")
 
 # Configure installation.
 # -----------------------
-IF(WIN32)
-    INSTALL_TARGETS(/sdk/lib/ RUNTIME_DIRECTORY /bin ${PLUGIN_NAME})
-ELSE(WIN32)
-    INSTALL_TARGETS(/bin/ RUNTIME_DIRECTORY /bin ${PLUGIN_NAME})
-ENDIF(WIN32)
+if(WIN32)
+    install_targets(/sdk/lib/ RUNTIME_DIRECTORY /bin ${PLUGIN_NAME})
+else(WIN32)
+    install_targets(/bin/ RUNTIME_DIRECTORY /bin ${PLUGIN_NAME})
+endif(WIN32)
 
-ENDIF(BUILD_API_EXAMPLES)
+endif(BUILD_API_EXAMPLES)

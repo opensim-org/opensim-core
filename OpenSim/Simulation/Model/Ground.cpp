@@ -43,6 +43,7 @@ Ground::Ground() : PhysicalFrame()
 {
     setName("ground");
     setAuthors("Ajay Seth");
+    upd_geometry(0).setFrameName("ground");
 }
 
 /*
@@ -60,4 +61,3 @@ void Ground::extendAddToSystem(SimTK::MultibodySystem& system) const
     Super::extendAddToSystem(system);
     setMobilizedBodyIndex(SimTK::GroundIndex);
 }
-

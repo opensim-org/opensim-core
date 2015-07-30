@@ -187,7 +187,7 @@ public:
     void findAndConnect(const Component& root) override;
 
     void disconnect() override {
-        connectee.clear();
+        connectee.reset(nullptr);
     }
     
     /** Derived classes must satisfy this Interface */
@@ -239,7 +239,7 @@ public:
     }
 
     void disconnect() override {
-        connectee.clear();
+        connectee.reset(nullptr);
     }
 
     /** Is the Input connected to an Output? */

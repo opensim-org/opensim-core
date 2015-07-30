@@ -14,11 +14,7 @@
 #include <OpenSim/Common/PropertyGroup.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/ObjectGroup.h>
-#include <OpenSim/Common/Geometry.h>
-#include <OpenSim/Common/DisplayGeometry.h>
 #include <OpenSim/Common/Set.h>
-#include <OpenSim/Common/GeometrySet.h>
-#include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/StateVector.h>
 #include <OpenSim/Common/StorageInterface.h>
 #include <OpenSim/Common/Storage.h>
@@ -54,6 +50,8 @@
 
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Simulation/Model/OffsetFrame.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Model/Ground.h>
 
 #include <OpenSim/Simulation/Model/Force.h>
@@ -225,6 +223,12 @@
 #include <OpenSim/Tools/DynamicsTool.h>
 #include <OpenSim/Tools/InverseDynamicsTool.h>
 
+#include <OpenSim/Tools/TrackingTask.h>
+#include <OpenSim/Tools/CMC_Task.h>
+#include <OpenSim/Tools/CMC_Joint.h>
+#include <OpenSim/Tools/CMC_Point.h>
+#include <OpenSim/Tools/CMC_TaskSet.h>
+
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Tools/RRATool.h>
 #include <OpenSim/Tools/ScaleTool.h>
@@ -246,6 +250,7 @@ using namespace SimTK;
 %feature("director") OpenSim::SimtkLogCallback;
 %feature("director") SimTK::DecorativeGeometryImplementation;
 %feature("notabstract") ControlLinear;
+
 
 %rename(OpenSimObject) OpenSim::Object;
 %rename(OpenSimException) OpenSim::Exception;
@@ -320,8 +325,15 @@ using namespace SimTK;
        this.setValues(values, splits.length);
 	}
 %}
-/*
+
+%typemap(javacode) SimTK::Vec3 %{
+    double[] getAsJavaArray() {
+		return new double[]{this->get(0), this->get(1), this->get(2)};
+	}
+%}
+
 %extend  SimTK::DecorativeGeometry {
+public:
 	bool hasUserRef() const {
 		return (self->getUserRef()!=0);
 	}
@@ -330,7 +342,37 @@ using namespace SimTK;
 		return *((OpenSim::Object*)self->getUserRef());
 	}
 }
-*/
+%extend SimTK::DecorativeMeshFile {
+     SimTK::DecorativeMeshFile* clone() { return new SimTK::DecorativeMeshFile(*self); }
+}
+%extend SimTK::DecorativeSphere {
+     SimTK::DecorativeSphere* clone() { return new SimTK::DecorativeSphere(*self); }
+}
+%extend SimTK::DecorativeBrick {
+     SimTK::DecorativeBrick* clone() { return new SimTK::DecorativeBrick(*self); }
+}
+
+%extend SimTK::DecorativeLine {
+     SimTK::DecorativeLine* clone() { return new SimTK::DecorativeLine(*self); }
+}
+%extend SimTK::DecorativeCylinder {
+     SimTK::DecorativeCylinder* clone() { return new SimTK::DecorativeCylinder(*self); }
+}
+%extend SimTK::DecorativeEllipsoid {
+     SimTK::DecorativeEllipsoid* clone() { return new SimTK::DecorativeEllipsoid(*self); }
+}
+%extend SimTK::DecorativeFrame {
+     SimTK::DecorativeFrame* clone() { return new SimTK::DecorativeFrame(*self); }
+}
+%extend SimTK::DecorativeArrow {
+     SimTK::DecorativeArrow* clone() { return new SimTK::DecorativeArrow(*self); }
+}
+%extend SimTK::DecorativeTorus {
+     SimTK::DecorativeTorus* clone() { return new SimTK::DecorativeTorus(*self); }
+}
+%extend SimTK::DecorativeCone {
+     SimTK::DecorativeCone* clone() { return new SimTK::DecorativeCone(*self); }
+}
 %javamethodmodifiers OpenSim::Model::addModelComponent "private";
 %javamethodmodifiers OpenSim::Model::addBody "private";
 %javamethodmodifiers OpenSim::Model::addConstraint "private";
@@ -422,6 +464,15 @@ using namespace SimTK;
   }
 %}
 
+%javamethodmodifiers OpenSim::ForceSet::append "private";
+%rename OpenSim::ForceSet::append private_append;
+%typemap(javacode) OpenSim::ForceSet %{
+   public boolean append(Force aFroce) {
+      aFroce.markAdopted();
+	  return private_append(aFroce);
+   }
+%}
+
 %typemap(javacode) OpenSim::Array<std::string> %{
    public java.util.Vector<String> toVector() {
       java.util.Vector<String> vector = new java.util.Vector<String>();
@@ -496,57 +547,6 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 	$action
 }
 
-%exception OpenSim::AnalyticGeometry::dynamic_cast(Geometry *geometry) {
-    $action
-    if (!result) {
-        jclass excep = jenv->FindClass("java/lang/ClassCastException");
-        if (excep) {
-            jenv->ThrowNew(excep, "dynamic_cast exception");
-        }
-    }
-}
-
-%extend OpenSim::AnalyticGeometry {
-    static OpenSim::AnalyticGeometry *dynamic_cast(OpenSim::Geometry *geometry) {
-        return dynamic_cast<OpenSim::AnalyticGeometry *>(geometry);
-    }
-};
-
-%extend OpenSim::LineGeometry {
-    static LineGeometry *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<LineGeometry *>(geometry);
-    }
-};
-
-%extend OpenSim::AnalyticSphere {
-    static AnalyticSphere *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<AnalyticSphere *>(geometry);
-    }
-};
-
-%extend OpenSim::AnalyticCylinder {
-    static AnalyticCylinder *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<AnalyticCylinder *>(geometry);
-    }
-};
-
-%extend OpenSim::AnalyticEllipsoid {
-    static AnalyticEllipsoid *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<AnalyticEllipsoid *>(geometry);
-    }
-};
-
-%extend OpenSim::AnalyticTorus {
-    static AnalyticTorus *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<AnalyticTorus *>(geometry);
-    }
-};
-
-%extend OpenSim::PolyhedralGeometry {
-    static PolyhedralGeometry *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<PolyhedralGeometry *>(geometry);
-    }
-};
 
 %extend OpenSim::Body {
 	void getInertia(Array<double>& rInertia) {
@@ -657,7 +657,6 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 
 %include <SimTKcommon/Constants.h>
 %include <SWIGSimTK/Vec.h>
-%include <SimTKcommon/SmallMatrix.h>
 // Vec3
 namespace SimTK {
 %template(Vec2) Vec<2>;
@@ -665,11 +664,18 @@ namespace SimTK {
 %template(Vec4) Vec<4>;
 %template(Vec6) Vec<6>;
 }
+
 // Mat33
 %include <SWIGSimTK/Mat.h>
 namespace SimTK {
 %template(Mat33) Mat<3, 3>;
 }
+%include <SWIGSimTK/CoordinateAxis.h>
+%include <SWIGSimTK/UnitVec.h>
+namespace SimTK {
+%template(UnitVec3)  SimTK::UnitVec<double,1>;
+}
+
 // Vector and Matrix
 %include <SWIGSimTK/BigMatrix.h>
 namespace SimTK {
@@ -686,7 +692,7 @@ namespace SimTK {
 %template(VectorOfVec3) Vector_<Vec3>;
 }
 
-%include <SWIGSimTK/CoordinateAxis.h>
+
 %include <SWIGSimTK/Rotation.h>
 namespace SimTK {
 %template(Rotation) SimTK::Rotation_<double>;
@@ -727,8 +733,8 @@ namespace SimTK {
 
 namespace SimTK {
 %template(ArrayDecorativeGeometry) SimTK::Array_<SimTK::DecorativeGeometry>;
+%template(SimTKArrayString) SimTK::Array_<std::string>;
 }
-
 
 // State & Stage
 %include <SWIGSimTK/Stage.h>
@@ -743,15 +749,12 @@ namespace SimTK {
 %include <OpenSim/Common/Property.h>
 %include <OpenSim/Common/PropertyGroup.h>
 %template(ArrayPtrsPropertyGroup) OpenSim::ArrayPtrs<OpenSim::PropertyGroup>;
+%template (PropertyString) OpenSim::Property<std::string>;
 %include <OpenSim/Common/Object.h>
 %include <OpenSim/Common/ObjectGroup.h>
-%include <OpenSim/Common/Geometry.h>
-%include <OpenSim/Common/DisplayGeometry.h>
 %include <OpenSim/Common/Set.h>
-%template(SetGeometry) OpenSim::Set<OpenSim::DisplayGeometry>;
-%include <OpenSim/Common/GeometrySet.h>
-%include <OpenSim/Common/VisibleObject.h>
 %include <OpenSim/Common/StateVector.h>
+%template(ArrayStateVector) OpenSim::Array<OpenSim::StateVector>;
 %include <OpenSim/Common/StorageInterface.h>
 %include <OpenSim/Common/Storage.h>
 %include <OpenSim/Common/Units.h>
@@ -786,23 +789,34 @@ namespace SimTK {
 
 %include <OpenSim/Common/ComponentOutput.h>
 %include <OpenSim/Common/ComponentConnector.h>
-%include <OpenSim/Common/Component.h>
-%include <OpenSim/Common/ComponentList.h>
 
-%template(ComponentList_Muscles) OpenSim::ComponentList<OpenSim::Muscle>;
-%template(MuscleIterator) OpenSim::ComponentListIterator<OpenSim::Muscle>;
-%template(ComponentList_Bodies) OpenSim::ComponentList<OpenSim::Body>;
-%template(BodyIterator) OpenSim::ComponentListIterator<OpenSim::Body>;
-%template(ComponentList_Forces) OpenSim::ComponentList<OpenSim::Force>;
-%template(ForceIterator) OpenSim::ComponentListIterator<OpenSim::Force>;
-%template(ComponentList_GeometryPaths) OpenSim::ComponentList<OpenSim::GeometryPath>;
-%template(GeometryPathIterator) OpenSim::ComponentListIterator<OpenSim::GeometryPath>;
-%template(ComponentList_Markers) OpenSim::ComponentList<OpenSim::Marker>;
-%template(MarkerIterator) OpenSim::ComponentListIterator<OpenSim::Marker>;
-%template(ComponentList_Joints) OpenSim::ComponentList<OpenSim::Joint>;
-%template(JointIterator) OpenSim::ComponentListIterator<OpenSim::Joint>;
-%template(ComponentList_Components) OpenSim::ComponentList<OpenSim::Component>;
+%include <OpenSim/Common/ComponentList.h>
+%template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
 %template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
+
+%template(FramesList) OpenSim::ComponentList<OpenSim::Frame>;
+%template(FrameIterator) OpenSim::ComponentListIterator<OpenSim::Frame>;
+
+%template(BodiesList) OpenSim::ComponentList<OpenSim::Body>;
+%template(BodyIterator) OpenSim::ComponentListIterator<OpenSim::Body>;
+
+%template(MusclesList) OpenSim::ComponentList<OpenSim::Muscle>;
+%template(MuscleIterator) OpenSim::ComponentListIterator<OpenSim::Muscle>;
+
+%template(ModelComponentList) OpenSim::ComponentList<OpenSim::ModelComponent>;
+%template(ModelComponentIterator) OpenSim::ComponentListIterator<OpenSim::ModelComponent>;
+
+%template(JointsList) OpenSim::ComponentList<OpenSim::Joint>;
+%template(JointIterator) OpenSim::ComponentListIterator<OpenSim::Joint>;
+
+%include <OpenSim/Common/Component.h>
+
+%template(getFramesList) OpenSim::Component::getComponentList<OpenSim::Frame>;
+%template(getBodiesList) OpenSim::Component::getComponentList<OpenSim::Body>;
+%template(getMusclesList) OpenSim::Component::getComponentList<OpenSim::Muscle>;
+%template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
+%template(getModelComponentList) OpenSim::Component::getComponentList<OpenSim::ModelComponent>;
+%template(getJointList) OpenSim::Component::getComponentList<OpenSim::Joint>;
 
 %include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
@@ -812,6 +826,9 @@ namespace SimTK {
 
 // osimSimulation
 %include <OpenSim/Simulation/osimSimulationDLL.h>
+
+%include <OpenSim/Simulation/Model/Appearance.h>
+%include <OpenSim/Simulation/Model/Geometry.h>
 %include <OpenSim/Simulation/Model/ModelComponent.h>
 %template(SetModelComponents) OpenSim::Set<OpenSim::ModelComponent>;
 %include <OpenSim/Simulation/Model/ModelComponentSet.h>
@@ -825,8 +842,19 @@ namespace SimTK {
 %include <OpenSim/Simulation/MomentArmSolver.h>
 
 %include <OpenSim/Simulation/Model/Frame.h>
+// Followig thee lines hacked in out of order to work around WrapObjects use in PhysicalFrame
+%include <OpenSim/Simulation/Wrap/WrapObject.h>
+%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
+%include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+
 %include <OpenSim/Simulation/Model/PhysicalFrame.h>
 %include <OpenSim/Simulation/Model/Ground.h>
+%include <OpenSim/Simulation/Model/OffsetFrame.h>
+%template(PhysicalFrameWithOffset)   OpenSim::OffsetFrame<OpenSim::PhysicalFrame>; 
+%include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+%template(SetFrames) OpenSim::Set<OpenSim::Frame>;
+%template(ModelComponentSetFrames) OpenSim::ModelComponentSet<OpenSim::Frame>;
+%include <OpenSim/Simulation/Model/FrameSet.h>
 
 %include <OpenSim/Simulation/Model/Force.h>
 %template(SetForces) OpenSim::Set<OpenSim::Force>;
@@ -877,15 +905,16 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/Station.h>
 %include <OpenSim/Simulation/Model/Marker.h>
 %template(SetMarkers) OpenSim::Set<OpenSim::Marker>;
+%template(ModelComponentSetMarkers) OpenSim::ModelComponentSet<OpenSim::Marker>;
 %include <OpenSim/Simulation/Model/MarkerSet.h>
 
-%include <OpenSim/Simulation/Wrap/WrapObject.h>
+//%include <OpenSim/Simulation/Wrap/WrapObject.h>
 %include <OpenSim/Simulation/Wrap/WrapSphere.h>
 %include <OpenSim/Simulation/Wrap/WrapCylinder.h>
 %include <OpenSim/Simulation/Wrap/WrapTorus.h>
 %include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
-%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
-%include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+//%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
+//%include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 %include <OpenSim/Simulation/Wrap/PathWrap.h>
 %template(SetPathWrap) OpenSim::Set<OpenSim::PathWrap>;
 %include <OpenSim/Simulation/Wrap/PathWrapSet.h>
@@ -949,6 +978,7 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.h>
 %include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
 %include <OpenSim/Simulation/Model/ModelDisplayHints.h>
+%include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 %include <OpenSim/Simulation/Model/ModelVisualizer.h>
 %include <OpenSim/Simulation/Model/Model.h>
 
@@ -1054,6 +1084,14 @@ namespace SimTK {
 %include <OpenSim/Tools/DynamicsTool.h>
 %include <OpenSim/Tools/InverseDynamicsTool.h>
 %include <OpenSim/Tools/ForwardTool.h>
+
+%include <OpenSim/Tools/TrackingTask.h>
+%include <OpenSim/Tools/CMC_Task.h>
+%include <OpenSim/Tools/CMC_Joint.h>
+%include <OpenSim/Tools/CMC_Point.h>
+%template (SetTrackingTasks) OpenSim::Set<OpenSim::TrackingTask>;
+%include <OpenSim/Tools/CMC_TaskSet.h>
+
 %include <OpenSim/Tools/CMCTool.h>
 %include <OpenSim/Tools/RRATool.h>
 %include <OpenSim/Tools/AnalyzeTool.h>

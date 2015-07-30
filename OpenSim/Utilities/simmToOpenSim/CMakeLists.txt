@@ -1,31 +1,31 @@
-ADD_DEFINITIONS(
+add_definitions(
     -DOPENSIM_BUILD=1
     -DINCLUDE_MOCAP_MODULE=1
     -DINCLUDE_EVA_REALTIME=0
     -DEXPERIMENTAL=0
     -DENGINE=1
     -DSIMMTOOPENSIM=1)
-INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} )
+include_directories(${OpenSim_SOURCE_DIR} )
 
-FILE(GLOB SOURCE_FILES *.c)
-FILE(GLOB INCLUDE_FILES *.h)
+file(GLOB SOURCE_FILES *.c)
+file(GLOB INCLUDE_FILES *.h)
 
-IF(WIN32)
-LINK_LIBRARIES(
+if(WIN32)
+link_libraries(
     debug acpp_d optimized acpp
     )
-ELSE(WIN32)
+else(WIN32)
 # m is math library for linux
-LINK_LIBRARIES(
+link_libraries(
     m
     debug acpp${CMAKE_DEBUG_POSTFIX} optimized acpp
     )
-ENDIF(WIN32)
+endif(WIN32)
 
-ADD_EXECUTABLE(simmToOpenSim ${SOURCE_FILES} ${INCLUDE_FILES})
+add_executable(simmToOpenSim ${SOURCE_FILES} ${INCLUDE_FILES})
 
-SET_TARGET_PROPERTIES(simmToOpenSim PROPERTIES PROJECT_LABEL "Utilities - simmToOpenSim")
+set_target_properties(simmToOpenSim PROPERTIES PROJECT_LABEL "Utilities - simmToOpenSim")
 
-INSTALL_TARGETS(/bin/ simmToOpenSim)
+install_targets(/bin/ simmToOpenSim)
 
-SUBDIRS(acpp)
+subdirs(acpp)

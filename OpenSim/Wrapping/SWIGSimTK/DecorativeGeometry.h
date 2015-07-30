@@ -9,7 +9,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org/home/simbody.  *
  *                                                                            *
- * Portions copyright (c) 2005-13 Stanford University and the Authors.        *
+ * Portions copyright (c) 2005-15 Stanford University and the Authors.        *
  * Authors: Michael Sherman                                                   *
  * Contributors: Jack Middleton, Peter Eastman, Ayman Habib                   *
  *                                                                            *
@@ -91,14 +91,14 @@ DecorativeGeometry() : rep(0) { }
 /** Copy construction is deep; the source object will be cloned to create an
 independent copy. **/
 DecorativeGeometry(const DecorativeGeometry& source);
-#ifndef SWIG
 /** Copy assignment is deep; the handle will be cleared if necessary and then
 the source object will be cloned to create an independent copy. **/
 DecorativeGeometry& operator=(const DecorativeGeometry& source);
-#endif
+
 /** Drawing modes. **/
 enum Representation {
-    DrawPoints    =  1, ///< Use a cloud of points.
+    Hide = 0, ///< hide geometry for now to display later
+    DrawPoints = 1, ///< Use a cloud of points.
     DrawWireframe =  2, ///< Use a line drawing.
     DrawSurface   =  3, ///< Use a shaded surface.
 
@@ -122,8 +122,9 @@ an index that can identify this particular piece of geometry. As an alternative,
 or addition, see setUserRef(). In any case the \a index is simply stored with 
 the object and returned if you ask for it. If you don't set it the value 
 is -1. The \a index is copied if you copy the %DecorativeGeometry object. Be
-sure to change it afterwards if that is not the correct index for the copy. **/
-//DecorativeGeometry& setIndexOnBody(int index);
+sure to change it afterwards if that is not the correct index for the copy. 
+Simbody sets this index when %DecorativeGeometry is added to a Body. **/
+DecorativeGeometry& setIndexOnBody(int index);
 
 /** Use this method to store an arbitrary reference pointer with this 
 %DecorativeGeometry object. This is particularly useful in selection operations
@@ -138,7 +139,7 @@ object will not be deleted when the %DecorativeGeometry object is deleted.
 %DecorativeGeometry object. That is likely to be incorrect in many 
 circumstances, depending on how you are using this value. Be sure to clear or 
 change the pointer if necessary after you make a copy. **/
-//DecorativeGeometry& setUserRef(void* userRef);
+DecorativeGeometry& setUserRef(void* userRef);
 
 /** This transform shifts the generated polygons with respect to this object's
 local frame. Subsequent calls with other transforms simply replace the earlier
@@ -180,13 +181,13 @@ int getBodyId() const;
 call for this %DecorativeGeometry object, or -1 if that method has not been
 called. Copy construction and copy assignment copy the \a index. Interpretation 
 of this integer is up to the caller. **/
-//int getIndexOnBody() const;
+int getIndexOnBody() const;
 
 /** Return the pointer value that was supplied to the most recent setUserRef()
 call for this %DecorativeGeometry object, or zero (nullptr) if that method has
 not been called. Copy construction and copy assignment copy the pointer. 
 Interpretation of this value is up to the caller. **/
-//void* getUserRef() const; 
+void* getUserRef() const; 
 
 /** Return the current setting of the "resolution" factor. A return value of
 -1 means "use the default". **/
@@ -231,7 +232,7 @@ Real getLineThickness() const;
     
 /** Set whether the geometry acts as a billboard, always rotating to face the 
 camera. The default is typically no except for text. If you want 3D text that
-moves with your model, set this to true. Here 0 means false, 1 means true,
+moves with your model, set this to false. Here 0 means false, 1 means true,
 and -1 means "use default". **/
 DecorativeGeometry& setFaceCamera(int shouldFace);
 /** Get whether the geometry acts as a billboard, always rotating to face the 
@@ -247,7 +248,7 @@ DecorativeGeometry& setRepresentation(const Representation&);
 Representation getRepresentation() const;
 
 void implementGeometry(DecorativeGeometryImplementation&) const;
-#ifndef SWIG
+
 // Bookkeeping below here -- internal use only. Don't look below or you will
 // turn into a pillar of salt.
 bool isOwnerHandle() const;
@@ -256,7 +257,6 @@ explicit DecorativeGeometry(class DecorativeGeometryRep* r) : rep(r) { }
 bool hasRep() const {return rep!=0;}
 const DecorativeGeometryRep& getRep() const {assert(rep); return *rep;}
 DecorativeGeometryRep&       updRep()       {assert(rep); return *rep;}
-#endif
 protected:
 DecorativeGeometryRep* rep;
 };
@@ -277,8 +277,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativePoint& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativePoint& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativePoint& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativePoint& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativePoint& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativePoint& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativePoint& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativePoint& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -315,8 +315,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativeLine& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeLine& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeLine& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeLine& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeLine& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeLine& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeLine& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeLine& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -328,8 +328,9 @@ public:
 
     const Vec3& getPoint1() const;
     const Vec3& getPoint2() const;
-
+#ifndef SWIG
     SimTK_PIMPL_DOWNCAST(DecorativeLine, DecorativeGeometry);
+#endif
 private:
     class DecorativeLineRep& updRep();
     const DecorativeLineRep& getRep() const;
@@ -346,8 +347,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativeCircle& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeCircle& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeCircle& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeCircle& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeCircle& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeCircle& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeCircle& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeCircle& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -375,8 +376,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativeSphere& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeSphere& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeSphere& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeSphere& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeSphere& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeSphere& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeSphere& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeSphere& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -406,8 +407,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativeEllipsoid& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeEllipsoid& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeEllipsoid& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeEllipsoid& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeEllipsoid& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeEllipsoid& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeEllipsoid& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeEllipsoid& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -436,8 +437,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativeBrick& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeBrick& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeBrick& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeBrick& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeBrick& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeBrick& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeBrick& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeBrick& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -468,8 +469,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativeCylinder& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeCylinder& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeCylinder& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeCylinder& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeCylinder& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeCylinder& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeCylinder& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeCylinder& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -498,8 +499,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativeFrame& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeFrame& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeFrame& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeFrame& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeFrame& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeFrame& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeFrame& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeFrame& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -532,14 +533,15 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     DecorativeText& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeText& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeText& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeText& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeText& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeText& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeText& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeText& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
     DecorativeText& setColor(const Vec3& rgb) {DecorativeGeometry::setColor(rgb);       return *this;}
     DecorativeText& setOpacity(Real o)        {DecorativeGeometry::setOpacity(o);       return *this;}
     DecorativeText& setLineThickness(Real t)  {DecorativeGeometry::setLineThickness(t); return *this;}
+    DecorativeText& setFaceCamera(int yn)     {DecorativeGeometry::setFaceCamera(yn);   return *this;}
     DecorativeText& setRepresentation(const Representation& r) 
     {   DecorativeGeometry::setRepresentation(r); return *this; }
 #ifndef SWIG
@@ -556,10 +558,11 @@ class SimTK_SimTKCOMMON_EXPORT DecorativeMesh : public DecorativeGeometry {
 public:
     explicit DecorativeMesh(const PolygonalMesh& mesh);
     const PolygonalMesh& getMesh() const;
+
     // Retain the derived type when setting generic geometry options.
     DecorativeMesh& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //DecorativeMesh& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //DecorativeMesh& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    DecorativeMesh& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    DecorativeMesh& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     DecorativeMesh& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     DecorativeMesh& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     DecorativeMesh& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -577,8 +580,8 @@ private:
 };
 
 
-/** This defines a displayable mesh by referencing a file name containing the mesh. If format is not supported
-  by visualizer it will be ignored. 
+/** This defines a displayable mesh by referencing a file name containing the 
+mesh. If format is not supported by visualizer it will be ignored. . **/
 class SimTK_SimTKCOMMON_EXPORT DecorativeMeshFile : public DecorativeGeometry {
 public:
     explicit DecorativeMeshFile(const std::string& meshFileName);
@@ -603,7 +606,134 @@ private:
     class DecorativeMeshFileRep& updRep();
     const DecorativeMeshFileRep& getRep() const;
 };
-*/
+
+
+/** This defines a displayable torus, the torus is centered at the
+origin with the axial direction aligned to the z-axis. It is defined by
+a torusRadius (radius of the circular centerline of the torus, measured
+from the origin), and a tubeRadius (radius of the torus cross-section:
+perpendicular distance from the circular centerline to the surface). **/
+class SimTK_SimTKCOMMON_EXPORT DecorativeTorus : public DecorativeGeometry {
+public:
+    explicit DecorativeTorus(Real torusR=1, Real tubeR=0.1);
+
+    DecorativeTorus& setTorusRadius(Real);
+    DecorativeTorus& setTubeRadius(Real);
+    Real getTorusRadius() const;
+    Real getTubeRadius() const;
+
+    // Retain the derived type when setting generic geometry options.
+    DecorativeTorus& setBodyId(int b)          { DecorativeGeometry::setBodyId(b);        return *this; }
+    DecorativeTorus& setIndexOnBody(int x)     { DecorativeGeometry::setIndexOnBody(x);   return *this; }
+    DecorativeTorus& setUserRef(void* p)       { DecorativeGeometry::setUserRef(p);       return *this; }
+    DecorativeTorus& setTransform(const Transform& X_BD) { DecorativeGeometry::setTransform(X_BD); return *this; }
+    DecorativeTorus& setResolution(Real r)     { DecorativeGeometry::setResolution(r);    return *this; }
+    DecorativeTorus& setScaleFactors(const Vec3& s) { DecorativeGeometry::setScaleFactors(s); return *this; }
+    DecorativeTorus& setColor(const Vec3& rgb) { DecorativeGeometry::setColor(rgb);       return *this; }
+    DecorativeTorus& setOpacity(Real o)        { DecorativeGeometry::setOpacity(o);       return *this; }
+    DecorativeTorus& setLineThickness(Real t)  { DecorativeGeometry::setLineThickness(t); return *this; }
+    DecorativeTorus& setRepresentation(const Representation& r)
+    {
+        DecorativeGeometry::setRepresentation(r); return *this;
+    }
+#ifndef SWIG
+    SimTK_PIMPL_DOWNCAST(DecorativeTorus, DecorativeGeometry);
+#endif
+private:
+    class DecorativeTorusRep& updRep();
+    const DecorativeTorusRep& getRep() const;
+};
+
+
+/** An arrow with start point, end point and tip-length. Note that 
+the actual placement can be changed by the parent class transform & scale; 
+here we are just generating the initial arrow in the geometry object's local 
+frame.
+
+There is a default constructor for this object but it is not much
+use unless followed by end point(s) specifications. By default 
+we produce an arrow going from (0,0,0) to (1,1,1) and tip
+length of .35 just so it will show up if you forget to set it to something 
+meaningful. Having a  default constructor allows us to have arrays of these 
+objects. **/
+class SimTK_SimTKCOMMON_EXPORT DecorativeArrow : public DecorativeGeometry {
+public:
+    explicit DecorativeArrow(const Vec3& startPoint = Vec3(0), const Vec3& endPoint = Vec3(1), Real tipLength = 0.35); // Arrow 
+    const Vec3& getStartPoint() const;
+    const Vec3& getEndPoint() const;
+    const Real& getTipLength() const;
+
+    DecorativeArrow& setStartPoint(const Vec3& start);
+    DecorativeArrow& setEndPoint(const Vec3& end);
+    DecorativeArrow& setTipLength(Real);
+
+    // Retain the derived type when setting generic geometry options.
+    DecorativeArrow& setBodyId(int b)          { DecorativeGeometry::setBodyId(b);        return *this; }
+    DecorativeArrow& setIndexOnBody(int x)     { DecorativeGeometry::setIndexOnBody(x);   return *this; }
+    DecorativeArrow& setUserRef(void* p)       { DecorativeGeometry::setUserRef(p);       return *this; }
+    DecorativeArrow& setTransform(const Transform& X_BD) { DecorativeGeometry::setTransform(X_BD); return *this; }
+    DecorativeArrow& setResolution(Real r)     { DecorativeGeometry::setResolution(r);    return *this; }
+    DecorativeArrow& setScaleFactors(const Vec3& s) { DecorativeGeometry::setScaleFactors(s); return *this; }
+    DecorativeArrow& setColor(const Vec3& rgb) { DecorativeGeometry::setColor(rgb);       return *this; }
+    DecorativeArrow& setOpacity(Real o)        { DecorativeGeometry::setOpacity(o);       return *this; }
+    DecorativeArrow& setLineThickness(Real t)  { DecorativeGeometry::setLineThickness(t); return *this; }
+    DecorativeArrow& setRepresentation(const Representation& r)
+    {
+        DecorativeGeometry::setRepresentation(r); return *this;
+    }
+#ifndef SWIG
+    SimTK_PIMPL_DOWNCAST(DecorativeArrow, DecorativeGeometry);
+#endif
+private:
+    class DecorativeArrowRep& updRep();
+    const DecorativeArrowRep& getRep() const;
+};
+
+
+/** A cone with origin point, direction, height and base radius. Note that
+the actual placement can be changed by the parent class transform & scale;
+here we are just generating the initial cone in the geometry object's local frame.
+
+There is a default constructor for this object but it is not much
+use unless followed by point, direction, height and base-radius specifications. By default
+we produce a cone going from (0,0,0) in direction (1,1,1) of height 1 and base
+radius of 0.5 just so it will show up if you forget to set it to something meaningful.
+Having a default constructor allows us to have arrays of these objects. **/
+class SimTK_SimTKCOMMON_EXPORT DecorativeCone : public DecorativeGeometry {
+public:
+    explicit DecorativeCone(const Vec3& p1 = Vec3(0), const UnitVec3& dir = UnitVec3(1,1,1),
+        Real height = 1.0, Real base = 0.5); // Cone 
+    const Vec3& getOrigin() const;
+    const UnitVec3& getDirection() const;
+    const Real& getHeight() const;
+    const Real& getBaseRadius() const;
+
+    DecorativeCone& setOrigin(const Vec3& origin);
+    DecorativeCone& setDirection(const UnitVec3& direction);
+    DecorativeCone& setHeight(Real length);
+    DecorativeCone& setBaseRadius(Real base);
+
+    // Retain the derived type when setting generic geometry options.
+    DecorativeCone& setBodyId(int b)          { DecorativeGeometry::setBodyId(b);        return *this; }
+    DecorativeCone& setIndexOnBody(int x)     { DecorativeGeometry::setIndexOnBody(x);   return *this; }
+    DecorativeCone& setUserRef(void* p)       { DecorativeGeometry::setUserRef(p);       return *this; }
+    DecorativeCone& setTransform(const Transform& X_BD) { DecorativeGeometry::setTransform(X_BD); return *this; }
+    DecorativeCone& setResolution(Real r)     { DecorativeGeometry::setResolution(r);    return *this; }
+    DecorativeCone& setScaleFactors(const Vec3& s) { DecorativeGeometry::setScaleFactors(s); return *this; }
+    DecorativeCone& setColor(const Vec3& rgb) { DecorativeGeometry::setColor(rgb);       return *this; }
+    DecorativeCone& setOpacity(Real o)        { DecorativeGeometry::setOpacity(o);       return *this; }
+    DecorativeCone& setLineThickness(Real t)  { DecorativeGeometry::setLineThickness(t); return *this; }
+    DecorativeCone& setRepresentation(const Representation& r)
+    {
+        DecorativeGeometry::setRepresentation(r); return *this;
+    }
+#ifndef SWIG
+    SimTK_PIMPL_DOWNCAST(DecorativeCone, DecorativeGeometry);
+#endif
+private:
+    class DecorativeConeRep& updRep();
+    const DecorativeConeRep& getRep() const;
+};
 
 /** This defines a single DecorativeGeometry object that is composed of a
 collection of other DecorativeGeometry objects. Parameters set for the
@@ -636,8 +766,8 @@ public:
 
     // Retain the derived type when setting generic geometry options.
     Decorations& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
-    //Decorations& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
-    //Decorations& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
+    Decorations& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}
+    Decorations& setUserRef(void* p)       {DecorativeGeometry::setUserRef(p);       return *this;}
     Decorations& setTransform(const Transform& X_BD) {DecorativeGeometry::setTransform(X_BD); return *this;}
     Decorations& setResolution(Real r)     {DecorativeGeometry::setResolution(r);    return *this;}
     Decorations& setScaleFactors(const Vec3& s) {DecorativeGeometry::setScaleFactors(s); return *this;}
@@ -670,7 +800,10 @@ public:
     virtual void implementFrameGeometry(    const DecorativeFrame&)    = 0;
     virtual void implementTextGeometry(     const DecorativeText&)     = 0;
     virtual void implementMeshGeometry(     const DecorativeMesh&)     = 0;
-    virtual void implementMeshFileGeometry(     const DecorativeMeshFile&)     = 0;
+    virtual void implementMeshFileGeometry( const DecorativeMeshFile&) = 0;
+    virtual void implementTorusGeometry(    const DecorativeTorus&)    = 0;
+    virtual void implementArrowGeometry(    const DecorativeArrow&)    = 0;
+    virtual void implementConeGeometry(     const DecorativeCone&)     = 0;
 };
 
 } // namespace SimTK

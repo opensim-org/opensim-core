@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "Object.h"
-#include "VisibleObject.h"
 #include "RegisterTypes_osimCommon.h"
 #include "FunctionSet.h"
 #include "GCVSplineSet.h"
@@ -45,8 +44,6 @@
 #include "PolynomialFunction.h"
 
 #include "Delay.h"
-
-#include "VisibleObject.h"
 #include "ObjectGroup.h"
 #include "StorageInterface.h"
 #include "LoadOpenSimLibrary.h"
