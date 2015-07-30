@@ -43,9 +43,9 @@ namespace OpenSim {
  * this is a known bug.
  *
  * @tparam T The type of the quantity to be delayed. Common choices are a
- * SimTK::Real (see ScalarDelay) or a SimTK::Vector (see VectorDelay).
+ * SimTK::Real (see Delay) or a SimTK::Vector (see DelayVector).
  *
- * @see ScalarDelay, VectorDelay
+ * @see Delay, DelayVector
  *
  *
  * This Component has a single input named "input" and a single output named
@@ -84,7 +84,7 @@ namespace OpenSim {
  *         _coordDelay.getInput("input").connect(coord.getOutput("value"));
  *     }
  *
- *     ScalarDelay _coordDelay;
+ *     Delay _coordDelay;
  * };
  * @endcode
  *
@@ -94,8 +94,8 @@ namespace OpenSim {
  *
  */
 template<typename T>
-class Delay : public Component {
-OpenSim_DECLARE_CONCRETE_OBJECT_T(Delay, T, Component);
+class Delay_ : public Component {
+OpenSim_DECLARE_CONCRETE_OBJECT_T(Delay_, T, Component);
 public:
 
     /** @name Property declarations
@@ -106,10 +106,10 @@ public:
     /**@}**/
 
     /// Default constructor.
-    Delay();
+    Delay_();
 
     /// Convenience constructor that sets the delay property.
-    explicit Delay(double delay);
+    explicit Delay_(double delay);
 
     /// Get the delayed value (the input's value at time t-delay).
     T getValue(const SimTK::State& s) const;
@@ -123,62 +123,62 @@ private:
     void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-    typename SimTK::Measure_<T>::Delay _delayMeasure;
+    typename SimTK::Measure_<T>::Delay m_delayMeasure;
 };
 
 template<class T>
-Delay<T>::Delay() {
+Delay_<T>::Delay_() {
     constructInfrastructure();
 }
 
 template<class T>
-Delay<T>::Delay(double delay) : Delay() {
+Delay_<T>::Delay_(double delay) : Delay_() {
     set_delay(delay);
 }
 
 template<class T>
-void Delay<T>::constructProperties() {
+void Delay_<T>::constructProperties() {
     constructProperty_delay(0.0);
 }
 
 template<class T>
-void Delay<T>::constructInputs() {
+void Delay_<T>::constructInputs() {
     // TODO the requiredAt Stage should be the same as this Delay's output dependsOn stage.
     constructInput<T>("input", SimTK::Stage::Time);
 }
 
 template<class T>
-void Delay<T>::constructOutputs() {
+void Delay_<T>::constructOutputs() {
     // TODO the depensdOn stage should be the dependsOn stage of the output
     // that is wired to this Delay's input.
-    constructOutput<T>("output", &Delay::getValue, SimTK::Stage::Time);
+    constructOutput<T>("output", &Delay_::getValue, SimTK::Stage::Time);
 }
 
 template<class T>
-T Delay<T>::getValue(const SimTK::State& s) const {
-    return _delayMeasure.getValue(s);
+T Delay_<T>::getValue(const SimTK::State& s) const {
+    return m_delayMeasure.getValue(s);
 }
 
 template<class T>
-void Delay<T>::extendFinalizeFromProperties() {
+void Delay_<T>::extendFinalizeFromProperties() {
     Super::extendFinalizeFromProperties();
     SimTK_VALUECHECK_NONNEG_ALWAYS(get_delay(),
             "delay", "Delay::extendFinalizeFromProperties()");
 }
 
 template<class T>
-void Delay<T>::extendAddToSystem(SimTK::MultibodySystem& system) const {
+void Delay_<T>::extendAddToSystem(SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
     auto& sub = system.updDefaultSubsystem();
     const auto& input = *static_cast<const Input<T>*>(&getInput("input"));
-    const_cast<Delay*>(this)->_delayMeasure =
+    const_cast<Delay_*>(this)->m_delayMeasure =
             typename SimTK::Measure_<T>::Delay(sub,
                                                InputMeasure<T>(sub, input),
                                                get_delay());
 }
 
-typedef Delay<SimTK::Real> ScalarDelay;
-typedef Delay<SimTK::Vector> VectorDelay;
+using Delay = Delay_<SimTK::Real>;
+using DelayVector = Delay_<SimTK::Vector>;
 
 } // namespace OpenSim
 

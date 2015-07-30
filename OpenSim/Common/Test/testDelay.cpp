@@ -115,9 +115,9 @@ private:
                 model.getOutput("com_velocity"));
     }
 
-    ScalarDelay _delay;
-    VectorDelay _vectorDelay;
-    Delay<SimTK::Vec3> _comVelocityDelay;
+    Delay _delay;
+    DelayVector _vectorDelay;
+    Delay_<SimTK::Vec3> _comVelocityDelay;
 };
 
 /// Contains dummy outputs with different requiresAt stages so that we can
@@ -129,9 +129,9 @@ public:
         constructInfrastructure();
     }
     // This also tests the convenience constructor.
-    ScalarDelay posDelay{0.01};
-    ScalarDelay velDelay{0.02};
-    ScalarDelay dynDelay{0.03};
+    Delay posDelay{0.01};
+    Delay velDelay{0.02};
+    Delay dynDelay{0.03};
 
 private:
     void constructOutputs() override {
@@ -283,7 +283,7 @@ void testDelaySimulation(Model& model, double delayTime = 0.017,
 
 void testDelay() {
     // This type is not registered in osimCommon.
-    Object::registerType(Delay<SimTK::Vec3>());
+    Object::registerType(Delay_<SimTK::Vec3>());
     Object::registerType(PendulumController());
 
     // Test the use of the Delay within a controller.
@@ -449,7 +449,7 @@ void testDelay() {
 }
 
 int main() {
-    SimTK_START_TEST("testOperators");
+    SimTK_START_TEST("testDelay");
         SimTK_SUBTEST(testDelay);
     SimTK_END_TEST();
 }
