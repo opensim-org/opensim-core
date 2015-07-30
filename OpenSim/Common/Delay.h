@@ -177,7 +177,16 @@ void Delay_<T>::extendAddToSystem(SimTK::MultibodySystem& system) const {
                                                get_delay());
 }
 
+/** A Delay component that allows one to delay the value of a scalar quantity.
+ * This is the most common type of Delay. See Delay_ for detailed information.
+ *
+ */
 using Delay = Delay_<SimTK::Real>;
+
+/** A Delay component that allows one to delay the value of a SimTK::Vector.
+ * For example, you could use this DelayVector to delay the value of
+ * the Model's generalized coordinates. See Delay_ for detailed information.
+ */
 using DelayVector = Delay_<SimTK::Vector>;
 
 } // namespace OpenSim
