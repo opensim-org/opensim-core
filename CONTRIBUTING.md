@@ -68,6 +68,7 @@ Coding Standards
 ----------------
 - [Header guards](#header-guards)
 - [Creating new OpenSim objects](#creating-new-opensim-objects)
+- [Holding onto Simbody resources in your component](#holding-onto-simbody-resources-in-your-component)
 - [Assignment operators in C++](#assignment-operators-in-c)
 - [Documenting your code](#documenting-your-code)
 - [Each line of text should be at most 80 characters](#each-line-of-text-should-be-at-most-80-characters)
@@ -130,6 +131,10 @@ void MyNewComponent::extendBaseClassMethod() {
 
 Now if someone changes the class structure later so that the Component's parent changes in the header file, the code in the .cpp file (which will have been long forgotten) will automatically change its behavior.
 
+### Holding onto Simbody resources in your component
+
+Many OpenSim components add something to the `SimTK::MultibodySystem` within the Component's `extendAddToSystem()`. For example, the `Delay` Component adds a `SimTK::Measure_<T>::Delay` to the `SimTK::MultibodySystem`. The `Delay` component must hold onto the `SimTK::Measure_<T>::Delay` and there are two mechanisms for doing so: the component could hold onto the `SimTK::Measure_<T>::Delay` handle, or it could hold onto a `SimTK::MeasureIndex`. Our convention is to hold onto the handle instead of the index whenever possible.
+
 ### Assignment operators in C++
 
 You should let the compiler automatically generate the copy constructor and copy assignment operator for your classes whenever possible. But sometimes you have to write one. Here is the basic template for copy assignment:
@@ -152,7 +157,7 @@ If the “copy stuff” part consists only of assignments that work for self ass
 
 Doxygen only looks in your .h files; it does not generate documentation from .cpp files. Thus, comments in .cpp files don't need to follow doxygen formatting, and in fact they should not because it is confusing and makes it look like there is API documentation when there isn't. You should mostly use `//`-style comments in .cpp files, and be sure you are addressing your comments to the right audience -- no doxygen reader will ever see them.
 
-Read more about doxygen on this page: Guide to Building Doxygen
+Read more about doxygen on this page in the OpenSim documentation: [Guide to Building Doxygen](http://simtk-confluence.stanford.edu:8080/display/OpenSim/Guide+to+Building+Doxygen)
 
 ### Each line of text should be at most 80 characters
 
