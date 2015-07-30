@@ -36,13 +36,6 @@ using namespace std;
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-// Destructor.
-CoordinateLimitForce::~CoordinateLimitForce()
-{
-    delete _upStep;
-    delete _loStep;
-}
-//_____________________________________________________________________________
 // Default constructor.
 CoordinateLimitForce::CoordinateLimitForce()
 {
@@ -80,8 +73,8 @@ CoordinateLimitForce::CoordinateLimitForce
 void CoordinateLimitForce::setNull()
 {
     setAuthors("Ajay Seth");
-    _upStep = NULL;
-    _loStep = NULL;
+    _upStep.reset();
+    _loStep.reset();
     
     // Scaling for coordinate values in m or degrees (rotational) 
     _w = SimTK::NaN;
@@ -226,14 +219,13 @@ void CoordinateLimitForce::extendConnectToModel(Model& aModel)
     _Klow = lowerStiffness/_w;
     _damp = damping/_w;
 
-    delete _upStep;
-    delete _loStep;
-
     // Define the transition from no stiffness to the upperStiffness as coordinate increases 
     // beyond the upper limit
-    _upStep = new SimTK::Function::Step(0.0, _Kup, _qup, _qup+_w*transition);
+    _upStep.reset(
+            new SimTK::Function::Step(0.0, _Kup, _qup, _qup+_w*transition));
     // Define the transition from lowerStiffness to zero as coordinate increases to the lower limit
-    _loStep = new SimTK::Function::Step(_Klow, 0.0, _qlow-_w*transition, _qlow);
+    _loStep.reset(
+            new SimTK::Function::Step(_Klow, 0.0, _qlow-_w*transition, _qlow));
 }
 
 
