@@ -57,23 +57,11 @@ static const Vec3 DefaultDefaultColor(.5,.5,.5); // boring gray
  */
 GeometryPath::GeometryPath() :
     ModelComponent(),
-    _preScaleLength(0.0),
-    _owner(nullptr)
-{
-    setNull();
-    constructProperties();
- }
-
-
-//_____________________________________________________________________________
-/*
- * Set the data members of this GeometryPath to their null values.
- */
-void GeometryPath::setNull()
+    _preScaleLength(0.0)
 {
     setAuthors("Peter Loan");
-    _maSolver.reset();
-}
+    constructProperties();
+ }
 
 //_____________________________________________________________________________
 /*

@@ -213,8 +213,6 @@ private:
     double calcLengthAfterPathComputation
        (const SimTK::State& s, const Array<PathPoint*>& currentPath) const;
 
-
-    void setNull();
     void constructProperties();
     void updateDisplayPath(const SimTK::State& s) const;
     void namePathPoints(int aStartingIndex);
