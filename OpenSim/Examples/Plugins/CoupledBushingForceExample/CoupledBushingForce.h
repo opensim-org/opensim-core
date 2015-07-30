@@ -1,5 +1,5 @@
-#ifndef __CoupledBushingForce_h__
-#define __CoupledBushingForce_h__
+#ifndef OPENSIM_COUPLED_BUSHING_FORCE_H_
+#define OPENSIM_COUPLED_BUSHING_FORCE_H_
 /* -------------------------------------------------------------------------- *
  *                      OpenSim:  CoupledBushingForce.h                       *
  * -------------------------------------------------------------------------- *
@@ -25,11 +25,10 @@
 
 
 // INCLUDE
-#include <string>
 #include "osimPluginDLL.h"
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec.h>
+#include <OpenSim/Common/Property.h>
 #include <OpenSim/Simulation/Model/Force.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 
 namespace OpenSim {
 
@@ -38,81 +37,64 @@ namespace OpenSim {
 /**
  * A class implementing a Coupled Bushing Force.
  * A Couple Bushing Force is the force proportional to the deviation of two frames, 
- * where components of the resulting BodyForce are coupled to all any or all 
+ * where components of the resulting BodyForce are coupled to any or all 
  * deviations, such that the general stiffness and damping matrices are 6x6.
  *
- * Deviations of a frame1 on body1 and another (frame2) on body2 are represents in
- * termsof x-y-z Euler angle sequence and x,y,z position of frame2 in frame1.
- * Damping is applied to the relative angular velocity and linear velocity of
- * frame2 in frame1.
+ * Deviations of an offset_frame (1) (on a PhysicalFrame e.g. a Body) and another 
+ * offset_frame2 (on another PhysicalFrame) are expressed in terms of and x-y-z 
+ * Euler angle sequence (for rotational deviation in radians) and x,y,z (distance
+ * in m) of the bushing's offset_frame2 w.r.t. offset_frame1.
+ * Damping is applied to the relative angular velocity (rad/s) and linear velocity 
+ * (m/s) of offset_frame2 in offset_frame1.
  *
  * @author Ajay Seth
  * @version 1.0
  */
 class OSIMPLUGIN_API CoupledBushingForce : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(CoupledBushingForce, Force);
-
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-    /** Specify first of two bodies held together by the bushing. */
-    PropertyStr _body1NameProp;
-    std::string& _body1Name;
-
-    /** Specify second of two bodies held by the bushing force. */
-    PropertyStr _body2NameProp;
-    std::string& _body2Name;
-
-    /** Location of the bushing frame1 in first body specified in body1 reference frame. */
-    PropertyDblVec3 _locationInBody1Prop;
-    SimTK::Vec3& _locationInBody1;
-
-    /** Orientation of the bushing frame1 axes on body1 specified in body1's
-    reference frame.  Euler XYZ body-fixed rotation angles are used to express
-    the orientation. */
-    PropertyDblVec3 _orientationInBody1Prop;
-    SimTK::Vec3& _orientationInBody1;
-
-    /** Location of bushing frame2 in second body specified in body2 reference frame. */
-    PropertyDblVec3 _locationInBody2Prop;
-    SimTK::Vec3& _locationInBody2;
-
-    /** Orientation of bushing frame2 axes on body2 specified in body2's
-    reference frame.  Euler XYZ body-fixed rotation angles are used to express
-    the orientation. */
-    PropertyDblVec3 _orientationInBody2Prop;
-    SimTK::Vec3& _orientationInBody2;
+public:
+    //==============================================================================
+    // PROPERTIES
+    //==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with the CoupleBushingForce. **/
+    /**@{**/
+    /// The frames that are connected by the bushing force
+    OpenSim_DECLARE_PROPERTY(offset_frame1, PhysicalOffsetFrame,
+        "Bushing offset on frame 1.");
+    OpenSim_DECLARE_PROPERTY(offset_frame2, PhysicalOffsetFrame,
+        "Bushing offset on frame 2.");
 
     /** Stiffness of the bushing related to Euler XYZ body-fixed angular and
-        translationals deviations that express frame2 in frame1. Force is zero
+        translational deviations that express frame2 in frame1. Force is zero
         when frames are coincident and aligned. */
-    PropertyDblVec6 _stiffnessMatrixRow1Prop;
-    PropertyDblVec6 _stiffnessMatrixRow2Prop;
-    PropertyDblVec6 _stiffnessMatrixRow3Prop;
-    PropertyDblVec6 _stiffnessMatrixRow4Prop;
-    PropertyDblVec6 _stiffnessMatrixRow5Prop;
-    PropertyDblVec6 _stiffnessMatrixRow6Prop;
-    SimTK::Mat66 _stiffnessMatrix;
+    OpenSim_DECLARE_PROPERTY(stiffness_row1, SimTK::Vec6,
+        "1st row of stiffness matrix: rotation (Nm/rad) & translation (N/m).");
+    OpenSim_DECLARE_PROPERTY(stiffness_row2, SimTK::Vec6,
+        "2nd row of stiffness matrix: rotation (Nm/rad) & translation (N/m).");
+    OpenSim_DECLARE_PROPERTY(stiffness_row3, SimTK::Vec6,
+        "3rd row of stiffness matrix: rotation (Nm/rad) & translation (N/m).");
+    OpenSim_DECLARE_PROPERTY(stiffness_row4, SimTK::Vec6,
+        "4th row of stiffness matrix: rotation (Nm/rad) & translation (N/m).");
+    OpenSim_DECLARE_PROPERTY(stiffness_row5, SimTK::Vec6,
+        "5th row of stiffness matrix: rotation (Nm/rad) & translation (N/m).");
+    OpenSim_DECLARE_PROPERTY(stiffness_row6, SimTK::Vec6,
+        "6th row of stiffness matrix: rotation (Nm/rad) & translation (N/m).");
 
     /** Damping of the bushing related to XYZ angular and
         translational speeds that express frame2 in frame1.  */
-    PropertyDblVec6 _dampingMatrixRow1Prop;
-    PropertyDblVec6 _dampingMatrixRow2Prop;
-    PropertyDblVec6 _dampingMatrixRow3Prop;
-    PropertyDblVec6 _dampingMatrixRow4Prop;
-    PropertyDblVec6 _dampingMatrixRow5Prop;
-    PropertyDblVec6 _dampingMatrixRow6Prop;
-    SimTK::Mat66 _dampingMatrix;
-
-private:
-    // underlying SimTK system elements
-    // the mobilized bodies involved
-    const SimTK::MobilizedBody *_b1;
-    const SimTK::MobilizedBody *_b2;
-    // The bushing frames affixed to the mobilized bodies
-    SimTK::Transform _inb1;
-    SimTK::Transform _inb2;
+    OpenSim_DECLARE_PROPERTY(damping_row1, SimTK::Vec6,
+        "1st row of damping matrix 3 rotation (Nm/(rad/s)) & 3 translation (N/(m/s)).");
+    OpenSim_DECLARE_PROPERTY(damping_row2, SimTK::Vec6,
+        "2nd row of damping matrix 3 rotation (Nm/(rad/s)) & 3 translation (N/(m/s)).");
+    OpenSim_DECLARE_PROPERTY(damping_row3, SimTK::Vec6,
+        "3rd row of damping matrix 3 rotation (Nm/(rad/s)) & 3 translation (N/(m/s)).");
+    OpenSim_DECLARE_PROPERTY(damping_row4, SimTK::Vec6,
+        "4th row of damping matrix 3 rotation (Nm/(rad/s)) & 3 translation (N/(m/s)).");
+    OpenSim_DECLARE_PROPERTY(damping_row5, SimTK::Vec6,
+        "5th row of damping matrix 3 rotation (Nm/(rad/s)) & 3 translation (N/(m/s)).");
+    OpenSim_DECLARE_PROPERTY(damping_row6, SimTK::Vec6,
+        "6th row of damping matrix 3 rotation (Nm/(rad/s)) & 3 translation (N/(m/s)).");
 
 //=============================================================================
 // METHODS
@@ -120,72 +102,76 @@ private:
 public:
     // CONSTRUCTION
     CoupledBushingForce();
-    CoupledBushingForce( std::string body1Name, SimTK::Vec3 point1, SimTK::Vec3 orientation1,
-                  std::string body2Name, SimTK::Vec3 point2, SimTK::Vec3 orientation2,
-                  SimTK::Mat66 stiffnessMat, SimTK::Mat66 dampingMat);
-    CoupledBushingForce(const CoupledBushingForce &aForce);
+    /** Construct the CoupleBushingForce given the two offset frames to which
+    it attaches by name. Stiffness and damping properties are supplied by 6x6
+    matrices. Rotational stiffness (damping) in N/rad(/s) and translational in
+    N/m(/s). Off-diagonals represent the coupling terms.
+    See property declarations for more information. **/
+    CoupledBushingForce(const std::string& frame1Name,
+                            SimTK::Vec3 point1, SimTK::Vec3 orientation1,
+                        const std::string& body2Name,
+                            SimTK::Vec3 point2, SimTK::Vec3 orientation2,
+                         SimTK::Mat66 stiffnessMat, SimTK::Mat66 dampingMat);
+
     virtual ~CoupledBushingForce();
 
-    CoupledBushingForce& operator=(const CoupledBushingForce &aForce);
-    void copyData(const CoupledBushingForce &aForce);
-
-    //SET 
-    void setBody1ByName(std::string aBodyName);
-    void setBody1BushingLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
-    void setBody2ByName(std::string aBodyName);
-    void setBody2BushingLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
+    // Uses default (compiler-generated) destructor, copy constructor, and copy
+    // assignment operator.
 
 
     //--------------------------------------------------------------------------
     // COMPUTATION
     //--------------------------------------------------------------------------
     /** Compute the deflection (spatial separation) of the two frames connected
-        by the bushing force. Angualar displacement expressed in Euler angles.
+        by the bushing force. Angular displacement expressed in Euler angles.
         The force and potential energy are determined by the deflection.  */
-    virtual SimTK::Vec6 computeDeflection(const SimTK::State& s) const;
+    SimTK::Vec6 computeDeflection(const SimTK::State& s) const;
 
     /** Compute the bushing force contribution to the system and add in to appropriate
-      * bodyForce and/or system generalizedForce. The bushing force is [K]*dq + [D]*dqdot
-      * where, [K] is the spatial 6dof stiffness matrix between the two frames 
-               dq is the deflection in body spatial coordinates with rotations in Euler angles
-      *        [D] is the spatial 6dof damping matrix opposing the velocity between the frames
-      *        dqdot is the relative spatial velocity of the two frames
-      * CoupledBushingForce implementation based SimTK::Force::LinearBushing
-      * developed and implemented by Michael Sherman.
-      */
-    virtual void computeForce(const SimTK::State& s, 
+     bodyForce and/or system generalizedForce. The bushing force is [K]*dq + [D]*dqdot
+     where, [K] is the spatial 6dof stiffness matrix between the two frames 
+         dq is the deflection in body spatial coordinates with rotations in Euler angles
+         [D] is the spatial 6dof damping matrix opposing the velocity between the frames
+         dqdot is the relative spatial velocity of the two frames
+     CoupledBushingForce implementation based SimTK::Force::LinearBushing
+     developed and implemented by Michael Sherman. */
+    void computeForce(const SimTK::State& s, 
                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const;
+                              SimTK::Vector& generalizedForces) const override;
 
     /** Potential energy is determined by the elastic energy storage of the bushing.
         In spatial terms, U = ~dq*[K]*dq, with K and dq defined above. */
-    virtual double computePotentialEnergy(const SimTK::State& s) const;
+    double computePotentialEnergy(const SimTK::State& s) const override;
 
     //-----------------------------------------------------------------------------
     // Reporting
     //-----------------------------------------------------------------------------
     /** 
-     * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
+     Provide name(s) of the quantities (column labels) of the force value(s) to be reported
      */
-    virtual OpenSim::Array<std::string> getRecordLabels() const ;
+    OpenSim::Array<std::string> getRecordLabels() const override;
     /**
     *  Provide the value(s) to be reported that correspond to the labels
     */
-    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
+    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
-protected:
-    void extendConnectToModel(Model& aModel) override;
-    /**
-     * Create a SimTK::Force which implements this CoupledBushingForce as part of the SimTK::MultibodySystem.
-     */
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 
 private:
     void setNull();
-    void setupProperties();
+    void constructProperties();
+
+    //--------------------------------------------------------------------------
+    // Implement ModelComponent interface.
+    //--------------------------------------------------------------------------
+    void extendFinalizeFromProperties() override;
+
     void constructMatricesFromProperties();
     void updatePropertiesFromMatrices();
+
+    // internal matrices
+    SimTK::Mat66 _stiffnessMatrix;
+    SimTK::Mat66 _dampingMatrix;
 
 //=============================================================================
 };  // END of class CoupledBushingForce
@@ -194,6 +180,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __CoupledBushingForce_h__
+#endif // OPENSIM_COUPLED_BUSHING_FORCE_H_
 
 

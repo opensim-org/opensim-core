@@ -50,37 +50,39 @@ CoupledBushingForce::~CoupledBushingForce()
 /**
  * Default constructor.
  */
-CoupledBushingForce::CoupledBushingForce() : Force(),
-    _body1Name(_body1NameProp.getValueStr()),
-    _body2Name(_body2NameProp.getValueStr()),
-    _locationInBody1(_locationInBody1Prop.getValueDblVec()),
-    _orientationInBody1(_orientationInBody1Prop.getValueDblVec()),
-    _locationInBody2(_locationInBody2Prop.getValueDblVec()),
-    _orientationInBody2(_orientationInBody2Prop.getValueDblVec())
+CoupledBushingForce::CoupledBushingForce() : Force()
 {
-    constructMatricesFromProperties();
     setNull();
 }
 
 /* Convenience constructor */
-CoupledBushingForce::CoupledBushingForce( std::string body1Name, SimTK::Vec3 point1, SimTK::Vec3 orientation1,
-                  std::string body2Name, SimTK::Vec3 point2, SimTK::Vec3 orientation2,
-                  SimTK::Mat66 stiffnessMat, SimTK::Mat66 dampingMat):  Force(),
-    _body1Name(_body1NameProp.getValueStr()),
-    _body2Name(_body2NameProp.getValueStr()),
-    _locationInBody1(_locationInBody1Prop.getValueDblVec()),
-    _orientationInBody1(_orientationInBody1Prop.getValueDblVec()),
-    _locationInBody2(_locationInBody2Prop.getValueDblVec()),
-    _orientationInBody2(_orientationInBody2Prop.getValueDblVec())
+CoupledBushingForce::CoupledBushingForce( const std::string& frame1Name,
+                SimTK::Vec3 point1, SimTK::Vec3 orientation1,
+                const std::string& frame2Name, 
+                SimTK::Vec3 point2, SimTK::Vec3 orientation2,
+                SimTK::Mat66 stiffnessMat, SimTK::Mat66 dampingMat) : Force()
 {
     setNull();
-    constructMatricesFromProperties();
-    _body1Name = body1Name;
-    _body2Name = body2Name;
-    _locationInBody1 = point1;
-    _orientationInBody1 = orientation1;
-    _locationInBody2 = point2;
-    _orientationInBody2 = orientation2;
+
+    upd_offset_frame1().setName(frame1Name + "_offset");
+    upd_offset_frame1().updConnector<PhysicalFrame>("parent")
+        .set_connected_to_name(frame1Name);
+    Rotation rotation1(BodyRotationSequence,
+        orientation1[0], XAxis,
+        orientation1[1], YAxis,
+        orientation1[2], ZAxis);
+    upd_offset_frame1().setOffsetTransform(Transform(rotation1, point1));
+
+    upd_offset_frame2().setName(frame2Name + "_offset");
+    upd_offset_frame2().updConnector<PhysicalFrame>("parent")
+        .set_connected_to_name(frame2Name);
+    Rotation rotation2(BodyRotationSequence,
+        orientation2[0], XAxis,
+        orientation2[1], YAxis,
+        orientation2[2], ZAxis);
+    upd_offset_frame2().setOffsetTransform(Transform(rotation2, point2));
+
+
     _stiffnessMatrix = stiffnessMat;
     _dampingMatrix = dampingMat;
     updatePropertiesFromMatrices();
@@ -89,239 +91,67 @@ CoupledBushingForce::CoupledBushingForce( std::string body1Name, SimTK::Vec3 poi
 
 //_____________________________________________________________________________
 /**
- * Copy constructor.
- *
- * @param aForce CoupledBushingForce to be copied.
- */
-CoupledBushingForce::CoupledBushingForce(const CoupledBushingForce &aForce) :
-   Force(aForce),
-    _body1Name(_body1NameProp.getValueStr()),
-    _body2Name(_body2NameProp.getValueStr()),
-    _locationInBody1(_locationInBody1Prop.getValueDblVec()),
-    _orientationInBody1(_orientationInBody1Prop.getValueDblVec()),
-    _locationInBody2(_locationInBody2Prop.getValueDblVec()),
-    _orientationInBody2(_orientationInBody2Prop.getValueDblVec())
-{
-    setNull();
-    constructMatricesFromProperties();
-    copyData(aForce);
-}
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy data members from one CoupledBushingForce to another.
- *
- * @param aForce CoupledBushingForce to be copied.
- */
-void CoupledBushingForce::copyData(const CoupledBushingForce &aForce)
-{
-    _body1Name = aForce._body1Name;
-    _body2Name = aForce._body2Name;
-    _locationInBody1 = aForce._locationInBody1;
-    _orientationInBody1 = aForce._orientationInBody1;
-    _locationInBody2 = aForce._locationInBody2;
-    _orientationInBody2 = aForce._orientationInBody2;
-    _stiffnessMatrix = aForce._stiffnessMatrix;
-    _dampingMatrix = aForce._dampingMatrix;
-    updatePropertiesFromMatrices();
-}
-
-//_____________________________________________________________________________
-/**
  * Set the data members of this CoupledBushingForce to their null values.
  */
 void CoupledBushingForce::setNull()
 {
     setAuthors("Ajay Seth");
-    _b1 = NULL;
-    _b2 = NULL;
-    setupProperties();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
+/*
+ * Create properties 
  */
-void CoupledBushingForce::setupProperties()
+void CoupledBushingForce::constructProperties()
 {
-    // Body 1 name
-    _body1NameProp.setName("body_1");
-    _propertySet.append(&_body1NameProp);
+    //Default frames
+    PhysicalOffsetFrame frame1;
+    PhysicalOffsetFrame frame2;
+    frame1.setName("offset_frame1");
+    frame2.setName("offset_frame2");
 
-    // Body 2 name
-    _body2NameProp.setName("body_2");
-    _propertySet.append(&_body2NameProp);
+    constructProperty_offset_frame1(frame1);
+    constructProperty_offset_frame2(frame2);
+    // default bushing material properties
+    // 6x6 stiffness matrix
+    constructProperty_stiffness_row1(Vec6(0));
+    constructProperty_stiffness_row2(Vec6(0));
+    constructProperty_stiffness_row3(Vec6(0));
+    constructProperty_stiffness_row4(Vec6(0));
+    constructProperty_stiffness_row5(Vec6(0));
+    constructProperty_stiffness_row6(Vec6(0));
+    // 6x6 damping matrix
+    constructProperty_damping_row1(Vec6(0));
+    constructProperty_damping_row2(Vec6(0));
+    constructProperty_damping_row3(Vec6(0));
+    constructProperty_damping_row4(Vec6(0));
+    constructProperty_damping_row5(Vec6(0));
+    constructProperty_damping_row6(Vec6(0));
+}
+ 
+void CoupledBushingForce::extendFinalizeFromProperties()
+{
+    Super::extendFinalizeFromProperties();
 
-    //Default location and orientation (rotation sequence)
-    SimTK::Vec3 origin(0.0, 0.0, 0.0);
-
-    // Location in Body 1 
-    _locationInBody1Prop.setName("location_body_1");
-    _locationInBody1Prop.setValue(origin);
-    _propertySet.append(&_locationInBody1Prop);
-
-    // Orientation in Body 1 
-    _orientationInBody1Prop.setName("orientation_body_1");
-    _orientationInBody1Prop.setValue(origin);
-    _propertySet.append(&_orientationInBody1Prop);
-
-    // Location in Body 2 
-    _locationInBody2Prop.setName("location_body_2");
-    _locationInBody2Prop.setValue(origin);
-    _propertySet.append(&_locationInBody2Prop);
-
-    // Orientation in Body 2 
-    _orientationInBody2Prop.setName("orientation_body_2");
-    _orientationInBody2Prop.setValue(origin);
-    _propertySet.append(&_orientationInBody2Prop);
-
-    _stiffnessMatrixRow1Prop.setName("stiffness_row1");
-    _propertySet.append(&_stiffnessMatrixRow1Prop );
-
-    _stiffnessMatrixRow2Prop.setName("stiffness_row2");
-    _propertySet.append(&_stiffnessMatrixRow2Prop );
-
-    _stiffnessMatrixRow3Prop.setName("stiffness_row3");
-    _propertySet.append(&_stiffnessMatrixRow3Prop );
-
-    _stiffnessMatrixRow4Prop.setName("stiffness_row4");
-    _propertySet.append(&_stiffnessMatrixRow4Prop );
-
-    _stiffnessMatrixRow5Prop.setName("stiffness_row5");
-    _propertySet.append(&_stiffnessMatrixRow5Prop );
-
-    _stiffnessMatrixRow6Prop.setName("stiffness_row6");
-    _propertySet.append(&_stiffnessMatrixRow6Prop );
-
-    _dampingMatrixRow1Prop.setName("damping_row1");
-    _propertySet.append(&_dampingMatrixRow1Prop );
-
-    _dampingMatrixRow2Prop.setName("damping_row2");
-    _propertySet.append(&_dampingMatrixRow2Prop );
-
-    _dampingMatrixRow3Prop.setName("damping_row3");
-    _propertySet.append(&_dampingMatrixRow3Prop );
-
-    _dampingMatrixRow4Prop.setName("damping_row4");
-    _propertySet.append(&_dampingMatrixRow4Prop );
-
-    _dampingMatrixRow5Prop.setName("damping_row5");
-    _propertySet.append(&_dampingMatrixRow5Prop );
-
-    _dampingMatrixRow6Prop.setName("damping_row6");
-    _propertySet.append(&_dampingMatrixRow6Prop );
+    //mark the two PhysicalOffsetFrames as subcomponents 
+    addComponent(&upd_offset_frame1());
+    addComponent(&upd_offset_frame2());
 }
 
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel OpenSim model containing this CoupledBushingForce.
- */
-void CoupledBushingForce::extendConnectToModel(Model& aModel)
-{
-    Super::extendConnectToModel(aModel);
-
-    string errorMessage;
-    // Look up the two bodies being connected by bushing by name in the
-    // model and might as well keep a pointer to them
-    if (!aModel.updBodySet().contains(_body1Name)) {
-        errorMessage = "Invalid bushing body1 (" + _body1Name + ") specified in Force " + getName();
-        throw (Exception(errorMessage.c_str()));
-    }
-    if (!aModel.updBodySet().contains(_body2Name)) {
-        errorMessage = "Invalid bushing body2 (" + _body2Name + ") specified in Force " + getName();
-        throw (Exception(errorMessage.c_str()));
-    }
-}
-
-void CoupledBushingForce::extendAddToSystem(SimTK::MultibodySystem& system) const
-{
-    Super::extendAddToSystem(system);
-
-    Body &body1 = _model->updBodySet().get(_body1Name);
-    Body &body2 = _model->updBodySet().get(_body2Name);
-
-    // Beyond the const Component get access to underlying SimTK elements
-    CoupledBushingForce* mutableThis = const_cast<CoupledBushingForce *>(this);
-
-    // Get underlying mobilized bodies
-    mutableThis->_b1 = &body1.getMobilizedBody();
-    mutableThis->_b2 = &body2.getMobilizedBody();
-    // Define the transforms for the bushing frames affixed to the specified bodies
-    SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(_orientationInBody1);
-    SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(_orientationInBody2);
-    // Hang on to the transforms for the bushing frames
-    mutableThis->_inb1 = SimTK::Transform(r1, _locationInBody1);
-    mutableThis->_inb2 = SimTK::Transform(r2, _locationInBody2);
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-CoupledBushingForce& CoupledBushingForce::operator=(const CoupledBushingForce &aForce)
-{
-    Force::operator=(aForce);
-    copyData(aForce);
-    return(*this);
-}
-
-//=============================================================================
-// SET
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Following methods set attributes of the weld Force */
-void CoupledBushingForce::setBody1ByName(std::string aBodyName)
-{
-    _body1Name = aBodyName;
-}
-
-void CoupledBushingForce::setBody2ByName(std::string aBodyName)
-{
-    _body2Name = aBodyName;
-}
-
-/** Set the location and orientation (optional) for weld on body 1*/
-void CoupledBushingForce::setBody1BushingLocation(Vec3 location, Vec3 orientation)
-{
-    _locationInBody1 = location;
-    _orientationInBody1 = orientation;
-}
-
-/** Set the location and orientation (optional) for weld on body 2*/
-void CoupledBushingForce::setBody2BushingLocation(Vec3 location, Vec3 orientation)
-{
-    _locationInBody2 = location;
-    _orientationInBody2 = orientation;
-}
 
 //=============================================================================
 // COMPUTATION
 //=============================================================================
 /** Compute the deflection (spatial separation) of the two frames connected
-    by the bushing force. Angualar displacement expressed in Euler angles.
+    by the bushing force. Angular displacement expressed in Euler angles.
     The force and potential energy are determined by the deflection.  */
 SimTK::Vec6 CoupledBushingForce::computeDeflection(const SimTK::State& s) const
 {
-    const Transform& X_GB1 = _b1->getBodyTransform(s);
-
-    const Transform& X_GB2 = _b2->getBodyTransform(s);
-
     // Define the frame on body 1 is the "fixed" frame, F
-    Transform X_GF = X_GB1 * _inb1;
+    Transform X_GF = get_offset_frame1().getGroundTransform(s);
     // Define the frame on body 2 as the "moving" frame, M
-    Transform X_GM = X_GB2 * _inb2;
+    Transform X_GM = get_offset_frame2().getGroundTransform(s);
     // Express M in F
     Transform X_FM = ~X_GF * X_GM;    
 
@@ -346,11 +176,11 @@ void CoupledBushingForce::computeForce(const SimTK::State& s,
                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
                               SimTK::Vector& generalizedForces) const
 {
-    const Transform& X_GB1 = _b1->getBodyTransform(s);
-    const Transform& X_GB2 = _b2->getBodyTransform(s);
+    const Transform& X_GB1 = get_offset_frame1().getMobilizedBody().getBodyTransform(s);
+    const Transform& X_GB2 = get_offset_frame2().getMobilizedBody().getBodyTransform(s);
 
-    Transform X_GF = X_GB1 * _inb1;   
-    Transform X_GM = X_GB2 * _inb2;   
+    Transform X_GF = get_offset_frame1().getGroundTransform(s);
+    Transform X_GM = get_offset_frame2().getGroundTransform(s);
     Transform X_FM = ~X_GF * X_GM;    
     const Rotation& R_GF = X_GF.R();
     const Rotation& R_GM = X_GM.R();
@@ -364,12 +194,12 @@ void CoupledBushingForce::computeForce(const SimTK::State& s,
     Vec6 fk = _stiffnessMatrix*dq;
 
     // Now evaluate velocities.
-    const SpatialVec& V_GB1 = _b1->getBodyVelocity(s);
-    const SpatialVec& V_GB2 = _b2->getBodyVelocity(s);
+    const SpatialVec& V_GB1 = get_offset_frame1().getMobilizedBody().getBodyVelocity(s);
+    const SpatialVec& V_GB2 = get_offset_frame2().getMobilizedBody().getBodyVelocity(s);
 
     // Re-express local vectors in the Ground frame.
-    Vec3 p_B1F_G =  X_GB1.R() * _inb1.p();   // 15 flops
-    Vec3 p_B2M_G =  X_GB2.R() * _inb2.p();   // 15 flops
+    Vec3 p_B1F_G = X_GB1.R() * get_offset_frame1().getOffsetTransform().p();   // 15 flops
+    Vec3 p_B2M_G = X_GB2.R() * get_offset_frame2().getOffsetTransform().p();   // 15 flops
     Vec3 p_FM_G  =  X_GF.R()  * X_FM.p();    // 15 flops
 
     SpatialVec V_GF(V_GB1[0], V_GB1[1] + V_GB1[0] % p_B1F_G);
@@ -422,8 +252,8 @@ void CoupledBushingForce::computeForce(const SimTK::State& s,
     SpatialVec F_GB1(F_GF[0] + p_B1F_G % F_GF[1], F_GF[1]);
 
     // Apply (add-in) the body forces to the system set of body forces
-    bodyForces[_b2->getMobilizedBodyIndex()] += F_GB2;
-    bodyForces[_b1->getMobilizedBodyIndex()] += F_GB1;
+    bodyForces[get_offset_frame2().getMobilizedBodyIndex()] += F_GB2;
+    bodyForces[get_offset_frame1().getMobilizedBodyIndex()] += F_GB1;
 }
 
 /** Potential energy stored in the bushing is purely a function of the deflection
@@ -440,25 +270,29 @@ double CoupledBushingForce::computePotentialEnergy(const SimTK::State& s) const
 //=============================================================================
 // Reporting
 //=============================================================================
-/** 
+/*
  * Provide names of the quantities (column labels) of the force value(s) reported
- * 
  */
 OpenSim::Array<std::string> CoupledBushingForce::getRecordLabels() const 
 {
     OpenSim::Array<std::string> labels("");
-    labels.append(getName()+"."+_body1Name+".force.X");
-    labels.append(getName()+"."+_body1Name+".force.Y");
-    labels.append(getName()+"."+_body1Name+".force.Z");
-    labels.append(getName()+"."+_body1Name+".torque.X");
-    labels.append(getName()+"."+_body1Name+".torque.Y");
-    labels.append(getName()+"."+_body1Name+".torque.Z");
-    labels.append(getName()+"."+_body2Name+".force.X");
-    labels.append(getName()+"."+_body2Name+".force.Y");
-    labels.append(getName()+"."+_body2Name+".force.Z");
-    labels.append(getName()+"."+_body2Name+".torque.X");
-    labels.append(getName()+"."+_body2Name+".torque.Y");
-    labels.append(getName()+"."+_body2Name+".torque.Z");
+
+    // Forces applied to underlying MobilizedBody which is a base PhysicalFrame
+    std::string base1Name = get_offset_frame1().findBaseFrame().getName();
+    std::string base2Name = get_offset_frame2().findBaseFrame().getName();
+
+    labels.append(getName() + "." + base1Name + ".force.X");
+    labels.append(getName() + "." + base1Name + ".force.Y");
+    labels.append(getName() + "." + base1Name + ".force.Z");
+    labels.append(getName() + "." + base1Name + ".torque.X");
+    labels.append(getName() + "." + base1Name + ".torque.Y");
+    labels.append(getName() + "." + base1Name + ".torque.Z");
+    labels.append(getName() + "." + base2Name + ".force.X");
+    labels.append(getName() + "." + base2Name + ".force.Y");
+    labels.append(getName() + "." + base2Name + ".force.Z");
+    labels.append(getName() + "." + base2Name + ".torque.X");
+    labels.append(getName() + "." + base2Name + ".torque.Y");
+    labels.append(getName() + "." + base2Name + ".torque.Z");
 
     return labels;
 }
@@ -477,13 +311,13 @@ OpenSim::Array<double> CoupledBushingForce::getRecordValues(const SimTK::State& 
 
     //get the net force added to the system contributed by the bushing
     simtkSpring.calcForceContribution(state, bodyForces, particleForces, mobilityForces);
-    SimTK::Vec3 forces = bodyForces(_model->getBodySet().get(_body1Name).getMobilizedBodyIndex())[1];
-    SimTK::Vec3 torques = bodyForces(_model->getBodySet().get(_body1Name).getMobilizedBodyIndex())[0];
+    SimTK::Vec3 forces = bodyForces(get_offset_frame1().getMobilizedBodyIndex())[1];
+    SimTK::Vec3 torques = bodyForces(get_offset_frame1().getMobilizedBodyIndex())[0];
     values.append(3, &forces[0]);
     values.append(3, &torques[0]);
 
-    forces = bodyForces(_model->getBodySet().get(_body2Name).getMobilizedBodyIndex())[1];
-    torques = bodyForces(_model->getBodySet().get(_body2Name).getMobilizedBodyIndex())[0];
+    forces = bodyForces(get_offset_frame2().getMobilizedBodyIndex())[1];
+    torques = bodyForces(get_offset_frame2().getMobilizedBodyIndex())[0];
 
     values.append(3, &forces[0]);
     values.append(3, &torques[0]);
@@ -494,34 +328,34 @@ OpenSim::Array<double> CoupledBushingForce::getRecordValues(const SimTK::State& 
 /* UTILITIES */
 void CoupledBushingForce::constructMatricesFromProperties()
 {
-    _stiffnessMatrix = Mat66(~_stiffnessMatrixRow1Prop.getValueDblVec(),
-                             ~_stiffnessMatrixRow2Prop.getValueDblVec(),
-                             ~_stiffnessMatrixRow3Prop.getValueDblVec(),
-                             ~_stiffnessMatrixRow4Prop.getValueDblVec(),
-                             ~_stiffnessMatrixRow5Prop.getValueDblVec(),
-                             ~_stiffnessMatrixRow6Prop.getValueDblVec());
+    _stiffnessMatrix = Mat66( ~get_stiffness_row1(),
+                              ~get_stiffness_row2(),
+                              ~get_stiffness_row3(),
+                              ~get_stiffness_row4(),
+                              ~get_stiffness_row5(),
+                              ~get_stiffness_row6() );
 
-    _dampingMatrix = Mat66(~_dampingMatrixRow1Prop.getValueDblVec(),
-                           ~_dampingMatrixRow2Prop.getValueDblVec(),
-                           ~_dampingMatrixRow3Prop.getValueDblVec(),
-                           ~_dampingMatrixRow4Prop.getValueDblVec(),
-                           ~_dampingMatrixRow5Prop.getValueDblVec(),
-                           ~_dampingMatrixRow6Prop.getValueDblVec());
+    _dampingMatrix = Mat66( ~get_damping_row1(),
+                            ~get_damping_row2(),
+                            ~get_damping_row3(),
+                            ~get_damping_row4(),
+                            ~get_damping_row5(),
+                            ~get_damping_row6() );
 }
 
 void CoupledBushingForce::updatePropertiesFromMatrices()
 {
-    _stiffnessMatrixRow1Prop.setValue(_stiffnessMatrix(0));
-    _stiffnessMatrixRow2Prop.setValue(_stiffnessMatrix(1));
-    _stiffnessMatrixRow3Prop.setValue(_stiffnessMatrix(2));
-    _stiffnessMatrixRow4Prop.setValue(_stiffnessMatrix(3));
-    _stiffnessMatrixRow5Prop.setValue(_stiffnessMatrix(4));
-    _stiffnessMatrixRow6Prop.setValue(_stiffnessMatrix(5));
+    upd_stiffness_row1() = _stiffnessMatrix(0);
+    upd_stiffness_row2() = _stiffnessMatrix(1);
+    upd_stiffness_row3() = _stiffnessMatrix(2);
+    upd_stiffness_row4() = _stiffnessMatrix(3);
+    upd_stiffness_row5() = _stiffnessMatrix(4);
+    upd_stiffness_row6() = _stiffnessMatrix(5);
 
-    _dampingMatrixRow1Prop.setValue(_dampingMatrix(0));
-    _dampingMatrixRow2Prop.setValue(_dampingMatrix(1));
-    _dampingMatrixRow3Prop.setValue(_dampingMatrix(2));
-    _dampingMatrixRow4Prop.setValue(_dampingMatrix(3));
-    _dampingMatrixRow5Prop.setValue(_dampingMatrix(4));
-    _dampingMatrixRow6Prop.setValue(_dampingMatrix(5));
+    upd_damping_row1() = _dampingMatrix(0);
+    upd_damping_row2() = _dampingMatrix(1);
+    upd_damping_row3() = _dampingMatrix(2);
+    upd_damping_row4() = _dampingMatrix(3);
+    upd_damping_row5() = _dampingMatrix(4);
+    upd_damping_row6() = _dampingMatrix(5);
 }
