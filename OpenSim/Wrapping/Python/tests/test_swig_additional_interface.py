@@ -63,10 +63,9 @@ def test_markAdopted2():
     constr.setConstantDistance(1)
     a.addConstraint(constr)
 
-    # Force requires body names. If not provided, you get a segfault.
-    f = osim.BushingForce()
-    f.setBody1ByName("ground")
-    f.setBody2ByName("body")
+    # Force requires frames. If not provided, you get a segfault.
+    f = osim.BushingForce(a.getGround(), body, osim.Vec3(2, 2, 2), osim.Vec3(1, 1, 1), osim.Vec3(0, 0, 0), osim.Vec3(0, 0, 0))
+
     a.addForce(f)
 
     model = osim.Model(os.environ['OPENSIM_HOME'] +
