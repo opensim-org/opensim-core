@@ -235,7 +235,7 @@ void testDelaySimulation(Model& model, double delayTime = 0.017,
         s = ts.getState();
 
         // Must realize in order to access delayed value.
-        model.realizeTime(s); // TODO should this be Velocity?
+        model.realizeVelocity(s);
 
         actualDelayedCoordValue = controller->getDelayedCoordinateValue(s);
         actualDelayedCoordValueVector =
@@ -338,7 +338,7 @@ void testWithController() {
         */
 
         // Test using a delay of 0.
-        // TODO testDelaySimulation(model, 0.0, false);
+        testDelaySimulation(model, 0.0, false);
 
         /* TODO will not pass until input/output copying is fixed.
         // Run same test after copying the model that contains the Delay.
@@ -451,11 +451,14 @@ void testNegativeDelayDurationException() {
 
 int main() {
 
-    SimTK_START_TEST("testDelay");
-        // This type is not registered in osimCommon.
+    //SimTK_START_TEST("testDelay");
+        // This Delay type is not registered in osimCommon.
         Object::registerType(Delay_<SimTK::Vec3>());
+
+        // This class is defined in this file.
         Object::registerType(PendulumController());
+
         SimTK_SUBTEST(testWithController);
         SimTK_SUBTEST(testNegativeDelayDurationException);
-    SimTK_END_TEST();
+    //SimTK_END_TEST();
 }

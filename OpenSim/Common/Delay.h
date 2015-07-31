@@ -29,7 +29,7 @@
 namespace OpenSim {
 
 /** This operator delays its input by a given time delay. The value of the
- * output at time t is the value the input had at time t-delay.
+ * output at time `t` is the value the input had at time `t-delay`.
  * A Delay can be used to model the delay in neural reflex circuits.
  *
  * For times prior to the start of a simulation this Component behaves as
@@ -39,8 +39,9 @@ namespace OpenSim {
  * integrator's accuracy setting. Make sure that the integrator's accuracy
  * is tighter than your delay duration (e.g., accuracy of 1e-3 or less for a
  * delay of 1e-3 seconds).
- * Also, a delay of 0 currently does not produce the correct behavior;
- * this is a known bug.
+ *
+ * @note A delay duration of 0 just passes through the value of the input
+ * with minimal overhead.
  *
  * @tparam T The type of the quantity to be delayed. Common choices are a
  * SimTK::Real (see Delay) or a SimTK::Vector (see DelayVector).
@@ -88,7 +89,8 @@ namespace OpenSim {
  * };
  * @endcode
  *
- * This class is implemented via a SimTK::Measure_<T>::Delay.
+ * This class is implemented via a SimTK::Measure_::Delay; see its
+ * documentation for more information.
  *
  * @ingroup operators
  *
@@ -156,7 +158,11 @@ void Delay_<T>::constructOutputs() {
 
 template<class T>
 T Delay_<T>::getValue(const SimTK::State& s) const {
-    return m_delayMeasure.getValue(s);
+    if (get_delay() > 0) {
+        return m_delayMeasure.getValue(s);
+    } else {
+        return getInputValue<T>(s, "input");
+    }
 }
 
 template<class T>
@@ -169,12 +175,16 @@ void Delay_<T>::extendFinalizeFromProperties() {
 template<class T>
 void Delay_<T>::extendAddToSystem(SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
-    auto& sub = system.updDefaultSubsystem();
-    const auto& input = *static_cast<const Input<T>*>(&getInput("input"));
-    const_cast<Delay_*>(this)->m_delayMeasure =
-            typename SimTK::Measure_<T>::Delay(sub,
-                                               InputMeasure<T>(sub, input),
-                                               get_delay());
+    if (get_delay() > 0) {
+        // This is necessary because Simbody does not currently handle
+        // a delay of 0 properly. See Simbody GitHub issue #360.
+        auto &sub = system.updDefaultSubsystem();
+        const auto &input = *static_cast<const Input<T> *>(&getInput("input"));
+        const_cast<Delay_ *>(this)->m_delayMeasure =
+                typename SimTK::Measure_<T>::Delay(sub,
+                                                   InputMeasure<T>(sub, input),
+                                                   get_delay());
+    }
 }
 
 /** A Delay component that allows one to delay the value of a scalar quantity.
