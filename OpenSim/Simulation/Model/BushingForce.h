@@ -56,12 +56,7 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
-    /// The frames that are connected by the bushing force
-    OpenSim_DECLARE_PROPERTY(offset_frame1, PhysicalOffsetFrame,
-        "Bushing offset on frame 1.");
-    OpenSim_DECLARE_PROPERTY(offset_frame2, PhysicalOffsetFrame,
-        "Bushing offset on frame 2.");
-    ///  Properties of the bushing force
+    /// Physical properties of the bushing force
     OpenSim_DECLARE_PROPERTY(rotational_stiffness, SimTK::Vec3,
         "Stiffness parameters resisting relative rotation (Nm/rad).");
     OpenSim_DECLARE_PROPERTY(translational_stiffness, SimTK::Vec3,
@@ -70,6 +65,11 @@ public:
         "Damping parameters resisting relative angular velocity. (Nm/(rad/s))");
     OpenSim_DECLARE_PROPERTY(translational_damping, SimTK::Vec3,
         "Damping parameters resisting relative translational velocity. (N/(m/s)");
+
+    /// BushingForce defined frames that are connected by this bushing
+    OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalFrame,
+        "Physical frames needed to satisfy the BushingForce's connections.");
+
     /**@}**/
 
 //==============================================================================
@@ -79,38 +79,11 @@ public:
     to be at their body origins, and sets all bushing parameters to zero. **/
     BushingForce();
 
-    /** Construct the BushingForce given the offset frames that it tries to
-    align according to the physical properties of the bushing.
-    See property declarations for more information. **/
-    BushingForce(const PhysicalOffsetFrame& frame1,
-                const PhysicalOffsetFrame& frame2,
-                const SimTK::Vec3& transStiffness,
-                const SimTK::Vec3& rotStiffness,
-                const SimTK::Vec3& transDamping,
-                const SimTK::Vec3& rotDamping);
-
-    /** Construct the BushingForce given the PhysicalFrames that it must align.
-    Must specify the offset transforms according to the point of attachment 
-    and its axes orientation on each PhysicalFrame plus the physical properties
-    of the bushing.  See property declarations for more information. */
+    /** Construct the BushingForce given the physical frames that it tries to keep
+    aligned by generating passive force according to the physical properties of the
+    bushing. See property declarations for more information. **/
     BushingForce(const PhysicalFrame& frame1,
-                 const SimTK::Vec3& point1, 
-                 const SimTK::Vec3& orientation1,
                  const PhysicalFrame& frame2,
-                 const SimTK::Vec3& point2, 
-                 const SimTK::Vec3& orientation2,
-                 const SimTK::Vec3& transStiffness, 
-                 const SimTK::Vec3& rotStiffness, 
-                 const SimTK::Vec3& transDamping, 
-                 const SimTK::Vec3& rotDamping);
-
-    /* Convenience construction by identifying bushing frames by name. */
-    BushingForce(const std::string& frame1Name,
-                const SimTK::Vec3& point1,
-                const SimTK::Vec3& orientation1,
-                const std::string& frame2Name,
-                const SimTK::Vec3& point2,
-                const SimTK::Vec3& orientation2,
                 const SimTK::Vec3& transStiffness,
                 const SimTK::Vec3& rotStiffness,
                 const SimTK::Vec3& transDamping,
@@ -141,6 +114,7 @@ private:
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface.
     //--------------------------------------------------------------------------
+    void constructConnectors() override;
     void extendFinalizeFromProperties() override;
     // Create a SimTK::Force::LinearBushing which implements this BushingForce.
     void extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) 

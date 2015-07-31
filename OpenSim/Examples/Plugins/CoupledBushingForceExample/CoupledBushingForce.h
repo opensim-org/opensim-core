@@ -59,11 +59,9 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with the CoupleBushingForce. **/
     /**@{**/
-    /// The frames that are connected by the bushing force
-    OpenSim_DECLARE_PROPERTY(offset_frame1, PhysicalOffsetFrame,
-        "Bushing offset on frame 1.");
-    OpenSim_DECLARE_PROPERTY(offset_frame2, PhysicalOffsetFrame,
-        "Bushing offset on frame 2.");
+    /// BushingForce defined frames that are connected by this bushing
+    OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalFrame,
+        "Physical frames needed to satisfy the BushingForce's connections.");
 
     /** Stiffness of the bushing related to Euler XYZ body-fixed angular and
         translational deviations that express frame2 in frame1. Force is zero
@@ -107,11 +105,10 @@ public:
     matrices. Rotational stiffness (damping) in N/rad(/s) and translational in
     N/m(/s). Off-diagonals represent the coupling terms.
     See property declarations for more information. **/
-    CoupledBushingForce(const std::string& frame1Name,
-                            SimTK::Vec3 point1, SimTK::Vec3 orientation1,
-                        const std::string& body2Name,
-                            SimTK::Vec3 point2, SimTK::Vec3 orientation2,
-                         SimTK::Mat66 stiffnessMat, SimTK::Mat66 dampingMat);
+    CoupledBushingForce(const PhysicalFrame& frame1,
+                        const PhysicalFrame& frame2,
+                        SimTK::Mat66 stiffnessMat,
+                        SimTK::Mat66 dampingMat);
 
     virtual ~CoupledBushingForce();
 
@@ -159,14 +156,15 @@ public:
 
 private:
     void setNull();
-    void constructProperties();
 
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface.
     //--------------------------------------------------------------------------
+    void constructProperties();
+    void constructConnectors() override;
     void extendFinalizeFromProperties() override;
 
-    void constructMatricesFromProperties();
+    void finalizeMatricesFromProperties();
     void updatePropertiesFromMatrices();
 
     // internal matrices
