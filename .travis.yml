@@ -45,6 +45,8 @@ addons:
       - g++-4.8
       # In case someone wants to check for memory leaks.
       - valgrind
+      # To build doxygen documentation.
+      - doxygen
       # To run the python tests.
       - python-nose
 
@@ -110,6 +112,9 @@ script:
 
   ## Print out valgrind output.
   - if [ $RUN_VALGRIND ]; then find Testing/Temporary -name "MemoryCheck*" -print | xargs cat; fi
+
+  ## Build doxygen documentation.
+  - make doxygen
 
   ## Test python wrapping.
   # Install OpenSim. Suppress output.
