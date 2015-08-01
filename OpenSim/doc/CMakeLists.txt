@@ -1,9 +1,8 @@
 install_files(/sdk/doc FILES "BuildOpenSimPluginSteps.pdf")
 
-include(FindDoxygen)
+find_package(Doxygen)
 
-if(DOXYGEN_EXECUTABLE-NOTFOUND)
-else(DOXYGEN_EXECUTABLE-NOTFOUND)
+if(${DOXYGEN_FOUND})
     set(DOXY_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile")
 
     # Set some useful variables.
@@ -40,7 +39,7 @@ else(DOXYGEN_EXECUTABLE-NOTFOUND)
     # on using MathJax from the internet instead of downloading it.
 
     # This block of commands is all executing during the configuring phase.
-    if (${OPENSIM_DOXYGEN_USE_MATHJAX} AND NOT EXISTS "${MATHJAX_ZIP_PATH}")
+    if(${OPENSIM_DOXYGEN_USE_MATHJAX} AND NOT EXISTS "${MATHJAX_ZIP_PATH}")
         message(STATUS "Trying to download MathJax for Doxygen...")
         file(DOWNLOAD https://github.com/mathjax/MathJax/archive/v2.5-latest.zip
             "${MATHJAX_ZIP_PATH}"
@@ -51,7 +50,7 @@ else(DOXYGEN_EXECUTABLE-NOTFOUND)
         # Did we download MathJax successfully?
         # Get first element of the status.
         list(GET MATHJAX_DOWNLOAD_STATUS 0 MATHJAX_DOWNLOAD_RETURN)
-        if (${MATHJAX_DOWNLOAD_RETURN} EQUAL 0)
+        if(${MATHJAX_DOWNLOAD_RETURN} EQUAL 0)
             message(STATUS "Successfully downloaded MathJax.")
         else()
             # Must modify the cache variable so we don't end up here after
@@ -65,7 +64,7 @@ else(DOXYGEN_EXECUTABLE-NOTFOUND)
         endif()
     endif()
 
-    if (${OPENSIM_DOXYGEN_USE_MATHJAX})
+    if(${OPENSIM_DOXYGEN_USE_MATHJAX})
         # This means the user wants to use MathJax *and* we were able to
         # download it successfully.
 
@@ -90,7 +89,7 @@ else(DOXYGEN_EXECUTABLE-NOTFOUND)
 
         # Try using LATEX.
         find_package(LATEX)
-        if (${LATEX_FOUND})
+        if(${LATEX_FOUND})
             set(OPENSIM_DOXYGEN_USE_MATHJAX "NO")
             message(STATUS "Using LATEX for Doxygen equations.")
         else()
@@ -168,4 +167,4 @@ else(DOXYGEN_EXECUTABLE-NOTFOUND)
     # This is just a shortcut to the Doxygen index.html.
     install(FILES "OpenSimAPI.html" DESTINATION "sdk/doc")
 
-endif(DOXYGEN_EXECUTABLE-NOTFOUND)
+endif()

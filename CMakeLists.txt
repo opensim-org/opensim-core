@@ -64,7 +64,7 @@ mark_as_advanced(PROCESSOR_COUNT)
 option(OPENSIM_DOXYGEN_USE_MATHJAX "Try to use MathJax to render Doxygen
 equations. If OFF, LATEX is used instead if you have it; otherwise we use
 MathJax from the internet (we don't download it). If we cannot download MathJax
-from the internet, we operate as if this option is OFF." ON)
+from the internet, we turn this option OFF." ON)
 
 
 # Simbody.
