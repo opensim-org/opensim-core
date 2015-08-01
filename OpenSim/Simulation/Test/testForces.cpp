@@ -603,16 +603,8 @@ void testBushingForce()
 
     osimModel->setGravity(gravity_vec);
 
-    PhysicalOffsetFrame frame1_offset(ground, Transform());
-    PhysicalOffsetFrame frame2_offset(ball, Transform());
-    frame1_offset.setName("frame1_offset");
-    frame2_offset.setName("frame2_offset");
-    
-    BushingForce spring(frame1_offset, frame2_offset,
+    BushingForce spring("ground", "ball",
         transStiffness, rotStiffness, transDamping, rotDamping);
-    // The offset frames should be properties of the BushingForce so add them to it
-    spring.append_frames(frame1_offset);
-    spring.append_frames(frame2_offset);
 
     osimModel->addForce(&spring);
     osimModel->setup();

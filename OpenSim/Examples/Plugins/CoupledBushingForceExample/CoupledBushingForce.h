@@ -99,14 +99,19 @@ public:
 //=============================================================================
 public:
     // CONSTRUCTION
+    /** Default constructor leaves frames unspecified and sets all bushing
+    stiffness and damping properties to zero. **/
     CoupledBushingForce();
-    /** Construct the CoupleBushingForce given the two offset frames to which
-    it attaches by name. Stiffness and damping properties are supplied by 6x6
-    matrices. Rotational stiffness (damping) in N/rad(/s) and translational in
-    N/m(/s). Off-diagonals represent the coupling terms.
+
+    /** Construct a CoupledBushingForce given the names of physical frames that it
+    tries to keep aligned by generating a passive force according to the physical
+    properties of the bushing.
+    Stiffness and damping properties are supplied by 6x6 matrices.
+    Rotational stiffness (damping) in N/rad(/s) and translational in N/m(/s).
+    Off-diagonals represent the coupling terms.
     See property declarations for more information. **/
-    CoupledBushingForce(const PhysicalFrame& frame1,
-                        const PhysicalFrame& frame2,
+    CoupledBushingForce(const std::string& frame1_name,
+                        const std::string& frame2_name,
                         SimTK::Mat66 stiffnessMat,
                         SimTK::Mat66 dampingMat);
 
@@ -114,7 +119,6 @@ public:
 
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.
-
 
     //--------------------------------------------------------------------------
     // COMPUTATION

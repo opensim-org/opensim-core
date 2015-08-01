@@ -56,16 +56,16 @@ CoupledBushingForce::CoupledBushingForce() : Force()
 }
 
 /* Convenience constructor */
-CoupledBushingForce::CoupledBushingForce( const PhysicalFrame& frame1,
-                                          const PhysicalFrame& frame2,
-                                        SimTK::Mat66 stiffnessMat,
-                                        SimTK::Mat66 dampingMat) : Force()
+CoupledBushingForce::CoupledBushingForce( const std::string& frame1_name,
+                                          const std::string& frame2_name,
+                                          SimTK::Mat66 stiffnessMat,
+                                          SimTK::Mat66 dampingMat) : Force()
 {
     setNull();
     constructInfrastructure();
 
-    updConnector<PhysicalFrame>("frame1").set_connected_to_name(frame1.getName());
-    updConnector<PhysicalFrame>("frame2").set_connected_to_name(frame2.getName());
+    updConnector<PhysicalFrame>("frame1").set_connected_to_name(frame1_name);
+    updConnector<PhysicalFrame>("frame2").set_connected_to_name(frame1_name);
 
     _stiffnessMatrix = stiffnessMat;
     _dampingMatrix = dampingMat;
@@ -321,13 +321,13 @@ getRecordValues(const SimTK::State& state) const
 
     //get the net force added to the system contributed by the bushing
     simtkSpring.calcForceContribution(state, bodyForces, particleForces, mobilityForces);
-    SimTK::Vec3 forces = bodyForces(frame1.getMobilizedBodyIndex())[1];
-    SimTK::Vec3 torques = bodyForces(frame1.getMobilizedBodyIndex())[0];
+    SimTK::Vec3 forces = bodyForces[frame1.getMobilizedBodyIndex()][1];
+    SimTK::Vec3 torques = bodyForces[frame1.getMobilizedBodyIndex()][0];
     values.append(3, &forces[0]);
     values.append(3, &torques[0]);
 
-    forces = bodyForces(frame2.getMobilizedBodyIndex())[1];
-    torques = bodyForces(frame2.getMobilizedBodyIndex())[0];
+    forces = bodyForces[frame2.getMobilizedBodyIndex()][1];
+    torques = bodyForces[frame2.getMobilizedBodyIndex()][0];
 
     values.append(3, &forces[0]);
     values.append(3, &torques[0]);

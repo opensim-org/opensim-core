@@ -49,8 +49,8 @@ BushingForce::BushingForce()
 
 /* Convenience construction that creates the Offsets on the Physical Frames (e.g.
    Bodies that the BushingForce acts between. */
-BushingForce::BushingForce( const PhysicalFrame& frame1,
-                            const PhysicalFrame& frame2,
+BushingForce::BushingForce( const std::string& frame1_name,
+                            const std::string& frame2_name,
                             const SimTK::Vec3& transStiffness,
                             const SimTK::Vec3& rotStiffness,
                             const SimTK::Vec3& transDamping,
@@ -59,8 +59,8 @@ BushingForce::BushingForce( const PhysicalFrame& frame1,
     setNull();
     constructInfrastructure();
 
-    updConnector<PhysicalFrame>("frame1").set_connected_to_name(frame1.getName());
-    updConnector<PhysicalFrame>("frame2").set_connected_to_name(frame2.getName());
+    updConnector<PhysicalFrame>("frame1").set_connected_to_name(frame1_name);
+    updConnector<PhysicalFrame>("frame2").set_connected_to_name(frame2_name);
 
     set_rotational_stiffness(rotStiffness);
     set_translational_stiffness(transStiffness);
@@ -119,53 +119,66 @@ void BushingForce::updateFromXMLNode( SimTK::Xml::Element& aNode,
             SimTK::Xml::element_iterator orientBody2Elt =
                 aNode.element_begin("orientation_body_2");
 
-            //Create two new PhysicalOffsetFrames
-            PhysicalOffsetFrame frame1;
-            PhysicalOffsetFrame frame2;
-            frame1.setName("frame1_offset");
-            frame2.setName("frame2_offset");
+            // The names of the two PhysicalFrames this bushing connects
+            std::string frame1_name("");
+            std::string frame2_name("");
+
+            // Create two new PhysicalOffsetFrames
+            PhysicalOffsetFrame frame1_offset;
+            PhysicalOffsetFrame frame2_offset;
+            frame1_offset.setName("frame1_offset");
+            frame2_offset.setName("frame2_offset");
 
             // If default constructed then elements not serialized since they are default
             // values. Check that we have associated elements, then extract their values.
             if (body1Element != aNode.element_end()){
-                std::string frame1_name("");
                 body1Element->getValueAs<std::string>(frame1_name);
-                frame1.updConnector(0).set_connected_to_name(frame1_name);
+                frame1_offset.updConnector(0).set_connected_to_name(frame1_name);
             }
             if (body2Element != aNode.element_end()){
-                std::string frame2_name("");
                 body2Element->getValueAs<std::string>(frame2_name);
-                frame2.updConnector(0).set_connected_to_name(frame2_name);
+                frame2_offset.updConnector(0).set_connected_to_name(frame2_name);
             }
             if (locBody1Elt != aNode.element_end()){
                 Vec3 location;
                 locBody1Elt->getValueAs<Vec3>(location);
-                frame1.set_translation(location);
+                frame1_offset.set_translation(location);
             }
             if (orientBody1Elt != aNode.element_end()){
                 Vec3 orientation;
                 orientBody1Elt->getValueAs<Vec3>(orientation);
-                frame1.set_orientation(orientation);
+                frame1_offset.set_orientation(orientation);
             }
             if (locBody2Elt != aNode.element_end()){
                 Vec3 location;
                 locBody2Elt->getValueAs<Vec3>(location);
-                frame2.set_translation(location);
+                frame2_offset.set_translation(location);
             }
             if (orientBody2Elt != aNode.element_end()){
                 Vec3 orientation;
                 orientBody2Elt->getValueAs<Vec3>(orientation);
-                frame2.set_orientation(orientation);
+                frame2_offset.set_orientation(orientation);
             }
 
-            // now append updated frames to the property list
-            append_frames(frame1);
-            append_frames(frame2);
-
-            // Now make sure BushingForce connectors are looking for
-            // the newly created offset frames to satisfy the connections
-            updConnector(0).set_connected_to_name(frame1.getName());
-            updConnector(1).set_connected_to_name(frame2.getName());
+            // now append updated frames to the property list if they are not
+            // identity transforms.
+            if ((frame1_offset.get_translation().norm() > 0.0) &&
+                (frame1_offset.get_orientation().norm() > 0.0)) {
+                append_frames(frame1_offset);
+                updConnector(0).set_connected_to_name(frame1_offset.getName());
+            }
+            else { // connect directly to the frame (body) that was identified by name
+                updConnector(0).set_connected_to_name(frame1_name);
+            }
+            // again for frame2
+            if ((frame2_offset.get_translation().norm() > 0.0) &&
+                (frame2_offset.get_orientation().norm() > 0.0)) {
+                append_frames(frame2_offset);
+                updConnector(0).set_connected_to_name(frame2_offset.getName());
+            }
+            else { // connect directly to the frame (body) that was identified by name
+                updConnector(1).set_connected_to_name(frame2_name);
+            }
         }
     }
     Super::updateFromXMLNode(aNode, versionNumber);

@@ -75,20 +75,20 @@ public:
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-    /** Default constructor leaves frames unspecified, sets the bushing frames
-    to be at their body origins, and sets all bushing parameters to zero. **/
+    /** Default constructor leaves frames unspecified and sets all bushing 
+        stiffness and damping properties to zero. **/
     BushingForce();
 
-    /** Construct the BushingForce given the physical frames that it tries to keep
-    aligned by generating passive force according to the physical properties of the
-    bushing. See property declarations for more information. **/
-    BushingForce(const PhysicalFrame& frame1,
-                 const PhysicalFrame& frame2,
+    /** Construct a BushingForce given the names of physical frames that it
+    tries to keep aligned by generating a passive force according to the physical
+    properties of the bushing.
+    See property declarations for more information. */
+    BushingForce(const std::string& frame1_name,
+                 const std::string& frame2_name,
                 const SimTK::Vec3& transStiffness,
                 const SimTK::Vec3& rotStiffness,
                 const SimTK::Vec3& transDamping,
                 const SimTK::Vec3& rotDamping);
-
 
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.
