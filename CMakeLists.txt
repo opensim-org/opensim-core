@@ -59,6 +59,13 @@ link_directories(${BUILD_BINARY_DIR})
 set(PROCESSOR_COUNT 8 CACHE STRING "Number of processors in the CPU")
 mark_as_advanced(PROCESSOR_COUNT)
 
+# Try to use MathJax for Doxygen equations.
+# -----------------------------------------
+option(OPENSIM_DOXYGEN_USE_MATHJAX "Try to use MathJax to render Doxygen
+equations. If OFF, LATEX is used instead if you have it; otherwise we use
+MathJax from the internet (we don't download it). If we cannot download MathJax
+from the internet, we operate as if this option is OFF." ON)
+
 
 # Simbody.
 # --------
