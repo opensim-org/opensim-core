@@ -127,6 +127,7 @@ void testVisModel(string fileName)
 
     std::string baseName = fileName.substr(0, fileName.find_last_of('.'));
     std::ifstream t("vis_" + baseName + ".txt");
+    if (!t.good()) throw OpenSim::Exception("Could not open file.");
     std::stringstream buffer;
     buffer << t.rdbuf();
     std::string fromFile = buffer.str();
@@ -137,5 +138,5 @@ void testVisModel(string fileName)
     cout << fromFile << endl;
     int same = fromFile.compare(fromModel);
     delete model;
-    ASSERT(same == 0);
+    ASSERT(same == 0, __FILE__, __LINE__, "Files do not match.");
 }

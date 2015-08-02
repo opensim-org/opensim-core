@@ -57,32 +57,11 @@ static const Vec3 DefaultDefaultColor(.5,.5,.5); // boring gray
  */
 GeometryPath::GeometryPath() :
     ModelComponent(),
-    _preScaleLength(0.0),
-    _owner(NULL)
-{
-    setNull();
-    constructProperties();
- }
-
-//_____________________________________________________________________________
-/*
- * Destructor.
- */
-GeometryPath::~GeometryPath()
-{
-    delete _maSolver;
-}
-
-
-//_____________________________________________________________________________
-/*
- * Set the data members of this GeometryPath to their null values.
- */
-void GeometryPath::setNull()
+    _preScaleLength(0.0)
 {
     setAuthors("Peter Loan");
-    _maSolver = NULL;
-}
+    constructProperties();
+ }
 
 //_____________________________________________________________________________
 /*
@@ -232,7 +211,7 @@ void GeometryPath::namePathPoints(int aStartingIndex)
     {
         sprintf(indx,"%d",i+1);
         PathPoint& point = get_PathPointSet().get(i);
-        if(point.getName()=="" && _owner) {
+        if (point.getName()=="" && _owner) {
             point.setName(_owner->getName() + "-P" + indx);
         }
     }
@@ -1278,10 +1257,10 @@ calcLengthAfterPathComputation(const SimTK::State& s,
 double GeometryPath::
 computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const
 {
-    if(!_maSolver)
-        _maSolver = new MomentArmSolver(*_model);
+    if (!_maSolver)
+        const_cast<Self*>(this)->_maSolver.reset(new MomentArmSolver(*_model));
 
-    return  _maSolver->solve(s, aCoord,  *this);
+    return _maSolver->solve(s, aCoord,  *this);
 }
 
 //_____________________________________________________________________________

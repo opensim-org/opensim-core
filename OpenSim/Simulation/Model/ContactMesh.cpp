@@ -50,9 +50,9 @@ ContactMesh::ContactMesh(const std::string& filename, const SimTK::Vec3& locatio
         file.open(filename.c_str());
         if (file.fail())
             throw Exception("Error loading mesh file: "+filename+". The file should exist in same folder with model.\n Model loading is aborted.");
-        SimTK::PolygonalMesh mesh;
-        mesh.loadObjFile(file);
         file.close();
+        SimTK::PolygonalMesh mesh;
+        mesh.loadFile(filename);
         _geometry = new SimTK::ContactGeometry::TriangleMesh(mesh);
     }
 }
@@ -93,6 +93,7 @@ void ContactMesh::setNull()
 void ContactMesh::setupProperties()
 {
     _filenameProp.setName("filename");
+    _filenameProp.setComment("Filename that contain mesh geomtry (supports .obj, .stl, .vtp). Mesh should be closed and water-tight.");
     _propertySet.append(&_filenameProp);
 }
 
@@ -128,8 +129,8 @@ void ContactMesh::loadMesh(const std::string& filename)
             if (restoreDirectory) IO::chDir(savedCwd);
             throw Exception("Error loading mesh file: "+filename+". The file should exist in same folder with model.\n Loading is aborted.");
         }
-        mesh.loadObjFile(file);
         file.close();
+        mesh.loadFile(filename);
         if (restoreDirectory) IO::chDir(savedCwd);
         _geometry = new SimTK::ContactGeometry::TriangleMesh(mesh);
     }
