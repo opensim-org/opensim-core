@@ -30,6 +30,8 @@
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
 #include "SimTKsimbody.h"
 
+#include <memory>
+
 namespace OpenSim {
 
 class Model;
@@ -51,41 +53,30 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ControllerSet, ModelComponentSet<Controller>);
 //=============================================================================
 // METHODS
 //=============================================================================
+public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
-public:
     ControllerSet() {}
     ControllerSet(Model& model);
     ControllerSet(const ControllerSet &aControllerSet);
     ControllerSet(Model& model, const std::string &aFileName,  bool aUpdateFromXMLNode = true);
-    virtual ~ControllerSet();
+#ifndef SWIG
+    ~ControllerSet() override = default;
+#endif
 
     void copyData(const ControllerSet &aAbsControllerSet);
-private:
-
-    /**
-     *   storage object containing the storage object
-     */
-     SimTK::ReferencePtr<Storage> _controlStore;
-
-    /**
-     *   set of actuators controlled by the set of controllers 
-     */
-     SimTK::ReferencePtr<Set<Actuator> > _actuatorSet;
 
 
     //--------------------------------------------------------------------------
     // OPERATORS
     //--------------------------------------------------------------------------
-public:
 #ifndef SWIG
     ControllerSet& operator=(const ControllerSet &aSet);
 #endif
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
-public:
 
     bool set(int aIndex, Controller *aController);
     bool addController(Controller *aController);
@@ -102,6 +93,13 @@ public:
     virtual void computeControls(const SimTK::State& s, SimTK::Vector &controls) const; 
 
     virtual void printInfo() const;
+
+private:
+
+    std::unique_ptr<Storage> _controlStore;
+
+    // Set of actuators controlled by the set of controllers.
+    SimTK::ReferencePtr<Set<Actuator> > _actuatorSet;
 //=============================================================================
 };  // END of class ControllerSet
 //=============================================================================

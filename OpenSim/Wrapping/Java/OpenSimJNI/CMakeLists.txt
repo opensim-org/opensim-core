@@ -67,11 +67,10 @@ include_directories(${OpenSim_SOURCE_DIR}
 
 set(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-link_libraries(osimCommon osimSimulation osimAnalyses osimTools
-    osimSimmFileWriter)
-
 add_library(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
+target_link_libraries(osim${KIT} osimTools osimSimmFileWriter)
+    
 set_target_properties(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
    PROJECT_LABEL "Java Bindings - osim${KIT}"
