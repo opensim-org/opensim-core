@@ -79,6 +79,12 @@ elseif(APPLE)
     set_target_properties(_${KIT} PROPERTIES SUFFIX ".so")
 endif()
 
+if(${OPENSIM_USE_INSTALL_RPATH})
+    set_target_properties(_${KIT} PROPERTIES
+        INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
+        )
+endif()
+
 # Shared libraries are needed at runtime for applications, so we put them
 # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
 # or OpemSim/lib/*.dylib (Mac). Windows .lib files, and Linux/Mac .a static

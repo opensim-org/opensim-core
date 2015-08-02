@@ -82,7 +82,6 @@ function(OPENSIM_ADD_LIBRARY)
        PROJECT_LABEL "${OSIMADDLIB_PROJECT_LABEL}"
     )
 
-
     # Install.
     # --------
     # Shared libraries are needed at runtime for applications, so we put them
@@ -221,5 +220,11 @@ function(OpenSimAddApplication APPNAME)
     install(TARGETS ${APPNAME} DESTINATION bin)
     set_target_properties(${APPNAME} PROPERTIES
         PROJECT_LABEL "Applications - ${APPNAME}")
+
+    if(${OPENSIM_USE_INSTALL_RPATH})
+        set_target_properties(${APPNAME} PROPERTIES
+            INSTALL_RPATH "\@executable_path/../lib"
+            )
+    endif()
 
 endfunction()
