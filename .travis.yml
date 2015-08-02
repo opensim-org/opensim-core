@@ -4,7 +4,7 @@
 language: cpp
 
 # Use container-based infrastructure to allow caching (for ccache).
-sudo: false
+# TODO sudo: false
 
 os:
   - linux
@@ -29,8 +29,8 @@ env:
     # for Clang to work with ccache.
     - CCACHE_CPP2=1
 
-cache: 
-  - directories: $HOME/.ccache
+#cache:  TODO
+#  - directories: $HOME/.ccache
 
 addons:
   # Dependencies on linux.
@@ -148,4 +148,4 @@ script:
 
 before_cache:
   # Show cache statistics.
-  - ccache --show-stats
+  # TODO - ccache --show-stats
