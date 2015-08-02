@@ -12,9 +12,14 @@ os:
 
 matrix:
   include:
-    - compiler: clang
+    - os: linux
+      compiler: clang
       env: BUILD_WRAPPING=on NPROC=1
-    - compiler: gcc
+    - os: linux
+      compiler: gcc
+      env: BUILD_WRAPPING=off NPROC=3
+    - os: osx
+      compiler: clang
       env: BUILD_WRAPPING=off NPROC=3
 
 env:
