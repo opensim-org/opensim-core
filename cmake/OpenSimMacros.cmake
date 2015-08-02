@@ -149,9 +149,8 @@ endfunction()
 function(OpenSimCopySharedTestFiles)
     if(BUILD_TESTING)
         foreach(filename ${ARGN})
-            configure_file("${OPENSIM_SHARED_TEST_FILES_DIR}/${filename}"
-                "${CMAKE_CURRENT_BINARY_DIR}"
-                COPYONLY)
+            file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/${filename}"
+                 DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
         endforeach()
     endif()
 endfunction()
