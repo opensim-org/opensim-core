@@ -1,6 +1,6 @@
 
 file(GLOB TEST_PROGS "test*.cpp")
-OPENSIM_ADD_TESTS(
+OpenSimAddTests(
     TESTPROGRAMS ${TEST_PROGS}
     LINKLIBS osimTools
     )

@@ -154,6 +154,7 @@ function(OpenSimCopySharedTestFiles)
                 COPYONLY)
         endforeach()
     endif()
+endfunction()
 
 # Create test targets for this directory.
 # TESTPROGRAMS: Names of test CPP files. One test will be created for each cpp
@@ -166,12 +167,12 @@ function(OpenSimCopySharedTestFiles)
 # Here's an example:
 #   file(GLOB TEST_PROGRAMS "test*.cpp")
 #   file(GLOB DATA_FILES *.osim *.xml *.sto *.mot)
-#   OPENSIM_ADD_TESTS(
+#   OpenSimAddTests(
 #       TESTPROGRAMS ${TEST_ROGRAMS}
 #       DATAFILES ${DATA_FILES}
 #       LINKLIBS osimCommon osimSimulation osimAnalyses
 #       )
-function(OPENSIM_ADD_TESTS)
+function(OpenSimAddTests)
 
     if(BUILD_TESTING)
 
