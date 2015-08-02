@@ -109,7 +109,6 @@ public:
 
 protected:
     /** how to display the bushing */
-    VisibleObject _displayer;
 
 public:
 //==============================================================================
@@ -206,7 +205,7 @@ protected:
         bool fixed, 
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const;
+        SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const override;
     void ComputeForcesAtBushing(const SimTK::State& state, 
                                 SimTK::SpatialVec& forces_on_M_in_ground, 
                                 SimTK::SpatialVec& forces_on_F_in_ground) const;
@@ -219,12 +218,7 @@ private:
     // Create a SimTK::Force::LinearBushing which implements this
     // FunctionBasedBushingForce.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    //--------------------------------------------------------------------------
-    // Visible Object Support for Java Gui
-    //--------------------------------------------------------------------------
-    virtual VisibleObject* getDisplayer() const;
-    virtual void updateDisplayer(const SimTK::State& s);
-    virtual void updateGeometry(const SimTK::State& s);
+
     void setNull();
     void constructProperties();
 

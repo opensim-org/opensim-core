@@ -43,6 +43,7 @@
 #include <OpenSim/Common/osimCommon.h>
 
 #include <OpenSim/Common/FunctionAdapter.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
@@ -63,6 +64,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/RollingOnSurfaceConstraint.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include "SimTKsimbody.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -990,16 +992,20 @@ void testRollingOnSurfaceConstraint()
 
     //OpenSim bodies
     Ground& ground = osimModel->updGround();;
-    ground.addDisplayGeometry("arrow.vtp");
-    ground.updDisplayer()->updGeometrySet()[0].setColor(Vec3(1, 0, 0));
+    Mesh arrowGeom("arrow.vtp");
+    arrowGeom.setColor(Vec3(1, 0, 0));
+    arrowGeom.setFrameName("ground");
+    ground.addGeometry(arrowGeom);
 
     //OpenSim rod
     auto osim_rod = new OpenSim::Body("rod", mass, comInRod, inertiaAboutCom);
-    osim_rod->addDisplayGeometry("cylinder.vtp");
-    osim_rod->updDisplayer()->updGeometrySet()[0]
-        .setScaleFactors(2*halfRodLength*Vec3(0.1, 1, 0.1));
-    osim_rod->updDisplayer()->updGeometrySet()[0]
-        .setTransform(Transform(comInRod));
+    OpenSim::PhysicalOffsetFrame* cylFrame = new PhysicalOffsetFrame(*osim_rod, Transform(comInRod));
+    cylFrame->setName("comInRod");
+    osimModel->addFrame(cylFrame);
+    Mesh cylGeom("cylinder.vtp");
+    cylGeom.set_scale_factors(2 * halfRodLength*Vec3(0.1, 1, 0.1));
+    cylGeom.setFrameName("comInRod");
+    osim_rod->addGeometry(cylGeom);
 
     // create rod as a free joint
     auto rodJoint = new PlanarJoint("rodToGround", ground, Vec3(0), Vec3(0),

@@ -44,6 +44,7 @@
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/FrameSet.h>
 #include <OpenSim/Simulation/Model/Ground.h>
+#include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 #include "Simbody.h"
 
 
@@ -175,6 +176,9 @@ public:
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(FrameSet,
         "List of Frames that various objects can be anchored to or expressed in, Body frames are builtin and not included in this list.");
+
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ModelVisualPreferences,
+        "Visual preferences for this model.");
     /**@}**/
 
 //=============================================================================
@@ -233,11 +237,13 @@ public:
     /** Get read only access to the ModelDisplayHints object stored with this
     %Model. These should be checked whenever display geometry is being
     generated. **/
-    const ModelDisplayHints& getDisplayHints() const {return _displayHints;}
+    const ModelDisplayHints& getDisplayHints() const {
+        return get_ModelVisualPreferences().get_ModelDisplayHints();}
     /** Get writable access to the ModelDisplayHints object stored with this
     %Model. The GUI or ModelVisualizer can update these as a result of user
     requests, or an OpenSim API program can set them programmatically. **/
-    ModelDisplayHints& updDisplayHints() {return _displayHints;}
+    ModelDisplayHints& updDisplayHints() { 
+        return upd_ModelVisualPreferences().upd_ModelDisplayHints(); }
 
     /** Request or suppress visualization of this %Model. This flag is checked
     during initSystem() and if set causes the %Model to allocate a
@@ -254,7 +260,7 @@ public:
     until initSystem() has been successfully invoked. Use this method prior
     to calling getVisualizer() or updVisualizer() to avoid an
     unpleasant exception. **/
-    bool hasVisualizer() const {return _modelViz != 0;}
+    bool hasVisualizer() const {return _modelViz != nullptr;}
 
     /** Obtain read-only access to the ModelVisualizer. This will throw an 
     exception if visualization was not requested or initSystem() not yet

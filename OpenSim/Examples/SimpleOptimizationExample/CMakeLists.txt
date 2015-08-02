@@ -1,11 +1,11 @@
-PROJECT (SimpleOptimizationExample)
+project(SimpleOptimizationExample)
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.6)
+cmake_minimum_required(VERSION 2.8.6)
 
 # Settings.
 # ---------
-SET(TARGET simpleOptimizationExample CACHE TYPE STRING)
-SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME} 
+set(TARGET simpleOptimizationExample CACHE TYPE STRING)
+set(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
         CACHE PATH "Top-level directory of OpenSim install")
 
 # Find and hook up to OpenSim.
@@ -20,34 +20,37 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR
             set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
             set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
         else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+            if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+            endif()
         endif()
     else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     endif()
 endif()
 
-FIND_PACKAGE(OpenSim REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")
+find_package(OpenSim REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")
 
-INCLUDE_DIRECTORIES(${OpenSim_INCLUDE_DIRS})
-LINK_DIRECTORIES(${OpenSim_LIB_DIR})
+include_directories(${OpenSim_INCLUDE_DIRS})
+link_directories(${OpenSim_LIB_DIR})
 
 # Configure this project.
 # -----------------------
-FILE(GLOB SOURCE_FILES *.h *.cpp)
-    
-ADD_EXECUTABLE(${TARGET} ${SOURCE_FILES})
+file(GLOB SOURCE_FILES *.h *.cpp)
 
-TARGET_LINK_LIBRARIES(${TARGET} ${OpenSim_LIBRARIES})
+add_executable(${TARGET} ${SOURCE_FILES})
+
+target_link_libraries(${TARGET} ${OpenSim_LIBRARIES})
 
 # This block copies the additional files into the running directory
 # For example vtp, obj files. Add to the end for more extentions
-FILE(GLOB DATA_FILES *.vtp *.obj *.osim)
-FOREACH (dataFile ${DATA_FILES})
-    ADD_CUSTOM_COMMAND(
+file(GLOB DATA_FILES *.vtp *.obj *.osim)
+foreach(dataFile ${DATA_FILES})
+    add_custom_command(
         TARGET ${TARGET}
         COMMAND ${CMAKE_COMMAND}
         ARGS -E copy
         ${dataFile}
         ${CMAKE_BINARY_DIR})
-ENDFOREACH (dataFile) 
+endforeach(dataFile)

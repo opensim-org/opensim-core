@@ -819,13 +819,6 @@ try {
     // LOOP THROUGH PROPERTIES
     for(int i=0; i < _propertyTable.getNumProperties(); ++i) {
         AbstractProperty& prop = _propertyTable.updAbstractPropertyByIndex(i);
-
-        if(_debugLevel>=4) {
-            cout << "Object.updateFromXMLNode: ("
-                 << getConcreteClassName()<<":"<<getName()
-                 <<") updating property " << prop.getName() << endl;
-        }
-
         prop.readFromXMLParentElement(aNode, versionNumber);
     }
 
@@ -840,12 +833,6 @@ try {
 
         // NAME
         string name = property->getName();
-        if(_debugLevel>=4) {
-            cout << "Object.updateFromXMLNode: ("
-                 << getConcreteClassName()<<":"<<getName()
-                 << ") updating property " << name << endl;
-        }
-
         SimTK::String valueString;
         SimTK::String lowerCaseValueString;
         SimTK::Xml::element_iterator iter;
@@ -1126,12 +1113,6 @@ updateXMLNode(SimTK::Xml::Element& aParent) const
         
         // Don't write out if this is just a default value.
         if (!prop.getValueIsDefault() || Object::getSerializeAllDefaults()) {
-            if(_debugLevel>=4)
-                cout << "Object.updateXMLNode: ("
-                     << getConcreteClassName()<<":"<<getName()
-                     << ") writing property " 
-                     << prop.getName() << endl;
-
             prop.writeToXMLParentElement(myObjectElement);
             wroteAnyProperties = true;
         }

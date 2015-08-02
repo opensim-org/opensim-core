@@ -1,8 +1,8 @@
 
-FILE(GLOB INCLUDES *.h)
-FILE(GLOB SOURCES *.cpp)
+file(GLOB INCLUDES *.h)
+file(GLOB SOURCES *.cpp)
 
-OPENSIM_ADD_LIBRARY(
+OPENSIM_add_library(
     KIT Actuators
     AUTHORS "Ajay_Seth-Matt_Millard-Matt_Demers-Ayman_Habib"
     LINKLIBS osimCommon osimSimulation

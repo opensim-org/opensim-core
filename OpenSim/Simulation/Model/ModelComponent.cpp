@@ -32,18 +32,21 @@ namespace OpenSim {
 //==============================================================================
 //                             MODEL COMPONENT
 //==============================================================================
-ModelComponent::ModelComponent() : _model(NULL) 
+ModelComponent::ModelComponent() : _model(nullptr) 
 {
+    constructProperty_geometry();
 }
 
 ModelComponent::ModelComponent(const std::string& fileName, bool updFromXMLNode)
-:   Component(fileName, updFromXMLNode), _model(NULL)
+:   Component(fileName, updFromXMLNode), _model(nullptr)
 {
+    constructProperty_geometry();
 }
 
 ModelComponent::ModelComponent(SimTK::Xml::Element& element) 
-:   Component(element), _model(NULL)
+:   Component(element), _model(nullptr)
 {
+    constructProperty_geometry();
 }
 
 const Model& ModelComponent::getModel() const
@@ -76,7 +79,16 @@ void ModelComponent::extendConnect(Component &root)
         connectToModel(*model);
 }
 
-
+void ModelComponent::extendFinalizeFromProperties()
+{
+    Super::extendFinalizeFromProperties();
+    int geomSize = getProperty_geometry().size();
+    if (geomSize > 0){
+        for (int i = 0; i < geomSize; ++i){
+            addComponent(&upd_geometry(i));
+        }
+    }
+}
 // Base class implementation of virtual method.
 void ModelComponent::connectToModel(Model& model)
 {
@@ -84,18 +96,37 @@ void ModelComponent::connectToModel(Model& model)
     extendConnectToModel(model);
 }
 
-// Base class implementation of virtual method.
-void ModelComponent::generateDecorations
-    (bool                                        fixed, 
-    const ModelDisplayHints&                    hints,
-    const SimTK::State&                         state,
-    SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const 
-{
-    for(unsigned int i=0; i < _components.size(); i++){
-        ModelComponent *mc = dynamic_cast<ModelComponent*>(_components[i]);
-        mc->generateDecorations(fixed,hints,state,appendToThis);
+void ModelComponent::addGeometry(OpenSim::Geometry& geom) {
+    extendAddGeometry(geom);
+    // Check that name exists and is unique as it's used to form PathName
+    if (geom.getName().empty()){
+        bool nameFound = false;
+        int index = 1;
+        while (!nameFound){
+            std::stringstream ss;
+            // generate candiate name
+            ss << getName() << "_geom_" << index;
+            std::string candidate = ss.str();
+            bool exists = false;
+            for (int idx = 0; idx < getProperty_geometry().size() && !exists; idx++){
+                if (get_geometry(idx).getName() == candidate){
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists){
+                nameFound = true;
+                geom.setName(candidate);
+            }
+            else
+                index++;
+        }
+        
     }
+    append_geometry(geom);
+    return;
 }
+
 
 const SimTK::DefaultSystemSubsystem& ModelComponent::
 getDefaultSubsystem() const

@@ -338,6 +338,42 @@ void Joint::scale(const ScaleSet& scaleSet)
     }
 }
 
+/** Create 2 geometry frames and add them to passed in array. */
+void Joint::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {
+
+     // invoke parent class method
+    Super::generateDecorations(fixed, hints, state, appendToThis);
+    if (!fixed) return;
+    // the frame on body 1 will be red
+    SimTK::Vec3 frame1color(1.0,0.0,0.0);
+    // the frame on body 2 will be blue
+    SimTK::Vec3 frame2color(0.0,0.5,1.0);
+    // the moment on body 2 will be yellow
+    SimTK::Vec3 moment2color(1.0,1.0,0.0);
+    // the force on body 2 will be green
+    //SimTK::Vec3 force2color(0.0,1.0,0.0);
+    double dimension = 1.0;
+    // create frames to be fixed on body 1 and body 2
+    SimTK::DecorativeFrame childFrame(dimension);
+    SimTK::DecorativeFrame parentFrame(dimension);
+
+    // attach frame to body, translate and rotate it to the location of the joint
+    childFrame.setBodyId(getChildFrame().getMobilizedBodyIndex());
+    childFrame.setTransform(getChildTransform());
+    childFrame.setColor(frame1color);
+
+    // attach frame to parent, translate and rotate it to the location of the joint
+    parentFrame.setBodyId(getParentFrame().getMobilizedBodyIndex());
+    parentFrame.setTransform(getParentTransform());
+    parentFrame.setColor(frame2color);
+    
+    appendToThis.push_back(childFrame);
+    appendToThis.push_back(parentFrame);
+
+}
+
+
 /** Construct coordinates according to the mobilities of the Joint */
 void Joint::constructCoordinates()
 {
@@ -594,11 +630,12 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             XMLDocument::renameChildNode(aNode, "location", "location_in_child"); // body_B -> body
             XMLDocument::renameChildNode(aNode, "orientation", "orientation_in_child"); // direction_A -> direction
         }
-    }
-    else {
-        // Handle any recent models that have the Joint connecting to Bodies instead
-        // of current use of PhyscialFrames
-        XMLDocument::renameChildNode(aNode, "Connector_Body_", "Connector_PhysicalFrame_");
+        // Version 30503 converted Connector_Body_ to Connector_PhysicalFrame_
+        if (documentVersion < 30503){
+            // Handle any models that have the Joint connecting to Bodies instead
+            // of PhyscialFrames
+            XMLDocument::renameChildNode(aNode, "Connector_Body_", "Connector_PhysicalFrame_");
+        }
     }
     Super::updateFromXMLNode(aNode, versionNumber);
 }
@@ -617,8 +654,8 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
 
         SimTK_ASSERT3( ( (mobilized == &getParentFrame()) || 
                          (mobilized == &getChildFrame()) ||
-                         (mobilized == _slaveBodyForParent) ||
-                         (mobilized == _slaveBodyForChild) ),
+                         (mobilized == _slaveBodyForParent.get()) ||
+                         (mobilized == _slaveBodyForChild.get()) ),
             "%s::'%s' - Cannot assign underlying system index to a Body '%s', "
             "which is not a parent or child Body of this Joint.",
                       getConcreteClassName().c_str(),
