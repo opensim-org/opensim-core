@@ -62,31 +62,4 @@ test_script:
   - ctest --parallel 4 --build-config RelWithDebInfo --output-on-failure
 
   ## Ensure we have no trouble installing.
-  - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
-  
-  ## Test python wrapping.
-  - set PATH=%OPENSIM_HOME%\bin;%PATH%
-  
-  # Copy over model files needed for testing.
-  # TODO this is temporary until we have a proper way to distribute models.
-  # The md command makes directories.
-  - cd %APPVEYOR_BUILD_DIR%
-  - md %OPENSIM_HOME%\Models\Arm26
-  - copy OpenSim\Tools\Test\arm26.osim %OPENSIM_HOME%\Models\Arm26\arm26.osim
-  - md %OPENSIM_HOME%\Models\Gait10dof18musc
-  - copy Applications\CMC\test\gait10dof18musc_subject01.osim %OPENSIM_HOME%\Models\Gait10dof18musc\gait10dof18musc.osim
-  
-  # Move to the installed location of the python package.
-  - cd %OPENSIM_HOME%\sdk\python
-  
-  # Run python tests.
-  - nosetests -v
-
-after_test:
-  - ## On master branch, create NuGet package for OpenSim.
-  - # Detect if we are on the master branch.
-  - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
-  - # Create and upload NuGet package.
-  - IF DEFINED DISTR cd %APPVEYOR_BUILD_FOLDER%
-  - IF DEFINED DISTR nuget pack .opensim-core.nuspec -BasePath %OPENSIM_HOME%
-  - IF DEFINED DISTR appveyor PushArtifact opensim-core.0.0.0.nupkg
+  - cmake --build . --target install --config RelWithDebInfo -- /maxcpucount:4 /verbosity:quiet
