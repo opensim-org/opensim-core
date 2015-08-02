@@ -28,7 +28,6 @@
 
 // TODO remove these when corresponding properties are removed
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
-#include <OpenSim/Common/VisibleObject.h>
 
 namespace OpenSim {
 
@@ -69,9 +68,6 @@ public:
     Connectors to the PhysicalFrames they attach to. This must be addressed prior
     to OpenSim 4.0 release. - aseth */
     /**@{**/
-    OpenSim_DECLARE_UNNAMED_PROPERTY(VisibleObject,
-        "For visualization in the Simbody visualizer or OpenSim GUI.");
-
     OpenSim_DECLARE_UNNAMED_PROPERTY(WrapObjectSet,
         "Set of wrap objects fixed to this body that GeometryPaths can wrap over.");
 
@@ -140,17 +136,10 @@ public:
         ScaleFactors */
     void scale(const SimTK::Vec3& aScaleFactors);
 
-    /** @name DEPRECATED API 
-    TODO: These methods will go away when Geometry are treated as proper
-    Components. */
+    /** @name DEPRECATED API */
 
     ///@{
     /** Deprecated methods for inermediate integration of Frames */
-    virtual void addDisplayGeometry(const std::string &aGeometryFileName);
-
-    const VisibleObject* getDisplayer() const { return &get_VisibleObject(); }
-    VisibleObject* updDisplayer() { return &upd_VisibleObject(); }
-
     /** Get the named wrap object, if it exists.
     *
     * @param aName Name of the wrap object.
@@ -164,7 +153,6 @@ public:
     */
     void addWrapObject(WrapObject* wrapObject);
     ///@} 
-
 
 protected:
     /** The transform X_GF for this PhysicalFrame, F, in ground, G. */

@@ -29,13 +29,11 @@
 #include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include "WrapObject.h"
 
 namespace OpenSim {
 
-class VisibleObject;
 class Body;
 class Model;
 class PathPoint;

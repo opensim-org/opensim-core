@@ -45,11 +45,16 @@ PhysicalFrame::PhysicalFrame() : Frame()
 {
     setAuthors("Matt DeMers, Ayman Habib, Ajay Seth");
     constructProperties();
+    FrameGeometry frm(0.2);
+    frm.setName("frame_geometry");
+    frm.set_display_radius(.004);
+    frm.setRepresentation(Geometry::Hide);
+    append_geometry(frm);
+
 }
 
 void PhysicalFrame::constructProperties()
 {
-    constructProperty_VisibleObject(VisibleObject());
     constructProperty_WrapObjectSet(WrapObjectSet());
 }
 
@@ -74,26 +79,22 @@ SimTK::Transform PhysicalFrame::
     return getMobilizedBody().getBodyTransform(s);
 }
 
-
 SimTK::Transform PhysicalFrame::extendFindTransformInBaseFrame() const
 {
-    return Transform();
+    return SimTK::Transform();
 }
 
 void PhysicalFrame::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
 
+    // Better use name search or more robust method
+    if (upd_geometry(0).getFrameName() == "")
+        upd_geometry(0).setFrameName(getName());
+
     for (int i = 0; i < get_WrapObjectSet().getSize(); i++)
         get_WrapObjectSet().get(i).connectToModelAndBody(aModel, *this);
 }
-
-
-void PhysicalFrame::addDisplayGeometry(const std::string &aGeometryFileName)
-{
-    updDisplayer()->setGeometryFileName(updDisplayer()->getNumGeometryFiles(), aGeometryFileName);
-}
-
 
 const WrapObject* PhysicalFrame::getWrapObject(const string& aName) const
 {
@@ -116,12 +117,15 @@ void PhysicalFrame::scale(const SimTK::Vec3& aScaleFactors)
     for (int i = 0; i< get_WrapObjectSet().getSize(); i++)
         upd_WrapObjectSet().get(i).scale(aScaleFactors);
 
-    SimTK::Vec3 oldScaleFactors;
-    getDisplayer()->getScaleFactors(oldScaleFactors);
-
-    for (int i = 0; i<3; i++) {
-        oldScaleFactors[i] *= aScaleFactors[i];
+    // TODO: When we redo scaling and decide where scale factors
+    // are maintained, we may need to fix this or remove this comment completely.
+    // -Ayman 5/15
+    
+    // Scale the Geometry if any
+    for (int i = 0; i < getNumGeometry(); ++i){
+        const SimTK::Vec3& oldScaleFactor = get_geometry(i).get_scale_factors();
+        // Recompute scale factors for Geometry
+        SimTK::Vec3 newScaleFactor = oldScaleFactor.elementwiseMultiply(aScaleFactors);
+        upd_geometry(i).set_scale_factors(newScaleFactor);
     }
-    // Update scale factors for displayer
-    updDisplayer()->setScaleFactors(oldScaleFactors);
 }

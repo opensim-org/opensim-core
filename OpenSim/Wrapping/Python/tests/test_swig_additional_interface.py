@@ -159,12 +159,6 @@ def test_markAdoptedSets():
     del fus
     del fu1
 
-    gs = osim.GeometrySet()
-    dg = osim.DisplayGeometry()
-    gs.adoptAndAppend(dg)
-    del gs
-    del dg
-
     s = osim.ScaleSet()
     o = osim.Scale()
     s.adoptAndAppend(o)
@@ -207,13 +201,27 @@ def test_markAdoptedSets():
     del s
     del o
 
-    # TODO 
-    # s = osim.ProbeSet()
-    # o = osim.Umberger2010MuscleMetabolicsProbe()
-    # s.adoptAndAppend(o)
-    # del s
-    # del o
+    s = osim.FrameSet()
+    o = osim.Body()
+    s.adoptAndAppend(o)
+    del s
+    del o
 
+    s = osim.ForceSet()
+    o = osim.CoordinateLimitForce()
+    s.adoptAndAppend(o)
+    del s
+    del o
+     
+    s = osim.ForceSet()
+    o = osim.SpringGeneralizedForce()
+    s.append(o)
+ 
+    s = osim.ProbeSet()
+    o = osim.Umberger2010MuscleMetabolicsProbe()
+    s.adoptAndAppend(o)
+    del s
+    del o
 
     a = osim.Model()
     body = osim.Body('body',

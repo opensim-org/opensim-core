@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/PropertyTransform.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Force.h>
@@ -103,68 +104,11 @@ public:
             _model->getMultibodySystem().realize( *_configState, stageBeforeRecreatingSystem );
         }
     // Transforms
-    void transformPosition(const Body& body, double offset[], double gOffset[]);
-    Transform getTransform(const Body& body);
-    void transform(const Body& ground, double d[], Body& body, double dragVectorBody[]);
-    // Coordinates
-    double getValue(const Coordinate& coord);
-    bool getLocked(const Coordinate& coord);
-    void setValue(const Coordinate& coord, double d, bool enforceConstraints=true);
-    void setClamped(Coordinate& coord, bool newValue);
-    bool getClamped(const Coordinate& coord);
-    void setLocked(Coordinate& coord, bool newValue);
-    bool isPrescribed(const Coordinate& coord) const;
-    bool isConstrained(const Coordinate& coord) const;
-    // Constraints
-    bool isDisabled(const Constraint& constraint) const {
-        return  constraint.isDisabled(*_configState);
-    }
-    void setDisabled(Constraint& constraint, bool disable) {
-        constraint.setDisabled(*_configState, disable);
-        _model->assemble(*_configState);
-    }
-    // Forces
-    bool isDisabled(const Force& force) const {
-        return  force.isDisabled(*_configState);
-    }
-    void setDisabled(Force& force, bool disable) const {
-        force.setDisabled(*_configState, disable);
-        _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
-    }
-    // Muscles
-    double getActivation(Muscle& act);
-    double getMuscleLength(Muscle& act);
-    const Array<PathPoint*>& getCurrentPath(Muscle& act);
-    const Array<PathPoint*>& getCurrentDisplayPath(GeometryPath& path);
-    void updateDisplayer(Force& f);
-    void copyMuscle(Muscle& from, Muscle& to);
-    void replacePropertyFunction(OpenSim::Object& obj, OpenSim::Function* aOldFunction, OpenSim::Function* aNewFunction);
-
-    // Muscle Points
-    void setXFunction(MovingPathPoint& mmp, Function& newFunction);
-    void setYFunction(MovingPathPoint& mmp, Function& newFunction);
-    void setZFunction(MovingPathPoint& mmp, Function& newFunction);
-    void setXCoordinate(MovingPathPoint& mmp, Coordinate& newCoord);
-    void setYCoordinate(MovingPathPoint& mmp, Coordinate& newCoord);
-    void setZCoordinate(MovingPathPoint& mmp, Coordinate& newCoord);
-    void setBody(PathPoint& pathPoint, Body& newBody);
-    void setCoordinate(ConditionalPathPoint& via, Coordinate& newCoord);
-    void setRangeMin(ConditionalPathPoint& via, double d);
-    void setRangeMax(ConditionalPathPoint& via, double d);
-    bool replacePathPoint(GeometryPath& p, PathPoint& mp, PathPoint& newPoint);
-    void setLocation(PathPoint& mp, int i, double d);
-    void setEndPoint(PathWrap& mw, int newEndPt);
-    void addPathPoint(GeometryPath& p, int menuChoice, Body& body);
-    bool deletePathPoint(GeometryPath& p, int menuChoice);
-    bool isActivePathPoint(PathPoint& mp) ; 
-    // Muscle Wrapping
-    void setStartPoint(PathWrap& mw, int newStartPt);
-    void addPathWrap(GeometryPath& p, WrapObject& awo);
-    void moveUpPathWrap(GeometryPath& p, int num);
-    void moveDownPathWrap(GeometryPath& p, int num);
-    void deletePathWrap(GeometryPath& p, int num);
+    void transformPosition(const PhysicalFrame& body, double offset[], double gOffset[]);
+    SimTK::Transform getTransform(const PhysicalFrame& body);
+    void transform(const PhysicalFrame& ground, double d[], PhysicalFrame& body, double dragVectorBody[]);
     // Markers
-    void setBody(Marker& currentMarker, Body& newBody, bool  b);
+    void setBody(Marker& currentMarker, PhysicalFrame& newBody, bool  b);
     int replaceMarkerSet(Model& model, MarkerSet& aMarkerSet);
 
     void getCenterOfMassInGround(double com[3]) const {

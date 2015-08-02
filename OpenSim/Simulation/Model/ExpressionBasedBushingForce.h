@@ -119,7 +119,6 @@ public:
 
 protected:
     /** how to display the bushing */
-    VisibleObject _displayer;
 private:
     // parser programs for efficiently evaluating the expressions
     Lepton::ExpressionProgram MxProg, MyProg, MzProg, FxProg, FyProg, FzProg; 
@@ -261,7 +260,7 @@ protected:
         bool fixed, 
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const;
+        SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const override;
     
     void ComputeForcesAtBushing(const SimTK::State& state, 
                                 SimTK::SpatialVec& forces_on_M_in_ground, 
@@ -274,12 +273,7 @@ private:
     void extendConnectToModel(Model& aModel) override;
     // Create a SimTK::Force::LinarBushing which implements this ExpressionBasedBushingForce.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    //--------------------------------------------------------------------------
-    // Visible Object Support for Java Gui
-    //--------------------------------------------------------------------------
-    virtual VisibleObject* getDisplayer() const;
-    virtual void updateDisplayer(const SimTK::State& s);
-    virtual void updateGeometry(const SimTK::State& s);
+
     void setNull();
     void constructProperties();
 

@@ -199,6 +199,7 @@ void InverseDynamicsTool::setCoordinateValues(const OpenSim::Storage& aStorage)
 {
     if (_coordinateValues) delete _coordinateValues;
     _coordinateValues = new Storage(aStorage);
+    _coordinatesFileName = "";
 }
 
 
@@ -265,7 +266,7 @@ bool InverseDynamicsTool::run()
         FunctionSet *coordFunctions = NULL;
         //Storage *coordinateValues = NULL;
 
-        if(hasCoordinateValues()){
+        if (loadCoordinateValues()){
             if(_lowpassCutoffFrequency>=0) {
                 cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_lowpassCutoffFrequency<<"..."<<endl<<endl;
                 _coordinateValues->pad(_coordinateValues->getSize()/2);
@@ -297,7 +298,7 @@ bool InverseDynamicsTool::run()
         }
         else{
             IO::chDir(saveWorkingDirectory);
-            throw Exception("InverseDynamicsTool: no coordinate file found.");
+            throw Exception("InverseDynamicsTool: no coordinate file found, or setCoordinateValues() was not called.");
 
         }
 
@@ -425,7 +426,7 @@ bool InverseDynamicsTool::run()
     return success;
 }
 
-bool InverseDynamicsTool::hasCoordinateValues()
+bool InverseDynamicsTool::loadCoordinateValues()
 {
     if (_coordinateValues!= NULL) // Coordinates has been set from GUI
         return true;

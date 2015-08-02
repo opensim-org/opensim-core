@@ -53,7 +53,7 @@
 
 namespace OpenSim {
 
-
+class ModelDisplayHints;
 //==============================================================================
 //                            OPENSIM COMPONENT
 //==============================================================================
@@ -256,6 +256,57 @@ public:
     // End of Component Structural Interface (public non-virtual).
     ///@} 
 
+    /** Optional method for generating arbitrary display geometry that reflects
+    this %Component at the specified \a state. This will be called once to 
+    obtain ground- and body-fixed geometry (with \a fixed=\c true), and then 
+    once per frame (with \a fixed=\c false) to generate on-the-fly geometry such
+    as rubber band lines, force arrows, labels, or debugging aids.
+  
+    If you override this method, be sure to invoke the base class method first, 
+    using code like this:
+    @code
+    void MyComponent::generateDecorations
+       (bool                                        fixed, 
+        const ModelDisplayHints&                    hints,
+        const SimTK::State&                         state,
+        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
+    {
+        // invoke parent class method
+        Super::generateDecorations(fixed,hints,state,appendToThis); 
+        // ... your code goes here
+    }
+    @endcode
+
+    @param[in]      fixed   
+        If \c true, generate only geometry that is independent of time, 
+        configuration, and velocity. Otherwise generate only such dependent 
+        geometry.
+    @param[in]      hints   
+        See documentation for ModelDisplayHints; you may want to alter the 
+        geometry you generate depending on what you find there. For example, 
+        you can determine whether the user wants to see debug geometry.
+    @param[in]      state
+        The State for which geometry should be produced. See below for more
+        information.
+    @param[in,out]  appendToThis
+        %Array to which generated geometry should be \e appended via the
+        \c push_back() method.
+
+    When called with \a fixed=\c true only modeling options and parameters 
+    (Instance variables) should affect geometry; time, position, and velocity
+    should not. In that case OpenSim will already have realized the \a state
+    through Instance stage. When called with \a fixed=\c false, you may 
+    consult any relevant value in \a state. However, to avoid unnecessary
+    computation, OpenSim guarantees only that \a state will have been realized
+    through Position stage; if you need anything higher than that (reaction 
+    forces, for example) you should make sure the \a state is realized through 
+    Acceleration stage. **/
+    virtual void generateDecorations
+            (bool                                       fixed,
+            const ModelDisplayHints&                    hints,
+            const SimTK::State&                         state,
+            SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const {};
+
     /**
      * Get the underlying MultibodySystem that this component is connected to.
      * Make sure you have called Model::initSystem() prior to accessing the System.
@@ -346,14 +397,14 @@ public:
         @endcode
         @see getNumConnectors()
         @see getConnector(int i);
-    */
+     */
     int getNumConnectors() const {
         return getProperty_connectors().size();
     }
 
     /** Access a read-only Connector by index.
     @see getNumConnectors()
-    */
+     */
     const AbstractConnector& getConnector(int i) const {
         return get_connectors(i);
     }
@@ -374,7 +425,7 @@ public:
     template<typename T> Connector<T>&
         updConnector(const std::string& name)
     {
-            return *const_cast<Connector<T>*>(&getConnector<T>(name));
+        return *const_cast<Connector<T>*>(&getConnector<T>(name));
     }
 
     template<typename T>
@@ -452,8 +503,8 @@ public:
         }
         std::stringstream msg;
         msg << "Component::getInput: ERR- no input '" << name << "' found.\n "
-            << "for component '" << getName() << "' of type "
-            << getConcreteClassName();
+                << "for component '" << getName() << "' of type "
+                << getConcreteClassName();
         throw Exception(msg.str(), __FILE__, __LINE__);
     }
 
@@ -483,33 +534,33 @@ public:
             }
         }
 
-        std::stringstream msg;
+            std::stringstream msg;
         msg << "Component::getOutput: ERR-  no output '" << name << "' found.\n "
             << "for component '" << getName() << "' of type "
             << getConcreteClassName();
-        throw Exception(msg.str(), __FILE__, __LINE__);
-    }
+            throw Exception(msg.str(), __FILE__, __LINE__);
+        }
 
     /** An iterator to traverse all the Outputs of this component, pointing at the
     * first Output. This can be used in a loop as such:
-    *
-    *  @code
+     *
+     *  @code
     *  OutputsIterator it;
-    *  for (it = myComp.getOutputsBegin(); it != myComp.getOutputsEnd(); it++)
-    *  { ... }
-    *  @endcode
-    *
-    * @see getOutputsEnd()
-    */
+     *  for (it = myComp.getOutputsBegin(); it != myComp.getOutputsEnd(); it++)
+     *  { ... }
+     *  @endcode
+     *
+     * @see getOutputsEnd()
+     */
     OutputsIterator getOutputsBegin() const {
         return _outputsTable.begin();
     }
 
     /** An iterator for the map of Outputs of this component, pointing at the
-    * end of the map. This can be used in a loop as such:
-    *
-    * @see getOutputsBegin()
-    */
+     * end of the map. This can be used in a loop as such:
+     *
+     * @see getOutputsBegin()
+     */
     OutputsIterator getOutputsEnd() const {
         return _outputsTable.end();
     }
@@ -528,11 +579,11 @@ public:
      * Get a ModelingOption flag for this Component by name.
      * The flag is an integer corresponding to the index of modelingOptionNames used 
      * add the modeling option to the component. @see addModelingOption
-     *
+    *
      * @param state  the State in which to set the modeling option
      * @param name   the name (string) of the modeling option of interest
      * @return flag  integer value for modeling option
-     */
+    */
     int getModelingOption(const SimTK::State& state, const std::string& name) const;
 
     /**
@@ -562,13 +613,13 @@ public:
         const AbstractInput& in = getInput(name);
         if (in.isConnected()){
             return (Input<T>::downcast(in)).getValue(state);
-        }
+            }
         else{
-            std::stringstream msg;
+        std::stringstream msg;
             msg << "Component::getInputValue: ERR- input '" << name << "' not connected.\n "
                 << "for component '" << getName() << "' of type "<< getConcreteClassName();
-            throw Exception(msg.str(), __FILE__, __LINE__);
-        }
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
     }
 
     /**
@@ -891,7 +942,7 @@ template <class T> friend class ComponentMeasure;
     available at this point.
 
     If you override this method, be sure to invoke the base class method first,
-    using code like this :
+        using code like this :
         @code
         void MyComponent::extendFinalizeFromProperties() {
             Super::extendFinalizeFromProperties(); // invoke parent class method
@@ -932,15 +983,45 @@ template <class T> friend class ComponentMeasure;
     /** Invoke connect() on the (sub)components of this Component.*/
     void componentsConnect(Component& root) const;
 
+    /** Build a tree of Components from this component and its descendants. 
+    This method needs to be invoked after ALL calls to addComponent have been 
+    made, otherwise any newly added component will not be included in the tree 
+    and will not be found for iteration or for connection. Accordingly the 
+    method is called from Model::extendConnectToModel after all internal 
+    components due to Body splits, and welds have been performed.
+    
+    The implementation populates _nextComponent ReferencePtr with a pointer to 
+    the next Component in tree pre-order traversal.
+    */
+    void initComponentTreeTraversal(Component &root) {
+        // Going down the tree, node is followed by all its
+        // children in order, last child's successor is the parent's successor.
+        for (unsigned int i = 0; i < _components.size(); i++){
+            if (i == _components.size() - 1){
+                // use parent's sibling if any
+                if (this == &root) // only to be safe if root changes
+                    _components[i]->_nextComponent = nullptr;
+                else
+                    _components[i]->_nextComponent = _nextComponent.get();
+            }
+            else
+                _components[i]->_nextComponent = _components[i + 1];
+        }
+        // recur to handle children of subcomponents
+        for (unsigned int i = 0; i < _components.size(); i++){
+            _components[i]->initComponentTreeTraversal(root);
+        }
+    }
+
     ///@cond
     /** Opportunity to remove connection related information. 
     If you override this method, be sure to invoke the base class method first,
-    using code like this :
-    @code
+        using code like this :
+        @code
         void MyComponent::disconnect(Component& root) {
         // disconnect your subcomponents and your Super first
         Super::extendDisconnect(); 
-        //your code to wipeout your connection related information
+            //your code to wipeout your connection related information
     }
     @endcode  */
     //virtual void extendDisconnect() {};
@@ -1503,24 +1584,26 @@ private:
             _connectorsTable[connector.getName()] = ix;
         }
     }
-    // Populate _nextComponent ReferencePtr with a pointer to the next Component in
-    // tree pre-order traversal.
-    void initComponentTreeTraversal(Component &root) {
-        // Going down the tree, node is followed by all its
-        // children in order, last child's successor is the parent's successor.
-        for (unsigned int i = 0; i < _components.size(); i++){
-            if (i == _components.size() - 1){
-                // use parent's sibling if any
-                if (this == &root) // only to be safe if root changes
-                    _components[i]->_nextComponent = nullptr; 
-                else
-                    _components[i]->_nextComponent.reset(_nextComponent);
-            }
-            else
-                _components[i]->_nextComponent.reset(_components[i + 1]);
-        }
+public:
+    const std::string& getPathName() const {
+        return _pathName;
     }
+    void dumpPathName() const {
+         std::cout << getConcreteClassName() << ": ID= " << getPathName() << std::endl;
+         for (unsigned int i = 0; i<_components.size(); i++)
+             _components[i]->dumpPathName();
+
+     }
 protected:
+    // Populate _pathName for Component and all its children
+    void populatePathName(const std::string& parentPath) {
+        if (getName().empty())
+            _pathName = parentPath + "/" + getConcreteClassName();
+        else
+            _pathName = parentPath+"/"+getName();
+        for (unsigned int i = 0; i<_components.size(); i++)
+            _components[i]->populatePathName(getPathName());
+    }
     //Derived Components must create concrete StateVariables to expose their state 
     //variables. When exposing state variables allocated by the underlying Simbody
     //component (MobilizedBody, Constraint, Force, etc...) use its interface to 
@@ -1531,7 +1614,7 @@ protected:
     class StateVariable {
         friend void Component::addStateVariable(StateVariable* sv) const;
     public:
-        StateVariable() : name(""), owner(NULL),
+        StateVariable() : name(""), owner(nullptr),
             subsysIndex(SimTK::InvalidIndex), varIndex(SimTK::InvalidIndex),
             sysYIndex(SimTK::InvalidIndex), hidden(true) {}
         explicit StateVariable(const std::string& name, //state var name
@@ -1605,6 +1688,9 @@ private:
     void baseAddToSystem(SimTK::MultibodySystem& system) const;
     // Reference pointer to the successor of the current Component in Pre-order traversal
     SimTK::ReferencePtr<Component> _nextComponent;
+    // PathName
+    std::string _pathName;
+
     // Reference pointer to the system that this component belongs to.
     SimTK::ReferencePtr<SimTK::MultibodySystem> _system;
 
@@ -1777,7 +1863,9 @@ template <typename T>
 void ComponentListIterator<T>::advanceToNextValidComponent() {
     // Advance _node to next valid (of type T) if needed
     // Similar logic to operator++ but applies _filter->isMatch()
-    while (_node != nullptr && (dynamic_cast<const T*>(_node) == nullptr || !_filter.isMatch(*_node))){
+    while (_node != nullptr && (dynamic_cast<const T*>(_node) == nullptr || 
+                                !_filter.isMatch(*_node) || 
+                                (_node == &_root))){
         if (_node->_components.size() > 0)
             _node = _node->_components[0];
         else {
@@ -1785,7 +1873,7 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
                 _node = nullptr;
                 continue;
             }
-            _node = _node->_nextComponent;
+            _node = _node->_nextComponent.get();
         }
     }
     return;

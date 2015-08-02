@@ -72,26 +72,57 @@ int main()
         // GROUND BODY
         // Get a reference to the model's ground frame
         Ground& ground = osimModel.updGround();
+        // Create Frames to attach Geometry to
+        // Left brick
+        OpenSim::PhysicalFrame* leftAnchorFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(0, 0.05, 0.35)));
+        leftAnchorFrame->setName("LeftAnchor");
+        osimModel.addFrame(leftAnchorFrame);
+        // Right brick
+        OpenSim::PhysicalFrame* rightAnchorFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(0, 0.05, -0.35)));
+        rightAnchorFrame->setName("RightAnchor");
+        osimModel.addFrame(rightAnchorFrame);
+        // Cylinder
+        OpenSim::PhysicalFrame* cylFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(-.2, 0.0, 0.)));
+        cylFrame->setName("CylAnchor");
+        osimModel.addFrame(cylFrame);
+        // Ellipsoid
+        OpenSim::PhysicalFrame* ellipsoidFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(-.6, 0.6, 0.)));
+        ellipsoidFrame->setName("EllipsoidAnchor");
+        osimModel.addFrame(ellipsoidFrame);
+
 
         // Add display geometry to the ground to visualize in the Visualizer and GUI
         // add a checkered floor
-        ground.addDisplayGeometry("checkered_floor.vtp");
-        // add anchors for the muscles to be fixed too
-        ground.addDisplayGeometry("block.vtp");
-        ground.addDisplayGeometry("block.vtp");
+        ground.addMeshGeometry("checkered_floor.vtp");
+        // add anchors for the muscles to be fixed to
+        Brick leftAnchorGeometry(SimTK::Vec3(0.05, 0.05, 0.05));
+        leftAnchorGeometry.setColor(SimTK::Vec3(0.0, 1.0, 0.0));
+        Brick rightAnchorGeometry(SimTK::Vec3(0.05, 0.05, 0.05));
+        rightAnchorGeometry.setColor(SimTK::Vec3(1.0, 1.0, 0.0));
+        rightAnchorGeometry.setOpacity(0.5);
 
         // block is 0.1 by 0.1 by 0.1m cube and centered at origin. 
         // transform anchors to be placed at the two extremes of the sliding block (to come)
-        GeometrySet& geometry = ground.updDisplayer()->updGeometrySet();
-        DisplayGeometry& anchor1 = geometry[1];
-        DisplayGeometry& anchor2 = geometry[2];
-        // scale the anchors
-        anchor1.setScaleFactors(Vec3(5, 1, 1));
-        anchor2.setScaleFactors(Vec3(5, 1, 1));
-        // reposition the anchors
-        anchor1.setTransform(Transform(Vec3(0, 0.05, 0.35)));
-        anchor2.setTransform(Transform(Vec3(0, 0.05, -0.35)));
 
+        // scale the anchors
+        leftAnchorGeometry.set_scale_factors(Vec3(5, 1, 1));
+        rightAnchorGeometry.set_scale_factors(Vec3(5, 1, 1));
+        // reposition the anchors
+        leftAnchorGeometry.setFrameName(leftAnchorFrame->getName());
+        ground.addGeometry(leftAnchorGeometry);
+        rightAnchorGeometry.setFrameName(rightAnchorFrame->getName());
+        ground.addGeometry(rightAnchorGeometry);
+        
+        Cylinder cylGeometry(0.2, .3);
+        cylGeometry.setFrameName("CylAnchor");
+        cylGeometry.setRepresentation(Geometry::DrawWireframe);
+        ground.addGeometry(cylGeometry);
+
+        Ellipsoid ellipsoidGeometry(0.2, .7, .5);
+        ellipsoidGeometry.setColor(SimTK::Vec3(1.0, .5, 0.1));
+        ellipsoidGeometry.setFrameName("EllipsoidAnchor");
+        ground.addGeometry(ellipsoidGeometry);
+        
         // BLOCK BODY
         Vec3 blockMassCenter(0);
         Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
@@ -100,8 +131,12 @@ int main()
         OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
 
         // Add display geometry to the block to visualize in the GUI
-        block->addDisplayGeometry("block.vtp");
-
+        block->addMeshGeometry("block.vtp");
+        
+        Sphere sphereGeometry(0.1);
+        sphereGeometry.setFrameName(block->getName());
+        block->addGeometry(sphereGeometry);
+        
         // FREE JOINT
 
         // Create a new free joint with 6 degrees-of-freedom (coordinates) between the block and ground bodies
@@ -265,7 +300,6 @@ int main()
 
         // Initialize the system and get the default state
         SimTK::State& si = osimModel.initSystem();
-        
         // Enable constraint consistent with current configuration of the model
         constDist->setDisabled(si, false);
 

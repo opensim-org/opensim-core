@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "ContactSphere.h"
+using SimTK::Transform;
 
 namespace OpenSim {
 
@@ -84,7 +85,6 @@ void ContactSphere::setRadius(double radius)
 
 SimTK::ContactGeometry ContactSphere::createSimTKContactGeometry()
 {
-    _displayer.addGeometry(AnalyticSphere::createSphere(_radius));
     return SimTK::ContactGeometry::Sphere(_radius);
 }
 
@@ -102,7 +102,7 @@ void ContactSphere::generateDecorations(bool fixed, const ModelDisplayHints& hin
 
     geometry.push_back(SimTK::DecorativeSphere(getRadius())
                            .setTransform(Transform(getLocation()))
-                           //.setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+                           .setRepresentation(SimTK::DecorativeGeometry::DrawWireframe)
                            .setBodyId(getBody().getMobilizedBodyIndex())
                            .setColor(SimTK::Vec3(0,1,0))
                            .setOpacity(0.5));

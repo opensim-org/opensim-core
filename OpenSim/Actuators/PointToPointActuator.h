@@ -123,8 +123,8 @@ private:
     // also sets the corresponding body name properties.
     void setBodyA(Body* bodyp);
     void setBodyB(Body* bodyp);
-    Body* getBodyA() const {return _bodyA;}
-    Body* getBodyB() const {return _bodyB;}    
+    Body* getBodyA() const {return _bodyA.get();}
+    Body* getBodyB() const {return _bodyB.get();}    
 
     //--------------------------------------------------------------------------
     // Implement Force interface

@@ -40,14 +40,12 @@
 
 namespace OpenSim {
 
-class VisibleObject;
 class Body;
 class PathPoint;
 class PathWrap;
 class WrapResult;
 class Model;
 class PhysicalFrame;
-class AnalyticGeometry;
 
 //=============================================================================
 //=============================================================================
@@ -97,10 +95,6 @@ protected:
 
     PropertyStr _quadrantNameProp;
     std::string& _quadrantName;
-
-    // Support for Display
-    PropertyObj _displayerProp;
-    VisibleObject &_displayer;
 
     WrapQuadrant _quadrant;
     int _wrapAxis;
@@ -155,15 +149,12 @@ public:
     virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const = 0;
 #endif
-    // Visible Object Support
-    const VisibleObject* getDisplayer() const override { return &_displayer; }
-    VisibleObject* updDisplayer() override { return &_displayer; }
-    virtual void updateGeometry() {}
+    virtual void updateGeometry() {};
 
 protected:
     void setupProperties();
     void setupQuadrant();
-    void setGeometryQuadrants(AnalyticGeometry *aGeometry) const;
+    //void setGeometryQuadrants(AnalyticGeometry *aGeometry) const;
 private:
     void setNull();
     void constructProperties();

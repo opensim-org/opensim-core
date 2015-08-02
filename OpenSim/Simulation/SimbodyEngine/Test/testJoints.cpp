@@ -1542,7 +1542,7 @@ void testCustomVsCompoundJoint()
     const Ground& ground = customModel.getGround();
     //OpenSim thigh
     OpenSim::Body osim_thigh("thigh", femurMass, femurCOM, femurInertiaAboutCOM);
-    osim_thigh.addDisplayGeometry("femur.vtp");
+    osim_thigh.addMeshGeometry("femur.vtp");
 
     // Define hip transform in terms of coordinates and axes for custom joint
     SpatialTransform hipTransform;
@@ -1569,7 +1569,7 @@ void testCustomVsCompoundJoint()
 
     // Add OpenSim shank via a knee joint
     OpenSim::Body osim_shank("shank", tibiaMass.getMass(), tibiaMass.getMassCenter(), tibiaMass.getInertia());
-    osim_shank.addDisplayGeometry("tibia.vtp");
+    osim_shank.addMeshGeometry("tibia.vtp");
 
     // Define knee coordinates and axes for custom joint spatial transform
     SpatialTransform kneeTransform;
@@ -1603,7 +1603,7 @@ void testCustomVsCompoundJoint()
 
     //OpenSim thigh
     OpenSim::Body thigh2("thigh2", femurMass, femurCOM, femurInertiaAboutCOM);
-    thigh2.addDisplayGeometry("femur.vtp");
+    thigh2.addMeshGeometry("femur.vtp");
 
     // create compound hip joint
     CompoundJoint hip2("hip2", ground2, hipInGround, oInP, thigh2, hipInFemur, oInB);
@@ -1614,7 +1614,7 @@ void testCustomVsCompoundJoint()
 
     // Add OpenSim shank via a knee joint
     OpenSim::Body shank2("shank2", tibiaMass.getMass(), tibiaMass.getMassCenter(), tibiaMass.getInertia());
-    shank2.addDisplayGeometry("tibia.vtp");
+    shank2.addMeshGeometry("tibia.vtp");
 
     // create custom knee joint
     CustomJoint knee2("knee2", thigh2, kneeInFemur, Vec3(0), shank2, kneeInTibia, Vec3(0), kneeTransform);
