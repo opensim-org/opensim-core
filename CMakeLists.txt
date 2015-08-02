@@ -51,10 +51,6 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     # not yet conform to the Filesystem Hierarchy Standard (FHS).
     set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}-install" CACHE PATH 
         "The directory in which to install this project." FORCE)
-    # If CMAKE_INSTALL_PREFIX *is* unmodified, it usually
-    # appears in the CMake GUI. Otherwise, it is *not* shown in the GUI. We
-    # want to make sure it is *still* shown in the GUI.
-    mark_as_advanced(CLEAR CMAKE_INSTALL_PREFIX)
 endif()
 
 

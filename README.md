@@ -276,7 +276,7 @@ On Mac using Xcode
    changing the `CMAKE_INSTALL_PREFIX` variable. We'll assume you set it to
    `~/opensim-core`. If you choose a different installation location, make
    sure to use *yours* where we use `~/opensim-core` below. You should *not*
-   use `/usr/`, `/usr/local/`, etc (because our installation does not yet conform to the [FHS](http://www.pathname.com/fhs/)).
+   use `/usr/`, `/usr/local/`, etc. (because our installation does not yet conform to the [FHS](http://www.pathname.com/fhs/)).
 6. Tell CMake where you installed Simbody by setting the `SIMBODY_HOME`
    variable to where you installed Simbody (e.g., `~/simbody`). If you
    installed Simbody using `brew`, then CMake will find Simbody automatically.
