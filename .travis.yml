@@ -8,52 +8,57 @@ language: cpp
 #
 
 os:
+  - linux
   - osx
     
-#matrix:
-#  include:
-#    - compiler: clang
-#      env: BUILD_WRAPPING=on NPROC=1
-#    - compiler: gcc
-#      env: BUILD_WRAPPING=off NPROC=3
+matrix:
+  include:
+    - os: linux
+      compiler: clang
+      env: BUILD_WRAPPING=on NPROC=1
+    - os: linux
+      compiler: gcc
+      env: BUILD_WRAPPING=off NPROC=3
+    - os: osx
+      compiler: clang
+      env: BUILD_WRAPPING=off NPROC=3
+
 
 env:
   global:
     # The python tests look for OPENSIM_HOME.
     - OPENSIM_HOME=~/opensim-install
     - SWIG_VER=2.0.10
-    - BUILD_WRAPPING=off
-    - NPROC=1
     - USE_CCACHE=1
     - CCACHE_COMPRESS=1
     # for Clang to work with ccache.
     - CCACHE_CPP2=1
 
-#cache:  TODO
-#  - directories: $HOME/.ccache
+cache:
+  - directories: $HOME/.ccache
 
-#addons:
-#  # Dependencies on linux.
-#  apt:
-#    sources:
-#      # For gcc >= 4.8
-#      - ubuntu-toolchain-r-test
-#      # For cmake >= 2.8.8 (for CMakePackageConfigHelpers)
-#      - kubuntu-backports
-#    packages:
-#      - cmake
-#      # For Simbody.
-#      - liblapack-dev
-#      # C++11 on Ubuntu. Update to gcc 4.8, which provides full C++11 support.  We
-#      # use this script because if building Simbody with C++11, we need gcc-4.8,
-#      # and the Travis Ubuntu 12.04 machines have an older version of gcc. Even if
-#      # building with Clang, we need the newer libstdc++ that we get by updating to
-#      # gcc-4.8.  See https://github.com/travis-ci/travis-ci/issues/979.
-#      - g++-4.8
-#      # In case someone wants to check for memory leaks.
-#      - valgrind
-#      # To run the python tests.
-#      - python-nose
+addons:
+  # Dependencies on linux.
+  apt:
+    sources:
+      # For gcc >= 4.8
+      - ubuntu-toolchain-r-test
+      # For cmake >= 2.8.8 (for CMakePackageConfigHelpers)
+      - kubuntu-backports
+    packages:
+      - cmake
+      # For Simbody.
+      - liblapack-dev
+      # C++11 on Ubuntu. Update to gcc 4.8, which provides full C++11 support.  We
+      # use this script because if building Simbody with C++11, we need gcc-4.8,
+      # and the Travis Ubuntu 12.04 machines have an older version of gcc. Even if
+      # building with Clang, we need the newer libstdc++ that we get by updating to
+      # gcc-4.8.  See https://github.com/travis-ci/travis-ci/issues/979.
+      - g++-4.8
+      # In case someone wants to check for memory leaks.
+      - valgrind
+      # To run the python tests.
+      - python-nose
 
 before_install:
 
@@ -148,4 +153,4 @@ script:
 
 before_cache:
   # Show cache statistics.
-  # TODO - ccache --show-stats
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then ccache --show-stats; fi
