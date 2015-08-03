@@ -110,7 +110,7 @@ public:
     Rotational stiffness (damping) in N/rad(/s) and translational in N/m(/s).
     Off-diagonals represent the coupling terms.
     See property declarations for more information. **/
-    CoupledBushingForce(const std::string& frame1_name,
+    CoupledBushingForce(const std::string& frame1Name,
                         const std::string& frame2_name,
                         SimTK::Mat66 stiffnessMat,
                         SimTK::Mat66 dampingMat);

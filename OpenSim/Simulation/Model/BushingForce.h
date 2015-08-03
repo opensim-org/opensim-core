@@ -83,8 +83,8 @@ public:
     tries to keep aligned by generating a passive force according to the physical
     properties of the bushing.
     See property declarations for more information. */
-    BushingForce(const std::string& frame1_name,
-                 const std::string& frame2_name,
+    BushingForce(const std::string& frame1Name,
+                 const std::string& frame2Name,
                 const SimTK::Vec3& transStiffness,
                 const SimTK::Vec3& rotStiffness,
                 const SimTK::Vec3& transDamping,

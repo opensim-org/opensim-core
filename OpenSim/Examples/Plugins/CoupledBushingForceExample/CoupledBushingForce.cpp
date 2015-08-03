@@ -56,16 +56,16 @@ CoupledBushingForce::CoupledBushingForce() : Force()
 }
 
 /* Convenience constructor */
-CoupledBushingForce::CoupledBushingForce( const std::string& frame1_name,
-                                          const std::string& frame2_name,
+CoupledBushingForce::CoupledBushingForce( const std::string& frame1Name,
+                                          const std::string& frame2Name,
                                           SimTK::Mat66 stiffnessMat,
                                           SimTK::Mat66 dampingMat) : Force()
 {
     setNull();
     constructInfrastructure();
 
-    updConnector<PhysicalFrame>("frame1").set_connected_to_name(frame1_name);
-    updConnector<PhysicalFrame>("frame2").set_connected_to_name(frame1_name);
+    updConnector<PhysicalFrame>("frame1").set_connected_to_name(frame1Name);
+    updConnector<PhysicalFrame>("frame2").set_connected_to_name(frame2Name);
 
     _stiffnessMatrix = stiffnessMat;
     _dampingMatrix = dampingMat;
