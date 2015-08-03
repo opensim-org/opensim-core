@@ -91,6 +91,7 @@ set_target_properties(_${KIT} PROPERTIES
     PROJECT_LABEL "Python Bindings - _${KIT}"
     PREFIX ""
     # Most shared libraries go into the root build dir; not so for _opensim.
+    ARCHIVE_OUTPUT_DIRECTORY "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
     LIBRARY_OUTPUT_DIRECTORY "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
     RUNTIME_OUTPUT_DIRECTORY "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
 )
