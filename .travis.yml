@@ -89,6 +89,7 @@ before_install:
   - make -j8 install
 
   ## Install SWIG to build Java/python wrapping.
+  - if [[ "$BUILD_WRAPPING" = "on" ]]; then if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pcre; fi; fi
   - if [[ "$BUILD_WRAPPING" = "on" ]]; then mkdir ~/swig-source && cd ~/swig-source; fi
   - if [[ "$BUILD_WRAPPING" = "on" ]]; then wget https://github.com/swig/swig/archive/rel-$SWIG_VER.tar.gz; fi
   #- wget http://prdownloads.sourceforge.net/swig/$SWIG.tar.gz
