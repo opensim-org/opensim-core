@@ -4,12 +4,7 @@
 language: cpp
 
 # Use container-based infrastructure to allow caching (for ccache).
-# TODO sudo: false
-#
-
-os:
-  - linux
-  - osx
+sudo: false
     
 matrix:
   include:
