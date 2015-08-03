@@ -121,6 +121,10 @@ add_test(NAME python WORKING_DIRECTORY "${PYTHON_PACKAGE_BINARY_DIR}"
     COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
                 "${CMAKE_CURRENT_SOURCE_DIR}/tests"
     )
+if(WIN32)
+    set_tests_properties(python PROPERTIES ENVIRONMENT
+        "PATH=${BUILD_BINARY_DIR}/${CMAKE_CFG_INTDIR}\\;$ENV{PATH}")
+endif()
 
 # Install python package.
 # -----------------------
