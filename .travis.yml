@@ -5,24 +5,34 @@ language: cpp
 
 # Use container-based infrastructure to allow caching (for ccache).
 sudo: false
-
+    
 matrix:
   include:
-    - compiler: clang
+    - os: linux
+      compiler: clang
       env: BUILD_WRAPPING=on NPROC=1
-    - compiler: gcc
+    - os: linux
+      compiler: gcc
       env: BUILD_WRAPPING=off NPROC=3
+    - os: osx
+      compiler: clang
+      env: BUILD_WRAPPING=off NPROC=3
+  allow_failures:
+    - os: osx
+      compiler: clang
+
 
 env:
   global:
     # The python tests look for OPENSIM_HOME.
-    - OPENSIM_HOME=~/opensim-install SWIG_VER=2.0.10
+    - OPENSIM_HOME=~/opensim-install
+    - SWIG_VER=2.0.10
     - USE_CCACHE=1
     - CCACHE_COMPRESS=1
     # for Clang to work with ccache.
     - CCACHE_CPP2=1
 
-cache: 
+cache:
   - directories: $HOME/.ccache
 
 addons:
@@ -82,16 +92,17 @@ before_install:
   - make -j8 install
 
   ## Install SWIG to build Java/python wrapping.
-  - mkdir ~/swig-source && cd ~/swig-source
-  - wget https://github.com/swig/swig/archive/rel-$SWIG_VER.tar.gz
+  - if [[ "$BUILD_WRAPPING" = "on" ]]; then if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pcre; fi; fi
+  - if [[ "$BUILD_WRAPPING" = "on" ]]; then mkdir ~/swig-source && cd ~/swig-source; fi
+  - if [[ "$BUILD_WRAPPING" = "on" ]]; then wget https://github.com/swig/swig/archive/rel-$SWIG_VER.tar.gz; fi
   #- wget http://prdownloads.sourceforge.net/swig/$SWIG.tar.gz
-  - tar xzf rel-$SWIG_VER.tar.gz && cd swig-rel-$SWIG_VER
-  - sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache && make && make -j8 install
+  - if [[ "$BUILD_WRAPPING" = "on" ]]; then tar xzf rel-$SWIG_VER.tar.gz && cd swig-rel-$SWIG_VER; fi
+  - if [[ "$BUILD_WRAPPING" = "on" ]]; then sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache && make && make -j8 install; fi
   #- ./configure --prefix=$HOME/swig && make && make -j8 install
 
   ## Detect if we should check memory leaks with valgrind.
   - cd $TRAVIS_BUILD_DIR
-  - git log --format=%B --no-merges -n 1 | grep '\[ci valgrind\]'; export RUN_VALGRIND=$?; true
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then git log --format=%B --no-merges -n 1 | grep '\[ci valgrind\]'; export RUN_VALGRIND=$?; true; fi
   - if [ $RUN_VALGRIND = "0" ]; then export CTEST_FLAGS="-D ExperimentalMemCheck"; fi
 
 install:
@@ -141,4 +152,4 @@ script:
 
 before_cache:
   # Show cache statistics.
-  - ccache --show-stats
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then ccache --show-stats; fi
