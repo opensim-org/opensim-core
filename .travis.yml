@@ -17,6 +17,9 @@ matrix:
     - os: osx
       compiler: clang
       env: BUILD_WRAPPING=off NPROC=3
+  allow_failures:
+    - os: osx
+      compiler: clang
 
 
 env:
