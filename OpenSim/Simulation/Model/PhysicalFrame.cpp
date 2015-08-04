@@ -88,7 +88,7 @@ void PhysicalFrame::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
 
-    // Better use name search or more robust method
+    // TODO: Better use name search or more robust method
     if (upd_geometry(0).getFrameName() == "")
         upd_geometry(0).setFrameName(getName());
 
