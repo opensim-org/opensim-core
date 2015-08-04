@@ -38,8 +38,20 @@ set(OPENSIM_VERSION
 
 # CMake module path.
 # ------------------
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(OpenSimMacros)
+
+# Directory in which to install.
+# ------------------------------
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    # On Windows, we override the default value because Visual Studio does
+    # not, by default, have permission to write to the Program Files
+    # directory.
+    # On Linux, we override the default value because our installation does
+    # not yet conform to the Filesystem Hierarchy Standard (FHS).
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}-install" CACHE PATH 
+        "The directory in which to install this project." FORCE)
+endif()
 
 
 # Build binary directory.
