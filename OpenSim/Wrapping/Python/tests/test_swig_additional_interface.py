@@ -63,10 +63,16 @@ def test_markAdopted2():
     constr.setConstantDistance(1)
     a.addConstraint(constr)
 
-    # Force requires frames. If not provided, you get a segfault.
-    f = osim.BushingForce("ground", "body", osim.Vec3(2, 2, 2), osim.Vec3(1, 1, 1), osim.Vec3(0, 0, 0), osim.Vec3(0, 0, 0))
-
+    f = osim.BushingForce("ground", "body",
+            osim.Vec3(2, 2, 2), osim.Vec3(1, 1, 1),
+            osim.Vec3(0, 0, 0), osim.Vec3(0, 0, 0))
     a.addForce(f)
+
+    f2 = osim.BushingForce()
+    a.addForce(f2)
+
+    f3 = osim.SpringGeneralizedForce()
+    a.addForce(f3)
 
     model = osim.Model(os.environ['OPENSIM_HOME'] +
             "/Models/Arm26/arm26.osim")
