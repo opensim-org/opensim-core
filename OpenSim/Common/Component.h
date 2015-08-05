@@ -896,7 +896,7 @@ class StateVariable;
 // Give the ComponentMeasure access to the realize() methods.
 template <class T> friend class ComponentMeasure;
 
-  /** Single call to construct the underlying infastructure of a Component, which
+  /** Single call to construct the underlying infrastructure of a Component, which
      include: 1) its properties, 2) its structural connectors (to other components),
      3) its Inputs (slots) for expected Output(s) of other components and, 4) its 
      own Outputs (wires) that it provides for other components to access its values.
@@ -953,9 +953,6 @@ template <class T> friend class ComponentMeasure;
         @endcode   */
     virtual void extendFinalizeFromProperties() {};
 
-    /** Invoke finalizeFromProperties() on the (sub)components of this Component.*/
-    void componentsFinalizeFromProperties() const;
-
     /** Perform any necessary initializations required to connect the component
     (and it subcomponents) to other components and mark the connection status.
     Provides a check for error conditions. connect() is invoked on all components 
@@ -980,9 +977,6 @@ template <class T> friend class ComponentMeasure;
     @endcode   */
     virtual void extendConnect(Component& root) {};
 
-    /** Invoke connect() on the (sub)components of this Component.*/
-    void componentsConnect(Component& root) const;
-
     /** Build a tree of Components from this component and its descendants. 
     This method needs to be invoked after ALL calls to addComponent have been 
     made, otherwise any newly added component will not be included in the tree 
@@ -1002,10 +996,10 @@ template <class T> friend class ComponentMeasure;
                 if (this == &root) // only to be safe if root changes
                     _components[i]->_nextComponent = nullptr;
                 else
-                    _components[i]->_nextComponent.reset(_nextComponent);
+                    _components[i]->_nextComponent = _nextComponent.get();
             }
             else
-                _components[i]->_nextComponent.reset(_components[i + 1]);
+                _components[i]->_nextComponent = _components[i + 1];
         }
         // recur to handle children of subcomponents
         for (unsigned int i = 0; i < _components.size(); i++){
@@ -1055,14 +1049,41 @@ template <class T> friend class ComponentMeasure;
     }
     @endcode
 
+    This method assumes that this Component's addToSystem will be invoked before
+    its subcomponents. If you need your subcomponents to be added to the system,
+    first (e.g. require of a Force to be anchored to a SimTK::MobilizedBody
+    specified by subcomponents) then you must implement:
+        extendAddToSystemAfterSubcomponents().
+    It is possible to implement both method to add system elements before and then 
+    after your subcomponents have added themselves. Caution is required that
+    Simbody elements are not added twice especially when order is unimportant.
+
     @param[in,out] system   The MultibodySystem being added to.
 
     @see addModelingOption(), addStateVariable(), addDiscreteVariables(), 
          addCacheVariable() **/
     virtual void extendAddToSystem(SimTK::MultibodySystem& system) const {};
 
-    /** Invoke extendAddToSystem() on the (sub)components of this Component.*/
-    void componentsAddToSystem(SimTK::MultibodySystem& system) const;
+    /** Add appropriate Simbody elements (if needed) to the System after your 
+    component's subcomponents have had a chance to add themselves to the system.
+
+    If you override this method, be sure to invoke the base class method at the
+    beginning, using code like this:
+    @code
+    void MyComponent::
+        extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) const {
+        // Perform any additions to the system required by your Super
+        Super::extendAddToSystemAfterSubcomponents(system);       
+        // ... your code goes here
+    }
+    @endcode
+    
+    @param[in,out] system   The MultibodySystem being added to.
+    
+    @see extendAddToSystem() **/
+    virtual void 
+        extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system)
+                                                                      const {};
 
     /** Transfer property values or other state-independent initial values
     into this component's state variables in the passed-in \a state argument.
@@ -1088,10 +1109,6 @@ template <class T> friend class ComponentMeasure;
     @see extendSetPropertiesFromState() **/
     virtual void extendInitStateFromProperties(SimTK::State& state) const {};
 
-    /** Invoke initStateFromProperties() on (sub)components of this Component */
-    void componentsInitStateFromProperties(SimTK::State& state) const;
-
-
     /** Update this component's property values to match the specified State,
     if the component has created any state variable that is intended to
     correspond to a property. Thus, state variable values can persist as part 
@@ -1112,9 +1129,6 @@ template <class T> friend class ComponentMeasure;
 
     @see extendInitStateFromProperties() **/
     virtual void extendSetPropertiesFromState(const SimTK::State& state) {};
-
-    /** Invoke setPropertiesFromState() on (sub)components of this Component */
-    void componentsSetPropertiesFromState(const SimTK::State& state);
 
     /** If a model component has allocated any continuous state variables
     using the addStateVariable() method, then %computeStateVariableDerivatives()
@@ -1552,6 +1566,21 @@ private:
     //the return type, @see addOutput()
     virtual void constructOutputs() {}
 
+    /// Invoke finalizeFromProperties() on the (sub)components of this Component.
+    void componentsFinalizeFromProperties() const;
+
+    /// Invoke connect() on the (sub)components of this Component.
+    void componentsConnect(Component& root) const;
+
+    /// Invoke addToSystem() on the (sub)components of this Component.
+    void componentsAddToSystem(SimTK::MultibodySystem& system) const;
+
+    /// Invoke initStateFromProperties() on (sub)components of this Component
+    void componentsInitStateFromProperties(SimTK::State& state) const;
+
+    /// Invoke setPropertiesFromState() on (sub)components of this Component
+    void componentsSetPropertiesFromState(const SimTK::State& state);
+
     // Get the number of continuous states that the Component added to the 
     // underlying computational system. It includes the number of built-in states  
     // exposed by this component. It represents the number of state variables  
@@ -1614,7 +1643,7 @@ protected:
     class StateVariable {
         friend void Component::addStateVariable(StateVariable* sv) const;
     public:
-        StateVariable() : name(""), owner(NULL),
+        StateVariable() : name(""), owner(nullptr),
             subsysIndex(SimTK::InvalidIndex), varIndex(SimTK::InvalidIndex),
             sysYIndex(SimTK::InvalidIndex), hidden(true) {}
         explicit StateVariable(const std::string& name, //state var name
@@ -1873,7 +1902,7 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
                 _node = nullptr;
                 continue;
             }
-            _node = _node->_nextComponent;
+            _node = _node->_nextComponent.get();
         }
     }
     return;

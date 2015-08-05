@@ -223,6 +223,12 @@
 #include <OpenSim/Tools/DynamicsTool.h>
 #include <OpenSim/Tools/InverseDynamicsTool.h>
 
+#include <OpenSim/Tools/TrackingTask.h>
+#include <OpenSim/Tools/CMC_Task.h>
+#include <OpenSim/Tools/CMC_Joint.h>
+#include <OpenSim/Tools/CMC_Point.h>
+#include <OpenSim/Tools/CMC_TaskSet.h>
+
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Tools/RRATool.h>
 #include <OpenSim/Tools/ScaleTool.h>
@@ -456,6 +462,15 @@ public:
 	aController.markAdopted();
 	private_addController(aController);
   }
+%}
+
+%javamethodmodifiers OpenSim::ForceSet::append "private";
+%rename OpenSim::ForceSet::append private_append;
+%typemap(javacode) OpenSim::ForceSet %{
+   public boolean append(Force aFroce) {
+      aFroce.markAdopted();
+	  return private_append(aFroce);
+   }
 %}
 
 %typemap(javacode) OpenSim::Array<std::string> %{
@@ -1069,6 +1084,14 @@ namespace SimTK {
 %include <OpenSim/Tools/DynamicsTool.h>
 %include <OpenSim/Tools/InverseDynamicsTool.h>
 %include <OpenSim/Tools/ForwardTool.h>
+
+%include <OpenSim/Tools/TrackingTask.h>
+%include <OpenSim/Tools/CMC_Task.h>
+%include <OpenSim/Tools/CMC_Joint.h>
+%include <OpenSim/Tools/CMC_Point.h>
+%template (SetTrackingTasks) OpenSim::Set<OpenSim::TrackingTask>;
+%include <OpenSim/Tools/CMC_TaskSet.h>
+
 %include <OpenSim/Tools/CMCTool.h>
 %include <OpenSim/Tools/RRATool.h>
 %include <OpenSim/Tools/AnalyzeTool.h>

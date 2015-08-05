@@ -20,7 +20,7 @@ include(CMakeParseArguments)
 #
 # Here's an example from OpenSim/Common/CMakeLists.txt:
 #
-#   opensim_add_library(
+#   OpenSimAddLibrary(
 #       KIT Common
 #       AUTHORS "Clay_Anderson-Ayman_Habib_and_Peter_Loan"
 #       LINKLIBS ${Simbody_LIBRARIES}
@@ -28,7 +28,7 @@ include(CMakeParseArguments)
 #       SOURCES ${SOURCES}
 #       TESTDIRS "Test"
 #       )
-function(OPENSIM_ADD_LIBRARY)
+function(OpenSimAddLibrary)
 
     # Parse arguments.
     # ----------------
@@ -130,16 +130,112 @@ function(OPENSIM_ADD_LIBRARY)
     # --------
     enable_testing()
 
-    if(EXECUTABLE_OUTPUT_PATH)
-        set(TEST_PATH ${EXECUTABLE_OUTPUT_PATH})
-    else()
-        set(TEST_PATH .)
-    endif()
-
     if(BUILD_TESTING)
         foreach(OSIMADDLIB_TESTDIR ${OSIMADDLIB_TESTDIRS})
             subdirs("${OSIMADDLIB_TESTDIR}")
         endforeach()
     endif()
+
+endfunction()
+
+# Copy a file from the directory containing test files (model files, data,
+# etc.) to the directory in which a test will be executed. This function makes
+# it easy to re-use files that are used in tests. With an easier mechanism for
+# re-using these files, we won't end up version-controlling the same file in
+# multiple test directories.
+#
+# Arguments are a list of files in the test resources directory
+# (OPENSIM_SHARED_TEST_FILES_DIR) to copy.
+function(OpenSimCopySharedTestFiles)
+    if(BUILD_TESTING)
+        foreach(filename ${ARGN})
+            file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/${filename}"
+                 DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+        endforeach()
+    endif()
+endfunction()
+
+# Create test targets for this directory.
+# TESTPROGRAMS: Names of test CPP files. One test will be created for each cpp
+#   of these files.
+# DATAFILES: Files necessary to run the test. These will be copied into the
+#   corresponding build directory.
+# LINKLIBS: Arguments to TARGET_LINK_LIBRARIES.
+# SOURCES: Extra source files for the exectuable.
+#
+# Here's an example:
+#   file(GLOB TEST_PROGRAMS "test*.cpp")
+#   file(GLOB DATA_FILES *.osim *.xml *.sto *.mot)
+#   OpenSimAddTests(
+#       TESTPROGRAMS ${TEST_ROGRAMS}
+#       DATAFILES ${DATA_FILES}
+#       LINKLIBS osimCommon osimSimulation osimAnalyses
+#       )
+function(OpenSimAddTests)
+
+    if(BUILD_TESTING)
+
+        # Parse arguments.
+        # ----------------
+        # http://www.cmake.org/cmake/help/v2.8.9/cmake.html#module:CMakeParseArguments
+        set(options)
+        set(oneValueArgs)
+        set(multiValueArgs TESTPROGRAMS DATAFILES LINKLIBS SOURCES)
+        CMAKE_PARSE_ARGUMENTS(
+            OSIMADDTESTS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+        # If EXECUTABLE_OUTPUT_PATH is set, then that's where the tests will be
+        # located. Otherwise, they are located in the current binary directory.
+        if(EXECUTABLE_OUTPUT_PATH)
+            set(TEST_PATH "${EXECUTABLE_OUTPUT_PATH}")
+        else()
+            set(TEST_PATH "${CMAKE_CURRENT_BINARY_DIR}")
+        endif()
+
+        # Make test targets.
+        foreach(test_program ${OSIMADDTESTS_TESTPROGRAMS})
+            # NAME_WE stands for "name without extension"
+            get_filename_component(TEST_NAME ${test_program} NAME_WE)
+
+            add_executable(${TEST_NAME} ${test_program}
+                ${OSIMADDTESTS_SOURCES})
+            target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
+            add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+            set_target_properties(${TEST_NAME} PROPERTIES
+                PROJECT_LABEL "Tests - ${TEST_NAME}")
+
+        endforeach()
+
+        # Copy data files to build directory.
+        foreach(data_file ${OSIMADDTESTS_DATAFILES})
+            # This command re-copies the data files if they are modified;
+            # custom commands don't do this.
+            file(COPY "${data_file}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+        endforeach()
+
+        #if(UNIX)
+        #  add_definitions(-fprofile-arcs -ftest-coverage)
+        #  link_libraries(gcov)
+        #endif(UNIX)
+
+    endif()
+
+endfunction()
+
+
+# Create an application/executable. To be used in the Appliations directory.
+# APPNAME: Name of the application. Must also be the name of the source file
+# containing main().
+#
+# Here's an example:
+#   OpenSimAddApplication(forward)
+function(OpenSimAddApplication APPNAME)
+
+    include_directories(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors)
+    add_executable(${APPNAME} ${APPNAME}.cpp)
+    target_link_libraries(${APPNAME} osimTools)
+    install(TARGETS ${APPNAME} DESTINATION bin)
+    set_target_properties(${APPNAME} PROPERTIES
+        PROJECT_LABEL "Applications - ${APPNAME}")
 
 endfunction()

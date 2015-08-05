@@ -509,7 +509,7 @@ public:
     //--------------------------------------------------------------------------
     // Internal muscle pointer
     //--------------------------------------------------------------------------
-    const Muscle* getMuscle() const         { return _musc; }
+    const Muscle* getMuscle() const         { return _musc.get(); }
     void setMuscle(Muscle* m)               { _musc = m; }
 
 

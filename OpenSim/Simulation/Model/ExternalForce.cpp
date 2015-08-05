@@ -320,7 +320,7 @@ void ExternalForce::computeForce(const SimTK::State& state,
     double time = state.getTime();
     const SimbodyEngine& engine = getModel().getSimbodyEngine();
 
-    assert(_appliedToBody!=0);
+    assert(_appliedToBody!=nullptr);
 
     if (_appliesForce) {
         Vec3 force = getForceAtTime(time);

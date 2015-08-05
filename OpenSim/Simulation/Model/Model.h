@@ -260,7 +260,7 @@ public:
     until initSystem() has been successfully invoked. Use this method prior
     to calling getVisualizer() or updVisualizer() to avoid an
     unpleasant exception. **/
-    bool hasVisualizer() const {return _modelViz != 0;}
+    bool hasVisualizer() const {return _modelViz != nullptr;}
 
     /** Obtain read-only access to the ModelVisualizer. This will throw an 
     exception if visualization was not requested or initSystem() not yet

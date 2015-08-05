@@ -93,7 +93,7 @@ void CoordinateActuator::setCoordinate(Coordinate* coordinate)
  */
 Coordinate* CoordinateActuator::getCoordinate() const
 {
-    return _coord;
+    return _coord.get();
 }
 
 //-----------------------------------------------------------------------------
