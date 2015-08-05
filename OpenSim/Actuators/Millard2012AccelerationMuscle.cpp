@@ -257,7 +257,7 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
 
 //Parallelism Method Overrides
 bool Millard2012AccelerationMuscle::shouldBeParallelIfPossible() const{
-  return true;
+    return true;
 }
 
 //=============================================================================
