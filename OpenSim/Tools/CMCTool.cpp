@@ -434,33 +434,6 @@ bool CMCTool::run()
     _model->getMultibodySystem().realize(s, Stage::Position );
      taskSet.setModel(*_model);
     _model->equilibrateMuscles(s);
-    
-    SimTK::GeneralForceSubsystem& gfs = _model->updForceSubsystem();
-    int autoThreadCount = gfs.getNumberOfThreads(); //auto-detected numThreads
-    char* envThreadsString = getenv("OPENSIM_CMC_MAX_THREADS");
-    //TODO: Best environment variable name?
-    int envThreads = autoThreadCount;
-    
-    cout << endl;
-    if(envThreadsString != NULL)
-    {
-      envThreads = stoi(envThreadsString);
-      if(autoThreadCount != envThreads)
-      {
-          gfs.setNumberOfThreads(envThreads);
-          cout << "Enviroment variable OPENSIM_CMC_MAX_THREADS set to " <<
-          envThreads << ". Overriding the detected number of " <<
-          autoThreadCount << " threads." << endl;
-      }else{
-        cout << "Enviroment variable OPENSIM_CMC_MAX_THREADS set to " <<
-        envThreads << ". Same as the detected number of " <<
-        autoThreadCount << " threads." << endl;
-      }
-
-    }else{
-      cout << "Environment variable OPENSIM_CMC_MAX_THREADS not set! Using the"
-      " detected number of " << autoThreadCount << " threads." << endl;
-    }
 
     // ---- INPUT ----
     // DESIRED POINTS AND KINEMATICS

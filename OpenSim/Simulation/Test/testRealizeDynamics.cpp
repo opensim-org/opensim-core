@@ -43,7 +43,6 @@ static const int MAX_N_TRIES = 100;
 int main()
 {
     try {
-        LoadOpenSimLibrary("osimActuators");
         testRealizeDynamics("arm26.osim");
     }
     catch (const Exception& e) {

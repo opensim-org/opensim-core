@@ -682,9 +682,10 @@ public:
      * Throws an exception if called before Model::initSystem()
      * This call invalidates the dynamics of the model and invalidates the
      * value of the controls until they are marked as valid when the update
-     * is completed (@see markControlsAsValid)
+     * is completed 
+     * @see markControlsAsValid
      *
-     * Note: This method cannot be called during the realization of Dynamics
+     * @note This method cannot be called during the realization of Dynamics
      * due to the non-thread-safe controlsCache. If this method must be called
      * during realizeDynamics, put a lock on the State. (See SimTK::State for
      * more information)
@@ -698,7 +699,7 @@ public:
      * Indicates that controls are valid for use at the dynamics stage.
      * If the stage is Velocity or lower the controls will remain invalid.
      *
-     * Note: This method cannot be called during the realization of Dynamics
+     * @note This method cannot be called during the realization of Dynamics
      * due to the non-thread-safe controlsCache. If this method must be called
      * during realizeDynamics, put a lock on the State. (See SimTK::State for
      * more information)
@@ -711,7 +712,7 @@ public:
      * Note, this method will invalidate the dynamics of the model,
      * but will mark the controls as valid. (E.g. controllers will not be invoked)
      *
-     * Note: This method cannot be called during the realization of Dynamics
+     * @note This method cannot be called during the realization of Dynamics
      * due to the non-thread-safe controlsCache. If this method must be called
      * during realizeDynamics, put a lock on the State. (See SimTK::State for
      * more information)

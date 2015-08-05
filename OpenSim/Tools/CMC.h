@@ -55,7 +55,8 @@ class CMC_TaskSet;
  * be nonlinear and governed by differential equations (and so have delays
  * in force production).  The cannonical example of such a dynamic system
  * is the musculoskeletal system (human or animal), hence the name
- * Computed Muscle Control.
+ * Computed Muscle Control. The user may specify the number of threads that
+ * CMC uses by setting the environment variable OPENSIM_MAX_THREADS.
  *
  * For a complete description of the CMC algorithm consult the following
  * references:

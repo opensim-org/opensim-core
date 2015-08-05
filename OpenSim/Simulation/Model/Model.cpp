@@ -490,6 +490,34 @@ void Model::createMultibodySystem()
     SimTK::UnitVec3 direction = magnitude==0 ? SimTK::UnitVec3(0,-1,0) : SimTK::UnitVec3(get_gravity()/magnitude);
     _gravityForce = new SimTK::Force::Gravity(*_forceSubsystem, *_matter, direction, magnitude);
 
+    // Detect if the environment variable OPENSIM_MAX_THREADS has been set; then
+    // decide on the maximum number of threads to use
+    int autoThreadCount = _forceSubsystem.getNumberOfThreads();
+    
+    //The maximum number of threads according to the environment variable
+    char* environmentMaxThreadsString = getenv("OPENSIM_MAX_THREADS");
+    int environmentMaxThreads;
+    
+    if(environmentMaxThreadsString != NULL)
+    {
+      environmentMaxThreads = stoi(environmentMaxThreadsString);
+      if(autoThreadCount != environmentMaxThreads)
+      {
+          _forceSubsystem.setNumberOfThreads(environmentMaxThreads);
+          cout << "Enviroment variable OPENSIM_MAX_THREADS set to " <<
+          environmentMaxThreads << ". Overriding the detected number of " <<
+          autoThreadCount << " threads." << endl;
+      }else{ //OPENSIM_MAX_THREADS == autoThreadCount
+        cout << "Enviroment variable OPENSIM_MAX_THREADS set to " <<
+        environmentMaxThreads << ". Same as the detected number of " <<
+        autoThreadCount << " threads." << endl;
+      }
+    }else{ // OPENSIM_MAX_THREADS is not set, just use detected # of threads
+      cout << "Environment variable OPENSIM_MAX_THREADS not set! Detected that"
+      << autoThreadCount << " threads are supported on this machine. Using "
+      << "up to " << autoThreadCount << " threads." << endl;
+    }
+    
     addToSystem(*_system);
 }
 
@@ -1766,7 +1794,7 @@ Vector& Model::updControls(const SimTK::State &s) const
         Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem()
             .getMeasure(_modelControlsIndex));
     // update the locally stored pointer to the controlsCache
-    const_cast<Model*>(this)->_controlsCache = controlsCache;
+    const_cast<Model*>(this)->_controlsCache = &controlsCache;
     
     return controlsCache.updValue(s);
 }
@@ -1814,7 +1842,7 @@ const Vector& Model::getControls(const SimTK::State &s) const
     // _controlsCache assumes that the controls cache will not be changed or
     // invalidated between the realization of Stage::Velocity and
     // Stage::Dynamics
-    return _controlsCache.getValue(s);
+    return _controlsCache->getValue(s);
 }
 
 
@@ -2074,8 +2102,7 @@ void Model::extendRealizeVelocity(const SimTK::State& state) const
         computeControls(state, controlsCache.updValue(state));
         controlsCache.markAsValid(state);
     }
-    //TODO: How often do we have to set the controlsCache?
-    const_cast<Model*>(this)->_controlsCache = controlsCache;
+    const_cast<Model*>(this)->_controlsCache = &controlsCache;
 }
 
 /**
