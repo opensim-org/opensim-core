@@ -59,8 +59,8 @@ BushingForce::BushingForce( const std::string& frame1Name,
     setNull();
     constructInfrastructure();
 
-    updConnector<PhysicalFrame>("frame1").set_connected_to_name(frame1Name);
-    updConnector<PhysicalFrame>("frame2").set_connected_to_name(frame2Name);
+    updConnector<PhysicalFrame>("frame1").set_connectee_name(frame1Name);
+    updConnector<PhysicalFrame>("frame2").set_connectee_name(frame2Name);
 
     set_rotational_stiffness(rotStiffness);
     set_translational_stiffness(transStiffness);
@@ -133,11 +133,11 @@ void BushingForce::updateFromXMLNode( SimTK::Xml::Element& aNode,
             // values. Check that we have associated elements, then extract their values.
             if (body1Element != aNode.element_end()){
                 body1Element->getValueAs<std::string>(frame1Name);
-                frame1Offset.updConnector(0).set_connected_to_name(frame1Name);
+                frame1Offset.updConnector(0).set_connectee_name(frame1Name);
             }
             if (body2Element != aNode.element_end()){
                 body2Element->getValueAs<std::string>(frame2Name);
-                frame2Offset.updConnector(0).set_connected_to_name(frame2Name);
+                frame2Offset.updConnector(0).set_connectee_name(frame2Name);
             }
             if (locBody1Elt != aNode.element_end()){
                 Vec3 location;
@@ -165,19 +165,19 @@ void BushingForce::updateFromXMLNode( SimTK::Xml::Element& aNode,
             if ((frame1Offset.get_translation().norm() > 0.0) &&
                 (frame1Offset.get_orientation().norm() > 0.0)) {
                 append_frames(frame1Offset);
-                updConnector(0).set_connected_to_name(frame1Offset.getName());
+                updConnector(0).set_connectee_name(frame1Offset.getName());
             }
             else { // connect directly to the frame (body) that was identified by name
-                updConnector(0).set_connected_to_name(frame1Name);
+                updConnector(0).set_connectee_name(frame1Name);
             }
             // again for frame2
             if ((frame2Offset.get_translation().norm() > 0.0) &&
                 (frame2Offset.get_orientation().norm() > 0.0)) {
                 append_frames(frame2Offset);
-                updConnector(0).set_connected_to_name(frame2Offset.getName());
+                updConnector(0).set_connectee_name(frame2Offset.getName());
             }
             else { // connect directly to the frame (body) that was identified by name
-                updConnector(1).set_connected_to_name(frame2Name);
+                updConnector(1).set_connectee_name(frame2Name);
             }
         }
     }

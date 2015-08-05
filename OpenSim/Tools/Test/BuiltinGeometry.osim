@@ -12,7 +12,7 @@
                     <connectors>
                         <Connector_Frame_ name="frame">
                             <!--Name of the component this Connector should be connected to.-->
-                            <connected_to_name>ground</connected_to_name>
+                            <connectee_name>ground</connectee_name>
                         </Connector_Frame_>
                     </connectors>
                 </Brick>
@@ -24,7 +24,7 @@
                     <connectors>
                         <Connector_Frame_ name="frame">
                             <!--Name of the component this Connector should be connected to.-->
-                            <connected_to_name>LeftAnchor</connected_to_name>
+                            <connectee_name>LeftAnchor</connectee_name>
                         </Connector_Frame_>
                     </connectors>
                 </Brick>
@@ -36,7 +36,7 @@
                     <connectors>
                         <Connector_Frame_ name="frame">
                             <!--Name of the component this Connector should be connected to.-->
-                            <connected_to_name>RightAnchor</connected_to_name>
+                            <connectee_name>RightAnchor</connectee_name>
                         </Connector_Frame_>
                     </connectors>
                 </Brick>
@@ -48,7 +48,7 @@
                     <connectors>
                         <Connector_Frame_ name="frame">
                             <!--Name of the component this Connector should be connected to.-->
-                            <connected_to_name>CylAnchor</connected_to_name>
+                            <connectee_name>CylAnchor</connectee_name>
                         </Connector_Frame_>
                     </connectors>
                 </Cylinder>
@@ -58,7 +58,7 @@
                     <connectors>
                         <Connector_Frame_ name="frame">
                             <!--Name of the component this Connector should be connected to.-->
-                            <connected_to_name>EllipsoidAnchor</connected_to_name>
+                            <connectee_name>EllipsoidAnchor</connectee_name>
                         </Connector_Frame_>
                     </connectors>
                 </Ellipsoid>
@@ -75,7 +75,7 @@
                             <connectors>
                                 <Connector_Frame_ name="frame">
                                     <!--Name of the component this Connector should be connected to.-->
-                                    <connected_to_name>block</connected_to_name>
+                                    <connectee_name>block</connectee_name>
                                 </Connector_Frame_>
                             </connectors>
                         </Sphere>
@@ -98,7 +98,7 @@
 					<connectors>
 						<Connector_PhysicalFrame_ name="parent">
 							<!--Name of the component this Connector should be connected to.-->
-							<connected_to_name>ground</connected_to_name>
+							<connectee_name>ground</connectee_name>
 						</Connector_PhysicalFrame_>
 					</connectors>
 					<!--Translation from the parent frame's origin to this frame's origin, expressed in the parent frame.-->
@@ -111,7 +111,7 @@
 					<connectors>
 						<Connector_PhysicalFrame_ name="parent">
 							<!--Name of the component this Connector should be connected to.-->
-							<connected_to_name>ground</connected_to_name>
+							<connectee_name>ground</connectee_name>
 						</Connector_PhysicalFrame_>
 					</connectors>
 					<!--Translation from the parent frame's origin to this frame's origin, expressed in the parent frame.-->
@@ -124,7 +124,7 @@
 					<connectors>
 						<Connector_PhysicalFrame_ name="parent">
 							<!--Name of the component this Connector should be connected to.-->
-							<connected_to_name>ground</connected_to_name>
+							<connectee_name>ground</connectee_name>
 						</Connector_PhysicalFrame_>
 					</connectors>
 					<!--Translation from the parent frame's origin to this frame's origin, expressed in the parent frame.-->
@@ -137,7 +137,7 @@
 					<connectors>
 						<Connector_PhysicalFrame_ name="parent">
 							<!--Name of the component this Connector should be connected to.-->
-							<connected_to_name>ground</connected_to_name>
+							<connectee_name>ground</connectee_name>
 						</Connector_PhysicalFrame_>
 					</connectors>
 					<!--Translation from the parent frame's origin to this frame's origin, expressed in the parent frame.-->
@@ -156,11 +156,11 @@
 					<connectors>
                         <Connector_PhysicalFrame_ name="parent_body">
 							<!--Name of the component this Connector should be connected to.-->
-							<connected_to_name>ground</connected_to_name>
+							<connectee_name>ground</connectee_name>
 						</Connector_PhysicalFrame_>
                         <Connector_PhysicalFrame_ name="child_body">
 							<!--Name of the component this Connector should be connected to.-->
-							<connected_to_name>block</connected_to_name>
+							<connectee_name>block</connectee_name>
 						</Connector_PhysicalFrame_>
 					</connectors>
 					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
@@ -265,11 +265,11 @@
                     <connectors>
                         <Connector_PhysicalFrame_ name="body_1">
                             <!--Name of the component this Connector should be connected to.-->
-                            <connected_to_name>ground</connected_to_name>
+                            <connectee_name>ground</connectee_name>
                         </Connector_PhysicalFrame_>
                         <Connector_PhysicalFrame_ name="body_2">
                             <!--Name of the component this Connector should be connected to.-->
-                            <connected_to_name>block</connected_to_name>
+                            <connectee_name>block</connectee_name>
                         </Connector_PhysicalFrame_>
                     </connectors>
 					<!--Location of the point in first body specified in body1 reference frame.-->

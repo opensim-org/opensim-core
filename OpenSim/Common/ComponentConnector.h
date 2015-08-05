@@ -76,7 +76,7 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with a Connector. **/
     /**@{**/
-    OpenSim_DECLARE_PROPERTY(connected_to_name, std::string,
+    OpenSim_DECLARE_PROPERTY(connectee_name, std::string,
         "Name of the component this Connector should be connected to.");
     /**@}**/
     //--------------------------------------------------------------------------
@@ -116,12 +116,12 @@ public:
     virtual bool isConnected() const = 0;
 
     /** get the type of object this connector connects to*/
-    virtual std::string getConnectedToTypeName() const = 0;
+    virtual std::string getConnecteeTypeName() const = 0;
 
     /** Connect this Connector to the provided connectee object */
     virtual void connect(const Object& connectee) = 0;
 
-    /** Connect this Connector according to its connected_to_name property
+    /** Connect this Connector according to its connectee_name property
         given a root Component to search its subcomponents for the connect_to
         Component. */
     virtual void findAndConnect(const Component& root) = 0;
@@ -130,7 +130,7 @@ public:
     virtual void disconnect() = 0;
 
 private:
-    void constructProperties() { constructProperty_connected_to_name(""); }
+    void constructProperties() { constructProperty_connectee_name(""); }
     SimTK::Stage connectAtStage;
 //=============================================================================
 };  // END class AbstractConnector
@@ -172,18 +172,18 @@ public:
         const T* objT = dynamic_cast<const T*>(&object);
         if (objT) {
             connectee = *objT;
-            set_connected_to_name(object.getName());
+            set_connectee_name(object.getName());
         }
         else {
             std::stringstream msg;
             msg << "Connector::connect(): ERR- Cannot connect '" << object.getName()
                 << "' of type " << object.getConcreteClassName() << ". Connector requires "
-                << getConnectedToTypeName() << ".";
+                << getConnecteeTypeName() << ".";
             throw Exception(msg.str(), __FILE__, __LINE__);
         }
     }
 
-    /** Connect this Connector given its connect_to_name property  */
+    /** Connect this Connector given its connectee_name property  */
     void findAndConnect(const Component& root) override;
 
     void disconnect() override {
@@ -192,7 +192,7 @@ public:
     
     /** Derived classes must satisfy this Interface */
     /** get the type of object this connector connects to*/
-    std::string getConnectedToTypeName() const override
+    std::string getConnecteeTypeName() const override
     { return T::getClassName(); }
 
     SimTK_DOWNCAST(Connector, AbstractConnector);
@@ -249,7 +249,7 @@ public:
 
     /** Derived classes must satisfy this Interface */
     /** get the type of object this connector connects to*/
-    std::string getConnectedToTypeName() const override
+    std::string getConnecteeTypeName() const override
     { return SimTK::NiceTypeName<AbstractOutput>::name(); }
 
 private:
@@ -282,7 +282,7 @@ public:
     }
 
     /** Connect this Input given a root Component to search for
-        the Output according to the connect_to_name of this Input  */
+        the Output according to the connectee_name of this Input  */
     void findAndConnect(const Component& root) override {
     }
 
