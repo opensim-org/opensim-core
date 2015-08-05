@@ -101,7 +101,7 @@ public:
         "are used to express the orientation. Default is (0,0,0)" );
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(CoordinateSet,
-        "Set holding the generalized coordinates (q's) that parmeterize this joint." );
+        "Set holding the generalized coordinates (q's) that parameterize this joint." );
 
     OpenSim_DECLARE_PROPERTY(reverse, bool,
         "Advanced option. Specify the direction of the joint in the multibody tree: "

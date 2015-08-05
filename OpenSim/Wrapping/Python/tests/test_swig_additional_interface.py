@@ -62,11 +62,16 @@ def test_markAdopted2():
     constr.setConstantDistance(1)
     a.addConstraint(constr)
 
-    # Force requires body names. If not provided, you get a segfault.
-    f = osim.BushingForce()
-    f.setBody1ByName("ground")
-    f.setBody2ByName("body")
+    f = osim.BushingForce("ground", "body",
+            osim.Vec3(2, 2, 2), osim.Vec3(1, 1, 1),
+            osim.Vec3(0, 0, 0), osim.Vec3(0, 0, 0))
     a.addForce(f)
+
+    f2 = osim.BushingForce()
+    a.addForce(f2)
+
+    f3 = osim.SpringGeneralizedForce()
+    a.addForce(f3)
 
     model = osim.Model(os.path.join(this_file_dir, "arm26.osim"))
     g = osim.CoordinateActuator('r_shoulder_elev')
