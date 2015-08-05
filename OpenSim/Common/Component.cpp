@@ -231,6 +231,7 @@ void Component::addToSystem(SimTK::MultibodySystem& system) const
     baseAddToSystem(system);
     extendAddToSystem(system);
     componentsAddToSystem(system);
+    extendAddToSystemAfterSubcomponents(system);
 }
 
 // Base class implementation of virtual method.

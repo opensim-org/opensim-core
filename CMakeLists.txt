@@ -38,8 +38,20 @@ set(OPENSIM_VERSION
 
 # CMake module path.
 # ------------------
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(OpenSimMacros)
+
+# Directory in which to install.
+# ------------------------------
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    # On Windows, we override the default value because Visual Studio does
+    # not, by default, have permission to write to the Program Files
+    # directory.
+    # On Linux, we override the default value because our installation does
+    # not yet conform to the Filesystem Hierarchy Standard (FHS).
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}-install" CACHE PATH 
+        "The directory in which to install this project." FORCE)
+endif()
 
 
 # Build binary directory.
@@ -515,6 +527,11 @@ add_definitions(-DOSIM_SYS_INFO=${OPENSIM_SYSTEM_INFO}
 set(BUILD_API_ONLY OFF CACHE BOOL "Build/install only headers, libraries,
     wrapping, tests; not applications (ik, rra, etc.).")
 mark_as_advanced( BUILD_API_ONLY )
+
+# This directory contains files (e.g., .osim) that multiple tests may want to
+# use. See the OpenSimCopySharedTestFiles function in
+# cmake/OpenSimMacros.cmake.
+set(OPENSIM_SHARED_TEST_FILES_DIR "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared")
 
 add_subdirectory(Vendors)
 add_subdirectory(OpenSim)
