@@ -116,7 +116,9 @@ public:
     //use compiler default copy constructor and assignment operator
 
     /** Destructor */
-    ~CoordinateLimitForce();
+#ifndef SWIG
+    ~CoordinateLimitForce() override = default;
+#endif
 
 
     //--------------------------------------------------------------------------
@@ -231,9 +233,10 @@ private:
 
     // Smooth step functions for continuous transition from no stiffness and 
     // damping to constant values beyond the limits. These are heap allocated
-    // and owned here so must be deleted in destructor.
-    SimTK::ReferencePtr<SimTK::Function::Step> _upStep;
-    SimTK::ReferencePtr<SimTK::Function::Step> _loStep;
+    // and owned here, but we don't want these functions to be copied if a
+    // CoordinateLimitForce is copied.
+    SimTK::NullOnCopyUniquePtr<SimTK::Function::Step> _upStep;
+    SimTK::NullOnCopyUniquePtr<SimTK::Function::Step> _loStep;
 
     // Scaling for coordinate values in m or degrees (rotational) 
     double _w;

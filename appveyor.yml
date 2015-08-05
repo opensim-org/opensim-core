@@ -13,6 +13,8 @@
 # "/EHsc" is to "unwind semantics" to get error messages when using "/WX" (C4530).
 # However, this was causing some weird behavior. Not treating warnings
 # as errors for now.
+#
+### TEMPORARILY DISABLING WRAPPING (see lines with ###)
   
 shallow_clone: true
 
@@ -29,9 +31,9 @@ nuget:
   account_feed: true
 
 install:
-  
+
   ## Use Chocolatey to install SWIG.
-  - choco -y install swig
+  - choco install swig -y
   
   ## Install python-nose for python testing.
   - pip install nose

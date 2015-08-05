@@ -340,14 +340,14 @@ protected:
             outbX = swap;
 
             outb = &getParentInternalRigidBody();
-            associatedFrame = (_slaveBodyForParent) ? _slaveBodyForParent :
-                                                     &getParentFrame();
+            associatedFrame = _slaveBodyForParent ? _slaveBodyForParent.get() 
+                                                  : &getParentFrame();
         }
         else{
             inb = getParentFrame().getMobilizedBody();
 
-            associatedFrame = (_slaveBodyForChild) ? _slaveBodyForChild :
-                &getChildFrame();
+            associatedFrame = _slaveBodyForChild ? _slaveBodyForChild.get()
+                                                 : &getChildFrame();
         }
 
         int startingCoordinateIndex = 0;
