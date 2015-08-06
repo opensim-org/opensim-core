@@ -87,7 +87,9 @@ private:
     //--------------------------------------------------------------------------
 public:
     GeometryPath();
+#ifndef SWIG
     ~GeometryPath() override = default;
+#endif
 
     const PathPointSet& getPathPointSet() const { return get_PathPointSet(); }
     PathPointSet& updPathPointSet() { return upd_PathPointSet(); }
@@ -211,8 +213,6 @@ private:
     double calcLengthAfterPathComputation
        (const SimTK::State& s, const Array<PathPoint*>& currentPath) const;
 
-
-    void setNull();
     void constructProperties();
     void updateDisplayPath(const SimTK::State& s) const;
     void namePathPoints(int aStartingIndex);
