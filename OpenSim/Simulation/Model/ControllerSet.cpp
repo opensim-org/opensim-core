@@ -49,14 +49,6 @@ template class OSIMSIMULATION_API ModelComponentSet<Controller>;
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Destructor.
- */
-ControllerSet::~ControllerSet()
-{
-    delete _controlStore;
-}
-//_____________________________________________________________________________
-/**
  * Default constructor.
  */
 
@@ -83,7 +75,7 @@ ControllerSet::ControllerSet(Model& model, const std::string &aFileName, bool aU
  *
  * @param aControllerSet ControllerSet to be copied.
  */
-ControllerSet::ControllerSet(const ControllerSet &aControllerSet) :
+ControllerSet::ControllerSet(const ControllerSet& aControllerSet) :
     ModelComponentSet<Controller>(aControllerSet)
 {
 
@@ -100,14 +92,14 @@ ControllerSet::ControllerSet(const ControllerSet &aControllerSet) :
  *
  * @param aControllerSet controller set to be copied
  */
-void ControllerSet::copyData(const ControllerSet &aControllerSet)
+void ControllerSet::copyData(const ControllerSet& aControllerSet)
 {
     _actuatorSet =  aControllerSet._actuatorSet;
-    const Storage *source = (Storage *)aControllerSet._controlStore;
-    if(source == NULL){
-        _controlStore =  NULL;
+    const Storage* source = aControllerSet._controlStore.get();
+    if (source) {
+        _controlStore.reset(new Storage(*source, true));
     } else {
-        _controlStore =  new Storage(*source, true);
+        _controlStore.reset();
     }
 }
 
@@ -181,8 +173,7 @@ void ControllerSet::constructStorage()
     Array<string> columnLabels;
 
     // CONTROLS
-    delete _controlStore;
-    _controlStore = new Storage(1023,"controls");
+    _controlStore.reset(new Storage(1023,"controls"));
     columnLabels.append("time");
 
     for(int i=0;i<_actuatorSet->getSize();i++)

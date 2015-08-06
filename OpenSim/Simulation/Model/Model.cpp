@@ -492,7 +492,7 @@ void Model::createMultibodySystem()
 
     // Detect if the environment variable OPENSIM_MAX_THREADS has been set; then
     // decide on the maximum number of threads to use
-    int autoThreadCount = _forceSubsystem.getNumberOfThreads();
+    int autoThreadCount = _forceSubsystem->getNumberOfThreads();
     
     //The maximum number of threads according to the environment variable
     char* environmentMaxThreadsString = getenv("OPENSIM_MAX_THREADS");
@@ -503,7 +503,7 @@ void Model::createMultibodySystem()
       environmentMaxThreads = stoi(environmentMaxThreadsString);
       if(autoThreadCount != environmentMaxThreads)
       {
-          _forceSubsystem.setNumberOfThreads(environmentMaxThreads);
+          _forceSubsystem->setNumberOfThreads(environmentMaxThreads);
           cout << "Enviroment variable OPENSIM_MAX_THREADS set to " <<
           environmentMaxThreads << ". Overriding the detected number of " <<
           autoThreadCount << " threads." << endl;
@@ -1794,7 +1794,7 @@ Vector& Model::updControls(const SimTK::State &s) const
         Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem()
             .getMeasure(_modelControlsIndex));
     // update the locally stored pointer to the controlsCache
-    const_cast<Model*>(this)->_controlsCache = &controlsCache;
+    const_cast<Model*>(this)->_controlsCache = controlsCache;
     
     return controlsCache.updValue(s);
 }
@@ -1842,7 +1842,7 @@ const Vector& Model::getControls(const SimTK::State &s) const
     // _controlsCache assumes that the controls cache will not be changed or
     // invalidated between the realization of Stage::Velocity and
     // Stage::Dynamics
-    return _controlsCache->getValue(s);
+    return _controlsCache.getValue(s);
 }
 
 
@@ -2102,7 +2102,7 @@ void Model::extendRealizeVelocity(const SimTK::State& state) const
         computeControls(state, controlsCache.updValue(state));
         controlsCache.markAsValid(state);
     }
-    const_cast<Model*>(this)->_controlsCache = &controlsCache;
+    const_cast<Model*>(this)->_controlsCache = controlsCache;
 }
 
 /**

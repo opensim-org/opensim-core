@@ -1058,20 +1058,20 @@ private:
     // The model owns the MultibodySystem, but the
     // subsystems and force elements are owned by the MultibodySystem so 
     // should not be deleted in the destructor.
-    SimTK::ReferencePtr<SimTK::MultibodySystem>  _system; // owned by Model; must destruct
+    SimTK::MultibodySystem*  _system; // owned by Model; must destruct
 
     // These are just references pointing into _system; don't destruct.
-    SimTK::ReferencePtr<SimTK::SimbodyMatterSubsystem>  _matter;     
-    SimTK::ReferencePtr<SimTK::Force::Gravity>          _gravityForce;
-    SimTK::ReferencePtr<SimTK::GeneralForceSubsystem>   _forceSubsystem;
-    SimTK::ReferencePtr<SimTK::GeneralContactSubsystem> _contactSubsystem;
+    SimTK::SimbodyMatterSubsystem*  _matter;     
+    SimTK::Force::Gravity*          _gravityForce;
+    SimTK::GeneralForceSubsystem*   _forceSubsystem;
+    SimTK::GeneralContactSubsystem* _contactSubsystem;
 
     // System-dependent objects.
 
     // Assembly solver used for satisfying constraints and other configuration
     // goals. This object is owned by the Model and must be destructed.
     //AssemblySolver*     _assemblySolver;
-    SimTK::ReferencePtr<AssemblySolver> _assemblySolver;
+    AssemblySolver* _assemblySolver;
 
     // Model controls as a shared pool (Vector) of individual Actuator controls
     SimTK::MeasureIndex   _modelControlsIndex;
@@ -1088,7 +1088,7 @@ private:
     // If visualization has been requested at the API level, we'll allocate 
     // a ModelVisualizer. The Model owns this object.
     //ModelVisualizer*    _modelViz; // owned by Model; must destruct
-    SimTK::ReferencePtr<ModelVisualizer> _modelViz;
+    ModelVisualizer* _modelViz;
 
 //==============================================================================
 };  // END of class Model
