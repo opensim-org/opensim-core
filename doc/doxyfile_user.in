@@ -26,7 +26,7 @@ PROJECT_BRIEF          = "For MATLAB, Python, Java, and C++ users"
 # The ENABLED_SECTIONS tag can be used to enable conditional 
 # documentation sections, marked by \if sectionname ... \endif.
 
-ENABLED_SECTIONS       = user
+ENABLED_SECTIONS       = 
 
 # The LAYOUT_FILE tag can be used to specify a layout file which will be parsed 
 # by doxygen. The layout file controls the global structure of the generated 

@@ -156,9 +156,8 @@ We produce two sets of doxygen-generated documentation, one for (scripting)
 users and one for C++ developers. The primary difference is that the user
 documentation only shows public members, while the developer documentation also
 shows protected members, nested classes, etc. When writing doxygen comments,
-you can tailor comments to either users or developers using the `\if user ...
-\endif` or `\if developer ...  \endif` syntax. Also, any doxygen comments that
-are prefixed with `\internal` will only appear in the developer doxygen.
+you can use `\internal` or `\if developer ... \endif`
+for documentation that is only intended for developers.
 
 Read more about doxygen on this page: Guide to Building Doxygen
 
