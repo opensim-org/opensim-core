@@ -184,7 +184,7 @@ void testComponent(const Component& instanceToTest)
         int nc = sub->getNumConnectors();
         for (int i = 0; i < nc; ++i){
             AbstractConnector& connector = sub->updConnector(i);
-            string dependencyTypeName = connector.getConnectedToTypeName();
+            string dependencyTypeName = connector.getConnecteeTypeName();
             cout << "Connector '" << connector.getName() <<
                 "' has dependency on: " << dependencyTypeName << endl;
             Object* dependency =
@@ -200,7 +200,7 @@ void testComponent(const Component& instanceToTest)
             if (dependency) {
                 //give it some random values including a name
                 randomize(dependency);
-                connector.set_connected_to_name(dependency->getName());
+                connector.set_connectee_name(dependency->getName());
 
                 // add the dependency 
                 addObjectAsComponentToModel(dependency, model);
