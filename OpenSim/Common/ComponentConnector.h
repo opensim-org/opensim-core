@@ -27,11 +27,13 @@
  * This file defines the Connector class, which formalizes the dependency of 
  * of a Component on another Object/Component in order to operate, BUT it does 
  * not own it. While Components can be composites (of multiple components) 
- * they often depend on unrelated objects/components that are define elsewhere.
- * For example a Joint connects two bodies together, neither or at best the
- * child body can own the joint. It must have a "Connector" to a parent body
+ * they often depend on unrelated objects/components that are defined and
+ * owned elsewhere.
+ *
+ * For example a Joint connects two bodies together, neither bodies own the
+ * the joint. Instead, the Joint has Connectors to a parent and a child body
  * that already exists. The maintenance of the dependency and the run-time 
- * verification of the existance of the parent is the task of the Connector.
+ * verification of the existence of the bodies is the duty of the Connector.
  */
 
 // INCLUDES
@@ -45,20 +47,25 @@ namespace OpenSim {
 //                        OPENSIM COMPONENT CONNECTOR
 //=============================================================================
 /**
- * A Connector formalizes the need for a connection between a Component and a
- * dependent object, without owning the object it is connected to. The purpose
- * of a Connector is to specify: 1) the object type that the Component is 
- * dependent on, 2) by when (what stage) the connector must be connected in
- * order for the component to function, 3) the name of object to connect to and
- * 4) whether it is connected or not. The specific instance that satisfies the
- * connector's requirement is maintained by the Component's list of Connections.
+ * A Connector formalizes the dependency between a Component and another object
+ * (typically another Component) without owning that object. The object that
+ * satisfies the requirements of the Connector we term the "connectee". When a 
+ * Connector is satisfied by a connectee we have a successful "connection" or
+ * is said to be connected.
  *
- * For example, a Joint has one Connector for the parent Body that it joins
- * its owning Body to. The type for the connector is Body and any attempt to 
- * connect to a non-Body object will throw an exception.
- * The connectAt Stage is Topology. That is the Joint's connection to a Body 
- * must be performed at the Topology system stage, and any attempt to change 
- * the connection status will invalidate that Stage and above.
+ * The purpose of a Connector is to specify: 1) the connectee type that the
+ * Component is dependent on, 2) by when (what stage) the connector must be
+ * connected in order for the component to function, 3) the name of a connectee
+ * that can be found at run-time to satisfy the connecter, and 4) whether or
+ * not it is connected. A Connector maintains a reference to the instance
+ * (connectee) until it is disconnected.
+ *
+ * For example, a Joint has two Connectors for the parent and child Bodies that
+ * it joins. The type for the connector is a PhysicalFrame and any attempt to 
+ * connect to a non-Body (or frame rigidly attached to a Body) will throw an
+ * exception. The connectAt Stage is Topology. That is the Joint's connection to
+ * a Body must be performed at the Topology system stage, and any attempt to
+ * change the connection status will invalidate that Stage and above.
  *
  * Other Components like a Marker or a Probe that do not change the system
  * topology or add new states could potentially be connected at later stages
@@ -66,7 +73,6 @@ namespace OpenSim {
  *
  * @author  Ajay Seth
  */
-
 class OSIMCOMMON_API AbstractConnector : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractConnector, Object);
 public:
