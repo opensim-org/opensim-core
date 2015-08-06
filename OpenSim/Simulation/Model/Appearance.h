@@ -37,22 +37,21 @@ class Model;
 //=============================================================================
 //=============================================================================
 /**
- * A class that holds the Display Attributes (Appearance) of an object displayed 
- * in the OpenSim Visualizer.
+ * A class that holds the Appearance Attributes of an object displayed 
+ * in the OpenSim Visualizer/GUI.
  * 
- * BaseAppearance contains Appearance properties that apply to all geometry.
+ * Appearance objects contain properties that are common to all geometry.
  * Geometry that have a surface so that it can be textured can use the subclass
- * Appearance, while schematic line drawings (e.g. Arrows, Frames) can use 
- * LineAppearance which offers thickness. 
+ * SurfaceAppearance, while schematic line drawings (e.g. Arrows, Frames) can use 
+ * DrawingAppearance which offers thickness, style etc. 
  *
- * TODO: Add Resolution to Appearance from DecorativeGeometry and 
- * utilize LineAppearance for Arrow, Line, and Frame (unused for now)
+ * TODO: Add Resolution or Quality to Appearance from DecorativeGeometry 
  *
  * @author Ayman Habib
  * @version 1.0
  */
-class OSIMSIMULATION_API BaseAppearance : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(BaseAppearance, Object);
+class OSIMSIMULATION_API Appearance : public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(Appearance, Object);
 public:
     //==========================================================================
     // PROPERTIES
@@ -72,10 +71,10 @@ public:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    BaseAppearance() {
+    Appearance() {
         constructProperties();
     }
-    virtual ~BaseAppearance() {};
+    virtual ~Appearance() {};
 
 private:
     void constructProperties() {
@@ -84,17 +83,17 @@ private:
         constructProperty_representation(3);
     }
     //==========================================================================
-};  // END of class BaseAppearance
+};  // END of class Appearance
 
 
-class OSIMSIMULATION_API Appearance : public BaseAppearance {
-    OpenSim_DECLARE_CONCRETE_OBJECT(Appearance, BaseAppearance);
+class OSIMSIMULATION_API SurfaceAppearance : public Appearance {
+    OpenSim_DECLARE_CONCRETE_OBJECT(SurfaceAppearance, Appearance);
 public:
     //==========================================================================
     // PROPERTIES
     //==========================================================================
     /** @name Property declarations
-    These are the serializable properties associated with Appearance. **/
+    These are the serializable properties associated with SurfaceAppearance. **/
     /**@{**/
     OpenSim_DECLARE_OPTIONAL_PROPERTY(texture_file, std::string,
         "Name of file containing texture. ");
@@ -104,46 +103,78 @@ public:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    Appearance() {
+    SurfaceAppearance() {
     }
-    virtual ~Appearance() {};
+    virtual ~SurfaceAppearance() {};
 
     bool hasTexture() {
         return getProperty_texture_file().size() > 0;
     }
 //=============================================================================
-};  // END of class Appearance
+};  // END of class SurfaceAppearance
 //=============================================================================
 
 //=============================================================================
-class OSIMSIMULATION_API LineAppearance : public BaseAppearance {
-    OpenSim_DECLARE_CONCRETE_OBJECT(LineAppearance, Object);
+class OSIMSIMULATION_API OneDimensionalAppearance : public Appearance {
+    OpenSim_DECLARE_CONCRETE_OBJECT(OneDimensionalAppearance, Object);
 public:
     //==============================================================================
     // PROPERTIES
     //==============================================================================
     /** @name Property declarations
-    These are the serializable properties associated with LineAppearance. **/
+    These are the serializable properties associated with OneDimensionalAppearance. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(thickness, double,
-        "The thickness used to visualize a LineGeometry. ");
+        "The thickness used to visualize the curve or drawing. ");
     /**@}**/
 
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    LineAppearance() {
+    OneDimensionalAppearance() {
         constructProperties();
     }
-    virtual ~LineAppearance() {};
+    virtual ~OneDimensionalAppearance() {};
 
 private:
     void constructProperties() {
         constructProperty_thickness(.05);
     }
     //=============================================================================
-};  // END of class LineAppearance
+};  // END of class OneDimensionalAppearance
+//=============================================================================
+
+
+class OSIMSIMULATION_API DrawingAppearance : public OneDimensionalAppearance {
+    OpenSim_DECLARE_CONCRETE_OBJECT(DrawingAppearance, OneDimensionalAppearance);
+public:
+    //==============================================================================
+    // PROPERTIES
+    //==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with DrawingAppearance. **/
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(size, double,
+        "A number representing the size for an object or drawing.");
+    /**@}**/
+
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+public:
+    DrawingAppearance(double size = 1.0) {
+        constructProperties();
+        updProperty_size() = size;
+    }
+    virtual ~DrawingAppearance() {};
+
+private:
+    void constructProperties() {
+        constructProperty_size(1.0);
+    }
+    //=============================================================================
+};  // END of class DrawingAppearance
 } // end of namespace OpenSim
 
 #endif // OPENSIM_APPEARANCE_H_
