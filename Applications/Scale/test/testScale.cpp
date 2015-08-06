@@ -78,8 +78,6 @@ void compareModel(const Model& resultModel, const std::string& stdFileName, doub
     ASSERT(sStd.getNU()==s.getNU());    
     ASSERT(sStd.getNZ()==s.getNZ());    
 
-    // Now cycle thru ModelComponents recursively
-
     delete refModel;
 }
 

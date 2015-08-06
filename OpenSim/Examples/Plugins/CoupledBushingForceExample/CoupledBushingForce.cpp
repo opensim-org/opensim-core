@@ -64,8 +64,8 @@ CoupledBushingForce::CoupledBushingForce( const std::string& frame1Name,
     setNull();
     constructInfrastructure();
 
-    updConnector<PhysicalFrame>("frame1").set_connected_to_name(frame1Name);
-    updConnector<PhysicalFrame>("frame2").set_connected_to_name(frame2Name);
+    updConnector<PhysicalFrame>("frame1").set_connectee_name(frame1Name);
+    updConnector<PhysicalFrame>("frame2").set_connectee_name(frame2Name);
 
     _stiffnessMatrix = stiffnessMat;
     _dampingMatrix = dampingMat;

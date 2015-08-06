@@ -413,14 +413,14 @@ void XMLDocument::addConnector(SimTK::Xml::Element& element, const std::string& 
         element.insertNodeBefore(element.element_begin(), connectorsElement);
         connectors_node =  element.element_begin("connectors");
     }
-    // Here we're guaranteed connectors node exist, add indivdual connector
+    // Here we're guaranteed connectors node exist, add individual connector
     SimTK::Xml::Element newConnectorElement(connectorTag);
     newConnectorElement.setAttributeValue("name", connectorName);
     newConnectorElement.writeToString(debug);
-    SimTK::Xml::Element connectedToElement("connected_to_name");
-    connectedToElement.insertNodeAfter(connectedToElement.element_end(), SimTK::Xml::Text(connectorValue));
+    SimTK::Xml::Element connecteeElement("connectee_name");
+    connecteeElement.insertNodeAfter(connecteeElement.element_end(), SimTK::Xml::Text(connectorValue));
     // Insert text under newConnectorElement
-    newConnectorElement.insertNodeAfter(newConnectorElement.element_end(), connectedToElement);
+    newConnectorElement.insertNodeAfter(newConnectorElement.element_end(), connecteeElement);
     connectors_node->insertNodeAfter(connectors_node->element_end(), newConnectorElement);
     connectors_node->writeToString(debug);
 }
