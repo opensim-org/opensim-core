@@ -54,6 +54,18 @@ Other Changes
 - Lepton was upgraded to the latest version (PR #349)
 - Made Object::print a const member function (PR #191)
 - Improved the testOptimization/OptimizationExample to reduce the runtime (PR #416)
+- Added shouldBeParallelIfPossible() override methods to all computationally
+expensive muscle force classes
+- Avoid lazy cache evaluation of the ground transform in the Frame class - 
+instead, cache evaluation is moved to the position stage
+- Cache the location of the controls cache in the Model class - this avoids
+OpenSim trying to access the shared controls cache's address at the same time,
+also is more efficient since the controls cache never changes location
+- Model now computes controls in Stage::Velocity instead of Stage::Dynamics,
+this prevents memory races from happening if the Stage::Dynamics uses a
+multi-threaded implementation for calculating force contributions
+- Lock the non-thread-safe Wrap classes (using the new getStateLock() method in
+Simbody)
 
 Documentation
 --------------

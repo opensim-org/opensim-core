@@ -301,6 +301,7 @@ Peter Loan         |              |Original code base; SIMM Translator; WrapObje
 Kate Saul          |              |Original MuscleAnalysis
 Jack Middleton     |              |Initial Simbody integration
 Jeffrey Reinbolt   |              |Static Optimization; Examples; Musculoskeletal modeling
+Thomas layout      |@thomasklau   |Parallel Force Calculations in OpenSim Tools
 
 
 Contributor License Agreement
