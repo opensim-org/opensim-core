@@ -71,11 +71,13 @@ private:
     // used for scaling tendon and fiber lengths
     double _preScaleLength;
 
-    // object that owns this GeometryPath object
+    // Pointer to the Object that owns this GeometryPath object.
     SimTK::ReferencePtr<Object> _owner;
 
-    // solver used to compute moment-arms
-    mutable SimTK::ReferencePtr<MomentArmSolver> _maSolver;
+    // Solver used to compute moment-arms. The GeometryPath owns this object,
+    // but we cannot simply use a unique_ptr because we want the pointer to be
+    // cleared on copy.
+    SimTK::NullOnCopyUniquePtr<MomentArmSolver> _maSolver;
     
 //=============================================================================
 // METHODS
@@ -85,7 +87,7 @@ private:
     //--------------------------------------------------------------------------
 public:
     GeometryPath();
-    virtual ~GeometryPath();
+    ~GeometryPath() override = default;
 
     const PathPointSet& getPathPointSet() const { return get_PathPointSet(); }
     PathPointSet& updPathPointSet() { return upd_PathPointSet(); }
@@ -180,8 +182,8 @@ public:
     //--------------------------------------------------------------------------
     // Visualization Support
     //--------------------------------------------------------------------------
-    // Update the geometry attached to the path (location of path points and connecting segments
-    //  all in global/interial frame)
+    // Update the geometry attached to the path (location of path points and
+    // connecting segments all in global/interial frame)
     virtual void updateGeometry(const SimTK::State& s) const;
 
 protected:

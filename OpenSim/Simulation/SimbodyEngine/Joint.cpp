@@ -654,8 +654,8 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
 
         SimTK_ASSERT3( ( (mobilized == &getParentFrame()) || 
                          (mobilized == &getChildFrame()) ||
-                         (mobilized == _slaveBodyForParent) ||
-                         (mobilized == _slaveBodyForChild) ),
+                         (mobilized == _slaveBodyForParent.get()) ||
+                         (mobilized == _slaveBodyForChild.get()) ),
             "%s::'%s' - Cannot assign underlying system index to a Body '%s', "
             "which is not a parent or child Body of this Joint.",
                       getConcreteClassName().c_str(),

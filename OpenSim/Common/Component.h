@@ -1002,7 +1002,7 @@ template <class T> friend class ComponentMeasure;
                 if (this == &root) // only to be safe if root changes
                     _components[i]->_nextComponent = nullptr;
                 else
-                    _components[i]->_nextComponent = _nextComponent;
+                    _components[i]->_nextComponent = _nextComponent.get();
             }
             else
                 _components[i]->_nextComponent = _components[i + 1];

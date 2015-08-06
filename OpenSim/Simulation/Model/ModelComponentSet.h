@@ -112,7 +112,7 @@ public:
      */
     Model& updModel()
     {
-        return *this->_model;
+        return *this->_model.get();
     }
 
     void setModel(Model& model) { _model = &model; }
