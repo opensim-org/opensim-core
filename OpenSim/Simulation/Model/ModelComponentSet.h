@@ -63,7 +63,7 @@ private:
 //=============================================================================
 public:
     /** Default constructor creates an empty Set with no associated Model. **/
-    ModelComponentSet() : _model(NULL)
+    ModelComponentSet() : _model(nullptr)
     {
     }
     /** Create an empty set associated to the specified Model. **/

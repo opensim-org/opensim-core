@@ -1010,7 +1010,7 @@ private:
     T& updValueVirtual(int index) override final 
     {   return *objects[index]; }
     void setValueVirtual(int index, const T& obj) override final
-    {   objects[index].clear();
+    {   objects[index].reset((T*)nullptr);
         objects[index] = obj; }
     int appendValueVirtual(const T& obj) override final
     {   objects.push_back();        // add empty element

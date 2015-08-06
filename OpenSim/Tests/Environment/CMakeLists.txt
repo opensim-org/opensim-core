@@ -1,18 +1,9 @@
 
 set(TEST_ENVIRONMENT checkEnvironment)       
-         
-include_directories(${OpenSim_SOURCE_DIR}        
-                 ${OpenSim_SOURCE_DIR}/Vendors)          
  
-add_executable(${TEST_ENVIRONMENT} ${OpenSim_SOURCE_DIR}/OpenSim/Examples/checkEnvironment/test.cpp)         
-target_link_libraries(${TEST_ENVIRONMENT}        
-       debug osimSimulation${CMAKE_DEBUG_POSTFIX}    optimized osimSimulation
-       debug osimActuators${CMAKE_DEBUG_POSTFIX}     optimized osimActuators
-       debug osimCommon${CMAKE_DEBUG_POSTFIX}        optimized osimCommon
-       debug osimAnalyses${CMAKE_DEBUG_POSTFIX}      optimized osimAnalyses
-       debug osimTools${CMAKE_DEBUG_POSTFIX}         optimized osimTools
-       ${Simbody_LIBRARIES}
-)        
+add_executable(${TEST_ENVIRONMENT}
+    ${OpenSim_SOURCE_DIR}/OpenSim/Examples/checkEnvironment/test.cpp)         
+target_link_libraries(${TEST_ENVIRONMENT} osimTools)
 set_target_properties(${TEST_ENVIRONMENT}        
        PROPERTIES        
        PROJECT_LABEL "Utilities - ${TEST_ENVIRONMENT}"       
