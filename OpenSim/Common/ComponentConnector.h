@@ -27,11 +27,14 @@
  * This file defines the Connector class, which formalizes the dependency of 
  * of a Component on another Object/Component in order to operate, BUT it does 
  * not own it. While Components can be composites (of multiple components) 
- * they often depend on unrelated objects/components that are define elsewhere.
- * For example a Joint connects two bodies together, neither or at best the
- * child body can own the joint. It must have a "Connector" to a parent body
- * that already exists. The maintenance of the dependency and the run-time 
- * verification of the existance of the parent is the task of the Connector.
+ * they often depend on unrelated objects/components that are defined and
+ * owned elsewhere.
+ *
+ * For example a Joint connects two bodies together, but the Joint does 
+ * not own either body. Instead, the Joint has Connectors to a parent and 
+ * a child body that already exists. The maintenance of the dependency and 
+ * the run-time verification of the existence of the bodies is the duty
+ * of the Connector.
  */
 
 // INCLUDES
@@ -45,20 +48,25 @@ namespace OpenSim {
 //                        OPENSIM COMPONENT CONNECTOR
 //=============================================================================
 /**
- * A Connector formalizes the need for a connection between a Component and a
- * dependent object, without owning the object it is connected to. The purpose
- * of a Connector is to specify: 1) the object type that the Component is 
- * dependent on, 2) by when (what stage) the connector must be connected in
- * order for the component to function, 3) the name of object to connect to and
- * 4) whether it is connected or not. The specific instance that satisfies the
- * connector's requirement is maintained by the Component's list of Connections.
+ * A Connector formalizes the dependency between a Component and another object
+ * (typically another Component) without owning that object. The object that
+ * satisfies the requirements of the Connector we term the "connectee". When a 
+ * Connector is satisfied by a connectee we have a successful "connection" or
+ * is said to be connected.
  *
- * For example, a Joint has one Connector for the parent Body that it joins
- * its owning Body to. The type for the connector is Body and any attempt to 
- * connect to a non-Body object will throw an exception.
- * The connectAt Stage is Topology. That is the Joint's connection to a Body 
- * must be performed at the Topology system stage, and any attempt to change 
- * the connection status will invalidate that Stage and above.
+ * The purpose of a Connector is to specify: 1) the connectee type that the
+ * Component is dependent on, 2) by when (what stage) the connector must be
+ * connected in order for the component to function, 3) the name of a connectee
+ * that can be found at run-time to satisfy the connecter, and 4) whether or
+ * not it is connected. A Connector maintains a reference to the instance
+ * (connectee) until it is disconnected.
+ *
+ * For example, a Joint has two Connectors for the parent and child Bodies that
+ * it joins. The type for the connector is a PhysicalFrame and any attempt to 
+ * connect to a non-Body (or frame rigidly attached to a Body) will throw an
+ * exception. The connectAt Stage is Topology. That is, the Joint's connection to
+ * a Body must be performed at the Topology system stage, and any attempt to
+ * change the connection status will invalidate that Stage and above.
  *
  * Other Components like a Marker or a Probe that do not change the system
  * topology or add new states could potentially be connected at later stages
@@ -66,14 +74,13 @@ namespace OpenSim {
  *
  * @author  Ajay Seth
  */
-
 class OSIMCOMMON_API AbstractConnector : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractConnector, Object);
 public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(connected_to_name, std::string,
+    OpenSim_DECLARE_PROPERTY(connectee_name, std::string,
         "Name of the component this Connector should be connected to.");
 
     //--------------------------------------------------------------------------
@@ -113,12 +120,12 @@ public:
     virtual bool isConnected() const = 0;
 
     /** get the type of object this connector connects to*/
-    virtual std::string getConnectedToTypeName() const = 0;
+    virtual std::string getConnecteeTypeName() const = 0;
 
     /** Connect this Connector to the provided connectee object */
     virtual void connect(const Object& connectee) = 0;
 
-    /** Connect this Connector according to its connected_to_name property
+    /** Connect this Connector according to its connectee_name property
         given a root Component to search its subcomponents for the connect_to
         Component. */
     virtual void findAndConnect(const Component& root) = 0;
@@ -127,7 +134,7 @@ public:
     virtual void disconnect() = 0;
 
 private:
-    void constructProperties() { constructProperty_connected_to_name(""); }
+    void constructProperties() { constructProperty_connectee_name(""); }
     SimTK::Stage connectAtStage;
 //=============================================================================
 };  // END class AbstractConnector
@@ -169,18 +176,18 @@ public:
         const T* objT = dynamic_cast<const T*>(&object);
         if (objT) {
             connectee = *objT;
-            set_connected_to_name(object.getName());
+            set_connectee_name(object.getName());
         }
         else {
             std::stringstream msg;
             msg << "Connector::connect(): ERR- Cannot connect '" << object.getName()
                 << "' of type " << object.getConcreteClassName() << ". Connector requires "
-                << getConnectedToTypeName() << ".";
+                << getConnecteeTypeName() << ".";
             throw Exception(msg.str(), __FILE__, __LINE__);
         }
     }
 
-    /** Connect this Connector given its connect_to_name property  */
+    /** Connect this Connector given its connectee_name property  */
     void findAndConnect(const Component& root) override;
 
     void disconnect() override {
@@ -189,7 +196,7 @@ public:
     
     /** Derived classes must satisfy this Interface */
     /** get the type of object this connector connects to*/
-    std::string getConnectedToTypeName() const override
+    std::string getConnecteeTypeName() const override
     { return T::getClassName(); }
 
     SimTK_DOWNCAST(Connector, AbstractConnector);
@@ -246,7 +253,7 @@ public:
 
     /** Derived classes must satisfy this Interface */
     /** get the type of object this connector connects to*/
-    std::string getConnectedToTypeName() const override
+    std::string getConnecteeTypeName() const override
     { return SimTK::NiceTypeName<AbstractOutput>::name(); }
 
 private:
@@ -279,7 +286,7 @@ public:
     }
 
     /** Connect this Input given a root Component to search for
-        the Output according to the connect_to_name of this Input  */
+        the Output according to the connectee_name of this Input  */
     void findAndConnect(const Component& root) override {
     }
 

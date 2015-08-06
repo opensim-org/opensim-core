@@ -1907,7 +1907,7 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
 
 template<class C>
 void Connector<C>::findAndConnect(const Component& root) {
-    const C& comp = root.getComponent<C>(get_connected_to_name());
+    const C& comp = root.getComponent<C>(get_connectee_name());
     connectee = comp;
 }
 

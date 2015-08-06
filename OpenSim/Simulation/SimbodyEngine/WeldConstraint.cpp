@@ -160,12 +160,12 @@ void WeldConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
  * Following methods set attributes of the weld constraint */
 void WeldConstraint::setBody1ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_1").set_connected_to_name(aBodyName);
+    updConnector<PhysicalFrame>("body_1").set_connectee_name(aBodyName);
 }
 
 void WeldConstraint::setBody2ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_2").set_connected_to_name(aBodyName);
+    updConnector<PhysicalFrame>("body_2").set_connectee_name(aBodyName);
 }
 
 /** Set the location and orientation (optional) for weld on body 1*/
