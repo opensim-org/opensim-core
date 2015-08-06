@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2013 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                           *
+ * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -30,10 +30,11 @@
  * they often depend on unrelated objects/components that are defined and
  * owned elsewhere.
  *
- * For example a Joint connects two bodies together, neither bodies own the
- * the joint. Instead, the Joint has Connectors to a parent and a child body
- * that already exists. The maintenance of the dependency and the run-time 
- * verification of the existence of the bodies is the duty of the Connector.
+ * For example a Joint connects two bodies together, but the Joint does 
+ * not own either body. Instead, the Joint has Connectors to a parent and 
+ * a child body that already exists. The maintenance of the dependency and 
+ * the run-time verification of the existence of the bodies is the duty
+ * of the Connector.
  */
 
 // INCLUDES
@@ -63,7 +64,7 @@ namespace OpenSim {
  * For example, a Joint has two Connectors for the parent and child Bodies that
  * it joins. The type for the connector is a PhysicalFrame and any attempt to 
  * connect to a non-Body (or frame rigidly attached to a Body) will throw an
- * exception. The connectAt Stage is Topology. That is the Joint's connection to
+ * exception. The connectAt Stage is Topology. That is, the Joint's connection to
  * a Body must be performed at the Topology system stage, and any attempt to
  * change the connection status will invalidate that Stage and above.
  *
