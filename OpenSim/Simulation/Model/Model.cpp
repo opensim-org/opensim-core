@@ -491,34 +491,6 @@ void Model::createMultibodySystem()
     SimTK::UnitVec3 direction = magnitude==0 ? SimTK::UnitVec3(0,-1,0) : SimTK::UnitVec3(get_gravity()/magnitude);
     _gravityForce = new SimTK::Force::Gravity(*_forceSubsystem, *_matter, direction, magnitude);
 
-    // Detect if the environment variable OPENSIM_MAX_THREADS has been set; then
-    // decide on the maximum number of threads to use
-    int autoThreadCount = _forceSubsystem->getNumberOfThreads();
-    
-    //The maximum number of threads according to the environment variable
-    char* environmentMaxThreadsString = getenv("OPENSIM_MAX_THREADS");
-    int environmentMaxThreads;
-    
-    if(environmentMaxThreadsString != NULL)
-    {
-      environmentMaxThreads = stoi(environmentMaxThreadsString);
-      if(autoThreadCount != environmentMaxThreads)
-      {
-          _forceSubsystem->setNumberOfThreads(environmentMaxThreads);
-          cout << "Enviroment variable OPENSIM_MAX_THREADS set to " <<
-          environmentMaxThreads << ". Overriding the detected number of " <<
-          autoThreadCount << " threads." << endl;
-      }else{ //OPENSIM_MAX_THREADS == autoThreadCount
-        cout << "Enviroment variable OPENSIM_MAX_THREADS set to " <<
-        environmentMaxThreads << ". Same as the detected number of " <<
-        autoThreadCount << " threads." << endl;
-      }
-    }else{ // OPENSIM_MAX_THREADS is not set, just use detected # of threads
-      cout << "Environment variable OPENSIM_MAX_THREADS not set! Detected that"
-      << autoThreadCount << " threads are supported on this machine. Using "
-      << "up to " << autoThreadCount << " threads." << endl;
-    }
-    
     addToSystem(*_system);
 }
 
