@@ -261,8 +261,6 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     bool constrained   = (bool) (_wrapSign != 0);
     bool far_side_wrap = false, long_wrap = false;
     
-    std::unique_lock<std::mutex> lock(s.getStateLock());
-
     // In case you need any variables from the previous wrap, copy them from
     // the PathWrap into the WrapResult, re-normalizing the ones that were
     // un-normalized at the end of the previous wrap calculation.

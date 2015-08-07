@@ -307,6 +307,7 @@ int WrapObject::wrapPathSegment(const SimTK::State& s, PathPoint& aPoint1, PathP
     pt1 = _pose.shiftBaseStationToFrame(pt1);
     pt2 = _pose.shiftBaseStationToFrame(pt2);
 
+    std::unique_lock<std::mutex> lock(s.getStateLock());
     return_code = wrapLine(s, pt1, pt2, aPathWrap, aWrapResult, p_flag);
 
    if (p_flag == true && return_code > 0) {

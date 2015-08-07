@@ -239,8 +239,6 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    bool far_side_wrap = false;
    static SimTK::Vec3 origin(0,0,0);
    
-   std::unique_lock<std::mutex> lock(s.getStateLock());
-
     // In case you need any variables from the previous wrap, copy them from
     // the PathWrap into the WrapResult, re-normalizing the ones that were
     // un-normalized at the end of the previous wrap calculation.
