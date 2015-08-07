@@ -46,6 +46,12 @@
 #include <map>
 #include <algorithm>
 
+// For writing a stack trace; see bottom of this file.
+#include <signal.h>
+#if WIN32
+#include <OpenSim/Common/StackWalker.h>
+#endif
+
 using namespace OpenSim;
 using namespace std;
 using SimTK::Xml;
@@ -1631,11 +1637,68 @@ osimCommonInstantiator::osimCommonInstantiator()
 { 
         registerDllClasses(); 
 } 
+
+class StackWalkerPrint : public StackWalker {
+public:
+    string output;
+    void OnOutput(LPCSTR szText) {
+        output += szText;
+    }
+};
+
+// TODO temporary printing of stack trace to debug appveyor crashes;
+// see issue #350.
+// Copied from oroboro.com/stack-trace-on-crash
+static inline void printStackTrace(FILE* out = stderr) {
+#if WIN32
+    fprintf(out, "Stack trace:\n");
+    StackWalkerPrint sw;
+    bool result = sw.ShowCallstack();
+    std::cout << sw.output;
+    std::cout << "Was stackwalker successful? " << result << std::endl;
+#endif
+}
+
+void abortHandler(int signum) {
+    // Create a string name for the singnal we caught.
+    const char* name = NULL;
+    switch (signum) {
+    case SIGABRT: name = "SIGABRT"; break;
+    case SIGSEGV: name = "SIGSEGV"; break;
+    case SIGILL: name = "SIGILL"; break;
+    case SIGFPE: name = "SIGFPE"; break;
+    }
+
+    // Notify the user which signal was caught.
+    if (name) {
+        fprintf(stderr, "Caught signal %d (%s)\n", signum, name);
+    }
+    else {
+        fprintf(stderr, "Caught signal %d\n", signum);
+    }
+
+    // Dump a stack trace.
+    printStackTrace();
+
+    // Exit the program.
+    exit(signum);
+}
     
 extern "C" OSIMCOMMON_API void RegisterTypes_osimCommon(); 
 void osimCommonInstantiator::registerDllClasses() 
 { 
         RegisterTypes_osimCommon(); 
+
+        // TODO temporary printing of stack trace to debug appveyor crashes;
+        // see issue #350.
+        // Abnormal termination condition, as is e.g. initiated by abort().
+        signal(SIGABRT, abortHandler);
+        // Invalid memory access (segmentation fault).
+        signal(SIGSEGV, abortHandler);
+        // Invalid program image, such as invalid instruction.
+        signal(SIGILL, abortHandler);
+        // Erroneous arithmetic operation such as divide by zero.
+        signal(SIGFPE, abortHandler);
 } 
     
 static osimCommonInstantiator instantiator; 
