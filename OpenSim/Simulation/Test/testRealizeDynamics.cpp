@@ -83,8 +83,14 @@ void testRealizeDynamics(const string& modelFile)
     const MultibodySystem& mbs = model.getMultibodySystem();
     Vector_<SpatialVec>&   rigidBodyForcesAnswer = mbs.updRigidBodyForces(state,
                                                                Stage::Dynamics);
-    
-    string answerString = rigidBodyForcesAnswer.toString(); 
+    string rigidBodyForcesAnswerString = rigidBodyForcesAnswer.toString();
+    Vector_<Vec3>&         particleForcesAnswer = mbs.updParticleForces(state,
+                                                               Stage::Dynamics);
+    string particleForcesAnswerString = particleForcesAnswer.toString();
+    Vector&                mobilityForcesAnswer = mbs.updMobilityForces(state,
+                                                               Stage::Dynamics);
+    string mobilityForcesAnswerString = mobilityForcesAnswer.toString();
+
     //Constantly realize to Stage::Dynamics to make sure that our answers are
     //consistent
     for(int x = 0; x < 100; x++)
@@ -95,6 +101,14 @@ void testRealizeDynamics(const string& modelFile)
       const MultibodySystem& mbs = model.getMultibodySystem();
       Vector_<SpatialVec>   tempRigidBodyForces = mbs.updRigidBodyForces(state,
                                                                Stage::Dynamics);
-      ASSERT((int)(answerString == tempRigidBodyForces.toString()) == 1);
+      Vector_<Vec3>&    tempParticleForcesAnswer = mbs.updParticleForces(state,
+                                                               Stage::Dynamics);
+      Vector&            tempMobilityForcesAnswer = mbs.updMobilityForces(state,
+                                                               Stage::Dynamics);
+                                                               
+      SimTK_TEST((int)(rigidBodyForcesAnswerString == tempRigidBodyForces.toString()) == 1);
+      SimTK_TEST((int)(particleForcesAnswerString == tempParticleForcesAnswer.toString()) == 1);
+      SimTK_TEST((int)(particleForcesAnswerString == tempParticleForcesAnswer.toString()) == 1);
+
     }
 }
