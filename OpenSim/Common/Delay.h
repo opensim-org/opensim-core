@@ -35,19 +35,25 @@ namespace OpenSim {
  * For times prior to the start of a simulation this Component behaves as
  * though the input value had been constant at its initial value.
  *
- * @note The output will be incorrect if the delay is smaller than the
- * integrator's accuracy setting. Make sure that the integrator's accuracy
- * is tighter than your delay duration (e.g., accuracy of 1e-3 or less for a
- * delay of 1e-3 seconds).
- *
- * @note A delay duration of 0 just passes through the value of the input
- * with minimal overhead.
- *
  * @tparam T The type of the quantity to be delayed. Common choices are a
  * SimTK::Real (see Delay) or a SimTK::Vector (see DelayVector).
  *
  * @see Delay, DelayVector
  *
+ * @note The output will be incorrect if the delay is smaller than the
+ * integrator's accuracy setting. Make sure that the integrator's accuracy
+ * is tighter than your delay duration (e.g., accuracy of 1e-3 or less for a
+ * delay of 1e-3 seconds). with minimal overhead.
+ *
+ * @note If the input to the delay is discontinuous (e.g., a step input),
+ * the delay output will be incorrect unless you use an event
+ * trigger (see SimTK::Event) to trigger a time step at the time of the
+ * discontinuity. For example, if you have a step input at 0.5 seconds, use an
+ * event trigger to force a time step at 0.5 seconds. Even then, the output
+ * may be incorrect leading up to the delayed time of the discontinuity; make
+ * sure your time steps are sufficiently small.
+ *
+ * @note A delay duration of 0 just passes through the value of the input.
  *
  * This Component has a single input named "input" and a single output named
  * "output". The typical way to use this Component is as a subcomponent in
@@ -62,7 +68,7 @@ namespace OpenSim {
  * public:
  *     OpenSim_DECLARE_PROPERTY(delay, double, "Duration of delay (seconds).");
  *     MyController() { constructProperties(); }
- *     void computeControls(const State& s, Vector &controls) const override {
+ *     void computeControls(const State& s, Vector& controls) const override {
  *         double q = _coordDelay.getValue(s);
  *         // Delayed negative feedback control law.
  *         double u = -10 * q;
@@ -100,12 +106,8 @@ class Delay_ : public Component {
 OpenSim_DECLARE_CONCRETE_OBJECT_T(Delay_, T, Component);
 public:
 
-    /** @name Property declarations
-    These are the serializable properties associated with a Delay. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(delay, double,
         "The duration (nonnegative, seconds) by which the output is delayed.");
-    /**@}**/
 
     /// Default constructor.
     Delay_();
@@ -191,13 +193,13 @@ void Delay_<T>::extendAddToSystem(SimTK::MultibodySystem& system) const {
  * This is the most common type of Delay. See Delay_ for detailed information.
  *
  */
-using Delay = Delay_<SimTK::Real>;
+typedef Delay_<SimTK::Real> Delay;
 
 /** A Delay component that allows one to delay the value of a SimTK::Vector.
  * For example, you could use this DelayVector to delay the value of
  * the Model's generalized coordinates. See Delay_ for detailed information.
  */
-using DelayVector = Delay_<SimTK::Vector>;
+typedef Delay_<SimTK::Vector> DelayVector;
 
 } // namespace OpenSim
 

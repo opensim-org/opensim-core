@@ -302,7 +302,7 @@ private:
 /** A SimTK::Measure_ whose value is the value of an OpenSim::Input, and whose
 * dependsOn SimTK::Stage is the connectAt stage of the OpenSim::Input. This
 * Measure is useful for building OpenSim Components that use
-* a SimTK::Measure_ internally.
+* a SimTK::Measure_ internally (e.g., Delay_).
 */
 template <class T>
 class InputMeasure : public SimTK::Measure_<T> {

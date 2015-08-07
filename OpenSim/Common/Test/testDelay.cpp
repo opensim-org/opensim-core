@@ -40,12 +40,11 @@ Model createPendulumModel() {
     return model;
 }
 
-/** Simple proportional controller whose output is a gain times a
- * coordinate value.
- * There is an option to delay the value of the coordinate.
- * We've tacked on a bunch of other miscellaneous stuff solely for testing
- * the Delay component.
- */
+// Simple proportional controller whose output is a gain times a
+// coordinate value.
+// There is an option to delay the value of the coordinate.
+// We've tacked on a bunch of other miscellaneous stuff solely for testing
+// the Delay component.
 class PendulumController : public Controller {
 OpenSim_DECLARE_CONCRETE_OBJECT(PendulumController, Controller);
 public:
@@ -120,8 +119,8 @@ private:
     Delay_<SimTK::Vec3> _comVelocityDelay;
 };
 
-/// Contains dummy outputs with different requiresAt stages so that we can
-/// test that stages are checked appropriately when asking for the Delay output.
+// Contains dummy outputs with different requiresAt stages so that we can
+// test that stages are checked appropriately when asking for the Delay output.
 class DelayStageTesting : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(DelayStageTesting, ModelComponent);
 public:
@@ -170,7 +169,7 @@ private:
     }
 };
 
-/// Allows some testing of Delay with different models.
+// Allows some testing of Delay with different models.
 void testDelaySimulation(Model& model, double delayTime = 0.017,
         bool testRegression = true, double maxStepSize = SimTK::NaN,
         /* integrator accuracy, test tolerance */ double tol=1e-6) {
@@ -351,7 +350,6 @@ void testWithController() {
         // Run same test after serializing and deserializing the model.
         // ------------------------------------------------------------
         {
-            Object::registerType(PendulumController());
             std::string filename = "pendulum_for_delay_test.osim";
             model.print(filename);
             Model modelDeserialized(filename);
@@ -359,99 +357,281 @@ void testWithController() {
         }
         */
     }
-    
+
+}
+
+void testStages() {
     // Check for possible issues with requiredAt and dependsOn stages.
     // ===============================================================
-    {
-        // Tests (1) exception thrown if stage is lower than the output's
-        // dependsOn stage.
-        // (2) that after realizing to the appropriate stage,
-        // the Delay has the correct value.
+    // Tests (1) exception thrown if stage is lower than the output's
+    // dependsOn stage.
+    // (2) that after realizing to the appropriate stage,
+    // the Delay has the correct value.
 
-        // Right now, these tests don't pass. Mainly, exceptions are not
-        // thrown when they should be. This is because the
-        // Delay's output dependsOnStage is Time,
-        // when ideally it would be promoted to the dependsOnStage of the
-        // output that is wired into the Delay's input if the latter stage
-        // is greater.
-        // TODO
+    // Right now, these tests don't pass. Mainly, exceptions are not
+    // thrown when they should be. This is because the
+    // Delay's output dependsOnStage is Time,
+    // when ideally it would be promoted to the dependsOnStage of the
+    // output that is wired into the Delay's input if the latter stage
+    // is greater.
+    // TODO
 
-        /*
-        // Create model with the dummy DelayStageTesting component.
-        double tol = 1e-6;
-        Model model;
-        auto* comp = new DelayStageTesting();
-        comp->setName("delay_stage_testing");
-        model.addModelComponent(comp);
+    // Create model with the dummy DelayStageTesting component.
+    double tol = 1e-6;
+    Model model;
+    auto* comp = new DelayStageTesting();
+    comp->setName("delay_stage_testing");
+    model.addModelComponent(comp);
 
-        // Integrate past 3.0 seconds.
-        State& s = model.initSystem();
-        SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
-        integrator.setAccuracy(tol);
-        SimTK::TimeStepper ts(model.getSystem(), integrator);
-        ts.initialize(s);
-        ts.stepTo(5.0);
-        s = ts.getState();
+    // Integrate past 3.0 seconds.
+    State& s = model.initSystem();
+    SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
+    integrator.setAccuracy(tol);
+    SimTK::TimeStepper ts(model.getSystem(), integrator);
+    ts.initialize(s);
+    ts.stepTo(5.0);
+    s = ts.getState();
 
-        std::cout << "DEBUG " << s.getSystemStage() << std::endl;
-        // Try realizing to the various stages.
-        // One stage below posDelay's dependsOn Stage.
-        model.realizeTime(s);
-        SimTK_TEST_MUST_THROW_EXC(comp->posDelay.getValue(s),
-                SimTK::Exception::StageTooLow);
+    std::cout << "DEBUG " << s.getSystemStage() << std::endl;
+    // Try realizing to the various stages.
+    // One stage below posDelay's dependsOn Stage.
+    model.realizeTime(s);
+    SimTK_TEST_MUST_THROW_EXC(comp->posDelay.getValue(s),
+            SimTK::Exception::StageTooLow);
 
-        model.realizePosition(s);
-        // getOutput("position") - delay.
-        SimTK_TEST_EQ(comp->posDelay.getValue(s), 5.0 + 1.0 - 0.01);
-        SimTK_TEST_MUST_THROW_EXC(comp->velDelay.getValue(s),
-                SimTK::Exception::StageTooLow);
+    model.realizePosition(s);
+    // getOutput("position") - delay.
+    SimTK_TEST_EQ(comp->posDelay.getValue(s), 5.0 + 1.0 - 0.01);
+    SimTK_TEST_MUST_THROW_EXC(comp->velDelay.getValue(s),
+            SimTK::Exception::StageTooLow);
 
-        model.realizeVelocity(s);
-        // getOutput("velocity") - delay.
-        SimTK_TEST_EQ(comp->velDelay.getValue(s), 5.0 + 2.0 - 0.02);
-        */
-        /* TODO
-        There's a bug where outputs with a dependsOn stage of Dynamics or
-        above causes an exception to be thrown when initializing the
-        TimeStepper.
-        SimTK_TEST_MUST_THROW_EXC(comp->dynDelay.getValue(s),
-                SimTK::Exception::StageTooLow);
+    model.realizeVelocity(s);
+    // getOutput("velocity") - delay.
+    SimTK_TEST_EQ(comp->velDelay.getValue(s), 5.0 + 2.0 - 0.02);
+    /* TODO
+    There's a bug where outputs with a dependsOn stage of Dynamics or
+    above causes an exception to be thrown when initializing the
+    TimeStepper.
+    SimTK_TEST_MUST_THROW_EXC(comp->dynDelay.getValue(s),
+            SimTK::Exception::StageTooLow);
 
-        model.realizeDynamics(s);
-        // getOutput("dynamics") - delay.
-        SimTK_TEST_EQ(comp->dynDelay.getValue(s), 5.0 + 3.0 - 0.03);
-        */
-    }
-
+    model.realizeDynamics(s);
+    // getOutput("dynamics") - delay.
+    SimTK_TEST_EQ(comp->dynDelay.getValue(s), 5.0 + 3.0 - 0.03);
+    */
 }
 
 void testNegativeDelayDurationException() {
     // Check for exception when delay is negative.
     // ===========================================
-    {
-        Model model = createPendulumModel();
+    Model model = createPendulumModel();
 
-        // Add actuator.
-        const Coordinate& coord = model.getCoordinateSet()[0];
-        std::string coordName = coord.getName();
-        CoordinateActuator* act = new CoordinateActuator(coordName);
-        act->setName("joint_0_actuator");
-        model.addForce(act);
+    // Add actuator.
+    const Coordinate& coord = model.getCoordinateSet()[0];
+    std::string coordName = coord.getName();
+    CoordinateActuator* act = new CoordinateActuator(coordName);
+    act->setName("joint_0_actuator");
+    model.addForce(act);
 
-        // Add controller.
-        PendulumController* controller = new PendulumController();
-        controller->addActuator(*act);
-        controller->set_delay(-0.35); // this should cause the exception.
-        model.addController(controller);
+    // Add controller.
+    PendulumController* controller = new PendulumController();
+    controller->addActuator(*act);
+    controller->set_delay(-0.35); // this should cause the exception.
+    model.addController(controller);
 
-        SimTK_TEST_MUST_THROW_EXC(model.initSystem(),
-                                  SimTK::Exception::ValueWasNegative);
+    SimTK_TEST_MUST_THROW_EXC(model.initSystem(),
+                              SimTK::Exception::ValueWasNegative);
+}
+
+// Has an output that is a step function. Used to see if the delay can
+// properly convey the discontinuity.
+// This test was used to explore two types of discontinuities: a step input,
+// and a linear function with a jump. In both cases, the discontinuity is at
+// 0.5 seconds. For both discontinuities, to get an accurate delay output, we
+// must use an event handler. For the step input, a
+class DiscontinuousInputTesting : public ModelComponent {
+OpenSim_DECLARE_CONCRETE_OBJECT(DiscontinuousInputTesting, ModelComponent);
+public:
+    DiscontinuousInputTesting() {
+        constructInfrastructure();
     }
+    Delay timeDelay{0.2};
+    Delay stepDelay{0.2};
+    Delay discontDelay{0.2};
+
+private:
+    void constructOutputs() override {
+        constructOutput<double>("time",
+                                std::bind([](const SimTK::State& s)->double
+                                          { return s.getTime(); },
+                                          std::placeholders::_1),
+                                SimTK::Stage::Time);
+        constructOutput<double>("step",
+                                std::bind([](const SimTK::State& s)->double
+                                          { return s.getTime() < 0.5 ? 1.5 : 4.3; },
+                                          std::placeholders::_1),
+                                SimTK::Stage::Time);
+        constructOutput<double>("discont",
+                                std::bind([](const SimTK::State& s)->double
+                                          { return s.getTime() < 0.5 ? s.getTime() : 1 + s.getTime(); },
+                                          std::placeholders::_1),
+                                SimTK::Stage::Time);
+    }
+    void extendFinalizeFromProperties() override {
+        Super::extendFinalizeFromProperties();
+        addComponent(&timeDelay);
+        addComponent(&stepDelay);
+        addComponent(&discontDelay);
+    }
+    void extendConnectToModel(Model& model) override {
+        Super::extendConnectToModel(model);
+        timeDelay.getInput("input").connect(getOutput("time"));
+        stepDelay.getInput("input").connect(getOutput("step"));
+        discontDelay.getInput("input").connect(getOutput("discont"));
+    }
+    // This event gets triggered at 0.5 seconds, which matches the
+    // time of the discontinuity in the "step" and "discont" outputs.
+    class FixedEvent : public SimTK::ScheduledEventHandler {
+    public:
+        void handleEvent(State &state, Real accuracy, bool &shouldTerminate)
+                const override { }
+
+        Real getNextEventTime(const State &state, bool includeCurrentTime)
+                const override {
+            return 0.5;
+        }
+    };
+    // This event is triggered whenever the input and output of the delay
+    // begin to deviate. The clever idea comes from Dimitar Stanev.
+    class DelayInputOutputEvent : public SimTK::TriggeredEventHandler {
+    public:
+        DelayInputOutputEvent(const Delay& delay, SimTK::Stage dependsOn) :
+                TriggeredEventHandler(dependsOn), m_delay(delay) {
+            getTriggerInfo().setTriggerOnRisingSignTransition(true);
+            getTriggerInfo().setTriggerOnFallingSignTransition(false);
+        }
+        void handleEvent(State& state, Real accuracy, bool& shouldTerminate)
+        const override {}
+        SimTK::Real getValue(const SimTK::State& s) const override {
+            if (m_delay.getOutputValue<double>(s, "output") ==
+                m_delay.getInputValue<double>(s, "input")) {
+                return -1;
+            } else {
+                return 1;
+            }
+        }
+    private:
+        const Delay& m_delay;
+    };
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override {
+        // Leads to correct results for both "step" and "discont".
+        system.addEventHandler(new FixedEvent());
+        // Leads to correct results for step input.
+        //system.addEventHandler(
+        //      new DelayInputOutputEvent(stepDelay, SimTK::Stage::Position));
+        // Leads to incorrect results for "discont" output. Specifically,
+        // the first time step after t = 0.7 seconds will give an incorrect
+        // value for the delayed value of the "discont" output.
+        //system.addEventHandler(
+        //      new DelayInputOutputEvent(discontDelay, SimTK::Stage::Position));
+    }
+};
+
+template<typename T>
+class Reporter_ : public ModelComponent {
+OpenSim_DECLARE_CONCRETE_OBJECT_T(Reporter_, T, ModelComponent);
+public:
+    Reporter_() {
+        constructInfrastructure();
+    }
+    void extendRealizeAcceleration(const SimTK::State& s) const override {
+        Super::extendRealizeAcceleration(s);
+        //std::cout << std::setw(10) << std::left << s.getTime() << " " <<
+        //        getInputValue<T>(s, "input") << std::endl;
+    }
+private:
+    void constructInputs() override {
+        constructInput<T>("input", SimTK::Stage::Time);
+    }
+};
+
+typedef Reporter_<SimTK::Real> Reporter;
+
+void testDiscontinuousInput() {
+    double tol = 1e-6;
+
+    // Create model.
+    Model model;
+    auto* body = new OpenSim::Body("body", 1, Vec3(0, 0, 0), Inertia(0));
+    auto* joint = new SliderJoint("joint",
+                                   model.getGround(), Vec3(0), Vec3(0),
+                                   *body, Vec3(0), Vec3(0));
+    auto* spring = new OpenSim::SpringGeneralizedForce("joint_coord_0");
+    // Tune stiffness to get not-too-small-not-too-large time steps.
+    // too small: delay is accurate even without the event handler.
+    // too large: delay is inaccurate if time steps are same size as
+    //            delay duration.
+    spring->set_stiffness(10);
+    spring->set_rest_length(1);
+
+    model.addBody(body);
+    model.addJoint(joint);
+    model.addForce(spring);
+
+    // Add Delay-related components.
+    auto* comp = new DiscontinuousInputTesting();
+    model.addModelComponent(comp);
+
+    auto* reporter = new Reporter();
+    model.addModelComponent(reporter);
+
+    reporter->getInput("input").connect(comp->stepDelay.getOutput("output"));
+
+    // Integrate past 3.0 seconds.
+    State& s = model.initSystem();
+    SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
+    integrator.setAccuracy(tol);
+    SimTK::TimeStepper ts(model.getSystem(), integrator);
+    ts.initialize(s);
+
+    /*
+    // This block was used for developing the test, but is not part of the
+    // test. You may want to use this if you edit the test.
+    ts.setReportAllSignificantStates(true);
+    integrator.setReturnEveryInternalStep(true);
+    while (ts.getState().getTime() < 2.0) {
+        ts.stepTo(2.0);
+        std::cout << ts.getState().getTime() << " " <<
+        comp->stepDelay.getValue(ts.getState()) << " " <<
+        comp->discontDelay.getValue(ts.getState()) << std::endl;
+    }
+    s = model.initSystem();
+    ts = SimTK::TimeStepper(model.getSystem(), integrator);
+    ts.initialize(s);
+    */
+
+    // Before the discontinuity.
+    // Ideally we'd step to just before the delayed time of the
+    // discontinuity (0.7 seconds), but the delayed quantities are actually
+    // incorrect then. We'd have to take much smaller time steps for the delay
+    // to be accurate between t = 0.66 seconds and 0.7 seconds.
+    ts.stepTo(0.66);
+    // The "step" output switches at 0.5 seconds, but the delay is 0.2 seconds,
+    // so the delay output should still be 1.5.
+    //std::cout << comp->stepDelay.getValue(ts.getState()) << " " << std::endl;
+    SimTK_TEST_EQ(comp->stepDelay.getValue(ts.getState()), 1.5);
+    //std::cout << comp->discontDelay.getValue(ts.getState()) << " " << std::endl;
+    SimTK_TEST_EQ(comp->discontDelay.getValue(ts.getState()), 0.46);
+
+    // At the discontinuity. :)
+    ts.stepTo(0.70);
+    SimTK_TEST_EQ(comp->stepDelay.getValue(ts.getState()), 4.3);
+    SimTK_TEST_EQ(comp->discontDelay.getValue(ts.getState()), 1.500);
 }
 
 int main() {
 
-    //SimTK_START_TEST("testDelay");
+    SimTK_START_TEST("testDelay");
         // This Delay type is not registered in osimCommon.
         Object::registerType(Delay_<SimTK::Vec3>());
 
@@ -460,5 +640,27 @@ int main() {
 
         SimTK_SUBTEST(testWithController);
         SimTK_SUBTEST(testNegativeDelayDurationException);
-    //SimTK_END_TEST();
+        // TODO SimTK_SUBTEST(testStages); see test for why it's omitted.
+        SimTK_SUBTEST(testDiscontinuousInput);
+    SimTK_END_TEST();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
