@@ -93,7 +93,7 @@ void testDynamicsParallelism(const string& modelFile)
 
     //Constantly realize to Stage::Dynamics to make sure that our answers are
     //consistent
-    for(int x = 0; x < 100; x++)
+    for(int x = 0; x < 100; ++x)
     {
       State& state = model.initSystem();
 

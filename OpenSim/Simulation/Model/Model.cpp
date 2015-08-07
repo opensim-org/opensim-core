@@ -130,13 +130,7 @@ Model::Model(const string &aFileName, const bool finalize) :
  */
 Model::~Model()
 {
-    delete _assemblySolver;
-    delete _modelViz;
-    delete _contactSubsystem;
-    delete _gravityForce;
-    delete _forceSubsystem;
-    delete _matter;
-    delete _system;
+
 }
 //_____________________________________________________________________________
 /**
@@ -469,16 +463,7 @@ bool Model::isValidSystem() const
  */
 void Model::createMultibodySystem()
 {
-    if(_system) // if system was built previously start fresh
-    {
-        // Delete the old system.
-        delete _modelViz;
-        delete _gravityForce;
-        delete _contactSubsystem;
-        delete _forceSubsystem;
-        delete _matter;
-        delete _system;
-    }
+    
 
     // create system
     _system = new SimTK::MultibodySystem;

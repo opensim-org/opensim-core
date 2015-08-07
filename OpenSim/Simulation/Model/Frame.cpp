@@ -50,7 +50,7 @@ Frame::Frame() : ModelComponent()
 void Frame::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     SimTK::Transform x;
-    // If the properties, topology or coordinate values change, 
+    // If the properties, topology or coordinate values change,
     // Stage::Position will be invalid.
     addCacheVariable("ground_transform", x, SimTK::Stage::Position);
 }
@@ -128,17 +128,4 @@ void Frame::extendRealizeTopology(SimTK::State& s) const
 {
     Super::extendRealizeTopology(s);
     groundTransformIndex = getCacheVariableIndex("ground_transform");
-}
-void Frame::extendRealizeVelocity(const SimTK::State& s) const
-{   
-    //Evaluate the lazy cache for the groundTransform so it doesn't get
-    //needlesly calculated by each one of the threads while realizing
-    //dynamics. (Also for thread-safety reasons)
-    Super::extendRealizeVelocity(s);
-
-    SimTK::Value<SimTK::Transform>::downcast(getSystem().getDefaultSubsystem().
-        updCacheEntry(s, groundTransformIndex)).upd() = calcGroundTransform(s);
-    
-    getSystem().getDefaultSubsystem().
-        markCacheValueRealized(s, groundTransformIndex);
 }

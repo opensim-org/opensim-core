@@ -168,7 +168,6 @@ void testMemoryUsage(const string& modelFile)
 
     //cout << "Initial memory use: " << mem1/1024 << "KB." << endl;
 
-
     for(int i=0; i< MAX_N_TRIES; ++i){
         state = model.initializeState();
     }

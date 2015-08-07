@@ -34,7 +34,7 @@ namespace OpenSim {
 /**
  * A Frame is an OpenSim representation of a reference frame. It consists of
  * a right-handed set of three orthogonal axes and an origin point. Frames are
- * intended to provide convenient reference frames for locating physical
+ * intended to provide convenient reference frames for locating phyical
  * structures (such as joints and muscle attachments) as well as provide a
  * convenient basis for performing spatial calculations. For example, if your
  * system involves contact, you might define a Frame that is aligned with the
@@ -52,7 +52,7 @@ namespace OpenSim {
  * bodies, their joints, and the locations where constraints can be connected
  * and forces can be applied. It is perhaps less evident that Frames can be
  * extremely useful for relating a multitude of reference frames together to
- * form chains and trees. For example, a Frame to specify muscle attachments
+ * form chains and trees. For example, a Frame to specify muscle attachements
  * (M) and a Frame to specify a joint location (J) could themselves be
  * specified in an anatomical Frame (A) defined by bony landmarks identified
  * by surface markers or tagged on CT or MRI images. The body (B), to which the
@@ -146,7 +146,7 @@ public:
     Take a point located and expressed in this frame (F) and determine
     its location expressed in another frame (A). The transform accounts for
     the difference in orientation and translation between the frames.
-    This is mathematically stated as: 
+    This is mathematically stated as:
         point_A = X_AF*point_F
 
     @param state       The state of the model.
@@ -154,12 +154,12 @@ public:
     @param otherFrame  The frame in which the point will be re-expressed
     @return point_A    The re-expression of the point in another frame.
     */
-    SimTK::Vec3 findLocationInAnotherFrame(const SimTK::State& state, 
+    SimTK::Vec3 findLocationInAnotherFrame(const SimTK::State& state,
                     const SimTK::Vec3& point_F, const Frame& otherFrame) const;
     /**@}**/
 
-    /** @name Advanced: A Frame's Base Frame and Transform 
-    A base Frame is the most ancestral Frame (itself, its parent, 
+    /** @name Advanced: A Frame's Base Frame and Transform
+    A base Frame is the most ancestral Frame (itself, its parent,
     grandparent, great-grandparent, etc, down the family tree)
     whose angular velocity is identical to this Frame. That is they belong to
     the same rigid spatial entity. For example, anatomical frames may
@@ -170,7 +170,7 @@ public:
     attached to the anatomical frames and so on.
     */
     ///@{
-    /** 
+    /**
     Find this Frame's base Frame.
 
     @return baseFrame     The Frame that is the base for this Frame.
@@ -189,7 +189,7 @@ public:
     ///@}
 
     /** Add a Mesh specified by file name to the list of Geometry owned by the Frame.
-    Scale defaults to 1.0 but can be changed on the call line. For convenience 
+    Scale defaults to 1.0 but can be changed on the call line. For convenience
     */
     void addMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
 
@@ -199,7 +199,6 @@ protected:
     /**@{**/
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendRealizeTopology(SimTK::State& s) const override;
-    void extendRealizeVelocity(const SimTK::State& s) const override;
 
     /// override default extendAddGeometry to set Frame to this Object
     void extendAddGeometry(OpenSim::Geometry& geom) override;
@@ -234,5 +233,4 @@ private:
 } // end of namespace OpenSim
 
 #endif // OPENSIM_FRAME_H_
-
 

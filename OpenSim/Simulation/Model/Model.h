@@ -457,7 +457,6 @@ public:
     /** Perform computations that may depend on anything but are only used
     for reporting and cannot affect subsequent simulation behavior. **/
     void realizeReport(const SimTK::State& state) const;
-    void extendRealizeVelocity(const SimTK::State& state) const override;
 
     /**@}**/
 
@@ -990,6 +989,13 @@ private:
     void constructOutputs() override;
 
     void createAssemblySolver(const SimTK::State& s);
+    
+    // Override extendRealizeVelocity to calculate the shared controls cache
+    // before we realize Stage::Dynamics, in which the muscle forces in
+    // Stage::Dynamics depend on using the controls cache. This is to mainly
+    // prevent thread-race issues that may come up if multiple muscle forces
+    // are trying to write to the shared-cache at the same time.
+    void extendRealizeVelocity(const SimTK::State& state) const override;
 
     // To provide access to private _modelComponents member.
     friend class Component; 
