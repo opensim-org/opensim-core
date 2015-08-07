@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                    OpenSim:  testRealizeDynamics.cpp                       *
+ *                    OpenSim:  testDynamicsParallelism.cpp                       *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -31,27 +31,27 @@ using namespace OpenSim;
 using namespace std;
 
 //==============================================================================
-// testRealizeDynamics tests that the results produced in every stage are 
-// repeatable - this test is designed primarily to make sure that there are no 
-// memory races during realizeDynamics that can cause time-dependent results 
-// with regards to thread timing.
+// testDynamicsParallelism tests that the results produced in Stage::Dynamics
+// are repeatable - this test is designed primarily to make sure that there are
+// no memory races during the realization of Stage::Dynamics that can cause
+// instruction-dependent results with regards to thread timing. Stage::Dynamics
+// is of special cause of concern because of the parallelism-dependent code
+// in Simbody's GeneralForceSubsystem that is executed during Stage::Dynamics.
 //==============================================================================
-void testRealizeDynamics(const string& modelFile);
-
-static const int MAX_N_TRIES = 100;
+void testDynamicsParallelism(const string& modelFile);
 
 int main()
 {
     try {
-        testRealizeDynamics("arm26.osim");
+        testDynamicsParallelism("arm26.osim");
     }
     catch (const Exception& e) {
-        cout << "testRealizeDynamics failed: ";
+        cout << "testDynamicsParallelism failed: ";
         e.print(cout);
         return 1;
     }
     catch (const std::exception& e) {
-        cout << "testRealizeDynamics failed: " << e.what() << endl;
+        cout << "testDynamicsParallelism failed: " << e.what() << endl;
         return 1;
     }
     cout << "Done" << endl;
@@ -61,7 +61,7 @@ int main()
 //==============================================================================
 // Test Cases
 //==============================================================================
-void testRealizeDynamics(const string& modelFile)
+void testDynamicsParallelism(const string& modelFile)
 {
     using namespace SimTK;
     using namespace std;
@@ -106,9 +106,12 @@ void testRealizeDynamics(const string& modelFile)
       Vector&            tempMobilityForcesAnswer = mbs.updMobilityForces(state,
                                                                Stage::Dynamics);
                                                                
-      SimTK_TEST((int)(rigidBodyForcesAnswerString == tempRigidBodyForces.toString()) == 1);
-      SimTK_TEST((int)(particleForcesAnswerString == tempParticleForcesAnswer.toString()) == 1);
-      SimTK_TEST((int)(particleForcesAnswerString == tempParticleForcesAnswer.toString()) == 1);
+      SimTK_TEST((int)(rigidBodyForcesAnswerString ==
+                                          tempRigidBodyForces.toString()) == 1);
+      SimTK_TEST((int)(particleForcesAnswerString ==
+                                     tempParticleForcesAnswer.toString()) == 1);
+      SimTK_TEST((int)(particleForcesAnswerString ==
+                                     tempParticleForcesAnswer.toString()) == 1);
 
     }
 }
