@@ -10,6 +10,6 @@ target_link_libraries(${EXAMPLE_TARGET} osimTools)
 set_target_properties(${EXAMPLE_TARGET}
     PROPERTIES
     DEFINE_SYMBOL OSIMPLUGIN_EXPORTS
-	FOLDER "Examples"
+    FOLDER "Examples"
     RUNTIME_OUTPUT_DIRECTORY ${OpenSim_BINARY_DIR}/OpenSim/Examples/Plugins/CoupledBushingForceExample
 )
