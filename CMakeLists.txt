@@ -18,6 +18,8 @@ if(COMMAND cmake_policy)
     endif()
 endif(COMMAND cmake_policy)
 
+# To create a folder hierarchy within Visual Studio.
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # OpenSim version.
 # ----------------
