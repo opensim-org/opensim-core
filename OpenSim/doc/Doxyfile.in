@@ -1546,6 +1546,8 @@ PREDEFINED             = FINAL_11=final OVERRIDE_11=override \
 # overrules the definition found in the source code.
 
 EXPAND_AS_DEFINED      = OpenSim_DECLARE_PROPERTY \
+                         OpenSim_DECLARE_PROPERTY_INIT \
+                         OpenSim_DECLARE_PROPERTY_COMMON \
                          OpenSim_DECLARE_UNNAMED_PROPERTY \
                          OpenSim_DECLARE_OPTIONAL_PROPERTY \
                          OpenSim_DECLARE_LIST_PROPERTY_HELPER \
