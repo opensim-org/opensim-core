@@ -26,7 +26,7 @@ target_link_libraries(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN}
 set_target_properties(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN}
     PROPERTIES
     DEFINE_SYMBOL OSIMEXPPLUGIN_EXPORTS
-	FOLDER "Examples"
+    FOLDER "Examples"
     RUNTIME_OUTPUT_DIRECTORY
     "${OpenSim_BINARY_DIR}/OpenSim/Examples/SymbolicExpressionReporter"
 )
