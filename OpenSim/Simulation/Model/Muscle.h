@@ -62,11 +62,6 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with the %Muscle class. 
-    Note that concrete muscles derived from this class inherit all these
-    properties. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(max_isometric_force, double,
         "Maximum isometric force that the fibers can generate");
     OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,
@@ -81,7 +76,6 @@ public:
         "Compute muscle dynamics ignoring tendon compliance. Tendon is assumed to be rigid.");
     OpenSim_DECLARE_PROPERTY(ignore_activation_dynamics, bool,
         "Compute muscle dynamics ignoring activation dynamics. Activation is equivalent to excitation.");
-    /**@}**/
 
 //=============================================================================
 // PUBLIC METHODS

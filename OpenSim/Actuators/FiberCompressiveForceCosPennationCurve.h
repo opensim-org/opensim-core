@@ -78,16 +78,12 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(engagement_angle_in_degrees, double, 
         "Engagement angle of the compressive pennation spring in degrees");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(stiffness_at_perpendicular, double, 
         "Stiffness of the curve at pennation angle of 90 degrees");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(curviness, double, 
         "Fiber curve bend, from linear to maximum bend (0-1)");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS

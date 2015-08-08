@@ -117,9 +117,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(FmaxTendonStrain, double,
         "tendon strain at maximum isometric muscle force");
 
@@ -146,7 +143,6 @@ public:
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(MuscleFixedWidthPennationModel,
         "The model governing the fiber and tendon kinematics.");
-
     /**@}**/
     //Parallelism Method Override
     bool shouldBeParallelIfPossible() const override;

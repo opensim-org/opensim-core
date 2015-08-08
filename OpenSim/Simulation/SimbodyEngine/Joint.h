@@ -82,9 +82,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with a Joint. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(location_in_parent, SimTK::Vec3,
         "Location of the joint in the parent body specified in the parent "
         "reference frame. Default is (0,0,0).");
@@ -111,7 +108,6 @@ public:
         "parent->child (forward, reverse == false) or child->parent (reverse == true) "
         "NOTE: the Joint transform and its coordinates maintain a parent->child "
         "sense, even if the Joint is reversed.");
-    /**@}**/
 
 //=============================================================================
 // METHODS

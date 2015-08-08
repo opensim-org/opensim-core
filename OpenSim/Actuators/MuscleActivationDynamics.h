@@ -69,16 +69,12 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property Declarations
-        These are the serializable properties associated with this class. **/
-    //@{
     OpenSim_DECLARE_PROPERTY(minimum_activation, double,
         "Smallest permitted activation value");
     OpenSim_DECLARE_PROPERTY(maximum_activation, double,
         "Largest permitted activation value");
     OpenSim_DECLARE_PROPERTY(default_activation, double,
         "Default activation value");
-    //@}
 
 //==============================================================================
 // PUBLIC METHODS

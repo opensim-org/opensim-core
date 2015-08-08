@@ -57,7 +57,8 @@ else(DOXYGEN_EXECUTABLE-NOTFOUND)
     # Doxfile.in should take care of directing the output of Doxygen
     # to ${PROJECT_BINARY_DIR}/html. Note that you have to invoke this
     # "doxygen" target directly; it isn't run by default.
-    add_custom_target(doxygen ${DOXYGEN_EXECUTABLE} ${DOXY_CONFIG}) 
+    add_custom_target(doxygen ${DOXYGEN_EXECUTABLE} ${DOXY_CONFIG}
+        COMMENT "Generating Doxygen documentation") 
 
     # There is an "images" directory containing the pictures needed by
     # the main page Copy all the files into html/images.

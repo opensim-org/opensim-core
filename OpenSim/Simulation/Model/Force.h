@@ -56,14 +56,10 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     /** A Force element is active (enabled) by default. **/
     OpenSim_DECLARE_PROPERTY(isDisabled, bool,
         "Flag indicating whether the force is disabled or not. Disabled means"
         " that the force is not active in subsequent dynamics realizations.");
-    /**@}**/
 
 //=============================================================================
 // PUBLIC METHODS
