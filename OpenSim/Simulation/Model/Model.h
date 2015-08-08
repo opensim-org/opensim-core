@@ -25,7 +25,6 @@
 
 // INCLUDES
 #include <string>
-#include <mutex>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/ArrayPtrs.h>
@@ -47,6 +46,7 @@
 #include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 #include "Simbody.h"
+
 
 
 namespace OpenSim {
@@ -115,9 +115,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with a Model. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(assembly_accuracy, double,
     "Specify how accurate the resulting configuration of a model assembly "
     "should be. This translates to the number of signficant digits in the "
@@ -179,7 +176,6 @@ public:
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(ModelVisualPreferences,
         "Visual preferences for this model.");
-    /**@}**/
 
 //=============================================================================
 // METHODS
@@ -681,13 +677,7 @@ public:
      * Throws an exception if called before Model::initSystem()
      * This call invalidates the dynamics of the model and invalidates the
      * value of the controls until they are marked as valid when the update
-     * is completed 
-     * @see markControlsAsValid
-     *
-     * @note This method cannot be called during the realization of Dynamics
-     * due to the non-thread-safe controlsCache. If this method must be called
-     * during realizeDynamics, put a lock on the State. (See SimTK::State for
-     * more information)
+     * is completed (@see markControlsAsValid)
      * @param[in]   s         System state at which to apply the controls
      * @return      writable controls Vector
      */
@@ -697,11 +687,6 @@ public:
      * Mark controls as valid after an update at a given state.
      * Indicates that controls are valid for use at the dynamics stage.
      * If the stage is Velocity or lower the controls will remain invalid.
-     *
-     * @note This method cannot be called during the realization of Dynamics
-     * due to the non-thread-safe controlsCache. If this method must be called
-     * during realizeDynamics, put a lock on the State. (See SimTK::State for
-     * more information)
      * @param[in]   s         System state in which the controls are updated 
      */
     void markControlsAsValid(const SimTK::State& s) const;
@@ -710,11 +695,6 @@ public:
      * Alternatively, set the controls on the model at a given state.
      * Note, this method will invalidate the dynamics of the model,
      * but will mark the controls as valid. (E.g. controllers will not be invoked)
-     *
-     * @note This method cannot be called during the realization of Dynamics
-     * due to the non-thread-safe controlsCache. If this method must be called
-     * during realizeDynamics, put a lock on the State. (See SimTK::State for
-     * more information)
      * @param[in]   s         System state at which to apply the controls
      * @param[in]   controls  The complete Vector of controls to be applied
      */
@@ -996,7 +976,7 @@ private:
     // prevent thread-race issues that may come up if multiple muscle forces
     // are trying to write to the shared-cache at the same time.
     void extendRealizeVelocity(const SimTK::State& state) const override;
-
+    
     // To provide access to private _modelComponents member.
     friend class Component; 
 
@@ -1044,7 +1024,7 @@ private:
     // _workingState will be set to the system default state when
     // initializeState() or initSystem() is called.
     SimTK::State _workingState;
-    
+
     //Local reference of the State's controlsCache to avoid the cost of fetching
     //the unchanging cache from the State
     SimTK::Measure_<SimTK::Vector>::Result _controlsCache;
@@ -1064,20 +1044,20 @@ private:
     // The model owns the MultibodySystem, but the
     // subsystems and force elements are owned by the MultibodySystem so 
     // should not be deleted in the destructor.
-    SimTK::MultibodySystem*  _system; // owned by Model; must destruct
+    SimTK::ReferencePtr<SimTK::MultibodySystem>  _system; // owned by Model; must destruct
 
     // These are just references pointing into _system; don't destruct.
-    SimTK::SimbodyMatterSubsystem*  _matter;     
-    SimTK::Force::Gravity*          _gravityForce;
-    SimTK::GeneralForceSubsystem*   _forceSubsystem;
-    SimTK::GeneralContactSubsystem* _contactSubsystem;
+    SimTK::ReferencePtr<SimTK::SimbodyMatterSubsystem>  _matter;     
+    SimTK::ReferencePtr<SimTK::Force::Gravity>          _gravityForce;
+    SimTK::ReferencePtr<SimTK::GeneralForceSubsystem>   _forceSubsystem;
+    SimTK::ReferencePtr<SimTK::GeneralContactSubsystem> _contactSubsystem;
 
     // System-dependent objects.
 
     // Assembly solver used for satisfying constraints and other configuration
     // goals. This object is owned by the Model and must be destructed.
     //AssemblySolver*     _assemblySolver;
-    AssemblySolver* _assemblySolver;
+    SimTK::ReferencePtr<AssemblySolver> _assemblySolver;
 
     // Model controls as a shared pool (Vector) of individual Actuator controls
     SimTK::MeasureIndex   _modelControlsIndex;
@@ -1094,7 +1074,7 @@ private:
     // If visualization has been requested at the API level, we'll allocate 
     // a ModelVisualizer. The Model owns this object.
     //ModelVisualizer*    _modelViz; // owned by Model; must destruct
-    ModelVisualizer* _modelViz;
+    SimTK::ReferencePtr<ModelVisualizer> _modelViz;
 
 //==============================================================================
 };  // END of class Model
@@ -1105,4 +1085,3 @@ private:
 } // end of namespace OpenSim
 
 #endif // OPENSIM_MODEL_H_
-
