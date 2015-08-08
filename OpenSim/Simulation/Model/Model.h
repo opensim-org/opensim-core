@@ -661,11 +661,22 @@ public:
      * Only valid once underlying system for the model has been created.
      * Throws an exception if called before Model::initSystem()
      * @return number of controls corresponding to all the actuators in the model
+     *
+     * @note This method cannot be called during the realization of Dynamics
+     * due to the non-thread-safe controlsCache. If this method must be called
+     * during realizeDynamics, put a lock on the State. (See SimTK::State for
+     * more information)
      */
     int getNumControls() const;
 
     /** Writable access to the default values for controls. These values are used for 
-        control value during a simulation unless updated, for example, by a Controller */
+     *  control value during a simulation unless updated, for example, by a Controller
+     *
+     * @note This method cannot be called during the realization of Dynamics
+     * due to the non-thread-safe controlsCache. If this method must be called
+     * during realizeDynamics, put a lock on the State. (See SimTK::State for
+     * more information)
+     */
     SimTK::Vector& updDefaultControls() const { return _defaultControls; }
     void setDefaultControls(const SimTK::Vector& controls) const
     {   _defaultControls = controls; }
@@ -680,6 +691,11 @@ public:
      * is completed (@see markControlsAsValid)
      * @param[in]   s         System state at which to apply the controls
      * @return      writable controls Vector
+     *
+     * @note This method cannot be called during the realization of Dynamics
+     * due to the non-thread-safe controlsCache. If this method must be called
+     * during realizeDynamics, put a lock on the State. (See SimTK::State for
+     * more information)
      */
     SimTK::Vector& updControls(const SimTK::State& s) const;
     
@@ -687,7 +703,12 @@ public:
      * Mark controls as valid after an update at a given state.
      * Indicates that controls are valid for use at the dynamics stage.
      * If the stage is Velocity or lower the controls will remain invalid.
-     * @param[in]   s         System state in which the controls are updated 
+     * @param[in]   s         System state in which the controls are updated
+     *
+     * @note This method cannot be called during the realization of Dynamics
+     * due to the non-thread-safe controlsCache. If this method must be called
+     * during realizeDynamics, put a lock on the State. (See SimTK::State for
+     * more information)
      */
     void markControlsAsValid(const SimTK::State& s) const;
 
@@ -697,6 +718,11 @@ public:
      * but will mark the controls as valid. (E.g. controllers will not be invoked)
      * @param[in]   s         System state at which to apply the controls
      * @param[in]   controls  The complete Vector of controls to be applied
+     *
+     * @note This method cannot be called during the realization of Dynamics
+     * due to the non-thread-safe controlsCache. If this method must be called
+     * during realizeDynamics, put a lock on the State. (See SimTK::State for
+     * more information)
      */
     void setControls(const SimTK::State& s, const SimTK::Vector& controls) const;
 
@@ -710,7 +736,13 @@ public:
                              when computing their control outputs.
     @param[out]  controls    The complete vector of controls into which 
                              individual controller contributions should be
-                             added. **/
+                             added.
+     *
+     * @note This method cannot be called during the realization of Dynamics
+     * due to the non-thread-safe controlsCache. If this method must be called
+     * during realizeDynamics, put a lock on the State. (See SimTK::State for
+     * more information)
+     **/
     void computeControls(const SimTK::State& state, SimTK::Vector& controls) const;
 
     /**
