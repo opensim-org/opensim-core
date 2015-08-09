@@ -67,7 +67,7 @@
     <allmemberslink visible="yes"/>
     <memberdecl>
       <nestedclasses visible="yes" title="Nested Classes"/>
-      <properties title=""/>
+      <properties title="OpenSim (XML) Properties"/>
       <publicmethods title=""/>
       <publictypes title=""/>
       <publicslots title=""/>
@@ -109,7 +109,7 @@
       <functions title=""/>
       <related title=""/>
       <variables title=""/>
-      <properties title=""/>
+      <properties title="OpenSim (XML) Property Documentation"/>
       <events title=""/>
     </memberdef>
     
