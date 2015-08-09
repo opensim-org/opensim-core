@@ -57,9 +57,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_OPTIONAL_PROPERTY(body, std::string, 
         "Name of Body to which this actuator is applied.");
     OpenSim_DECLARE_PROPERTY(point, SimTK::Vec3,
@@ -76,7 +73,6 @@ public:
         "Interpret direction in Ground frame if true; otherwise, body frame.");
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum force produced by this actuator when fully activated.");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS

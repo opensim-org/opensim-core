@@ -53,9 +53,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
-    These are the serializable properties associated with a Controller. **/
-    /**@{**/
 
     OpenSim_DECLARE_PROPERTY(isDisabled, bool, 
         "Flag (true or false) indicating whether or not the controller is disabled." );

@@ -44,7 +44,7 @@ else(DOXYGEN_EXECUTABLE-NOTFOUND)
         SOURCES ${CMAKE_CURRENT_BINARY_DIR}/doxyfile_user
                 ${CMAKE_CURRENT_BINARY_DIR}/doxyfile_developer
                 ${CMAKE_CURRENT_BINARY_DIR}/doxyfile_shared
-        COMMENT "Generate Doxygen documentation"
+        COMMENT "Generating Doxygen documentation"
                 )
 
     # Configure doxygen configuration that's shared between both user

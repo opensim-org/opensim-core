@@ -66,16 +66,12 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(norm_length_at_zero_force, double, 
         "Normalized fiber length at zero force");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(stiffness_at_zero_length, double, 
         "Fiber stiffness at zero length");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(curviness, double, 
         "Fiber curve bend, from linear to maximum bend (0-1)");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS

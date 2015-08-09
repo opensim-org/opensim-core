@@ -59,12 +59,10 @@ int main()
         Model osimModel;
         osimModel.setName("tugOfWar");
 
-        // GROUND BODY
+        // GROUND FRAME
 
         // Get a reference to the model's ground body
-        OpenSim::Body& ground = *new OpenSim::Body("ground", SimTK::Infinity,
-            Vec3(0), Inertia());
-        osimModel.addBody(&ground);
+        Ground& ground = osimModel.updGround();
 
         // Add display geometry to the ground to visualize in the GUI
         ground.addMeshGeometry("ground.vtp");

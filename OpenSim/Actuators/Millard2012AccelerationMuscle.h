@@ -275,9 +275,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY( default_activation, double,
                        "assumed initial activation level if none is assigned.");
 
@@ -345,8 +342,6 @@ public:
     OpenSim_DECLARE_PROPERTY(   mass,
                                 double,
                                 "lumped mass");
-
-    /**@}**/
 
 
 

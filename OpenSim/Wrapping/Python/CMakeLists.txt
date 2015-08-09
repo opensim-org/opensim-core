@@ -26,7 +26,8 @@ set(swig_interface_file_fullname
 # it's out of date. Previously, we used a custom target only. But, custom
 # targets are always out of date.
 add_custom_command(
-    OUTPUT ${swig_output_cxx_file_fullname} ${swig_output_header_file_fullname}
+    OUTPUT opensim.py
+        ${swig_output_cxx_file_fullname} ${swig_output_header_file_fullname}
     COMMAND ${SWIG_EXECUTABLE} -v -c++ -python
         -I${OpenSim_SOURCE_DIR}
         -I${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/
@@ -37,7 +38,7 @@ add_custom_command(
     DEPENDS ${swig_interface_file_fullname})
 
 add_custom_target(PyWrap
-    DEPENDS ${swig_output_cxx_file_fullname}
+    DEPENDS opensim.py ${swig_output_cxx_file_fullname}
         ${swig_output_header_file_fullname})
 
 set_target_properties(PyWrap PROPERTIES PROJECT_LABEL "Python Bindings - Generate")
@@ -96,6 +97,9 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/setup.py DESTINATION sdk/python)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/opensim.py
     DESTINATION sdk/python/opensim)
 install(FILES __init__.py DESTINATION sdk/python/opensim)
-install(DIRECTORY tests DESTINATION sdk/python/opensim)
+install(FILES ${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim
+              ${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim
+        DESTINATION sdk/python/opensim/tests)
+INSTALL(DIRECTORY tests DESTINATION sdk/python/opensim)
 
 endif(BUILD_PYTHON_WRAPPING)

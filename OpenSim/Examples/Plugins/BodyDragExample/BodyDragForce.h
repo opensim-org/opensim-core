@@ -53,9 +53,6 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-/** @name Property declarations
-    These are the serializable properties associated with this class. **/
-/**@{**/
 
     /** String property containing the name of the body names*/
     OpenSim_DECLARE_PROPERTY(body_name, std::string, 
@@ -90,8 +87,6 @@ public:
     //// My double property
     //OpenSim_DECLARE_PROPERTY(double_property, double, 
     //"My double property."); 
-
-/**@}**/
 
 
 //=============================================================================

@@ -66,7 +66,8 @@
     <collaborationgraph visible="$COLLABORATION_GRAPH"/>
     <allmemberslink visible="yes"/>
     <memberdecl>
-      <nestedclasses visible="yes" title=""/>
+      <nestedclasses visible="yes" title="Nested Classes"/>
+      <properties title=""/>
       <publicmethods title=""/>
       <publictypes title=""/>
       <publicslots title=""/>
@@ -85,7 +86,6 @@
       <packagestaticmethods title=""/>
       <packageattributes title=""/>
       <packagestaticattributes title=""/>
-      <properties title=""/>
       <events title=""/>
       <privatetypes title=""/>
       <privateslots title=""/>

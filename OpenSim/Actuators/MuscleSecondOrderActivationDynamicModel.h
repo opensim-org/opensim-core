@@ -166,16 +166,12 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(twitch_time_constant, double,
         "time-to-peak after an impulse (s)");    
     OpenSim_DECLARE_PROPERTY(minimum_activation, double,
         "activation lower bound");
     //OpenSim_DECLARE_PROPERTY(minimum_activation, double,
     //    "minimum activation allowed");                       
-    /**@}**/
     
 //==============================================================================
 // PUBLIC METHODS

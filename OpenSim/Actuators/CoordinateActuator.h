@@ -53,14 +53,10 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_OPTIONAL_PROPERTY(coordinate, std::string,
         "Name of the generalized coordinate to which the actuator applies.");
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum generalized force produced by this actuator.");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS

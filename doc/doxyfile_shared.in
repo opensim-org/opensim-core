@@ -204,7 +204,7 @@ TAB_SIZE               = 4
 # will result in a user-defined paragraph with heading "Side Effects:". 
 # You can put \n's in the value part of an alias to insert newlines.
 
-ALIASES                = 
+ALIASES                = "propmethods=\par Methods related to this property\n"
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only). 
 # A mapping has the form "name=value". For example adding 
@@ -1525,14 +1525,14 @@ SEARCH_INCLUDES        = YES
 # contain include files that are not input files but should be processed by 
 # the preprocessor.
 
-INCLUDE_PATH           = 
+INCLUDE_PATH           = "@PROJECT_SOURCE_DIR@"
 
 # You can use the INCLUDE_FILE_PATTERNS tag to specify one or more wildcard 
 # patterns (like *.h and *.hpp) to filter out the header-files in the 
 # directories. If left blank, the patterns specified with FILE_PATTERNS will 
 # be used.
 
-INCLUDE_FILE_PATTERNS  = 
+INCLUDE_FILE_PATTERNS  = "@PROJECT_SOURCE_DIR@/OpenSim/Common/Property.h"
 
 # The PREDEFINED tag can be used to specify one or more macro names that 
 # are defined before the preprocessor is started (similar to the -D option of 
@@ -1543,7 +1543,8 @@ INCLUDE_FILE_PATTERNS  =
 # instead of the = operator.
 
 # Expand Simbody's C++11 macros to the standard keywords.
-PREDEFINED             = FINAL_11=final OVERRIDE_11=override
+PREDEFINED             = FINAL_11=final OVERRIDE_11=override \
+                         OpenSim_DOXYGEN_Q_PROPERTY=Q_PROPERTY
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 
@@ -1551,7 +1552,16 @@ PREDEFINED             = FINAL_11=final OVERRIDE_11=override
 # Use the PREDEFINED tag if you want to use a different macro definition that 
 # overrules the definition found in the source code.
 
-EXPAND_AS_DEFINED      = 
+EXPAND_AS_DEFINED      = OpenSim_DECLARE_PROPERTY \
+                         OpenSim_DECLARE_UNNAMED_PROPERTY \
+                         OpenSim_DECLARE_OPTIONAL_PROPERTY \
+                         OpenSim_DECLARE_LIST_PROPERTY_HELPER \
+                         OpenSim_DECLARE_LIST_PROPERTY \
+                         OpenSim_DECLARE_LIST_PROPERTY_SIZE \
+                         OpenSim_DECLARE_LIST_PROPERTY_ATLEAST \
+                         OpenSim_DECLARE_LIST_PROPERTY_ATMOST \
+                         OpenSim_DECLARE_LIST_PROPERTY_RANGE \
+                         OpenSim_DECLARE_PROPERTY_HELPER \
 
 # If the SKIP_FUNCTION_MACROS tag is set to YES (the default) then 
 # doxygen's preprocessor will remove all references to function-like macros 
