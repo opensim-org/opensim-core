@@ -116,25 +116,25 @@ public:
 // PROPERTIES
 //==============================================================================
 
-    OpenSim_DECLARE_PROPERTY_INIT(ground, Ground,
+    OpenSim_DECLARE_PROPERTY(ground, Ground,
         "The model's ground reference frame.", Ground());
 
-    OpenSim_DECLARE_PROPERTY_INIT(gravity,SimTK::Vec3,
+    OpenSim_DECLARE_PROPERTY(gravity,SimTK::Vec3,
         "Acceleration due to gravity, expressed in ground.",
         SimTK::Vec3(0.0, -9.80665, 0.0));
 
-    OpenSim_DECLARE_PROPERTY_INIT(credits,std::string,
+    OpenSim_DECLARE_PROPERTY(credits,std::string,
         "Credits (e.g., model author names) associated with the model.",
         "Frank Anderson, Peter Loan, Ayman Habib, Ajay Seth, Michael Sherman");
 
-    OpenSim_DECLARE_PROPERTY_INIT(publications,std::string,
+    OpenSim_DECLARE_PROPERTY(publications,std::string,
         "Publications and references associated with the model.",
         "List of publications related to model...");
 
-    OpenSim_DECLARE_PROPERTY_INIT(length_units,std::string,
+    OpenSim_DECLARE_PROPERTY(length_units,std::string,
         "Units for all lengths.", "meters");
 
-    OpenSim_DECLARE_PROPERTY_INIT(force_units,std::string,
+    OpenSim_DECLARE_PROPERTY(force_units,std::string,
         "Units for all forces.", "N");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(ControllerSet, 
@@ -170,7 +170,7 @@ public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(ModelVisualPreferences,
         "Visual preferences for this model.");
 
-    OpenSim_DECLARE_PROPERTY_INIT(assembly_accuracy, double,
+    OpenSim_DECLARE_PROPERTY(assembly_accuracy, double,
     "Specify how accurate the resulting configuration of a model assembly "
     "should be. This translates to the number of signficant digits in the "
     "resulting coordinate values. Therefore, if you require initial conditions "

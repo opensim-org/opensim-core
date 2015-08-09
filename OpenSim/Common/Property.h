@@ -1150,6 +1150,9 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
 // the macros below.
 #define OpenSim_DOXYGEN_Q_PROPERTY(T, name)
 
+#define GET_MACRO(_1,_2,_3,_4,MACRO_NAME,...) \
+   MACRO_NAME
+
 #define OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment, initComment)     \
     /** comment initComment                                              */ \
     /** This property appears in XML files under                         */ \
@@ -1173,25 +1176,7 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
     {   updProperty_##pname().setValue(value); }                            \
     /** @}                                                               */
 
-/** Declare a required, single-value property of the given \a pname and 
-type \a T, with an associated \a comment. The value list for this property will
-always contain exactly one element, and the property must be initialized at
-construction. This macro, and the other similar macros, define several related 
-methods. If the property name is my_prop_name, then the defined methods are:
-  - constructProperty_my_prop_name(initialValue)
-  - getProperty_my_prop_name()
-  - updProperty_my_prop_name()
-  - get_my_prop_name()
-  - upd_my_prop_name()
-  - set_my_prop_name(value)
-
-For some property types, the initial value may be omitted during construction.
-A data member is also created but is intended for internal use only:
-  - PropertyIndex_my_prop_name holds the property table index for this 
-    property after it has been constructed
-
-@relates OpenSim::Property **/
-#define OpenSim_DECLARE_PROPERTY(pname, T, comment)                         \
+#define OpenSim_DECLARE_PROPERTY_ORIG(pname, T, comment)                    \
     /** @cond **/                                                           \
     OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \
     void constructProperty_##pname(const T& initValue) {                    \
@@ -1209,6 +1194,27 @@ A data member is also created but is intended for internal use only:
     /** @endcond **/                                                        \
     OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,                      \
             Default value: `init`.)
+
+/**
+Declare a required, single-value property of the given \a pname and 
+type \a T, with an associated \a comment. The value list for this property will
+always contain exactly one element, and the property must be initialized at
+construction. This macro, and the other similar macros, define several related 
+methods. If the property name is my_prop_name, then the defined methods are:
+  - constructProperty_my_prop_name(initialValue)
+  - getProperty_my_prop_name()
+  - updProperty_my_prop_name()
+  - get_my_prop_name()
+  - upd_my_prop_name()
+  - set_my_prop_name(value)
+
+For some property types, the initial value may be omitted during construction.
+A data member is also created but is intended for internal use only:
+  - PropertyIndex_my_prop_name holds the property table index for this 
+    property after it has been constructed
+
+@relates OpenSim::Property **/
+#define OpenSim_DECLARE_PROPERTY(...) GET_MACRO(__VA_ARGS__, OpenSim_DECLARE_PROPERTY_INIT, OpenSim_DECLARE_PROPERTY_ORIG)(__VA_ARGS__)
 
 /** Declare a required, unnamed property holding exactly one object of type
 T derived from %OpenSim's Object class and identified by that object's class 
