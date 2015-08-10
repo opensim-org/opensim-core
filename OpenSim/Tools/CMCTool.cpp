@@ -87,6 +87,35 @@ CMCTool::CMCTool() :
 }
 //_____________________________________________________________________________
 /**
+ * Default constructor with a specified number of threads (jobs).
+ */
+CMCTool::CMCTool(int numThreads) :
+    AbstractTool(),
+    _excludedActuators(_excludedActuatorsProp.getValueStrArray()),
+    _desiredPointsFileName(_desiredPointsFileNameProp.getValueStr()),
+    _desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
+    //_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
+    //_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
+    _taskSetFileName(_taskSetFileNameProp.getValueStr()),
+    _constraintsFileName(_constraintsFileNameProp.getValueStr()),
+    _rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
+    _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
+    //_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+    _targetDT(_targetDTProp.getValueDbl()),          
+    //_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
+    _useFastTarget(_useFastTargetProp.getValueBool()),
+    _optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
+    _numericalDerivativeStepSize(_numericalDerivativeStepSizeProp.getValueDbl()),
+    _optimizationConvergenceTolerance(_optimizationConvergenceToleranceProp.getValueDbl()),
+    _maxIterations(_maxIterationsProp.getValueInt()),
+    _printLevel(_printLevelProp.getValueInt()),
+    _verbose(_verboseProp.getValueBool())
+{
+    setNull();
+    specifiedMaxNumThreads = numThreads;
+}
+//_____________________________________________________________________________
+/**
  * Construct from an XML property file.
  *
  * @param aFileName File name of the XML document.
@@ -434,7 +463,30 @@ bool CMCTool::run()
     _model->getMultibodySystem().realize(s, Stage::Position );
      taskSet.setModel(*_model);
     _model->equilibrateMuscles(s);
+    cout << endl;
 
+    SimTK::GeneralForceSubsystem& gfs = _model->updForceSubsystem();
+    int autoThreadCount = gfs.getNumberOfThreads(); //auto-detected numThreads
+    if(specifiedMaxNumThreads != -1)
+    {
+      if(autoThreadCount != specifiedMaxNumThreads)
+      {
+          gfs.setNumberOfThreads(specifiedMaxNumThreads);
+          cout << "Specified number of max threads (jobs) set to " <<
+          specifiedMaxNumThreads << ". Overriding the detected number of " <<
+          autoThreadCount << " threads." << endl;
+      }else{
+        cout << "Specified number of max threads (jobs) set to " <<
+        specifiedMaxNumThreads << ". Same as the detected number of " <<
+        autoThreadCount << " threads." << endl;
+      }
+
+    }else{
+      cout << "Specified number of max threads (jobs) not set! Using the"
+      " detected number of " << autoThreadCount << " threads."
+      << "To specify the number of maximum threads that the CMCTool can use,"
+      << "run the CMCTool with the -j flag." << endl;
+    }
     // ---- INPUT ----
     // DESIRED POINTS AND KINEMATICS
     if(_desiredPointsFileName=="" && _desiredKinematicsFileName=="") {

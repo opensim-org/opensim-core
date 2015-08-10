@@ -38,6 +38,11 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
 //_____________________________________________________________________________
 /**
  * Main routine for running the Computed Muscle Control (CMC) algorithm.
+ *
+ * The following options are available for users to specify parameters
+ * for the CMC algorithm:
+ * "-help" or "-h"/"-usage" or "-u" for more information about the CMC Tool
+ * "-jobs" or "-j" to specify the number of threads that the CMC Tool can use
  */
 int main(int argc,char **argv)
 {

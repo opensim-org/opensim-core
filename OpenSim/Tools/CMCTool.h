@@ -129,6 +129,9 @@ private:
     bool &_verbose;
 
     ForceSet _originalForceSet;
+    
+    /** Specified maximum number of threads (jobs) that the CMC Tool can use. */
+    int specifiedMaxNumThreads = -1;
 
 //=============================================================================
 // METHODS
