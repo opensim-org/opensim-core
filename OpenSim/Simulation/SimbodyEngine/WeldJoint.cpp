@@ -60,13 +60,11 @@ WeldJoint::WeldJoint() :
 /**
  * Convenience Constructor.
  */
-WeldJoint::WeldJoint(const std::string &name, const PhysicalFrame& parent,
-    const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-    const PhysicalFrame& child,
-    const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-    bool reverse) :
-        Super(name, parent, locationInParent,orientationInParent,
-                      child, locationInchild, orientationInChild, reverse)
+WeldJoint::WeldJoint( const std::string &name,
+                      const std::string& parentName,
+                      const std::string& childName,
+                      bool reverse) :
+                        Super(name, parentName, childName, reverse)
 {
     setAuthors("Ajay Seth");
     constructCoordinates();

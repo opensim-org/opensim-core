@@ -58,13 +58,11 @@ BallJoint::BallJoint() : Joint()
 /**
  * Convenience Constructor.
  */
-BallJoint::BallJoint(const std::string &name, const PhysicalFrame& parent, 
-                     const Vec3& locationInParent, const Vec3& orientationInParent,
-                     const OpenSim::Body& body,
-                     const Vec3& locationInBody, const Vec3& orientationInBody, 
-                     bool reverse) :
-            Joint(name, parent, locationInParent,orientationInParent,
-                    body, locationInBody, orientationInBody, reverse)
+BallJoint::BallJoint( const std::string &name,
+                      const std::string& parentName,
+                      const std::string& childName,
+                      bool reverse ) :
+                     Super(name, parentName, childName, reverse)
 {
     setAuthors("Ajay Seth");
     constructCoordinates();

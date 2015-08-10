@@ -45,38 +45,6 @@ using namespace OpenSim;
 PinJoint::~PinJoint()
 {
 }
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-PinJoint::PinJoint() :
-    Joint()
-{
-    setAuthors("Ajay Seth");
-    constructCoordinates();
-
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-    coordinateSet[0].setMotionType(Coordinate::Rotational);
-}
-
-//_____________________________________________________________________________
-/**
- * Convenience Constructor.
- */
-PinJoint::PinJoint(const std::string &name, const PhysicalFrame& parent,
-    const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-    const PhysicalFrame& child,
-    const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-    bool reverse) : 
-        Super(name, parent, locationInParent, orientationInParent,
-            child, locationInchild, orientationInChild, reverse)
-{
-    setAuthors("Ajay Seth");
-    constructCoordinates();
-
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-    coordinateSet[0].setMotionType(Coordinate::Rotational);
-}
 
 //=============================================================================
 // Simbody Model building.

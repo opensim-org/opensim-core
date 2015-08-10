@@ -59,17 +59,12 @@ EllipsoidJoint::EllipsoidJoint() :
 /**
  * Convenience Constructor.
  */
-EllipsoidJoint::EllipsoidJoint(const std::string &name,
-    const PhysicalFrame& parent,
-    const SimTK::Vec3& locationInParent,
-    const SimTK::Vec3& orientationInParent,
-    const PhysicalFrame& child,
-    const SimTK::Vec3& locationInChild,
-    const SimTK::Vec3& orientationInChild,
-    const SimTK::Vec3& ellipsoidRadii,
-    bool reverse) :
-    Joint(name, parent, locationInParent,orientationInParent,
-            child, locationInChild, orientationInChild, reverse)
+EllipsoidJoint::EllipsoidJoint( const std::string& name,
+                                const std::string& parentName,
+                                const std::string& childName,
+                                const SimTK::Vec3& ellipsoidRadii,
+                                bool reverse) :
+                                  Super(name, parentName, childName, reverse)
 {
     constructCoordinates();
     constructProperties();
@@ -199,21 +194,14 @@ void EllipsoidJoint::generateDecorations
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const
-    {
-        // invoke parent class method, this draws 2 Frames
-        Super::generateDecorations(fixed,hints,state,geometryArray); 
+{
+    // invoke parent class method, this draws 2 Frames
+    Super::generateDecorations(fixed,hints,state,geometryArray); 
 
-        double dimension = get_radii_x_y_z().norm()/2;
+    // Construct the visible Ellipsoid
+    SimTK::DecorativeEllipsoid ellipsoid(get_radii_x_y_z());
+    ellipsoid.setTransform(getParentFrame().getGroundTransform(state));
+    ellipsoid.setColor(Vec3(0.0, 1.0, 1.0));
 
-        // Construct the visible Ellipsoid
-        SimTK::DecorativeEllipsoid ellipsoid(get_radii_x_y_z());
-        ellipsoid.setTransform(getParentTransform());
-        ellipsoid.setColor(Vec3(0.0, 1.0, 1.0));
-
-        geometryArray.push_back(ellipsoid);
-
-        // if the model is moving, calculate and draw motion.
-        if(!fixed){
-        }
-
-    }
+    geometryArray.push_back(ellipsoid);
+}

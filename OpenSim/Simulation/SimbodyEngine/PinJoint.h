@@ -46,34 +46,22 @@ are in the desired direction.
  */
 class OSIMSIMULATION_API PinJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PinJoint, Joint);
-
-private:
-    static const int _numMobilities = 1;
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-
-    /** Pin has no additional properties*/
-
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-    // CONSTRUCTION
-    PinJoint();
-    // Convenience constructor
-    PinJoint(const std::string &name,  const PhysicalFrame& parent,
-             const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-             const PhysicalFrame& child,
-             const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-             bool reverse = false);
+    /** Use Joint's constructors. @see Joint */
+    using Joint::Joint;
+
     virtual ~PinJoint();
 
     int numCoordinates() const override {return _numMobilities;};
 
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+
+private:
+    static const int _numMobilities = 1;
 
 //=============================================================================
 };  // END of class PinJoint

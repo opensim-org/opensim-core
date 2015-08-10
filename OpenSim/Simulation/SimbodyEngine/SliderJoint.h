@@ -45,34 +45,22 @@ Slider provides a single mobility along the common X-axis of the joint frames
 
 class OSIMSIMULATION_API SliderJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(SliderJoint, Joint);
-
-private:
-    static const int _numMobilities = 1;
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-
-    /** Slider has no additional properties*/
-
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-    // CONSTRUCTION
-    SliderJoint();
+    /** Use Joint's constructors. @see Joint */
+    using Joint::Joint;
 
-    // Convenience constructor
-    SliderJoint(const std::string &name, const PhysicalFrame& parent,
-        const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-        const PhysicalFrame& child,
-        const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-        bool reverse = false);
+    virtual ~SliderJoint() {}
 
     int numCoordinates() const { return _numMobilities; }
 
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+
+private:
+    static const int _numMobilities = 1;
 
 //=============================================================================
 };  // END of class SliderJoint

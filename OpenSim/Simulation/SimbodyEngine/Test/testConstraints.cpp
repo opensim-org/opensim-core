@@ -1008,8 +1008,7 @@ void testRollingOnSurfaceConstraint()
     osim_rod->addGeometry(cylGeom);
 
     // create rod as a free joint
-    auto rodJoint = new PlanarJoint("rodToGround", ground, Vec3(0), Vec3(0),
-                                                *osim_rod, Vec3(0), Vec3(0));
+    auto rodJoint = new PlanarJoint("rodToGround", ground.getName(), osim_rod->getName());
 
     // Add the thigh body which now also contains the hip joint to the model
     osimModel->addBody(osim_rod);

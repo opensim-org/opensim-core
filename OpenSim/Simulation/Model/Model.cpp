@@ -723,8 +723,7 @@ void Model::extendConnectToModel(Model &model)
 
             std::string jname = "free_" + child->getName();
             SimTK::Vec3 zeroVec(0.0);
-            Joint* free = new FreeJoint(jname,
-                               *ground, zeroVec, zeroVec, *child, zeroVec, zeroVec);
+            Joint* free = new FreeJoint(jname, ground->getName(), child->getName());
             addJoint(free);
         }
         else{
@@ -766,15 +765,15 @@ void Model::extendConnectToModel(Model &model)
 
         if (joint.getConcreteClassName() == "WeldJoint") {
             WeldConstraint* weld = new WeldConstraint( joint.getName()+"_Loop",
-                parent, joint.getParentTransform(),
-                child, joint.getChildTransform());
+                parent, joint.getParentFrame().findTransformInBaseFrame(),
+                child, joint.getChildFrame().findTransformInBaseFrame());
             addConstraint(weld);
 
         }
         else if (joint.getConcreteClassName() == "BallJoint") {
             PointConstraint* point = new PointConstraint(
-                parent, joint.getParentTransform().p(),
-                child,  joint.getChildTransform().p()   );
+                parent, joint.getParentFrame().findTransformInBaseFrame().p(),
+                child, joint.getChildFrame().findTransformInBaseFrame().p());
             point->setName(joint.getName() + "_Loop");
             addConstraint(point);
         }

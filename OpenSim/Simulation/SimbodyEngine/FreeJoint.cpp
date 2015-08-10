@@ -61,18 +61,12 @@ FreeJoint::FreeJoint() :
  * Convenience Constructor.
  */
 FreeJoint::FreeJoint(const std::string &name,
-    const PhysicalFrame& parent,
-    const SimTK::Vec3& locationInParent,
-    const SimTK::Vec3& orientationInParent,
-    const PhysicalFrame& child,
-    const SimTK::Vec3& locationInChild,
-    const SimTK::Vec3& orientationInChild,
-    bool reverse) :
-        Joint(name, parent, locationInParent, orientationInParent,
-            child, locationInChild, orientationInChild, reverse)
+            const std::string& parentName,
+            const std::string& childName,
+            bool reverse) :
+            Super(name, parentName, childName, reverse)
 {
     setNull();
-    setName(name);
 }
 
 //=============================================================================

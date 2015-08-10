@@ -275,15 +275,10 @@ void CoordinateCouplerConstraint::scale(const ScaleSet& aScaleSet)
         // We can handle non-uniform scaling along transform axes of custom joints ONLY at this time
         const Joint *joint =  dynamic_cast<const Joint*>(depCoordinate._joint.get());
         // Simplifies things if we have uniform scaling so check first
-        // TODO: Non-uniform scaling below has not been exercised! - ASeth
+
         if(joint) {
             if (bodyScaleFactors[0] != bodyScaleFactors[1] ||  bodyScaleFactors[0] != bodyScaleFactors[2] ) {
-                // Get the coordinate axis defined on the parent body
-                const Vec3& xyzEuler = joint->getOrientationInParent();
-                Rotation orientInParent(BodyRotationSequence,xyzEuler[0],XAxis,xyzEuler[1],YAxis,xyzEuler[2],ZAxis);
-
-                Vec3 axis;
-
+                // TODO: Non-uniform scaling remains undefined! - ASeth
                 throw(Exception("Non-uniform scaling of CoordinateCoupler constraints not implemented."));
             }
         }

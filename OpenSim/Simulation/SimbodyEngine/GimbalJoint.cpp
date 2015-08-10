@@ -46,32 +46,7 @@ GimbalJoint::~GimbalJoint()
 {
 }
 //_____________________________________________________________________________
-/**
- * Default constructor.
- */
-GimbalJoint::GimbalJoint() : Joint()
-{
-    setAuthors("Tim Dorn, Ajay Seth");
-    constructCoordinates();
-}
-//_____________________________________________________________________________
-/**
- * Convenience Constructor.
- */
-GimbalJoint::GimbalJoint(const std::string &name,
-    const PhysicalFrame& parent,
-    const SimTK::Vec3& locationInParent,
-    const SimTK::Vec3& orientationInParent,
-    const PhysicalFrame& child,
-    const SimTK::Vec3& locationInChild,
-    const SimTK::Vec3& orientationInChild,
-    bool reverse) :
-            Joint(name, parent, locationInParent,orientationInParent,
-                    child, locationInChild, orientationInChild, reverse)
-{
-    setAuthors("Tim Dorn, Ajay Seth");
-    constructCoordinates();
-}
+
 
 //=============================================================================
 // Simbody Model building.

@@ -58,11 +58,11 @@ public:
     // CONSTRUCTION
     WeldJoint();
     // Convenience constructor
-    WeldJoint(const std::string &name, const PhysicalFrame& parent,
-        const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-        const PhysicalFrame& child,
-        const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-        bool reverse = false);
+    WeldJoint( const std::string &name,
+               const std::string& parentName,
+               const std::string& child,
+               bool reverse = false);
+
     virtual ~WeldJoint();
 
     int numCoordinates() const override {return _numMobilities;};

@@ -47,6 +47,7 @@
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
@@ -182,9 +183,10 @@ protected:
         // Assign the underlying indices to access System resources (state values) for the Coordinate subcomponents
 
         // PARENT TRANSFORM
-        const SimTK::Transform& parentTransform = getParentTransform();
+        const SimTK::Transform& parentTransform =
+            getParentFrame().findTransformInBaseFrame();
         // CHILD TRANSFORM
-        const SimTK::Transform& childTransform = getChildTransform();
+        const SimTK::Transform& childTransform = getChildFrame().findTransformInBaseFrame();
 
         int coordinateIndexForMobility = 0;
 
@@ -873,22 +875,44 @@ void testWeldJoint(bool randomizeBodyOrder)
     kneeTransform[2].setCoordinateNames(OpenSim::Array<std::string>("knee_q", 1, 1));
     kneeTransform[2].setFunction(new LinearFunction()); 
 
+    PhysicalOffsetFrame kneeInFemurOffset(osim_thigh, Transform(Rotation(), kneeInFemur));
+    kneeInFemurOffset.setName("knee_in_femur");
+
+    PhysicalOffsetFrame kneeInTibiatOffset(osim_shank, Transform(Rotation(), kneeInTibia));
+    kneeInTibiatOffset.setName("knee_in_tibia");
+
     // create custom knee joint
-    CustomJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0), osim_shank, kneeInTibia, Vec3(0), kneeTransform);
+    CustomJoint knee("knee", "knee_in_femur", "knee_in_tibia", kneeTransform);
 
     tempBodySet.adoptAndAppend(&osim_shank);
     tempJointSet.adoptAndAppend(&knee);
 
     // Add foot body at ankle
     OpenSim::Body osim_foot("foot", footMass.getMass(), footMass.getMassCenter(), footMass.getInertia());
-    WeldJoint ankle("ankle", osim_shank, ankleInTibia, Vec3(0), osim_foot, ankleInFoot, Vec3(0));
+
+    PhysicalOffsetFrame ankleInTibiaOffset(osim_shank, Transform(Rotation(), ankleInTibia));
+    ankleInTibiaOffset.setName("ankle_in_tibia");
+
+    PhysicalOffsetFrame ankleInFootOffset(osim_foot, Transform(Rotation(), ankleInFoot));
+    ankleInFootOffset.setName("ankle_in_foot");
+
+    WeldJoint ankle("ankle", "ankle_in_tibia", "ankle_in_foot");
+    ankle.append_frames(ankleInTibiaOffset);
+    ankle.append_frames(ankleInFootOffset);
 
     tempBodySet.adoptAndAppend(&osim_foot);
     tempJointSet.adoptAndAppend(&ankle);
 
     // Add toes body at mtp
-    OpenSim::Body osim_toes ("toes", toesMass.getMass(), toesMass.getMassCenter(), toesMass.getInertia());
-    WeldJoint mtp("mtp", osim_foot, mtpInFoot, Vec3(0), osim_toes, mtpInToes, Vec3(0));
+    OpenSim::Body osim_toes("toes", toesMass.getMass(), toesMass.getMassCenter(), toesMass.getInertia());
+    
+    PhysicalOffsetFrame mtpInFootOffset(osim_shank, Transform(Rotation(), mtpInFoot));
+    mtpInFootOffset.setName("mtp_in_foot");
+
+    PhysicalOffsetFrame mtpInToesOffset(osim_foot, Transform(Rotation(), mtpInToes));
+    mtpInToesOffset.setName("mtp_in_toes");
+    
+    WeldJoint mtp("mtp", "mtp_in_foot", "mtp_in_toes");
 
     tempBodySet.adoptAndAppend(&osim_toes);
     tempJointSet.adoptAndAppend(&mtp);

@@ -34,9 +34,9 @@ class Model;
 class ScaleSet;
 
 /**
-An OpenSim Joint is an OpenSim::ModelComponent which connects two Bodies
-together and speficies their relative permissible motion as described in
-internal coordinates. The base Joint specifies the two frames (on each body),
+An OpenSim Joint is an OpenSim::ModelComponent which connects two PhysicalFrames
+together and specifies their relative permissible motion as described in
+internal coordinates. The base Joint specifies two frames (e.g. on two bodies),
 which the joint spans. The relative motion (including the # of coordinates)
 are defined by concrete Joints, which specify the permissible kinematics of
 a child joint frame (on a child body) with respect to a parent joint frame
@@ -44,8 +44,8 @@ a child joint frame (on a child body) with respect to a parent joint frame
 identify the directionality of the joint and in which frame the joint
 coordinates are expressed.
 
-For example, A PinJoint between a parent, P, and a child body, B,
-frames have a coordinate value of zero when the two frames are aligned
+For example, A PinJoint between a parent frame, P, and a child frame, B,
+have a coordinate value of zero when the two frames are aligned
 and positive coordinate values are the angle between the frames' X-axes given
 a positive Z-rotation of the child frame about the coincident Z-axis in
 the parent frame.
@@ -60,16 +60,14 @@ A Seth, M Sherman, P Eastman, S Delp; Nonlinear dynamics 62 (1), 291-303
 \code{.cpp}
     // Define a Pin joint between ground and platform.
     PinJoint* platformToGround = new PinJoint("PlatformToGround",
-            ground, locationInParent, orientationInParent,
-            *platform, locationInChild, orientationInChild, false);
+                                              "ground", "platform", false);
 \endcode
 
 <b>Python example</b>
 \code{.py}
     # Define a ball joint between blockA and blockB.
     abJoint  = osim.BallJoint('JointName',
-            blockA, locInParent, oriInParent,
-            blockB, locInChild, oriInChild, False)
+            'blockA', 'blockB', False)
 \endcode
 
 @author Ajay Seth
@@ -85,24 +83,6 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with a Joint. **/
     /**@{**/
-    OpenSim_DECLARE_PROPERTY(location_in_parent, SimTK::Vec3,
-        "Location of the joint in the parent body specified in the parent "
-        "reference frame. Default is (0,0,0).");
-
-    OpenSim_DECLARE_PROPERTY(orientation_in_parent, SimTK::Vec3,
-        "Orientation of the joint in the parent body specified in the parent "
-        "reference frame. Euler XYZ body-fixed rotation angles (in radians) "
-        "are used to express the orientation. Default is (0,0,0).");
-
-    OpenSim_DECLARE_PROPERTY(location_in_child, SimTK::Vec3,
-        "Location of the joint in the child body specified in the child "
-        "reference frame. Default is (0,0,0).");
-
-    OpenSim_DECLARE_PROPERTY(orientation_in_child, SimTK::Vec3,
-        "Orientation of the joint in the child body specified in the child body "
-        "reference frame. Euler XYZ body-fixed rotation angles (in radians) "
-        "are used to express the orientation. Default is (0,0,0)" );
-
     OpenSim_DECLARE_UNNAMED_PROPERTY(CoordinateSet,
         "Set holding the generalized coordinates (q's) that parameterize this joint." );
 
@@ -111,6 +91,11 @@ public:
         "parent->child (forward, reverse == false) or child->parent (reverse == true) "
         "NOTE: the Joint transform and its coordinates maintain a parent->child "
         "sense, even if the Joint is reversed.");
+
+    /** Joint defined frames used to connect PhysicalFrames like Bodies and offsets
+        on bodies. */
+    OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalFrame,
+        "Physical frames needed to satisfy the Joint's connections.");
     /**@}**/
 
 //=============================================================================
@@ -124,10 +109,8 @@ public:
     Joint();
 
     /** Convenience Constructor */
-    /** Create a Joint where the parent and body are specified as well as the
-        joint frames in the child and parent bodies in terms of their location
-        and orientation in their respective bodies. Also an advanced option to
-        specify a tree structure to be constructed in the reverse direction,
+    /** Create a Joint where the parent and child frames are specified by name.
+        Also an advanced option to reverse the direction in the multibody tree,
         that is child to parent, but the coordinates remain as if defined parent
         to child. This can be useful for defining models from the ground up, yet
         maintaining the convention of the knee, for example, of the relative
@@ -135,30 +118,67 @@ public:
 
         @param[in] name     the name associated with this joint (should be
                             unique from other joints in the same model)
-        @param[in] parent   the parent PhysicalFrame that joint connects to
-        @param[in] locationInParent    Vec3 of the location of the joint in the
-                                       parent body frame.
-        @param[in] orientationInParent Vec3 of the XYZ body-fixed Euler angles
-                                       of the joint frame orientation in the
-                                       parent body frame.
-        @param[in] child    the child PhysicalFrame that joint connects to
-        @param[in] locationInChild     Vec3 of the location of the joint in the
-                                       child body frame.
-        @param[in] orientationInChild  Vec3 of the XYZ body-fixed Euler angles
-                                       of the joint frame orientation in the
-                                       child body frame.
+        @param[in] parentName   the name of the parent PhysicalFrame of the joint
+        @param[in] childName    the name of the child PhysicalFrame of the joint
         @param[in] reverse  Advanced optional flag (bool) specifying the 
                             direction of the Joint in the multibody tree. 
-                            Default is false (that is, forward).
+                            Default is false (that is, forward. parent to child).
         */
-    Joint(const std::string &name,
-          const PhysicalFrame& parent,
-          const SimTK::Vec3& locationInParent,
-          const SimTK::Vec3& orientationInParent,
-          const PhysicalFrame& child,
-          const SimTK::Vec3& locationInChild,
-          const SimTK::Vec3& orientationInChild,
-          bool reverse = false);
+    Joint( const std::string& name,
+           const std::string& parentName,
+           const std::string& childName,
+           bool reverse = false);
+
+    /** DEPRECATED Convenience Constructor
+    Create a Joint where the parent and body are specified as well as the
+    joint frames in the child and parent bodies in terms of their location
+    and orientation in their respective bodies. Also an advanced option to
+    specify a tree structure to be constructed in the reverse direction,
+    that is child to parent, but the coordinates remain as if defined parent
+    to child. This can be useful for defining models from the ground up, yet
+    maintaining the convention of the knee, for example, of the relative
+    motion of the tibia (child) w.r.t. the femur (parent).
+
+    @param[in] name     the name associated with this joint (should be
+                        unique from other joints in the same model)
+    @param[in] parent   the parent PhysicalFrame that joint connects to
+    @param[in] locationInParent    Vec3 of the location of the joint in the
+                                   parent frame.
+    @param[in] orientationInParent Vec3 of the XYZ body-fixed Euler angles
+                                   of the joint frame orientation in the
+                                   parent frame.
+    @param[in] child    the child PhysicalFrame that joint connects to
+    @param[in] locationInChild     Vec3 of the location of the joint in the
+                                   child body frame.
+    @param[in] orientationInChild  Vec3 of the XYZ body-fixed Euler angles
+                                   of the joint frame orientation in the
+                                   child body frame.
+    @param[in] reverse  Advanced optional flag (bool) specifying the
+                        direction of the Joint in the multibody tree.
+                        Default is false (that is, forward).
+    */
+    DEPRECATED_14("Joint constructor with explicit location and "
+        "orientation offsets will no longer be supported.")
+    Joint(const std::string& name,
+        const PhysicalFrame& parent,
+        const SimTK::Vec3& locationInParent,
+        const SimTK::Vec3& orientationInParent,
+        const PhysicalFrame& child,
+        const SimTK::Vec3& locationInChild,
+        const SimTK::Vec3& orientationInChild,
+        bool reverse);
+
+    DEPRECATED_14("Joint constructor with explicit location and "
+        "orientation offsets will no longer be supported.")
+    Joint(const std::string& name,
+        const PhysicalFrame& parent,
+        const SimTK::Vec3& locationInParent,
+        const SimTK::Vec3& orientationInParent,
+        const PhysicalFrame& child,
+        const SimTK::Vec3& locationInChild,
+        const SimTK::Vec3& orientationInChild) :
+            Joint(name, parent, locationInParent, orientationInParent,
+                        child, locationInChild, orientationInChild, false) {}
 
     virtual ~Joint();
 
@@ -168,52 +188,22 @@ public:
     const std::string& getChildFrameName() const;
 
     /**
-     * Set the child body that this joint connects.
-     *
-     * @param child PhysicalFrame reference.
-     */
-    void setChildFrame(const PhysicalFrame& child);
-
-    /**
      * Get the child joint frame.
      *
      * @return const PhysicalFrame reference.
      */
     const PhysicalFrame& getChildFrame() const;
 
-    void setLocationInChild(const SimTK::Vec3& aLocation);
-    const SimTK::Vec3& getLocationInChild() const;
-    void setOrientationInChild(const SimTK::Vec3& aOrientation);
-    const SimTK::Vec3& getOrientationInChild() const;
-
     // Relating to the parent joint frame
     void setParentFrameName(const std::string& aName);
     const std::string& getParentFrameName() const;
 
-    /**
-    * Set the parent frame that this joint connects.
-    *
-    * @param parent PhysicalFrame.
-    */
-    void setParentFrame(const PhysicalFrame& parent);
     /**
      * Get the parent frame to which this joint attaches.
      *
      * @return const ref to parent PhysicalFrame.
      */
     const OpenSim::PhysicalFrame& getParentFrame() const;
-
-    void setLocationInParent(const SimTK::Vec3& aLocation);
-    const SimTK::Vec3& getLocationInParent() const;
-    void setOrientationInParent(const SimTK::Vec3& aOrientation);
-    const SimTK::Vec3& getOrientationInParent() const;
-
-    /** Get the Joint frames expressed as body transforms. Only available after
-        extendConnectToModel() has been called on the Joint. */
-    const SimTK::Transform& getParentTransform() const
-        { return _jointFrameInParent; }
-    const SimTK::Transform& getChildTransform() const
-        { return _jointFrameInChild; }
 
     // Coordinate Set
     const CoordinateSet& getCoordinateSet() const {return get_CoordinateSet();}
@@ -260,7 +250,7 @@ public:
 
     // SCALE
     /**
-    * Scale a joint based on XYZ scale factors for the bodies.
+    * Scale a joint based on XYZ scale factors for PhysicalFrames.
     * Generic behavior is to scale the locations on parent and on the body
     * according to scale factors of the bodies upon which they are located.
     *
@@ -270,17 +260,6 @@ public:
     * @param aScaleSet Set of XYZ scale factors for the bodies.
     */
     virtual void scale(const ScaleSet& aScaleSet);
-
-    /**
-    * ModelComponent display interface.
-    *
-    * This method appends the visuals for the Joint to the list appendToThis.
-    * Base class adds geometry for the two Frames making the joint, any extra 
-    * gometry needed to visualize the Joint would be added by the subclass.
-    */
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
-        SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
-
 
 protected:
     // build Joint transforms from properties
@@ -331,8 +310,8 @@ protected:
     {
         SimTK::MobilizedBody inb;
         const SimTK::Body* outb = &getChildInternalRigidBody();
-        const SimTK::Transform* inbX = &getParentTransform();
-        const SimTK::Transform* outbX = &getChildTransform();
+        const SimTK::Transform* inbX = &getParentFrame().findTransformInBaseFrame();
+        const SimTK::Transform* outbX = &getChildFrame().findTransformInBaseFrame();
         const PhysicalFrame* associatedFrame = nullptr;
         // if the joint is reversed then flip the underlying tree representation
         // of inboard and outboard bodies, although the joint direction will be
@@ -444,7 +423,7 @@ private:
     void constructProperties() override;
 
     /** Next define its structural dependencies on other components.
-        These will be the parent and child bodies of the Joint.*/
+        These will be the parent and child frames of the Joint.*/
     void constructConnectors() override;
 
     /** Utility method for accessing the number of mobilities provided by
@@ -471,10 +450,6 @@ private:
     //=========================================================================
     // DATA
     //=========================================================================
-    // Hold complete transforms for the joint frame's in connected bodies
-    SimTK::Transform _jointFrameInChild;
-    SimTK::Transform _jointFrameInParent;
-
     SimTK::ReferencePtr<Body> _slaveBodyForParent;
     SimTK::ReferencePtr<Body> _slaveBodyForChild;
 

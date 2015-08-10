@@ -33,7 +33,7 @@ A class implementing a Gimbal joint. The underlying implementation Simbody is a
 SimTK::MobilizedBody::Gimbal. The opensim Gimbal joint implementation uses a fixed
  1-2-3 (x-y-z) body fixed Euler sequence for generalized coordinates calculation.
 Gimbal joints have a singularity when Y is near \f$\frac{\pi}{2}\f$.
-Generalized speeds are equal to the Eular angle derivatives  (\f$\vec{u} = \dot{\vec{q}}\f$)
+Generalized speeds are equal to the Euler angle derivatives  (\f$\vec{u} = \dot{\vec{q}}\f$)
 
 \image html gimbalJoint.gif
 
@@ -44,30 +44,12 @@ Generalized speeds are equal to the Eular angle derivatives  (\f$\vec{u} = \dot{
 
 class OSIMSIMULATION_API GimbalJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(GimbalJoint, Joint);
-
-private:
-    static const int _numMobilities = 3;
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-
-
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
     // CONSTRUCTION
-    GimbalJoint();
-    // convenience constructor
-    GimbalJoint(const std::string &name,
-        const PhysicalFrame& parent,
-        const SimTK::Vec3& locationInParent,
-        const SimTK::Vec3& orientationInParent,
-        const PhysicalFrame& child,
-        const SimTK::Vec3& locationInChild,
-        const SimTK::Vec3& orientationInChild,
-        bool reverse = false);
+    using Joint::Joint;
 
     virtual ~GimbalJoint();
 
@@ -78,6 +60,10 @@ protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendInitStateFromProperties(SimTK::State& s) const override;
     void extendSetPropertiesFromState(const SimTK::State& state) override;
+
+
+private:
+    static const int _numMobilities = 3;
 
 //=============================================================================
 };  // END of class GimbalJoint
