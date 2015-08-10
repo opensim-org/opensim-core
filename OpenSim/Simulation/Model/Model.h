@@ -1060,9 +1060,6 @@ private:
     // initializeState() or initSystem() is called.
     SimTK::State _workingState;
 
-    //Local reference of the State's controlsCache to avoid the cost of fetching
-    //the unchanging cache from the State
-    SimTK::Measure_<SimTK::Vector>::Result _controlsCache;
     //--------------------------------------------------------------------------
     //                              RUN TIME 
     //--------------------------------------------------------------------------
@@ -1093,7 +1090,11 @@ private:
     // goals. This object is owned by the Model and must be destructed.
     //AssemblySolver*     _assemblySolver;
     SimTK::ReferencePtr<AssemblySolver> _assemblySolver;
-
+    
+    // Local reference of the State's controlsCache to avoid memory races to fetch
+    // the shared controls cache
+    SimTK::Measure_<SimTK::Vector>::Result _controlsCache;
+    
     // Model controls as a shared pool (Vector) of individual Actuator controls
     SimTK::MeasureIndex   _modelControlsIndex;
     // Default values pooled from Actuators upon system creation.

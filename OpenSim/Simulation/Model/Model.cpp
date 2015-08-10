@@ -828,6 +828,7 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
         Stage::Velocity, Stage::Acceleration);
 
     mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
+    mutableThis->_controlsCache = modelControls;
 }
 
 
@@ -1872,21 +1873,18 @@ void Model::setAllControllersEnabled( bool enabled ) {
 void Model::extendRealizeVelocity(const SimTK::State& state) const
 {
     Super::extendRealizeVelocity(state);
-    Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(
-               _system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
 
     //Calculate the controls cache before we realize dynamics and call calcForces (possibly in parallel).
     //Note: If the shared controls cache is calculated inside of calcForces and the force in which it is
     //being calculated is parallel, a data race may occur to mark the controlsCache as valid/invalid.
-    if(!controlsCache.isValid(state)){
+    if(!_controlsCache.isValid(state)){
         // Always reset controls to their default values before computing controls
         // since default behavior is for controllors to "addInControls" so there should be valid
         // values to begin with.
-        controlsCache.updValue(state) = _defaultControls;
-        computeControls(state, controlsCache.updValue(state));
-        controlsCache.markAsValid(state);
+        _controlsCache.updValue(state) = _defaultControls;
+        computeControls(state, _controlsCache.updValue(state));
+        _controlsCache.markAsValid(state);
     }
-    const_cast<Model*>(this)->_controlsCache = controlsCache;
 }
 /**
  * Model::formStateStorage is intended to take any storage and populate stateStorage.
