@@ -818,17 +818,6 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 
     // Reset the vector of all controls' defaults
     mutableThis->_defaultControls.resize(0);
-
-    // Create the shared cache that will hold all model controls
-    // This must be created before Actuator.extendAddToSystem() since Actuator will append 
-    // its "slots" and retain its index by accessing this cached Vector
-    // value depends on velocity and invalidates dynamics BUT should not trigger
-    // recomputation of the controls which are necessary for dynamics
-    Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(), 
-        Stage::Velocity, Stage::Acceleration);
-
-    mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
-    mutableThis->_controlsCache = modelControls;
 }
 
 
@@ -1000,11 +989,12 @@ void Model::setDefaultProperties()
 void Model::extendInitStateFromProperties(SimTK::State& state) const
 {
     Super::extendInitStateFromProperties(state);
+    SimTK::Vector& controlsCache = Value<Vector>::updDowncast
+               (getDefaultSubsystem().updCacheEntry(state,_modelControlsIndex));
     // Allocate the size and default values for controls
     // Actuators will have a const view into the cache
-    Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
-    controlsCache.updValue(state).resize(_defaultControls.size());
-    controlsCache.updValue(state) = _defaultControls;
+    controlsCache.resize(_defaultControls.size());
+    controlsCache = _defaultControls;
 }
 
 void Model::extendSetPropertiesFromState(const SimTK::State& state)
@@ -1774,43 +1764,36 @@ int Model::getNumControls() const
  * Throws an exception if called before Model::initSystem() */
 Vector& Model::updControls(const SimTK::State &s) const
 {
-    if( (!_system) || (!_modelControlsIndex.isValid()) ){
+    if( (!_system) || (!isControlsCacheValid(s)) ){
         throw Exception("Model::updControls() requires an initialized Model./n" 
             "Prior call to Model::initSystem() is required.");
     }
 
     // direct the system shared cache 
-    Measure_<Vector>::Result controlsCache = 
-        Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem()
-            .getMeasure(_modelControlsIndex));
-    return controlsCache.updValue(s);
+    return Value<Vector>::updDowncast(
+           getDefaultSubsystem().updCacheEntry(s,_modelControlsIndex));
 }
 
 void Model::markControlsAsValid(const SimTK::State& s) const
 {
-    if( (!_system) || (!_modelControlsIndex.isValid()) ){
+    if( (!_system) || (!isControlsCacheValid(s)) ){
         throw Exception("Model::markControlsAsValid() requires an initialized Model./n" 
             "Prior call to Model::initSystem() is required.");
     }
 
-    Measure_<Vector>::Result controlsCache = 
-        Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem()
-            .getMeasure(_modelControlsIndex));
-    controlsCache.markAsValid(s);
+    getDefaultSubsystem().markCacheValueRealized(s,_modelControlsIndex);
 }
 
 void Model::setControls(const SimTK::State& s, const SimTK::Vector& controls) const
 {   
-    if( (!_system) || (!_modelControlsIndex.isValid()) ){
+    if( (!_system) || (!isControlsCacheValid(s)) ){
         throw Exception("Model::setControls() requires an initialized Model./n" 
             "Prior call to Model::initSystem() is required.");
     }
 
     // direct the system shared cache 
-    Measure_<Vector>::Result controlsCache = 
-        Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem()
-        .getMeasure(_modelControlsIndex));
-    controlsCache.setValue(s, controls);
+    Value<Vector>::updDowncast
+        (getDefaultSubsystem().updCacheEntry(s,_modelControlsIndex)) = controls;
 
     // Make sure to re-realize dynamics to make sure controls can affect forces
     // and not just derivatives
@@ -1821,15 +1804,16 @@ void Model::setControls(const SimTK::State& s, const SimTK::Vector& controls) co
 /** Const access to controls does not invalidate dynamics */
 const Vector& Model::getControls(const SimTK::State &s) const
 {
-    if( (!_system) || (!_modelControlsIndex.isValid()) ){
+    if( (!_system) || (!isControlsCacheValid(s)) ){
         throw Exception("Model::getControls() requires an initialized Model./n"
             "Prior call to Model::initSystem() is required.");
     }
 
-    // _controlsCache assumes that the controls cache will not be changed or
-    // invalidated between the realization of Stage::Velocity and
+    // _modelControlsIndex assumes that the controls cache will not be changed
+    // or invalidated between the realization of Stage::Velocity and
     // Stage::Dynamics
-    return _controlsCache.getValue(s);
+    return Value<Vector>::downcast
+                   (getDefaultSubsystem().getCacheEntry(s,_modelControlsIndex));
 }
 
 
@@ -1867,6 +1851,26 @@ bool Model::getAllControllersEnabled() const{
 void Model::setAllControllersEnabled( bool enabled ) {
     _allControllersEnabled = enabled;
 }
+bool Model::isControlsCacheValid(const SimTK::State& state) const{
+    return getDefaultSubsystem().isCacheValueRealized(state,_modelControlsIndex);
+}
+//------------------------------------------------------------------------------
+//            OVERRIDDEN METHOD TO INITIALIZE CONTROLS CACHE
+//------------------------------------------------------------------------------
+void Model::extendRealizeTopology(SimTK::State& s) const
+{    
+    Super::extendRealizeTopology(s);
+
+    Model *mutableThis = const_cast<Model *>(this);
+
+    // Create the shared cache that will hold all model controls
+    // This must be created before Actuator.extendAddToSystem() since Actuator will append 
+    // its "slots" and retain its index by accessing this cached Vector
+    // value depends on velocity and invalidates dynamics BUT should not trigger
+    // recomputation of the controls which are necessary for dynamics
+    mutableThis->_modelControlsIndex = getDefaultSubsystem().allocateCacheEntry(
+        s, Stage::Velocity, Stage::Acceleration, new Value<Vector>());
+}
 //------------------------------------------------------------------------------
 //       OVERRIDDEN METHOD TO COMPUTE CONTROLS DURING REALIZE VELOCITY
 //------------------------------------------------------------------------------
@@ -1877,15 +1881,20 @@ void Model::extendRealizeVelocity(const SimTK::State& state) const
     //Calculate the controls cache before we realize dynamics and call calcForces (possibly in parallel).
     //Note: If the shared controls cache is calculated inside of calcForces and the force in which it is
     //being calculated is parallel, a data race may occur to mark the controlsCache as valid/invalid.
-    if(!_controlsCache.isValid(state)){
+    if(!isControlsCacheValid(state)){
         // Always reset controls to their default values before computing controls
         // since default behavior is for controllors to "addInControls" so there should be valid
         // values to begin with.
-        _controlsCache.updValue(state) = _defaultControls;
-        computeControls(state, _controlsCache.updValue(state));
-        _controlsCache.markAsValid(state);
+        Value<Vector>::updDowncast(
+        getDefaultSubsystem().updCacheEntry(state,_modelControlsIndex)) =
+                                                               _defaultControls;
+        computeControls(state,
+               Value<Vector>::updDowncast(
+               getDefaultSubsystem().updCacheEntry(state,_modelControlsIndex)));
+        getDefaultSubsystem().markCacheValueRealized(state,_modelControlsIndex);
     }
 }
+
 /**
  * Model::formStateStorage is intended to take any storage and populate stateStorage.
  * stateStorage is supposed to be a Storage with labels identical to those obtained by 

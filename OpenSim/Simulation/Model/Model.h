@@ -758,6 +758,7 @@ public:
     ControllerSet& updControllerSet();
     bool getAllControllersEnabled() const;
     void setAllControllersEnabled( bool enabled );
+    bool isControlsCacheValid(const SimTK::State& state) const;
 
     //--------------------------------------------------------------------------
     // CONFIGURATION
@@ -1005,6 +1006,7 @@ private:
 
     void createAssemblySolver(const SimTK::State& s);
     
+    void extendRealizeTopology(SimTK::State& state) const override;
     // Override extendRealizeVelocity to calculate the shared controls cache
     // before we realize Stage::Dynamics, in which the muscle forces in
     // Stage::Dynamics depend on using the controls cache. This is to mainly
@@ -1096,7 +1098,7 @@ private:
     SimTK::Measure_<SimTK::Vector>::Result _controlsCache;
     
     // Model controls as a shared pool (Vector) of individual Actuator controls
-    SimTK::MeasureIndex   _modelControlsIndex;
+    SimTK::CacheEntryIndex   _modelControlsIndex;
     // Default values pooled from Actuators upon system creation.
     mutable SimTK::Vector _defaultControls;
 
