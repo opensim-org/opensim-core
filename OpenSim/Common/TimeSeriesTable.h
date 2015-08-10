@@ -24,8 +24,8 @@
 This file defines the TimeSeriesTable_ class, which is used by OpenSim to 
 provide an in-memory container for data access and manipulation.              */
 
-#ifndef OPENSIM_COMMON_TIMESERIESDATATABLE_H_
-#define OPENSIM_COMMON_TIMESERIESDATATABLE_H_
+#ifndef OPENSIM_COMMON_TIMESERIESDATATABLE_H
+#define OPENSIM_COMMON_TIMESERIESDATATABLE_H
 
 #include "OpenSim/Common/DataTable.h"
 
@@ -951,4 +951,4 @@ TimeSeriesTable_<ET> concatenateColumns(const TimeSeriesTable_<ET>& dt1,
 
 } // namespace OpenSim
 
-#endif // OPENSIM_COMMON_TIMESERIESDATATABLE_H_
+#endif // OPENSIM_COMMON_TIMESERIESDATATABLE_H

@@ -31,4 +31,8 @@ if(BUILD_API_EXAMPLES)
   add_subdirectory(DataTable)
   install(DIRECTORY   DataTable
           DESTINATION sdk/APIExamples)
+
+  add_subdirectory(DataAdapter)
+  install(DIRECTORY   DataAdapter
+          DESTINATION sdk/APIExamples)
 endif(BUILD_API_EXAMPLES)
