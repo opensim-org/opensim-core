@@ -50,9 +50,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     /** The "coordinates" property holds a list of strings representing the
     generalized coordinate names that serve as the independent variables of
     the transform function. **/
@@ -72,7 +69,6 @@ public:
     OpenSim_DECLARE_PROPERTY(function, Function,
        "Transform function of the generalized coordinates used to \
        represent the amount of displacement along a specified axis.");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS

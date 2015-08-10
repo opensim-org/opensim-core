@@ -144,7 +144,7 @@ if(${DOXYGEN_FOUND})
     # to ${PROJECT_BINARY_DIR}/html. Note that you have to invoke this
     # "doxygen" target directly; it isn't run by default.
     add_custom_target(doxygen ${DOXYGEN_EXECUTABLE} ${DOXY_CONFIG}
-        COMMENT "Running Doxygen."
+        COMMENT "Generating Doxygen documentation",
         DEPENDS ${DOXYGEN_TARGET_DEPENDENCIES}
         )
 

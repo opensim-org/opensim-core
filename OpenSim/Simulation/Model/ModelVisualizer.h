@@ -156,6 +156,8 @@ public:
     find it in a series of locations using the same algorithm as is done
     internally by the %ModelVisualizer. 
     
+    @param[in]      model
+        Used to obtain the name of the file from which the model was loaded.
     @param[in]      geoFile 
         Name of file to look for; can be absolute or relative path name or just
         a file name and the extension must be supplied.
@@ -181,7 +183,7 @@ public:
     No attempt is made to validate the contents of the file or whether it
     has a supported extension; we're just looking for a file of the given
     name that exists and is readable. **/
-    bool findGeometryFile(const Model& aModel,
+    bool findGeometryFile(const Model& model,
                           const std::string&          geoFile,
                           bool&                       isAbsolute,
                           SimTK::Array_<std::string>& attempts) const;

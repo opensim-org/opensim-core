@@ -184,12 +184,8 @@ protected:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with a Connector. **/
-    /**@{**/
     OpenSim_DECLARE_LIST_PROPERTY(connectors, AbstractConnector,
         "List of connectors (structural dependencies) that this component has.");
-    /**@}**/
 
 public:
 //==============================================================================
@@ -1911,7 +1907,7 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
 
 template<class C>
 void Connector<C>::findAndConnect(const Component& root) {
-    const C& comp = root.getComponent<C>(get_connected_to_name());
+    const C& comp = root.getComponent<C>(get_connectee_name());
     connectee = comp;
 }
 

@@ -179,9 +179,9 @@ void Marker::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             SimTK::Xml::Element frameElement("Connector_PhysicalFrame_");
             connectorsElement.insertNodeAfter(connectorsElement.node_end(), frameElement);
             frameElement.setAttributeValue("name", "reference_frame");
-            SimTK::Xml::Element connectedToElement("connected_to_name");
-            connectedToElement.setValue(bName);
-            frameElement.insertNodeAfter(frameElement.node_end(), connectedToElement);
+            SimTK::Xml::Element connecteeElement("connectee_name");
+            connecteeElement.setValue(bName);
+            frameElement.insertNodeAfter(frameElement.node_end(), connecteeElement);
             aNode.insertNodeAfter(bIter, connectorsElement);
             aNode.eraseNode(bIter);
         }

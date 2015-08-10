@@ -232,8 +232,9 @@ public:
         upd_end_point() = aPoint2;
     }
 
-    /// Virtual method to map LineGeometry to Array of SimTK::DecorativeGeometry.
-    /// Appearance, Transforms are handled by base Geometry class
+    /** Virtual method to map LineGeometry to SimTK::Array of
+    SimTK::DecorativeGeometry.  Appearance, Transforms are handled by base
+    Geometry class. */
     void createDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
@@ -276,8 +277,8 @@ public:
     /// destructor
     virtual ~Arrow() {}
 
-    /// Virtual method to map Arrow to Array of SimTK::DecorativeGeometry.
-    /// Appearance, Transforms are handled by base Geometry class
+    /** Virtual method to map Arrow to SimTK::Array of SimTK::DecorativeGeometry.
+    Appearance, Transforms are handled by base Geometry class. */
     void createDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
@@ -404,8 +405,9 @@ public:
         upd_radii()[1] = radius2;
         upd_radii()[2] = radius3;
     } 
-    /// Virtual method to map Ellipsoid to Array of SimTK::DecorativeGeometry.
-    /// Appearance, Transforms are handled by base Geometry class
+    /** Virtual method to map Ellipsoid to SimTK::Array_ of
+    SimTK::DecorativeGeometry.  Appearance, Transforms are handled by base
+    Geometry class. */
     void createDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
@@ -449,8 +451,8 @@ public:
         params[0] = get_radius();
         params[1] = get_half_height();
     }
-    /// Virtual method to map Cylinder to Array of SimTK::DecorativeGeometry.
-    /// Appearance, Transforms are handled by base Geometry class
+    /** Virtual method to map Cylinder to SimTK::Array_ of SimTK::DecorativeGeometry.
+    Appearance, Transforms are handled by base Geometry class. */
     void createDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
@@ -493,8 +495,8 @@ public:
     }
     /// destructor
     ~Cone() {}
-    /// Method to map Cone to Array of SimTK::DecorativeGeometry.
-    /// Appearance, Transforms are handled by base Geometry class
+    /** Method to map Cone to SimTK::Array of SimTK::DecorativeGeometry.
+    Appearance, Transforms are handled by base Geometry class. */
     void createDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
@@ -532,11 +534,13 @@ public:
         upd_cross_section()=crossSectionRadius;
     }
     virtual ~Torus() {}
-    /// Method to map Cone to Array of SimTK::DecorativeGeometry.
-    /// Appearance, Transforms are handled by base Geometry class    
+
+    /** Method to map Cone to Array of SimTK::DecorativeGeometry.
+    Appearance, Transforms are handled by base Geometry class. */
     void createDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override {};
 };
+
 /**
 * A class to represent Brick geometry. Brick is specified by three half_lengths
 */
@@ -544,7 +548,6 @@ class OSIMSIMULATION_API Brick : public Geometry
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(Brick, Geometry);
 public:
-    /// Half lengths in X,Y,Z directions respectively
     OpenSim_DECLARE_PROPERTY(half_lengths, SimTK::Vec3, 
         "Half lengths in X, Y, Z respectively.");
 

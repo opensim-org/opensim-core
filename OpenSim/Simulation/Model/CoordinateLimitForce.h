@@ -58,9 +58,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(coordinate, std::string,
         "Coordinate (name) to be limited.");
     OpenSim_DECLARE_PROPERTY(upper_stiffness, double,
@@ -87,7 +84,6 @@ public:
         "Option to compute the dissipation energy due to damping in the "
         "CoordinateLimitForce. If true the dissipation power is automatically "
         "integrated to provide energy. Default is false.");
-    /**@}**/
 
 //=============================================================================
 // PUBLIC METHODS

@@ -53,10 +53,7 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
-    /// Physical properties of the bushing force
+    // Physical properties of the bushing force
     OpenSim_DECLARE_PROPERTY(rotational_stiffness, SimTK::Vec3,
         "Stiffness parameters resisting relative rotation (Nm/rad).");
     OpenSim_DECLARE_PROPERTY(translational_stiffness, SimTK::Vec3,
@@ -69,8 +66,6 @@ public:
     /// BushingForce defined frames that are connected by this bushing
     OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalFrame,
         "Physical frames needed to satisfy the BushingForce's connections.");
-
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS
