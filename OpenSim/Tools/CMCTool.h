@@ -142,6 +142,7 @@ private:
 public:
     virtual ~CMCTool();
     CMCTool();
+    CMCTool(int numThreads);
     CMCTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
     CMCTool(const CMCTool &aObject);
 
