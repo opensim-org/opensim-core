@@ -334,7 +334,7 @@ endif()
 # As of Simbody 3.4, Simbody has a SimbodyConfig.cmake file, which is a
 # preferred way to find Simbody over the previous FindSimbody.cmake script.
 # NO_MODULE means we will not allow the use of a FindSimbody.cmake script.
-set(SIMBODY_VERSION_TO_USE 3.5)
+set(SIMBODY_VERSION_TO_USE 3.6)
 
 # Find Simbody freshly by unsetting this CMake-generated variable.
 unset(Simbody_DIR CACHE)
