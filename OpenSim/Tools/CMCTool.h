@@ -143,6 +143,7 @@ public:
     virtual ~CMCTool();
     CMCTool();
     CMCTool(int numThreads);
+    CMCTool(const std::string &aFileName, int numThreads, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
     CMCTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
     CMCTool(const CMCTool &aObject);
 
@@ -201,7 +202,9 @@ public:
     bool getUseFastTarget() const { return _useFastTarget;};         
     void setUseFastTarget(bool useFastTarget) const {  _useFastTarget=useFastTarget; };
 
-
+    //Multithreading Options Get/Set
+    int getMaxNumThreads() const {return specifiedMaxNumThreads;};
+    void setMaxNumThreads(int maxThreads) {specifiedMaxNumThreads = maxThreads;};
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------

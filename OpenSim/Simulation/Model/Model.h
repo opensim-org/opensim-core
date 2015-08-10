@@ -688,7 +688,10 @@ public:
      * Throws an exception if called before Model::initSystem()
      * This call invalidates the dynamics of the model and invalidates the
      * value of the controls until they are marked as valid when the update
-     * is completed (@see markControlsAsValid)
+     * is completed
+     *
+     * @see markControlsAsValid
+     *
      * @param[in]   s         System state at which to apply the controls
      * @return      writable controls Vector
      *

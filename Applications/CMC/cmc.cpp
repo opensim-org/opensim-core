@@ -34,15 +34,10 @@ using namespace std;
 using namespace OpenSim;
 
 static void PrintUsage(const char *aProgName, ostream &aOStream);
-
+static bool startsWith(const char *pre, const char *str);
 //_____________________________________________________________________________
 /**
  * Main routine for running the Computed Muscle Control (CMC) algorithm.
- *
- * The following options are available for users to specify parameters
- * for the CMC algorithm:
- * "-help" or "-h"/"-usage" or "-u" for more information about the CMC Tool
- * "-jobs" or "-j" to specify the number of threads that the CMC Tool can use
  */
 int main(int argc,char **argv)
 {
@@ -54,7 +49,8 @@ int main(int argc,char **argv)
     
     //LoadOpenSimLibrary("osimSdfastEngine");
     //LoadOpenSimLibrary("osimSimbodyEngine");
-
+    int specifiedMaxNumThreads = -1;
+    
     // PARSE COMMAND LINE
     int i;
     string option = "";
@@ -76,6 +72,11 @@ int main(int argc,char **argv)
             return(0);
  
         // PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
+        } else if(startsWith("-j",option.c_str())){
+            char* optionCStr = const_cast<char*>(option.c_str());
+            optionCStr += 2; //increment the char*'s memory address by 2, skip "-j"
+            specifiedMaxNumThreads = atoi(optionCStr);
+
         } else if((option=="-PrintSetup")||(option=="-PS")) {
             CMCTool *investigation = new CMCTool();
             investigation->setName("default");
@@ -88,7 +89,6 @@ int main(int argc,char **argv)
         // IDENTIFY SETUP FILE
         } else if((option=="-Setup")||(option=="-S")) {
             if((i+1)<argc) setupFileName = argv[i+1];
-            break;
 
         // PRINT PROPERTY INFO
         } else if((option=="-PropertyInfo")||(option=="-PI")) {
@@ -116,20 +116,36 @@ int main(int argc,char **argv)
 
     // CONSTRUCT
     cout<<"Constructing investigation from setup file "<<setupFileName<<".\n"<<endl;
-    CMCTool cmcgait(setupFileName);
+    if(specifiedMaxNumThreads != -1)
+    {
+        CMCTool cmcgait(setupFileName,specifiedMaxNumThreads);
+        
+        // PRINT MODEL INFORMATION
+        Model& model = cmcgait.getModel();
+        cout<<"-----------------------------------------------------------------------\n";
+        cout<<"Loaded library\n";
+        cout<<"-----------------------------------------------------------------------\n";
+        model.printBasicInfo(cout);
+        cout<<"-----------------------------------------------------------------------\n\n";
 
-    // PRINT MODEL INFORMATION
-    Model& model = cmcgait.getModel();
-    cout<<"-----------------------------------------------------------------------\n";
-    cout<<"Loaded library\n";
-    cout<<"-----------------------------------------------------------------------\n";
-    model.printBasicInfo(cout);
-    cout<<"-----------------------------------------------------------------------\n\n";
+
+        // RUN
+        cmcgait.run();
+    }else{
+        CMCTool cmcgait(setupFileName);
+        
+        // PRINT MODEL INFORMATION
+        Model& model = cmcgait.getModel();
+        cout<<"-----------------------------------------------------------------------\n";
+        cout<<"Loaded library\n";
+        cout<<"-----------------------------------------------------------------------\n";
+        model.printBasicInfo(cout);
+        cout<<"-----------------------------------------------------------------------\n\n";
 
 
-    // RUN
-    cmcgait.run();
-
+        // RUN
+        cmcgait.run();
+    }
 
     //----------------------------
     // Catch any thrown exceptions
@@ -142,7 +158,14 @@ int main(int argc,char **argv)
 
     return(0);
 }
-
+//_____________________________________________________________________________
+/**
+ * Helper function for parsing the command line
+ */
+static bool startsWith(const char *pre, const char *str)
+{
+    return strncmp(pre, str, strlen(pre)) == 0;
+}
 
 //_____________________________________________________________________________
 /**
@@ -152,14 +175,15 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
 {
     string progName=IO::GetFileNameFromURI(aProgName);
     aOStream<<"\n\n"<<progName<<":\n"<<GetVersionAndDate()<<"\n\n";
-    aOStream<<"Option              Argument         Action / Notes\n";
-    aOStream<<"------              --------         --------------\n";
-    aOStream<<"-Help, -H                            Print the command-line options for "<<progName<<".\n";
-    aOStream<<"-PrintSetup, -PS                     Print a default setup file for cmc.exe (setup_cmc_default.xml).\n";
-    aOStream<<"-Setup, -S          SetupFileName    Specify the name of the XML setup file for the CMC investigation.\n";
-    aOStream<<"-PropertyInfo, -PI                   Print help information for properties in setup files.\n";
-    aOStream<<"-Library, -L        LibraryName      Specifiy a library to load. Do not include the extension (e.g., .lib or .dll).\n";
-    aOStream<<"                                     To load more than one library, repeat the -Library command-line option.\n\n";
+    aOStream<<"Option              Argument             Action / Notes\n";
+    aOStream<<"------              --------             --------------\n";
+    aOStream <<"-jX                X = NumJobs(Threads) Set the number of threads (jobs) that CMCTool can spawn.\n";
+    aOStream<<"-Help, -H                                Print the command-line options for "<<progName<<".\n";
+    aOStream<<"-PrintSetup, -PS                         Print a default setup file for cmc.exe (setup_cmc_default.xml).\n";
+    aOStream<<"-Setup, -S          SetupFileName        Specify the name of the XML setup file for the CMC investigation.\n";
+    aOStream<<"-PropertyInfo, -PI                       Print help information for properties in setup files.\n";
+    aOStream<<"-Library, -L        LibraryName          Specifiy a library to load. Do not include the extension (e.g., .lib or .dll).\n";
+    aOStream<<"                                         To load more than one library, repeat the -Library command-line option.\n\n";
 
 }
 

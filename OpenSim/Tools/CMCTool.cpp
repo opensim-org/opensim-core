@@ -112,7 +112,7 @@ CMCTool::CMCTool(int numThreads) :
     _verbose(_verboseProp.getValueBool())
 {
     setNull();
-    specifiedMaxNumThreads = numThreads;
+    setMaxNumThreads(numThreads);
 }
 //_____________________________________________________________________________
 /**
@@ -152,7 +152,46 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
         setToolOwnsModel(true);
     }
 }
-
+//_____________________________________________________________________________
+/**
+ * Construct from an XML property file with additional threads (jobs) specified.
+ *
+ * @param aFileName File name of the XML document.
+ */
+CMCTool::CMCTool(const string &aFileName, int numThreads, bool aLoadModel) :
+    AbstractTool(aFileName, false),
+    _excludedActuators(_excludedActuatorsProp.getValueStrArray()),
+    _desiredPointsFileName(_desiredPointsFileNameProp.getValueStr()),
+    _desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
+    //_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
+    //_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
+    _taskSetFileName(_taskSetFileNameProp.getValueStr()),
+    _constraintsFileName(_constraintsFileNameProp.getValueStr()),
+    _rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
+    _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
+    //_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+    _targetDT(_targetDTProp.getValueDbl()),          
+    //_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
+    _useFastTarget(_useFastTargetProp.getValueBool()),
+    _optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
+    _numericalDerivativeStepSize(_numericalDerivativeStepSizeProp.getValueDbl()),
+    _optimizationConvergenceTolerance(_optimizationConvergenceToleranceProp.getValueDbl()),
+    _maxIterations(_maxIterationsProp.getValueInt()),
+    _printLevel(_printLevelProp.getValueInt()),
+    _verbose(_verboseProp.getValueBool())
+{
+    setNull();
+    updateFromXMLDocument();
+    setMaxNumThreads(numThreads);
+    
+    if(aLoadModel){
+        loadModel(aFileName, &_originalForceSet);
+        // Append to or replace model forces with those (i.e. actuators) specified by the analysis
+        updateModelForces(*_model, aFileName);
+        setModel(*_model);  
+        setToolOwnsModel(true);
+    }
+}
 //_____________________________________________________________________________
 /**
  * Copy constructor.
