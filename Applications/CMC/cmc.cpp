@@ -114,39 +114,32 @@ int main(int argc,char **argv)
         return(-1);
     }
 
-    // CONSTRUCT
-    cout<<"Constructing investigation from setup file "<<setupFileName<<".\n"<<endl;
+    // SETUP NUMBER OF THREADS (JOBS)
+    std::unique_ptr<CMCTool> cmcgait;
     if(specifiedMaxNumThreads != -1)
     {
-        CMCTool cmcgait(setupFileName,specifiedMaxNumThreads);
-        
-        // PRINT MODEL INFORMATION
-        Model& model = cmcgait.getModel();
-        cout<<"-----------------------------------------------------------------------\n";
-        cout<<"Loaded library\n";
-        cout<<"-----------------------------------------------------------------------\n";
-        model.printBasicInfo(cout);
-        cout<<"-----------------------------------------------------------------------\n\n";
-
-
-        // RUN
-        cmcgait.run();
+        if(specifiedMaxNumThreads <= 0)
+            throw Exception("Exception: The number of threads specified to the CMCTool must be > 0");
+            
+        cmcgait.reset(new CMCTool(setupFileName,specifiedMaxNumThreads));
     }else{
-        CMCTool cmcgait(setupFileName);
-        
-        // PRINT MODEL INFORMATION
-        Model& model = cmcgait.getModel();
-        cout<<"-----------------------------------------------------------------------\n";
-        cout<<"Loaded library\n";
-        cout<<"-----------------------------------------------------------------------\n";
-        model.printBasicInfo(cout);
-        cout<<"-----------------------------------------------------------------------\n\n";
-
-
-        // RUN
-        cmcgait.run();
+        cmcgait.reset(new CMCTool(setupFileName));
     }
+    
+    // CONSTRUCT
+    cout<<"Constructing investigation from setup file "<<setupFileName<<".\n"<<endl;
+    
+    // PRINT MODEL INFORMATION
+    Model& model = cmcgait->getModel();
+    cout<<"-----------------------------------------------------------------------\n";
+    cout<<"Loaded library\n";
+    cout<<"-----------------------------------------------------------------------\n";
+    model.printBasicInfo(cout);
+    cout<<"-----------------------------------------------------------------------\n\n";
 
+    // RUN
+    cmcgait->run();
+    
     //----------------------------
     // Catch any thrown exceptions
     //----------------------------
