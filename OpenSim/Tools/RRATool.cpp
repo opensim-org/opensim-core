@@ -83,6 +83,30 @@ RRATool::RRATool() :
 }
 //_____________________________________________________________________________
 /**
+ * Default constructor.
+ */
+RRATool::RRATool(int numThreads) :
+    AbstractTool(),
+    _desiredPointsFileName(_desiredPointsFileNameProp.getValueStr()),
+    _desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
+    _taskSetFileName(_taskSetFileNameProp.getValueStr()),
+    _constraintsFileName(_constraintsFileNameProp.getValueStr()),
+    _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
+    _optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
+    _numericalDerivativeStepSize(_numericalDerivativeStepSizeProp.getValueDbl()),
+    _optimizationConvergenceTolerance(_optimizationConvergenceToleranceProp.getValueDbl()),
+    _adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool()),
+    _initialTimeForCOMAdjustment(_initialTimeForCOMAdjustmentProp.getValueDbl()),
+    _finalTimeForCOMAdjustment(_finalTimeForCOMAdjustmentProp.getValueDbl()),
+    _adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
+    _outputModelFile(_outputModelFileProp.getValueStr()),
+    _verbose(_verboseProp.getValueBool())
+{
+    setNull();
+    setMaxNumThreads(numThreads);
+}
+//_____________________________________________________________________________
+/**
  * Construct from an XML property file.
  *
  * @param aFileName File name of the XML document.
@@ -106,6 +130,41 @@ RRATool::RRATool(const string &aFileName, bool aLoadModel) :
 {
     setNull();
     updateFromXMLDocument();
+    if(aLoadModel){
+        loadModel(aFileName, &_originalForceSet);
+        // Append to or replace model forces with those (i.e. actuators) specified by the analysis
+        updateModelForces(*_model, aFileName);
+        setModel(*_model);  
+        setToolOwnsModel(true);
+    }
+}
+//_____________________________________________________________________________
+/**
+* Construct from an XML property file with additional threads (jobs) specified.
+ *
+ * @param aFileName File name of the XML document.
+ */
+RRATool::RRATool(const string &aFileName, int numThreads, bool aLoadModel) :
+    AbstractTool(aFileName, false),
+    _desiredPointsFileName(_desiredPointsFileNameProp.getValueStr()),
+    _desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
+    _taskSetFileName(_taskSetFileNameProp.getValueStr()),
+    _constraintsFileName(_constraintsFileNameProp.getValueStr()),
+    _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
+    _optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
+    _numericalDerivativeStepSize(_numericalDerivativeStepSizeProp.getValueDbl()),
+    _optimizationConvergenceTolerance(_optimizationConvergenceToleranceProp.getValueDbl()),
+    _adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool()),
+    _initialTimeForCOMAdjustment(_initialTimeForCOMAdjustmentProp.getValueDbl()),
+    _finalTimeForCOMAdjustment(_finalTimeForCOMAdjustmentProp.getValueDbl()),
+    _adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
+    _outputModelFile(_outputModelFileProp.getValueStr()),
+    _verbose(_verboseProp.getValueBool())
+{
+    setNull();
+    updateFromXMLDocument();
+    setMaxNumThreads(numThreads);
+
     if(aLoadModel){
         loadModel(aFileName, &_originalForceSet);
         // Append to or replace model forces with those (i.e. actuators) specified by the analysis

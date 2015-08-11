@@ -129,7 +129,7 @@ int main(int argc,char **argv)
     if(specifiedMaxNumThreads != -1)
     {
         if(specifiedMaxNumThreads <= 0)
-            throw Exception("Exception: The number of threads specified to the CMCTool must be > 0");
+            throw Exception("Exception: The number of threads specified to the ForwardTool must be > 0");
             
         forward.reset(new ForwardTool(setupFileName,specifiedMaxNumThreads));
     }else{
@@ -187,7 +187,7 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream<<"\n\n"<<progName<<":\n"<<GetVersionAndDate()<<"\n\n";
     aOStream<<"Option              Argument             Action / Notes\n";
     aOStream<<"------              --------             --------------\n";
-    aOStream<<"-jX                 X = NumJobs(Threads) Set the number of threads (jobs) that CMCTool can spawn.\n";
+    aOStream<<"-jX                 X = NumJobs(Threads) Set the number of threads (jobs) that ForwardTool can spawn.\n";
     aOStream<<"-Help, -H                                Print the command-line options for forward.exe.\n";
     aOStream<<"-PrintSetup, -PS                         Print a default setup file for forward.exe (default_forward.xml).\n";
     aOStream<<"-Setup, -S          SetupFileName        Specify the name of the XML setup file to use for this forward tool.\n";

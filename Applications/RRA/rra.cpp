@@ -34,6 +34,7 @@ using namespace std;
 using namespace OpenSim;
 
 static void PrintUsage(const char *aProgName, ostream &aOStream);
+static bool startsWith(const char *pre, const char *str);
 
 //_____________________________________________________________________________
 /**
@@ -46,6 +47,8 @@ int main(int argc,char **argv)
     //----------------------
     try {
     //----------------------
+    
+    int specifiedMaxNumThreads = -1;
 
     // PARSE COMMAND LINE
     int i;
@@ -66,7 +69,13 @@ int main(int argc,char **argv)
         (option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
             PrintUsage(argv[0], cout);
             return(0);
- 
+            
+        // MANUAL SPECIFICIATION OF NUMBER OF THREADS (JOBS)
+        } else if(startsWith("-j",option.c_str())){
+            char* optionCStr = const_cast<char*>(option.c_str());
+            optionCStr += 2; //increment the char*'s memory address by 2, skip "-j"
+            specifiedMaxNumThreads = atoi(optionCStr);
+                
         // PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
         } else if((option=="-PrintSetup")||(option=="-PS")) {
             RRATool *investigation = new RRATool();
@@ -105,23 +114,32 @@ int main(int argc,char **argv)
         PrintUsage(argv[0], cout);
         return(-1);
     }
-
+    
+    // SETUP NUMBER OF THREADS (JOBS)
+    std::unique_ptr<RRATool> rra;
+    if(specifiedMaxNumThreads != -1)
+    {
+        if(specifiedMaxNumThreads <= 0)
+            throw Exception("Exception: The number of threads specified to the RRATool must be > 0");
+            
+        rra.reset(new RRATool(setupFileName,specifiedMaxNumThreads));
+    }else{
+        rra.reset(new RRATool(setupFileName));
+    }
+    
     // CONSTRUCT
     cout<<"Constructing investigation from setup file "<<setupFileName<<".\n\n";
-    RRATool rra(setupFileName);
 
     // PRINT MODEL INFORMATION
-    Model& model = rra.getModel();
+    Model& model = rra->getModel();
     cout<<"-----------------------------------------------------------------------\n";
     cout<<"Loaded library\n";
     cout<<"-----------------------------------------------------------------------\n";
     model.printBasicInfo(cout);
     cout<<"-----------------------------------------------------------------------\n\n";
 
-
     // RUN
-    rra.run();
-
+    rra->run();
 
     //----------------------------
     // Catch any thrown exceptions
@@ -134,7 +152,14 @@ int main(int argc,char **argv)
 
     return(0);
 }
-
+//_____________________________________________________________________________
+/**
+ * Helper function for parsing the command line
+ */
+static bool startsWith(const char *pre, const char *str)
+{
+    return strncmp(pre, str, strlen(pre)) == 0;
+}
 
 //_____________________________________________________________________________
 /**
@@ -144,14 +169,15 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
 {
     string progName=IO::GetFileNameFromURI(aProgName);
     aOStream<<"\n\n"<<progName<<":\n"<<GetVersionAndDate()<<"\n\n";
-    aOStream<<"Option              Argument         Action / Notes\n";
-    aOStream<<"------              --------         --------------\n";
-    aOStream<<"-Help, -H                            Print the command-line options for "<<progName<<".\n";
-    aOStream<<"-PrintSetup, -PS                     Print a default setup file for cmc.exe (setup_cmc_default.xml).\n";
-    aOStream<<"-Setup, -S          SetupFileName    Specify the name of the XML setup file for the CMC investigation.\n";
-    aOStream<<"-PropertyInfo, -PI                   Print help information for properties in setup files.\n";
-    aOStream<<"-Library, -L        LibraryName      Specifiy a library to load. Do not include the extension (e.g., .lib or .dll).\n";
-    aOStream<<"                                     To load more than one library, repeat the -Library command-line option.\n\n";
+    aOStream<<"Option              Argument             Action / Notes\n";
+    aOStream<<"------              --------             --------------\n";
+    aOStream <<"-jX                X = NumJobs(Threads) Set the number of threads (jobs) that RRATool can spawn.\n";
+    aOStream<<"-Help, -H                                Print the command-line options for "<<progName<<".\n";
+    aOStream<<"-PrintSetup, -PS                         Print a default setup file for cmc.exe (setup_cmc_default.xml).\n";
+    aOStream<<"-Setup, -S          SetupFileName        Specify the name of the XML setup file for the CMC investigation.\n";
+    aOStream<<"-PropertyInfo, -PI                       Print help information for properties in setup files.\n";
+    aOStream<<"-Library, -L        LibraryName          Specifiy a library to load. Do not include the extension (e.g., .lib or .dll).\n";
+    aOStream<<"                                         To load more than one library, repeat the -Library command-line option.\n\n";
 
 }
 

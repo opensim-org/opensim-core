@@ -51,9 +51,7 @@ using namespace OpenSim;
  */
 ForwardTool::~ForwardTool()
 {
-
     if(_yStore!=NULL) delete _yStore;
-
 }
 //_____________________________________________________________________________
 /**
