@@ -1093,10 +1093,6 @@ private:
     //AssemblySolver*     _assemblySolver;
     SimTK::ReferencePtr<AssemblySolver> _assemblySolver;
     
-    // Local reference of the State's controlsCache to avoid memory races to fetch
-    // the shared controls cache
-    SimTK::Measure_<SimTK::Vector>::Result _controlsCache;
-    
     // Model controls as a shared pool (Vector) of individual Actuator controls
     SimTK::CacheEntryIndex   _modelControlsIndex;
     // Default values pooled from Actuators upon system creation.
