@@ -533,3 +533,4 @@ if(NOT BUILD_API_ONLY)
 endif()
 
 add_subdirectory(cmake)
+add_subdirectory(doc)
