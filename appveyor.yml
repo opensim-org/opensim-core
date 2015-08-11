@@ -54,7 +54,7 @@ build_script:
   - mkdir build
   - cd build
   # Configure.
-  - cmake .. -G"Visual Studio 12 2013 Win64" -DSIMBODY_HOME=C:\simbody -DCMAKE_INSTALL_PREFIX=%OPENSIM_HOME% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON # TODO -DBUILD_SIMM_TRANSLATOR=ON
+  - cmake .. -G"Visual Studio 14 2015 Win64" -DSIMBODY_HOME=C:\simbody -DCMAKE_INSTALL_PREFIX=%OPENSIM_HOME% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON # TODO -DBUILD_SIMM_TRANSLATOR=ON
   # Build.
   - cmake --build . --target ALL_BUILD --config Release -- /maxcpucount:4 /verbosity:quiet
   
