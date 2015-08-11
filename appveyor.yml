@@ -14,9 +14,10 @@
 # However, this was causing some weird behavior. Not treating warnings
 # as errors for now.
 #
-### TEMPORARILY DISABLING WRAPPING (see lines with ###)
   
 shallow_clone: true
+
+os: Visual Studio 2015
 
 platform: x64
 
@@ -24,7 +25,7 @@ init:
   # Note: python 2.7 32bit is already on the path. We want v2.7 64bit,
   # so we must add v2.7 64bit earlier on the PATH.
   # http://www.appveyor.com/docs/installed-software
-  - SET PATH=C:\Program Files (x86)\MSBuild\12.0\bin\;C:\Python27-x64\Scripts;%PATH%
+  - SET PATH=C:\Python27-x64\Scripts;%PATH%
   - SET OPENSIM_HOME=C:\OpenSim
   
 nuget:
