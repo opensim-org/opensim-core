@@ -68,6 +68,18 @@ ForwardTool::ForwardTool() :
 }
 //_____________________________________________________________________________
 /**
+ * Default constructor with specified number of threads (jobs).
+ */
+ForwardTool::ForwardTool(int numThreads) :
+    AbstractTool(),
+    _statesFileName(_statesFileNameProp.getValueStr()),
+    _useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
+{
+    setNull();
+    setMaxNumThreads(numThreads);
+}
+//_____________________________________________________________________________
+/**
  * Construct from file.
  *
  * The object is constructed from the root element of the XML document.
@@ -81,6 +93,32 @@ ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aL
     _useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
     setNull();
+
+    if(aUpdateFromXMLNode) updateFromXMLDocument();
+    if(aLoadModel) { 
+        loadModel(aFileName); 
+        // Append to or replace model forces with those (i.e. actuators) specified by the analysis
+        updateModelForces(*_model, aFileName);
+        setModel(*_model);  
+        setToolOwnsModel(true); 
+    }
+}
+//_____________________________________________________________________________
+/**
+ * Construct from file with a specified number of threads (jobs).
+ *
+ * The object is constructed from the root element of the XML document.
+ * The type of object is the tag name of the XML root element.
+ *
+ * @param aFileName File name of the document.
+ */
+ForwardTool::ForwardTool(const string &aFileName,int numThreads, bool aUpdateFromXMLNode,bool aLoadModel) :
+    AbstractTool(aFileName, false),
+    _statesFileName(_statesFileNameProp.getValueStr()),
+    _useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
+{
+    setNull();
+    setMaxNumThreads(numThreads);
 
     if(aUpdateFromXMLNode) updateFromXMLDocument();
     if(aLoadModel) { 
@@ -253,7 +291,6 @@ bool ForwardTool::run()
 
     bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
 
-
     // Re create the system with forces above and Realize the topology
     SimTK::State& s = _model->initSystem();
     _model->getMultibodySystem().realize(s, Stage::Position );
@@ -265,7 +302,30 @@ bool ForwardTool::run()
 
     // INITIAL AND FINAL TIMES AND STATES INDEX
     int startIndexForYStore = determineInitialTimeFromStatesStorage(_ti);
-
+    
+    // DESIRED NUMBER OF THREADS (JOBS)
+    SimTK::GeneralForceSubsystem& gfs = _model->updForceSubsystem();
+    int autoThreadCount = gfs.getNumberOfThreads(); //auto-detected numThreads
+    if(specifiedMaxNumThreads != -1)
+    {
+        if(autoThreadCount != specifiedMaxNumThreads)
+        {
+            gfs.setNumberOfThreads(specifiedMaxNumThreads);
+            cout << "Specified number of max threads (jobs) set to " <<
+            specifiedMaxNumThreads << ". Overriding the detected number of " <<
+            autoThreadCount << " threads." << endl;
+        }else{
+            cout << "Specified number of max threads (jobs) set to " <<
+            specifiedMaxNumThreads << ". Same as the detected number of " <<
+            autoThreadCount << " threads." << endl;
+        }
+    }else{
+        cout << "Specified number of max threads (jobs) not set! Using the"
+        " detected number of " << autoThreadCount << " threads."
+        << "To specify the number of maximum threads that the ForwardTool can"
+        << "use, run the ForwardTool with the -j flag." << endl;
+    }
+    
     // SETUP SIMULATION
     // Manager (now allocated on the heap so that getManager doesn't return stale pointer on stack
     RungeKuttaMersonIntegrator integrator(_model->getMultibodySystem());

@@ -71,12 +71,13 @@ int main(int argc,char **argv)
             PrintUsage(argv[0], cout);
             return(0);
  
-        // PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
+        // MANUAL SPECIFICIATION OF NUMBER OF THREADS (JOBS)
         } else if(startsWith("-j",option.c_str())){
             char* optionCStr = const_cast<char*>(option.c_str());
             optionCStr += 2; //increment the char*'s memory address by 2, skip "-j"
             specifiedMaxNumThreads = atoi(optionCStr);
 
+        // PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
         } else if((option=="-PrintSetup")||(option=="-PS")) {
             CMCTool *investigation = new CMCTool();
             investigation->setName("default");

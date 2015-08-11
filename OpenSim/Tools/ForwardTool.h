@@ -89,6 +89,9 @@ protected:
 
     /*** Private place to save some deserializtion info in case needed later */
     std::string _parsingLog;
+    
+    /** Specified maximum number of threads (jobs) that the CMC Tool can use. */
+    int specifiedMaxNumThreads = -1;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -98,7 +101,9 @@ protected:
 public:
     virtual ~ForwardTool();
     ForwardTool();
+    ForwardTool(int numThreads);
     ForwardTool(const std::string &aFileName,bool aUpdateFromXMLNode=true,bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
+    ForwardTool(const std::string &aFileName,int numThreads, bool aUpdateFromXMLNode=true,bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
     ForwardTool(const ForwardTool &aObject);
 
 private:
@@ -129,7 +134,10 @@ public:
     void setUseSpecifiedDt(bool aUseSpecifiedDt) { _useSpecifiedDt = aUseSpecifiedDt; }
 
     void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
-
+    
+    //Multithreading Options Get/Set
+    int getMaxNumThreads() const {return specifiedMaxNumThreads;};
+    void setMaxNumThreads(int maxThreads) {specifiedMaxNumThreads = maxThreads;};
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
