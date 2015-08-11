@@ -1864,12 +1864,17 @@ void Model::extendRealizeTopology(SimTK::State& s) const
     Model *mutableThis = const_cast<Model *>(this);
 
     // Create the shared cache that will hold all model controls
-    // This must be created before Actuator.extendAddToSystem() since Actuator will append 
-    // its "slots" and retain its index by accessing this cached Vector
-    // value depends on velocity and invalidates dynamics BUT should not trigger
-    // recomputation of the controls which are necessary for dynamics
+    // This must be created before Actuator.extendAddToSystem() since Actuator
+    // will append its "slots" and retain its index by accessing this cached
+    // Vector value depends on velocity and invalidates dynamics BUT should not
+    // trigger recomputation of the controls which are necessary for dynamics.
+    //
+    // Note: We force this cache to be evaulated non-lazily at Stage::Velocity
+    // because we need the controls cache in Stage::Dynamics. Since the
+    // evaulation of Stage::Dynamics must be thread-safe, lazy evaluation is
+    // not possible in Stage::Dynamics.
     mutableThis->_modelControlsIndex = getDefaultSubsystem().allocateCacheEntry(
-        s, Stage::Velocity, Stage::Acceleration, new Value<Vector>());
+        s, Stage::Velocity, Stage::Velocity, new Value<Vector>());
 }
 //------------------------------------------------------------------------------
 //       OVERRIDDEN METHOD TO COMPUTE CONTROLS DURING REALIZE VELOCITY
@@ -1878,21 +1883,22 @@ void Model::extendRealizeVelocity(const SimTK::State& state) const
 {
     Super::extendRealizeVelocity(state);
 
-    //Calculate the controls cache before we realize dynamics and call calcForces (possibly in parallel).
-    //Note: If the shared controls cache is calculated inside of calcForces and the force in which it is
-    //being calculated is parallel, a data race may occur to mark the controlsCache as valid/invalid.
-    if(!isControlsCacheValid(state)){
-        // Always reset controls to their default values before computing controls
-        // since default behavior is for controllors to "addInControls" so there should be valid
-        // values to begin with.
-        Value<Vector>::updDowncast(
-        getDefaultSubsystem().updCacheEntry(state,_modelControlsIndex)) =
+    // Calculate the controls cache before we realize dynamics and call
+    // calcForces (possibly in parallel).
+    // Note: If the shared controls cache is calculated inside of calcForces
+    // and the force in which it is being calculated is parallel, a data race
+    // may occur to mark the controlsCache as valid/invalid.
+    
+    // Always reset controls to their default values before computing controls
+    // since default behavior is for controllors to "addInControls" so there
+    // should be valid values to begin with.
+    Value<Vector>::updDowncast(
+    getDefaultSubsystem().updCacheEntry(state,_modelControlsIndex)) =
                                                                _defaultControls;
-        computeControls(state,
-               Value<Vector>::updDowncast(
-               getDefaultSubsystem().updCacheEntry(state,_modelControlsIndex)));
-        getDefaultSubsystem().markCacheValueRealized(state,_modelControlsIndex);
-    }
+    computeControls(state,
+           Value<Vector>::updDowncast(
+           getDefaultSubsystem().updCacheEntry(state,_modelControlsIndex)));
+    getDefaultSubsystem().markCacheValueRealized(state,_modelControlsIndex);
 }
 
 /**

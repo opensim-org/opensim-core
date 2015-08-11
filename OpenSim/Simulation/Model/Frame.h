@@ -34,7 +34,7 @@ namespace OpenSim {
 /**
  * A Frame is an OpenSim representation of a reference frame. It consists of
  * a right-handed set of three orthogonal axes and an origin point. Frames are
- * intended to provide convenient reference frames for locating phyical
+ * intended to provide convenient reference frames for locating physical
  * structures (such as joints and muscle attachments) as well as provide a
  * convenient basis for performing spatial calculations. For example, if your
  * system involves contact, you might define a Frame that is aligned with the
