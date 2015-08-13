@@ -127,7 +127,7 @@ int main(int argc,char **argv)
     cout<<"Constructing investigation from setup file "<<setupFileName<<".\n"<<endl;
     
     // PRINT MODEL INFORMATION
-    Model& model = cmcgait->getModel();
+    Model& model = cmcgait.getModel();
     cout<<"-----------------------------------------------------------------------\n";
     cout<<"Loaded library\n";
     cout<<"-----------------------------------------------------------------------\n";
@@ -135,7 +135,7 @@ int main(int argc,char **argv)
     cout<<"-----------------------------------------------------------------------\n\n";
 
     // RUN
-    cmcgait->run();
+    cmcgait.run();
     
     //----------------------------
     // Catch any thrown exceptions
