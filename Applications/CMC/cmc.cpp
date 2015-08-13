@@ -114,17 +114,13 @@ int main(int argc,char **argv)
         PrintUsage(argv[0], cout);
         return(-1);
     }
-
+    CMCTool cmcgait(setupFileName);
     // SETUP NUMBER OF THREADS (JOBS)
-    std::unique_ptr<CMCTool> cmcgait;
     if(specifiedMaxNumThreads != -1)
     {
         if(specifiedMaxNumThreads <= 0)
             throw Exception("Exception: The number of threads specified to the CMCTool must be > 0");
-            
-        cmcgait.reset(new CMCTool(setupFileName,specifiedMaxNumThreads));
-    }else{
-        cmcgait.reset(new CMCTool(setupFileName));
+        cmcgait.setMaxNumThreads(specifiedMaxNumThreads);
     }
     
     // CONSTRUCT
