@@ -493,6 +493,6 @@ Your changes will only take effect in new terminal windows.
 [travisci]: https://travis-ci.org/opensim-org/opensim-core
 [buildstatus_image_appveyor]: https://ci.appveyor.com/api/projects/status/i4wxnmx9jlk69kge/branch/master?svg=true
 [appveyorci]: https://ci.appveyor.com/project/opensim-org/opensim-core/branch/master
-[running_gif]: OpenSim/doc/images/opensim_running.gif
-[simple_example_gif]: OpenSim/doc/images/opensim_double_pendulum_muscle.gif
+[running_gif]: doc/images/opensim_running.gif
+[simple_example_gif]: doc/images/opensim_double_pendulum_muscle.gif
 [java]: http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase6-419409.html
