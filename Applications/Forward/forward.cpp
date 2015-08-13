@@ -125,15 +125,12 @@ int main(int argc,char **argv)
     }
     
     // SETUP NUMBER OF THREADS (JOBS)
-    std::unique_ptr<ForwardTool> forward;
+    ForwardTool forward(setupFileName);
     if(specifiedMaxNumThreads != -1)
     {
         if(specifiedMaxNumThreads <= 0)
             throw Exception("Exception: The number of threads specified to the ForwardTool must be > 0");
-            
-        forward.reset(new ForwardTool(setupFileName,specifiedMaxNumThreads));
-    }else{
-        forward.reset(new ForwardTool(setupFileName));
+        forward.setMaxNumThreads(specifiedMaxNumThreads);
     }
     
     /*
@@ -145,7 +142,7 @@ int main(int argc,char **argv)
     cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
 
     // PRINT MODEL INFORMATION
-    Model& model = forward->getModel();
+    Model& model = forward.getModel();
 
     cout<<"-----------------------------------------------------------------------"<<endl;
 
@@ -153,7 +150,7 @@ int main(int argc,char **argv)
     std::clock_t startTime = std::clock();
 
     // RUN
-    forward->run();
+    forward.run();
 
     std::cout << "Forward simulation time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
 

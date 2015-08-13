@@ -66,18 +66,6 @@ ForwardTool::ForwardTool() :
 }
 //_____________________________________________________________________________
 /**
- * Default constructor with specified number of threads (jobs).
- */
-ForwardTool::ForwardTool(int numThreads) :
-    AbstractTool(),
-    _statesFileName(_statesFileNameProp.getValueStr()),
-    _useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
-{
-    setNull();
-    setMaxNumThreads(numThreads);
-}
-//_____________________________________________________________________________
-/**
  * Construct from file.
  *
  * The object is constructed from the root element of the XML document.
@@ -91,32 +79,6 @@ ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aL
     _useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
     setNull();
-
-    if(aUpdateFromXMLNode) updateFromXMLDocument();
-    if(aLoadModel) { 
-        loadModel(aFileName); 
-        // Append to or replace model forces with those (i.e. actuators) specified by the analysis
-        updateModelForces(*_model, aFileName);
-        setModel(*_model);  
-        setToolOwnsModel(true); 
-    }
-}
-//_____________________________________________________________________________
-/**
- * Construct from file with a specified number of threads (jobs).
- *
- * The object is constructed from the root element of the XML document.
- * The type of object is the tag name of the XML root element.
- *
- * @param aFileName File name of the document.
- */
-ForwardTool::ForwardTool(const string &aFileName,int numThreads, bool aUpdateFromXMLNode,bool aLoadModel) :
-    AbstractTool(aFileName, false),
-    _statesFileName(_statesFileNameProp.getValueStr()),
-    _useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
-{
-    setNull();
-    setMaxNumThreads(numThreads);
 
     if(aUpdateFromXMLNode) updateFromXMLDocument();
     if(aLoadModel) { 

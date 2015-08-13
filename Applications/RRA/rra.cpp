@@ -116,22 +116,19 @@ int main(int argc,char **argv)
     }
     
     // SETUP NUMBER OF THREADS (JOBS)
-    std::unique_ptr<RRATool> rra;
+    RRATool rra(setupFileName);
     if(specifiedMaxNumThreads != -1)
     {
         if(specifiedMaxNumThreads <= 0)
             throw Exception("Exception: The number of threads specified to the RRATool must be > 0");
-            
-        rra.reset(new RRATool(setupFileName,specifiedMaxNumThreads));
-    }else{
-        rra.reset(new RRATool(setupFileName));
+        rra.setMaxNumThreads(specifiedMaxNumThreads);
     }
     
     // CONSTRUCT
     cout<<"Constructing investigation from setup file "<<setupFileName<<".\n\n";
 
     // PRINT MODEL INFORMATION
-    Model& model = rra->getModel();
+    Model& model = rra.getModel();
     cout<<"-----------------------------------------------------------------------\n";
     cout<<"Loaded library\n";
     cout<<"-----------------------------------------------------------------------\n";
@@ -139,7 +136,7 @@ int main(int argc,char **argv)
     cout<<"-----------------------------------------------------------------------\n\n";
 
     // RUN
-    rra->run();
+    rra.run();
 
     //----------------------------
     // Catch any thrown exceptions
