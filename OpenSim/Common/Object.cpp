@@ -1618,6 +1618,8 @@ std::string Object::dump(bool dumpName) {
     // TODO property lists.
     // TODO old style property sets.
     // TODO Element types (e.g., numeric, string, Vec3).
+    // TODO abstract classes.
+    // TODO unnamed properties.
 
     // An XML schema is itself an XML document.
     Xml::Document schema;
@@ -1649,45 +1651,88 @@ std::string Object::dump(bool dumpName) {
         // ---------------------------
         Xml::Element all("xs:all");
         objElem.insertNodeAfter(objElem.node_end(), all);
+
         for (int iprop = 0; iprop < object->getNumProperties(); ++iprop) {
             const auto &prop = object->getPropertyByIndex(iprop);
-            Xml::Element propElem("xs:element");
-            propElem.setAttributeValue("name", prop.getName());
 
+            Xml::Element propElem("xs:element");
             // It's valid for any of these elements to not appear:
             propElem.setAttributeValue("minOccurs", "0");
             all.insertNodeAfter(all.node_end(), propElem);
 
-            // Encode the type of the property.
             if (prop.isOneObjectProperty()) {
-                propElem.setAttributeValue("type", prop.getTypeName());
-            }
-            else if (prop.getTypeName() == "bool") {
-                propElem.setAttributeValue("type", "xs:boolean");
-            }
+                // You have the choice between an element whose tag
+                // is the type and that has an attribute with the property name,
+                // TODO
+                // http://stackoverflow.com/questions/780817/xml-schema-why-cant-xsall-have-choice-children-and-how-can-this-be-bypas
+                //Xml::Element choice("xs:choice");
+                //objElem.insertNodeAfter(objElem.node_end(), choice);
 
-            // Add documentation.
-            Xml::Element propAnno("xs:annotation");
-            propElem.insertNodeAfter(propElem.node_end(), propAnno);
-            Xml::Element propDoc("xs:documentation",
-                                 "(" + prop.getTypeName() + "): " + prop.getComment());
-            propAnno.insertNodeAfter(propAnno.node_end(), propDoc);
+                propElem.setAttributeValue("name", prop.getTypeName());
+                // TODO specified below in the extension propElem.setAttributeValue("type", prop.getTypeName());
 
-            // Add allowed attributes.
-            if (prop.isOneObjectProperty()) {
-                // Add allowed attributes.
-                Xml::Element nameAttr("xs:attribute");
-                nameAttr.setAttributeValue("name", "name");
-                propElem.insertNodeAfter(propElem.node_end(), nameAttr);
-                Xml::Element fileAttr("xs:attribute");
-                fileAttr.setAttributeValue("name", "file");
-                propElem.insertNodeAfter(propElem.node_end(), fileAttr);
+                // Require the property to have a name attribute, unless
+                // this is an unnamed property.
+                if (!prop.isUnnamedProperty()) {
+                    // We must extend the XML type to require the additional
+                    // name.
+                    Xml::Element complex("xs:complexType");
+                    propElem.insertNodeAfter(propElem.node_end(), complex);
+                    Xml::Element content("xs:complexContent");
+                    complex.insertNodeAfter(complex.node_end(), content);
+                    Xml::Element ext("xs:extension");
+                    // We are extending the type for this property.
+                    ext.setAttributeValue("base", prop.getTypeName());
+                    content.insertNodeAfter(content.node_end(), ext);
+
+                    Xml::Element attr("xs:attribute");
+                    // The name attribute of this element must be
+                    // the property name, and it must be provided.
+                    attr.setAttributeValue("name", "name");
+                    attr.setAttributeValue("fixed", prop.getName());
+                    attr.setAttributeValue("use", "required");
+                    ext.insertNodeAfter(ext.node_end(), attr);
+                }
+            }
+                /*
+            if (prop.isObjectProperty() && prop.isListProperty()) {
+                // choice unbounded.
+            }
+             */
+            else {
+
+                propElem.setAttributeValue("name", prop.getName());
+
+                // Encode the type of the property.
+                if (prop.isOneObjectProperty()) {
+                    propElem.setAttributeValue("type", prop.getTypeName());
+                }
+                else if (prop.getTypeName() == "bool") {
+                    propElem.setAttributeValue("type", "xs:boolean");
+                }
+
+                // Add documentation.
+                Xml::Element propAnno("xs:annotation");
+                propElem.insertNodeAfter(propElem.node_end(), propAnno);
+                Xml::Element propDoc("xs:documentation",
+                                     "(" + prop.getTypeName() + "): " +
+                                     prop.getComment());
+                propAnno.insertNodeAfter(propAnno.node_end(), propDoc);
+
             }
 
             // TODO if object property, allow either
             // <Ground name="ground"/> or <ground><Ground/></ground>
 
         }
+
+        // Add allowed attributes.
+        Xml::Element nameAttr("xs:attribute");
+        nameAttr.setAttributeValue("name", "name");
+        objElem.insertNodeAfter(objElem.node_end(), nameAttr);
+        Xml::Element fileAttr("xs:attribute");
+        fileAttr.setAttributeValue("name", "file");
+        objElem.insertNodeAfter(objElem.node_end(), fileAttr);
 
         root.insertNodeAfter(root.node_end(), objElem);
     }
@@ -1708,7 +1753,7 @@ std::string Object::dump(bool dumpName) {
         Xml::Element objElem("xs:element");
         objElem.setAttributeValue("name", object->getConcreteClassName());
         objElem.setAttributeValue("type", object->getConcreteClassName());
-        osimDocComplex.insertNodeAfter(osimDocComplex.node_end(), objElem);
+        choice.insertNodeAfter(choice.node_end(), objElem);
     }
 
     schema.writeToFile(filename);
