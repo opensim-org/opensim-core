@@ -26,14 +26,41 @@
 #include <fstream>
 
 
+class A {
+public:
+    virtual void prepareForReading() = 0;
+};
+
+class B : public A {
+};
+
+class C : public B {
+public:
+    void prepareForReading() {
+        std::cout << "C::prepareForReading()" << std::endl;
+    }
+};
+
+
 int main(void) {
     using namespace OpenSim;
 
-    std::ifstream input_file{"/home/shrik/opensim-core/OpenSim/Wrapping/Java/"
-            "Matlab/testData/Subject01/MarkerData/walk_free_01.trc"};
+    DataAdapter::registerDataAdapter("trc", TRCAdapter{});
 
-    auto data_adapter = getDataAdapter("trc", input_file);
+    TRCAdapter::Table table{};
 
+    auto file_adapter = FileAdapter::createAdapter("trc");
+
+    file_adapter->setFilename("/home/shrik/opensim-core/OpenSim/Wrapping/Java/"
+                              "Matlab/testData/Subject01/MarkerData/"
+                              "walk_free_01.trc");
+
+    file_adapter->prepareForReading(table);
+
+    file_adapter->read();
+
+    std::cout << table.getNumRows() << " rows" << std::endl;
+    std::cout << table.getNumColumns() << " columns" << std::endl; 
 
     return 0;
 }
