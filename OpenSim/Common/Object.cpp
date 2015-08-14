@@ -1614,12 +1614,15 @@ std::string Object::dump(bool dumpName) {
     }
 
 /* static */ void Object::printXMLSchema(const std::string &filename) {
-    // TODO set objects.
     // TODO property lists.
-    // TODO old style property sets.
     // TODO Element types (e.g., numeric, string, Vec3).
     // TODO abstract classes.
     // TODO unnamed properties.
+    // TODO constrain value types.
+    // TODO put in documentation whether it's optional, a list, how long
+    // the list is, etc.
+    // TODO abstract classes. for any Object property, allow all subclasses.
+    // TODO print XMLDocument version number in the filename for this schema.
 
     // An XML schema is itself an XML document.
     Xml::Document schema;
@@ -1628,7 +1631,7 @@ std::string Object::dump(bool dumpName) {
     // We want the schema to have the same version number as OpenSim XML documents.
     // However, it's invalid to use uppercase "V" in version in the
     // XML schema (as we do for OpenSim's XMLDocument).
-    root.setAttributeValue("version", std::to_string(XMLDocument().LatestVersion));
+    root.setAttributeValue("version", std::to_string(XMLDocument::LatestVersion));
     root.setAttributeValue("xmlns:xs", "http://www.w3.org/2001/XMLSchema");
     root.setAttributeValue("targetNamespace", "http://www.w3schools.com");
     root.setAttributeValue("xmlns", "http://www.w3schools.com");
@@ -1664,11 +1667,10 @@ std::string Object::dump(bool dumpName) {
             const auto &prop = object->getPropertyByIndex(iprop);
 
             Xml::Element propElem("xs:element");
-            // It's valid for any of these elements to not appear:
-            propElem.setAttributeValue("minOccurs", "0");
             all.insertNodeAfter(all.node_end(), propElem);
 
-            if (prop.isOneObjectProperty()) {
+            if (prop.isOneObjectProperty() ||
+                    (prop.isObjectProperty() && prop.isOptionalProperty())) {
                 // You have the choice between an element whose tag
                 // is the type and that has an attribute with the property name,
                 // TODO
@@ -1708,12 +1710,40 @@ std::string Object::dump(bool dumpName) {
                 }
             }
             else if (prop.isObjectProperty() && prop.isListProperty()) {
-                // choice unbounded.
-                // isAcceptableObjectTag.
 
+                propElem.setAttributeValue("name", prop.getName());
+
+                Xml::Element complex("xs:complexType");
+                propElem.insertNodeAfter(propElem.node_end(), complex);
+
+                // The user can choose between objects that this property accepts.
+                Xml::Element choice("xs:choice");
+                complex.insertNodeAfter(complex.node_end(), choice);
+
+                // Set the possible number of entries in the list.
+                choice.setAttributeValue("minOccurs",
+                                         std::to_string(prop.getMinListSize()));
+                std::string max =
+                        prop.getMaxListSize() < std::numeric_limits<int>::max() ?
+                        std::to_string(prop.getMaxListSize()) : "unbounded";
+                choice.setAttributeValue("maxOccurs", max);
+
+                // Add a possible tag for all acceptable objects for this list.
+                for (int iobjlist = 0; iobjlist < objects.size(); iobjlist++) {
+                    auto objForList = objects[iobjlist];
+
+                    if (prop.isAcceptableObjectTag(
+                            objForList->getConcreteClassName())) {
+                        Xml::Element listElem("xs:element");
+                        listElem.setAttributeValue("name",
+                                objForList->getConcreteClassName());
+                        listElem.setAttributeValue("type",
+                                objForList->getConcreteClassName());
+                        choice.insertNodeAfter(choice.node_end(), listElem);
+                    }
+                }
             }
             else {
-
                 propElem.setAttributeValue("name", prop.getName());
 
                 // Encode the type of the property.
@@ -1723,8 +1753,10 @@ std::string Object::dump(bool dumpName) {
                 else if (prop.getTypeName() == "bool") {
                     propElem.setAttributeValue("type", "xs:boolean");
                 }
-
             }
+
+            // It's valid for any property to not appear:
+            propElem.setAttributeValue("minOccurs", "0");
 
             // Add documentation.
             Xml::Element propAnno("xs:annotation");
@@ -1736,7 +1768,6 @@ std::string Object::dump(bool dumpName) {
 
             // TODO if object property, allow either
             // <Ground name="ground"/> or <ground><Ground/></ground>
-
         }
 
         // Add allowed attributes.
@@ -1753,6 +1784,7 @@ std::string Object::dump(bool dumpName) {
     // The top element must be OpenSimDocument.
     Xml::Element osimDoc("xs:element");
     osimDoc.setAttributeValue("name", XMLDocument().getRootTag());
+    // TODO add Version attribute.
     root.insertNodeAfter(root.node_end(), osimDoc);
     Xml::Element osimDocComplex("xs:complexType");
     osimDoc.insertNodeAfter(osimDoc.node_end(), osimDocComplex);

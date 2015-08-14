@@ -269,6 +269,16 @@ public:
     bool isOneObjectProperty() const 
     {   return isOneValueProperty() && isObjectProperty(); }
 
+    /**@name                 Advanced */
+    /** @{ */
+    /** Return true if the given string is the XML tag name for one of the
+    Object-derived types that is allowed by this property. If so, we expect that
+    an element with that tag could be deserialized into a value element of this
+    property. This always returns false for a simple property. **/
+    // TODO create "extendIs...."
+    virtual bool isAcceptableObjectTag
+            (const std::string& objectTypeTag) const = 0;
+    /** @} */
 
 protected:
     AbstractProperty();
@@ -338,13 +348,6 @@ protected:
     /** If the concrete property allows it, clear the value list. **/
     virtual void clearValues() = 0;
 
-
-    /** Return true if the given string is the XML tag name for one of the
-    Object-derived types that is allowed by this property. If so, we expect that
-    an element with that tag could be deserialized into a value element of this
-    property. This always returns false for a simple property. **/
-    virtual bool isAcceptableObjectTag
-       (const std::string& objectTypeTag) const = 0;
 
     //--------------------------------------------------------------------------
 

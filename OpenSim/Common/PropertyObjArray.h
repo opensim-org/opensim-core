@@ -77,8 +77,8 @@ public:
 
     int getNumValues() const override {return getArraySize();}
     bool isObjectProperty() const override {return true;}
-    bool isAcceptableObjectTag
-        (const std::string& objectTypeTag) const override {return true;}
+    bool isAcceptableObjectTag(const std::string& objectTypeTag) const override
+    {return Object::isObjectTypeDerivedFrom<T>(objectTypeTag);}
     const Object& getValueAsObject(int index) const override
     {  return *getValueObjPtr(index); }
     Object& updValueAsObject(int index) override
