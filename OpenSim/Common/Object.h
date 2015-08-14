@@ -629,6 +629,14 @@ public:
     just the object's name. **/
     const std::string& toString() const;
 
+    /** Print an XML schema file that describes the valid content of an
+    OpenSim XML file (including .osim files). Such files usually have an
+    xsd extension. The schema file can be used to provide autocomplete for
+    OpenSim XML files in text editors that support XML autocompletion
+    (e.g., Visual Studio). The schema supports classes defined in plugins,
+    so long as registerType() has been called for the plugin classes. **/
+    static void printXMLSchema(const std::string& filename);
+
     #ifndef SWIG
     /** OBSOLETE: Get a reference to the PropertySet maintained by the 
     Object. **/
@@ -641,11 +649,13 @@ public:
     static Object* SafeCopy(const Object *aObject) 
     {   return aObject ? aObject->clone() : 0; }
 
-    /** OBSOLETE alternate name for registerType(). **/
+    /** (Deprecated) alternate name for registerType(). **/
+    DEPRECATED_14("use registerType() instead (lower case r).")
     static void RegisterType(const Object& defaultObject) 
     {   registerType(defaultObject); }
-    /** OBSOLETE alternate name for renameType(). **/
-    static void RenameType(const std::string& oldName, 
+    /** (Deprecated) alternate name for renameType(). **/
+    DEPRECATED_14("use renameType() instead (lower case r).")
+    static void RenameType(const std::string& oldName,
                            const std::string& newName) 
     {   renameType(oldName, newName); }
     /**@}**/
