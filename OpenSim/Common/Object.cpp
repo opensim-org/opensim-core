@@ -1632,6 +1632,66 @@ std::string Object::dump(bool dumpName) {
     root.setAttributeValue("xmlns", "http://www.w3schools.com");
     root.setAttributeValue("elementFormDefault", "qualified");
 
+    ArrayPtrs<Object> objects;
+    getRegisteredObjectsOfGivenType<Object>(objects);
+    for (int iobj = 0; iobj < objects.size(); ++iobj) {
+        auto object = objects[iobj];
+        Xml::Element objElem("xs:complexType");
+        objElem.setAttributeValue("name", object->getConcreteClassName());
+
+        // Add documentation. TODO use doxygen class website.
+        Xml::Element objAnno("xs:annotation");
+        objElem.insertNodeAfter(objElem.node_end(), objAnno);
+        Xml::Element objDoc("xs:documentation", object->getDescription());
+        objAnno.insertNodeAfter(objAnno.node_end(), objDoc);
+
+        // Properties for this object.
+        // ---------------------------
+        Xml::Element all("xs:all");
+        objElem.insertNodeAfter(objElem.node_end(), all);
+        for (int iprop = 0; iprop < object->getNumProperties(); ++iprop) {
+            const auto &prop = object->getPropertyByIndex(iprop);
+            Xml::Element propElem("xs:element");
+            propElem.setAttributeValue("name", prop.getName());
+
+            // It's valid for any of these elements to not appear:
+            propElem.setAttributeValue("minOccurs", "0");
+            all.insertNodeAfter(all.node_end(), propElem);
+
+            // Encode the type of the property.
+            if (prop.isOneObjectProperty()) {
+                propElem.setAttributeValue("type", prop.getTypeName());
+            }
+            else if (prop.getTypeName() == "bool") {
+                propElem.setAttributeValue("type", "xs:boolean");
+            }
+
+            // Add documentation.
+            Xml::Element propAnno("xs:annotation");
+            propElem.insertNodeAfter(propElem.node_end(), propAnno);
+            Xml::Element propDoc("xs:documentation",
+                                 "(" + prop.getTypeName() + "): " + prop.getComment());
+            propAnno.insertNodeAfter(propAnno.node_end(), propDoc);
+
+            // Add allowed attributes.
+            if (prop.isOneObjectProperty()) {
+                // Add allowed attributes.
+                Xml::Element nameAttr("xs:attribute");
+                nameAttr.setAttributeValue("name", "name");
+                propElem.insertNodeAfter(propElem.node_end(), nameAttr);
+                Xml::Element fileAttr("xs:attribute");
+                fileAttr.setAttributeValue("name", "file");
+                propElem.insertNodeAfter(propElem.node_end(), fileAttr);
+            }
+
+            // TODO if object property, allow either
+            // <Ground name="ground"/> or <ground><Ground/></ground>
+
+        }
+
+        root.insertNodeAfter(root.node_end(), objElem);
+    }
+
     // The top element must be OpenSimDocument.
     Xml::Element osimDoc("xs:element");
     osimDoc.setAttributeValue("name", XMLDocument().getRootTag());
@@ -1643,77 +1703,14 @@ std::string Object::dump(bool dumpName) {
     // any of the containing elements.
     Xml::Element choice("xs:choice");
     osimDocComplex.insertNodeAfter(osimDocComplex.node_end(), choice);
-
-    ArrayPtrs<Object> objects;
-    getRegisteredObjectsOfGivenType<Object>(objects);
     for (int iobj = 0; iobj < objects.size(); ++iobj) {
         auto object = objects[iobj];
         Xml::Element objElem("xs:element");
         objElem.setAttributeValue("name", object->getConcreteClassName());
-
-
-        Xml::Element complexType("xs:complexType");
-        objElem.insertNodeAfter(objElem.node_end(), complexType);
-
-        // Add documentation. TODO use doxygen class website.
-        Xml::Element objAnno("xs:annotation");
-        complexType.insertNodeAfter(complexType.node_end(), objAnno);
-        Xml::Element objDoc("xs:documentation", object->getDescription());
-        objAnno.insertNodeAfter(objAnno.node_end(), objDoc);
-
-        // Properties for this object.
-        // ---------------------------
-        Xml::Element all("xs:all");
-        complexType.insertNodeAfter(complexType.node_end(), all);
-        for (int iprop = 0; iprop < object->getNumProperties(); ++iprop) {
-            const auto &prop = object->getPropertyByIndex(iprop);
-            Xml::Element propElem("xs:element");
-            propElem.setAttributeValue("name", prop.getName());
-
-            // It's valid for any of these elements to not appear:
-            propElem.setAttributeValue("minOccurs", "0");
-            all.insertNodeAfter(all.node_end(), propElem);
-
-            // Encode the type of the property.
-            if (prop.getTypeName() == "bool") {
-                propElem.setAttributeValue("type", "xs:boolean");
-            }
-
-            // Complex elements are those that contain other elements
-            // (roughly).
-            Xml::Element propType("");
-            if (prop.isObjectProperty()) {
-                propType.setElementTag("xs:complexType");
-                propElem.insertNodeAfter(propElem.node_end(), propType);
-            } else {
-                propType = propElem;
-            }
-
-             // Add documentation.
-            Xml::Element propAnno("xs:annotation");
-            propType.insertNodeAfter(propType.node_end(), propAnno);
-            Xml::Element propDoc("xs:documentation",
-                "(" + prop.getTypeName() + "): " + prop.getComment());
-            propAnno.insertNodeAfter(propAnno.node_end(), propDoc);
-
-            // Add allowed attributes.
-            if (prop.isOneObjectProperty()) {
-                // Add allowed attributes.
-                Xml::Element nameAttr("xs:attribute");
-                nameAttr.setAttributeValue("name", "name");
-                propType.insertNodeAfter(propType.node_end(), nameAttr);
-                Xml::Element fileAttr("xs:attribute");
-                fileAttr.setAttributeValue("name", "file");
-                propType.insertNodeAfter(propType.node_end(), fileAttr);
-            }
-
-            // TODO if object property, allow either
-            // <Ground name="ground"/> or <ground><Ground/></ground>
-
-        }
-
-        choice.insertNodeAfter(choice.node_end(), objElem);
+        objElem.setAttributeValue("type", object->getConcreteClassName());
+        osimDocComplex.insertNodeAfter(osimDocComplex.node_end(), objElem);
     }
+
     schema.writeToFile(filename);
 }
 
