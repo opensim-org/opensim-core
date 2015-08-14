@@ -1638,6 +1638,14 @@ std::string Object::dump(bool dumpName) {
     getRegisteredObjectsOfGivenType<Object>(objects);
     for (int iobj = 0; iobj < objects.size(); ++iobj) {
         auto object = objects[iobj];
+
+        // For now, skip nested classes since colons make the schema more
+        // complicated.
+        // TODO
+        if (object->getConcreteClassName().find("::") != std::string::npos) {
+            continue;
+        }
+
         Xml::Element objElem("xs:complexType");
         objElem.setAttributeValue("name", object->getConcreteClassName());
 
@@ -1669,11 +1677,14 @@ std::string Object::dump(bool dumpName) {
                 //objElem.insertNodeAfter(objElem.node_end(), choice);
 
                 propElem.setAttributeValue("name", prop.getTypeName());
-                // TODO specified below in the extension propElem.setAttributeValue("type", prop.getTypeName());
 
                 // Require the property to have a name attribute, unless
                 // this is an unnamed property.
-                if (!prop.isUnnamedProperty()) {
+                if (prop.isUnnamedProperty()) {
+
+                    propElem.setAttributeValue("type", prop.getTypeName());
+
+                } else {
                     // We must extend the XML type to require the additional
                     // name.
                     Xml::Element complex("xs:complexType");
@@ -1692,13 +1703,15 @@ std::string Object::dump(bool dumpName) {
                     attr.setAttributeValue("fixed", prop.getName());
                     attr.setAttributeValue("use", "required");
                     ext.insertNodeAfter(ext.node_end(), attr);
+                    // TODO could maybe use xs:restriction to limit the options
+                    // for the name attribute.
                 }
             }
-                /*
-            if (prop.isObjectProperty() && prop.isListProperty()) {
+            else if (prop.isObjectProperty() && prop.isListProperty()) {
                 // choice unbounded.
+                // isAcceptableObjectTag.
+
             }
-             */
             else {
 
                 propElem.setAttributeValue("name", prop.getName());
@@ -1711,15 +1724,15 @@ std::string Object::dump(bool dumpName) {
                     propElem.setAttributeValue("type", "xs:boolean");
                 }
 
-                // Add documentation.
-                Xml::Element propAnno("xs:annotation");
-                propElem.insertNodeAfter(propElem.node_end(), propAnno);
-                Xml::Element propDoc("xs:documentation",
-                                     "(" + prop.getTypeName() + "): " +
-                                     prop.getComment());
-                propAnno.insertNodeAfter(propAnno.node_end(), propDoc);
-
             }
+
+            // Add documentation.
+            Xml::Element propAnno("xs:annotation");
+            propElem.insertNodeAfter(propElem.node_end(), propAnno);
+            Xml::Element propDoc("xs:documentation",
+                                 "(" + prop.getTypeName() + "): " +
+                                 prop.getComment());
+            propAnno.insertNodeAfter(propAnno.node_end(), propDoc);
 
             // TODO if object property, allow either
             // <Ground name="ground"/> or <ground><Ground/></ground>
@@ -1750,6 +1763,14 @@ std::string Object::dump(bool dumpName) {
     osimDocComplex.insertNodeAfter(osimDocComplex.node_end(), choice);
     for (int iobj = 0; iobj < objects.size(); ++iobj) {
         auto object = objects[iobj];
+
+        // For now, skip nested classes since colons make the schema more
+        // complicated.
+        // TODO
+        if (object->getConcreteClassName().find("::") != std::string::npos) {
+            continue;
+        }
+
         Xml::Element objElem("xs:element");
         objElem.setAttributeValue("name", object->getConcreteClassName());
         objElem.setAttributeValue("type", object->getConcreteClassName());
