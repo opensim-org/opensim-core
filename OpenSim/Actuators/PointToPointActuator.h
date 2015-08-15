@@ -52,9 +52,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_OPTIONAL_PROPERTY(bodyA, std::string,
         "Name of Body to which the point-to-point actuator is applied.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(bodyB, std::string,
@@ -72,7 +69,6 @@ public:
     /** The default for optimal force is 1. **/
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum force produced by this actuator when fully activated.");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS
@@ -123,8 +119,8 @@ private:
     // also sets the corresponding body name properties.
     void setBodyA(Body* bodyp);
     void setBodyB(Body* bodyp);
-    Body* getBodyA() const {return _bodyA;}
-    Body* getBodyB() const {return _bodyB;}    
+    Body* getBodyA() const {return _bodyA.get();}
+    Body* getBodyB() const {return _bodyB.get();}    
 
     //--------------------------------------------------------------------------
     // Implement Force interface

@@ -38,8 +38,20 @@ set(OPENSIM_VERSION
 
 # CMake module path.
 # ------------------
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(OpenSimMacros)
+
+# Directory in which to install.
+# ------------------------------
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    # On Windows, we override the default value because Visual Studio does
+    # not, by default, have permission to write to the Program Files
+    # directory.
+    # On Linux, we override the default value because our installation does
+    # not yet conform to the Filesystem Hierarchy Standard (FHS).
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}-install" CACHE PATH 
+        "The directory in which to install this project." FORCE)
+endif()
 
 
 # Build binary directory.
@@ -174,13 +186,6 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     # If you know of optimization bugs that affect SimTK in particular
     # gcc versions, this is the place to turn off those optimizations.
     set(GCC_OPT_DISABLE)
-    # We know Gcc 4.4.3 on Ubuntu 10 is buggy and that Snow Leopard's
-    # 4.2.1 is not. To be safe for now we'll assume anything over 4.3
-    # should have these disabled.
-    if(GCC_VERSION VERSION_GREATER 4.3 OR GCC_VERSION VERSION_EQUAL 4.3)
-        set(GCC_OPT_DISABLE
-    "-fno-tree-vrp -fno-strict-aliasing -fno-guess-branch-probability")
-    endif()
 
     # C++
     set(CMAKE_CXX_FLAGS_DEBUG          "-g ${GCC_INST_SET}"
@@ -329,7 +334,7 @@ endif()
 # As of Simbody 3.4, Simbody has a SimbodyConfig.cmake file, which is a
 # preferred way to find Simbody over the previous FindSimbody.cmake script.
 # NO_MODULE means we will not allow the use of a FindSimbody.cmake script.
-set(SIMBODY_VERSION_TO_USE 3.5)
+set(SIMBODY_VERSION_TO_USE 3.6)
 
 # Find Simbody freshly by unsetting this CMake-generated variable.
 unset(Simbody_DIR CACHE)
@@ -516,6 +521,11 @@ set(BUILD_API_ONLY OFF CACHE BOOL "Build/install only headers, libraries,
     wrapping, tests; not applications (ik, rra, etc.).")
 mark_as_advanced( BUILD_API_ONLY )
 
+# This directory contains files (e.g., .osim) that multiple tests may want to
+# use. See the OpenSimCopySharedTestFiles function in
+# cmake/OpenSimMacros.cmake.
+set(OPENSIM_SHARED_TEST_FILES_DIR "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared")
+
 add_subdirectory(Vendors)
 add_subdirectory(OpenSim)
 if(NOT BUILD_API_ONLY)
@@ -523,3 +533,4 @@ if(NOT BUILD_API_ONLY)
 endif()
 
 add_subdirectory(cmake)
+add_subdirectory(doc)

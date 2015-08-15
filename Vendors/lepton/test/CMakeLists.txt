@@ -1,7 +1,7 @@
 
 file(GLOB TEST_PROGS "*est*.cpp")
 
-OPENSIM_ADD_TESTS(
+OpenSimAddTests(
     TESTPROGRAMS ${TEST_PROGS}
     LINKLIBS osimLepton
     )

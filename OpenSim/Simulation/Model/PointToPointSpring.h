@@ -44,9 +44,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(point1, SimTK::Vec3,
         "Spring attachment point on body1.");
     OpenSim_DECLARE_PROPERTY(point2, SimTK::Vec3,
@@ -55,7 +52,6 @@ public:
         "Spring stiffness (N/m).");
     OpenSim_DECLARE_PROPERTY(rest_length, double,
         "Spring resting length (m).");
-    /**@}**/
 
 
 //==============================================================================

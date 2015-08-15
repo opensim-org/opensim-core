@@ -56,9 +56,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
 
     /** Spatial transform defining how the child body moves with respect
     to the parent body as a function of the generalized coordinates.
@@ -66,7 +63,6 @@ public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(SpatialTransform,
         "Defines how the child body moves with respect to the parent as "
         "a function of the generalized coordinates.");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS

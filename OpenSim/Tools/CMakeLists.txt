@@ -2,7 +2,7 @@
 file(GLOB INCLUDES *.h)
 file(GLOB SOURCES *.cpp)
 
-OPENSIM_add_library(
+OpenSimAddLibrary(
     KIT Tools
     AUTHORS "Frank_C_Anderson"
     LINKLIBS osimCommon osimSimulation osimActuators osimAnalyses

@@ -46,9 +46,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     /** Define the individual transform axes (6) that specify the spatial 
     transform; each is a TransformAxis object. **/
     OpenSim_DECLARE_PROPERTY(rotation1, TransformAxis,
@@ -63,7 +60,6 @@ public:
         "");
     OpenSim_DECLARE_PROPERTY(translation3, TransformAxis,
         "");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS

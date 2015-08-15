@@ -53,16 +53,13 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
-    These are the serializable properties associated with a Controller. **/
-    /**@{**/
 
     OpenSim_DECLARE_PROPERTY(isDisabled, bool, 
         "Flag (true or false) indicating whether or not the controller is disabled." );
 
     OpenSim_DECLARE_LIST_PROPERTY(actuator_list, std::string,
         "The list of model actuators that this controller will control."
-        "The keyword ALL indicates the controller will controll all the acuators in the model" );
+        "The keyword ALL indicates the controller will control all the actuators in the model" );
 
 //=============================================================================
 // METHODS

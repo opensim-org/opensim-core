@@ -75,8 +75,8 @@ Joint::Joint(const std::string &name,
     set_orientation_in_child(orientationInChild);
     set_reverse(reverse);
 
-    updConnector<PhysicalFrame>("parent_body").set_connected_to_name(parent.getName());
-    updConnector<PhysicalFrame>("child_body").set_connected_to_name(child.getName());
+    updConnector<PhysicalFrame>("parent_body").set_connectee_name(parent.getName());
+    updConnector<PhysicalFrame>("child_body").set_connectee_name(child.getName());
 
     setName(name);
 }
@@ -128,20 +128,20 @@ void Joint::constructConnectors()
 
 void Joint::setParentFrameName(const std::string& name)
 {
-    updConnector<PhysicalFrame>("parent_body").set_connected_to_name(name);
+    updConnector<PhysicalFrame>("parent_body").set_connectee_name(name);
 }
 const std::string& Joint::getParentFrameName() const
 {
-    return getConnector<PhysicalFrame>("parent_body").get_connected_to_name();
+    return getConnector<PhysicalFrame>("parent_body").get_connectee_name();
 }
 
 void Joint::setChildFrameName(const std::string& name)
 {
-    updConnector<PhysicalFrame>("child_body").set_connected_to_name(name);
+    updConnector<PhysicalFrame>("child_body").set_connectee_name(name);
 }
 const std::string& Joint::getChildFrameName() const
 {
-    return getConnector<PhysicalFrame>("child_body").get_connected_to_name();
+    return getConnector<PhysicalFrame>("child_body").get_connectee_name();
 }
 
 void Joint::extendFinalizeFromProperties()
@@ -654,8 +654,8 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
 
         SimTK_ASSERT3( ( (mobilized == &getParentFrame()) || 
                          (mobilized == &getChildFrame()) ||
-                         (mobilized == _slaveBodyForParent) ||
-                         (mobilized == _slaveBodyForChild) ),
+                         (mobilized == _slaveBodyForParent.get()) ||
+                         (mobilized == _slaveBodyForChild.get()) ),
             "%s::'%s' - Cannot assign underlying system index to a Body '%s', "
             "which is not a parent or child Body of this Joint.",
                       getConcreteClassName().c_str(),

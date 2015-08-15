@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30503">
+	<Model name="SimpleBlocksWithLigaments-scaled">
+		<!--The model's ground reference frame.-->
+		<Ground name="ground">
+			<!--List of Geometry that is attached to this Model Component.-->
+			<geometry>
+				<FrameGeometry name="frame_geometry">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_Frame_ name="frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>ground</connectee_name>
+						</Connector_Frame_>
+					</connectors>
+					<!--Scale factors in X, Y, Z directions respectively.-->
+					<scale_factors>0.2 0.2 0.2</scale_factors>
+					<!--Default appearance for this Geometry-->
+					<Appearance>
+						<!--The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. -->
+						<representation>0</representation>
+					</Appearance>
+					<!--The radius of the arrow-shaft used to display the frame.-->
+					<display_radius>0.004</display_radius>
+				</FrameGeometry>
+			</geometry>
+			<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.-->
+			<WrapObjectSet>
+				<objects />
+				<groups />
+			</WrapObjectSet>
+		</Ground>
+		<!--Acceleration due to gravity, expressed in ground.-->
+		<gravity>0 -9.80665 0</gravity>
+		<!--Credits (e.g., model author names) associated with the model.-->
+		<credits>James Dunne</credits>
+		<!--Publications and references associated with the model.-->
+		<publications>Unassigned</publications>
+		<!--Units for all lengths.-->
+		<length_units>meters</length_units>
+		<!--Units for all forces.-->
+		<force_units>N</force_units>
+		<!--List of bodies that make up this model.-->
+		<BodySet>
+			<objects>
+				<Body name="block">
+					<!--List of Geometry that is attached to this Model Component.-->
+					<geometry>
+						<Mesh name="block_geom_1">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_Frame_ name="frame">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>block</connectee_name>
+								</Connector_Frame_>
+							</connectors>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>2 2 2</scale_factors>
+							<!--Default appearance for this Geometry-->
+							<Appearance>
+								<!--The color (rgb) used to display the object. -->
+								<color>1 1 1</color>
+								<!--The opacity (0-1) used to display the object. -->
+								<opacity>1</opacity>
+								<!--The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. -->
+								<representation>3</representation>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>block.vtp</mesh_file>
+						</Mesh>
+						<FrameGeometry name="block_body_frame">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_Frame_ name="frame">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>block</connectee_name>
+								</Connector_Frame_>
+							</connectors>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>2 2 2</scale_factors>
+							<!--Default appearance for this Geometry-->
+							<Appearance>
+								<!--The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. -->
+								<representation>0</representation>
+							</Appearance>
+						</FrameGeometry>
+					</geometry>
+					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.-->
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+					<!--The mass of the body (kg)-->
+					<mass>1</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>4 4 4 0 0 0</inertia>
+				</Body>
+				<Body name="block1">
+					<!--List of Geometry that is attached to this Model Component.-->
+					<geometry>
+						<Mesh name="block1_geom_1">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_Frame_ name="frame">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>block1</connectee_name>
+								</Connector_Frame_>
+							</connectors>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>2 2 2</scale_factors>
+							<!--Default appearance for this Geometry-->
+							<Appearance>
+								<!--The color (rgb) used to display the object. -->
+								<color>1 1 1</color>
+								<!--The opacity (0-1) used to display the object. -->
+								<opacity>1</opacity>
+								<!--The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. -->
+								<representation>3</representation>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>block.vtp</mesh_file>
+						</Mesh>
+						<FrameGeometry name="block1_body_frame">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_Frame_ name="frame">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>block1</connectee_name>
+								</Connector_Frame_>
+							</connectors>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>2 2 2</scale_factors>
+							<!--Default appearance for this Geometry-->
+							<Appearance>
+								<!--The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. -->
+								<representation>0</representation>
+							</Appearance>
+						</FrameGeometry>
+					</geometry>
+					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.-->
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+					<!--The mass of the body (kg)-->
+					<mass>1</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>4 4 4 0 0 0</inertia>
+				</Body>
+			</objects>
+			<groups />
+		</BodySet>
+		<!--List of Frames that various objects can be anchored to or expressed in, Body frames are builtin and not included in this list.-->
+		<FrameSet>
+			<objects />
+			<groups />
+		</FrameSet>
+		<!--List of joints that connect the bodies.-->
+		<JointSet>
+			<objects>
+				<FreeJoint name="grd_block">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent_body">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>ground</connectee_name>
+						</Connector_PhysicalFrame_>
+						<Connector_PhysicalFrame_ name="child_body">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>block</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+					<location_in_parent>0 0 0</location_in_parent>
+					<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0).-->
+					<orientation_in_parent>0 0 0</orientation_in_parent>
+					<!--Location of the joint in the child body specified in the child reference frame. Default is (0,0,0).-->
+					<location_in_child>0 0.14 0</location_in_child>
+					<!--Orientation of the joint in the child body specified in the child body reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0)-->
+					<orientation_in_child>0 0 0</orientation_in_child>
+					<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+					<CoordinateSet>
+						<objects>
+							<Coordinate name="grd_block_xRotation">
+								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+								<motion_type>rotational</motion_type>
+								<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+								<prescribed>false</prescribed>
+							</Coordinate>
+							<Coordinate name="grd_block_yRotation">
+								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+								<motion_type>rotational</motion_type>
+								<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+								<prescribed>false</prescribed>
+							</Coordinate>
+							<Coordinate name="grd_block_zRotation">
+								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+								<motion_type>rotational</motion_type>
+								<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+								<prescribed>false</prescribed>
+							</Coordinate>
+							<Coordinate name="grd_block_xTranslation">
+								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+								<motion_type>translational</motion_type>
+								<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+								<prescribed>false</prescribed>
+							</Coordinate>
+							<Coordinate name="grd_block_yTranslation">
+								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+								<motion_type>translational</motion_type>
+								<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+								<prescribed>false</prescribed>
+							</Coordinate>
+							<Coordinate name="grd_block_zTranslation">
+								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+								<motion_type>translational</motion_type>
+								<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+								<prescribed>false</prescribed>
+							</Coordinate>
+						</objects>
+						<groups />
+					</CoordinateSet>
+					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse == false) or child->parent (reverse == true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
+					<reverse>false</reverse>
+				</FreeJoint>
+				<PinJoint name="jnt1">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent_body">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>block</connectee_name>
+						</Connector_PhysicalFrame_>
+						<Connector_PhysicalFrame_ name="child_body">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>block1</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+					<location_in_parent>0 -0.14 0</location_in_parent>
+					<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0).-->
+					<orientation_in_parent>0 0 0</orientation_in_parent>
+					<!--Location of the joint in the child body specified in the child reference frame. Default is (0,0,0).-->
+					<location_in_child>0 0.14 0</location_in_child>
+					<!--Orientation of the joint in the child body specified in the child body reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0)-->
+					<orientation_in_child>0 0 0</orientation_in_child>
+					<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+					<CoordinateSet>
+						<objects>
+							<Coordinate name="jnt1_coord_0">
+								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+								<motion_type>rotational</motion_type>
+								<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+								<prescribed>false</prescribed>
+							</Coordinate>
+						</objects>
+						<groups />
+					</CoordinateSet>
+					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse == false) or child->parent (reverse == true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
+					<reverse>false</reverse>
+				</PinJoint>
+			</objects>
+		</JointSet>
+		<!--Controllers that provide the control inputs for Actuators.-->
+		<ControllerSet>
+			<objects />
+			<groups />
+		</ControllerSet>
+		<!--Constraints in the model.-->
+		<ConstraintSet>
+			<objects />
+			<groups />
+		</ConstraintSet>
+		<!--Forces in the model (includes Actuators).-->
+		<ForceSet>
+			<objects>
+				<Ligament name="lateralLigament">
+					<!--the set of points defining the path of the ligament-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="lateralLigament-P1">
+									<location> 0 0 0.1</location>
+									<body>block</body>
+								</PathPoint>
+								<PathPoint name="lateralLigament-P2">
+									<location> 0 0 0.1</location>
+									<body>block1</body>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--Used to initialize the colour cache variable-->
+						<default_color>0.9 0.9 0.9</default_color>
+					</GeometryPath>
+					<!--resting length of the ligament-->
+					<resting_length>0.14</resting_length>
+					<!--force magnitude that scales the force-length curve-->
+					<pcsa_force>1000</pcsa_force>
+					<!--Function representing the force-length behavior of the ligament-->
+					<SimmSpline name="force_length_curve">
+						<x> -1 -0.5 -0.2 0 0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.1 0.13 0.15 0.2 0.4 0.7 1</x>
+						<y> 0 0 0 0 0.00083333 0.00333333 0.0075 0.0133333 0.0208333 0.03 0.04 0.07 0.1 0.12 0.17 0.37 0.67 0.97</y>
+					</SimmSpline>
+				</Ligament>
+				<Ligament name="MedialLigament">
+					<!--the set of points defining the path of the ligament-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="MedialLigament-P1">
+									<location> 0 0 -0.1</location>
+									<body>block</body>
+								</PathPoint>
+								<PathPoint name="MedialLigament-P2">
+									<location> 0 0 -0.1</location>
+									<body>block1</body>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--Used to initialize the colour cache variable-->
+						<default_color>0.9 0.9 0.9</default_color>
+					</GeometryPath>
+					<!--resting length of the ligament-->
+					<resting_length>0.14</resting_length>
+					<!--force magnitude that scales the force-length curve-->
+					<pcsa_force>1000</pcsa_force>
+					<!--Function representing the force-length behavior of the ligament-->
+					<SimmSpline name="force_length_curve">
+						<x> -1 -0.5 -0.2 0 0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.1 0.13 0.15 0.2 0.4 0.7 1</x>
+						<y> 0 0 0 0 0.00083333 0.00333333 0.0075 0.0133333 0.0208333 0.03 0.04 0.07 0.1 0.12 0.17 0.37 0.67 0.97</y>
+					</SimmSpline>
+				</Ligament>
+				<Ligament name="internalLigament">
+					<!--the set of points defining the path of the ligament-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="internalLigament-P1">
+									<location> 0 -0.1 0</location>
+									<body>block</body>
+								</PathPoint>
+								<PathPoint name="internalLigament-P2">
+									<location> 0 0.1 0</location>
+									<body>block1</body>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--Used to initialize the colour cache variable-->
+						<default_color>0.9 0.9 0.9</default_color>
+					</GeometryPath>
+					<!--resting length of the ligament-->
+					<resting_length>0.06</resting_length>
+					<!--force magnitude that scales the force-length curve-->
+					<pcsa_force>1000</pcsa_force>
+					<!--Function representing the force-length behavior of the ligament-->
+					<SimmSpline name="force_length_curve">
+						<x> -1 -0.5 -0.2 0 0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.1 0.13 0.15 0.2 0.4 0.7 1</x>
+						<y> 0 0 0 0 0.00083333 0.00333333 0.0075 0.0133333 0.0208333 0.03 0.04 0.07 0.1 0.12 0.17 0.37 0.67 0.97</y>
+					</SimmSpline>
+				</Ligament>
+				<Ligament name="crossLigament">
+					<!--the set of points defining the path of the ligament-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="crossLigament-P1">
+									<location> 0.1 -0.1 0.1</location>
+									<body>block</body>
+								</PathPoint>
+								<PathPoint name="crossLigament-P2">
+									<location> -0.1 0.1 -0.1</location>
+									<body>block1</body>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--Used to initialize the colour cache variable-->
+						<default_color>0.9 0.9 0.9</default_color>
+					</GeometryPath>
+					<!--resting length of the ligament-->
+					<resting_length>0.289196876423888</resting_length>
+					<!--force magnitude that scales the force-length curve-->
+					<pcsa_force>1000</pcsa_force>
+					<!--Function representing the force-length behavior of the ligament-->
+					<SimmSpline name="force_length_curve">
+						<x> -1 -0.5 -0.2 0 0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.1 0.13 0.15 0.2 0.4 0.7 1</x>
+						<y> 0 0 0 0 0.00083333 0.00333333 0.0075 0.0133333 0.0208333 0.03 0.04 0.07 0.1 0.12 0.17 0.37 0.67 0.97</y>
+					</SimmSpline>
+				</Ligament>
+			</objects>
+			<groups />
+		</ForceSet>
+		<!--Markers in the model.-->
+		<MarkerSet>
+			<objects />
+			<groups />
+		</MarkerSet>
+		<!--Geometry to be used in contact forces.-->
+		<ContactGeometrySet>
+			<objects />
+			<groups />
+		</ContactGeometrySet>
+		<!--Additional components in the model.-->
+		<ComponentSet>
+			<objects />
+			<groups />
+		</ComponentSet>
+		<!--Probes in the model.-->
+		<ProbeSet>
+			<objects />
+			<groups />
+		</ProbeSet>
+	</Model>
+</OpenSimDocument>

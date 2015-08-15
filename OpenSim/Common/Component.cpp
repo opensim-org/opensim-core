@@ -183,8 +183,8 @@ void Component::connect(Component &root)
         catch (...) {
             throw Exception(getConcreteClassName() +
                 "::connect() Could not find component '"
-                + connector.get_connected_to_name() + "' to satisfy Connector<" +
-                connector.getConnectedToTypeName() + "> '" + getName() + "' " +
+                + connector.get_connectee_name() + "' to satisfy Connector<" +
+                connector.getConnecteeTypeName() + "> '" + getName() + "' " +
                 "as a subcomponent of " + root.getName() + ".");
         }
     }
@@ -231,6 +231,7 @@ void Component::addToSystem(SimTK::MultibodySystem& system) const
     baseAddToSystem(system);
     extendAddToSystem(system);
     componentsAddToSystem(system);
+    extendAddToSystemAfterSubcomponents(system);
 }
 
 // Base class implementation of virtual method.
