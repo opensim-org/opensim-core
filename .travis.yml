@@ -10,16 +10,16 @@ matrix:
   include:
     - os: linux
       compiler: clang
-      env: BUILD_WRAPPING=on NPROC=1 BTYPE=RelWithDebInfo
+      env: BTYPE=RelWithDebInfo WRAP=on NPROC=1
     - os: linux
       compiler: gcc
-      env: BUILD_WRAPPING=off NPROC=3 BTYPE=RelWithDebInfo
+      env: BTYPE=RelWithDebInfo WRAP=off NPROC=3
     - os: linux
       compiler: clang
-      env: BUILD_WRAPPING=off NPROC=3 BTYPE=Debug
+      env: BTYPE=Debug WRAP=off NPROC=3
     - os: osx
       compiler: clang
-      env: BUILD_WRAPPING=off NPROC=3 BTYPE=RelWithDebInfo
+      env: BTYPE=RelWithDebInfo WRAP=off NPROC=3
 
 env:
   global:
@@ -91,12 +91,12 @@ before_install:
   - make -j8 install
 
   ## Install SWIG to build Java/python wrapping.
-  - if [[ "$BUILD_WRAPPING" = "on" ]]; then if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pcre; fi; fi
-  - if [[ "$BUILD_WRAPPING" = "on" ]]; then mkdir ~/swig-source && cd ~/swig-source; fi
-  - if [[ "$BUILD_WRAPPING" = "on" ]]; then wget https://github.com/swig/swig/archive/rel-$SWIG_VER.tar.gz; fi
+  - if [[ "$WRAP" = "on" ]]; then if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pcre; fi; fi
+  - if [[ "$WRAP" = "on" ]]; then mkdir ~/swig-source && cd ~/swig-source; fi
+  - if [[ "$WRAP" = "on" ]]; then wget https://github.com/swig/swig/archive/rel-$SWIG_VER.tar.gz; fi
   #- wget http://prdownloads.sourceforge.net/swig/$SWIG.tar.gz
-  - if [[ "$BUILD_WRAPPING" = "on" ]]; then tar xzf rel-$SWIG_VER.tar.gz && cd swig-rel-$SWIG_VER; fi
-  - if [[ "$BUILD_WRAPPING" = "on" ]]; then sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache && make && make -j8 install; fi
+  - if [[ "$WRAP" = "on" ]]; then tar xzf rel-$SWIG_VER.tar.gz && cd swig-rel-$SWIG_VER; fi
+  - if [[ "$WRAP" = "on" ]]; then sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache && make && make -j8 install; fi
   #- ./configure --prefix=$HOME/swig && make && make -j8 install
 
   ## Detect if we should check memory leaks with valgrind.
@@ -113,10 +113,10 @@ before_install:
 install:
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
   # Configure OpenSim.
-  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$BUILD_WRAPPING -DBUILD_PYTHON_WRAPPING=$BUILD_WRAPPING -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS="-Werror -Wno-error=deprecated-declarations" -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE
+  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS="-Werror -Wno-error=deprecated-declarations" -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE
   # Build OpenSim.
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
-  - if [[ "$BUILD_WRAPPING" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PyWrap; fi
+  - if [[ "$WRAP" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PyWrap; fi
   # Build whatever remains (at least _opensim, tests and examples).
   - make -j$NPROC;
 
@@ -129,13 +129,13 @@ script:
 
   ## Test python wrapping.
   # Install OpenSim. Suppress output.
-  - if [ "$BUILD_WRAPPING" = "on" ]; then make -j8 install > /dev/null; fi
+  - if [ "$WRAP" = "on" ]; then make -j8 install > /dev/null; fi
   # Add OpenSim libraries to library path.
-  - if [ "$BUILD_WRAPPING" = "on" ]; then export LD_LIBRARY_PATH=$OPENSIM_HOME/lib; fi
+  - if [ "$WRAP" = "on" ]; then export LD_LIBRARY_PATH=$OPENSIM_HOME/lib; fi
   # Go to the python wrapping package directory.
-  - if [ "$BUILD_WRAPPING" = "on" ]; then cd $OPENSIM_HOME/sdk/python; fi
+  - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/sdk/python; fi
   # Run the python tests, verbosely.
-  - if [ "$BUILD_WRAPPING" = "on" ]; then nosetests -v; fi
+  - if [ "$WRAP" = "on" ]; then nosetests -v; fi
 
   ## Ensure that there are no tabs in source code.
   - cd $TRAVIS_BUILD_DIR
