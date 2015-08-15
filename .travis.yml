@@ -115,7 +115,6 @@ before_install:
 install:
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
   # Configure OpenSim.
-  - echo $TESTS_TO_EXCLUDE
   - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS="-Werror -Wno-error=deprecated-declarations" -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE
   # Build OpenSim.
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
@@ -125,7 +124,10 @@ install:
 
 script:
   # Test OpenSim.
-  - ctest -j8 --output-on-failure $CTEST_FLAGS --exclude-regex $TESTS_TO_EXCLUDE
+  # On Debug, we need to tell travis not to timeout if it doesn't get
+  # any output for more than 10 minutes. We do this using "travis_wait".
+  - if [ "$BTYPE" = "Debug" ]; export NO_TIMEOUT="travis_wait"; fi
+  - $NO_TIMEOUT ctest -j8 --output-on-failure $CTEST_FLAGS --exclude-regex $TESTS_TO_EXCLUDE
 
   ## Print out valgrind output.
   - if [ $RUN_VALGRIND ]; then find Testing/Temporary -name "MemoryCheck*" -print | xargs cat; fi
