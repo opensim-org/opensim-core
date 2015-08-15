@@ -104,9 +104,11 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then git log --format=%B --no-merges -n 1 | grep '\[ci valgrind\]'; export RUN_VALGRIND=$?; true; fi
   - if [ $RUN_VALGRIND = "0" ]; then export CTEST_FLAGS="-D ExperimentalMemCheck"; fi
   
+  ## Decide which tests to exclude.
+  # Initialize environment variable.
+  - export TESTS_TO_EXCLUDE="unmatched" # This is just for the regex.
   ## On OSX, we know that testInitState fails; exclude it.
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export TESTS_TO_EXCLUDE="testInitState"; fi
-
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testInitState"; fi
   ## If we are building in debug, there are some tests to ignore.
   - if [ "$BTYPE" = "Debug" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testPrescribedForce|testInducedAccelerations|testAssemblySolver"; fi
 
