@@ -79,7 +79,7 @@ if(${DOXYGEN_FOUND})
             message(STATUS "Using LATEX for Doxygen equations.")
         else()
             message(STATUS
-                "Cound not find LATEX. Using MathJax Content Distribution Network.")
+                "Using MathJax Content Distribution Network for Doxygen.")
             set(OPENSIM_DOXYGEN_USE_MATHJAX "YES")
             set(OPENSIM_DOXYGEN_MATHJAX_RELPATH
                 "https://cdn.mathjax.org/mathjax/latest")
