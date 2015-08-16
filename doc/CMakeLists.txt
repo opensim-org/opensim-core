@@ -15,11 +15,9 @@ if(${DOXYGEN_FOUND})
     # Doxygen comments. Then when we do an INSTALL later (see below), we just 
     # need to copy over the binary html directory into sdk/doc.
     # (sherm 20120127)
-    set(HTML_BINARY_DIR "${PROJECT_BINARY_DIR}/html/")
-    file(MAKE_DIRECTORY "${HTML_BINARY_DIR}")
 
-    set(HTML_IMAGES_BINARY_DIR "${HTML_BINARY_DIR}/images")
-    set(DOXYGEN_TARGET_DEPENDENCIES "${HTML_IMAGES_BINARY_DIR}")
+    # We will populate this with the paths on which the doxygen target depends.
+    set(DOXYGEN_TARGET_DEPENDENCIES)
 
     set(MATHJAX_ZIP_PATH "${PROJECT_BINARY_DIR}/MathJax.zip")
 
@@ -67,19 +65,6 @@ if(${DOXYGEN_FOUND})
     if(${OPENSIM_DOXYGEN_USE_MATHJAX})
         # This means the user wants to use MathJax *and* we were able to
         # download it successfully.
-
-        set(MATHJAX_UNZIPPED_DIR "${HTML_BINARY_DIR}/MathJax-2.5-latest")
-
-        # This creates a folder html/MathJax-2.5-latest in the build tree.
-        add_custom_command(
-            OUTPUT "${MATHJAX_UNZIPPED_DIR}"
-            COMMENT "Unzipping MathJax.zip."
-            COMMAND ${CMAKE_COMMAND} -E tar -x "${MATHJAX_ZIP_PATH}" 
-            WORKING_DIRECTORY "${HTML_BINARY_DIR}"
-            )
-
-        # Add the MathJax unzipped directory to the dependencies for doxygen.
-        list(APPEND DOXYGEN_TARGET_DEPENDENCIES "${MATHJAX_UNZIPPED_DIR}")
 
         # See Doxyfile.in for a description of these variables.
         set(OPENSIM_DOXYGEN_USE_MATHJAX "YES")
@@ -132,39 +117,103 @@ if(${DOXYGEN_FOUND})
             "${Simbody_DOXYGEN_TAGFILE}=${OPENSIM_SIMBODY_DOXYGEN_LOCATION}")
     endif()
 
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in 
-          ${DOXY_CONFIG}
-          @ONLY )
+    # Configure doxygen configuration that's shared between both user
+    # and developer configurations.
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doxyfile_shared.in
+        ${CMAKE_CURRENT_BINARY_DIR}/doxyfile_shared @ONLY )
+    
+    ##############################
+    # USER AND DEVELOPER DOXYGEN #
+    ##############################
 
-    ###############
-    # RUN DOXYGEN #
-    ###############
+    foreach(audience developer user)
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doxyfile_${audience}.in
+            ${CMAKE_CURRENT_BINARY_DIR}/doxyfile_${audience} @ONLY )
 
-    # Doxfile.in should take care of directing the output of Doxygen
-    # to ${PROJECT_BINARY_DIR}/html. Note that you have to invoke this
-    # "doxygen" target directly; it isn't run by default.
-    add_custom_target(doxygen ${DOXYGEN_EXECUTABLE} ${DOXY_CONFIG}
-        COMMENT "Generating Doxygen documentation"
-        DEPENDS ${DOXYGEN_TARGET_DEPENDENCIES}
-        )
+        # The goal here is to run Doxygen to generate most of the API
+        # documentation under "html" in the binary directory, then apply a few
+        # hand-tweaked hacks to it there.
+        # The result should be fully-functional documentation in the binary
+        # directory (start with index.html) that can be examined while
+        # debugging Doxygen comments. Then when we do an INSTALL later (see
+        # below), we just need to copy over the binary html directory into
+        # sdk/doc.
+        # (sherm 20120127)
+        # ^ There are now two builds of doxygen, so the above comment now
+        # applies to both sets.
+        # (chrisdembia 20150507)
+    
+        set(html_binary_dir "${PROJECT_BINARY_DIR}/html_${audience}/")
+        file(MAKE_DIRECTORY ${html_binary_dir})
 
-    # There is an "images" directory containing the pictures needed by
-    # the main page Copy all the files into html/images.
-    add_custom_command(
-        OUTPUT "${HTML_IMAGES_BINARY_DIR}"
-        COMMENT "Copying images for Doxygen."
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/images"
-        "${HTML_IMAGES_BINARY_DIR}"
-        )
+        # MathJax
+        # -------
+        if(${OPENSIM_DOXYGEN_USE_MATHJAX})
+            # This means the user wants to use MathJax *and* we were able to
+            # download it successfully.
 
-    ################
-    # INSTALLATION #
-    ################
-    install(DIRECTORY "${PROJECT_BINARY_DIR}/html/"
-            DESTINATION "sdk/doc/html"
+            set(mathjax_unzipped_dir "${html_binary_dir}/MathJax-2.5-latest")
+
+            # This creates a folder html_${audience}/MathJax-2.5-latest in the
+            # build tree.
+            add_custom_command(
+                OUTPUT "${mathjax_unzipped_dir}"
+                COMMENT "Unzipping MathJax.zip for ${audience} documentation"
+                COMMAND ${CMAKE_COMMAND} -E tar -x "${MATHJAX_ZIP_PATH}" 
+                WORKING_DIRECTORY "${html_binary_dir}"
+                )
+
+            # Add the MathJax unzipped directory to the dependencies for doxygen.
+            list(APPEND DOXYGEN_TARGET_DEPENDENCIES "${mathjax_unzipped_dir}")
+        endif()
+    
+        # Copy images directory.
+        # ----------------------
+        set(html_images_binary_dir "${html_binary_dir}/images")
+        # There is an "images" directory containing the pictures needed by
+        # the main page. Copy all the files into html_${audience}/images.
+        add_custom_command(
+            OUTPUT "${html_images_binary_dir}"
+            COMMENT "Copying images for ${audience} Doxygen"
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    "${CMAKE_CURRENT_SOURCE_DIR}/images"
+                    "${html_images_binary_dir}"
             )
-    # This is just a shortcut to the Doxygen index.html.
+        list(APPEND DOXYGEN_TARGET_DEPENDENCIES "${html_images_binary_dir}")
+    
+        # Run doxygen
+        # -----------
+        add_custom_command(
+            OUTPUT "${html_binary_dir}/index.html"
+            COMMENT "Running Doxygen to build ${audience} documentation"
+            COMMAND ${DOXYGEN_EXECUTABLE}
+                    ${CMAKE_CURRENT_BINARY_DIR}/doxyfile_${audience})
+        list(APPEND DOXYGEN_TARGET_DEPENDENCIES "${html_binary_dir}/index.html")
+    
+        # Installation
+        # ------------
+        install(DIRECTORY "${html_binary_dir}"
+                DESTINATION "sdk/doc/html_${audience}"
+                )
+
+    endforeach()
+
+    # Define the doxygen target (now that we know the dependencies).
+    # --------------------------------------------------------------
+    # Doxyfile.in should take care of directing the output of Doxygen
+    # to ${PROJECT_BINARY_DIR}/html_(user|developer).
+    # Note that you have to invoke this "doxygen" target directly; it isn't run
+    # by default.
+    add_custom_target(doxygen
+        SOURCES ${CMAKE_CURRENT_BINARY_DIR}/doxyfile_user
+                ${CMAKE_CURRENT_BINARY_DIR}/doxyfile_developer
+                ${CMAKE_CURRENT_BINARY_DIR}/doxyfile_shared
+        COMMENT "Doxygen documentation"
+        DEPENDS ${DOXYGEN_TARGET_DEPENDENCIES}
+                )
+
+    # This is just a shortcut to the Doxygen index.html, for the user
+    # documentation.
     install(FILES "OpenSimAPI.html" DESTINATION "sdk/doc")
 
 endif()

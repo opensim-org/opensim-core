@@ -112,11 +112,15 @@ On Windows using Visual Studio
 * **operating system**: Windows 7 or 8.
 * **cross-platform build system**:
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8
-* **compiler / IDE**: Visual Studio 2013. We recommended either:
-    * *Visual Studio Express 2013 for Windows Desktop*, which is free, or
-    * *Visual Studio Professional 2013* through
-      [Dreamspark](https://www.dreamspark.com) if you are at an academic
-      institution.
+* **compiler / IDE**: [Visual Studio 2015](https://www.visualstudio.com/).
+    * *Visual Studio Community 2015* is sufficient and is free for everyone.
+        If you want to use *Visual Studio Enterprise 2015*, you may be able 
+        to get it for free at [Dreamspark](https://www.dreamspark.com) if 
+        you are at an academic institution.
+    * Visual Studio 2015 does not install C++ 
+      support by default. During the installation you must select 
+      *Custom*, and check *Programming Languages > Visual C++ > Common Tools for Visual C++ 2015*.
+      You can uncheck all other boxes.
 * **physics engine**:
   [Simbody](https://github.com/simbody/simbody#windows-and-visual-studio) >= 3.4
 * **API documentation** (optional):
@@ -489,6 +493,6 @@ Your changes will only take effect in new terminal windows.
 [travisci]: https://travis-ci.org/opensim-org/opensim-core
 [buildstatus_image_appveyor]: https://ci.appveyor.com/api/projects/status/i4wxnmx9jlk69kge/branch/master?svg=true
 [appveyorci]: https://ci.appveyor.com/project/opensim-org/opensim-core/branch/master
-[running_gif]: OpenSim/doc/images/opensim_running.gif
-[simple_example_gif]: OpenSim/doc/images/opensim_double_pendulum_muscle.gif
+[running_gif]: doc/images/opensim_running.gif
+[simple_example_gif]: doc/images/opensim_double_pendulum_muscle.gif
 [java]: http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase6-419409.html
