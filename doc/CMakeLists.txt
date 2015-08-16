@@ -67,7 +67,7 @@ if(${DOXYGEN_FOUND})
         # download it successfully.
 
         # See Doxyfile.in for a description of these variables.
-        set(OPENSIM_DOXYGEN_USE_MATHJAX "YES")
+        set(OPENSIM_DOXYGEN_USE_MATHJAX_DOXYFILE "YES")
         set(OPENSIM_DOXYGEN_MATHJAX_RELPATH "MathJax-2.5-latest")
 
     else()
@@ -75,12 +75,12 @@ if(${DOXYGEN_FOUND})
         # Try using LATEX.
         find_package(LATEX)
         if(${LATEX_FOUND})
-            set(OPENSIM_DOXYGEN_USE_MATHJAX "NO")
+            set(OPENSIM_DOXYGEN_USE_MATHJAX_DOXYFILE "NO")
             message(STATUS "Using LATEX for Doxygen equations.")
         else()
             message(STATUS
                 "Using MathJax Content Distribution Network for Doxygen.")
-            set(OPENSIM_DOXYGEN_USE_MATHJAX "YES")
+            set(OPENSIM_DOXYGEN_USE_MATHJAX_DOXYFILE "YES")
             set(OPENSIM_DOXYGEN_MATHJAX_RELPATH
                 "https://cdn.mathjax.org/mathjax/latest")
         endif()

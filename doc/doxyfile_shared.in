@@ -1206,7 +1206,7 @@ FORMULA_TRANSPARENT    = YES
 # output. When enabled you also need to install MathJax separately and 
 # configure the path to it using the MATHJAX_RELPATH option.
 
-USE_MATHJAX            = @OPENSIM_DOXYGEN_USE_MATHJAX@
+USE_MATHJAX            = @OPENSIM_DOXYGEN_USE_MATHJAX_DOXYFILE@
 
 # When MathJax is enabled you need to specify the location relative to the 
 # HTML output directory using the MATHJAX_RELPATH option. The destination 
