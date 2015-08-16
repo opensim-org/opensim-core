@@ -126,8 +126,8 @@ script:
   # Test OpenSim.
   # On Debug, we need to tell travis not to timeout if it doesn't get
   # any output for more than 10 minutes. We do this using "travis_wait".
-  - if [ "$BTYPE" = "Debug" ]; export NO_TIMEOUT="travis_wait"; fi
-  - $NO_TIMEOUT ctest -j8 --output-on-failure $CTEST_FLAGS --exclude-regex $TESTS_TO_EXCLUDE
+  #- if [ "$BTYPE" = "Debug" ]; export NO_TIMEOUT="travis_wait"; fi
+  - travis_wait ctest -j8 --output-on-failure $CTEST_FLAGS --exclude-regex $TESTS_TO_EXCLUDE
 
   ## Print out valgrind output.
   - if [ $RUN_VALGRIND ]; then find Testing/Temporary -name "MemoryCheck*" -print | xargs cat; fi
