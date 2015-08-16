@@ -125,8 +125,8 @@ if(${DOXYGEN_FOUND})
     ##############################
     # USER AND DEVELOPER DOXYGEN #
     ##############################
-
-    foreach(audience developer user)
+    set(DOXYGEN_AUDIENCES developer user)
+    foreach(audience ${DOXYGEN_AUDIENCES})
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doxyfile_${audience}.in
             ${CMAKE_CURRENT_BINARY_DIR}/doxyfile_${audience} @ONLY )
 
@@ -180,21 +180,6 @@ if(${DOXYGEN_FOUND})
                     "${html_images_binary_dir}"
             )
         list(APPEND DOXYGEN_TARGET_DEPENDENCIES "${html_images_binary_dir}")
-    
-        # Run doxygen
-        # -----------
-        add_custom_command(
-            OUTPUT "${html_binary_dir}/index.html"
-            COMMENT "Running Doxygen to build ${audience} documentation"
-            COMMAND ${DOXYGEN_EXECUTABLE}
-                    ${CMAKE_CURRENT_BINARY_DIR}/doxyfile_${audience})
-        list(APPEND DOXYGEN_TARGET_DEPENDENCIES "${html_binary_dir}/index.html")
-    
-        # Installation
-        # ------------
-        install(DIRECTORY "${html_binary_dir}"
-                DESTINATION "sdk/doc/html_${audience}"
-                )
 
     endforeach()
 
@@ -211,6 +196,24 @@ if(${DOXYGEN_FOUND})
         COMMENT "Doxygen documentation"
         DEPENDS ${DOXYGEN_TARGET_DEPENDENCIES}
                 )
+    
+    # Now creat the command for running doxygen, which requires that we
+    # have defined the doxygen target.
+    foreach(audience ${DOXYGEN_AUDIENCES})
+        # Run doxygen
+        # -----------
+        add_custom_command(TARGET doxygen
+            COMMENT "Running Doxygen to build ${audience} documentation"
+            COMMAND ${DOXYGEN_EXECUTABLE}
+                    ${CMAKE_CURRENT_BINARY_DIR}/doxyfile_${audience})
+    
+        # Installation
+        # ------------
+        install(DIRECTORY "${html_binary_dir}"
+                DESTINATION "sdk/doc/html_${audience}"
+                )
+
+    endforeach()
 
     # This is just a shortcut to the Doxygen index.html, for the user
     # documentation.
