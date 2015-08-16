@@ -110,7 +110,7 @@ before_install:
   ## On OSX, we know that testInitState fails; exclude it.
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testInitState"; fi
   ## If we are building in debug, there are some tests to ignore.
-  - if [ "$BTYPE" = "Debug" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testPrescribedForce|testInducedAccelerations|testAssemblySolver|testCMCEMGDrivenArm|testCMCGait10dof18musc"; fi
+  - if [ "$BTYPE" = "Debug" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testPrescribedForce|testInducedAccelerations|testAssemblySolver|testCMC"; fi
 
 install:
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
@@ -124,10 +124,10 @@ install:
 
 script:
   # Test OpenSim.
-  # On Debug, we need to tell travis not to timeout if it doesn't get
+  # TODO On Debug, we need to tell travis not to timeout if it doesn't get
   # any output for more than 10 minutes. We do this using "travis_wait".
   #- if [ "$BTYPE" = "Debug" ]; export NO_TIMEOUT="travis_wait"; fi
-  - travis_wait ctest -j8 --output-on-failure $CTEST_FLAGS --exclude-regex $TESTS_TO_EXCLUDE
+  - ctest -j8 --output-on-failure $CTEST_FLAGS --exclude-regex $TESTS_TO_EXCLUDE
 
   ## Print out valgrind output.
   - if [ $RUN_VALGRIND ]; then find Testing/Temporary -name "MemoryCheck*" -print | xargs cat; fi
