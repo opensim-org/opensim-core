@@ -100,16 +100,6 @@ public:
         if (mag ==0) rV = 0.0; else rV = 1/mag * aV;
         return mag;
     }
-    /**
-    * Compute the magnitude of a vector.
-    *
-    * @param aN     Obsolete -- always pass as a "3".
-    * @param aV     Vector.
-    * @returns      Square root of the dot product aV*aV.
-    */
-    inline static double Magnitude(int aN,const SimTK::Vec3& aV){
-        return aV.norm();
-    }
     //_____________________________________________________________________________
     /**
     * Compute the dot product of two vectors.
@@ -147,25 +137,13 @@ public:
     // MATRIX
     //--------------------------------------------------------------------------
     static int Identity(int aNR,double *rI);
-    //static int Assign(int aNR,int aNC,double aScalar,double *rM);
-    //static int Assign(int aNR,int aNC,const double *aM,double *rM);
-    //static int Add(int aNR,int aNC,const double *aM1,double aScalar,double *aM);
-    static int Add(int aNR,int aNC,const double *aM1,const double *aM2,double *aM);
-    static int Subtract(int aNR,int aNC,const double *aM1,const double *aM2,
-        double *aM);
-    static int Multiply(int aNR,int aNC,const double *aM,double aScalar,double *rM);
     static int Multiply(int aNR1,int aNCR,int aNC2,const double *aM1,
         const double *aM2,double *aM);
     static int Invert(int aN,const double *aM,double *aMInv);
-    static int Transpose(int aNR,int aNC,const double *aM,double *aMT);
-    static void Print(int aNR,int aNC,const double *aM,int aPrecision=8);
 
     //--------------------------------------------------------------------------
     // INDEX OPERATIONS
     //--------------------------------------------------------------------------
-    static int FindIndex(int aStartIndex,double aTime,int aNT,double *aT);
-    static int FindIndexLess(int aNX,double *aX,double aValue);
-    static int FindIndexGreater(int aNX,double *aX,double aValue);
     static int ComputeIndex(int i2,int n1,int i1);
     static int ComputeIndex(int i3,int n2,int i2,int n1,int i1);
     static void GetDim3(int n3,int n2,int n1,int i2,int i1,double *m,double *a);
