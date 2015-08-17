@@ -10,16 +10,16 @@ matrix:
   include:
     - os: linux
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=on NPROC=1
+      env: BTYPE=RelWithDebInfo WRAP=on BUILD_DOXYGEN=on NPROC=1
     - os: linux
       compiler: gcc
-      env: BTYPE=RelWithDebInfo WRAP=off NPROC=3
+      env: BTYPE=RelWithDebInfo WRAP=off BUILD_DOXYGEN=off NPROC=3
     - os: linux
       compiler: clang
-      env: BTYPE=Debug WRAP=off NPROC=3
+      env: BTYPE=Debug WRAP=off BUILD_DOXYGEN=off NPROC=3
     - os: osx
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=off NPROC=3
+      env: BTYPE=RelWithDebInfo WRAP=off BUILD_DOXYGEN=off NPROC=3
 
 env:
   global:
@@ -54,6 +54,8 @@ addons:
       - g++-4.8
       # In case someone wants to check for memory leaks.
       - valgrind
+      # To build doxygen documentation.
+      - doxygen
       # To run the python tests.
       - python-nose
 
@@ -131,6 +133,9 @@ script:
 
   ## Print out valgrind output.
   - if [ $RUN_VALGRIND ]; then find Testing/Temporary -name "MemoryCheck*" -print | xargs cat; fi
+
+  ## Build doxygen documentation.
+  - if [ "$BUILD_DOXYGEN" = "on" ]; then make doxygen; fi
 
   ## Test python wrapping.
   # Install OpenSim. Suppress output.
