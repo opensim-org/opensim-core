@@ -331,7 +331,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
         pp[i] = p11[i] + dist * vv[i];
 
     dist = sqrt(r_squared - dist * dist);
-
+    
     Mtx::CrossProduct(dn, vv, uu);
 
     for (i = 0; i < 3; i++)
@@ -686,8 +686,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
  * @param far_side_wrap Boolean indicating if the wrap is the long way around
  * @param aWrapResult The result of the wrapping (tangent points, etc.)
  */
-void WrapCylinder::_make_spiral_path(SimTK::Vec3& aPoint1,
-                                                 SimTK::Vec3& aPoint2,
+void WrapCylinder::_make_spiral_path(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                                  bool far_side_wrap,
                                                  WrapResult& aWrapResult) const
 {
@@ -696,7 +695,7 @@ void WrapCylinder::_make_spiral_path(SimTK::Vec3& aPoint1,
     double sense = far_side_wrap ? -1.0 : 1.0;
     double m[4][4];
     int i, iterations = 0;
-
+    
 restart_spiral_wrap:
 
     aWrapResult.wrap_pts.setSize(0);
@@ -708,7 +707,7 @@ restart_spiral_wrap:
 
     MAKE_3DVECTOR(r1a, r2a, axial_vec);
 
-    axial_dist = Mtx::Magnitude(3, axial_vec);
+    axial_dist = axial_vec.norm();
 
     // determine the radial angle
     MAKE_3DVECTOR(r1a, aWrapResult.r1, uu);

@@ -266,7 +266,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     }
 
    // check that neither point is inside the radius of the sphere
-    if (Mtx::Magnitude(3, p1m) < _radius || Mtx::Magnitude(3, p2m) < _radius)
+    if (p1m.norm() < _radius || p2m.norm() < _radius)
       return insideRadius;
 
     a = Mtx::DotProduct(3, ri, ri);
@@ -307,7 +307,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
 
    // if the muscle line passes too close to the center of the sphere
    // then give up
-    if (Mtx::Magnitude(3, hp2) < 0.00001) {
+    if (hp2.norm() < 0.00001) {
         // JPL 12/28/06: r1 and r2 from the previous wrap have already
         // been copied into aWrapResult (and not yet overwritten). So
         // just go directly to calc_path.
@@ -338,20 +338,20 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
       ra[i][2] = z[i];
    }
 
-    a1 = asin(_radius / Mtx::Magnitude(3, p1m));
+    a1 = asin(_radius / p1m.norm());
 
     WrapMath::Make3x3DirCosMatrix(a1, rrx);
     Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
     // TODO: test that this gives same result as SIMM code
 
    for (i = 0; i < 3; i++)
-      r1a[i] = aPoint1[i] + aa[i][1] * Mtx::Magnitude(3, p1m) * cos(a1);
+      r1a[i] = aPoint1[i] + aa[i][1] * p1m.norm() * cos(a1);
 
    WrapMath::Make3x3DirCosMatrix(-a1, rrx);
     Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
 
    for (i = 0; i < 3; i++)
-      r1b[i] = aPoint1[i] + aa[i][1] * Mtx::Magnitude(3, p1m) * cos(a1);
+      r1b[i] = aPoint1[i] + aa[i][1] * p1m.norm() * cos(a1);
 
    // calc tangent point candidates r2a, r2b
     for (i = 0; i < 3; i++)
@@ -366,19 +366,19 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
       ra[i][2] = z[i];
    }
 
-   a2 = asin(_radius / Mtx::Magnitude(3, p2m));
+   a2 = asin(_radius / p2m.norm());
    
    WrapMath::Make3x3DirCosMatrix(a2, rrx);
     Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
 
    for (i = 0; i < 3; i++)
-      r2a[i] = aPoint2[i] + aa[i][1] * Mtx::Magnitude(3, p2m) * cos(a2);
+      r2a[i] = aPoint2[i] + aa[i][1] * p2m.norm() * cos(a2);
 
    WrapMath::Make3x3DirCosMatrix(-a2, rrx);
     Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
 
    for (i = 0; i < 3; i++)
-      r2b[i] = aPoint2[i] + aa[i][1] * Mtx::Magnitude(3, p2m) * cos(a2);
+      r2b[i] = aPoint2[i] + aa[i][1] * p2m.norm() * cos(a2);
 
    // determine wrapping tangent points r1 & r2
     for (i = 0; i < 3; i++) {

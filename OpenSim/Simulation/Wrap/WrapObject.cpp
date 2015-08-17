@@ -278,7 +278,7 @@ WrapObject& WrapObject::operator=(const WrapObject& aWrapObject)
 /**
  * Calculate the wrapping of one path segment over one wrap object.
  *
- * @param aPoint1 The first patth point
+ * @param aPoint1 The first path point
  * @param aPoint2 The second path point
  * @param aPathWrap An object holding the parameters for this path/wrap-object pairing
  * @param aWrapResult The result of the wrapping (tangent points, etc.)
@@ -287,7 +287,7 @@ WrapObject& WrapObject::operator=(const WrapObject& aWrapObject)
 int WrapObject::wrapPathSegment(const SimTK::State& s, PathPoint& aPoint1, PathPoint& aPoint2,
                                           const PathWrap& aPathWrap, WrapResult& aWrapResult) const
 {
-   int return_code = noWrap;
+    int return_code = noWrap;
     bool p_flag;
     Vec3 pt1(0.0);
     Vec3 pt2(0.0);
@@ -307,7 +307,6 @@ int WrapObject::wrapPathSegment(const SimTK::State& s, PathPoint& aPoint1, PathP
     pt1 = _pose.shiftBaseStationToFrame(pt1);
     pt2 = _pose.shiftBaseStationToFrame(pt2);
 
-    std::unique_lock<std::mutex> lock(s.getStateLock());
     return_code = wrapLine(s, pt1, pt2, aPathWrap, aWrapResult, p_flag);
 
    if (p_flag == true && return_code > 0) {

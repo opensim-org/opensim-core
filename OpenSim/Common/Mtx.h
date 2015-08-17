@@ -142,28 +142,6 @@ public:
         SimTK::UnitVec3 unit(aV);
         rV = unit.perp().asVec3();
     }
-    static void
-     Interpolate(int aN,double aT1,double *aY1,double aT2,double *aY2,
-     double t,double *aY);
-    static double
-     Interpolate(double aT1,double aY1,double aT2,double aY2,
-     double t);
-
-    //--------------------------------------------------------------------------
-    // TRANSLATION AND ROTATION
-    //--------------------------------------------------------------------------
-    static void
-        Translate(double aX,double aY,double aZ,const double aP[3],double rP[3]);
-    static void
-        Rotate(int aXYZ,double aRadians,const double aP[3],double rP[3]);
-    static void
-        Rotate(const double aAxis[3],double aRadians,const double aP[3],
-        double rP[3]);
-    static void
-        RotateDeg(int aXYZ,double aDegrees,const double aP[3],double rP[3]);
-    static void
-        RotateDeg(const double aAxis[3],double aDegrees,const double aP[3],
-        double rP[3]);
 
     //--------------------------------------------------------------------------
     // MATRIX
