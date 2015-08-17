@@ -1036,16 +1036,22 @@ private:
 
 
     //                      SIMBODY MULTIBODY SYSTEM
+    // We dynamically allocate these because they are not available at
+    // construction.
     // The model owns the MultibodySystem, but the
-    // subsystems and force elements are owned by the MultibodySystem so 
-    // should not be deleted in the destructor.
-    SimTK::ReferencePtr<SimTK::MultibodySystem>  _system; // owned by Model; must destruct
+    // subsystems and force elements are owned by the MultibodySystem. However,
+    // that memory management happens through Simbody's handles. It's fine for
+    // us to manage the heap memory for the handles.
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::MultibodySystem>> _system;
 
-    // These are just references pointing into _system; don't destruct.
-    SimTK::ReferencePtr<SimTK::SimbodyMatterSubsystem>  _matter;     
-    SimTK::ReferencePtr<SimTK::Force::Gravity>          _gravityForce;
-    SimTK::ReferencePtr<SimTK::GeneralForceSubsystem>   _forceSubsystem;
-    SimTK::ReferencePtr<SimTK::GeneralContactSubsystem> _contactSubsystem;
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::SimbodyMatterSubsystem>>
+        _matter;     
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::Force::Gravity>>
+        _gravityForce;
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::GeneralForceSubsystem>>
+        _forceSubsystem;
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::GeneralContactSubsystem>>
+        _contactSubsystem;
 
     // System-dependent objects.
 

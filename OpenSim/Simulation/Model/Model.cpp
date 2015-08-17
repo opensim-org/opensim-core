@@ -91,10 +91,10 @@ Model::Model() :
     _coordinateSet(CoordinateSet()),
     _useVisualizer(false),
     _allControllersEnabled(true),
-    _system(nullptr),
     _workingState()
 {
-    constructInfrastructure();    setNull();
+    constructInfrastructure();
+    setNull();
     finalizeFromProperties();
 }
 //_____________________________________________________________________________
@@ -108,7 +108,6 @@ Model::Model(const string &aFileName, const bool finalize) :
     _coordinateSet(CoordinateSet()),
     _useVisualizer(false),
     _allControllersEnabled(true),
-    _system(nullptr),
     _workingState()
 {   
     constructInfrastructure();
@@ -131,11 +130,6 @@ Model::~Model()
 {
     delete _assemblySolver;
     delete _modelViz;
-    delete _contactSubsystem;
-    delete _gravityForce;
-    delete _forceSubsystem;
-    delete _matter;
-    delete _system; 
 }
 //_____________________________________________________________________________
 /**
@@ -217,13 +211,6 @@ void Model::setNull()
 {
     _useVisualizer = false;
     _allControllersEnabled = true;
-
-    _system = NULL;
-    _matter = NULL;
-
-    _forceSubsystem = NULL;
-    _contactSubsystem = NULL;
-    _gravityForce = NULL;
 
     _modelViz = NULL;
     _assemblySolver = NULL;
@@ -473,23 +460,20 @@ void Model::createMultibodySystem()
     {
         // Delete the old system.
         delete _modelViz;
-        delete _gravityForce;
-        delete _contactSubsystem;
-        delete _forceSubsystem;
-        delete _matter;
-        delete _system;
     }
 
     // create system    
-    _system = new SimTK::MultibodySystem;
-    _matter = new SimTK::SimbodyMatterSubsystem(*_system);
-    _forceSubsystem = new SimTK::GeneralForceSubsystem(*_system);
-    _contactSubsystem = new SimTK::GeneralContactSubsystem(*_system);
+    _system.reset(new SimTK::MultibodySystem);
+    _matter.reset(new SimTK::SimbodyMatterSubsystem(*_system));
+    _forceSubsystem.reset(new SimTK::GeneralForceSubsystem(*_system));
+    _contactSubsystem.reset(new SimTK::GeneralContactSubsystem(*_system));
 
-    // create gravity force, a direction is needed even if magnitude=0 for PotentialEnergy purposes.
+    // create gravity force, a direction is needed even if magnitude=0 for
+    // PotentialEnergy purposes.
     double magnitude = get_gravity().norm();
     SimTK::UnitVec3 direction = magnitude==0 ? SimTK::UnitVec3(0,-1,0) : SimTK::UnitVec3(get_gravity()/magnitude);
-    _gravityForce = new SimTK::Force::Gravity(*_forceSubsystem, *_matter, direction, magnitude);
+    _gravityForce.reset(new SimTK::Force::Gravity(*_forceSubsystem, *_matter,
+                direction, magnitude));
 
     addToSystem(*_system);
 }
