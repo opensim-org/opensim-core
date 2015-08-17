@@ -56,10 +56,6 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. Other
-    properties are inherited from its superclass. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(time_scale, double,
         "Scale factor for normalizing time");
     OpenSim_DECLARE_PROPERTY(activation1, double,
@@ -74,7 +70,6 @@ public:
         "Function representing active force-length behavior of muscle fibers");
     OpenSim_DECLARE_PROPERTY(passive_force_length_curve, Function,
         "Function representing passive force-length behavior of muscle fibers");
-    /**@}**/
 
 //=============================================================================
 // PUBLIC METHODS

@@ -1,8 +1,7 @@
+file(GLOB TEST_PROGS "test*.cpp")
+OpenSimCopySharedTestFiles(gait10dof18musc_subject01.osim)
 
-file(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
-
-OPENSIM_ADD_TESTS(
+OpenSimAddTests(
     TESTPROGRAMS ${TEST_PROGS}
-    DATAFILES ${TEST_FILES}
     LINKLIBS osimTools
     )

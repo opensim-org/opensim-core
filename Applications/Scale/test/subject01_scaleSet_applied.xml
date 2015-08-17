@@ -1,68 +1,68 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<OpenSimDocument Version="20303">
+<OpenSimDocument Version="30503">
 	<ScaleSet name="ScaleSet">
 		<objects>
-			<Scale name="">
+			<Scale>
 				<scales> 1 1 1</scales>
 				<segment>ground</segment>
 				<apply>true</apply>
 			</Scale>
-			<Scale name="">
+			<Scale>
 				<scales> 1.02458 1.02458 1.02458</scales>
 				<segment>pelvis</segment>
 				<apply>true</apply>
 			</Scale>
-			<Scale name="">
+			<Scale>
 				<scales> 1.14724 1.14724 1.14724</scales>
 				<segment>femur_r</segment>
 				<apply>true</apply>
 			</Scale>
-			<Scale name="">
+			<Scale>
 				<scales> 0.988523 0.988523 0.988523</scales>
 				<segment>tibia_r</segment>
 				<apply>true</apply>
 			</Scale>
-			<Scale name="">
+			<Scale>
 				<scales> 1.11398 1.11398 1.11398</scales>
 				<segment>talus_r</segment>
 				<apply>true</apply>
 			</Scale>
-			<Scale name="">
+			<Scale>
 				<scales> 1.02708 1.02708 1.02708</scales>
 				<segment>calcn_r</segment>
 				<apply>true</apply>
 			</Scale>
-			<Scale name="">
+			<Scale>
 				<scales> 1.02708 1.02708 1.02708</scales>
 				<segment>toes_r</segment>
 				<apply>true</apply>
 			</Scale>
-			<Scale name="">
+			<Scale>
 				<scales> 1.14724 1.14724 1.14724</scales>
 				<segment>femur_l</segment>
 				<apply>true</apply>
 			</Scale>
-			<Scale name="">
+			<Scale>
 				<scales> 0.988523 0.988523 0.988523</scales>
 				<segment>tibia_l</segment>
 				<apply>true</apply>
 			</Scale>
-			<Scale name="">
+			<Scale>
 				<scales> 1.11398 1.11398 1.11398</scales>
 				<segment>talus_l</segment>
 				<apply>true</apply>
 			</Scale>
-			<Scale name="">
+			<Scale>
 				<scales> 1.02708 1.02708 1.02708</scales>
 				<segment>calcn_l</segment>
 				<apply>true</apply>
 			</Scale>
-			<Scale name="">
+			<Scale>
 				<scales> 1.02708 1.02708 1.02708</scales>
 				<segment>toes_l</segment>
 				<apply>true</apply>
 			</Scale>
-			<Scale name="">
+			<Scale>
 				<scales> 1.07972 1.07972 1.07972</scales>
 				<segment>torso</segment>
 				<apply>true</apply>

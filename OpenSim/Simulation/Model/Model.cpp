@@ -51,6 +51,7 @@
 #include "ModelVisualizer.h"
 
 #include "Muscle.h"
+#include "Ligament.h"
 #include "CoordinateSet.h"
 #include "FrameSet.h"
 #include "BodySet.h"
@@ -1360,6 +1361,14 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
             act->preScale(s, aScaleSet);
             act->scale(s, aScaleSet);
         }
+        // Do ligaments as well for now until a general mechanism is introduced. -Ayman 5/15
+        else {
+            Ligament* ligament = dynamic_cast<Ligament*>(&get_ForceSet().get(i));
+            if (ligament){
+                ligament->preScale(s, aScaleSet);
+                ligament->scale(s, aScaleSet);
+            }
+        }
     }
     // 3. Scale the rest of the model
     bool returnVal = updSimbodyEngine().scale(s, aScaleSet, aFinalMass, aPreserveMassDist);
@@ -1377,6 +1386,13 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
             PathActuator* act = dynamic_cast<PathActuator*>(&get_ForceSet().get(i));
             if( act ) {
                 act->postScale(s, aScaleSet);
+            }
+            // Do ligaments as well for now until a general mechanism is introduced. -Ayman 5/15
+            else {
+                Ligament* ligament = dynamic_cast<Ligament*>(&get_ForceSet().get(i));
+                if (ligament){
+                    ligament->postScale(s, aScaleSet);
+                }
             }
         }
 

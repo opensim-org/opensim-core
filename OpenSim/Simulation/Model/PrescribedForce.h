@@ -60,8 +60,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations **/
-    /**@{**/
     /** "body" property is a string containing the name of the body to which
     the force will be applied. **/
     OpenSim_DECLARE_OPTIONAL_PROPERTY(body, std::string,
@@ -99,7 +97,6 @@ public:
     // Would have been better for this to be a list property. 
     OpenSim_DECLARE_PROPERTY(torqueFunctions, FunctionSet,
         "Three functions describing the torque the PrescribedForce applies.");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS
