@@ -37,6 +37,19 @@
 
 namespace OpenSim {
 
+/**
+ * DataAdapter is an abstract class defining an interface for reading/writing
+ * in/out the contents of a DataTable. It enables access to/from various data
+ * sources/sinks such as: streams, files, databases and devices. The DataTable
+ * is independent of the form and format of the data in/out of the source/sink.
+ * Concrete classes handle the details (e.g. format, sequential access, etc...) 
+ * associated with a particular data source/sink.
+ *
+ * The base DataAdapter contains a static registry to serve as a factory for 
+ * concrete DataAdpaters, given a string identifier of the type of adapter.
+ * The adapter knows the source format and data flow (read, write, both).
+ * String identifiers can be associated with file formats according to known
+ * file extensions.                                                           */
 class DataAdapter {
 public:
     using RegisteredDataAdapters = 
@@ -49,15 +62,43 @@ public:
 
     virtual ~DataAdapter() {}
 
+    /** Register a concrete DataAdapter by its unique string identifier.
+        Registration permits access to the required concrete adapter by
+        identifier lookup. As such, identifiers must be unique, but adapters may
+        be registered with multiple identifiers. For example, a data file may 
+        have multiple valid extensions (e.g. ".jpg: and ".jpeg") in which case
+        both extensions would be valid identifiers for the same adapter. If an
+        identifier is already in use an Exception is thrown. 
+    @param[in] identifier string used to uniquely identify the required
+               concrete adapter to process a source/sink. For file adapters,
+               register unique file extension(s) in order for OpenSim to read/
+               write different file formats.
+    @param[in] adapter the concrete DataAdapter required to process the type
+    (format) of the data for the source/sink.                                 */
     static
     void registerDataAdapter(const std::string& identifier,
                              const DataAdapter& adapter);
 
+    /** Creator of concrete DataAdapter(s) for the specified source type by its
+        unique identifier (string). For example, for file based sources, a 
+        component can acquire the necessary adapter instance to read the data
+        by the file extension if the extension is used as its identifier.
+    @param[in] identifier string used to uniquely identify the concrete adapter
+               that processes data from/to sources/sinks of a particular type.
+               For file adapters, .                                           */
     static
     std::unique_ptr<DataAdapter> createAdapter(const std::string& identifier);
 
+    /** Give the adapter an opportunity to prepare itself for reading data
+        into a DataTable. Adapter keeps a reference to the DataTable for
+        all subsequent read access.
+        @param[out] table  The DataTable to be filled by the DataAdapter.     */
     virtual void prepareForReading(AbstractDataTable& datatable) = 0;
 
+    /** Read in rows of the DataTable from this adapter's data source.
+    If a file this can be all the rows of data. If the source is a stream
+    or a device, this may be a row in time or the last few buffered rows.
+    @return  done  returns true if there is no more data to be read in.       */
     virtual void read() = 0;
 
 private:

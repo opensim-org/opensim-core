@@ -134,10 +134,12 @@ protected:
 public:
     using time_type = TS;
 
-    /** Inherit constructors.                                                 */
+    /** Construct.                                                            */
     using DataTable_<ET>::DataTable_;
+    TimeSeriesTable_()                                   = default;
 
     /** Copy.                                                                 */
+    TimeSeriesTable_(const TimeSeriesTable_&)            = default;
     TimeSeriesTable_& operator=(const TimeSeriesTable_&) = default;
     TimeSeriesTable_& operator=(TimeSeriesTable_&&)      = default;
 
@@ -172,7 +174,7 @@ public:
 
     \throws DataHasZeroRows If the DataTable currently has zero rows.
     \throws RowMissingTime If any of the rows is missing a timestamp.         */
-    std::pair<TS, TS> getTimeRange() {
+    std::pair<TS, TS> getTimeRange() const {
         throwIfDataHasZeroRows();
         throwIfRowMissingTime();
 

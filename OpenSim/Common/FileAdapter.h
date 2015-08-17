@@ -31,6 +31,10 @@
 
 namespace OpenSim {
 
+/** FileAdapter class for constructing DataAdapters that specifically access
+data sources that are files. It provides utilities for resolving paths and
+format parsing.
+Concrete classes handle the individual formats and specific DataTypes.        */
 class FileAdapter : public DataAdapter {
 public:
     FileAdapter() = default;
