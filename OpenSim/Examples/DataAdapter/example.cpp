@@ -20,26 +20,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Common/DataAdapter.h"
+#include "OpenSim/Common/TRCAdapter.h"
 
 #include <iostream>
 #include <fstream>
-
-
-class A {
-public:
-    virtual void prepareForReading() = 0;
-};
-
-class B : public A {
-};
-
-class C : public B {
-public:
-    void prepareForReading() {
-        std::cout << "C::prepareForReading()" << std::endl;
-    }
-};
 
 
 int main(void) {

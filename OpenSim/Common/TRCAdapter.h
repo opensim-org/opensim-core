@@ -1,7 +1,7 @@
-#ifndef OPENSIM_COMMON_FILEADAPTER_H
-#define OPENSIM_COMMON_FILEADAPTER_H
+#ifndef OPENSIM_COMMON_TRCADAPTER_H
+#define OPENSIM_COMMON_TRCADAPTER_H
 /* -------------------------------------------------------------------------- *
- *                          OpenSim:  FileAdapter.h                           *
+ *                          OpenSim:  TRCAdapter.h                            *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * OpenSim is developed at Stanford University and supported by the US        *
@@ -21,37 +21,37 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/** @file
-* This file defines an abstract FileAdapter class, which implements the 
-  OpenSim::DataAdpater interface for reading or writing data files.
-*/
-#include "DataAdapter.h"
-
-#include <vector>
+#include "FileAdapter.h"
 
 namespace OpenSim {
 
-class FileAdapter : public DataAdapter {
+class TRCAdapter : public FileAdapter {
 public:
-    FileAdapter() = default;
+    using Table = TimeSeriesTable_<SimTK::Vec3>;
+    
+    TRCAdapter* clone() const override;
 
-    static
-    std::unique_ptr<FileAdapter> createAdapter(const std::string& identifier);
+    void prepareForReading(AbstractDataTable& datatable) override;
 
-    void setFilename(const std::string& filename);
+    void read() override;
 
-    const std::string& getFilename() const;
+    static std::string getIdentifier();
 
-    static
-    std::string findExtension(const std::string& filename);
+private:
+    Table* table_;
 
-    std::vector<std::string> tokenize(const std::string& str, 
-                                      const std::string& delims);
-
-protected:
-    std::string filename_;
+    static const std::string                     delimiters_;
+    static const std::string                     newline_;
+    static const std::string                     frame_num_column_label_;
+    static const std::string                     time_column_label_;
+    static const std::string                     x_label_;
+    static const std::string                     y_label_;
+    static const std::string                     z_label_;
+    static const std::string                     num_markers_label_;
+    static const std::string                     num_frames_label_;
+    static const unsigned                        data_starts_at_row_;
 };
 
-} // OpenSim namespace
+} // namespace OpenSim
 
-#endif // OPENSIM_COMMON_FILEADAPTER_H
+#endif // OPENSIM_COMMON_TRCADAPTER_H
