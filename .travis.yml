@@ -110,7 +110,7 @@ before_install:
   ## On OSX, we know that testInitState fails; exclude it.
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testInitState"; fi
   ## If we are building in debug, there are some tests to ignore.
-  - if [ "$BTYPE" = "Debug" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testInitState|testPrescribedForce|testInducedAccelerations|testAssemblySolver|testCMC|testOptimizationExample|testComponents"; fi
+  - if [ "$BTYPE" = "Debug" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testInitState|testPrescribedForce|testInducedAccelerations|testAssemblySolver|testCMC|testOptimizationExample|testComponents|testForward"; fi
 
 install:
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
