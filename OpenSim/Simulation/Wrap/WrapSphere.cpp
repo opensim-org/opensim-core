@@ -341,23 +341,12 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     a1 = asin(_radius / p1m.norm());
 
     WrapMath::Make3x3DirCosMatrix(a1, rrx);
-    std::cout << "----------------------------------------------------" << std:: endl;
-    Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
-    for(int ii = 0; ii < 3; ii++)
-    {
-        for(int jj=0; jj < 3; jj++)
-        {
-            std::cout << aa[ii][jj] << " ";
-            std::cout << std::endl;
-        }
-    }
-    std::cout << "*****" <<std:: endl;
     Mtx::Multiply33(ra,rrx,aa);
     for (i = 0; i < 3; i++)
         r1a[i] = aPoint1[i] + aa[i][1] * p1m.norm() * cos(a1);
 
     WrapMath::Make3x3DirCosMatrix(-a1, rrx);
-    Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
+    Mtx::Multiply33(ra, rrx, aa);
 
     for (i = 0; i < 3; i++)
         r1b[i] = aPoint1[i] + aa[i][1] * p1m.norm() * cos(a1);
@@ -378,13 +367,13 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     a2 = asin(_radius / p2m.norm());
    
     WrapMath::Make3x3DirCosMatrix(a2, rrx);
-    Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
+    Mtx::Multiply33(ra, rrx, aa);
 
     for (i = 0; i < 3; i++)
        r2a[i] = aPoint2[i] + aa[i][1] * p2m.norm() * cos(a2);
 
     WrapMath::Make3x3DirCosMatrix(-a2, rrx);
-    Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
+    Mtx::Multiply33(ra, rrx, aa);
 
     for (i = 0; i < 3; i++)
         r2b[i] = aPoint2[i] + aa[i][1] * p2m.norm() * cos(a2);

@@ -107,13 +107,13 @@ int Mtx::Multiply33(const double aM1[3][3], const double aM2[3][3],
                    aM2[1][0],aM2[1][1],aM2[1][2],
                    aM2[2][0],aM2[2][1],aM2[2][2]);
     Mat33 result(m1*m2);
+    
     for(int x = 0; x < 3; x++)
     {
         for(int y= 0; y < 3; y++)
         {
-            std::cout << result(x,y) << " ";
+            rM[x][y] = result(x,y);
         }
-        std::cout << std::endl;
     }
 }
 
