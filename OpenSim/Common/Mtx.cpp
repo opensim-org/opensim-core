@@ -26,6 +26,7 @@
  */
 
 #include "osimCommonDLL.h"
+#include "SimTKcommon.h"
 #include "Mtx.h"
 #include <string.h> // for memcpy in linux
 
@@ -34,8 +35,8 @@
 // STATIC VARIABLES
 //=============================================================================
 
-
 using namespace OpenSim;
+using namespace SimTK;
 using SimTK::Vec3;
 
 /*static*/ thread_local int Mtx::_PSpaceSize = 0;
@@ -56,8 +57,10 @@ static const double eps = std::numeric_limits<double>::epsilon();
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Assign a square matrix to the identidy matrix:  rI = I.
+ * Assign a square matrix to the identity matrix:  rI = I.
  * The matrix must be square.
+ *
+ * //TODO: Is there a better way to do this? Seems kind of inefficient
  *
  * @param aN Dimension of the matrix (aN=nRows, aN=nCols).
  * @param rI Ouput identity matrix (rI = I).
@@ -84,6 +87,37 @@ Identity(int aN,double *rI)
 
     return(0);
 }
+//_____________________________________________________________________________
+/**
+ * Multiply two 3x3 matrices.
+ *
+ * If the arguments are not valid (aM1,aM2,aM==NULL), then a -1 is returned.
+ * Othersise, 0 is returned.
+ *
+ * aM1 is the first 3x3 matrix
+ * aM2 is the first 3x3 matrix
+ * rM is the 3x3 matrix result
+ */
+int Mtx::Multiply33(const double aM1[3][3], const double aM2[3][3],
+                    double rM[3][3])
+{
+    const Mat33 m1(aM1[0][0],aM1[0][1],aM1[0][2],
+                   aM1[1][0],aM1[1][1],aM1[1][2],
+                   aM1[2][0],aM1[2][1],aM1[2][2]);
+    const Mat33 m2(aM2[0][0],aM2[0][1],aM2[0][2],
+                   aM2[1][0],aM2[1][1],aM2[1][2],
+                   aM2[2][0],aM2[2][1],aM2[2][2]);
+    Mat33 result(m1*m2);
+    
+    for(int x = 0; x < 3; x++)
+    {
+        for(int y= 0; y < 3; y++)
+        {
+            rM[x][y] = result(x,y);
+        }
+    }
+}
+
 //_____________________________________________________________________________
 /**
  * Multiply two matrices.

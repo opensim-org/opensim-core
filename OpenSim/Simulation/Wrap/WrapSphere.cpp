@@ -229,11 +229,9 @@ WrapSphere& WrapSphere::operator=(const WrapSphere& aWrapSphere)
 int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                  const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
-   double l1, l2, disc, a, b, c, a1, a2, j1, j2, j3, j4, r1r2, ra[3][3], rrx[3][3], aa[3][3], mat[4][4], 
-            axis[4], vec[4], rotvec[4], angle, *r11, *r22;
-    Vec3 ri, p2m, p1m, mp, r1n, r2n,
-            p1p2, np2, hp2, r1m, r2m, y, z, n, r1a, r2a,
-            r1b, r2b, r1am, r2am, r1bm, r2bm;
+   double l1, l2, disc, a, b, c, a1, a2, j1, j2, j3, j4, r1r2;
+   Vec3 ri, p2m, p1m, mp, r1n, r2n, p1p2, np2, hp2, r1m, r2m, y, z, n, r1a, r2a,
+        r1b, r2b, r1am, r2am, r1bm, r2bm;
             
    int i, j, maxit, return_code = wrapped;
    bool far_side_wrap = false;
@@ -324,6 +322,8 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
       goto calc_path;
    }
 
+   double ra[3][3], rrx[3][3], aa[3][3], mat[4][4], axis[4], vec[4], rotvec[4], angle, *r11, *r22;
+   
    // calc tangent point candidates r1a, r1b
     Mtx::Normalize(3, hp2, n);
     for (i = 0; i < 3; i++)
@@ -341,17 +341,15 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     a1 = asin(_radius / p1m.norm());
 
     WrapMath::Make3x3DirCosMatrix(a1, rrx);
-    Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
-    // TODO: test that this gives same result as SIMM code
+    Mtx::Multiply33(ra,rrx,aa);
+    for (i = 0; i < 3; i++)
+        r1a[i] = aPoint1[i] + aa[i][1] * p1m.norm() * cos(a1);
 
-   for (i = 0; i < 3; i++)
-      r1a[i] = aPoint1[i] + aa[i][1] * p1m.norm() * cos(a1);
+    WrapMath::Make3x3DirCosMatrix(-a1, rrx);
+    Mtx::Multiply33(ra, rrx, aa);
 
-   WrapMath::Make3x3DirCosMatrix(-a1, rrx);
-    Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
-
-   for (i = 0; i < 3; i++)
-      r1b[i] = aPoint1[i] + aa[i][1] * p1m.norm() * cos(a1);
+    for (i = 0; i < 3; i++)
+        r1b[i] = aPoint1[i] + aa[i][1] * p1m.norm() * cos(a1);
 
    // calc tangent point candidates r2a, r2b
     for (i = 0; i < 3; i++)
@@ -359,26 +357,26 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     Mtx::Normalize(3, y, y);
     Mtx::CrossProduct(n, y, z);
 
-   for (i = 0; i < 3; i++)
-   {
-      ra[i][0] = n[i];
-      ra[i][1] = y[i];
-      ra[i][2] = z[i];
-   }
+    for (i = 0; i < 3; i++)
+    {
+        ra[i][0] = n[i];
+        ra[i][1] = y[i];
+        ra[i][2] = z[i];
+    }
 
-   a2 = asin(_radius / p2m.norm());
+    a2 = asin(_radius / p2m.norm());
    
-   WrapMath::Make3x3DirCosMatrix(a2, rrx);
-    Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
+    WrapMath::Make3x3DirCosMatrix(a2, rrx);
+    Mtx::Multiply33(ra, rrx, aa);
 
-   for (i = 0; i < 3; i++)
-      r2a[i] = aPoint2[i] + aa[i][1] * p2m.norm() * cos(a2);
+    for (i = 0; i < 3; i++)
+       r2a[i] = aPoint2[i] + aa[i][1] * p2m.norm() * cos(a2);
 
-   WrapMath::Make3x3DirCosMatrix(-a2, rrx);
-    Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
+    WrapMath::Make3x3DirCosMatrix(-a2, rrx);
+    Mtx::Multiply33(ra, rrx, aa);
 
-   for (i = 0; i < 3; i++)
-      r2b[i] = aPoint2[i] + aa[i][1] * p2m.norm() * cos(a2);
+    for (i = 0; i < 3; i++)
+        r2b[i] = aPoint2[i] + aa[i][1] * p2m.norm() * cos(a2);
 
    // determine wrapping tangent points r1 & r2
     for (i = 0; i < 3; i++) {
@@ -395,7 +393,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    
    {
       // check which of the tangential points results in the shortest distance
-        j1 = Mtx::DotProduct(3, r1am, r2am);
+      j1 = Mtx::DotProduct(3, r1am, r2am);
       j2 = Mtx::DotProduct(3, r1am, r2bm);
       j3 = Mtx::DotProduct(3, r1bm, r2am);
       j4 = Mtx::DotProduct(3, r1bm, r2bm);
