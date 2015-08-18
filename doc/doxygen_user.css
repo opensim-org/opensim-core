@@ -1,0 +1,13 @@
+/* Import the shared style. */
+@import url("doxygen_shared.css");
+
+#titlearea
+{
+	padding: 0px;
+	margin: 0px;
+	width: 100%;
+	color: white;
+	background-color: #485D77;
+	border-bottom: 1px solid #CCC;
+	background: -webkit-gradient(linear,left top,left bottom,from(#485D77),to(#252D38)) !important;
+}

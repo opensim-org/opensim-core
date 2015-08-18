@@ -57,16 +57,12 @@ public:
     //==========================================================================
     // PROPERTIES
     //==========================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with Appearance. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(color, SimTK::Vec3,
         "The color (rgb) used to display the object. ");
     OpenSim_DECLARE_PROPERTY(opacity, double,
         "The opacity (0-1) used to display the object. ");
     OpenSim_DECLARE_PROPERTY(representation, int,
         "The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. ");
-    /**@}**/
 
     //--------------------------------------------------------------------------
     // CONSTRUCTION
@@ -93,12 +89,8 @@ public:
     //==========================================================================
     // PROPERTIES
     //==========================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with Appearance. **/
-    /**@{**/
     OpenSim_DECLARE_OPTIONAL_PROPERTY(texture_file, std::string,
         "Name of file containing texture. ");
-    /**@}**/
 
     //--------------------------------------------------------------------------
     // CONSTRUCTION
@@ -122,12 +114,8 @@ public:
     //==============================================================================
     // PROPERTIES
     //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with LineAppearance. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(thickness, double,
         "The thickness used to visualize a LineGeometry. ");
-    /**@}**/
 
     //--------------------------------------------------------------------------
     // CONSTRUCTION

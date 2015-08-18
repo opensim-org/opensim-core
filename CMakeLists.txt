@@ -38,8 +38,20 @@ set(OPENSIM_VERSION
 
 # CMake module path.
 # ------------------
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(OpenSimMacros)
+
+# Directory in which to install.
+# ------------------------------
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    # On Windows, we override the default value because Visual Studio does
+    # not, by default, have permission to write to the Program Files
+    # directory.
+    # On Linux, we override the default value because our installation does
+    # not yet conform to the Filesystem Hierarchy Standard (FHS).
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}-install" CACHE PATH 
+        "The directory in which to install this project." FORCE)
+endif()
 
 
 # Build binary directory.
@@ -58,6 +70,13 @@ link_directories(${BUILD_BINARY_DIR})
 # Specify number of cores to run for build
 set(PROCESSOR_COUNT 8 CACHE STRING "Number of processors in the CPU")
 mark_as_advanced(PROCESSOR_COUNT)
+
+# Try to use MathJax for Doxygen equations.
+# -----------------------------------------
+option(OPENSIM_DOXYGEN_USE_MATHJAX "Try to use MathJax to render Doxygen
+equations. If OFF, LATEX is used instead if you have it; otherwise we use
+MathJax from the internet (we don't download it). If we cannot download MathJax
+from the internet, we turn this option OFF." ON)
 
 
 # Simbody.
@@ -322,7 +341,7 @@ endif()
 # As of Simbody 3.4, Simbody has a SimbodyConfig.cmake file, which is a
 # preferred way to find Simbody over the previous FindSimbody.cmake script.
 # NO_MODULE means we will not allow the use of a FindSimbody.cmake script.
-set(SIMBODY_VERSION_TO_USE 3.5)
+set(SIMBODY_VERSION_TO_USE 3.6)
 
 # Find Simbody freshly by unsetting this CMake-generated variable.
 unset(Simbody_DIR CACHE)
@@ -509,6 +528,11 @@ set(BUILD_API_ONLY OFF CACHE BOOL "Build/install only headers, libraries,
     wrapping, tests; not applications (ik, rra, etc.).")
 mark_as_advanced( BUILD_API_ONLY )
 
+# This directory contains files (e.g., .osim) that multiple tests may want to
+# use. See the OpenSimCopySharedTestFiles function in
+# cmake/OpenSimMacros.cmake.
+set(OPENSIM_SHARED_TEST_FILES_DIR "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared")
+
 add_subdirectory(Vendors)
 add_subdirectory(OpenSim)
 if(NOT BUILD_API_ONLY)
@@ -516,3 +540,4 @@ if(NOT BUILD_API_ONLY)
 endif()
 
 add_subdirectory(cmake)
+add_subdirectory(doc)

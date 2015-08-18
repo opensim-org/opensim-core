@@ -47,10 +47,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. Others
-    are inherited from the superclass. **/
-    /**@{**/
     /** Default is true. **/
     OpenSim_DECLARE_PROPERTY(compute_kinetic_energy, bool,
         "Specify whether kinetic energy is to be included in the system energy"
@@ -59,7 +55,6 @@ public:
     OpenSim_DECLARE_PROPERTY(compute_potential_energy, bool,
         "Specify whether potential energy is to be included in the system"
         " energy computation (true/false).");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS

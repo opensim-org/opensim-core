@@ -339,7 +339,7 @@ void testFilterByFrameType()
     // Previous model with a PhysicalOffsetFrame attached to rod1
     Model* pendulumWFrame = new Model("double_pendulum_extraFrame.osim");
 
-    // Create an ordinaray (non-physical OffsetFrame attached to rod2
+    // Create an ordinary (non-physical) OffsetFrame attached to rod2
     const OpenSim::Body& rod2 = pendulumWFrame->getBodySet().get("rod2");
     SimTK::Transform X_RO_2;
     X_RO_2.setP(SimTK::Vec3(0.1, 0.22, 0.333));
@@ -406,7 +406,7 @@ void testStationOnFrame()
     Station* myStation = new Station();
     myStation->set_location(com);
     myStation->updConnector<PhysicalFrame>("reference_frame")
-        .set_connected_to_name("rod1");
+        .set_connectee_name("rod1");
     pendulum->addModelComponent(myStation);
     // myStation should coinicde with com location of rod1 in ground
     SimTK::State& s = pendulum->initSystem();

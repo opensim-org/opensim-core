@@ -58,14 +58,10 @@ public:
 //===============================================================================
 // PROPERTIES
 //===============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(default_activation, double,
         "Assumed activation level if none is assigned.");
     OpenSim_DECLARE_PROPERTY(default_fiber_length, double,
         "Assumed fiber length, unless otherwise assigned.");
-    /**@}**/
 
 
 //==============================================================================

@@ -20,7 +20,7 @@ include(CMakeParseArguments)
 #
 # Here's an example from OpenSim/Common/CMakeLists.txt:
 #
-#   opensim_add_library(
+#   OpenSimAddLibrary(
 #       KIT Common
 #       AUTHORS "Clay_Anderson-Ayman_Habib_and_Peter_Loan"
 #       LINKLIBS ${Simbody_LIBRARIES}
@@ -28,7 +28,7 @@ include(CMakeParseArguments)
 #       SOURCES ${SOURCES}
 #       TESTDIRS "Test"
 #       )
-function(OPENSIM_ADD_LIBRARY)
+function(OpenSimAddLibrary)
 
     # Parse arguments.
     # ----------------
@@ -138,6 +138,22 @@ function(OPENSIM_ADD_LIBRARY)
 
 endfunction()
 
+# Copy a file from the directory containing test files (model files, data,
+# etc.) to the directory in which a test will be executed. This function makes
+# it easy to re-use files that are used in tests. With an easier mechanism for
+# re-using these files, we won't end up version-controlling the same file in
+# multiple test directories.
+#
+# Arguments are a list of files in the test resources directory
+# (OPENSIM_SHARED_TEST_FILES_DIR) to copy.
+function(OpenSimCopySharedTestFiles)
+    if(BUILD_TESTING)
+        foreach(filename ${ARGN})
+            file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/${filename}"
+                 DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+        endforeach()
+    endif()
+endfunction()
 
 # Create test targets for this directory.
 # TESTPROGRAMS: Names of test CPP files. One test will be created for each cpp
@@ -150,12 +166,12 @@ endfunction()
 # Here's an example:
 #   file(GLOB TEST_PROGRAMS "test*.cpp")
 #   file(GLOB DATA_FILES *.osim *.xml *.sto *.mot)
-#   OPENSIM_ADD_TESTS(
+#   OpenSimAddTests(
 #       TESTPROGRAMS ${TEST_ROGRAMS}
 #       DATAFILES ${DATA_FILES}
 #       LINKLIBS osimCommon osimSimulation osimAnalyses
 #       )
-function(OPENSIM_ADD_TESTS)
+function(OpenSimAddTests)
 
     if(BUILD_TESTING)
 

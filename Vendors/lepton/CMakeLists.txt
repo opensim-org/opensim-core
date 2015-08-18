@@ -6,7 +6,7 @@ endif(WIN32)
 
 include_directories(${OpenSim_SOURCE_DIR}/Vendors/lepton/include)
 
-OPENSIM_add_library(VENDORLIB LOWERINCLUDEDIRNAME
+OpenSimAddLibrary(VENDORLIB LOWERINCLUDEDIRNAME
     KIT Lepton
     AUTHORS "Peter_Eastman"
     LINKLIBS ""
