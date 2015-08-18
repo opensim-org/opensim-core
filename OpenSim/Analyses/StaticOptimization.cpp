@@ -209,7 +209,11 @@ constructColumnLabels()
     Array<string> labels;
     labels.append("time");
     if(_model) 
-        for (int i = 0; i < _forceSet->getActuators().getSize(); i++) labels.append(_forceSet->getActuators().get(i).getName());
+		for (int i = 0; i < _forceSet->getActuators().getSize(); i++) {
+			if (ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->getActuators().get(i))) {
+				labels.append(act->getName());
+			}
+		}
     setColumnLabels(labels);
 }
 
@@ -371,10 +375,12 @@ record(const SimTK::State& s)
     // Parameter bounds
     SimTK::Vector lowerBounds(na), upperBounds(na);
     for(int i=0,j=0;i<fs.getSize();i++) {
-        ScalarActuator& act = *dynamic_cast<ScalarActuator*>(&fs.get(i));
-        lowerBounds(j) = act.getMinControl();
-        upperBounds(j) = act.getMaxControl();
-        j++;
+        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fs.get(i));
+		if (act) {
+			lowerBounds(j) = act->getMinControl();
+			upperBounds(j) = act->getMaxControl();
+			j++;
+		}
     }
     
     target.setParameterLimits(lowerBounds, upperBounds);
@@ -584,7 +590,7 @@ begin(SimTK::State& s )
         _forceReporter->begin(sWorkingCopy);
         _forceReporter->updForceStorage().reset();
 
-        _parameters.resize(_forceSet->getActuators().getSize());
+        _parameters.resize(_modelWorkingCopy->getNumControls());
         _parameters = 0;
     }
 
