@@ -51,11 +51,11 @@ class OSIMCOMMON_API Mtx
 // DATA
 //=============================================================================
 private:
-    static int _PSpaceSize;
-    static int _WSpaceSize;
-    static double **_P1Space;
-    static double **_P2Space;
-    static double *_WSpace;
+    static thread_local int _PSpaceSize;
+    static thread_local int _WSpaceSize;
+    static thread_local double **_P1Space;
+    static thread_local double **_P2Space;
+    static thread_local double *_WSpace;
 
 //=============================================================================
 // METHODS

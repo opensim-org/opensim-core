@@ -38,11 +38,12 @@
 using namespace OpenSim;
 using SimTK::Vec3;
 
-int Mtx::_PSpaceSize = 0;
-int Mtx::_WSpaceSize = 0;
-double** Mtx::_P1Space = NULL;
-double** Mtx::_P2Space = NULL;
-double*  Mtx::_WSpace = NULL;
+/*static*/ thread_local int Mtx::_PSpaceSize = 0;
+/*static*/ thread_local int Mtx::_WSpaceSize = 0;
+/*static*/ thread_local double** Mtx::_P1Space = NULL;
+/*static*/ thread_local double** Mtx::_P2Space = NULL;
+/*static*/ thread_local double*  Mtx::_WSpace = NULL;
+
 static const double eps = std::numeric_limits<double>::epsilon();
 
 
