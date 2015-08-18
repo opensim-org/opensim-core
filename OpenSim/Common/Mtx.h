@@ -139,8 +139,6 @@ public:
     static int Identity(int aNR,double *rI);
     static int Multiply(int aNR1,int aNCR,int aNC2,const double *aM1,
         const double *aM2,double *aM);
-    static int Multiply33(const double aM1[3][3], const double aM2[3][3],
-                        double rM[3][3]);
     static int Invert(int aN,const double *aM,double *aMInv);
 
     //--------------------------------------------------------------------------
