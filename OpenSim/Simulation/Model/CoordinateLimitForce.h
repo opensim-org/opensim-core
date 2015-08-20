@@ -235,8 +235,8 @@ private:
     // damping to constant values beyond the limits. These are heap allocated
     // and owned here, but we don't want these functions to be copied if a
     // CoordinateLimitForce is copied.
-    SimTK::ResetOnCopy<std::unique_ptr<SimTK::Function::Step>> _upStep;
-    SimTK::ResetOnCopy<std::unique_ptr<SimTK::Function::Step>> _loStep;
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::Function::Step> > _upStep;
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::Function::Step> > _loStep;
 
     // Scaling for coordinate values in m or degrees (rotational) 
     double _w;
