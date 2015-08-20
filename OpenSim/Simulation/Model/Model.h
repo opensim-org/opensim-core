@@ -1038,15 +1038,15 @@ private:
     // subsystems and force elements are owned by the MultibodySystem. However,
     // that memory management happens through Simbody's handles. It's fine for
     // us to manage the heap memory for the handles.
-    SimTK::ResetOnCopy<std::unique_ptr<SimTK::MultibodySystem>> _system;
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::MultibodySystem> > _system;
 
-    SimTK::ResetOnCopy<std::unique_ptr<SimTK::SimbodyMatterSubsystem>>
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::SimbodyMatterSubsystem> >
         _matter;     
-    SimTK::ResetOnCopy<std::unique_ptr<SimTK::Force::Gravity>>
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::Force::Gravity> >
         _gravityForce;
-    SimTK::ResetOnCopy<std::unique_ptr<SimTK::GeneralForceSubsystem>>
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::GeneralForceSubsystem> >
         _forceSubsystem;
-    SimTK::ResetOnCopy<std::unique_ptr<SimTK::GeneralContactSubsystem>>
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::GeneralContactSubsystem> >
         _contactSubsystem;
 
     // System-dependent objects.
