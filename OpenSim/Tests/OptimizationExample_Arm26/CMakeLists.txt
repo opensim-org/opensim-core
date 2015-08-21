@@ -47,6 +47,6 @@ add_test(${TEST_TARGET} ${TEST_PATH}/${TEST_TARGET})
 set_tests_properties(${TEST_TARGET} PROPERTIES DEPENDS ${TEST_TARGET}Runs)
 
 set_target_properties(${EXAMPLE_TARGET} PROPERTIES
-    PROJECT_LABEL "Examples - ${EXAMPLE_TARGET}" )
+    FOLDER "Examples")
 set_target_properties(${TEST_TARGET} PROPERTIES
-    PROJECT_LABEL "Tests - ${TEST_TARGET}")
+    FOLDER "Example tests")

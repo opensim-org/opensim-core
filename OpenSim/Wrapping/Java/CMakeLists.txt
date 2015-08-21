@@ -24,8 +24,11 @@ if( JAVA_COMPILE )
      COMMAND ${JAVA_COMPILE} 
      ${CMAKE_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/src/org/opensim/modeling/*.java 
      -source 1.6 -target 1.6
-     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/src/)
+     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/src
+     )
      
+  set_target_properties(JavaCompile PROPERTIES FOLDER "Wrapping (scripting)")
+
   add_custom_command(TARGET JavaCompile
                    POST_BUILD
                    COMMAND ${JAVA_ARCHIVE} -cvf org-opensim-modeling.jar

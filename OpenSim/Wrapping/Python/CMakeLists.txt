@@ -47,7 +47,9 @@ add_custom_target(PyWrap
         ${swig_output_cxx_file_fullname}
         ${swig_output_header_file_fullname})
 
-set_target_properties(PyWrap PROPERTIES PROJECT_LABEL "Python Bindings - Generate")
+set_target_properties(PyWrap PROPERTIES
+    PROJECT_LABEL "Python - Generate source code"
+    FOLDER "Wrapping (scripting)")
 
 
 # Compile python wrapper files.
@@ -89,7 +91,8 @@ add_library(_${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 
 # Resulting library must be named _opensim.so on Unix, _opensim.pyd on Windows.
 set_target_properties(_${KIT} PROPERTIES
-    PROJECT_LABEL "Python Bindings - _${KIT}"
+    PROJECT_LABEL "Python - _${KIT}"
+    FOLDER "Wrapping (scripting)"
     PREFIX ""
     # Most shared libraries go into the root build dir; not so for _opensim.
     ARCHIVE_OUTPUT_DIRECTORY "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
