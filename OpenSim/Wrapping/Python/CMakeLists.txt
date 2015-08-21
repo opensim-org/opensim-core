@@ -28,6 +28,7 @@ set(swig_interface_file_fullname
 # Using a custom command / custom target pair so that SWIG is only run when
 # it's out of date. Previously, we used a custom target only. But, custom
 # targets are always out of date.
+# TODO can use `swig -M` to detect file dependencies for CMake.
 add_custom_command(
     OUTPUT "${PYTHON_PACKAGE_BINARY_DIR}/opensim/opensim.py"
         ${swig_output_cxx_file_fullname} ${swig_output_header_file_fullname}
