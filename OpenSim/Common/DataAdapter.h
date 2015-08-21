@@ -93,13 +93,23 @@ public:
         into a DataTable. Adapter keeps a reference to the DataTable for
         all subsequent read access.
         @param[out] table  The DataTable to be filled by the DataAdapter.     */
-    virtual void prepareForReading(AbstractDataTable& datatable) = 0;
+    virtual void prepareForReading(AbstractDataTable& table) = 0;
+
+    /** Give the adapter an opportunity to prepare itself for writing out a
+        DataTable. Adapter keeps a reference to the DataTable for all
+        subsequent write access.
+        @param[in] table  The DataTable to be written out by the DataAdapter. */
+    virtual void prepareForWriting(const AbstractDataTable& table) = 0;
 
     /** Read in rows of the DataTable from this adapter's data source.
     If a file this can be all the rows of data. If the source is a stream
-    or a device, this may be a row in time or the last few buffered rows.
-    @return  done  returns true if there is no more data to be read in.       */
+    or a device, this may be a row in time or the last few buffered rows.     */
     virtual void read() = 0;
+
+    /** Write out rows of the DataTableas to this adapter's data sink.
+    If a file this can be all the rows of data. If the sink is a stream
+    or a device, this may the row(s) up to the current time.                  */
+    virtual void write() = 0;
 
 private:
     static RegisteredDataAdapters registered_data_adapters;

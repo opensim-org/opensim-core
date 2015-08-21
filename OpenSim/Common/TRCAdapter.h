@@ -31,25 +31,31 @@ public:
     
     TRCAdapter* clone() const override;
 
-    void prepareForReading(AbstractDataTable& datatable) override;
+    void prepareForReading(AbstractDataTable& table) override;
+
+    void prepareForWriting(const AbstractDataTable& table) override;
 
     void read() override;
+    
+    void write() override;
 
     static std::string getIdentifier();
 
 private:
     Table* table_;
 
-    static const std::string                     delimiters_;
-    static const std::string                     newline_;
-    static const std::string                     frame_num_column_label_;
-    static const std::string                     time_column_label_;
-    static const std::string                     x_label_;
-    static const std::string                     y_label_;
-    static const std::string                     z_label_;
-    static const std::string                     num_markers_label_;
-    static const std::string                     num_frames_label_;
-    static const unsigned                        data_starts_at_row_;
+    static const std::string              delimiter_write_;
+    static const std::string              delimiters_read_;
+    static const std::string              newline_;
+    static const std::string              frame_num_column_label_;
+    static const std::string              time_column_label_;
+    static const std::string              x_label_;
+    static const std::string              y_label_;
+    static const std::string              z_label_;
+    static const std::string              num_markers_label_;
+    static const std::string              num_frames_label_;
+    static const unsigned                 data_starts_at_row_;
+    static const std::vector<std::string> metadata_keys_;
 };
 
 } // namespace OpenSim
