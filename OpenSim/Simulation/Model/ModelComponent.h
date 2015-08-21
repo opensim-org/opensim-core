@@ -81,15 +81,12 @@ class Model;
 
 class OSIMSIMULATION_API ModelComponent : public Component {
 OpenSim_DECLARE_ABSTRACT_OBJECT(ModelComponent, Component);
+//==============================================================================
 // PROPERTIES
 //==============================================================================
-/** @name Property declarations
-These are the serializable properties associated with this class. **/
-/**@{**/
 public:
     OpenSim_DECLARE_LIST_PROPERTY(geometry, Geometry,
         "List of Geometry that is attached to this Model Component.");
-/**@}**/
 //==============================================================================
 // METHODS
 //==============================================================================

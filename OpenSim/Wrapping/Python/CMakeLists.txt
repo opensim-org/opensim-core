@@ -112,6 +112,12 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in
 # Copy source tree files into the build directory.
 file(COPY __init__.py DESTINATION "${PYTHON_PACKAGE_BINARY_DIR}/opensim")
 
+foreach(test_file tests/storage.sto "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
+        "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim")
+    file(COPY "${test_file}"
+         DESTINATION "${PYTHON_PACKAGE_BINARY_DIR}/opensim/tests")
+endforeach()
+
 # Test.
 # -----
 add_test(NAME python WORKING_DIRECTORY "${PYTHON_PACKAGE_BINARY_DIR}"
@@ -120,7 +126,7 @@ add_test(NAME python WORKING_DIRECTORY "${PYTHON_PACKAGE_BINARY_DIR}"
     # one can edit the tests and immediately re-run the tests without any
     # intermediate file copying.
     COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
-                "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+                "${CMAKE_CURRENT_SOURCE_DIR}/tests" --verbose
     )
 if(WIN32)
     set_tests_properties(python PROPERTIES ENVIRONMENT

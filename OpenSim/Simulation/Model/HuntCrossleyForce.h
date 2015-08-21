@@ -48,16 +48,11 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. Others
-    are inherited from the superclass. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(contact_parameters, 
         HuntCrossleyForce::ContactParametersSet,
         "Material properties.");
     OpenSim_DECLARE_PROPERTY(transition_velocity, double,
         "Slip velocity (creep) at which peak static friction occurs.");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS
@@ -134,10 +129,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. Others
-    are inherited from the superclass. **/
-    /**@{**/
     OpenSim_DECLARE_LIST_PROPERTY(geometry, std::string,
         "Names of geometry objects affected by these parameters.");
     OpenSim_DECLARE_PROPERTY(stiffness, double,
@@ -150,7 +141,6 @@ public:
         "");
     OpenSim_DECLARE_PROPERTY(viscous_friction, double,
         "");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS

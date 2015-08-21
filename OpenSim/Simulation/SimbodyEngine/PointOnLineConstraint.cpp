@@ -151,12 +151,12 @@ void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) co
  * Following methods set attributes of the point on line constraint */
 void PointOnLineConstraint::setLineBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("line_body").set_connected_to_name(aBodyName);
+    updConnector<PhysicalFrame>("line_body").set_connectee_name(aBodyName);
 }
 
 void PointOnLineConstraint::setFollowerBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("follower_body").set_connected_to_name(aBodyName);
+    updConnector<PhysicalFrame>("follower_body").set_connectee_name(aBodyName);
 
 }
 
@@ -187,9 +187,13 @@ void PointOnLineConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
             // replace old properties with latest use of Connectors
             SimTK::Xml::element_iterator body1Element = aNode.element_begin("line_body");
             SimTK::Xml::element_iterator body2Element = aNode.element_begin("follower_body");
-            std::string body1_name, body2_name;
-            body1Element->getValueAs<std::string>(body1_name);
-            body2Element->getValueAs<std::string>(body2_name);
+            std::string body1_name(""), body2_name("");
+            // If default constructed then elements not serialized since they are default
+            // values. Check that we have associated elements, then extract their values.
+            if (body1Element != aNode.element_end())
+                body1Element->getValueAs<std::string>(body1_name);
+            if (body2Element != aNode.element_end())
+                body2Element->getValueAs<std::string>(body2_name);
             XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "line_body", body1_name);
             XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "follower_body", body2_name);
         }

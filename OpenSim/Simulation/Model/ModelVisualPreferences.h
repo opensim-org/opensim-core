@@ -54,13 +54,8 @@ public:
     //==========================================================================
     // PROPERTIES
     //==========================================================================
-    /** @name Property declarations
-    These are the serializable properties of ModelVisualPreferences. **/
-    /**@{**/
     OpenSim_DECLARE_UNNAMED_PROPERTY(ModelDisplayHints,
         "Model display preferences");
-
-    /**@}**/
 
     //--------------------------------------------------------------------------
     // CONSTRUCTION

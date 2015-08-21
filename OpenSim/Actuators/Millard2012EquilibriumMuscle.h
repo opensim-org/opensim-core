@@ -199,9 +199,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(fiber_damping, double,
         "The linear damping of the fiber.");
     OpenSim_DECLARE_PROPERTY(default_activation, double,
@@ -222,7 +219,6 @@ public:
         "Passive-force-length curve.");
     OpenSim_DECLARE_UNNAMED_PROPERTY(TendonForceLengthCurve,
         "Tendon-force-length curve.");
-    /**@}**/
 
 //==============================================================================
 // CONSTRUCTORS

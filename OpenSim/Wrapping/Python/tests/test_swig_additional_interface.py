@@ -2,6 +2,7 @@
 make to the C++ API, via the SWIG interface (*.i) file.
 
 """
+
 import os
 import unittest
 
@@ -14,13 +15,10 @@ import opensim as osim
 # TODO operator overloading operator+().
 # TODO size() -> __len__()
 
+test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
+                        'tests')
+
 class TestSwigAddtlInterface(unittest.TestCase):
-    def test_check_env_var(self):
-        if 'OPENSIM_HOME' not in os.environ:
-            raise Exception("To run tests, must set environment "
-                    "variable OPENSIM_HOME "
-                    "to an OpenSim installation.")
-    
     def test_markAdopted1(self):
         """Ensures that we can tell an object that some other object is managing
         its memory.
@@ -38,10 +36,21 @@ class TestSwigAddtlInterface(unittest.TestCase):
         # We just need the following not to not cause a segfault.
     
         # Model add*
-        a.addForce(osim.PathActuator())
-        a.addProbe(osim.Umberger2010MuscleMetabolicsProbe())
-        a.addAnalysis(osim.MuscleAnalysis())
-        a.addController(osim.PrescribedController())
+        pa = osim.PathActuator()
+        pa.setName('pa')
+        a.addForce(pa)
+
+        probe = osim.Umberger2010MuscleMetabolicsProbe()
+        probe.setName('probe')
+        a.addProbe(probe)
+
+        ma = osim.MuscleAnalysis()
+        ma.setName('ma')
+        a.addAnalysis(ma)
+
+        pc = osim.PrescribedController()
+        pc.setName('pc')
+        a.addController(pc)
         
         body = osim.Body('body1',
                 1.0,
@@ -72,14 +81,18 @@ class TestSwigAddtlInterface(unittest.TestCase):
         constr.setConstantDistance(1)
         a.addConstraint(constr)
     
-        # Force requires body names. If not provided, you get a segfault.
-        f = osim.BushingForce()
-        f.setBody1ByName("ground")
-        f.setBody2ByName("body")
+        f = osim.BushingForce("ground", "body",
+                osim.Vec3(2, 2, 2), osim.Vec3(1, 1, 1),
+                osim.Vec3(0, 0, 0), osim.Vec3(0, 0, 0))
         a.addForce(f)
     
-        model = osim.Model(os.environ['OPENSIM_HOME'] +
-                "/Models/Arm26/arm26.osim")
+        f2 = osim.BushingForce()
+        a.addForce(f2)
+    
+        f3 = osim.SpringGeneralizedForce()
+        a.addForce(f3)
+    
+        model = osim.Model(os.path.join(test_dir, "arm26.osim"))
         g = osim.CoordinateActuator('r_shoulder_elev')
         model.addForce(g)
     
@@ -232,7 +245,6 @@ class TestSwigAddtlInterface(unittest.TestCase):
         del s
         del o
     
-    
         a = osim.Model()
         body = osim.Body('body',
                 1.0,
@@ -375,4 +387,3 @@ class TestSwigAddtlInterface(unittest.TestCase):
             assert k == names[j]
             assert k == v.getName()
             j += 1
-
