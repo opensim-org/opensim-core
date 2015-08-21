@@ -113,7 +113,7 @@ public:
     //--------------------------------------------------------------------------
     // UTILITY
     //--------------------------------------------------------------------------
-    static void getAvailableAnalyses(AnalysisSet& as);
+    static void getAvailableAnalyses(AnalysisSet& aset);
 
 //=============================================================================
 };  // END of class AnalysisSet

@@ -406,12 +406,27 @@ once added to the Model.  These lines must go at this point in this .i file. I
 originally had them at the bottom, and then they didn't work!
 
 note: ## is a "glue" operator: `a ## b` --> `ab`.
+note: We need two different versions of this swig macro, before/after v3.0.3.
+      This is because of the backwards-incompatible compactdefaultargs
+      behavior.
 */
+#ifdef SWIG_VERSION < 0x030003
+
 %define MODEL_ADOPT_HELPER(NAME)
 %pythonappend OpenSim::Model::add ## NAME %{
     args[0]._markAdopted()
 %}
 %enddef
+
+#else
+
+%define MODEL_ADOPT_HELPER(NAME)
+%pythonappend OpenSim::Model::add ## NAME %{
+    self._markAdopted()
+%}
+%enddef
+
+#endif
 
 MODEL_ADOPT_HELPER(ModelComponent);
 MODEL_ADOPT_HELPER(Body);
