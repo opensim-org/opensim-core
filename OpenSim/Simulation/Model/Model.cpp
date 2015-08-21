@@ -129,7 +129,6 @@ Model::Model(const string &aFileName, const bool finalize) :
  */
 Model::~Model()
 {
-    delete _assemblySolver;
     delete _modelViz;
 }
 //_____________________________________________________________________________
@@ -214,7 +213,6 @@ void Model::setNull()
     _allControllersEnabled = true;
 
     _modelViz = NULL;
-    _assemblySolver = NULL;
 
     _validationLog="";
 
@@ -1563,13 +1561,10 @@ void Model::createAssemblySolver(const SimTK::State& s)
         }
     }
 
-    // Have an AssemblySolver on hand, but delete any old one first
-    delete _assemblySolver;
-
     // Use the assembler to generate the initial pose from Coordinate defaults
     // that also satisfies the constraints. AssemblySolver makes copy of
     // coordsToTrack
-    _assemblySolver = new AssemblySolver(*this, coordsToTrack);
+    _assemblySolver.reset(new AssemblySolver(*this, coordsToTrack));
     _assemblySolver->setConstraintWeight(SimTK::Infinity);
     _assemblySolver->setAccuracy(get_assembly_accuracy());
 }

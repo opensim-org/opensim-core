@@ -29,6 +29,7 @@
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Units.h>
+#include <OpenSim/Simulation/AssemblySolver.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/Model/ControllerSet.h>
@@ -70,7 +71,6 @@ class Actuator;
 class ContactGeometrySet;
 class Storage;
 class ScaleSet;
-class AssemblySolver;
 class Controller;
 class ControllerSet;
 class ModelDisplayHints;
@@ -1052,9 +1052,9 @@ private:
     // System-dependent objects.
 
     // Assembly solver used for satisfying constraints and other configuration
-    // goals. This object is owned by the Model and must be destructed.
-    //AssemblySolver*     _assemblySolver;
-    SimTK::ReferencePtr<AssemblySolver> _assemblySolver;
+    // goals. This object is owned by the Model, and should not be copied
+    // when the Model is copied.
+    SimTK::ResetOnCopy<std::unique_ptr<AssemblySolver> > _assemblySolver;
 
     // Model controls as a shared pool (Vector) of individual Actuator controls
     SimTK::MeasureIndex   _modelControlsIndex;
