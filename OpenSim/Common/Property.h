@@ -1168,41 +1168,11 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
 #define OpenSim_OVERLOAD_MACRO_4(_1,_2,_3,_4,MACRO_NAME,...) \
    MACRO_NAME
 
+
 // OpenSim_DECLARE_PROPERTY: the required, single-value variant.
 // -------------------------------------------------------------
-/**
-Declare a required, single-value property of the given \a pname and 
-type \a T, with an associated \a comment, and optionally, the property's
-initialValue:
-
- - OpenSim_DECLARE_PROPERTY(pname, T, comment)
- - OpenSim_DECLARE_PROPERTY(pname, T, comment, initialValue)
-
-This macro defines the following methods for a property named my_prop_name:
-  - getProperty_my_prop_name()
-  - updProperty_my_prop_name()
-  - get_my_prop_name()
-  - upd_my_prop_name()
-  - set_my_prop_name(value)
-
-If you don't provide an initial value when you call the macro (the first
-signature above), then you must call the following method when constructing the
-class (in version 3.3 and prior, this was always necessary):
-  - constructProperty_my_prop_name(initialValue); this method only exists if
-    you use the first signature above.
-
-A data member is also created but is intended for internal use only:
-  - PropertyIndex_my_prop_name holds the property table index for this 
-    property after it has been constructed.
-
-@relates OpenSim::Property **/
-// See comment above for OpenSim_OVERLOAD_MACRO_4 to understand how this works.
-#define OpenSim_DECLARE_PROPERTY(...)                                       \
-    OpenSim_OVERLOAD_MACRO_4(__VA_ARGS__,                                   \
-            OpenSim_DECLARE_PROPERTY_INIT,                                  \
-            OpenSim_DECLARE_PROPERTY_ORIG)(__VA_ARGS__)
-
-// The following few macros are used to implement OpenSim_DECLARE_PROPERTY.
+// The next few helper macros are used to implement OpenSim_DECLARE_PROPERTY,
+// which appears after the helper macros.
 
 // This is called for OpenSim_DECLARE_PROPERTY whether or not
 // the default property value is given to the macro.
@@ -1252,6 +1222,48 @@ A data member is also created but is intended for internal use only:
     /** @endcond **/                                                        \
     OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,                      \
             Default value: `init`.)
+
+/**
+Declare a required, single-value property of the given \a pname and 
+type \a T, with an associated \a comment, and optionally, the property's
+initialValue:
+
+ - OpenSim_DECLARE_PROPERTY(pname, T, comment)
+ - OpenSim_DECLARE_PROPERTY(pname, T, comment, initialValue)
+
+This macro defines the following methods for a property named my_prop_name:
+  - getProperty_my_prop_name()
+  - updProperty_my_prop_name()
+  - get_my_prop_name()
+  - upd_my_prop_name()
+  - set_my_prop_name(value)
+
+If you don't provide an initial value when you call the macro (the first
+signature above), then you must call the following method when constructing the
+class (in version 3.3 and prior, this was always necessary):
+  - constructProperty_my_prop_name(initialValue); this method only exists if
+    you use the first signature above.
+
+A data member is also created but is intended for internal use only:
+  - PropertyIndex_my_prop_name holds the property table index for this 
+    property after it has been constructed.
+
+@relates OpenSim::Property **/
+// See comment above for OpenSim_OVERLOAD_MACRO_4 to understand how this works.
+#ifndef SWIG
+
+#define OpenSim_DECLARE_PROPERTY(...)                                       \
+    OpenSim_OVERLOAD_MACRO_4(__VA_ARGS__,                                   \
+            OpenSim_DECLARE_PROPERTY_INIT,                                  \
+            OpenSim_DECLARE_PROPERTY_ORIG)(__VA_ARGS__)
+
+#else
+
+#define OpenSim_DECLARE_PROPERTY(pname, T, comment, ...)                    \
+    OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \
+    OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)
+
+#endif
 
 
 // All other property macros.
