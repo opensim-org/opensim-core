@@ -108,7 +108,7 @@ private:
     void constructProperties();
 
     /** ID for the constraint in Simbody. */
-    mutable SimTK::ConstraintIndex _index;
+    mutable SimTK::ResetOnCopy<SimTK::ConstraintIndex> _index;
 
     friend class SimbodyEngine;
 

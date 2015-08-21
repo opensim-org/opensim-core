@@ -223,7 +223,7 @@ protected:
 
 protected:
     /** ID for the force in Simbody. */
-    SimTK::ForceIndex   _index;
+    SimTK::ResetOnCopy<SimTK::ForceIndex> _index;
 
 private:
     void setNull();
