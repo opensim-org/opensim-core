@@ -73,6 +73,13 @@ link_directories(${BUILD_BINARY_DIR})
 set(PROCESSOR_COUNT 8 CACHE STRING "Number of processors in the CPU")
 mark_as_advanced(PROCESSOR_COUNT)
 
+# Try to use MathJax for Doxygen equations.
+# -----------------------------------------
+option(OPENSIM_DOXYGEN_USE_MATHJAX "Try to use MathJax to render Doxygen
+equations. If OFF, LATEX is used instead if you have it; otherwise we use
+MathJax from the internet (we don't download it). If we cannot download MathJax
+from the internet, we turn this option OFF." ON)
+
 
 # Simbody.
 # --------
@@ -336,7 +343,7 @@ endif()
 # As of Simbody 3.4, Simbody has a SimbodyConfig.cmake file, which is a
 # preferred way to find Simbody over the previous FindSimbody.cmake script.
 # NO_MODULE means we will not allow the use of a FindSimbody.cmake script.
-set(SIMBODY_VERSION_TO_USE 3.5)
+set(SIMBODY_VERSION_TO_USE 3.6)
 
 # Find Simbody freshly by unsetting this CMake-generated variable.
 unset(Simbody_DIR CACHE)
@@ -535,3 +542,4 @@ if(NOT BUILD_API_ONLY)
 endif()
 
 add_subdirectory(cmake)
+add_subdirectory(doc)
