@@ -103,7 +103,7 @@ protected:
 public:
     virtual ~InverseDynamicsTool();
     InverseDynamicsTool();
-    InverseDynamicsTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
+    InverseDynamicsTool(const std::string &aFileName, bool aLoadModel=true);
     InverseDynamicsTool(const InverseDynamicsTool &aObject);
 
     /* Register types to be used when reading an InverseDynamicsTool object from xml file. */
@@ -165,7 +165,7 @@ public:
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
-    virtual bool run() SWIG_DECLARE_EXCEPTION;
+    bool run() override;
 
 
 //=============================================================================

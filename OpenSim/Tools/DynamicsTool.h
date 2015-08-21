@@ -95,7 +95,7 @@ protected:
 public:
     virtual ~DynamicsTool();
     DynamicsTool();
-    DynamicsTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
+    DynamicsTool(const std::string &aFileName, bool aLoadModel=true);
     DynamicsTool(const DynamicsTool &aTool);
 
     /** Modify model to exclude specified forces by disabling those identified by name or group */
@@ -147,7 +147,7 @@ public:
     bool createExternalLoads( const std::string &aExternalLoadsFileName,
                                      Model& aModel, const Storage *loadKinematics=NULL);
 
-    virtual bool run() SWIG_DECLARE_EXCEPTION=0;
+    virtual bool run() = 0;
 
 
 //=============================================================================

@@ -117,7 +117,7 @@ private:
 public:
     virtual ~InverseKinematicsTool();
     InverseKinematicsTool();
-    InverseKinematicsTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
+    InverseKinematicsTool(const std::string &aFileName, bool aLoadModel=true);
     InverseKinematicsTool(const InverseKinematicsTool &aObject);
 
     /* Register types to be used when reading an InverseKinematicsTool object from xml file. */
@@ -165,7 +165,7 @@ public:
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
-    virtual bool run() SWIG_DECLARE_EXCEPTION;
+    bool run() override;
 
 
 //=============================================================================

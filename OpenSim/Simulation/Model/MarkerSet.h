@@ -56,7 +56,7 @@ private:
     void setNull();
 public:
     MarkerSet();
-    MarkerSet(Model& aModel, const std::string& aMarkersFileName) SWIG_DECLARE_EXCEPTION;
+    MarkerSet(Model& aModel, const std::string& aMarkersFileName);
     MarkerSet(const MarkerSet& aMarkerSet);
     ~MarkerSet(void);
 

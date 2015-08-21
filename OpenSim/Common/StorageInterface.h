@@ -46,7 +46,7 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(StorageInterface, Object);
 // METHODS
 //=============================================================================
 public:
-    explicit StorageInterface(const std::string &aFileName) SWIG_DECLARE_EXCEPTION{};
+    explicit StorageInterface(const std::string &aFileName) {};
     StorageInterface(const StorageInterface& aStorageInterface) {};
     virtual ~StorageInterface() {}
 

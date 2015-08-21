@@ -69,9 +69,7 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Object>;
         #undef final
     #endif
     #define final
-    #define SWIG_DECLARE_EXCEPTION throw(OpenSim::Exception)
 #else
-    #define SWIG_DECLARE_EXCEPTION
 #endif
 
 
@@ -663,7 +661,7 @@ protected:
     /** Constructor from a file, to be called from other constructors that 
     take a file as input. **/
     explicit Object(const std::string& fileName, 
-           bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
+           bool aUpdateFromXMLNode = true);
 
     /** Copy constructor is invoked automatically by derived classes with
     default copy constructors; otherwise it must be invoked explicitly. **/

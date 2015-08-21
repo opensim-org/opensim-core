@@ -86,7 +86,7 @@ private:
 public:
     virtual ~AnalyzeTool();
     AnalyzeTool();
-    AnalyzeTool(const std::string &aFileName, bool aLoadModelAndInput=true) SWIG_DECLARE_EXCEPTION;
+    AnalyzeTool(const std::string &aFileName, bool aLoadModelAndInput=true);
     AnalyzeTool(const AnalyzeTool &aObject);
     explicit AnalyzeTool(Model& aModel);
 
@@ -125,16 +125,16 @@ public:
     //--------------------------------------------------------------------------
     // UTILITIES
     //--------------------------------------------------------------------------
-    void setStatesFromMotion(const SimTK::State& s, const Storage &aMotion, bool aInDegrees) SWIG_DECLARE_EXCEPTION;
-    void loadStatesFromFile(SimTK::State& s ) SWIG_DECLARE_EXCEPTION;
+    void setStatesFromMotion(const SimTK::State& s, const Storage &aMotion, bool aInDegrees);
+    void loadStatesFromFile(SimTK::State& s );
     void verifyControlsStates();
     void setPrintResultFiles(bool aToWrite);
     void disableIntegrationOnlyProbes();
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
-    virtual bool run() SWIG_DECLARE_EXCEPTION;
-    virtual bool run(bool plotting) SWIG_DECLARE_EXCEPTION;
+    virtual bool run();
+    virtual bool run(bool plotting);
 
     //--------------------------------------------------------------------------
     // HELPER

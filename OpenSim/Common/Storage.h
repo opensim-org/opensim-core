@@ -114,7 +114,7 @@ public:
     // make this constructor explicit so you don't get implicit casting of int to Storage
     explicit Storage(int aCapacity=Storage_DEFAULT_CAPACITY,
         const std::string &aName="UNKNOWN");
-    Storage(const std::string &aFileName, bool readHeadersOnly=false) SWIG_DECLARE_EXCEPTION;
+    Storage(const std::string &aFileName, bool readHeadersOnly=false);
     Storage(const Storage &aStorage,bool aCopyData=true);
     Storage(const Storage &aStorage,int aStateIndex,int aN,
         const char *aDelimiter="\t");

@@ -98,7 +98,7 @@ protected:
 public:
     virtual ~ForwardTool();
     ForwardTool();
-    ForwardTool(const std::string &aFileName,bool aUpdateFromXMLNode=true,bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
+    ForwardTool(const std::string &aFileName,bool aUpdateFromXMLNode=true,bool aLoadModel=true);
     ForwardTool(const ForwardTool &aObject);
 
 private:
@@ -133,7 +133,7 @@ public:
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
-    virtual bool run() SWIG_DECLARE_EXCEPTION;
+    virtual bool run();
     void printResults();
 
     //--------------------------------------------------------------------------

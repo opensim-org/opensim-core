@@ -129,7 +129,7 @@ private:
 public:
     virtual ~RRATool();
     RRATool();
-    RRATool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
+    RRATool(const std::string &aFileName, bool aLoadModel=true);
     RRATool(const RRATool &aObject);
 
 private:
@@ -180,7 +180,7 @@ public:
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
-    virtual bool run() SWIG_DECLARE_EXCEPTION;
+    virtual bool run();
 
     //--------------------------------------------------------------------------
     // UTILITY

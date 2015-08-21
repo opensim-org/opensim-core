@@ -277,12 +277,20 @@ using namespace SimTK;
         $action
     } catch (const SimTK::Exception::IndexOutOfRange& e) {
         SWIG_exception(SWIG_IndexError, e.what());
+    } catch (const SimTK::Exception::Base& e) {
+        std::string str("SimTK Simbody error in '$fulldecl': ");
+        std::string what(e.what());
+        SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
     } catch (const OpenSim::Exception& e) {
-        std::string str("OpenSim Exception: ");
+        std::string str("OpenSim error in '$fulldecl': ");
+        std::string what(e.what());
+        SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
+    } catch (const std::exception& e) {
+        std::string str("std::exception in '$fulldecl': ");
         std::string what(e.what());
         SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
     } catch (...) {
-        SWIG_exception(SWIG_RuntimeError, "Unknown exception.");
+        SWIG_exception(SWIG_RuntimeError, "Unknown exception in '$fulldecl'.");
     }
 }
 
