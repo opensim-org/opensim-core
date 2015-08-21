@@ -474,7 +474,7 @@ enable_testing()
 include(CTest)
 
 # Sets the number of CPUs testing would use
-set(cmd ${CMAKE_CTEST_COMMAND} -j${PROCESSOR_COUNT})
+set(cmd ${CMAKE_CTEST_COMMAND} -j${PROCESSOR_COUNT} --output-on-failure)
 if(MSVC)
     set(cmd ${cmd} -C ${CMAKE_CFG_INTDIR})
 else(MSVC)

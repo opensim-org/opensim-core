@@ -46,7 +46,6 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WeldConstraint, Constraint);
 //=============================================================================
 public:
 
-    /** Properties */
     OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
         "Location of the weld in first body specified in body1 reference frame.");
     OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
