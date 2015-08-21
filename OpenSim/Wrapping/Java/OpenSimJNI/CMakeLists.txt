@@ -54,7 +54,7 @@ add_custom_target(JavaWrap
 
 set_target_properties(JavaWrap PROPERTIES
     PROJECT_LABEL "Java - Generate source code"
-    FOLDER "Wrapping/Scripting"
+    FOLDER "Wrapping (scripting)"
     )
 
 
@@ -76,7 +76,7 @@ target_link_libraries(osim${KIT} osimTools osimSimmFileWriter)
 set_target_properties(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
    PROJECT_LABEL "Java - osim${KIT}"
-   FOLDER "Wrapping/Scripting"
+   FOLDER "Wrapping (scripting)"
 )
 
 add_dependencies(osim${KIT} JavaWrap)
