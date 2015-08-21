@@ -53,7 +53,9 @@ add_custom_target(JavaWrap
             "${swig_generated_header_fullname}")
 
 set_target_properties(JavaWrap PROPERTIES
-    PROJECT_LABEL "Java Bindings - Generate")
+    PROJECT_LABEL "Java - Generate source code"
+    FOLDER "Wrapping/Scripting"
+    )
 
 
 set(SOURCE_FILES "${swig_generated_file_fullname}" OpenSimContext.cpp)
@@ -73,7 +75,8 @@ target_link_libraries(osim${KIT} osimTools osimSimmFileWriter)
     
 set_target_properties(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
-   PROJECT_LABEL "Java Bindings - osim${KIT}"
+   PROJECT_LABEL "Java - osim${KIT}"
+   FOLDER "Wrapping/Scripting"
 )
 
 add_dependencies(osim${KIT} JavaWrap)

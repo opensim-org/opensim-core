@@ -41,7 +41,9 @@ add_custom_target(PyWrap
     DEPENDS opensim.py ${swig_output_cxx_file_fullname}
         ${swig_output_header_file_fullname})
 
-set_target_properties(PyWrap PROPERTIES PROJECT_LABEL "Python Bindings - Generate")
+set_target_properties(PyWrap PROPERTIES
+    PROJECT_LABEL "Python - Generate source code"
+    FOLDER "Wrapping/Scripting")
 
 set(SOURCE_FILES OpenSimContext.cpp "${swig_output_cxx_file_fullname}")
 set(INCLUDE_FILES OpenSimContext.h "${swig_output_header_file_fullname}")
@@ -69,7 +71,8 @@ add_library(_${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 # Resulting library must be named _opensim.so on Unix, _opensim.pyd on Windows.
 set_target_properties(_${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
-   PROJECT_LABEL "Python Bindings - _${KIT}"
+   PROJECT_LABEL "Python - _${KIT}"
+   FOLDER "Wrapping/Scripting"
    PREFIX ""
 )
 if(WIN32)
