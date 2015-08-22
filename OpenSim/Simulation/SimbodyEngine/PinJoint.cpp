@@ -52,5 +52,6 @@ PinJoint::~PinJoint()
 //_____________________________________________________________________________
 void PinJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
     createMobilizedBody<MobilizedBody::Pin>(system);
 }

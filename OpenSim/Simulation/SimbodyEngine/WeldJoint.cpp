@@ -45,34 +45,6 @@ using namespace OpenSim;
 WeldJoint::~WeldJoint()
 {
 }
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-WeldJoint::WeldJoint() :
-    Joint()
-{
-    setAuthors("Ajay Seth");
-    constructCoordinates();
-}
-
-//_____________________________________________________________________________
-/**
- * Convenience Constructor.
- */
-WeldJoint::WeldJoint( const std::string &name,
-                      const std::string& parentName,
-                      const std::string& childName,
-                      bool reverse) :
-                        Super(name, parentName, childName, reverse)
-{
-    setAuthors("Ajay Seth");
-    constructCoordinates();
-}
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
 
 
 //=============================================================================
@@ -81,6 +53,7 @@ WeldJoint::WeldJoint( const std::string &name,
 //_____________________________________________________________________________
 void WeldJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
     createMobilizedBody<SimTK::MobilizedBody::Weld>(system);
 }
 

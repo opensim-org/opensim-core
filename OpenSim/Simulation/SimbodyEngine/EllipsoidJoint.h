@@ -46,9 +46,6 @@ position (\f$\vec{u} \neq \dot{\vec{q}}\f$)
 */
 class OSIMSIMULATION_API EllipsoidJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(EllipsoidJoint, Joint);
-
-private:
-    static const int _numMobilities = 3;
 //=============================================================================
 // DATA
 //=============================================================================
@@ -67,15 +64,25 @@ public:
 //=============================================================================
 // METHODS
 //=============================================================================
-public:
     // CONSTRUCTION
     EllipsoidJoint();
-    // convenience constructor
+    /** Convenience Joint like Constructor */
     EllipsoidJoint( const std::string& name,
                     const std::string& parentName,
                     const std::string& child,
                     const SimTK::Vec3& ellipsoidRadii,
                     bool reverse = false);
+
+    /** Deprecated Joint Constructor*/
+    EllipsoidJoint::EllipsoidJoint(const std::string& name,
+        const PhysicalFrame& parent,
+        const SimTK::Vec3& locationInParent,
+        const SimTK::Vec3& orientationInParent,
+        const PhysicalFrame& child,
+        const SimTK::Vec3& locationInChild,
+        const SimTK::Vec3& orientationInChild,
+        const SimTK::Vec3& ellipsoidRadii,
+        bool reverse=false);
 
     virtual ~EllipsoidJoint();
 
@@ -101,6 +108,7 @@ protected:
         SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const override;
 
 private:
+    static const int _numMobilities = 3;
     void constructProperties();
 
 //=============================================================================

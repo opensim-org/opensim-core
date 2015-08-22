@@ -76,7 +76,6 @@ class OSIMSIMULATION_API Joint : public ModelComponent {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Joint, ModelComponent);
 
 public:
-
 //==============================================================================
 // PROPERTIES
 //==============================================================================
@@ -157,8 +156,8 @@ public:
                         direction of the Joint in the multibody tree.
                         Default is false (that is, forward).
     */
-    DEPRECATED_14("Joint constructor with explicit location and "
-        "orientation offsets will no longer be supported.")
+   // DEPRECATED_14("Joint constructor with explicit location and "
+    //    "orientation offsets will no longer be supported.")
     Joint(const std::string& name,
         const PhysicalFrame& parent,
         const SimTK::Vec3& locationInParent,
@@ -168,8 +167,8 @@ public:
         const SimTK::Vec3& orientationInChild,
         bool reverse);
 
-    DEPRECATED_14("Joint constructor with explicit location and "
-        "orientation offsets will no longer be supported.")
+   // DEPRECATED_14("Joint constructor with explicit location and "
+   //     "orientation offsets will no longer be supported.")
     Joint(const std::string& name,
         const PhysicalFrame& parent,
         const SimTK::Vec3& locationInParent,

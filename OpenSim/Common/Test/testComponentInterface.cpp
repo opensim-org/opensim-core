@@ -138,10 +138,6 @@ public:
         m_mutableCtr = 0;
     }
 
-    Foo(double mass) : Foo() {
-        upd_mass() = mass;
-    }
-
     double getSomething(const SimTK::State& state) const {
         const_cast<Foo *>(this)->m_ctr++;
         m_mutableCtr++;
@@ -182,7 +178,7 @@ protected:
         Vec3 mInP(0, 0, 0);
 
         SimTK::Body::Rigid bone(
-            MassProperties(get_mass(), Vec3(0), Inertia::brick(0.5, 1, 0.5)));
+            MassProperties(1, Vec3(0), Inertia::brick(0.5, 1, 0.5)));
 
         // Thigh connected by hip
         MobilizedBody::Pin b1ToGround(matter.updGround(), SimTK::Transform(mInP),
@@ -336,13 +332,9 @@ public:
     OpenSim_DECLARE_PROPERTY(scale1, double, "Scale factor for 1st Foo");
     OpenSim_DECLARE_PROPERTY(scale2, double, "Scale factor for 2nd Foo");
 
-    using Foo::Foo;
-    
-    /*
     CompoundFoo() : Foo() {
         constructInfrastructure();
     }
-    */
 
 protected:
     // Component implementation interface
@@ -557,8 +549,6 @@ int main() {
         compFoo.set_Foo2(foo2);
         compFoo.finalizeFromProperties();
     
-        CompoundFoo massiveFoo{};
-
         world3.add(&compFoo);
         world3.add(&bar2);
 

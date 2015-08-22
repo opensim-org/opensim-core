@@ -57,6 +57,7 @@ public:
     int numCoordinates() const { return _numMobilities; }
 
 protected:
+    void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 private:

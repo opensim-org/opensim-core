@@ -57,9 +57,7 @@ Joint::Joint() : Super()
     constructInfrastructure();
 }
 
-/**
- * API constructor.
- */
+/* API constructor. */
 Joint::Joint(const std::string &name, const std::string& parentName, 
                                       const std::string& childName,
                                       bool reverse) : Super()
@@ -74,7 +72,7 @@ Joint::Joint(const std::string &name, const std::string& parentName,
     setName(name);
 }
 
-
+/* Deprecated Constructor*/
 Joint::Joint(const std::string &name,
     const PhysicalFrame& parent,
     const SimTK::Vec3& locationInParent,
@@ -107,14 +105,21 @@ Joint::Joint(const std::string &name,
     PhysicalOffsetFrame childOffset(child, childTransform);
     childOffset.setName(child.getName()+"_offset");
 
+    //for debugging color parent green and child blue
+    parentOffset.upd_geometry(0).setColor(SimTK::Vec3(0, 1, 0));
+    parentOffset.upd_geometry(0).set_scale_factors(SimTK::Vec3(0.1, 0.1, 0.1));
+    childOffset.upd_geometry(0).setColor(SimTK::Vec3(0, 0, 1));
+    childOffset.upd_geometry(0).set_scale_factors(SimTK::Vec3(0.1, 0.1, 0.1));
+ 
+
     // Append the offset frames to the Joints internal list of frames
     append_frames(parentOffset);
     append_frames(childOffset);
 
     updConnector<PhysicalFrame>("parent_frame").set_connectee_name(
-        parentOffset.getName() );
+        getName() + "/" + parentOffset.getName() );
     updConnector<PhysicalFrame>("child_frame").set_connectee_name(
-        childOffset.getName() );
+        getName() + "/" + childOffset.getName() );
 }
 
 //=============================================================================
@@ -181,14 +186,16 @@ void Joint::extendFinalizeFromProperties()
     // add all coordinates listed under this joint as 
     // subcomponents as long as the number of coordinates
     // does not exceed the number of dofs.
-    SimTK_ASSERT1(numCoordinates() == coordinateSet.getSize(), 
+    SimTK_ASSERT1(numCoordinates() == coordinateSet.getSize(),
         "%s list of coordinates does not match Joint degrees-of-freedom.",
-                  getConcreteClassName().c_str());
-    for (int i = 0; i< coordinateSet.getSize(); ++i){
+        getConcreteClassName().c_str());
+    for (int i = 0; i < coordinateSet.getSize(); ++i) {
         coordinateSet[i].setJoint(*this);
         addComponent(&coordinateSet[i]);
     }
-
+    for (int i = 0; i < getProperty_frames().size(); ++i) {
+        addComponent(&upd_frames(i));
+    }
 }
 
 //=============================================================================
@@ -281,7 +288,9 @@ void Joint::constructCoordinates()
     // Check how many coordinates are already defined if any
     int ncoords = coordinateSet.getSize();
 
-    for(int i = ncoords; i< numCoordinates() ; i++){
+    int nj_coords = numCoordinates();
+
+    for(int i = ncoords; i< numCoordinates(); ++i){
         std::stringstream name;
         name << getName() << "_coord_" << i;
         Coordinate *coord = new Coordinate();
@@ -305,11 +314,13 @@ void Joint::setChildMobilizedBodyIndex(const SimTK::MobilizedBodyIndex index) co
 void Joint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
-    /* TODO: Useful to include through debug message/log in the future
-    cout << getConcreteClassName() << ":'" << getName() << "' connects parent '";
-    cout << getParentFrameName() << "'[" << getParentFrame().getIndex() << "] and child '";
-    cout << getChildFrameName() << "'[" << getChildFrame().getIndex() << "]" << endl;
-     */
+
+    // The parent node in the multibody tree must part of the system
+    if(get_reverse())
+        // this will be the child if the joint definition is revesed
+        getConnector<PhysicalFrame>("child_frame").getConnectee().addToSystem(system);
+    else // otherwise it is the parent frame
+        getConnector<PhysicalFrame>("parent_frame").getConnectee().addToSystem(system);
 }
 
 void Joint::extendInitStateFromProperties(SimTK::State& s) const
@@ -334,9 +345,10 @@ void Joint::extendSetPropertiesFromState(const SimTK::State& state)
 //=============================================================================
 // Computation
 //=============================================================================
-/* Calculate the equivalent spatial force, FB_G, acting on the body connected by this joint at 
-   its location B, expressed in ground.  */
-SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s, const SimTK::Vector &mobilityForces) const
+/* Calculate the equivalent spatial force, FB_G, acting on the body connected by
+   this joint at its location B, expressed in ground.  */
+SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s, 
+    const SimTK::Vector &mobilityForces) const
 {
     // The number of mobilities for the entire system.
     int nm = _model->getMatterSubsystem().getNumMobilities();
@@ -526,90 +538,97 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             XMLDocument::renameChildNode(aNode, "location", "location_in_child"); 
             XMLDocument::renameChildNode(aNode, "orientation", "orientation_in_child");
         }
-        // Version 30503 converted Connector_Body_ to Connector_PhysicalFrame_
-        if (documentVersion < 30503){
+        // Version 30501 converted Connector_Body_ to Connector_PhysicalFrame_
+        if (documentVersion < 30501) {
             // Handle any models that have the Joint connecting to Bodies instead
             // of PhyscialFrames
             XMLDocument::renameChildNode(aNode, "Connector_Body_",
                                                 "Connector_PhysicalFrame_");
+        }
+        // Version 30503 changed "parent_body" connector name to "parent_frame"
+        // Convert location and orientation into PhysicalOffsetFrames owned by the Joint
+        if (documentVersion < 30503) {
+            // Elements for the parent and child names the joint connects
+            SimTK::Xml::element_iterator parentNameElt;
+            SimTK::Xml::element_iterator childNameElt;
+            // The names of the two PhysicalFrames this joint connects
+            std::string parentFrameName("");
+            std::string childFrameName("");
 
-            // replace old properties with latest use of PhysicalOffsetFrames properties
-            SimTK::Xml::element_iterator parentElement =
-                aNode.element_begin("parent_body");
-            SimTK::Xml::element_iterator childElement =
-                aNode.element_begin("child_body");
+            SimTK::Xml::element_iterator connectors_node = aNode.element_begin("connectors");
+
+            SimTK::Xml::element_iterator connectorElement =
+                connectors_node->element_begin("Connector_PhysicalFrame_");
+            while (connectorElement != aNode.element_end()) {
+                // If connector name is "parent_body" rename it to "parent_frame"
+                if (connectorElement->getAllAttributes()[0].getValue() == "parent_body") {
+                    connectorElement->getAllAttributes()[0].setValue("parent_frame");
+                }
+                // If connector name is "parent_frame" get the name of the conectee
+                if (connectorElement->getAllAttributes()[0].getValue() == "parent_frame"){
+                    parentNameElt = connectorElement->element_begin("connectee_name");
+                    parentNameElt->getValueAs<std::string>(parentFrameName);
+                }
+                if (connectorElement->getAllAttributes()[0].getValue() == "child_body") {
+                    connectorElement->getAllAttributes()[0].setValue("child_frame");
+                }
+                if (connectorElement->getAllAttributes()[0].getValue() == "child_frame") {
+                    childNameElt =  connectorElement->element_begin("connectee_name");
+                    childNameElt->getValueAs<std::string>(childFrameName);
+                }
+                ++connectorElement;
+            }
+
             SimTK::Xml::element_iterator locParentElt =
-                aNode.element_begin("location_parent");
+                aNode.element_begin("location_in_parent");
             SimTK::Xml::element_iterator orientParentElt =
-                aNode.element_begin("orientation_parent");
+                aNode.element_begin("orientation_in_parent");
             SimTK::Xml::element_iterator locChildElt =
-                aNode.element_begin("location_child");
+                aNode.element_begin("location_in_child");
             SimTK::Xml::element_iterator orientChildElt =
-                aNode.element_begin("orientation_child");
+                aNode.element_begin("orientation_in_child");
 
-            // The names of the two PhysicalFrames this bushing connects
-            std::string frame1Name("");
-            std::string frame2Name("");
+            Vec3 location_in_parent(0);
+            Vec3 orientation_in_parent(0);
+            Vec3 location_in_child(0);
+            Vec3 orientation_in_child(0);
 
-            // Create two new PhysicalOffsetFrames
-            PhysicalOffsetFrame frame1Offset;
-            PhysicalOffsetFrame frame2Offset;
-            frame1Offset.setName("frame1_offset");
-            frame2Offset.setName("frame2_offset");
-
-            // If default constructed then elements not serialized since they are default
-            // values. Check that we have associated elements, then extract their values.
-            if (parentElement != aNode.element_end()){
-                parentElement->getValueAs<std::string>(frame1Name);
-                frame1Offset.updConnector(0).set_connectee_name(frame1Name);
-            }
-            if (childElement != aNode.element_end()){
-                childElement->getValueAs<std::string>(frame2Name);
-                frame2Offset.updConnector(0).set_connectee_name(frame2Name);
-            }
             if (locParentElt != aNode.element_end()){
-                Vec3 location;
-                locParentElt->getValueAs<Vec3>(location);
-                frame1Offset.set_translation(location);
+                locParentElt->getValueAs<Vec3>(location_in_parent);
             }
             if (orientParentElt != aNode.element_end()){
-                Vec3 orientation;
-                orientParentElt->getValueAs<Vec3>(orientation);
-                frame1Offset.set_orientation(orientation);
+                orientParentElt->getValueAs<Vec3>(orientation_in_parent);
             }
             if (locChildElt != aNode.element_end()){
-                Vec3 location;
-                locChildElt->getValueAs<Vec3>(location);
-                frame2Offset.set_translation(location);
+                locChildElt->getValueAs<Vec3>(location_in_child);
             }
             if (orientChildElt != aNode.element_end()){
-                Vec3 orientation;
-                orientChildElt->getValueAs<Vec3>(orientation);
-                frame2Offset.set_orientation(orientation);
+                orientChildElt->getValueAs<Vec3>(orientation_in_child);
             }
+
+            // Avoid collision by prefixing the joint name to the connectee_name
+            // as to enforce a local search for the correct local offset
+            std::string jName = aNode.getOptionalAttributeValueAs<std::string>("name", "");
 
             // now append updated frames to the property list if they are not
             // identity transforms.
-            if ((frame1Offset.get_translation().norm() > 0.0) &&
-                (frame1Offset.get_orientation().norm() > 0.0)) {
-                append_frames(frame1Offset);
-                updConnector(0).set_connectee_name(frame1Offset.getName());
-            }
-            else { // connect directly to the frame (body) that was identified by name
-                updConnector(0).set_connectee_name(frame1Name);
-            }
-            // again for frame2
-            if ((frame2Offset.get_translation().norm() > 0.0) &&
-                (frame2Offset.get_orientation().norm() > 0.0)) {
-                append_frames(frame2Offset);
-                updConnector(0).set_connectee_name(frame2Offset.getName());
-            }
-            else { // connect directly to the frame (body) that was identified by name
-                updConnector(1).set_connectee_name(frame2Name);
+            if ((location_in_parent.norm() > 0.0) ||
+                (orientation_in_parent.norm() > 0.0)) {
+                XMLDocument::addPhysicalOffsetFrame(aNode, parentFrameName+"_offset",
+                    parentFrameName, location_in_parent, orientation_in_parent);
+                parentNameElt->setValue(jName +"/"+parentFrameName + "_offset");
             }
 
+            // again for the offset frame on the child
+            if ((location_in_child.norm() > 0.0) ||
+                (orientation_in_child.norm() > 0.0)) {
+                XMLDocument::addPhysicalOffsetFrame(aNode, childFrameName + "_offset",
+                    childFrameName, location_in_child, orientation_in_child);
+                childNameElt->setValue(jName +"/"+childFrameName + "_offset");
+            }
         }
     }
+
     Super::updateFromXMLNode(aNode, versionNumber);
 }
 
@@ -629,13 +648,22 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
                          (mobilized == &getChildFrame()) ||
                          (mobilized == _slaveBodyForParent.get()) ||
                          (mobilized == _slaveBodyForChild.get()) ),
-            "%s::'%s' - Cannot assign underlying system index to a Body '%s', "
-            "which is not a parent or child Body of this Joint.",
+            "%s::'%s' - Cannot assign underlying system index to a PhysicalFrame '%s', "
+            "which is not a parent or child Frame of this Joint.",
                       getConcreteClassName().c_str(),
                       getName().c_str(), mobilized->getName().c_str());
 
         // ONLY the base Joint can do this assignment
         mobilized->setMobilizedBodyIndex(mobod.getMobilizedBodyIndex());
+
+        // Note that setting the mobilized body index of a PhysicalOffsetFrame
+        // does not set it on the parent PhysicalFrame. 
+        // Do the check and set it here as well since only the Joint can set the index.
+        const PhysicalOffsetFrame* physOff =
+            dynamic_cast<const PhysicalOffsetFrame*>(mobilized);
+        if (physOff) {
+            physOff->getParentFrame().setMobilizedBodyIndex(mobod.getMobilizedBodyIndex());
+        }
     }
     int nc = numCoordinates();
     SimTK_ASSERT3(numMobilities <= (nc - startingCoordinateIndex),

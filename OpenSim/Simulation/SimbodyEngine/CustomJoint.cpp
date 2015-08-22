@@ -43,14 +43,14 @@ using namespace OpenSim;
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Default constructor.
- */
-CustomJoint::CustomJoint() : Super()
+/* Default Constructor */
+CustomJoint::CustomJoint()
 {
     constructProperties();
+    finalizeFromProperties();
 }
-//_____________________________________________________________________________
+
+
 /**
  * Constructor with specified SpatialTransform.
  */
@@ -60,6 +60,23 @@ CustomJoint::CustomJoint(const std::string &name,
                          SpatialTransform& aSpatialTransform,
                          bool reverse) :
                          Super(name, parentName, childName, reverse)
+{
+    constructProperties();
+    set_SpatialTransform(aSpatialTransform);
+    finalizeFromProperties();
+}
+
+CustomJoint::CustomJoint(const std::string& name,
+    const PhysicalFrame& parent,
+    const SimTK::Vec3& locationInParent,
+    const SimTK::Vec3& orientationInParent,
+    const PhysicalFrame& child,
+    const SimTK::Vec3& locationInChild,
+    const SimTK::Vec3& orientationInChild,
+    SpatialTransform& aSpatialTransform,
+    bool reverse) :
+        Joint(name, parent, locationInParent, orientationInParent,
+            child, locationInChild, orientationInChild, reverse)
 {
     constructProperties();
     set_SpatialTransform(aSpatialTransform);
@@ -217,6 +234,8 @@ void CustomJoint::constructCoordinates()
 //_____________________________________________________________________________
 void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
+
     SimTK::MobilizedBody inb;
     SimTK::Body outb;
     const SimTK::Transform* inbX = &getParentFrame().findTransformInBaseFrame();

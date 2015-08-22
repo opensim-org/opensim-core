@@ -49,8 +49,7 @@ EllipsoidJoint::~EllipsoidJoint()
 /**
  * Default constructor.
  */
-EllipsoidJoint::EllipsoidJoint() :
-    Joint()
+EllipsoidJoint::EllipsoidJoint() : Super()
 {
     constructCoordinates();
     constructProperties();
@@ -71,6 +70,25 @@ EllipsoidJoint::EllipsoidJoint( const std::string& name,
 
     set_radii_x_y_z(ellipsoidRadii);
 }
+
+/* Deprecated Constructor*/
+EllipsoidJoint::EllipsoidJoint(const std::string& name,
+    const PhysicalFrame& parent,
+    const SimTK::Vec3& locationInParent,
+    const SimTK::Vec3& orientationInParent,
+    const PhysicalFrame& child,
+    const SimTK::Vec3& locationInChild,
+    const SimTK::Vec3& orientationInChild,
+    const SimTK::Vec3& ellipsoidRadii,
+    bool reverse) :
+    Super(name, parent, locationInParent, orientationInParent,
+        child, locationInChild, orientationInChild, reverse)
+{
+    constructCoordinates();
+    constructProperties();
+    set_radii_x_y_z(ellipsoidRadii);
+}
+
 
 //=============================================================================
 // CONSTRUCTION
@@ -144,6 +162,7 @@ void EllipsoidJoint::scale(const ScaleSet& aScaleSet)
 //_____________________________________________________________________________
 void EllipsoidJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
     // CREATE MOBILIZED BODY
     MobilizedBody::Ellipsoid mobod =
         createMobilizedBody<MobilizedBody::Ellipsoid>(system);

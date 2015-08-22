@@ -49,26 +49,13 @@ of position (\f$\vec{u} \neq \dot{\vec{q}}\f$).
 */
 
 class OSIMSIMULATION_API BallJoint : public Joint {
-OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
-
-private:
-    static const int _numMobilities = 3;
-//=============================================================================
-// DATA
-//=============================================================================
-
-
+	OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
     // CONSTRUCTION
-    BallJoint();
-    // convenience constructor
-    BallJoint( const std::string& name,
-               const std::string& parentName,
-               const std::string& child,
-               bool reverse = false);
+	using Joint::Joint;
 
     virtual ~BallJoint();
 
@@ -80,6 +67,8 @@ protected:
     void extendInitStateFromProperties(SimTK::State& s) const override;
     void extendSetPropertiesFromState(const SimTK::State& state) override;
 
+private:
+	static const int _numMobilities = 3;
 //=============================================================================
 };  // END of class BallJoint
 //=============================================================================

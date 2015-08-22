@@ -34,22 +34,21 @@ class SpatialTransform;
 //                              CUSTOM JOINT
 //==============================================================================
 /**
-
-A class implementing a custom joint.  The underlying implementation in Simbody is a
-SimTK::MobilizedBody::FunctionBased. Custom joints offer a generic joint
+A class implementing a custom joint.  The underlying implementation in Simbody 
+is a SimTK::MobilizedBody::FunctionBased. Custom joints offer a generic joint
 representation, which can be used to model both conventional (pins, slider,
-universal, etc…) as well as more complex biomechanical joints. The behavior of a
-custom joint is specified by its SpatialTransform. A SpatialTransform is comprised
-of 6 TransformAxes (3 rotations and 3 translations) that define the spatial
-position of Child in Parent as a function of coordinates. Each transform axis
-enables a function of joint coordinates to operate about or along its axis.
-The order of the spatial transform is fixed with rotations first followed by
-translations. Subsequently, coupled motion (i.e., describing motion of two
-degrees of freedom as a function of one coordinate) is easily handled.
+universal, etc…) as well as more complex biomechanical joints. The behavior of
+a custom joint is specified by its SpatialTransform. A SpatialTransform is com-
+prised of 6 TransformAxes (3 rotations and 3 translations) that define the
+spatial position of Child in Parent as a function of coordinates. Each transform
+axis has a function of joint coordinates that describes the motion about or along
+the transform axis. The order of the spatial transform is fixed with rotations
+first followed by translations. Subsequently, coupled motion (i.e., describing
+motion of two degrees of freedom as a function of one coordinate) is handled by
+transform axis functions that depend on the same coordinate(s).
 
 @author Ajay Seth, Frank C. Anderson
 */
-
 class OSIMSIMULATION_API CustomJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(CustomJoint, Joint);
 public:
@@ -72,6 +71,7 @@ public:
 // PUBLIC METHODS
 //==============================================================================
     // CONSTRUCTION
+    /** Default Constructor */
     CustomJoint();
 
     /** Construct joint with supplied coordinates and transform axes */
@@ -80,6 +80,19 @@ public:
                  const std::string& childName,
                  SpatialTransform& aSpatialTransform,
                  bool reverse=false);
+
+    /** Deprecated Joint constructor with explicit offsets in terms of
+        location and orientation. */
+    CustomJoint(const std::string& name,
+        const PhysicalFrame& parent,
+        const SimTK::Vec3& locationInParent,
+        const SimTK::Vec3& orientationInParent,
+        const PhysicalFrame& child,
+        const SimTK::Vec3& locationInChild,
+        const SimTK::Vec3& orientationInChild,
+        SpatialTransform& aSpatialTransform,
+        bool reverse=false);
+
 
     virtual ~CustomJoint() {}
 

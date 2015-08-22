@@ -404,7 +404,9 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
 /*
  * Helper function to add connector to the xmlElement passed in
  */
-void XMLDocument::addConnector(SimTK::Xml::Element& element, const std::string& connectorTag, const std::string& connectorName, const std::string& connectorValue)
+void XMLDocument::addConnector(SimTK::Xml::Element& element,
+    const std::string& connectorTag, const std::string& connectorName, 
+    const std::string& connectorValue)
 {
     SimTK::Xml::element_iterator  connectors_node =  element.element_begin("connectors");
     SimTK::String debug;
@@ -423,4 +425,37 @@ void XMLDocument::addConnector(SimTK::Xml::Element& element, const std::string& 
     newConnectorElement.insertNodeAfter(newConnectorElement.element_end(), connecteeElement);
     connectors_node->insertNodeAfter(connectors_node->element_end(), newConnectorElement);
     connectors_node->writeToString(debug);
+}
+
+void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,
+    const std::string& frameName,
+    const std::string& parentFrameName, 
+    const SimTK::Vec3& location, const SimTK::Vec3& orientation)
+{
+    SimTK::Xml::element_iterator  frames_node = element.element_begin("frames");
+    SimTK::String debug;
+    if (frames_node == element.element_end()) {
+        SimTK::Xml::Element framesElement("frames");
+        element.insertNodeBefore(element.element_begin(), framesElement);
+        frames_node = element.element_begin("frames");
+    }
+    // Here we're guaranteed connectors node exist, add individual connector
+    SimTK::Xml::Element newFrameElement("PhysicalOffsetFrame");
+    newFrameElement.setAttributeValue("name", frameName);
+    newFrameElement.writeToString(debug);
+
+    XMLDocument::addConnector(newFrameElement, "Connector_PhysicalFrame_", "parent", parentFrameName);
+
+    std::ostringstream transValue;
+    transValue << location[0] << " " << location[1] << " " << location[2];
+    SimTK::Xml::Element translationElement("translation", transValue.str());
+    newFrameElement.insertNodeAfter(newFrameElement.element_end(), translationElement);
+
+    std::ostringstream orientValue; 
+    orientValue << orientation[0] << " " << orientation[1] << " " << orientation[2];
+    SimTK::Xml::Element orientationElement("orientation", orientValue.str());
+    newFrameElement.insertNodeAfter(newFrameElement.element_end(), orientationElement);
+
+    frames_node->insertNodeAfter(frames_node->element_end(), newFrameElement);
+    frames_node->writeToString(debug);
 }

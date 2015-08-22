@@ -45,29 +45,6 @@ using namespace OpenSim;
 BallJoint::~BallJoint()
 {
 }
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-BallJoint::BallJoint() : Joint()
-{
-    setAuthors("Ajay Seth");
-    constructCoordinates();
-}
-//_____________________________________________________________________________
-/**
- * Convenience Constructor.
- */
-BallJoint::BallJoint( const std::string &name,
-                      const std::string& parentName,
-                      const std::string& childName,
-                      bool reverse ) :
-                     Super(name, parentName, childName, reverse)
-{
-    setAuthors("Ajay Seth");
-    constructCoordinates();
-}
-
 
 //=============================================================================
 // Simbody Model building.
@@ -75,6 +52,7 @@ BallJoint::BallJoint( const std::string &name,
 //_____________________________________________________________________________
 void BallJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
     createMobilizedBody<MobilizedBody::Ball>(system);
 }
 

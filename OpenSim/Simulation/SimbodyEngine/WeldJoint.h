@@ -43,8 +43,6 @@ usual manner.
 class OSIMSIMULATION_API WeldJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(WeldJoint, Joint);
 
-private:
-    static const int _numMobilities = 0;
 //=============================================================================
 // DATA
 //=============================================================================
@@ -56,12 +54,7 @@ private:
 //=============================================================================
 public:
     // CONSTRUCTION
-    WeldJoint();
-    // Convenience constructor
-    WeldJoint( const std::string &name,
-               const std::string& parentName,
-               const std::string& child,
-               bool reverse = false);
+	using Joint::Joint;
 
     virtual ~WeldJoint();
 
@@ -70,6 +63,8 @@ public:
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
+private:
+	static const int _numMobilities = 0;
 //=============================================================================
 };  // END of class WeldJoint
 //=============================================================================

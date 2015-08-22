@@ -191,8 +191,8 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                     SimTK::String parent_name = "ground";
                     parentBodyElement->getValueAs<SimTK::String>(parent_name);
                     //cout << "Processing Joint " << concreteJointNode->getElementTag() << "Parent body " << parent_name << std::endl;
-                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "parent_body", parent_name);
-                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "child_body", body_name);
+                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "parent_frame", parent_name);
+                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "child_frame", body_name);
                     concreteJointNode->eraseNode(parentBodyElement);
                     jointObjects.insertNodeAfter(jointObjects.node_end(), *concreteJointNode);
                     detach_joint_node.clearOrphan();
@@ -561,12 +561,18 @@ void Model::extendFinalizeFromProperties()
         }
     }
 
+    FrameSet& fs = updFrameSet();
+    int nf = fs.getSize();
+    for (int i = 0; i<nf; ++i) {
+        addComponent(&fs[i]);
+    }
 
     // Complete multibody tree description by indicating how "bodies" are
     // connected by joints.
     if(getJointSet().getSize()>0)
     {
         JointSet &js = updJointSet();
+
         int nj = js.getSize();
         for (int i = 0; i<nj; ++i){
             std::string name = js[i].getName();
@@ -576,21 +582,26 @@ void Model::extendFinalizeFromProperties()
                 name = js[i].getParentFrameName() + "_to_" + js[i].getChildFrameName();
             }
 
+            // TODO Remove this when subcomponents can be iterated upon construction.
+            // We are only calling finalizeFromProperties so that any offset frames
+            // belonging to the Joint are marked as subcomponents and can be found.
+            js[i].finalizeFromProperties();
             addComponent(&js[i]);
+            // TODO Remove this when subcomponents can be iterated upon construction.
+            // Currently we need to take a first pass at connecting the joints in 
+            // order to find the frames that they attach to and their underlying bodies.
+            js[i].connect(*this);
+
             // Use joints to define the underlying multibody tree
             _multibodyTree.addJoint(name,
                 js[i].getConcreteClassName(),
-                js[i].getParentFrameName(),
-                js[i].getChildFrameName(),
+                // Multibody tree builder only cares about bodies not intermediate
+                // frames that joints actually connect to.
+                js[i].getParentFrame().findBaseFrame().getName(),
+                js[i].getChildFrame().findBaseFrame().getName(),
                 false,
                 &js[i]);
         }
-    }
-
-    FrameSet& fs = updFrameSet();
-    int nf = fs.getSize();
-    for (int i = 0; i<nf; ++i){
-            addComponent(&fs[i]);
     }
 
     if(getConstraintSet().getSize()>0)
@@ -724,6 +735,7 @@ void Model::extendConnectToModel(Model &model)
             std::string jname = "free_" + child->getName();
             SimTK::Vec3 zeroVec(0.0);
             Joint* free = new FreeJoint(jname, ground->getName(), child->getName());
+            free->finalizeFromProperties();
             addJoint(free);
         }
         else{

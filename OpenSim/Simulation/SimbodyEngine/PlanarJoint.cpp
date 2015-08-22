@@ -35,43 +35,14 @@ using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
 
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-PlanarJoint::PlanarJoint() :
-    Joint()
-{
-    setAuthors("Ajay Seth");
-    constructCoordinates();
 
+void PlanarJoint::extendFinalizeFromProperties()
+{
+    Super::extendFinalizeFromProperties();
     const CoordinateSet& coordinateSet = get_CoordinateSet();
     coordinateSet[1].setMotionType(Coordinate::Translational);
     coordinateSet[2].setMotionType(Coordinate::Translational);
 }
-
-//_____________________________________________________________________________
-/**
- * Convenience Constructor.
- */
-PlanarJoint::PlanarJoint( const std::string &name,
-                            const std::string& parentName,
-                            const std::string& childName,
-                            bool reverse) :
-                            Super(name, parentName, childName, reverse)
-{
-    setAuthors("Ajay Seth");
-    constructCoordinates();
-
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-    coordinateSet[1].setMotionType(Coordinate::Translational);
-    coordinateSet[2].setMotionType(Coordinate::Translational);
-}
-
-
 
 //=============================================================================
 // Simbody Model building.
@@ -79,5 +50,6 @@ PlanarJoint::PlanarJoint( const std::string &name,
 //_____________________________________________________________________________
 void PlanarJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
     createMobilizedBody<MobilizedBody::Planar>(system);
 }

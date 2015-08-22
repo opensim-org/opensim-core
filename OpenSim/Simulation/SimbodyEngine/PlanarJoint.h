@@ -46,34 +46,23 @@ ordered mobilities; rotation about Z and translation in X then Y.
 
 class OSIMSIMULATION_API PlanarJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PlanarJoint, Joint);
-
-private:
-    static const int _numMobilities = 3;
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-
-
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
     // CONSTRUCTION
-    PlanarJoint();
-
-    // Convenience constructor
-    PlanarJoint(const std::string& name,
-                const std::string& parentName,
-                const std::string& child,
-                bool reverse = false);
+    using Joint::Joint;
 
     int numCoordinates() const { return _numMobilities; }
 
 protected:
     /** Model component interface */
+    void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
+private:
+    static const int _numMobilities = 3;
+    
 //=============================================================================
 };  // END of class PlanarJoint
 //=============================================================================

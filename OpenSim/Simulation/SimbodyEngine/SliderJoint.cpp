@@ -34,11 +34,20 @@
 using namespace std;
 using namespace OpenSim;
 
+
+void SliderJoint::extendFinalizeFromProperties()
+{
+    Super::extendFinalizeFromProperties();
+    const CoordinateSet& coordinateSet = get_CoordinateSet();
+    coordinateSet[0].setMotionType(Coordinate::Translational);
+}
+
 //=============================================================================
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
 void SliderJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
     createMobilizedBody<SimTK::MobilizedBody::Slider>(system);
 }

@@ -39,82 +39,46 @@ using namespace OpenSim;
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Destructor.
- */
 FreeJoint::~FreeJoint()
 {
-}
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-FreeJoint::FreeJoint() :
-    Joint()
-    //_useEulerAngles(_useEulerAnglesProp.getValueBool())
-{
-    setNull();
-}
-
-//_____________________________________________________________________________
-/**
- * Convenience Constructor.
- */
-FreeJoint::FreeJoint(const std::string &name,
-            const std::string& parentName,
-            const std::string& childName,
-            bool reverse) :
-            Super(name, parentName, childName, reverse)
-{
-    setNull();
-}
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this FreeJoint to their null values.
- */
-void FreeJoint::setNull()
-{
-    setAuthors("Ajay Seth");
-
-    constructCoordinates();
-    // We know we have three rotations followed by three translations
-    // Replace default names _coord_? with more meaningful names
-
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-    
-    string dirStrings[] = {"x", "y", "z"};
-    for (int i=0; i< 3; i++){
-        string oldName = coordinateSet.get(i).getName();
-        int pos=(int)oldName.find("_coord_"); 
-        if (pos != string::npos){
-            oldName.replace(pos, 8, ""); 
-            coordinateSet.get(i).setName(oldName+"_"+dirStrings[i]+"Rotation");
-            coordinateSet.get(i).setMotionType(Coordinate::Rotational);
-        }
-    }
-    for (int i=3; i< 6; i++){
-        string oldName = coordinateSet.get(i).getName();
-        int pos=(int)oldName.find("_coord_"); 
-        if (pos != string::npos){
-            oldName.replace(pos, 8, ""); 
-            coordinateSet.get(i).setName(oldName+"_"+dirStrings[i-3]+"Translation");
-            coordinateSet.get(i).setMotionType(Coordinate::Translational);
-        }
-    }
-
 }
 
 //=============================================================================
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
+void FreeJoint::extendFinalizeFromProperties()
+{
+    Super::extendFinalizeFromProperties();
+    // We know we have three rotations followed by three translations
+    // Replace default names _coord_? with more meaningful names
+
+    const CoordinateSet& coordinateSet = get_CoordinateSet();
+
+    string dirStrings[] = { "x", "y", "z" };
+    for (int i = 0; i< 3; i++) {
+        string oldName = coordinateSet.get(i).getName();
+        int pos = (int)oldName.find("_coord_");
+        if (pos != string::npos) {
+            oldName.replace(pos, 8, "");
+            coordinateSet.get(i).setName(oldName + "_" + dirStrings[i] + "Rotation");
+            coordinateSet.get(i).setMotionType(Coordinate::Rotational);
+        }
+    }
+    for (int i = 3; i< 6; i++) {
+        string oldName = coordinateSet.get(i).getName();
+        int pos = (int)oldName.find("_coord_");
+        if (pos != string::npos) {
+            oldName.replace(pos, 8, "");
+            coordinateSet.get(i).setName(oldName + "_" + dirStrings[i - 3] + "Translation");
+            coordinateSet.get(i).setMotionType(Coordinate::Translational);
+        }
+    }
+}
+
 void FreeJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
     createMobilizedBody<MobilizedBody::Free>(system);
 }
 

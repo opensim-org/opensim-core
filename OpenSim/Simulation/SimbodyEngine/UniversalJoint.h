@@ -46,28 +46,12 @@ second rotation is near 90 degrees.
 
 class OSIMSIMULATION_API UniversalJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(UniversalJoint, Joint);
-
-private:
-    static const int _numMobilities = 2;
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-
-    /** UniversalJoint has no additional properties*/
-
-
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
     // CONSTRUCTION
-    UniversalJoint();
-    // Convenience constructor
-    UniversalJoint( const std::string &name,
-                    const std::string& parentName,
-                    const std::string& child,
-                    bool reverse = false);
+	using Joint::Joint;
 
     virtual ~UniversalJoint();
 
@@ -77,6 +61,9 @@ public:
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
+
+private:
+	static const int _numMobilities = 2;
 //=============================================================================
 };  // END of class UniversalJoint
 //=============================================================================

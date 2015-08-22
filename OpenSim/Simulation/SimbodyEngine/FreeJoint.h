@@ -49,8 +49,7 @@ position (\f$\vec{u} \neq \dot{\vec{q}}\f$).
 class OSIMSIMULATION_API FreeJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(FreeJoint, Joint);
 
-private:
-    static const int _numMobilities = 6;
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -65,12 +64,7 @@ protected:
 //=============================================================================
 public:
     // CONSTRUCTION
-    FreeJoint();
-    // Convenience Constructor
-    FreeJoint( const std::string& name,
-               const std::string& parentName,
-               const std::string& child,
-               bool reverse = false);
+    using Joint::Joint;
 
     virtual ~FreeJoint();
 
@@ -78,11 +72,14 @@ public:
 
 protected:
     // ModelComponent interface.
+    void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendInitStateFromProperties(SimTK::State& s) const override;
     void extendSetPropertiesFromState(const SimTK::State& state) override;
 
 private:
+    static const int _numMobilities = 6;
+
     SimTK::MobilizedBodyIndex _masslessBodyIndex;
     void setNull();
 //=============================================================================

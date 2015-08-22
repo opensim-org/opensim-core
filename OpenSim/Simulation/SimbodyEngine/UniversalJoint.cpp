@@ -38,34 +38,11 @@ using namespace OpenSim;
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Destructor.
  */
 UniversalJoint::~UniversalJoint()
 {
-}
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-UniversalJoint::UniversalJoint() : Joint()
-{
-    setAuthors("Tim Dorn");
-    constructCoordinates();
-}
-
-//_____________________________________________________________________________
-/**
- * Convenience Constructor.
- */
-UniversalJoint::UniversalJoint( const std::string &name,
-                                const std::string& parentName,
-                                const std::string& childName,
-                                bool reverse) :
-                                  Super(name, parentName, childName, reverse)
-{
-    setAuthors("Tim Dorn");
-    constructCoordinates();
 }
 
 //=============================================================================
@@ -74,5 +51,6 @@ UniversalJoint::UniversalJoint( const std::string &name,
 //_____________________________________________________________________________
 void UniversalJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
     createMobilizedBody<MobilizedBody::Universal>(system);
 }

@@ -54,6 +54,7 @@ GimbalJoint::~GimbalJoint()
 //_____________________________________________________________________________
 void GimbalJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
     createMobilizedBody<MobilizedBody::Gimbal>(system);
 }
 
