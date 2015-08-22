@@ -1001,6 +1001,13 @@ public:
            ("ObjectProperty<T>::updAs(): Property " + prop.getName() 
            + " was not of object type " + T::getClassName());
     }
+	// Return index if name matches, -1 if not found, slow linear search by name
+	int findIndexForName(const SimTK::String& name) const {
+		for (int i = 0; i < getNumValues(); ++i)
+			if (objects[i]->getName() == name)
+				return i;
+		return -1;
+	}
 private:
     // Base class checks the index.
     const T& getValueVirtual(int index) const override final 
