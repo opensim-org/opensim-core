@@ -89,7 +89,7 @@ void PhysicalFrame::extendConnectToModel(Model& aModel)
     Super::extendConnectToModel(aModel);
 
     // TODO: Better use name search or more robust method
-	int idx = static_cast<const ObjectProperty<Geometry>&>(getProperty_geometry()).findIndexForName("frame_geometry");
+    int idx = static_cast<const ObjectProperty<Geometry>&>(getProperty_geometry()).findIndexForName("frame_geometry");
 
     if (upd_geometry(0).getFrameName() == "" && idx !=-1)
         upd_geometry(idx).setFrameName(getName());
