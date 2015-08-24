@@ -490,10 +490,10 @@ void testCoordinateLocking()
 
     // create hip as a pin joint
     PinJoint hip("hip",ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
-
+    hip.finalizeFromProperties();
     // Rename hip coordinates for a pin joint
     hip.getCoordinateSet()[0].setName("hip_flex");
-    
+
     // Add the thigh body 
     osimModel->addBody(&osim_thigh);
     osimModel->addJoint(&hip);
@@ -503,6 +503,7 @@ void testCoordinateLocking()
 
     // create pin knee joint
     PinJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0), osim_shank, Vec3(0), Vec3(0));
+    knee.finalizeFromProperties();
     knee.getCoordinateSet()[0].setName("knee_q");
 
     // Add the shank body and knee joint
@@ -823,7 +824,7 @@ void testCoordinateCouplerConstraint()
 
     // create hip as a pin joint
     PinJoint hip("hip",ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
-
+    hip.finalizeFromProperties();
     // Rename hip coordinates for a pin joint
     hip.getCoordinateSet()[0].setName("hip_flex");
     
