@@ -353,20 +353,17 @@ public:
 
     template <class C>
     const C& getComponent(const std::string& name) const {
-        //TODO use the component iterator when they can be used upon construction
-        /*
-        ComponentList<C> compsList = getComponentList<C>();
-        for (const C& comp : compsList) {
-            if (comp.getName() == name){
-                return comp;
-            }
-        }*/
         const Component& comp = getComponent(name);
-
         const C* compC = dynamic_cast<const C*>(&comp);
 
         if (compC) {
             return *compC;
+        } //TODO only use the component iterator when they can be used upon construction
+        ComponentList<C> compsList = getComponentList<C>();
+        for (const C& comp : compsList) {
+            if (comp.getName() == name) {
+                return comp;
+            }
         }
 
 
