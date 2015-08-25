@@ -531,8 +531,9 @@ public:
 
     /** Return index of passed in name if the Property contains objects that are
     derived from OpenSim::Object, and -1 if no such Object is found. Throws an 
-    Exception if the List doesn't contain OpenSim Objects (e.g. Primitive types)
-    since these are not named **/
+    Exception if the List doesn't contain OpenSim Objects (e.g. primitive types)
+    since these are not named. When a search is performed, it's a linear search. 
+    **/
     virtual int findIndexForName(const SimTK::String& name) const = 0;
 
     /** Return true if the given AbstractProperty references a concrete
