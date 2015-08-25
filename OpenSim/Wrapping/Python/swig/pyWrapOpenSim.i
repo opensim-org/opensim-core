@@ -1,6 +1,12 @@
 %module(directors="1") opensim
 %module opensim
-#pragma SWIG nowarn=822,451,503,516,325,401
+#pragma SWIG nowarn=822,451,503,516,325
+// 401 is "Nothing known about base class *some-class*.
+//         Maybe you forgot to instantiate *some-template* using %template."
+// When wrapping new classes it's good to uncomment the line below to make sure
+// you've wrapped your new class properly. However, SWIG generates lots of 401
+// errors that are very difficult to resolve.
+#pragma SWIG nowarn=401
 
 /*
 For consistency with the rest of the API, we use camel-case for variable names.
@@ -245,8 +251,6 @@ own project.
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
 
-#include <OpenSim/Wrapping/Python/OpenSimContext.h>
-
 using namespace OpenSim;
 using namespace SimTK;
 
@@ -263,7 +267,34 @@ using namespace SimTK;
 %rename(OpenSimObject) OpenSim::Object;
 %rename(OpenSimException) OpenSim::Exception;
 
-%newobject *::clone; 
+// Relay exceptions to the target language.
+// This causes substantial code bloat and possibly hurts performance.
+// Without these try-catch block, a SimTK or OpenSim exception causes the
+// program to crash.
+%include exception.i
+%exception {
+    try {
+        $action
+    } catch (const SimTK::Exception::IndexOutOfRange& e) {
+        SWIG_exception(SWIG_IndexError, e.what());
+    } catch (const SimTK::Exception::Base& e) {
+        std::string str("SimTK Simbody error in '$fulldecl': ");
+        std::string what(e.what());
+        SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
+    } catch (const OpenSim::Exception& e) {
+        std::string str("OpenSim error in '$fulldecl': ");
+        std::string what(e.what());
+        SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
+    } catch (const std::exception& e) {
+        std::string str("std::exception in '$fulldecl': ");
+        std::string what(e.what());
+        SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
+    } catch (...) {
+        SWIG_exception(SWIG_RuntimeError, "Unknown exception in '$fulldecl'.");
+    }
+}
+
+%newobject *::clone;
 
 %rename(printToXML) OpenSim::Object::print(const std::string&) const;
 %rename(printToXML) OpenSim::XMLDocument::print(const std::string&);
@@ -306,9 +337,10 @@ originally had them at the bottom, and then they didn't work!
 
 note: ## is a "glue" operator: `a ## b` --> `ab`.
 */
+
 %define MODEL_ADOPT_HELPER(NAME)
 %pythonappend OpenSim::Model::add ## NAME %{
-    args[0]._markAdopted()
+    self._markAdopted()
 %}
 %enddef
 
@@ -483,6 +515,8 @@ namespace SimTK {
 %include <SWIGSimTK/SpatialAlgebra.h>
 namespace SimTK {
 %template(SpatialVec) Vec<2,   Vec3>;
+%template(VectorBaseOfSpatialVec) VectorBase<SpatialVec>;
+%template(VectorBaseOfVec3) VectorBase<Vec3>;
 %template(VectorOfSpatialVec) Vector_<SpatialVec>;
 %template(VectorOfVec3) Vector_<Vec3>;
 }
@@ -507,6 +541,10 @@ namespace SimTK {
 }
 %include <SWIGSimTK/common.h>
 %include <SWIGSimTK/Array.h>
+namespace SimTK {
+    %template(ArrayView) ArrayView_<double, unsigned int>;
+    %template(ArrayViewOfVec3) ArrayView_<Vec3, unsigned int>;
+}
 
 typedef int MobilizedBodyIndex;
 typedef int SubsystemIndex;
@@ -582,6 +620,12 @@ namespace SimTK {
 %template(ArrayPtrsObj) OpenSim::ArrayPtrs<OpenSim::Object>;
 %include <OpenSim/Common/ComponentOutput.h>
 %include <OpenSim/Common/ComponentConnector.h>
+%include <OpenSim/Common/Component.h>
+namespace OpenSim {
+    // Python does not support these operators.
+    %ignore ComponentListIterator::operator++();
+    %ignore ComponentListIterator::operator++(int);
+};
 
 %include <OpenSim/Common/ComponentList.h>
 %template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
@@ -724,6 +768,10 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/BodyScaleSet.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+namespace OpenSim {
+    // This method overshadows setFunction(const Function&).
+    %ignore TransformAxis::setFunction(Function*);
+};
 %include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
 %include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 %include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
@@ -755,6 +803,10 @@ namespace SimTK {
 %include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 %include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
 %include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
+namespace OpenSim {
+    // This method overshadows setFunction(const Function&).
+    %ignore CoordinateCouplerConstraint::setFunction(Function*);
+};
 %include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 %include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
 
@@ -767,7 +819,11 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
 %include <OpenSim/Simulation/Model/ActuatorForceProbe.h>
 %include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
+%template(SetBhargava2004MuscleMetabolicsProbeMetabolicMuscleParameter)
+    OpenSim::Set<OpenSim::Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter>;
 %include <OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.h>
+%template(SetUmberger2010MuscleMetabolicsProbeMetabolicMuscleParameter)
+    OpenSim::Set<OpenSim::Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>;
 %include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
 %include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 %include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
@@ -864,6 +920,11 @@ namespace SimTK {
 
 %template(ReferenceVec3) OpenSim::Reference_<SimTK::Vec3>;
 %template(ReferenceDouble) OpenSim::Reference_<double>;
+%template(ArrayViewConstCoordinateReference)
+    SimTK::ArrayViewConst_<OpenSim::CoordinateReference>;
+%ignore ArrayViewConstCoordinateReference;
+%template(ArrayViewCoordinateReference)
+    SimTK::ArrayView_<OpenSim::CoordinateReference>;
 %template(ArrayCoordinateReference) SimTK::Array_<OpenSim::CoordinateReference>;
 %template(SimTKArrayDouble) SimTK::Array_<double>;
 %template(SimTKArrayVec3) SimTK::Array_<SimTK::Vec3>;
