@@ -251,12 +251,13 @@ own project.
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
 
+#include <OpenSim/Wrapping/Python/OpenSimContext.h>
+
 using namespace OpenSim;
 using namespace SimTK;
 
 %}
 
-%feature("director") OpenSim::AnalysisWrapper;
 %feature("director") OpenSim::SimtkLogCallback;
 %feature("director") SimTK::DecorativeGeometryImplementation;
 %feature("notabstract") ControlLinear;
