@@ -33,7 +33,6 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
-
 A class implementing a Planar joint. The underlying implementation
 in Simbody is a SimTK::MobilizedBody::Planar. A Planar joint provides three
 ordered mobilities; rotation about Z and translation in X then Y.
@@ -42,27 +41,22 @@ ordered mobilities; rotation about Z and translation in X then Y.
 
 @author Ajay Seth
 */
-
-
 class OSIMSIMULATION_API PlanarJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PlanarJoint, Joint);
-//=============================================================================
-// METHODS
-//=============================================================================
-public:
-    // CONSTRUCTION
-    using Joint::Joint;
 
-    int numCoordinates() const { return _numMobilities; }
+    /** Specify the Coordinates of the GimbalJoint */
+    Coordinate rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    Coordinate tx{ constructCoordinate(Coordinate::MotionType::Translational) };
+    Coordinate ty{ constructCoordinate(Coordinate::MotionType::Translational) };
+
+public:
+    /** Use Joint's constructors. @see Joint */
+    using Joint::Joint;
 
 protected:
     /** Model component interface */
-    void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-private:
-    static const int _numMobilities = 3;
-    
 //=============================================================================
 };  // END of class PlanarJoint
 //=============================================================================

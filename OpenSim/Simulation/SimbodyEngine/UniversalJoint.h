@@ -42,28 +42,22 @@ second rotation is near 90 degrees.
 
 @author Tim Dorn
  */
-
-
 class OSIMSIMULATION_API UniversalJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(UniversalJoint, Joint);
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-    // CONSTRUCTION
-	using Joint::Joint;
-
-    virtual ~UniversalJoint();
-
-    int numCoordinates() const override { return _numMobilities; }
-
+    /** Use Joint's constructors. @see Joint */
+    using Joint::Joint;
 
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-
 private:
-	static const int _numMobilities = 2;
+    /** Specify the Coordinates of the UniversalJoint */
+    Coordinate rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    Coordinate ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
 //=============================================================================
 };  // END of class UniversalJoint
 //=============================================================================

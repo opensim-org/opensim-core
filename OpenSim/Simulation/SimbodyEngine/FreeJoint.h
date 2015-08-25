@@ -49,37 +49,25 @@ position (\f$\vec{u} \neq \dot{\vec{q}}\f$).
 class OSIMSIMULATION_API FreeJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(FreeJoint, Joint);
 
+/** Specify the Coordinates of the FreeJoint */
+Coordinate rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
+Coordinate ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
+Coordinate rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+Coordinate tx{ constructCoordinate(Coordinate::MotionType::Translational) };
+Coordinate ty{ constructCoordinate(Coordinate::MotionType::Translational) };
+Coordinate tz{ constructCoordinate(Coordinate::MotionType::Translational) };
 
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-
-    /** Flag to use Euler angles to parameterize rotation of the body  */
-    //PropertyBool _useEulerAnglesProp;
-    //bool &_useEulerAngles;
-
-//=============================================================================
-// METHODS
-//=============================================================================
 public:
-    // CONSTRUCTION
+    /** Use Joint's constructors. @see Joint */
     using Joint::Joint;
-
-    virtual ~FreeJoint();
-
-    int numCoordinates() const override  { return _numMobilities; }
 
 protected:
     // ModelComponent interface.
-    void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendInitStateFromProperties(SimTK::State& s) const override;
     void extendSetPropertiesFromState(const SimTK::State& state) override;
 
 private:
-    static const int _numMobilities = 6;
-
     SimTK::MobilizedBodyIndex _masslessBodyIndex;
     void setNull();
 //=============================================================================

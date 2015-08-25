@@ -42,29 +42,16 @@ usual manner.
 */
 class OSIMSIMULATION_API WeldJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(WeldJoint, Joint);
-
-//=============================================================================
-// DATA
-//=============================================================================
-
-    /** Weld has no properties*/
-
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-    // CONSTRUCTION
-	using Joint::Joint;
-
-    virtual ~WeldJoint();
-
-    int numCoordinates() const override {return _numMobilities;};
+    /** Use Joint's constructors. @see Joint */
+    using Joint::Joint;
 
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-private:
-	static const int _numMobilities = 0;
 //=============================================================================
 };  // END of class WeldJoint
 //=============================================================================

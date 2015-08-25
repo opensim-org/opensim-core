@@ -34,35 +34,25 @@ namespace OpenSim {
 /**
 A class implementing a Slider joint.  A class implementing a Slider joint.  The
 underlying implementation in Simbody is a SimTK::MobilizedBody::Slider.
-Slider provides a single mobility along the common X-axis of the joint frames
+Slider provides a single corodinate along the common X-axis of the joint frames
 (not body) in the parent and body.
 
 \image html sliderJoint.gif
 
 @author Ajay Seth
 */
-
-
 class OSIMSIMULATION_API SliderJoint : public Joint {
-OpenSim_DECLARE_CONCRETE_OBJECT(SliderJoint, Joint);
-//=============================================================================
-// METHODS
-//=============================================================================
+    OpenSim_DECLARE_CONCRETE_OBJECT(SliderJoint, Joint);
+
+    /** Specify the Coordinate of the SliderJoint */
+    Coordinate tx{ constructCoordinate(Coordinate::MotionType::Translational) };
+
 public:
     /** Use Joint's constructors. @see Joint */
     using Joint::Joint;
 
-    virtual ~SliderJoint() {}
-
-    int numCoordinates() const { return _numMobilities; }
-
 protected:
-    void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-
-private:
-    static const int _numMobilities = 1;
-
 //=============================================================================
 };  // END of class SliderJoint
 //=============================================================================

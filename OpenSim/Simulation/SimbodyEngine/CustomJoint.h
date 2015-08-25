@@ -94,11 +94,7 @@ public:
         bool reverse=false);
 
 
-    virtual ~CustomJoint() {}
-
     // default destructor, copy constructor, copy assignment
-
-    int numCoordinates() const override {return get_CoordinateSet().getSize();};
 
     // Get and Set Transforms
     const SpatialTransform& getSpatialTransform() const
@@ -116,10 +112,11 @@ public:
 private:
     // ModelComponent extension interface
     void extendFinalizeFromProperties() override;
-    void extendConnectToModel(Model& aModel) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     void constructProperties();
+
+    // Construct coordinates according to the SpatialTransform of the CustomJoint */
     void constructCoordinates();
 
     template <typename T>
@@ -141,8 +138,6 @@ SimTK::MobilizedBody::FunctionBased
                             const SimTK::Body& outboard,
                             const SimTK::Transform& outboardTransform,
                             int& startingCoorinateIndex) const;
-
-
 
 } // end of namespace OpenSim
 

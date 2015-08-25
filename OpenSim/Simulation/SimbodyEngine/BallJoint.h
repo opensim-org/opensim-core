@@ -49,26 +49,22 @@ of position (\f$\vec{u} \neq \dot{\vec{q}}\f$).
 */
 
 class OSIMSIMULATION_API BallJoint : public Joint {
-	OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
-//=============================================================================
-// METHODS
-//=============================================================================
+    OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
+
+    /** Specify the Coordinates of the BallJoint */
+    Coordinate rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    Coordinate ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    Coordinate rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+
 public:
-    // CONSTRUCTION
-	using Joint::Joint;
-
-    virtual ~BallJoint();
-
-    int numCoordinates() const override {return _numMobilities;} ;
+    /** Use Joint's constructors. @see Joint */
+    using Joint::Joint;
 
 protected:
     // ModelComponent interface.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendInitStateFromProperties(SimTK::State& s) const override;
     void extendSetPropertiesFromState(const SimTK::State& state) override;
-
-private:
-	static const int _numMobilities = 3;
 //=============================================================================
 };  // END of class BallJoint
 //=============================================================================

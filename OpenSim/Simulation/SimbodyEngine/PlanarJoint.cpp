@@ -31,18 +31,8 @@
 //=============================================================================
 // STATICS
 //=============================================================================
-using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
-
-
-void PlanarJoint::extendFinalizeFromProperties()
-{
-    Super::extendFinalizeFromProperties();
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-    coordinateSet[1].setMotionType(Coordinate::Translational);
-    coordinateSet[2].setMotionType(Coordinate::Translational);
-}
 
 //=============================================================================
 // Simbody Model building.

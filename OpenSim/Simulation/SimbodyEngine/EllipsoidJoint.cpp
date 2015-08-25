@@ -40,18 +40,10 @@ using namespace OpenSim;
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Destructor.
- */
-EllipsoidJoint::~EllipsoidJoint()
-{
-}
-//_____________________________________________________________________________
-/**
  * Default constructor.
  */
 EllipsoidJoint::EllipsoidJoint() : Super()
 {
-    constructCoordinates();
     constructProperties();
 }
 //_____________________________________________________________________________
@@ -65,9 +57,7 @@ EllipsoidJoint::EllipsoidJoint( const std::string& name,
                                 bool reverse) :
                                   Super(name, parentName, childName, reverse)
 {
-    constructCoordinates();
     constructProperties();
-
     set_radii_x_y_z(ellipsoidRadii);
 }
 
@@ -84,7 +74,6 @@ EllipsoidJoint::EllipsoidJoint(const std::string& name,
     Super(name, parent, locationInParent, orientationInParent,
         child, locationInChild, orientationInChild, reverse)
 {
-    constructCoordinates();
     constructProperties();
     set_radii_x_y_z(ellipsoidRadii);
 }

@@ -151,17 +151,14 @@ public:
 class CompoundJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(CompoundJoint, Joint);
 
-private:
-    static const int _numMobilities = 3;
+    /** Specify the Coordinates of the BallJoint */
+    Coordinate rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    Coordinate ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    Coordinate rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
 
-//=============================================================================
-// METHODS
-//=============================================================================
 public:
     // CONSTRUCTION
     using Joint::Joint;
-
-    virtual int numCoordinates() const {return _numMobilities;};
 
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override
@@ -216,7 +213,6 @@ protected:
             childTransform2,
             coordinateIndexForMobility, &getChildFrame());
     }
-
 //=============================================================================
 };  // END of class CompoundJoint
 //=============================================================================
@@ -1160,7 +1156,7 @@ void testBallJoint()
                          osim_thigh, hipInFemur, Vec3(0));
 
     // Rename hip coordinates for a ball joint
-    CoordinateSet hip_coords = hip.getCoordinateSet();
+    const CoordinateSet& hip_coords = hip.getCoordinateSet();
     for(int i=0; i<hip_coords.getSize(); i++){
         std::stringstream coord_name;
         coord_name << "hip_q" << i;
@@ -1178,10 +1174,9 @@ void testBallJoint()
     // create pin knee joint
     PinJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0), 
                           osim_shank, kneeInTibia, Vec3(0));
-    knee.finalizeFromProperties();
+
     // Rename knee coordinates for a pin joint
-    int first = 0;
-    knee.getCoordinateSet().get(first).setName("knee_q");
+    knee.getCoordinateSet()[0].setName("knee_q");
 
     // Add the shank body which now also contains the knee joint to the model
     osimModel.addBody(&osim_shank);
@@ -1352,7 +1347,7 @@ void testSliderJoint()
 
     // create hip as an Ball joint
     PinJoint hip("hip", ground, hipInPelvis, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
-    hip.finalizeFromProperties();
+
     // Rename hip coordinates for a pin joint
     CoordinateSet& hipCoords = hip.upd_CoordinateSet();
     for(int i=0; i<hipCoords.getSize(); i++){
@@ -1372,7 +1367,7 @@ void testSliderJoint()
     // create slider knee joint
     SliderJoint knee("knee", osim_thigh, kneeInFemur, oInP,
                              osim_shank, kneeInTibia, oInB);
-    knee.finalizeFromProperties();
+
     CoordinateSet& kneeCoords = knee.upd_CoordinateSet();
     kneeCoords[0].setName("knee_qx");
 
@@ -1463,7 +1458,7 @@ void testPlanarJoint()
 
     // create planar knee joint
     PlanarJoint knee("knee", osim_thigh, kneeInFemur, oInP, osim_shank, kneeInTibia, oInB);
-    knee.finalizeFromProperties();
+
     CoordinateSet& kneeCoords = knee.upd_CoordinateSet();
     kneeCoords[0].setName("knee_rz");
     kneeCoords[0].setName("knee_tx");
@@ -1947,7 +1942,7 @@ void testAutomaticJointReversal()
     // create custom hip joint
     auto hip = new CustomJoint("hip", *pelvis, hipInPelvis, zvec,
                                       *thigh, hipInFemur, zvec, hipTransform);
-    
+
     // Define knee transform for flexion/extension
     SpatialTransform kneeTransform;
     kneeTransform[2].setCoordinateNames(OpenSim::Array<std::string>("knee_q", 1, 1));
@@ -1998,12 +1993,6 @@ void testAutomaticJointReversal()
                                                   cpelvis, zvec, zvec);
 
     modelConstrained.addJoint(pelvisFree);
-
-    // TODO this should be removed. FreeJoint creates its own coordinates with
-    // appropriate naming, but does this in finalizeFromProperties. The Coordinates
-    // should be able upon construction, and should be addressed.
-    // For the time being explicitly calling FreeJoint::finalizeFromProperties()
-    pelvisFree->finalizeFromProperties();
     
     CoordinateSet& pelvisCoords = pelvisFree->upd_CoordinateSet();
     for (int i = 0; i < pelvisCoords.getSize(); ++i) {
@@ -2099,10 +2088,9 @@ void testAutomaticLoopJointBreaker()
     // create pin knee joint
     PinJoint knee("knee", thigh, kneeInFemur, zvec,
                           shank, kneeInTibia, zvec);
-    knee.finalizeFromProperties();
-    // Rename knee coordinates for a pin joint
-    int first = 0;
-    knee.getCoordinateSet().get(first).setName("knee_q");
+
+    // Rename knee coordinate for a pin joint
+    knee.getCoordinateSet()[0].setName("knee_q");
 
     // Add the shank body and the knee joint to the model
     model.addBody(&shank);

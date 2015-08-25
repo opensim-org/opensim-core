@@ -178,20 +178,14 @@ const std::string& Joint::getChildFrameName() const
 void Joint::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
+    CoordinateSet& coords = upd_CoordinateSet();
 
-    constructCoordinates();
-
-    CoordinateSet& coordinateSet = upd_CoordinateSet();
-
-    // add all coordinates listed under this joint as 
-    // subcomponents as long as the number of coordinates
-    // does not exceed the number of dofs.
-    SimTK_ASSERT1(numCoordinates() == coordinateSet.getSize(),
-        "%s list of coordinates does not match Joint degrees-of-freedom.",
-        getConcreteClassName().c_str());
-    for (int i = 0; i < coordinateSet.getSize(); ++i) {
-        coordinateSet[i].setJoint(*this);
-        addComponent(&coordinateSet[i]);
+    // add all coordinates listed under this joint 
+    for (int i = 0; i < coords.getSize(); ++i) {
+        coords[i].setJoint(*this);
+        // Append a pointer otherwise the model will make a copy that will not
+        // be updated properly
+        addComponent(&coords[i]);
     }
     for (int i = 0; i < getProperty_frames().size(); ++i) {
         addComponent(&upd_frames(i));
@@ -275,27 +269,6 @@ void Joint::scale(const ScaleSet& scaleSet)
     found = getProperty_frames().findIndex(getParentFrame());
     if (found >= 0) {
         upd_frames(found).scale(parentFactors);
-    }
-}
-
-/** Construct coordinates according to the mobilities of the Joint */
-void Joint::constructCoordinates()
-{
-    CoordinateSet& coordinateSet = upd_CoordinateSet();
-    // When this Joint is destroyed so should all its coordinates.
-    coordinateSet.setMemoryOwner(true);
-
-    // Check how many coordinates are already defined if any
-    int ncoords = coordinateSet.getSize();
-
-    int nj_coords = numCoordinates();
-
-    for(int i = ncoords; i< numCoordinates(); ++i){
-        std::stringstream name;
-        name << getName() << "_coord_" << i;
-        Coordinate *coord = new Coordinate();
-        coord->setName(name.str());
-        coordinateSet.adoptAndAppend(coord);
     }
 }
 

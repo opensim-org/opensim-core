@@ -46,9 +46,12 @@ position (\f$\vec{u} \neq \dot{\vec{q}}\f$)
 */
 class OSIMSIMULATION_API EllipsoidJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(EllipsoidJoint, Joint);
-//=============================================================================
-// DATA
-//=============================================================================
+
+    /** Specify the Coordinates of the EllipsoidJoint */
+    Coordinate rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    Coordinate ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    Coordinate rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+
 public:
 //==============================================================================
 // PROPERTIES
@@ -84,10 +87,6 @@ public:
         const SimTK::Vec3& ellipsoidRadii,
         bool reverse=false);
 
-    virtual ~EllipsoidJoint();
-
-    int numCoordinates() const override { return _numMobilities; }
-
     //Set properties
     void setEllipsoidRadii(const SimTK::Vec3& radii);
 
@@ -108,7 +107,6 @@ protected:
         SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const override;
 
 private:
-    static const int _numMobilities = 3;
     void constructProperties();
 
 //=============================================================================

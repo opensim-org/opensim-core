@@ -896,8 +896,6 @@ void Model::addMarker(OpenSim::Marker* marker)
 void Model::addJoint(Joint* joint)
 {
     if (joint){
-        //TODO Remove once coordinates are accessible from the Joint upon construction
-        joint->finalizeFromProperties();
         updJointSet().adoptAndAppend(joint);
         addComponent(joint);
         updCoordinateSet().populate(*this);

@@ -51,7 +51,7 @@ AssemblySolver::AssemblySolver
     _accuracy = 1e-4;
 
     // Get model coordinates
-    const CoordinateSet &modelCoordSet = getModel().getCoordinateSet();
+    const CoordinateSet& modelCoordSet = getModel().getCoordinateSet();
 
     SimTK::Array_<CoordinateReference>::iterator p;
 
@@ -97,7 +97,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
     _coordinateAssemblyConditions.clear();
 
     // Get model coordinates
-    const CoordinateSet &modelCoordSet = getModel().getCoordinateSet();
+    const CoordinateSet& modelCoordSet = getModel().getCoordinateSet();
 
     // Restrict solution to set range of any of the coordinates that are clamped
     for(int i=0; i<modelCoordSet.getSize(); ++i){
@@ -214,7 +214,7 @@ void AssemblySolver::assemble(SimTK::State &state)
         state.updU() = s.getU();
 
         // Get model coordinates
-        const CoordinateSet &modelCoordSet = getModel().getCoordinateSet();
+        const CoordinateSet& modelCoordSet = getModel().getCoordinateSet();
         // Make sure the locks in orignal state are restored
         for(int i=0; i< modelCoordSet.getSize(); ++i){
             bool isLocked = modelCoordSet[i].getLocked(state);

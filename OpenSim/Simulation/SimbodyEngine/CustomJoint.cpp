@@ -47,7 +47,7 @@ using namespace OpenSim;
 CustomJoint::CustomJoint()
 {
     constructProperties();
-    finalizeFromProperties();
+    constructCoordinates();
 }
 
 
@@ -63,7 +63,7 @@ CustomJoint::CustomJoint(const std::string &name,
 {
     constructProperties();
     set_SpatialTransform(aSpatialTransform);
-    finalizeFromProperties();
+    constructCoordinates();
 }
 
 CustomJoint::CustomJoint(const std::string& name,
@@ -80,7 +80,7 @@ CustomJoint::CustomJoint(const std::string& name,
 {
     constructProperties();
     set_SpatialTransform(aSpatialTransform);
-    finalizeFromProperties();
+    constructCoordinates();
 }
 
 //_____________________________________________________________________________
@@ -99,15 +99,12 @@ void CustomJoint::constructProperties()
  */
 void CustomJoint::extendFinalizeFromProperties()
 {
-    constructCoordinates();
-    Joint::extendFinalizeFromProperties();
-}
+    Super::extendFinalizeFromProperties();
 
-
-void CustomJoint::extendConnectToModel(Model& aModel)
-{
-    Super::extendConnectToModel(aModel);
-
+    //SpatialTransform "connect" methods are poorly named. These are
+    // establishing the SpatialTransform and its Transform axes as 
+    // sub objects (not updated to Components) of the CustomJoint and this
+    // should be done here.
     /* Set up spatial transform for this custom joint. */
     updSpatialTransform().connectToJoint(*this);
 
@@ -119,9 +116,9 @@ void CustomJoint::extendConnectToModel(Model& aModel)
     // valid because connectToJoint() has already been called on the 
     // SpatialTransform.
     Array<Coordinate*> coords;
-    for (int i=0; i<6; i++) {
+    for (int i = 0; i<6; i++) {
         const TransformAxis& transform = getSpatialTransform()[i];
-        for (int j=0; j<transform.getCoordinateNames().size(); j++) {
+        for (int j = 0; j<transform.getCoordinateNames().size(); j++) {
             Coordinate* c = &(upd_CoordinateSet().get(transform.getCoordinateNames()[j]));
             // If the coordinate is not already in the array, add it.
             if (coords.findIndex(c) == -1)
@@ -132,10 +129,10 @@ void CustomJoint::extendConnectToModel(Model& aModel)
     // and add them back in in the right order.
     bool currentOwnership = getCoordinateSet().getMemoryOwner();
     upd_CoordinateSet().setMemoryOwner(false);
-    for (int i=0; i<nc; i++)
+    for (int i = 0; i<nc; i++)
         upd_CoordinateSet().remove(0);
     upd_CoordinateSet().setMemoryOwner(currentOwnership);
-    for (int i=0; i<coords.getSize(); i++)
+    for (int i = 0; i<coords.getSize(); i++) 
         upd_CoordinateSet().adoptAndAppend(coords[i]);
 }
 
@@ -259,27 +256,35 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
     }
 
     const CoordinateSet& coords = get_CoordinateSet();
+    const Array<std::string>& coordNames = getSpatialTransform().getCoordinateNames();
+
     // Some initializations
-    int numMobilities = coords.getSize();  // Note- should check that all coordinates are used.
+    int numCoordinates = coords.getSize();  // Note- should check that all coordinates are used.
     std::vector<std::vector<int> > coordinateIndices =
         getSpatialTransform().getCoordinateIndices();
     std::vector<const SimTK::Function*> functions =
         getSpatialTransform().getFunctions();
     std::vector<Vec3> axes = getSpatialTransform().getAxes();
 
-    SimTK_ASSERT1(numMobilities > 0,
-        "%s must have 1 or more mobilities (dofs).",
+    SimTK_ASSERT1(numCoordinates == coordNames.getSize(),
+        "%s list of coordinates does not match number of mobilities.",
+        getConcreteClassName().c_str());
 
+    SimTK_ASSERT1(numCoordinates > 0,
+        "%s must have 1 or more mobilities (dofs).",
                   getConcreteClassName().c_str());
-    SimTK_ASSERT1(numMobilities <= 6,
+
+    SimTK_ASSERT1(numCoordinates <= 6,
         "%s cannot exceed 6 mobilities (dofs).",
         getConcreteClassName().c_str());
     assert(functions.size() == 6);
-    SimTK_ASSERT2(numMobilities <= 6,
+
+    SimTK_ASSERT2(numCoordinates <= 6,
         "%s::%s must specify functions for complete spatial (6 axes) motion.",
         getConcreteClassName().c_str(),
                   getSpatialTransform().getConcreteClassName().c_str());
     assert(coordinateIndices.size() == 6);
+
     SimTK_ASSERT2(axes.size() == 6,
         "%s::%s must specify 6 independent axes to span spatial motion.",
         getConcreteClassName().c_str(), getSpatialTransform().getConcreteClassName().c_str());
@@ -290,15 +295,10 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
     SimTK::MobilizedBody::FunctionBased
         simtkBody(inb, *inbX, 
                   outb, *outbX, 
-                  numMobilities, functions,
+                    numCoordinates, functions,
                   coordinateIndices, axes, dir);
 
-    int nc = numCoordinates();
-
-    SimTK_ASSERT1(nc == numMobilities, "%s list of coordinates does not match number of mobilities.",
-        getConcreteClassName().c_str());
-
-    assignSystemIndicesToBodyAndCoordinates(simtkBody, mobilized, nc, 0);
+    assignSystemIndicesToBodyAndCoordinates(simtkBody, mobilized, numCoordinates, 0);
 }
 
 //=============================================================================

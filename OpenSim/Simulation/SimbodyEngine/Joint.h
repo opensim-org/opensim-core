@@ -210,8 +210,7 @@ public:
     bool getReverse() const { return get_reverse(); }
 
     //Model building
-    virtual int numCoordinates() const = 0;
-
+    int numCoordinates() const { return get_CoordinateSet().getSize(); }
 
     // Utility
     bool isCoordinateUsed(const Coordinate& aCoordinate) const;
@@ -267,8 +266,20 @@ protected:
     void extendInitStateFromProperties(SimTK::State& s) const override;
     void extendSetPropertiesFromState(const SimTK::State& state) override;
 
-    /** Construct coordinates according to the mobilities of the Joint */
-    void constructCoordinates();
+
+    /** Utility for derived Joints to add Coordinate(s) to reflect its DOFs.
+        Derived Joints must construct as many Coordinates as reflected by the
+        Mobilizer Qs unless those Qs are intended to be hidden. */
+    Coordinate& constructCoordinate(Coordinate::MotionType mt) {
+        Coordinate* coord = new Coordinate();
+        coord->setMotionType(mt);
+        std::stringstream name;
+        name << getName() << "_coord_" << get_CoordinateSet().getSize();
+        coord->setName(name.str());
+        // CoordinateSet takes ownership
+        upd_CoordinateSet().adoptAndAppend(coord);
+        return *coord;
+    }
 
     // Methods that allow access for Joint subclasses to data members of
     // Body and Coordinate , which Joint befriends
