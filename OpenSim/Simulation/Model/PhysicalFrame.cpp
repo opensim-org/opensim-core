@@ -89,9 +89,8 @@ void PhysicalFrame::extendConnectToModel(Model& aModel)
     Super::extendConnectToModel(aModel);
 
     // TODO: Better use name search or more robust method
-    int idx = ObjectProperty<Geometry>::getAs(getProperty_geometry()).findIndexForName("frame_geometry");
-    if (upd_geometry(0).getFrameName() == "" && idx !=-1)
-        upd_geometry(idx).setFrameName(getName());
+    if (upd_geometry(0).getFrameName() == "")
+        upd_geometry(0).setFrameName(getName());
 
     for (int i = 0; i < get_WrapObjectSet().getSize(); i++)
         get_WrapObjectSet().get(i).connectToModelAndBody(aModel, *this);
