@@ -72,14 +72,13 @@ function(OpenSimAddLibrary)
 
     # This is for exporting classes on Windows.
     if(OSIMADDLIB_VENDORLIB)
-        set(OSIMADDLIB_PROJECT_LABEL
-            "Vendor Libraries - ${OSIMADDLIB_LIBRARY_NAME}")
+	    set(OSIMADDLIB_FOLDER "Vendor Libraries")
     else()
-        set(OSIMADDLIB_PROJECT_LABEL "Libraries - ${OSIMADDLIB_LIBRARY_NAME}")
+		set(OSIMADDLIB_FOLDER "Libraries")
     endif()
     set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES
        DEFINE_SYMBOL OSIM${OSIMADDLIB_UKIT}_EXPORTS
-       PROJECT_LABEL "${OSIMADDLIB_PROJECT_LABEL}"
+       FOLDER "${OSIMADDLIB_FOLDER}" # For Visual Studio.
     )
 
 
@@ -202,7 +201,8 @@ function(OpenSimAddTests)
             target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
             add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
             set_target_properties(${TEST_NAME} PROPERTIES
-                PROJECT_LABEL "Tests - ${TEST_NAME}")
+                FOLDER "Tests"
+				)
 
         endforeach()
 
@@ -236,6 +236,6 @@ function(OpenSimAddApplication APPNAME)
     target_link_libraries(${APPNAME} osimTools)
     install(TARGETS ${APPNAME} DESTINATION bin)
     set_target_properties(${APPNAME} PROPERTIES
-        PROJECT_LABEL "Applications - ${APPNAME}")
+        FOLDER "Applications")
 
 endfunction()
