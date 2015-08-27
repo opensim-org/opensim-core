@@ -122,7 +122,7 @@ On Windows using Visual Studio
       *Custom*, and check *Programming Languages > Visual C++ > Common Tools for Visual C++ 2015*.
       You can uncheck all other boxes.
 * **physics engine**:
-  [Simbody](https://github.com/simbody/simbody#windows-and-visual-studio) >= 3.4
+  [Simbody](https://github.com/simbody/simbody#windows-and-visual-studio) >= 3.6
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git. There are many options:
@@ -237,10 +237,7 @@ On Mac using Xcode
 * **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 5, through
   the Mac App Store.
 * **physics engine**:
-  [Simbody](https://github.com/simbody/simbody#installing) >= 3.5.
-  **Important**: If installing Simbody 3.5 using Makefile's, make sure Simbody's
-  CMake variable `SIMBODY_STANDARD_11` is turned on (in 3.6 and later, this variable
-  is removed).
+  [Simbody](https://github.com/simbody/simbody#installing) >= 3.6.
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git.
@@ -364,10 +361,7 @@ line below, we show the corresponding package.
 * **compiler**: [gcc](http://gcc.gnu.org) >= 4.8; `g++-4.8`, or
       [Clang](http://clang.llvm.org) >= 3.4; `clang-3.4`.
 * **physics engine**:
-  [Simbody](https://github.com/simbody/simbody#installing) >= 3.5.
-  **Important**: If installing Simbody 3.5 using Makefile's, make sure Simbody's
-  CMake variable `SIMBODY_STANDARD_11` is turned on (in 3.6 and later, this variable
-  is removed).
+  [Simbody](https://github.com/simbody/simbody#installing) >= 3.6.
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
