@@ -101,39 +101,53 @@ void CustomJoint::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    //SpatialTransform "connect" methods are poorly named. These are
-    // establishing the SpatialTransform and its Transform axes as 
-    // sub objects (not updated to Components) of the CustomJoint and this
-    // should be done here.
-    /* Set up spatial transform for this custom joint. */
-    updSpatialTransform().connectToJoint(*this);
-
-    // Reorder the coordinates so that they match their order in the SpatialTransform.
-    int nc = getCoordinateSet().getSize();
-
     // Form an array of pointers to the coordinates in the order that they are
-    // referenced in the SpatialTransform. All of the coordinate names should be
-    // valid because connectToJoint() has already been called on the 
-    // SpatialTransform.
+    // referenced in the SpatialTransform. Add Coordinates to the joint's
+    // CoordinateSet of the Coordinate does not already exist.
     Array<Coordinate*> coords;
-    for (int i = 0; i<6; i++) {
+    for (int i = 0; i < 6; ++i) {
         const TransformAxis& transform = getSpatialTransform()[i];
-        for (int j = 0; j<transform.getCoordinateNames().size(); j++) {
-            Coordinate* c = &(upd_CoordinateSet().get(transform.getCoordinateNames()[j]));
+        for (int j = 0; j < transform.getCoordinateNames().size(); ++j) {
+            const std::string& coordNameForAxis = transform.getCoordinateNames()[j];
+            int fix = get_CoordinateSet().getIndex(coordNameForAxis);
+            Coordinate* c = nullptr;
+            if(fix < 0) { // not found
+                c = new Coordinate();
+                c->setName(coordNameForAxis);
+                upd_CoordinateSet().adoptAndAppend(c);
+            }
+            else {
+                c = &(upd_CoordinateSet().get(transform.getCoordinateNames()[j]));
+            }
+
             // If the coordinate is not already in the array, add it.
             if (coords.findIndex(c) == -1)
                 coords.append(c);
         }
     }
+
+    // Reorder the coordinates so that they match their order in the SpatialTransform.
+    int nc = getCoordinateSet().getSize();
     // Now remove all the coordinates from the set (without deleting),
     // and add them back in in the right order.
     bool currentOwnership = getCoordinateSet().getMemoryOwner();
     upd_CoordinateSet().setMemoryOwner(false);
-    for (int i = 0; i<nc; i++)
+    for (int i = 0; i < nc; ++i)
         upd_CoordinateSet().remove(0);
     upd_CoordinateSet().setMemoryOwner(currentOwnership);
-    for (int i = 0; i<coords.getSize(); i++) 
+    for (int i = 0; i < coords.getSize(); ++i)
         upd_CoordinateSet().adoptAndAppend(coords[i]);
+}
+
+void CustomJoint::extendConnectToModel(Model& aModel)
+{
+    Super::extendConnectToModel(aModel);
+    // SpatialTransform "connect" methods are poorly named. This
+    // establishing the SpatialTransform and its Transform axes as 
+    // sub objects (not updated to Components) of the CustomJoint and this
+    // should be done here.
+    /* Set up spatial transform for this custom joint. */
+    updSpatialTransform().connectToJoint(*this);
 }
 
 

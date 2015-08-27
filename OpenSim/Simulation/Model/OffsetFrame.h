@@ -132,6 +132,10 @@ public:
     */
     void setOffsetTransform(const SimTK::Transform& offset);
 
+
+    /** Scale the offset given scale factors for spatial (XYZ) dimensions */
+    void scale(const SimTK::Vec3& scaleFactors);
+
 protected:
     /** The transform X_GF for this OffsetFrame, F, in ground, G.*/
     SimTK::Transform
@@ -245,6 +249,12 @@ void OffsetFrame<C>::setOffsetTransform(const SimTK::Transform& xform)
     // serialize after this call
     set_translation(xform.p());
     set_orientation(xform.R().convertRotationToBodyFixedXYZ());
+}
+
+template<class C>
+inline void OffsetFrame<C>::scale(const SimTK::Vec3 & scaleFactors)
+{
+    upd_translation() = get_translation().elementwiseMultiply(scaleFactors);
 }
 
 template<class C>

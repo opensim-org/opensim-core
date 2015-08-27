@@ -987,7 +987,7 @@ void testCoordinateLimitForce()
     osimModel->print("CoordinateLimitForceTest.osim");
 
     // Check serialization and deserilaization
-    Model* loadedModel = new Model("CoordinateLimitForceTest.osim");
+    Model* loadedModel = new Model("CoordinateLimitForceTest.osim", false);
 
     ASSERT(*loadedModel == *osimModel,
         "Deserialized CoordinateLimitForceTest failed to be equivalent to original.");

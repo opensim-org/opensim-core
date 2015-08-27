@@ -53,8 +53,8 @@ using namespace std;
 // 30501 for Changing serialization of Marker
 // 30502 for Changing serialization of Geometry
 // 30503 for Changing serialization of Ground
-
-const int XMLDocument::LatestVersion = 30503;   
+// 30505 for Changing serialization of Joint to create offset frames
+const int XMLDocument::LatestVersion = 30505;   
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================

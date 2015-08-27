@@ -86,13 +86,12 @@ void TransformAxis::connectToJoint(const Joint& aJoint)
     int nc = coordNames.size();
     const CoordinateSet& coords = _joint->getCoordinateSet();
 
-    // If a Function has been assigned then we have to insist that any 
-    // specified coordinates actually exist in this joint.
-    // TODO: (sherm 20120418) Why do we allow unrecognized coordinate names
-    // if there is no Function?
-
-    if (!hasFunction())
-        return; // no need to check
+    if (!hasFunction()) {
+        SimTK_ASSERT2_ALWAYS(coordNames.size() == 0,
+            "CustomJoint (%s) %s axis has no function but has coordinates.",
+            _joint->getName(), getName());
+        return;
+    }
 
     for(int i=0; i< nc; ++i) {
         if (!coords.contains(coordNames[i])) {

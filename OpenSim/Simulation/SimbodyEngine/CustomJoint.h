@@ -112,11 +112,12 @@ public:
 private:
     // ModelComponent extension interface
     void extendFinalizeFromProperties() override;
+    void extendConnectToModel(Model& aModel) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     void constructProperties();
 
-    // Construct coordinates according to the SpatialTransform of the CustomJoint */
+    // Construct coordinates according to the SpatialTransform of the CustomJoint
     void constructCoordinates();
 
     template <typename T>

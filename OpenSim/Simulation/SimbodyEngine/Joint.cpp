@@ -238,11 +238,11 @@ bool Joint::isCoordinateUsed(const Coordinate& aCoordinate) const
 void Joint::scale(const ScaleSet& scaleSet)
 {
     SimTK::Vec3 parentFactors(1.0);
-    SimTK::Vec3 bodyFactors(1.0);
+    SimTK::Vec3 childFactors(1.0);
 
     // Find the factors associated with the PhysicalFrames this Joint connects
-    const string& parentName = getParentFrame().getName();
-    const string& bodyName = getChildFrame().getName();
+    const string& parentName = getParentFrame().findBaseFrame().getName();
+    const string& childName = getChildFrame().findBaseFrame().getName();
     // Get scale factors
     bool found_p = false;
     bool found_b = false;
@@ -252,8 +252,8 @@ void Joint::scale(const ScaleSet& scaleSet)
             scale.getScaleFactors(parentFactors);
             found_p = true;
         }
-        if (!found_b && (scale.getSegmentName() == bodyName)) {
-            scale.getScaleFactors(bodyFactors);
+        if (!found_b && (scale.getSegmentName() == childName)) {
+            scale.getScaleFactors(childFactors);
             found_b = true;
         }
         if (found_p && found_b)
@@ -264,11 +264,15 @@ void Joint::scale(const ScaleSet& scaleSet)
     // otherwise let the owner of the frame decide.
     int found = getProperty_frames().findIndex(getParentFrame());
     if (found >= 0) {
-        upd_frames(found).scale(parentFactors);
+        PhysicalOffsetFrame& offset
+            = SimTK_DYNAMIC_CAST_DEBUG<PhysicalOffsetFrame&>(upd_frames(found));
+        offset.scale(parentFactors);
     }
-    found = getProperty_frames().findIndex(getParentFrame());
+    found = getProperty_frames().findIndex(getChildFrame());
     if (found >= 0) {
-        upd_frames(found).scale(parentFactors);
+        PhysicalOffsetFrame& offset
+            = SimTK_DYNAMIC_CAST_DEBUG<PhysicalOffsetFrame&>(upd_frames(found));
+        offset.scale(childFactors);
     }
 }
 
@@ -520,7 +524,7 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
         }
         // Version 30503 changed "parent_body" connector name to "parent_frame"
         // Convert location and orientation into PhysicalOffsetFrames owned by the Joint
-        if (documentVersion < 30503) {
+        if (documentVersion < 30505) {
             // Elements for the parent and child names the joint connects
             SimTK::Xml::element_iterator parentNameElt;
             SimTK::Xml::element_iterator childNameElt;
