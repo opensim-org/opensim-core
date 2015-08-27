@@ -50,12 +50,12 @@ class OSIMSIMULATION_API FreeJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(FreeJoint, Joint);
 
 /** Specify the Coordinates of the FreeJoint */
-Coordinate rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
-Coordinate ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
-Coordinate rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
-Coordinate tx{ constructCoordinate(Coordinate::MotionType::Translational) };
-Coordinate ty{ constructCoordinate(Coordinate::MotionType::Translational) };
-Coordinate tz{ constructCoordinate(Coordinate::MotionType::Translational) };
+CoordinateP rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
+CoordinateP ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
+CoordinateP rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+CoordinateP tx{ constructCoordinate(Coordinate::MotionType::Translational) };
+CoordinateP ty{ constructCoordinate(Coordinate::MotionType::Translational) };
+CoordinateP tz{ constructCoordinate(Coordinate::MotionType::Translational) };
 
 public:
     /** Use Joint's constructors. @see Joint */

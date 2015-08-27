@@ -100,10 +100,6 @@ public:
 //=============================================================================
 // METHODS
 //=============================================================================
-
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
     /** DEFAULT CONSTRUCTION */
     Joint();
 
@@ -156,8 +152,7 @@ public:
                         direction of the Joint in the multibody tree.
                         Default is false (that is, forward).
     */
-   // DEPRECATED_14("Joint constructor with explicit location and "
-    //    "orientation offsets will no longer be supported.")
+    DEPRECATED_14("Use Joint(name, parentName, childName) instead.")
     Joint(const std::string& name,
         const PhysicalFrame& parent,
         const SimTK::Vec3& locationInParent,
@@ -167,8 +162,7 @@ public:
         const SimTK::Vec3& orientationInChild,
         bool reverse);
 
-   // DEPRECATED_14("Joint constructor with explicit location and "
-   //     "orientation offsets will no longer be supported.")
+    DEPRECATED_14("Use Joint(name, parentName, childName) instead.")
     Joint(const std::string& name,
         const PhysicalFrame& parent,
         const SimTK::Vec3& locationInParent,
@@ -260,17 +254,19 @@ public:
     virtual void scale(const ScaleSet& aScaleSet);
 
 protected:
-    // build Joint transforms from properties
-    void extendFinalizeFromProperties() override;
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    void extendInitStateFromProperties(SimTK::State& s) const override;
-    void extendSetPropertiesFromState(const SimTK::State& state) override;
-
+    /** A Coordinate place-holder created by constructCoordinate(). E.g.:  
+    class My2DofJoint::Joint {
+        CoordinateP dof1{ constructCoordinate(Coordinate::MotionType::Rotational) };
+        CoordinateP dof2{ constructCoordinate(Coordinate::MotionType::Translatinal) };
+        ...
+    }
+    */
+    using CoordinateP = SimTK::ReferencePtr<Coordinate>;
 
     /** Utility for derived Joints to add Coordinate(s) to reflect its DOFs.
-        Derived Joints must construct as many Coordinates as reflected by the
-        Mobilizer Qs unless those Qs are intended to be hidden. */
-    Coordinate& constructCoordinate(Coordinate::MotionType mt) {
+    Derived Joints must construct as many Coordinates as reflected by the
+    Mobilizer Qs unless those Qs are intended to be hidden. */
+    Coordinate* constructCoordinate(Coordinate::MotionType mt) {
         Coordinate* coord = new Coordinate();
         coord->setMotionType(mt);
         std::stringstream name;
@@ -278,8 +274,14 @@ protected:
         coord->setName(name.str());
         // CoordinateSet takes ownership
         upd_CoordinateSet().adoptAndAppend(coord);
-        return *coord;
+        return coord;
     }
+
+    // build Joint transforms from properties
+    void extendFinalizeFromProperties() override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
     // Methods that allow access for Joint subclasses to data members of
     // Body and Coordinate , which Joint befriends

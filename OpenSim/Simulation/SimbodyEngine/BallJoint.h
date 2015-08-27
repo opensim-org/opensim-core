@@ -52,9 +52,9 @@ class OSIMSIMULATION_API BallJoint : public Joint {
     OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
 
     /** Specify the Coordinates of the BallJoint */
-    Coordinate rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    Coordinate ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    Coordinate rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateP rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateP ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateP rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
 
 public:
     /** Use Joint's constructors. @see Joint */

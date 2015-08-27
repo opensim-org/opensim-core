@@ -151,10 +151,10 @@ public:
 class CompoundJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(CompoundJoint, Joint);
 
-    /** Specify the Coordinates of the BallJoint */
-    Coordinate rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    Coordinate ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    Coordinate rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    /** Specify the Coordinates of this CompoundJoint */
+    CoordinateP rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateP ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateP rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
 
 public:
     // CONSTRUCTION

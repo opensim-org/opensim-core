@@ -45,7 +45,7 @@ class OSIMSIMULATION_API SliderJoint : public Joint {
     OpenSim_DECLARE_CONCRETE_OBJECT(SliderJoint, Joint);
 
     /** Specify the Coordinate of the SliderJoint */
-    Coordinate tx{ constructCoordinate(Coordinate::MotionType::Translational) };
+    CoordinateP tx{ constructCoordinate(Coordinate::MotionType::Translational) };
 
 public:
     /** Use Joint's constructors. @see Joint */

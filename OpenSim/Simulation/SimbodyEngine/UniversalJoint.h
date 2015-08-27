@@ -44,20 +44,17 @@ second rotation is near 90 degrees.
  */
 class OSIMSIMULATION_API UniversalJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(UniversalJoint, Joint);
-//=============================================================================
-// METHODS
-//=============================================================================
+
+    /** Specify the Coordinates of the UniversalJoint */
+    CoordinateP rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateP ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
+
 public:
     /** Use Joint's constructors. @see Joint */
     using Joint::Joint;
 
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-
-private:
-    /** Specify the Coordinates of the UniversalJoint */
-    Coordinate rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    Coordinate ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
 //=============================================================================
 };  // END of class UniversalJoint
 //=============================================================================
