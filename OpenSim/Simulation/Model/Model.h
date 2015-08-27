@@ -115,9 +115,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with a Model. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(assembly_accuracy, double,
     "Specify how accurate the resulting configuration of a model assembly "
     "should be. This translates to the number of signficant digits in the "
@@ -179,7 +176,6 @@ public:
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(ModelVisualPreferences,
         "Visual preferences for this model.");
-    /**@}**/
 
 //=============================================================================
 // METHODS

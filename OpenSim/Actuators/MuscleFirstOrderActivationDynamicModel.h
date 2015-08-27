@@ -84,16 +84,12 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-        These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
         "Activation time constant in seconds");
     OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
         "Deactivation time constant in seconds");
     OpenSim_DECLARE_PROPERTY(minimum_activation, double,
         "Lower bound on activation");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS

@@ -46,14 +46,9 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PolynomialFunction, Function);
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(coefficients, SimTK::Vector,
         "Coefficients of a polynomial function, from highest to lowest order."
         "Polynomial order is n-1, where n is the number of coefficients.");
-    /**@}**/
-
 
 //=============================================================================
 // METHODS

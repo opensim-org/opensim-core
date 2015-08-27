@@ -59,9 +59,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(applied_to_body, std::string,
         "Name of the body the force is applied to.");
     OpenSim_DECLARE_PROPERTY(force_expressed_in_body, std::string,
@@ -76,7 +73,6 @@ public:
         "Identifier (string) to locate the torque to be applied in the data source.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(data_source_name, std::string,
         "Name of the data source (Storage) that will supply the force data.");
-    /**@}**/
 
 
 //==============================================================================

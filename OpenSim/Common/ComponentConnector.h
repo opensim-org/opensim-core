@@ -80,12 +80,9 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with a Connector. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(connectee_name, std::string,
         "Name of the component this Connector should be connected to.");
-    /**@}**/
+
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------

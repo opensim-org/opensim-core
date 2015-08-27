@@ -112,9 +112,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-        These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(concentric_slope_at_vmax, double,
         "Slope of force-velocity curve at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)");
     OpenSim_DECLARE_PROPERTY(concentric_slope_near_vmax, double,
@@ -131,7 +128,6 @@ public:
         "Shape of concentric branch of force-velocity curve, from linear (0) to maximal curve (1)");
     OpenSim_DECLARE_PROPERTY(eccentric_curviness, double,
         "Shape of eccentric branch of force-velocity curve, from linear (0) to maximal curve (1)");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS

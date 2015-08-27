@@ -199,9 +199,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     /** Enabled by default. **/
     OpenSim_DECLARE_PROPERTY(activation_rate_on, 
         bool,
@@ -285,7 +282,6 @@ public:
         Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet,
         "A set containing, for each muscle, the parameters "
         "required to calculate muscle metabolic power.");
-    /**@}**/
 
 //=============================================================================
 // PUBLIC METHODS
@@ -487,9 +483,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(specific_tension, double,
         "The specific tension of the muscle (Pascals (N/m^2)).");
 
@@ -517,7 +510,6 @@ public:
 
     OpenSim_DECLARE_PROPERTY(maintenance_constant_fast_twitch, double,
         "Maintenance constant for fast twitch fibers (W/kg).");
-    /**@}**/
 
 //=============================================================================
 // DATA
