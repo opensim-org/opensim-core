@@ -1,9 +1,8 @@
-#ifndef OPENSIM_COMMON_FILEADAPTER_H
-#define OPENSIM_COMMON_FILEADAPTER_H
 /* -------------------------------------------------------------------------- *
- *                          OpenSim:  FileAdapter.h                           *
+ *                            OpenSim:  example.cpp                           *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
+ * See http://opensim.stanford.edu and the NOTICE file for more information.  *
  * OpenSim is developed at Stanford University and supported by the US        *
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
@@ -21,41 +20,31 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/** @file
-* This file defines an abstract FileAdapter class, which implements the 
-  OpenSim::DataAdpater interface for reading or writing data files.
-*/
-#include "DataAdapter.h"
+#include "OpenSim/Common/TRCAdapter.h"
 
-#include <vector>
+#include <iostream>
+#include <fstream>
 
-namespace OpenSim {
 
-/** FileAdapter class for constructing DataAdapters that specifically access
-data sources that are files. It provides utilities for resolving paths and
-format parsing.
-Concrete classes handle the individual formats and specific DataTypes.        */
-class FileAdapter : public DataAdapter {
-public:
-    FileAdapter() = default;
+int main(void) {
+    using namespace OpenSim;
 
-    static
-    std::unique_ptr<FileAdapter> createAdapter(const std::string& identifier);
+    DataAdapter::registerDataAdapter("trc", TRCAdapter{});
 
-    void setFilename(const std::string& filename);
+    TRCAdapter::Table table{};
 
-    const std::string& getFilename() const;
+    auto file_adapter = FileAdapter::createAdapter("trc");
 
-    static
-    std::string findExtension(const std::string& filename);
+    file_adapter->setFilename("/home/shrik/opensim-core/OpenSim/Wrapping/Java/"
+                              "Matlab/testData/Subject01/MarkerData/"
+                              "walk_free_01.trc");
 
-    std::vector<std::string> tokenize(const std::string& str, 
-                                      const std::string& delims);
+    file_adapter->prepareForReading(table);
 
-protected:
-    std::string filename_;
-};
+    file_adapter->read();
 
-} // OpenSim namespace
+    std::cout << table.getNumRows() << " rows" << std::endl;
+    std::cout << table.getNumColumns() << " columns" << std::endl; 
 
-#endif // OPENSIM_COMMON_FILEADAPTER_H
+    return 0;
+}

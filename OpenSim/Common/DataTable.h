@@ -24,8 +24,8 @@
 This file defines the  DataTable_ class, which is used by OpenSim to provide an 
 in-memory container for data access and manipulation.                         */
 
-#ifndef OPENSIM_COMMON_DATATABLE_H_
-#define OPENSIM_COMMON_DATATABLE_H_
+#ifndef OPENSIM_COMMON_DATATABLE_H
+#define OPENSIM_COMMON_DATATABLE_H
 
 // Non-standard headers.
 #include "SimTKcommon.h"
@@ -3103,4 +3103,4 @@ DataTable_<ET> concatenateColumns(const DataTable_<ET>& dt1,
 
 } // namespace OpenSim
 
-#endif //OPENSIM_COMMON_DATATABLE_H_
+#endif //OPENSIM_COMMON_DATATABLE_H
