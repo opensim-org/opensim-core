@@ -109,15 +109,11 @@ TRCAdapter::read() {
         auto row = tokenize(line, delimiters_read_);
         ++row_num;
 
-        if(row.size() == 0)
-            continue;
-
         if(row.size() != column_labels.size() * 3 + 2)
             throw Exception{"There are " + 
                     std::to_string(column_labels.size() * 3 + 2) + 
                     " column labels but row " + std::to_string(row_num) + 
-                    " contains " + std::to_string(row.size()) + 
-                    " columns."};
+                    " contains " + std::to_string(row.size()) + " columns."};
 
         // Columns 2 till the end are data.
         std::vector<SimTK::Vec3> row_vector{};
