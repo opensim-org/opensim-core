@@ -322,15 +322,15 @@ protected:
     {
         SimTK::MobilizedBody inb;
         const SimTK::Body* outb = &getChildInternalRigidBody();
-        const SimTK::Transform* inbX = &getParentFrame().findTransformInBaseFrame();
-        const SimTK::Transform* outbX = &getChildFrame().findTransformInBaseFrame();
+        SimTK::Transform inbX = getParentFrame().findTransformInBaseFrame();
+        SimTK::Transform outbX = getChildFrame().findTransformInBaseFrame();
         const PhysicalFrame* associatedFrame = nullptr;
         // if the joint is reversed then flip the underlying tree representation
         // of inboard and outboard bodies, although the joint direction will be
         // preserved, the inboard must exist first.
         if (get_reverse()){
             inb = getChildFrame().getMobilizedBody();
-            const SimTK::Transform* swap = inbX;
+            SimTK::Transform swap = inbX;
             inbX = outbX;
             outbX = swap;
 
@@ -346,8 +346,8 @@ protected:
         }
 
         int startingCoordinateIndex = 0;
-        T simtkBody = createMobilizedBody<T>(inb, *inbX,
-                                             *outb, *outbX,
+        T simtkBody = createMobilizedBody<T>(inb, inbX,
+                                             *outb, outbX,
                                              startingCoordinateIndex,
                                              associatedFrame);
 
