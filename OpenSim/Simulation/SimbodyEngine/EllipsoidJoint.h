@@ -73,7 +73,7 @@ public:
                     bool reverse = false);
 
     /** Deprecated Joint Constructor*/
-    EllipsoidJoint::EllipsoidJoint(const std::string& name,
+    EllipsoidJoint(const std::string& name,
         const PhysicalFrame& parent,
         const SimTK::Vec3& locationInParent,
         const SimTK::Vec3& orientationInParent,
