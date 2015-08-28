@@ -26,7 +26,6 @@
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 namespace OpenSim {
 
@@ -125,10 +124,10 @@ public:
            bool reverse = false);
 
     /** DEPRECATED Convenience Constructor
-    Create a Joint where the parent and body are specified as well as the
+    Create a Joint where the parent and child are specified as well as the
     joint frames in the child and parent bodies in terms of their location
-    and orientation in their respective bodies. Also an advanced option to
-    specify a tree structure to be constructed in the reverse direction,
+    and orientation in their respective physical frames. Also an advanced option
+    to specify the tree structure to be constructed in the reverse direction,
     that is child to parent, but the coordinates remain as if defined parent
     to child. This can be useful for defining models from the ground up, yet
     maintaining the convention of the knee, for example, of the relative
@@ -144,10 +143,10 @@ public:
                                    parent frame.
     @param[in] child    the child PhysicalFrame that joint connects to
     @param[in] locationInChild     Vec3 of the location of the joint in the
-                                   child body frame.
+                                   child physical frame.
     @param[in] orientationInChild  Vec3 of the XYZ body-fixed Euler angles
                                    of the joint frame orientation in the
-                                   child body frame.
+                                   child physical frame.
     @param[in] reverse  Advanced optional flag (bool) specifying the
                         direction of the Joint in the multibody tree.
                         Default is false (that is, forward).
@@ -243,8 +242,8 @@ public:
     // SCALE
     /**
     * Scale a joint based on XYZ scale factors for PhysicalFrames.
-    * Generic behavior is to scale the locations on parent and on the body
-    * according to scale factors of the bodies upon which they are located.
+    * Generic behavior is to scale the locations of parent and child offsets
+    * according to scale factors of the physical frame upon which they are located.
     *
     * Joint subclasses should invoke this method before scaling joint specific
     * properties
