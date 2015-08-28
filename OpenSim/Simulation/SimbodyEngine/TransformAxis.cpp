@@ -89,7 +89,7 @@ void TransformAxis::connectToJoint(const Joint& aJoint)
     if (!hasFunction()) {
         SimTK_ASSERT2_ALWAYS(coordNames.size() == 0,
             "CustomJoint (%s) %s axis has no function but has coordinates.",
-            _joint->getName(), getName());
+            _joint->getName().c_str(), getName().c_str());
         return;
     }
 
