@@ -249,18 +249,18 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 
     SimTK::MobilizedBody inb;
     SimTK::Body outb;
-    const SimTK::Transform* inbX = &getParentFrame().findTransformInBaseFrame();
-    const SimTK::Transform* outbX = &getChildFrame().findTransformInBaseFrame();
+    SimTK::Transform inbX = getParentFrame().findTransformInBaseFrame();
+    SimTK::Transform outbX = getChildFrame().findTransformInBaseFrame();
     const OpenSim::PhysicalFrame* mobilized = &getChildFrame();
     // if the joint is reversed then flip the underlying tree representation
     // of inboard and outboard bodies, although the joint direction will be 
     // preserved, the inboard must exist first.
     if (get_reverse()){
         inb = getChildFrame().getMobilizedBody();
-        inbX = &getChildFrame().findTransformInBaseFrame();
+        inbX = getChildFrame().findTransformInBaseFrame();
 
         outb = getParentInternalRigidBody();
-        outbX = &getParentFrame().findTransformInBaseFrame();
+        outbX = getParentFrame().findTransformInBaseFrame();
 
         mobilized = &getParentFrame();
     }
@@ -307,8 +307,8 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
         SimTK::MobilizedBody::Direction(get_reverse());
 
     SimTK::MobilizedBody::FunctionBased
-        simtkBody(inb, *inbX, 
-                  outb, *outbX, 
+        simtkBody(inb, inbX, 
+                  outb, outbX, 
                     numCoordinates, functions,
                   coordinateIndices, axes, dir);
 
