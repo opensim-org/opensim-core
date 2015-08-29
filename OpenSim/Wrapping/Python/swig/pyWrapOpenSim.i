@@ -317,10 +317,9 @@ originally had them at the bottom, and then they didn't work!
 
 note: ## is a "glue" operator: `a ## b` --> `ab`.
 */
-
 %define MODEL_ADOPT_HELPER(NAME)
 %pythonappend OpenSim::Model::add ## NAME %{
-    self._markAdopted()
+    adoptee._markAdopted()
 %}
 %enddef
 
