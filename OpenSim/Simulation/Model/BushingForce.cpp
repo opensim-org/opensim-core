@@ -104,7 +104,7 @@ void BushingForce::updateFromXMLNode( SimTK::Xml::Element& aNode,
     int documentVersion = versionNumber;
     bool converting = false;
     if (documentVersion < XMLDocument::getLatestVersion()){
-        if (documentVersion < 30503){
+        if (documentVersion < 30505){
             // replace old properties with latest use of PhysicalOffsetFrames properties
             SimTK::Xml::element_iterator body1Element =
                 aNode.element_begin("body_1");
@@ -123,62 +123,58 @@ void BushingForce::updateFromXMLNode( SimTK::Xml::Element& aNode,
             std::string frame1Name("");
             std::string frame2Name("");
 
-            // Create two new PhysicalOffsetFrames
-            PhysicalOffsetFrame frame1Offset;
-            PhysicalOffsetFrame frame2Offset;
-            frame1Offset.setName("frame1_offset");
-            frame2Offset.setName("frame2_offset");
-
-            // If default constructed then elements not serialized since they are default
-            // values. Check that we have associated elements, then extract their values.
-            if (body1Element != aNode.element_end()){
+            if (body1Element != aNode.element_end()) {
                 body1Element->getValueAs<std::string>(frame1Name);
-                frame1Offset.updConnector(0).set_connectee_name(frame1Name);
             }
-            if (body2Element != aNode.element_end()){
+
+            if (body2Element != aNode.element_end()) {
                 body2Element->getValueAs<std::string>(frame2Name);
-                frame2Offset.updConnector(0).set_connectee_name(frame2Name);
             }
-            if (locBody1Elt != aNode.element_end()){
-                Vec3 location;
-                locBody1Elt->getValueAs<Vec3>(location);
-                frame1Offset.set_translation(location);
+
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                "frame1", frame1Name);
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                "frame2", frame2Name);
+
+            Vec3 locationInFrame1(0);
+            Vec3 orientationInFrame1(0);
+            Vec3 locationInFrame2(0);
+            Vec3 orientationInFrame2(0);
+
+            if (locBody1Elt != aNode.element_end()) {
+                locBody1Elt->getValueAs<Vec3>(locationInFrame1);
             }
-            if (orientBody1Elt != aNode.element_end()){
-                Vec3 orientation;
-                orientBody1Elt->getValueAs<Vec3>(orientation);
-                frame1Offset.set_orientation(orientation);
+            if (orientBody1Elt != aNode.element_end()) {
+                orientBody1Elt->getValueAs<Vec3>(orientationInFrame1);
             }
-            if (locBody2Elt != aNode.element_end()){
-                Vec3 location;
-                locBody2Elt->getValueAs<Vec3>(location);
-                frame2Offset.set_translation(location);
+            if (locBody2Elt != aNode.element_end()) {
+                locBody2Elt->getValueAs<Vec3>(locationInFrame2);
             }
-            if (orientBody2Elt != aNode.element_end()){
-                Vec3 orientation;
-                orientBody2Elt->getValueAs<Vec3>(orientation);
-                frame2Offset.set_orientation(orientation);
+            if (orientBody2Elt != aNode.element_end()) {
+                orientBody2Elt->getValueAs<Vec3>(orientationInFrame2);
             }
+
+            // Avoid collision by prefixing the joint name to the connectee_name
+            // as to enforce a local search for the correct local offset
+            std::string pName = aNode.getOptionalAttributeValueAs<std::string>("name", "");
 
             // now append updated frames to the property list if they are not
             // identity transforms.
-            if ((frame1Offset.get_translation().norm() > 0.0) &&
-                (frame1Offset.get_orientation().norm() > 0.0)) {
-                append_frames(frame1Offset);
-                updConnector(0).set_connectee_name(frame1Offset.getName());
+            if ((locationInFrame1.norm() > 0.0) ||
+                (orientationInFrame1.norm() > 0.0)) {
+                XMLDocument::addPhysicalOffsetFrame(aNode, frame1Name + "_offset",
+                    frame1Name, locationInFrame1, orientationInFrame1);
+                body1Element->setValue(pName + "/" + frame1Name + "_offset");
             }
-            else { // connect directly to the frame (body) that was identified by name
-                updConnector(0).set_connectee_name(frame1Name);
+
+            // again for the offset frame on the child
+            if ((locationInFrame2.norm() > 0.0) ||
+                (orientationInFrame2.norm() > 0.0)) {
+                XMLDocument::addPhysicalOffsetFrame(aNode, frame2Name + "_offset",
+                    frame2Name, locationInFrame2, orientationInFrame2);
+                body2Element->setValue(pName + "/" + frame2Name + "_offset");
             }
-            // again for frame2
-            if ((frame2Offset.get_translation().norm() > 0.0) &&
-                (frame2Offset.get_orientation().norm() > 0.0)) {
-                append_frames(frame2Offset);
-                updConnector(0).set_connectee_name(frame2Offset.getName());
-            }
-            else { // connect directly to the frame (body) that was identified by name
-                updConnector(1).set_connectee_name(frame2Name);
-            }
+
         }
     }
     Super::updateFromXMLNode(aNode, versionNumber);
@@ -200,10 +196,10 @@ void BushingForce::
 {
     Super::extendAddToSystemAfterSubcomponents(system);
 
-    const SimTK::Vec3& rotStiffness         = get_rotational_stiffness();
-    const SimTK::Vec3& transStiffness       = get_translational_stiffness();
-    const SimTK::Vec3& rotDamping           = get_rotational_damping();
-    const SimTK::Vec3& transDamping         = get_translational_damping();
+    const SimTK::Vec3& rotStiffness   = get_rotational_stiffness();
+    const SimTK::Vec3& transStiffness = get_translational_stiffness();
+    const SimTK::Vec3& rotDamping     = get_rotational_damping();
+    const SimTK::Vec3& transDamping   = get_translational_damping();
 
     // get connected frames
     const PhysicalFrame& frame1 = getConnectee<PhysicalFrame>("frame1");

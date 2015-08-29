@@ -30,33 +30,29 @@
 
 namespace OpenSim {
 
+class PhysicalOffsetFrame;
+
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Weld Constraint.  The underlying Constraint in Simbody
- * is a Constraint::Weld
+ * A class implementing a Weld Constraint. A WeldConstraint eliminates up to
+ * 6 dofs of a model by fixing to PhysicalFrames together at their origins
+ * aligning their axes.  PhysicalFrames are generally Ground, Body, or
+ * PhysicalOffsetFrame attached to a PhysicalFrame.
+ * The underlying Constraint in Simbody is a SimTK::Constraint::Weld
  *
  * @author Ajay Seth
  */
 class OSIMSIMULATION_API WeldConstraint : public Constraint {
 OpenSim_DECLARE_CONCRETE_OBJECT(WeldConstraint, Constraint);
-
-//=============================================================================
-// DATA
-//=============================================================================
 public:
-
-    /** Properties */
-    OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
-        "Location of the weld in first body specified in body1 reference frame.");
-    OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
-        "Location of the weld in second body specified in body2 reference frame.");
-    OpenSim_DECLARE_PROPERTY(orientation_body_1, SimTK::Vec3,
-        "Orientation of the weld axes on body1 specified in body1's reference frame."  
-        "Euler XYZ body-fixed rotation angles are used to express the orientation.");
-    OpenSim_DECLARE_PROPERTY(orientation_body_2, SimTK::Vec3,
-        "Orientation of the weld axes on body2 specified in body2's reference frame."
-        "Euler XYZ body-fixed rotation angles are used to express the orientation.");
+//=============================================================================
+// PROPERTIES
+//=============================================================================
+    /** WeldConstraint defined frames used to connect PhysicalFrames like 
+        Bodies but offset from the body origin. */
+    OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalFrame,
+        "Physical frames needed to satisfy WeldConstraint connections.");
 
 //=============================================================================
 // METHODS
@@ -65,39 +61,50 @@ public:
     // CONSTRUCTION
     WeldConstraint();
     // Convenience constructors
-    WeldConstraint(const std::string &name, 
-        const PhysicalFrame& body1, SimTK::Vec3 locationInBody1, SimTK::Vec3 orientationInBody1,
-        const PhysicalFrame& body2, SimTK::Vec3 locationInBody2, SimTK::Vec3 orientationInBody2);
     WeldConstraint(const std::string &name,
-        const PhysicalFrame& body1, SimTK::Transform transformInBody1,
-        const PhysicalFrame& body2, SimTK::Transform transformInBody2);
+                const std::string& frame1Name,
+                const std::string& frame2Name );
+
+    // Deprecated constructors
+    WeldConstraint(const std::string &name, 
+        const PhysicalFrame& frame1,
+        const SimTK::Vec3& locationInFrame1, const SimTK::Vec3& orientationInFrame1,
+        const PhysicalFrame& frame2,
+        const SimTK::Vec3& locationInFrame2, const SimTK::Vec3& orientationInFrame2);
+
+    WeldConstraint(const std::string &name,
+        const PhysicalFrame& frame1, const SimTK::Transform& transformInFrame1,
+        const PhysicalFrame& frame2, const SimTK::Transform& transformInFrame2);
 
     virtual ~WeldConstraint();
 
-    //SET 
-    void setBody1ByName(const std::string& aBodyName);
-    void setBody1WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
-    void setBody2ByName(const std::string& aBodyName);
-    void setBody2WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
-
     // Method to set point locations for induced acceleration analysis
-    virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point);
+    virtual void setContactPointForInducedAccelerations(
+        const SimTK::State &s, SimTK::Vec3 point);
 
 protected:
     /**
     * Extend Component Interface.
     */
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    void extendFinalizeFromProperties() override;
+    void extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system)
+                                                                  const override;
     /** Updating XML formating to latest revision */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
 
 
 private:
     void setNull();
-    /** Construct WeldConstraint's properties */
+    // Construct WeldConstraint's properties
     void constructProperties() override;
-    /** Construct WeldConstraint's connectors */
+    // Construct WeldConstraint's connectors
     void constructConnectors() override;
+
+    // Some analyses (e.g. Induced Accelerations, update the constraint
+    // location (Transform) based on experimental data. The constraint
+    // keeps its own internal frames to update.
+    SimTK::ReferencePtr<PhysicalOffsetFrame> _internalOffset1{ nullptr };
+    SimTK::ReferencePtr<PhysicalOffsetFrame> _internalOffset2{ nullptr };
 //=============================================================================
 };  // END of class WeldConstraint
 //=============================================================================
