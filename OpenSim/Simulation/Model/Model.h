@@ -817,9 +817,9 @@ public:
      *
      * @param analysis  pointer to the Analysis to add
      */
-    void addAnalysis(Analysis *analysis);
+    void addAnalysis(Analysis *adoptee);
     /** Add a Controller to the %Model. **/
-    void addController(Controller *aController);
+    void addController(Controller *adoptee);
 
     /**
      * Remove an Analysis from the %Model.
