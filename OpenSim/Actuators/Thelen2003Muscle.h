@@ -143,6 +143,9 @@ public:
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(MuscleFixedWidthPennationModel,
         "The model governing the fiber and tendon kinematics.");
+    /**@}**/
+    //Parallelism Method Override
+    bool shouldBeParallelIfPossible() const override;
 
     enum CurveType{FiberActiveForceLength,
                     FiberPassiveForceLength,

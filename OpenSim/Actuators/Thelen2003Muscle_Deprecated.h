@@ -75,7 +75,10 @@ public:
         "force-velocity shape factor");
     OpenSim_DECLARE_PROPERTY(Flen, double,
         "maximum normalized lengthening force");
-
+    /**@}**/
+    //Parallelism Method Override
+    bool shouldBeParallelIfPossible() const override;
+    
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================

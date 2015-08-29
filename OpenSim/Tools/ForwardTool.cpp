@@ -51,9 +51,7 @@ using namespace OpenSim;
  */
 ForwardTool::~ForwardTool()
 {
-
     if(_yStore!=NULL) delete _yStore;
-
 }
 //_____________________________________________________________________________
 /**
@@ -253,7 +251,6 @@ bool ForwardTool::run()
 
     bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
 
-
     // Re create the system with forces above and Realize the topology
     SimTK::State& s = _model->initSystem();
     _model->getMultibodySystem().realize(s, Stage::Position );
@@ -265,7 +262,30 @@ bool ForwardTool::run()
 
     // INITIAL AND FINAL TIMES AND STATES INDEX
     int startIndexForYStore = determineInitialTimeFromStatesStorage(_ti);
-
+    
+    // DESIRED NUMBER OF THREADS (JOBS)
+    SimTK::GeneralForceSubsystem& gfs = _model->updForceSubsystem();
+    int autoThreadCount = gfs.getNumberOfThreads(); //auto-detected numThreads
+    if(specifiedMaxNumThreads != -1)
+    {
+        if(autoThreadCount != specifiedMaxNumThreads)
+        {
+            gfs.setNumberOfThreads(specifiedMaxNumThreads);
+            cout << "Specified number of max threads (jobs) set to " <<
+            specifiedMaxNumThreads << ". Overriding the detected number of " <<
+            autoThreadCount << " threads." << endl;
+        }else{
+            cout << "Specified number of max threads (jobs) set to " <<
+            specifiedMaxNumThreads << ". Same as the detected number of " <<
+            autoThreadCount << " threads." << endl;
+        }
+    }else{
+        cout << "Specified number of max threads (jobs) not set! Using the"
+        " detected number of " << autoThreadCount << " threads."
+        << "To specify the number of maximum threads that the ForwardTool can"
+        << "use, run the ForwardTool with the -j flag." << endl;
+    }
+    
     // SETUP SIMULATION
     // Manager (now allocated on the heap so that getManager doesn't return stale pointer on stack
     RungeKuttaMersonIntegrator integrator(_model->getMultibodySystem());

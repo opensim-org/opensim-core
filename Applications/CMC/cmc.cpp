@@ -34,7 +34,7 @@ using namespace std;
 using namespace OpenSim;
 
 static void PrintUsage(const char *aProgName, ostream &aOStream);
-
+static bool startsWith(const char *pre, const char *str);
 //_____________________________________________________________________________
 /**
  * Main routine for running the Computed Muscle Control (CMC) algorithm.
@@ -49,7 +49,8 @@ int main(int argc,char **argv)
     
     //LoadOpenSimLibrary("osimSdfastEngine");
     //LoadOpenSimLibrary("osimSimbodyEngine");
-
+    int specifiedMaxNumThreads = -1;
+    
     // PARSE COMMAND LINE
     int i;
     string option = "";
@@ -70,6 +71,12 @@ int main(int argc,char **argv)
             PrintUsage(argv[0], cout);
             return(0);
  
+        // MANUAL SPECIFICIATION OF NUMBER OF THREADS (JOBS)
+        } else if(startsWith("-j",option.c_str())){
+            char* optionCStr = const_cast<char*>(option.c_str());
+            optionCStr += 2; //increment the char*'s memory address by 2, skip "-j"
+            specifiedMaxNumThreads = atoi(optionCStr);
+
         // PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
         } else if((option=="-PrintSetup")||(option=="-PS")) {
             CMCTool *investigation = new CMCTool();
@@ -83,7 +90,6 @@ int main(int argc,char **argv)
         // IDENTIFY SETUP FILE
         } else if((option=="-Setup")||(option=="-S")) {
             if((i+1)<argc) setupFileName = argv[i+1];
-            break;
 
         // PRINT PROPERTY INFO
         } else if((option=="-PropertyInfo")||(option=="-PI")) {
@@ -108,11 +114,18 @@ int main(int argc,char **argv)
         PrintUsage(argv[0], cout);
         return(-1);
     }
-
+    CMCTool cmcgait(setupFileName);
+    // SETUP NUMBER OF THREADS (JOBS)
+    if(specifiedMaxNumThreads != -1)
+    {
+        if(specifiedMaxNumThreads <= 0)
+            throw Exception("Exception: The number of threads specified to the CMCTool must be > 0");
+        cmcgait.setMaxNumThreads(specifiedMaxNumThreads);
+    }
+    
     // CONSTRUCT
     cout<<"Constructing investigation from setup file "<<setupFileName<<".\n"<<endl;
-    CMCTool cmcgait(setupFileName);
-
+    
     // PRINT MODEL INFORMATION
     Model& model = cmcgait.getModel();
     cout<<"-----------------------------------------------------------------------\n";
@@ -121,11 +134,9 @@ int main(int argc,char **argv)
     model.printBasicInfo(cout);
     cout<<"-----------------------------------------------------------------------\n\n";
 
-
     // RUN
     cmcgait.run();
-
-
+    
     //----------------------------
     // Catch any thrown exceptions
     //----------------------------
@@ -137,7 +148,14 @@ int main(int argc,char **argv)
 
     return(0);
 }
-
+//_____________________________________________________________________________
+/**
+ * Helper function for parsing the command line
+ */
+static bool startsWith(const char *pre, const char *str)
+{
+    return strncmp(pre, str, strlen(pre)) == 0;
+}
 
 //_____________________________________________________________________________
 /**
@@ -147,14 +165,15 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
 {
     string progName=IO::GetFileNameFromURI(aProgName);
     aOStream<<"\n\n"<<progName<<":\n"<<GetVersionAndDate()<<"\n\n";
-    aOStream<<"Option              Argument         Action / Notes\n";
-    aOStream<<"------              --------         --------------\n";
-    aOStream<<"-Help, -H                            Print the command-line options for "<<progName<<".\n";
-    aOStream<<"-PrintSetup, -PS                     Print a default setup file for cmc.exe (setup_cmc_default.xml).\n";
-    aOStream<<"-Setup, -S          SetupFileName    Specify the name of the XML setup file for the CMC investigation.\n";
-    aOStream<<"-PropertyInfo, -PI                   Print help information for properties in setup files.\n";
-    aOStream<<"-Library, -L        LibraryName      Specifiy a library to load. Do not include the extension (e.g., .lib or .dll).\n";
-    aOStream<<"                                     To load more than one library, repeat the -Library command-line option.\n\n";
+    aOStream<<"Option              Argument             Action / Notes\n";
+    aOStream<<"------              --------             --------------\n";
+    aOStream <<"-jX                X = NumJobs(Threads) Set the number of threads (jobs) that CMCTool can spawn.\n";
+    aOStream<<"-Help, -H                                Print the command-line options for "<<progName<<".\n";
+    aOStream<<"-PrintSetup, -PS                         Print a default setup file for cmc.exe (setup_cmc_default.xml).\n";
+    aOStream<<"-Setup, -S          SetupFileName        Specify the name of the XML setup file for the CMC investigation.\n";
+    aOStream<<"-PropertyInfo, -PI                       Print help information for properties in setup files.\n";
+    aOStream<<"-Library, -L        LibraryName          Specifiy a library to load. Do not include the extension (e.g., .lib or .dll).\n";
+    aOStream<<"                                         To load more than one library, repeat the -Library command-line option.\n\n";
 
 }
 

@@ -119,6 +119,9 @@ private:
     bool &_verbose;
 
     ForceSet _originalForceSet;
+    
+    /** Specified maximum number of threads (jobs) that the CMC Tool can use. */
+    int specifiedMaxNumThreads = -1;
 
 //=============================================================================
 // METHODS
@@ -177,6 +180,9 @@ public:
     const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
     void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
 
+    //Multithreading Options Get/Set
+    int getMaxNumThreads() const {return specifiedMaxNumThreads;};
+    void setMaxNumThreads(int maxThreads) {specifiedMaxNumThreads = maxThreads;};
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------

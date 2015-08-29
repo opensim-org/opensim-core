@@ -32,6 +32,8 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
+#include <mutex>
+#include <thread>
 
 //=============================================================================
 // STATICS
@@ -244,25 +246,27 @@ WrapCylinder& WrapCylinder::operator=(const WrapCylinder& aWrapCylinder)
  */
 int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                     const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
-{
+{    
     double dist, p11_dist, p22_dist, t, dot1, dot2, dot3, dot4, d, sin_theta,
         *r11, *r22, alpha, beta, r_squared = _radius * _radius;
     double dist1, dist2;
     double t12, t00;
 
-    Vec3 pp, vv, uu, r1a, r1b, r2a, r2b, apex, plane_normal, sum_musc, 
-        r1am, r1bm, r2am, r2bm, p11, p22, r1p, r2p, axispt, near12, 
+    Vec3 pp, vv, uu, r1a, r1b, r2a, r2b, apex, plane_normal, sum_musc,
+        r1am, r1bm, r2am, r2bm, p11, p22, r1p, r2p, axispt, near12,
         vert1, vert2, mpt, apex1, apex2, l1, l2, near00;
 
     int i, return_code = wrapped;
     bool r1_inter, r2_inter;
     bool constrained   = (bool) (_wrapSign != 0);
     bool far_side_wrap = false, long_wrap = false;
-
+    
     // In case you need any variables from the previous wrap, copy them from
     // the PathWrap into the WrapResult, re-normalizing the ones that were
     // un-normalized at the end of the previous wrap calculation.
+
     const WrapResult& previousWrap = aPathWrap.getPreviousWrap();
+
     aWrapResult.factor = previousWrap.factor;
     for (i = 0; i < 3; i++)
     {
@@ -316,7 +320,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
 
     // find preliminary tangent point candidates r1a & r1b
     MAKE_3DVECTOR(p11, aPoint1, vv);
-
+    
     p11_dist = Mtx::Normalize(3, vv, vv);
 
     sin_theta = _radius / p11_dist;
@@ -327,7 +331,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
         pp[i] = p11[i] + dist * vv[i];
 
     dist = sqrt(r_squared - dist * dist);
-
+    
     Mtx::CrossProduct(dn, vv, uu);
 
     for (i = 0; i < 3; i++)
@@ -682,8 +686,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
  * @param far_side_wrap Boolean indicating if the wrap is the long way around
  * @param aWrapResult The result of the wrapping (tangent points, etc.)
  */
-void WrapCylinder::_make_spiral_path(SimTK::Vec3& aPoint1,
-                                                 SimTK::Vec3& aPoint2,
+void WrapCylinder::_make_spiral_path(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                                  bool far_side_wrap,
                                                  WrapResult& aWrapResult) const
 {
@@ -692,7 +695,7 @@ void WrapCylinder::_make_spiral_path(SimTK::Vec3& aPoint1,
     double sense = far_side_wrap ? -1.0 : 1.0;
     double m[4][4];
     int i, iterations = 0;
-
+    
 restart_spiral_wrap:
 
     aWrapResult.wrap_pts.setSize(0);
@@ -704,7 +707,7 @@ restart_spiral_wrap:
 
     MAKE_3DVECTOR(r1a, r2a, axial_vec);
 
-    axial_dist = Mtx::Magnitude(3, axial_vec);
+    axial_dist = axial_vec.norm();
 
     // determine the radial angle
     MAKE_3DVECTOR(r1a, aWrapResult.r1, uu);
@@ -770,7 +773,6 @@ restart_spiral_wrap:
                 goto restart_spiral_wrap;
             }
         }
-
         aWrapResult.wrap_pts.append(wrap_pt);
     }
 }

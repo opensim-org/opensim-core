@@ -39,6 +39,7 @@ using namespace OpenSim;
 using namespace std;
 
 static void PrintUsage(const char *aProgName, ostream &aOStream);
+static bool startsWith(const char *pre, const char *str);
 
 //_____________________________________________________________________________
 /**
@@ -55,7 +56,7 @@ int main(int argc,char **argv)
     //----------------------
 
     //LoadOpenSimLibrary("osimSdfastEngine");
-
+    int specifiedMaxNumThreads = -1;
 
     // PARSE COMMAND LINE
     int i;
@@ -76,7 +77,13 @@ int main(int argc,char **argv)
 
             PrintUsage(argv[0], cout);
             return(0);
- 
+
+        // MANUAL SPECIFICIATION OF NUMBER OF THREADS (JOBS)
+        } else if(startsWith("-j",option.c_str())){
+            char* optionCStr = const_cast<char*>(option.c_str());
+            optionCStr += 2; //increment the char*'s memory address by 2, skip "-j"
+            specifiedMaxNumThreads = atoi(optionCStr);
+
         // PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
         } else if((option=="-PrintSetup")||(option=="-PS")) {
             ForwardTool *tool = new ForwardTool();
@@ -116,7 +123,16 @@ int main(int argc,char **argv)
         PrintUsage(argv[0], cout);
         return(-1);
     }
-
+    
+    // SETUP NUMBER OF THREADS (JOBS)
+    ForwardTool forward(setupFileName);
+    if(specifiedMaxNumThreads != -1)
+    {
+        if(specifiedMaxNumThreads <= 0)
+            throw Exception("Exception: The number of threads specified to the ForwardTool must be > 0");
+        forward.setMaxNumThreads(specifiedMaxNumThreads);
+    }
+    
     /*
       ISSUE: need to explicitly laod the library osimActuators.
     */
@@ -124,7 +140,6 @@ int main(int argc,char **argv)
 
     // CONSTRUCT
     cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
-    ForwardTool forward(setupFileName);
 
     // PRINT MODEL INFORMATION
     Model& model = forward.getModel();
@@ -150,7 +165,14 @@ int main(int argc,char **argv)
 
     return(0);
 }
-
+//_____________________________________________________________________________
+/**
+ * Helper function for parsing the command line
+ */
+static bool startsWith(const char *pre, const char *str)
+{
+    return strncmp(pre, str, strlen(pre)) == 0;
+}
 
 //_____________________________________________________________________________
 /**
@@ -160,12 +182,13 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
 {
     string progName=IO::GetFileNameFromURI(aProgName);
     aOStream<<"\n\n"<<progName<<":\n"<<GetVersionAndDate()<<"\n\n";
-    aOStream<<"Option              Argument         Action / Notes\n";
-    aOStream<<"------              --------         --------------\n";
-    aOStream<<"-Help, -H                            Print the command-line options for forward.exe.\n";
-    aOStream<<"-PrintSetup, -PS                     Print a default setup file for forward.exe (default_forward.xml).\n";
-    aOStream<<"-Setup, -S          SetupFileName    Specify the name of the XML setup file to use for this forward tool.\n";
-    aOStream<<"-PropertyInfo, -PI                   Print help information for properties in setup files.\n";
+    aOStream<<"Option              Argument             Action / Notes\n";
+    aOStream<<"------              --------             --------------\n";
+    aOStream<<"-jX                 X = NumJobs(Threads) Set the number of threads (jobs) that ForwardTool can spawn.\n";
+    aOStream<<"-Help, -H                                Print the command-line options for forward.exe.\n";
+    aOStream<<"-PrintSetup, -PS                         Print a default setup file for forward.exe (default_forward.xml).\n";
+    aOStream<<"-Setup, -S          SetupFileName        Specify the name of the XML setup file to use for this forward tool.\n";
+    aOStream<<"-PropertyInfo, -PI                       Print help information for properties in setup files.\n";
 
 
     //aOStream<<"\nThe input to the -PropertyInfo option is the name of the class to which a property\n";

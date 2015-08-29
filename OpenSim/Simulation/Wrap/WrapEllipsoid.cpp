@@ -31,6 +31,8 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
+#include <mutex>
+#include <thread>
 
 //=============================================================================
 // STATICS
@@ -258,8 +260,8 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
         p1e, p2e, vs4, dist, fanWeight = -SimTK::Infinity;
     double t_sv[3][3], t_c1[3][3];
     bool far_side_wrap = false;
-   static SimTK::Vec3 origin(0,0,0);
-
+    static SimTK::Vec3 origin(0,0,0);
+    
     // In case you need any variables from the previous wrap, copy them from
     // the PathWrap into the WrapResult, re-normalizing the ones that were
     // un-normalized at the end of the previous wrap calculation.
@@ -883,7 +885,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
     double phi, dphi, phi0, len, mu, aa, bb, cc, mu3, s[500][3], r0[3][3], rphi[3][3], desiredSegLength = 0.001;
 
     MAKE_3DVECTOR21(r1, r2, dr);
-    len = Mtx::Magnitude(3, dr) / aWrapResult.factor;
+    len = dr.norm() / aWrapResult.factor;
 
     if (len < desiredSegLength) {
         // If the distance between r1 and r2 is very small, then don't bother
@@ -1027,7 +1029,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
         Vec3 q = aWrapResult.wrap_pts.get(i+1);
         MAKE_3DVECTOR21(q, p, dv); 
 
-        aWrapResult.wrap_path_length += dv.norm(); //Mtx::Magnitude(3, dv);
+        aWrapResult.wrap_path_length += dv.norm();
     }
 }
 

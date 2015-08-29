@@ -89,6 +89,9 @@ protected:
 
     /*** Private place to save some deserializtion info in case needed later */
     std::string _parsingLog;
+    
+    /** Specified maximum number of threads (jobs) that the CMC Tool can use. */
+    int specifiedMaxNumThreads = -1;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -129,7 +132,10 @@ public:
     void setUseSpecifiedDt(bool aUseSpecifiedDt) { _useSpecifiedDt = aUseSpecifiedDt; }
 
     void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
-
+    
+    //Multithreading Options Get/Set
+    int getMaxNumThreads() const {return specifiedMaxNumThreads;};
+    void setMaxNumThreads(int maxThreads) {specifiedMaxNumThreads = maxThreads;};
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------

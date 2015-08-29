@@ -276,7 +276,7 @@ int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3
     bool constrained = (bool) (_wrapSign != 0);
     bool far_side_wrap = false;
     aFlag = true;
-
+    
     if (findClosestPoint(_outerRadius, &aPoint1[0], &aPoint2[0], &closestPt[0], &closestPt[1], &closestPt[2], _wrapSign, _wrapAxis) == 0)
         return noWrap;
 

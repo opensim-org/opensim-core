@@ -558,12 +558,12 @@ ReduceNumberOfPoints(double aDistance,
         p2[0] = rTime[imid];
         p2[1] = rSignal[imid];
 
-        v1 = p2 - p1; //Mtx::Subtract(1,3,p2,p1,v1);
-        v2 = p3 - p1; //Mtx::Subtract(1,3,p3,p1,v2);
+        v1 = p2 - p1;
+        v2 = p3 - p1;
 
-        mv1 = v1.norm(); //Mtx::Magnitude(3,v1);
-        mv2 = v2.norm(); //Mtx::Magnitude(3,v2);
-        cos = (~v1*v2)/(mv1*mv2); //Mtx::DotProduct(3,v1,v2) / (mv1*mv2); 
+        mv1 = v1.norm();
+        mv2 = v2.norm();
+        cos = (~v1*v2)/(mv1*mv2);
 
         dsq = mv1 * mv1 * (1.0 - cos*cos);
 

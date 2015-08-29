@@ -129,6 +129,9 @@ private:
     bool &_verbose;
 
     ForceSet _originalForceSet;
+    
+    /** Specified maximum number of threads (jobs) that the CMC Tool can use. */
+    int specifiedMaxNumThreads = -1;
 
 //=============================================================================
 // METHODS
@@ -197,7 +200,9 @@ public:
     bool getUseFastTarget() const { return _useFastTarget;};         
     void setUseFastTarget(bool useFastTarget) const {  _useFastTarget=useFastTarget; };
 
-
+    //Multithreading Options Get/Set
+    int getMaxNumThreads() const {return specifiedMaxNumThreads;};
+    void setMaxNumThreads(int maxThreads) {specifiedMaxNumThreads = maxThreads;};
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------

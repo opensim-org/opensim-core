@@ -661,11 +661,22 @@ public:
      * Only valid once underlying system for the model has been created.
      * Throws an exception if called before Model::initSystem()
      * @return number of controls corresponding to all the actuators in the model
+     *
+     * @note This method cannot be called during the realization of Dynamics
+     * due to the non-thread-safe controlsCache. If this method must be called
+     * during realizeDynamics, put a lock on the State. (See SimTK::State for
+     * more information)
      */
     int getNumControls() const;
 
     /** Writable access to the default values for controls. These values are used for 
-        control value during a simulation unless updated, for example, by a Controller */
+     *  control value during a simulation unless updated, for example, by a Controller
+     *
+     * @note This method cannot be called during the realization of Dynamics
+     * due to the non-thread-safe controlsCache. If this method must be called
+     * during realizeDynamics, put a lock on the State. (See SimTK::State for
+     * more information)
+     */
     SimTK::Vector& updDefaultControls() const { return _defaultControls; }
     void setDefaultControls(const SimTK::Vector& controls) const
     {   _defaultControls = controls; }
@@ -677,9 +688,17 @@ public:
      * Throws an exception if called before Model::initSystem()
      * This call invalidates the dynamics of the model and invalidates the
      * value of the controls until they are marked as valid when the update
-     * is completed (@see markControlsAsValid)
+     * is completed
+     *
+     * @see markControlsAsValid
+     *
      * @param[in]   s         System state at which to apply the controls
      * @return      writable controls Vector
+     *
+     * @note This method cannot be called during the realization of Dynamics
+     * due to the non-thread-safe controlsCache. If this method must be called
+     * during realizeDynamics, put a lock on the State. (See SimTK::State for
+     * more information)
      */
     SimTK::Vector& updControls(const SimTK::State& s) const;
     
@@ -687,7 +706,12 @@ public:
      * Mark controls as valid after an update at a given state.
      * Indicates that controls are valid for use at the dynamics stage.
      * If the stage is Velocity or lower the controls will remain invalid.
-     * @param[in]   s         System state in which the controls are updated 
+     * @param[in]   s         System state in which the controls are updated
+     *
+     * @note This method cannot be called during the realization of Dynamics
+     * due to the non-thread-safe controlsCache. If this method must be called
+     * during realizeDynamics, put a lock on the State. (See SimTK::State for
+     * more information)
      */
     void markControlsAsValid(const SimTK::State& s) const;
 
@@ -697,6 +721,11 @@ public:
      * but will mark the controls as valid. (E.g. controllers will not be invoked)
      * @param[in]   s         System state at which to apply the controls
      * @param[in]   controls  The complete Vector of controls to be applied
+     *
+     * @note This method cannot be called during the realization of Dynamics
+     * due to the non-thread-safe controlsCache. If this method must be called
+     * during realizeDynamics, put a lock on the State. (See SimTK::State for
+     * more information)
      */
     void setControls(const SimTK::State& s, const SimTK::Vector& controls) const;
 
@@ -710,7 +739,13 @@ public:
                              when computing their control outputs.
     @param[out]  controls    The complete vector of controls into which 
                              individual controller contributions should be
-                             added. **/
+                             added.
+     *
+     * @note This method cannot be called during the realization of Dynamics
+     * due to the non-thread-safe controlsCache. If this method must be called
+     * during realizeDynamics, put a lock on the State. (See SimTK::State for
+     * more information)
+     **/
     void computeControls(const SimTK::State& state, SimTK::Vector& controls) const;
 
     /**
@@ -723,6 +758,7 @@ public:
     ControllerSet& updControllerSet();
     bool getAllControllersEnabled() const;
     void setAllControllersEnabled( bool enabled );
+    bool isControlsCacheValid(const SimTK::State& state) const;
 
     //--------------------------------------------------------------------------
     // CONFIGURATION
@@ -969,7 +1005,15 @@ private:
     void constructOutputs() override;
 
     void createAssemblySolver(const SimTK::State& s);
-
+    
+    void extendRealizeTopology(SimTK::State& state) const override;
+    // Override extendRealizeVelocity to calculate the shared controls cache
+    // before we realize Stage::Dynamics, in which the muscle forces in
+    // Stage::Dynamics depend on using the controls cache. This is to mainly
+    // prevent thread-race issues that may come up if multiple muscle forces
+    // are trying to write to the shared-cache at the same time.
+    void extendRealizeVelocity(const SimTK::State& state) const override;
+    
     // To provide access to private _modelComponents member.
     friend class Component; 
 
@@ -1018,7 +1062,6 @@ private:
     // initializeState() or initSystem() is called.
     SimTK::State _workingState;
 
-
     //--------------------------------------------------------------------------
     //                              RUN TIME 
     //--------------------------------------------------------------------------
@@ -1049,9 +1092,9 @@ private:
     // goals. This object is owned by the Model and must be destructed.
     //AssemblySolver*     _assemblySolver;
     SimTK::ReferencePtr<AssemblySolver> _assemblySolver;
-
+    
     // Model controls as a shared pool (Vector) of individual Actuator controls
-    SimTK::MeasureIndex   _modelControlsIndex;
+    SimTK::CacheEntryIndex   _modelControlsIndex;
     // Default values pooled from Actuators upon system creation.
     mutable SimTK::Vector _defaultControls;
 
@@ -1076,4 +1119,3 @@ private:
 } // end of namespace OpenSim
 
 #endif // OPENSIM_MODEL_H_
-

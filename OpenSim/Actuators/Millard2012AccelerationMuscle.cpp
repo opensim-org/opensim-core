@@ -255,6 +255,11 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
     finalizeFromProperties();
 }
 
+//Parallelism Method Overrides
+bool Millard2012AccelerationMuscle::shouldBeParallelIfPossible() const{
+    return true;
+}
+
 //=============================================================================
 // Model Component Interface
 //=============================================================================

@@ -97,7 +97,10 @@ public:
     virtual bool setActivation1(double aActivation1);
     virtual bool setActivation2(double aActivation2);
     virtual bool setDamping(double aDamping);
-
+    
+    //Parallelism Method Override
+    bool shouldBeParallelIfPossible() const override;
+    
     //--------------------------------------------------------------------------
     // COMPUTATION
     //--------------------------------------------------------------------------

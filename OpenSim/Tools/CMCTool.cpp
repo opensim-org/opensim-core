@@ -21,6 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include <time.h>
+#include <stdlib.h>
 #include "CMCTool.h"
 #include "AnalyzeTool.h"
 #include <OpenSim/Common/IO.h>
@@ -122,7 +123,6 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
         setToolOwnsModel(true);
     }
 }
-
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -433,7 +433,31 @@ bool CMCTool::run()
     _model->getMultibodySystem().realize(s, Stage::Position );
      taskSet.setModel(*_model);
     _model->equilibrateMuscles(s);
-  
+    cout << endl;
+    
+    // DESIRED NUMBER OF THREADS (JOBS)
+    SimTK::GeneralForceSubsystem& gfs = _model->updForceSubsystem();
+    int autoThreadCount = gfs.getNumberOfThreads(); //auto-detected numThreads
+    if(specifiedMaxNumThreads != -1)
+    {
+        if(autoThreadCount != specifiedMaxNumThreads)
+        {
+            gfs.setNumberOfThreads(specifiedMaxNumThreads);
+            cout << "Specified number of max threads (jobs) set to " <<
+            specifiedMaxNumThreads << ". Overriding the detected number of " <<
+            autoThreadCount << " threads." << endl;
+        }else{
+            cout << "Specified number of max threads (jobs) set to " <<
+            specifiedMaxNumThreads << ". Same as the detected number of " <<
+            autoThreadCount << " threads." << endl;
+        }
+    }else{
+        cout << "Specified number of max threads (jobs) not set! Using the"
+        " detected number of " << autoThreadCount << " threads."
+        << "To specify the number of maximum threads that the CMCTool can use,"
+        << "run the CMCTool with the -j flag." << endl;
+    }
+    
     // ---- INPUT ----
     // DESIRED POINTS AND KINEMATICS
     if(_desiredPointsFileName=="" && _desiredKinematicsFileName=="") {

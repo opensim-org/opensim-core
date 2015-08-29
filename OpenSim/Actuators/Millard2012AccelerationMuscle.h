@@ -460,7 +460,9 @@ public:
     @returns the stiffness of the muscle fibers along the tendon (N/m)
     */
     double getFiberStiffnessAlongTendon(const SimTK::State& s) const;
-
+    
+    //Parallelism Method Override
+    bool shouldBeParallelIfPossible() const override;
 //==============================================================================
 // Set Properties
 //==============================================================================

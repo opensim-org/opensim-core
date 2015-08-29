@@ -130,7 +130,10 @@ public:
     virtual void setFiberVelocityDeriv(const SimTK::State& s, double fiberVelocityDeriv) const { setStateVariableDeriv(s, "fiber_velocity", fiberVelocityDeriv); }
     virtual void setActiveForce(const SimTK::State& s, double aForce) const;
     virtual double getActiveForce(const SimTK::State& s) const;
-
+    
+    //Parallelism Method Override
+    bool shouldBeParallelIfPossible() const override;
+   
     //--------------------------------------------------------------------------
     // COMPUTATION
     //--------------------------------------------------------------------------
