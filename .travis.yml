@@ -25,7 +25,7 @@ env:
   global:
     # The python tests look for OPENSIM_HOME.
     - OPENSIM_HOME=~/opensim-install
-    - SWIG_VER=2.0.10
+    - SWIG_VER=3.0.5
     - USE_CCACHE=1
     - CCACHE_COMPRESS=1
     # for Clang to work with ccache.
