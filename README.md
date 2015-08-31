@@ -329,18 +329,19 @@ On Mac using Xcode
 
 #### Set environment variables
 
-1. Allow executables to find OpenSim-Core libraries by adding the OpenSim-Core
-   `lib/` directory to your linker path. Open a terminal and type:
-
-        $ echo 'export DYLD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bash_profile
-
-2. Add OpenSim-Core's executables to the path so you can access them from any
-   directory on your computer. *Note* some of the names of OpenSim-Core
-   executables conflict with some UNIX commands (e.g., `id`). To give
-   preference to OpenSim-Core's executables, we must *prepend* OpenSim-Core's
-   `bin/` directory to the path. Open a terminal and type:
+1. **Executables**. If you want to run OpenSim-Core's executables from
+   anywhere on your computer, you must update your PATH. *Note* some of the names of OpenSim-Core executables conflict with some UNIX commands (e.g., `id`). To give preference to OpenSim-Core's executables, we must *prepend* OpenSim-Core's `bin/` directory to the path. Open a terminal and type:
 
         $ echo 'export PATH=~/opensim-core/bin:$PATH' >> ~/.bash_profile
+
+2. **Libraries**. Hopefully you can skip this step. This step is required if:
+  1. You are using CMake version 2.8.11 or older.
+  2. You plan on building C++ executables or libraries on top of OpenSim, *and* you plan to "install" them in the CMake sense of the word (that is, you're not going to simply use them from your project's build directory).
+  3. You plan to use the Java or MATLAB wrapping.
+
+  If any of these are true, then you must add OpenSim-Core libraries to your linker path. Open a terminal and type:
+
+          $ echo 'export DYLD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bash_profile
 
 Your changes will only take effect in new terminal windows.
 
@@ -468,18 +469,19 @@ And you could get all the optional dependencies via:
 
 #### Set environment variables
 
-1. Allow executables to find OpenSim-Core libraries by adding the OpenSim-Core
-   `lib/` directory to your linker path.
-
-        $ echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bashrc
-
-2. Add OpenSim-Core's executables to the path so you can access them from any
+1. **Executables**. Add OpenSim-Core's executables to the path so you can access them from any
    directory on your computer. NOTE that some of the names of OpenSim-Core
    executables conflict with some UNIX commands (e.g., `id`). To give
    preference to OpenSim-Core's executables, we must *prepend* OpenSim-Core's
    `bin/` directory to the path.
 
         $ echo 'export PATH=~/opensim-core/bin:$PATH' >> ~/.bashrc
+
+2. **Libraries**. Allow executables to find OpenSim-Core libraries by
+  adding the OpenSim-Core
+   `lib/` directory to your linker path.
+
+        $ echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bashrc
 
 Your changes will only take effect in new terminal windows.
 

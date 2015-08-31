@@ -81,7 +81,6 @@ function(OpenSimAddLibrary)
        FOLDER "${OSIMADDLIB_FOLDER}" # For Visual Studio.
     )
 
-
     # Install.
     # --------
     # Shared libraries are needed at runtime for applications, so we put them
@@ -237,5 +236,11 @@ function(OpenSimAddApplication APPNAME)
     install(TARGETS ${APPNAME} DESTINATION bin)
     set_target_properties(${APPNAME} PROPERTIES
         FOLDER "Applications")
+
+    if(${OPENSIM_USE_INSTALL_RPATH})
+        set_target_properties(${APPNAME} PROPERTIES
+            INSTALL_RPATH "\@executable_path/../lib"
+            )
+    endif()
 
 endfunction()
