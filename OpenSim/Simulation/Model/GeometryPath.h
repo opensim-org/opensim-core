@@ -87,9 +87,7 @@ private:
     //--------------------------------------------------------------------------
 public:
     GeometryPath();
-#ifndef SWIG
     ~GeometryPath() override = default;
-#endif
 
     const PathPointSet& getPathPointSet() const { return get_PathPointSet(); }
     PathPointSet& updPathPointSet() { return upd_PathPointSet(); }
