@@ -130,7 +130,6 @@ Model::Model(const string &aFileName, const bool finalize) :
 Model::~Model()
 {
     delete _modelViz;
-    delete _assemblySolver;
 }
 //_____________________________________________________________________________
 /**
@@ -462,10 +461,13 @@ void Model::createMultibodySystem()
         delete _modelViz;
     }
 
-    // create system
+    // We must reset these unique_ptr's before deleting the System (through
+    // reset()), since deleting the System puts a null handle pointer inside
+    // the subsystems (since System deletes the subsystems).
     _matter.reset();
     _forceSubsystem.reset();
     _contactSubsystem.reset();
+    // create system
     _system.reset(new SimTK::MultibodySystem);
     _matter.reset(new SimTK::SimbodyMatterSubsystem(*_system));
     _forceSubsystem.reset(new SimTK::GeneralForceSubsystem(*_system));
@@ -1565,12 +1567,10 @@ void Model::createAssemblySolver(const SimTK::State& s)
         }
     }
 
-    delete _assemblySolver;
-
     // Use the assembler to generate the initial pose from Coordinate defaults
     // that also satisfies the constraints. AssemblySolver makes copy of
     // coordsToTrack
-    _assemblySolver = new AssemblySolver(*this, coordsToTrack);
+    _assemblySolver.reset(new AssemblySolver(*this, coordsToTrack));
     _assemblySolver->setConstraintWeight(SimTK::Infinity);
     _assemblySolver->setAccuracy(get_assembly_accuracy());
 }
