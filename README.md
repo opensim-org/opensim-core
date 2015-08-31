@@ -122,7 +122,7 @@ On Windows using Visual Studio
       *Custom*, and check *Programming Languages > Visual C++ > Common Tools for Visual C++ 2015*.
       You can uncheck all other boxes.
 * **physics engine**:
-  [Simbody](https://github.com/simbody/simbody#windows-and-visual-studio) >= 3.4
+  [Simbody](https://github.com/simbody/simbody#windows-and-visual-studio) >= 3.6
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git. There are many options:
@@ -130,8 +130,8 @@ On Windows using Visual Studio
     * [TortoiseGit](https://code.google.com/p/tortoisegit/wiki/Download),
       intermediate; good for TortoiseSVN users;
     * [GitHub for Windows](https://windows.github.com/), easiest.
-* **Wrapping** (optional): [SWIG](http://www.swig.org/) 2.0.10
-    * **MATLAB scripting** (optional): [Java development kit][java] 1.6.
+* **Wrapping** (optional): [SWIG](http://www.swig.org/) 3.0.5
+    * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
     * **python scripting** (optional):
         * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
@@ -183,6 +183,7 @@ On Windows using Visual Studio
     * `BUILD_PYTHON_WRAPPING` if you want to access OpenSim through Python; see
       dependencies above.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
+    * It is very important to use Java or Python environment binary format compatible with API build **(either all 32 or 64 bit)**.
 8. Click the **Configure** button again. Then, click **Generate** to make
    Visual Studio project files in the build directory.
 
@@ -237,17 +238,14 @@ On Mac using Xcode
 * **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 5, through
   the Mac App Store.
 * **physics engine**:
-  [Simbody](https://github.com/simbody/simbody#installing) >= 3.5.
-  **Important**: If installing Simbody 3.5 using Makefile's, make sure Simbody's
-  CMake variable `SIMBODY_STANDARD_11` is turned on (in 3.6 and later, this variable
-  is removed).
+  [Simbody](https://github.com/simbody/simbody#installing) >= 3.6.
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git.
     * Xcode Command Line Tools gives you git on the command line.
     * [GitHub for Mac](https://mac.github.com), easiest.
-* **Wrapping** (optional): [SWIG](http://www.swig.org/) 2.0.10
-    * **MATLAB scripting** (optional): [Java development kit][java] 1.6.
+* **Wrapping** (optional): [SWIG](http://www.swig.org/) 3.0.5
+    * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
     * **python scripting** (optional):
         * Mac's come with python, but you could also install:
         * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
@@ -364,16 +362,13 @@ line below, we show the corresponding package.
 * **compiler**: [gcc](http://gcc.gnu.org) >= 4.8; `g++-4.8`, or
       [Clang](http://clang.llvm.org) >= 3.4; `clang-3.4`.
 * **physics engine**:
-  [Simbody](https://github.com/simbody/simbody#installing) >= 3.5.
-  **Important**: If installing Simbody 3.5 using Makefile's, make sure Simbody's
-  CMake variable `SIMBODY_STANDARD_11` is turned on (in 3.6 and later, this variable
-  is removed).
+  [Simbody](https://github.com/simbody/simbody#installing) >= 3.6.
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
 * **version control** (optional): git; `git`.
-* **Wrapping** (optional): [SWIG](http://www.swig.org/) 2.0.10 `swig`
-    * **MATLAB scripting** (optional): [Java development kit][java] >= 1.6;
+* **Wrapping** (optional): [SWIG](http://www.swig.org/) 3.0.5; must get from SWIG website.
+    * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7;
       `openjdk-6-jdk` or `openjdk-7-jdk`.
     * **python scripting** (optional): `python-dev`.
 

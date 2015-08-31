@@ -18,6 +18,8 @@ if(COMMAND cmake_policy)
     endif()
 endif(COMMAND cmake_policy)
 
+# To create a folder hierarchy within Visual Studio.
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # OpenSim version.
 # ----------------
@@ -70,6 +72,13 @@ link_directories(${BUILD_BINARY_DIR})
 # Specify number of cores to run for build
 set(PROCESSOR_COUNT 8 CACHE STRING "Number of processors in the CPU")
 mark_as_advanced(PROCESSOR_COUNT)
+
+# Try to use MathJax for Doxygen equations.
+# -----------------------------------------
+option(OPENSIM_DOXYGEN_USE_MATHJAX "Try to use MathJax to render Doxygen
+equations. If OFF, LATEX is used instead if you have it; otherwise we use
+MathJax from the internet (we don't download it). If we cannot download MathJax
+from the internet, we turn this option OFF." ON)
 
 
 # Simbody.

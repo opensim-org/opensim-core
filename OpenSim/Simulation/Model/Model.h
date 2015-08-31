@@ -462,15 +462,15 @@ public:
     /**
      * Add ModelComponents to the Model. Model takes ownership of the objects.
      */
-    void addModelComponent(ModelComponent* aModelComponent);
-    void addBody(Body *body);
-    void addJoint(Joint *joint);
-    void addConstraint(Constraint *constraint);
-    void addForce(Force *force);
-    void addProbe(Probe *probe);
-    void addContactGeometry(ContactGeometry *contactGeometry);
-    void addFrame(Frame* frame);
-    void addMarker(Marker *marker);
+    void addModelComponent(ModelComponent* adoptee);
+    void addBody(Body *adoptee);
+    void addJoint(Joint *adoptee);
+    void addConstraint(Constraint *adoptee);
+    void addForce(Force *adoptee);
+    void addProbe(Probe *adoptee);
+    void addContactGeometry(ContactGeometry *adoptee);
+    void addFrame(Frame* adoptee);
+    void addMarker(Marker *adoptee);
     /** remove passed in Probe from model **/
     void removeProbe(Probe *probe);
     //--------------------------------------------------------------------------
@@ -817,9 +817,9 @@ public:
      *
      * @param analysis  pointer to the Analysis to add
      */
-    void addAnalysis(Analysis *analysis);
+    void addAnalysis(Analysis *adoptee);
     /** Add a Controller to the %Model. **/
-    void addController(Controller *aController);
+    void addController(Controller *adoptee);
 
     /**
      * Remove an Analysis from the %Model.
