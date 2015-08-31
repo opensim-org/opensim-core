@@ -130,6 +130,7 @@ Model::Model(const string &aFileName, const bool finalize) :
 Model::~Model()
 {
     delete _modelViz;
+    delete _assemblySolver;
 }
 //_____________________________________________________________________________
 /**
@@ -461,7 +462,10 @@ void Model::createMultibodySystem()
         delete _modelViz;
     }
 
-    // create system    
+    // create system
+    //_matter.reset();
+    //_forceSubsystem.reset();
+    //_contactSubsystem.reset();
     _system.reset(new SimTK::MultibodySystem);
     _matter.reset(new SimTK::SimbodyMatterSubsystem(*_system));
     _forceSubsystem.reset(new SimTK::GeneralForceSubsystem(*_system));
@@ -806,7 +810,7 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
     // its "slots" and retain its index by accessing this cached Vector
     // value depends on velocity and invalidates dynamics BUT should not trigger
     // recomputation of the controls which are necessary for dynamics
-    Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(), 
+    Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(),
         Stage::Velocity, Stage::Acceleration);
 
     mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
@@ -1561,10 +1565,12 @@ void Model::createAssemblySolver(const SimTK::State& s)
         }
     }
 
+    delete _assemblySolver;
+
     // Use the assembler to generate the initial pose from Coordinate defaults
     // that also satisfies the constraints. AssemblySolver makes copy of
     // coordsToTrack
-    _assemblySolver.reset(new AssemblySolver(*this, coordsToTrack));
+    _assemblySolver = new AssemblySolver(*this, coordsToTrack);
     _assemblySolver->setConstraintWeight(SimTK::Infinity);
     _assemblySolver->setAccuracy(get_assembly_accuracy());
 }
