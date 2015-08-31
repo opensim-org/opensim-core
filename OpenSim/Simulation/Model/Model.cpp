@@ -463,9 +463,9 @@ void Model::createMultibodySystem()
     }
 
     // create system
-    //_matter.reset();
-    //_forceSubsystem.reset();
-    //_contactSubsystem.reset();
+    _matter.reset();
+    _forceSubsystem.reset();
+    _contactSubsystem.reset();
     _system.reset(new SimTK::MultibodySystem);
     _matter.reset(new SimTK::SimbodyMatterSubsystem(*_system));
     _forceSubsystem.reset(new SimTK::GeneralForceSubsystem(*_system));
