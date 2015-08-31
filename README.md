@@ -367,7 +367,7 @@ line below, we show the corresponding package.
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
 * **version control** (optional): git; `git`.
-* **Wrapping** (optional): [SWIG](http://www.swig.org/) 3.0.5 `swig`
+* **Wrapping** (optional): [SWIG](http://www.swig.org/) 3.0.5; must get from SWIG website.
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7;
       `openjdk-6-jdk` or `openjdk-7-jdk`.
     * **python scripting** (optional): `python-dev`.
