@@ -1077,7 +1077,7 @@ private:
     // used by unique_ptr can't delete a ModelVisualizer. We must create a
     // deleter who can be a friend of the ModelVisualizer.
     struct ModelVisualizerDeleter {
-        void operator()(ModelVisualizer* modelViz);
+        void operator()(const ModelVisualizer* modelViz);
     };
 
     // The second template argument for unique_ptr is a deleter.

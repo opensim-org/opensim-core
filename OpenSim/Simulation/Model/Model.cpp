@@ -2132,7 +2132,7 @@ void Model::constructOutputs()
     
 }
 
-void Model::ModelVisualizerDeleter::operator()(ModelVisualizer* modelViz) {
+void Model::ModelVisualizerDeleter::operator()(const ModelVisualizer* modelViz) {
     delete modelViz;
 }
 
