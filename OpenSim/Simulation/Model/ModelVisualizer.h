@@ -29,7 +29,6 @@ that provides some visualization and user interaction when running a program
 that uses the OpenSim API. **/
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Simulation/Model/Model.h>
 
 #ifndef SWIG
 namespace SimTK {
@@ -88,6 +87,8 @@ private:
 #endif
 
 namespace OpenSim {
+
+class Model;
 
 /** This class manages runtime visualization of a Model that is being 
 manipulated through the OpenSim API. You should not allocate one of these
