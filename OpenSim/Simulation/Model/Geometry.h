@@ -118,9 +118,12 @@ public:
         SimTK::DecorativeGeometry& decoration) const {
             decoration.setColor(get_Appearance().get_color());
             decoration.setOpacity(get_Appearance().get_opacity());
-            decoration.setRepresentation(
-                (SimTK::DecorativeGeometry::Representation)
-                get_Appearance().get_representation());
+            if (get_Appearance().get_visibile())
+                decoration.setRepresentation(
+                    (SimTK::DecorativeGeometry::Representation)
+                    get_Appearance().get_representation());
+            else
+                decoration.setRepresentation(SimTK::DecorativeGeometry::Hide);
     };
     /// Convenient access to set Appearance/Color
     void setColor(const SimTK::Vec3& color) { 

@@ -156,7 +156,7 @@ private:
     void constructProperties() {
         constructProperty_visibile(true);
         constructProperty_opacity(1.0);
-        constructProperty_color(SimTK::Vec3(.8)); // Gray
+        constructProperty_color(SimTK::Vec3(1.0)); // White by default, shows as a shade of gray
         constructProperty_surface_appearance(SurfaceAppearance());
         constructProperty_curve_appearance(CurveAppearance());
     }
