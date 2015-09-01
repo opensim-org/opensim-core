@@ -3,14 +3,14 @@ set(KIT opensim)
 if(BUILD_PYTHON_WRAPPING)
 
 find_package(PythonLibs 2.7)
-find_package(PythonInterp 2.7 REQUIRED)
-
 if(NOT PYTHONLIBS_FOUND)
     message(FATAL_ERROR "Cannot build Python wrapping because "
         "Python libraries were not found. Either turn "
         "BUILD_PYTHON_WRAPPING off or install Python "
         "libraries (on Ubuntu, sudo apt-get install python2.7-dev).")
 endif()
+
+find_package(PythonInterp 2.7 REQUIRED)
 
 
 # Location of the opensim python package in the build directory, for testing.
@@ -149,4 +149,4 @@ install(DIRECTORY "${PYTHON_PACKAGE_BINARY_DIR}/opensim" DESTINATION sdk/python)
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests"
         DESTINATION sdk/python/opensim)
 
-endif(BUILD_PYTHON_WRAPPING)
+endif()
