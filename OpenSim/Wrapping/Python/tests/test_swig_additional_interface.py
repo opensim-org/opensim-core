@@ -279,11 +279,11 @@ class TestSwigAddtlInterface(unittest.TestCase):
         assert v1[1] == 2
     
         # Out of bounds.
-        with self.assertRaises(IndexError):
+        with self.assertRaises(RuntimeError):
             v1[-1]
-        with self.assertRaises(IndexError):
+        with self.assertRaises(RuntimeError):
             v1[3]
-        with self.assertRaises(IndexError):
+        with self.assertRaises(RuntimeError):
             v1[5]
     
         # Tests __setitem__().
@@ -291,9 +291,9 @@ class TestSwigAddtlInterface(unittest.TestCase):
         assert v1[0] == 5
     
         # Out of bounds.
-        with self.assertRaises(IndexError):
+        with self.assertRaises(RuntimeError):
             v1[-1] = 5
-        with self.assertRaises(IndexError):
+        with self.assertRaises(RuntimeError):
             v1[3] = 1.3
 
         # Add.
@@ -315,20 +315,20 @@ class TestSwigAddtlInterface(unittest.TestCase):
         assert v[4] == 3
 
         # Out of bounds.
-        with self.assertRaises(IndexError):
+        with self.assertRaises(RuntimeError):
             v[-1]
-        with self.assertRaises(IndexError):
+        with self.assertRaises(RuntimeError):
             v[5]
 
         # Tests __setitem__()
         v[0] = 15
         assert v[0] == 15
 
-        with self.assertRaises(IndexError):
+        with self.assertRaises(RuntimeError):
             v[-1] = 12
-        with self.assertRaises(IndexError):
+        with self.assertRaises(RuntimeError):
             v[5] = 14
-        with self.assertRaises(IndexError):
+        with self.assertRaises(RuntimeError):
             v[9] = 18
 
         # Size.
