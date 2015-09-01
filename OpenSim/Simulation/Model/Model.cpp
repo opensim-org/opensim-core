@@ -125,14 +125,6 @@ Model::Model(const string &aFileName, const bool finalize) :
 
 //_____________________________________________________________________________
 /**
- * Destructor.
- */
-Model::~Model()
-{
-    delete _modelViz;
-}
-//_____________________________________________________________________________
-/**
  * Override default implementation by object to intercept and fix the XML node
  * underneath the model to match current version
  */
@@ -212,8 +204,6 @@ void Model::setNull()
     _useVisualizer = false;
     _allControllersEnabled = true;
 
-    _modelViz = NULL;
-
     _validationLog="";
 
     _analysisSet.setMemoryOwner(false);
@@ -286,7 +276,7 @@ void Model::buildSystem() {
     // Create a Visualizer for this Model if one has been requested. This adds
     // necessary elements to the System. Doesn't initialize geometry yet.
     if (getUseVisualizer())
-        _modelViz = new ModelVisualizer(*this);
+        _modelViz.reset(new ModelVisualizer(*this));
 }
 
 
@@ -455,11 +445,6 @@ bool Model::isValidSystem() const
  */
 void Model::createMultibodySystem()
 {
-    if(_system) // if system was built previously start fresh
-    {
-        // Delete the old system.
-        delete _modelViz;
-    }
 
     // We must reset these unique_ptr's before deleting the System (through
     // reset()), since deleting the System puts a null handle pointer inside
@@ -2146,3 +2131,8 @@ void Model::constructOutputs()
        std::bind(&Model::calcMassCenterAcceleration,this,std::placeholders::_1), SimTK::Stage::Acceleration);
     
 }
+
+void Model::ModelVisualizerDeleter::operator()(ModelVisualizer* modelViz) {
+    delete modelViz;
+}
+

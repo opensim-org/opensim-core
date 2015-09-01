@@ -46,6 +46,7 @@
 #include <OpenSim/Simulation/Model/FrameSet.h>
 #include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
+//#include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include "Simbody.h"
 
 
@@ -910,7 +911,7 @@ public:
     /**@{**/
 
     /** Destructor. */
-    ~Model();
+    ~Model() override = default;
 
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, 
@@ -1069,9 +1070,19 @@ private:
     ModelDisplayHints   _displayHints;
 
     // If visualization has been requested at the API level, we'll allocate 
-    // a ModelVisualizer. The Model owns this object.
-    //ModelVisualizer*    _modelViz; // owned by Model; must destruct
-    SimTK::ReferencePtr<ModelVisualizer> _modelViz;
+    // a ModelVisualizer. The Model owns this object, but it should not be
+    // copied.
+
+    // The ModelVisualizer destructor is private, and so the default deleter
+    // used by unique_ptr can't delete a ModelVisualizer. We must create a
+    // deleter who can be a friend of the ModelVisualizer.
+    struct ModelVisualizerDeleter {
+        void operator()(ModelVisualizer* modelViz);
+    };
+
+    // The second template argument for unique_ptr is a deleter.
+    SimTK::ResetOnCopy<std::unique_ptr<ModelVisualizer,
+                       ModelVisualizerDeleter>> _modelViz;
 
 //==============================================================================
 };  // END of class Model
