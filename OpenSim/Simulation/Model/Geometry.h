@@ -68,15 +68,6 @@ public:
     // Default display properiies e.g. Representation, color, texture, etc.
     OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
         "Default appearance for this Geometry");
-
-    enum DisplayPreference {
-        Hide = 0,       ///<Hide geometry from display
-        DrawPoints = 1, ///< Use a cloud of points.
-        DrawWireframe = 2, ///< Use a line drawing.
-        DrawSurface = 3, ///< Use a shaded surface.
-
-        DrawDefault = -1  ///< Let someone else decide.
-    };
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
@@ -91,14 +82,9 @@ public:
         constructProperty_Appearance(Appearance());
     }
     /// Convenience constructor that takes a Frame
-    Geometry(const Frame& frame)
+    Geometry(const Frame& frame):
+        Geometry()
     {
-        setNull();
-        constructInfrastructure();
-
-        constructProperty_scale_factors(SimTK::Vec3(1));
-        constructProperty_Appearance(Appearance());
-
         setFrame(frame);
     }
 
@@ -155,12 +141,12 @@ public:
     };
 
     /// Convenient access to set Appearance/representation
-    void setRepresentation(const DisplayPreference& rep) { 
+    void setRepresentation(DecorativeGeometry::Representation rep) { 
         upd_Appearance().set_representation(rep); 
     };
     /// Convenient access to get Appearance/representation
-    const DisplayPreference& getRepresentation() { return 
-        (const DisplayPreference&)get_Appearance().get_representation(); 
+    DecorativeGeometry::Representation getRepresentation() { return
+        get_Appearance().get_representation(); 
     };
 
     /// Map this Geometry into a list of primitives aka SimTK::DecorativeGeometry 

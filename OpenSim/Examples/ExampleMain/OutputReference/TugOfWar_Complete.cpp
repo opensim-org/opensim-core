@@ -115,7 +115,7 @@ int main()
         
         Cylinder cylGeometry(0.2, .3);
         cylGeometry.setFrameName("CylAnchor");
-        cylGeometry.setRepresentation(Geometry::DrawWireframe);
+        cylGeometry.setRepresentation(DecorativeGeometry::DrawWireframe);
         ground.addGeometry(cylGeometry);
 
         Ellipsoid ellipsoidGeometry(0.2, .7, .5);
