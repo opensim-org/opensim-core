@@ -106,6 +106,12 @@ elseif(APPLE)
     set_target_properties(_${KIT} PROPERTIES SUFFIX ".so")
 endif()
 
+if(${OPENSIM_USE_INSTALL_RPATH})
+    set_target_properties(_${KIT} PROPERTIES
+        INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
+        )
+endif()
+
 # Create complete python package in the build tree.
 # -------------------------------------------------
 # Configure setup.py

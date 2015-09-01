@@ -122,7 +122,7 @@ On Windows using Visual Studio
       *Custom*, and check *Programming Languages > Visual C++ > Common Tools for Visual C++ 2015*.
       You can uncheck all other boxes.
 * **physics engine**:
-  [Simbody](https://github.com/simbody/simbody#windows-and-visual-studio) >= 3.4
+  [Simbody](https://github.com/simbody/simbody#windows-and-visual-studio) >= 3.6
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git. There are many options:
@@ -130,8 +130,8 @@ On Windows using Visual Studio
     * [TortoiseGit](https://code.google.com/p/tortoisegit/wiki/Download),
       intermediate; good for TortoiseSVN users;
     * [GitHub for Windows](https://windows.github.com/), easiest.
-* **Wrapping** (optional): [SWIG](http://www.swig.org/) 2.0.10
-    * **MATLAB scripting** (optional): [Java development kit][java] 1.6.
+* **Wrapping** (optional): [SWIG](http://www.swig.org/) 3.0.5
+    * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
     * **python scripting** (optional):
         * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
@@ -183,6 +183,7 @@ On Windows using Visual Studio
     * `BUILD_PYTHON_WRAPPING` if you want to access OpenSim through Python; see
       dependencies above.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
+    * It is very important to use Java or Python environment binary format compatible with API build **(either all 32 or 64 bit)**.
 8. Click the **Configure** button again. Then, click **Generate** to make
    Visual Studio project files in the build directory.
 
@@ -237,17 +238,14 @@ On Mac using Xcode
 * **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 5, through
   the Mac App Store.
 * **physics engine**:
-  [Simbody](https://github.com/simbody/simbody#installing) >= 3.5.
-  **Important**: If installing Simbody 3.5 using Makefile's, make sure Simbody's
-  CMake variable `SIMBODY_STANDARD_11` is turned on (in 3.6 and later, this variable
-  is removed).
+  [Simbody](https://github.com/simbody/simbody#installing) >= 3.6.
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git.
     * Xcode Command Line Tools gives you git on the command line.
     * [GitHub for Mac](https://mac.github.com), easiest.
-* **Wrapping** (optional): [SWIG](http://www.swig.org/) 2.0.10
-    * **MATLAB scripting** (optional): [Java development kit][java] 1.6.
+* **Wrapping** (optional): [SWIG](http://www.swig.org/) 3.0.5
+    * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
     * **python scripting** (optional):
         * Mac's come with python, but you could also install:
         * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
@@ -331,18 +329,19 @@ On Mac using Xcode
 
 #### Set environment variables
 
-1. Allow executables to find OpenSim-Core libraries by adding the OpenSim-Core
-   `lib/` directory to your linker path. Open a terminal and type:
-
-        $ echo 'export DYLD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bash_profile
-
-2. Add OpenSim-Core's executables to the path so you can access them from any
-   directory on your computer. *Note* some of the names of OpenSim-Core
-   executables conflict with some UNIX commands (e.g., `id`). To give
-   preference to OpenSim-Core's executables, we must *prepend* OpenSim-Core's
-   `bin/` directory to the path. Open a terminal and type:
+1. **Executables**. If you want to run OpenSim-Core's executables from
+   anywhere on your computer, you must update your PATH. *Note* some of the names of OpenSim-Core executables conflict with some UNIX commands (e.g., `id`). To give preference to OpenSim-Core's executables, we must *prepend* OpenSim-Core's `bin/` directory to the path. Open a terminal and type:
 
         $ echo 'export PATH=~/opensim-core/bin:$PATH' >> ~/.bash_profile
+
+2. **Libraries**. Hopefully you can skip this step. This step is required if:
+  1. You are using CMake version 2.8.11 or older.
+  2. You plan on building C++ executables or libraries on top of OpenSim, *and* you plan to "install" them in the CMake sense of the word (that is, you're not going to simply use them from your project's build directory).
+  3. You plan to use the Java or MATLAB wrapping.
+
+  If any of these are true, then you must add OpenSim-Core libraries to your linker path. Open a terminal and type:
+
+          $ echo 'export DYLD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bash_profile
 
 Your changes will only take effect in new terminal windows.
 
@@ -364,16 +363,13 @@ line below, we show the corresponding package.
 * **compiler**: [gcc](http://gcc.gnu.org) >= 4.8; `g++-4.8`, or
       [Clang](http://clang.llvm.org) >= 3.4; `clang-3.4`.
 * **physics engine**:
-  [Simbody](https://github.com/simbody/simbody#installing) >= 3.5.
-  **Important**: If installing Simbody 3.5 using Makefile's, make sure Simbody's
-  CMake variable `SIMBODY_STANDARD_11` is turned on (in 3.6 and later, this variable
-  is removed).
+  [Simbody](https://github.com/simbody/simbody#installing) >= 3.6.
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
 * **version control** (optional): git; `git`.
-* **Wrapping** (optional): [SWIG](http://www.swig.org/) 2.0.10 `swig`
-    * **MATLAB scripting** (optional): [Java development kit][java] >= 1.6;
+* **Wrapping** (optional): [SWIG](http://www.swig.org/) 3.0.5; must get from SWIG website.
+    * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7;
       `openjdk-6-jdk` or `openjdk-7-jdk`.
     * **python scripting** (optional): `python-dev`.
 
@@ -473,18 +469,19 @@ And you could get all the optional dependencies via:
 
 #### Set environment variables
 
-1. Allow executables to find OpenSim-Core libraries by adding the OpenSim-Core
-   `lib/` directory to your linker path.
-
-        $ echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bashrc
-
-2. Add OpenSim-Core's executables to the path so you can access them from any
+1. **Executables**. Add OpenSim-Core's executables to the path so you can access them from any
    directory on your computer. NOTE that some of the names of OpenSim-Core
    executables conflict with some UNIX commands (e.g., `id`). To give
    preference to OpenSim-Core's executables, we must *prepend* OpenSim-Core's
    `bin/` directory to the path.
 
         $ echo 'export PATH=~/opensim-core/bin:$PATH' >> ~/.bashrc
+
+2. **Libraries**. Allow executables to find OpenSim-Core libraries by
+  adding the OpenSim-Core
+   `lib/` directory to your linker path.
+
+        $ echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bashrc
 
 Your changes will only take effect in new terminal windows.
 

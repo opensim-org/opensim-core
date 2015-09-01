@@ -256,7 +256,6 @@ using namespace SimTK;
 
 %}
 
-%feature("director") OpenSim::AnalysisWrapper;
 %feature("director") OpenSim::SimtkLogCallback;
 %feature("director") SimTK::DecorativeGeometryImplementation;
 %feature("notabstract") ControlLinear;
@@ -414,7 +413,7 @@ note: We need two different versions of this swig macro, before/after v3.0.3.
 
 %define MODEL_ADOPT_HELPER(NAME)
 %pythonappend OpenSim::Model::add ## NAME %{
-    args[0]._markAdopted()
+    adoptee._markAdopted()
 %}
 %enddef
 

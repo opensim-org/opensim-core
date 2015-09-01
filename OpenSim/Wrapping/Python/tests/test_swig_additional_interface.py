@@ -33,7 +33,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
     def test_markAdopted2(self):
         a = osim.Model()
     
-        # We just need the following not to not cause a segfault.
+        # We just need the following not to cause a segfault.
     
         # Model add*
         pa = osim.PathActuator()
