@@ -92,10 +92,10 @@ Model::Model() :
     _coordinateSet(CoordinateSet()),
     _useVisualizer(false),
     _allControllersEnabled(true),
-    _system(nullptr),
     _workingState()
 {
-    constructInfrastructure();    setNull();
+    constructInfrastructure();
+    setNull();
     finalizeFromProperties();
 }
 //_____________________________________________________________________________
@@ -109,7 +109,6 @@ Model::Model(const string &aFileName, const bool finalize) :
     _coordinateSet(CoordinateSet()),
     _useVisualizer(false),
     _allControllersEnabled(true),
-    _system(nullptr),
     _workingState()
 {   
     constructInfrastructure();
@@ -130,13 +129,7 @@ Model::Model(const string &aFileName, const bool finalize) :
  */
 Model::~Model()
 {
-    delete _assemblySolver;
     delete _modelViz;
-    delete _contactSubsystem;
-    delete _gravityForce;
-    delete _forceSubsystem;
-    delete _matter;
-    delete _system; 
 }
 //_____________________________________________________________________________
 /**
@@ -219,15 +212,7 @@ void Model::setNull()
     _useVisualizer = false;
     _allControllersEnabled = true;
 
-    _system = NULL;
-    _matter = NULL;
-
-    _forceSubsystem = NULL;
-    _contactSubsystem = NULL;
-    _gravityForce = NULL;
-
     _modelViz = NULL;
-    _assemblySolver = NULL;
 
     _validationLog="";
 
@@ -474,23 +459,26 @@ void Model::createMultibodySystem()
     {
         // Delete the old system.
         delete _modelViz;
-        delete _gravityForce;
-        delete _contactSubsystem;
-        delete _forceSubsystem;
-        delete _matter;
-        delete _system;
     }
 
-    // create system    
-    _system = new SimTK::MultibodySystem;
-    _matter = new SimTK::SimbodyMatterSubsystem(*_system);
-    _forceSubsystem = new SimTK::GeneralForceSubsystem(*_system);
-    _contactSubsystem = new SimTK::GeneralContactSubsystem(*_system);
+    // We must reset these unique_ptr's before deleting the System (through
+    // reset()), since deleting the System puts a null handle pointer inside
+    // the subsystems (since System deletes the subsystems).
+    _matter.reset();
+    _forceSubsystem.reset();
+    _contactSubsystem.reset();
+    // create system
+    _system.reset(new SimTK::MultibodySystem);
+    _matter.reset(new SimTK::SimbodyMatterSubsystem(*_system));
+    _forceSubsystem.reset(new SimTK::GeneralForceSubsystem(*_system));
+    _contactSubsystem.reset(new SimTK::GeneralContactSubsystem(*_system));
 
-    // create gravity force, a direction is needed even if magnitude=0 for PotentialEnergy purposes.
+    // create gravity force, a direction is needed even if magnitude=0 for
+    // PotentialEnergy purposes.
     double magnitude = get_gravity().norm();
     SimTK::UnitVec3 direction = magnitude==0 ? SimTK::UnitVec3(0,-1,0) : SimTK::UnitVec3(get_gravity()/magnitude);
-    _gravityForce = new SimTK::Force::Gravity(*_forceSubsystem, *_matter, direction, magnitude);
+    _gravityForce.reset(new SimTK::Force::Gravity(*_forceSubsystem, *_matter,
+                direction, magnitude));
 
     addToSystem(*_system);
 }
@@ -824,7 +812,7 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
     // its "slots" and retain its index by accessing this cached Vector
     // value depends on velocity and invalidates dynamics BUT should not trigger
     // recomputation of the controls which are necessary for dynamics
-    Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(), 
+    Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(),
         Stage::Velocity, Stage::Acceleration);
 
     mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
@@ -1579,13 +1567,10 @@ void Model::createAssemblySolver(const SimTK::State& s)
         }
     }
 
-    // Have an AssemblySolver on hand, but delete any old one first
-    delete _assemblySolver;
-
     // Use the assembler to generate the initial pose from Coordinate defaults
     // that also satisfies the constraints. AssemblySolver makes copy of
     // coordsToTrack
-    _assemblySolver = new AssemblySolver(*this, coordsToTrack);
+    _assemblySolver.reset(new AssemblySolver(*this, coordsToTrack));
     _assemblySolver->setConstraintWeight(SimTK::Infinity);
     _assemblySolver->setAccuracy(get_assembly_accuracy());
 }

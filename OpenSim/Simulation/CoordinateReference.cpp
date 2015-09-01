@@ -22,7 +22,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "CoordinateReference.h"
-#include "Model/Model.h"
 
 using namespace std;
 using namespace SimTK;
