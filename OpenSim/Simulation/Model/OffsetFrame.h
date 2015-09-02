@@ -195,7 +195,7 @@ OffsetFrame<C>::OffsetFrame(const std::string& name,
         const C& parent, const SimTK::Transform& offset)
     : OffsetFrame(parent, offset)
 {
-    setName(name);
+    this->setName(name);
 }
 
 // Set a null frame as Identity rotation, 0 translation
