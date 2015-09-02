@@ -46,6 +46,7 @@
 #include <OpenSim/Simulation/Model/FrameSet.h>
 #include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
+#include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include "Simbody.h"
 
 
@@ -74,7 +75,6 @@ class ScaleSet;
 class Controller;
 class ControllerSet;
 class ModelDisplayHints;
-class ModelVisualizer;
 class ComponentSet;
 class FrameSet;
 
@@ -910,7 +910,7 @@ public:
     /**@{**/
 
     /** Destructor. */
-    ~Model();
+    ~Model() override = default;
 
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, 
@@ -1069,9 +1069,9 @@ private:
     ModelDisplayHints   _displayHints;
 
     // If visualization has been requested at the API level, we'll allocate 
-    // a ModelVisualizer. The Model owns this object.
-    //ModelVisualizer*    _modelViz; // owned by Model; must destruct
-    SimTK::ReferencePtr<ModelVisualizer> _modelViz;
+    // a ModelVisualizer. The Model owns this object, but it should not be
+    // copied.
+    SimTK::ResetOnCopy<std::unique_ptr<ModelVisualizer>> _modelViz;
 
 //==============================================================================
 };  // END of class Model
