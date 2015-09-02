@@ -46,7 +46,7 @@
 #include <OpenSim/Simulation/Model/FrameSet.h>
 #include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
-//#include <OpenSim/Simulation/Model/ModelVisualizer.h>
+#include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include "Simbody.h"
 
 
@@ -75,7 +75,6 @@ class ScaleSet;
 class Controller;
 class ControllerSet;
 class ModelDisplayHints;
-class ModelVisualizer;
 class ComponentSet;
 class FrameSet;
 
@@ -1072,17 +1071,7 @@ private:
     // If visualization has been requested at the API level, we'll allocate 
     // a ModelVisualizer. The Model owns this object, but it should not be
     // copied.
-
-    // The ModelVisualizer destructor is private, and so the default deleter
-    // used by unique_ptr can't delete a ModelVisualizer. We must create a
-    // deleter who can be a friend of the ModelVisualizer.
-    struct ModelVisualizerDeleter {
-        void operator()(const ModelVisualizer* modelViz);
-    };
-
-    // The second template argument for unique_ptr is a deleter.
-    SimTK::ResetOnCopy<std::unique_ptr<ModelVisualizer,
-                       ModelVisualizerDeleter>> _modelViz;
+    SimTK::ResetOnCopy<std::unique_ptr<ModelVisualizer>> _modelViz;
 
 //==============================================================================
 };  // END of class Model

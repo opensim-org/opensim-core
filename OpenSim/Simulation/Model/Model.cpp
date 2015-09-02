@@ -48,7 +48,6 @@
 #include "SimTKcommon/internal/SystemGuts.h"
 
 #include "Model.h"
-#include "ModelVisualizer.h"
 
 #include "Muscle.h"
 #include "Ligament.h"
@@ -2130,9 +2129,5 @@ void Model::constructOutputs()
    constructOutput<SimTK::Vec3>("com_acceleration",
        std::bind(&Model::calcMassCenterAcceleration,this,std::placeholders::_1), SimTK::Stage::Acceleration);
     
-}
-
-void Model::ModelVisualizerDeleter::operator()(const ModelVisualizer* modelViz) {
-    delete modelViz;
 }
 
