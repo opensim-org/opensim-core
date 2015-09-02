@@ -152,9 +152,9 @@ class CompoundJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(CompoundJoint, Joint);
 
     /** Specify the Coordinates of this CompoundJoint */
-    CoordinateP rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    CoordinateP ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    CoordinateP rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
 
 public:
     // CONSTRUCTION
@@ -1268,8 +1268,36 @@ void testPinJoint()
     // create pin knee joint
     PinJoint knee("knee", osim_thigh, kneeInFemur, oInP,
                           osim_shank, kneeInTibia, oInB);
-    knee.finalizeFromProperties();
     knee.getCoordinateSet()[0].setName("knee_q");
+
+    // verify that defaul copy constructor handles coordinates appropriately
+    auto knee2(knee);
+    ASSERT(knee2.get_CoordinateSet().getSize() == knee.get_CoordinateSet().getSize());
+    ASSERT(knee2.get_CoordinateSet()[0].getName() == "knee_q");
+
+    // Exercise new convenience constructor
+    // TODO. prefixing the joint name to the frame names should not be necessary.
+    // This is only required now because the search does not respect the local
+    // (relative) name, which it would find immediatel, and insted is searching
+    // from the root of the tree. The "knee/" prefix can be removed here when 
+    // the deprecated constructor used to construct the knee Joint instance (to
+    // which we are comparing for this test) no longer has to force the local search.
+    PinJoint knee3("knee", "knee/thigh_offset", "knee/shank_offset");
+    knee3.getCoordinateSet()[0].setName("knee_q"); // use the same coordinate name
+    // and current way of specifying the offset locations of the joint
+    // in the respective PhysicalFrames (e.g. Bodies)
+    knee3.append_frames(PhysicalOffsetFrame("thigh_offset", osim_thigh,
+        SimTK::Transform(Rotation(BodyRotationSequence,
+            oInP[0], XAxis,
+            oInP[1], YAxis,
+            oInP[2], ZAxis), kneeInFemur)));
+    knee3.append_frames(PhysicalOffsetFrame("shank_offset", osim_shank,
+        SimTK::Transform(Rotation(BodyRotationSequence,
+            oInB[0], XAxis,
+            oInB[1], YAxis,
+            oInB[2], ZAxis), kneeInTibia)));
+
+    ASSERT(knee3 == knee);
 
     // Add the shank body which now also contains the knee joint to the model
     osimModel->addBody(&osim_shank);
@@ -1298,7 +1326,6 @@ void testPinJoint()
     //==========================================================================================================
     // Compare Simbody system and OpenSim model simulations
     compareSimulations(system, state, osimModel, osim_state, "testPinJoint FAILED\n");
-
 } // end testPinJoint
 
 void testSliderJoint()

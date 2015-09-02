@@ -47,7 +47,7 @@ class OSIMSIMULATION_API PinJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PinJoint, Joint);
 
     /** Specify the Coordinate of the PinJoint */
-    CoordinateP rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
 
 public:
     /** Use Joint's constructors. @see Joint */

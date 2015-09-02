@@ -80,20 +80,27 @@ public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
-    /**
-    By default, the frame is not connected to any parent frame, and its
+    /** By default, the frame is not connected to any parent frame, and its
     transform is an identity transform.
     */
     OffsetFrame();
 
-    /**
-    A convenience constructor that initializes the parent connection and
+    /** A convenience constructor that initializes the parent connection and
     offset property of this OffsetFrame.
      
     @param[in] parent   The parent reference frame.
     @param[in] offset   The offset transform between this frame and its parent
     */
     OffsetFrame(const C& parent, const SimTK::Transform& offset);
+
+    /**  A convenience constructor that initializes the name of the OffsetFrame,
+         the parent connection and its offset property.
+    @param[in] name     The name of this OffsetFrame.
+    @param[in] parent   The parent reference frame.
+    @param[in] offset   The offset transform between this frame and its parent
+    */
+    OffsetFrame(const std::string& name, 
+                const C& parent, const SimTK::Transform& offset);
 
     // use compiler generated destructor, copy constructor and assignment operator
 
@@ -181,6 +188,14 @@ OffsetFrame<C>::OffsetFrame(const C& parent,
     this->constructInfrastructure();
     setParentFrame(parent);
     setOffsetTransform(offset);
+}
+
+template <class C>
+OffsetFrame<C>::OffsetFrame(const std::string& name, 
+        const C& parent, const SimTK::Transform& offset)
+    : OffsetFrame(parent, offset)
+{
+    setName(name);
 }
 
 // Set a null frame as Identity rotation, 0 translation

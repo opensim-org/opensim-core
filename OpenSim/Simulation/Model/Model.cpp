@@ -517,8 +517,7 @@ void Model::extendFinalizeFromProperties()
         else{
             _multibodyTree.addJointType(
                 availablJointTypes[i]->getConcreteClassName(),
-                availablJointTypes[i]->numCoordinates(),
-                (availablJointTypes[i]->getConcreteClassName() == "BallJoint"));
+                availablJointTypes[i]->numCoordinates(), false);
         }
     }
 
@@ -578,7 +577,7 @@ void Model::extendFinalizeFromProperties()
             std::string name = js[i].getName();
             IO::TrimWhitespace(name);
 
-            if ((name.empty()) || (name == "")){
+            if (name.empty()){
                 name = js[i].getParentFrameName() + "_to_" + js[i].getChildFrameName();
             }
 

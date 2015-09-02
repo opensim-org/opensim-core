@@ -48,9 +48,9 @@ class OSIMSIMULATION_API EllipsoidJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(EllipsoidJoint, Joint);
 
     /** Specify the Coordinates of the EllipsoidJoint */
-    CoordinateP rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    CoordinateP ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    CoordinateP rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
 
 public:
 //==============================================================================
