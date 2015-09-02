@@ -167,7 +167,7 @@ protected:
     set by the end of PhysicalFrame::addToSystem()
         */
     void setMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix) const {
-        _mbIndex = mbix; 
+        const_cast<Self*>(this)->_mbIndex = mbix; 
     }
 
     /** Extend how PhysicalFrame determines its base Frame. */
@@ -193,7 +193,7 @@ private:
     /* ID for the underlying mobilized body in Simbody system.
     Only Joint can set, since it defines the mobilized body type and
     the connection to the parent body in the multibody tree. */
-    mutable SimTK::ResetOnCopy<SimTK::MobilizedBodyIndex> _mbIndex;
+    SimTK::ResetOnCopy<SimTK::MobilizedBodyIndex> _mbIndex;
 
     virtual const SimTK::Body& extractInternalRigidBody() const {
         return _internalRigidBody;
