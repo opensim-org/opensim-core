@@ -118,7 +118,7 @@ public:
         SimTK::DecorativeGeometry& decoration) const {
             decoration.setColor(get_Appearance().get_color());
             decoration.setOpacity(get_Appearance().get_opacity());
-            if (get_Appearance().get_visibile())
+            if (get_Appearance().get_visible())
                 decoration.setRepresentation(
                     (SimTK::DecorativeGeometry::Representation)
                     get_Appearance().get_representation());

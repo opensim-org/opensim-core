@@ -126,7 +126,7 @@ public:
     //==========================================================================
     // PROPERTIES
     //==========================================================================
-    OpenSim_DECLARE_PROPERTY(visibile, bool, 
+    OpenSim_DECLARE_PROPERTY(visible, bool, 
         "Flag indicating whether the associated Geometry is visible or hidden.")
     OpenSim_DECLARE_PROPERTY(opacity, double,
             "The opacity (0-1) used to display the object. ");
@@ -152,9 +152,30 @@ public:
 
     void set_representation(DecorativeGeometry::Representation& rep) { upd_surface_appearance().set_representation(rep); }
 
+protected:
+    /** Updating XML formating to latest revision */
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override {
+        int documentVersion = versionNumber;
+        if (documentVersion < XMLDocument::getLatestVersion()) {
+            if (documentVersion < 30505) {
+                // if representation = 0 visible = false, else true
+                SimTK::Xml::element_iterator iIter = aNode.element_begin("representation");
+                if (iIter != aNode.element_end()) {
+                    int oldRep = iIter->getValueAs<int>();
+                    if (oldRep == 0) {
+                        SimTK::Xml::Element visNode("visible", "false");
+                        aNode.insertNodeAfter(aNode.element_end(), visNode);
+                    }
+
+                }
+            }
+        }
+        Super::updateFromXMLNode(aNode, versionNumber);
+    }
+
 private:
     void constructProperties() {
-        constructProperty_visibile(true);
+        constructProperty_visible(true);
         constructProperty_opacity(1.0);
         constructProperty_color(SimTK::Vec3(1.0)); // White by default, shows as a shade of gray
         constructProperty_surface_appearance(SurfaceAppearance());
