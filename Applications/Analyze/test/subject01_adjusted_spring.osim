@@ -1605,21 +1605,6 @@
 		<!--Forces in the model (includes Actuators).-->
 		<ForceSet>
 			<objects>
-        <BodyActuator name="BodyAct">
-          <!--List of connectors (structural dependencies) that this component has.-->
-          <connectors>
-            <Connector_Body_ name="body">
-              <!--Name of the component this Connector should be connected to.-->
-              <connectee_name>pelvis</connectee_name>
-            </Connector_Body_>
-          </connectors>
-          <!--Location of application point; in body frame unless point_is_global=true-->
-          <point>0 0 0</point>
-          <!--Interpret point in Ground frame if true; otherwise, body frame.-->
-          <point_is_global>false</point_is_global>
-          <!--Interpret axis in Ground frame if true; otherwise, body's frame.-->
-          <spatial_force_is_global>true</spatial_force_is_global>
-        </BodyActuator>
         <Millard2012EquilibriumMuscle name="hamstrings_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
 					<isDisabled>false</isDisabled>
