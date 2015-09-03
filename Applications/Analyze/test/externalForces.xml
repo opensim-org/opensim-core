@@ -241,6 +241,6 @@
 		<!--Low-pass cut-off frequency for filtering the model kinematics
 		    corresponding to the external loads. A negative value results in no
 		    filtering. The default value is -1.0, so no filtering.-->
-		<lowpass_cutoff_frequency_for_load_kinematics>-1</lowpass_cutoff_frequency_for_load_kinematics>
+		<lowpass_cutoff_frequency_for_load_kinematics>6</lowpass_cutoff_frequency_for_load_kinematics>
 	</ExternalLoads>
 </OpenSimDocument>
