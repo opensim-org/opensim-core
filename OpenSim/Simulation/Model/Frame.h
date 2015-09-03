@@ -223,7 +223,7 @@ private:
     virtual SimTK::Transform extendFindTransformInBaseFrame() const = 0;
     /**@}**/
 
-    mutable SimTK::CacheEntryIndex groundTransformIndex;
+    SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _groundTransformIndex;
 
 //=============================================================================
 };  // END of class Frame

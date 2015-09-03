@@ -281,15 +281,15 @@ private:
     //       during a simulation.
     //       The last constraint to be set takes precedence.
     /** Indices for the constraint in Simbody. */
-    SimTK::ConstraintIndex _prescribedConstraintIndex;
-    SimTK::ConstraintIndex _lockedConstraintIndex;
-    SimTK::ConstraintIndex _clampedConstraintIndex;
+    SimTK::ResetOnCopy<SimTK::ConstraintIndex> _prescribedConstraintIndex;
+    SimTK::ResetOnCopy<SimTK::ConstraintIndex> _lockedConstraintIndex;
+    SimTK::ResetOnCopy<SimTK::ConstraintIndex> _clampedConstraintIndex;
 
     /* MobilizedBodyIndex of the body which this coordinate serves.  */
-    SimTK::MobilizedBodyIndex _bodyIndex;
+    SimTK::ResetOnCopy<SimTK::MobilizedBodyIndex> _bodyIndex;
 
     /* Mobilizer Q (i.e. generalized coordinate) index for this Coordinate. */
-    SimTK::MobilizerQIndex _mobilizerQIndex;
+    SimTK::ResetOnCopy<SimTK::MobilizerQIndex> _mobilizerQIndex;
 
     /* Keep a reference to the SimTK function owned by the PrescribedMotion
     Constraint, so we can change the value at which to lock the joint. */
