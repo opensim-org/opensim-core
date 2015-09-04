@@ -1,5 +1,5 @@
-#ifndef _OpenSim_Doxygen_Main_h_
-#define _OpenSim_Doxygen_Main_h_
+#ifndef OPENSIM_DOXYGEN_MAIN_H_
+#define OPENSIM_DOXYGEN_MAIN_H_
 /* -------------------------------------------------------------------------- *
  *                     OpenSim:  OpenSimDoxygenMain.h                         *
  * -------------------------------------------------------------------------- *
@@ -36,10 +36,32 @@ OpenSim source and it is not installed with OpenSim. **/
 
 /** @mainpage Overview
 
+\if developer
+This documentation is for people who want to extend the OpenSim libraries by,
+for example, writing a C++ plugin or creating new Components.  Therefore, this
+site contains documentation for protected methods that you might need to
+implement. If you simply want to make use of the API in MATLAB or Python, then
+this documentation contains excessive information and you should check
+out the *user* API documentation.
+
+\else
+
+This documentation is for people who want to use the OpenSim application
+programming interface (API) with the MATLAB, Python, Java or C++ languages.
+Therefore, internal ("protected") methods are hidden from this
+documentation. If you want to extend the OpenSim libraries by writing your own
+C++ plugin or you want to contribute directly to the OpenSim library, see
+the *developer* API documentation.
+
+\endif
+
 \htmlonly
 <!-- ImageReady Slices -->
-The table below represents the conceptual heirarchy of OpenSim within SimTK. Each box represents a class utilized by the OpenSim API, and is built on top of (i.e., requires) the components underneath. 
-For example, you can click on the "Model Component" block to see a list of model components, such as body, constraint, or joint.
+The table below represents the hierarchical structure of OpenSim.
+Each box represents a class utilized by the OpenSim API, and is built on top of
+(i.e., requires) the components underneath. 
+For example, you can click on the "Model Component" block to see a list of
+model components, such as body, constraint, or joint.
 
 <br/>
 <br/> <b>Click on any of the boxes to navigate to corresponding class description.</b>
@@ -275,4 +297,4 @@ The following people have contributed to the OpenSim API:
 Frank C. Anderson, Allison S. Arnold, Scott L. Delp, Matt S. DeMers, Tim Dorn, Brian Garner, Saryn R. Goldberg, Eran Guendelman, Ayman Habib, Samuel R. Hamner, Jennifer L. Hicks, Katherine R. S. Holzbaur, Chand T. John, Cassidy Kelly, May Q. Liu, Peter Loan, Jack Middleton, Matthew Millard, Paul C. Mitiguy, Jeffrey A. Reinbolt, Ajay Seth, Michael A. Sherman, Darryl G. Thelen, Kevin Xu
 **/
 
-#endif // _OpenSim_Doxygen_Main_h_
+#endif // OPENSIM_DOXYGEN_MAIN_H_

@@ -53,9 +53,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
         "time constant for ramping up of muscle activation");
     OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
@@ -78,7 +75,6 @@ public:
         "force-velocity shape factor");
     OpenSim_DECLARE_PROPERTY(Flen, double,
         "maximum normalized lengthening force");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS

@@ -82,9 +82,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with a Joint. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(location_in_parent, SimTK::Vec3,
         "Location of the joint in the parent body specified in the parent "
         "reference frame. Default is (0,0,0).");
@@ -104,14 +101,13 @@ public:
         "are used to express the orientation. Default is (0,0,0)" );
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(CoordinateSet,
-        "Set holding the generalized coordinates (q's) that parmeterize this joint." );
+        "Set holding the generalized coordinates (q's) that parameterize this joint." );
 
     OpenSim_DECLARE_PROPERTY(reverse, bool,
         "Advanced option. Specify the direction of the joint in the multibody tree: "
         "parent->child (forward, reverse == false) or child->parent (reverse == true) "
         "NOTE: the Joint transform and its coordinates maintain a parent->child "
         "sense, even if the Joint is reversed.");
-    /**@}**/
 
 //=============================================================================
 // METHODS

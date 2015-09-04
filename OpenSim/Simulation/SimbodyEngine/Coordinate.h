@@ -56,9 +56,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
-    These are the serializable properties associated with a Coordinate. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(motion_type, std::string, 
         "Coordinate can describe rotational, translational, or coupled motion. "
         "Defaults to rotational.");
@@ -99,7 +96,6 @@ public:
         "constraints. This allows values for important coordinates, which have "
         "this flag set to false, to dictate the value of unimportant coordinates " 
         "if they are linked via constraints."); 
-    /**@}**/
 
     /** Motion type that describes the motion dictated by the coordinate.
         Types include: Rotational, Translational and Coupled (both) */
@@ -285,15 +281,15 @@ private:
     //       during a simulation.
     //       The last constraint to be set takes precedence.
     /** Indices for the constraint in Simbody. */
-    SimTK::ConstraintIndex _prescribedConstraintIndex;
-    SimTK::ConstraintIndex _lockedConstraintIndex;
-    SimTK::ConstraintIndex _clampedConstraintIndex;
+    SimTK::ResetOnCopy<SimTK::ConstraintIndex> _prescribedConstraintIndex;
+    SimTK::ResetOnCopy<SimTK::ConstraintIndex> _lockedConstraintIndex;
+    SimTK::ResetOnCopy<SimTK::ConstraintIndex> _clampedConstraintIndex;
 
     /* MobilizedBodyIndex of the body which this coordinate serves.  */
-    SimTK::MobilizedBodyIndex _bodyIndex;
+    SimTK::ResetOnCopy<SimTK::MobilizedBodyIndex> _bodyIndex;
 
     /* Mobilizer Q (i.e. generalized coordinate) index for this Coordinate. */
-    SimTK::MobilizerQIndex _mobilizerQIndex;
+    SimTK::ResetOnCopy<SimTK::MobilizerQIndex> _mobilizerQIndex;
 
     /* Keep a reference to the SimTK function owned by the PrescribedMotion
     Constraint, so we can change the value at which to lock the joint. */

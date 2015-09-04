@@ -41,7 +41,9 @@ add_custom_target(PyWrap
     DEPENDS opensim.py ${swig_output_cxx_file_fullname}
         ${swig_output_header_file_fullname})
 
-set_target_properties(PyWrap PROPERTIES PROJECT_LABEL "Python Bindings - Generate")
+set_target_properties(PyWrap PROPERTIES
+    PROJECT_LABEL "Python - Generate source code"
+    FOLDER "Wrapping (scripting)")
 
 set(SOURCE_FILES OpenSimContext.cpp "${swig_output_cxx_file_fullname}")
 set(INCLUDE_FILES OpenSimContext.h "${swig_output_header_file_fullname}")
@@ -69,7 +71,8 @@ add_library(_${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 # Resulting library must be named _opensim.so on Unix, _opensim.pyd on Windows.
 set_target_properties(_${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
-   PROJECT_LABEL "Python Bindings - _${KIT}"
+   PROJECT_LABEL "Python - _${KIT}"
+   FOLDER "Wrapping (scripting)"
    PREFIX ""
 )
 if(WIN32)
@@ -77,6 +80,12 @@ if(WIN32)
 elseif(APPLE)
     # Defaults to .dylib; change to .so.
     set_target_properties(_${KIT} PROPERTIES SUFFIX ".so")
+endif()
+
+if(${OPENSIM_USE_INSTALL_RPATH})
+    set_target_properties(_${KIT} PROPERTIES
+        INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
+        )
 endif()
 
 # Shared libraries are needed at runtime for applications, so we put them
@@ -97,6 +106,9 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/setup.py DESTINATION sdk/python)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/opensim.py
     DESTINATION sdk/python/opensim)
 install(FILES __init__.py DESTINATION sdk/python/opensim)
-install(DIRECTORY tests DESTINATION sdk/python/opensim)
+install(FILES ${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim
+              ${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim
+        DESTINATION sdk/python/opensim/tests)
+INSTALL(DIRECTORY tests DESTINATION sdk/python/opensim)
 
 endif(BUILD_PYTHON_WRAPPING)

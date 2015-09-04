@@ -11,6 +11,7 @@ Contents:
 
 - [Ways to Contribute](#ways-to-contribute)
 - [Making a Pull Request](#making-a-pull-request-pr)
+- [Writing tests](#writing-tests)
 - [Checking for Memory Leaks through GitHub](#checking-for-memory-leaks-through-github)
 - [Coding Standards](#coding-standards)
 - [List of Contributors](#list-of-contributors)
@@ -58,6 +59,17 @@ When you are ready to make a PR, please adhere to following guidelines:
 
 A few additional practices will help streamline the code review process. Please use tags (i.e., @user_name) and quoting to help keep the discussion organized. Please also call for a meeting or Skype call when discussions start to stagnate. In addition, we recommend getting input on your interface design before implementing a major new component or other change.
 
+
+Writing tests
+-------------
+There are directories of tests scattered throughout the repository. Each
+directory contains most of the files (e.g., .osim model files) necessary to run
+the tests. When building, these files are copied over into the build tree. Some
+of these files are used by multiple tests from different parts of the
+repository. To avoid duplicating such files within the repository, they should
+go into the `OpenSim/Tests/shared` directory. You can then use the
+`OPENSIM_COPY_SHARED_TEST_FILES` CMake macro (in `cmake/OpenSimMacros.osim`) to
+copy the necessary shared files to the proper build directory.
 
 Checking for Memory Leaks through GitHub
 ----------------------------------------
@@ -151,6 +163,13 @@ If the “copy stuff” part consists only of assignments that work for self ass
 ### Documenting your code
 
 Doxygen only looks in your .h files; it does not generate documentation from .cpp files. Thus, comments in .cpp files don't need to follow doxygen formatting, and in fact they should not because it is confusing and makes it look like there is API documentation when there isn't. You should mostly use `//`-style comments in .cpp files, and be sure you are addressing your comments to the right audience -- no doxygen reader will ever see them.
+
+We produce two sets of doxygen-generated documentation, one for (scripting)
+users and one for C++ developers. The primary difference is that the user
+documentation only shows public members, while the developer documentation also
+shows protected members, nested classes, etc. When writing doxygen comments,
+you can use `\internal` or `\if developer ... \endif`
+for documentation that is only intended for developers.
 
 Read more about doxygen on this page: Guide to Building Doxygen
 

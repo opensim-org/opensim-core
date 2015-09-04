@@ -42,37 +42,9 @@ Force::Force()
     constructProperties();
 }
 
-//_____________________________________________________________________________
-// Copy constructor.
-Force::Force(const Force& source) : Super(source)
-{
-    copyData(source);
-}
-
-//_____________________________________________________________________________
-// Copy assignment.
-Force& Force::operator=(const Force& source)
-{
-    if (&source != this) {
-        Super::operator=(source);
-        copyData(source);
-    }
-    return *this;
-}
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
-//_____________________________________________________________________________
-// Perform copy construction or assignment on local data members; base class
-// (including properties) has already been copied.
-void Force::copyData(const Force& source)
-{
-    copyProperty_isDisabled(source);
-    // A copy is no longer a live Force with an underlying SimTK::Force. The
-    // system must be created, at which time the Force will be assigned an index
-    // corresponding to a valid system SimTK::Force.
-    _index.invalidate();
-}
 
 //_____________________________________________________________________________
 // Set the data members of this Force to their null values.

@@ -50,9 +50,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     /** List of Muscles to probe.  **/
     OpenSim_DECLARE_LIST_PROPERTY(muscle_names, std::string,
         "Specify a list of muscles whose work should be calculated. "

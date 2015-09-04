@@ -20,7 +20,7 @@ include(CMakeParseArguments)
 #
 # Here's an example from OpenSim/Common/CMakeLists.txt:
 #
-#   opensim_add_library(
+#   OpenSimAddLibrary(
 #       KIT Common
 #       AUTHORS "Clay_Anderson-Ayman_Habib_and_Peter_Loan"
 #       LINKLIBS ${Simbody_LIBRARIES}
@@ -28,7 +28,7 @@ include(CMakeParseArguments)
 #       SOURCES ${SOURCES}
 #       TESTDIRS "Test"
 #       )
-function(OPENSIM_ADD_LIBRARY)
+function(OpenSimAddLibrary)
 
     # Parse arguments.
     # ----------------
@@ -72,16 +72,14 @@ function(OPENSIM_ADD_LIBRARY)
 
     # This is for exporting classes on Windows.
     if(OSIMADDLIB_VENDORLIB)
-        set(OSIMADDLIB_PROJECT_LABEL
-            "Vendor Libraries - ${OSIMADDLIB_LIBRARY_NAME}")
+	    set(OSIMADDLIB_FOLDER "Vendor Libraries")
     else()
-        set(OSIMADDLIB_PROJECT_LABEL "Libraries - ${OSIMADDLIB_LIBRARY_NAME}")
+		set(OSIMADDLIB_FOLDER "Libraries")
     endif()
     set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES
        DEFINE_SYMBOL OSIM${OSIMADDLIB_UKIT}_EXPORTS
-       PROJECT_LABEL "${OSIMADDLIB_PROJECT_LABEL}"
+       FOLDER "${OSIMADDLIB_FOLDER}" # For Visual Studio.
     )
-
 
     # Install.
     # --------
@@ -138,6 +136,22 @@ function(OPENSIM_ADD_LIBRARY)
 
 endfunction()
 
+# Copy a file from the directory containing test files (model files, data,
+# etc.) to the directory in which a test will be executed. This function makes
+# it easy to re-use files that are used in tests. With an easier mechanism for
+# re-using these files, we won't end up version-controlling the same file in
+# multiple test directories.
+#
+# Arguments are a list of files in the test resources directory
+# (OPENSIM_SHARED_TEST_FILES_DIR) to copy.
+function(OpenSimCopySharedTestFiles)
+    if(BUILD_TESTING)
+        foreach(filename ${ARGN})
+            file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/${filename}"
+                 DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+        endforeach()
+    endif()
+endfunction()
 
 # Create test targets for this directory.
 # TESTPROGRAMS: Names of test CPP files. One test will be created for each cpp
@@ -150,12 +164,12 @@ endfunction()
 # Here's an example:
 #   file(GLOB TEST_PROGRAMS "test*.cpp")
 #   file(GLOB DATA_FILES *.osim *.xml *.sto *.mot)
-#   OPENSIM_ADD_TESTS(
+#   OpenSimAddTests(
 #       TESTPROGRAMS ${TEST_ROGRAMS}
 #       DATAFILES ${DATA_FILES}
 #       LINKLIBS osimCommon osimSimulation osimAnalyses
 #       )
-function(OPENSIM_ADD_TESTS)
+function(OpenSimAddTests)
 
     if(BUILD_TESTING)
 
@@ -186,7 +200,8 @@ function(OPENSIM_ADD_TESTS)
             target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
             add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
             set_target_properties(${TEST_NAME} PROPERTIES
-                PROJECT_LABEL "Tests - ${TEST_NAME}")
+                FOLDER "Tests"
+				)
 
         endforeach()
 
@@ -220,6 +235,12 @@ function(OpenSimAddApplication APPNAME)
     target_link_libraries(${APPNAME} osimTools)
     install(TARGETS ${APPNAME} DESTINATION bin)
     set_target_properties(${APPNAME} PROPERTIES
-        PROJECT_LABEL "Applications - ${APPNAME}")
+        FOLDER "Applications")
+
+    if(${OPENSIM_USE_INSTALL_RPATH})
+        set_target_properties(${APPNAME} PROPERTIES
+            INSTALL_RPATH "\@executable_path/../lib"
+            )
+    endif()
 
 endfunction()

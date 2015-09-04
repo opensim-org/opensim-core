@@ -46,9 +46,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
-    These are the serializable properties associated with a Body. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(mass, double, 
         "The mass of the body (kg)");
 
@@ -58,7 +55,6 @@ public:
     OpenSim_DECLARE_PROPERTY(inertia, SimTK::Vec6, 
         "The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] "
         "measured about the mass_center and not the body origin.");
-    /**@}**/
 
 //=============================================================================
 // PUBLIC METHODS

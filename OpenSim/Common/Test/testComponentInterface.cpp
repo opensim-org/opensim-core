@@ -405,8 +405,8 @@ int main() {
 
         //Configure the connector to look for its dependency by this name
         //Will get resolved and connected automatically at Component connect
-        bar.updConnector<Foo>("parentFoo").set_connected_to_name("Foo");
-        bar.updConnector<Foo>("childFoo").set_connected_to_name("Foo");
+        bar.updConnector<Foo>("parentFoo").set_connectee_name("Foo");
+        bar.updConnector<Foo>("childFoo").set_connectee_name("Foo");
         
         // add a subcomponent
         // connect internals
@@ -448,7 +448,7 @@ int main() {
 
         theWorld.add(&foo2);
 
-        bar.updConnector<Foo>("childFoo").set_connected_to_name("Foo2");
+        bar.updConnector<Foo>("childFoo").set_connectee_name("Foo2");
         string connectorName = bar.updConnector<Foo>("childFoo").getConcreteClassName();
 
         // Bar should connect now
@@ -554,8 +554,8 @@ int main() {
 
         //Configure the connector to look for its dependency by this name
         //Will get resolved and connected automatically at Component connect
-        bar2.updConnector<Foo>("parentFoo").set_connected_to_name("BigFoo");
-        bar2.updConnector<Foo>("childFoo").set_connected_to_name("Foo");
+        bar2.updConnector<Foo>("parentFoo").set_connectee_name("BigFoo");
+        bar2.updConnector<Foo>("childFoo").set_connectee_name("Foo");
 
         //world3.connect();
         world3.print("Compound_" + modelFile);

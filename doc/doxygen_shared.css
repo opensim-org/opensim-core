@@ -1332,17 +1332,6 @@ dl.section dd {
 	padding: 0px;
 }
 
-#titlearea
-{
-	padding: 0px;
-	margin: 0px;
-	width: 100%;
-	color: white;
-	background-color: #252D38;
-	border-bottom: 1px solid #CCC;
-	background: -webkit-gradient(linear,left top,left bottom,from(#485D77),to(#252D38)) !important;
-}
-
 .image
 {
         text-align: center;

@@ -603,11 +603,25 @@ void testBushingForce()
 
     osimModel->setGravity(gravity_vec);
 
-    BushingForce spring("ground", Vec3(0), Vec3(0), "ball", Vec3(0), Vec3(0), transStiffness, rotStiffness, transDamping, rotDamping);
+    BushingForce spring("ground", "ball",
+        transStiffness, rotStiffness, transDamping, rotDamping);
 
     osimModel->addForce(&spring);
+    osimModel->setup();
+    const BushingForce& bushingForce =
+        osimModel->getComponent<BushingForce>("");
 
     osimModel->print("BushingForceModel.osim");
+
+    Model previousVersionModel("BushingForceModel_30000.osim", true);
+    previousVersionModel.print("BushingForceModel_30000_in_Latest.osim");
+    previousVersionModel.setup();
+    const BushingForce& bushingForceFromPrevious =
+        previousVersionModel.getComponent<BushingForce>("");
+
+
+    ASSERT(bushingForce == bushingForceFromPrevious, __FILE__, __LINE__,
+        "current bushing force FAILED to match bushing force from previous model.");
 
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(osimModel);
