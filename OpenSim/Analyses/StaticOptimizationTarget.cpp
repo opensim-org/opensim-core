@@ -516,7 +516,7 @@ gradientFunc(const Vector &parameters, const bool new_parameters, Vector &gradie
     int na = _model->getActuators().getSize();
     for(int i=0;i<na;i++) {
         ScalarActuator *act = dynamic_cast<ScalarActuator*>(&_model->getActuators().get(i));
-        if (!act) continue;	// Skip over non ScalarActuators
+        if (!act) continue;         // Skip over non ScalarActuators
         if(parameters[i] < 0) {
             gradient[i] =  -1.0 * _activationExponent * pow(fabs(parameters[i]),_activationExponent-1.0);
         } else {
