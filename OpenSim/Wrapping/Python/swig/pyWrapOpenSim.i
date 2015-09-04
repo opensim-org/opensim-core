@@ -273,24 +273,34 @@ using namespace SimTK;
 %exception {
     try {
         $action
-    //} catch (const SimTK::Exception::IndexOutOfRange& e) {
-    //    SWIG_exception(SWIG_IndexError, e.what());
-    //} catch (const SimTK::Exception::Base& e) {
-    //    std::string str("SimTK Simbody error in '$fulldecl': ");
-    //    std::string what(e.what());
-    //    SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
-    //} catch (const OpenSim::Exception& e) {
-    //    std::string str("OpenSim error in '$fulldecl': ");
-    //    std::string what(e.what());
-    //    SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
     } catch (const std::exception& e) {
         std::string str("std::exception in '$fulldecl': ");
         std::string what(e.what());
         SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
-    //} catch (...) {
-    //    SWIG_exception(SWIG_RuntimeError, "Unknown exception in '$fulldecl'.");
     }
 }
+// The following exception handling is preferred but causes too much bloat.
+//%exception {
+//    try {
+//        $action
+//    } catch (const SimTK::Exception::IndexOutOfRange& e) {
+//        SWIG_exception(SWIG_IndexError, e.what());
+//    } catch (const SimTK::Exception::Base& e) {
+//        std::string str("SimTK Simbody error in '$fulldecl': ");
+//        std::string what(e.what());
+//        SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
+//    } catch (const OpenSim::Exception& e) {
+//        std::string str("OpenSim error in '$fulldecl': ");
+//        std::string what(e.what());
+//        SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
+//    } catch (const std::exception& e) {
+//        std::string str("std::exception in '$fulldecl': ");
+//        std::string what(e.what());
+//        SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
+//    } catch (...) {
+//        SWIG_exception(SWIG_RuntimeError, "Unknown exception in '$fulldecl'.");
+//    }
+//}
 
 %newobject *::clone;
 
@@ -404,27 +414,12 @@ once added to the Model.  These lines must go at this point in this .i file. I
 originally had them at the bottom, and then they didn't work!
 
 note: ## is a "glue" operator: `a ## b` --> `ab`.
-note: We need two different versions of this swig macro, before/after v3.0.3.
-      This is because of the backwards-incompatible compactdefaultargs
-      behavior.
 */
-#ifdef SWIG_VERSION < 0x030003
-
 %define MODEL_ADOPT_HELPER(NAME)
 %pythonappend OpenSim::Model::add ## NAME %{
     adoptee._markAdopted()
 %}
 %enddef
-
-#else
-
-%define MODEL_ADOPT_HELPER(NAME)
-%pythonappend OpenSim::Model::add ## NAME %{
-    self._markAdopted()
-%}
-%enddef
-
-#endif
 
 MODEL_ADOPT_HELPER(ModelComponent);
 MODEL_ADOPT_HELPER(Body);
