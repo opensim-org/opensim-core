@@ -1,6 +1,8 @@
 %module(directors="1") opensimModel
 %module opensimModel
 #pragma SWIG nowarn=822,451,503,516,325,401
+// 476 is "Initialization using std::initializer_list."
+#pragma SWIG nowarn=476
 %{
 #include <OpenSim/version.h>
 #include <SimTKsimbody.h>
@@ -654,30 +656,58 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 /* rest of header files to be wrapped */
 %include <OpenSim/version.h>
 %include <SimTKcommon.h>
+%include <SimTKcommon/internal/common.h>
+
+// "Remove" problematic SimTK macros defined in common.h
+#undef SimTK_FORCE_INLINE
+#define SimTK_FORCE_INLINE 
+#undef SimTK_DEFINE_UNIQUE_INDEX_TYPE
+#define SimTK_DEFINE_UNIQUE_INDEX_TYPE(NAME) typedef int NAME;
+#undef SimTK_PIMPL_DOWNCAST
+#define SimTK_PIMPL_DOWNCAST(x, y)
 
 %include <SimTKcommon/Constants.h>
-%include <SWIGSimTK/Vec.h>
+namespace SimTK {
+    %ignore Vec::drop1;
+    %ignore Vec::append1;
+    %ignore Vec::insert1;
+    %ignore Vec::scalarMinusEqFromLeft;
+    %ignore Vec::scalarDivideEqFromLeft;
+};
+%include <SimTKcommon/internal/Vec.h>
+%include <SimTKcommon/SmallMatrix.h>
 // Vec3
 namespace SimTK {
-%template(Vec2) Vec<2>;
-%template(Vec3) Vec<3>;
-%template(Vec4) Vec<4>;
-%template(Vec6) Vec<6>;
+%template(Vec2) Vec<2, double, 1>;
+%template(Vec3) Vec<3, double, 1>;
+%template(Vec4) Vec<4, double, 1>;
+%template(Vec6) Vec<6, double, 1>;
 }
 
 // Mat33
-%include <SWIGSimTK/Mat.h>
 namespace SimTK {
-%template(Mat33) Mat<3, 3>;
+    %ignore Mat::dropRow;
+    %ignore Mat::dropCol;
+    %ignore Mat::dropRowCol;
+    %ignore Mat::appendRow;
+    %ignore Mat::appendCol;
+    %ignore Mat::appendRowCol;
+    %ignore Mat::insertRow;
+    %ignore Mat::insertCol;
+    %ignore Mat::insertRowCol;
+};
+%include <SimTKcommon/internal/Mat.h>
+namespace SimTK {
+%template(Mat33) Mat<3, 3, double, 3, 1>;
 }
-%include <SWIGSimTK/CoordinateAxis.h>
-%include <SWIGSimTK/UnitVec.h>
+%include <SimTKcommon/internal/CoordinateAxis.h>
+%include <SimTKcommon/internal/UnitVec.h>
 namespace SimTK {
 %template(UnitVec3)  SimTK::UnitVec<double,1>;
 }
 
 // Vector and Matrix
-%include <SWIGSimTK/BigMatrix.h>
+%include <SimTKcommon/internal/BigMatrix.h>
 namespace SimTK {
 %template(MatrixBaseDouble) SimTK::MatrixBase<double>;
 %template(VectorBaseDouble) SimTK::VectorBase<double>;
@@ -685,7 +715,7 @@ namespace SimTK {
 %template(Matrix) SimTK::Matrix_<double>;
 }
 
-%include <SWIGSimTK/SpatialAlgebra.h>
+%include <SimTKcommon/internal/SpatialAlgebra.h>
 namespace SimTK {
 %template(SpatialVec) Vec<2,   Vec3>;
 %template(VectorOfSpatialVec) Vector_<SpatialVec>;
@@ -693,25 +723,31 @@ namespace SimTK {
 }
 
 
-%include <SWIGSimTK/Rotation.h>
+%include <SimTKcommon/internal/Rotation.h>
 namespace SimTK {
 %template(Rotation) SimTK::Rotation_<double>;
 %template(InverseRotation) SimTK::InverseRotation_<double>;
 }
 // Transform
-%include <SWIGSimTK/Transform.h>
+%include <SimTKcommon/internal/Transform.h>
 namespace SimTK {
 %template(Transform) SimTK::Transform_<double>;
 }
 
 //
-%include <SWIGSimTK/MassProperties.h>
+%include <SimTKcommon/internal/MassProperties.h>
 namespace SimTK {
 %template(Inertia) SimTK::Inertia_<double>;
 %template(MassProperties) SimTK::MassProperties_<double>;
 }
-%include <SWIGSimTK/common.h>
-%include <SWIGSimTK/Array.h>
+
+namespace SimTK {
+    %ignore Array_::Array_(Array_&&); // warning 509: shadowed.
+    %ignore Array_<OpenSim::CoordinateReference>::push_back(OpenSim::CoordinateReference const&);
+    %ignore Array_<SimTK::DecorativeGeometry>::push_back(SimTK::DecorativeGeometry const&);
+    %ignore Array_<SimTK::Vec3>::push_back(SimTK::Vec<3, SimTK::Real, 1> const&);
+}
+%include <SimTKcommon/internal/Array.h>
 
 typedef int MobilizedBodyIndex;
 typedef int SubsystemIndex;
@@ -729,7 +765,7 @@ namespace SimTK {
 %template(ArrayIndexInt) ArrayIndexTraits<int>; 
 }
 
-%include <SWIGSimTK/DecorativeGeometry.h>
+%include <SimTKcommon/internal/DecorativeGeometry.h>
 
 namespace SimTK {
 %template(ArrayDecorativeGeometry) SimTK::Array_<SimTK::DecorativeGeometry>;
@@ -737,8 +773,14 @@ namespace SimTK {
 }
 
 // State & Stage
-%include <SWIGSimTK/Stage.h>
-%include <SWIGSimTK/State.h>
+namespace SimTK {
+    %ignore State::State(State&&); // warning 509: shadowed.
+    %ignore Stage::operator++;
+    %ignore Stage::operator--;
+    %ignore Stage::Stage(int); // warning 509: shadowed.
+}
+%include <SimTKcommon/internal/Stage.h>
+%include <SimTKcommon/internal/State.h>
 
 // osimCommon Library
 %include <OpenSim/Common/osimCommonDLL.h>
@@ -746,6 +788,10 @@ namespace SimTK {
 %include <OpenSim/Common/Array.h>
 %include <OpenSim/Common/ArrayPtrs.h>
 %include <OpenSim/Common/AbstractProperty.h>
+namespace OpenSim {
+    // warning 509: shadowed.
+    %ignore Property<std::string>::appendValue(std::string const *);
+}
 %include <OpenSim/Common/Property.h>
 %include <OpenSim/Common/PropertyGroup.h>
 %template(ArrayPtrsPropertyGroup) OpenSim::ArrayPtrs<OpenSim::PropertyGroup>;
