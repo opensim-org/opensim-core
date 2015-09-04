@@ -469,7 +469,7 @@ import_array();
 #undef SimTK_FORCE_INLINE
 #define SimTK_FORCE_INLINE 
 #undef SimTK_DEFINE_UNIQUE_INDEX_TYPE
-#define SimTK_DEFINE_UNIQUE_INDEX_TYPE(x) 
+#define SimTK_DEFINE_UNIQUE_INDEX_TYPE(NAME) typedef int NAME;
 #undef SimTK_PIMPL_DOWNCAST
 #define SimTK_PIMPL_DOWNCAST(x, y)
 
