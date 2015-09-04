@@ -1,5 +1,4 @@
 %module(directors="1") opensim
-%module opensim
 #pragma SWIG nowarn=822,451,503,516,325
 // 401 is "Nothing known about base class *some-class*.
 //         Maybe you forgot to instantiate *some-template* using %template."

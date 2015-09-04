@@ -335,7 +335,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         assert len(v) == 5
 
     def test_exceptions(self):
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(osim.OpenSimException):
             osim.Model("NONEXISTANT_FILE_NAME")
         with self.assertRaises(RuntimeError):
             m = osim.Model()
