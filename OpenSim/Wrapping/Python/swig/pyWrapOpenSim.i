@@ -288,8 +288,8 @@ using namespace SimTK;
         std::string str("std::exception in '$fulldecl': ");
         std::string what(e.what());
         SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
-    } catch (...) {
-        SWIG_exception(SWIG_RuntimeError, "Unknown exception in '$fulldecl'.");
+    //} catch (...) {
+    //    SWIG_exception(SWIG_RuntimeError, "Unknown exception in '$fulldecl'.");
     }
 }
 
