@@ -196,7 +196,7 @@ public:
     @param finalize  whether to extendFinalizeFromProperties to create a valid OpenSim Model or not on exit, 
                      defaults to true. If set to false only deserialization is performed.
     **/
-    explicit Model(const std::string& filename, bool finalize=true);
+    explicit Model(const std::string& filename, bool finalize=true) SWIG_DECLARE_EXCEPTION;
 
     /**
      * Perform some set up functions that happen after the
@@ -204,7 +204,7 @@ public:
      * not yet designed to be called after a model has been
      * copied.
      */
-    void setup();
+    void setup() SWIG_DECLARE_EXCEPTION;
 
     /**
      * Perform some clean up functions that are normally done 
@@ -308,7 +308,7 @@ public:
     initializeState(). This returns a reference to the writable internally-
     maintained model State. Note that this does not affect the 
     system's default state (which is part of the model and hence read-only). **/
-    SimTK::State& initSystem() {
+    SimTK::State& initSystem() SWIG_DECLARE_EXCEPTION {
         buildSystem();
         return initializeState();
     }
@@ -899,7 +899,7 @@ public:
      * @param nameString the name of the object being looked up
      * @return reference to the object if found or throws an exception.
      */
-    const Object& getObjectByTypeAndName(const std::string& typeString, const std::string& nameString);
+    const Object& getObjectByTypeAndName(const std::string& typeString, const std::string& nameString) SWIG_DECLARE_EXCEPTION;
 
     //--------------------------------------------------------------------------
     /**@name            Implementation of Object interface

@@ -247,7 +247,7 @@ public:
     * Set the model to be investigated.
     * NOTE: setup() should have been called on the model prior to calling this method
     */
-    virtual void setModel(Model& aModel);
+    virtual void setModel(Model& aModel) SWIG_DECLARE_EXCEPTION;
     
     /**
     * Get the model to be investigated.
@@ -324,7 +324,7 @@ public:
     /**
     * Update the forces applied to a model.
     */
-    void updateModelForces(Model& model, const std::string &aToolSetupFileName, ForceSet *rOriginalForceSet = 0 );
+    void updateModelForces(Model& model, const std::string &aToolSetupFileName, ForceSet *rOriginalForceSet = 0 )  SWIG_DECLARE_EXCEPTION;
     
     /**
     * Adds Analysis objects from analysis set to model.
@@ -353,7 +353,7 @@ public:
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
-    virtual bool run() = 0;
+    virtual bool run() SWIG_DECLARE_EXCEPTION=0;
     
     /**
     * Print the results of the analysis.

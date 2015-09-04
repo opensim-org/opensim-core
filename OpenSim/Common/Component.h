@@ -196,7 +196,7 @@ public:
 
     /** Construct Component from an XML file. **/
     Component(const std::string& aFileName,
-        bool aUpdateFromXMLNode = true);
+        bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
 
     /** Construct Component from a specific node in an XML document. **/
     explicit Component(SimTK::Xml::Element& aNode);

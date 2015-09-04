@@ -179,7 +179,7 @@ public:
         It is expected that the run() method be composed of a sequence of calls  
         to underlying computational and reporting objects and should 
     */
-    virtual bool run() = 0;
+    virtual bool run() SWIG_DECLARE_EXCEPTION=0;
 
     //--------------------------------------------------------------------------
     // GET AND SET

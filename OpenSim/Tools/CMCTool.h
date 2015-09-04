@@ -139,7 +139,7 @@ private:
 public:
     virtual ~CMCTool();
     CMCTool();
-    CMCTool(const std::string &aFileName, bool aLoadModel=true);
+    CMCTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
     CMCTool(const CMCTool &aObject);
 
 private:
@@ -201,7 +201,7 @@ public:
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
-    bool run() override;
+    virtual bool run() SWIG_DECLARE_EXCEPTION;
 
     //--------------------------------------------------------------------------
     // UTILITY

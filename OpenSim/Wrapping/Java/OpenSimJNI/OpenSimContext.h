@@ -218,7 +218,7 @@ public:
     void realizeVelocity();
 
     void cacheModelAndState();
-    void restoreStateFromCachedModel();
+    void restoreStateFromCachedModel()  SWIG_DECLARE_EXCEPTION;
 //=============================================================================
 // DATA
 //=============================================================================

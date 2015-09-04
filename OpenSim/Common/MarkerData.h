@@ -72,7 +72,7 @@ private:
     //--------------------------------------------------------------------------
 public:
     MarkerData();
-    explicit MarkerData(const std::string& aFileName);
+    explicit MarkerData(const std::string& aFileName) SWIG_DECLARE_EXCEPTION;
     virtual ~MarkerData();
 
     void findFrameRange(double aStartTime, double aEndTime, int& rStartFrame, int& rEndFrame) const;

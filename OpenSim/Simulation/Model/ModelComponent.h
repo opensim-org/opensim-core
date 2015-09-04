@@ -95,7 +95,7 @@ public:
     ModelComponent();
     /** Construct ModelComponent from an XML file. **/
     ModelComponent(const std::string& aFileName, 
-                   bool aUpdateFromXMLNode = true);
+                   bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
     /** Construct ModelComponent from a specific node in an XML document. **/
     explicit ModelComponent(SimTK::Xml::Element& aNode);
 

@@ -95,7 +95,7 @@ private:
 public:
     ExternalLoads();
     ExternalLoads(Model& model);
-    ExternalLoads(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true);
+    ExternalLoads(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true)  SWIG_DECLARE_EXCEPTION;
     ExternalLoads(const ExternalLoads &aExternalLoads);
     virtual ~ExternalLoads();
 
