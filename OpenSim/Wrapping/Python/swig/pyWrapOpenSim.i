@@ -339,25 +339,6 @@ MODEL_ADOPT_HELPER(Controller);
 // Make sure clone does not leak memory
 %newobject *::clone; 
 
-// Would prefer to modify the Joint abstract class constructor,
-// but the proxy classes don't even call it.
-%define JOINT_ADOPT_HELPER(NAME)
-%pythonappend OpenSim::Joint:: ## NAME %{
-    self._markAdopted()
-%}
-%enddef
-
-JOINT_ADOPT_HELPER(FreeJoint);
-JOINT_ADOPT_HELPER(CustomJoint);
-JOINT_ADOPT_HELPER(EllipsoidJoint);
-JOINT_ADOPT_HELPER(BallJoint);
-JOINT_ADOPT_HELPER(PinJoint);
-JOINT_ADOPT_HELPER(SliderJoint);
-JOINT_ADOPT_HELPER(WeldJoint);
-JOINT_ADOPT_HELPER(GimbalJoint);
-JOINT_ADOPT_HELPER(UniversalJoint);
-JOINT_ADOPT_HELPER(PlanarJoint);
-
 %extend OpenSim::Array<double> {
 	void appendVec3(SimTK::Vec3 vec3) {
 		for(int i=0; i<3; i++)

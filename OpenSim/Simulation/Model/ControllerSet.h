@@ -60,10 +60,8 @@ public:
     ControllerSet() {}
     ControllerSet(Model& model);
     ControllerSet(const ControllerSet &aControllerSet);
-    ControllerSet(Model& model, const std::string &aFileName,  bool aUpdateFromXMLNode = true);
-#ifndef SWIG
+    ControllerSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true);
     ~ControllerSet() override = default;
-#endif
 
     void copyData(const ControllerSet &aAbsControllerSet);
 
