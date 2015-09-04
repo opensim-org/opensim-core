@@ -534,18 +534,18 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 connectors_node->element_begin("Connector_PhysicalFrame_");
             while (connectorElement != aNode.element_end()) {
                 // If connector name is "parent_body" rename it to "parent_frame"
-                if (connectorElement->getAllAttributes()[0].getValue() == "parent_body") {
-                    connectorElement->getAllAttributes()[0].setValue("parent_frame");
+                if (connectorElement->getRequiredAttributeValue("name") == "parent_body") {
+                    connectorElement->setAttributeValue("name", "parent_frame");
                 }
-                // If connector name is "parent_frame" get the name of the conectee
-                if (connectorElement->getAllAttributes()[0].getValue() == "parent_frame"){
+                // If connector name is "parent_frame" get the name of the connectee
+                if (connectorElement->getRequiredAttributeValue("name") == "parent_frame"){
                     parentNameElt = connectorElement->element_begin("connectee_name");
                     parentNameElt->getValueAs<std::string>(parentFrameName);
                 }
-                if (connectorElement->getAllAttributes()[0].getValue() == "child_body") {
-                    connectorElement->getAllAttributes()[0].setValue("child_frame");
+                if (connectorElement->getRequiredAttributeValue("name") == "child_body") {
+                    connectorElement->setAttributeValue("name", "child_frame");
                 }
-                if (connectorElement->getAllAttributes()[0].getValue() == "child_frame") {
+                if (connectorElement->getRequiredAttributeValue("name") == "child_frame") {
                     childNameElt =  connectorElement->element_begin("connectee_name");
                     childNameElt->getValueAs<std::string>(childFrameName);
                 }

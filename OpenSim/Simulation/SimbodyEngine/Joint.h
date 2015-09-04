@@ -171,7 +171,7 @@ public:
                         direction of the Joint in the multibody tree.
                         Default is false (that is, forward).
     */
-    DEPRECATED_14("Use Joint(name, parentName, childName) instead.")
+    //DEPRECATED_14("Use Joint(name, parentName, childName) instead.")
     Joint(const std::string& name,
         const PhysicalFrame& parent,
         const SimTK::Vec3& locationInParent,
@@ -181,10 +181,7 @@ public:
         const SimTK::Vec3& orientationInChild,
         bool reverse);
 
-    /** <b>(Deprecated)</b> Use Joint(name, parentName, childName) instead.
-        Same as above, without the option to reverse the joint.
-    */
-    DEPRECATED_14("Use Joint(name, parentName, childName) instead.")
+    /** Same as above, without the option to reverse the joint. */
     Joint(const std::string& name,
         const PhysicalFrame& parent,
         const SimTK::Vec3& locationInParent,
@@ -285,6 +282,7 @@ protected:
     }
     \endcode
     */
+#ifndef SWIG
     /// @class Joint::CoordinateIndex
     /// Unique integer type for local Coordinate indexing
     SimTK_DEFINE_UNIQUE_INDEX_TYPE(CoordinateIndex)
@@ -293,6 +291,7 @@ protected:
     Derived Joints must construct as many Coordinates as reflected by the
     Mobilizer Qs. */
     CoordinateIndex constructCoordinate(Coordinate::MotionType mt); 
+#endif SWIG
 
     // build Joint transforms from properties
     void extendFinalizeFromProperties() override;
