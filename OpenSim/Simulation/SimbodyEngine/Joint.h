@@ -291,7 +291,7 @@ protected:
     Derived Joints must construct as many Coordinates as reflected by the
     Mobilizer Qs. */
     CoordinateIndex constructCoordinate(Coordinate::MotionType mt); 
-#endif SWIG
+#endif //SWIG
 
     // build Joint transforms from properties
     void extendFinalizeFromProperties() override;
