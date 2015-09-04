@@ -589,9 +589,9 @@ namespace SimTK {
         SimTK_INDEXCHECK_ALWAYS(i, $self->size(), "Vec3.__setitem__()");
         $self->operator[](i) = value;
     }
-    SimTK::Vec<3> __add__(const SimTK::Vec<3>& v) const {
-        return *($self) + v;
-    }
+    //SimTK::Vec<3> __add__(const SimTK::Vec<3>& v) const {
+    //    return *($self) + v;
+    //}
 };
 
 // Mat33
