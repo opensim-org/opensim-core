@@ -253,3 +253,11 @@ def test_markAdoptedSets():
     constr.setConstantDistance(1)
     a.addConstraint(constr)
 
+def test_SimTK_math_types():
+    # Make sure we can pass SimTK math types to different methods. This checks
+    # a subtle issue created by presence/absence of default template arguments.
+    osim.Inertia(osim.Mat33())
+    osim.Rotation(osim.Mat33())
+    b = osim.Body()
+    b.setMassCenter(osim.UnitVec3(1, 0, 0))
+
