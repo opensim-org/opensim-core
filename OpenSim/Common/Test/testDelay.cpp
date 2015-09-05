@@ -49,7 +49,7 @@ class PendulumController : public Controller {
 OpenSim_DECLARE_CONCRETE_OBJECT(PendulumController, Controller);
 public:
     OpenSim_DECLARE_PROPERTY(delay, double,
-            "Use a delayed coordinate value. Default: 0, for no delay.");
+            "Use a delayed coordinate value.");
     PendulumController() {
         constructInfrastructure();
         _delay.setName("coordinate_delay");
@@ -63,7 +63,7 @@ public:
         double q;
         if (get_delay() > 0) {
             q = _delay.getValue(s);
-        } else {
+        } else { // TODO remove.
             q = getModel().getCoordinateSet()[0].getValue(s);
         }
         double u = -10 * q;
@@ -98,6 +98,7 @@ private:
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
         _delay.set_delay(get_delay());
+        // TODO _delay.set_can_use_current_value(true);
         _vectorDelay.set_delay(get_delay());
         _comVelocityDelay.set_delay(get_delay());
         addComponent(&_delay);
@@ -144,15 +145,16 @@ private:
                         { return s.getTime() + 2.0; },
                         std::placeholders::_1),
                 SimTK::Stage::Velocity);
-        /* TODO
-        There's a bug where outputs with a dependsOn stage of Dynamics or
-        above causes an exception to be thrown when initializing the
-        TimeStepper.
+        // There's a bug where outputs with a dependsOn stage of Dynamics or
+        // above causes an exception to be thrown when initializing the
+        // TimeStepper.
+        // TODO
         constructOutput<double>("dynamics",
                 std::bind([](const SimTK::State& s)->double
                         { return s.getTime() + 3.0; },
                         std::placeholders::_1),
                 SimTK::Stage::Dynamics);
+        /* TODO
         */
     }
     void extendFinalizeFromProperties() override {
@@ -165,7 +167,7 @@ private:
         Super::extendConnectToModel(model);
         posDelay.getInput("input").connect(getOutput("position"));
         velDelay.getInput("input").connect(getOutput("velocity"));
-        //TODO see above dynDelay.getInput("input").connect(getOutput("dynamics"));
+        dynDelay.getInput("input").connect(getOutput("dynamics"));
     }
 };
 
@@ -185,6 +187,7 @@ void testDelaySimulation(Model& model, double delayTime = 0.017,
     SimTK::Vector finalCoordValueVector_noControllerDelay;
     SimTK::Vec3 finalCOMValue_noControllerDelay;
     {
+        controller->set_delay(0);
         State& s = model.initSystem();
         SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
         integrator.setAccuracy(tol);
@@ -214,37 +217,74 @@ void testDelaySimulation(Model& model, double delayTime = 0.017,
     SimTK::Vec3 finalCOMValue_withControllerDelay;
     {
         controller->set_delay(delayTime);
-        State& s = model.initSystem();
-        SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
-        integrator.setAccuracy(tol);
-        SimTK::TimeStepper ts(model.getSystem(), integrator);
-        ts.initialize(s);
+        {
+            State &s = model.initSystem();
+            SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
+            integrator.setAccuracy(tol);
+            if (!SimTK::isNaN(maxStepSize)) {
+                integrator.setMaximumStepSize(maxStepSize);
+            }
+            SimTK::TimeStepper ts(model.getSystem(), integrator);
+            ts.initialize(s);
 
-        // Stop early so we can record the true value of the delayed
-        // coordinate.
-        ts.stepTo(finalTime - delayTime);
-        s = ts.getState();
+            // Stop early so we can record the true value of the delayed
+            // coordinate.
+            ts.setReportAllSignificantStates(true);
+            integrator.setReturnEveryInternalStep(true);
+            while (ts.getState().getTime() < finalTime - delayTime) {
+                ts.stepTo(finalTime - delayTime);
+                std::cout << ts.getState().getTime() << " " <<
+                    coord.getValue(ts.getState()) << std::endl;
+            }
+            /*
+            */
+            /*
+            ts.stepTo(finalTime - delayTime);
+             */
 
-        expectedDelayedCoordValue = coord.getValue(s);
-        expectedDelayedCoordValueVector = controller->getCoordValueVector(s);
-        expectedDelayedCOMValue = model.calcMassCenterVelocity(s);
+            expectedDelayedCoordValue = coord.getValue(ts.getState());
+            expectedDelayedCoordValueVector = controller->getCoordValueVector(
+                    ts.getState());
+            expectedDelayedCOMValue = model.calcMassCenterVelocity(ts.getState());
+        }
 
         // Simulate with controller delay to the finalTime.
-        ts.stepTo(finalTime);
-        s = ts.getState();
+        {
+            State &s = model.initSystem();
+            SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
+            integrator.setAccuracy(tol);
+            if (!SimTK::isNaN(maxStepSize)) {
+                integrator.setMaximumStepSize(maxStepSize);
+            }
+            SimTK::TimeStepper ts(model.getSystem(), integrator);
+            ts.initialize(s);
+            ts.setReportAllSignificantStates(true);
+            integrator.setReturnEveryInternalStep(true);
+            std::cout << "The full duration now." << std::endl;
+            while (ts.getState().getTime() < finalTime) {
+                ts.stepTo(finalTime);
+                std::cout << ts.getState().getTime() << " " <<
+                    controller->getDelayedCoordinateValue(ts.getState()) << std::endl;
+            }
+            /*
+            */
+            /*
+            ts.stepTo(finalTime);
+             */
 
-        // Must realize in order to access delayed value.
-        model.realizeVelocity(s);
+            // Must realize in order to access delayed value.
+            model.realizeVelocity(ts.getState());
 
-        actualDelayedCoordValue = controller->getDelayedCoordinateValue(s);
-        actualDelayedCoordValueVector =
-                controller->getDelayedCoordValueVector(s);
-        actualDelayedCOMValue = controller->getDelayedCOMVelocityValue(s);
+            actualDelayedCoordValue = controller->getDelayedCoordinateValue(ts.getState());
+            actualDelayedCoordValueVector =
+                    controller->getDelayedCoordValueVector(ts.getState());
+            actualDelayedCOMValue = controller->getDelayedCOMVelocityValue(ts.getState());
 
-        finalCoordValue_withControllerDelay = coord.getValue(s);
-        finalCoordValueVector_withControllerDelay =
-                controller->getCoordValueVector(s);
-        finalCOMValue_withControllerDelay = model.calcMassCenterVelocity(s);
+            finalCoordValue_withControllerDelay = coord.getValue(ts.getState());
+            finalCoordValueVector_withControllerDelay =
+                    controller->getCoordValueVector(ts.getState());
+            finalCOMValue_withControllerDelay = model.calcMassCenterVelocity(ts.getState());
+        }
     }
 
     // Basic check on the Delay within the controller to see that the Delay
@@ -257,6 +297,9 @@ void testDelaySimulation(Model& model, double delayTime = 0.017,
     // Make sure the final coordinate value is not the same with vs.
     // without controller delay, to show that the controller delay had an
     // effect.
+    std::cout << delayTime << std::setprecision(10) << " " <<
+            finalCoordValue_noControllerDelay << " " <<
+            finalCoordValue_withControllerDelay << std::endl;
     SimTK_TEST_NOTEQ_TOL(finalCoordValue_noControllerDelay,
             finalCoordValue_withControllerDelay, tol);
     SimTK_TEST_NOTEQ_TOL(finalCoordValueVector_noControllerDelay,
@@ -284,79 +327,113 @@ void testWithController() {
 
     // Test the use of the Delay within a controller.
     // ==============================================
+    Model model = createPendulumModel();
+    const Coordinate& coord = model.getCoordinateSet()[0];
+    std::string coordName = coord.getName();
+
+    // Add actuator.
+    CoordinateActuator* act = new CoordinateActuator(coordName);
+    act->setName("joint_0_actuator");
+    model.addForce(act);
+
+    // Add controller.
+    PendulumController* controller = new PendulumController();
+    controller->setName("mycontroller");
+    controller->addActuator(*act);
+    model.addController(controller);
+
+    // TODO
+    testDelaySimulation(model, 0.17, false, 0.001);
+    testDelaySimulation(model, 0.17, false, 0.003, 1e-6);
+    testDelaySimulation(model, 0.17, false, 0.003);
+    testDelaySimulation(model, 0.17, false, 0.006);
+    testDelaySimulation(model, 0.17, false, 0.009);
+    testDelaySimulation(model, 0.17, false, 0.012);
+    testDelaySimulation(model, 0.17, false, 0.015);
+    testDelaySimulation(model, 0.17, false);
+    testDelaySimulation(model, 0.35, false);
+    testDelaySimulation(model, 0.02, false, 0.005);
+    testDelaySimulation(model, 0.02, false, 0.005);
+    testDelaySimulation(model, 0.02, false, 0.004);
+    testDelaySimulation(model, 0.02, false, 0.007);
+    testDelaySimulation(model, 0.02, false, 0.008);
+    testDelaySimulation(model, 0.02, false, 0.009);
+    testDelaySimulation(model, 0.02, false, 0.010);
+
+    // Run test on original model.
+    testDelaySimulation(model);
+
+    // Run test on original model using a few different delay times,
+    // to ensure that the Delay component is able to modify the
+    // Measure::Delay properly if a property changes.
+    testDelaySimulation(model, 0.020, false);
+    testDelaySimulation(model, 0.17, false);
+    testDelaySimulation(model, 0.17, false);
+    testDelaySimulation(model, 0.35, false);
+
+    // Test smaller delay durations.
+    testDelaySimulation(model, 0.001, false);
+    testDelaySimulation(model, 1e-6, false);
+
+    // TODO
+    testDelaySimulation(model, 0.02, false, 0.005);
+    testDelaySimulation(model, 0.02, false, 0.005);
+    testDelaySimulation(model, 0.02, false, 0.004);
+    testDelaySimulation(model, 0.02, false, 0.007);
+    testDelaySimulation(model, 0.02, false, 0.008);
+    testDelaySimulation(model, 0.02, false, 0.009);
+    testDelaySimulation(model, 0.02, false, 0.010);
+
+    // Show that accuracy equal to delay yields correct results.
+    testDelaySimulation(model, 0.0001, false, SimTK::NaN, 0.0001);
+    //testDelaySimulation(model, 0.0001, false, SimTK::NaN, 0.0005);
+    //testDelaySimulation(model, 0.0005, false, 0.02, 0.1);
+
+    // TODO
+    testDelaySimulation(model, 0.0005, false, 0.02);
+    testDelaySimulation(model, 0.0001, false, 0.02, 0.1);
+
+
+    testDelaySimulation(model, 0.0001, false, 0.005);
+
+    /*
+     The two exception tests below were used to understand the interaction
+     between delay duration and integrator accuracy and min step size.
+     They are not too useful as actual tests though.
+    // Show that accuracy less tight than delay yields incorrect results,
+    // even at the looser testing tolerance (= accuracy).
+    SimTK_TEST_MUST_THROW_EXC(
+        testDelaySimulation(model, 0.0001, false, SimTK::NaN, 0.0005),
+        SimTK::Exception::Assert);
+
+    // Test a delay duration that is shorter than a time step.
+    // This shows that having a time step smaller than the delay
+    // is not sufficient; integrator accuracy is what's important.
+    SimTK_TEST_MUST_THROW_EXC(
+        testDelaySimulation(model, 0.0001, false, 0.00005),
+        SimTK::Exception::Assert);
+    */
+
+    // Test using a delay of 0, which bypasses the use of a measure.
+    testDelaySimulation(model, 0.0, false);
+
+    /* TODO will not pass until input/output copying is fixed.
+    // Run same test after copying the model that contains the Delay.
+    // --------------------------------------------------------------
     {
-        Model model = createPendulumModel();
-        const Coordinate& coord = model.getCoordinateSet()[0];
-        std::string coordName = coord.getName();
-
-        // Add actuator.
-        CoordinateActuator* act = new CoordinateActuator(coordName);
-        act->setName("joint_0_actuator");
-        model.addForce(act);
-
-        // Add controller.
-        PendulumController* controller = new PendulumController();
-        controller->setName("mycontroller");
-        controller->addActuator(*act);
-        model.addController(controller);
-
-        // Run test on original model.
-        testDelaySimulation(model);
-
-        // Run test on original model using a different delay time,
-        // to ensure that the Delay component is able to modify the
-        // Measure::Delay properly if a property changes.
-        testDelaySimulation(model, 0.020, false);
-
-        // Test a really small delay duration (the default accuracy).
-        testDelaySimulation(model, 1e-6, false);
-
-        // Show that accuracy equal to delay yields correct results.
-        // TODO
-        //testDelaySimulation(model, 0.0001, false, SimTK::NaN, 0.0001);
-
-        // TODO
-        testDelaySimulation(model, 0.0005, false, 0.02);
-
-        /*
-         The two exception tests below were used to understand the interaction
-         between delay duration and integrator accuracy and min step size.
-         They are not too useful as actual tests though.
-        // Show that accuracy less tight than delay yields incorrect results,
-        // even at the looser testing tolerance (= accuracy).
-        SimTK_TEST_MUST_THROW_EXC(
-            testDelaySimulation(model, 0.0001, false, SimTK::NaN, 0.0005),
-            SimTK::Exception::Assert);
-
-        // Test a delay duration that is shorter than a time step.
-        // This shows that having a time step smaller than the delay
-        // is not sufficient; integrator accuracy is what's important.
-        SimTK_TEST_MUST_THROW_EXC(
-            testDelaySimulation(model, 0.0001, false, 0.00005),
-            SimTK::Exception::Assert);
-        */
-
-        // Test using a delay of 0.
-        testDelaySimulation(model, 0.0, false);
-
-        /* TODO will not pass until input/output copying is fixed.
-        // Run same test after copying the model that contains the Delay.
-        // --------------------------------------------------------------
-        {
-            Model modelCopy = model;
-            testDelaySimulation(modelCopy);
-        }
-
-        // Run same test after serializing and deserializing the model.
-        // ------------------------------------------------------------
-        {
-            std::string filename = "pendulum_for_delay_test.osim";
-            model.print(filename);
-            Model modelDeserialized(filename);
-            testDelaySimulation(modelDeserialized);
-        }
-        */
+        Model modelCopy = model;
+        testDelaySimulation(modelCopy);
     }
+
+    // Run same test after serializing and deserializing the model.
+    // ------------------------------------------------------------
+    {
+        std::string filename = "pendulum_for_delay_test.osim";
+        model.print(filename);
+        Model modelDeserialized(filename);
+        testDelaySimulation(modelDeserialized);
+    }
+    */
 
 }
 
@@ -462,20 +539,20 @@ public:
 private:
     void constructOutputs() override {
         constructOutput<double>("time",
-                                std::bind([](const SimTK::State& s)->double
-                                          { return s.getTime(); },
-                                          std::placeholders::_1),
-                                SimTK::Stage::Time);
+            std::bind([](const SimTK::State& s)->double
+                      { return s.getTime(); },
+                      std::placeholders::_1),
+            SimTK::Stage::Time);
         constructOutput<double>("step",
-                                std::bind([](const SimTK::State& s)->double
-                                          { return s.getTime() < 0.5 ? 1.5 : 4.3; },
-                                          std::placeholders::_1),
-                                SimTK::Stage::Time);
+            std::bind([](const SimTK::State& s)->double
+                      { return s.getTime() < 0.5 ? 1.5 : 4.3; },
+                      std::placeholders::_1),
+            SimTK::Stage::Time);
         constructOutput<double>("discont",
-                                std::bind([](const SimTK::State& s)->double
-                                          { return s.getTime() < 0.5 ? s.getTime() : 1 + s.getTime(); },
-                                          std::placeholders::_1),
-                                SimTK::Stage::Time);
+            std::bind([](const SimTK::State& s)->double
+                  { return s.getTime() < 0.5 ? s.getTime() : 1 + s.getTime(); },
+                  std::placeholders::_1),
+            SimTK::Stage::Time);
     }
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
