@@ -108,6 +108,8 @@ public:
 
     OpenSim_DECLARE_PROPERTY(delay, double,
         "The duration (nonnegative, seconds) by which the output is delayed.");
+    OpenSim_DECLARE_PROPERTY(can_use_current_value, bool,
+        "(Advanced) Use current value of input to compute delayed quantity.");
 
     /// Default constructor.
     Delay_();
@@ -143,6 +145,7 @@ Delay_<T>::Delay_(double delay) : Delay_() {
 template<class T>
 void Delay_<T>::constructProperties() {
     constructProperty_delay(0.0);
+    constructProperty_can_use_current_value(false);
 }
 
 template<class T>
@@ -186,6 +189,9 @@ void Delay_<T>::extendAddToSystem(SimTK::MultibodySystem& system) const {
                 typename SimTK::Measure_<T>::Delay(sub,
                                                    InputMeasure<T>(sub, input),
                                                    get_delay());
+        const_cast<Delay_ *>(this)->m_delayMeasure.setCanUseCurrentValue(
+                get_can_use_current_value());
+
     }
 }
 
