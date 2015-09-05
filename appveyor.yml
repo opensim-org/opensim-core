@@ -65,23 +65,15 @@ test_script:
   ## Ensure we have no trouble installing.
   - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
   
-  ## Test python wrapping.
-  - set PATH=%OPENSIM_HOME%\bin;%PATH%
-  
-  # Copy over model files needed for testing.
-  # TODO this is temporary until we have a proper way to distribute models.
-  # The md command makes directories.
-  - cd %APPVEYOR_BUILD_DIR%
-  - md %OPENSIM_HOME%\Models\Arm26
-  - copy OpenSim\Tools\Test\arm26.osim %OPENSIM_HOME%\Models\Arm26\arm26.osim
-  - md %OPENSIM_HOME%\Models\Gait10dof18musc
-  - copy Applications\CMC\test\gait10dof18musc_subject01.osim %OPENSIM_HOME%\Models\Gait10dof18musc\gait10dof18musc.osim
-  
-  # Move to the installed location of the python package.
-  - cd %OPENSIM_HOME%\sdk\python
-  
-  # Run python tests.
-  - nosetests -v
+  ### Test python wrapping.
+  #- set PATH=%OPENSIM_HOME%\bin;%PATH%
+  #
+  #
+  ## Move to the installed location of the python package.
+  #- cd %OPENSIM_HOME%\sdk\python
+  #
+  ## Run python tests.
+  #- nosetests -v
 
 after_test:
   - ## On master branch, create NuGet package for OpenSim.
