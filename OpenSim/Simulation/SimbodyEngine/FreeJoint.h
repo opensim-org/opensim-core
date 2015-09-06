@@ -87,7 +87,7 @@ protected:
     void extendSetPropertiesFromState(const SimTK::State& state) override;
 
 private:
-    SimTK::MobilizedBodyIndex _masslessBodyIndex;
+    SimTK::ResetOnCopy<SimTK::MobilizedBodyIndex> _masslessBodyIndex;
     void setNull();
 //=============================================================================
 };  // END of class FreeJoint

@@ -164,6 +164,13 @@ If the “copy stuff” part consists only of assignments that work for self ass
 
 Doxygen only looks in your .h files; it does not generate documentation from .cpp files. Thus, comments in .cpp files don't need to follow doxygen formatting, and in fact they should not because it is confusing and makes it look like there is API documentation when there isn't. You should mostly use `//`-style comments in .cpp files, and be sure you are addressing your comments to the right audience -- no doxygen reader will ever see them.
 
+We produce two sets of doxygen-generated documentation, one for (scripting)
+users and one for C++ developers. The primary difference is that the user
+documentation only shows public members, while the developer documentation also
+shows protected members, nested classes, etc. When writing doxygen comments,
+you can use `\internal` or `\if developer ... \endif`
+for documentation that is only intended for developers.
+
 Read more about doxygen on this page: Guide to Building Doxygen
 
 ### Each line of text should be at most 80 characters

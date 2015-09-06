@@ -12,12 +12,10 @@ cmake_minimum_required(VERSION 2.8.8)
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
     cmake_policy(SET CMP0005 NEW)
-    if(NOT (${CMAKE_VERSION} VERSION_LESS 3.0))
-        # MACOSX_RPATH enabled by default; policy introduced with cmake 3.0.
-        cmake_policy(SET CMP0042 NEW)
-    endif()
 endif(COMMAND cmake_policy)
 
+# To create a folder hierarchy within Visual Studio.
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # OpenSim version.
 # ----------------
@@ -70,6 +68,13 @@ link_directories(${BUILD_BINARY_DIR})
 # Specify number of cores to run for build
 set(PROCESSOR_COUNT 8 CACHE STRING "Number of processors in the CPU")
 mark_as_advanced(PROCESSOR_COUNT)
+
+# Try to use MathJax for Doxygen equations.
+# -----------------------------------------
+option(OPENSIM_DOXYGEN_USE_MATHJAX "Try to use MathJax to render Doxygen
+equations. If OFF, LATEX is used instead if you have it; otherwise we use
+MathJax from the internet (we don't download it). If we cannot download MathJax
+from the internet, we turn this option OFF." ON)
 
 
 # Simbody.
@@ -273,40 +278,10 @@ set(CMAKE_VERBOSE_MAKEFILE OFF CACHE BOOL
     "Enable this for verbose build output.")
 
 if(WIN32)
-add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
-else(WIN32)
-endif(WIN32)
+    add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+endif()
 
-##################################################
-## Define Platform to
-##          Win32/VC${version}
-##      or  Mac
-##      or  Linux
-##
-## Also translate ARCH64 to platform specific flags
-##
-##################################################
 include(InstallRequiredSystemLibraries)
-
-if(WIN32)
-else(WIN32)
-    set(NameSpace "")   ## No renamed SimTK libraries except on Windows
-    if(APPLE)
-       if(ARCH64)
-           set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.8" )
-       else(ARCH64)
-           set( CMAKE_CXX_FLAGS
-               "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.8 -m32" )
-       endif(ARCH64)
-    else(APPLE)
-       if(ARCH64)
-           set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64" )
-       else(ARCH64)
-          # I don't believe setting the CXX flags is working in cmake.
-          set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32" )
-       endif(ARCH64)
-    endif(APPLE)
-endif(WIN32)
 
 # C++11: In revision 8629, we started using std::unique_ptr, which requires
 # C++11 features to be enabled when using GCC or Clang.
@@ -329,12 +304,50 @@ if(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
 endif()
 
 
+## On APPLE, use MACOSX_RPATH.
+set(OPENSIM_USE_INSTALL_RPATH FALSE)
+if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
+    option(OPENSIM_NO_LIBRARY_PATH_ENV_VAR
+        "If ON, you don't need to set the LD_LIBRARY_PATH (Linux) or
+        DYLD_LIBRARY_PATH (Mac) to make use of OpenSim's executables.
+        Instead, we bake the location of OpenSim's libraries into the
+        executables, so the executables already know where to find the
+        libraries. This uses the RPATH mechanism." ON)
+    if(${OPENSIM_NO_LIBRARY_PATH_ENV_VAR})
+        # CMake 2.8.12 introduced the ability to set RPATH for shared libraries on
+        # OSX. This helps executables find the libraries they depend on without
+        # having to set the DYLD_LIBRARY_PATH environment variable.
+        # The code below is all taken from the link below, and implements the
+        # scenario "Always use full RPATH".
+        # http://www.cmake.org/Wiki/CMake_RPATH_handling
+        # Note: the RPATH won't succeed if the libraries are moved; in this case,
+        # one will still need to set DYLD_LIBRARY_PATH (or alter the RPATH in the
+        # executables/libraries that depend on Simbody's libraries).
+        set(CMAKE_MACOSX_RPATH ON)
+    
+        set(CMAKE_INSTALL_FULL_LIBDIR "${CMAKE_INSTALL_PREFIX}/lib")
+    
+        # Add the automatically determined parts of the RPATH
+        # which point to directories outside the build tree to the install RPATH.
+        set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+    
+        # The RPATH to be used when installing, but only if it's not a system
+        # directory.
+        list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
+            "${CMAKE_INSTALL_FULL_LIBDIR}" isSystemDir)
+        if("${isSystemDir}" STREQUAL "-1")
+            set(OPENSIM_USE_INSTALL_RPATH TRUE)
+        endif()
+    endif()
+endif()
+
+
 # Find Simbody.
 # -------------
 # As of Simbody 3.4, Simbody has a SimbodyConfig.cmake file, which is a
 # preferred way to find Simbody over the previous FindSimbody.cmake script.
 # NO_MODULE means we will not allow the use of a FindSimbody.cmake script.
-set(SIMBODY_VERSION_TO_USE 3.5)
+set(SIMBODY_VERSION_TO_USE 3.6)
 
 # Find Simbody freshly by unsetting this CMake-generated variable.
 unset(Simbody_DIR CACHE)
@@ -533,3 +546,4 @@ if(NOT BUILD_API_ONLY)
 endif()
 
 add_subdirectory(cmake)
+add_subdirectory(doc)

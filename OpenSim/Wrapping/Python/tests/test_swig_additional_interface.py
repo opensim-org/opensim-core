@@ -25,7 +25,7 @@ def test_markAdopted1():
 def test_markAdopted2():
     a = osim.Model()
 
-    # We just need the following not to not cause a segfault.
+    # We just need the following not to cause a segfault.
 
     # Model add*
     a.addForce(osim.PathActuator())
