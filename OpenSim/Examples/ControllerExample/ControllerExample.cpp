@@ -181,12 +181,12 @@ public:
         // force.  Otherwise, set the muscle's control to zero.
         double leftControl = 0.0, rightControl = 0.0;
         if( desFrc < 0 ) {
-            leftControl = abs( desFrc ) / FoptL;
+            leftControl = std::abs( desFrc ) / FoptL;
             rightControl = 0.0;
         }
         else if( desFrc > 0 ) {
             leftControl = 0.0;
-            rightControl = abs( desFrc ) / FoptR;
+            rightControl = std::abs( desFrc ) / FoptR;
         }
         // Don't allow any control value to be greater than one.
         if( leftControl > 1.0 ) leftControl = 1.0;
