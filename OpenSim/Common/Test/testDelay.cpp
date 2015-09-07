@@ -60,12 +60,7 @@ public:
         set_delay(delay);
     }
     void computeControls(const State& s, Vector &controls) const override {
-        double q;
-        if (get_delay() > 0) {
-            q = _delay.getValue(s);
-        } else { // TODO remove.
-            q = getModel().getCoordinateSet()[0].getValue(s);
-        }
+        double q = _delay.getValue(s);
         double u = -10 * q;
         getModel().getActuators()[0].addInControls(Vector(1, u), controls);
     }
@@ -98,7 +93,6 @@ private:
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
         _delay.set_delay(get_delay());
-        // TODO _delay.set_can_use_current_value(true);
         _vectorDelay.set_delay(get_delay());
         _comVelocityDelay.set_delay(get_delay());
         addComponent(&_delay);
@@ -154,8 +148,6 @@ private:
                         { return s.getTime() + 3.0; },
                         std::placeholders::_1),
                 SimTK::Stage::Dynamics);
-        /* TODO
-        */
     }
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
@@ -172,15 +164,37 @@ private:
 };
 
 // Allows some testing of Delay with different models.
-void testDelaySimulation(Model& model, double delayTime = 0.017,
-        bool testRegression = true, double maxStepSize = SimTK::NaN,
-        /* integrator accuracy, test tolerance */ double tol=1e-6) {
+void testDelaySimulation(Model& model, double delayDuration,
+        bool testRegression, double maxStepSize,
+        double integratorAccuracy,
+        double testTolerance) {
 
     double finalTime = 1.35;
+
+    SimTK_ASSERT_ALWAYS(finalTime > delayDuration,
+        "It doesn't make sense to delay for more time than we simulate.");
 
     const Coordinate& coord = model.getCoordinateSet()[0];
     auto* controller = dynamic_cast<PendulumController*>(
             &model.updControllerSet().get("mycontroller"));
+
+    // Helper function to init system, integrate, and return final state.
+    // Must return a copy of the state, because the time stepper or integrator
+    // deletes it at the end of the scope of the lambda function.
+    auto integrate = [&](double time) -> const SimTK::State {
+        State& state = model.initSystem();
+        //SimTK::SemiExplicitEuler2Integrator integrator(model.getSystem());
+        SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
+        integrator.setAccuracy(integratorAccuracy);
+        if (!SimTK::isNaN(maxStepSize)) {
+            integrator.setMaximumStepSize(maxStepSize);
+        }
+        SimTK::TimeStepper ts(model.getSystem(), integrator);
+        ts.initialize(state);
+        ts.stepTo(time);
+
+        return ts.getState();
+    };
 
     // First simulate without controller delay.
     double finalCoordValue_noControllerDelay;
@@ -188,16 +202,8 @@ void testDelaySimulation(Model& model, double delayTime = 0.017,
     SimTK::Vec3 finalCOMValue_noControllerDelay;
     {
         controller->set_delay(0);
-        State& s = model.initSystem();
-        SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
-        integrator.setAccuracy(tol);
-        if (!SimTK::isNaN(maxStepSize)) {
-            integrator.setMaximumStepSize(maxStepSize);
-        }
-        SimTK::TimeStepper ts(model.getSystem(), integrator);
-        ts.initialize(s);
-        ts.stepTo(finalTime);
-        s = ts.getState();
+
+        const auto& s = integrate(finalTime);
 
         finalCoordValue_noControllerDelay = coord.getValue(s);
         finalCoordValueVector_noControllerDelay =
@@ -215,111 +221,98 @@ void testDelaySimulation(Model& model, double delayTime = 0.017,
     SimTK::Vec3 expectedDelayedCOMValue;
     SimTK::Vec3 actualDelayedCOMValue;
     SimTK::Vec3 finalCOMValue_withControllerDelay;
+
+    // Now with a delay!
+    // -----------------
+    controller->set_delay(delayDuration);
     {
-        controller->set_delay(delayTime);
-        {
-            State &s = model.initSystem();
-            SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
-            integrator.setAccuracy(tol);
-            if (!SimTK::isNaN(maxStepSize)) {
-                integrator.setMaximumStepSize(maxStepSize);
-            }
-            SimTK::TimeStepper ts(model.getSystem(), integrator);
-            ts.initialize(s);
+        // Stop early so we can record the true value of the delayed
+        // coordinate.
+        const auto& s = integrate(finalTime - delayDuration);
 
-            // Stop early so we can record the true value of the delayed
-            // coordinate.
-            ts.setReportAllSignificantStates(true);
-            integrator.setReturnEveryInternalStep(true);
-            while (ts.getState().getTime() < finalTime - delayTime) {
-                ts.stepTo(finalTime - delayTime);
-                std::cout << ts.getState().getTime() << " " <<
-                    coord.getValue(ts.getState()) << std::endl;
-            }
-            /*
-            */
-            /*
-            ts.stepTo(finalTime - delayTime);
-             */
-
-            expectedDelayedCoordValue = coord.getValue(ts.getState());
-            expectedDelayedCoordValueVector = controller->getCoordValueVector(
-                    ts.getState());
-            expectedDelayedCOMValue = model.calcMassCenterVelocity(ts.getState());
-        }
-
-        // Simulate with controller delay to the finalTime.
-        {
-            State &s = model.initSystem();
-            SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
-            integrator.setAccuracy(tol);
-            if (!SimTK::isNaN(maxStepSize)) {
-                integrator.setMaximumStepSize(maxStepSize);
-            }
-            SimTK::TimeStepper ts(model.getSystem(), integrator);
-            ts.initialize(s);
-            ts.setReportAllSignificantStates(true);
-            integrator.setReturnEveryInternalStep(true);
-            std::cout << "The full duration now." << std::endl;
-            while (ts.getState().getTime() < finalTime) {
-                ts.stepTo(finalTime);
-                std::cout << ts.getState().getTime() << " " <<
-                    controller->getDelayedCoordinateValue(ts.getState()) << std::endl;
-            }
-            /*
-            */
-            /*
-            ts.stepTo(finalTime);
-             */
-
-            // Must realize in order to access delayed value.
-            model.realizeVelocity(ts.getState());
-
-            actualDelayedCoordValue = controller->getDelayedCoordinateValue(ts.getState());
-            actualDelayedCoordValueVector =
-                    controller->getDelayedCoordValueVector(ts.getState());
-            actualDelayedCOMValue = controller->getDelayedCOMVelocityValue(ts.getState());
-
-            finalCoordValue_withControllerDelay = coord.getValue(ts.getState());
-            finalCoordValueVector_withControllerDelay =
-                    controller->getCoordValueVector(ts.getState());
-            finalCOMValue_withControllerDelay = model.calcMassCenterVelocity(ts.getState());
-        }
+        expectedDelayedCoordValue = coord.getValue(s);
+        expectedDelayedCoordValueVector =
+                controller->getCoordValueVector(s);
+        expectedDelayedCOMValue = model.calcMassCenterVelocity(s);
     }
+
+    // Simulate with controller delay to the finalTime.
+    {
+        const auto& s = integrate(finalTime);
+
+        // Must realize in order to access delayed value.
+        // TODO is this necessary?
+        model.realizeVelocity(s);
+
+        actualDelayedCoordValue = controller->getDelayedCoordinateValue(s);
+        actualDelayedCoordValueVector =
+                controller->getDelayedCoordValueVector(s);
+        actualDelayedCOMValue = controller->getDelayedCOMVelocityValue(s);
+
+        finalCoordValue_withControllerDelay = coord.getValue(s);
+        finalCoordValueVector_withControllerDelay =
+                controller->getCoordValueVector(s);
+        finalCOMValue_withControllerDelay = model.calcMassCenterVelocity(s);
+    }
+
+    // TODO exactly delay if the duration is a multiple of the step size.
 
     // Basic check on the Delay within the controller to see that the Delay
     // itself is working as a subcomponent.
-    SimTK_TEST_EQ_TOL(expectedDelayedCoordValue, actualDelayedCoordValue, tol);
-    SimTK_TEST_EQ_TOL(expectedDelayedCoordValueVector,
-            actualDelayedCoordValueVector, tol);
-    SimTK_TEST_EQ_TOL(expectedDelayedCOMValue, actualDelayedCOMValue, tol);
+    SimTK_TEST_EQ_TOL(
+            expectedDelayedCoordValue,
+            actualDelayedCoordValue,
+            testTolerance);
+    SimTK_TEST_EQ_TOL(
+            expectedDelayedCoordValueVector,
+            actualDelayedCoordValueVector,
+            testTolerance);
+    SimTK_TEST_EQ_TOL(
+            expectedDelayedCOMValue,
+            actualDelayedCOMValue,
+            10.0 * testTolerance);
 
-    // Make sure the final coordinate value is not the same with vs.
-    // without controller delay, to show that the controller delay had an
-    // effect.
-    std::cout << delayTime << std::setprecision(10) << " " <<
-            finalCoordValue_noControllerDelay << " " <<
-            finalCoordValue_withControllerDelay << std::endl;
-    SimTK_TEST_NOTEQ_TOL(finalCoordValue_noControllerDelay,
-            finalCoordValue_withControllerDelay, tol);
-    SimTK_TEST_NOTEQ_TOL(finalCoordValueVector_noControllerDelay,
-            finalCoordValueVector_withControllerDelay, tol);
-    SimTK_TEST_NOTEQ_TOL(finalCOMValue_noControllerDelay,
-            finalCOMValue_withControllerDelay, tol);
+    if (delayDuration > 0) {
+        // Make sure the final coordinate value is not the same with vs.
+        // without controller delay, to show that the controller delay had an
+        // effect.
+        SimTK_TEST_NOTEQ_TOL(
+                finalCoordValue_noControllerDelay,
+                finalCoordValue_withControllerDelay,
+                testTolerance);
+        SimTK_TEST_NOTEQ_TOL(
+                finalCoordValueVector_noControllerDelay,
+                finalCoordValueVector_withControllerDelay,
+                testTolerance);
+        SimTK_TEST_NOTEQ_TOL(
+                finalCOMValue_noControllerDelay,
+                finalCOMValue_withControllerDelay,
+                testTolerance);
+    }
 
     // Regression. Since above we are only checking if the controller with
     // delay and the controller without delay produce different results,
     // the above test is not sufficient to check if behavior changes.
     if (testRegression) {
         // The testRegression argument is a hacky way to only test regression
-        // with the default delayTime, since these hardcoded numbers were
-        // obtained with the default delayTime (0.017 s).
-        SimTK_TEST_EQ_TOL(finalCoordValue_noControllerDelay, -0.245182, tol);
-        SimTK_TEST_EQ_TOL(finalCoordValue_withControllerDelay, -0.171928, tol);
-        SimTK_TEST_EQ_TOL(finalCOMValue_noControllerDelay,
-                Vec3(0.495057698, 1.97852341, 0.0), tol);
-        SimTK_TEST_EQ_TOL(finalCOMValue_withControllerDelay,
-                Vec3(0.392224361, 2.2588064, 0.0), tol);
+        // with the default delayDuration, since these hardcoded numbers were
+        // obtained with a specific delayDuration (0.017 s).
+        SimTK_TEST_EQ_TOL(
+                finalCoordValue_noControllerDelay,
+                -0.24517802,
+                integratorAccuracy);
+        SimTK_TEST_EQ_TOL(
+                finalCoordValue_withControllerDelay,
+                -0.1717850302,
+                integratorAccuracy);
+        SimTK_TEST_EQ_TOL(
+                finalCOMValue_noControllerDelay,
+                Vec3(0.495047906, 1.978515157, 0.0),
+                integratorAccuracy);
+        SimTK_TEST_EQ_TOL(
+                finalCOMValue_withControllerDelay,
+                Vec3(0.3918402072, 2.258509885, 0.0),
+                integratorAccuracy);
     }
 }
 
@@ -342,87 +335,32 @@ void testWithController() {
     controller->addActuator(*act);
     model.addController(controller);
 
-    // TODO
-    testDelaySimulation(model, 0.17, false, 0.001);
-    testDelaySimulation(model, 0.17, false, 0.003, 1e-6);
-    testDelaySimulation(model, 0.17, false, 0.003);
-    testDelaySimulation(model, 0.17, false, 0.006);
-    testDelaySimulation(model, 0.17, false, 0.009);
-    testDelaySimulation(model, 0.17, false, 0.012);
-    testDelaySimulation(model, 0.17, false, 0.015);
-    testDelaySimulation(model, 0.17, false);
-    testDelaySimulation(model, 0.35, false);
-    testDelaySimulation(model, 0.02, false, 0.005);
-    testDelaySimulation(model, 0.02, false, 0.005);
-    testDelaySimulation(model, 0.02, false, 0.004);
-    testDelaySimulation(model, 0.02, false, 0.007);
-    testDelaySimulation(model, 0.02, false, 0.008);
-    testDelaySimulation(model, 0.02, false, 0.009);
-    testDelaySimulation(model, 0.02, false, 0.010);
-
     // Run test on original model.
-    testDelaySimulation(model);
+    testDelaySimulation(model, 0.017, true, 0.001, 1e-6, 2e-5);
 
     // Run test on original model using a few different delay times,
     // to ensure that the Delay component is able to modify the
     // Measure::Delay properly if a property changes.
-    testDelaySimulation(model, 0.020, false);
-    testDelaySimulation(model, 0.17, false);
-    testDelaySimulation(model, 0.17, false);
-    testDelaySimulation(model, 0.35, false);
+    testDelaySimulation(model, 0.017, false, 0.001, 1e-6, 2e-5);
+    testDelaySimulation(model, 0.013, false, 0.001, 1e-6, 2e-5);
+    testDelaySimulation(model, 0.296, false, 0.001, 1e-6, 2e-5);
 
-    // Test smaller delay durations.
-    testDelaySimulation(model, 0.001, false);
-    testDelaySimulation(model, 1e-6, false);
-
-    // TODO
-    testDelaySimulation(model, 0.02, false, 0.005);
-    testDelaySimulation(model, 0.02, false, 0.005);
-    testDelaySimulation(model, 0.02, false, 0.004);
-    testDelaySimulation(model, 0.02, false, 0.007);
-    testDelaySimulation(model, 0.02, false, 0.008);
-    testDelaySimulation(model, 0.02, false, 0.009);
-    testDelaySimulation(model, 0.02, false, 0.010);
-
-    // Show that accuracy equal to delay yields correct results.
-    testDelaySimulation(model, 0.0001, false, SimTK::NaN, 0.0001);
-    //testDelaySimulation(model, 0.0001, false, SimTK::NaN, 0.0005);
-    //testDelaySimulation(model, 0.0005, false, 0.02, 0.1);
-
-    // TODO
-    testDelaySimulation(model, 0.0005, false, 0.02);
-    testDelaySimulation(model, 0.0001, false, 0.02, 0.1);
-
-
-    testDelaySimulation(model, 0.0001, false, 0.005);
-
-    /*
-     The two exception tests below were used to understand the interaction
-     between delay duration and integrator accuracy and min step size.
-     They are not too useful as actual tests though.
-    // Show that accuracy less tight than delay yields incorrect results,
-    // even at the looser testing tolerance (= accuracy).
-    SimTK_TEST_MUST_THROW_EXC(
-        testDelaySimulation(model, 0.0001, false, SimTK::NaN, 0.0005),
-        SimTK::Exception::Assert);
-
-    // Test a delay duration that is shorter than a time step.
-    // This shows that having a time step smaller than the delay
-    // is not sufficient; integrator accuracy is what's important.
-    SimTK_TEST_MUST_THROW_EXC(
-        testDelaySimulation(model, 0.0001, false, 0.00005),
-        SimTK::Exception::Assert);
-    */
+    // Test a smaller delay duration.
+    testDelaySimulation(model, 0.0043, false, 0.001, 1e-6, 2e-5);
 
     // Test using a delay of 0, which bypasses the use of a measure.
-    testDelaySimulation(model, 0.0, false);
+    testDelaySimulation(model, 0.0, false, 0.001, 1e-6, 1e-12);
 
     /* TODO will not pass until input/output copying is fixed.
     // Run same test after copying the model that contains the Delay.
     // --------------------------------------------------------------
     {
+        Model modelCopy(model);
+        testDelaySimulation(modelCopy, 0.017, true, 0.001, 1e-6, 2e-5);
+    }
+    {
         Model modelCopy = model;
-        testDelaySimulation(modelCopy);
+        testDelaySimulation(modelCopy, 0.017, true, 0.001, 1e-6, 2e-5);
     }
 
     // Run same test after serializing and deserializing the model.
@@ -431,7 +369,7 @@ void testWithController() {
         std::string filename = "pendulum_for_delay_test.osim";
         model.print(filename);
         Model modelDeserialized(filename);
-        testDelaySimulation(modelDeserialized);
+        testDelaySimulation(modelDeserialized, 0.017, true, 0.001, 1e-6, 2e-5);
     }
     */
 
