@@ -83,12 +83,12 @@ private:
         constructProperty_delay(0.0);
     }
     void constructInputs() override {
-        constructInput<double>("coord_value", SimTK::Stage::Position);
+        constructInput<double>("coord_value", SimTK::Stage::Model);
     }
     void constructOutputs() override {
         constructOutput<Vector>("coord_value_vector",
                 &PendulumController::getCoordValueVector,
-                SimTK::Stage::Position);
+                SimTK::Stage::Model);
     }
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
@@ -240,8 +240,9 @@ void testDelaySimulation(Model& model, double delayDuration,
     {
         const auto& s = integrate(finalTime);
 
-        // Must realize in order to access delayed value.
-        // TODO is this necessary?
+        // Only needed for the case that delayDuration == 0, because
+        // the COM velocity input is passed throught and that depends on
+        // velocity.
         model.realizeVelocity(s);
 
         actualDelayedCoordValue = controller->getDelayedCoordinateValue(s);
@@ -254,8 +255,6 @@ void testDelaySimulation(Model& model, double delayDuration,
                 controller->getCoordValueVector(s);
         finalCOMValue_withControllerDelay = model.calcMassCenterVelocity(s);
     }
-
-    // TODO exactly delay if the duration is a multiple of the step size.
 
     // Basic check on the Delay within the controller to see that the Delay
     // itself is working as a subcomponent.
@@ -552,26 +551,6 @@ private:
     }
 };
 
-template<typename T>
-class Reporter_ : public ModelComponent {
-OpenSim_DECLARE_CONCRETE_OBJECT_T(Reporter_, T, ModelComponent);
-public:
-    Reporter_() {
-        constructInfrastructure();
-    }
-    void extendRealizeAcceleration(const SimTK::State& s) const override {
-        Super::extendRealizeAcceleration(s);
-        //std::cout << std::setw(10) << std::left << s.getTime() << " " <<
-        //        getInputValue<T>(s, "input") << std::endl;
-    }
-private:
-    void constructInputs() override {
-        constructInput<T>("input", SimTK::Stage::Time);
-    }
-};
-
-typedef Reporter_<SimTK::Real> Reporter;
-
 void testDiscontinuousInput() {
     double tol = 1e-6;
 
@@ -596,11 +575,6 @@ void testDiscontinuousInput() {
     // Add Delay-related components.
     auto* comp = new DiscontinuousInputTesting();
     model.addModelComponent(comp);
-
-    auto* reporter = new Reporter();
-    model.addModelComponent(reporter);
-
-    reporter->getInput("input").connect(comp->stepDelay.getOutput("output"));
 
     // Integrate past 3.0 seconds.
     State& s = model.initSystem();

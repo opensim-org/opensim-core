@@ -32,32 +32,47 @@ namespace OpenSim {
  * output at time `t` is the value the input had at time `t-delay`.
  * A Delay can be used to model the delay in neural reflex circuits.
  *
+ * This Component has a single input named "input" and a single output named
+ * "output". The typical way to use this Component is as a subcomponent in
+ * another component.
+ *
  * For times prior to the start of a simulation this Component behaves as
  * though the input value had been constant at its initial value.
+ *
+ * A delay duration of 0 just passes through the value
+ * of the input and introduces minimal computational overhead.
  *
  * @tparam T The type of the quantity to be delayed. Common choices are a
  * SimTK::Real (see Delay) or a SimTK::Vector (see DelayVector).
  *
  * @see Delay, DelayVector
  *
- * @note The output will be incorrect if the delay is smaller than the
- * integrator's accuracy setting. Make sure that the integrator's accuracy
- * is tighter than your delay duration (e.g., accuracy of 1e-3 or less for a
- * delay of 1e-3 seconds). with minimal overhead.
+ * ### Accuracy
+ * The delayed quantity is obtained by linearly interpolating between past
+ * successful time steps. The accuracy of the output of the delay is not
+ * controlled by the integrators, and you must make sure the
+ * delay is sufficiently accurate for your use case.
+ * Smaller time steps improve the accuracy of the output; the maximum time
+ * step should be significantly smaller than the delay duration.
+ * See SimTK::Integrator::setMaximumStepSize.
  *
- * @note If the input to the delay is discontinuous (e.g., a step input),
- * the delay output will be incorrect unless you use an event
- * trigger (see SimTK::Event) to trigger a time step at the time of the
- * discontinuity. For example, if you have a step input at 0.5 seconds, use an
- * event trigger to force a time step at 0.5 seconds. Even then, the output
- * may be incorrect leading up to the delayed time of the discontinuity; make
- * sure your time steps are sufficiently small.
+ * The delayed quantity will be exactly correct if there was a time
+ * step at exactly `t - delay`; you can obtain an accurate delayed output
+ * if use a fixed step integrator whose with a delay duration that is
+ * a multiple of the fixed step size.
  *
- * @note A delay duration of 0 just passes through the value of the input.
+ * ### Discontinuous input
+ * If the input to the delay is discontinuous,
+ * the output of the delay is likely to be grossly inaccurate around the
+ * discontinuity (as a result of linear interpolation).
+ * You can remedy this problem in the case that your discontinuity is
+ * piecewise constant by using an event trigger to trigger time steps
+ * at the time of the discontinuity.
+ * For example, if you have a step input at 0.5 seconds, use an
+ * event trigger to force a time step at 0.5 seconds.
  *
- * This Component has a single input named "input" and a single output named
- * "output". The typical way to use this Component is as a subcomponent in
- * another component. Here is a basic example in which a controller specifies
+ * ### Example
+ * Here is a basic example in which a controller specifies
  * the control signal for a single actuator using the delayed value of a
  * coordinate:
  * @code
@@ -86,7 +101,7 @@ namespace OpenSim {
  *     }
  *     void extendConnectToModel(Model& model) override {
  *         Super::extendConnectToModel(model);
- *         const auto& coord = model.getCoordinateSet()[0];
+ *         const auto& coord = model.getCoordinateSet().get("ankle_angle");
  *         // Set the input for the Delay component.
  *         _coordDelay.getInput("input").connect(coord.getOutput("value"));
  *     }
@@ -109,7 +124,7 @@ public:
     OpenSim_DECLARE_PROPERTY(delay, double,
         "The duration (nonnegative, seconds) by which the output is delayed.");
     OpenSim_DECLARE_PROPERTY(can_use_current_value, bool,
-        "(Advanced) Use current value of input to compute delayed quantity.");
+        "(Advanced) Use current value of input to compute output.");
 
     /// Default constructor.
     Delay_();
@@ -197,7 +212,6 @@ void Delay_<T>::extendAddToSystem(SimTK::MultibodySystem& system) const {
 
 /** A Delay component that allows one to delay the value of a scalar quantity.
  * This is the most common type of Delay. See Delay_ for detailed information.
- *
  */
 typedef Delay_<SimTK::Real> Delay;
 
