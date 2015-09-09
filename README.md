@@ -120,7 +120,8 @@ On Windows using Visual Studio
     * Visual Studio 2015 does not install C++ 
       support by default. During the installation you must select 
       *Custom*, and check *Programming Languages > Visual C++ > Common Tools for Visual C++ 2015*.
-      You can uncheck all other boxes.
+      You can uncheck all other boxes. If you have already installed Visual
+      Studio without C++ support, simply re-run the installer and select *Modify*.
 * **physics engine**:
   [Simbody](https://github.com/simbody/simbody#windows-and-visual-studio) >= 3.6
 * **API documentation** (optional):
