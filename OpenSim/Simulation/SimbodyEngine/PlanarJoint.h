@@ -45,9 +45,9 @@ class OSIMSIMULATION_API PlanarJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PlanarJoint, Joint);
 
     /** Specify the Coordinates of the GimbalJoint */
-    CoordinateP rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    CoordinateP tx{ constructCoordinate(Coordinate::MotionType::Translational) };
-    CoordinateP ty{ constructCoordinate(Coordinate::MotionType::Translational) };
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex tx{ constructCoordinate(Coordinate::MotionType::Translational) };
+    CoordinateIndex ty{ constructCoordinate(Coordinate::MotionType::Translational) };
 
 public:
     /** Use Joint's constructors. @see Joint */

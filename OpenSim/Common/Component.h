@@ -1744,8 +1744,9 @@ private:
     // Underlying SimTK custom measure ComponentMeasure, which implements
     // the realizations in the subsystem by calling private concrete methods on
     // the Component. Every model component has one of these, allocated
-    // in its extendAddToSystem() method, and placed in the System's default subsystem.
-    SimTK::MeasureIndex  _simTKcomponentIndex;
+    // in its extendAddToSystem() method, and placed in the System's default
+    // subsystem.
+    SimTK::ResetOnCopy<SimTK::MeasureIndex> _simTKcomponentIndex;
 
     // Structure to hold modeling option information. Modeling options are
     // integers 0..maxOptionValue. At run time we keep them in a Simbody

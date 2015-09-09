@@ -39,6 +39,6 @@ if( JAVA_COMPILE )
 endif( JAVA_COMPILE )
 endif(BUILD_JAVA_WRAPPING)
 
-install(DIRECTORY Matlab DESTINATION Scripts PATTERN ".svn" EXCLUDE 
-                                             PATTERN "Matlab/Dynamic_Walker_Example" EXCLUDE)
+install(DIRECTORY Matlab DESTINATION Scripts 
+    PATTERN "Matlab/Dynamic_Walker_Example" EXCLUDE)
 

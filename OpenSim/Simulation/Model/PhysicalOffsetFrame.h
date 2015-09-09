@@ -53,28 +53,15 @@ public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
-    /** By default, the frame is not connected to any parent frame,
-     * and its transform is an identity transform.
-     */
-    PhysicalOffsetFrame();
+    /** Constructors are defined by the OffsetFrame base class */
+    using OffsetFrame<PhysicalFrame>::OffsetFrame;
 
-    virtual ~PhysicalOffsetFrame() {}
-
-    /**
-    A convenience constructor that initializes the parent connection and
-    offset property of this PhysicalOffsetFrame.
-
-    @param[in] parent   The parent PhysicalOffsetFrame.
-    @param[in] offset   The offset transform between this frame and its parent
-    */
-    PhysicalOffsetFrame(const PhysicalFrame& parent,
-                        const SimTK::Transform& offset);
+    ~PhysicalOffsetFrame() final {}
 
 protected:
     /** Extend Component interface for adding the PhysicalOffsetFrame to the 
         underlying multibody system */
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override final;
 
 //=============================================================================
 }; // END of class PhysicalOffsetFrame

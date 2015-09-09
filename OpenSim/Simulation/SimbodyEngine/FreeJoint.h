@@ -50,12 +50,12 @@ class OSIMSIMULATION_API FreeJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(FreeJoint, Joint);
 
 /** Specify the Coordinates of the FreeJoint */
-CoordinateP rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
-CoordinateP ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
-CoordinateP rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
-CoordinateP tx{ constructCoordinate(Coordinate::MotionType::Translational) };
-CoordinateP ty{ constructCoordinate(Coordinate::MotionType::Translational) };
-CoordinateP tz{ constructCoordinate(Coordinate::MotionType::Translational) };
+CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
+CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
+CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+CoordinateIndex tx{ constructCoordinate(Coordinate::MotionType::Translational) };
+CoordinateIndex ty{ constructCoordinate(Coordinate::MotionType::Translational) };
+CoordinateIndex tz{ constructCoordinate(Coordinate::MotionType::Translational) };
 
 public:
     /** Use Joint's constructors. @see Joint */
@@ -68,7 +68,7 @@ protected:
     void extendSetPropertiesFromState(const SimTK::State& state) override;
 
 private:
-    SimTK::MobilizedBodyIndex _masslessBodyIndex;
+    SimTK::ResetOnCopy<SimTK::MobilizedBodyIndex> _masslessBodyIndex;
     void setNull();
 //=============================================================================
 };  // END of class FreeJoint

@@ -60,16 +60,13 @@ Joint::Joint() : Super()
 /* API constructor. */
 Joint::Joint(const std::string &name, const std::string& parentName, 
                                       const std::string& childName,
-                                      bool reverse) : Super()
+                                      bool reverse) : Joint()
 {
-    setNull();
-    constructInfrastructure();
+    setName(name);
     set_reverse(reverse);
 
     updConnector<PhysicalFrame>("parent_frame").set_connectee_name(parentName);
     updConnector<PhysicalFrame>("child_frame").set_connectee_name(childName);
-
-    setName(name);
 }
 
 /* Deprecated Constructor*/
@@ -80,13 +77,14 @@ Joint::Joint(const std::string &name,
     const PhysicalFrame& child,
     const SimTK::Vec3& locationInChild,
     const SimTK::Vec3& orientationInChild,
-    bool reverse) : Super()
+    bool reverse)
+    // TODO. prefixing the joint name to the frame names should not be necessary.
+    // This is only required now because the search does not respect the local
+    // (relative) name, which it should find immediately, and instead is searching
+    // from the root of the tree.
+    : Joint(name, name + "/" + parent.getName() + "_offset",
+        name + "/" + child.getName() + "_offset")
 {
-    setNull();
-    constructInfrastructure();
-    setName(name);
-    set_reverse(reverse);
-
     // PARENT TRANSFORM
     Rotation parentRotation(BodyRotationSequence,
         orientationInParent[0], XAxis,
@@ -94,7 +92,7 @@ Joint::Joint(const std::string &name,
         orientationInParent[2], ZAxis);
     SimTK::Transform parentTransform(parentRotation, locationInParent);
     PhysicalOffsetFrame parentOffset(parent, parentTransform);
-    parentOffset.setName(parent.getName()+"_offset");
+    parentOffset.setName(parent.getName() + "_offset");
 
     // CHILD TRANSFORM
     Rotation childRotation(BodyRotationSequence,
@@ -103,28 +101,26 @@ Joint::Joint(const std::string &name,
         orientationInChild[2], ZAxis);
     SimTK::Transform childTransform(childRotation, locationInChild);
     PhysicalOffsetFrame childOffset(child, childTransform);
-    childOffset.setName(child.getName()+"_offset");
-
-    //for debugging color parent green and child blue
-    parentOffset.upd_geometry(0).setColor(SimTK::Vec3(0, 1, 0));
-    parentOffset.upd_geometry(0).set_scale_factors(SimTK::Vec3(0.1, 0.1, 0.1));
-    childOffset.upd_geometry(0).setColor(SimTK::Vec3(0, 0, 1));
-    childOffset.upd_geometry(0).set_scale_factors(SimTK::Vec3(0.1, 0.1, 0.1));
- 
+    childOffset.setName(child.getName() + "_offset");
 
     // Append the offset frames to the Joints internal list of frames
     append_frames(parentOffset);
     append_frames(childOffset);
-
-    updConnector<PhysicalFrame>("parent_frame").set_connectee_name(
-        getName() + "/" + parentOffset.getName() );
-    updConnector<PhysicalFrame>("child_frame").set_connectee_name(
-        getName() + "/" + childOffset.getName() );
 }
 
 //=============================================================================
-// CONSTRUCTION
+// CONSTRUCTION Utility
 //=============================================================================
+Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt)
+{
+    Coordinate* coord = new Coordinate();
+    coord->setMotionType(mt);
+    coord->setName(getName() + "_coord_"
+        + std::to_string(get_CoordinateSet().getSize()));
+    // CoordinateSet takes ownership
+    upd_CoordinateSet().adoptAndAppend(coord);
+    return CoordinateIndex(get_CoordinateSet().getIndex(coord));
+}
 
 //_____________________________________________________________________________
 /**
@@ -538,18 +534,18 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 connectors_node->element_begin("Connector_PhysicalFrame_");
             while (connectorElement != aNode.element_end()) {
                 // If connector name is "parent_body" rename it to "parent_frame"
-                if (connectorElement->getAllAttributes()[0].getValue() == "parent_body") {
-                    connectorElement->getAllAttributes()[0].setValue("parent_frame");
+                if (connectorElement->getRequiredAttributeValue("name") == "parent_body") {
+                    connectorElement->setAttributeValue("name", "parent_frame");
                 }
-                // If connector name is "parent_frame" get the name of the conectee
-                if (connectorElement->getAllAttributes()[0].getValue() == "parent_frame"){
+                // If connector name is "parent_frame" get the name of the connectee
+                if (connectorElement->getRequiredAttributeValue("name") == "parent_frame"){
                     parentNameElt = connectorElement->element_begin("connectee_name");
                     parentNameElt->getValueAs<std::string>(parentFrameName);
                 }
-                if (connectorElement->getAllAttributes()[0].getValue() == "child_body") {
-                    connectorElement->getAllAttributes()[0].setValue("child_frame");
+                if (connectorElement->getRequiredAttributeValue("name") == "child_body") {
+                    connectorElement->setAttributeValue("name", "child_frame");
                 }
-                if (connectorElement->getAllAttributes()[0].getValue() == "child_frame") {
+                if (connectorElement->getRequiredAttributeValue("name") == "child_frame") {
                     childNameElt =  connectorElement->element_begin("connectee_name");
                     childNameElt->getValueAs<std::string>(childFrameName);
                 }

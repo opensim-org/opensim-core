@@ -68,7 +68,7 @@ public:
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
 
-    /** Set the 'optimal_force' property. **/
+    /** %Set the 'optimal_force' property. **/
     void setOptimalForce(double optimalForce);
     /** Get the current setting of the 'optimal_force' property. **/
     double getOptimalForce() const override; // part of Actuator interface
@@ -81,7 +81,7 @@ public:
     bool isCoordinateValid() const;
     double getSpeed( const SimTK::State& s) const;
 
-    /** Set the reference pointer to point to the given Coordinate and set
+    /** %Set the reference pointer to point to the given Coordinate and set
     the 'coordinate' name property also. **/
     void setCoordinate(Coordinate* aCoordinate);
     /** Get a pointer to the Coordinate to which this actuator refers. **/

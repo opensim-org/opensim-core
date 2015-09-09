@@ -26,6 +26,7 @@
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 namespace OpenSim {
 
@@ -35,7 +36,7 @@ class ScaleSet;
 /**
 An OpenSim Joint is an OpenSim::ModelComponent which connects two PhysicalFrames
 together and specifies their relative permissible motion as described in
-internal coordinates. The base Joint specifies two frames (e.g. on two bodies),
+internal coordinates. The base Joint specifies two frames (e.g. one per body),
 which the joint spans. The relative motion (including the # of coordinates)
 are defined by concrete Joints, which specify the permissible kinematics of
 a child joint frame (on a child body) with respect to a parent joint frame
@@ -44,10 +45,13 @@ identify the directionality of the joint and in which frame the joint
 coordinates are expressed.
 
 For example, A PinJoint between a parent frame, P, and a child frame, B,
-have a coordinate value of zero when the two frames are aligned
-and positive coordinate values are the angle between the frames' X-axes given
+has a coordinate value of zero when the two frames are aligned and
+positive coordinate values are the angle between the frames' X-axes given
 a positive Z-rotation of the child frame about the coincident Z-axis in
 the parent frame.
+
+Note: the parent and child frames must be added to the model by the time
+      you call initSystem() on the model.
 
 Concrete Joints can specify relative translations and even coupled
 rotations and translations (see EllipsoidJoint and CustomJoint). For more
@@ -59,15 +63,28 @@ A Seth, M Sherman, P Eastman, S Delp; Nonlinear dynamics 62 (1), 291-303
 \code{.cpp}
     // Define a Pin joint between ground and platform.
     PinJoint* platformToGround = new PinJoint("PlatformToGround",
-                                              "ground", "platform", false);
+                                              "ground", "platform");
 \endcode
 
 <b>Python example</b>
 \code{.py}
     # Define a ball joint between blockA and blockB.
-    abJoint  = osim.BallJoint('JointName',
-            'blockA', 'blockB', False)
+    abJoint  = osim.BallJoint('JointName', 'blockA', 'blockB')
 \endcode
+
+In the case that you want to connect to an existing PhysicalFrame, like
+a Body or Ground, but not to their origins you can create
+PhysicalOffsetFrames to connect to and add them to the Joint.
+
+<b>C++ example</b>
+\code{.cpp}
+// Define a Pin joint between ground and platform with offsets.
+PinJoint* platformToGround = new PinJoint("PlatformToGround",
+                                          "groundOffset", "platformOffset");
+platformToGround.append_frames(new PhysicalOffsetFrame("groundOffset", ...));
+platformToGround.append_frames(new PhysicalOffsetFrame("platformOffset", ...));
+\endcode
+
 
 @author Ajay Seth
 */
@@ -86,20 +103,23 @@ public:
 
     OpenSim_DECLARE_PROPERTY(reverse, bool,
         "Advanced option. Specify the direction of the joint in the multibody tree: "
-        "parent->child (forward, reverse == false) or child->parent (reverse == true) "
+        "parent->child (forward, reverse is false) or child->parent (reverse is true) "
         "NOTE: the Joint transform and its coordinates maintain a parent->child "
         "sense, even if the Joint is reversed.");
 
-    /** Joint defined frames used to connect PhysicalFrames like Bodies and offsets
-        on bodies. */
     OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalFrame,
-        "Physical frames needed to satisfy the Joint's connections.");
+        "Physical frames owned by the Joint that are used to satisfy the Joint's "
+        "parent and child frame connections. For examples, PhysicalOffsetFrames "
+        "are often used to offset the connection from a Body's origin to another "
+        "location of interest (e.g. the joint center). That offset can be added "
+        "to the Joint. When the joint is delete so are the Frames in this list.");
     /**@}**/
 
 //=============================================================================
 // METHODS
 //=============================================================================
-    /** DEFAULT CONSTRUCTION */
+    /** Default Constructor. Create an unnamed Joint with parent and child
+        frame connectors that are unsastisfied. */
     Joint();
 
     /** Convenience Constructor */
@@ -112,19 +132,19 @@ public:
 
         @param[in] name     the name associated with this joint (should be
                             unique from other joints in the same model)
-        @param[in] parentName   the name of the parent PhysicalFrame of the joint
-        @param[in] childName    the name of the child PhysicalFrame of the joint
+        @param[in] parentName   the name of the parent PhysicalFrame for the joint
+        @param[in] childName    the name of the child PhysicalFrame for the joint
         @param[in] reverse  Advanced optional flag (bool) specifying the 
                             direction of the Joint in the multibody tree. 
-                            Default is false (that is, forward. parent to child).
+                            Default is false (that is, parent to child).
         */
     Joint( const std::string& name,
            const std::string& parentName,
            const std::string& childName,
            bool reverse = false);
 
-    /** DEPRECATED Convenience Constructor
-    Create a Joint where the parent and child are specified as well as the
+    /** <b>(Deprecated)</b> Use Joint(name, parentName, childName) instead. 
+    Construct a Joint where the parent and child are specified as well as the
     joint frames in the child and parent bodies in terms of their location
     and orientation in their respective physical frames. Also an advanced option
     to specify the tree structure to be constructed in the reverse direction,
@@ -151,7 +171,7 @@ public:
                         direction of the Joint in the multibody tree.
                         Default is false (that is, forward).
     */
-    DEPRECATED_14("Use Joint(name, parentName, childName) instead.")
+    //DEPRECATED_14("Use Joint(name, parentName, childName) instead.")
     Joint(const std::string& name,
         const PhysicalFrame& parent,
         const SimTK::Vec3& locationInParent,
@@ -161,7 +181,7 @@ public:
         const SimTK::Vec3& orientationInChild,
         bool reverse);
 
-    DEPRECATED_14("Use Joint(name, parentName, childName) instead.")
+    /** Same as above, without the option to reverse the joint. */
     Joint(const std::string& name,
         const PhysicalFrame& parent,
         const SimTK::Vec3& locationInParent,
@@ -253,28 +273,25 @@ public:
     virtual void scale(const ScaleSet& aScaleSet);
 
 protected:
-    /** A Coordinate place-holder created by constructCoordinate(). E.g.:  
+    /** A CoordinateIndex member is created by constructCoordinate(). E.g.:  
+    \code{.cpp}
     class My2DofJoint::Joint {
-        CoordinateP dof1{ constructCoordinate(Coordinate::MotionType::Rotational) };
-        CoordinateP dof2{ constructCoordinate(Coordinate::MotionType::Translatinal) };
+        CoordinateIndex dof1{ constructCoordinate(Coordinate::MotionType::Rotational) };
+        CoordinateIndex dof2{ constructCoordinate(Coordinate::MotionType::Translatinal) };
         ...
     }
+    \endcode
     */
-    using CoordinateP = SimTK::ReferencePtr<Coordinate>;
+#ifndef SWIG
+    /// @class Joint::CoordinateIndex
+    /// Unique integer type for local Coordinate indexing
+    SimTK_DEFINE_UNIQUE_INDEX_TYPE(CoordinateIndex)
 
     /** Utility for derived Joints to add Coordinate(s) to reflect its DOFs.
     Derived Joints must construct as many Coordinates as reflected by the
-    Mobilizer Qs unless those Qs are intended to be hidden. */
-    Coordinate* constructCoordinate(Coordinate::MotionType mt) {
-        Coordinate* coord = new Coordinate();
-        coord->setMotionType(mt);
-        std::stringstream name;
-        name << getName() << "_coord_" << get_CoordinateSet().getSize();
-        coord->setName(name.str());
-        // CoordinateSet takes ownership
-        upd_CoordinateSet().adoptAndAppend(coord);
-        return coord;
-    }
+    Mobilizer Qs. */
+    CoordinateIndex constructCoordinate(Coordinate::MotionType mt); 
+#endif //SWIG
 
     // build Joint transforms from properties
     void extendFinalizeFromProperties() override;

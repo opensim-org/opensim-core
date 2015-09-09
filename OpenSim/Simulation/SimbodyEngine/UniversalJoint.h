@@ -46,8 +46,8 @@ class OSIMSIMULATION_API UniversalJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(UniversalJoint, Joint);
 
     /** Specify the Coordinates of the UniversalJoint */
-    CoordinateP rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    CoordinateP ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
 
 public:
     /** Use Joint's constructors. @see Joint */

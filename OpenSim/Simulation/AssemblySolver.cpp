@@ -23,7 +23,6 @@
 
 #include "AssemblySolver.h"
 #include "Model/Model.h"
-#include "CoordinateReference.h"
 #include <OpenSim/Common/Constant.h>
 
 using namespace std;

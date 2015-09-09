@@ -60,18 +60,6 @@ public:
 // PUBLIC METHODS
 //=============================================================================
 
-    // Constructors are protected; has default destructor.
-
-    /** Implements a copy constructor just so it can invalidate the 
-    SimTK::Force index after copying. **/
-    Force(const Force &aForce);
-
-#ifndef SWIG
-    /** Implements a copy assignment operator just so it can invalidate the 
-    SimTK::Force index after the assignment. **/
-    Force& operator=(const Force &aForce);
-#endif
-
     /**
     * Tell SimBody to parallelize this force. Should be 
     * set to true for any forces that will take time to 
@@ -111,7 +99,9 @@ public:
     /** Return a flag indicating whether the Force is applied along a Path. If
     you override this method to return true for a specific subclass, it must
     also implement the getGeometryPath() method. **/
-    virtual bool hasGeometryPath() const { return getPropertyIndex("GeometryPath").isValid();};
+    virtual bool hasGeometryPath() const {
+        return getPropertyIndex("GeometryPath").isValid();
+    };
 
 protected:
     /** Default constructor sets up Force-level properties; can only be
@@ -223,12 +213,11 @@ protected:
 
 protected:
     /** ID for the force in Simbody. */
-    SimTK::ForceIndex   _index;
+    SimTK::ResetOnCopy<SimTK::ForceIndex> _index;
 
 private:
     void setNull();
     void constructProperties();
-    void copyData(const Force &aForce);
 
     friend class ForceAdapter;
 
