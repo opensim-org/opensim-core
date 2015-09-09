@@ -1218,9 +1218,51 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
     {   updProperty_##pname().setValue(value); }                            \
     /** @}                                                               */
 
+/*
+template <typename T, int CONCRETE = std::is_default_constructible<T>::value>
+struct Create {
+    static const T& create() {
+        return T();
+    }
+};
+
+template <typename T>
+struct Create<T, 0> {
+    static const T& create() {
+        //static_assert(false, "Something wrong happened.");
+        static_assert(std::is_default_constructible<T>::value, "Something wrong happened.");
+        throw OpenSim::Exception("Something wrong happeend");
+        return nullptr;
+    }
+};
+*/
+
+/* TODO OpenSim_DECLARE_PROPERTY_HELPER(pname,T, = PropertyIndex(std::is_default_constructible<T>::value ? this->template addProperty<T>(#pname, comment,Create<T>::create()) : SimTK::InvalidIndex))                            */ 
+
 // For backwards compatibility: the user initializes the property themselves
 // during class construction with constructProperty_prop_name().
-#define OpenSim_DECLARE_PROPERTY_ORIG(pname, T, comment)                    \
+#define OpenSim_DECLARE_PROPERTY_DEFAULTINIT(pname, T, comment)             \
+    /** @cond **/                                                           \
+    static_assert(std::is_default_constructible< T >::value, "DEBUG err");   \
+    OpenSim_DECLARE_PROPERTY_HELPER(pname,T,                                \
+            = Object::PropertyConstructHelper<T>::create(                   \
+                this, #pname, comment))                                     \
+    void constructProperty_##pname(const T& value) {                        \
+        if (std::is_default_constructible<T>::value) {                      \
+            /* TODO in this case people should not be calling constructPr*/ \
+            std::cout << "DEBUG default init constructible " << #pname << std::endl; \
+            set_##pname(value);                                             \
+        } else {                                                            \
+            std::cout << "DEBUG defaultinit " << #pname << std::endl;       \
+            PropertyIndex_##pname =                                         \
+                this->template addProperty<T>(#pname,comment,value);        \
+        }                                                                   \
+    }                                                                       \
+    /** @endcond **/                                                        \
+    OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)
+
+
+#define OpenSim_DECLARE_PROPERTY_UNINIT(pname, T, comment)                  \
     /** @cond **/                                                           \
     OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \
     void constructProperty_##pname(const T& initValue) {                    \
@@ -1234,7 +1276,7 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
 // use the macro in their class header. In this case, we do *not* define a
 // constructProperty_prop_name() method, since that could lead to unintended
 // behavior (providing a default value twice).
-#define OpenSim_DECLARE_PROPERTY_INIT(pname, T, comment, init)              \
+#define OpenSim_DECLARE_PROPERTY_USERINIT(pname, T, comment, init)          \
     /** @cond **/                                                           \
     OpenSim_DECLARE_PROPERTY_HELPER(pname,T,                                \
             = this->template addProperty<T>(#pname,comment,init))           \
@@ -1273,11 +1315,12 @@ A data member is also created but is intended for internal use only:
 
 #define OpenSim_DECLARE_PROPERTY(...)                                       \
     OpenSim_OVERLOAD_MACRO_4(__VA_ARGS__,                                   \
-            OpenSim_DECLARE_PROPERTY_INIT,                                  \
-            OpenSim_DECLARE_PROPERTY_ORIG)(__VA_ARGS__)
+            OpenSim_DECLARE_PROPERTY_USERINIT,                              \
+            OpenSim_DECLARE_PROPERTY_DEFAULTINIT)(__VA_ARGS__)
 
 #else
-
+// SWIG has trouble with the complex macro above;, here, we provide a simpler
+// and sufficient version. SWIG also allows providing 0 variadic arguments.
 #define OpenSim_DECLARE_PROPERTY(pname, T, comment, ...)                    \
     OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \
     OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)

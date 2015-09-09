@@ -48,7 +48,7 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(contact_parameters, 
+    OpenSim_DECLARE_PROPERTY_UNINIT(contact_parameters, 
         ElasticFoundationForce::ContactParametersSet,
         "Material properties.");
     OpenSim_DECLARE_PROPERTY(transition_velocity, double,

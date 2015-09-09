@@ -778,6 +778,13 @@ private:
     void updateDefaultObjectsFromXMLNode();
     void updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent);
 
+    // TODO relocate
+protected:
+    template <typename T, bool DEFCON = std::is_default_constructible<T>::value>
+    struct PropertyConstructHelper {
+        static PropertyIndex create(Object* obj, const std::string& name,
+                                                 const std::string& comment);
+    };
 
 //==============================================================================
 // DATA
@@ -998,6 +1005,21 @@ addListProperty(const std::string&  name,
     return PropertyIndex(_propertyTable.adoptProperty(p));
 }
 
+template <typename T>
+struct Object::PropertyConstructHelper<T, true> {
+    static PropertyIndex create(Object* obj, const std::string& name,
+                                                   const std::string& comment) {
+        return obj->template addProperty<T>(name, comment, T());
+    }
+};
+
+template <typename T>
+struct Object::PropertyConstructHelper<T, false> {
+    static PropertyIndex create(Object* obj, const std::string& name,
+                                                   const std::string& comment) {
+        return PropertyIndex(SimTK::InvalidIndex);
+    }
+};
 
 
 //==============================================================================

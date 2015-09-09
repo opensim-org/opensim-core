@@ -81,14 +81,13 @@ public:
 // PROPERTIES
 //==============================================================================
     OpenSim_DECLARE_PROPERTY(connectee_name, std::string,
-        "Name of the component this Connector should be connected to.");
+        "Name of the component this Connector should be connected to.", "");
 
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
     /** Default constructor */
     AbstractConnector() : Object(), connectAtStage(SimTK::Stage::Topology) {
-        constructProperties();
     }
 
     // default destructor, copy constructor
@@ -100,7 +99,6 @@ public:
     @param connectAtStage   Stage at which Connector should be connected. */
     AbstractConnector(const std::string& name, const SimTK::Stage& connectAtStage) :
         connectAtStage(connectAtStage) {
-        constructProperties();
         setName(name);
     }
 
@@ -134,7 +132,6 @@ public:
     virtual void disconnect() = 0;
 
 private:
-    void constructProperties() { constructProperty_connectee_name(""); }
     SimTK::Stage connectAtStage;
 //=============================================================================
 };  // END class AbstractConnector
