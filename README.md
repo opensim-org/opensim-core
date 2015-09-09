@@ -165,8 +165,8 @@ On Windows using Visual Studio
    `C:/opensim-core-build`, or some other path that is not inside your source
    directory. This is *not* where we are installing OpenSim-Core; see below.
 4. Click the **Configure** button.
-    1. Choose the *Visual Studio 12* generator (for Visual Studio 2013). To
-       build as 64-bit, select *Visual Studio 12 Win64*.
+    1. Choose the *Visual Studio 14* generator (for Visual Studio 2015). To
+       build as 64-bit, select *Visual Studio 14 Win64*.
     2. Click **Finish**.
 5. Where do you want to install OpenSim-Core on your computer? Set this by
    changing the `CMAKE_INSTALL_PREFIX` variable. We'll assume you set it to
