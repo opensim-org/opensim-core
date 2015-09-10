@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  ValueArray.h                          *
+ *                            OpenSim:  ValueArrayDictionary.h                *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -20,65 +20,43 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#ifndef OPENSIM_VALUEARRAY_H_
-#define OPENSIM_VALUEARRAY_H_
+#ifndef OPENSIM_VALUEARRAYDICTIONARY_H_
+#define OPENSIM_VALUEARRAYDICTIONARY_H_
 
-// Non-standard headers.
-#include "SimTKcommon.h"
-#include "OpenSim/Common/Exception.h"
+#include "OpenSim/Common/ValueArray.h"
 
 namespace OpenSim {
 
-class AbstractValueArray {
+class ValueArrayDictionary {
 public:
-    using AbstractValue = SimTK::AbstractValue;
+    using Dictionary = std::map<std::string, 
+                                std::unique_ptr<AbstractValueArray>>;
 
-    virtual AbstractValueArray* clone() const = 0;
-
-    virtual size_t size() const = 0;
-
-    virtual SimTK::AbstractValue& operator[](size_t index) = 0;
-
-    virtual const SimTK::AbstractValue& operator[](size_t index) const = 0;
-};
-
-
-template<typename T>
-class ValueArray : public AbstractValueArray {
-public:
-    template<typename U>
-    using Value = SimTK::Value<U>;
-
-    ValueArray* clone() const override {
-        auto copy = new ValueArray{};
-        copy->_values = _values;
-        return copy;
+    const AbstractValueArray& 
+    getValueArrayForKey(const std::string& key) const {
+        return *_dictionary.at(key);
     }
 
-    size_t size() const override {
-        return _values.size();
+    void setValueArrayForKey(const std::string& key, 
+                             const AbstractValueArray& abstractValueArray) {
+        using Value = std::unique_ptr<AbstractValueArray>;
+
+        _dictionary.emplace(key, 
+                            Value{abstractValueArray.clone()});
     }
 
-    Value<T>& operator[](size_t index) override {
-        return _values[index];
-    } 
-
-    const Value<T>& operator[](size_t index) const override {
-        return _values[index];
+    void removeArrayForKey(const std::string& key) {
+        _dictionary.erase(key);
     }
 
-    const std::vector<Value<T>>& get() const {
-        return _values;
+    std::pair<Dictionary::const_iterator, Dictionary::const_iterator>
+    getKeyValueIterator() const {
+        return std::make_pair(_dictionary.cbegin(), _dictionary.cend());
     }
-
-    std::vector<Value<T>>& upd() {
-        return _values;
-    }
-
 private:
-    std::vector<Value<T>> _values;
+    Dictionary _dictionary;
 };
 
 }
 
-#endif // OPENSIM_VALUEARRAY_H_
+#endif // OPENSIM_VALUEARRAYDICTIONARY_H_
