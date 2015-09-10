@@ -334,6 +334,42 @@ MODEL_ADOPT_HELPER(Analysis);
 MODEL_ADOPT_HELPER(Force);
 MODEL_ADOPT_HELPER(Controller);
 
+/*
+Extend concrete Joints to use the inherited base constructors.
+Note that CustomJoint and EllipsoidJoint do implement their own
+constructors because they have additional arguments.
+*/
+%define EXPOSE_JOINT_CONSTRUCTORS_HELPER(NAME)
+%extend OpenSim::NAME {
+	NAME(const std::string& name,
+         const std::string& parentName,
+         const std::string& childName) {
+		return new NAME(name, parentName, childName, false);
+	}
+	
+	NAME(const std::string& name,
+         const PhysicalFrame& parent,
+         const SimTK::Vec3& locationInParent,
+         const SimTK::Vec3& orientationInParent,
+         const PhysicalFrame& child,
+         const SimTK::Vec3& locationInChild,
+         const SimTK::Vec3& orientationInChild) {
+		return new NAME(name, parent, locationInParent, orientationInParent,
+					child, locationInChild, orientationInChild, false);
+	}
+};
+%enddef
+
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(FreeJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(BallJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(PinJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(SliderJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(WeldJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(GimbalJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(UniversalJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
+
+
 // Make sure clone does not leak memory
 %newobject *::clone; 
 
