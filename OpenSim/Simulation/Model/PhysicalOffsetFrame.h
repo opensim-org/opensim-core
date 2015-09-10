@@ -40,6 +40,9 @@ namespace OpenSim {
 * frame specified in the femur (thigh) and tibia (shank) Body reference frames.
 * This class has the methods of both the OffsetFrame (template) and the
 * PhysicalFrame class.
+* 
+* NOTE: PhysicalOffsetFrame is closed to extensions. Consider extending
+* OffsetFrame and/or use the mixin with a derived class of PhysicalFrame.
 *
 * @author Ajay Seth
 */

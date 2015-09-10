@@ -77,8 +77,8 @@ public:
                  SpatialTransform& aSpatialTransform,
                  bool reverse=false);
 
-    /** Deprecated Joint constructor with explicit offsets in terms of
-        location and orientation. */
+    /** Joint constructor with explicit parent and child offsets in terms of
+        their location and orientation. */
     CustomJoint(const std::string& name,
         const PhysicalFrame& parent,
         const SimTK::Vec3& locationInParent,

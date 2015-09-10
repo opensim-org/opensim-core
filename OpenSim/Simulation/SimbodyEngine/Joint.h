@@ -143,7 +143,7 @@ public:
            const std::string& childName,
            bool reverse = false);
 
-    /** <b>(Deprecated)</b> Use Joint(name, parentName, childName) instead. 
+    /** Backwards compatible Convenience Constructor 
     Construct a Joint where the parent and child are specified as well as the
     joint frames in the child and parent bodies in terms of their location
     and orientation in their respective physical frames. Also an advanced option
@@ -171,7 +171,6 @@ public:
                         direction of the Joint in the multibody tree.
                         Default is false (that is, forward).
     */
-    //DEPRECATED_14("Use Joint(name, parentName, childName) instead.")
     Joint(const std::string& name,
         const PhysicalFrame& parent,
         const SimTK::Vec3& locationInParent,
