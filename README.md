@@ -111,7 +111,7 @@ On Windows using Visual Studio
 
 * **operating system**: Windows 7 or 8.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.1.3
 * **compiler / IDE**: [Visual Studio 2015](https://www.visualstudio.com/).
     * *Visual Studio Community 2015* is sufficient and is free for everyone.
         If you want to use *Visual Studio Enterprise 2015*, you may be able 
