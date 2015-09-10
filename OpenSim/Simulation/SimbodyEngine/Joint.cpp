@@ -69,7 +69,7 @@ Joint::Joint(const std::string &name, const std::string& parentName,
     updConnector<PhysicalFrame>("child_frame").set_connectee_name(childName);
 }
 
-/* Deprecated Constructor*/
+/* Convenience Constructor*/
 Joint::Joint(const std::string &name,
     const PhysicalFrame& parent,
     const SimTK::Vec3& locationInParent,

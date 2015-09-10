@@ -336,6 +336,8 @@ MODEL_ADOPT_HELPER(Controller);
 
 /*
 Extend concrete Joints to use the inherited base constructors.
+This is only necessary because SWIG does not generate these inherited
+constructors provided by C++11's 'using' (e.g. using Joint::Joint) declaration.
 Note that CustomJoint and EllipsoidJoint do implement their own
 constructors because they have additional arguments.
 */
