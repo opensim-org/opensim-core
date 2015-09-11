@@ -518,6 +518,7 @@ add_subdirectory(OpenSim)
 if(NOT BUILD_API_ONLY)
     add_subdirectory(Applications)
 endif()
+add_subdirectory(Bindings)
 
 add_subdirectory(cmake)
 add_subdirectory(doc)
