@@ -54,7 +54,8 @@ private:
 
 protected:
 
-    OpenSim_DECLARE_LIST_PROPERTY(coordinates, std::string, "Names of generalized coordinates whose kinematics are to be recorded.");
+    OpenSim_DECLARE_LIST_PROPERTY(coordinates, std::string, 
+        "Names of generalized coordinates whose kinematics are to be recorded.");
 
     Array<int> _coordinateIndices;
     Array<double> _values;

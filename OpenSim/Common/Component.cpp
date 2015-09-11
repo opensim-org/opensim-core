@@ -184,7 +184,7 @@ void Component::connect(Component &root)
             throw Exception(getConcreteClassName() +
                 "::connect() Could not find component '"
                 + connector.get_connectee_name() + "' to satisfy Connector<" +
-                connector.getConnecteeTypeName() + "> '" + getName() + "' " +
+                connector.getConnecteeTypeName() + "> of '" + getName() + "' " +
                 "as a subcomponent of " + root.getName() + ".");
         }
     }

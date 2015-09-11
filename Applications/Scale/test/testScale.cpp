@@ -33,6 +33,7 @@
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
+#include <OpenSim/Simulation/Model/Ligament.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -43,15 +44,14 @@ using namespace std;
 void scaleGait2354();
 void scaleGait2354_GUI(bool useMarkerPlacement);
 void scaleModelWithLigament();
+bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp);
 
 int main()
 {
     try {
- 
         scaleGait2354();
         scaleGait2354_GUI(false);
         scaleModelWithLigament();
-
     }
     catch (const Exception& e) {
         e.print(cerr);
@@ -130,8 +130,8 @@ void scaleGait2354()
 
     const ScaleSet& computedScaleSet = ScaleSet(setupFilePath+"subject01_scaleSet_applied.xml");
 
-    ASSERT(computedScaleSet == stdScaleSet);
-    
+    ASSERT(compareStdScaleToComputed(stdScaleSet, computedScaleSet));
+
     delete model;
     delete subject;
 }
@@ -179,7 +179,7 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
 
     const ScaleSet& computedScaleSet = ScaleSet(setupFilePath+"subject01_scaleSet_applied_GUI.xml");
 
-    ASSERT(computedScaleSet == stdScaleSet);
+    ASSERT(compareStdScaleToComputed(stdScaleSet, computedScaleSet));
 
     delete subject;
 }
@@ -213,7 +213,6 @@ void scaleModelWithLigament()
     SimTK::State& s = model->updWorkingState();
     model->getMultibodySystem().realize(s, SimTK::Stage::Position);
 
-
     ASSERT(!scaleTool->isDefaultModelScaler() && scaleTool->getModelScaler().getApply());
     ModelScaler& scaler = scaleTool->getModelScaler();
     ASSERT(scaler.processModel(model, setupFilePath, scaleTool->getSubjectMass()));
@@ -221,8 +220,55 @@ void scaleModelWithLigament()
     const std::string& scaledModelFile = scaler.getOutputModelFileName();
     const std::string& std_scaledModelFile = "std_toyLigamentModelScaled.osim";
 
-    ASSERT(Model(scaledModelFile) == Model(std_scaledModelFile));
+    Model comp(scaledModelFile);
+    Model std(std_scaledModelFile);
+
+    comp.setup(); //required to call connect and build the Component tree 
+    std.setup();
+
+    ComponentList<Ligament> compLigs = comp.getComponentList<Ligament>();
+    ComponentList<Ligament> stdLigs = std.getComponentList<Ligament>();
+
+    ComponentList<Ligament>::const_iterator itc = compLigs.begin();
+    ComponentList<Ligament>::const_iterator its = stdLigs.begin();
+
+    for (; its != stdLigs.end() && itc != compLigs.end(); ++its, ++itc){
+        cout << "std:" << its->getName() << "==";
+        cout << "comp:" << itc->getName() << " : ";
+        cout << (*its == *itc) << endl;
+        ASSERT(*its == *itc, __FILE__, __LINE__,
+            "Scaled ligament " + its->getName() + " did not match standard.");
+    }
+
+    std.print("std_toyLigamentModelScaled_latest.osim");
+    comp.print("comp_toyLigamentModelScaled_latest.osim");
+
+    //Finally make sure we didn't incorrectly scale anything else in the model
+    ASSERT(std == comp);
 
     delete model;
     delete scaleTool;
+}
+
+bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp) {
+    for (int i = 0; i < std.getSize(); ++i) {
+        const Scale& scaleStd = std[i];
+        int fix = -1;
+        //find corresponding scale factor by segment name
+        for (int j = 0 ; j < comp.getSize(); ++j) {
+            if (comp[j].getSegmentName() == scaleStd.getSegmentName()) {
+                fix = j;
+                break;
+            }
+        }
+        if (fix < 0) {
+            cout << "Computed ScaleSet does not contain factors for ";
+            cout << std[i].getSegmentName() << "." << endl;
+            return false;
+        }
+        if (!(scaleStd == comp[fix])) {
+            return false;
+        }
+    }
+    return true;
 }

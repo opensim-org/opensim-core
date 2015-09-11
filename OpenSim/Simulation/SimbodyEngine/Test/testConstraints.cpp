@@ -490,20 +490,20 @@ void testCoordinateLocking()
 
     // create hip as a pin joint
     PinJoint hip("hip",ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
-
     // Rename hip coordinates for a pin joint
     hip.getCoordinateSet()[0].setName("hip_flex");
-    
+
     // Add the thigh body 
     osimModel->addBody(&osim_thigh);
     osimModel->addJoint(&hip);
 
     // Add OpenSim shank via a knee joint
-    OpenSim::Body osim_shank("shank", tibiaMass.getMass(), tibiaMass.getMassCenter(), tibiaMass.getInertia());
+    OpenSim::Body osim_shank("shank", tibiaMass.getMass(),
+        tibiaMass.getMassCenter(), tibiaMass.getInertia());
 
     // create pin knee joint
-    PinJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0), osim_shank, Vec3(0), Vec3(0));
-    knee.getCoordinateSet()[0].setName("knee_q");
+    PinJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0),
+                          osim_shank, Vec3(0), Vec3(0));
 
     // Add the shank body and knee joint
     osimModel->addBody(&osim_shank);
@@ -832,7 +832,8 @@ void testCoordinateCouplerConstraint()
     osimModel->addJoint(&hip);
 
     // Add another body via a knee joint
-    OpenSim::Body osim_shank("shank", tibiaMass.getMass(), tibiaMass.getMassCenter(), tibiaMass.getInertia());
+    OpenSim::Body osim_shank("shank", tibiaMass.getMass(),
+        tibiaMass.getMassCenter(), tibiaMass.getInertia());
 
     // Define knee coordinates and axes for custom joint spatial transform
     SpatialTransform kneeTransform;
@@ -1008,8 +1009,7 @@ void testRollingOnSurfaceConstraint()
     osim_rod->addGeometry(cylGeom);
 
     // create rod as a free joint
-    auto rodJoint = new PlanarJoint("rodToGround", ground, Vec3(0), Vec3(0),
-                                                *osim_rod, Vec3(0), Vec3(0));
+    auto rodJoint = new PlanarJoint("rodToGround", ground.getName(), osim_rod->getName());
 
     // Add the thigh body which now also contains the hip joint to the model
     osimModel->addBody(osim_rod);

@@ -349,15 +349,23 @@ public:
 
     template <class C>
     const C& getComponent(const std::string& name) const {
+        const Component& comp = getComponent(name);
+        const C* compC = dynamic_cast<const C*>(&comp);
+
+        if (compC) {
+            return *compC;
+        } //TODO only use the component iterator when they can be used upon construction
         ComponentList<C> compsList = getComponentList<C>();
         for (const C& comp : compsList) {
-            if (comp.getName() == name){
+            if (comp.getName() == name) {
                 return comp;
             }
         }
+
+
         std::stringstream msg;
         msg << getConcreteClassName() + ": ERR- Cannot find '" << name
-            << "' of type " << compsList.begin()->getConcreteClassName() << ".";
+            << "' of type " << comp.getConcreteClassName() << ".";
         throw Exception(msg.str(), __FILE__, __LINE__);
     }
 

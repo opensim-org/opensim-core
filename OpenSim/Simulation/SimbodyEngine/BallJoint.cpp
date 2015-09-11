@@ -36,47 +36,12 @@ using namespace SimTK;
 using namespace OpenSim;
 
 //=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-BallJoint::~BallJoint()
-{
-}
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-BallJoint::BallJoint() : Joint()
-{
-    setAuthors("Ajay Seth");
-    constructCoordinates();
-}
-//_____________________________________________________________________________
-/**
- * Convenience Constructor.
- */
-BallJoint::BallJoint(const std::string &name, const PhysicalFrame& parent, 
-                     const Vec3& locationInParent, const Vec3& orientationInParent,
-                     const OpenSim::Body& body,
-                     const Vec3& locationInBody, const Vec3& orientationInBody, 
-                     bool reverse) :
-            Joint(name, parent, locationInParent,orientationInParent,
-                    body, locationInBody, orientationInBody, reverse)
-{
-    setAuthors("Ajay Seth");
-    constructCoordinates();
-}
-
-
-//=============================================================================
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
 void BallJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
     createMobilizedBody<MobilizedBody::Ball>(system);
 }
 

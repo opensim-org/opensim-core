@@ -133,7 +133,7 @@ public:
 
     /** Scale PhysicalFrame related dimensions according to predetermined 
         ScaleFactors */
-    void scale(const SimTK::Vec3& aScaleFactors);
+    void scale(const SimTK::Vec3& scaleFactors);
 
     /** @name DEPRECATED API */
 

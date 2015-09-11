@@ -50,7 +50,6 @@ PhysicalFrame::PhysicalFrame() : Frame()
     frm.set_display_radius(.004);
     frm.setRepresentation(Geometry::Hide);
     append_geometry(frm);
-
 }
 
 void PhysicalFrame::constructProperties()
