@@ -48,7 +48,7 @@ private:
         constructOutput<double>("term_2",
                 &ComplexResponse::getTerm2, SimTK::Stage::Velocity);
         constructOutput<double>("sum", &ComplexResponse::getTotal,
-                SimTK::Stage::Time);
+                SimTK::Stage::Velocity);
     }
     void extendAddToSystem(MultibodySystem& system) const override {
         Super::extendAddToSystem(system);
@@ -61,11 +61,61 @@ private:
     }
 };
 
-//class AggregateResponse : public ModelComponent {
+class AggregateResponse : public ModelComponent {
+    OpenSim_DECLARE_CONCRETE_OBJECT(AggregateResponse, ModelComponent);
+public:
+    AggregateResponse() { constructInfrastructure(); }
+// TODO want to use list property, but that makes clones and inputs/outputs
+// don't get copied yet.
 //    OpenSim_DECLARE_LIST_PROPERTY(responses, ComplexResponse,
 //            "for individual coordinates.");
-//    OpenSim_DECLARE_PROPERTY(scaling_factor, double, "Affects each coord.");
-//};
+    // Temporary solution:
+    std::vector<std::shared_ptr<ComplexResponse>> responses;
+
+    // TODO how do we propagate this scaling_factor to the ComplexResponses?
+    OpenSim_DECLARE_PROPERTY(scaling_factor, double, "Affects each coord.");
+
+    double getTotalSum(const State& s) const {
+        const double basalRate = 1.0;
+        double totalSum = 1.0;
+        for (const auto& response : responses) {
+            totalSum += response->getOutputValue<double>(s, "sum");
+        }
+        return totalSum;
+    }
+
+    double getTotalTerm1(const State& s) const {
+        double totalTerm1;
+        for (const auto& response : responses) {
+            totalTerm1 += response->getOutputValue<double>(s, "term_1");
+        }
+        return totalTerm1;
+    }
+
+    double getTotalTerm2(const State& s) const {
+        double totalTerm2;
+        for (const auto& response : responses) {
+            totalTerm2 += response->getOutputValue<double>(s, "term_2");
+        }
+        return totalTerm2;
+    }
+
+private:
+    void extendFinalizeFromProperties() {
+        Super::extendFinalizeFromProperties();
+        for (auto& response : responses) {
+            addComponent(response.get());
+        }
+    }
+    void constructOutputs() override {
+        constructOutput<double>("total_sum",
+                &AggregateResponse::getTotalSum, SimTK::Stage::Position);
+        constructOutput<double>("total_term_1",
+                &AggregateResponse::getTotalTerm1, SimTK::Stage::Velocity);
+        constructOutput<double>("total_term_2",
+                &AggregateResponse::getTotalTerm2, SimTK::Stage::Velocity);
+    }
+};
 
 template <typename T>
 class ConsoleReporter : public ModelComponent {
@@ -76,13 +126,17 @@ public:
     }
 private:
     void constructInputs() override {
-        constructInput<T>("input", SimTK::Stage::Acceleration);
+        constructInput<T>("input1", SimTK::Stage::Acceleration);
+        // constructInput<T>("input2", SimTK::Stage::Acceleration);
+        constructInput<T>("input3", SimTK::Stage::Acceleration);
         // multi input: constructMultiInput<T>("input", SimTK::Stage::Acceleration);
     }
     void extendRealizeReport(const State& state) const override {
         // multi input: loop through multi-inputs.
         std::cout << std::setw(10) << state.getTime() << ": " <<
-            getInputValue<T>(state, "input") << std::endl;
+            getInputValue<T>(state, "input1") << " " <<
+            // getInputValue<T>(state, "input2") << " " <<
+            getInputValue<T>(state, "input3") << std::endl;
     }
 };
 
@@ -111,13 +165,24 @@ void testComplexResponse() {
     auto j3 = new PinJoint("j3", *b2, Vec3(0), Vec3(0),
                *b3, Vec3(0, 1, 0), Vec3(0));
 
-    auto cr = new ComplexResponse();
-    cr->setName("complex_response");
-    cr->updConnector<Coordinate>("coord").set_connectee_name("j1_coord_0");
+    auto aggregate = new AggregateResponse();
+    aggregate->setName("aggregate_response");
+    aggregate->responses.push_back(
+            std::shared_ptr<ComplexResponse>(new ComplexResponse()));
+    aggregate->responses[0]->setName("complex_response_j1");
+    aggregate->responses[0]->updConnector<Coordinate>("coord")
+        .set_connectee_name("j1_coord_0");
+    aggregate->responses.push_back(
+            std::shared_ptr<ComplexResponse>(new ComplexResponse()));
+    aggregate->responses[1]->setName("complex_response_j2");
+    aggregate->responses[1]->updConnector<Coordinate>("coord")
+        .set_connectee_name("j2_coord_0");
 
     auto reporter = new ConsoleReporter<double>();
     reporter->setName("reporter");
-    reporter->getInput("input").connect(cr->getOutput("sum"));
+    reporter->getInput("input1").connect(aggregate->responses[0]->getOutput("sum"));
+    //reporter->getInput("input2").connect(aggregate->responses[1]->getOutput("sum"));
+    reporter->getInput("input3").connect(aggregate->getOutput("total_sum"));
     // TODO connect by path: reporter->getInput("input").connect("/complex_response/sum");
     // multi input: reporter->getMultiInput("input").append_connect(cr->getOutput("sum"));
 
@@ -127,7 +192,7 @@ void testComplexResponse() {
     model.addJoint(j1);
     model.addJoint(j2);
     model.addJoint(j3);
-    model.addModelComponent(cr); 
+    model.addModelComponent(aggregate); 
     model.addModelComponent(reporter);
 
     State& state = model.initSystem();
