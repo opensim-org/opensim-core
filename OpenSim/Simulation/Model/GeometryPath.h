@@ -77,7 +77,7 @@ private:
     // Solver used to compute moment-arms. The GeometryPath owns this object,
     // but we cannot simply use a unique_ptr because we want the pointer to be
     // cleared on copy.
-    SimTK::NullOnCopyUniquePtr<MomentArmSolver> _maSolver;
+    SimTK::ResetOnCopy<std::unique_ptr<MomentArmSolver> > _maSolver;
     
 //=============================================================================
 // METHODS
@@ -87,9 +87,7 @@ private:
     //--------------------------------------------------------------------------
 public:
     GeometryPath();
-#ifndef SWIG
     ~GeometryPath() override = default;
-#endif
 
     const PathPointSet& getPathPointSet() const { return get_PathPointSet(); }
     PathPointSet& updPathPointSet() { return upd_PathPointSet(); }

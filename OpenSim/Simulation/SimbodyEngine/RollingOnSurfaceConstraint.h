@@ -73,7 +73,7 @@ public:
 private:
 
     /** Get the indices of underlying constraints to access from Simbody */
-    std::vector<SimTK::ConstraintIndex> _indices;
+    SimTK::ResetOnCopy<std::vector<SimTK::ConstraintIndex>> _indices;
 
     /**  This cache acts a temporary hold for the constraint conditions when time has not changed */
     std::vector<bool> _defaultUnilateralConditions;

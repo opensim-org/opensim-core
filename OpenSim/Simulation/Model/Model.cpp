@@ -48,7 +48,6 @@
 #include "SimTKcommon/internal/SystemGuts.h"
 
 #include "Model.h"
-#include "ModelVisualizer.h"
 
 #include "Muscle.h"
 #include "Ligament.h"
@@ -92,10 +91,10 @@ Model::Model() :
     _coordinateSet(CoordinateSet()),
     _useVisualizer(false),
     _allControllersEnabled(true),
-    _system(nullptr),
     _workingState()
 {
-    constructInfrastructure();    setNull();
+    constructInfrastructure();
+    setNull();
     finalizeFromProperties();
 }
 //_____________________________________________________________________________
@@ -109,7 +108,6 @@ Model::Model(const string &aFileName, const bool finalize) :
     _coordinateSet(CoordinateSet()),
     _useVisualizer(false),
     _allControllersEnabled(true),
-    _system(nullptr),
     _workingState()
 {   
     constructInfrastructure();
@@ -124,20 +122,6 @@ Model::Model(const string &aFileName, const bool finalize) :
     cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
 }
 
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-Model::~Model()
-{
-    delete _assemblySolver;
-    delete _modelViz;
-    delete _contactSubsystem;
-    delete _gravityForce;
-    delete _forceSubsystem;
-    delete _matter;
-    delete _system; 
-}
 //_____________________________________________________________________________
 /**
  * Override default implementation by object to intercept and fix the XML node
@@ -191,8 +175,8 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                     SimTK::String parent_name = "ground";
                     parentBodyElement->getValueAs<SimTK::String>(parent_name);
                     //cout << "Processing Joint " << concreteJointNode->getElementTag() << "Parent body " << parent_name << std::endl;
-                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "parent_body", parent_name);
-                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "child_body", body_name);
+                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "parent_frame", parent_name);
+                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "child_frame", body_name);
                     concreteJointNode->eraseNode(parentBodyElement);
                     jointObjects.insertNodeAfter(jointObjects.node_end(), *concreteJointNode);
                     detach_joint_node.clearOrphan();
@@ -218,16 +202,6 @@ void Model::setNull()
 {
     _useVisualizer = false;
     _allControllersEnabled = true;
-
-    _system = NULL;
-    _matter = NULL;
-
-    _forceSubsystem = NULL;
-    _contactSubsystem = NULL;
-    _gravityForce = NULL;
-
-    _modelViz = NULL;
-    _assemblySolver = NULL;
 
     _validationLog="";
 
@@ -301,7 +275,7 @@ void Model::buildSystem() {
     // Create a Visualizer for this Model if one has been requested. This adds
     // necessary elements to the System. Doesn't initialize geometry yet.
     if (getUseVisualizer())
-        _modelViz = new ModelVisualizer(*this);
+        _modelViz.reset(new ModelVisualizer(*this));
 }
 
 
@@ -470,27 +444,25 @@ bool Model::isValidSystem() const
  */
 void Model::createMultibodySystem()
 {
-    if(_system) // if system was built previously start fresh
-    {
-        // Delete the old system.
-        delete _modelViz;
-        delete _gravityForce;
-        delete _contactSubsystem;
-        delete _forceSubsystem;
-        delete _matter;
-        delete _system;
-    }
 
-    // create system    
-    _system = new SimTK::MultibodySystem;
-    _matter = new SimTK::SimbodyMatterSubsystem(*_system);
-    _forceSubsystem = new SimTK::GeneralForceSubsystem(*_system);
-    _contactSubsystem = new SimTK::GeneralContactSubsystem(*_system);
+    // We must reset these unique_ptr's before deleting the System (through
+    // reset()), since deleting the System puts a null handle pointer inside
+    // the subsystems (since System deletes the subsystems).
+    _matter.reset();
+    _forceSubsystem.reset();
+    _contactSubsystem.reset();
+    // create system
+    _system.reset(new SimTK::MultibodySystem);
+    _matter.reset(new SimTK::SimbodyMatterSubsystem(*_system));
+    _forceSubsystem.reset(new SimTK::GeneralForceSubsystem(*_system));
+    _contactSubsystem.reset(new SimTK::GeneralContactSubsystem(*_system));
 
-    // create gravity force, a direction is needed even if magnitude=0 for PotentialEnergy purposes.
+    // create gravity force, a direction is needed even if magnitude=0 for
+    // PotentialEnergy purposes.
     double magnitude = get_gravity().norm();
     SimTK::UnitVec3 direction = magnitude==0 ? SimTK::UnitVec3(0,-1,0) : SimTK::UnitVec3(get_gravity()/magnitude);
-    _gravityForce = new SimTK::Force::Gravity(*_forceSubsystem, *_matter, direction, magnitude);
+    _gravityForce.reset(new SimTK::Force::Gravity(*_forceSubsystem, *_matter,
+                direction, magnitude));
 
     addToSystem(*_system);
 }
@@ -517,8 +489,7 @@ void Model::extendFinalizeFromProperties()
         else{
             _multibodyTree.addJointType(
                 availablJointTypes[i]->getConcreteClassName(),
-                availablJointTypes[i]->numCoordinates(),
-                (availablJointTypes[i]->getConcreteClassName() == "BallJoint"));
+                availablJointTypes[i]->numCoordinates(), false);
         }
     }
 
@@ -561,36 +532,47 @@ void Model::extendFinalizeFromProperties()
         }
     }
 
+    FrameSet& fs = updFrameSet();
+    int nf = fs.getSize();
+    for (int i = 0; i<nf; ++i) {
+        addComponent(&fs[i]);
+    }
 
     // Complete multibody tree description by indicating how "bodies" are
     // connected by joints.
     if(getJointSet().getSize()>0)
     {
         JointSet &js = updJointSet();
+
         int nj = js.getSize();
         for (int i = 0; i<nj; ++i){
             std::string name = js[i].getName();
             IO::TrimWhitespace(name);
 
-            if ((name.empty()) || (name == "")){
+            if (name.empty()){
                 name = js[i].getParentFrameName() + "_to_" + js[i].getChildFrameName();
             }
 
+            // TODO Remove this when subcomponents can be iterated upon construction.
+            // We are only calling finalizeFromProperties so that any offset frames
+            // belonging to the Joint are marked as subcomponents and can be found.
+            js[i].finalizeFromProperties();
             addComponent(&js[i]);
+            // TODO Remove this when subcomponents can be iterated upon construction.
+            // Currently we need to take a first pass at connecting the joints in 
+            // order to find the frames that they attach to and their underlying bodies.
+            js[i].connect(*this);
+
             // Use joints to define the underlying multibody tree
             _multibodyTree.addJoint(name,
                 js[i].getConcreteClassName(),
-                js[i].getParentFrameName(),
-                js[i].getChildFrameName(),
+                // Multibody tree builder only cares about bodies not intermediate
+                // frames that joints actually connect to.
+                js[i].getParentFrame().findBaseFrame().getName(),
+                js[i].getChildFrame().findBaseFrame().getName(),
                 false,
                 &js[i]);
         }
-    }
-
-    FrameSet& fs = updFrameSet();
-    int nf = fs.getSize();
-    for (int i = 0; i<nf; ++i){
-            addComponent(&fs[i]);
     }
 
     if(getConstraintSet().getSize()>0)
@@ -723,8 +705,8 @@ void Model::extendConnectToModel(Model &model)
 
             std::string jname = "free_" + child->getName();
             SimTK::Vec3 zeroVec(0.0);
-            Joint* free = new FreeJoint(jname,
-                               *ground, zeroVec, zeroVec, *child, zeroVec, zeroVec);
+            Joint* free = new FreeJoint(jname, ground->getName(), child->getName());
+            free->finalizeFromProperties();
             addJoint(free);
         }
         else{
@@ -766,15 +748,15 @@ void Model::extendConnectToModel(Model &model)
 
         if (joint.getConcreteClassName() == "WeldJoint") {
             WeldConstraint* weld = new WeldConstraint( joint.getName()+"_Loop",
-                parent, joint.getParentTransform(),
-                child, joint.getChildTransform());
+                parent, joint.getParentFrame().findTransformInBaseFrame(),
+                child, joint.getChildFrame().findTransformInBaseFrame());
             addConstraint(weld);
 
         }
         else if (joint.getConcreteClassName() == "BallJoint") {
             PointConstraint* point = new PointConstraint(
-                parent, joint.getParentTransform().p(),
-                child,  joint.getChildTransform().p()   );
+                parent, joint.getParentFrame().findTransformInBaseFrame().p(),
+                child, joint.getChildFrame().findTransformInBaseFrame().p());
             point->setName(joint.getName() + "_Loop");
             addConstraint(point);
         }
@@ -824,7 +806,7 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
     // its "slots" and retain its index by accessing this cached Vector
     // value depends on velocity and invalidates dynamics BUT should not trigger
     // recomputation of the controls which are necessary for dynamics
-    Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(), 
+    Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(),
         Stage::Velocity, Stage::Acceleration);
 
     mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
@@ -1579,13 +1561,10 @@ void Model::createAssemblySolver(const SimTK::State& s)
         }
     }
 
-    // Have an AssemblySolver on hand, but delete any old one first
-    delete _assemblySolver;
-
     // Use the assembler to generate the initial pose from Coordinate defaults
     // that also satisfies the constraints. AssemblySolver makes copy of
     // coordsToTrack
-    _assemblySolver = new AssemblySolver(*this, coordsToTrack);
+    _assemblySolver.reset(new AssemblySolver(*this, coordsToTrack));
     _assemblySolver->setConstraintWeight(SimTK::Infinity);
     _assemblySolver->setAccuracy(get_assembly_accuracy());
 }
@@ -2161,3 +2140,4 @@ void Model::constructOutputs()
        std::bind(&Model::calcMassCenterAcceleration,this,std::placeholders::_1), SimTK::Stage::Acceleration);
     
 }
+

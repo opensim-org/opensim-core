@@ -25,7 +25,7 @@ def test_markAdopted1():
 def test_markAdopted2():
     a = osim.Model()
 
-    # We just need the following not to not cause a segfault.
+    # We just need the following not to cause a segfault.
 
     # Model add*
     a.addForce(osim.PathActuator())
@@ -97,11 +97,12 @@ def test_Joint():
             body,
             loc_in_body, orient_in_parent)
     del joint
+    spatialTransform = osim.SpatialTransform()
     joint = osim.CustomJoint("joint",
             a.getGround(),
             loc_in_parent, orient_in_parent,
             body,
-            loc_in_body, orient_in_parent)
+            loc_in_body, orient_in_parent, spatialTransform)
     del joint
     joint = osim.EllipsoidJoint("joint",
             a.getGround(),

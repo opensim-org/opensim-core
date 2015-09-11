@@ -30,48 +30,27 @@ namespace OpenSim {
 
 /**
 A class implementing a Gimbal joint. The underlying implementation Simbody is a
-SimTK::MobilizedBody::Gimbal. The opensim Gimbal joint implementation uses a fixed
- 1-2-3 (x-y-z) body fixed Euler sequence for generalized coordinates calculation.
+SimTK::MobilizedBody::Gimbal. The opensim Gimbal joint implementation uses a 
+ X-Y-Z body fixed Euler sequence for generalized coordinates calculation.
 Gimbal joints have a singularity when Y is near \f$\frac{\pi}{2}\f$.
-Generalized speeds are equal to the Eular angle derivatives  (\f$\vec{u} = \dot{\vec{q}}\f$)
+Generalized speeds are equal to the Euler angle derivatives  (\f$\vec{u} = \dot{\vec{q}}\f$)
 
 \image html gimbalJoint.gif
 
 @author Tim Dorn
 @author Ajay Seth
 */
-
-
 class OSIMSIMULATION_API GimbalJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(GimbalJoint, Joint);
 
-private:
-    static const int _numMobilities = 3;
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
+    /** Specify the Coordinates of the GimbalJoint */
+    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
 
-
-//=============================================================================
-// METHODS
-//=============================================================================
 public:
-    // CONSTRUCTION
-    GimbalJoint();
-    // convenience constructor
-    GimbalJoint(const std::string &name,
-        const PhysicalFrame& parent,
-        const SimTK::Vec3& locationInParent,
-        const SimTK::Vec3& orientationInParent,
-        const PhysicalFrame& child,
-        const SimTK::Vec3& locationInChild,
-        const SimTK::Vec3& orientationInChild,
-        bool reverse = false);
-
-    virtual ~GimbalJoint();
-
-    int numCoordinates() const override  {return _numMobilities;}
+    /** Use Joint's constructors. @see Joint */
+    using Joint::Joint;
 
 protected:
     // ModelComponent interface.

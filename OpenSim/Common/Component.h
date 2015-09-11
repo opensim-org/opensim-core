@@ -349,15 +349,23 @@ public:
 
     template <class C>
     const C& getComponent(const std::string& name) const {
+        const Component& comp = getComponent(name);
+        const C* compC = dynamic_cast<const C*>(&comp);
+
+        if (compC) {
+            return *compC;
+        } //TODO only use the component iterator when they can be used upon construction
         ComponentList<C> compsList = getComponentList<C>();
         for (const C& comp : compsList) {
-            if (comp.getName() == name){
+            if (comp.getName() == name) {
                 return comp;
             }
         }
+
+
         std::stringstream msg;
         msg << getConcreteClassName() + ": ERR- Cannot find '" << name
-            << "' of type " << compsList.begin()->getConcreteClassName() << ".";
+            << "' of type " << comp.getConcreteClassName() << ".";
         throw Exception(msg.str(), __FILE__, __LINE__);
     }
 
@@ -1736,8 +1744,9 @@ private:
     // Underlying SimTK custom measure ComponentMeasure, which implements
     // the realizations in the subsystem by calling private concrete methods on
     // the Component. Every model component has one of these, allocated
-    // in its extendAddToSystem() method, and placed in the System's default subsystem.
-    SimTK::MeasureIndex  _simTKcomponentIndex;
+    // in its extendAddToSystem() method, and placed in the System's default
+    // subsystem.
+    SimTK::ResetOnCopy<SimTK::MeasureIndex> _simTKcomponentIndex;
 
     // Structure to hold modeling option information. Modeling options are
     // integers 0..maxOptionValue. At run time we keep them in a Simbody
