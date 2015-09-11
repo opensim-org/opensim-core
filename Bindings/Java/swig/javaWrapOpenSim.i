@@ -235,11 +235,11 @@
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
 
-#include <OpenSim/Wrapping/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
+#include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
 
 #include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
 
-#include <OpenSim/Wrapping/Java/OpenSimJNI/OpenSimContext.h>
+#include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -1136,6 +1136,6 @@ namespace SimTK {
 
 %include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
 
-%include <OpenSim/Wrapping/Java/OpenSimJNI/OpenSimContext.h>
+%include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
 
-%include <OpenSim/Wrapping/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
+%include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>

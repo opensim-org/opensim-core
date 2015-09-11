@@ -20,7 +20,7 @@ set(swig_output_cxx_file_fullname
 set(swig_output_header_file_fullname
     ${CMAKE_CURRENT_BINARY_DIR}/pyOpenSim_wrap.h)
 set(swig_interface_file_fullname
-    ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/Python/swig/pyWrapOpenSim.i)
+    ${OpenSim_SOURCE_DIR}/Bindings/Python/swig/pyWrapOpenSim.i)
 
 # Using a custom command / custom target pair so that SWIG is only run when
 # it's out of date. Previously, we used a custom target only. But, custom
@@ -30,7 +30,7 @@ add_custom_command(
         ${swig_output_cxx_file_fullname} ${swig_output_header_file_fullname}
     COMMAND ${SWIG_EXECUTABLE} -v -c++ -python
         -I${OpenSim_SOURCE_DIR}
-        -I${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/
+        -I${OpenSim_SOURCE_DIR}/Bindings/
         -I${Simbody_INCLUDE_DIR}
         -o ${swig_output_cxx_file_fullname}
         -outdir ${CMAKE_CURRENT_BINARY_DIR}

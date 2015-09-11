@@ -251,7 +251,7 @@ own project.
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
 
-#include <OpenSim/Wrapping/Python/OpenSimContext.h>
+#include <Bindings/Python/OpenSimContext.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -947,7 +947,7 @@ namespace OpenSim {
 %include <OpenSim/Tools/AnalyzeTool.h>
 %include <OpenSim/Tools/InverseKinematicsTool.h>
 
-%include <OpenSim/Wrapping/Python/OpenSimContext.h>
+%include <Bindings/Python/OpenSimContext.h>
 
 // Memory management
 // =================
