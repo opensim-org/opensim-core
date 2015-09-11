@@ -57,9 +57,8 @@ WeldConstraint::WeldConstraint() :
 
 WeldConstraint::WeldConstraint( const std::string &name,
                                 const std::string& frame1Name,
-                                const std::string& frame2Name) : Constraint()
+                                const std::string& frame2Name) : WeldConstraint()
 {
-    constructInfrastructure();
     setName(name);
     updConnector<PhysicalFrame>("frame1").set_connectee_name(frame1Name);
     updConnector<PhysicalFrame>("frame2").set_connectee_name(frame2Name);
@@ -84,16 +83,15 @@ WeldConstraint::WeldConstraint(const std::string &name,
 WeldConstraint::WeldConstraint(const std::string &name,
     const PhysicalFrame& frame1, const SimTK::Transform& transformInFrame1,
     const PhysicalFrame& frame2, const SimTK::Transform& transformInFrame2)
-    : Constraint()
+    : WeldConstraint()
 {
-    constructInfrastructure();
     setName(name);
 
-    PhysicalOffsetFrame frame1Offset(frame1, transformInFrame1);
-    frame1Offset.setName(frame1.getName() + "_offset");
+    PhysicalOffsetFrame frame1Offset(frame1.getName() + "_offset",
+                                     frame1, transformInFrame1);
 
-    PhysicalOffsetFrame frame2Offset(frame2, transformInFrame2);
-    frame2Offset.setName(frame2.getName() + "_offset");
+    PhysicalOffsetFrame frame2Offset(frame2.getName() + "_offset", 
+                                    frame2, transformInFrame2);
 
     // Append the offset frames to the Joints internal list of frames
     append_frames(frame1Offset);

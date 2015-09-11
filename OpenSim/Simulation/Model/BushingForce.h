@@ -88,9 +88,6 @@ public:
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.
 
-    /** Update the XML format of the BushingForce from older versions */
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
-
     /** Potential energy is the elastic energy stored in the bushing. */
     double computePotentialEnergy(const SimTK::State& s) const final;
 
@@ -106,6 +103,9 @@ public:
     OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
 private:
+    /** Update the XML format of the BushingForce from older versions */
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
+
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface.
     //--------------------------------------------------------------------------
