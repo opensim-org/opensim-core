@@ -245,7 +245,7 @@ public:
                           for example 
     @return spatial force, FB_G, acting on the body connected by this joint at 
     its location B, expressed in ground.  */
-    virtual SimTK::SpatialVec 
+    SimTK::SpatialVec 
     calcEquivalentSpatialForce(const SimTK::State &s, 
                                const SimTK::Vector &mobilityForces) const;
 

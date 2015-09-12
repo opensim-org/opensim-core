@@ -28,7 +28,8 @@
 #include "osimPluginDLL.h"
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Simulation/Model/Force.h>
-#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Simulation/Model/LinkTwoFrames.h>
 
 namespace OpenSim {
 
@@ -50,19 +51,12 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMPLUGIN_API CoupledBushingForce : public Force {
+class OSIMPLUGIN_API CoupledBushingForce : public LinkTwoFrames<Force, PhysicalFrame> {
 OpenSim_DECLARE_CONCRETE_OBJECT(CoupledBushingForce, Force);
 public:
     //==============================================================================
     // PROPERTIES
     //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with the CoupleBushingForce. **/
-    /**@{**/
-    /// BushingForce defined frames that are connected by this bushing
-    OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalFrame,
-        "Physical frames needed to satisfy the BushingForce's connections.");
-
     /** Stiffness of the bushing related to Euler XYZ body-fixed angular and
         translational deviations that express frame2 in frame1. Force is zero
         when frames are coincident and aligned. */
@@ -110,7 +104,8 @@ public:
     Rotational stiffness (damping) in N/rad(/s) and translational in N/m(/s).
     Off-diagonals represent the coupling terms.
     See property declarations for more information. **/
-    CoupledBushingForce(const std::string& frame1Name,
+    CoupledBushingForce(const std::string& name,
+                        const std::string& frame1Name,
                         const std::string& frame2_name,
                         SimTK::Mat66 stiffnessMat,
                         SimTK::Mat66 dampingMat);
@@ -159,13 +154,10 @@ public:
 
 
 private:
-    void setNull();
-
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface.
     //--------------------------------------------------------------------------
     void constructProperties();
-    void constructConnectors() override;
     void extendFinalizeFromProperties() override;
 
     void finalizeMatricesFromProperties();

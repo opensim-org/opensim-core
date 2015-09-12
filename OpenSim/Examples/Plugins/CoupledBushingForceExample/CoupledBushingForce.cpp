@@ -24,10 +24,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include "CoupledBushingForce.h"
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/Model.h>
-
-#include "CoupledBushingForce.h"
 
 //=============================================================================
 // STATICS
@@ -50,38 +49,28 @@ CoupledBushingForce::~CoupledBushingForce()
 /**
  * Default constructor.
  */
-CoupledBushingForce::CoupledBushingForce() : Force()
+CoupledBushingForce::CoupledBushingForce() : LinkTwoFrames<Force, PhysicalFrame>()
 {
-    setNull();
+    setAuthors("Ajay Seth");
+    constructProperties();
 }
 
 /* Convenience constructor */
-CoupledBushingForce::CoupledBushingForce( const std::string& frame1Name,
+CoupledBushingForce::CoupledBushingForce( const std::string& name,
+                                          const std::string& frame1Name,
                                           const std::string& frame2Name,
                                           SimTK::Mat66 stiffnessMat,
-                                          SimTK::Mat66 dampingMat) : Force()
+                                          SimTK::Mat66 dampingMat)
+    : LinkTwoFrames<Force, PhysicalFrame>(name, frame1Name, frame2Name)
 {
-    setNull();
-    constructInfrastructure();
-
-    updConnector<PhysicalFrame>("frame1").set_connectee_name(frame1Name);
-    updConnector<PhysicalFrame>("frame2").set_connectee_name(frame2Name);
+    setAuthors("Ajay Seth");
+    constructProperties();
 
     _stiffnessMatrix = stiffnessMat;
     _dampingMatrix = dampingMat;
     updatePropertiesFromMatrices();
 }
 
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this CoupledBushingForce to their null values.
- */
-void CoupledBushingForce::setNull()
-{
-    setAuthors("Ajay Seth");
-    constructProperties();
-}
 
 //_____________________________________________________________________________
 /*
@@ -104,29 +93,12 @@ void CoupledBushingForce::constructProperties()
     constructProperty_damping_row4(Vec6(0));
     constructProperty_damping_row5(Vec6(0));
     constructProperty_damping_row6(Vec6(0));
-
-    //Default frames list is empty
-    constructProperty_frames();
 }
 
-//_____________________________________________________________________________
-/*
-* Construct Structural Connectors
-*/
-void CoupledBushingForce::constructConnectors() {
-    constructConnector<PhysicalFrame>("frame1");
-    constructConnector<PhysicalFrame>("frame2");
-}
 
 void CoupledBushingForce::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
-
-    //mark frames in property list as subcomponents
-    for (int i = 0; i < updProperty_frames().size(); ++i){
-        addComponent(&upd_frames(i));
-    }
-
     finalizeMatricesFromProperties();
 }
 
