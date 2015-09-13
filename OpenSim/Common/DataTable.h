@@ -158,12 +158,6 @@ matrix with column names) with support for holding metadata.
            SimTK::Real (alias for double).                                    */
 template<typename ETX = double, typename ETY = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
-    static_assert(std::is_arithmetic<ETX>::value || std::is_class<ETX>::value, 
-                  "Template parameter ETX must be either an arithmetic type " 
-                  "(int, float, double etc) or a class/struct type.");
-    static_assert(std::is_arithmetic<ETY>::value || std::is_class<ETY>::value, 
-                  "Template parameter ETY must be either an arithmetic type " 
-                  "(int, float, double etc) or a class/struct type.");
 public:
     using RowVector    = SimTK::RowVector_<ETY>;
     using ColumnVector = SimTK::Vector_<ETY>;
@@ -207,6 +201,20 @@ public:
     }
 
 protected:
+    size_t computeNumRows() const override {
+        return _depData.nrow();
+    }
+
+    size_t computeNumColumns() const override {
+        return _depData.ncol();
+    }
+
+    void validateIndependentMetaData() const override {
+    }
+
+    void validateDependentsMetaData() const override {
+    }
+
     virtual void validateAppendRow() const = 0;
 
     std::vector<ETX>    _indData;
