@@ -37,9 +37,9 @@ public:
 
     virtual size_t size() const = 0;
 
-    virtual SimTK::AbstractValue& operator[](size_t index) = 0;
+    virtual AbstractValue& operator[](size_t index) = 0;
 
-    virtual const SimTK::AbstractValue& operator[](size_t index) const = 0;
+    virtual const AbstractValue& operator[](size_t index) const = 0;
 };
 
 

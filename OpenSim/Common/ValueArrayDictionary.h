@@ -28,10 +28,11 @@
 namespace OpenSim {
 
 class ValueArrayDictionary {
-public:
+private:
     using Dictionary = std::map<std::string, 
                                 std::unique_ptr<AbstractValueArray>>;
 
+public:
     const AbstractValueArray& 
     getValueArrayForKey(const std::string& key) const {
         return *_dictionary.at(key);
@@ -45,13 +46,25 @@ public:
                             Value{abstractValueArray.clone()});
     }
 
-    void removeArrayForKey(const std::string& key) {
+    void removeValueArrayForKey(const std::string& key) {
         _dictionary.erase(key);
     }
 
     std::pair<Dictionary::const_iterator, Dictionary::const_iterator>
     getKeyValueIterator() const {
         return std::make_pair(_dictionary.cbegin(), _dictionary.cend());
+    }
+
+    std::vector<std::string> getKeys() const {
+        std::vector<std::string> keys{};
+        std::transform(_dictionary.begin(), 
+                       _dictionary.end(),
+                       std::back_inserter(keys),
+                       [] (const Dictionary::value_type& key_value) {
+                           return key_value.first;
+                       });
+
+        return keys;
     }
 private:
     Dictionary _dictionary;
