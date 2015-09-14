@@ -25,12 +25,14 @@
 
 #include "OpenSim/Common/ValueArray.h"
 
+#include <memory>
+
 namespace OpenSim {
 
 class ValueArrayDictionary {
 private:
     using Dictionary = std::map<std::string, 
-                                std::unique_ptr<AbstractValueArray>>;
+                                std::shared_ptr<AbstractValueArray>>;
 
 public:
     const AbstractValueArray& 

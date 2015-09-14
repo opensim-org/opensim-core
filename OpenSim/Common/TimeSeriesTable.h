@@ -24,36 +24,33 @@
 This file defines the TimeSeriesTable_ class, which is used by OpenSim to 
 provide an in-memory container for data access and manipulation.              */
 
-#ifndef OPENSIM_COMMON_TIMESERIESDATATABLE_H
-#define OPENSIM_COMMON_TIMESERIESDATATABLE_H
+#ifndef OPENSIM_TIMESERIESDATATABLE_H
+#define OPENSIM_TIMESERIESDATATABLE_H
 
 #include "OpenSim/Common/DataTable.h"
 
 
 namespace OpenSim {
 
-/** TimeSeriesTable_ is a DataTable_ that adds support for a time column. 
-The time column can be of any arithmetic type -- float, double, int, long etc. 
-In this documentaion, words time & timestamp are used interchangeably to mean
-an entry of the time column.
-
-The time column is enforced to be strictly increasing. Entries in the 
-time-series column can be used to access the rows of the DataTable.           
-
-\tparam ET Type of the entries in the underlying matrix. Defaults to
-           SimTK::Real (alias for double).
-\tparam TS Type of the time column.                                           */
+/** TimeSeriesTable_ is a DataTable_ that treats the independent column as time.
+The time column is enforced to be strictly increasing.                        */
 template<typename ETY = SimTK::Real>
 class TimeSeriesTable_ : public DataTable_<double, ETY> {
+public:
+    using RowVector = SimTK::RowVector_<ETY>;
 protected:
-    void validateAppendRow() const override {
-        
+    void validateAppendRow(const double& time, 
+                           const RowVector& row) const override {
+        using DT = DataTable_<double, ETY>;
+        if(DT::_indData.size() > 0 && DT::_indData.back() >= time)
+            throw Exception{"Timestamp added for the row is less than or equal "
+                    "to the timestamp of the last existing row."};
     }
-};
+}; // TimeSeriesTable_
 
 /** See TimeSeriesTable_ for details on the interface.                        */
 using TimeSeriesTable = TimeSeriesTable_<SimTK::Real>;
 
 } // namespace OpenSim
 
-#endif // OPENSIM_COMMON_TIMESERIESDATATABLE_H
+#endif // OPENSIM_TIMESERIESDATATABLE_H
