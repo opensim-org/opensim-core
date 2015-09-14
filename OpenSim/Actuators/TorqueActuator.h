@@ -45,7 +45,7 @@ class Model;
 //                           TORQUE ACTUATOR
 //==============================================================================
 /**
- * A TorqueActuatorr applies equal and opposite torques on the two bodies 
+ * A TorqueActuator applies equal and opposite torques on the two bodies 
  * (bodyA and B) that it connects. The torque is applied about an axis
  * specified in ground (global) by default, otherwise it is in bodyA's frame. 
  * The magnitude of the torque is equal to the product of the optimal_force of 
@@ -121,13 +121,13 @@ public:
     double getOptimalForce() const override // Part of Actuator interface.
     {   return get_optimal_force(); }
 
-    /** %Set the first body to which this actuator applies torque. */
+    /** %Set the first body (bodyA) to which this actuator applies torque. */
     void setBodyA(const PhysicalFrame& body);
-    /** %Set the second body to which this actuator applies torque. */
+    /** %Set the second body (bodyB) to which this actuator applies torque. */
     void setBodyB(const PhysicalFrame& body);
-    /** Get the first body to which this actuator applies torque. */
+    /** Get the first body (bodyA) to which this actuator applies torque. */
     const PhysicalFrame& getBodyA() const {return *_bodyA;}
-    /** Get the second body to which this actuator applies torque. */
+    /** Get the second body (bodyB) to which this actuator applies torque. */
     const PhysicalFrame& getBodyB() const {return *_bodyB;}
 
 //==============================================================================
