@@ -59,7 +59,7 @@
 			<groups />
 		</ControllerSet>
 		<!--XML file (.xml) containing the forces applied to the model as ExternalLoads.-->
-		<external_loads_file>subject01_walk_grf.xml</external_loads_file>
+		<external_loads_file>externalForces.xml</external_loads_file>
 		<!--Storage file (.sto) containing the time history of states for the model. This file often contains multiple rows of data, each row being a time-stamped array of states. The first column contains the time.  The rest of the columns contain the states in the order appropriate for the model. In a storage file, unlike a motion file (.mot), non-uniform time spacing is allowed.  If the user-specified initial time for a simulation does not correspond exactly to one of the time stamps in this file, inerpolation is NOT used because it is sometimes necessary to an exact set of states for analyses.  Instead, the closest earlier set of states is used.-->
 		<states_file />
 		<!--Motion file (.mot) or storage file (.sto) containing the time history of the generalized coordinates for the model. These can be specified in place of the states file.-->
