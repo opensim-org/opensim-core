@@ -160,8 +160,8 @@ private:
     void setNull();
 
     /**
-     * Set up the properties for th analysis.
-     * Each property should have meaningful name and an informative comment.
+     * %Set up the properties for the analysis.
+     * Each property should have a meaningful name and an informative comment.
      * The name you give each property is the tag that will be used in the XML
      * file.  The comment will appear before the property in the XML file.
      * In addition, the comments are used for tool tips in the OpenSim GUI.

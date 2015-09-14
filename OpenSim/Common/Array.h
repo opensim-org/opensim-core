@@ -130,7 +130,7 @@ Array(const Array<T> &aArray)
 private:
 //_____________________________________________________________________________
 /**
- * Set all member variables to their null or default values.
+ * %Set all member variables to their null or default values.
  */
 void setNull()
 {
@@ -413,7 +413,7 @@ int getCapacity() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the amount by which the capacity is increased when the capacity of
+ * %Set the amount by which the capacity is increased when the capacity of
  * of the array in exceeded.
  * If the specified increment is negative, the capacity is set to double
  * whenever the capacity is exceeded.
@@ -441,7 +441,7 @@ int getCapacityIncrement() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the size of the array.  This method can be used to either increase
+ * %Set the size of the array.  This method can be used to either increase
  * or decrease the size of the array.  If this size of the array is
  * increased, the new elements are initialized to the default value
  * that was specified at the time of construction.
@@ -661,7 +661,7 @@ int remove(int aIndex)
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the value at a specified index.
+ * %Set the value at a specified index.
  *
  * @param aIndex Index of the array element to be set.  It is permissible
  * for aIndex to be past the current end of the array- the capacity will

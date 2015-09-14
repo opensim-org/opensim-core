@@ -75,7 +75,7 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
     /**
-     * Set this class's pointer to the storage object containing
+     * %Set this class's pointer to the storage object containing
      * desired model states to point to the storage object passed into
      * this method.  This method is currently implemented only by the
      * CorrectionController class, which is a subclass of Controller.

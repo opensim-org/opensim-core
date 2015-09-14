@@ -123,7 +123,7 @@ public:
     will be taken from the cache variable, so may have changed. **/
     const SimTK::Vec3& getDefaultColor() const { return get_default_color(); }
 
-    /** Set the value of the color cache variable owned by this %GeometryPath
+    /** %Set the value of the color cache variable owned by this %GeometryPath
     object, in the cache of the given state. The value of this variable is used
     as the color when the path is drawn, which occurs with the state realized 
     to Stage::Dynamics. So you must call this method during realizeDynamics() or 

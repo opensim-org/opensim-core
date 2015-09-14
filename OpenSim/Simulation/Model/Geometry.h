@@ -106,9 +106,9 @@ public:
     virtual ~Geometry() {}
     /** Interface methods to handle the Frame which the Geometry is attached to.
     **/
-    /** Set the name of the Frame of attachment **/
+    /** %Set the name of the Frame of attachment **/
     void setFrameName(const std::string& name);
-    /** Set the Frame of attachment **/
+    /** %Set the Frame of attachment **/
     void setFrame(const Frame& frame);
     /** Return a reference to the name of the Frame to which
     this Geometry is attached (using a Connector). **/
@@ -225,7 +225,7 @@ public:
         rPoint1 = get_start_point();
         rPoint2 = get_end_point();
     }
-    /// Set end points from passed in arguments
+    /// %Set end points from passed in arguments
     void setPoints(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2)
     {
         upd_start_point() = aPoint1;

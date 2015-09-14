@@ -94,11 +94,11 @@ public:
 
     virtual ~AssemblySolver();
 
-    /** Set the unitless accuracy of the assembly solution, which is dictates to how
+    /** %Set the unitless accuracy of the assembly solution, which is dictates to how
         many significant digits the solution should be resolved to.*/
     void setAccuracy(double accuracy) {_accuracy = accuracy; }
 
-    /** Set the relative weighting for constraints. Use Infinity to identify the 
+    /** %Set the relative weighting for constraints. Use Infinity to identify the 
         strict enforcement of constraints, otherwise any positive weighting will
         append the constraint errors to the assembly cost which the solver will
         minimize.*/

@@ -145,7 +145,7 @@ public:
      * get/set the name of the file containing coordinates
      */
     const std::string& getCoordinatesFileName() const { return _coordinatesFileName;};
-    /** Set the name of the coordinatesFile to be used. This call resets 
+    /** %Set the name of the coordinatesFile to be used. This call resets 
      _coordinateValues as well. */
     void setCoordinatesFileName(const std::string& aCoordinateFile)  { 
         _coordinatesFileName=aCoordinateFile;

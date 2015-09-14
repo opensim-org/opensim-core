@@ -733,7 +733,7 @@ protected:
 //==============================================================================
 
     /**
-    Set the derivative of an actuator state, specified by name
+    %Set the derivative of an actuator state, specified by name
     @param s the state    
     @param aStateName The name of the state to set.
     @param aValue The value to set the state to.

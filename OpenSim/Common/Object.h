@@ -261,23 +261,23 @@ public:
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
-    /** Set the name of the Object. */
+    /** %Set the name of the Object. */
     void setName(const std::string& name);
     /** Get the name of this Object. */
     const std::string& getName() const;
-    /** Set description, a one-liner summary. */
+    /** %Set description, a one-liner summary. */
     void setDescription(const std::string& description);
     /** Get description, a one-liner summary. */
     const std::string& getDescription() const;
 
     /** Get Authors of this Object */
     const std::string& getAuthors() const { return _authors; };
-    /** Set Authors of this object, call this method in your constructor if needed */
+    /** %Set Authors of this object. Call this method in your constructor if needed. */
     void setAuthors(const std::string& authors) { _authors=authors; };
 
     /** Get references or publications to cite if using this object. */
     const std::string& getReferences() const { return _references; };
-    /** Set references or publications to cite if using this object. */
+    /** %Set references or publications to cite if using this object. */
     void setReferences(const std::string& references) 
     {   _references=references; };
 
@@ -616,7 +616,7 @@ public:
         return this->isKindOf(type); 
     } 
 
-    /** Set the debug level to get verbose output. Zero means no debugging. **/
+    /** %Set the debug level to get verbose output. Zero means no debugging. **/
     static void setDebugLevel(int newLevel) {
         _debugLevel=newLevel; 
     };

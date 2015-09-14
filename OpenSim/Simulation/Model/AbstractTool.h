@@ -207,7 +207,7 @@ private:
     ControllerSet _controllerCopies;     
 
     /**
-    * Set all member variables to their null or default values.
+    * %Set all member variables to their null or default values.
     */
     void setNull();
     
@@ -244,7 +244,7 @@ public:
     //--------------------------------------------------------------------------
     
     /**
-    * Set the model to be investigated.
+    * %Set the model to be investigated.
     * NOTE: setup() should have been called on the model prior to calling this method
     */
     virtual void setModel(Model& aModel) SWIG_DECLARE_EXCEPTION;

@@ -71,21 +71,21 @@ public:
     /** Convenience constructor for API users. **/
     McKibbenActuator(const std::string& name, double num_turns, double thread_length);
 
-    /** Set the 'number of turns' property. **/
+    /** %Set the 'number of turns' property. **/
     void setNumberOfTurns(double val)
     {   set_number_of_turns(val); }
     /** Get the current value of the 'number of turns' property. **/
     double getNumberOfTurns() const 
     {   return get_number_of_turns(); }
     
-    /** Set the 'thread length' property. **/
+    /** %Set the 'thread length' property. **/
     void setThreadLength(double val)
     {   set_thread_length(val); }
     /** Get the current value of the 'thread length' property. **/
     double getThreadLength() const
     {   return get_thread_length(); }
     
-    /** Set the 'cord length' property. **/
+    /** %Set the 'cord length' property. **/
     void setCordLength(double val)
     {   set_cord_length(val); }
     /** Get the current value of the 'cord length' property. **/

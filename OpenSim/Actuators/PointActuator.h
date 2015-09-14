@@ -84,7 +84,7 @@ public:
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
 
-    /** Set the 'optimal_force' property. **/
+    /** %Set the 'optimal_force' property. **/
     void setOptimalForce(double aOptimalForce);
     /** Get the current value of the 'optimal_force' property. **/
     double getOptimalForce() const override; // Part of Actuator interface.

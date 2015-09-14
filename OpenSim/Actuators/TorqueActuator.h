@@ -98,7 +98,7 @@ public:
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
     
-    /** Set the 'axis' property to the supplied value; frame is interpreted
+    /** %Set the 'axis' property to the supplied value; frame is interpreted
     according to the 'torque_is_global' property. **/
     void setAxis(const SimTK::Vec3& axis) 
     {   set_axis(axis); }
@@ -106,7 +106,7 @@ public:
     const SimTK::Vec3& getAxis() const 
     {   return get_axis(); }
 
-    /** Set the 'torque_is_global' property that determines how to interpret
+    /** %Set the 'torque_is_global' property that determines how to interpret
     the 'axis' vector; if not global (Ground frame) it is in body A's frame. **/
     void setTorqueIsGlobal(bool isGlobal) 
     {   set_torque_is_global(isGlobal); }
@@ -114,18 +114,20 @@ public:
     bool getTorqueIsGlobal() const
     {   return get_torque_is_global(); }
 
-    /** Set the 'optimal_force' property. **/
+    /** %Set the 'optimal_force' property. **/
     void setOptimalForce(double optimalForce)
     {   set_optimal_force(optimalForce); }
     /** Get the current value of the 'optimal_force' property. **/
     double getOptimalForce() const override // Part of Actuator interface.
     {   return get_optimal_force(); }
 
-    /* Set the bodies to which this actuator applies torque. */
+    /** %Set the first body to which this actuator applies torque. */
     void setBodyA(const PhysicalFrame& body);
+    /** %Set the second body to which this actuator applies torque. */
     void setBodyB(const PhysicalFrame& body);
-    /* Get the bodies that this actuator applies torque to. */
+    /** Get the first body to which this actuator applies torque. */
     const PhysicalFrame& getBodyA() const {return *_bodyA;}
+    /** Get the second body to which this actuator applies torque. */
     const PhysicalFrame& getBodyB() const {return *_bodyB;}
 
 //==============================================================================
