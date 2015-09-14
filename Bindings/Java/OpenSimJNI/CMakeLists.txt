@@ -14,7 +14,7 @@ set(swig_generated_file_fullname
 set(swig_generated_header_fullname
     ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI_wrap.h)
 set(swig_interface_file_fullname
-    ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/Java/swig/javaWrapOpenSim.i)
+    ${OpenSim_SOURCE_DIR}/Bindings/Java/swig/javaWrapOpenSim.i)
 set(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling"
     CACHE STRING
     "The wrapping is built as the Java package specified in this variable.")
