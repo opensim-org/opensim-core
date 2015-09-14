@@ -34,7 +34,7 @@ namespace OpenSim {
 /**
  * A Frame is an OpenSim representation of a reference frame. It consists of
  * a right-handed set of three orthogonal axes and an origin point. Frames are
- * intended to provide convenient reference frames for locating phyical
+ * intended to provide convenient reference frames for locating physical
  * structures (such as joints and muscle attachments) as well as provide a
  * convenient basis for performing spatial calculations. For example, if your
  * system involves contact, you might define a Frame that is aligned with the
@@ -52,7 +52,7 @@ namespace OpenSim {
  * bodies, their joints, and the locations where constraints can be connected
  * and forces can be applied. It is perhaps less evident that Frames can be
  * extremely useful for relating a multitude of reference frames together to
- * form chains and trees. For example, a Frame to specify muscle attachements
+ * form chains and trees. For example, a Frame to specify muscle attachments
  * (M) and a Frame to specify a joint location (J) could themselves be
  * specified in an anatomical Frame (A) defined by bony landmarks identified
  * by surface markers or tagged on CT or MRI images. The body (B), to which the
@@ -188,12 +188,21 @@ public:
     // End of Base Frame and Transform accessors
     ///@}
 
+    /** Add a Mesh specified by file name to the list of Geometry owned by the Frame.
+    Scale defaults to 1.0 but can be changed on the call line. For convenience 
+    */
+    void addMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
+
 protected:
     /** @name Component Extension methods.
         Frame types override these Component methods. */
     /**@{**/
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendRealizeTopology(SimTK::State& s) const override;
+
+    /// override default extendAddGeometry to set Frame to this Object
+    void extendAddGeometry(OpenSim::Geometry& geom) override;
+
     /**@}**/
 
 private:
@@ -214,7 +223,7 @@ private:
     virtual SimTK::Transform extendFindTransformInBaseFrame() const = 0;
     /**@}**/
 
-    mutable SimTK::CacheEntryIndex groundTransformIndex;
+    SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _groundTransformIndex;
 
 //=============================================================================
 };  // END of class Frame

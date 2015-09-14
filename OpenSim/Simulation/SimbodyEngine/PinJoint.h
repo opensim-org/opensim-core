@@ -33,7 +33,7 @@ namespace OpenSim {
 //=============================================================================
 /**
 
-A Class implementing a Pin joint . The underlying implementation in Simbody is a
+A Class implementing a Pin joint. The underlying implementation in Simbody is a
 SimTK::MobilizedBody::Pin. Pin provides one DOF about the common Z-axis of the
 joint (not body) frames in the parent and child body. If you want rotation about
 a different direction, rotate the joint and body frames such that the z axes
@@ -42,35 +42,16 @@ are in the desired direction.
 \image html pinJoint.gif
 
  @author Ajay Seth
- @version 1.0
  */
 class OSIMSIMULATION_API PinJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PinJoint, Joint);
 
-private:
-    static const int _numMobilities = 1;
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
+    /** Specify the Coordinate of the PinJoint */
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
 
-    /** Pin has no additional properties*/
-
-//=============================================================================
-// METHODS
-//=============================================================================
 public:
-    // CONSTRUCTION
-    PinJoint();
-    // Convenience constructor
-    PinJoint(const std::string &name,  const PhysicalFrame& parent,
-             const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-             const PhysicalFrame& child,
-             const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-             bool reverse = false);
-    virtual ~PinJoint();
-
-    int numCoordinates() const override {return _numMobilities;};
+    /** Use Joint's constructors. @see Joint */
+    using Joint::Joint;
 
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;

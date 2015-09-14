@@ -47,7 +47,6 @@ CoordinateSet::~CoordinateSet(void)
 CoordinateSet::CoordinateSet() :
     ModelComponentSet<Coordinate>()
 {
-    setNull();
 }
 
 //_____________________________________________________________________________
@@ -57,20 +56,12 @@ CoordinateSet::CoordinateSet() :
 CoordinateSet::CoordinateSet(const CoordinateSet& aCoordinateSet):
     ModelComponentSet<Coordinate>(aCoordinateSet)
 {
-    setNull();
     *this = aCoordinateSet;
 }
 
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
-/**
- * Set the data members of this CoordinateSet to their null values.
- */
-void CoordinateSet::setNull()
-{
-}
-    
 /**
   * Populate this flat list of Coordinates given a Model that has been set up
   */
@@ -81,11 +72,13 @@ void CoordinateSet::populate(Model& model)
     setMemoryOwner(false);
     setSize(0);
 
+    // At the Model level coordinate names are likely not to be unique
+    // unless qualified by its owning component name, namely the Joint
     for(int i=0; i< model.getJointSet().getSize(); i++){
         Joint& nextJoint = model.getJointSet().get(i);
+        CoordinateSet& coords = nextJoint.upd_CoordinateSet();
         for(int j=0; j< nextJoint.numCoordinates(); j++){
-            // Append a pointer (address) otherwise the model will get a copy that will not be updated properly
-            adoptAndAppend(&(nextJoint.getCoordinateSet()[j]));
+            adoptAndAppend(&coords[j]);
         }
     }
 }

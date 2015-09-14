@@ -62,9 +62,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_OPTIONAL_PROPERTY(body_1, std::string,
         "One of the two bodies connected by the bushing.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(body_2, std::string,
@@ -115,11 +112,9 @@ public:
         "Damping parameters resisting relative angular velocity.");
     OpenSim_DECLARE_PROPERTY(translational_damping, SimTK::Vec3,
         "Damping parameters resisting relative translational velocity.");
-    /**@}**/
 
 protected:
     /** how to display the bushing */
-    VisibleObject _displayer;
 private:
     // parser programs for efficiently evaluating the expressions
     Lepton::ExpressionProgram MxProg, MyProg, MzProg, FxProg, FyProg, FzProg; 
@@ -261,7 +256,7 @@ protected:
         bool fixed, 
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const;
+        SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const override;
     
     void ComputeForcesAtBushing(const SimTK::State& state, 
                                 SimTK::SpatialVec& forces_on_M_in_ground, 
@@ -274,12 +269,7 @@ private:
     void extendConnectToModel(Model& aModel) override;
     // Create a SimTK::Force::LinarBushing which implements this ExpressionBasedBushingForce.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    //--------------------------------------------------------------------------
-    // Visible Object Support for Java Gui
-    //--------------------------------------------------------------------------
-    virtual VisibleObject* getDisplayer() const;
-    virtual void updateDisplayer(const SimTK::State& s);
-    virtual void updateGeometry(const SimTK::State& s);
+
     void setNull();
     void constructProperties();
 

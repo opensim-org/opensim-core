@@ -341,7 +341,7 @@ double  Thelen2003Muscle::computeActuation(const SimTK::State& s) const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
                     "Thelen2003Muscle: Muscle is not"
-                    " to date with properties");
+                    " up to date with properties");
 
     const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
     const FiberVelocityInfo& mvi = getFiberVelocityInfo(s);

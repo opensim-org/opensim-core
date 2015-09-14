@@ -45,6 +45,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 #include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
@@ -448,10 +449,16 @@ void SimbodySimmModel::convertJoint(const Joint& joint)
     // adding the non-zero components to the SimbodySimmJoint.
     if (parentJointAdded == false) {
         int rotationsSoFar = 0;
-        SimTK::Vec3 location;
-        SimTK::Vec3 orientation;
-        location = joint.getLocationInParent();
-        orientation = joint.getOrientationInParent();
+        SimTK::Vec3 location(0);
+        SimTK::Vec3 orientation(0);
+        const PhysicalOffsetFrame* offset =
+            dynamic_cast<const PhysicalOffsetFrame*>(&joint.getParentFrame());
+        if (offset) {
+            location = offset->get_translation();
+            orientation = offset->get_orientation();
+        }
+
+
         if (NOT_EQUAL_WITHIN_ERROR(location[0], 0.0))
             ssj->addConstantDof("tx", NULL, location[0]);
         if (NOT_EQUAL_WITHIN_ERROR(location[1], 0.0))
@@ -540,11 +547,17 @@ void SimbodySimmModel::convertJoint(const Joint& joint)
  */
 bool SimbodySimmModel::isChildJointNeeded(const OpenSim::Joint& aJoint)
 {
-    SimTK::Vec3 location;
-    SimTK::Vec3 orientation;
-
-    location = aJoint.getLocationInChild();
-    orientation= aJoint.getOrientationInChild();
+    SimTK::Vec3 location(0);
+    SimTK::Vec3 orientation(0);
+    const PhysicalOffsetFrame* offset =
+        dynamic_cast<const PhysicalOffsetFrame*>(&aJoint.getChildFrame());
+    if (offset) {
+        location = offset->get_translation();
+        orientation = offset->get_orientation();
+    }
+    else {
+        return false;
+    }
 
     double sum = location.scalarNormSqr();
    if (NOT_EQUAL_WITHIN_ERROR(sum, 0.0))
@@ -573,11 +586,15 @@ bool SimbodySimmModel::isParentJointNeeded(const OpenSim::Joint& aJoint)
     if (aJoint.getConcreteClassName()=="WeldJoint")
         return false;
 
-    SimTK::Vec3 location;
-    SimTK::Vec3 orientation;
+    SimTK::Vec3 location(0);
+    SimTK::Vec3 orientation(0);
 
-    location = aJoint.getLocationInParent();
-    orientation = aJoint.getOrientationInParent();
+    const PhysicalOffsetFrame* offset =
+        dynamic_cast<const PhysicalOffsetFrame*>(&aJoint.getParentFrame());
+    if (offset) {
+        location = offset->get_translation();
+        orientation = offset->get_orientation();
+    }
 
     bool translationsUsed[] = {false, false, false}, translationsDone = false;
     int numTranslations = 0, numRotations = 0;
@@ -705,13 +722,18 @@ void SimbodySimmModel::makeSimmJoint(const string& aName, const string& aParentN
  */
 bool SimbodySimmModel::addExtraJoints(const OpenSim::Joint& aJoint, string& rParentName, string& rChildName)
 {
-   SimTK::Vec3 location;
-   SimTK::Vec3 orientation;
+   SimTK::Vec3 location(0);
+   SimTK::Vec3 orientation(0);
     bool parentJointAdded = false;
 
    if (isParentJointNeeded(aJoint)) {
-       location = aJoint.getLocationInParent();
-       orientation = aJoint.getOrientationInParent();
+       const PhysicalOffsetFrame* offset =
+           dynamic_cast<const PhysicalOffsetFrame*>(&aJoint.getParentFrame());
+       if (offset) {
+           location = offset->get_translation();
+           orientation = offset->get_orientation();
+       }
+
       string bodyName = aJoint.getChildFrameName() + "_pjc";
       SimbodySimmBody* b = new SimbodySimmBody(NULL, bodyName);
       _simmBody.append(b);
@@ -723,9 +745,16 @@ bool SimbodySimmModel::addExtraJoints(const OpenSim::Joint& aJoint, string& rPar
         parentJointAdded = false;
    }
 
+   location = 0;
+   orientation = 0;
+
    if (isChildJointNeeded(aJoint)) {
-       location = aJoint.getLocationInChild();
-       orientation = aJoint.getOrientationInChild();
+       const PhysicalOffsetFrame* offset =
+           dynamic_cast<const PhysicalOffsetFrame*>(&aJoint.getChildFrame());
+       if (offset) {
+           location = offset->get_translation();
+           orientation = offset->get_orientation();
+       }
        string bodyName = aJoint.getChildFrameName() + "_jcc";
       SimbodySimmBody* b = new SimbodySimmBody(NULL, bodyName);
       _simmBody.append(b);

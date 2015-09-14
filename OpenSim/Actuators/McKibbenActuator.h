@@ -56,16 +56,12 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(thread_length, double,
         "The thread length");
     OpenSim_DECLARE_PROPERTY(number_of_turns, double,
         "Number of turns of the thread.");
     OpenSim_DECLARE_PROPERTY(cord_length, double,
         "The length of the flexible cord attaching the actuator to the last point.");
-    /**@}**/
     
 //==============================================================================
 // PUBLIC METHODS
@@ -122,10 +118,7 @@ private:
     //--------------------------------------------------------------------------
     // Visualization interface
     //--------------------------------------------------------------------------
-    /*
-    virtual VisibleObject* getDisplayer() const;
-    virtual void updateDisplayer(const SimTK::State& s);
-    virtual void updateGeometry(const SimTK::State& s);*/
+
 
 }; // class McKibbenActuator
 } // namespace OpenSim

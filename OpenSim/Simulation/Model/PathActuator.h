@@ -48,16 +48,10 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with the %PathActuator
-    class. Note that objects derived from this class inherit these
-    properties. **/
-    /**@{**/
     OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath,
         "The set of points defining the path of the muscle.");
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum force this actuator can produce.");
-    /**@}**/
 
 //=============================================================================
 // PUBLIC METHODS
@@ -122,12 +116,6 @@ public:
     virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
     virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
     virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-
-    //--------------------------------------------------------------------------
-    // Visible Object Support
-    //--------------------------------------------------------------------------
-    virtual const VisibleObject* getDisplayer() const;
-    virtual void updateDisplayer(const SimTK::State& s) const;
 
 protected:
     /** Override this method if you would like to calculate a color for use when

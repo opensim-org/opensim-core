@@ -1,12 +1,12 @@
-FILE(GLOB SOURCE_FILES src/*.cpp)
+file(GLOB SOURCE_FILES src/*.cpp)
 
-IF(WIN32)
-    ADD_DEFINITIONS("-DLEPTON_BUILDING_SHARED_LIBRARY")
-ENDIF(WIN32)
+if(WIN32)
+    add_definitions("-DLEPTON_BUILDING_SHARED_LIBRARY")
+endif(WIN32)
 
-INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}/Vendors/lepton/include)
+include_directories(${OpenSim_SOURCE_DIR}/Vendors/lepton/include)
 
-OPENSIM_ADD_LIBRARY(VENDORLIB
+OpenSimAddLibrary(VENDORLIB LOWERINCLUDEDIRNAME
     KIT Lepton
     AUTHORS "Peter_Eastman"
     LINKLIBS ""

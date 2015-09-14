@@ -1,6 +1,6 @@
 
-IF(BUILD_PYTHON_WRAPPING OR BUILD_JAVA_WRAPPING)
-    find_package(SWIG 2.0.9 REQUIRED)
-ENDIF()
+if(BUILD_PYTHON_WRAPPING OR BUILD_JAVA_WRAPPING)
+    find_package(SWIG 3.0.5 REQUIRED)
+endif()
 
-SUBDIRS(Java Python)
+subdirs(Java Python)

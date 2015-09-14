@@ -152,12 +152,12 @@ const PhysicalFrame& ConstantDistanceConstraint::getBody2() const
 * Following methods set attributes of the constraint */
 void ConstantDistanceConstraint::setBody1ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_1").set_connected_to_name(aBodyName);
+    updConnector<PhysicalFrame>("body_1").set_connectee_name(aBodyName);
 }
 
 void ConstantDistanceConstraint::setBody2ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_2").set_connected_to_name(aBodyName);
+    updConnector<PhysicalFrame>("body_2").set_connectee_name(aBodyName);
 }
 
 /** Set the location for point on body 1*/
@@ -186,13 +186,34 @@ void ConstantDistanceConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, i
             // replace old properties with latest use of Connectors
             SimTK::Xml::element_iterator body1Element = aNode.element_begin("body_1");
             SimTK::Xml::element_iterator body2Element = aNode.element_begin("body_2");
-            std::string body1_name, body2_name;
-            body1Element->getValueAs<std::string>(body1_name);
-            body2Element->getValueAs<std::string>(body2_name);
+            std::string body1_name(""), body2_name("");
+            // If default constructed then elements not serialized since they are default
+            // values. Check that we have associated elements, then extract their values.
+            if (body1Element != aNode.element_end())
+                body1Element->getValueAs<std::string>(body1_name);
+            if (body2Element != aNode.element_end())
+                body2Element->getValueAs<std::string>(body2_name);
             XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "body_1", body1_name);
             XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "body_2", body2_name);
         }
     }
 
     Super::updateFromXMLNode(aNode, versionNumber);
+}// Visual support ConstantDistanceConstraint drawing in SimTK visualizer.
+void ConstantDistanceConstraint::generateDecorations(
+    bool                                        fixed,
+    const ModelDisplayHints&                    hints,
+    const SimTK::State&                         state,
+    SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
+{
+    Super::generateDecorations(fixed, hints, state, appendToThis);
+    if (fixed) return;
+    const Vec3 pink(1, .6, .8);
+    const OpenSim::PhysicalFrame& frame1 = getBody1();
+    const Vec3& p_B1 = frame1.getGroundTransform(state)*get_location_body_1();
+    const OpenSim::PhysicalFrame& frame2 = getBody2();
+    const Vec3& p_B2 = frame2.getGroundTransform(state)*get_location_body_2();
+    appendToThis.push_back(
+        SimTK::DecorativeLine(p_B1, p_B2).setBodyId(0)
+        .setColor(pink).setOpacity(1.0).setLineThickness(.05));
 }

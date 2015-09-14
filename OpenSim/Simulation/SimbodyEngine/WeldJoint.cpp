@@ -31,51 +31,8 @@
 //=============================================================================
 // STATICS
 //=============================================================================
-using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
-
-//=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-WeldJoint::~WeldJoint()
-{
-}
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-WeldJoint::WeldJoint() :
-    Joint()
-{
-    setAuthors("Ajay Seth");
-    constructCoordinates();
-}
-
-//_____________________________________________________________________________
-/**
- * Convenience Constructor.
- */
-WeldJoint::WeldJoint(const std::string &name, const PhysicalFrame& parent,
-    const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-    const PhysicalFrame& child,
-    const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-    bool reverse) :
-        Super(name, parent, locationInParent,orientationInParent,
-                      child, locationInchild, orientationInChild, reverse)
-{
-    setAuthors("Ajay Seth");
-    constructCoordinates();
-}
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
-
 
 //=============================================================================
 // Simbody Model building.
@@ -83,6 +40,7 @@ WeldJoint::WeldJoint(const std::string &name, const PhysicalFrame& parent,
 //_____________________________________________________________________________
 void WeldJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
     createMobilizedBody<SimTK::MobilizedBody::Weld>(system);
 }
 

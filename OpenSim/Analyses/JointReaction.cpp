@@ -576,9 +576,8 @@ record(const SimTK::State& s)
         const PhysicalFrame& expressedInBody = *currentKey.expressedInFrame;
         
         // find the point of application of the joint load on the child
-        const Vec3& childLocation = joint.getLocationInChild();
-        // and find it's current location in the ground reference frame
-        Vec3 childLocationInGlobal = joint.getChildFrame().getGroundTransform(s_analysis)*childLocation;
+        // in the ground reference frame
+        Vec3 childLocationInGlobal = joint.getChildFrame().getGroundTransform(s_analysis).p();
         // set the point of application to the joint location in the child body
         Vec3 pointOfApplication(0,0,0);
         
@@ -588,9 +587,7 @@ record(const SimTK::State& s)
             /*Take reaction load from child and apply on parent*/
             force = -force;
             moment = -moment;
-            const Vec3& parentLocation = joint.getLocationInParent();
-            Vec3 parentLocationInGlobal = joint.getParentFrame()
-                .getGroundTransform(s_analysis)*parentLocation;
+            Vec3 parentLocationInGlobal = joint.getParentFrame().getGroundTransform(s_analysis).p();
 
             // define vector from the mobilizer location on the child to the location on the parent
             Vec3 translation = parentLocationInGlobal - childLocationInGlobal;

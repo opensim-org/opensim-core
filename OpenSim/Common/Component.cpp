@@ -173,8 +173,6 @@ void Component::connect(Component &root)
 
     reset();
 
-    initComponentTreeTraversal(root);
-
     // rebuilding the connectors table, which was emptied by clearStateAllocations
     for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
         AbstractConnector& connector = upd_connectors(ix);
@@ -185,8 +183,8 @@ void Component::connect(Component &root)
         catch (...) {
             throw Exception(getConcreteClassName() +
                 "::connect() Could not find component '"
-                + connector.get_connected_to_name() + "' to satisfy Connector<" +
-                connector.getConnectedToTypeName() + "> '" + getName() + "' " +
+                + connector.get_connectee_name() + "' to satisfy Connector<" +
+                connector.getConnecteeTypeName() + "> of '" + getName() + "' " +
                 "as a subcomponent of " + root.getName() + ".");
         }
     }
@@ -233,6 +231,7 @@ void Component::addToSystem(SimTK::MultibodySystem& system) const
     baseAddToSystem(system);
     extendAddToSystem(system);
     componentsAddToSystem(system);
+    extendAddToSystemAfterSubcomponents(system);
 }
 
 // Base class implementation of virtual method.
@@ -789,15 +788,6 @@ setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value)
     }
 }
 
-/*
-// Specifiy a member function of the state implemented by this component to be
-// an Output.
-template <typename T>
-void Component::addOutput(const std::string& name,
-                    const std::function<T(const SimTK::State&)> outputFunction,
-                    const SimTK::Stage& dependsOn)
-*/
-
 void Component::constructOutputForStateVariable(const std::string& name) {
     constructOutput<double>(name,
             std::bind(&Component::getStateVariableValue,
@@ -819,6 +809,7 @@ void Component::addComponent(Component *aComponent)
             std::find(_components.begin(), _components.end(), aComponent);
         if ( it == _components.end() ){
             _components.push_back(aComponent);
+            //std::cout << "Adding component " << aComponent->getName() << " as subcomponent of " << getName() << std::endl;
         }
         else{
             std::string msg = "ERROR- " +getConcreteClassName()+"::addComponent() '"

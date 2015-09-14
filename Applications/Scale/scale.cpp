@@ -57,7 +57,6 @@ int main(int argc,char **argv)
     IO::SetDigitsPad(4);
 
     // REGISTER TYPES
-    Object::registerType(VisibleObject());
     Object::registerType(ScaleTool());
     ScaleTool::registerTypes();
 

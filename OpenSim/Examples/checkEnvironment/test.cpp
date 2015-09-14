@@ -48,15 +48,15 @@ int main()
         Model osimModel;
         osimModel.setName("tugOfWar");
 
-        // GROUND BODY
+        // GROUND FRAME
 
-        // Get a reference to the model's ground body
+        // Get a reference to the model's ground frame
         Ground& ground = osimModel.updGround();
 
         // Add display geometry to the ground to visualize in the GUI
-        ground.addDisplayGeometry("ground.vtp");
-        ground.addDisplayGeometry("anchor1.vtp");
-        ground.addDisplayGeometry("anchor2.vtp");
+        ground.addMeshGeometry("ground.vtp");
+        ground.addMeshGeometry("anchor1.vtp");
+        ground.addMeshGeometry("anchor2.vtp");
 
         // BLOCK BODY
 
@@ -69,15 +69,16 @@ int main()
         OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
 
         // Add display geometry to the block to visualize in the GUI
-        block->addDisplayGeometry("block.vtp");
+        Brick brick(SimTK::Vec3(0.05, 0.05, 0.05));
+        block->addGeometry(brick);
 
         // FREE JOINT
 
-        // Create a new free joint with 6 degrees-of-freedom (coordinates) between the block and ground bodies
+        // Create a new free joint with 6 degrees-of-freedom (coordinates) between the block and ground frames
         Vec3 locationInParent(0, blockSideLength/2, 0), orientationInParent(0), locationInBody(0), orientationInBody(0);
         FreeJoint *blockToGround = new FreeJoint("blockToGround", ground, locationInParent, orientationInParent, *block, locationInBody, orientationInBody);
         
-        // Get a reference to the coordinate set (6 degrees-of-freedom) between the block and ground bodies
+        // Get a reference to the coordinate set (6 degrees-of-freedom) between the block and ground frames
         CoordinateSet& jointCoordinateSet = blockToGround->upd_CoordinateSet();
 
         // Set the angle and position ranges for the coordinate set

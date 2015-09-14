@@ -183,13 +183,17 @@ void AbstractProperty::readFromXMLParentElement(Xml::Element& parent,
 
     // Found a match. Borrow the object node briefly and canonicalize it 
     // into a conventional <propName> object </propName> structure.
-    Xml::Element dummy(isUnnamedProperty() ? "Unnamed" : getName());
+    std::string propName = isUnnamedProperty() ? "Unnamed" : getName();
+    Xml::Element dummy(propName);
     dummy.insertNodeAfter(dummy.node_end(), parent.removeNode(iter));
+    parent.insertNodeAfter(parent.node_end(), dummy);
+
     readFromXMLElement(dummy, versionNumber);
     // Now put the node back where we found it.
     parent.insertNodeBefore(prev, 
                             dummy.removeNode(dummy.element_begin()));
     setValueIsDefault(false);
+    parent.removeNode(parent.element_begin(dummy.getElementTag()));
     dummy.clearOrphan();
 }
 

@@ -1,5 +1,5 @@
 
-SET(SIMULATION_SUBDIRS 
+set(SIMULATION_SUBDIRS 
         .
         Control
         Manager
@@ -7,19 +7,19 @@ SET(SIMULATION_SUBDIRS
         Wrap
         SimbodyEngine)
 
-SET(SOURCES)
-SET(INCLUDES)
-FOREACH(dir ${SIMULATION_SUBDIRS})
-    FILE(GLOB SOURCES_ONEDIR ${dir}/*.cpp)
-    FILE(GLOB INCLUDES_ONEDIR ${dir}/*.h)
-    LIST(APPEND SOURCES ${SOURCES_ONEDIR})
-    LIST(APPEND INCLUDES ${INCLUDES_ONEDIR})
-ENDFOREACH()
+set(SOURCES)
+set(INCLUDES)
+foreach(dir ${SIMULATION_SUBDIRS})
+    file(GLOB SOURCES_ONEDIR ${dir}/*.cpp)
+    file(GLOB INCLUDES_ONEDIR ${dir}/*.h)
+    list(APPEND SOURCES ${SOURCES_ONEDIR})
+    list(APPEND INCLUDES ${INCLUDES_ONEDIR})
+endforeach()
 
-OPENSIM_ADD_LIBRARY(
+OpenSimAddLibrary(
     KIT Simulation
     AUTHORS "Ajay_Seth-Michael_Sherman-Ayman_Habib"
-    LINKLIBS ${SIMTK_ALL_LIBS} osimCommon osimLepton
+    LINKLIBS ${Simbody_LIBRARIES} osimCommon osimLepton
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
     TESTDIRS SimbodyEngine Test

@@ -2,15 +2,14 @@
 make to the C++ API, via the SWIG interface (*.i) file.
 
 """
+
+import inspect
 import os
 
-import opensim as osim
+this_file_dir = os.path.dirname(
+                os.path.abspath(inspect.getfile(inspect.currentframe())))
 
-def test_check_env_var():
-    if 'OPENSIM_HOME' not in os.environ:
-        raise Exception("To run tests, must set environment "
-                "variable OPENSIM_HOME "
-                "to an OpenSim installation.")
+import opensim as osim
 
 def test_markAdopted1():
     """Ensures that we can tell an object that some other object is managing
@@ -26,7 +25,7 @@ def test_markAdopted1():
 def test_markAdopted2():
     a = osim.Model()
 
-    # We just need the following not to not cause a segfault.
+    # We just need the following not to cause a segfault.
 
     # Model add*
     a.addForce(osim.PathActuator())
@@ -63,14 +62,18 @@ def test_markAdopted2():
     constr.setConstantDistance(1)
     a.addConstraint(constr)
 
-    # Force requires body names. If not provided, you get a segfault.
-    f = osim.BushingForce()
-    f.setBody1ByName("ground")
-    f.setBody2ByName("body")
+    f = osim.BushingForce("ground", "body",
+            osim.Vec3(2, 2, 2), osim.Vec3(1, 1, 1),
+            osim.Vec3(0, 0, 0), osim.Vec3(0, 0, 0))
     a.addForce(f)
 
-    model = osim.Model(os.environ['OPENSIM_HOME'] +
-            "/Models/Arm26/arm26.osim")
+    f2 = osim.BushingForce()
+    a.addForce(f2)
+
+    f3 = osim.SpringGeneralizedForce()
+    a.addForce(f3)
+
+    model = osim.Model(os.path.join(this_file_dir, "arm26.osim"))
     g = osim.CoordinateActuator('r_shoulder_elev')
     model.addForce(g)
 
@@ -94,11 +97,12 @@ def test_Joint():
             body,
             loc_in_body, orient_in_parent)
     del joint
+    spatialTransform = osim.SpatialTransform()
     joint = osim.CustomJoint("joint",
             a.getGround(),
             loc_in_parent, orient_in_parent,
             body,
-            loc_in_body, orient_in_parent)
+            loc_in_body, orient_in_parent, spatialTransform)
     del joint
     joint = osim.EllipsoidJoint("joint",
             a.getGround(),
@@ -159,12 +163,6 @@ def test_markAdoptedSets():
     del fus
     del fu1
 
-    gs = osim.GeometrySet()
-    dg = osim.DisplayGeometry()
-    gs.adoptAndAppend(dg)
-    del gs
-    del dg
-
     s = osim.ScaleSet()
     o = osim.Scale()
     s.adoptAndAppend(o)
@@ -207,13 +205,27 @@ def test_markAdoptedSets():
     del s
     del o
 
-    # TODO 
-    # s = osim.ProbeSet()
-    # o = osim.Umberger2010MuscleMetabolicsProbe()
-    # s.adoptAndAppend(o)
-    # del s
-    # del o
+    s = osim.FrameSet()
+    o = osim.Body()
+    s.adoptAndAppend(o)
+    del s
+    del o
 
+    s = osim.ForceSet()
+    o = osim.CoordinateLimitForce()
+    s.adoptAndAppend(o)
+    del s
+    del o
+     
+    s = osim.ForceSet()
+    o = osim.SpringGeneralizedForce()
+    s.append(o)
+ 
+    s = osim.ProbeSet()
+    o = osim.Umberger2010MuscleMetabolicsProbe()
+    s.adoptAndAppend(o)
+    del s
+    del o
 
     a = osim.Model()
     body = osim.Body('body',

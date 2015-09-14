@@ -31,7 +31,6 @@
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include "WrapResult.h"
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/Mtx.h>
 
 //=============================================================================
@@ -53,10 +52,7 @@ WrapObject::WrapObject() :
    _xyzBodyRotation(_xyzBodyRotationProp.getValueDblArray()),
    _translation(_translationProp.getValueDblVec()),
     _active(_activeProp.getValueBool()),
-    _quadrantName(_quadrantNameProp.getValueStr()),
-    _displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj())
-
+    _quadrantName(_quadrantNameProp.getValueStr())
 {
     setNull();
     setupProperties();
@@ -82,9 +78,7 @@ WrapObject::WrapObject(const WrapObject& aWrapObject) :
    _xyzBodyRotation(_xyzBodyRotationProp.getValueDblArray()),
    _translation(_translationProp.getValueDblVec()),
     _active(_activeProp.getValueBool()),
-    _quadrantName(_quadrantNameProp.getValueStr()),
-    _displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj())
+    _quadrantName(_quadrantNameProp.getValueStr())
 {
     setNull();
     setupProperties();
@@ -128,10 +122,6 @@ void WrapObject::setupProperties()
     _quadrantNameProp.setName("quadrant");
     _quadrantNameProp.setValue("Unassigned");
     _propertySet.append(&_quadrantNameProp);
-
-    _displayerProp.setName("display");
-    _propertySet.append(&_displayerProp);
-
 }
 
 void WrapObject::constructProperties()
@@ -153,11 +143,6 @@ void WrapObject::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
     SimTK::Rotation rot;
     rot.setRotationToBodyFixedXYZ(Vec3(_xyzBodyRotation[0], _xyzBodyRotation[1], _xyzBodyRotation[2]));
     _pose.set(rot, _translation);
-
-    // Object is visible (has displayer) and depends on body it's attached to.
-    _body->updDisplayer()->addDependent(updDisplayer());
-    _displayer.setTransform(_pose);
-    _displayer.setOwner(this);
 }
 
 //_____________________________________________________________________________
@@ -180,7 +165,7 @@ void WrapObject::scale(const SimTK::Vec3& aScaleFactors)
  * set quadrants for the geometric object representing the wrap object
  * This has to be done after geometry object creation so it's not 
  * part of WrapObject::connectToModelAndBody()
- */
+ *
 void WrapObject::setGeometryQuadrants(OpenSim::AnalyticGeometry *aGeometry) const
 {
     // The following code should be moved to the base class WrapObject
@@ -194,7 +179,7 @@ void WrapObject::setGeometryQuadrants(OpenSim::AnalyticGeometry *aGeometry) cons
             quads[2*_wrapAxis+1]=false;
     }
     aGeometry->setQuadrants(quads);
-}
+}*/
 //_____________________________________________________________________________
 /**
  * Copy data members from one WrapObject to another.
@@ -208,7 +193,6 @@ void WrapObject::copyData(const WrapObject& aWrapObject)
     _active = aWrapObject._active;
     _quadrantName = aWrapObject._quadrantName;
     _quadrant = aWrapObject._quadrant;
-    _displayer = aWrapObject._displayer;
 }
 
 //_____________________________________________________________________________

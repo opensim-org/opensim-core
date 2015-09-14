@@ -44,12 +44,17 @@ using namespace std;
 // CONSTANTS
 //-----------------------------------------------------------------------------
 
-// up version to 20301 for separation of RRATool, CMCTool
-// up version to 20302 for Muscle's pennation_angle -> pennation_angle_at_optimal
-// up version to 30500 for OpenSim 4.0 development and Connectors
-// up version to 30501 for Changing serialization of Marker
-
-const int XMLDocument::LatestVersion = 30501;   
+// This list of version numbers is not complete
+// 20301 for separation of RRATool, CMCTool
+// 20302 for Muscle's pennation_angle -> pennation_angle_at_optimal
+// 20303
+// 30000 for OpenSim 3.0 release
+// 30500 for OpenSim 4.0 development and Connectors
+// 30501 for Changing serialization of Marker
+// 30502 for Changing serialization of Geometry
+// 30503 for Changing serialization of Ground
+// 30505 for Changing serialization of Joint to create offset frames
+const int XMLDocument::LatestVersion = 30505;   
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
@@ -399,23 +404,60 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
 /*
  * Helper function to add connector to the xmlElement passed in
  */
-void XMLDocument::addConnector(SimTK::Xml::Element& element, const std::string& connectorTag, const std::string& connectorName, const std::string& connectorValue)
+void XMLDocument::addConnector(SimTK::Xml::Element& element,
+    const std::string& connectorTag, const std::string& connectorName, 
+    const std::string& connectorValue)
 {
     SimTK::Xml::element_iterator  connectors_node =  element.element_begin("connectors");
-    SimTK::String debug;
+    //SimTK::String debug; //Only used for debugging
     if (connectors_node == element.element_end()){
         SimTK::Xml::Element connectorsElement("connectors");
         element.insertNodeBefore(element.element_begin(), connectorsElement);
         connectors_node =  element.element_begin("connectors");
     }
-    // Here we're guaranteed connectors node exist, add indivdual connector
+    // Here we're guaranteed connectors node exists, add individual connector
     SimTK::Xml::Element newConnectorElement(connectorTag);
     newConnectorElement.setAttributeValue("name", connectorName);
-    newConnectorElement.writeToString(debug);
-    SimTK::Xml::Element connectedToElement("connected_to_name");
-    connectedToElement.insertNodeAfter(connectedToElement.element_end(), SimTK::Xml::Text(connectorValue));
+    //newConnectorElement.writeToString(debug);
+
+    SimTK::Xml::Element connecteeElement("connectee_name");
+    connecteeElement.insertNodeAfter(connecteeElement.element_end(), SimTK::Xml::Text(connectorValue));
     // Insert text under newConnectorElement
-    newConnectorElement.insertNodeAfter(newConnectorElement.element_end(), connectedToElement);
+    newConnectorElement.insertNodeAfter(newConnectorElement.element_end(), connecteeElement);
     connectors_node->insertNodeAfter(connectors_node->element_end(), newConnectorElement);
-    connectors_node->writeToString(debug);
+    //connectors_node->writeToString(debug);
+}
+
+void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,
+    const std::string& frameName,
+    const std::string& parentFrameName, 
+    const SimTK::Vec3& location, const SimTK::Vec3& orientation)
+{
+    SimTK::Xml::element_iterator  frames_node = element.element_begin("frames");
+    //SimTK::String debug; //Only used for debugging
+    
+    if (frames_node == element.element_end()) {
+        SimTK::Xml::Element framesElement("frames");
+        element.insertNodeBefore(element.element_begin(), framesElement);
+        frames_node = element.element_begin("frames");
+    }
+    // Here we're guaranteed frames node exists, add individual frame
+    SimTK::Xml::Element newFrameElement("PhysicalOffsetFrame");
+    newFrameElement.setAttributeValue("name", frameName);
+    //newFrameElement.writeToString(debug);
+
+    XMLDocument::addConnector(newFrameElement, "Connector_PhysicalFrame_", "parent", parentFrameName);
+
+    std::ostringstream transValue;
+    transValue << location[0] << " " << location[1] << " " << location[2];
+    SimTK::Xml::Element translationElement("translation", transValue.str());
+    newFrameElement.insertNodeAfter(newFrameElement.element_end(), translationElement);
+
+    std::ostringstream orientValue; 
+    orientValue << orientation[0] << " " << orientation[1] << " " << orientation[2];
+    SimTK::Xml::Element orientationElement("orientation", orientValue.str());
+    newFrameElement.insertNodeAfter(newFrameElement.element_end(), orientationElement);
+
+    frames_node->insertNodeAfter(frames_node->element_end(), newFrameElement);
+    //frames_node->writeToString(debug);
 }

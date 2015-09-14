@@ -47,31 +47,33 @@ position (\f$\vec{u} \neq \dot{\vec{q}}\f$)
 class OSIMSIMULATION_API EllipsoidJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(EllipsoidJoint, Joint);
 
-private:
-    static const int _numMobilities = 3;
-//=============================================================================
-// DATA
-//=============================================================================
+    /** Specify the Coordinates of the EllipsoidJoint */
+    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+
 public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with an EllipsoidJoint. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(radii_x_y_z, SimTK::Vec3,
         "Radii of the ellipsoid fixed to the parent frame, "
         "specified as a Vec3(rX, rY, rZ).");
-    /**@}**/
 
 //=============================================================================
 // METHODS
 //=============================================================================
-public:
     // CONSTRUCTION
     EllipsoidJoint();
-    // convenience constructor
-    EllipsoidJoint(const std::string &name,
+    /** Convenience Joint like Constructor */
+    EllipsoidJoint( const std::string& name,
+                    const std::string& parentName,
+                    const std::string& child,
+                    const SimTK::Vec3& ellipsoidRadii,
+                    bool reverse = false);
+
+    /** Deprecated Joint Constructor*/
+    EllipsoidJoint(const std::string& name,
         const PhysicalFrame& parent,
         const SimTK::Vec3& locationInParent,
         const SimTK::Vec3& orientationInParent,
@@ -79,11 +81,7 @@ public:
         const SimTK::Vec3& locationInChild,
         const SimTK::Vec3& orientationInChild,
         const SimTK::Vec3& ellipsoidRadii,
-        bool reverse = false);
-
-    virtual ~EllipsoidJoint();
-
-    int numCoordinates() const override { return _numMobilities; }
+        bool reverse=false);
 
     //Set properties
     void setEllipsoidRadii(const SimTK::Vec3& radii);
@@ -102,7 +100,7 @@ protected:
         bool fixed,
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const;
+        SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const override;
 
 private:
     void constructProperties();

@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 // INCLUDE
 #include "Force.h"
-#include <OpenSim/Common/VisibleObject.h>
 #include <Vendors/lepton/include/Lepton.h>
 
 namespace OpenSim {
@@ -36,16 +35,12 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(coordinate, std::string,
         "Coordinate (name) to apply force to.");
     OpenSim_DECLARE_PROPERTY(expression, std::string,
         "Expression of the force magnitude as a function of the coordinate value (q)"
         "and its time derivative (qdot). Note, expression cannot have any whitespace"
         "seperating characters");
-    /**@}**/
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================

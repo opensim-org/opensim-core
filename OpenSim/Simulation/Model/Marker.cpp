@@ -179,13 +179,32 @@ void Marker::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             SimTK::Xml::Element frameElement("Connector_PhysicalFrame_");
             connectorsElement.insertNodeAfter(connectorsElement.node_end(), frameElement);
             frameElement.setAttributeValue("name", "reference_frame");
-            SimTK::Xml::Element connectedToElement("connected_to_name");
-            connectedToElement.setValue(bName);
-            frameElement.insertNodeAfter(frameElement.node_end(), connectedToElement);
+            SimTK::Xml::Element connecteeElement("connectee_name");
+            connecteeElement.setValue(bName);
+            frameElement.insertNodeAfter(frameElement.node_end(), connecteeElement);
             aNode.insertNodeAfter(bIter, connectorsElement);
             aNode.eraseNode(bIter);
         }
     }
     // Call base class now assuming _node has been corrected for current version
     Object::updateFromXMLNode(aNode, versionNumber);
+}
+
+void Marker::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
+{
+    Super::generateDecorations(fixed, hints, state, appendToThis);
+    if (!fixed) return;
+    if (hints.get_show_markers()) { 
+        // @TODO default color, size, shape should be obtained from hints
+        const Vec3 pink(1, .6, .8);
+        const OpenSim::PhysicalFrame& frame = getReferenceFrame();
+        const Frame& bf = frame.findBaseFrame();
+        SimTK::Transform bTrans = frame.findTransformInBaseFrame();
+        const Vec3& p_BM = bTrans*get_location();
+        appendToThis.push_back(
+            SimTK::DecorativeSphere(.005).setBodyId(frame.getMobilizedBodyIndex())
+            .setColor(pink).setOpacity(1.0)
+            .setTransform(get_location()));
+    }
 }

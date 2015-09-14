@@ -1,46 +1,8 @@
-FILE(GLOB SOURCE_FILES *.cpp)
-FILE(GLOB INCLUDE_FILES *.h)
+file(GLOB TEST_PROGS "test*.cpp")
 
-LINK_LIBRARIES(osimSimulation osimActuators)
+OpenSimCopySharedTestFiles(arm26.osim)
 
-ADD_EXECUTABLE(testIterators ${SOURCE_FILES} ${INCLUDE_FILES})
-
-SET_TARGET_PROPERTIES(testIterators PROPERTIES
-    ${EXCLUDE_IF_MINIMAL_BUILD}
-    PROJECT_LABEL "Tests - testIterators"
-)
-SET(TEST_TARGET testIterators)
-SET(TEST_DIR ${OpenSim_BINARY_DIR}/OpenSim/Tests/testIterators)
-TARGET_LINK_LIBRARIES(${TEST_TARGET} ${LINK_LIBRARIES})
-
-FILE(GLOB TEST_FILES 
-    ${EXAMPLE_DIR}/*.obj 
-    ${EXAMPLE_DIR}/*.osim 
-    ${EXAMPLE_DIR}/*.xml 
-    ${EXAMPLE_DIR}/*.sto 
-    ${EXAMPLE_DIR}/*.mot
-    *.obj *.osim *.xml *.sto *.mot)
-
-#
-# Copy files to run dir
-#
-FOREACH (dataFile ${TEST_FILES})
- ADD_CUSTOM_COMMAND(
-    TARGET ${TEST_TARGET}
-    COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy
-    ${dataFile}
-    ${TEST_DIR})
-ENDFOREACH (dataFile) 
-
-#
-# Testing
-#
-IF (EXECUTABLE_OUTPUT_PATH)
-  SET (TEST_PATH ${EXECUTABLE_OUTPUT_PATH})
-ELSE (EXECUTABLE_OUTPUT_PATH)
-  SET (TEST_PATH .)
-ENDIF (EXECUTABLE_OUTPUT_PATH)
-
-ADD_TEST(${TEST_TARGET} ${TEST_PATH}/${TEST_TARGET})
-
+OpenSimAddTests(
+    TESTPROGRAMS ${TEST_PROGS}
+    LINKLIBS osimSimulation osimActuators
+    )

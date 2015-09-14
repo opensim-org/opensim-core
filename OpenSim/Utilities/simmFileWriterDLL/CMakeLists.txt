@@ -1,11 +1,11 @@
 
-FILE(GLOB SOURCES *.cpp)
-FILE(GLOB INCLUDES *.h)
+file(GLOB SOURCES *.cpp)
+file(GLOB INCLUDES *.h)
 
-OPENSIM_ADD_LIBRARY(
+OpenSimAddLibrary(
     KIT SimmFileWriter
     AUTHORS "Peter_Loan"
-    LINKLIBS osimCommon osimSimulation osimActuators ${SIMTK_ALL_LIBS}
+    LINKLIBS osimCommon osimSimulation osimActuators ${Simbody_LIBRARIES}
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
     TESTDIRS ""

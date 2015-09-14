@@ -95,7 +95,7 @@ public:
     through this iterator. */
     typedef ComponentListIterator<T> const_iterator;
     /** Constructor that takes a Component to iterate over (itself and its
-    descendents) and a ComponentFilter. You can change the filter later
+    descendants) and a ComponentFilter. You can change the filter later
     using the setFilter() method. The filter is cloned on
     construction and can only be changed using setFilter().
     */
@@ -103,7 +103,7 @@ public:
         _root(root), _filter(f){
     }
     /** Constructor that takes only a Component to iterate over (itself and its
-    descendents). ComponentFilterMatchAll is used internally. You can
+    descendants). ComponentFilterMatchAll is used internally. You can
     change the filter using setFilter() method. 
     */
     ComponentList(const Component& root) : _root(root){
@@ -166,7 +166,11 @@ public:
     /// Check that the component under the cuurent iterator is same 
     /// (has same address) as right-hand iter.
     bool operator==(const ComponentListIterator& iter) const {
-        return _node == &*iter;
+        return this->equals(iter);
+    }
+    /// Check for equality using method rather than operator to support scripting
+    bool equals(const ComponentListIterator& iter) const {
+        return (_node == iter._node);
     }
     /// Check for inequality using same convention as operator==.
     bool operator!=(const ComponentListIterator& iter) const {
@@ -197,6 +201,7 @@ public:
      languages.
      */
     ComponentListIterator<T>& next() { return ++(*this); }
+
 private:
     // Internal method to advance iterator to next valid component.
     void advanceToNextValidComponent();

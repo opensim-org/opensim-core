@@ -80,7 +80,6 @@ namespace OpenSim {
 // CONSTANTS
 const char ObjectDEFAULT_NAME[] = "default";
 
-class VisibleObject;
 class XMLDocument;
 
 //==============================================================================
@@ -224,16 +223,6 @@ public:
     concrete object.
     @see getClassName() **/
     virtual const std::string& getConcreteClassName() const = 0;
-
-    /**
-     * Methods to support making the object displayable in the GUI or Visualizer
-     * Implemented only in few objects
-     */
-    /** Get const pointer to VisibleObject that contains geometry */
-    virtual const VisibleObject *getDisplayer() const { return 0; };
-    /** get Non const pointer to VisibleObject */
-    virtual VisibleObject *updDisplayer() { return 0; };
-
 
     //--------------------------------------------------------------------------
     // OPERATORS
@@ -1185,9 +1174,16 @@ ObjectProperty<T>::isEqualTo(const AbstractProperty& other) const {
         return false;
     assert(this->size() == other.size()); // base class checked
     const ObjectProperty& otherO = ObjectProperty::getAs(other);
-    for (int i=0; i<objects.size(); ++i)
-        if (!(objects[i] == otherO.objects[i]))
+    for (int i=0; i<objects.size(); ++i) {
+        const T* const thisp  = objects[i].get();
+        const T* const otherp = otherO.objects[i].get();
+        if (thisp == otherp)
+            continue; // same object or both null
+        if (!(thisp && otherp))
+            return false; // only one is null; they are different
+        if (!(*thisp == *otherp)) // delegate to object's operator==()
             return false;
+    }
     return true;
 }
 

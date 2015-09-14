@@ -58,9 +58,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(coordinate, std::string,
         "Coordinate (name) to be limited.");
     OpenSim_DECLARE_PROPERTY(upper_stiffness, double,
@@ -87,7 +84,6 @@ public:
         "Option to compute the dissipation energy due to damping in the "
         "CoordinateLimitForce. If true the dissipation power is automatically "
         "integrated to provide energy. Default is false.");
-    /**@}**/
 
 //=============================================================================
 // PUBLIC METHODS
@@ -120,7 +116,7 @@ public:
     //use compiler default copy constructor and assignment operator
 
     /** Destructor */
-    ~CoordinateLimitForce();
+    ~CoordinateLimitForce() override = default;
 
 
     //--------------------------------------------------------------------------
@@ -235,9 +231,10 @@ private:
 
     // Smooth step functions for continuous transition from no stiffness and 
     // damping to constant values beyond the limits. These are heap allocated
-    // and owned here so must be deleted in destructor.
-    SimTK::ReferencePtr<SimTK::Function::Step> _upStep;
-    SimTK::ReferencePtr<SimTK::Function::Step> _loStep;
+    // and owned here, but we don't want these functions to be copied if a
+    // CoordinateLimitForce is copied.
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::Function::Step> > _upStep;
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::Function::Step> > _loStep;
 
     // Scaling for coordinate values in m or degrees (rotational) 
     double _w;

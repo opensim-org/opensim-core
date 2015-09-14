@@ -192,7 +192,7 @@ public:
     void setDataColumn(int aStateIndex,const Array<double> &aData);
     int getDataColumn(const std::string& columnName,double *&rData) const;
     void getDataColumn(const std::string& columnName, Array<double>& data, double startTime=0.0);
-
+#ifndef SWIG
     /** A data block, like a vector for a force, point, etc... will span multiple "columns"
         It is desirable to access the block as a single entity provided an identifier that is common 
        to all components (such as prefix in the column label).
@@ -200,7 +200,7 @@ public:
      @param rData       Array<Array<double>> of data belonging to the identifier 
      @param startTime   at what time to begin (if not 0) */
     void getDataForIdentifier(const std::string& identifier, Array< Array<double> >& rData, double startTime=0.0) const;
-
+#endif
     /**
      * Get indices of columns corresponding to identifier, empty array if identifier is not found in labels
      */

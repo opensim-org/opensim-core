@@ -29,6 +29,7 @@
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Units.h>
+#include <OpenSim/Simulation/AssemblySolver.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/Model/ControllerSet.h>
@@ -44,6 +45,8 @@
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/FrameSet.h>
 #include <OpenSim/Simulation/Model/Ground.h>
+#include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
+#include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include "Simbody.h"
 
 
@@ -69,11 +72,9 @@ class Actuator;
 class ContactGeometrySet;
 class Storage;
 class ScaleSet;
-class AssemblySolver;
 class Controller;
 class ControllerSet;
 class ModelDisplayHints;
-class ModelVisualizer;
 class ComponentSet;
 class FrameSet;
 
@@ -114,9 +115,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with a Model. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(assembly_accuracy, double,
     "Specify how accurate the resulting configuration of a model assembly "
     "should be. This translates to the number of signficant digits in the "
@@ -175,7 +173,9 @@ public:
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(FrameSet,
         "List of Frames that various objects can be anchored to or expressed in, Body frames are builtin and not included in this list.");
-    /**@}**/
+
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ModelVisualPreferences,
+        "Visual preferences for this model.");
 
 //=============================================================================
 // METHODS
@@ -233,11 +233,13 @@ public:
     /** Get read only access to the ModelDisplayHints object stored with this
     %Model. These should be checked whenever display geometry is being
     generated. **/
-    const ModelDisplayHints& getDisplayHints() const {return _displayHints;}
+    const ModelDisplayHints& getDisplayHints() const {
+        return get_ModelVisualPreferences().get_ModelDisplayHints();}
     /** Get writable access to the ModelDisplayHints object stored with this
     %Model. The GUI or ModelVisualizer can update these as a result of user
     requests, or an OpenSim API program can set them programmatically. **/
-    ModelDisplayHints& updDisplayHints() {return _displayHints;}
+    ModelDisplayHints& updDisplayHints() { 
+        return upd_ModelVisualPreferences().upd_ModelDisplayHints(); }
 
     /** Request or suppress visualization of this %Model. This flag is checked
     during initSystem() and if set causes the %Model to allocate a
@@ -254,7 +256,7 @@ public:
     until initSystem() has been successfully invoked. Use this method prior
     to calling getVisualizer() or updVisualizer() to avoid an
     unpleasant exception. **/
-    bool hasVisualizer() const {return _modelViz != 0;}
+    bool hasVisualizer() const {return _modelViz != nullptr;}
 
     /** Obtain read-only access to the ModelVisualizer. This will throw an 
     exception if visualization was not requested or initSystem() not yet
@@ -303,9 +305,9 @@ public:
 
     
     /** Convenience method that invokes buildSystem() and then 
-    initializeState(). A reference to the writable internally-
-    maintained model State is returned (note that this does not affect the 
-    system's default state (which is part of the model and hence read only). **/
+    initializeState(). This returns a reference to the writable internally-
+    maintained model State. Note that this does not affect the 
+    system's default state (which is part of the model and hence read-only). **/
     SimTK::State& initSystem() SWIG_DECLARE_EXCEPTION {
         buildSystem();
         return initializeState();
@@ -378,13 +380,13 @@ public:
 
     /** Get read-only access to the internal Simbody MultibodySystem that was
     created by this %Model at the last initSystem() call. **/    
-    const SimTK::MultibodySystem& getMultibodySystem() const {return *_system; } 
+    const SimTK::MultibodySystem& getMultibodySystem() const {return *_system; }
     /** (Advanced) Get writable access to the internal Simbody MultibodySystem 
     that was created by this %Model at the last initSystem() call. Be careful
     if you make modifications to the System because that will invalidate 
     initialization already performed by the Model. 
     @see initStateWithoutRecreatingSystem() **/    
-    SimTK::MultibodySystem& updMultibodySystem() const {return *_system; } 
+    SimTK::MultibodySystem& updMultibodySystem() const {return *_system; }
 
     /** Get read-only access to the internal DefaultSystemSubsystem allocated
     by this %Model's Simbody MultibodySystem. **/
@@ -460,15 +462,15 @@ public:
     /**
      * Add ModelComponents to the Model. Model takes ownership of the objects.
      */
-    void addModelComponent(ModelComponent* aModelComponent);
-    void addBody(Body *body);
-    void addJoint(Joint *joint);
-    void addConstraint(Constraint *constraint);
-    void addForce(Force *force);
-    void addProbe(Probe *probe);
-    void addContactGeometry(ContactGeometry *contactGeometry);
-    void addFrame(Frame* frame);
-    void addMarker(Marker *marker);
+    void addModelComponent(ModelComponent* adoptee);
+    void addBody(Body *adoptee);
+    void addJoint(Joint *adoptee);
+    void addConstraint(Constraint *adoptee);
+    void addForce(Force *adoptee);
+    void addProbe(Probe *adoptee);
+    void addContactGeometry(ContactGeometry *adoptee);
+    void addFrame(Frame* adoptee);
+    void addMarker(Marker *adoptee);
     /** remove passed in Probe from model **/
     void removeProbe(Probe *probe);
     //--------------------------------------------------------------------------
@@ -815,9 +817,9 @@ public:
      *
      * @param analysis  pointer to the Analysis to add
      */
-    void addAnalysis(Analysis *analysis);
+    void addAnalysis(Analysis *adoptee);
     /** Add a Controller to the %Model. **/
-    void addController(Controller *aController);
+    void addController(Controller *adoptee);
 
     /**
      * Remove an Analysis from the %Model.
@@ -908,7 +910,7 @@ public:
     /**@{**/
 
     /** Destructor. */
-    ~Model();
+    ~Model() override = default;
 
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, 
@@ -1030,23 +1032,29 @@ private:
 
 
     //                      SIMBODY MULTIBODY SYSTEM
+    // We dynamically allocate these because they are not available at
+    // construction.
     // The model owns the MultibodySystem, but the
-    // subsystems and force elements are owned by the MultibodySystem so 
-    // should not be deleted in the destructor.
-    SimTK::ReferencePtr<SimTK::MultibodySystem>  _system; // owned by Model; must destruct
+    // subsystems and force elements are owned by the MultibodySystem. However,
+    // that memory management happens through Simbody's handles. It's fine for
+    // us to manage the heap memory for the handles.
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::MultibodySystem>> _system;
 
-    // These are just references pointing into _system; don't destruct.
-    SimTK::ReferencePtr<SimTK::SimbodyMatterSubsystem>  _matter;     
-    SimTK::ReferencePtr<SimTK::Force::Gravity>          _gravityForce;
-    SimTK::ReferencePtr<SimTK::GeneralForceSubsystem>   _forceSubsystem;
-    SimTK::ReferencePtr<SimTK::GeneralContactSubsystem> _contactSubsystem;
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::SimbodyMatterSubsystem>>
+        _matter;     
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::Force::Gravity>>
+        _gravityForce;
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::GeneralForceSubsystem>>
+        _forceSubsystem;
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::GeneralContactSubsystem>>
+        _contactSubsystem;
 
     // System-dependent objects.
 
     // Assembly solver used for satisfying constraints and other configuration
-    // goals. This object is owned by the Model and must be destructed.
-    //AssemblySolver*     _assemblySolver;
-    SimTK::ReferencePtr<AssemblySolver> _assemblySolver;
+    // goals. This object is owned by the Model, and should not be copied
+    // when the Model is copied.
+    SimTK::ResetOnCopy<std::unique_ptr<AssemblySolver>> _assemblySolver;
 
     // Model controls as a shared pool (Vector) of individual Actuator controls
     SimTK::MeasureIndex   _modelControlsIndex;
@@ -1061,9 +1069,9 @@ private:
     ModelDisplayHints   _displayHints;
 
     // If visualization has been requested at the API level, we'll allocate 
-    // a ModelVisualizer. The Model owns this object.
-    //ModelVisualizer*    _modelViz; // owned by Model; must destruct
-    SimTK::ReferencePtr<ModelVisualizer> _modelViz;
+    // a ModelVisualizer. The Model owns this object, but it should not be
+    // copied.
+    SimTK::ResetOnCopy<std::unique_ptr<ModelVisualizer>> _modelViz;
 
 //==============================================================================
 };  // END of class Model

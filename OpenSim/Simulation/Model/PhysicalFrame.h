@@ -28,7 +28,6 @@
 
 // TODO remove these when corresponding properties are removed
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
-#include <OpenSim/Common/VisibleObject.h>
 
 namespace OpenSim {
 
@@ -58,24 +57,20 @@ public:
     //==============================================================================
     // PROPERTIES
     //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with a PhysicalFrame.
-    NOTE: These properties used to be members of Body and were moved up in the
-    hierarchy with the introduction of Frames.
-
-    TODO: Both VisibleObject and the WrapObjectSet should NOT be properties
+    /* TODO: Both VisibleObject and the WrapObjectSet should NOT be properties
     of the PhysicalFrame. This is an itermediate solution as we integrate Frames 
     use into the OpenSim API. These properties should be their own components with
     Connectors to the PhysicalFrames they attach to. This must be addressed prior
-    to OpenSim 4.0 release. - aseth */
-    /**@{**/
-    OpenSim_DECLARE_UNNAMED_PROPERTY(VisibleObject,
-        "For visualization in the Simbody visualizer or OpenSim GUI.");
+    to OpenSim 4.0 release. - aseth
 
+    Note: VisibleObject was removed from this class by @aymanhab via PR #417.
+                                                            -@chrisdembia
+    */
     OpenSim_DECLARE_UNNAMED_PROPERTY(WrapObjectSet,
-        "Set of wrap objects fixed to this body that GeometryPaths can wrap over.");
+        "Set of wrap objects fixed to this body that GeometryPaths can wrap over."
+        "This property used to be a member of Body but was moved up with "
+        "the introduction of Frames.");
 
-    /**@}**/
     //==========================================================================
     // PUBLIC METHODS
     //==========================================================================
@@ -138,19 +133,12 @@ public:
 
     /** Scale PhysicalFrame related dimensions according to predetermined 
         ScaleFactors */
-    void scale(const SimTK::Vec3& aScaleFactors);
+    void scale(const SimTK::Vec3& scaleFactors);
 
-    /** @name DEPRECATED API 
-    TODO: These methods will go away when Geometry are treated as proper
-    Components. */
+    /** @name DEPRECATED API */
 
     ///@{
     /** Deprecated methods for inermediate integration of Frames */
-    virtual void addDisplayGeometry(const std::string &aGeometryFileName);
-
-    const VisibleObject* getDisplayer() const { return &get_VisibleObject(); }
-    VisibleObject* updDisplayer() { return &upd_VisibleObject(); }
-
     /** Get the named wrap object, if it exists.
     *
     * @param aName Name of the wrap object.
@@ -164,7 +152,6 @@ public:
     */
     void addWrapObject(WrapObject* wrapObject);
     ///@} 
-
 
 protected:
     /** The transform X_GF for this PhysicalFrame, F, in ground, G. */
@@ -180,7 +167,7 @@ protected:
     set by the end of PhysicalFrame::addToSystem()
         */
     void setMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix) const {
-        _mbIndex = mbix; 
+        const_cast<Self*>(this)->_mbIndex = mbix; 
     }
 
     /** Extend how PhysicalFrame determines its base Frame. */
@@ -206,7 +193,7 @@ private:
     /* ID for the underlying mobilized body in Simbody system.
     Only Joint can set, since it defines the mobilized body type and
     the connection to the parent body in the multibody tree. */
-    mutable SimTK::MobilizedBodyIndex _mbIndex;
+    SimTK::ResetOnCopy<SimTK::MobilizedBodyIndex> _mbIndex;
 
     virtual const SimTK::Body& extractInternalRigidBody() const {
         return _internalRigidBody;

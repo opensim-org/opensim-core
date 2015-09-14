@@ -51,9 +51,6 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ConstantDistanceConstraint, Constraint);
 // DATA
 //=============================================================================
 public:
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
         "Location of the point in first body specified in body1 "
         "reference frame.");
@@ -63,7 +60,6 @@ public:
     OpenSim_DECLARE_PROPERTY(constant_distance, double, "constant distance "
         "to be rigidly maintained between the two points "
         "fixed on each body.");
-    /**@}**/
 
 //=============================================================================
 // METHODS
@@ -103,6 +99,13 @@ protected:
     * Extend Component Interface.
     */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    // Visual support Constraint drawing in visualizer.
+    void generateDecorations(
+        bool                                        fixed,
+        const ModelDisplayHints&                    hints,
+        const SimTK::State&                         state,
+        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
+        override;
 
     /** Updating XML formating to latest revision */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;

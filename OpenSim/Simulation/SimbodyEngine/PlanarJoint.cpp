@@ -31,52 +31,8 @@
 //=============================================================================
 // STATICS
 //=============================================================================
-using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-PlanarJoint::PlanarJoint() :
-    Joint()
-{
-    setAuthors("Ajay Seth");
-    constructCoordinates();
-
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-    coordinateSet[1].setMotionType(Coordinate::Translational);
-    coordinateSet[2].setMotionType(Coordinate::Translational);
-}
-
-//_____________________________________________________________________________
-/**
- * Convenience Constructor.
- */
-PlanarJoint::PlanarJoint(const std::string &name,
-    const PhysicalFrame& parent,
-    const SimTK::Vec3& locationInParent,
-    const SimTK::Vec3& orientationInParent,
-    const PhysicalFrame& child,
-    const SimTK::Vec3& locationInChild,
-    const SimTK::Vec3& orientationInChild,
-    bool reverse) :
-        Joint(name, parent, locationInParent,orientationInParent,
-            child, locationInChild, orientationInChild, reverse)
-{
-    setAuthors("Ajay Seth");
-    constructCoordinates();
-
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-    coordinateSet[1].setMotionType(Coordinate::Translational);
-    coordinateSet[2].setMotionType(Coordinate::Translational);
-}
-
-
 
 //=============================================================================
 // Simbody Model building.
@@ -84,5 +40,6 @@ PlanarJoint::PlanarJoint(const std::string &name,
 //_____________________________________________________________________________
 void PlanarJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
     createMobilizedBody<MobilizedBody::Planar>(system);
 }

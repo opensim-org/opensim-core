@@ -66,11 +66,12 @@ const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 const static double mass = 1.0;
 const static double radius = 0.10;
 const static double height = 1.0;
-const static string mesh_file = "sphere_10cm_radius.obj"; //"10_5_cm_sphere_47700.obj";
+const static string mesh_files[] = {"sphere_10cm_radius.obj", "sphere_10cm_radius.stl", "sphere_10cm_radius.vtp" };
+//"10_5_cm_sphere_47700.obj";
 
 //==========================================================================================================
 
-int testBouncingBall(bool useMesh);
+int testBouncingBall(bool useMesh, const std::string mesh_filename="");
 int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh2);
 void compareHertzAndMeshContactResults();
 
@@ -79,7 +80,12 @@ int main()
     try
     {
         testBouncingBall(false);
-        testBouncingBall(true);
+        cout << "Testing mesh .obj format" << endl;
+        testBouncingBall(true, mesh_files[0]);
+        cout << "Testing mesh .stl format" << endl;
+        testBouncingBall(true, mesh_files[1]);
+        cout << "Testing mesh .vtp format" << endl;
+        testBouncingBall(true, mesh_files[2]);
         testBallToBallContact(false, false, false);
         testBallToBallContact(true, true, false);
         testBallToBallContact(true, false, true);
@@ -97,7 +103,7 @@ int main()
 //==========================================================================================================
 // Test Cases
 //==========================================================================================================
-int testBouncingBall(bool useMesh)
+int testBouncingBall(bool useMesh, const std::string mesh_filename)
 {
     // Setup OpenSim model
     Model *osimModel = new Model;
@@ -122,8 +128,9 @@ int testBouncingBall(bool useMesh)
     ContactHalfSpace *floor = new ContactHalfSpace(Vec3(0), Vec3(0, 0, -0.5*SimTK_PI), ground, "ground");
     osimModel->addContactGeometry(floor);
     OpenSim::ContactGeometry* geometry;
-    if (useMesh)
-        geometry = new ContactMesh(mesh_file, Vec3(0), Vec3(0), ball, "ball");
+    if (useMesh){
+        geometry = new ContactMesh(mesh_filename, Vec3(0), Vec3(0), ball, "ball");
+    }
     else
         geometry = new ContactSphere(radius, Vec3(0), ball, "ball");
     osimModel->addContactGeometry(geometry);
@@ -242,12 +249,12 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
     OpenSim::ContactGeometry *ball1, *ball2;
 
     if (useElasticFoundation && useMesh1)
-        ball1 = new ContactMesh(mesh_file, Vec3(0), Vec3(0), ground, "ball1");
+        ball1 = new ContactMesh(mesh_files[0], Vec3(0), Vec3(0), ground, "ball1");
     else
         ball1 = new ContactSphere(radius, Vec3(0), ground, "ball1");
 
     if (useElasticFoundation && useMesh2)
-        ball2 = new ContactMesh(mesh_file, Vec3(0), Vec3(0), ball, "ball2");
+        ball2 = new ContactMesh(mesh_files[0], Vec3(0), Vec3(0), ball, "ball2");
     else
         ball2 = new ContactSphere(radius, Vec3(0), ball, "ball2");
     

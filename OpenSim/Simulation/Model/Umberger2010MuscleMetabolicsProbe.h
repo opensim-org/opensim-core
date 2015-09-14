@@ -213,9 +213,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     /** Enabled by default. **/
     OpenSim_DECLARE_PROPERTY(activation_maintenance_rate_on, 
         bool,
@@ -298,8 +295,6 @@ public:
         Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet,
         "A set containing, for each muscle, the parameters "
         "required to calculate muscle metabolic power.");
-
-    /**@}**/
 
 //=============================================================================
 // PUBLIC METHODS
@@ -467,9 +462,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(specific_tension, double,
         "The specific tension of the muscle (Pascals (N/m^2)).");
 
@@ -485,7 +477,6 @@ public:
 
     OpenSim_DECLARE_PROPERTY(provided_muscle_mass, double,
         "The user specified muscle mass (kg).");
-    /**@}**/
 
     //=============================================================================
     // METHODS
@@ -509,7 +500,7 @@ public:
     //--------------------------------------------------------------------------
     // Internal muscle pointer
     //--------------------------------------------------------------------------
-    const Muscle* getMuscle() const         { return _musc; }
+    const Muscle* getMuscle() const         { return _musc.get(); }
     void setMuscle(Muscle* m)               { _musc = m; }
 
 

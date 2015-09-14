@@ -141,12 +141,12 @@ void PointConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
  * Following methods set attributes of the frames of constraint */
 void PointConstraint::setBody1ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_1").set_connected_to_name(aBodyName);
+    updConnector<PhysicalFrame>("body_1").set_connectee_name(aBodyName);
 }
 
 void PointConstraint::setBody2ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_2").set_connected_to_name(aBodyName);
+    updConnector<PhysicalFrame>("body_2").set_connectee_name(aBodyName);
 }
 
 /** Set the location for point on body 1*/
@@ -189,9 +189,13 @@ void PointConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
             // replace old properties with latest use of Connectors
             SimTK::Xml::element_iterator body1Element = aNode.element_begin("body_1");
             SimTK::Xml::element_iterator body2Element = aNode.element_begin("body_2");
-            std::string body1_name, body2_name;
-            body1Element->getValueAs<std::string>(body1_name);
-            body2Element->getValueAs<std::string>(body2_name);
+            std::string body1_name(""), body2_name("");
+            // If default constructed then elements not serialized since they are default
+            // values. Check that we have associated elements, then extract their values.
+            if (body1Element != aNode.element_end())
+                body1Element->getValueAs<std::string>(body1_name);
+            if (body2Element != aNode.element_end())
+                body2Element->getValueAs<std::string>(body2_name);
             XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "body_1", body1_name);
             XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "body_2", body2_name);
         }

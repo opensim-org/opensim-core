@@ -114,10 +114,10 @@ void testAssembleModelWithConstraints(string modelFile)
         for (int i = 0; i < js.getSize(); ++i){
             const Joint& j = js[i];
             viz.addDecoration(j.getParentFrame().getMobilizedBodyIndex(),
-                j.getParentTransform(),
+                j.getParentFrame().findTransformInBaseFrame(),
                 SimTK::DecorativeFrame(0.05));
             viz.addDecoration(j.getChildFrame().getMobilizedBodyIndex(),
-                j.getChildTransform(),
+                j.getChildFrame().findTransformInBaseFrame(),
                 SimTK::DecorativeFrame(0.033));
             viz.addDecoration(j.getChildFrame().getMobilizedBodyIndex(),
                 Transform(),
@@ -250,15 +250,16 @@ void testAssemblySatisfiesConstraints(string modelFile)
     using namespace SimTK;
 
     cout << "****************************************************************************" << endl;
-    cout << " testAssemblySatisfiesConstraints :: "<< modelFile << endl;
+    cout << " testAssemblySatisfiesConstraints :: " << modelFile << endl;
     cout << "****************************************************************************\n" << endl;
     //==========================================================================================================
     // Setup OpenSim model
     Model model(modelFile);
+    model.print(modelFile + "_latest.osim");
     // In Simbody 3.4, rod constraints are handled differently than in Simbody
-    // 3.4. This leads to a decrease in the accuracy that the assembly solver
+    // 3.3. This leads to a decrease in the accuracy that the assembly solver
     // achieves, even though the constraints are achieved to the same extent.
-    // Therefore, it is reasonable to reduce the accuracy (increase the value
+    // Therefore, it is reasonable to loosen the accuracy (increase the value
     // of assembly_accuracy) for assembly.
     model.set_assembly_accuracy(1e-8);
 
@@ -293,11 +294,11 @@ void testAssemblySatisfiesConstraints(string modelFile)
     for(int i=0; i<N; ++i){
         kneeAngle = upper-i*delta;
         coords[0].setValue(state, kneeAngle, true);
-        //model.getVisualizer().show(state);
+//        model.getVisualizer().show(state);
         cerr = calcLigamentLengthError(state, model);
         qerr = coords[0].getValue(state)-kneeAngle;
-        //cout << "Assembly errors:: cerr = " << cerr << " m,  qerr = " 
-        //  << convertRadiansToDegrees(qerr) << " degrees" << endl;
+//        cout << "Assembly errors:: cerr = " << cerr << " m,  qerr = " 
+//          << convertRadiansToDegrees(qerr) << " degrees" << endl;
         ASSERT_EQUAL(0.0, cerr, model.get_assembly_accuracy(),
             __FILE__, __LINE__, "Constraints NOT satisfied to within assembly accuracy");
     }

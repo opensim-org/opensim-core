@@ -55,7 +55,7 @@ int main()
             
         // Get the ground body
         Ground& ground = osimModel.updGround();
-        ground.addDisplayGeometry("checkered_floor.vtp");
+        ground.addMeshGeometry("checkered_floor.vtp");
 
         // create linkage body
         double linkageMass = 0.001, linkageLength = 0.5, linkageDiameter = 0.06;
@@ -65,33 +65,35 @@ int main()
         Inertia linkageInertia = Inertia::cylinderAlongY(linkageDiameter/2.0, linkageLength/2.0);
 
         OpenSim::Body* linkage1 = new OpenSim::Body("linkage1", linkageMass, linkageMassCenter, linkageMass*linkageInertia);
-
-        // Graphical representation
-        linkage1->addDisplayGeometry("cylinder.vtp");
-        //This cylinder.vtp geometry is 1 meter tall, 1 meter diameter.  Scale and shift it to look pretty
-        GeometrySet& geometry = linkage1->updDisplayer()->updGeometrySet();
-        DisplayGeometry& thinCylinder = geometry[0];
-        thinCylinder.setScaleFactors(linkageDimensions);
-        thinCylinder.setTransform(Transform(Vec3(0.0,linkageLength/2.0,0.0)));
-        linkage1->addDisplayGeometry("sphere.vtp");
-        //This sphere.vtp is 1 meter in diameter.  Scale it.
-        geometry[1].setScaleFactors(Vec3(0.1));
         
+        // Graphical representation
+        Cylinder cyl;
+        cyl.set_scale_factors(linkageDimensions);
+        Frame* cyl1Frame = new PhysicalOffsetFrame(*linkage1, Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
+        cyl1Frame->setName("Cyl1_frame");
+        osimModel.addFrame(cyl1Frame);
+        cyl.setFrameName("Cyl1_frame");
+        linkage1->addGeometry(cyl);
+
+        Sphere sphere(0.1);
+        linkage1->addGeometry(sphere);
+         
         // Creat a second linkage body
         OpenSim::Body* linkage2 = new OpenSim::Body(*linkage1);
         linkage2->setName("linkage2");
-
+        Frame* cyl2Frame = new PhysicalOffsetFrame(*linkage2, Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
+        cyl2Frame->setName("Cyl2_frame");
+        osimModel.addFrame(cyl2Frame);
+        (linkage2->upd_geometry(0)).setFrameName("Cyl2_frame");
         // Creat a block to be the pelvis
         double blockMass = 20.0, blockSideLength = 0.2;
         Vec3 blockMassCenter(0);
         Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
         OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
-        block->addDisplayGeometry("block.vtp");
-        //This block.vtp is 0.1x0.1x0.1 meters.  scale its appearance
-        block->updDisplayer()->updGeometrySet()[0].setScaleFactors(Vec3(2.0));
+        Brick brick(SimTK::Vec3(0.05, 0.05, 0.05));
+        block->addGeometry(brick);
 
         // Create 1 degree-of-freedom pin joints between the bodies to creat a kinematic chain from ground through the block
-        
         Vec3 orientationInGround(0), locationInGround(0), locationInParent(0.0, linkageLength, 0.0), orientationInChild(0), locationInChild(0);
 
         PinJoint *ankle = new PinJoint("ankle", ground, locationInGround, orientationInGround, *linkage1, 
@@ -213,6 +215,7 @@ int main()
         si.getU().dump("Initial u's");
         std::cout << "Initial time: " << si.getTime() << std::endl;
 
+        osimModel.dumpPathName();
         // Integrate
         manager.setInitialTime(t0);
         manager.setFinalTime(tf);

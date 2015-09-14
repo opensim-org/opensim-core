@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                                       *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Author(s): Ajay Seth, Ayman Habib                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -59,10 +59,15 @@ public:
     void add(Component* comp) {
         // add it the property list of components that owns and serializes them
         updProperty_components().adoptAndAppendValue(comp);
+        addComponent(comp);
     }
 
+
     // Top level connection method for all encompassing Component
-    void connect() { Super::connect(*this); }
+    void buildComponentTreeAndConnect() { 
+        initComponentTreeTraversal(*this);
+        connect(*this);
+    }
     void buildUpSystem(MultibodySystem& system) { addToSystem(system); }
 
     const SimbodyMatterSubsystem& getMatterSubsystem() const { return *matter; }
@@ -400,13 +405,13 @@ int main() {
 
         //Configure the connector to look for its dependency by this name
         //Will get resolved and connected automatically at Component connect
-        bar.updConnector<Foo>("parentFoo").set_connected_to_name("Foo");
-        bar.updConnector<Foo>("childFoo").set_connected_to_name("Foo");
+        bar.updConnector<Foo>("parentFoo").set_connectee_name("Foo");
+        bar.updConnector<Foo>("childFoo").set_connectee_name("Foo");
         
         // add a subcomponent
         // connect internals
         try{
-            theWorld.connect();
+            theWorld.buildComponentTreeAndConnect();
         }
         catch (const std::exception& e) {
             // Should fail to connect because child and parent Foo's are the same
@@ -443,11 +448,11 @@ int main() {
 
         theWorld.add(&foo2);
 
-        bar.updConnector<Foo>("childFoo").set_connected_to_name("Foo2");
+        bar.updConnector<Foo>("childFoo").set_connectee_name("Foo2");
         string connectorName = bar.updConnector<Foo>("childFoo").getConcreteClassName();
 
         // Bar should connect now
-        theWorld.connect();
+        theWorld.buildComponentTreeAndConnect();
 
         std::cout << "Iterate over only Foo's." << std::endl;
         for (auto& component : theWorld.getComponentList<Foo>()) {
@@ -512,7 +517,7 @@ int main() {
             "Model serialization->deserialization FAILED");
 
         world2->setName("InternalWorld");
-        world2->connect();
+        world2->buildComponentTreeAndConnect();
 
         world2->updComponent("Bar").getConnector<Foo>("childFoo");
         ASSERT("Foo2" ==
@@ -533,7 +538,7 @@ int main() {
 
         // Add second world as the internal model of the first
         theWorld.add(world2);
-        theWorld.connect();
+        theWorld.buildComponentTreeAndConnect();
 
         Bar& bar2 = *new Bar();
         bar2.setName("bar2");
@@ -549,10 +554,10 @@ int main() {
 
         //Configure the connector to look for its dependency by this name
         //Will get resolved and connected automatically at Component connect
-        bar2.updConnector<Foo>("parentFoo").set_connected_to_name("BigFoo");
-        bar2.updConnector<Foo>("childFoo").set_connected_to_name("Foo");
+        bar2.updConnector<Foo>("parentFoo").set_connectee_name("BigFoo");
+        bar2.updConnector<Foo>("childFoo").set_connectee_name("Foo");
 
-        world3.connect();
+        //world3.connect();
         world3.print("Compound_" + modelFile);
 
         MultibodySystem system3;

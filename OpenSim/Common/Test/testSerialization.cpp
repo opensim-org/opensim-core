@@ -54,6 +54,15 @@ static void indent(int nSpaces) {
     for (int i=0; i<nSpaces; ++i) cout << " ";
 }
 
+class ObjectWithListProperty : public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ObjectWithListProperty, Object);
+public:
+    OpenSim_DECLARE_LIST_PROPERTY(list_SerializableObject, SerializableObject,
+        "List of SerializableObject(s).");
+    ObjectWithListProperty() {
+        constructProperty_list_SerializableObject();
+    }
+};
 // Recursively dump out contents of an object and its properties.
 static void dumpObj(const Object& obj, int nSpaces) {
     indent(nSpaces);
@@ -208,6 +217,18 @@ int main()
         cout << "\n------------------------------------------" << endl;
         cout << "DUMPOBJ(assignOfObj1)" << endl;
         dumpObj(assignOfObj1, 0);
+
+        ObjectWithListProperty objWithListProp;
+        SerializableObject obj_l1;
+        obj_l1.setName("First");
+        SerializableObject obj_l2;
+        obj_l2.setName("Second");
+        objWithListProp.append_list_SerializableObject(obj_l1);
+        objWithListProp.append_list_SerializableObject(obj_l2);
+        int loc = objWithListProp.getProperty_list_SerializableObject().findIndexForName("Second");
+        ASSERT(loc == 1);
+        int notFound = objWithListProp.getProperty_list_SerializableObject().findIndexForName("Third");
+        ASSERT(notFound == -1);
     }
     catch(const std::exception& e) {
         cerr << "EXCEPTION: " << e.what() << endl;

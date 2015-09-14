@@ -58,19 +58,33 @@ void Frame::extendAddToSystem(SimTK::MultibodySystem& system) const
 const SimTK::Transform& Frame::getGroundTransform(const SimTK::State& s) const
 {
     if (!getSystem().getDefaultSubsystem().
-            isCacheValueRealized(s, groundTransformIndex)){
+            isCacheValueRealized(s, _groundTransformIndex)){
         //cache is not valid so calculate the transform
         SimTK::Value<SimTK::Transform>::downcast(
             getSystem().getDefaultSubsystem().
-            updCacheEntry(s, groundTransformIndex)).upd()
+            updCacheEntry(s, _groundTransformIndex)).upd()
                 = calcGroundTransform(s);
         // mark cache as up-to-date
         getSystem().getDefaultSubsystem().
-            markCacheValueRealized(s, groundTransformIndex);
+            markCacheValueRealized(s, _groundTransformIndex);
     }
     return SimTK::Value<SimTK::Transform>::downcast(
         getSystem().getDefaultSubsystem().
-            getCacheEntry(s, groundTransformIndex)).get();
+            getCacheEntry(s, _groundTransformIndex)).get();
+}
+
+void Frame::extendAddGeometry(OpenSim::Geometry& geom) {
+    if (geom.getFrameName() == "")
+        geom.setFrameName(getName());
+}
+
+
+void Frame::addMeshGeometry(const std::string& aGeometryFileName, const SimTK::Vec3 scale)
+{
+    Mesh geom(aGeometryFileName);
+    geom.set_scale_factors(scale);
+    geom.setFrameName(getName());
+    addGeometry(geom);
 }
 
 //=============================================================================
@@ -113,5 +127,6 @@ SimTK::Transform Frame::findTransformInBaseFrame() const
 void Frame::extendRealizeTopology(SimTK::State& s) const
 {
     Super::extendRealizeTopology(s);
-    groundTransformIndex = getCacheVariableIndex("ground_transform");
+    const_cast<Self*>(this)->_groundTransformIndex =
+        getCacheVariableIndex("ground_transform");
 }

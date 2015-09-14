@@ -47,7 +47,6 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(ContactGeometry, ModelComponent);
 //=============================================================================
 protected:
     SimTK::ReferencePtr<PhysicalFrame> _body;
-    VisibleObject   _displayer;
 
 //=============================================================================
 // METHODS
@@ -156,9 +155,6 @@ public:
     */
     virtual void scale(const ScaleSet& aScaleSet);
 
-    // Visible Object Support
-    virtual const VisibleObject* getDisplayer() const { return &_displayer; };
-    virtual VisibleObject* updDisplayer() { return &_displayer; };
     // Override this method if geometry changes/deforms
     virtual void updateGeometry() {};
 

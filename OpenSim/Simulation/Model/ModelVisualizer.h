@@ -29,7 +29,6 @@ that provides some visualization and user interaction when running a program
 that uses the OpenSim API. **/
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Simulation/Model/Model.h>
 
 #ifndef SWIG
 namespace SimTK {
@@ -89,6 +88,8 @@ private:
 
 namespace OpenSim {
 
+class Model;
+
 /** This class manages runtime visualization of a Model that is being 
 manipulated through the OpenSim API. You should not allocate one of these
 yourself; instead, call the Model's setUseVisualizer() method and let the
@@ -104,6 +105,9 @@ instructions on what to display.
 @see ModelDisplayHints, Model **/
 class OSIMSIMULATION_API ModelVisualizer {
 public:
+
+    ~ModelVisualizer() {clear();}
+
     /** @name                Drawing methods
     Currently there is just a single method for generating a frame. **/
     /**@{**/
@@ -156,6 +160,8 @@ public:
     find it in a series of locations using the same algorithm as is done
     internally by the %ModelVisualizer. 
     
+    @param[in]      model
+        Used to obtain the name of the file from which the model was loaded.
     @param[in]      geoFile 
         Name of file to look for; can be absolute or relative path name or just
         a file name and the extension must be supplied.
@@ -181,7 +187,8 @@ public:
     No attempt is made to validate the contents of the file or whether it
     has a supported extension; we're just looking for a file of the given
     name that exists and is readable. **/
-    bool findGeometryFile(const std::string&          geoFile,
+    bool findGeometryFile(const Model& model,
+                          const std::string&          geoFile,
                           bool&                       isAbsolute,
                           SimTK::Array_<std::string>& attempts) const;
     /**@}**/
@@ -190,7 +197,7 @@ public:
 private:
     friend class Model;
 
-    // Only Model is permitted to create or destruct one of these. Note that
+    // Only Model is permitted to create one of these. Note that
     // this will cause modifications to System that must occur prior to 
     // realizeTopology().
     ModelVisualizer(Model& model) : _model(model), _viz(0) {
@@ -201,8 +208,6 @@ private:
     // Called from Model's initSystem() method; state must be realized 
     // through Instance stage.
     void collectFixedGeometry(const SimTK::State& state) const;
-
-    ~ModelVisualizer() {clear();}
 
     void clear() {
         delete _viz; _viz = 0;

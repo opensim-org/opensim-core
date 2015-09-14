@@ -37,7 +37,6 @@
 namespace OpenSim {
 
 class Model;
-class VisibleObject;
 class Controller;
 class Coordinate;
 
@@ -136,9 +135,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
-    These are the serializable properties associated with this class. **/
-    /**@{**/
     /** Default is -Infinity (no limit). **/
     OpenSim_DECLARE_PROPERTY(min_control, double,
         "Minimum allowed value for control signal. Used primarily when solving "
@@ -147,7 +143,6 @@ public:
     OpenSim_DECLARE_PROPERTY(max_control, double,
         "Maximum allowed value for control signal. Used primarily when solving "
         "for control values.");
-    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS

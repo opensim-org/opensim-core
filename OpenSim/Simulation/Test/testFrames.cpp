@@ -39,6 +39,7 @@ Tests Include:
 
 using namespace OpenSim;
 using namespace std;
+using SimTK::Transform;
 
 void testBody();
 void testPhysicalOffsetFrameOnBody();
@@ -112,7 +113,7 @@ int main()
 
 void testBody()
 {
-    cout << "Running testBody" << endl;
+    cout << "\nRunning testBody" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
 
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
@@ -159,7 +160,7 @@ void testPhysicalOffsetFrameOnBody()
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
 
-    cout << "Running testOffsetFrameOnBody" << endl;
+    cout << "\nRunning testOffsetFrameOnBody" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
 
@@ -233,7 +234,7 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
 
-    cout << "Running testPhysicalOffsetFrameOnPhysicalOffsetFrame" << endl;
+    cout << "\nRunning testPhysicalOffsetFrameOnPhysicalOffsetFrame" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
     
@@ -296,7 +297,7 @@ void testPhysicalOffsetFrameOnBodySerialize()
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
 
-    cout << "Running testPhysicalOffsetFrameOnBodySerialize" << endl;
+    cout << "\nRunning testPhysicalOffsetFrameOnBodySerialize" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
 
@@ -338,7 +339,7 @@ void testFilterByFrameType()
     // Previous model with a PhysicalOffsetFrame attached to rod1
     Model* pendulumWFrame = new Model("double_pendulum_extraFrame.osim");
 
-    // Create an ordinaray (non-physical OffsetFrame attached to rod2
+    // Create an ordinary (non-physical) OffsetFrame attached to rod2
     const OpenSim::Body& rod2 = pendulumWFrame->getBodySet().get("rod2");
     SimTK::Transform X_RO_2;
     X_RO_2.setP(SimTK::Vec3(0.1, 0.22, 0.333));
@@ -348,7 +349,7 @@ void testFilterByFrameType()
 
     // add OffsetFrame to the model
     pendulumWFrame->addFrame(anOffset);
-    pendulumWFrame->connect(*pendulumWFrame);
+    pendulumWFrame->initSystem();
 
     std::cout << "\nList all Frames in the model." << std::endl;
     int i = 0;
@@ -356,8 +357,8 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(5, i, 0, __FILE__, __LINE__,
-        "testFilterByFrameType failed to find the 4 Frames in the model.");
+    ASSERT_EQUAL(9, i, 0, __FILE__, __LINE__,
+        "testFilterByFrameType failed to find the 9 Frames in the model.");
 
     i = 0;
     std::cout << "\nList all PhysicalFrames in the model." << std::endl;
@@ -365,8 +366,8 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(4, i, 0, __FILE__, __LINE__,
-        "testFilterByFrameType failed to find 4 PhysicalFrames.");
+    ASSERT_EQUAL(8, i, 0, __FILE__, __LINE__,
+        "testFilterByFrameType failed to find 6 PhysicalFrames.");
 
     i = 0;
     std::cout << "\nList all Bodies in the model." << std::endl;
@@ -386,8 +387,8 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(1, i, 0, __FILE__, __LINE__,
-        "testFilterByFrameType failed to find the 1 PhyscicalOffsetFrame in the model.");
+    ASSERT_EQUAL(5, i, 0, __FILE__, __LINE__,
+        "testFilterByFrameType failed to find the 3 PhyscicalOffsetFrame in the model.");
 }
 
 
@@ -405,7 +406,7 @@ void testStationOnFrame()
     Station* myStation = new Station();
     myStation->set_location(com);
     myStation->updConnector<PhysicalFrame>("reference_frame")
-        .set_connected_to_name("rod1");
+        .set_connectee_name("rod1");
     pendulum->addModelComponent(myStation);
     // myStation should coinicde with com location of rod1 in ground
     SimTK::State& s = pendulum->initSystem();

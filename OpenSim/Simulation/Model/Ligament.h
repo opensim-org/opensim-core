@@ -54,9 +54,7 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/    OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath, 
+    OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath, 
         "the set of points defining the path of the ligament");
     OpenSim_DECLARE_PROPERTY(resting_length, double,
         "resting length of the ligament");
@@ -64,7 +62,6 @@ public:
         "force magnitude that scales the force-length curve");
     OpenSim_DECLARE_PROPERTY(force_length_curve, Function,
         "Function representing the force-length behavior of the ligament");
-    /**@}**/
 
 
 //==============================================================================
@@ -112,13 +109,6 @@ public:
     virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
     virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
     virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-
-
-    //--------------------------------------------------------------------------
-    // Display
-    //--------------------------------------------------------------------------
-    virtual const VisibleObject* getDisplayer() const;
-    virtual void updateDisplayer(const SimTK::State& s) const;
 
 protected:
     /** Override this method if you would like to calculate a color for use
