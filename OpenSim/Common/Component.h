@@ -246,7 +246,7 @@ public:
     /** Initialize Component's state variable values from its properties */
     void initStateFromProperties(SimTK::State& state) const;
 
-    /** Set Component's properties given a state. */
+    /** %Set Component's properties given a state. */
     void setPropertiesFromState(const SimTK::State& state);
 
     // End of Component Structural Interface (public non-virtual).
@@ -591,7 +591,7 @@ public:
     int getModelingOption(const SimTK::State& state, const std::string& name) const;
 
     /**
-     * Set the value of a ModelingOption flag for this Component.
+     * %Set the value of a ModelingOption flag for this Component.
      * if the integer value exceeds the number of option names used to
      * define the options, an exception is thrown. The SimTK::State 
      * Stage will be reverted back to Stage::Instance.
@@ -656,7 +656,7 @@ public:
     double getStateVariableValue(const SimTK::State& state, const std::string& name) const;
 
     /**
-     * Set the value of a state variable allocated by this Component by name.
+     * %Set the value of a state variable allocated by this Component by name.
      *
      * @param state  the State for which to set the value
      * @param name   the name of the state variable
@@ -676,7 +676,7 @@ public:
     SimTK::Vector getStateVariableValues(const SimTK::State& state) const;
 
     /**
-     * Set all values of the state variables allocated by this Component.
+     * %Set all values of the state variables allocated by this Component.
      * Includes state variables allocated by its subcomponents.
      *
      * @param state   the State for which to get the value
@@ -704,7 +704,7 @@ public:
     double getDiscreteVariableValue(const SimTK::State& state, const std::string& name) const;
 
     /**
-     * Set the value of a discrete variable allocated by this Component by name.
+     * %Set the value of a discrete variable allocated by this Component by name.
      *
      * @param state  the State for which to set the value
      * @param name   the name of the dsicrete variable
@@ -860,7 +860,7 @@ public:
     }
 
     /**
-     *  Set cache variable value allocated by this Component by name.
+     *  %Set cache variable value allocated by this Component by name.
      *  All cache entries are lazily evaluated (on a need basis) so a set
      *  also marks the cache as valid.
      *
@@ -1170,7 +1170,7 @@ template <class T> friend class ComponentMeasure;
     virtual void computeStateVariableDerivatives(const SimTK::State& s) const;
 
     /**
-     * Set the derivative of a state variable by name when computed inside of  
+     * %Set the derivative of a state variable by name when computed inside of  
      * this Component's computeStateVariableDerivatives() method.
      *
      * @param state  the State for which to set the value

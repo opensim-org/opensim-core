@@ -142,7 +142,7 @@ public:
 
     // Integrator
     SimTK::Integrator& getIntegrator() const;
-    /** Set the integrator*/
+    /** %Set the integrator */
     void setIntegrator( SimTK::Integrator&);
     // Initial and final times
     void setInitialTime(double aTI);

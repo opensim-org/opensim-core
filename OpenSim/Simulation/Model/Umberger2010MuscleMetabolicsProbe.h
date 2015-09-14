@@ -372,10 +372,10 @@ public:
     /** Remove a muscle from the metabolic analysis. */
     void removeMuscle(const std::string& muscleName);
 
-    /** Set an existing muscle to use a provided muscle mass. */
+    /** %Set an existing muscle to use a provided muscle mass. */
     void useProvidedMass(const std::string& muscleName, double providedMass);
     
-    /** Set an existing muscle to calculate its own mass. */
+    /** %Set an existing muscle to calculate its own mass. */
     void useCalculatedMass(const std::string& muscleName);
 
     /** Get whether the muscle mass is being explicitly provided.
@@ -393,19 +393,19 @@ public:
     /** Get the ratio of slow twitch fibers for an existing muscle. */
     const double getRatioSlowTwitchFibers(const std::string& muscleName) const;
 
-    /** Set the ratio of slow twitch fibers for an existing muscle. */
+    /** %Set the ratio of slow twitch fibers for an existing muscle. */
     void setRatioSlowTwitchFibers(const std::string& muscleName, const double& ratio);
 
     /** Get the density for an existing muscle (kg/m^3). */
     const double getDensity(const std::string& muscleName) const;
 
-    /** Set the density for an existing muscle (kg/m^3). */
+    /** %Set the density for an existing muscle (kg/m^3). */
     void setDensity(const std::string& muscleName, const double& density);
 
     /** Get the specific tension for an existing muscle (Pascals (N/m^2)). */
     const double getSpecificTension(const std::string& muscleName) const;
 
-    /** Set the specific tension for an existing muscle (Pascals (N/m^2)). */
+    /** %Set the specific tension for an existing muscle (Pascals (N/m^2)). */
     void setSpecificTension(const std::string& muscleName, const double& specificTension);
 
 

@@ -156,22 +156,22 @@ public:
 
     /** Returns true if the Probe is disabled or false if the probe is enabled. */
     bool isDisabled() const;
-    /** Set the Probe as disabled (true) or enabled (false). */
+    /** %Set the Probe as disabled (true) or enabled (false). */
     void setDisabled(bool isDisabled);
 
     /** Return the operation being performed on the probe value. */
     std::string getOperation() const;
-    /** Set the operation being performed on the probe value. */
+    /** %Set the operation being performed on the probe value. */
     void setOperation(std::string probe_operation);
 
     /** Return the initial conditions (when the probe_operation is set to 'integrate'). */
     SimTK::Vector getInitialConditions() const;
-    /** Set the initial conditions (when the probe_operation is set to 'integrate'). */
+    /** %Set the initial conditions (when the probe_operation is set to 'integrate'). */
     void setInitialConditions(SimTK::Vector initial_conditions_for_integration);
 
     /** Return the gain to apply to the probe output. */
     double getGain() const;
-    /** Set the gain to apply to the probe output. */
+    /** %Set the gain to apply to the probe output. */
     void setGain(double gain);
     
 

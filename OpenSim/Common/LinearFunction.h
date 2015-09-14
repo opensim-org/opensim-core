@@ -85,11 +85,11 @@ public:
     // SET AND GET Coefficients
     //--------------------------------------------------------------------------
 public:
-    /** Set Coefficients for slope and intercept */
+    /** %Set Coefficients for slope and intercept */
     void setCoefficients(Array<double> coefficients);
-    /** Set slope */
+    /** %Set slope */
     void setSlope(double slope) {_coefficients[0] = slope; }
-    /** Set intercept */
+    /** %Set intercept */
     void setIntercept(double intercept) {_coefficients[1] = intercept; }
     /** Get Coefficients */
     const Array<double> getCoefficients() const

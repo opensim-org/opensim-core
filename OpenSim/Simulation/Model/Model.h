@@ -484,7 +484,7 @@ public:
     const std::string& getInputFileName() const { return _fileName; }
 
     /** 
-     * Set the XML file name used to construct the model.
+     * %Set the XML file name used to construct the model.
      *
      * @param fileName The XML file name.
      */
@@ -502,7 +502,7 @@ public:
     const std::string& getCredits() const { return get_credits(); }
 
     /** 
-     * Set the credits (e.g., model author names) associated with the model.
+     * %Set the credits (e.g., model author names) associated with the model.
      *
      * @param aCredits The string of credits.
      */
@@ -516,7 +516,7 @@ public:
     const std::string& getPublications() const { return get_publications(); }
     
     /** 
-     * Set the publications associated with the model. 
+     * %Set the publications associated with the model. 
      *
      * @param aPublications The string of publications.
      */
@@ -550,7 +550,7 @@ public:
     SimTK::Vec3 getGravity() const;
     
     /**
-     * Set the gravity vector in the gloabl frame.
+     * %Set the gravity vector in the global frame.
      *
      * @param aGrav The XYZ gravity vector
      * @return Whether or not the gravity vector was successfully set.
@@ -953,7 +953,7 @@ public:
     //--------------------------------------------------------------------------
 
 private:
-    // Set the values of all data members to an appropriate "null" value.
+    // %Set the values of all data members to an appropriate "null" value.
     void setNull();
 
     void setDefaultProperties();

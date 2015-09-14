@@ -107,7 +107,7 @@ public:
     /** set the weighting (importance) of meeting this CoordinateReference */
     void setWeight(double weight);
 
-    /** Set the coordinate value as a function of time. */
+    /** %Set the coordinate value as a function of time. */
     void setValueFunction(const OpenSim::Function& function)
     {
         _coordinateValueFunction = function.clone();

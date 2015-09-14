@@ -86,9 +86,9 @@ public:
     RollingOnSurfaceConstraint();
     virtual ~RollingOnSurfaceConstraint();
 
-    /** Set rolling body by its name */
+    /** %Set rolling body by its name */
     void setRollingBodyByName(const std::string& aBodyName);
-    /** Set surface body by its name */
+    /** %Set surface body by its name */
     void setSurfaceBodyByName(const std::string& aBodyName);
 
     /**
@@ -101,7 +101,7 @@ public:
     bool isDisabled(const SimTK::State& state) const override;
 
     /**
-    * Set whether or not the RollingOnSurfaceConstraint is disabled.
+    * %Set whether or not the RollingOnSurfaceConstraint is disabled.
     * Since the constraint is composed of multiple constraints, this method can
     * disable all the constraints, but enabling is not guaranteed. For example, if
     * the unilateral conditions are violated the constraint will be disabled.
@@ -138,7 +138,7 @@ public:
     std::vector<bool> unilateralConditionsSatisfied(const SimTK::State& state) override;
 
 
-    /** Set whether constraint is enabled or disabled but use cached values for 
+    /** %Set whether constraint is enabled or disabled but use cached values for 
         unilateral conditions instead of automatic reevaluation */
     bool setDisabledWithCachedUnilateralConditions(bool isDisabled,
         SimTK::State& state){

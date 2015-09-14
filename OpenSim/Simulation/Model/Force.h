@@ -75,7 +75,7 @@ public:
 
     /** Return if the Force is disabled or not. */
     bool isDisabled(const SimTK::State& s) const;
-    /** Set the Force as disabled (true) or not (false). */
+    /** %Set the Force as disabled (true) or not (false). */
     void setDisabled(SimTK::State& s, bool disabled) const;
 
     /**

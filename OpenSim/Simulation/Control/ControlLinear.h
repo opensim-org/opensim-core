@@ -112,7 +112,7 @@ protected:
     
 private:
     /**
-     * Set the member data to their NULL values.
+     * %Set the member data to their NULL values.
      */
     void setNull();
     /**

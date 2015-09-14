@@ -135,7 +135,7 @@ ArrayPtrs(const ArrayPtrs<T> &aArray)
 private:
 //_____________________________________________________________________________
 /**
- * Set all member variables to their null or default values.
+ * %Set all member variables to their null or default values.
  */
 void setNull()
 {
@@ -301,7 +301,7 @@ friend std::ostream& operator<<(std::ostream &aOut,const ArrayPtrs<T> &aArray)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Set whether or not this array owns the memory pointed to by the pointers
+ * %Set whether or not this array owns the memory pointed to by the pointers
  * in its array.
  *
  * @param aTrueFalse If true, all the memory associated with each of the
@@ -465,7 +465,7 @@ int getCapacity() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the amount by which the capacity is increased when the capacity of
+ * %Set the amount by which the capacity is increased when the capacity of
  * of the array in exceeded.
  * If the specified increment is negative or this method
  * is called with no argument, the capacity is set to double whenever
@@ -494,7 +494,7 @@ int getCapacityIncrement() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the size of the array.  This method can be used only to decrease
+ * %Set the size of the array.  This method can be used only to decrease
  * the size of the array.  If the size of an array is decreased, all objects
  * in the array that become invalid as a result of the decrease are
  * deleted.
@@ -782,7 +782,7 @@ bool remove(const T* aObject)
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the object at a specified index.  A copy of the object is NOT made.
+ * %Set the object at a specified index.  A copy of the object is NOT made.
  *
  * If the set method is successful and the array is set as the memory
  * owner, the previous object stored at the specified index is deleted.

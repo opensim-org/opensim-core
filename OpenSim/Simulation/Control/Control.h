@@ -213,7 +213,7 @@ public:
     virtual double getParameterMin(int aI) const = 0;
     // Parameter Max
     /**
-     * Set the maximum value that a control parameter can take on.
+     * %Set the maximum value that a control parameter can take on.
      *
      * @param aI Index of the parameter.
      * @param aMax Maximum value the parameter can have.
