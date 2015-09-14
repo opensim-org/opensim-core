@@ -41,6 +41,8 @@
 #include "MultiplierFunction.h"
 #include "PolynomialFunction.h"
 
+#include "Delay.h"
+
 #include "ObjectGroup.h"
 
 #include <string>
@@ -85,6 +87,10 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::registerType( PiecewiseConstantFunction() );
     Object::registerType( MultiplierFunction() );
     Object::registerType(PolynomialFunction());
+
+    Object::registerType( Delay() );
+    Object::registerType( DelayVector() );
+
     Object::registerType( ObjectGroup() );
 
     // TODO: temporarily map old NaturalCubicSpline (which wasn't a 

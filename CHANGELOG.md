@@ -44,6 +44,7 @@ Bug Fixes
 
 New Classes
 -----------
+- Created Delay operator component (PR #398).
 - Created Frame, PhysicalFrame, FixedFrame, Station and Marker ModelComponents (PR #188, PR #325, PR #339). Marker did not previously comply with the Model Component interface.  
 - Added a BodyActuator component, which applies a spatial force on a specified Point of a Body (PR #126)
 

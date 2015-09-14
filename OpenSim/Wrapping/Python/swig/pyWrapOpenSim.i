@@ -54,6 +54,8 @@ own project.
 #include <OpenSim/Common/XYFunctionInterface.h>
 #include <OpenSim/Common/FunctionSet.h>
 
+#include <OpenSim/Common/Delay.h>
+
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
@@ -594,6 +596,10 @@ namespace SimTK {
 
 %template(SetFunctions) OpenSim::Set<OpenSim::Function>;
 %include <OpenSim/Common/FunctionSet.h>
+
+%include <OpenSim/Common/Delay.h>
+%template(Delay) OpenSim::Delay_<double>;
+%template(VectorDelay) OpenSim::Delay_<SimTK::Vector>;
 
 %include <OpenSim/Common/Constant.h>
 %include <OpenSim/Common/SimmSpline.h>

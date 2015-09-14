@@ -22,6 +22,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+/**
+@defgroup operators Operator Components
+These Components are generic components that perform mathematical
+operations on their inputs.
+*/
+
 /** @file
 This "header" file is actually just the source for OpenSim's Doxygen
 Mainpage, the first page that a user sees when entering the Doxygen-
@@ -203,7 +209,7 @@ model components, such as body, constraint, or joint.
 
 \endhtmlonly
 
-<b>Other specific classes of interest in OpenSim:</b>
+<b>Other classes of interest in OpenSim:</b>
 
 - OpenSim::Actuator
 - OpenSim::Body
@@ -211,6 +217,7 @@ model components, such as body, constraint, or joint.
 - OpenSim::Function
 - OpenSim::Joint
 - OpenSim::Muscle
+- \ref operators
 
 <b>Classes of interest in Simbody:</b>
 
