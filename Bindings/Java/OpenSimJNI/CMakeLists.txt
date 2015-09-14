@@ -38,7 +38,7 @@ add_custom_command(
     COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
         -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
         -I${OpenSim_SOURCE_DIR}
-        -I${OpenSim_SOURCE_DIR}/OpenSim/Wrapping
+        -I${OpenSim_SOURCE_DIR}/Bindings
         -I${Simbody_INCLUDE_DIR}
         -o ${swig_generated_file_fullname}
         -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
