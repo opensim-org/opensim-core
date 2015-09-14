@@ -334,27 +334,46 @@ MODEL_ADOPT_HELPER(Analysis);
 MODEL_ADOPT_HELPER(Force);
 MODEL_ADOPT_HELPER(Controller);
 
-// Make sure clone does not leak memory
-%newobject *::clone; 
-
-// Would prefer to modify the Joint abstract class constructor,
-// but the proxy classes don't even call it.
-%define JOINT_ADOPT_HELPER(NAME)
-%pythonappend OpenSim::Joint:: ## NAME %{
-    self._markAdopted()
-%}
+/*
+Extend concrete Joints to use the inherited base constructors.
+This is only necessary because SWIG does not generate these inherited
+constructors provided by C++11's 'using' (e.g. using Joint::Joint) declaration.
+Note that CustomJoint and EllipsoidJoint do implement their own
+constructors because they have additional arguments.
+*/
+%define EXPOSE_JOINT_CONSTRUCTORS_HELPER(NAME)
+%extend OpenSim::NAME {
+	NAME(const std::string& name,
+         const std::string& parentName,
+         const std::string& childName) {
+		return new NAME(name, parentName, childName, false);
+	}
+	
+	NAME(const std::string& name,
+         const PhysicalFrame& parent,
+         const SimTK::Vec3& locationInParent,
+         const SimTK::Vec3& orientationInParent,
+         const PhysicalFrame& child,
+         const SimTK::Vec3& locationInChild,
+         const SimTK::Vec3& orientationInChild) {
+		return new NAME(name, parent, locationInParent, orientationInParent,
+					child, locationInChild, orientationInChild, false);
+	}
+};
 %enddef
 
-JOINT_ADOPT_HELPER(FreeJoint);
-JOINT_ADOPT_HELPER(CustomJoint);
-JOINT_ADOPT_HELPER(EllipsoidJoint);
-JOINT_ADOPT_HELPER(BallJoint);
-JOINT_ADOPT_HELPER(PinJoint);
-JOINT_ADOPT_HELPER(SliderJoint);
-JOINT_ADOPT_HELPER(WeldJoint);
-JOINT_ADOPT_HELPER(GimbalJoint);
-JOINT_ADOPT_HELPER(UniversalJoint);
-JOINT_ADOPT_HELPER(PlanarJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(FreeJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(BallJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(PinJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(SliderJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(WeldJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(GimbalJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(UniversalJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
+
+
+// Make sure clone does not leak memory
+%newobject *::clone; 
 
 %extend OpenSim::Array<double> {
 	void appendVec3(SimTK::Vec3 vec3) {

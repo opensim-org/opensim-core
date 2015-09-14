@@ -220,7 +220,7 @@ void testPrescribedControllerOnBlock(bool disabled)
     osimModel.addController(&actuatorController);
     
     osimModel.print("blockWithPrescribedController.osim");
-    Model modelfileFromFile("blockWithPrescribedController.osim");
+    Model modelfileFromFile("blockWithPrescribedController.osim", false);
 
     // Verify that serialization and then deserialization is correct
     ASSERT(osimModel == modelfileFromFile);

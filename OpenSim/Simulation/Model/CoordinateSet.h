@@ -37,14 +37,11 @@ class Model;
  * A class for holding a set of coordinates.
  *
  * @authors Peter Loan, Ajay Seth
- * @version 2.0
  */
 
 class OSIMSIMULATION_API CoordinateSet : public ModelComponentSet<Coordinate> {
 OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateSet, ModelComponentSet<Coordinate>);
 
-private:
-    void setNull();
 public:
     CoordinateSet();
     CoordinateSet(Model& model) : Super(model) {}

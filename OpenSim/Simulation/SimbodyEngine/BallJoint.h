@@ -49,38 +49,22 @@ of position (\f$\vec{u} \neq \dot{\vec{q}}\f$).
 */
 
 class OSIMSIMULATION_API BallJoint : public Joint {
-OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
+    OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
 
-private:
-    static const int _numMobilities = 3;
-//=============================================================================
-// DATA
-//=============================================================================
+    /** Specify the Coordinates of the BallJoint */
+    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
 
-
-//=============================================================================
-// METHODS
-//=============================================================================
 public:
-    // CONSTRUCTION
-    BallJoint();
-    // convenience constructor
-    BallJoint(const std::string &name, const PhysicalFrame& parent,
-        const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-        const OpenSim::Body& body,
-        const SimTK::Vec3& locationInBody, const SimTK::Vec3& orientationInBody,
-                /*bool useEulerAngles=true,*/ bool reverse=false);
-
-    virtual ~BallJoint();
-
-    int numCoordinates() const override {return _numMobilities;} ;
+    /** Use Joint's constructors. @see Joint */
+    using Joint::Joint;
 
 protected:
     // ModelComponent interface.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendInitStateFromProperties(SimTK::State& s) const override;
     void extendSetPropertiesFromState(const SimTK::State& state) override;
-
 //=============================================================================
 };  // END of class BallJoint
 //=============================================================================

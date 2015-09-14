@@ -49,36 +49,17 @@ position (\f$\vec{u} \neq \dot{\vec{q}}\f$).
 class OSIMSIMULATION_API FreeJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(FreeJoint, Joint);
 
-private:
-    static const int _numMobilities = 6;
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
+/** Specify the Coordinates of the FreeJoint */
+CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
+CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
+CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+CoordinateIndex tx{ constructCoordinate(Coordinate::MotionType::Translational) };
+CoordinateIndex ty{ constructCoordinate(Coordinate::MotionType::Translational) };
+CoordinateIndex tz{ constructCoordinate(Coordinate::MotionType::Translational) };
 
-    /** Flag to use Euler angles to parameterize rotation of the body  */
-    //PropertyBool _useEulerAnglesProp;
-    //bool &_useEulerAngles;
-
-//=============================================================================
-// METHODS
-//=============================================================================
 public:
-    // CONSTRUCTION
-    FreeJoint();
-    // Convenience Constructor
-    FreeJoint(const std::string &name,
-        const PhysicalFrame& parent,
-        const SimTK::Vec3& locationInParent,
-        const SimTK::Vec3& orientationInParent,
-        const PhysicalFrame& child,
-        const SimTK::Vec3& locationInChild,
-        const SimTK::Vec3& orientationInChild,
-        bool reverse = false);
-
-    virtual ~FreeJoint();
-
-    int numCoordinates() const override  { return _numMobilities; }
+    /** Use Joint's constructors. @see Joint */
+    using Joint::Joint;
 
 protected:
     // ModelComponent interface.

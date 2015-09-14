@@ -43,44 +43,44 @@ using namespace OpenSim;
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Default constructor.
- */
-CustomJoint::CustomJoint() : Super()
+/* Default Constructor */
+CustomJoint::CustomJoint()
 {
     constructProperties();
+    constructCoordinates();
 }
-//_____________________________________________________________________________
+
+
 /**
  * Constructor with specified SpatialTransform.
  */
-CustomJoint::CustomJoint(const std::string& name, const PhysicalFrame& parent,
-    const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-    const PhysicalFrame& child,
-    const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-    SpatialTransform& aSpatialTransform, bool reverse) :
-        Super(name, parent, locationInParent, orientationInParent,
-                child, locationInchild, orientationInChild, reverse)
+CustomJoint::CustomJoint(const std::string &name,
+                         const std::string& parentName,
+                         const std::string& childName,
+                         SpatialTransform& aSpatialTransform,
+                         bool reverse) :
+                         Super(name, parentName, childName, reverse)
 {
     constructProperties();
     set_SpatialTransform(aSpatialTransform);
-    finalizeFromProperties();
+    constructCoordinates();
 }
 
-//_____________________________________________________________________________
-/**
- * Convenience Constructor; use default SpatialTransform.
- */
-CustomJoint::CustomJoint(const std::string &name, const PhysicalFrame& parent,
-    const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+CustomJoint::CustomJoint(const std::string& name,
+    const PhysicalFrame& parent,
+    const SimTK::Vec3& locationInParent,
+    const SimTK::Vec3& orientationInParent,
     const PhysicalFrame& child,
-    const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-    bool reverse) : 
-        Super(name, parent, locationInParent,orientationInParent,
-            child, locationInchild, orientationInChild, reverse)
+    const SimTK::Vec3& locationInChild,
+    const SimTK::Vec3& orientationInChild,
+    SpatialTransform& aSpatialTransform,
+    bool reverse) :
+        Joint(name, parent, locationInParent, orientationInParent,
+            child, locationInChild, orientationInChild, reverse)
 {
     constructProperties();
-    finalizeFromProperties();
+    set_SpatialTransform(aSpatialTransform);
+    constructCoordinates();
 }
 
 //_____________________________________________________________________________
@@ -99,44 +99,55 @@ void CustomJoint::constructProperties()
  */
 void CustomJoint::extendFinalizeFromProperties()
 {
-    constructCoordinates();
-    Joint::extendFinalizeFromProperties();
-}
-
-
-void CustomJoint::extendConnectToModel(Model& aModel)
-{
-    Super::extendConnectToModel(aModel);
-
-    /* Set up spatial transform for this custom joint. */
-    updSpatialTransform().connectToJoint(*this);
-
-    // Reorder the coordinates so that they match their order in the SpatialTransform.
-    int nc = getCoordinateSet().getSize();
+    Super::extendFinalizeFromProperties();
 
     // Form an array of pointers to the coordinates in the order that they are
-    // referenced in the SpatialTransform. All of the coordinate names should be
-    // valid because connectToJoint() has already been called on the 
-    // SpatialTransform.
+    // referenced in the SpatialTransform. Add Coordinates to the joint's
+    // CoordinateSet of the Coordinate does not already exist.
     Array<Coordinate*> coords;
-    for (int i=0; i<6; i++) {
+    for (int i = 0; i < 6; ++i) {
         const TransformAxis& transform = getSpatialTransform()[i];
-        for (int j=0; j<transform.getCoordinateNames().size(); j++) {
-            Coordinate* c = &(upd_CoordinateSet().get(transform.getCoordinateNames()[j]));
+        for (int j = 0; j < transform.getCoordinateNames().size(); ++j) {
+            const std::string& coordNameForAxis = transform.getCoordinateNames()[j];
+            int fix = get_CoordinateSet().getIndex(coordNameForAxis);
+            Coordinate* c = nullptr;
+            if(fix < 0) { // not found
+                c = new Coordinate();
+                c->setName(coordNameForAxis);
+                upd_CoordinateSet().adoptAndAppend(c);
+            }
+            else {
+                c = &(upd_CoordinateSet().get(transform.getCoordinateNames()[j]));
+            }
+
             // If the coordinate is not already in the array, add it.
             if (coords.findIndex(c) == -1)
                 coords.append(c);
         }
     }
+
+    // Reorder the coordinates so that they match their order in the SpatialTransform.
+    int nc = getCoordinateSet().getSize();
     // Now remove all the coordinates from the set (without deleting),
     // and add them back in in the right order.
     bool currentOwnership = getCoordinateSet().getMemoryOwner();
     upd_CoordinateSet().setMemoryOwner(false);
-    for (int i=0; i<nc; i++)
+    for (int i = 0; i < nc; ++i)
         upd_CoordinateSet().remove(0);
     upd_CoordinateSet().setMemoryOwner(currentOwnership);
-    for (int i=0; i<coords.getSize(); i++)
+    for (int i = 0; i < coords.getSize(); ++i)
         upd_CoordinateSet().adoptAndAppend(coords[i]);
+}
+
+void CustomJoint::extendConnectToModel(Model& aModel)
+{
+    Super::extendConnectToModel(aModel);
+    // SpatialTransform "connect" methods are poorly named. This
+    // establishing the SpatialTransform and its Transform axes as 
+    // sub objects (not updated to Components) of the CustomJoint and this
+    // should be done here.
+    /* Set up spatial transform for this custom joint. */
+    updSpatialTransform().connectToJoint(*this);
 }
 
 
@@ -234,20 +245,22 @@ void CustomJoint::constructCoordinates()
 //_____________________________________________________________________________
 void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
+
     SimTK::MobilizedBody inb;
     SimTK::Body outb;
-    const SimTK::Transform* inbX = &getParentTransform();
-    const SimTK::Transform* outbX = &getChildTransform();
+    SimTK::Transform inbX = getParentFrame().findTransformInBaseFrame();
+    SimTK::Transform outbX = getChildFrame().findTransformInBaseFrame();
     const OpenSim::PhysicalFrame* mobilized = &getChildFrame();
     // if the joint is reversed then flip the underlying tree representation
     // of inboard and outboard bodies, although the joint direction will be 
     // preserved, the inboard must exist first.
     if (get_reverse()){
         inb = getChildFrame().getMobilizedBody();
-        inbX = &getChildTransform();
+        inbX = getChildFrame().findTransformInBaseFrame();
 
         outb = getParentInternalRigidBody();
-        outbX = &getParentTransform();
+        outbX = getParentFrame().findTransformInBaseFrame();
 
         mobilized = &getParentFrame();
     }
@@ -257,27 +270,35 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
     }
 
     const CoordinateSet& coords = get_CoordinateSet();
+    const Array<std::string>& coordNames = getSpatialTransform().getCoordinateNames();
+
     // Some initializations
-    int numMobilities = coords.getSize();  // Note- should check that all coordinates are used.
+    int numCoordinates = coords.getSize();  // Note- should check that all coordinates are used.
     std::vector<std::vector<int> > coordinateIndices =
         getSpatialTransform().getCoordinateIndices();
     std::vector<const SimTK::Function*> functions =
         getSpatialTransform().getFunctions();
     std::vector<Vec3> axes = getSpatialTransform().getAxes();
 
-    SimTK_ASSERT1(numMobilities > 0,
-        "%s must have 1 or more mobilities (dofs).",
+    SimTK_ASSERT1(numCoordinates == coordNames.getSize(),
+        "%s list of coordinates does not match number of mobilities.",
+        getConcreteClassName().c_str());
 
+    SimTK_ASSERT1(numCoordinates > 0,
+        "%s must have 1 or more mobilities (dofs).",
                   getConcreteClassName().c_str());
-    SimTK_ASSERT1(numMobilities <= 6,
+
+    SimTK_ASSERT1(numCoordinates <= 6,
         "%s cannot exceed 6 mobilities (dofs).",
         getConcreteClassName().c_str());
     assert(functions.size() == 6);
-    SimTK_ASSERT2(numMobilities <= 6,
+
+    SimTK_ASSERT2(numCoordinates <= 6,
         "%s::%s must specify functions for complete spatial (6 axes) motion.",
         getConcreteClassName().c_str(),
                   getSpatialTransform().getConcreteClassName().c_str());
     assert(coordinateIndices.size() == 6);
+
     SimTK_ASSERT2(axes.size() == 6,
         "%s::%s must specify 6 independent axes to span spatial motion.",
         getConcreteClassName().c_str(), getSpatialTransform().getConcreteClassName().c_str());
@@ -286,17 +307,12 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
         SimTK::MobilizedBody::Direction(get_reverse());
 
     SimTK::MobilizedBody::FunctionBased
-        simtkBody(inb, *inbX, 
-                  outb, *outbX, 
-                  numMobilities, functions,
+        simtkBody(inb, inbX, 
+                  outb, outbX, 
+                    numCoordinates, functions,
                   coordinateIndices, axes, dir);
 
-    int nc = numCoordinates();
-
-    SimTK_ASSERT1(nc == numMobilities, "%s list of coordinates does not match number of mobilities.",
-        getConcreteClassName().c_str());
-
-    assignSystemIndicesToBodyAndCoordinates(simtkBody, mobilized, nc, 0);
+    assignSystemIndicesToBodyAndCoordinates(simtkBody, mobilized, numCoordinates, 0);
 }
 
 //=============================================================================

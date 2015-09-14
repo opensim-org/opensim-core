@@ -121,7 +121,7 @@ void ConditionalPathPoint::init(const PathPoint& aPoint)
         if (path) {
             ModelComponent* comp = dynamic_cast<ModelComponent*>(path->getOwner());
             if (comp) {
-                CoordinateSet coords = comp->getModel().getCoordinateSet();
+                const CoordinateSet& coords = comp->getModel().getCoordinateSet();
                 if (coords.getSize() > 0) {
                     int index = 0;
                     _coordinateName = coords.get(index).getName();
