@@ -178,7 +178,17 @@ void Component::connect(Component &root)
         AbstractConnector& connector = upd_connectors(ix);
         connector.disconnect();
         try{
-            connector.findAndConnect(root);
+            const std::string& compName = connector.get_connectee_name();
+            std::string::size_type front = compName.find("/");
+            if (front != 0) { // local or globally unique name
+                const Component* comp = findComponent(compName);
+                if (comp) {
+                    connector.connect(*comp);
+                }
+            }
+            if(!connector.isConnected()) {
+                connector.findAndConnect(root);
+            }
         }
         catch (...) {
             throw Exception(getConcreteClassName() +
@@ -191,7 +201,6 @@ void Component::connect(Component &root)
 
     // Allow derived Components to handle/check their connections
     extendConnect(root);
-
     componentsConnect(root);
 
     // Forming connections changes the Connector which is a property
