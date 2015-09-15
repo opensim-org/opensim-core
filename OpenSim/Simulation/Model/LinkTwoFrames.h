@@ -70,54 +70,57 @@ public:
     LinkTwoFrames();
 
     /** Convenience Constructor.
-    Create a WeldConstraint bewteen two PhysicalFrames, frame1 and frame2.
+    Create a LinkTwoFrames Component bewteen two Frames identified by name.
+
     @param[in] name         the name of this LinkTwoFrames component
-    @param[in] frame1Name   the name of the first PhysicalFrame being linked
-    @param[in] frame2Name   the name of the second PhysicalFrame being linked
+    @param[in] frame1Name   the name of the first Frame being linked
+    @param[in] frame2Name   the name of the second Frame being linked
     */
     LinkTwoFrames(const std::string &name,
         const std::string& frame1Name,
         const std::string& frame2Name);
 
     /** Convenience Constructor
-    Construct a WeldConstraint where the weld frames are specified in terms of their
-    transforms in their respective PhysicalFrames.
+    Construct a LinkTwoFrames where the two frames are specified by name 
+    and ofset transforms on the respective frames.
 
-    @param[in] name         the name of this LinkTwoFrames component
-    @param[in] frame1       the first Frame that the component links
-    @param[in] transformInFrame1    offset Transform in the first frame
-    @param[in] frame2       the second Frame that the component links
-    @param[in] transformInFrame2    offset Transform in the second frame
+    @param[in] name             the name of this LinkTwoFrames component
+    @param[in] frame1Name       the first Frame that the component links
+    @param[in] offsetOnFrame1   offset Transform on the first frame
+    @param[in] frame2Name       the second Frame that the component links
+    @param[in] offsetOnFrame2   offset Transform on the second frame
     */
     LinkTwoFrames(const std::string &name,
-        const F& frame1, const SimTK::Transform& transformInFrame1,
-        const F& frame2, const SimTK::Transform& transformInFrame2);
+        const std::string& frame1Name, const SimTK::Transform& transformInFrame1,
+        const std::string& frame2Name, const SimTK::Transform& transformInFrame2);
 
     /** Backwards compatible Convenience Constructor
-    LinkTwoFrames with offsets specified in terms of the location and orientation 
-    in respective PhysicalFrames.
+    LinkTwoFrames with offsets specified in terms of the location and 
+    orientation in respective PhysicalFrames.
 
     @param[in] name     the name of this LinkTwoFrames component
     @param[in] frame1   the first Frame that the component links
-    @param[in] locationInFrame1    Vec3 of the location offset in the first frame
-    @param[in] orientationInFrame1 Vec3 of the XYZ body-fixed Euler angles of the
-                                   orientation offset in frame 1.
+    @param[in] locationInFrame1    Vec3 of offset location on the first frame
+    @param[in] orientationInFrame1 Vec3 of orientation offse expressed as
+                                   XYZ body-fixed Euler angles w.r.t frame1.
     @param[in] frame2    the second Frame that the component links
-    @param[in] locationInFrame2    Vec3 of the location of the weld in the second frame
-    @param[in] orientationInFrame1 Vec3 of the XYZ body-fixed Euler angles
-    of the weld frame orientation in frame2.
+    @param[in] locationInFrame2    Vec3 of offset location on the second frame
+    @param[in] orientationInFrame1 Vec3 of orientation offse expressed as
+                                   XYZ body-fixed Euler angles w.r.t frame2.
     */
     LinkTwoFrames(const std::string &name,
-        const F& frame1,
+        const std::string& frame1Name,
         const SimTK::Vec3& locationInFrame1, const SimTK::Vec3& orientationInFrame1,
-        const F& frame2,
+        const std::string& frame2Name,
         const SimTK::Vec3& locationInFrame2, const SimTK::Vec3& orientationInFrame2);
 
     // use compiler generated destructor, copy constructor and assignment operator
 
-    /** Access the first frame the LinkTwoFrames component connects */
+    /** Access the first frame the LinkTwoFrames component connects. If an offset
+        was introduced at construction, then this will be the offset frame.*/
     const F& getFrame1() const;
-    /** Access the second frame the LinkTwoFrames component connects */
+    /** Access the second frame the LinkTwoFrames component connects If an offset
+        was introduced at construction, then this will be the offset frame.*/
     const F& getFrame2() const;
 
     /**
@@ -172,17 +175,17 @@ LinkTwoFrames<C, F>::LinkTwoFrames(const std::string &name,
 
 template <class C, class F>
 LinkTwoFrames<C, F>::LinkTwoFrames(const std::string &name,
-    const F& frame1, const SimTK::Transform& transformInFrame1,
-    const F& frame2, const SimTK::Transform& transformInFrame2)
+    const std::string& frame1Name, const SimTK::Transform& transformInFrame1,
+    const std::string& frame2Name, const SimTK::Transform& transformInFrame2)
     : LinkTwoFrames()
 {
     setName(name);
 
-    PhysicalOffsetFrame frame1Offset(frame1.getName() + "_offset",
-        frame1, transformInFrame1);
+    PhysicalOffsetFrame frame1Offset(frame1Name + "_offset",
+        frame1Name, transformInFrame1);
 
-    PhysicalOffsetFrame frame2Offset(frame2.getName() + "_offset",
-        frame2, transformInFrame2);
+    PhysicalOffsetFrame frame2Offset(frame2Name + "_offset",
+        frame2Name, transformInFrame2);
 
     // Append the offset frames to the Joints internal list of frames
     append_frames(frame1Offset);
@@ -194,7 +197,7 @@ LinkTwoFrames<C, F>::LinkTwoFrames(const std::string &name,
         getName() + "/" + frame2Offset.getName());
 }
 
-
+/*
 template <class C, class F>
 LinkTwoFrames<C, F>::LinkTwoFrames(const std::string &name,
     const F& frame1,
@@ -202,11 +205,29 @@ LinkTwoFrames<C, F>::LinkTwoFrames(const std::string &name,
     const F& frame2,
     const SimTK::Vec3& locationInFrame2, const SimTK::Vec3& orientationInFrame2)
     : LinkTwoFrames(name,
-        frame1, SimTK::Transform(SimTK::Rotation(SimTK::BodyRotationSequence,
+        frame1.getName(), SimTK::Transform(SimTK::Rotation(SimTK::BodyRotationSequence,
             orientationInFrame1[0], SimTK::XAxis,
             orientationInFrame1[1], SimTK::YAxis,
             orientationInFrame1[2], SimTK::ZAxis), locationInFrame1),
-        frame2, SimTK::Transform(SimTK::Rotation(SimTK::BodyRotationSequence,
+        frame2.getName(), SimTK::Transform(SimTK::Rotation(SimTK::BodyRotationSequence,
+            orientationInFrame2[0], SimTK::XAxis,
+            orientationInFrame2[1], SimTK::YAxis,
+            orientationInFrame2[2], SimTK::ZAxis), locationInFrame2))
+{}
+*/
+
+template <class C, class F>
+LinkTwoFrames<C, F>::LinkTwoFrames(const std::string& name,
+    const std::string& frame1Name,
+    const SimTK::Vec3& locationInFrame1, const SimTK::Vec3& orientationInFrame1,
+    const std::string& frame2Name,
+    const SimTK::Vec3& locationInFrame2, const SimTK::Vec3& orientationInFrame2)
+    : LinkTwoFrames(name,
+        frame1Name, SimTK::Transform(SimTK::Rotation(SimTK::BodyRotationSequence,
+            orientationInFrame1[0], SimTK::XAxis,
+            orientationInFrame1[1], SimTK::YAxis,
+            orientationInFrame1[2], SimTK::ZAxis), locationInFrame1),
+        frame2Name, SimTK::Transform(SimTK::Rotation(SimTK::BodyRotationSequence,
             orientationInFrame2[0], SimTK::XAxis,
             orientationInFrame2[1], SimTK::YAxis,
             orientationInFrame2[2], SimTK::ZAxis), locationInFrame2))

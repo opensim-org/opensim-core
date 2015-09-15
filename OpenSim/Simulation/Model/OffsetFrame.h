@@ -86,21 +86,31 @@ public:
     OffsetFrame();
 
     /** A convenience constructor that initializes the parent connection and
-    offset property of this OffsetFrame.
-     
+    offset Transform in the parent frame.
     @param[in] parent   The parent reference frame.
     @param[in] offset   The offset transform between this frame and its parent
     */
     OffsetFrame(const C& parent, const SimTK::Transform& offset);
 
-    /**  A convenience constructor that initializes the name of the OffsetFrame,
-         the parent connection and its offset property.
-    @param[in] name     The name of this OffsetFrame.
-    @param[in] parent   The parent reference frame.
-    @param[in] offset   The offset transform between this frame and its parent
+    /**  A convenience constructor that initializes the parent connection by 
+        name and of the offset Transform in the parent frame.
+    @param[in] name         The name of this OffsetFrame.
+    @param[in] parent       The parent reference frame.
+    @param[in] offset       The offset Transform between this frame and its parent
     */
     OffsetFrame(const std::string& name, 
-                const C& parent, const SimTK::Transform& offset);
+                const C& parent,
+                const SimTK::Transform& offset);
+
+    /**  A convenience constructor that initializes the parent connection by
+    name and of the offset Transform in the parent frame.
+    @param[in] name         The name of this OffsetFrame.
+    @param[in] parentName   The name of the parent reference Frame.
+    @param[in] offset       The offset Transform between this frame and its parent
+    */
+    OffsetFrame(const std::string& name,
+                const std::string& parent,
+                const SimTK::Transform& offset);
 
     // use compiler generated destructor, copy constructor and assignment operator
 
@@ -108,6 +118,7 @@ public:
     void setParentFrame(const C& parent);
     /** Get the parent reference frame*/
     const C& getParentFrame() const;
+
     /**
     Get the transform that describes the translational and rotational offset
     of this frame (F frame) relative to its parent frame (B frame).  This method
@@ -181,21 +192,30 @@ OffsetFrame<C>::OffsetFrame() : C()
 
 // Convenience constructors
 template <class C>
-OffsetFrame<C>::OffsetFrame(const C& parent,
-    const SimTK::Transform& offset) : C()
+OffsetFrame<C>::OffsetFrame(const C& parent, const SimTK::Transform& offset)
+    : OffsetFrame()
 {
-    setNull();
-    this->constructInfrastructure();
     setParentFrame(parent);
     setOffsetTransform(offset);
 }
 
 template <class C>
 OffsetFrame<C>::OffsetFrame(const std::string& name, 
-        const C& parent, const SimTK::Transform& offset)
+                            const C& parent, const SimTK::Transform& offset)
     : OffsetFrame(parent, offset)
 {
-    this->setName(name);
+    setName(name);
+}
+
+template <class C>
+OffsetFrame<C>::OffsetFrame(const std::string& name,
+                            const std::string& parentName,
+                            const SimTK::Transform& offset)
+    : OffsetFrame()
+{
+    setName(name);
+    this->template updConnector<C>("parent").set_connectee_name(parentName);
+    setOffsetTransform(offset);
 }
 
 // Set a null frame as Identity rotation, 0 translation
@@ -256,7 +276,7 @@ template <class C>
 void OffsetFrame<C>::setOffsetTransform(const SimTK::Transform& xform)
 {
     _offsetTransform = xform;
-    // Make sure properties are updated in case we either call gettters or
+    // Make sure properties are updated in case we either get properties or
     // serialize after this call
     set_translation(xform.p());
     set_orientation(xform.R().convertRotationToBodyFixedXYZ());
