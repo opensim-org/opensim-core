@@ -28,7 +28,9 @@
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/MarkerData.h>
+#include "OpenSim/Common/Units.h"
+// #include <OpenSim/Common/MarkerData.h>
+#include "OpenSim/Common/TimeSeriesTable.h"
 
 namespace OpenSim {
 
@@ -108,10 +110,11 @@ private:
     // Implementation details
 
     // Use a specialized data structure for holding the marker data
-    SimTK::ReferencePtr<MarkerData> _markerData;
+    TimeSeriesTable_<SimTK::Vec3> _markerData;
     // marker names inside the marker data
     SimTK::Array_<std::string> _markerNames;
-    // corresponding list of weights guaranteed to be in the same order as names above
+    // corresponding list of weights guaranteed to be in the same order as names
+    // above
     SimTK::Array_<double> _weights;
 
 //=============================================================================
@@ -124,11 +127,17 @@ public:
     MarkersReference();
 
     // Convenience load markers from a file
-    MarkersReference(const std::string filename, Units modelUnits=Units(Units::Meters));
+    MarkersReference(const std::string filename, 
+                     Units modelUnits=Units(Units::Meters));
 
-    MarkersReference(MarkerData& aMarkerData, const Set<MarkerWeight>* aMarkerWeightSet=NULL);
+    MarkersReference(TimeSeriesTable_<SimTK::Vec3>& aMarkerData, 
+                     const Set<MarkerWeight>* aMarkerWeightSet=NULL);
 
-    MarkersReference& operator=(const MarkersReference &aRef) {Reference_<SimTK::Vec3>::operator=(aRef); copyData(aRef); return(*this); };
+    MarkersReference& operator=(const MarkersReference &aRef) {
+        Reference_<SimTK::Vec3>::operator=(aRef); 
+        copyData(aRef); 
+        return(*this); 
+    }
     
     virtual ~MarkersReference() {}
 
@@ -139,41 +148,60 @@ public:
     }
 
     /** load the marker data for this MarkersReference from markerFile  */
-    void loadMarkersFile(const std::string markerFile, Units modelUnits=Units(Units::Meters));
+    void loadMarkersFile(const std::string markerFile, 
+                         Units modelUnits=Units(Units::Meters));
 
 
     //--------------------------------------------------------------------------
     // Reference Interface
     //--------------------------------------------------------------------------
-    virtual int getNumRefs() const {return _markerData->getNumMarkers(); }
+    virtual int getNumRefs() const {
+        // return _markerData->getNumMarkers(); 
+        return std::stoi(_markerData.getMetaData<std::string>("NumMarkers"));
+    }
     /** get the time range for which the MarkersReference values are valid,
         based on the loaded marker data.*/
     virtual SimTK::Vec2 getValidTimeRange() const;
     /** get the names of the markers serving as references */
     virtual const SimTK::Array_<std::string>& getNames() const;
     /** get the value of the MarkersReference */
-    virtual void getValues(const SimTK::State &s, SimTK::Array_<SimTK::Vec3> &values) const;
+    virtual void getValues(const SimTK::State &s, 
+                           SimTK::Array_<SimTK::Vec3> &values) const;
     /** get the speed value of the MarkersReference */
-    virtual void getSpeedValues(const SimTK::State &s, SimTK::Array_<SimTK::Vec3> &speedValues) const;
+    virtual void getSpeedValues(const SimTK::State &s, 
+                                SimTK::Array_<SimTK::Vec3> &speedValues) const;
     /** get the acceleration value of the MarkersReference */
-    virtual void getAccelerationValues(const SimTK::State &s, SimTK::Array_<SimTK::Vec3> &accValues) const;
-    /** get the weighting (importance) of meeting this MarkersReference in the same order as names*/
-    virtual void getWeights(const SimTK::State &s, SimTK::Array_<double> &weights) const;
+    virtual 
+    void getAccelerationValues(const SimTK::State &s, 
+                               SimTK::Array_<SimTK::Vec3> &accValues) const;
+    /** get the weighting (importance) of meeting this MarkersReference in the 
+    same order as names*/
+    virtual void getWeights(const SimTK::State &s, 
+                            SimTK::Array_<double> &weights) const;
 
     //--------------------------------------------------------------------------
     // Convenience Access
     //--------------------------------------------------------------------------
-    double getSamplingFrequency() {return _markerData->getDataRate(); }
-    Set<MarkerWeight> &updMarkerWeightSet() {return _markerWeightSet; }
+    double getSamplingFrequency() {
+        // return _markerData->getDataRate(); 
+        return std::stod(_markerData.getMetaData<std::string>("DataRate")); 
+    }
+
+    Set<MarkerWeight> &updMarkerWeightSet() {
+        return _markerWeightSet; 
+    }
     void setMarkerWeightSet(Set<MarkerWeight> &markerWeights);
-    void setDefaultWeight(double weight) {_defaultWeight = weight; }
+
+    void setDefaultWeight(double weight) {
+        _defaultWeight = weight; 
+    }
 
 private:
     // utility to define object properties including their tags, comments and
     // default values.
     void setupProperties();
 
-    void populateFromMarkerData(MarkerData& aMarkerData);
+    void populateFromMarkerData(TimeSeriesTable_<SimTK::Vec3>& aMarkerData);
 
 //=============================================================================
 };  // END of class MarkersReference

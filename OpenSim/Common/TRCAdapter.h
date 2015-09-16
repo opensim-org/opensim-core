@@ -1,8 +1,9 @@
+#ifndef OPENSIM_COMMON_TRCADAPTER_H
+#define OPENSIM_COMMON_TRCADAPTER_H
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  example.cpp                           *
+ *                          OpenSim:  TRCAdapter.h                            *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
- * See http://opensim.stanford.edu and the NOTICE file for more information.  *
  * OpenSim is developed at Stanford University and supported by the US        *
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
@@ -20,42 +21,43 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Common/TimeSeriesTable.h"
+#include "FileAdapter.h"
 
-int main() {
-    using namespace OpenSim;
+namespace OpenSim {
 
-    TimeSeriesTable table{};
-
-    ValueArray<std::string> value_array{};
-    auto& vec = value_array.upd();
-    for(unsigned i = 0; i < 5; ++i)
-        vec.push_back(SimTK::Value<std::string>{std::to_string(i)});
-
-    TimeSeriesTable::DependentsMetaData dep_metadata{};
-    dep_metadata.setValueArrayForKey("labels", value_array);
-
-    table.setDependentsMetaData(dep_metadata);
-
-    SimTK::RowVector_<double> row0{5};
+class TRCAdapter : public FileAdapter {
+public:
+    using Table = TimeSeriesTable_<SimTK::Vec3>;
     
-    table.appendRow(0.00, row0);
+    TRCAdapter* clone() const override;
 
-    auto row1 = row0 + 1;
+    void prepareForReading(AbstractDataTable& table) override;
 
-    table.appendRow(0.25, row1);
+    void prepareForWriting(const AbstractDataTable& table) override;
 
-    auto row2 = row1 + 1;
-
-    table.appendRow(0.50, row2);
-
-    auto row3 = row2 + 1;
-
-    table.appendRow(0.75, row3);
+    void read() override;
     
-    auto row4 = row3 + 1;
+    void write() override;
 
-    table.appendRow(1.00, row4);
+    static std::string getIdentifier();
 
-    return 0;
-}
+private:
+    Table* table_;
+
+    static const std::string              delimiter_write_;
+    static const std::string              delimiters_read_;
+    static const std::string              newline_;
+    static const std::string              frame_num_column_label_;
+    static const std::string              time_column_label_;
+    static const std::string              x_label_;
+    static const std::string              y_label_;
+    static const std::string              z_label_;
+    static const std::string              num_markers_label_;
+    static const std::string              num_frames_label_;
+    static const unsigned                 data_starts_at_row_;
+    static const std::vector<std::string> metadata_keys_;
+};
+
+} // namespace OpenSim
+
+#endif // OPENSIM_COMMON_TRCADAPTER_H

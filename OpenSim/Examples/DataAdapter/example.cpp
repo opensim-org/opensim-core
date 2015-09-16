@@ -20,42 +20,31 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Common/TimeSeriesTable.h"
+#include "OpenSim/Common/TRCAdapter.h"
 
-int main() {
+#include <iostream>
+#include <fstream>
+
+
+int main(void) {
     using namespace OpenSim;
 
-    TimeSeriesTable table{};
+    DataAdapter::registerDataAdapter("trc", TRCAdapter{});
 
-    ValueArray<std::string> value_array{};
-    auto& vec = value_array.upd();
-    for(unsigned i = 0; i < 5; ++i)
-        vec.push_back(SimTK::Value<std::string>{std::to_string(i)});
+    TRCAdapter::Table table{};
 
-    TimeSeriesTable::DependentsMetaData dep_metadata{};
-    dep_metadata.setValueArrayForKey("labels", value_array);
+    auto file_adapter = FileAdapter::createAdapter("trc");
 
-    table.setDependentsMetaData(dep_metadata);
+    file_adapter->setFilename("/home/shrik/opensim-core/OpenSim/Wrapping/Java/"
+                              "Matlab/testData/Subject01/MarkerData/"
+                              "walk_free_01.trc");
 
-    SimTK::RowVector_<double> row0{5};
-    
-    table.appendRow(0.00, row0);
+    file_adapter->prepareForReading(table);
 
-    auto row1 = row0 + 1;
+    file_adapter->read();
 
-    table.appendRow(0.25, row1);
-
-    auto row2 = row1 + 1;
-
-    table.appendRow(0.50, row2);
-
-    auto row3 = row2 + 1;
-
-    table.appendRow(0.75, row3);
-    
-    auto row4 = row3 + 1;
-
-    table.appendRow(1.00, row4);
+    std::cout << table.getNumRows() << " rows" << std::endl;
+    std::cout << table.getNumColumns() << " columns" << std::endl; 
 
     return 0;
 }

@@ -211,7 +211,7 @@ IF(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
 
     # C++
     SET(CMAKE_CXX_FLAGS_DEBUG          "-g ${GCC_INST_SET}" 
-      CACHE STRING "g++ Debug build compile flags" FORCE)
+      CACHE STRING "g++ Debug build compile flags")
     SET(CMAKE_CXX_FLAGS_RELEASE        
       "-DNDEBUG -O2 ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}" 
       CACHE STRING "g++ Release build compile flags" FORCE)
@@ -223,7 +223,7 @@ IF(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
 
     # C
     SET(CMAKE_C_FLAGS_DEBUG            "-g ${GCC_INST_SET}" 
-      CACHE STRING "gcc Debug build compile flags" FORCE)
+      CACHE STRING "gcc Debug build compile flags")
     SET(CMAKE_C_FLAGS_RELEASE          
       "-DNDEBUG -O2 ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}" 
       CACHE STRING "gcc Release build compile flags" FORCE)

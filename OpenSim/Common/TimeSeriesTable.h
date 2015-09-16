@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  example.cpp                           *
+ *                            OpenSim:  TimeSeriesTable.h                     *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -20,42 +20,37 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Common/TimeSeriesTable.h"
+/** \file
+This file defines the TimeSeriesTable_ class, which is used by OpenSim to 
+provide an in-memory container for data access and manipulation.              */
 
-int main() {
-    using namespace OpenSim;
+#ifndef OPENSIM_TIMESERIESDATATABLE_H
+#define OPENSIM_TIMESERIESDATATABLE_H
 
-    TimeSeriesTable table{};
+#include "OpenSim/Common/DataTable.h"
 
-    ValueArray<std::string> value_array{};
-    auto& vec = value_array.upd();
-    for(unsigned i = 0; i < 5; ++i)
-        vec.push_back(SimTK::Value<std::string>{std::to_string(i)});
 
-    TimeSeriesTable::DependentsMetaData dep_metadata{};
-    dep_metadata.setValueArrayForKey("labels", value_array);
+namespace OpenSim {
 
-    table.setDependentsMetaData(dep_metadata);
+/** TimeSeriesTable_ is a DataTable_ that treats the independent column as time.
+The time column is enforced to be strictly increasing.                        */
+template<typename ETY = SimTK::Real>
+class TimeSeriesTable_ : public DataTable_<double, ETY> {
+public:
+    using RowVector = SimTK::RowVector_<ETY>;
+protected:
+    void validateAppendRow(const double& time, 
+                           const RowVector& row) const override {
+        using DT = DataTable_<double, ETY>;
+        if(DT::_indData.size() > 0 && DT::_indData.back() >= time)
+            throw Exception{"Timestamp added for the row is less than or equal "
+                    "to the timestamp of the last existing row."};
+    }
+}; // TimeSeriesTable_
 
-    SimTK::RowVector_<double> row0{5};
-    
-    table.appendRow(0.00, row0);
+/** See TimeSeriesTable_ for details on the interface.                        */
+using TimeSeriesTable = TimeSeriesTable_<SimTK::Real>;
 
-    auto row1 = row0 + 1;
+} // namespace OpenSim
 
-    table.appendRow(0.25, row1);
-
-    auto row2 = row1 + 1;
-
-    table.appendRow(0.50, row2);
-
-    auto row3 = row2 + 1;
-
-    table.appendRow(0.75, row3);
-    
-    auto row4 = row3 + 1;
-
-    table.appendRow(1.00, row4);
-
-    return 0;
-}
+#endif // OPENSIM_TIMESERIESDATATABLE_H
