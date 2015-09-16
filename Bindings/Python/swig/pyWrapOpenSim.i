@@ -16,8 +16,8 @@ own project.
 
 %{
 #define SWIG_FILE_WITH_INIT
-
-
+%}
+%{
 #include <OpenSim/version.h>
 #include <SimTKsimbody.h>
 #include <OpenSim/Common/osimCommonDLL.h>
@@ -46,9 +46,9 @@ own project.
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/MultiplierFunction.h>
+#include <OpenSim/Common/PolynomialFunction.h>
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/Sine.h>
-#include <OpenSim/Common/PolynomialFunction.h>
 #include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 #include <OpenSim/Common/SmoothSegmentedFunction.h>
 #include <OpenSim/Common/XYFunctionInterface.h>
@@ -252,7 +252,8 @@ own project.
 #include <OpenSim/Tools/InverseKinematicsTool.h>
 
 #include <Bindings/Python/OpenSimContext.h>
-
+%}
+%{
 using namespace OpenSim;
 using namespace SimTK;
 

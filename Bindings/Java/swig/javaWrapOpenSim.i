@@ -50,9 +50,9 @@
 
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/OffsetFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Simulation/Model/Ground.h>
 
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
@@ -234,13 +234,14 @@
 #include <OpenSim/Tools/ScaleTool.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
-
-#include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
-
+%}
+%{
 #include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
 
+#include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
 #include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
-
+%}
+%{
 using namespace OpenSim;
 using namespace SimTK;
 
