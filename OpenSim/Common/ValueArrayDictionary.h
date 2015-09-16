@@ -29,34 +29,43 @@
 
 namespace OpenSim {
 
+/** ValueArrayDictionary represents a associative array mapping from a string to
+an AbstractValueArray.                                                        */
 class ValueArrayDictionary {
 private:
     using Dictionary = std::map<std::string, 
-                                std::shared_ptr<AbstractValueArray>>;
+                                SimTK::ClonePtr<AbstractValueArray>>;
 
 public:
+    /** Get the array corresponding to a given key.                           */
     const AbstractValueArray& 
     getValueArrayForKey(const std::string& key) const {
         return *_dictionary.at(key);
     }
 
+    /** Set the array corresponding to a given key.                           */
     void setValueArrayForKey(const std::string& key, 
                              const AbstractValueArray& abstractValueArray) {
-        using Value = std::unique_ptr<AbstractValueArray>;
+        using Value = SimTK::ClonePtr<AbstractValueArray>;
 
         _dictionary.emplace(key, 
                             Value{abstractValueArray.clone()});
     }
 
+    /** Remove a key and its associated array.                                */
     void removeValueArrayForKey(const std::string& key) {
         _dictionary.erase(key);
     }
 
+    /** Get an iterator to the associative array. The returned object is an 
+    std::pair where the first element is the iterator representing the
+    beginning and second element is the iterator representing the end.        */
     std::pair<Dictionary::const_iterator, Dictionary::const_iterator>
     getKeyValueIterator() const {
         return std::make_pair(_dictionary.cbegin(), _dictionary.cend());
     }
 
+    /** Get all the existing keys as a std::vector.                           */
     std::vector<std::string> getKeys() const {
         std::vector<std::string> keys{};
         std::transform(_dictionary.begin(), 

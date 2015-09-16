@@ -24,8 +24,8 @@
 This file defines the  DataTable_ class, which is used by OpenSim to provide an 
 in-memory container for data access and manipulation.                         */
 
-#ifndef OPENSIM_COMMON_DATATABLE_H
-#define OPENSIM_COMMON_DATATABLE_H
+#ifndef OPENSIM_DATATABLE_H
+#define OPENSIM_DATATABLE_H
 
 // Non-standard headers.
 #include "SimTKcommon.h"
@@ -37,7 +37,7 @@ namespace OpenSim {
 /** AbstractDataTable is the base-class of all DataTable_(templated) allowing 
 storage of DataTable_ templated on different types to be stored in a container 
 like std::vector. AbstractDataTable_ offers:
-- Interface to access columns of DataTable_ through column labels. 
+- Interface to access column metadata of the DataTable_.
 - A heterogeneous container to store metadata associated with the DataTable_ in
   the form of key-value pairs where key is of type std::string and value can be
   of any type.
@@ -85,38 +85,46 @@ public:
     AbstractDataTable& operator=(const AbstractDataTable&)   = default;
     AbstractDataTable& operator=(AbstractDataTable&&)        = default;
     virtual std::unique_ptr<AbstractDataTable> clone() const = 0;
-    virtual ~AbstractDataTable() {}
+    virtual ~AbstractDataTable()                             = default;
 
+    /** Get metadata associated with the table.                               */
     const TableMetaData& getTableMetaData() const {
         return _tableMetaData;
     }
 
+    /** Update metadata associated with the table.                            */
     TableMetaData& updTableMetaData() {
         return _tableMetaData;
     }
 
+    /** Get number of rows.                                                   */
     size_t getNumRows() const {
         return computeNumRows();
     }
 
+    /** Get number of columns.                                                */
     size_t getNumColumns() const {
         return computeNumColumns();
     }
-
+    
+    /** Get metadata associated with the independent column.                  */
     const IndependentMetaData& getIndependentMetaData() const {
         return _independentMetaData;
     }
     
+    /** Set metadata associated with the independent column.                  */
     void 
     setIndependentMetaData(const IndependentMetaData& independentMetaData) {
         _independentMetaData = independentMetaData;
         validateIndependentMetaData();
     }
 
+    /** Get metadata associated with the dependent columns.                   */
     const DependentsMetaData& getDependentsMetaData() const {
         return _dependentsMetaData;
     }
     
+    /** Set metadata associated with the dependent columns.                   */
     void 
     setDependentsMetaData(const DependentsMetaData& dependentsMetaData) {
         _dependentsMetaData = dependentsMetaData;
@@ -124,10 +132,10 @@ public:
     }
 
 protected:
-    virtual size_t computeNumRows() const = 0;
-    virtual size_t computeNumColumns() const = 0;
+    virtual size_t computeNumRows() const            = 0;
+    virtual size_t computeNumColumns() const         = 0;
     virtual void validateIndependentMetaData() const = 0;
-    virtual void validateDependentsMetaData() const = 0;
+    virtual void validateDependentsMetaData() const  = 0;
 
     TableMetaData       _tableMetaData;
     DependentsMetaData  _dependentsMetaData;
@@ -135,43 +143,58 @@ protected:
 }; // AbstractDataTable
 
 
-
-
-/** DataTable_ is a in-memory storage container for data (in the form of a 
-matrix with column names) with support for holding metadata.                
-                                                                              
-- Underlying matrix will have entries of configurable type ET (template 
-  param).
-- Random-access (constant-time) to specific entries, entire columns and entire 
-  rows using their index.
-- Average constant-time access to columns through column-labels.
-- Add rows and columns to existing DataTable_. 
-- Add/concatenate two DataTable_(s) by row and by column. 
-- %Set column labels for a subset of columns, update them, remove them etc. 
-- Construct DataTable_ emtpy OR with a given shape and default value OR using 
-  and iterator pair one entry at a time.
-- Heterogeneous metadata container through base class AbstractDataTable. 
-  Metadata in the form of key-value pairs where key is a std::string and value 
-  is is of any type.
-                                                                              
-\tparam ET Type of the entries in the underlying matrix. Defaults to         
-           SimTK::Real (alias for double).                                    */
+/** DataTable_ is a in-memory storage container for data with support for 
+holding metadata. Data contains an independent column and a set of dependent 
+columns. The type of the independent column can be configured using ETX (
+template param). The type of the dependent columns, which together form a matrix
+, can be configured using ETY (template param). Independent and Dependent 
+columns can contain metadata. DataTable_ as a whole can contain metadata.     */
 template<typename ETX = double, typename ETY = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
 public:
     using RowVector    = SimTK::RowVector_<ETY>;
     using ColumnVector = SimTK::Vector_<ETY>;
 
-    void appendRow(const ETX& indRow, const RowVector& depRow) {
-        _indData.push_back(indRow);
-        _depData.push_back(depRow);
-        validateAppendRow();
+    DataTable_()                             = default;
+    DataTable_(const DataTable_&)            = default;
+    DataTable_(DataTable_&&)                 = default;
+    DataTable_& operator=(const DataTable_&) = default;
+    DataTable_& operator=(DataTable_&&)      = default;
+    ~DataTable_()                            = default;
+
+    std::unique_ptr<AbstractDataTable> clone() const override {
+        return std::unique_ptr<AbstractDataTable>{new DataTable_{*this}};
     }
 
+    /** Append row to the DataTable_.                                         */
+    void appendRow(const ETX& indRow, const RowVector& depRow) {
+        validateAppendRow(indRow, depRow);
+
+        _indData.push_back(indRow);
+
+        if(_depData.nrow() == 0 || _depData.ncol() == 0) {
+            try {
+                auto& labels = 
+                    _dependentsMetaData.getValueArrayForKey("labels");
+                if(depRow.size() != labels.size())
+                    throw Exception{"Number of columns in the input row does "
+                            "not match the number of labels."};
+            } catch(std::out_of_range&) {
+                // No operation.
+            }
+            _depData.resize(1, depRow.size());
+        } else
+            _depData.resizeKeep(_depData.nrow() + 1, _depData.ncol());
+            
+        _depData.updRow(_depData.nrow() - 1) = depRow;
+    }
+
+    /** Get row at index.                                                     */
     RowVector getRowAtIndex(size_t index) const {
         return _depData.getRow(index);
     }
 
+    /** Get row corresponding to the given entry in the independent column.   */
     RowVector getRow(const ETX& ind) const {
         auto row_ind = std::distance(_indData.begin(), 
                                      std::find(_indData.cbegin(), 
@@ -180,10 +203,12 @@ public:
         return _depData.getRow(row_ind);
     }
 
+    /** Update row at index.                                                  */
     RowVector updRowAtIndex(size_t index) {
         return _depData.updRow(index);
     }
 
+    /** Update row corresponding to the given entry in the independent column.*/
     RowVector updRow(const ETX& ind) {
         auto row_ind = std::distance(_indData.begin(), 
                                      std::find(_indData.cbegin(), 
@@ -192,10 +217,12 @@ public:
         return _depData.updRow(row_ind);
     }
 
+    /** Get independent column.                                               */
     const std::vector<ETX>& getIndependentColumn() const {
         return _indData;
     }
 
+    /** Get dependent column.                                                 */
     ColumnVector getDependentColumnAtIndex(size_t index) const {
         return _depData.getCol(index);
     }
@@ -210,12 +237,29 @@ protected:
     }
 
     void validateIndependentMetaData() const override {
+        try {
+            _independentMetaData.getValueForKey("labels");
+        } catch(std::out_of_range&) {
+            throw Exception{"Independent metadata does not contain 'labels'."};
+        }
     }
 
     void validateDependentsMetaData() const override {
+        try {
+            auto& labels = _dependentsMetaData.getValueArrayForKey("labels");
+            if(labels.size() == 0)
+                throw Exception{"Dependents metadata has zero labels."};
+            if(_depData.ncol() != 0 && labels.size() != _depData.ncol())
+                throw Exception{"Dependents metadata has incorrect number of"
+                        " columns."};
+        } catch(std::out_of_range&) {
+            throw Exception{"Dependent metadata does not contain 'labels'."};
+        }
     }
 
-    virtual void validateAppendRow() const = 0;
+    virtual void validateAppendRow(const ETX&, const RowVector&) const {
+        // No operation.
+    }
 
     std::vector<ETX>    _indData;
     SimTK::Matrix_<ETY> _depData;
@@ -226,4 +270,4 @@ using DataTable = DataTable_<SimTK::Real>;
 
 } // namespace OpenSim
 
-#endif //OPENSIM_COMMON_DATATABLE_H
+#endif //OPENSIM_DATATABLE_H

@@ -29,16 +29,22 @@
 
 namespace OpenSim {
 
+/** ValueArray (of type T) represents an array of SimTK::Value (of type T). 
+AbstractValueArray is the base class of all ValueArray thereby hiding the type
+of the underlying array (which is T).                                         */
 class AbstractValueArray {
 public:
     using AbstractValue = SimTK::AbstractValue;
 
     virtual AbstractValueArray* clone() const = 0;
 
+    /** Get the size of the array.                                            */
     virtual size_t size() const = 0;
 
+    /** Access an element of the array using its index.                       */
     virtual AbstractValue& operator[](size_t index) = 0;
 
+    /** Access an element of the array using its index.                       */
     virtual const AbstractValue& operator[](size_t index) const = 0;
 };
 
@@ -50,27 +56,30 @@ public:
     using Value = SimTK::Value<U>;
 
     ValueArray* clone() const override {
-        auto copy = new ValueArray{};
-        copy->_values = _values;
-        return copy;
+        return new ValueArray{*this};
     }
 
+    /** Get the size of the array.                                            */
     size_t size() const override {
         return _values.size();
     }
 
+    /** Access an element of the array using its index.                       */
     Value<T>& operator[](size_t index) override {
         return _values[index];
     } 
 
+    /** Access an element of the array using its index.                       */
     const Value<T>& operator[](size_t index) const override {
         return _values[index];
     }
 
+    /** Get the underlying array.                                             */
     const std::vector<Value<T>>& get() const {
         return _values;
     }
 
+    /** Get the underlying array.                                             */
     std::vector<Value<T>>& upd() {
         return _values;
     }
