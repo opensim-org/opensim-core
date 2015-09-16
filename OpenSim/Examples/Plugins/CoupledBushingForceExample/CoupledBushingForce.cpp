@@ -106,33 +106,6 @@ void CoupledBushingForce::extendFinalizeFromProperties()
 //=============================================================================
 // COMPUTATION
 //=============================================================================
-/** Compute the deflection (spatial separation) of the two frames connected
-    by the bushing force. Angular displacement expressed in Euler angles.
-    The force and potential energy are determined by the deflection.  */
-SimTK::Vec6 CoupledBushingForce::computeDeflection(const SimTK::State& s) const
-{
-    // get connected frames
-    const PhysicalFrame& frame1 = getConnectee<PhysicalFrame>("frame1");
-    const PhysicalFrame& frame2 = getConnectee<PhysicalFrame>("frame2");
-
-    // Define the frame on body 1 is the "fixed" frame, F
-    Transform X_GF = frame1.getGroundTransform(s);
-    // Define the frame on body 2 as the "moving" frame, M
-    Transform X_GM = frame2.getGroundTransform(s);
-    // Express M in F
-    Transform X_FM = ~X_GF * X_GM;    
-
-    // Calculate stiffness generalized forces of bushing by first computing
-    // the deviation of the two frames measured by dq
-    Vec6 dq(0);
-    // First 3 are rotational deviations
-    dq.updSubVec<3>(0) = X_FM.R().convertRotationToBodyFixedXYZ();
-    // Second 3 are translational
-    dq.updSubVec<3>(3) = X_FM.p();
-
-    return dq;
-}
-
 /**
  * Compute the force contribution to the system and add in to appropriate
  * bodyForce and/or system generalizedForce.

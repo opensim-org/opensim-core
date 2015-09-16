@@ -703,7 +703,8 @@ void testFunctionBasedBushingForce()
     ball.scale(Vec3(ball_radius), false);
 
     // Add joints
-    SliderJoint slider("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+    SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), 
+                                 ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
     // Rename coordinates for a slider joint
@@ -722,8 +723,10 @@ void testFunctionBasedBushingForce()
 
     osimModel->setGravity(gravity_vec);
 
-    FunctionBasedBushingForce spring("ground", Vec3(0), Vec3(0), "ball", Vec3(0), Vec3(0), transStiffness, rotStiffness, transDamping, rotDamping);
-    spring.setName("linear_bushing");
+    FunctionBasedBushingForce spring("linear_bushing",
+                    "ground", Vec3(0), Vec3(0), 
+                    "ball", Vec3(0), Vec3(0),
+                    transStiffness, rotStiffness, transDamping, rotDamping);
 
     osimModel->addForce(&spring);
 

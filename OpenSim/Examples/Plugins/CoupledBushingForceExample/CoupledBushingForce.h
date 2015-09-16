@@ -118,11 +118,6 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATION
     //--------------------------------------------------------------------------
-    /** Compute the deflection (spatial separation) of the two frames connected
-        by the bushing force. Angular displacement expressed in Euler angles.
-        The force and potential energy are determined by the deflection.  */
-    SimTK::Vec6 computeDeflection(const SimTK::State& s) const;
-
     /** Compute the bushing force contribution to the system and add in to appropriate
      bodyForce and/or system generalizedForce. The bushing force is [K]*dq + [D]*dqdot
      where, [K] is the spatial 6dof stiffness matrix between the two frames 

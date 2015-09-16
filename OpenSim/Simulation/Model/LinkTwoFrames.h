@@ -123,6 +123,23 @@ public:
         was introduced at construction, then this will be the offset frame.*/
     const F& getFrame2() const;
 
+    /** Compute the relative offset Transform between the two frames linked by 
+        this Component at a given State, expressed in frame 1. */
+    SimTK::Transform computeRelativeOffset(const SimTK::State& s) const;
+
+    /** Compute the relative velocity between the two frames linked by
+    this Component at a given State, expressed in frame 1. */
+    SimTK::SpatialVec computeRelativeVeocity(const SimTK::State& s) const;
+
+    /** Compute the deflection (spatial separation) of the two frames connected
+        by the bushing force. Angualar displacement expressed in Euler angles.
+        NOTE: the value is only valid for small deviations and the behavior
+           will become undefined at large angles (~90 degs). It is useful for 
+           calculating errors for constraints and forces for computing restoration
+           forces.
+     @return deflection     Vec6 of angular (3) and translational (3) deflections. */
+    SimTK::Vec6 computeDeflection(const SimTK::State& s) const;
+
     /**
     * Scale a joint based on XYZ scale factors for PhysicalFrames.
     * Generic behavior is to scale the locations of parent and child offsets
@@ -191,10 +208,10 @@ LinkTwoFrames<C, F>::LinkTwoFrames(const std::string &name,
     append_frames(frame1Offset);
     append_frames(frame2Offset);
 
-    updConnector<PhysicalFrame>("frame1").set_connectee_name(
-        getName() + "/" + frame1Offset.getName());
-    updConnector<PhysicalFrame>("frame2").set_connectee_name(
-        getName() + "/" + frame2Offset.getName());
+    updConnector<PhysicalFrame>("frame1")
+        .set_connectee_name(frame1Offset.getName());
+    updConnector<PhysicalFrame>("frame2")
+        .set_connectee_name(frame2Offset.getName());
 }
 
 /*
@@ -313,8 +330,75 @@ void LinkTwoFrames<C, F>::extendFinalizeFromProperties()
     }
 }
 
+//=============================================================================
+// UTILITY COMPUTATIONS
+//=============================================================================
+template <class C, class F>
+SimTK::Transform LinkTwoFrames<C, F>::computeRelativeOffset(const SimTK::State& s) const
+{
+    // get connected frames
+    const F& frame1 = getConnectee<F>("frame1");
+    const F& frame2 = getConnectee<F>("frame2");
+
+    // Define frame1 as the "fixed" frame, F
+    SimTK::Transform X_GF = frame1.getGroundTransform(s);
+    // Define the frame2 as the "moving" frame, M
+    SimTK::Transform X_GM = frame2.getGroundTransform(s);
+    // Express M in F
+    return ~X_GF * X_GM;
+}
+
+template <class C, class F>
+SimTK::Vec6 LinkTwoFrames<C, F>::computeDeflection(const SimTK::State& s) const
+{
+    SimTK::Transform X_FM = this->computeRelativeOffset(s);
+
+    // Calculate stiffness generalized forces of bushing by first computing
+    // the deviation of the two frames measured by dq
+    SimTK::Vec6 dq(0);
+    // First 3 are rotational deviations
+    dq.updSubVec<3>(0) = X_FM.R().convertRotationToBodyFixedXYZ();
+    // Second 3 are translational
+    dq.updSubVec<3>(3) = X_FM.p();
+
+    return dq;
+}
+
+template <class C, class F>
+SimTK::SpatialVec LinkTwoFrames<C, F>::computeRelativeVeocity(const SimTK::State& s) const
+{
+    // get connected frames
+    const F& frame1 = getConnectee<F>("frame1");
+    const F& frame2 = getConnectee<F>("frame2");
+
+    const SimTK::Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
+    const SimTK::Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
+
+    SimTK::Transform X_GF = frame1.getGroundTransform(s);
+    SimTK::Transform X_GM = frame2.getGroundTransform(s);
+    SimTK::Transform X_FM = ~X_GF * X_GM;
+    const SimTK::Rotation& R_GF = X_GF.R();
+
+    // Now evaluate velocities.
+    const SimTK::SpatialVec& V_GB1 = frame1.getMobilizedBody().getBodyVelocity(s);
+    const SimTK::SpatialVec& V_GB2 = frame2.getMobilizedBody().getBodyVelocity(s);
+
+    // Re-express local vectors in the Ground frame.
+    SimTK::Vec3 p_B1F_G = X_GB1.R() * frame1.findTransformInBaseFrame().p();
+    SimTK::Vec3 p_B2M_G = X_GB2.R() * frame2.findTransformInBaseFrame().p();
+    SimTK::Vec3 p_FM_G = X_GF.R()  * X_FM.p();    // 15 flops
+
+    SimTK::SpatialVec V_GF(V_GB1[0], V_GB1[1] + V_GB1[0] % p_B1F_G);
+    SimTK::SpatialVec V_GM(V_GB2[0], V_GB2[1] + V_GB2[0] % p_B2M_G);
+
+    // This is the velocity of M in F, but with the time derivative
+    // taken in the Ground frame.
+    const SimTK::SpatialVec V_FM_G = V_GM - V_GF;
+
+    // To get derivative in F, we must remove the part due to the
+    // angular velocity w_GF of F in G.
+    return ~R_GF * SimTK::SpatialVec(V_FM_G[0], V_FM_G[1] - V_GF[0] % p_FM_G);
+}
+
 } // end of namespace OpenSim
-
 #endif // OPENSIM_LINK_TWO_FRAMES_H_
-
-
