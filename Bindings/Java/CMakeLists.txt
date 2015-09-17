@@ -3,8 +3,6 @@
 
 subdirs(OpenSimJNI)
 
-if(BUILD_JAVA_WRAPPING) 
-
 ## Now build jar file from the java files created by SWIG. This depends on finding an installation of Java
 find_package( Java )
 if( JAVA_COMPILE )
@@ -37,7 +35,6 @@ if( JAVA_COMPILE )
                    ${CMAKE_BINARY_DIR}/Bindings/Java/OpenSimJNI/src/
    )
 endif( JAVA_COMPILE )
-endif(BUILD_JAVA_WRAPPING)
 
 install(DIRECTORY Matlab DESTINATION Scripts 
     PATTERN "Matlab/Dynamic_Walker_Example" EXCLUDE)

@@ -1,10 +1,7 @@
 set(KIT opensim)
 set(UKIT PYOPENSIM)
 
-if(BUILD_PYTHON_WRAPPING)
-
 find_package(PythonLibs 2.7)
-#find_package(PythonInterp 2.7)
 
 if(NOT PYTHONLIBS_FOUND)
     message(FATAL_ERROR "Cannot build Python wrapping because "
@@ -110,5 +107,3 @@ install(FILES ${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim
               ${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim
         DESTINATION sdk/python/opensim/tests)
 INSTALL(DIRECTORY tests DESTINATION sdk/python/opensim)
-
-endif(BUILD_PYTHON_WRAPPING)

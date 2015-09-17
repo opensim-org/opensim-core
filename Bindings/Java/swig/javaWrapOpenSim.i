@@ -3,7 +3,7 @@
 #pragma SWIG nowarn=822,451,503,516,325,401
 %{
 
-#include <Bindings/common/OpenSimHeaders.h>
+#include <Bindings/OpenSimHeaders.h>
 #include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
 
 #include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
@@ -441,7 +441,7 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 	}
 }
 
-%include <Bindings/common/opensim.i>
+%include <Bindings/opensim.i>
 %include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
 
 %include <Bindings/Java/OpenSimJNI/OpenSimContext.h>

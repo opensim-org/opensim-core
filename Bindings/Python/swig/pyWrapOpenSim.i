@@ -16,7 +16,7 @@ own project.
 
 %{
 #define SWIG_FILE_WITH_INIT
-#include <Bindings/common/OpenSimHeaders.h>
+#include <Bindings/OpenSimHeaders.h>
 #include <Bindings/Python/OpenSimContext.h>
 %}
 %{
@@ -206,7 +206,7 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 };
 
 
-%include <Bindings/common/opensim.i>
+%include <Bindings/opensim.i>
 %include <Bindings/Python/OpenSimContext.h>
 
 // Memory management

@@ -1,8 +1,6 @@
 set(KIT JavaJNI)
 set(UKIT JAVAJNI)
 
-if(BUILD_JAVA_WRAPPING) 
-
 include(${CMAKE_ROOT}/Modules/FindJava.cmake)
 include(${CMAKE_ROOT}/Modules/FindJNI.cmake)
 
@@ -106,4 +104,3 @@ endif(BUILD_TESTING)
 
 
 endif(JAVA_INCLUDE_PATH)
-endif(BUILD_JAVA_WRAPPING)
