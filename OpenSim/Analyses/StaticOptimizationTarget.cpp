@@ -198,7 +198,7 @@ setStatesSplineSet(GCVSplineSet aStatesSplineSet)
 //------------------------------------------------------------------------------
 ///______________________________________________________________________________
 /**
- * Set the number of paramters.
+ * Set the number of parameters.
  *
  * The number of parameters can be set at any time.  However, the perturbation
  * sizes for the parameters (i.e., _dx) is destroyed.  Therefore, the
@@ -360,7 +360,7 @@ computeActuatorAreas(const SimTK::State& s )
  * @param ic Index of the constraint.
  * @param dcdx The derivatives of the constraints.
  *
- * @return -1 if an error is encountered, 0 otherwize.
+ * @return -1 if an error is encountered, 0 otherwise.
  */
 int StaticOptimizationTarget::
 CentralDifferencesConstraint(const StaticOptimizationTarget *aTarget,
@@ -410,7 +410,7 @@ CentralDifferencesConstraint(const StaticOptimizationTarget *aTarget,
  * @param x Values of the controls at time t.
  * @param dpdx The derivatives of the performance criterion.
  *
- * @return -1 if an error is encountered, 0 otherwize.
+ * @return -1 if an error is encountered, 0 otherwise.
  */
 int StaticOptimizationTarget::
 CentralDifferences(const StaticOptimizationTarget *aTarget,

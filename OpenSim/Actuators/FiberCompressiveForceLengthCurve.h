@@ -284,7 +284,7 @@ public:
             (where NormForce corresponds to the number of
             Newtons that 1 normalized force corresponds to, and NormDistance
             is the distance in meters that a normalized value of 1 corresponds
-            to) to obtain the potental energy stored in the fiber in units of 
+            to) to obtain the potential energy stored in the fiber in units of 
             Joules.
 
     <B>Computational Costs</B>    

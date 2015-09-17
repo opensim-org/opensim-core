@@ -89,7 +89,7 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
 
 //_____________________________________________________________________________
 /**
- * allocate and initialize the SimTK state for this acuator.
+ * allocate and initialize the SimTK state for this actuator.
  */
  void ActivationFiberLengthMuscle_Deprecated::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
@@ -441,7 +441,7 @@ double ActivationFiberLengthMuscle_Deprecated::
 }
 
 //==============================================================================
-// GENERIC NORMALIZED FORCE-LENGTH-VELOCIY PROPERTIES
+// GENERIC NORMALIZED FORCE-LENGTH-VELOCITY PROPERTIES
 //==============================================================================
 //_____________________________________________________________________________
 /**

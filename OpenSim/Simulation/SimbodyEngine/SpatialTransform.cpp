@@ -114,7 +114,7 @@ void SpatialTransform::connectToJoint(CustomJoint& owningJoint)
             if(transform.getCoordinateNames().size() == 1)
                 transform.setFunction(new LinearFunction());
             else if(transform.getCoordinateNames().size() > 1)
-                throw Exception("TransformAxis: an appropriate multicoordinate function was not supplied");
+                throw Exception("TransformAxis: an appropriate multi-coordinate function was not supplied");
             else
                 transform.setFunction(new Constant());
         }

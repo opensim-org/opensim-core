@@ -76,7 +76,7 @@ protected:
 public:
     BodyKinematics(Model *aModel=0, bool aInDegrees=true);
     BodyKinematics(const std::string &aFileName);
-    // Copy constrctor and virtual copy 
+    // Copy constructor and virtual copy 
     BodyKinematics(const BodyKinematics &aObject);
     virtual ~BodyKinematics();
 

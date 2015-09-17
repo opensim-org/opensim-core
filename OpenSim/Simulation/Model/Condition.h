@@ -41,7 +41,7 @@ class Model;
 //=============================================================================
 /**
  * A parent class for implementing an OpenSim Condition. Condition objects
- * are useful for encapulating logic that is commonly used to make decisions.
+ * are useful for encapsulating logic that is commonly used to make decisions.
  * A Condition returns whether or not a particular condition is true or not,
  * based on the current state. 
  * 

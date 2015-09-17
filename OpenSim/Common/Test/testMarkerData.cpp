@@ -29,7 +29,7 @@ using namespace OpenSim;
 using namespace std;
 
 int main() {
-    // Create a storge from a std file "std_storage.sto"
+    // Create a storage from a std file "std_storage.sto"
     try {
         //MarkerData md("TRCFileWithNANs.trc");
         MarkerData md("TRCFileWithNANs.trc");

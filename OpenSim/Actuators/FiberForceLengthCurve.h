@@ -148,7 +148,7 @@ namespace OpenSim {
     properties.
 
     <h3>References</h3>
-    - Thelen, D.G. (2003) Adjustment of muscle mechanics model paramters to
+    - Thelen, D.G. (2003) Adjustment of muscle mechanics model parameters to
       simulate dynamic contractions in older adults. ASME Journal of
       Biomechanical Engineering 125:70--77.
     - Winters, T.M., Takahashi, M., Lieber, R.L., and Ward, S. (2010) Whole
@@ -299,7 +299,7 @@ public:
         The normalized length of the muscle fiber.
     @return The normalized area under the curve, which corresponds to the
         normalized potential energy stored in the fiber. To calculate the
-        potental energy stored in the fiber in units of Joules, multiply the
+        potential energy stored in the fiber in units of Joules, multiply the
         returned quantity by normForce*normLength (where normForce is the number
         of Newtons represented by a normalized force of 1.0 and normLength is
         the number of meters represented by a normalized length of 1.0).

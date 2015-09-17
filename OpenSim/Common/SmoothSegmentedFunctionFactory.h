@@ -54,11 +54,11 @@ ASME Journal of Biomechanical Engineering (125).) are parameterized in a
 physically meaningful manner, making them easy to use. However there are 
 many shortcomings of these curves:
 
-a. The tendon and parallel element are not C2 continuous, making them slow to 
+a. The tendon and parallel element are not C2-continuous, making them slow to 
 simulate and likely not physiologically accurate. 
 b. The active force length curve approaches does not achieve its minimum value
 at a normalized fiber length of 0.5, and 1.5. 
-c. The force velocity curve is not C2 continuous at the origin. As it is 
+c. The force velocity curve is not C2-continuous at the origin. As it is 
 written in the paper the curve is impossible to use with an equilibrium model
 because it is not invertible. In addition the force-velocity curve actually 
 increases in stiffness as activation drops - a very undesirable property given
@@ -69,12 +69,12 @@ by Thelen's work, and thus similar comments can easily be applied to just about
 every other musculoskeletal simulation.
 
 Another example is from Miller (Miller,RH(2011).Optimal Control of 
-Human Running. PhD Thesis). On pg 149 a physiolgically plausible force velocity
+Human Running. PhD Thesis). On pg 149 a physiologically plausible force velocity
 curve is specified that gives the user the ability to change the concentric 
-curvature to be consistent with a slow or a fast twitch musle. This curve is 
-not C2 continuous at the origin, but even worse, it contains singularities in 
+curvature to be consistent with a slow- or a fast-twitch muscle. This curve is 
+not C2-continuous at the origin, but even worse, it contains singularities in 
 its parameter space. Since these parameters do not have a physical interpretation 
-this model is difficult to use without accidentically creating a curve with a 
+this model is difficult to use without accidentally creating a curve with a 
 singularity.
 
 With this motivation I set out to develop a class that could generate muscle
@@ -89,7 +89,7 @@ characteristic curves with the following properties:
 \endverbatim
 
 These goals were surprisingly difficult to achieve, but these goals have been 
-achieved using sets of C2 continuous quintic Bezier curves. The resulting 
+achieved using sets of C2-continuous quintic Bezier curves. The resulting 
 muscle curve functions in this class take parameters that would be intuitive to 
 biomechanists who simulate human musculoskeletal systems, and returns a 
 SmoothSegmentedFunction which is capable of evaluating the value, derivatives 
@@ -97,11 +97,11 @@ and optionally the integral of the desired function (or actually relation as
 the case may be). 
 
 Each curve is made up of one or more C2 quintic Bezier curves x(u), 
-and y(u), with linearily extrapolated ends as shown in the figure below. These 
+and y(u), with linearly extrapolated ends as shown in the figure below. These 
 quintic curves span 2 points, and achieve the desired derivative at its end 
 points. The degree of curviness can be varied from 0 to 1 (0, 0.75 and 1.0 are 
-shown in the figure in grey, blue and black respectively), and will make the 
-curve approximate a line when set to 0 (grey), and approximate a curve that 
+shown in the figure in gray, blue and black respectively), and will make the 
+curve approximate a line when set to 0 (gray), and approximate a curve that 
 hugs the intersection of the lines that are defined by the end points locations 
 and the slopes at the end of each curve segment (red lines). Although you do 
 not need to set all of this information directly, for some of the curves it is 
@@ -165,7 +165,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
 
         @param minActiveForceLengthValue
                               The minimum value of the active force length 
-                              curve. A physiological non-equibrium muscle model
+                              curve. A physiological non-equilibrium muscle model
                               would have this value set to 0. An equilibrium 
                               muscle model would have a non-zero lower bound on 
                               this value of 0.1 typically. shoulderVal must be 
@@ -191,8 +191,8 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         @param curveName The name of the muscle this curve applies to. This 
                           curve name should have the name of the muscle and the
                           curve in it (e.g. "bicep_fiberActiveForceLengthCurve") 
-                          sothat if this curve ever causes an exception, a 
-                          userfriendly error message can be displayed to the
+                          so that, if this curve ever causes an exception, a 
+                          user-friendly error message can be displayed to the
                           end user to help them debug their model.
 
         @throws SimTK::Exception if these conditions aren't met
@@ -239,7 +239,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
             const std::string& curveName);   
 
         /**
-        This function will generate a C2 continous (continuous to the second 
+        This function will generate a C2-continuous (continuous to the second 
         derivative) force velocity curve of a single muscle fiber. The main 
         function of this element is to model the amount the force enhancement or 
         attenuation that is associated with contracting at a particular velocity.
@@ -252,9 +252,9 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         @param dydxC  The slope of the fv(dlce(t)/dt) curve at the maximum 
                       normalized concentric contraction velocity. Although 
                       physiologically the value of dydxC at the maximum 
-                      concentric contracton velocity is by definition 0, a value
-                      of 0 is often used. If you are using an equilbrium type 
-                      model this term must be positive and greater than zero so
+                      concentric contraction velocity is by definition 0, a value
+                      of 0 is often used. If you are using an equilibrium-type 
+                      model, this term must be positive and greater than zero so
                       that the fv curve can be inverted.
                       <br /><br />
                       Minimum Value: 0
@@ -271,15 +271,15 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
 
         @param dydxIso  The slope of the fv curve when dlce(t)/dt = 0. 
                         <br /><br />
-                        Minimim Value: dydxIso > 1.0
+                        Minimum Value: dydxIso > 1.0
                         Maximum Value: dydxIso < Inf
                         
         @param dydxE    The analogous term of dydxC parameter but for the 
                         eccentric portion of the force-velocity curve. As with
                         the dydxC term, the physiologically accurate value for
                         this parameter is 0, though a value of 0 is rarely used
-                        in muscle models.  If you are using an equilbrium type 
-                        model this term must be positive and greater than zero 
+                        in muscle models.  If you are using an equilibrium-type 
+                        model, this term must be positive and greater than zero 
                         so that the fv curve can be inverted. 
                         <br /><br />
                         Minimum Value: 0
@@ -318,8 +318,8 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         @param curveName The name of the muscle this curve applies to. This 
                           curve name should have the name of the muscle and the
                           curve in it (e.g. "bicep_fiberForceVelocityCurve") 
-                          sothat if this curve ever causes an exception, a 
-                          userfriendly error message can be displayed to the
+                          so that, if this curve ever causes an exception, a 
+                          user-friendly error message can be displayed to the
                           end user to help them debug their model.
 
         @throws SimTK::Exception unless these conditions are met
@@ -371,7 +371,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
             bool computeIntegral, const std::string& curveName);
 
         /**
-        This function will generate a C2 continuous (continuous to the 2nd
+        This function will generate a C2-continuous (continuous to the 2nd
         derivative) inverse curve that the function 
         createFiberForceVelocityCurve generates. The inverse force velocity 
         curve is required by every equilibrium muscle model in order to compute
@@ -396,7 +396,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
             bool computeIntegral, const std::string& muscleName);
 
         /**
-        This element will generate a C2 continuous (continuous to the 2nd
+        This element will generate a C2-continuous (continuous to the 2nd
         derivative) compressive force profile curve as a function of pennation.
         A muscle model with this element usually places this element parallel to
         the fiber.The main function of this element is to prevent the fiber from 
@@ -429,8 +429,8 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
                           curve name should have the name of the muscle and the
                           curve in it 
                           (e.g. "bicep_fiberCompressiveForcePennationCurve") 
-                          sothat if this curve ever causes an exception, a 
-                          userfriendly error message can be displayed to the
+                          so that, if this curve ever causes an exception, a 
+                          user-friendly error message can be displayed to the
                           end user to help them debug their model.
 
         @throws SimTK::Exception unless the following conditions are met
@@ -470,7 +470,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
                 bool computeIntegral, const std::string& curveName);
 
         /**
-        This element will generate a C2 continuous (continuous to the 2nd
+        This element will generate a C2-continuous (continuous to the 2nd
         derivative) compressive force profile curve as a function of 
         cos(pennation).
 
@@ -507,8 +507,8 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
                           curve name should have the name of the muscle and the
                           curve in it 
                      (e.g. "bicep_fiberCompressiveForceCosPennationCurve") 
-                          sothat if this curve ever causes an exception, a 
-                          userfriendly error message can be displayed to the
+                          so that, if this curve ever causes an exception, a 
+                          user-friendly error message can be displayed to the
                           end user to help them debug their model.
 
         @throws SimTK::Exception unless the following conditions are met:
@@ -548,7 +548,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
 
 
         /**
-        This element will generate a C2 continous (continuous to the second 
+        This element will generate a C2-continuous (continuous to the second 
         derivative) curve that models a compressive force profile that is a 
         function of fiber length. The main function of
         this element is to prevent the fiber from achieving an unrealistically
@@ -582,8 +582,8 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
                           curve name should have the name of the muscle and the
                           curve in it 
                           (e.g. "bicep_fiberCompressiveForceLengthCurve") 
-                          sothat if this curve ever causes an exception, a 
-                          userfriendly error message can be displayed to the
+                          so that, if this curve ever causes an exception, a 
+                          user-friendly error message can be displayed to the
                           end user to help them debug their model.
 
         @throws SimTK::Exception unless the following conditions are met
@@ -619,13 +619,13 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
             double curviness,bool computeIntegral,const std::string& curveName);
 
          /**
-        This function will generate a C2 continuous curve that fits a fiber's 
+        This function will generate a C2-continuous curve that fits a fiber's 
         tensile force length curve.
 
         @param eZero The fiber strain at which the fiber begins to develop force.
                      Thus an e0 of 0.0 means that the fiber will start to develop
                      passive force when it has a normalized length of 1.0. Note
-                     that e0 can be postive or negative.
+                     that e0 can be positive or negative.
 
         @param eIso The fiber strain at which the fiber develops 1 unit of 
                     normalized force (1 maximum isometric force). Note that the 
@@ -657,8 +657,8 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
          @param curveName The name of the muscle this curve applies to. This 
                           curve name should have the name of the muscle and the
                           curve in it (e.g. "bicep_fiberForceLengthCurve") 
-                          sothat if this curve ever causes an exception, a 
-                          userfriendly error message can be displayed to the
+                          so that, if this curve ever causes an exception, a 
+                          user-friendly error message can be displayed to the
                           end user to help them debug their model.
 
         @throws SimTK::Exception unless the following conditions are met
@@ -701,7 +701,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
                        bool computeIntegral, const std::string& curveName);
 
         /**
-        Will generate a C2 continous (continuous to the second derivative) 
+        Will generate a C2-continuous (continuous to the second derivative) 
         curve in a MuscleFunctionObject object that fits a tendon's tensile 
         force length curve. 
 
@@ -735,8 +735,8 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
          @param curveName The name of the muscle this curve applies to. This 
                           curve name should have the name of the muscle and the
                           curve in it (e.g. "bicep_tendonForceLengthCurve") 
-                          sothat if this curve ever causes an exception, a 
-                          userfriendly error message can be displayed to the
+                          so that, if this curve ever causes an exception, a 
+                          user-friendly error message can be displayed to the
                           end user to help them debug their model.
 
         @throws SimTK::Exception unless the following conditions are met:

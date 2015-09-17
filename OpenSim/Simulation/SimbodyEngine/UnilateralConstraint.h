@@ -47,10 +47,10 @@ class SimbodyEngine;
  * An abstract class defining an OpenSim UnilateralConstraint.
  * Specific UnilateralConstraints should be derived from this class. 
  *
- * It is expeced that constraints used to model contact will be unilateral.
+ * It is expected that constraints used to model contact will be unilateral.
  * Furthermore, complex contact constraints can themselves employ several
  * SimTK::Constraints. In this case, disabling methods on Constraint should be
- * overriden and the appropriate logic applied to enabling/disabling individual
+ * overridden and the appropriate logic applied to enabling/disabling individual
  * underlying constraints.  In most cases, the unilateral conditions should be
  * sufficient to determine the states of the internal (underlying) constraints
  * based on the global disabled condition.

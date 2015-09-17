@@ -419,11 +419,11 @@ getTimeArray()
 }
 //_____________________________________________________________________________
 /**
- * Get the integration step (index) that occured prior to or at 
+ * Get the integration step (index) that occurred prior to or at 
  * a specified time.
  *
  * @param aTime Time of the integration step.
- * @return Step that occured prior to or at aTime.  0 is returned if there
+ * @return Step that occurred prior to or at aTime.  0 is returned if there
  * is no such time stored.
  */
 int Manager::
@@ -468,7 +468,7 @@ getTimeArrayTime(int aStep)
  *
  * @param aFileName Name of the file to which to print.  If the time array
  * cannot be written to a file of the specified name, the time array is
- * wirttent to standard out.
+ * written to standard out.
  */
 void Manager::
 printTimeArray(const char *aFileName)
@@ -563,7 +563,7 @@ setIntegrator(SimTK::Integrator& integrator)
 
 
 //-----------------------------------------------------------------------------
-// INTIAL AND FINAL TIME
+// INITIAL AND FINAL TIME
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
@@ -852,7 +852,7 @@ double Manager::getFixedStepSize(int tArrayStep) const {
  */
 void Manager::initialize(SimTK::State& s, double dt )
 {
-    // skip initailizations for CMC's actutator system
+    // skip initializations for CMC's actuator system
     if( _writeToStorage && _performAnalyses ) { 
 
         double tReal = s.getTime();

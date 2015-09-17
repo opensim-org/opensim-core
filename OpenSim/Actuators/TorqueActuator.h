@@ -89,7 +89,7 @@ public:
      @param bodyA   the body that the actuator applies torque to
      @param bodyB   the body that the actuator applies the opposite torque to
      @param axis    the axis about which the torque is applied
-     @param axisInGround flag to inidicate the axis is expressed in ground
+     @param axisInGround flag to indicate the axis is expressed in ground
                            otherwise, it is expressed in bodyA's frame
     */
     TorqueActuator(const PhysicalFrame& bodyA, const PhysicalFrame& bodyB,

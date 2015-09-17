@@ -24,7 +24,7 @@
 //=============================================================================
 // testMomentArms loads various OpenSim models to compute and test moment arms
 // results from these models to the definition r*f = Tau , where r is the 
-// moment-arm about a coordinate, f is the scaler maginitude of the Force and 
+// moment-arm about a coordinate, f is the scaler magnitude of the Force and 
 // Tau is the resulting generalized force. 
 //
 //  Tests Include:
@@ -130,7 +130,7 @@ int main()
 }
 
 //==========================================================================================================
-// moment_arm = dl/dtheta, definition using inexact peturbation technique
+// moment_arm = dl/dtheta, definition using inexact perturbation technique
 //==========================================================================================================
 double computeMomentArmFromDefinition(const SimTK::State &s, const GeometryPath &path, const Coordinate &coord)
 {
@@ -146,7 +146,7 @@ double computeMomentArmFromDefinition(const SimTK::State &s, const GeometryPath 
     // Compute length 1 
     coord.setValue(s_ma, theta-dtheta, false);
 
-    // satisfy contraints using project since we are close to the solution
+    // satisfy constraints using project since we are close to the solution
     coord.getModel().getMultibodySystem().realize(s_ma, SimTK::Stage::Position);
     coord.getModel().getMultibodySystem().projectQ(s_ma, 1e-8);
 
@@ -158,7 +158,7 @@ double computeMomentArmFromDefinition(const SimTK::State &s, const GeometryPath 
     // Compute length 2
     coord.setValue(s_ma, theta+dtheta, false);
 
-    // satisfy contraints using project since we are close to the solution
+    // satisfy constraints using project since we are close to the solution
     coord.getModel().getMultibodySystem().realize(s_ma, SimTK::Stage::Position);
     coord.getModel().getMultibodySystem().projectQ(s_ma, 1e-8);
 
@@ -401,7 +401,7 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
     if(!passesDynamicConsistency)
         cout << "WARNING: Moment arm * force did not satisfy Torque equivalence." << endl;
 
-    // Minimum requirement to pass is that calculated moment-arm satifies either
+    // Minimum requirement to pass is that calculated moment-arm satisfies either
     // dL/dTheta definition or is at least dynamically consistent, in which dL/dTheta is not
     ASSERT(passesDefinition || passesDynamicConsistency, __FILE__, __LINE__, errorMessage);
 }

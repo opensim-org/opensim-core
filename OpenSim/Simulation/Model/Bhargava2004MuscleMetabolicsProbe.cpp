@@ -525,7 +525,7 @@ Array<string> Bhargava2004MuscleMetabolicsProbe::getProbeOutputLabels() const
 //=============================================================================
 //_____________________________________________________________________________
 /** 
-* Get the number of muscles being analysed in the metabolic analysis. 
+* Get the number of muscles being analyzed in the metabolic analysis. 
 */
 const int Bhargava2004MuscleMetabolicsProbe::
     getNumMetabolicMuscles() const  

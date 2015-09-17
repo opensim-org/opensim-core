@@ -27,7 +27,7 @@ using namespace std;
 using namespace SimTK;
 
 
-//This Measure returns a probe value value only at the Acceleration stage
+//This Measure returns a probe value only at the Acceleration stage
 template <class T>
 class ProbeMeasure : public SimTK::Measure_<T> {
 public:

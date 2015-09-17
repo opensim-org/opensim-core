@@ -35,8 +35,8 @@ namespace OpenSim {
 A class implementing a Free joint.  The underlying implementation
 in Simbody is a SimTK::MobilizedBody::Free.
 Free joint allows unrestricted motion with three rotations and three translations.
-Rotations are modeled similiarly to BallJoint -using quaternions with no
-singulaties- while the translational generalized coordinates are XYZ
+Rotations are modeled similarly to BallJoint -using quaternions with no
+singularities- while the translational generalized coordinates are XYZ
 Translations along the parent axis. Generalized speeds are equal to the computed
 angular velocities (\f$\vec{u} = \vec{\omega}\f$), not a differentiation of
 position (\f$\vec{u} \neq \dot{\vec{q}}\f$).

@@ -227,7 +227,7 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
         aSMD._numFrames = aSMD._frames.getSize();
    }
 
-   /* If the user-defined frame numbers are not continguous from the first frame to the
+   /* If the user-defined frame numbers are not contiguous from the first frame to the
     * last, reset them to a contiguous array. This is necessary because the user-defined
     * numbers are used to index the array of frames.
     */
@@ -520,7 +520,7 @@ void MarkerData::readStoFile(const string& aFileName)
         int frameNum = i+1;
         MarkerFrame *frame = new MarkerFrame(_numMarkers, frameNum, time, _units);
         const Array<double>& rowData = nextRow->getData();
-        // Cycle thru map and add Marker coordinates to the frame. Same order as header.
+        // Cycle through map and add Marker coordinates to the frame. Same order as header.
         for (iter = markerIndices.begin(); iter != markerIndices.end(); iter++) {
             int startIndex = iter->first; // startIndex includes time but data doesn't!
             frame->addMarker(SimTK::Vec3(rowData[startIndex-1], rowData[startIndex], rowData[startIndex+1]));

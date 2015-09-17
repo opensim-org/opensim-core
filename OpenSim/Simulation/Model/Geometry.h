@@ -44,7 +44,7 @@ class ModelComponent;
  Geometry items to represent itself in graphics window. The relation between
  a ModelComponent and specific Geometry utilizes the Component mechanism, as
  the specific pieces of geometry are treated as subcomponents. The placement
- of the Geometry in 3D spae is computed from the Frame that the Geometry is
+ of the Geometry in 3D space is computed from the Frame that the Geometry is
  "Connected" to.
 
  Geometry (and all its subclasses) serve as the set of higher level primitives
@@ -65,7 +65,7 @@ public:
     // Scale factors
     OpenSim_DECLARE_PROPERTY(scale_factors, SimTK::Vec3,
         "Scale factors in X, Y, Z directions respectively.");
-    // Default display properiies e.g. Representation, color, texture, etc.
+    // Default display properties e.g. Representation, color, texture, etc.
     OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
         "Default appearance for this Geometry");
 
@@ -291,7 +291,7 @@ private:
 
 
 /**
- * Utility class used to abstract anayltic geometry. This will need to be 
+ * Utility class used to abstract analytic geometry. This will need to be 
  * revisited when wrapping is re-done to handle quadrants or analytic shapes
  * that were supported in earlier releases before 4.0. 
  *

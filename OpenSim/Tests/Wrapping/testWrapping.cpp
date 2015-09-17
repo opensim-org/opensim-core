@@ -56,7 +56,7 @@ int main()
 {
     SimTK::Array_<std::string> failures;
 
-    try{// performance with multiple muscles and wrapping in upper-exremity
+    try{// performance with multiple muscles and wrapping in upper-extremity
         simulateModelWithMusclesNoViz("TestShoulderModel.osim", 0.02);}
     catch (const std::exception& e) {
         std::cout << "Exception: " << e.what() << std::endl;
@@ -87,7 +87,7 @@ int main_new()
 
     for (unsigned int i = 0; i < tests.size(); ++i) {
         cout << "testing " << tests[i].filename << " for " << tests[i].duration << " s" << endl;
-        try { // performance with cylnder wrapping
+        try { // performance with cylinder wrapping
             simulateModelWithPassiveMuscles(tests[i].filename, tests[i].duration);
             simulateModelWithCables(tests[i].filename, tests[i].duration);
 
@@ -144,7 +144,7 @@ public:
 
     const CablePath& getCablePath() const {return path;}
 
-    // Must be at stage Velocity. Evalutes tension if necessary.
+    // Must be at stage Velocity. Evaluates tension if necessary.
     Real getTension(const State& state) const {
         ensureTensionCalculated(state);
         return Value<Real>::downcast(forces.getCacheEntry(state, tensionx));

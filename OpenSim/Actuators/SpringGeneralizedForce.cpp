@@ -144,7 +144,7 @@ getViscosity() const
 //_____________________________________________________________________________
 /**
  * Set the stiffness of the spring.  Normally the stiffness is a positive
- * quantity.  Negative stiffnessess will result in an unstable system- the
+ * quantity.  Negative stiffnesses will result in an unstable system- the
  * force will push away from the rest length instead of pulling toward it.
  *
  * @param aStiffness Stiffness of the spring force.
