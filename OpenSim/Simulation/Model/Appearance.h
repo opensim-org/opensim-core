@@ -33,10 +33,11 @@ namespace OpenSim {
 class Body;
 class Model;
 
-using SimTK::DecorativeGeometry;
+using VisualRepresentation = SimTK::DecorativeGeometry::Representation;
+
 /**
-SurfaceAppearance class holds the display attributes  of a piece of Geometry 
-displayed in the OpenSim visualizer or GUI. The attributes in this 
+SurfaceAppearance class holds the appearance attributes  of a piece of Geometry 
+displayed in the OpenSim visualizer or GUI as a surface. The attributes in this 
 class are specific to geometry that have surfaces so these surfaces can be 
 textured, or rendered using  a variety of shading/lighting models etc. Attributes 
 common to all possible  objects that can be rendered (e.g. color, opacity, 
@@ -59,7 +60,7 @@ public:
     //--------------------------------------------------------------------------
 public:
     SurfaceAppearance() {
-        constructProperty_representation(3); // Surface shaded by default
+        constructProperty_representation(VisualRepresentation::DrawSurface); // Surface shaded by default
     }
     virtual ~SurfaceAppearance() {};
 
@@ -123,6 +124,7 @@ private:
 class OSIMSIMULATION_API Appearance : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(Appearance, Object);
 public:
+
     //==========================================================================
     // PROPERTIES
     //==========================================================================
@@ -148,9 +150,9 @@ public:
     }
     virtual ~Appearance() {};
 
-    DecorativeGeometry::Representation get_representation() const { return (DecorativeGeometry::Representation)get_surface_appearance().get_representation(); }
+    VisualRepresentation get_representation() const { return (VisualRepresentation)get_surface_appearance().get_representation(); }
 
-    void set_representation(DecorativeGeometry::Representation& rep) { upd_surface_appearance().set_representation(rep); }
+    void set_representation(VisualRepresentation& rep) { upd_surface_appearance().set_representation(rep); }
 
 protected:
     /** Updating XML formating to latest revision */

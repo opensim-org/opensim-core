@@ -120,7 +120,7 @@ public:
             decoration.setOpacity(get_Appearance().get_opacity());
             if (get_Appearance().get_visible())
                 decoration.setRepresentation(
-                    (SimTK::DecorativeGeometry::Representation)
+                    (VisualRepresentation)
                     get_Appearance().get_representation());
             else
                 decoration.setRepresentation(SimTK::DecorativeGeometry::Hide);
@@ -144,11 +144,11 @@ public:
     };
 
     /// Convenient access to set Appearance/representation
-    void setRepresentation(DecorativeGeometry::Representation rep) { 
+    void setRepresentation(VisualRepresentation rep) { 
         upd_Appearance().set_representation(rep); 
     };
     /// Convenient access to get Appearance/representation
-    DecorativeGeometry::Representation getRepresentation() { return
+    VisualRepresentation getRepresentation() { return
         get_Appearance().get_representation(); 
     };
 
