@@ -306,10 +306,16 @@ public:
     /**
      * Get the underlying MultibodySystem that this component is connected to.
      * Make sure you have called Model::initSystem() prior to accessing the System.
-     * Throws an Exception if the System has not been created OR the this
-     * Component has not been added itself to the System.
-     */
+     * Throws an Exception if the System has not been created or the Component
+     * has not added itself to the System.
+     * @see hasSystem().  */
     const SimTK::MultibodySystem& getSystem() const;
+
+    /**
+    * Check is there is an underlying MultibodySystem that this component is a
+    * part of. Returns false if the System has not been created OR if this
+    * Component has not added itself to the System.  */
+    bool hasSystem() const { return !_system.empty(); }
 
     /**
      * Get an iterator thru the underlying subcomponents that this component is 
@@ -317,12 +323,12 @@ public:
      * tree structure is fixed when the system is created.
      * The order of the Components is that of tree preorder traversal so that a
      * component is processed before its subcomponents. All addComponent calls 
-     * must be done before calling this method on the top model.
-     */
+     * must be done before calling this method on the top model. */
     template <typename T = Component>
     ComponentList<T> getComponentList() const {
         return ComponentList<T>(*this);
     }
+
     /**
      * Class to hold the list of components/subcomponents to iterate over.
     */

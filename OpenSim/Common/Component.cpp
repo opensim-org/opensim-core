@@ -1020,7 +1020,7 @@ void Component::extendRealizeAcceleration(const SimTK::State& s) const
 const SimTK::MultibodySystem& Component::getSystem() const
 {
     if (_system.empty()){
-        std::string msg = "Component::getSystem() ";
+        std::string msg = getConcreteClassName()+"::getSystem() ";
         msg += getName() + " has no reference to a System.\n";
         msg += "Make sure you added the Component to the Model and ";
         msg += "called Model::initSystem(). ";
