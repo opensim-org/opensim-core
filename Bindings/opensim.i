@@ -371,7 +371,6 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/ExpressionBasedBushingForce.h>
 
 %include <OpenSim/Simulation/Solver.h>
-%include <OpenSim/Simulation/AssemblySolver.h>
 %include <OpenSim/Simulation/Reference.h>
 
 %template(ReferenceVec3) OpenSim::Reference_<SimTK::Vec3>;
@@ -382,6 +381,7 @@ namespace SimTK {
 
 %include <OpenSim/Simulation/MarkersReference.h>
 %include <OpenSim/Simulation/CoordinateReference.h>
+%include <OpenSim/Simulation/AssemblySolver.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
 
 //osimAnalyses
