@@ -25,7 +25,7 @@ if( JAVA_COMPILE )
      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/Bindings/Java/OpenSimJNI/src
      )
      
-  set_target_properties(JavaCompile PROPERTIES FOLDER "Wrapping (scripting)")
+  set_target_properties(JavaCompile PROPERTIES FOLDER "Bindings")
 
   add_custom_command(TARGET JavaCompile
                    POST_BUILD

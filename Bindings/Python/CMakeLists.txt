@@ -40,7 +40,7 @@ add_custom_target(PyWrap
 
 set_target_properties(PyWrap PROPERTIES
     PROJECT_LABEL "Python - Generate source code"
-    FOLDER "Wrapping (scripting)")
+    FOLDER "Bindings")
 
 set(SOURCE_FILES OpenSimContext.cpp "${swig_output_cxx_file_fullname}")
 set(INCLUDE_FILES OpenSimContext.h "${swig_output_header_file_fullname}")
@@ -69,7 +69,7 @@ add_library(_${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 set_target_properties(_${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
    PROJECT_LABEL "Python - _${KIT}"
-   FOLDER "Wrapping (scripting)"
+   FOLDER "Bindings"
    PREFIX ""
 )
 if(WIN32)
