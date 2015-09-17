@@ -180,16 +180,16 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATION
     //--------------------------------------------------------------------------
-    /** Compute the bushing force contribution to the system and add in to appropriate
-      * bodyForce and/or system generalizedForce. 
-      */
-    virtual void computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const;
+    /** Calculate the bushing force contribution due to its stiffness. This is 
+        a function of the deflection between the bushing frames. It is the force
+        on frame2 from frame1 in the basis of the deflection (dq). */
+    SimTK::Vec6 calcStiffnessForce(const SimTK::State& state) const;
 
-    /** Potential energy calculation is not implemented */
-
-    
+    /** Calculate the bushing force contribution due to its damping. This is a
+        function of the deflection rate between the bushing frames. It is the 
+        force on frame2 from frame1 in the basis of the deflection rate (dqdot).*/
+    SimTK::Vec6 calcDampingForce(const SimTK::State& state) const;
+  
 
     //--------------------------------------------------------------------------
     // Reporting
@@ -205,6 +205,12 @@ public:
     virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
 
 protected:
+    /** Compute the bushing force contribution to the system and add in to 
+        appropriate bodyForces and/or system generalizedForces */
+    virtual void computeForce(const SimTK::State& s,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+                              SimTK::Vector& generalizedForces) const;
+    /** Potential energy calculation is not implemented */
     //--------------------------------------------------------------------------
     // Visual support in SimTK visualizer
     // -------------------------------------------------------------------------
@@ -227,6 +233,7 @@ private:
     void setNull();
     void constructProperties();
 
+    SimTK::Mat66 _dampingMatrix{ 0.0 };
 
     // parser programs for efficiently evaluating the expressions
     Lepton::ExpressionProgram MxProg, MyProg, MzProg, FxProg, FyProg, FzProg;

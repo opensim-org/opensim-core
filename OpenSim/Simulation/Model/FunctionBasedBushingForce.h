@@ -129,6 +129,16 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATION
     //--------------------------------------------------------------------------
+    /** Calculate the bushing force contribution due to its stiffness. This is
+    a function of the deflection between the bushing frames. It is the force
+    on frame2 from frame1 in the basis of the deflection (dq). */
+    SimTK::Vec6 calcStiffnessForce(const SimTK::State& state) const;
+
+    /** Calculate the bushing force contribution due to its damping. This is a
+    function of the deflection rate between the bushing frames. It is the
+    force on frame2 from frame1 in the basis of the deflection rate (dqdot).*/
+    SimTK::Vec6 calcDampingForce(const SimTK::State& state) const;
+
     /** Compute the bushing force contribution to the system and add in to appropriate
       * bodyForce and/or system generalizedForce. 
       */
@@ -155,17 +165,15 @@ protected:
     // -------------------------------------------------------------------------
     void generateDecorations(
         bool fixed, 
-        const ModelDisplayHints&                    hints,
-        const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const override;
-    void ComputeForcesAtBushing(const SimTK::State& state, 
-                                SimTK::SpatialVec& forces_on_M_in_ground, 
-                                SimTK::SpatialVec& forces_on_F_in_ground) const;
-
+        const ModelDisplayHints&                  hints,
+        const SimTK::State&                       state,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometryArray) const override;
 private:
 
     void setNull();
     void constructProperties();
+
+    SimTK::Mat66 _dampingMatrix{ 0.0 };
 
 //==============================================================================
 };  // END of class FunctionBasedBushingForce

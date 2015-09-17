@@ -132,13 +132,22 @@ public:
     SimTK::SpatialVec computeRelativeVeocity(const SimTK::State& s) const;
 
     /** Compute the deflection (spatial separation) of the two frames connected
-        by the bushing force. Angualar displacement expressed in Euler angles.
-        NOTE: the value is only valid for small deviations and the behavior
-           will become undefined at large angles (~90 degs). It is useful for 
-           calculating errors for constraints and forces for computing restoration
-           forces.
-     @return deflection     Vec6 of angular (3) and translational (3) deflections. */
+        by the LinkTwoFrames. Angular displacement expressed in Euler angles.
+        NOTE: the value is only valid for all deviations and the behavior
+           will become undefined at large angles (~90 degs). It is mainly useful
+           for calculating errors for constraints and forces for computing 
+           restoration forces.
+     @return dq     Vec6 of (3) angular and (3) translational deflections. */
     SimTK::Vec6 computeDeflection(const SimTK::State& s) const;
+    /** Compute the deflection rate (dqdot) of the two frames connected by
+         the bushing force. Angualar velocity is expressed as Euler angle
+        derivatives.
+        NOTE: the value is only valid for small deviations and the behavior
+        will become undefined at large angles (~90 degs). It is useful for
+        calculating errors for constraints and forces for computing restoration
+        forces.
+    @return dqdot  Vec6 of (3) angular and (3) translational deflection rates. */
+    SimTK::Vec6 computeDeflectionRate(const SimTK::State& s) const;
 
     /**
     * Scale a joint based on XYZ scale factors for PhysicalFrames.
@@ -154,15 +163,45 @@ public:
 
 protected:
     /** @name Component Interface
-    These methods adhere to the Component Interface**/
+        These methods adhere to the Component Interface**/
     /**@{**/
     void constructConnectors() override;
     void extendFinalizeFromProperties() override;
+    void extendConnectToModel(Model& model) override; 
     /**@}**/
+
+    /** Helper method to convert internal force expressed in the basis of the
+        deflection between frame1 and frame2, dq, as individual spatial forces
+        acting on each frame linked by this component. The internal force, f, is
+        directed onto frame2 from frame1.
+    @param state                const State of current system configuration
+    @param[in] internalForce    Vec6 of forces in the basis of the deflection
+    @param[in,out] F_G1         SpatialVec Force (torque, force) of this
+                                LinkTwoFrames component applied to frame1
+    @param[in,out] F_G1         SpatialVec Force (torque, force) of this
+                                LinkTwoFrames component applied to frame2 */
+    void convertInternalForceToForcesOnFrames(
+        const SimTK::State& s,
+        SimTK::Vec6 f, SimTK::SpatialVec& F_G1, SimTK::SpatialVec& F_G2) const;
+
+    /** Helper method to add in equivalent physical forces given internal forces
+        expressed in the basis of the deflection between frame1 and frame2, dq,
+        (and its time rate of change, dqdot), where the internal force, f, is 
+        applied to frame2. 
+    @param state                    const State of current system configuration
+    @param[in] internalForce        Vec6 of forces in the basis of the deflection 
+    @param[in,out] physicalForces   Vector of SpatialVec's (torque, force) on 
+                                    each PhysicalFrame in the System          */
+    void addInPhysicalForcesFromInternal(const SimTK::State& state,
+        SimTK::Vec6 f, SimTK::Vector_<SimTK::SpatialVec>& physicalForces) const;
 
 private:
 
     void constructProperties() override;
+
+    //hang on to references to the individual frames for fast access
+    mutable SimTK::ReferencePtr<const F> _frame1{};
+    mutable SimTK::ReferencePtr<const F> _frame2{};
 
 //=============================================================================
 }; // END of class OffsetFrame
@@ -268,13 +307,19 @@ void LinkTwoFrames<C,F>::constructConnectors()
 template <class C, class F>
 const F& LinkTwoFrames<C, F>::getFrame1() const
 {
-    return this->getConnector<F>("frame1").getConnectee();
+    if (!(this->isObjectUpToDateWithProperties() && !this->hasSystem())) {
+        _frame1 = &(this->getConnector<F>("frame1").getConnectee());
+    }
+    return _frame1.getRef();
 }
 
 template <class C, class F>
 const F& LinkTwoFrames<C, F>::getFrame2() const
 {
-    return this->getConnector<F>("frame2").getConnectee();
+    if (!(this->isObjectUpToDateWithProperties() && this->hasSystem())) {
+        _frame2 = &(this->getConnector<F>("frame2").getConnectee());
+    }
+    return _frame2.getRef();
 }
 
 template<class C, class F>
@@ -330,20 +375,25 @@ void LinkTwoFrames<C, F>::extendFinalizeFromProperties()
     }
 }
 
+
+template<class C, class F>
+void LinkTwoFrames<C, F>::extendConnectToModel(Model& model) 
+{
+    Super::extendConnectToModel(model); //connect to frames 
+    // now keep a reference to the frames
+    _frame1 = &(this->getConnector<F>("frame1").getConnectee());
+    _frame2 = &(this->getConnector<F>("frame2").getConnectee());
+}
 //=============================================================================
 // UTILITY COMPUTATIONS
 //=============================================================================
 template <class C, class F>
 SimTK::Transform LinkTwoFrames<C, F>::computeRelativeOffset(const SimTK::State& s) const
 {
-    // get connected frames
-    const F& frame1 = getConnectee<F>("frame1");
-    const F& frame2 = getConnectee<F>("frame2");
-
     // Define frame1 as the "fixed" frame, F
-    SimTK::Transform X_GF = frame1.getGroundTransform(s);
+    SimTK::Transform X_GF = getFrame1().getGroundTransform(s);
     // Define the frame2 as the "moving" frame, M
-    SimTK::Transform X_GM = frame2.getGroundTransform(s);
+    SimTK::Transform X_GM = getFrame2().getGroundTransform(s);
     // Express M in F
     return ~X_GF * X_GM;
 }
@@ -367,9 +417,8 @@ SimTK::Vec6 LinkTwoFrames<C, F>::computeDeflection(const SimTK::State& s) const
 template <class C, class F>
 SimTK::SpatialVec LinkTwoFrames<C, F>::computeRelativeVeocity(const SimTK::State& s) const
 {
-    // get connected frames
-    const F& frame1 = getConnectee<F>("frame1");
-    const F& frame2 = getConnectee<F>("frame2");
+    const F& frame1 = getFrame1();
+    const F& frame2 = getFrame2();
 
     const SimTK::Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
     const SimTK::Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
@@ -398,6 +447,105 @@ SimTK::SpatialVec LinkTwoFrames<C, F>::computeRelativeVeocity(const SimTK::State
     // To get derivative in F, we must remove the part due to the
     // angular velocity w_GF of F in G.
     return ~R_GF * SimTK::SpatialVec(V_FM_G[0], V_FM_G[1] - V_GF[0] % p_FM_G);
+}
+
+template <class C, class F>
+SimTK::Vec6 LinkTwoFrames<C, F>::computeDeflectionRate(const SimTK::State& s) const
+{
+    SimTK::Vec6 dqdot(0);
+    SimTK::Vec6 dq = computeDeflection(s);
+
+    // Evaluate evaluate relative transform
+    SimTK::Transform X_FM = this->computeRelativeOffset(s);
+    // Evaluate velocity
+    SimTK::SpatialVec V_FM = computeRelativeVeocity(s);
+
+    // Need angular velocity in M frame for conversion to qdot.
+    const SimTK::Vec3  w_FM_M = ~(X_FM.R()) * V_FM[0];
+    const SimTK::Mat33 N_FM = 
+        SimTK::Rotation::calcNForBodyXYZInBodyFrame(dq.getSubVec<3>(0));
+    
+    dqdot.updSubVec<3>(0) = N_FM * w_FM_M;
+    dqdot.updSubVec<3>(3) = V_FM[1];
+
+    return dqdot;
+}
+
+template <class C, class F>
+void LinkTwoFrames<C, F>::convertInternalForceToForcesOnFrames(
+    const SimTK::State& s,
+    SimTK::Vec6 f, SimTK::SpatialVec& F_G1, SimTK::SpatialVec& F_G2) const
+{
+    // internal force on body 2
+    const SimTK::Vec3& fB2_q = f.getSubVec<3>(0); // in q basis
+    const SimTK::Vec3& fM_F = f.getSubVec<3>(3); // acts at M, but exp. in F frame
+
+    SimTK::Vec6 dq = computeDeflection(s);
+
+    // get connected frames
+    const F& frame1 = getFrame1();
+    const F& frame2 = getFrame2();
+
+    const SimTK::Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
+    const SimTK::Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
+
+    SimTK::Transform X_GF = frame1.getGroundTransform(s);
+    SimTK::Transform X_GM = frame2.getGroundTransform(s);
+    SimTK::Transform X_FM = ~X_GF * X_GM;
+    const SimTK::Mat33 N_FM =
+        SimTK::Rotation::calcNForBodyXYZInBodyFrame(dq.getSubVec<3>(0));
+
+    // Calculate the matrix relating q-space generalized forces to a real-space
+    // moment vector. We know qforce = ~H * moment (where H is the
+    // the hinge matrix for a mobilizer using qdots as generalized speeds).
+    // In that case H would be N^-1, qforce = ~(N^-1)*moment so
+    // moment = ~N*qforce. Caution: our N wants the moment in the outboard
+    // body frame, in this case M.
+    const SimTK::Vec3  mB2_M = ~N_FM * fB2_q; // moment acting on body 2, exp. in M
+    const SimTK::Vec3  mB2_G = X_GM.R() * mB2_M; // moment on body 2, now exp. in G
+
+    // Transform force from F frame to ground. This is the force to 
+    // apply to body 2 at point OM; -f goes on body 1 at the same
+    // spatial location. Here we actually apply it at OF so we have to
+    // account for the moment produced by the shift from OM.
+    const SimTK::Vec3 fM_G = X_GF.R()*fM_F;
+
+    // Re-express local vectors in the Ground frame.
+    SimTK::Vec3 p_FM_G = X_GF.R()  * X_FM.p();    // 15 flops
+
+    F_G2 = SimTK::SpatialVec( mB2_G, fM_G);
+    F_G1 = SimTK::SpatialVec(-(mB2_G + p_FM_G % fM_G), -fM_G);
+}
+
+// The method only makes sense for applying forces to PhysicalFrames so explicitly 
+// specialize for PhysicalFrame.
+template <class C, class F>
+void LinkTwoFrames<C, F>::addInPhysicalForcesFromInternal(
+        const SimTK::State& s,
+        SimTK::Vec6 f, SimTK::Vector_<SimTK::SpatialVec>& physicalForces) const
+{
+    SimTK::SpatialVec F_GF;
+    SimTK::SpatialVec F_GM;
+    // convert the internal force to spatial forces on the two frames
+    convertInternalForceToForcesOnFrames(s, f, F_GF, F_GM);
+
+    // get connected frames
+    const F& frame1 = getFrame1();
+    const F& frame2 = getFrame2();
+
+    const SimTK::Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
+    const SimTK::Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
+
+    SimTK::Vec3 p_B1F_G = X_GB1.R() * frame1.findTransformInBaseFrame().p();
+    SimTK::Vec3 p_B2M_G = X_GB2.R() * frame2.findTransformInBaseFrame().p();
+
+    // Shift forces to body origins.
+    SimTK::SpatialVec F_GB2(F_GM[0] + p_B2M_G % F_GM[1], F_GM[1]);
+    SimTK::SpatialVec F_GB1(F_GF[0] + p_B1F_G % F_GF[1], F_GF[1]);
+
+    // Apply (add-in) the body forces to the system set of body forces
+    physicalForces[frame2.getMobilizedBodyIndex()] += F_GB2;
+    physicalForces[frame1.getMobilizedBodyIndex()] += F_GB1;
 }
 
 } // end of namespace OpenSim

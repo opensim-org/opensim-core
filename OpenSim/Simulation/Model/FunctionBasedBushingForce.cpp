@@ -124,199 +124,77 @@ void FunctionBasedBushingForce::constructProperties()
 //=============================================================================
 // COMPUTATION
 //=============================================================================
-
-/* compute the bushing force at the bushing location
-*/
-void FunctionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& s, 
-    SpatialVec& forces_on_M_in_ground, SpatialVec& forces_on_F_in_ground) const
+/* Calculate the bushing force contribution due to its stiffness. */
+SimTK::Vec6 FunctionBasedBushingForce::
+    calcStiffnessForce(const SimTK::State& s) const
 {
-    // get connected frames
-    const PhysicalFrame& frame1 = getConnectee<PhysicalFrame>("frame1");
-    const PhysicalFrame& frame2 = getConnectee<PhysicalFrame>("frame2");
-
-    const Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
-    const Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
-
-    Transform X_GF = frame1.getGroundTransform(s);
-    Transform X_GM = frame2.getGroundTransform(s);
-    Transform X_FM = ~X_GF * X_GM;    
-    const Rotation& R_GF = X_GF.R();
-    const Rotation& R_GM = X_GM.R();
-    const Rotation& R_FM = X_FM.R();
-
     // Calculate stiffness generalized forces of bushing by first computing
     // the deviation of the two frames measured by dq
     Vec6 dq = computeDeflection(s);
 
-    // TO DO: compute the deflection forces from functions
-    //------------------------------------------
     Vec6 fk = Vec6(0.0);
+    fk[0] = get_m_x_theta_x_function().calcValue(SimTK::Vector(1, dq[0]));
+    fk[1] = get_m_y_theta_y_function().calcValue(SimTK::Vector(1, dq[1]));
+    fk[2] = get_m_z_theta_z_function().calcValue(SimTK::Vector(1, dq[2]));
+    fk[3] = get_f_x_delta_x_function().calcValue(SimTK::Vector(1, dq[3]));
+    fk[4] = get_f_y_delta_y_function().calcValue(SimTK::Vector(1, dq[4]));
+    fk[5] = get_f_z_delta_z_function().calcValue(SimTK::Vector(1, dq[5]));
 
-    fk[0] = get_m_x_theta_x_function().calcValue(SimTK::Vector(1,dq[0]) );
-    fk[1] = get_m_y_theta_y_function().calcValue(SimTK::Vector(1,dq[1]) );
-    fk[2] = get_m_z_theta_z_function().calcValue(SimTK::Vector(1,dq[2]) );
-    fk[3] = get_f_x_delta_x_function().calcValue(SimTK::Vector(1,dq[3]) );
-    fk[4] = get_f_y_delta_y_function().calcValue(SimTK::Vector(1,dq[4]) );
-    fk[5] = get_f_z_delta_z_function().calcValue(SimTK::Vector(1,dq[5]) );
-
-    // Now evaluate velocities.
-    const SpatialVec& V_GB1 = frame1.getMobilizedBody().getBodyVelocity(s);
-    const SpatialVec& V_GB2 = frame2.getMobilizedBody().getBodyVelocity(s);
-
-    // Re-express local vectors in the Ground frame.
-    Vec3 p_B1F_G = X_GB1.R() * frame1.findTransformInBaseFrame().p();
-    Vec3 p_B2M_G = X_GB2.R() * frame2.findTransformInBaseFrame().p();
-    Vec3 p_FM_G  =  X_GF.R()  * X_FM.p();    // 15 flops
-
-    SpatialVec V_GF(V_GB1[0], V_GB1[1] + V_GB1[0] % p_B1F_G);
-    SpatialVec V_GM(V_GB2[0], V_GB2[1] + V_GB2[0] % p_B2M_G);
-
-    // This is the velocity of M in F, but with the time derivative
-    // taken in the Ground frame.
-    const SpatialVec V_FM_G = V_GM - V_GF;
-
-    // To get derivative in F, we must remove the part due to the
-    // angular velocity w_GF of F in G.
-    SpatialVec V_FM = ~R_GF * SpatialVec(V_FM_G[0], 
-                                 V_FM_G[1] - V_GF[0] % p_FM_G);
-
-
-    // QUESTION:  Should be damp omega or qdot?  The process that follows
-    //            here damps qdot.
-
-    // Need angular velocity in M frame for conversion to qdot.
-    const Vec3  w_FM_M = ~R_FM * V_FM[0];
-    const Mat33 N_FM   = Rotation::calcNForBodyXYZInBodyFrame(dq.getSubVec<3>(0));
-    Vec6 dqdot(0);
-    dqdot.updSubVec<3>(0) = N_FM * w_FM_M;
-    dqdot.updSubVec<3>(3) = V_FM[1];
-
-    // TO DO: compute damping matrix earlier?
-    //------------------------------------------
-    SimTK::Mat66 _dampingMatrix(0.0);
-
-    // fill damping matrix with damping from  vector member
-    for(int i=0; i<3;i++){
-        _dampingMatrix[i][i] = get_rotational_damping(0)[i];
-        _dampingMatrix[i+3][i+3] = get_translational_damping(0)[i];
-    }
-    
-    // velocity dependent force according to the speed of frame2 on 
-    // body2 relative to frame1 
-    Vec6 fv = _dampingMatrix * dqdot;
-
-    Vec6 f = -(fk+fv); // generalized forces on body 2
-    const Vec3& fB2_q = f.getSubVec<3>(0); // in q basis
-    const Vec3& fM_F  = f.getSubVec<3>(3); // acts at M, but exp. in F frame
-
-    // Calculate the matrix relating q-space generalized forces to a real-space
-    // moment vector. We know qforce = ~H * moment (where H is the
-    // the hinge matrix for a mobilizer using qdots as generalized speeds).
-    // In that case H would be N^-1, qforce = ~(N^-1)*moment so
-    // moment = ~N*qforce. Caution: our N wants the moment in the outboard
-    // body frame, in this case M.
-    const Vec3  mB2_M = ~N_FM * fB2_q; // moment acting on body 2, exp. in M
-    const Vec3  mB2_G =  R_GM * mB2_M; // moment on body 2, now exp. in G
-
-    // Transform force from F frame to ground. This is the force to 
-    // apply to body 2 at point OM; -f goes on body 1 at the same
-    // spatial location. Here we actually apply it at OF so we have to
-    // account for the moment produced by the shift from OM.
-    const Vec3 fM_G = R_GF*fM_F;
-
-    forces_on_M_in_ground[0] = mB2_G;
-    forces_on_M_in_ground[1] = fM_G;
-
-    forces_on_F_in_ground[0] = -(mB2_G + p_FM_G % fM_G);
-    forces_on_F_in_ground[1] = -fM_G;
-    //SpatialVec F_GM(  mB2_G,                       fM_G);
-    //SpatialVec F_GF(-(mB2_G + p_FM_G % fM_G) , -fM_G);
+    return -fk;
 }
-/*
- * Compute the force contribution to the system and add in to appropriate
- * bodyForce and/or system generalizedForce.
- * FunctionBasedBushingForce implementation based SimTK::Force::LinearBushing
- * developed and implemented by Michael Sherman.
- */
+
+/* Calculate the bushing force contribution due to its damping. */
+SimTK::Vec6 FunctionBasedBushingForce::
+    calcDampingForce(const SimTK::State& s) const
+{
+    Vec6 dqdot = computeDeflectionRate(s);
+    return -_dampingMatrix * dqdot;
+}
+
+/* Compute the force contribution to the system and add in to appropriate
+ * bodyForce and/or system generalizedForce. */
 void FunctionBasedBushingForce::computeForce(const SimTK::State& s, 
                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
                               SimTK::Vector& generalizedForces) const
 {
-    SpatialVec F_GM( Vec3(0.0),Vec3(0.0) );
-    SpatialVec F_GF( Vec3(0.0),Vec3(0.0) );
-    ComputeForcesAtBushing(s, F_GM, F_GF);
-    
-    // get connected frames
-    const PhysicalFrame& frame1 = getConnectee<PhysicalFrame>("frame1");
-    const PhysicalFrame& frame2 = getConnectee<PhysicalFrame>("frame2");
-    const Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
-    const Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
+    // stiffness force
+    Vec6 fk = calcStiffnessForce(s);
+    // damping force
+    Vec6 fv = calcDampingForce(s);
 
-    Transform X_GF = frame1.getGroundTransform(s);
-    Transform X_GM = frame2.getGroundTransform(s);
-    Transform X_FM = ~X_GF * X_GM;    
-    const Rotation& R_GF = X_GF.R();
-    const Rotation& R_GM = X_GM.R();
-    const Rotation& R_FM = X_FM.R();
+    // total bushing force in the internal basis of the deflection (dq) 
+    Vec6 f = fk + fv;
 
-    // Re-express local vectors in the Ground frame.
-    Vec3 p_B1F_G = X_GB1.R() * frame1.findTransformInBaseFrame().p();
-    Vec3 p_B2M_G = X_GB2.R() * frame2.findTransformInBaseFrame().p();
-    Vec3 p_FM_G  =  X_GF.R()  * X_FM.p();    // 15 flops
-    
-    // Shift forces to body origins.
-    SpatialVec F_GB2(F_GM[0] + p_B2M_G % F_GM[1], F_GM[1]);
-    SpatialVec F_GB1(F_GF[0] + p_B1F_G % F_GF[1], F_GF[1]);
-
-    // Apply (add-in) the body forces to the system set of body forces
-    bodyForces[frame2.getMobilizedBodyIndex()] += F_GB2;
-    bodyForces[frame1.getMobilizedBodyIndex()] += F_GB1;
+    // convert internal forces to spatial and add then add to system
+    // physical (body) forces
+    addInPhysicalForcesFromInternal(s, f, bodyForces);
 }
-
-/** Potential energy stored in the bushing is purely a function of the deflection
-    from the rest position and the stiffness */
-/**
-double CoupledBushingForce::computePotentialEnergy(const SimTK::State& s) const
-{
-    Vec6 dq = computeDeflection(s);
-    // Energy stored in the bushing
-    double U = 0.5*(~dq*_stiffnessMatrix*dq);
-    return U;
-}
-*/
-
 
 //=============================================================================
 // Reporting
 //=============================================================================
-/** 
- * Provide names of the quantities (column labels) of the force value(s) reported
- * 
+/* Names of the quantities (column labels) of the force value(s) reported
  */
 OpenSim::Array<std::string> FunctionBasedBushingForce::getRecordLabels() const 
 {
     OpenSim::Array<std::string> labels("");
 
-    // get connected frames
-    const PhysicalFrame& frame1 = getConnectee<PhysicalFrame>("frame1");
-    const PhysicalFrame& frame2 = getConnectee<PhysicalFrame>("frame2");
+    // Forces applied to the two frames of the bushing
+    const std::string& frame1Name = getFrame1().getName();
+    const std::string& frame2Name = getFrame2().getName();
 
-    // Forces applied to underlying MobilizedBody which is a base PhysicalFrame
-    std::string base1Name = frame1.findBaseFrame().getName();
-    std::string base2Name = frame2.findBaseFrame().getName();
-
-    labels.append(getName() + "." + base1Name + ".force.X");
-    labels.append(getName() + "." + base1Name + ".force.Y");
-    labels.append(getName() + "." + base1Name + ".force.Z");
-    labels.append(getName() + "." + base1Name + ".torque.X");
-    labels.append(getName() + "." + base1Name + ".torque.Y");
-    labels.append(getName() + "." + base1Name + ".torque.Z");
-    labels.append(getName() + "." + base2Name + ".force.X");
-    labels.append(getName() + "." + base2Name + ".force.Y");
-    labels.append(getName() + "." + base2Name + ".force.Z");
-    labels.append(getName() + "." + base2Name + ".torque.X");
-    labels.append(getName() + "." + base2Name + ".torque.Y");
-    labels.append(getName() + "." + base2Name + ".torque.Z");
+    labels.append(getName() + "." + frame1Name + ".force.X");
+    labels.append(getName() + "." + frame1Name + ".force.Y");
+    labels.append(getName() + "." + frame1Name + ".force.Z");
+    labels.append(getName() + "." + frame1Name + ".torque.X");
+    labels.append(getName() + "." + frame1Name + ".torque.Y");
+    labels.append(getName() + "." + frame1Name + ".torque.Z");
+    labels.append(getName() + "." + frame2Name + ".force.X");
+    labels.append(getName() + "." + frame2Name + ".force.Y");
+    labels.append(getName() + "." + frame2Name + ".force.Z");
+    labels.append(getName() + "." + frame2Name + ".torque.X");
+    labels.append(getName() + "." + frame2Name + ".torque.Y");
+    labels.append(getName() + "." + frame2Name + ".torque.Z");
 
     return labels;
 }
@@ -324,12 +202,15 @@ OpenSim::Array<std::string> FunctionBasedBushingForce::getRecordLabels() const
  * Provide the value(s) to be reported that correspond to the labels
  */
 OpenSim::Array<double> FunctionBasedBushingForce::
-getRecordValues(const SimTK::State& state) const 
+    getRecordValues(const SimTK::State& s) const 
 {
     SpatialVec F_GM( Vec3(0.0),Vec3(0.0) );
     SpatialVec F_GF( Vec3(0.0),Vec3(0.0) );
+
+    // total bushing force in the internal basis of the deflection (dq) 
+    Vec6 f = calcStiffnessForce(s) + calcDampingForce(s);
     
-    ComputeForcesAtBushing(state, F_GM, F_GF);
+    convertInternalForceToForcesOnFrames(s, f, F_GF, F_GM);
 
     OpenSim::Array<double> values(1);
 
@@ -337,36 +218,6 @@ getRecordValues(const SimTK::State& state) const
     values.append(3, &F_GF[0][0]);
     values.append(3, &F_GM[1][0]);
     values.append(3, &F_GM[0][0]);
-
-
-    /*  Old stuff reporting body forces at body origin
-    -----------------------------------------------------
-    const string& body1Name = get_body_1();
-    const string& body2Name = get_body_2();
-
-    OpenSim::Array<double> values(1);
-
-    const SimTK::Force::LinearBushing &simtkSpring = 
-        (SimTK::Force::LinearBushing &)(_model->getForceSubsystem().getForce(_index));
-
-    SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
-    SimTK::Vector_<SimTK::Vec3> particleForces(0);
-    SimTK::Vector mobilityForces(0);
-
-    //get the net force added to the system contributed by the bushing
-    simtkSpring.calcForceContribution(state, bodyForces, particleForces, mobilityForces);
-    SimTK::Vec3 forces = bodyForces(_model->getBodySet().get(body1Name).getIndex())[1];
-    SimTK::Vec3 torques = bodyForces(_model->getBodySet().get(body1Name).getIndex())[0];
-    values.append(3, &forces[0]);
-    values.append(3, &torques[0]);
-
-    forces = bodyForces(_model->getBodySet().get(body2Name).getIndex())[1];
-    torques = bodyForces(_model->getBodySet().get(body2Name).getIndex())[0];
-
-    values.append(3, &forces[0]);
-    values.append(3, &torques[0]);
-
-    */
 
     return values;
 }
@@ -379,77 +230,74 @@ getRecordValues(const SimTK::State& state) const
 void FunctionBasedBushingForce::generateDecorations
        (bool                                        fixed, 
         const ModelDisplayHints&                    hints,
-        const SimTK::State&                         state,
+        const SimTK::State&                         s,
         SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const
     {
         // invoke parent class method
-        Super::generateDecorations(fixed,hints,state,geometryArray); 
-        // the frame on body 1 will be red
-        SimTK::Vec3 frame1color(1.0,0.0,0.0);
-        // the frame on body 2 will be blue
-        SimTK::Vec3 frame2color(0.0,0.5,1.0);
-        // the moment on body 2 will be yellow
-        SimTK::Vec3 moment2color(1.0,1.0,0.0);
-        // the force on body 2 will be green
-        SimTK::Vec3 force2color(0.0,1.0,0.0);
+        Super::generateDecorations(fixed, hints , s, geometryArray); 
+        // draw frame1 as red
+        SimTK::Vec3 frame1color(1.0, 0.0, 0.0);
+        // draw frame2 as blue
+        SimTK::Vec3 frame2color(0.0, 0.5, 1.0);
+        // the moment on frame2 will be yellow
+        SimTK::Vec3 moment2color(1.0, 1.0, 0.0);
+        // the force on frame2 will be green
+        SimTK::Vec3 force2color(0.0, 1.0, 0.0);
 
-        // create frames to be fixed on body 1 and body 2
-        SimTK::DecorativeFrame body1Frame(0.2);
-        SimTK::DecorativeFrame body2Frame(0.2);
+        // create decorative frames to be fixed on frame1 and frame2
+        SimTK::DecorativeFrame decorativeFrame1(0.2);
+        SimTK::DecorativeFrame decorativeFrame2(0.2);
 
         // get connected frames
-        const PhysicalFrame& frame1 = getConnectee<PhysicalFrame>("frame1");
-        const PhysicalFrame& frame2 = getConnectee<PhysicalFrame>("frame2");
+        const PhysicalFrame& frame1 = getFrame1();
+        const PhysicalFrame& frame2 = getFrame2();
 
         // attach frame 1 to body 1, translate and rotate it to the location of the bushing
-        body1Frame.setBodyId(frame1.getMobilizedBodyIndex());
-        body1Frame.setTransform(frame1.findTransformInBaseFrame());
-        body1Frame.setColor(frame1color);
+        decorativeFrame1.setBodyId(frame1.getMobilizedBodyIndex());
+        decorativeFrame1.setTransform(frame1.findTransformInBaseFrame());
+        decorativeFrame1.setColor(frame1color);
 
         // attach frame 2 to body 2, translate and rotate it to the location of the bushing
-        body2Frame.setBodyId(frame2.getMobilizedBodyIndex());
-        body2Frame.setTransform(frame2.findTransformInBaseFrame());
-        body2Frame.setColor(frame2color);
+        decorativeFrame2.setBodyId(frame2.getMobilizedBodyIndex());
+        decorativeFrame2.setTransform(frame2.findTransformInBaseFrame());
+        decorativeFrame2.setColor(frame2color);
 
-        geometryArray.push_back(body1Frame);
-        geometryArray.push_back(body2Frame);
-
+        geometryArray.push_back(decorativeFrame1);
+        geometryArray.push_back(decorativeFrame2);
 
         // if the model is moving, calculate and draw the bushing forces.
         if(!fixed){
+            SpatialVec F_GM(Vec3(0.0), Vec3(0.0));
+            SpatialVec F_GF(Vec3(0.0), Vec3(0.0));
 
-            SpatialVec F_GM( Vec3(0.0),Vec3(0.0) );
-            SpatialVec F_GF( Vec3(0.0),Vec3(0.0) );
-        
-            _model->getMultibodySystem().realize(state, Stage::Velocity );
-            // calculate forces and moments the bushing applies to each body
-            ComputeForcesAtBushing(state, F_GM, F_GF);
+            // total bushing force in the internal basis of the deflection (dq) 
+            Vec6 f = calcStiffnessForce(s) + calcDampingForce(s);
 
-            // location of the bushing on body 2
+            convertInternalForceToForcesOnFrames(s, f, F_GF, F_GM);
+
+            // location of the bushing on frame2
             SimTK::Vec3 p_b2M_b2 = frame2.findTransformInBaseFrame().p();
-            SimTK::Vec3 p_GM_G = frame2.getGroundTransform(state).p();
+            SimTK::Vec3 p_GM_G = frame2.getGroundTransform(s).p();
 
-            // Add moment on body2 as line vector starting at bushing location
+            // Add moment on frame2 as line vector starting at bushing location
             SimTK::Vec3 scaled_M_GM(get_moment_visual_scale()*F_GM[0]);
             SimTK::Real m_length(scaled_M_GM.norm());
-            SimTK::Real m_radius(m_length/get_visual_aspect_ratio()/2.0);
-            SimTK::Transform   X_m2cylinder( SimTK::Rotation( SimTK::UnitVec3(scaled_M_GM), SimTK::YAxis), p_GM_G + scaled_M_GM/2.0);
-            SimTK::DecorativeCylinder body2Moment(m_radius, m_length/2.0);
-            body2Moment.setTransform(X_m2cylinder);
-            body2Moment.setColor(moment2color);
-            geometryArray.push_back(body2Moment);
+            SimTK::Real m_radius(m_length / get_visual_aspect_ratio() / 2.0);
+            SimTK::Transform   X_m2cylinder(SimTK::Rotation(SimTK::UnitVec3(scaled_M_GM), SimTK::YAxis), p_GM_G + scaled_M_GM / 2.0);
+            SimTK::DecorativeCylinder frame2Moment(m_radius, m_length / 2.0);
+            frame2Moment.setTransform(X_m2cylinder);
+            frame2Moment.setColor(moment2color);
+            geometryArray.push_back(frame2Moment);
 
-            // Add force on body2 as line vector starting at bushing location
+            // Add force on frame2 as line vector starting at bushing location
             SimTK::Vec3 scaled_F_GM(get_force_visual_scale()*F_GM[1]);
             SimTK::Real f_length(scaled_F_GM.norm());
-            SimTK::Real f_radius(f_length/get_visual_aspect_ratio()/2.0);
-            SimTK::Transform   X_f2cylinder( SimTK::Rotation( SimTK::UnitVec3(scaled_F_GM), SimTK::YAxis), p_GM_G + scaled_F_GM/2.0);
-            SimTK::DecorativeCylinder body2Force(f_radius, f_length/2.0);
-            body2Force.setTransform(X_f2cylinder);
-            body2Force.setColor(force2color);
-            
-            geometryArray.push_back(body2Force);
+            SimTK::Real f_radius(f_length / get_visual_aspect_ratio() / 2.0);
+            SimTK::Transform   X_f2cylinder(SimTK::Rotation(SimTK::UnitVec3(scaled_F_GM), SimTK::YAxis), p_GM_G + scaled_F_GM / 2.0);
+            SimTK::DecorativeCylinder frame2Force(f_radius, f_length / 2.0);
+            frame2Force.setTransform(X_f2cylinder);
+            frame2Force.setColor(force2color);
 
+            geometryArray.push_back(frame2Force);
         }
-
     }
