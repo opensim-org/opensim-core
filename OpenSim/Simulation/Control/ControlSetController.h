@@ -114,7 +114,7 @@ protected:
      */
     void copyData(const ControlSetController &aController);
 
-    // for any post XML deserialization intialization
+    // for any post XML deserialization initialization
     void extendFinalizeFromProperties() override;
 
     //--------------------------------------------------------------------------
@@ -149,7 +149,7 @@ public:
     }
 
    /** 
-    *   return the min an max times that a controller knows how to supply controlls for 
+    *   return the min an max times that a controller knows how to supply controls for 
     */ 
    double getFirstTime() const;
    double getLastTime() const;

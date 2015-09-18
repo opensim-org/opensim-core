@@ -129,7 +129,7 @@ void CustomJoint::extendFinalizeFromProperties()
     // Reorder the coordinates so that they match their order in the SpatialTransform.
     int nc = getCoordinateSet().getSize();
     // Now remove all the coordinates from the set (without deleting),
-    // and add them back in in the right order.
+    // and add them back in the right order.
     bool currentOwnership = getCoordinateSet().getMemoryOwner();
     upd_CoordinateSet().setMemoryOwner(false);
     for (int i = 0; i < nc; ++i)
@@ -447,14 +447,14 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
     }
     // Axes should be independent otherwise Simbody throws an exception in extendAddToSystem
     double tol = 1e-5;
-    // Verify that none of the rotation axes are colinear
+    // Verify that none of the rotation axes are collinear
     const std::vector<SimTK::Vec3> axes=getSpatialTransform().getAxes();
     for(int startIndex=0; startIndex<=3; startIndex+=3){
         if(((axes[startIndex+0]%axes[startIndex+1]).norm() < tol)||
             ((axes[startIndex+0]%axes[startIndex+2]).norm() < tol)||
             ((axes[startIndex+1]%axes[startIndex+2]).norm() < tol)){
                 throw(Exception("CustomJoint " + getName() + 
-                    " has colinear axes and so is not well-defined."
+                    " has collinear axes and so is not well-defined."
                     " Please fix and retry loading.."));
         }
     }

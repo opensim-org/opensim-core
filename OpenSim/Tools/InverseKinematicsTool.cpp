@@ -283,7 +283,7 @@ bool InverseKinematicsTool::run()
 
         cout<<"Running tool "<<getName()<<".\n";
 
-        // Initialize the the model's underlying computational system and get its default state.
+        // Initialize the model's underlying computational system and get its default state.
         SimTK::State& s = _model->initSystem();
 
         //Convert old Tasks to references for assembly and tracking
@@ -296,7 +296,7 @@ bool InverseKinematicsTool::run()
         bool haveCoordinateFile = false;
         if(_coordinateFileName != "" && _coordinateFileName != "Unassigned"){
             Storage coordinateValues(_coordinateFileName);
-            // Convert degrees to radian (TODO: this needs to have a check that the storage is infact in degrees!)
+            // Convert degrees to radian (TODO: this needs to have a check that the storage is, in fact, in degrees!)
             _model->getSimbodyEngine().convertDegreesToRadians(coordinateValues);
             haveCoordinateFile = true;
             coordFunctions = new GCVSplineSet(5,&coordinateValues);
@@ -542,7 +542,7 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
                     aNode = updDocument()->getRootDataElement();
                 }
                 else
-                ;   // Somthing wrong! bail out
+                ;   // Something wrong! bail out
             }
         }
     }

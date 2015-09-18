@@ -95,7 +95,7 @@ protected:
     PropertyDbl _tfProp;
     double &_tf;
     
-    /** A flag used to specify whether or not equilibrium is solved for for
+    /** A flag used to specify whether or not equilibrium is solved for
     the auxiliary states.  This often needs to be done auxiliary sates whose
     starting values are unknown (e.g., muscle fiber lengths). */
     OpenSim::PropertyBool _solveForEquilibriumForAuxiliaryStatesProp;
@@ -181,7 +181,7 @@ public:
     * In this case, the XML document is created by parsing the XML file.
     *
     * 2) Construction by AbstractTool(const XMLDocument *aDocument).
-    * This constructor explictly requests construction based on an
+    * This constructor explicitly requests construction based on an
     * XML document.  In this way the proper connection between an object's node
     * and the corresponding node within the XML document is established.
     * This constructor is a copy constructor of sorts because all essential
@@ -287,9 +287,9 @@ public:
     void setInitialTime(const double aInitialTime) { _ti=aInitialTime; }
     void setFinalTime(const double aFinalTime) { _tf=aFinalTime; }
     
-    // DEPRACATED: should use "initial" instead of "start"
+    // DEPRECATED: should use "initial" instead of "start"
     double getStartTime() const { return _ti; }
-    void setStartTime(const double aStartTime) { _ti=aStartTime; } // depracated: should use "initial" instead of "start"
+    void setStartTime(const double aStartTime) { _ti=aStartTime; } // deprecated: should use "initial" instead of "start"
 
     // Integrator settings
     int getMaximumNumberOfSteps() const { return _maxSteps; }

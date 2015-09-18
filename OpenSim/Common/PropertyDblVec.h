@@ -127,7 +127,7 @@ public:
     /** Nonconst version of accessor for use by GUI. */
     Array<double>& getValueDblArray() override {return _dblvec;}
 
-    /** Get a constant String represeting the value of this property. */
+    /** Get a constant String representing the value of this property. */
     std::string toString()  const override {
         std::string str = "(";
         char dbl[256];

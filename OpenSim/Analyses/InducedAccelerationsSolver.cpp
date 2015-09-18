@@ -135,7 +135,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
         const SimTK::Vector &appliedMobilityForces = _modelCopy.getMultibodySystem().getMobilityForces(s_solver, SimTK::Stage::Dynamics);
         appliedMobilityForces.dump("All Applied Mobility Forces");
         
-        // Get all applied body forces like those from conact
+        // Get all applied body forces like those from contact
         const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces = _modelCopy.getMultibodySystem().getRigidBodyForces(s_solver, SimTK::Stage::Dynamics);
         appliedBodyForces.dump("All Applied Body Forces");
 
@@ -267,7 +267,7 @@ const SimTK::State& InducedAccelerationsSolver::
     // check that state of the model hasn't changed since the solve
     if((s.getTime() == s_solver.getTime()) &&
         (s.getNY() == s_solver.getNY())) {
-        // check the solver stage is infact acceleration, if not 
+        // ensure the solver stage is, in fact, acceleration; if not,
         // no solver was performed or it was unsuccessful
         if(s_solver.getSystemStage() >= SimTK::Stage::Acceleration){
             return s_solver;

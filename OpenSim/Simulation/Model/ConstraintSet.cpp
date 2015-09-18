@@ -83,7 +83,7 @@ void ConstraintSet::setNull()
  */
 
 /**
- * Scale contraint set by a set of scale factors
+ * Scale constraint set by a set of scale factors
  */
 void ConstraintSet::scale(const ScaleSet& aScaleSet)
 {

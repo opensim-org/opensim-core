@@ -168,7 +168,7 @@ SimTK::Matrix SegmentedQuinticBezierToolkit::
     //a triangle that is formed by the two points that the user entered, and 
     //also the intersection of the 2 lines the user entered. If the distance
     //between the two points the user entered is larger than the distance from
-    //either point to the intersection loctaion, this function will generate a
+    //either point to the intersection location, this function will generate a
     //'C' shaped curve. If this is not true, an 'S' shaped curve will result, 
     //and this function should not be used.
 

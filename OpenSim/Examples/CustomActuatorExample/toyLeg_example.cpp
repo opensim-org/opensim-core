@@ -78,14 +78,14 @@ int main()
         Sphere sphere(0.1);
         linkage1->addGeometry(sphere);
          
-        // Creat a second linkage body
+        // Create a second linkage body
         OpenSim::Body* linkage2 = new OpenSim::Body(*linkage1);
         linkage2->setName("linkage2");
         Frame* cyl2Frame = new PhysicalOffsetFrame(*linkage2, Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
         cyl2Frame->setName("Cyl2_frame");
         osimModel.addFrame(cyl2Frame);
         (linkage2->upd_geometry(0)).setFrameName("Cyl2_frame");
-        // Creat a block to be the pelvis
+        // Create a block to be the pelvis
         double blockMass = 20.0, blockSideLength = 0.2;
         Vec3 blockMassCenter(0);
         Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
@@ -93,7 +93,7 @@ int main()
         Brick brick(SimTK::Vec3(0.05, 0.05, 0.05));
         block->addGeometry(brick);
 
-        // Create 1 degree-of-freedom pin joints between the bodies to creat a kinematic chain from ground through the block
+        // Create 1 degree-of-freedom pin joints between the bodies to create a kinematic chain from ground through the block
         Vec3 orientationInGround(0), locationInGround(0), locationInParent(0.0, linkageLength, 0.0), orientationInChild(0), locationInChild(0);
 
         PinJoint *ankle = new PinJoint("ankle", ground, locationInGround, orientationInGround, *linkage1, 
@@ -127,7 +127,7 @@ int main()
         osimModel.addJoint(ankle);
         osimModel.addJoint(knee);
         osimModel.addJoint(hip);
-        // Define contraints on the model
+        // Define constraints on the model
         //  Add a point on line constraint to limit the block to vertical motion
 
         Vec3 lineDirection(0,1,0), pointOnLine(0,0,0), pointOnBlock(0);
@@ -181,7 +181,7 @@ int main()
         // add the controller to the model
         osimModel.addController(legController);     
         
-        // define the acceration due to gravity
+        // define the acceleration due to gravity
         osimModel.setGravity(Vec3(0, -9.80665, 0));
 
         // enable the model visualizer see the model in action, which can be

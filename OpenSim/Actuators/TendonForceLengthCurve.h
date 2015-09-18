@@ -101,7 +101,7 @@ namespace OpenSim {
 
     <B>Default Parameter Values</B>
     If the optional parameters are not specified, the curve is fit to match the
-    average dimensionless in-vivo tendon curve reported by Maganarius et al. and
+    average dimensionless in-vivo tendon curve reported by Maganaris et al. and
     Magnusson et al. In addition, the generated curve will have a characteristic
     toe region that is fit to the in-vivo literature. Note that this curve is
     not being fit to the commonly used linearly extrapolated exponential curve
@@ -136,7 +136,7 @@ namespace OpenSim {
         effect of donor age and strain rate. The Journal of Foot and Ankle
         Surgery 36:435--445.
     \li Maganaris, C.N., Paul, J.P. (2002) Tensile properties of the in vivo
-        grastrocnemius tendon. Journal of Biomechanics 35:1639--1646.
+        gastrocnemius tendon. Journal of Biomechanics 35:1639--1646.
     \li Magnusson, S.P., Aagaard, P., Rosager, S., Dyhre-Poulsen, P., Kjaer, M.
         (2001) Load-displacement properties of the human triceps surae
         aponeurosis in vivo. Journal of Physiology 531:277--288.
@@ -177,7 +177,7 @@ public:
 
     /** This constructor will create a C2-continuous tendon-force-length curve
     that is fit to match the average dimensionless in-vivo tendon curve reported
-    by Maganarius et al. and Magnusson et al. In addition, the generated curve
+    by Maganaris et al. and Magnusson et al. In addition, the generated curve
     will have a characteristic toe region that is fit to the in-vivo literature.
     @param strainAtOneNormForce
         The tendon strain at which the tendon develops 1 unit of normalized
@@ -283,7 +283,7 @@ public:
         The normalized length of the tendon.
     @return The normalized area under the curve, which corresponds to the
         normalized potential energy stored in the tendon. To calculate the
-        potental energy stored in the tendon in units of Joules, multiply the
+        potential energy stored in the tendon in units of Joules, multiply the
         returned quantity by normForce*normLength (where normForce is the number
         of Newtons represented by a normalized force of 1.0 and normLength is
         the number of meters represented by a normalized length of 1.0).
@@ -345,7 +345,7 @@ private:
         tension of 1 normalized force when it is strained by 4% of its slack
         length or, equivalently, is stretched to 1.04 times its resting length.
     @returns A vector that contains the parameters that define the properties of
-        the extrapolated exponental curve that is used to construct the
+        the extrapolated exponential curve that is used to construct the
         reference tendon defined in Thelen 2003. The fields of the vector are as
         follows:
             [0]: e0
@@ -353,8 +353,8 @@ private:
             [2]: Ftoe
             [3]: ktoe
             [4]: klin
-            [5]: normalized potental energy from a strain of 0 to etoe
-            [6]: normalized potental energy from a strain of 0 to e0
+            [5]: normalized potential energy from a strain of 0 to etoe
+            [6]: normalized potential energy from a strain of 0 to e0
     */
     SimTK::Vector calcReferenceTendon(double strainAtOneNormForce);
 

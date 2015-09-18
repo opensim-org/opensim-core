@@ -514,7 +514,7 @@ void testForceVelocityInverseCurve()
         SimTK_TEST(fvCurve4.getEccentricCurviness()     == p6);
         cout << "Passed" << endl;
 //====================================================================
-        cout <<"5. Testing serivices for connectivity:" << endl;     
+        cout <<"5. Testing services for connectivity:" << endl;     
 
 
         cout <<"    a. calcValue" << endl;
@@ -958,7 +958,7 @@ void testFiberCompressiveForceLengthCurve()
         // FiberCompressiveForceLengthCurve
         //====================================================================
 
-        //solve for the paramters that will yield a value of 0.05 at a 
+        //solve for the parameters that will yield a value of 0.05 at a 
         //fiber length of  0.5
 
         //double len0 = fceCurve4.getNormLengthAtZeroForce();

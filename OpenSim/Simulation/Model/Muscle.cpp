@@ -749,14 +749,14 @@ void Muscle::updateGeometry(const SimTK::State& s)
 {
     double aFiberLength = getFiberLength(s);
     if (aFiberLength < SimTK::Eps){
-        cout << "Muscle::calcPennationAngle() ERRROR- fiber length is zero." << endl;
+        cout << "Muscle::calcPennationAngle() ERROR- fiber length is zero." << endl;
         return SimTK::NaN;
     }
     
     double value = _muscleWidth/aFiberLength;
 
     if(value >= 1.0){
-        cout << "Muscle::calcPennationAngle() ERRROR- pennation at 90 degrees." << endl;
+        cout << "Muscle::calcPennationAngle() ERROR- pennation at 90 degrees." << endl;
         return SimTK_PI/2.0;
     }
    else

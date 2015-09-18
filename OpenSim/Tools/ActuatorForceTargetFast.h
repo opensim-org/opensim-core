@@ -50,17 +50,17 @@ class CMC;
  * equations, meaning there may be non-linear behavior and delays in force
  * production.
  *
- * The performance criterion is the sum of actutor stresses squared. The
+ * The performance criterion is the sum of actuator stresses squared. The
  * desired accelerations are achieved by imposing a set of constraints.
  * The desired accelerations are computed according to the Proportional
  * Derivative (PD) control in order to drive the dynamic model toward a set
  * of target kinematic trajectories.
  *
  * Because the desired accelerations are achieved by imposing a set of
- * linear hard constraints, this optimiztion target can fail if the desired
- * accelreations cannot be achieved.  To insure that the constraints can
+ * linear hard constraints, this optimization target can fail if the desired
+ * accelerations cannot be achieved.  To insure that the constraints can
  * be achieved, a number of sufficiently strong actuators can be added
- * to the model.  Althernatively, one can use a different optimization
+ * to the model.  Alternatively, one can use a different optimization
  * target ActuatorForceTarget.  The benefits of using the fast
  * target are both speed and tracking accuracy.
  * 

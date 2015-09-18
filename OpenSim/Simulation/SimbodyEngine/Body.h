@@ -64,7 +64,7 @@ public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
-    /** default contructor*/
+    /** default constructor*/
     Body();
 
     /** Convenience constructor */  
@@ -86,7 +86,7 @@ public:
     const SimTK::Inertia& getInertia() const;
     void setInertia(const SimTK::Inertia& aInertia);
 
-    /** Assemble body interial properties: mass, center of mass location, moment 
+    /** Assemble body inertial properties: mass, center of mass location, moment 
         of inertia about the origin of the body and return as
         SimTK::MassProperties.
      */
@@ -144,7 +144,7 @@ private:
     SimTK::Body::Rigid _internalRigidBody;
 
     // Have to be at the Model level to build the system topology. This
-    // involves splitting bodies to satsify loop constraints. Only the Model,
+    // involves splitting bodies to satisfy loop constraints. Only the Model,
     // therefore, can tell a Body if it must add slaves to implement a valid
     // Multibody tree.
     friend class Model;

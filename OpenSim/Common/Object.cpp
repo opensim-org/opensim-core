@@ -146,7 +146,7 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
  * members of the object; that is, the object's DOMnode and XMLDocument
  * are not copied but set to NULL.  The reason for this is that for the
  * object and all its derived classes to establish the correct connection
- * to the XML document nodes, the the object would need to reconstruct based
+ * to the XML document nodes, the object would need to reconstruct based
  * on the XML document not the values of the object's member variables.
  *
  * There are three proper ways to generate an XML document for an Object:
@@ -155,7 +155,7 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
  * In this case, the XML document is created by parsing the XML file.
  *
  * 2) Construction by Object(const XMLDocument *aDocument).
- * This constructor explictly requests construction based on an
+ * This constructor explicitly requests construction based on an
  * XML document.  In this way the proper connection between an object's node
  * and the corresponding node within the XML document is established.
  * This constructor is a copy constructor of sorts because all essential
@@ -460,7 +460,7 @@ getPropertyByName(const std::string& name) const {
 
     throw Exception("Property '" + name + "' not present in Object "
                     + getName());
-    return *p; //NOTREACHED
+    return *p; //NOT REACHED
 }
 
 AbstractProperty& Object::
@@ -478,7 +478,7 @@ updPropertyByName(const std::string& name) {
 
     throw Exception("Property '" + name + "' not present in Object "
                     + getName());
-    return *p; //NOTREACHED
+    return *p; //NOT REACHED
 }
 
 //=============================================================================
@@ -997,7 +997,7 @@ try {
 
     } catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
-        // And then we can rethrow the exception
+        // And then we can re-throw the exception
         throw(ex);
     }
 
@@ -1384,7 +1384,7 @@ print(const string &aFileName) const
         updateXMLNode(e);
     } catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
-        // And then we can rethrow the exception
+        // And then we can re-throw the exception
         IO::chDir(savedCwd);
         throw(ex);
     }

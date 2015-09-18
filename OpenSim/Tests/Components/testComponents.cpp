@@ -294,9 +294,9 @@ void testComponent(const Component& instanceToTest)
             << setprecision(3) << leakPercent << "%";
 
         ASSERT(leakPercent < leakTol, __FILE__, __LINE__,
-            msg.str() + "excceeds tolerance (" + to_string(leakTol) + ").\n"
+            msg.str() + "exceeds tolerance (" + to_string(leakTol) + ").\n"
             "Initial memory: " +
-            to_string(initMemory / 1024) + "KB increaseed by " +
+            to_string(initMemory / 1024) + "KB increased by " +
             to_string(increaseInMemory / 1024) + "KB over " + to_string(nCopies) +
             " iterations = " + to_string(leakPercent) + "%.\n"); // << endl;
 
@@ -330,7 +330,7 @@ void testComponent(const Component& instanceToTest)
             << setprecision(3) << leakPercent << "%.";
 
         ASSERT(leakPercent < leakTol, __FILE__, __LINE__,
-            msg.str() + "\nExcceeds tolerance of " + to_string(leakTol) + "%.\n" 
+            msg.str() + "\nExceeds tolerance of " + to_string(leakTol) + "%.\n" 
             + "Initial memory: " +
             to_string(initMemory / 1024) + "KB increased by " +
             to_string(increaseInMemory / 1024) + "KB over " + to_string(nLoops) +

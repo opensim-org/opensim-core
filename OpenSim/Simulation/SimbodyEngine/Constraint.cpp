@@ -185,7 +185,7 @@ bool Constraint::setDisabled(SimTK::State& s, bool isDisabled)
  * @param state State of model
  * @param bodyForcesInAncestor is a Vector of SpatialVecs contain constraint forces
  * @param mobilityForces is a Vector of forces that act along the constrained
- *         mobilitities associated with this constraint
+ *         mobilities associated with this constraint
  */
 void Constraint::calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor, 
                                       SimTK::Vector& mobilityForces) const
@@ -227,7 +227,7 @@ Array<std::string> Constraint::getRecordLabels() const
             }
         }
         if(bod == NULL){
-            throw Exception("Constraint "+getName()+" does not have an idenitfiable body index.");
+            throw Exception("Constraint "+getName()+" does not have an identifiable body index.");
         }
         string prefix = getName()+"_"+bod->getName();
         labels.append(prefix+"_Fx");
@@ -254,7 +254,7 @@ Array<std::string> Constraint::getRecordLabels() const
 Array<double> Constraint::getRecordValues(const SimTK::State& state) const
 {
     // EOMs are solved for accelerations (udots) and constraint multipliers (lambdas)
-    // simulataneously, so system must be realized to acceleration
+    // simultaneously, so system must be realized to acceleration
     _model->getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
     SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
 

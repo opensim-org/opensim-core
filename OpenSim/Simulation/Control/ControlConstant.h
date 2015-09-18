@@ -67,7 +67,7 @@ public:
      * @param aX Constant value of the control.
      * @param aName Name of the control.
      */
-    ControlConstant(double aX=0.0,const char *aName="UNKOWN");
+    ControlConstant(double aX=0.0,const char *aName="UNKNOWN");
     ControlConstant(const ControlConstant &aControl);
     virtual ~ControlConstant();
 

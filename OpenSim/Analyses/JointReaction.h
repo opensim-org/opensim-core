@@ -54,7 +54,7 @@ class Joint;
  * constrain the body motions to satisfy the joint as if the joint did not exist.
  * The reaction load acts at the joint center (mobilizer frame) of both the parent 
  * and child bodies and either force can be reported and expressed in the either
- * the child, parent or ground frames. The default behavior is the the force
+ * the child, parent or ground frames. The default behavior is the force
  * on the child expressed in the ground frame.
  *
  * @author Matt DeMers, Ajay Seth
@@ -69,7 +69,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(JointReaction, Analysis);
 private:
 
     /* Private struct containing reference indices used to set up the output
-     *  of each analysed joint.*/
+     *  of each analyzed joint.*/
     struct JointReactionKey
     {
         /* The index of the joint to be reported on in the Model's JointSet.
@@ -97,7 +97,7 @@ protected:
     PropertyStr _forcesFileNameProp;
     std::string &_forcesFileName;
 
-    /** String Array containting the names of the joints to be analysed*/
+    /** String Array containing the names of the joints to be analyzed*/
     PropertyStrArray _jointNamesProp;
     Array<std::string> &_jointNames;
 

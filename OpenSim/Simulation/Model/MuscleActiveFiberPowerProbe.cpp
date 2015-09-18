@@ -127,7 +127,7 @@ void MuscleActiveFiberPowerProbe::extendConnectToModel(Model& model)
 //=============================================================================
 //_____________________________________________________________________________
 /**
-Compute the muscle fiberpower upon which the Probe operation will be based on.
+Compute the muscle fiber power upon which the Probe operation will be based on.
  */
 SimTK::Vector MuscleActiveFiberPowerProbe::computeProbeInputs(const State& s) const
 {

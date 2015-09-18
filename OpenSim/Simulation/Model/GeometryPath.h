@@ -64,9 +64,9 @@ OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, ModelComponent);
 private:
     OpenSim_DECLARE_UNNAMED_PROPERTY(PathPointSet, "The set of points defining the path");
 
-    OpenSim_DECLARE_UNNAMED_PROPERTY(PathWrapSet, "The wrap objecs that are associated with this path");
+    OpenSim_DECLARE_UNNAMED_PROPERTY(PathWrapSet, "The wrap objects that are associated with this path");
     
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(default_color, SimTK::Vec3, "Used to initialize the colour cache variable");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(default_color, SimTK::Vec3, "Used to initialize the color cache variable");
 
     // used for scaling tendon and fiber lengths
     double _preScaleLength;
@@ -134,7 +134,7 @@ public:
     %GeometryPath object in the given state. You can access this value any time
     after the state is initialized, at which point it will have been set to
     the default color value specified in a call to setDefaultColor() earlier,
-    or it will have the default default color value chosen by %GeometryPath.
+    or it will have the default color value chosen by %GeometryPath.
     @see setDefaultColor() **/
     SimTK::Vec3 getColor(const SimTK::State& s) const;
 
@@ -149,7 +149,7 @@ public:
     double getLengtheningSpeed(const SimTK::State& s) const;
     void setLengtheningSpeed( const SimTK::State& s, double speed ) const;
 
-    /** get the the path as PointForceDirections directions, which can be used
+    /** get the path as PointForceDirections directions, which can be used
         to apply tension to bodies the points are connected to.*/
     void getPointForceDirections(const SimTK::State& s, 
         OpenSim::Array<PointForceDirection*> *rPFDs) const;
@@ -183,7 +183,7 @@ public:
     // Visualization Support
     //--------------------------------------------------------------------------
     // Update the geometry attached to the path (location of path points and
-    // connecting segments all in global/interial frame)
+    // connecting segments all in global/inertial frame)
     virtual void updateGeometry(const SimTK::State& s) const;
 
 protected:
