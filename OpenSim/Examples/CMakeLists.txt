@@ -14,6 +14,10 @@ install(DIRECTORY SimpleOptimizationExample DESTINATION sdk/APIExamples)
 install(DIRECTORY SymbolicExpressionReporter DESTINATION sdk/APIExamples)
 add_subdirectory(SymbolicExpressionReporter)
 
+add_subdirectory(DataTable)
+install(DIRECTORY DataTable 
+        DESTINATION sdk/APIExamples)
+
 elseif()
 
 add_subdirectory(ControllerExample)
