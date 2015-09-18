@@ -396,7 +396,7 @@ void ActivationFiberLengthMuscle_Deprecated::computeForce(const SimTK::State& s,
 {
     Super::computeForce(s, bodyForces, generalizedForces);
 
-    if (isActuationOverriden(s)) {
+    if (isActuationOverridden(s)) {
         // Also define the state derivatives, since realize acceleration will
         // ask for muscle derivatives, which will be integrated
         // in the case the force is being overridden, the states aren't being used
