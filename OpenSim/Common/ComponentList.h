@@ -163,7 +163,7 @@ class ComponentListIterator :
 {
     friend class ComponentList<T>;
 public:
-    /// Check that the component under the cuurent iterator is same 
+    /// Check that the component under the current iterator is same 
     /// (has same address) as right-hand iter.
     bool operator==(const ComponentListIterator& iter) const {
         return this->equals(iter);

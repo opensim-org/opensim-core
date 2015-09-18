@@ -73,7 +73,7 @@ protected:
 public:
     SymbolicExpressionReporter(Model *aModel=0);
     SymbolicExpressionReporter(const std::string &aFileName);
-    // Copy constrctor and virtual copy 
+    // Copy constructor and virtual copy 
     SymbolicExpressionReporter(const SymbolicExpressionReporter &aObject);
 
     virtual ~SymbolicExpressionReporter();

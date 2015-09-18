@@ -87,7 +87,7 @@ protected:
 
     /** Utility node for speeding up searches for control values in
     getControlValue() and elsewhere.  Without this node, a control node would
-    need to be contructed, but this is too expensive.  It is better to contruct
+    need to be constructed, but this is too expensive.  It is better to construct
     a node up front, and then just alter the time. */
     ControlLinearNode _searchNode;
 
@@ -121,7 +121,7 @@ private:
      * Currently, simple linear extrapolation using the first two nodes is
      * used.
      *
-     * @param aT Time at which to evalute the control curve.
+     * @param aT Time at which to evaluate the control curve.
      * @return Extrapolated value of the control curve.
      */
     double extrapolateBefore(double aT) const;
@@ -131,7 +131,7 @@ private:
      * Currently, simple linear extrapolation using the last two nodes is
      * used.
      *
-     * @param aT Time at which to evalute the control curve.
+     * @param aT Time at which to evaluate the control curve.
      * @return Extrapolated value of the control curve.
      */
     double extrapolateAfter(double aT) const;
@@ -141,7 +141,7 @@ private:
      * Currently, simple linear extrapolation using the first two nodes is
      * used.
      *
-     * @param aT Time at which to evalute the control curve.
+     * @param aT Time at which to evaluate the control curve.
      * @return Extrapolated value of the control curve.
      */
     double extrapolateMinBefore(double aT) const;
@@ -151,7 +151,7 @@ private:
      * Currently, simple linear extrapolation using the last two nodes is
      * used.
      *
-     * @param aT Time at which to evalute the control curve.
+     * @param aT Time at which to evaluate the control curve.
      * @return Extrapolated value of the control curve.
      */
     double extrapolateMinAfter(double aT) const;
@@ -161,7 +161,7 @@ private:
      * Currently, simple linear extrapolation using the first two nodes is
      * used.
      *
-     * @param aT Time at which to evalute the control curve.
+     * @param aT Time at which to evaluate the control curve.
      * @return Extrapolated value of the control curve.
      */
     double extrapolateMaxBefore(double aT) const;
@@ -171,7 +171,7 @@ private:
      * Currently, simple linear extrapolation using the last two nodes is
      * used.
      *
-     * @param aT Time at which to evalute the control curve.
+     * @param aT Time at which to evaluate the control curve.
      * @return Extrapolated value of the control curve.
      */
     double extrapolateMaxAfter(double aT) const;

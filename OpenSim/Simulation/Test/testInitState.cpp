@@ -38,7 +38,7 @@ using namespace std;
 //==============================================================================
 void testStates(const string& modelFile);
 //==============================================================================
-// testMemoryUsage tests that repeated initilization of the state does not  
+// testMemoryUsage tests that repeated initialization of the state does not  
 // cause the memory footprint of the process to increase significantly.
 //==============================================================================
 void testMemoryUsage(const string& modelFile);
@@ -88,7 +88,7 @@ void testStates(const string& modelFile)
     y1 = state.getY();
     y1.dump("y1: Initial state:");
 
-    // update state to contain muscle states that yield muscle equilibirium
+    // update state to contain muscle states that yield muscle equilibrium
     model.equilibrateMuscles(state);
     state.getY().dump("y1: State after equilibrateMuscles:");
     //==========================================================================
@@ -114,7 +114,7 @@ void testStates(const string& modelFile)
     Vector y3 = state2.getY();
     y3.dump("y3: Model reset to Initial state:");
 
-    // update state to contain muscle states that yield muscle equilibirium
+    // update state to contain muscle states that yield muscle equilibrium
     model.equilibrateMuscles(state2);
     state.getY().dump("y3: State after equilibrateMuscles:");
     //==========================================================================

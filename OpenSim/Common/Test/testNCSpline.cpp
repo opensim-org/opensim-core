@@ -163,11 +163,11 @@ SimTK::Vector getAnalyticFunction(double x,int fcnType){
 *   b.  The first derivatives are continuous at the knot points
 *       -Error between the value of the first derivative at the knot point, and
 *        what a linear extrapolation would predict just to the left and right of 
-*        the knot point. (should be zero, within a tolerace affected by the step size in xD)
+*        the knot point. (should be zero, within a tolerance affected by the step size in xD)
 *   c.  The second derivatives are continuous at the knots points
 *       -Error between the value of the numerically calculated derivative at the knot point, and
 *        what a linear extrapolation would predict just to the left and right of 
-*        the knot point. (should be zero, within a tolerace affected by the step size in xD)
+*        the knot point. (should be zero, within a tolerance affected by the step size in xD)
 *   d.  The second derivative is zero at the end points.
 *       -Numerically calculated extrapolation of the 2nd derivative should be zero 
 *        at the end points within some tolerance
@@ -333,7 +333,7 @@ int main() {
                             //to initialize and test the various spline classes
         const int size =6;          //Number of knot points
         const int sizeDK = 10000;       //Number of points per knot in the densely sampled vector
-        int sizeD=sizeDK*(size-1);  //Number of points in a densly sampled interpolation
+        int sizeD=sizeDK*(size-1);  //Number of points in a densely sampled interpolation
 
         //Domain vector variables
         double xmin,xmax,deltaX,deltaD;

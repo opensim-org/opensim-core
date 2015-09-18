@@ -40,7 +40,7 @@ public:
     OpenSim_DECLARE_PROPERTY(expression, std::string,
         "Expression of the force magnitude as a function of the coordinate value (q)"
         "and its time derivative (qdot). Note, expression cannot have any whitespace"
-        "seperating characters");
+        "separating characters");
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================

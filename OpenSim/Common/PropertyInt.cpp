@@ -159,7 +159,7 @@ getValueInt()
 /**
  * Get a constant reference to the value of this property.
  *
- * @return Contant reference to the value of this property.
+ * @return Constant reference to the value of this property.
  */
 const int& PropertyInt::
 getValueInt() const
@@ -168,9 +168,9 @@ getValueInt() const
 }
 //_____________________________________________________________________________
 /**
- * Get a constant String represeting the value of this property.
+ * Get a constant String representing the value of this property.
  *
- * @return Constant String represeting the value of this property.
+ * @return Constant String representing the value of this property.
  */
 string PropertyInt::
 toString() const

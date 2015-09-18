@@ -63,7 +63,7 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(VectorFunction, Object);
 protected:
     /** Number of independent variables */
     int _nX;
-    /** Number of dependant variables */
+    /** Number of dependent variables */
     int _nY;
     /** Array containing minimum allowed values of the independent variables. */
     Array<double> _minX;

@@ -85,7 +85,7 @@ namespace OpenSim {
        The curve is parameterized as a set of Bezier curves. If x is within the
        domain of these Bezier curves they will be evaluated. If x is outside
        of the domain of these Bezier curves a linear extrapolation will be 
-       evalulated
+       evaluated
 
 
        <B>Computational Costs</B>
@@ -160,7 +160,7 @@ namespace OpenSim {
        bool isIntegralAvailable() const;
 
        /**
-       Returns a bool that indicates if the integral computed is compuated left
+       Returns a bool that indicates if the integral computed is computed left
        to right, or right to left.
 
        @return true if the integral was computed left to right, and false if the
@@ -229,7 +229,7 @@ namespace OpenSim {
        0.1*(x1-x0).
 
        The number of rows used will vary from curve to curve. Each quintic 
-       Bezier curve section will have 100 samples. Each linearily extrapolated
+       Bezier curve section will have 100 samples. Each linearly extrapolated
        region will have 10 samples each. Some muscle curves (the tendon, 
        parallel elements, compressive elements) consist of only 1 elbow, and so 
        these matrices will have only 100+20 rows. The force velocity curve is 
@@ -264,7 +264,7 @@ namespace OpenSim {
 
        @param maxOrder The maximum derivative order to compute
        @throws OpenSim::Exception
-        -If the requested derivatve order is greater than getMaxDerivativeOrder()
+        -If the requested derivative order is greater than getMaxDerivativeOrder()
        @returns a matrix populated with x,y,dy/dx ... d^ny/dx^n,iy
 
 
@@ -397,7 +397,7 @@ namespace OpenSim {
        Generating the integral curve is not cheap, and so should only be used 
        when if it will be evaluated during a simulation. 
        \verbatim     
-        Computatonal Cost Per Bezier Section:
+        Computational Cost Per Bezier Section:
             Without Integral :   4,100 flops
             With Integral    : 174,100 flops
        \endverbatim
@@ -416,7 +416,7 @@ namespace OpenSim {
         @param path The desired path to the folder to write the file
         @param filename The name of the file to print
         @throws OpenSim::Exception
-            -If the desired file cannot be created and openened, perhaps 
+            -If the desired file cannot be created and opened, perhaps 
              because the path doesn't exist.
         */
         void printMatrixToFile(SimTK::Matrix& data,

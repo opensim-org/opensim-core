@@ -27,7 +27,7 @@ if(${DOXYGEN_FOUND})
     # MathJax. LaTeX is unpleasant to install on Windows, so we prefer MathJax.
 
     # There are two ways of using MathJax: from the internet, or locally.
-    # We prefer using MathJax locally, bt we have to download it first.
+    # We prefer using MathJax locally, but we have to download it first.
     # We download a 50 mb MathJax zip and unzip it (150 mb).
     # The zip can be thrown away, but the 150 mb MathJax directory must stay
     # with the Doxygen documentation.
@@ -54,7 +54,7 @@ if(${DOXYGEN_FOUND})
             # Must modify the cache variable so we don't end up here after
             # running the CMake configuring step multiple times.
             set(OPENSIM_DOXYGEN_USE_MATHJAX OFF CACHE BOOL
-                "Overriden to OFF since we could not download MathJax."
+                "Overridden to OFF since we could not download MathJax."
                 FORCE)
             list(GET MATHJAX_DOWNLOAD_STATUS 1 MATHJAX_DOWNLOAD_MESSAGE)
             message(STATUS
@@ -197,7 +197,7 @@ if(${DOXYGEN_FOUND})
         DEPENDS ${DOXYGEN_TARGET_DEPENDENCIES}
                 )
     
-    # Now creat the command for running doxygen, which requires that we
+    # Now create the command for running doxygen, which requires that we
     # have defined the doxygen target.
     foreach(audience ${DOXYGEN_AUDIENCES})
         # Run doxygen

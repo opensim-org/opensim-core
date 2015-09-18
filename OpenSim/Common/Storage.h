@@ -52,7 +52,7 @@ typedef std::map<std::string, std::string, std::less<std::string> > MapKeysToVal
  * stored statevectors are monotonically increasing.
  *
  * When stored as a file, the statevectors are stored in rows.  This first
- * value in a row is the time stamp at which the states occured.  The
+ * value in a row is the time stamp at which the states occurred.  The
  * rest of the elements in a row are the states.  Therefore, each column of
  * data in a file corresponds to a particular state.
  *

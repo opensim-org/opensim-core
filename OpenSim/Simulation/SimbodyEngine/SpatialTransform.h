@@ -35,7 +35,7 @@ class CustomJoint;
 //==============================================================================
 /**
  * A class encapsulating the spatial transformation between two bodies that 
- * defines the behaviour of a custom joint.
+ * defines the behavior of a custom joint.
  *
  * @authors Ajay Seth
  */

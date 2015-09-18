@@ -161,7 +161,7 @@ getModel()
 /**
  * Set all the callbacks either on or off.
  *
- * @param aTrueFalse Arguement that, if true, results in all callbacks
+ * @param aTrueFalse Argument that, if true, results in all callbacks
  * being turned on; if false, all callbacks are turned off.
  */
 void AnalysisSet::

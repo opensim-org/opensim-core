@@ -68,7 +68,7 @@ void Actuator::extendAddToSystem(SimTK::MultibodySystem& system) const
     // Beyond the const Component get the index so we can access the SimTK::Force later
     Actuator* mutableThis = const_cast<Actuator *>(this);
 
-    // Model is in charge of creating the shared cache for all all actuator controls
+    // Model is in charge of creating the shared cache for all actuator controls
     // but it does so based on the size and order in its _defaultControls
     // Actuator has the opportunity here to add slots for its control and record
     // the index into the shared cache Vector.

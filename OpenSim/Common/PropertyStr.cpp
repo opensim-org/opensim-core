@@ -167,9 +167,9 @@ getValueStr() const
 }
 //_____________________________________________________________________________
 /**
- * Get a constant String represeting the value of this property.
+ * Get a constant String representing the value of this property.
  *
- * @return Constant String represeting the value of this property.
+ * @return Constant String representing the value of this property.
  */
 string PropertyStr::
 toString() const

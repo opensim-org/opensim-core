@@ -138,7 +138,7 @@ void Millard2012AccelerationMuscle::constructProperties()
     constructProperty_fiber_force_length_damping(1e-2);
     constructProperty_fiber_compressive_force_cos_pennation_damping(1.0);
 
-    //Linear fiber damping as in Shutte's model
+    //Linear fiber damping as in Schutte's model
     constructProperty_fiber_damping(1e-2);
 
     //Mass property
@@ -1106,7 +1106,7 @@ void Millard2012AccelerationMuscle::
         double fcphi= mli.userDefinedLengthExtras[MLIfcphi];
 
     //========================================================================
-    //Compute visco elastic multipliers and their derivatives derivatives
+    //Compute visco elastic multipliers and their derivatives
     //========================================================================
         AccelerationMuscleInfo ami;
         calcAccelerationMuscleInfo( ami,
@@ -1396,7 +1396,7 @@ SimTK::Vector Millard2012AccelerationMuscle::
         fv          = fvCurve.calcValue(dlceN1_dt);
             
         //========================================================================
-        //Compute visco elastic multipliers and their derivatives derivatives
+        //Compute visco elastic multipliers and their derivatives
         //========================================================================            
         calcAccelerationMuscleInfo( ami,
                                     lce  ,dlce_dt,
@@ -1485,7 +1485,7 @@ SimTK::Vector Millard2012AccelerationMuscle::
         stiffness:
                 
         Linearizing the force balance equations
-        FceAT = Ft at equilbrium (ignoring the small Coriolis term)
+        FceAT = Ft at equilibrium (ignoring the small Coriolis term)
         FceAT = KceAT*(xceAT-xceAT0) + FceAT0
         Ft    = Kt*(xt-xt0) + Ft0
                 
@@ -1508,7 +1508,7 @@ SimTK::Vector Millard2012AccelerationMuscle::
         dxt_dt      = Ke*dxm_dt/Kt
         dxceAT_dt   = Ke*dxm_dt/KceAT
 
-        This is a hueristic. The above assumptions are necessary as 
+        This is a heuristic. The above assumptions are necessary as 
         computing the partial derivatives of Kce or Kt w.r.t. time 
         requires acceleration level knowledge, which is not available in 
         general.
@@ -2024,7 +2024,7 @@ void Millard2012AccelerationMuscle::
         ami.fkV    = -  ami.fk  * dlceN_dt  * bk;
         ami.fcphiV = - ami.fcphi* dlceNAT_dt* bcphi;
         */
-        //Compressive elments: note the opposite signs
+        //Compressive elements: note the opposite signs
         if(fkSAT) {     ami.fkV         = -ami.fk;
                         ami.fkVEM       =  ami.fk + ami.fkV; //0
                         ami.dfkV_dlce   = -ami.dfk_dlce;
