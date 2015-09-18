@@ -1,8 +1,6 @@
 set(KIT JavaJNI)
 set(UKIT JAVAJNI)
 
-if(BUILD_JAVA_WRAPPING) 
-
 include(${CMAKE_ROOT}/Modules/FindJava.cmake)
 include(${CMAKE_ROOT}/Modules/FindJNI.cmake)
 
@@ -14,7 +12,7 @@ set(swig_generated_file_fullname
 set(swig_generated_header_fullname
     ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI_wrap.h)
 set(swig_interface_file_fullname
-    ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/Java/swig/javaWrapOpenSim.i)
+    ${OpenSim_SOURCE_DIR}/Bindings/Java/swig/javaWrapOpenSim.i)
 set(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling"
     CACHE STRING
     "The wrapping is built as the Java package specified in this variable.")
@@ -38,7 +36,7 @@ add_custom_command(
     COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
         -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
         -I${OpenSim_SOURCE_DIR}
-        -I${OpenSim_SOURCE_DIR}/OpenSim/Wrapping
+        -I${OpenSim_SOURCE_DIR}/Bindings
         -I${Simbody_INCLUDE_DIR}
         -o ${swig_generated_file_fullname}
         -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
@@ -54,7 +52,7 @@ add_custom_target(JavaWrap
 
 set_target_properties(JavaWrap PROPERTIES
     PROJECT_LABEL "Java - Generate source code"
-    FOLDER "Wrapping (scripting)"
+    FOLDER "Bindings"
     )
 
 
@@ -76,7 +74,7 @@ target_link_libraries(osim${KIT} osimTools osimSimmFileWriter)
 set_target_properties(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
    PROJECT_LABEL "Java - osim${KIT}"
-   FOLDER "Wrapping (scripting)"
+   FOLDER "Bindings"
 )
 
 add_dependencies(osim${KIT} JavaWrap)
@@ -106,4 +104,3 @@ endif(BUILD_TESTING)
 
 
 endif(JAVA_INCLUDE_PATH)
-endif(BUILD_JAVA_WRAPPING)
