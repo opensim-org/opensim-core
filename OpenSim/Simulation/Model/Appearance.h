@@ -68,7 +68,7 @@ public:
     virtual ~SurfaceAppearance() {};
 
     bool hasTexture() {
-        return getProperty_texture_file().size() > 0;
+        return !getProperty_texture_file().empty();
     }
     //========================================================================
 };  // END of class SurfaceAppearance
