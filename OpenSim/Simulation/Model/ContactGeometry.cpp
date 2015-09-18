@@ -46,7 +46,7 @@ ContactGeometry::ContactGeometry() : ModelComponent()
 }
 
 //_____________________________________________________________________________
-// Convienience constructor.
+// Convenience constructor.
 ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, 
     PhysicalFrame& body) : ModelComponent()
 {

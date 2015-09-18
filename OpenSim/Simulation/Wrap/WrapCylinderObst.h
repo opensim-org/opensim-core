@@ -42,7 +42,7 @@ class WrapResult;
  * A class implementing a cylinder obstacle for muscle wrapping, based on
  * algorithm presented in Garner & Pandy (2000).
  *
- * @author Brian Garner, derivded from Peter Loan
+ * @author Brian Garner, derived from Peter Loan
  * @version 0.1
  */
 class OSIMSIMULATION_API WrapCylinderObst : public WrapObject {
@@ -63,7 +63,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WrapCylinderObst, WrapObject);
 
     // Facilitate prescription of wrapping direction around obstacle: "righthand" or "lefthand".
     // In traversing from the 1st point (P) to the 2nd (S), the path will wrap either
-    //    righthanded or lefthanded about the obstacle's z-axis.
+    //    right-handed or left-handed about the obstacle's z-axis.
     PropertyStr _wrapDirectionNameProp;
     std::string& _wrapDirectionName;
     WrapDirectionEnum _wrapDirection;

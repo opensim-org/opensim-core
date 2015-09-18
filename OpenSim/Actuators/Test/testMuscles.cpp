@@ -184,7 +184,7 @@ int main()
     cases should be easy to add currently, the test only verifies that the work 
     done by the muscle corresponds to the change in system energy.
 
-    TODO: Test will fail wih prescribe motion until the work done by this 
+    TODO: Test will fail with prescribed motion until the work done by this 
     constraint is accounted for.
 ================================================================================
 */
@@ -304,7 +304,7 @@ void simulateMuscle(
     PrescribedController * muscleController = new PrescribedController();
     if(control != NULL){
         muscleController->setActuators(model.updActuators());
-        // Set the indiviudal muscle control functions 
+        // Set the individual muscle control functions 
         //for the prescribed muscle controller
         muscleController->prescribeControlForActuator("muscle",control->clone());
 
@@ -342,7 +342,7 @@ void simulateMuscle(
     /* Setup a Muscle Analysis to report all internal values of the 
        muscle during the simulation. If you uncomment, remember to 
        uncomment the corresponding calls to write the results to 
-       file after the simualtion.*/
+       file after the simulation.*/
     MuscleAnalysis * muscleAnalysis = new MuscleAnalysis();
     Array<string> tmp; 
     tmp.append("muscle");
@@ -468,7 +468,7 @@ void simulateMuscle(
 
     dF/dt : the rate change of muscle force
     K     : the stiffness of the whole muscle
-    dl/dt : the length change of the whole mucle
+    dl/dt : the length change of the whole muscle
 
     Here we compute dF/dt numerically, while at time zero we have the analytical
     values for K and dl/dt
@@ -600,7 +600,7 @@ void simulateMuscle(
 
 
 //==============================================================================
-// Individudal muscle model (derived from Muscle) test cases can be added here
+// Individual muscle model (derived from Muscle) test cases can be added here
 //==============================================================================
 
 /*void testPathActuator()

@@ -47,7 +47,7 @@ namespace OpenSim {
 /**
  * An abstract base class for specifying a task objective for
  * a dynamic simulation.  This class supports joint, point, and orientation
- * task objectives.  Specfic implementations for these kinds of control
+ * task objectives.  Specific implementations for these kinds of control
  * tasks should inherit from this class.
  *
  * @author Frank C. Anderson
@@ -81,7 +81,7 @@ protected:
     PropertyDblVec3 _propR2;
 
     // REFERENCES TO PROPERTY VALUES
-    // NOTE- These refrence variables must be listed in the class after
+    // NOTE- These reference variables must be listed in the class after
     // the properties to which they refer.  The order in which member
     // variables are listed determines the order in which the member
     // variables are initialized.  The properties must be initialized

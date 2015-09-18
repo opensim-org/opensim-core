@@ -104,7 +104,7 @@ void ModelComponent::addGeometry(OpenSim::Geometry& geom) {
         int index = 1;
         while (!nameFound){
             std::stringstream ss;
-            // generate candiate name
+            // generate candidate name
             ss << getName() << "_geom_" << index;
             std::string candidate = ss.str();
             bool exists = false;

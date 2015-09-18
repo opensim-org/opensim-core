@@ -71,7 +71,7 @@ public:
         "is disengaged (i.e. control == 0).  If the clutch is re-engaged within the " 
         "relaxation period there will be residual tension in the spring.");
     OpenSim_DECLARE_PROPERTY(initial_stretch, double,
-        "The initial stretch (m) of the spring element. Note if the clucth is "
+        "The initial stretch (m) of the spring element. Note if the clutch is "
         "not engaged, the actuator will 'slip' until there is no stretch according "
         "to the relaxation_time_constant.");
 

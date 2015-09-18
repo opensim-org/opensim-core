@@ -178,7 +178,7 @@ public:
 
     // DEGREES/RADIANS
     /**
-     * Set whether or not to write the output of angles in degrees.
+     * %Set whether or not to write the output of angles in degrees.
      * This flag must be set before an analysis is performed to ensure that
      * the results are in the proper format.
      * @param aTrueFalse Output will be in degrees if "true" and in radians
@@ -195,9 +195,9 @@ public:
     void setStepInterval(int aStepInterval);
     int getStepInterval() const;
 
-    // COLUMN LABLES
+    // COLUMN LABELS
     /**
-     * Set the column labels for this analysis.
+     * %Set the column labels for this analysis.
      * @param aLabels an Array of strings (labels).
      */
     void setColumnLabels(const Array<std::string> &aLabels);

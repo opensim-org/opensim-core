@@ -92,7 +92,7 @@ public:
      */
     double getRadius() const;
     /**
-     * Set the radius of the sphere.
+     * %Set the radius of the sphere.
      */
     void setRadius(double radius);
 private:

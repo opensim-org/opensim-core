@@ -194,9 +194,9 @@ getValueBoolArray() const
 }
 //_____________________________________________________________________________
 /**
- * Get a constantString represeting the value of this property.
+ * Get a constantString representing the value of this property.
  *
- * @return Constant String represeting the value of this property.
+ * @return Constant String representing the value of this property.
  */
 string PropertyBoolArray::
 toString() const

@@ -152,7 +152,7 @@ This function will scan through a vector and determine if it is monotonic or
 not
 
 @param y the vector of interest
-@param multEPS The tolerance on the monotoncity check, expressed as a scaling of
+@param multEPS The tolerance on the monotonicity check, expressed as a scaling of
                 SimTK::Eps
 @return true if the vector is monotonic, false if it is not
 */
@@ -383,7 +383,7 @@ int main(int argc, char* argv[])
 
                 //Computed muscle kinematics
                 //Needs to be constant so I can numerically compute
-                //the partial deriative of tendon length w.r.t. fiber length
+                //the partial derivative of tendon length w.r.t. fiber length
                 mclLen(i) = ( 2.01 + 1)*paraHeight + tendonSlackLen;
                 mclVel(i) = 0;
 

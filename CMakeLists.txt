@@ -47,7 +47,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     # directory.
     # On Linux, we override the default value because our installation does
     # not yet conform to the Filesystem Hierarchy Standard (FHS).
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}-install" CACHE PATH 
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}-install" CACHE PATH
         "The directory in which to install this project." FORCE)
 endif()
 
@@ -300,13 +300,13 @@ if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
         # one will still need to set DYLD_LIBRARY_PATH (or alter the RPATH in the
         # executables/libraries that depend on Simbody's libraries).
         set(CMAKE_MACOSX_RPATH ON)
-    
+
         set(CMAKE_INSTALL_FULL_LIBDIR "${CMAKE_INSTALL_PREFIX}/lib")
-    
+
         # Add the automatically determined parts of the RPATH
         # which point to directories outside the build tree to the install RPATH.
         set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-    
+
         # The RPATH to be used when installing, but only if it's not a system
         # directory.
         list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
@@ -463,11 +463,11 @@ include(CTest)
 
 # Sets the number of CPUs testing would use
 set(cmd ${CMAKE_CTEST_COMMAND} -j${PROCESSOR_COUNT})
-if(MSVC)
+if(MSVC OR XCODE)
     set(cmd ${cmd} -C ${CMAKE_CFG_INTDIR})
-else(MSVC)
+else(MSVC OR XCODE)
     set(cmd ${cmd} -C ${CMAKE_BUILD_TYPE})
-endif(MSVC)
+endif(MSVC OR XCODE)
 add_custom_target(RUN_TESTS_PARALLEL
     COMMAND ${cmd}
 )
@@ -518,6 +518,7 @@ add_subdirectory(OpenSim)
 if(NOT BUILD_API_ONLY)
     add_subdirectory(Applications)
 endif()
+add_subdirectory(Bindings)
 
 add_subdirectory(cmake)
 add_subdirectory(doc)

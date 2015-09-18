@@ -50,7 +50,7 @@ public:
         // have to construct this Component's properties so that deserialization from
         // XML has a place to go.
         constructInfrastructure();
-        // Propogate XML file values to properties 
+        // Propagate XML file values to properties 
         updateFromXMLDocument();
         // add components listed as properties as sub components.
         finalizeFromProperties();

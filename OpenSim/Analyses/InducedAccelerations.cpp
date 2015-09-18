@@ -112,7 +112,7 @@ InducedAccelerations::InducedAccelerations(const std::string &aFileName):
     updateFromXMLDocument();
 }
 
-// Copy constrctor and virtual copy 
+// Copy constructor and virtual copy 
 //_____________________________________________________________________________
 /*
  * Copy constructor.
@@ -211,7 +211,7 @@ void InducedAccelerations::setupProperties()
     _propertySet.append(&_constraintSetProp);
 
     _forceThresholdProp.setName("force_threshold");
-    _forceThresholdProp.setComment("The minimum amount of external force (N) that is neccessary to be replaced with a constraint.");
+    _forceThresholdProp.setComment("The minimum amount of external force (N) that is necessary to be replaced with a constraint.");
     _propertySet.append(&_forceThresholdProp);
 
     _computePotentialsOnlyProp.setName("compute_potentials_only");
@@ -588,7 +588,7 @@ int InducedAccelerations::record(const SimTK::State& s)
             const SimTK::Vector &appliedMobilityForces = _model->getMultibodySystem().getMobilityForces(s_analysis, SimTK::Stage::Dynamics);
             appliedMobilityForces.dump("All Applied Mobility Forces");
         
-            // Get all applied body forces like those from conact
+            // Get all applied body forces like those from contact
             const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces = _model->getMultibodySystem().getRigidBodyForces(s_analysis, SimTK::Stage::Dynamics);
             appliedBodyForces.dump("All Applied Body Forces");
 
@@ -845,7 +845,7 @@ void InducedAccelerations::initialize(const SimTK::State& s)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration in
+ * This method is meant to be called at the beginning of an integration in
  * Model::integBeginCallback() and has the same argument list.
  *
  * @param s SimTK:State

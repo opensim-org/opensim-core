@@ -670,7 +670,7 @@ calcActivationDerivative(double activation, double excitation) const
 }
 
 //==============================================================================
-// MUSCLE INFERFACE REQUIREMENTS -- MUSCLE LENGTH INFO
+// MUSCLE INTERFACE REQUIREMENTS -- MUSCLE LENGTH INFO
 //==============================================================================
 void Millard2012EquilibriumMuscle::calcMuscleLengthInfo(const SimTK::State& s,
     MuscleLengthInfo& mli) const
@@ -722,7 +722,7 @@ void Millard2012EquilibriumMuscle::calcMuscleLengthInfo(const SimTK::State& s,
 
 
 //==============================================================================
-// MUSCLE INFERFACE REQUIREMENTS -- MUSCLE POTENTIAL ENERGY INFO
+// MUSCLE INTERFACE REQUIREMENTS -- MUSCLE POTENTIAL ENERGY INFO
 //==============================================================================
 void Millard2012EquilibriumMuscle::
     calcMusclePotentialEnergyInfo(const SimTK::State& s,
@@ -777,7 +777,7 @@ void Millard2012EquilibriumMuscle::
 
 
 //==============================================================================
-// MUSCLE INFERFACE REQUIREMENTS -- FIBER VELOCITY INFO
+// MUSCLE INTERFACE REQUIREMENTS -- FIBER VELOCITY INFO
 //==============================================================================
 void Millard2012EquilibriumMuscle::
 calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
@@ -943,7 +943,7 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
 }
 
 //==============================================================================
-// MUSCLE INFERFACE REQUIREMENTS -- MUSCLE DYNAMICS INFO
+// MUSCLE INTERFACE REQUIREMENTS -- MUSCLE DYNAMICS INFO
 //==============================================================================
 void Millard2012EquilibriumMuscle::
 calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
@@ -1143,7 +1143,7 @@ void Millard2012EquilibriumMuscle::
     // Activation dynamics if not ignored
     if(!get_ignore_activation_dynamics()) {
         double adot = 0;
-        // if not disabled or overriden then compute its derivative
+        // if not disabled or overridden then compute its derivative
         if (!isDisabled(s) && !isActuationOverriden(s)) {
             adot =getActivationDerivative(s);
         }
@@ -1153,7 +1153,7 @@ void Millard2012EquilibriumMuscle::
     // Fiber length is the next state (if it is a state at all)
     if(!get_ignore_tendon_compliance()) {
         double ldot = 0;
-        // if not disabled or overriden then compute its derivative
+        // if not disabled or overridden then compute its derivative
         if (!isDisabled(s) && !isActuationOverriden(s)) {
             ldot = getFiberVelocity(s);
         }
@@ -1556,7 +1556,7 @@ estimateMuscleFiberState(double aActivation,
             dFm_d_xm = Km*dlceAT + dKm_d_t*lceAT (assume dKm_d_t = 0)   [7]
             dFt_d_xt = Kt*dtl + dKt_d_t*dtl (assume dKt_d_t = 0)        [8]
 
-            Subtituting 7 and 8 into 2:
+            Substituting 7 and 8 into 2:
             Km dlceAT - Kt dtl = 0
 
             Using Eqn 4, we have 2 equations in 2 unknowns. Can now solve for

@@ -329,7 +329,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
 
     if (fabs(ppm) < 0.0001)
     {
-        // vector p1m and p2m are colinear
+        // vector p1m and p2m are collinear
         aFlag = false;
         aWrapResult.wrap_path_length = 0.0;
 
@@ -435,7 +435,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
             // This can create an sv->c1 vector that points roughly 180-degrees
             // opposite to the fan solution's sv->c1 vector.  This creates problems
             // when interpolating between the Frans and fan solutions because the
-            // interpolated c1 can become colinear to the muscle line during
+            // interpolated c1 can become collinear to the muscle line during
             // interpolation.  Therefore we detect Frans-solution sv points near
             // the ends of r1->r2 here, and fade out the Frans result for them.
 

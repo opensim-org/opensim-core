@@ -162,7 +162,7 @@ private:
     void constructProperties() override;
 
     
-    // the tranform on my parent frame
+    // the transform on my parent frame
     SimTK::Transform _offsetTransform;
 //=============================================================================
 }; // END of class OffsetFrame
@@ -256,7 +256,7 @@ template <class C>
 void OffsetFrame<C>::setOffsetTransform(const SimTK::Transform& xform)
 {
     _offsetTransform = xform;
-    // Make sure properties are updated in case we either call gettters or
+    // Make sure properties are updated in case we either call getters or
     // serialize after this call
     set_translation(xform.p());
     set_orientation(xform.R().convertRotationToBodyFixedXYZ());

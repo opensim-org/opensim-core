@@ -27,7 +27,7 @@
 
 #include "osimCommonDLL.h"
 #include "Mtx.h"
-#include <string.h> // for memcpy in linux
+#include <string.h> // for memcpy in Linux
 
 
 //=============================================================================
@@ -235,15 +235,15 @@ RotateDeg(const double aAxis[3],double aDegrees,const double aP[3],double rP[3])
 
 
 //=============================================================================
-// MATRIX ARITHMATIC
+// MATRIX ARITHMETIC
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Assign a square matrix to the identidy matrix:  rI = I.
+ * Assign a square matrix to the identity matrix:  rI = I.
  * The matrix must be square.
  *
  * @param aN Dimension of the matrix (aN=nRows, aN=nCols).
- * @param rI Ouput identity matrix (rI = I).
+ * @param rI Output identity matrix (rI = I).
  * @return 0 on success, -1 on error.
  *
  */
@@ -272,7 +272,7 @@ Identity(int aN,double *rI)
  * Add two matrices.
  *
  * If the arguments are not valid, then a -1 is returned.
- * Othersise, 0 is returned.
+ * Otherwise, 0 is returned.
  *
  * It is permissible for aM to coincide with either aM1 or aM2.
  */
@@ -296,7 +296,7 @@ Add(int aNR,int aNC,const double *aM1,const double *aM2,double *aM)
  * Subtract two matrices.
  *
  * If the arguments are not valid, then a -1 is returned.
- * Othersise, 0 is returned.
+ * Otherwise, 0 is returned.
  *
  * It is permissible for aM to coincide with either aM1 or aM2. aM1 - aM2
  */
@@ -323,7 +323,7 @@ Subtract(int aNR,int aNC,const double *aM1,const double *aM2,double *aM)
  *
  * @param aNR Number of rows in aM.
  * @param aNC Number of columns in aM.
- * @param aM Matirx laid out in memory as aM[aNR][aNC].
+ * @param aM Matrix laid out in memory as aM[aNR][aNC].
  * @param aScalar Scalar value by which to multiply aM.
  * @param rM Result of aScalar * aM.
  * @return -1 if an error is encountered, 0 otherwise.
@@ -347,7 +347,7 @@ Multiply(int aNR,int aNC,const double *aM,double aScalar,double *rM)
  * Multiply two matrices.
  *
  * If the arguments are not valid (aM1,aM2,aM==NULL), then a -1 is returned.
- * Othersise, 0 is returned.
+ * Otherwise, 0 is returned.
  *
  * It is permissible for aM to overlap with either aM1 or aM2.
  */
@@ -376,7 +376,7 @@ Multiply(int aNR1,int aNCR,int aNC2,const double *aM1,const double *aM2,
 
         for(c2=0;c2<aNC2;c2++,ij++) {
 
-            // SET POINTERS TO BEGINNIG OF ROW OF aM1 AND COLUMN OF aM2
+            // SET POINTERS TO BEGINNING OF ROW OF aM1 AND COLUMN OF aM2
             ij1 = aM1 + r1*aNCR;
             ij2 = aM2 + c2;
 
@@ -438,7 +438,7 @@ Invert(int aN,const double *aM,double *rMInv)
         *Ir = rMInv + i;
     }
 
-    // REDUCE MATRIX TO UPPER TRIAGULAR USING ROW OPERATIONS
+    // REDUCE MATRIX TO UPPER TRIANGULAR USING ROW OPERATIONS
     for(r=0,n=aN-1;r<n;r++) {
 
         // SWAP
@@ -489,7 +489,7 @@ Invert(int aN,const double *aM,double *rMInv)
  * Transpose a matrix.
  *
  * If the arguments are invalid (e.g.,aM==NULL), then a -1 is returned.
- * Othersise, 0 is returned.
+ * Otherwise, 0 is returned.
  *
  * It is permissible for aM to overlap in memory with aMT.
  */

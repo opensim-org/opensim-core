@@ -136,7 +136,7 @@ AnalyzeTool::AnalyzeTool(Model& aModel) :
  * members of the object; that is, the object's DOMnode and XMLDocument
  * are not copied but set to NULL.  The reason for this is that for the
  * object and all its derived classes to establish the correct connection
- * to the XML document nodes, the the object would need to reconstruct based
+ * to the XML document nodes, the object would need to reconstruct based
  * on the XML document not the values of the object's member variables.
  *
  * There are three proper ways to generate an XML document for an Tool:
@@ -145,7 +145,7 @@ AnalyzeTool::AnalyzeTool(Model& aModel) :
  * In this case, the XML document is created by parsing the XML file.
  *
  * 2) Construction by Tool(const XMLDocument *aDocument).
- * This constructor explictly requests construction based on an
+ * This constructor explicitly requests construction based on an
  * XML document.  In this way the proper connection between an object's node
  * and the corresponding node within the XML document is established.
  * This constructor is a copy constructor of sorts because all essential
@@ -211,7 +211,7 @@ void AnalyzeTool::setupProperties()
                  "The first column contains the time.  The rest of the columns contain the states in the order "
                  "appropriate for the model. In a storage file, unlike a motion file (.mot), non-uniform time spacing "
                  "is allowed.  If the user-specified initial time for a simulation does not correspond exactly to "
-                 "one of the time stamps in this file, inerpolation is NOT used because it is sometimes necessary to "
+                 "one of the time stamps in this file, interpolation is NOT used because it is sometimes necessary to "
                  "an exact set of states for analyses.  Instead, the closest earlier set of states is used.";
     _statesFileNameProp.setComment(comment);
     _statesFileNameProp.setName("states_file");
@@ -254,7 +254,7 @@ operator=(const AnalyzeTool &aTool)
     // BASE CLASS
     AbstractTool::operator=(aTool);
 
-    // MEMEBER VARIABLES
+    // MEMBER VARIABLES
     _statesFileName = aTool._statesFileName;
     _coordinatesFileName = aTool._coordinatesFileName;
     _speedsFileName = aTool._speedsFileName;
@@ -291,7 +291,7 @@ createStatesStorageFromCoordinatesAndSpeeds(const Model& aModel, const Storage& 
     stateNames = aModel.getStateVariableNames();
     stateNames.insert(0, "time");
     
-    // Preserve the labels from the data file which are typically abreviated
+    // Preserve the labels from the data file which are typically abbreviated
     // label[0] = time
     for(int i=1; i<=nq; ++i){
         stateNames[i] = qLabels[i];
@@ -562,7 +562,7 @@ bool AnalyzeTool::run(bool plotting)
     _statesStore->getTime(iInitial,ti);
     _statesStore->getTime(iFinal,tf);
 
-    // It is rediculous too start before the specified time! So check we aren't doing something stupid.
+    // It is ridiculous to start before the specified time! So check we aren't doing something stupid.
     //while(ti < _ti){
     //  _statesStore->getTime(++iInitial,ti);
     //}
@@ -645,7 +645,7 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
                 cout << "Reason: " << e.what() << endl;
             }
         }
-        // Make sure model is atleast ready to provide kinematics
+        // Make sure model is at least ready to provide kinematics
         aModel.getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
         if(i==iInitial) {

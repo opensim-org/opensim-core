@@ -91,7 +91,7 @@ ForceReporter::ForceReporter(const std::string &aFileName): Analysis(aFileName, 
     allocateStorage();
 }
 
-// Copy constrctor and virtual copy 
+// Copy constructor and virtual copy 
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -299,7 +299,7 @@ int ForceReporter::record(const SimTK::State& s)
  * necessary initializations may be performed.
  *
  *
- * This method should be overriden in the child class.  It is
+ * This method should be overridden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *
@@ -335,7 +335,7 @@ begin(SimTK::State& s)
  *
  * When called during an integration, this method is meant to be called 
  *
- * This method should be overriden in derived classes.  It is
+ * This method should be overridden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
  * it is not necessary.
  *
@@ -359,7 +359,7 @@ step(const SimTK::State& s, int stepNumber )
  *
  * This method is meant to be called at the end of an integration 
  *
- * This method should be overriden in the child class.  It is
+ * This method should be overridden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  * @param state System state

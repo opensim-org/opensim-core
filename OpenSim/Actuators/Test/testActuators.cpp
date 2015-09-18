@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2013 Stanford University and the Authors                *
- * Author(s): Ajay Seth, Soha Pouya                                                       *
+ * Author(s): Ajay Seth, Soha Pouya                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -663,7 +663,7 @@ void testBodyActuator()
     // Get the default control vector of the model
     Vector modelControls = model->getDefaultControls();
     
-    // Spedicfy a vector of control signals to include desired torques and forces
+    // Specify a vector of control signals to include desired torques and forces
     Vector fixedControls(6);
     for (int i = 0; i < 3; i++){
         fixedControls(i) = torqueInG(i);
@@ -818,7 +818,7 @@ void testActuatorsCombination()
     // Get the default control vector of the model
     Vector modelControls = model->getDefaultControls();
 
-    // Spedicfy a vector of control signals for desired torques and forces
+    // Specify a vector of control signals for desired torques and forces
     Vector bodyActuator1Controls(6,0.0); 
     for (int i=0; i<3; i++) bodyActuator1Controls(i) = torqueInG(i); // torque in 3 axes
     for (int i=0; i<3; i++) bodyActuator1Controls(i+3) = forceInG(i); // force along 3 axes
@@ -883,11 +883,11 @@ void testActuatorsCombination()
     // Get the default control vector of the model
     Vector modelControls_2 = model->getDefaultControls();
 
-    // Spedicfy a vector of control signals for desired torques and forces
+    // Specify a vector of control signals for desired torques and forces
     Vector bodyActuatorSum_Controls(6,0.0);
 
     // make the torque component as the sum of body, torque and point actuators used 
-    // in previous tets case
+    // in previous test case
     for (int i = 0; i < 3; i++){
         bodyActuatorSum_Controls(i)   = 2*torqueInG(i);
         bodyActuatorSum_Controls(i+3) = 2*forceInG(i);
@@ -900,7 +900,7 @@ void testActuatorsCombination()
     bodyActuator_sum->addInControls(bodyActuatorSum_Controls, modelControls_2);
     model->setDefaultControls(modelControls_2);
 
-    // --------------------------- Comptue Acc and Compare -------------------------
+    // --------------------------- Compute Acc and Compare -------------------------
     // now compare the acc due to forces/torques applied by this body actuator
     model->computeStateVariableDerivatives(state2);
 

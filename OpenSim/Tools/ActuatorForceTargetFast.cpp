@@ -50,7 +50,7 @@ using SimTK::Matrix;
 #define USE_LINEAR_CONSTRAINT_MATRIX
 
 //==============================================================================
-// DESTRUCTOR & CONSTRUCTIOR(S)
+// DESTRUCTOR & CONSTRUCTOR(S)
 //==============================================================================
 //______________________________________________________________________________
 /**
@@ -147,7 +147,7 @@ prepareToOptimize(SimTK::State& s, double *x)
     }
 #endif
 
-    // use tempory copy of state because computeIsokineticForceAssumingInfinitelyStiffTendon
+    // use temporary copy of state because computeIsokineticForceAssumingInfinitelyStiffTendon
     // will change the muscle states. This is necessary ONLY in the case of deprecated muscles
     SimTK::State tempState = s;
     double activation = 1.0;
@@ -292,7 +292,7 @@ constraintFunc(const SimTK::Vector &x, const bool new_coefficients, SimTK::Vecto
 
     // Use precomputed constraint matrix
     constraints = _constraintMatrix * x + _constraintVector;
-    //cout <<"x = " << x[0] <<" contraintEqn = " << constraints[0] << endl;
+    //cout <<"x = " << x[0] <<" constraintEqn = " << constraints[0] << endl;
 
 #endif
     return(0);
