@@ -30,7 +30,6 @@ add_custom_command(
         ${swig_output_cxx_file_fullname} ${swig_output_header_file_fullname}
     COMMAND ${SWIG_EXECUTABLE} -v -c++ -python
         -I${OpenSim_SOURCE_DIR}
-        -I${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/
         -I${Simbody_INCLUDE_DIR}
         -o ${swig_output_cxx_file_fullname}
         -outdir ${CMAKE_CURRENT_BINARY_DIR}
