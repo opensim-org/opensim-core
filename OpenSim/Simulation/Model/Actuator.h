@@ -195,7 +195,7 @@ public:
     /**
     *  return ScalarActuator's override status
     */
-    bool isActuationOverriden(const SimTK::State& s) const;
+    bool isActuationOverridden(const SimTK::State& s) const;
 
     /**
     * set the actuation value used when the override is true 

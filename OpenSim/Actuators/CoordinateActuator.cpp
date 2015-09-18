@@ -188,7 +188,7 @@ void CoordinateActuator::computeForce( const SimTK::State& s,
     if(!_model) return;
 
    double force;
-   if (isActuationOverriden(s)) {
+   if (isActuationOverridden(s)) {
        force = computeOverrideActuation(s);
     } else {
        force = computeActuation(s);
