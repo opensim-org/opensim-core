@@ -60,7 +60,7 @@ namespace OpenSim {
         The slope of the force-velocity curve at a normalized velocity of 0,
         which is the maximum slope of the force-velocity curve. A
         physiologically accurate value for this parameter is 5 (according to
-        Leiber, page 55), which is the default value. Although this parameter
+        Lieber, page 55), which is the default value. Although this parameter
         can be changed, it must be positive and greater than
         max( (maxEccentricMultiplier-1)/1, 1). The value of this parameter also
         affects how much the eccentric and concentric curves can be bent by the
