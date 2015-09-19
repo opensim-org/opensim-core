@@ -10,16 +10,16 @@ matrix:
   include:
     - os: linux
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=on BUILD_DOXYGEN=on NPROC=1
+      env: BTYPE=RelWithDebInfo WRAP=on  DOXY=on  NPROC=1
     - os: linux
       compiler: gcc
-      env: BTYPE=RelWithDebInfo WRAP=off BUILD_DOXYGEN=off NPROC=3
+      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3
     - os: linux
       compiler: clang
-      env: BTYPE=Debug WRAP=off BUILD_DOXYGEN=off NPROC=3
+      env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3
     - os: osx
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=off BUILD_DOXYGEN=off NPROC=3
+      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3
 
 env:
   global:
@@ -117,7 +117,7 @@ before_install:
 install:
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
   # Configure OpenSim.
-  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE
+  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DOPENSIM_USE_MATHJAX=off
   # Build OpenSim.
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
   - if [[ "$WRAP" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PyWrap; fi
@@ -135,17 +135,23 @@ script:
   - if [ $RUN_VALGRIND ]; then find Testing/Temporary -name "MemoryCheck*" -print | xargs cat; fi
 
   ## Build doxygen documentation.
-  - if [ "$BUILD_DOXYGEN" = "on" ]; then make doxygen; fi
+  - if [ "$DOXY" = "on" ]; then make doxygen; fi
+  
+  ## Install OpenSim. Suppress output.
+  - make -j8 install
 
   ## Test python wrapping.
-  # Install OpenSim. Suppress output.
-  - if [ "$WRAP" = "on" ]; then make -j8 install > /dev/null; fi
   # Add OpenSim libraries to library path.
   - if [ "$WRAP" = "on" ]; then export LD_LIBRARY_PATH=$OPENSIM_HOME/lib; fi
   # Go to the python wrapping package directory.
   - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/sdk/python; fi
   # Run the python tests, verbosely.
   - if [ "$WRAP" = "on" ]; then nosetests -v; fi
+    
+  ## Upload doxygen to server for viewing.
+  # View resulting doxygen at myosin.sourceforge.net/<pull-request-number>
+  - export RSYNC_PASSWORD=rectusfemoris
+  - if [ "$DOXY" = "on" ]; then if [ $TRAVIS_PULL_REQUEST ]; then rsync -azvh $OPENSIM_HOME/sdk/doc/html_developer/ opensim-bot@web.sourceforge.net:/home/project-web/myosin/htdocs/$TRAVIS_PULL_REQUEST; fi; fi
 
   ## Ensure that there are no tabs in source code.
   - cd $TRAVIS_BUILD_DIR
