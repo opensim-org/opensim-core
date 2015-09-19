@@ -151,7 +151,8 @@ script:
   ## Upload doxygen to server for viewing.
   # View resulting doxygen at myosin.sourceforge.net/<pull-request-number>
   - export RSYNC_PASSWORD=rectusfemoris
-  - if [ "$DOXY" = "on" ]; then if [ $TRAVIS_PULL_REQUEST ]; then rsync -azvh $OPENSIM_HOME/sdk/doc/html_developer/ opensim-bot@web.sourceforge.net:/home/project-web/myosin/htdocs/$TRAVIS_PULL_REQUEST; fi; fi
+  # The `-e "ssh...` is for automatically accepting the ssh key.
+  - if [ "$DOXY" = "on" ]; then if [ $TRAVIS_PULL_REQUEST ]; then rsync -azv -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" $OPENSIM_HOME/sdk/doc/html_developer/ opensim-bot@web.sourceforge.net:/home/project-web/myosin/htdocs/$TRAVIS_PULL_REQUEST; fi; fi
 
   ## Ensure that there are no tabs in source code.
   - cd $TRAVIS_BUILD_DIR
