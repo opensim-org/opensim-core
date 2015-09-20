@@ -263,10 +263,11 @@ protected:
             throw Exception{"Dependent metadata for 'labels' has incorrect "
                     "length."};
 
-        for(const std::string& key : _dependentsMetaData.getKeys())
+        for(const std::string& key : _dependentsMetaData.getKeys()) {
             if(num_cols != _dependentsMetaData.getValueArrayForKey(key).size())
                 throw Exception{"All entries in dependent metadata must have "
                         "same length."};
+        }
     }
 
     virtual void validateAppendRow(const ETX&, const RowVector&) const {
