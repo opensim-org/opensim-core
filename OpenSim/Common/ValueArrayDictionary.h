@@ -29,8 +29,8 @@
 
 namespace OpenSim {
 
-/** ValueArrayDictionary represents a associative array mapping from a string to
-an AbstractValueArray.                                                        */
+/** ValueArrayDictionary represents an associative array mapping from a string 
+to an AbstractValueArray.                                                     */
 class ValueArrayDictionary {
 private:
     using Dictionary = std::map<std::string, 
