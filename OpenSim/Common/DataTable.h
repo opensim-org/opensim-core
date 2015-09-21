@@ -152,8 +152,9 @@ columns can contain metadata. DataTable_ as a whole can contain metadata.     */
 template<typename ETX = double, typename ETY = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
 public:
-    using RowVector    = SimTK::RowVector_<ETY>;
-    using ColumnVector = SimTK::Vector_<ETY>;
+    using RowVector     = SimTK::RowVector_<ETY>;
+    using RowVectorView = SimTK::RowVectorView_<ETY>;
+    using ColumnVector  = SimTK::Vector_<ETY>;
 
     DataTable_()                             = default;
     DataTable_(const DataTable_&)            = default;
@@ -190,12 +191,12 @@ public:
     }
 
     /** Get row at index.                                                     */
-    RowVector getRowAtIndex(size_t index) const {
+    RowVectorView getRowAtIndex(size_t index) const {
         return _depData.row(index);
     }
 
     /** Get row corresponding to the given entry in the independent column.   */
-    RowVector getRow(const ETX& ind) const {
+    RowVectorView getRow(const ETX& ind) const {
         auto iter = std::find(_indData.cbegin(), _indData.cend(), ind);
 
         if(iter == _indData.cend())
@@ -206,12 +207,12 @@ public:
     }
 
     /** Update row at index.                                                  */
-    RowVector updRowAtIndex(size_t index) {
+    RowVectorView updRowAtIndex(size_t index) {
         return _depData.updRow(index);
     }
 
     /** Update row corresponding to the given entry in the independent column.*/
-    RowVector updRow(const ETX& ind) {
+    RowVectorView updRow(const ETX& ind) {
         auto iter = std::find(_indData.cbegin(), _indData.cend(), ind);
 
         if(iter == _indData.cend())
