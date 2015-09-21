@@ -37,7 +37,7 @@ int main() {
 
     table.setDependentsMetaData(dep_metadata);
 
-    SimTK::RowVector_<double> row0{5};
+    SimTK::RowVector_<double> row0{5, double{0}};
     
     table.appendRow(0.00, row0);
 
