@@ -25,6 +25,7 @@
 int main() {
     using namespace SimTK;
     using namespace OpenSim;
+    using OpenSim::Exception;
 
     // Default construct, add metadata to columns, append rows one at a time.
 
@@ -68,44 +69,64 @@ int main() {
                                             std::string{"/path/to/file"});
 
     // Retrieve added metadata and rows to check.
-    assert(table.getNumRows() == unsigned{5});
-    assert(table.getNumColumns() == unsigned{5});
+    if(table.getNumRows() != unsigned{5})
+        throw Exception{"Test Failed: table.getNumRows() != unsigned{5}"};
+
+    if(table.getNumColumns() != unsigned{5})
+        throw Exception{"Test Failed: table.getNumColumns() != unsigned{5}"};
 
     const auto& dep_metadata_ref = table.getDependentsMetaData();
 
     const auto& labels_ref = dep_metadata_ref.getValueArrayForKey("labels");
     for(unsigned i = 0; i < 5; ++i)
-        assert(labels_ref[i].getValue<std::string>() == std::to_string(i + 1));
+        if(labels_ref[i].getValue<std::string>() != std::to_string(i + 1))
+            throw Exception{"Test failed: labels_ref[i].getValue<std::string>()"
+                    " != std::to_string(i + 1)"};
 
     const auto& col_index_ref 
         = dep_metadata_ref.getValueArrayForKey("column-index");
     for(unsigned i = 0; i < 5; ++i)
-        assert(col_index_ref[i].getValue<unsigned>() == i + 1);
+        if(col_index_ref[i].getValue<unsigned>() != i + 1)
+            throw Exception{"Test failed: col_index_ref[i].getValue<unsigned>()"
+                    " != i + 1"};
 
     const auto& ind_metadata_ref = table.getIndependentMetaData();
     
-    assert(ind_metadata_ref.getValueForKey("labels").getValue<std::string>() 
-           == std::string{"0"});
-    assert(ind_metadata_ref.getValueForKey("column-index").getValue<unsigned>()
-           == unsigned{0});
+    if(ind_metadata_ref.getValueForKey("labels").getValue<std::string>() 
+       != std::string{"0"})
+        throw Exception{"Test failed: ind_metadata_ref.getValueForKey"
+                "(\"labels\").getValue<std::string>() != std::string{\"0\"}"};
+    if(ind_metadata_ref.getValueForKey("column-index").getValue<unsigned>()
+       != unsigned{0})
+        throw Exception{"Test failed: ind_metadata_ref.getValueForKey"
+                "(\"column-index\").getValue<unsigned>() != unsigned{0}"};
 
     for(unsigned i = 0; i < 5; ++i) {
         for(unsigned j = 0; j < 5; ++j) {
             const auto row_i_1 = table.getRowAtIndex(i);
-            assert(row_i_1[j] == (row + i)[j]);
+            if(row_i_1[j] != (row + i)[j])
+                throw Exception{"Test failed: row_i_1[j] != (row + i)[j]"};
 
             const auto row_i_2 = table.getRow(0 + 0.25 * i);
-            assert(row_i_2[j] == (row + i)[j]);
+            if(row_i_2[j] != (row + i)[j])
+                throw Exception{"Test failed: row_i_2[j] != (row + i)[j]"};
 
-            assert(table.getDependentColumnAtIndex(i)[j] == j);
+            if(table.getDependentColumnAtIndex(i)[j] != j)
+                throw Exception{"Test failed: table.getDependentColumnAtIndex"
+                        "(i)[j] != j"};
         }
     }
 
     const auto& tab_metadata_ref = table.getTableMetaData();
-    assert(tab_metadata_ref.getValueForKey("DataRate").getValue<int>() 
-           == 600);
-    assert(tab_metadata_ref.getValueForKey("Filename").getValue<std::string>()
-           == std::string{"/path/to/file"});
+    if(tab_metadata_ref.getValueForKey("DataRate").getValue<int>() 
+       != 600)
+        throw Exception{"Test failed: tab_metadata_ref.getValueForKey"
+                "(\"DataRate\").getValue<int>() != 600"};
+    if(tab_metadata_ref.getValueForKey("Filename").getValue<std::string>()
+       != std::string{"/path/to/file"})
+        throw Exception{"Test failed: tab_metadata_ref.getValueForKey"
+                "(\"Filename\").getValue<std::string>() != std::string"
+                "{\"/path/to/file\"}"};
 
     return 0;
 }
