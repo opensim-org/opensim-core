@@ -20,12 +20,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#ifndef OPENSIM_TIMESERIESDATATABLE_H_
+#define OPENSIM_TIMESERIESDATATABLE_H_
+
 /** \file
 This file defines the TimeSeriesTable_ class, which is used by OpenSim to 
 provide an in-memory container for data access and manipulation.              */
-
-#ifndef OPENSIM_TIMESERIESDATATABLE_H
-#define OPENSIM_TIMESERIESDATATABLE_H
 
 #include "OpenSim/Common/DataTable.h"
 
@@ -53,4 +53,4 @@ using TimeSeriesTable = TimeSeriesTable_<SimTK::Real>;
 
 } // namespace OpenSim
 
-#endif // OPENSIM_TIMESERIESDATATABLE_H
+#endif // OPENSIM_TIMESERIESDATATABLE_H_
