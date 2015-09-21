@@ -791,9 +791,13 @@ void testExpressionBasedBushingForce()
     // Setup OpenSim model
     Model *osimModel = new Model;
     osimModel->setName("ExpressionBasedBushingTest");
-    //OpenSim bodies
+    osimModel->setGravity(gravity_vec);
+
+    // Create ball body and attach it to ground
+    // with a vertical slider
+
     const Ground& ground = osimModel->getGround();
-    
+
     OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
     ball.addMeshGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
@@ -810,33 +814,29 @@ void testExpressionBasedBushingForce()
     osimModel->addBody(&ball);
     osimModel->addJoint(&sliderY);
     
-    // Base Body
+    // Create base body and attach it to ground with a weld
+
     OpenSim::Body base("base_body", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
     base.addMeshGeometry("sphere.vtp");
     base.scale(Vec3(ball_radius), false);
-    //WeldJoint weld("", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
-    //FreeJoint free("", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
-    //SliderJoint sliderX("", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
-    PinJoint pinX("", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
-    osimModel->addBody(&base);
-    osimModel->addJoint(&pinX);
     
+    WeldJoint weld("", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
+    osimModel->addBody(&base);
+    osimModel->addJoint(&weld);
+    
+    // create an ExpressionBasedBushingForce that represents an
+    // uncoupled, linear bushing between the ball body and welded base body
     Vec3 rotStiffness(0);
     Vec3 transStiffness(stiffness);
     Vec3 rotDamping(0);
     Vec3 transDamping(0);
     
-    osimModel->setGravity(gravity_vec);
-    
     ExpressionBasedBushingForce spring("base_body", Vec3(0), Vec3(0), "ball", Vec3(0), Vec3(0), transStiffness, rotStiffness, transDamping, rotDamping);
     spring.setName("linear_bushing");
-    cout << spring.getFxExpression() << endl;
     
     osimModel->addForce(&spring);
     
     osimModel->print("ExpressionBasedBushingForceModel.osim");
-    //osimModel->setUseVisualizer(true);
-    
     
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(osimModel);
@@ -844,6 +844,7 @@ void testExpressionBasedBushingForce()
     
     SimTK::State& osim_state = osimModel->initSystem();
     
+    // set the initial height of the ball on slider
     slider_coords[0].setValue(osim_state, start_h);
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
     
@@ -858,7 +859,6 @@ void testExpressionBasedBushingForce()
     double nsteps = 10;
     double dt = final_t/nsteps;
     
-    
     for(int i = 1; i <=nsteps; i++){
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
@@ -866,18 +866,21 @@ void testExpressionBasedBushingForce()
         Vec3 pos;
         osimModel->updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
         
+        // compute the height based on the analytic solution for 1-D spring-mass
+        // system with zero-velocity at initial offset.
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
-        cout << "height = " << pos(1) << ", should be " << height << endl;
-        cout << "position = " << pos << endl;
+
+        // check that the simulated solution is equivalent to the analytic solution
         ASSERT_EQUAL(height, pos(1), 1e-4);
         
-        //Now check that the force reported by spring
+        // get the forces applied to the base and ball
         Array<double> model_force = spring.getRecordValues(osim_state);
         
-        // get the forces applied to the ground and ball
+        // compute the expected force on the ball
         double analytical_force = -stiffness*height;
-        // analytical force corresponds in direction to the force on the ball Y index = 7
-        cout << "f = " << model_force[7] << ", should be " << analytical_force << endl;
+
+        // check analytical force corresponds to the force on the ball 
+        // in the Y direction, index = 7
         ASSERT_EQUAL(analytical_force, model_force[7], 2e-4);
         
         manager.setInitialTime(dt*i);
