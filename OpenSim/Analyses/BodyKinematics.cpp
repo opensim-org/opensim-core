@@ -96,7 +96,7 @@ BodyKinematics::BodyKinematics(const std::string &aFileName):
 
 }
 
-// Copy constrctor and virtual copy 
+// Copy constructor and virtual copy 
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -312,7 +312,7 @@ updateBodiesToRecord()
         }
         int index = bs.getIndex(_bodies[i]);
         if(index<0) 
-            throw Exception("BodyKinematics: ERR- Cound not find body named '"+_bodies[i]+"'",__FILE__,__LINE__);
+            throw Exception("BodyKinematics: ERR- Could not find body named '"+_bodies[i]+"'",__FILE__,__LINE__);
         _bodyIndices.append(index);
     }
     _kin.setSize(6*_bodyIndices.getSize()+(_recordCenterOfMass?3:0));
@@ -391,7 +391,7 @@ getPositionStorage()
  * Set the capacity increments of all storage instances.
  *
  * @param aIncrement Increment by which storage capacities will be increased
- * when storage capcities run out.
+ * when storage capacities run out.
  */
 void BodyKinematics::
 setStorageCapacityIncrements(int aIncrement)
@@ -604,9 +604,9 @@ record(const SimTK::State& s)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration 
+ * This method is meant to be called at the beginning of an integration 
  *
- * This method should be overriden in the child class.  It is
+ * This method should be overridden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *
@@ -640,7 +640,7 @@ begin(SimTK::State& s )
  *
  * When called during an integration, this method is meant to be called 
  *
- * This method should be overriden in derived classes.  It is
+ * This method should be overridden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
  * it is not necessary.
  *
@@ -664,7 +664,7 @@ step(const SimTK::State& s, int stepNumber)
  *
  * This method is meant to be called at the end of an integration 
  *
- * This method should be overriden in the child class.  It is
+ * This method should be overridden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *

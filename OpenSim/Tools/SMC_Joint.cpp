@@ -56,7 +56,7 @@ SMC_Joint::~SMC_Joint()
  * Construct a task for a specified generalized coordinate.
  *
  * @param aQID ID of the generalized coordinate to be tracked.
- * @todo Insted of an integer id, the name of the coordinate
+ * @todo Instead of an integer id, the name of the coordinate
  * should be used.
  */
 SMC_Joint::SMC_Joint(const string &aCoordinateName) :

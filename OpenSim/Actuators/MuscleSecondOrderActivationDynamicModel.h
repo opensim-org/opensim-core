@@ -40,7 +40,7 @@ namespace OpenSim {
     This function is a muscle modeling utility class that simulates
     dynamics of muscle force development as a function of input excitation.
     Though it has been long been assumed that a second-order, critically damped 
-    filter models the twitch response of muscle very accurately (Bellmare et al)
+    filter models the twitch response of muscle very accurately (Bellmare et al.)
     first order models have persisted in the literature. Zajac originally chose
     to use first order, rather than second order equations in an effort to 
     reduce simulation times. First order activation dynamics were later 
@@ -52,8 +52,8 @@ namespace OpenSim {
     
     The figure shows that
     there are very large differences in the impulse response between a first 
-    order system (filled grey area), and Bellmare et al.'s experimental data
-    (thick grey line). The first order system has an instantaneous rise time,
+    order system (filled gray area), and Bellmare et al.'s experimental data
+    (thick gray line). The first order system has an instantaneous rise time,
     reaches a peak value when the impulse terminates (in 0 time). 
     Additionally the impulse response of the second order system is 
     orders of magnitude higher than the second order system (peaking at a 
@@ -67,7 +67,7 @@ namespace OpenSim {
     The quality of match between the second order model and the experimental data
     can be improved by having separate time constants for rising 
     (\f$\dot{a} > 0\f$) and falling (\f$\dot{a} < 0\f$). This small change can 
-    be easily encorporated into a canonical second order ODE of a damped system 
+    be easily incorporated into a canonical second order ODE of a damped system 
     with a forced input where \f$a\f$ is activation, \f$\zeta\f$ is damping, 
     \f$\omega\f$ is the natural frequency of the system, \f$\mu\f$ is excitation 
     (bounded by 0 and 1).
@@ -107,7 +107,7 @@ namespace OpenSim {
         \hat{a}_{min} = \frac{a_{min}}{1-a_{min}}         
     \f]
 
-    Subsituting in the rescaled activation and lower bound into the
+    Substituting in the rescaled activation and lower bound into the
     second order system yields
 
     \f[
@@ -122,14 +122,14 @@ namespace OpenSim {
 
 
     The default time to peak (or twitchTimeConstant) is 0.050 seconds. This is
-    on the faster end of skeletal muscles. Bellare et al. reported values of 
-    0.0657, 0.071 and 0.116 for the biceps brachaii, adductor pollicus, and the
-    solues respectively.
+    on the faster end of skeletal muscles. Bellmare et al. reported values of 
+    0.0657, 0.071 and 0.116 for the biceps brachii, adductor pollicis, and the
+    soleus respectively.
 
 
     <B>References</B>
 
-    Bellmare, F., Woods, JJ., Johansson,R., and Bigland-Ritchie,B (1983). 
+    Bellmare, F., Woods, JJ., Johansson, R., and Bigland-Ritchie, B. (1983). 
     Motor-unit discharge rates in maximal voluntary contractions of three human 
     muscles. J. Neurophysiology(50), pp. 1380-1392.
 
@@ -137,13 +137,13 @@ namespace OpenSim {
     Parameters to Simulate Dynamic Contractions in Older Adults. 
     ASME Journal of Biomechanical Engineering (125).
 
-    Winters, JM (1995). An Improved Muscle-Reflex Actuator for Use in 
+    Winters, JM. (1995). An Improved Muscle-Reflex Actuator for Use in 
     Large-Scale Neuromusculoskeletal Models. Annals of Biomedical Engineering
     (25), pp. 359-374.
 
     Zajac, FE (1989). Muscle and Tendon: Properties, Models, Scaling and 
     Application to Biomechanics and Motor Control. Critical Reviews in 
-    Bimedical Engineering (17), pp. 359-410.
+    Biomedical Engineering (17), pp. 359-410.
 
     <B>Computational Cost Details</B>
     All computational costs assume the following operation costs:

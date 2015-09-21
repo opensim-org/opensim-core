@@ -24,7 +24,7 @@
 //=============================================================================
 //  testJoints builds OpenSim models using the API and builds an equivalent
 //  Simbody system using the Simbody API for each test case. A test fails if 
-//  the OpenSim and Simbody final states of the simulation are not equivelent 
+//  the OpenSim and Simbody final states of the simulation are not equivalent 
 //  (norm(error) greater than 10x integration error tolerance)
 //
 //  Tests Include:
@@ -310,14 +310,14 @@ int main()
     }
 
     // Compare behavior of a double pendulum with an OpenSim Ball hip and custom pin knee
-    // OpenSim, system restricted to using euler angles exclusively to support EllipsoidJoint
+    // OpenSim, system restricted to using Euler angles exclusively to support EllipsoidJoint
     // and the fact that coordinates cannot map to/from quaternions
     try { ++itc; testBallJoint(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testBallJoint");
     }
     // Compare behavior of a Free hip and pin knee 
-    // OpenSim, system restricted to using euelr angles exclusively to support EllipsoidJoint
+    // OpenSim, system restricted to using Euler angles exclusively to support EllipsoidJoint
     // and the fact that coordinates cannot map to/from quaternions
     try { ++itc; testFreeJoint(); }
     catch (const std::exception& e){
@@ -329,7 +329,7 @@ int main()
         cout << e.what() <<endl;
         failures.push_back("testCustomWithMultidimFunction");
     }
-    // Compare custom implmentation of Gimbal to a Compund (multi-mobilizer) Joint version
+    // Compare custom implementation of Gimbal to a Compound (multi-mobilizer) Joint version
     try { ++itc; testCustomVsCompoundJoint(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testCustomVsCompoundJoint");
@@ -344,7 +344,7 @@ int main()
     if (!failures.empty()) {
         cout << "Done, with " << failures.size() << " failure(s) out of ";
         cout << itc << " test cases."<< endl;
-        cout << "Failiure(s): " << failures << endl;
+        cout << "Failure(s): " << failures << endl;
         return 1;
     }
 
@@ -1270,7 +1270,7 @@ void testPinJoint()
                           osim_shank, kneeInTibia, oInB);
     knee.getCoordinateSet()[0].setName("knee_q");
 
-    // verify that defaul copy constructor handles coordinates appropriately
+    // verify that default copy constructor handles coordinates appropriately
     auto knee2(knee);
     ASSERT(knee2.get_CoordinateSet().getSize() == knee.get_CoordinateSet().getSize());
     ASSERT(knee2.get_CoordinateSet()[0].getName() == "knee_q");
@@ -1278,7 +1278,7 @@ void testPinJoint()
     // Exercise new convenience constructor
     // TODO. prefixing the joint name to the frame names should not be necessary.
     // This is only required now because the search does not respect the local
-    // (relative) name, which it would find immediatel, and insted is searching
+    // (relative) name, which it would find immediately, and instead is searching
     // from the root of the tree. The "knee/" prefix can be removed here when 
     // the deprecated constructor used to construct the knee Joint instance (to
     // which we are comparing for this test) no longer has to force the local search.
@@ -1791,7 +1791,7 @@ void testEquivalentBodyForceFromGeneralizedForce()
     cout << endl;
     cout << "=====================================================================" << endl;
     cout << " OpenSim test equivalent spatial body force from applied gen. force." << endl;
-    cout << " Applied to all the joints of a gait model with coupler contraints." << endl; 
+    cout << " Applied to all the joints of a gait model with coupler constraints." << endl; 
     cout << "=====================================================================" << endl;
 
     // Need to load osim actuators because the following model has
@@ -1912,9 +1912,9 @@ void testAutomaticJointReversal()
     using namespace OpenSim;
 
     cout << endl;
-    cout << "==========================================================" << endl;
-    cout << " Test Joint Reversal against not reversed with contraints    " << endl;
-    cout << "==========================================================" << endl;
+    cout << "===========================================================" << endl;
+    cout << " Test Joint Reversal against not reversed with constraints    " << endl;
+    cout << "===========================================================" << endl;
 
 
     //==========================================================================================================

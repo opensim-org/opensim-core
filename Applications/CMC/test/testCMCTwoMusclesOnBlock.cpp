@@ -74,7 +74,7 @@ void testSingleRigidTendonMuscle() {
 
     // Use copy of the model because forward adds a ControlSetController to the model and the controls from CMC
     // are added in with those "feedforward" controls. Instead we want to verify that CMC can compute these 
-    // samecontrols
+    // same controls
     CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
     cmc.setModel(*modelCopy);
     cmc.run();

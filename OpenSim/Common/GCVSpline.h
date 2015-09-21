@@ -44,7 +44,7 @@ namespace OpenSim {
 
 /**
  * A class for representing a smooth function with a generalized
- * cross-validation spline.  Linear, cubic, qunitic, and heptic splines
+ * cross-validation spline.  Linear, cubic, quintic, and heptic splines
  * are supported:
  *
  * @code

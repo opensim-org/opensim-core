@@ -721,7 +721,7 @@ restart_spiral_wrap:
     if (far_side_wrap)
         theta = 2.0 * SimTK_PI - theta;
 
-    // use pythagorus to calculate the length of the spiral path (imaging
+    // use Pythagoras to calculate the length of the spiral path (imaging
     // a right triangle wrapping around the surface of a cylinder)
     x = _radius * theta;
     y = axial_dist;
@@ -751,7 +751,7 @@ restart_spiral_wrap:
 
         _calc_spiral_wrap_point(r1a, axial_vec, m, ax, sense, t, theta, wrap_pt);
 
-        // adjust r1/r2 tangent points if necessary to acheive tangency with
+        // adjust r1/r2 tangent points if necessary to achieve tangency with
         // the spiral path:
         if (i == 1 && iterations < MAX_ITERATIONS)
         {
@@ -777,7 +777,7 @@ restart_spiral_wrap:
 
 //_____________________________________________________________________________
 /**
- * Calculate a newpoint along a spiral wrapping path.
+ * Calculate a new point along a spiral wrapping path.
  *
  * @param r1a An existing point on the spiral path
  * @param axial_vec Vector from r1a parallel to cylinder axis

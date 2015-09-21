@@ -162,7 +162,7 @@ operator=(const Control &aControl)
 // GET AND SET
 //=============================================================================
 //-----------------------------------------------------------------------------
-// IS MODEL CONROL
+// IS MODEL CONTROL
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 void Control::
@@ -203,7 +203,7 @@ setDefaultParameterMin(double aMin)
     _defaultMin = aMin;
     if(_defaultMax < _defaultMin) {
         printf("Control.setDefaultParameterMin: ");
-        printf("WARN- minimum is greater than maxium, setting max = min.\n");
+        printf("WARN- minimum is greater than maximum, setting max = min.\n");
         _defaultMax = _defaultMin;
     }
 }
@@ -255,14 +255,14 @@ getFilterOn() const
 //_____________________________________________________________________________
 const double Control::getFirstTime() const
 {
-    string msg = "Control.getFirstTime: This method must be overriden.";
+    string msg = "Control.getFirstTime: This method must be overridden.";
     throw(Exception(msg,__FILE__,__LINE__));
     return 0;
 }
 //_____________________________________________________________________________
 const double Control::getLastTime() const
 {
-    string msg = "Control.getLastTime: This method must be overriden.";
+    string msg = "Control.getLastTime: This method must be overridden.";
     throw(Exception(msg,__FILE__,__LINE__));
     return 1; 
 }
@@ -275,7 +275,7 @@ const double Control::getLastTime() const
 void Control::
 simplify(const PropertySet &aProperties)
 {
-    string msg = "Control.simplify: This method must be overriden.";
+    string msg = "Control.simplify: This method must be overridden.";
     throw(Exception(msg,__FILE__,__LINE__));
 }
 

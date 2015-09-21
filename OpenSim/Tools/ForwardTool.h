@@ -53,7 +53,7 @@ class ControlSet;
 //=============================================================================
 //=============================================================================
 /**
- * A concrete tool for perfroming forward dynamics simulations
+ * A concrete tool for performing forward dynamics simulations
  *
  * @author Frank C. Anderson
  * @version 1.0
@@ -87,7 +87,7 @@ protected:
     /** pointer to the simulation Manager */
     Manager* _manager;
 
-    /*** Private place to save some deserializtion info in case needed later */
+    /*** Private place to save some deserialization info in case needed later */
     std::string _parsingLog;
 //=============================================================================
 // METHODS

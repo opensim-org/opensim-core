@@ -146,7 +146,7 @@ void testBody()
         ASSERT_EQUAL(p_known, xform.p(), SimTK::Vec3(SimTK::Eps),
             __FILE__, __LINE__,
             "testBody(): incorrect rod1 location in ground.");
-        // The rotation part is a pure bodyfixed Z-rotation by radAngle.
+        // The rotation part is a pure body-fixed Z-rotation by radAngle.
         SimTK::Vec3 angles = xform.R().convertRotationToBodyFixedXYZ();
         SimTK::Vec3 angs_known(0, 0, radAngle);
         ASSERT_EQUAL(angs_known, angles, SimTK::Vec3(SimTK::Eps), 
@@ -408,7 +408,7 @@ void testStationOnFrame()
     myStation->updConnector<PhysicalFrame>("reference_frame")
         .set_connectee_name("rod1");
     pendulum->addModelComponent(myStation);
-    // myStation should coinicde with com location of rod1 in ground
+    // myStation should coincide with com location of rod1 in ground
     SimTK::State& s = pendulum->initSystem();
     for (double ang = 0; ang <= 90.0; ang += 10.){
         double radAngle = SimTK::convertDegreesToRadians(ang);

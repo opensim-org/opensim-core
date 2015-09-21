@@ -61,7 +61,7 @@ int main(int argc,char **argv)
     string::size_type extSep = inputFileName.rfind(".");
 
     if (extSep == string::npos) {
-        cout<<"\n\versionUpdate.exe: ERROR- Unknown file type encontered. File extension must be specified.\n";
+        cout<<"\n\versionUpdate.exe: ERROR- Unknown file type encountered. File extension must be specified.\n";
         PrintUsage(argv[0], cout);
         return 1;// if '_fileName' contains path information...
     }
@@ -72,7 +72,7 @@ int main(int argc,char **argv)
         return (0);
     }
     if (extension != ".xml" && extension != ".osim") {
-        cout<<"\n\versionUpdate.exe: ERROR- Unknown file type encontered. Only .xml, .osim and .sto files are supported.\n";
+        cout<<"\n\versionUpdate.exe: ERROR- Unknown file type encountered. Only .xml, .osim and .sto files are supported.\n";
         PrintUsage(argv[0], cout);
         return 1;// if '_fileName' contains path information...
     }

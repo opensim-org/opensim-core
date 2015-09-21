@@ -94,7 +94,7 @@ public:
      */
     const std::string& getFilename() const;
     /**
-     * Set the name of the file to load the mesh from.
+     * %Set the name of the file to load the mesh from.
      */
     void setFilename(const std::string& filename);
 private:

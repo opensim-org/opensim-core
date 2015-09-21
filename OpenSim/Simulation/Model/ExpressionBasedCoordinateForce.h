@@ -40,7 +40,7 @@ public:
     OpenSim_DECLARE_PROPERTY(expression, std::string,
         "Expression of the force magnitude as a function of the coordinate value (q)"
         "and its time derivative (qdot). Note, expression cannot have any whitespace"
-        "seperating characters");
+        "separating characters");
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
@@ -63,7 +63,7 @@ public:
     const std::string& getCoordinateName() const {return get_coordinate();}
 
     /**
-    * Set the mathematical expression that defines the force magnitude of this
+    * %Set the mathematical expression that defines the force magnitude of this
     * coordinate force in terms of the coordinate value (q) and its
     * time derivative (qdot). Expressions with C-mathematical operations
     * such as +,-,*,/ and common functions: exp, pow, sqrt, sin, cos, tan, 

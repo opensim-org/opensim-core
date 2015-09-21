@@ -343,7 +343,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
                 coord.setValue(s, Q[coordinatesToColumns[j]], j==nq-1);*/
         }
 
-        // get forcce data
+        // get force data
         force = exForce.getForceAtTime(time);
         if(exForce._appliesTorque)
             torque = exForce.getTorqueAtTime(time);

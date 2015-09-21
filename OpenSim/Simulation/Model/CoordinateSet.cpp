@@ -68,7 +68,7 @@ CoordinateSet::CoordinateSet(const CoordinateSet& aCoordinateSet):
 void CoordinateSet::populate(Model& model)
 {
     setModel(model);
-    // Append Coordinate from Joint's cordrinate set to the model's set as pointers
+    // Append Coordinate from Joint's coordinate set to the model's set as pointers
     setMemoryOwner(false);
     setSize(0);
 

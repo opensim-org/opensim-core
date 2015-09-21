@@ -131,7 +131,7 @@ private:
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Set all member variables to NULL values.
+ * %Set all member variables to NULL values.
  */
 void
 setNull()
@@ -251,7 +251,7 @@ friend std::ostream& operator<<(std::ostream &aOut,const Set<T> &aSet)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Set whether or not this set owns the memory pointed to by the pointers
+ * %Set whether or not this Set owns the memory pointed to by the pointers
  * it holds.
  *
  * @param aTrueFalse If true, all the memory associated with each of the
@@ -348,7 +348,7 @@ int getCapacity() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the amount by which the capacity is increased when the capacity of
+ * %Set the amount by which the capacity is increased when the capacity of
  * of the array in exceeded.
  * If the specified increment is negative or this method
  * is called with no argument, the capacity is set to double whenever
@@ -377,7 +377,7 @@ int getCapacityIncrement() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the size of the array.  This method can be used only to decrease
+ * %Set the size of the array.  This method can be used only to decrease
  * the size of the array.  If the size of an array is decreased, all objects
  * in the array that become invalid as a result of the decrease are
  * deleted.
@@ -588,7 +588,7 @@ virtual void clearAndDestroy()
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the object at a specified index.  A copy of the object is NOT made.
+ * %Set the object at a specified index.  A copy of the object is NOT made.
  * If getMemoryOwner() is true, this Set takes over ownership of the object and
  * deletes it when the Set itself is deleted.
  *
@@ -617,7 +617,7 @@ virtual bool set(int aIndex, T *aObject, bool preserveGroups = false)
 #ifndef SWIG
 //_____________________________________________________________________________
 /**
- * Set the object at a specified index.  A copy is made of the
+ * %Set the object at a specified index.  A copy is made of the
  * object and added to the Set.  The original object is unaffected.
  *
  * @param aIndex Index of the array element to be set.  aIndex must be
@@ -735,7 +735,7 @@ virtual T* getLast() const
  *
  * A binary search is performed (i.e., the array is repeatedly subdivided
  * into two bins one of which must contain the specified until the
- * approprite element is identified), so the performance of this method
+ * appropriate element is identified), so the performance of this method
  * is approximately ln(n), where n is the size of the array.
  *
  * @param aObject Value to which the array elements are compared.

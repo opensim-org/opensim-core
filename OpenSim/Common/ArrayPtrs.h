@@ -38,7 +38,7 @@
 /**
  * A class for storing an array of pointers to objects of type T.
  *
- * In constrast to class Array<T>, when an object is added to this array
+ * In contrast to class Array<T>, when an object is added to this array
  * a copy is not made.  Rather, a pointer to the added object is
  * stored in the array.
  *
@@ -83,7 +83,7 @@ protected:
 // METHODS
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //=============================================================================
-// CONTRUCTION
+// CONSTRUCTION
 //=============================================================================
 public:
 //_____________________________________________________________________________
@@ -135,7 +135,7 @@ ArrayPtrs(const ArrayPtrs<T> &aArray)
 private:
 //_____________________________________________________________________________
 /**
- * Set all member variables to their null or default values.
+ * %Set all member variables to their null or default values.
  */
 void setNull()
 {
@@ -301,7 +301,7 @@ friend std::ostream& operator<<(std::ostream &aOut,const ArrayPtrs<T> &aArray)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Set whether or not this array owns the memory pointed to by the pointers
+ * %Set whether or not this array owns the memory pointed to by the pointers
  * in its array.
  *
  * @param aTrueFalse If true, all the memory associated with each of the
@@ -465,7 +465,7 @@ int getCapacity() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the amount by which the capacity is increased when the capacity of
+ * %Set the amount by which the capacity is increased when the capacity of
  * of the array in exceeded.
  * If the specified increment is negative or this method
  * is called with no argument, the capacity is set to double whenever
@@ -494,7 +494,7 @@ int getCapacityIncrement() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the size of the array.  This method can be used only to decrease
+ * %Set the size of the array.  This method can be used only to decrease
  * the size of the array.  If the size of an array is decreased, all objects
  * in the array that become invalid as a result of the decrease are
  * deleted.
@@ -782,7 +782,7 @@ bool remove(const T* aObject)
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the object at a specified index.  A copy of the object is NOT made.
+ * %Set the object at a specified index.  A copy of the object is NOT made.
  *
  * If the set method is successful and the array is set as the memory
  * owner, the previous object stored at the specified index is deleted.
@@ -950,7 +950,7 @@ T* getLast() const
  *
  * A binary search is performed (i.e., the array is repeatedly subdivided
  * into two bins one of which must contain the specified until the
- * approprite element is identified), so the performance of this method
+ * appropriate element is identified), so the performance of this method
  * is approximately ln(n), where n is the size of the array.
  *
  * @param aValue Value to which the array elements are compared.

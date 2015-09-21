@@ -99,7 +99,7 @@ void scaleGait2354()
     // Construct model and read parameters file
     subject = new ScaleTool("subject01_Setup_Scale.xml");
 
-    // Keep track of the folder containing setup file, wil be used to locate results to comapre against
+    // Keep track of the folder containing setup file, will be used to locate results to compare against
     setupFilePath=subject->getPathToSubject();
 
     model = subject->createModel();
@@ -153,7 +153,7 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
 
     Model guiModel("gait2354_simbody.osim");
     
-    // Keep track of the folder containing setup file, wil be used to locate results to comapre against
+    // Keep track of the folder containing setup file, will be used to locate results to compare against
     guiModel.initSystem();
     MarkerSet *markerSet = new MarkerSet(guiModel, setupFilePath + subject->getGenericModelMaker().getMarkerSetFileName());
     guiModel.updateMarkerSet(*markerSet);
@@ -200,7 +200,7 @@ void scaleModelWithLigament()
     // Construct model and read parameters file
     scaleTool = new ScaleTool("toyLigamentModel_Setup_Scale.xml");
 
-    // Keep track of the folder containing setup file, wil be used to locate results to comapre against
+    // Keep track of the folder containing setup file, will be used to locate results to compare against
     setupFilePath = scaleTool->getPathToSubject();
 
     model = scaleTool->createModel();

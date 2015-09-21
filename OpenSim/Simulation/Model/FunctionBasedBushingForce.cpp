@@ -221,7 +221,7 @@ void FunctionBasedBushingForce::setBody2BushingLocation(const Vec3& location,
 // COMPUTATION
 //=============================================================================
 /** Compute the deflection (spatial separation) of the two frames connected
-    by the bushing force. Angualar displacement expressed in Euler angles.
+    by the bushing force. Angular displacement expressed in Euler angles.
     The force and potential energy are determined by the deflection.  */
 SimTK::Vec6 FunctionBasedBushingForce::computeDeflection(const SimTK::State& s) const
 {
@@ -404,7 +404,7 @@ double CoupledBushingForce::computePotentialEnergy(const SimTK::State& s) const
 }
 */
 
-// TO DO:  correct potential energy caculation
+// TO DO:  correct potential energy calculation
 /* Potential energy is computed by underlying SimTK::Force. */
 double FunctionBasedBushingForce::computePotentialEnergy(const SimTK::State& s) const
 {
@@ -545,7 +545,7 @@ void FunctionBasedBushingForce::generateDecorations
             SimTK::Vec3 p_b2M_b2 = _inb2.p();
             SimTK::Vec3 p_GM_G(0.0);
             
-            // fing the body2 location of the bushing in ground
+            // find the body2 location of the bushing in ground
             _model->getSimbodyEngine().transformPosition(state, 
                 _model->getBodySet().get(get_body_2()), p_b2M_b2, p_GM_G);
 

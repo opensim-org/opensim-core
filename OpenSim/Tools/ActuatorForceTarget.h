@@ -44,7 +44,7 @@ namespace OpenSim {
  * production.
  *
  * The performance criterion is a sum of two terms.  The first term
- * is the sum of actutor stresses squared.  The second term is a weighted
+ * is the sum of actuator stresses squared.  The second term is a weighted
  * sum of terms designed to achieve a set of desired accelerations that
  * will drive the dynamic model toward a set of target kinematic trajectories.
  * The desired accelerations are according to the Proportional Derivative (PD)
@@ -52,7 +52,7 @@ namespace OpenSim {
  *
  * Because the performance criterion is simply a long sum of things,
  * achieving the desired accelerations can be compromised in order to
- * reduce the forces (or moments) applied by the actutors.  This feature
+ * reduce the forces (or moments) applied by the actuators.  This feature
  * is what is exploited by the Residual Reduction Algorithm.
  *
  * Although this target is fairly robust (meaning the optimizer should not
