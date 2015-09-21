@@ -67,7 +67,7 @@ public:
     PropertyTransform(const std::string &aName,
         const Array<double> &aArray);
     PropertyTransform(const PropertyTransform &aProperty);
-    /*virtual*/ PropertyTransform* clone() const;
+    /*virtual*/ PropertyTransform* clone() const override;
 
     //--------------------------------------------------------------------------
     // OPERATORS
@@ -88,14 +88,14 @@ public:
 #ifndef SWIG
     virtual const SimTK::Transform& getValueTransform() const;
 #endif
-    virtual void setValue(int aSize,const double aArray[]);
+    virtual void setValue(int aSize,const double aArray[]) override;
     void getRotationsAndTranslationsAsArray6(double aArray[]) const;
 
-    virtual void setValue(const Array<double> &aArray){
+    virtual void setValue(const Array<double> &aArray) override{
         setValue(6, &aArray[0]);
     };
     // VALUE as String
-    virtual std::string toString() const;
+    virtual std::string toString() const override;
 
 
 //=============================================================================

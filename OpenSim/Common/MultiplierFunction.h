@@ -74,7 +74,7 @@ public:
     MultiplierFunction(const MultiplierFunction &aFunction);
     virtual ~MultiplierFunction();
 
-    virtual void init(Function* aFunction);
+    virtual void init(Function* aFunction) override;
 
 private:
     void setNull();
@@ -101,11 +101,11 @@ public:
     //--------------------------------------------------------------------------
     // EVALUATION
     //--------------------------------------------------------------------------
-    double calcValue(const SimTK::Vector& x) const;
-    double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const;
-    int getArgumentSize() const;
-    int getMaxDerivativeOrder() const;
-    SimTK::Function* createSimTKFunction() const;
+    double calcValue(const SimTK::Vector& x) const override;
+    double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const override;
+    int getArgumentSize() const override;
+    int getMaxDerivativeOrder() const override;
+    SimTK::Function* createSimTKFunction() const override;
 
 //=============================================================================
 };  // END class MultiplierFunction

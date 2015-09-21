@@ -90,14 +90,14 @@ public:
     // TYPE
     std::string getTypeName() const override;
     // VALUE
-    virtual void setValue(const Array<bool> &aArray);
-    virtual void setValue(int aSize,const bool aArray[]);
-    virtual Array<bool>& getValueBoolArray();
-    virtual const Array<bool>& getValueBoolArray() const;
+    virtual void setValue(const Array<bool> &aArray) override;
+    virtual void setValue(int aSize,const bool aArray[]) override;
+    virtual Array<bool>& getValueBoolArray() override;
+    virtual const Array<bool>& getValueBoolArray() const override;
     // SIZE
-    virtual int getArraySize() const { return _array.getSize(); }
+    virtual int getArraySize() const override { return _array.getSize(); }
     // VALUE as String
-    virtual std::string toString() const;
+    virtual std::string toString() const override;
     void clearValues() override { _array.setSize(0); }
 
 //=============================================================================

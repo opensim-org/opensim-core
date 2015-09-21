@@ -97,23 +97,23 @@ public:
     /** 
      * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
      */
-    virtual OpenSim::Array<std::string> getRecordLabels() const ;
+    virtual OpenSim::Array<std::string> getRecordLabels() const override ;
     /**
     *  Provide the value(s) to be reported that correspond to the labels
     */
-    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
+    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override ;
 
 protected:
 
     /**
      * Create a SimTK::Force which implements this Force.
      */
-    void extendAddToSystem(SimTK::MultibodySystem& system) const;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 
 private:
     // INITIALIZATION
-    void constructProperties();
+    void constructProperties() override;
 
 //==============================================================================
 };  // END of class HuntCrossleyForce

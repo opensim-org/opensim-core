@@ -88,7 +88,7 @@ public:
     virtual void print(std::ostream &aOut) const;
 #endif
     // override virtual function from std::exception
-    const char* what() const throw() {return getMessage();}
+    const char* what() const throw() override {return getMessage();}
 
 //=============================================================================
 };  // END CLASS Exception

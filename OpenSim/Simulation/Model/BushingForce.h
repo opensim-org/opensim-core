@@ -92,7 +92,7 @@ public:
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
 
     /** Potential energy is the elastic energy stored in the bushing. */
-    double computePotentialEnergy(const SimTK::State& s) const final;
+    double computePotentialEnergy(const SimTK::State& s) const final override;
 
     //--------------------------------------------------------------------------
     // Reporting
@@ -116,7 +116,7 @@ private:
                                                                     const override;
 
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 //==============================================================================
 };  // END of class BushingForce
 //==============================================================================

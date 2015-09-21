@@ -47,7 +47,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
        ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
              numKnobs(numParameters), OptimizerSystem(numParameters), si(s), osimModel(aModel){}
                 
-    int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const {
+    int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const override {
 
         // make a copy of out initial states
         State s = si;

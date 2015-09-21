@@ -228,7 +228,7 @@ public:
     void interrupt() {
         _throwException=true;
     }
-    virtual int step( const SimTK::State& s, int stepNumber) {
+    virtual int step( const SimTK::State& s, int stepNumber) override {
         if (_throwException)
             throw Exception("Operation Aborted");
         return 0;

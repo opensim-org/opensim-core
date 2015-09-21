@@ -65,7 +65,7 @@ public:
     PropertyInt();
     PropertyInt(const std::string &aName,int aValue);
     PropertyInt(const PropertyInt &aProperty);
-    /*virtual*/ PropertyInt* clone() const;
+    /*virtual*/ PropertyInt* clone() const override;
 
     //--------------------------------------------------------------------------
     // OPERATORS
@@ -80,11 +80,11 @@ public:
     // TYPE
     std::string getTypeName() const override;
     // VALUE
-    virtual void setValue(int aValue);
-    virtual int& getValueInt();
-    virtual const int& getValueInt() const;
+    virtual void setValue(int aValue) override;
+    virtual int& getValueInt() override;
+    virtual const int& getValueInt() const override;
     // VALUE as String
-    virtual std::string toString() const;
+    virtual std::string toString() const override;
 
 //=============================================================================
 };  // END of class PropertyInt

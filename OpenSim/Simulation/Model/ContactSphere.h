@@ -84,7 +84,7 @@ public:
     void copyData(const ContactSphere& source) {
         _radius = source._radius;
     }
-    SimTK::ContactGeometry createSimTKContactGeometry();
+    SimTK::ContactGeometry createSimTKContactGeometry() override;
 
     // ACCESSORS
     /**

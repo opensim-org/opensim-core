@@ -128,7 +128,7 @@ public:
     bool getUseModelForceSet() { return _useModelForceSet; }
     void setUseModelForceSet(bool aUseModelActuatorSet) { _useModelForceSet = aUseModelActuatorSet; }
 
-    virtual void setModel(Model& aModel);
+    virtual void setModel(Model& aModel) override;
     void setActivationExponent(const double aExponent) { _activationExponent=aExponent; }
     double getActivationExponent() const { return _activationExponent; }
     void setUseMusclePhysiology(const bool useIt) { _useMusclePhysiology=useIt; }
@@ -141,11 +141,11 @@ public:
     // ANALYSIS
     //--------------------------------------------------------------------------
     virtual int
-        begin(SimTK::State& s );
+        begin(SimTK::State& s ) override;
     virtual int
-        step(const SimTK::State& s, int setNumber );
+        step(const SimTK::State& s, int setNumber ) override;
     virtual int
-        end(SimTK::State& s );
+        end(SimTK::State& s ) override;
 protected:
     virtual int
         record(const SimTK::State& s );
@@ -155,7 +155,7 @@ protected:
 public:
     virtual int
         printResults(const std::string &aBaseName,const std::string &aDir="",
-        double aDT=-1.0,const std::string &aExtension=".sto");
+        double aDT=-1.0,const std::string &aExtension=".sto") override;
 
 //=============================================================================
 };  // END of class StaticOptimization

@@ -125,7 +125,7 @@ public:
     //--------------------------------------------------------------------------
     // EVALUATION
     //--------------------------------------------------------------------------
-    virtual SimTK::Function* createSimTKFunction() const;
+    virtual SimTK::Function* createSimTKFunction() const override;
 
 //=============================================================================
 };  // END class StepFunction

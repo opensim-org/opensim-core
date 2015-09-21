@@ -57,7 +57,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
            p_manager = new Manager(osimModel, *p_integrator);
        }
                 
-    int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const {
+    int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const override {
 
         // make a copy of the initial states
         State s = si;

@@ -102,11 +102,11 @@ public:
     MultidimensionalFunction() {};
     virtual ~MultidimensionalFunction() {};
 
-    virtual double calcValue(const SimTK::Vector& x) const
+    virtual double calcValue(const SimTK::Vector& x) const override
     {
         return 2*x[0]*x[0] + x[1];
     }
-    virtual double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const
+    virtual double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const override
     {
        int nd = (int)derivComponents.size();
        if (nd < 1)
@@ -123,9 +123,9 @@ public:
        }
        return 0;
     }
-    virtual int getArgumentSize() const {return 2;}
-    virtual int getMaxDerivativeOrder() const { return 2;}
-    virtual SimTK::Function* createSimTKFunction() const
+    virtual int getArgumentSize() const override {return 2;}
+    virtual int getMaxDerivativeOrder() const override { return 2;}
+    virtual SimTK::Function* createSimTKFunction() const override
     {
         return new FunctionAdapter(*this);
     }

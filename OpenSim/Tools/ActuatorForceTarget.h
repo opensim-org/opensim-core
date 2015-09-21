@@ -108,13 +108,13 @@ public:
 
 public:
     void setStressTermWeight(double aWeight);
-    bool prepareToOptimize(SimTK::State& s, double *x);
+    bool prepareToOptimize(SimTK::State& s, double *x) override;
 
     //--------------------------------------------------------------------------
     // REQUIRED OPTIMIZATION TARGET METHODS
     //--------------------------------------------------------------------------
-   int objectiveFunc(const SimTK::Vector &aF, bool new_coefficients, SimTK::Real& rP) const;
-   int gradientFunc(const SimTK::Vector &x, bool new_coefficients, SimTK::Vector &gradient ) const;
+   int objectiveFunc(const SimTK::Vector &aF, bool new_coefficients, SimTK::Real& rP) const override;
+   int gradientFunc(const SimTK::Vector &x, bool new_coefficients, SimTK::Vector &gradient ) const override;
 
 private:
     void computePerformanceVectors(SimTK::State& s, const SimTK::Vector &aF, SimTK::Vector &rAccelPerformanceVector, SimTK::Vector &rForcePerformanceVector);

@@ -84,7 +84,7 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
-    virtual void computeDesiredAccelerations(const SimTK::State& s, double aT);
+    virtual void computeDesiredAccelerations(const SimTK::State& s, double aT) override;
 
 
 //=============================================================================

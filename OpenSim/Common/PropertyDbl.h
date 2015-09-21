@@ -63,7 +63,7 @@ public:
     PropertyDbl();
     PropertyDbl(const std::string &aName,double aValue);
     PropertyDbl(const PropertyDbl &aProperty);
-    virtual PropertyDbl* clone() const;
+    virtual PropertyDbl* clone() const override;
     virtual ~PropertyDbl() { };
 
     //--------------------------------------------------------------------------
@@ -79,13 +79,13 @@ public:
     // TYPE
     std::string getTypeName() const override;
     // VALUE
-    virtual void setValue(double aValue);
+    virtual void setValue(double aValue) override;
 #ifndef SWIG
-    virtual double& getValueDbl();
+    virtual double& getValueDbl() override;
 #endif
-    virtual const double& getValueDbl() const;
+    virtual const double& getValueDbl() const override;
     // VALUE as String
-    virtual std::string toString() const;
+    virtual std::string toString() const override;
 
 //=============================================================================
 };  // END of class PropertyDbl

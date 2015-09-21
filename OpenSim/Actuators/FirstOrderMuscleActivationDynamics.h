@@ -164,7 +164,7 @@ public:
 //==============================================================================
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
     /** Implementation of a first-order activation dynamic model that respects
         the lower bound on activation while preserving the expected steady-state

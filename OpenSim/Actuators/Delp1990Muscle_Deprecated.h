@@ -134,8 +134,8 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATION
     //--------------------------------------------------------------------------
-    virtual double computeActuation(const SimTK::State& s) const;
-    virtual double computeIsometricForce(SimTK::State& s, double activation) const;
+    virtual double computeActuation(const SimTK::State& s) const override;
+    virtual double computeIsometricForce(SimTK::State& s, double activation) const override;
 
     virtual Function* getActiveForceLengthCurve() const;
     virtual bool setActiveForceLengthCurve(Function* aActiveForceLengthCurve);

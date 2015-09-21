@@ -91,22 +91,22 @@ public:
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
-    virtual void setModel(Model& aModel);
+    virtual void setModel(Model& aModel) override;
     void setPoint(const SimTK::Vec3 &aPoint);
     SimTK::Vec3 getPoint() const;
 
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
-    virtual void computeErrors(const SimTK::State& s, double aT);
-    virtual void computeDesiredAccelerations(const SimTK::State& s, double aT);
-    virtual void computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF);
-    virtual void computeAccelerations(const SimTK::State& s );
+    virtual void computeErrors(const SimTK::State& s, double aT) override;
+    virtual void computeDesiredAccelerations(const SimTK::State& s, double aT) override;
+    virtual void computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF) override;
+    virtual void computeAccelerations(const SimTK::State& s ) override;
 
     //--------------------------------------------------------------------------
     // XML
     //--------------------------------------------------------------------------
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
 //=============================================================================
 };  // END of class CMC_Point

@@ -186,22 +186,22 @@ public:
     //-------------------------------------------------------------------------
     // GET AND SET
     //-------------------------------------------------------------------------
-    virtual void setModel(Model &aModel);
+    virtual void setModel(Model &aModel) override;
 
     //-------------------------------------------------------------------------
     // INTEGRATION
     //-------------------------------------------------------------------------
     virtual void initialize(const SimTK::State& s); 
-    virtual int begin( SimTK::State& s);
-    virtual int step( const SimTK::State& s, int stepNumber);
-    virtual int end( SimTK::State& s);
+    virtual int begin( SimTK::State& s) override;
+    virtual int step( const SimTK::State& s, int stepNumber) override;
+    virtual int end( SimTK::State& s) override;
 
     //-------------------------------------------------------------------------
     // IO
     //-------------------------------------------------------------------------
     virtual int
         printResults(const std::string &aBaseName,const std::string &aDir="",
-        double aDT=-1.0,const std::string &aExtension=".sto");
+        double aDT=-1.0,const std::string &aExtension=".sto") override;
 
 
     void addContactConstraintFromExternalForce(ExternalForce *externalForce);

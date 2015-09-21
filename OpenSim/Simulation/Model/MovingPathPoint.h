@@ -108,8 +108,8 @@ public:
     MovingPathPoint& operator=(const MovingPathPoint &aPoint);
 #endif
    void copyData(const MovingPathPoint &aPoint);
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
-    virtual void init(const PathPoint& aPoint);
+    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
+    virtual void init(const PathPoint& aPoint) override;
 
     const Coordinate* getXCoordinate() const { return _xCoordinate; }
     const Coordinate* getYCoordinate() const { return _yCoordinate; }
@@ -139,7 +139,7 @@ public:
     void setYFunction( const SimTK::State& s, Function& aFunction);
     void setZFunction( const SimTK::State& s, Function& aFunction);
 #endif
-   virtual void scale(const SimTK::State& s, const SimTK::Vec3& aScaleFactors);
+   virtual void scale(const SimTK::State& s, const SimTK::Vec3& aScaleFactors) override;
 
 private:
     void setNull();

@@ -114,7 +114,7 @@ public:
         operator=(const ForwardTool &aForwardTool);
 #endif
 
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
@@ -133,7 +133,7 @@ public:
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
-    virtual bool run() SWIG_DECLARE_EXCEPTION;
+    virtual bool run() override SWIG_DECLARE_EXCEPTION;
     void printResults();
 
     //--------------------------------------------------------------------------
