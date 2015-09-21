@@ -79,7 +79,7 @@ public:
     static ForceSet* CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel,double aOptimalForce = 1,bool aIncludeLockedAndConstrainedCoordinates = true);
 
     bool isCoordinateValid() const;
-    double getSpeed( const SimTK::State& s) const;
+    double getSpeed( const SimTK::State& s) const override;
 
     /** %Set the reference pointer to point to the given Coordinate and set
     the 'coordinate' name property also. **/
@@ -116,7 +116,7 @@ private:
     // Implement Object interface.
     //--------------------------------------------------------------------------
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
 
     // Note: reference pointers are automatically set to null on construction 

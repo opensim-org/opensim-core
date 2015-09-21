@@ -138,12 +138,12 @@ public:
     GCVSpline(const GCVSpline &aSpline);
     virtual ~GCVSpline();
 
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 private:
     void setNull();
     void setupProperties();
     void setEqual(const GCVSpline &aSpline);
-    virtual void init(Function* aFunction);
+    virtual void init(Function* aFunction) override;
 
     //--------------------------------------------------------------------------
     // OPERATORS
@@ -227,7 +227,7 @@ public:
     virtual bool deletePoint(int aIndex);
     virtual bool deletePoints(const Array<int>& indices);
     virtual int addPoint(double aX, double aY);
-    SimTK::Function* createSimTKFunction() const;
+    SimTK::Function* createSimTKFunction() const override;
 
     //--------------------------------------------------------------------------
     // EVALUATION

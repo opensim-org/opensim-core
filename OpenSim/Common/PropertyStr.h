@@ -65,7 +65,7 @@ public:
     PropertyStr(const std::string &aName,
         const std::string &aValue);
     PropertyStr(const PropertyStr &aProperty);
-    /*virtual*/ PropertyStr* clone() const;
+    /*virtual*/ PropertyStr* clone() const override;
 
     //--------------------------------------------------------------------------
     // OPERATORS
@@ -82,13 +82,13 @@ public:
     // TYPE
     std::string getTypeName() const override;
     // VALUE
-    virtual void setValue(const std::string &aValue);
+    virtual void setValue(const std::string &aValue) override;
 #ifndef SWIG
-    virtual std::string& getValueStr();
+    virtual std::string& getValueStr() override;
 #endif
-    virtual const std::string& getValueStr() const;
+    virtual const std::string& getValueStr() const override;
     // VALUE as String
-    virtual std::string toString() const;
+    virtual std::string toString() const override;
 
     // Special method to reset the value
     void clearValue() { _value = getDefaultStr(); setValueIsDefault(true); }

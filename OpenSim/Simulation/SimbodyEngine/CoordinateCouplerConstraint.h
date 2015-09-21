@@ -115,7 +115,7 @@ public:
         { set_coupled_coordinates_function(*aFunction); }
 
     // SCALE
-    virtual void scale(const ScaleSet& aScaleSet);
+    virtual void scale(const ScaleSet& aScaleSet) override;
 
 protected:
     void extendConnectToModel(Model& aModel) override;
@@ -126,7 +126,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
     friend class SimbodyEngine;
 
 //=============================================================================

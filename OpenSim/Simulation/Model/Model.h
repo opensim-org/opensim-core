@@ -963,7 +963,7 @@ private:
 //  void copyData(const Model& source);
 
     // Connect properties to local pointers.
-    void constructProperties();
+    void constructProperties() override;
 
     // construct outputs
     void constructOutputs() override;

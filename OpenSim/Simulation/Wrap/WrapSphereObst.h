@@ -80,13 +80,13 @@ public:
     double getLength() const { return _length; }
     void setLength(double aLength) { _length = aLength; }
 
-    virtual const char* getWrapTypeName() const;
-    virtual std::string getDimensionsString() const;
-    virtual void scale(const SimTK::Vec3& aScaleFactors) { }
+    virtual const char* getWrapTypeName() const override;
+    virtual std::string getDimensionsString() const override;
+    virtual void scale(const SimTK::Vec3& aScaleFactors) override { }
     void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 #ifndef SWIG
     virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
+        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
 #endif
 protected:
     void setupProperties();

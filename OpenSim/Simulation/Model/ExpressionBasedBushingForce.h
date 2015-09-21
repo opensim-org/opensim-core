@@ -229,7 +229,7 @@ public:
       */
     virtual void computeForce(const SimTK::State& s, 
                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const;
+                              SimTK::Vector& generalizedForces) const override;
 
     /** Potential energy calculation is not implemented */
 
@@ -242,11 +242,11 @@ public:
      * Provide name(s) of the quantities (column labels) of the force value(s) 
      * to be reported.
      */
-    virtual OpenSim::Array<std::string> getRecordLabels() const ;
+    virtual OpenSim::Array<std::string> getRecordLabels() const override ;
     /**
     *  Provide the value(s) to be reported that correspond to the labels
     */
-    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
+    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override ;
 
 protected:
     //--------------------------------------------------------------------------
@@ -271,7 +271,7 @@ private:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
 //==============================================================================
 };  // END of class ExpressionBasedBushingForce

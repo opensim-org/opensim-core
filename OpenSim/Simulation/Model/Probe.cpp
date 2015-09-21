@@ -53,7 +53,7 @@ public:
     Stage getDependsOnStageVirtual(int order) const
     {   return Stage::Acceleration; }
  
-    void calcCachedValueVirtual(const State& s, int derivOrder, T& value) const
+    void calcCachedValueVirtual(const State& s, int derivOrder, T& value) const override
     {
         SimTK_ASSERT1_ALWAYS(derivOrder==0,
             "ProbeMeasure::Implementation::calcCachedValueVirtual():"

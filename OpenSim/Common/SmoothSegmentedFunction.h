@@ -430,7 +430,7 @@ namespace OpenSim {
        This is a required virtual function required because this class extends 
        the SimTK::Function interface.
        */
-        double calcValue(const SimTK::Vector& x) const; /*virtual*/
+        double calcValue(const SimTK::Vector& x) const override; /*virtual*/
 
         /** Refer to the documentation for calcDerivative(double x, int order) 
        because this function is identical in function to 
@@ -439,7 +439,7 @@ namespace OpenSim {
        the SimTK::Function interface.*/
        double calcDerivative(
                                const SimTK::Array_<int>& derivComponents, 
-                               const SimTK::Vector& x) const; /*virtual*/ 
+                               const SimTK::Vector& x) const override; /*virtual*/ 
 
        /**This will return the size of the vector that the 
        calcValue(const SimTK::Vector& x) require. This is a required virtual 
@@ -458,12 +458,12 @@ namespace OpenSim {
         calcDerivative(double x, int order) instead.
 
        */
-       int getArgumentSize() const; /*virtual*/ 
+       int getArgumentSize() const override; /*virtual*/ 
 
        /**@return The maximum order derivative that this object is capable of 
        returning*/
        /*virtual*/ 
-       int getMaxDerivativeOrder() const;
+       int getMaxDerivativeOrder() const override;
                
     };
 

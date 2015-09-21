@@ -86,12 +86,12 @@ public:
     //--------------------------------------------------------------------------
     // EVALUATION
     //--------------------------------------------------------------------------
-    virtual double calcValue(const SimTK::Vector& xUnused) const
+    virtual double calcValue(const SimTK::Vector& xUnused) const override
     {
         return _value;
     }
     const double getValue() const { return _value; }
-    SimTK::Function* createSimTKFunction() const;
+    SimTK::Function* createSimTKFunction() const override;
 //=============================================================================
 };  // END class Constant
 //=============================================================================

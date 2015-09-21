@@ -145,20 +145,20 @@ public:
     //--------------------------------------------------------------------------
     // Reference Interface
     //--------------------------------------------------------------------------
-    virtual int getNumRefs() const {return _markerData->getNumMarkers(); }
+    virtual int getNumRefs() const override {return _markerData->getNumMarkers(); }
     /** get the time range for which the MarkersReference values are valid,
         based on the loaded marker data.*/
-    virtual SimTK::Vec2 getValidTimeRange() const;
+    virtual SimTK::Vec2 getValidTimeRange() const override;
     /** get the names of the markers serving as references */
-    virtual const SimTK::Array_<std::string>& getNames() const;
+    virtual const SimTK::Array_<std::string>& getNames() const override;
     /** get the value of the MarkersReference */
-    virtual void getValues(const SimTK::State &s, SimTK::Array_<SimTK::Vec3> &values) const;
+    virtual void getValues(const SimTK::State &s, SimTK::Array_<SimTK::Vec3> &values) const override;
     /** get the speed value of the MarkersReference */
     virtual void getSpeedValues(const SimTK::State &s, SimTK::Array_<SimTK::Vec3> &speedValues) const;
     /** get the acceleration value of the MarkersReference */
     virtual void getAccelerationValues(const SimTK::State &s, SimTK::Array_<SimTK::Vec3> &accValues) const;
     /** get the weighting (importance) of meeting this MarkersReference in the same order as names*/
-    virtual void getWeights(const SimTK::State &s, SimTK::Array_<double> &weights) const;
+    virtual void getWeights(const SimTK::State &s, SimTK::Array_<double> &weights) const override;
 
     //--------------------------------------------------------------------------
     // Convenience Access

@@ -78,7 +78,7 @@ virtual ~ControllableSpring() {};
 
 /* define private utilities to be used by the constructors. */
 private:
-void constructProperties()
+void constructProperties() override
 {
     constructProperty_rest_length(1.0);
 }
@@ -103,7 +103,7 @@ public:
 ** direction between them. */
 void computeForce(const SimTK::State& s, 
                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+                              SimTK::Vector& generalizedForces) const override
 {
     // make sure the model and bodies are instantiated
     if (!_model) return;

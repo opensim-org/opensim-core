@@ -106,7 +106,7 @@ public:
         return *this;
     }
 
-    virtual bool operator==(const Property_Deprecated& aProperty) const {
+    virtual bool operator==(const Property_Deprecated& aProperty) const override {
         bool equal = Property_Deprecated::operator==(aProperty);
         if (equal){ 
             if (_value==NULL) return (((PropertyObjPtr&) aProperty)._value==NULL);
@@ -122,12 +122,12 @@ public:
     std::string getTypeName() const override
     {   return T::getClassName(); }
     // VALUE
-    virtual bool isValidObject(const Object *aValue) const { return dynamic_cast<const T*>(aValue)!=0; }
-    virtual void setValue(Object *aValue) { delete _value; _value = dynamic_cast<T*>(aValue); }
+    virtual bool isValidObject(const Object *aValue) const override { return dynamic_cast<const T*>(aValue)!=0; }
+    virtual void setValue(Object *aValue) override { delete _value; _value = dynamic_cast<T*>(aValue); }
     const Object* getValueObjPtr() const override { return _value; }
     T*& getValueObjPtrRef() { return _value; }
     // VALUE as String
-    virtual std::string toString() const {return "(ObjectPointer)";}
+    virtual std::string toString() const override {return "(ObjectPointer)";}
 
 //=============================================================================
 };  // END of class PropertyObjPtr

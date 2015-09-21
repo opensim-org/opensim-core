@@ -111,7 +111,7 @@ private:
     void extendConnectToModel(Model& aModel) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-    void constructProperties();
+    void constructProperties() override;
 
     // Construct coordinates according to the SpatialTransform of the CustomJoint
     void constructCoordinates();

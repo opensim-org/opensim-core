@@ -42,7 +42,7 @@ public:
     ~ComponentWithStateVariables() {
         //std::cout << "ComponentWithStateVariables destructed" << std::endl;
     }
-    ComponentWithStateVariables* clone() const {
+    ComponentWithStateVariables* clone() const override {
         return new ComponentWithStateVariables(*this);
     }
 };

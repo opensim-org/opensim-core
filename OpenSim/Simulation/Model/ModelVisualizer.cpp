@@ -78,7 +78,7 @@ public:
     complicated; here we're just setting/clearing visualization flags so no 
     synchronization is required. Note that the Visualizer's InputSilo class 
     handles synchronization automatically but this one does not. */
-    /*virtual*/ bool menuSelected(int menu, int item) {
+    /*virtual*/ bool menuSelected(int menu, int item) override {
         if (menu != ShowMenuId) return false; // some other menu
         ModelDisplayHints& hints = _model.updDisplayHints();
         switch(item) {

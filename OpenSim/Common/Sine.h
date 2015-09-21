@@ -116,24 +116,24 @@ public:
     //--------------------------------------------------------------------------
     // EVALUATION
     //--------------------------------------------------------------------------
-    virtual double calcValue(const SimTK::Vector& x) const
+    virtual double calcValue(const SimTK::Vector& x) const override
     {
         return _amplitude*sin(_omega*x[0] + _phase);
     }
     
-    double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const
+    double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const override
     {
         int n = (int)derivComponents.size();
 
         return _amplitude*pow(_omega,n)*sin(_omega*x[0] + _phase + n*SimTK::Pi/2);
     }
 
-    SimTK::Function* createSimTKFunction() const {
+    SimTK::Function* createSimTKFunction() const override {
         return new FunctionAdapter(*this);
     }
    
-    int getArgumentSize() const {return 1;}
-    int getMaxDerivativeOrder() const {return 10;}
+    int getArgumentSize() const override {return 1;}
+    int getMaxDerivativeOrder() const override {return 10;}
 
 //=============================================================================
 };  // END class Sine

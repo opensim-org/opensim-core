@@ -101,7 +101,7 @@ public:
      * @param s Current state of the system
      * @param controls Controls being calculated
      */
-    void computeControls(const SimTK::State& s, SimTK::Vector &controls) const
+    void computeControls(const SimTK::State& s, SimTK::Vector &controls) const override
     {
         // Get the current time in the simulation.
         double t = s.getTime();

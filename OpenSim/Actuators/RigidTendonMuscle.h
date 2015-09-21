@@ -80,41 +80,41 @@ public:
     // assignment operator.
 
     /** activation level for this muscle */
-    void setActivation(SimTK::State& s, double activation) const {setExcitation(s, activation); }
+    void setActivation(SimTK::State& s, double activation) const override {setExcitation(s, activation); }
 
 protected:
 
     /** calculate muscle's length related values such fiber and tendon lengths,
         normalized lengths, pennation angle, etc... */
-    void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const;
+    void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const override;
 
     /** calculate muscle's velocity related values such fiber and tendon velocities,
         normalized velocities, pennation angular velocity, etc... */
-    void  calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const;
+    void  calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const override;
 
     /** calculate muscle's active and passive force-length, force-velocity, 
         tendon force, relationships and their related values */
-    void  calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const;
+    void  calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const override;
 
     /** calculate muscle's fiber and tendon potential energy */
     void calcMusclePotentialEnergyInfo(const SimTK::State& s,
-        MusclePotentialEnergyInfo& mpei) const;
+        MusclePotentialEnergyInfo& mpei) const override;
 
     /** compute initial fiber length (velocity) such that muscle fiber and tendon are 
         in static equilibrium and update the state */
-    void computeInitialFiberEquilibrium(SimTK::State& s) const {}
+    void computeInitialFiberEquilibrium(SimTK::State& s) const override {}
 
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
-    double computeActuation( const SimTK::State& s ) const;
+    double computeActuation( const SimTK::State& s ) const override;
     double computeIsometricForce(SimTK::State& s, double activation) const;
     void equilibrate(SimTK::State& s) const {}
     
 
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
 protected:
 

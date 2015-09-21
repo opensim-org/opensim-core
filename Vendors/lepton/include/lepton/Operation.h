@@ -159,28 +159,28 @@ class LEPTON_EXPORT Operation::Constant : public Operation {
 public:
     Constant(double value) : value(value) {
     }
-    std::string getName() const {
+    std::string getName() const override {
         std::stringstream name;
         name << value;
         return name.str();
     }
-    Id getId() const {
+    Id getId() const override {
         return CONSTANT;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 0;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Constant(value);
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return value;
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
     double getValue() const {
         return value;
     }
-    bool operator!=(const Operation& op) const {
+    bool operator!=(const Operation& op) const override {
         const Constant* o = dynamic_cast<const Constant*>(&op);
         return (o == NULL || o->value != value);
     }
@@ -192,26 +192,26 @@ class LEPTON_EXPORT Operation::Variable : public Operation {
 public:
     Variable(const std::string& name) : name(name) {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return name;
     }
-    Id getId() const {
+    Id getId() const override {
         return VARIABLE;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 0;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Variable(name);
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         std::map<std::string, double>::const_iterator iter = variables.find(name);
         if (iter == variables.end())
             throw Exception("No value specified for variable "+name);
         return iter->second;
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
-    bool operator!=(const Operation& op) const {
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
+    bool operator!=(const Operation& op) const override {
         const Variable* o = dynamic_cast<const Variable*>(&op);
         return (o == NULL || o->name != name);
     }
@@ -229,31 +229,31 @@ public:
     ~Custom() {
         delete function;
     }
-    std::string getName() const {
+    std::string getName() const override {
         return name;
     }
-    Id getId() const {
+    Id getId() const override {
         return CUSTOM;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return function->getNumArguments();
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         Custom* clone = new Custom(name, function->clone());
         clone->isDerivative = isDerivative;
         clone->derivOrder = derivOrder;
         return clone;
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         if (isDerivative)
             return function->evaluateDerivative(args, &derivOrder[0]);
         return function->evaluate(args);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
     const std::vector<int>& getDerivOrder() const {
         return derivOrder;
     }
-    bool operator!=(const Operation& op) const {
+    bool operator!=(const Operation& op) const override {
         const Custom* o = dynamic_cast<const Custom*>(&op);
         return (o == NULL || o->name != name || o->isDerivative != isDerivative || o->derivOrder != derivOrder);
     }
@@ -268,26 +268,26 @@ class LEPTON_EXPORT Operation::Add : public Operation {
 public:
     Add() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "+";
     }
-    Id getId() const {
+    Id getId() const override {
         return ADD;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 2;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Add();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return args[0]+args[1];
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
-    bool isInfixOperator() const {
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
+    bool isInfixOperator() const override {
         return true;
     }
-    bool isSymmetric() const {
+    bool isSymmetric() const override {
         return true;
     }
 };
@@ -296,23 +296,23 @@ class LEPTON_EXPORT Operation::Subtract : public Operation {
 public:
     Subtract() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "-";
     }
-    Id getId() const {
+    Id getId() const override {
         return SUBTRACT;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 2;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Subtract();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return args[0]-args[1];
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
-    bool isInfixOperator() const {
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
+    bool isInfixOperator() const override {
         return true;
     }
 };
@@ -321,26 +321,26 @@ class LEPTON_EXPORT Operation::Multiply : public Operation {
 public:
     Multiply() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "*";
     }
-    Id getId() const {
+    Id getId() const override {
         return MULTIPLY;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 2;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Multiply();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return args[0]*args[1];
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
-    bool isInfixOperator() const {
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
+    bool isInfixOperator() const override {
         return true;
     }
-    bool isSymmetric() const {
+    bool isSymmetric() const override {
         return true;
     }
 };
@@ -349,23 +349,23 @@ class LEPTON_EXPORT Operation::Divide : public Operation {
 public:
     Divide() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "/";
     }
-    Id getId() const {
+    Id getId() const override {
         return DIVIDE;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 2;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Divide();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return args[0]/args[1];
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
-    bool isInfixOperator() const {
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
+    bool isInfixOperator() const override {
         return true;
     }
 };
@@ -374,23 +374,23 @@ class LEPTON_EXPORT Operation::Power : public Operation {
 public:
     Power() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "^";
     }
-    Id getId() const {
+    Id getId() const override {
         return POWER;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 2;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Power();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return std::pow(args[0], args[1]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
-    bool isInfixOperator() const {
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
+    bool isInfixOperator() const override {
         return true;
     }
 };
@@ -399,530 +399,530 @@ class LEPTON_EXPORT Operation::Negate : public Operation {
 public:
     Negate() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "-";
     }
-    Id getId() const {
+    Id getId() const override {
         return NEGATE;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Negate();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return -args[0];
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Sqrt : public Operation {
 public:
     Sqrt() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "sqrt";
     }
-    Id getId() const {
+    Id getId() const override {
         return SQRT;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Sqrt();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return std::sqrt(args[0]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Exp : public Operation {
 public:
     Exp() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "exp";
     }
-    Id getId() const {
+    Id getId() const override {
         return EXP;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Exp();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return std::exp(args[0]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Log : public Operation {
 public:
     Log() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "log";
     }
-    Id getId() const {
+    Id getId() const override {
         return LOG;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Log();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return std::log(args[0]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Sin : public Operation {
 public:
     Sin() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "sin";
     }
-    Id getId() const {
+    Id getId() const override {
         return SIN;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Sin();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return std::sin(args[0]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Cos : public Operation {
 public:
     Cos() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "cos";
     }
-    Id getId() const {
+    Id getId() const override {
         return COS;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Cos();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return std::cos(args[0]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Sec : public Operation {
 public:
     Sec() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "sec";
     }
-    Id getId() const {
+    Id getId() const override {
         return SEC;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Sec();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return 1.0/std::cos(args[0]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Csc : public Operation {
 public:
     Csc() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "csc";
     }
-    Id getId() const {
+    Id getId() const override {
         return CSC;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Csc();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return 1.0/std::sin(args[0]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Tan : public Operation {
 public:
     Tan() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "tan";
     }
-    Id getId() const {
+    Id getId() const override {
         return TAN;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Tan();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return std::tan(args[0]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Cot : public Operation {
 public:
     Cot() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "cot";
     }
-    Id getId() const {
+    Id getId() const override {
         return COT;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Cot();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return 1.0/std::tan(args[0]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Asin : public Operation {
 public:
     Asin() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "asin";
     }
-    Id getId() const {
+    Id getId() const override {
         return ASIN;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Asin();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return std::asin(args[0]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Acos : public Operation {
 public:
     Acos() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "acos";
     }
-    Id getId() const {
+    Id getId() const override {
         return ACOS;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Acos();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return std::acos(args[0]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Atan : public Operation {
 public:
     Atan() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "atan";
     }
-    Id getId() const {
+    Id getId() const override {
         return ATAN;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Atan();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return std::atan(args[0]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Sinh : public Operation {
 public:
     Sinh() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "sinh";
     }
-    Id getId() const {
+    Id getId() const override {
         return SINH;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Sinh();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return std::sinh(args[0]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Cosh : public Operation {
 public:
     Cosh() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "cosh";
     }
-    Id getId() const {
+    Id getId() const override {
         return COSH;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Cosh();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return std::cosh(args[0]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Tanh : public Operation {
 public:
     Tanh() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "tanh";
     }
-    Id getId() const {
+    Id getId() const override {
         return TANH;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Tanh();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return std::tanh(args[0]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Erf : public Operation {
 public:
     Erf() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "erf";
     }
-    Id getId() const {
+    Id getId() const override {
         return ERF;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Erf();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const;
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Erfc : public Operation {
 public:
     Erfc() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "erfc";
     }
-    Id getId() const {
+    Id getId() const override {
         return ERFC;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Erfc();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const;
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Step : public Operation {
 public:
     Step() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "step";
     }
-    Id getId() const {
+    Id getId() const override {
         return STEP;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Step();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return (args[0] >= 0.0 ? 1.0 : 0.0);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Delta : public Operation {
 public:
     Delta() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "delta";
     }
-    Id getId() const {
+    Id getId() const override {
         return DELTA;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Delta();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return (args[0] == 0.0 ? 1.0 : 0.0);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Square : public Operation {
 public:
     Square() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "square";
     }
-    Id getId() const {
+    Id getId() const override {
         return SQUARE;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Square();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return args[0]*args[0];
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Cube : public Operation {
 public:
     Cube() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "cube";
     }
-    Id getId() const {
+    Id getId() const override {
         return CUBE;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Cube();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return args[0]*args[0]*args[0];
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Reciprocal : public Operation {
 public:
     Reciprocal() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "recip";
     }
-    Id getId() const {
+    Id getId() const override {
         return RECIPROCAL;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Reciprocal();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return 1.0/args[0];
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::AddConstant : public Operation {
 public:
     AddConstant(double value) : value(value) {
     }
-    std::string getName() const {
+    std::string getName() const override {
         std::stringstream name;
         name << value << "+";
         return name.str();
     }
-    Id getId() const {
+    Id getId() const override {
         return ADD_CONSTANT;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new AddConstant(value);
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return args[0]+value;
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
     double getValue() const {
         return value;
     }
-    bool operator!=(const Operation& op) const {
+    bool operator!=(const Operation& op) const override {
         const AddConstant* o = dynamic_cast<const AddConstant*>(&op);
         return (o == NULL || o->value != value);
     }
@@ -934,28 +934,28 @@ class LEPTON_EXPORT Operation::MultiplyConstant : public Operation {
 public:
     MultiplyConstant(double value) : value(value) {
     }
-    std::string getName() const {
+    std::string getName() const override {
         std::stringstream name;
         name << value << "*";
         return name.str();
     }
-    Id getId() const {
+    Id getId() const override {
         return MULTIPLY_CONSTANT;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new MultiplyConstant(value);
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return args[0]*value;
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
     double getValue() const {
         return value;
     }
-    bool operator!=(const Operation& op) const {
+    bool operator!=(const Operation& op) const override {
         const MultiplyConstant* o = dynamic_cast<const MultiplyConstant*>(&op);
         return (o == NULL || o->value != value);
     }
@@ -969,21 +969,21 @@ public:
         intValue = (int) value;
         isIntPower = (intValue == value);
     }
-    std::string getName() const {
+    std::string getName() const override {
         std::stringstream name;
         name << "^" << value;
         return name.str();
     }
-    Id getId() const {
+    Id getId() const override {
         return POWER_CONSTANT;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new PowerConstant(value);
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         if (isIntPower) {
             // Integer powers can be computed much more quickly by repeated multiplication.
             
@@ -1005,15 +1005,15 @@ public:
         else
         return std::pow(args[0], value);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
     double getValue() const {
         return value;
     }
-    bool operator!=(const Operation& op) const {
+    bool operator!=(const Operation& op) const override {
         const PowerConstant* o = dynamic_cast<const PowerConstant*>(&op);
         return (o == NULL || o->value != value);
     }
-    bool isInfixOperator() const {
+    bool isInfixOperator() const override {
         return true;
     }
 private:
@@ -1026,68 +1026,68 @@ class LEPTON_EXPORT Operation::Min : public Operation {
 public:
     Min() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "min";
     }
-    Id getId() const {
+    Id getId() const override {
         return MIN;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 2;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Min();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         // parens around (std::min) are workaround for horrible microsoft max/min macro trouble
         return (std::min)(args[0], args[1]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Max : public Operation {
 public:
     Max() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "max";
     }
-    Id getId() const {
+    Id getId() const override {
         return MAX;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 2;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Max();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         // parens around (std::min) are workaround for horrible microsoft max/min macro trouble
         return (std::max)(args[0], args[1]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 class LEPTON_EXPORT Operation::Abs : public Operation {
 public:
     Abs() {
     }
-    std::string getName() const {
+    std::string getName() const override {
         return "abs";
     }
-    Id getId() const {
+    Id getId() const override {
         return ABS;
     }
-    int getNumArguments() const {
+    int getNumArguments() const override {
         return 1;
     }
-    Operation* clone() const {
+    Operation* clone() const override {
         return new Abs();
     }
-    double evaluate(double* args, const std::map<std::string, double>& variables) const {
+    double evaluate(double* args, const std::map<std::string, double>& variables) const override {
         return std::abs(args[0]);
     }
-    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const;
+    ExpressionTreeNode differentiate(const std::vector<ExpressionTreeNode>& children, const std::vector<ExpressionTreeNode>& childDerivs, const std::string& variable) const override;
 };
 
 } // namespace Lepton
