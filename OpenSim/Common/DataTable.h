@@ -46,14 +46,18 @@ This class is abstract and cannot be used directly. Create instances of
 DataTable_ instead. See DataTable_ for details on ussage.                     */
 class AbstractDataTable {
 protected:
+    /** ValueDictionary represents an associative array mapping from string to
+    an AbstractValue.                                                         */
     class ValueDictionary {
     public:
         using AbstractValue = SimTK::AbstractValue;
 
+        /** Get the AbstractValue corresponding to a given key.               */
         const AbstractValue& getValueForKey(const std::string& key) const {
             return _dictionary.getValueArrayForKey(key)[0];
         }
 
+        /** Set the value corresponding to a given key.                       */
         template<typename ValueType>
         void setValueForKey(const std::string& key,
                             const ValueType& value) {
@@ -62,10 +66,12 @@ protected:
             _dictionary.setValueArrayForKey(key, value_array);
         }
 
+        /** Remove a key and its associated value.                            */
         void removeValueForKey(const std::string& key) {
             _dictionary.removeValueArrayForKey(key);
         }
 
+        /** GEt all the existing keys as a std::vector.                       */
         std::vector<std::string> getKeys() const {
             return _dictionary.getKeys();
         }
