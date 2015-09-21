@@ -90,10 +90,13 @@ int main() {
            == unsigned{0});
 
     for(unsigned i = 0; i < 5; ++i) {
-        assert(table.getIndependentColumn()[i] == 0 + 0.25 * i);
         for(unsigned j = 0; j < 5; ++j) {
-            assert(table.getRowAtIndex(i)[j] == (row + i)[j]);
-            assert(table.getRow(0 + 0.25 * i)[j] == (row + i)[j]);
+            const auto row_i_1 = table.getRowAtIndex(i);
+            assert(row_i_1[j] == (row + i)[j]);
+
+            const auto row_i_2 = table.getRow(0 + 0.25 * i);
+            assert(row_i_2[j] == (row + i)[j]);
+
             assert(table.getDependentColumnAtIndex(i)[j] == j);
         }
     }

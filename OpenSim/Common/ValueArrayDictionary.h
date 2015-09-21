@@ -57,12 +57,14 @@ public:
         _dictionary.erase(key);
     }
 
-    /** Get an iterator to the associative array. The returned object is an 
-    std::pair where the first element is the iterator representing the
-    beginning and second element is the iterator representing the end.        */
-    std::pair<Dictionary::const_iterator, Dictionary::const_iterator>
-    getKeyValueIterator() const {
-        return std::make_pair(_dictionary.cbegin(), _dictionary.cend());
+    /** Get begin iterator to the associative array.                          */
+    Dictionary::const_iterator getKeyValueBegin() const {
+        return _dictionary.cbegin();
+    }
+
+    /** Get begin iterator to the associative array.                          */
+    Dictionary::const_iterator getKeyValueEnd() const {
+        return _dictionary.cend();
     }
 
     /** Get all the existing keys as a std::vector.                           */
