@@ -66,10 +66,12 @@ There are directories of tests scattered throughout the repository. Each
 directory contains most of the files (e.g., .osim model files) necessary to run
 the tests. When building, these files are copied over into the build tree. Some
 of these files are used by multiple tests from different parts of the
-repository. To avoid duplicating such files within the repository, they should
+repository. To avoid duplicating such files within the repository, the files should
 go into the `OpenSim/Tests/shared` directory. You can then use the
-`OPENSIM_COPY_SHARED_TEST_FILES` CMake macro (in `cmake/OpenSimMacros.osim`) to
-copy the necessary shared files to the proper build directory.
+`OpenSimCopySharedTestFiles` CMake macro (in `cmake/OpenSimMacros.osim`) to
+copy the necessary shared files to the proper build directory. *DO NOT CHANGE* files
+that are already in `OpenSim/Tests/shared`; you could inadvertently weaken tests
+that rely on some obscure aspect of the files.
 
 Checking for Memory Leaks through GitHub
 ----------------------------------------

@@ -44,7 +44,7 @@ namespace OpenSim {
  * the behavior of a joint function created in SIMM.
  *
  * This class inherits from Function and so can be used as input to
- * any class requiring a Fuction as input.
+ * any class requiring a Function as input.
  *
  * @author Peter Loan
  * @version 1.0

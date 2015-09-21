@@ -129,8 +129,8 @@ Component::Component(SimTK::Xml::Element& element)
 
 Component::Component(const Component& source) : Object(source)
 {
-    //Object copy will handle pthe propeties table.
-    //But need to copy Component specific property inidices.
+    //Object copy will handle the properties table.
+    //But need to copy Component specific property indices.
     copyProperty_connectors(source);
     finalizeFromProperties();
 }
@@ -395,7 +395,7 @@ void Component::addDiscreteVariable(const std::string&  discreteVariableName,
         throw Exception("Component::addDiscreteVariable: discrete variable '" + 
             discreteVariableName + "' already exists.");
     }
-    // assign "slots" for the the discrete variables by name
+    // assign "slots" for the discrete variables by name
     // discrete variable indices will be invalid by default
     // upon allocation during realizeTopology the indices will be set
     _namedDiscreteVariableInfo[discreteVariableName] = 
@@ -1000,7 +1000,7 @@ void Component::extendRealizeAcceleration(const SimTK::State& s) const
             const AddedStateVariable* asv = 
                 dynamic_cast<const AddedStateVariable*>(&sv);
             if(asv)
-                // set corresponing system derivative value from
+                // set corresponding system derivative value from
                 // cached value
                 subSys.updZDot(s)[ZIndex(asv->getVarIndex())] =
                     asv->getDerivative(s);

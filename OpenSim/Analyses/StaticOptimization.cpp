@@ -78,7 +78,7 @@ StaticOptimization::StaticOptimization(Model *aModel) :
     if(aModel) setModel(*aModel);
     else allocateStorage();
 }
-// Copy constrctor and virtual copy 
+// Copy constructor and virtual copy 
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -507,7 +507,7 @@ record(const SimTK::State& s)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration 
+ * This method is meant to be called at the beginning of an integration 
  *
  * @param s Current state .
  *
@@ -552,8 +552,13 @@ begin(SimTK::State& s )
 
         SimTK::State& sWorkingCopy = _modelWorkingCopy->initSystem();
 
+<<<<<<< HEAD
         // Set modeling options for Actuators to be overriden
         for(int i=0; i<_forceSet->getSize(); i++) {
+=======
+        // Set modeling options for Actuators to be overridden
+        for(int i=0,j=0; i<_forceSet->getSize(); i++) {
+>>>>>>> 0cc0e61c0a006efc37e57c5ac2b2c17c19366270
             ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
             if( act ) {
                 act->overrideActuation(sWorkingCopy, true);
@@ -583,7 +588,7 @@ begin(SimTK::State& s )
         int nacc = _accelerationIndices.getSize();
 
         if(na < nacc) 
-            throw(Exception("StaticOptimization: ERROR- overconstrained "
+            throw(Exception("StaticOptimization: ERROR- over-constrained "
                 "system -- need at least as many forces as there are degrees of freedom.\n") );
 
         _forceReporter.reset(new ForceReporter(_modelWorkingCopy));
@@ -635,7 +640,7 @@ begin(SimTK::State& s )
  * the execution of a forward integrations or after the integration by
  * feeding it the necessary data.
  *
- * This method should be overriden in derived classes.  It is
+ * This method should be overridden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
  * it is not necessary.
  *

@@ -171,7 +171,7 @@ printPerformance(double *x)
  * @param ic Index of the constraint.
  * @param dcdx The derivatives of the constraints.
  *
- * @return -1 if an error is encountered, 0 otherwize.
+ * @return -1 if an error is encountered, 0 otherwise.
  */
 int OptimizationTarget::
 CentralDifferencesConstraint(const OptimizationTarget *aTarget,
@@ -221,7 +221,7 @@ CentralDifferencesConstraint(const OptimizationTarget *aTarget,
  * @param x Values of the controls at time t.
  * @param dpdx The derivatives of the performance criterion.
  *
- * @return -1 if an error is encountered, 0 otherwize.
+ * @return -1 if an error is encountered, 0 otherwise.
  */
 int OptimizationTarget::
 CentralDifferences(const OptimizationTarget *aTarget,
@@ -273,7 +273,7 @@ CentralDifferences(const OptimizationTarget *aTarget,
  * @param x Values of the controls at time t.
  * @param dpdx The derivatives of the performance criterion.
  *
- * @return -1 if an error is encountered, 0 otherwize.
+ * @return -1 if an error is encountered, 0 otherwise.
  */
 int OptimizationTarget::
 ForwardDifferences(const OptimizationTarget *aTarget,

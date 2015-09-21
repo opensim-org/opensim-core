@@ -296,7 +296,7 @@ bool XMLDocument::isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoub
     Xml::Element root2=  aOtherDocument.getRootElement();
 
     //if (!equal) return false;
-    // Cycle thru children and compare. Order is assumed to be the same for now
+    // Cycle through children and compare. Order is assumed to be the same for now
     SimTK::Array_<SimTK::Xml::Element> elts1 = root1.getAllElements();
     SimTK::Array_<SimTK::Xml::Element> elts2 = root2.getAllElements();
     if (elts1.size() != elts2.size()){
@@ -372,7 +372,7 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
             return false; 
         }
         if (value1){
-            // We should check if this's a double or array of doubles in that case we can getValueAs<double> anbd
+            // We should check if this's a double or array of doubles in that case we can getValueAs<double>
             try {
                 SimTK::Array_<double> v1, v2;
                 elts1[it].getValueAs(v1);

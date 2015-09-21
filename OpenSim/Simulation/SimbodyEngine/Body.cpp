@@ -150,7 +150,7 @@ const SimTK::Inertia& Body::getInertia() const
         const double& m = getMass();
         // if mass is zero, non-zero inertia makes no sense
         if (-SimTK::SignificantReal <= m && m <= SimTK::SignificantReal){
-            // force zero intertia
+            // force zero inertia
             cout<<"Body '"<<getName()<<"' is massless but nonzero inertia provided.";
             cout<<" Inertia reset to zero. "<<"Otherwise provide nonzero mass."<< endl;
             _inertia = SimTK::Inertia(0);
@@ -162,13 +162,13 @@ const SimTK::Inertia& Body::getInertia() const
             } 
             catch (const std::exception& ex){
                 // Should throw an Exception but we have models we have released with
-                // bad intertias. E.g. early gait23 models had an error in the inertia
+                // bad inertias. E.g. early gait23 models had an error in the inertia
                 // of the toes Body. We cannot allow failures with our models so 
                 // raise a warning and do something sensible with the values at hand.
                 cout << "WARNING: Body " + getName() + " has invalid inertia. " << endl;
                 cout << ex.what() << endl;
 
-                // get some aggregate value for the inertia based on exsiting values
+                // get some aggregate value for the inertia based on existing values
                 double diag = Ivec.getSubVec<3>(0).norm()/sqrt(3.0);
 
                 // and then assume a spherical shape.
@@ -552,7 +552,7 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
             if (localScaleIter != displayGeomIter->element_end()){
                 localScale = localScaleIter->getValueAs<SimTK::Vec3>();
             }
-            // Now compose scale factors and xforms and create new node to insert into bodyNode
+            // Now compose scale factors and transforms and create new node to insert into bodyNode
              SimTK::Xml::Element meshFileNode("mesh_file", geomFile);
              std::stringstream localScaleStr;
              localScaleStr << localScale[0] * outerScaleFactors[0] << " " << localScale[1] * outerScaleFactors[1] 
@@ -618,7 +618,7 @@ Body* Body::addSlave()
     //add to internal list as memory owner
     _slaves.push_back(slave);
 
-    //add to list of subcomponents to autotically add to system and initialize
+    //add to list of subcomponents to automatically add to system and initialize
     addComponent(slave);
 
     return slave;

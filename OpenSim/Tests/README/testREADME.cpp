@@ -26,7 +26,7 @@
  * preprocessor lines (#ifdef VISUALIZE; #endif).
  *
  * If your changes would cause the gif to change substantially, make a new gif:
- * 1. Uncomment the `VISUALIZE` defininition.
+ * 1. Uncomment the `VISUALIZE` definition.
  * 2. Recompile and execute this code (testREADME in your build directory).
  * 3. When the visualizer pops up, click View -> Save Movie.
  * 4. cd into testREADME_1 and run the following commands (on Linux):

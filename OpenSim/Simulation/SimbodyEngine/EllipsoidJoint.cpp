@@ -99,8 +99,8 @@ void EllipsoidJoint::constructProperties()
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Set the EllipsoidJoint's radii. If the the system is created, will attempt
- * to update the the default radii of the underlying MobilizedBody::Ellipsoid
+ * Set the EllipsoidJoint's radii. If the system is created, will attempt
+ * to update the default radii of the underlying MobilizedBody::Ellipsoid
  *
  * @param Vec3 of radii: X, Y, Z in the parent frame.
  */

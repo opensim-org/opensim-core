@@ -100,7 +100,7 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * <B>Bdot = basal_coefficient * (m_body^basal_exponent) </B>
  *     - m_body = mass of the entire model
  *     - basal_coefficient and basal_exponent are defined by their respective properties.\n
- * <I>Note that this quantity is muscle independant. Rather it is calculated on a whole body level.</I>
+ * <I>Note that this quantity is muscle independent. Rather it is calculated on a whole body level.</I>
  *
  *
  * <H2><B> ACTIVATION & MAINTENANCE HEAT RATE (W) </B></H2>
@@ -330,7 +330,7 @@ public:
 
     /** Returns the column labels of the probe values for reporting. 
         Currently uses the Probe name as the column label, so be sure
-        to name your probe appropiately!  */
+        to name your probe appropriately!  */
     virtual OpenSim::Array<std::string> getProbeOutputLabels() const override;
 
 
@@ -354,10 +354,10 @@ public:
     @note It is important to first add the metabolic probe to the model before
     calling any other methods that may modify its properties. This is because 
     some methods (e.g. addMuscle() or useCalculatedMass) may require information
-    about the muscles to sucsessfully execute, and this information can only be
+    about the muscles to successfully execute, and this information can only be
     obtained if the metabolic probe is already 'connected' to the model.
     */
-    /** Get the number of muscles being analysed in the metabolic analysis. */
+    /** Get the number of muscles being analyzed in the metabolic analysis. */
     const int getNumMetabolicMuscles() const;  
 
     /** Add a muscle and its parameters so that it can be included in the metabolic analysis. */
@@ -372,10 +372,10 @@ public:
     /** Remove a muscle from the metabolic analysis. */
     void removeMuscle(const std::string& muscleName);
 
-    /** Set an existing muscle to use a provided muscle mass. */
+    /** %Set an existing muscle to use a provided muscle mass. */
     void useProvidedMass(const std::string& muscleName, double providedMass);
     
-    /** Set an existing muscle to calculate its own mass. */
+    /** %Set an existing muscle to calculate its own mass. */
     void useCalculatedMass(const std::string& muscleName);
 
     /** Get whether the muscle mass is being explicitly provided.
@@ -393,19 +393,19 @@ public:
     /** Get the ratio of slow twitch fibers for an existing muscle. */
     const double getRatioSlowTwitchFibers(const std::string& muscleName) const;
 
-    /** Set the ratio of slow twitch fibers for an existing muscle. */
+    /** %Set the ratio of slow twitch fibers for an existing muscle. */
     void setRatioSlowTwitchFibers(const std::string& muscleName, const double& ratio);
 
     /** Get the density for an existing muscle (kg/m^3). */
     const double getDensity(const std::string& muscleName) const;
 
-    /** Set the density for an existing muscle (kg/m^3). */
+    /** %Set the density for an existing muscle (kg/m^3). */
     void setDensity(const std::string& muscleName, const double& density);
 
     /** Get the specific tension for an existing muscle (Pascals (N/m^2)). */
     const double getSpecificTension(const std::string& muscleName) const;
 
-    /** Set the specific tension for an existing muscle (Pascals (N/m^2)). */
+    /** %Set the specific tension for an existing muscle (Pascals (N/m^2)). */
     void setSpecificTension(const std::string& muscleName, const double& specificTension);
 
 

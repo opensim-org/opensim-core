@@ -99,7 +99,7 @@ protected:
     PropertyStr _outputScaleFileNameProp;
     std::string &_outputScaleFileName;
 
-    // Whether or not to write write to the designated output files (GUI will set this to false)
+    // Whether or not to write to the designated output files (GUI will set this to false)
     bool _printResultFiles;
 
 //=============================================================================

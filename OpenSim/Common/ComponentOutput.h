@@ -40,7 +40,7 @@ namespace OpenSim {
 //                           OPENSIM COMPONENT OUTPUT
 //=============================================================================
 /**
- * Output formalizes the accesss to a value of interest computed by the 
+ * Output formalizes the access to a value of interest computed by the 
  * owning Component. The value is then exposed and easily accessible for use by
  * other components (e.g. to satisfy an Input).
  * The purpose of an Output is to bind a value of interest to a component's 
@@ -49,7 +49,7 @@ namespace OpenSim {
  * realization (computational) stage at which the value is valid, so that a 
  * caller can provide adequate error handling.
  *
- * For example, a Body can have its position transormation with respect to  
+ * For example, a Body can have its position transformation with respect to  
  * ground as an Output, which is only accessible when the model has been 
  * realized to the Position stage or beyond, in which case it depends on the
  * Position stage. The validity of data flow can be checked prior to

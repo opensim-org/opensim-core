@@ -37,7 +37,7 @@ namespace OpenSim {
 This is a low level Quintic Bezier curve class that contains functions to design
 continuous sets of 'C' shaped Bezier curves, and to evaluate their values and 
 derivatives. A set in this context is used to refer to 2 or more quintic Bezier
-curves that are continuously connected to eachother to form one smooth curve,
+curves that are continuously connected to each other to form one smooth curve,
 hence the name QuinticBezierSet.
 
 In the special case when this class is being used to generate and evaluate 
@@ -52,7 +52,7 @@ in x,y space, allowing many of the methods (such as the evaluation of y(x) given
 that x(u) and y(u), the derivatives of y(x), and its first integral) to be 
 developed, though in general this can't always be done.
 
-I have parcelled all of these tools into their own class so that others may more 
+I have parceled all of these tools into their own class so that others may more 
 easily use and develop this starting point for their own means. I used the 
 following text during the development of this code:
 
@@ -91,7 +91,7 @@ b. http://objectmix.com/graphics/133553-area-closed-bezier-curve.html
 
 Currently the Bezier curve value and its derivative are computed separately to
 evaluate f and df in the Newton iteration to solve for u(x). Code optimized to
-compute both of these quantites at the same time could cut the cost of 
+compute both of these quantities at the same time could cut the cost of 
 evaluating x(u) and dx/du in half. Since these quantities are evaluated in an
 iterative loop, this one change could yield substantial computational savings.
 
@@ -109,8 +109,8 @@ quintic Bezier curve sets are desired.
 6. Low level Code Optimization
 
 I have exported all of the low level code as optimized code from Maple. Although
-the code produced using this means is reasonably fast, it is usally possible
-to obtain superiour performance (and sometimes less round off error) by 
+the code produced using this means is reasonably fast, it is usually possible
+to obtain superior performance (and sometimes less round off error) by 
 doing this work by hand.
 
 <B>Computational Cost Details</B>
@@ -139,7 +139,7 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
     public:
 
          /**
-        This function will compute the u value that correesponds to the given x
+        This function will compute the u value that corresponds to the given x
         for a quintic Bezier curve. 
 
         @param ax         The x value
@@ -153,7 +153,7 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
             -if the desired tolerance is not met
             -if the derivative goes to 0 to machine precision 
 
-        This function will compute the u value that correesponds to the given x
+        This function will compute the u value that corresponds to the given x
         for a quintic Bezier curve. This is accomplished by using an approximate 
         spline inverse of u(x) to get a very good initial guess, and then one or 
         two Newton iterations to polish the answer to the desired tolerance.
@@ -188,7 +188,7 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
             SimTK::Spline splineUX = SimTK::SplineFitter<Real>::
                 fitForSmoothingParameter(3,x,u,0).getSpline();
 
-            //Now evalutate u at the given xVal
+            //Now evaluate u at the given xVal
             double u = SegmentedQuinticBezierToolkit::
                      calcU(xVal,vX, splineUX, 1e-12,20);
 
@@ -269,7 +269,7 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         @return         The value of the Bezier curve located at u.
 
         Calculates the value of a quintic Bezier curve at value u. This 
-        calculation is acheived by mulitplying a row vector comprised of powers 
+        calculation is achieved by multiplying a row vector comprised of powers 
         of u, by the 6x6 coefficient matrix associated with a quintic Bezier 
         curve, by the vector of Bezier control points, pV, in a particular 
         dimension. The code to compute the value of a quintic bezier curve has
@@ -282,7 +282,7 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
 
 
 
-        The math this function executes is decribed in pseudo code as the 
+        The math this function executes is described in pseudo code as the 
         following:
 
         \verbatim
@@ -336,7 +336,7 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         @return         The value of du/dx of Bezier curve located at u.
 
         Calculates the value of a quintic Bezier derivative curve at value u. 
-        This calculation is acheived by taking the derivative of the row vector
+        This calculation is achieved by taking the derivative of the row vector
         uV and multiplying it by the 6x6 coefficient matrix associated with a 
         quintic Bezier curve, by the vector of Bezier control points, pV, in a 
         particular dimension.
@@ -486,7 +486,7 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
           at these points with slopes of dydx0 and dydx1 form a triangle. If the 
           line segment from (x0,y0) to (x1,y1) is not the longest line segment, 
           an exception is thrown. This is an overly conservative test as it 
-          prevents very deep 'V' shapes from being respresented.
+          prevents very deep 'V' shapes from being represented.
 
         @return a SimTK::Matrix of 6 points Matrix(6,2) that correspond to the 
                          X, and Y control points for a quintic Bezier curve that
@@ -497,7 +497,7 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         create a C shaped curve that intersects points 0 (x0, y0) and point 1
         (x1, y1) with slopes dydx0 and dydx1 respectively, and a second 
         derivative of 0. The curve that results can approximate a line 
-        (curviness = 0), or in a smooth C shaped curve (curviniess = 1)
+        (curviness = 0), or in a smooth C shaped curve (curviness = 1)
 
         The current implementation of this function is not optimized in anyway
         and has the following costs:
@@ -557,7 +557,7 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
 
         This the expense of this function depends on the number of points in
         vX, the points for which the integral y(x) must be calculated. The 
-        integral is evaluated using a Runge Kutta 45 integrator, and so each
+        integral is evaluated using a Runge-Kutta 45 integrator, and so each
         point requires 6 function evaluations. 
         (http://en.wikipedia.org/wiki/Dormand%E2%80%93Prince_method)
 
@@ -570,7 +570,7 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         The example below is quite involved, but just so it can show you an
         example of how to create the array of Spline objects that approximate 
         the function u(x). Although the example has been created for only 1
-        Bezier curve set, simply changing the size and entries of the matricies
+        Bezier curve set, simply changing the size and entries of the matrices
         _mX and _mY will allow multiple sets to be integrated.
 
 
@@ -714,7 +714,7 @@ class BezierData {
         splines) and then using Newton's method to polish the value up. This
         is the tolerance that is used in the polishing stage*/
         double _uTol;
-        /**The maximum number of interations allowed when evaluating u(x) using
+        /**The maximum number of iterations allowed when evaluating u(x) using
         Newton's method. In practice the guesses are usually very close to the
         actual solution, so only 1-3 iterations are required.*/
         int _uMaxIter;
@@ -725,7 +725,7 @@ class BezierData {
         /**The starting value*/
         double _startValue; 
 
-        /**The name of the curve being intergrated. This is used to generate
+        /**The name of the curve being integrated. This is used to generate
         useful error messages when something fails*/
         std::string _name;
 };

@@ -71,7 +71,7 @@ protected:
 public:
     ForceReporter(Model *aModel=0);
     ForceReporter(const std::string &aFileName);
-    // Copy constrctor and virtual copy 
+    // Copy constructor and virtual copy 
     ForceReporter(const ForceReporter &aObject);
     virtual ~ForceReporter();
 

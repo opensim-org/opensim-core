@@ -55,7 +55,7 @@ class ExternalForce;
  *
  * Induced Accelerations can apply any OpenSim::Constraint that implements
  * setContactPointForInducedAccelerations() to replace external forces, which
- * are pecisely the same external forces (ExternalLoads file) applied
+ * are precisely the same external forces (ExternalLoads file) applied
  * during the forward dynamics simulation being analyzed.
  *
  * The ConstraintSet supplied must have the same number constraints as
@@ -92,7 +92,7 @@ protected:
     PropertyObj _constraintSetProp;
     ConstraintSet &_constraintSet;
 
-    /** Threshhold of force necessary for a constraint to be active */
+    /** Threshold of force necessary for a constraint to be active */
     PropertyDbl _forceThresholdProp;
     double &_forceThreshold;
 
@@ -160,8 +160,8 @@ private:
     void setNull();
 
     /**
-     * Set up the properties for th analysis.
-     * Each property should have meaningful name and an informative comment.
+     * %Set up the properties for the analysis.
+     * Each property should have a meaningful name and an informative comment.
      * The name you give each property is the tag that will be used in the XML
      * file.  The comment will appear before the property in the XML file.
      * In addition, the comments are used for tool tips in the OpenSim GUI.

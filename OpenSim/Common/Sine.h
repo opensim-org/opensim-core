@@ -38,7 +38,7 @@ namespace OpenSim {
  * A class for representing a Sine function.
  *
  * This class inherits from Function and so can be used as input to
- * any class requiring a Fuction as input. Implements f(x) = A*sin(omega*x+phase)
+ * any class requiring a Function as input. Implements f(x) = A*sin(omega*x+phase)
  *
  * @author Ajay Seth
  * @version 1.0

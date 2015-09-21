@@ -44,13 +44,13 @@ namespace OpenSim {
 /**
  This class serves as a serializable FiberCompressiveForceCosPennationCurve, 
  which is used to ensure that the pennation angle approaches but never reaches
- an angle of 90 degrees. Preventing the fibers from achivieving a pennation 
+ an angle of 90 degrees. Preventing the fibers from achieving a pennation 
  angle of 90 degrees is important for equilibrium muscle models which
  have a singularity at this value.
 
  This curve is designed to work with the muscle model
  in such a way that it acts like a spring that the pennated muscle fibers 
- contact it as the fiber rotates (circuled in red). When the spring engages it 
+ contact it as the fiber rotates (circled in red). When the spring engages it 
  will exert a force on the fiber that will prevent it from shortening further, 
  thus preventing the pennation angle from reaching 90 degrees.
   
@@ -159,7 +159,7 @@ public:
 
     /**
      Constructs a C2 continuous compressive fiber force cos pennation curve 
-     using only the manditory property, engagmentAngleInDegrees. The
+     using only the mandatory property, engagmentAngleInDegrees. The
      sole purpose of this curve is to prevent the pennation angle from reaching
      an angle of 90 degrees. Details to appear in Millard et al. 2012.
      
@@ -340,7 +340,7 @@ public:
             multiply this quantity by the number of NormForce
             (where NormForce corresponds to the number of
             Newtons that 1 normalized force corresponds to) to obtain 
-            the potental energy stored in the fiber in units of Joules. Note 
+            the potential energy stored in the fiber in units of Joules. Note 
             that NormDistance is omitted because the length dimension of this 
             curve is not normalized, only the force dimension.
 

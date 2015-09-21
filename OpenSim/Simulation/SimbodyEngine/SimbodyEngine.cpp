@@ -792,7 +792,7 @@ bool SimbodyEngine::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFi
  * for deleting the memory associated with this storage.
  * @param rUComplete Storage containing all the u's.  The generalized speeds
  * are obtained by spline fitting the q's and differentiating the splines.
- * When a u is constrained, its value is altered to be consisten with the
+ * When a u is constrained, its value is altered to be consistent with the
  * constraint.  The caller is responsible for deleting the memory
  * associated with this storage.
  */
@@ -944,7 +944,7 @@ void SimbodyEngine::scaleRotationalDofColumns(Storage &rStorage, double factor) 
         if (index >= 0){
             const Coordinate& coord = coordinateSet.get(index);
             if (coord.getMotionType() == Coordinate::Rotational) {
-                // assumes first data colum is 0 whereas labels has time as 0
+                // assumes first data column is 0 whereas labels has time as 0
                 rStorage.multiplyColumn(i-1, factor);
             }
         }

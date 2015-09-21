@@ -98,7 +98,7 @@ int main()
             numGeomPaths++;
         }
         const OpenSim::Joint& shoulderJnt = model.getJointSet().get(0);
-        // cycle thru components under shoulderJnt should return the Joint itself and the Coordinate
+        // cycle through components under shoulderJnt should return the Joint itself and the Coordinate
         int numJntComponents = 0;
         ComponentList<Component> jComponentsList = shoulderJnt.getComponentList();
         std::cout << "Components/subComponents under Shoulder Joint:" << std::endl;
@@ -141,7 +141,7 @@ int main()
         }
 
         // TODO: Hard-coding these numbers is not ideal. As we introduce more components
-        // to recompose existing components, this will need continual updating. For exampe,
+        // to recompose existing components, this will need continual updating. For example,
         // Joint's often add PhysicalOffsetFrames to handle what used to be baked in location
         // and orientation offsets.
         ASSERT(numComponents == 77); 

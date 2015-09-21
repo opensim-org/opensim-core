@@ -153,7 +153,7 @@ void TorqueActuator::computeForce(const State& s,
     
     double actuation = 0;
 
-    if (isActuationOverriden(s)) {
+    if (isActuationOverridden(s)) {
         actuation = computeOverrideActuation(s);
     } else {
         actuation = computeActuation(s);

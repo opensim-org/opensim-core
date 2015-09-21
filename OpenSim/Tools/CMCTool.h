@@ -65,7 +65,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(CMCTool, AbstractTool);
 //=============================================================================
 private:
 
-    /** Idenitify the list of forces to be ignored for computing dynamics */
+    /** Identify the list of forces to be ignored for computing dynamics */
     PropertyStrArray _excludedActuatorsProp;
     Array<std::string> &_excludedActuators;
 
@@ -101,7 +101,7 @@ private:
     /** Flag indicating whether to use the fast CMC optimization
     target.  The fast target requires the desired accelerations to           
     be met within the tolerance set by the convergence criterion.        
-    The optimizer fails if the acclerations constraints cannot be        
+    The optimizer fails if the accelerations constraints cannot be        
     met, so the fast target is less robust.  The regular target          
     does not require the acceleration constraints to be met; it          
     meets them as well as it can. */         

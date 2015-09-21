@@ -116,7 +116,7 @@ public:
 
 private:
     /**
-    * Set all member variables to their null or default values.
+    * %Set all member variables to their null or default values.
     */
     void setNull() {
         setupProperties();

@@ -56,7 +56,7 @@ Kinematics::~Kinematics()
 //_____________________________________________________________________________
 /**
  * Construct an Kinematics object for recording the kinematics of
- * a model's generalized coodinates during a simulation.
+ * a model's generalized coordinates during a simulation.
  *
  * @param aModel Model for which the kinematics are to be recorded.
  */
@@ -201,7 +201,7 @@ updateCoordinatesToRecord()
         
         int index = coordSet.getIndex(get_coordinates(i));
         if(index<0) 
-            throw Exception("Kinematics: ERR- Cound not find coordinate named '"+get_coordinates(i)+"'",__FILE__,__LINE__);
+            throw Exception("Kinematics: ERR- Could not find coordinate named '"+get_coordinates(i)+"'",__FILE__,__LINE__);
         _coordinateIndices[i] = index;
     }
     _values.setSize(_coordinateIndices.getSize());
@@ -322,7 +322,7 @@ void Kinematics::setModel(Model& aModel)
     // BASE CLASS
     Analysis::setModel(aModel);
 
-    // Allocate storages to containt the results of the analysis
+    // Allocate storages to contain the results of the analysis
     allocateStorage();
 
     // UPDATE LABELS
@@ -338,7 +338,7 @@ void Kinematics::setModel(Model& aModel)
  * Set the capacity increments of all storage instances.
  *
  * @param aIncrement Increment by which storage capacities will be increased
- * when storage capcities run out.
+ * when storage capacities run out.
  */
 void Kinematics::
 setStorageCapacityIncrements(int aIncrement)
@@ -402,7 +402,7 @@ int Kinematics::record(const SimTK::State& s)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration 
+ * This method is meant to be called at the beginning of an integration 
  *
  * @param s current state of System
  *
@@ -441,7 +441,7 @@ begin( SimTK::State& s )
  *
  * When called during an integration, this method is meant to be called 
  *
- * This method should be overriden in derived classes.  It is
+ * This method should be overridden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
  * it is not necessary.
  *
@@ -463,7 +463,7 @@ step(const SimTK::State& s, int stepNumber )
  *
  * This method is meant to be called at the end of an integration 
  *
- * This method should be overriden in the child class.  It is
+ * This method should be overridden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *

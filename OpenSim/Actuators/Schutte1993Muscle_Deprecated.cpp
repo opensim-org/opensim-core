@@ -432,7 +432,7 @@ double Schutte1993Muscle_Deprecated::calcFiberVelocity(const SimTK::State& s, do
  * static equilibrium. Using the total muscle-tendon length, it finds the
  * fiber and tendon lengths so that the forces in each match. This routine
  * takes pennation angle into account, so its definition of static equilibrium
- * is when tendon_force = fiber_force * cos(pennation_angle). This funcion
+ * is when tendon_force = fiber_force * cos(pennation_angle). This function
  * will modify the object's values for length, fiberLength,
  * and passiveForce.
  *
@@ -617,7 +617,7 @@ double Schutte1993Muscle_Deprecated::computeIsometricForce(SimTK::State& s, doub
     return tendon_force;
 }
 
-// Satisdfy the ActivationFiberLengthMuscle_Deprecated interface
+// Satisfy the ActivationFiberLengthMuscle_Deprecated interface
 double Schutte1993Muscle_Deprecated::calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const
 {
     return calcNonzeroPassiveForce(s,aNormFiberLength, 0.0);

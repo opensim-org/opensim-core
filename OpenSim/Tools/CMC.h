@@ -53,7 +53,7 @@ class CMC_TaskSet;
  * designed specifically for controlling dynamic models that are actuated
  * by redundant sets of actuators whose force-generating properties may
  * be nonlinear and governed by differential equations (and so have delays
- * in force production).  The cannonical example of such a dynamic system
+ * in force production).  The canonical example of such a dynamic system
  * is the musculoskeletal system (human or animal), hence the name
  * Computed Muscle Control.
  *
@@ -202,7 +202,7 @@ public:
      */
     virtual void computeControls(const SimTK::State& s, SimTK::Vector& controls) const;
     virtual void computeInitialStates(SimTK::State& s, double &rTI);
-    /** CMC algroithm */
+    /** CMC algorithm */
     virtual void computeControls(SimTK::State& s, ControlSet &rX);
 
     //--------------------------------------------------------------------------
@@ -215,7 +215,7 @@ public:
      virtual void setupProperties();
 
  protected:
-     // for any post XML deserialization intialization
+     // for any post XML deserialization initialization
      void extendConnectToModel(Model& model) override;
 
      // for adding any components to the underlying system
