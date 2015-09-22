@@ -98,7 +98,7 @@ int main()
             numGeomPaths++;
         }
         const OpenSim::Joint& shoulderJnt = model.getJointSet().get(0);
-        // cycle thru components under shoulderJnt should return the Joint itself and the Coordinate
+        // cycle through components under shoulderJnt should return the Joint itself and the Coordinate
         int numJntComponents = 0;
         ComponentList<Component> jComponentsList = shoulderJnt.getComponentList();
         std::cout << "Components/subComponents under Shoulder Joint:" << std::endl;
@@ -140,14 +140,22 @@ int main()
             countSkipComponent++;
         }
 
-        ASSERT(numComponents == 73); 
+        // TODO: Hard-coding these numbers is not ideal. As we introduce more components
+        // to recompose existing components, this will need continual updating. For example,
+        // Joint's often add PhysicalOffsetFrames to handle what used to be baked in location
+        // and orientation offsets.
+        ASSERT(numComponents == 77); 
         ASSERT(numBodies == model.getNumBodies());
         ASSERT(numBodiesPost == numBodies);
         ASSERT(numMuscles == model.getMuscles().getSize());
         ASSERT(numJointsWithStateVariables == 2);
         ASSERT(numModelComponentsWithStateVariables == 10);
-        ASSERT(numJntComponents == 1);
-        ASSERT(countSkipComponent == 17);
+        // Below updated from 1 to 3 to account for offset frame and its geometry added to the Joint
+        ASSERT(numJntComponents == 3);
+        // Unclear what the following tests. But given that 4 more components were added
+        // and skipIter seems to be skipping by 2 (counting every other ModelComponent),
+        // then 77 components - 35 mesh geometry - 5 frame geom = 37 now /2 = 18 
+        ASSERT(countSkipComponent == 18);
     }
     catch (Exception &ex) {
         ex.print(std::cout);

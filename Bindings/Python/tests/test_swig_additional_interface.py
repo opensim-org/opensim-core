@@ -116,11 +116,12 @@ class TestSwigAddtlInterface(unittest.TestCase):
                 body,
                 loc_in_body, orient_in_parent)
         del joint
+        spatialTransform = osim.SpatialTransform()
         joint = osim.CustomJoint("joint",
                 a.getGround(),
                 loc_in_parent, orient_in_parent,
                 body,
-                loc_in_body, orient_in_parent)
+                loc_in_body, orient_in_parent, spatialTransform)
         del joint
         joint = osim.EllipsoidJoint("joint",
                 a.getGround(),

@@ -145,7 +145,7 @@ getValueObj()
 /**
  * Get a constant reference to the value of this property.
  *
- * @return Contant reference to the value of this property.
+ * @return Constant reference to the value of this property.
  */
 const Object& PropertyObj::
 getValueObj() const
@@ -154,9 +154,9 @@ getValueObj() const
 }
 //_____________________________________________________________________________
 /**
- * Get a constant String represeting the value of this property.
+ * Get a constant String representing the value of this property.
  *
- * @return Constant String represeting the value of this property.
+ * @return Constant String representing the value of this property.
  */
 string PropertyObj::
 toString() const

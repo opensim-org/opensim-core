@@ -29,7 +29,6 @@ that provides some visualization and user interaction when running a program
 that uses the OpenSim API. **/
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Simulation/Model/Model.h>
 
 #ifndef SWIG
 namespace SimTK {
@@ -89,6 +88,8 @@ private:
 
 namespace OpenSim {
 
+class Model;
+
 /** This class manages runtime visualization of a Model that is being 
 manipulated through the OpenSim API. You should not allocate one of these
 yourself; instead, call the Model's setUseVisualizer() method and let the
@@ -104,6 +105,9 @@ instructions on what to display.
 @see ModelDisplayHints, Model **/
 class OSIMSIMULATION_API ModelVisualizer {
 public:
+
+    ~ModelVisualizer() {clear();}
+
     /** @name                Drawing methods
     Currently there is just a single method for generating a frame. **/
     /**@{**/
@@ -193,7 +197,7 @@ public:
 private:
     friend class Model;
 
-    // Only Model is permitted to create or destruct one of these. Note that
+    // Only Model is permitted to create one of these. Note that
     // this will cause modifications to System that must occur prior to 
     // realizeTopology().
     ModelVisualizer(Model& model) : _model(model), _viz(0) {
@@ -204,8 +208,6 @@ private:
     // Called from Model's initSystem() method; state must be realized 
     // through Instance stage.
     void collectFixedGeometry(const SimTK::State& state) const;
-
-    ~ModelVisualizer() {clear();}
 
     void clear() {
         delete _viz; _viz = 0;

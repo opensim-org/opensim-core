@@ -31,46 +31,7 @@
 //=============================================================================
 // STATICS
 //=============================================================================
-using namespace std;
 using namespace OpenSim;
-
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-SliderJoint::SliderJoint() :
-    Joint()
-{
-    setAuthors("Ajay Seth");
-    constructCoordinates();
-
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-    coordinateSet[0].setMotionType(Coordinate::Translational);
-}
-
-//_____________________________________________________________________________
-/**
- * Convenience Constructor.
- */
-SliderJoint::SliderJoint(const std::string &name, const PhysicalFrame& parent,
-    const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-    const PhysicalFrame& child,
-    const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-    bool reverse) :
-        Super(name, parent, locationInParent, orientationInParent,
-            child, locationInchild, orientationInChild, reverse)
-{
-    setAuthors("Ajay Seth");
-    constructCoordinates();
-
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-    coordinateSet[0].setMotionType(Coordinate::Translational);
-}
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
-
 
 //=============================================================================
 // Simbody Model building.
@@ -78,5 +39,6 @@ SliderJoint::SliderJoint(const std::string &name, const PhysicalFrame& parent,
 //_____________________________________________________________________________
 void SliderJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
     createMobilizedBody<SimTK::MobilizedBody::Slider>(system);
 }

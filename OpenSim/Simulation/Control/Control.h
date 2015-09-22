@@ -48,7 +48,7 @@ namespace OpenSim {
  *
  * In general, a control consists of a set of parameters.  These parameters
  * are used to reconstruct a control curve.  For example, a control may be
- * represented by a consant, a series of step functions, a set of linearly
+ * represented by a constant, a series of step functions, a set of linearly
  * interpolated values, a set of spline control points, coefficients in
  * a Fourier series, etc.
  *
@@ -61,14 +61,14 @@ namespace OpenSim {
  * A distinction is also made between controls that control a model and
  * controls that control some other aspect of a simulation.  For example,
  * a control for the excitation level of a muscle is a "model"
- * control.  The value of this type of control is querried during the
- * course of a simualtion.  On the other hand, a control for
+ * control.  The value of this type of control is queried during the
+ * course of a simulation.  On the other hand, a control for
  * the final time of a simulation is not usually a "model" control.
  * Nor is a control for the initial value of a state variable, even if that
  * state variable is the initial value of a muscle activation.  These
  * "non-model" controls are used to set things before a simulation ever
- * begins and are not querried during the cours of a simulation.  The
- * number of model controls can be querried by a call to
+ * begins and are not queried during the course of a simulation.  The
+ * number of model controls can be queried by a call to
  * Model::getNumControls().
  *
  * @author Frank C. Anderson
@@ -141,7 +141,7 @@ public:
      * controls may be, for example, controls that are used to set up a
      * simulation.  Such examples might include an initial state of a model
      * (e.g., joint angle, joint angular velocity, ...) or the final time of
-     * a siimulation.
+     * a simulation.
      *
      * @param aTrueFalse If true, the control is treated as a model control.
      * If false, the control is not treated as a model control.
@@ -151,7 +151,7 @@ public:
     bool getIsModelControl() const;
     /**
      * Sets whether or not to extrapolate for control curve evaluations that
-     * are outide the region of confidence for a control.
+     * are outside the region of confidence for a control.
      *
      * @param aTrueFalse If true, extrapolate when needed and possible to
      * determine the value of the control curve.
@@ -213,7 +213,7 @@ public:
     virtual double getParameterMin(int aI) const = 0;
     // Parameter Max
     /**
-     * Set the maximum value that a control parameter can take on.
+     * %Set the maximum value that a control parameter can take on.
      *
      * @param aI Index of the parameter.
      * @param aMax Maximum value the parameter can have.
@@ -232,7 +232,7 @@ public:
      *
      * Parameters for some types of control curves do not have a time at which
      * they are specified.  For example, in a Fourier series the control
-     * parameters are the cooefficients in the expansion, and each term in
+     * parameters are the coefficients in the expansion, and each term in
      * the expansion corresponds not to a specific time but to a frequency.
      * Another example is a constant that has the same value for all times.
      * In these cases, this method returns SimTK::NaN.
@@ -337,7 +337,7 @@ public:
      * is not defined,
      * _defaultMin is returned.  If the control is set to extrapolate,
      * (see getExtraplate()), and the time is before the first node or
-     * after the last node, then an extrapolation is performed to determin
+     * after the last node, then an extrapolation is performed to determine
      * the value of the control curve.  Otherwise, the value of either the
      * first control node or last control node is returned.
      */
@@ -356,7 +356,7 @@ public:
      * @return Maximum allowed control value.  If the value of the curve is not defined,
      * _defaultMax is returned.  If the control is set to extrapolate,
      * getExtraplate, and the time is before the first node or
-     * after the last node, then an extrapolation is performed to determin
+     * after the last node, then an extrapolation is performed to determine
      * the value of the control curve.  Otherwise, the value of either the
      * first control node or last control node is returned.
      */
@@ -371,13 +371,13 @@ public:
     // Convenience methods to get first and last time.
     /**
      * Gets the first time for which a parameter is specified. Should be
-     * overriden by derived classes that have a defined min time.
+     * overridden by derived classes that have a defined min time.
      *
      * @return 0.
      */
     virtual const double getFirstTime() const;
     /**
-     * Gets the last time for which a arameter is specified. Should be overriden
+     * Gets the last time for which a parameter is specified. Should be overridden
      * by derived classes that have a defined max time.
      *
      * @return 0.
@@ -394,7 +394,7 @@ public:
      *
      * @param aProperties PropertySet used to perform the simplify
      * operation.
-     * @throw Exception This method does nothing.  It must be overriden
+     * @throw Exception This method does nothing.  It must be overridden
      * in derived classes.
      */
     virtual void

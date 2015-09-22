@@ -1,7 +1,5 @@
 set(KIT opensim)
 
-if(BUILD_PYTHON_WRAPPING)
-
 find_package(PythonLibs 2.7)
 if(NOT PYTHONLIBS_FOUND)
     message(FATAL_ERROR "Cannot build Python wrapping because "
@@ -23,7 +21,7 @@ set(swig_output_cxx_file_fullname
 set(swig_output_header_file_fullname
     ${CMAKE_CURRENT_BINARY_DIR}/pyOpenSim_wrap.h)
 set(swig_interface_file_fullname
-    ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/Python/swig/pyWrapOpenSim.i)
+    ${OpenSim_SOURCE_DIR}/Bindings/Python/swig/pyWrapOpenSim.i)
 
 # Using a custom command / custom target pair so that SWIG is only run when
 # it's out of date. Previously, we used a custom target only. But, custom
@@ -35,7 +33,7 @@ add_custom_command(
     COMMAND ${SWIG_EXECUTABLE} -v -c++ -python
         #-debug-tmused # Which typemaps were used?
         -I${OpenSim_SOURCE_DIR}
-        -I${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/
+        -I${OpenSim_SOURCE_DIR}/Bindings/
         -I${Simbody_INCLUDE_DIR}
         -o ${swig_output_cxx_file_fullname}
         -outdir "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
@@ -49,7 +47,7 @@ add_custom_target(PyWrap
 
 set_target_properties(PyWrap PROPERTIES
     PROJECT_LABEL "Python - Generate source code"
-    FOLDER "Wrapping (scripting)")
+    FOLDER "Bindings")
 
 
 # Compile python wrapper files.
@@ -84,7 +82,7 @@ add_library(_${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 # Resulting library must be named _opensim.so on Unix, _opensim.pyd on Windows.
 set_target_properties(_${KIT} PROPERTIES
     PROJECT_LABEL "Python - _${KIT}"
-    FOLDER "Wrapping (scripting)"
+    FOLDER "Bindings"
     PREFIX ""
     # Most shared libraries go into the root build dir; not so for _opensim.
     ARCHIVE_OUTPUT_DIRECTORY "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
@@ -140,5 +138,3 @@ install(FILES "${PYTHON_PACKAGE_BINARY_DIR}/setup.py" DESTINATION sdk/python)
 install(DIRECTORY "${PYTHON_PACKAGE_BINARY_DIR}/opensim" DESTINATION sdk/python)
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests"
         DESTINATION sdk/python/opensim)
-
-endif()

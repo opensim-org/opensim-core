@@ -31,7 +31,7 @@ namespace OpenSim {
  * This class represents a half space (that is, everything to one side of an infinite plane)
  * for use in contact modeling.  In its local coordinate system, all points for which x>0 are
  * considered to be inside the geometry.  Its location and orientation properties can be used
- * to move and rotateit to represent other half spaces.
+ * to move and rotate it to represent other half spaces.
  *
  * @author Peter Eastman
  */

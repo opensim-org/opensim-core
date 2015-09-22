@@ -133,7 +133,7 @@ operator=(const ControlLinearNode &aNode)
 /**
  * Equality operator.
  *
- * Equality of nodes is dertermined by comparing the time member varaibles.
+ * Equality of nodes is determined by comparing the time member variables.
  * If two nodes have the same value for time within the set equality
  * tolerance, the two nodes are considered equal:\n\n
  *
@@ -177,7 +177,7 @@ operator<(const ControlLinearNode &aNode) const
 /**
  * Set the tolerance for determining equality of nodes.
  *
- * Equality of nodes is dertermined by comparing the time member varaibles.
+ * Equality of nodes is determined by comparing the time member variables.
  * If two nodes have the same value for time within the set equality
  * tolerance, the two nodes are considered equal.
  *
@@ -200,7 +200,7 @@ SetEqualityTolerance(double aTol)
 /**
  * Get the tolerance for determining equality of nodes.
  *
- * Equality of nodes is dertermined by comparing _time member varaibles.
+ * Equality of nodes is determined by comparing _time member variables.
  * If two nodes have the same value for _time within the set equality
  * tolerance, the two nodes are considered equal.
  *

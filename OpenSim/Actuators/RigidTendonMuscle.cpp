@@ -198,7 +198,7 @@ calcMuscleDynamicsInfo(const State& s, MuscleDynamicsInfo& mdi) const
 //--------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Compute the actuation (i.e. activation causing tenson) of this muscle. 
+ * Compute the actuation (i.e. activation causing tension) of this muscle. 
  */
 double RigidTendonMuscle::computeActuation(const State& s) const
 {

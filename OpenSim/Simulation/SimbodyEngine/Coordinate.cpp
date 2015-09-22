@@ -484,7 +484,7 @@ void Coordinate::setPrescribedFunction(const OpenSim::Function& function)
 
 //_____________________________________________________________________________
 /**
- * Determine if the the coordinate is dependent on other coordinates or not,
+ * Determine if the coordinate is dependent on other coordinates or not,
  * by checking to see whether there is a CoordinateCouplerConstraint relating
  * it to another coordinate. If so return true, false otherwise.
  * TODO: note that this will fail to detect any other kind of constraint that
@@ -508,7 +508,7 @@ void Coordinate::setPrescribedFunction(const OpenSim::Function& function)
 }
 //_____________________________________________________________________________
 /**
- *  Determine if the the coordinate is constrained or not.
+ *  Determine if the coordinate is constrained or not.
  *  Specifically, is locked, prescribed, or completely dependent on other coordinates?
  *  If so return true, false otherwise.
  */

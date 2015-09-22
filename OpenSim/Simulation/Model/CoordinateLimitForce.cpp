@@ -229,7 +229,7 @@ void CoordinateLimitForce::extendConnectToModel(Model& aModel)
 }
 
 
-/** Create the underlying Force that is part of the multibodysystem. */
+/** Create the underlying Force that is part of the multibody system. */
 void CoordinateLimitForce::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
@@ -246,7 +246,7 @@ void CoordinateLimitForce::extendAddToSystem(SimTK::MultibodySystem& system) con
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Compute and apply the mobility force corrsponding to the passive limit force
+ * Compute and apply the mobility force corresponding to the passive limit force
  *
  */
 void CoordinateLimitForce::computeForce( const SimTK::State& s, 
@@ -268,10 +268,10 @@ double CoordinateLimitForce::calcLimitForce( const SimTK::State& s) const
     double f_low = K_low*(_qlow - q);
 
     // dividing the stiffness by the constant yields the transition function that can 
-    // also be appplied to damping
+    // also be applied to damping
     double f_damp = -_damp*(K_up/_Kup + K_low/_Klow)*qdot;
 
-    // disspative power is negative power but is already implied by "dissipation"
+    // dissipative power is negative power but is already implied by "dissipation"
     // so negate power so that dissipation power is a positive number
     double dissPower = -qdot*f_damp;
     setCacheVariableValue<double>(s, "dissipationPower", dissPower);
@@ -318,13 +318,13 @@ double CoordinateLimitForce::computePotentialEnergy(const SimTK::State& s) const
         return K*x*x*x*(2.0-2.5*x+(6.0/7.0)*x*x) * (delta*delta);
     }
 }
-// power dissipated by the damping term of the coodinate limit force
+// power dissipated by the damping term of the coordinate limit force
 double CoordinateLimitForce::getPowerDissipation(const SimTK::State& s) const
 {
     return  getCacheVariableValue<double>(s, "dissipationPower");
 }
 
-// energy dissipated by the damping term of the coodinate limit force
+// energy dissipated by the damping term of the coordinate limit force
 double CoordinateLimitForce::getDissipatedEnergy(const SimTK::State& s) const
 {
     if(isComputingDissipationEnergy()){

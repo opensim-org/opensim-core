@@ -96,7 +96,7 @@ public:
      */
     const SimTK::Vec3& getLocation() const;
     /**
-     * Set the location of the geometry within the Body it is attached to.
+     * %Set the location of the geometry within the Body it is attached to.
      */
     void setLocation(const SimTK::Vec3& location);
     /**
@@ -104,7 +104,7 @@ public:
      */
     const SimTK::Vec3& getOrientation() const;
     /**
-     * Set the orientation of the geometry within the Body it is attached to.
+     * %Set the orientation of the geometry within the Body it is attached to.
      */
     void setOrientation(const SimTK::Vec3& orientation);
 #ifndef SWIG
@@ -118,7 +118,7 @@ public:
      */
     OpenSim::PhysicalFrame& updBody();
     /**
-     * Set the Body this geometry is attached to.
+     * %Set the Body this geometry is attached to.
      */
     void setBody(PhysicalFrame& body);
     /**
@@ -126,7 +126,7 @@ public:
      */
     const std::string& getBodyName();
     /**
-     * Set the name of the Body this geometry is attached to.  This will cause the
+     * %Set the name of the Body this geometry is attached to.  This will cause the
      * Body to be set to NULL, then resolved when extendConnectToModel() is called.
      */
     void setBodyName(const std::string& name);
@@ -135,7 +135,7 @@ public:
      */
     const int getDisplayPreference();
     /**
-     * Set the display_preference of this geometry.
+     * %Set the display_preference of this geometry.
      */
     void setDisplayPreference(const int dispPref);
     /**

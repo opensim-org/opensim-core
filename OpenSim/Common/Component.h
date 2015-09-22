@@ -246,7 +246,7 @@ public:
     /** Initialize Component's state variable values from its properties */
     void initStateFromProperties(SimTK::State& state) const;
 
-    /** Set Component's properties given a state. */
+    /** %Set Component's properties given a state. */
     void setPropertiesFromState(const SimTK::State& state);
 
     // End of Component Structural Interface (public non-virtual).
@@ -312,7 +312,7 @@ public:
     const SimTK::MultibodySystem& getSystem() const;
 
     /**
-     * Get an iterator thru the underlying subcomponents that this component is 
+     * Get an iterator through the underlying subcomponents that this component is 
      * composed of. The hierarchy of Components/subComponents forms a tree. The 
      * tree structure is fixed when the system is created.
      * The order of the Components is that of tree preorder traversal so that a
@@ -349,15 +349,23 @@ public:
 
     template <class C>
     const C& getComponent(const std::string& name) const {
+        const Component& comp = getComponent(name);
+        const C* compC = dynamic_cast<const C*>(&comp);
+
+        if (compC) {
+            return *compC;
+        } //TODO only use the component iterator when they can be used upon construction
         ComponentList<C> compsList = getComponentList<C>();
         for (const C& comp : compsList) {
-            if (comp.getName() == name){
+            if (comp.getName() == name) {
                 return comp;
             }
         }
+
+
         std::stringstream msg;
         msg << getConcreteClassName() + ": ERR- Cannot find '" << name
-            << "' of type " << compsList.begin()->getConcreteClassName() << ".";
+            << "' of type " << comp.getConcreteClassName() << ".";
         throw Exception(msg.str(), __FILE__, __LINE__);
     }
 
@@ -583,7 +591,7 @@ public:
     int getModelingOption(const SimTK::State& state, const std::string& name) const;
 
     /**
-     * Set the value of a ModelingOption flag for this Component.
+     * %Set the value of a ModelingOption flag for this Component.
      * if the integer value exceeds the number of option names used to
      * define the options, an exception is thrown. The SimTK::State 
      * Stage will be reverted back to Stage::Instance.
@@ -648,7 +656,7 @@ public:
     double getStateVariableValue(const SimTK::State& state, const std::string& name) const;
 
     /**
-     * Set the value of a state variable allocated by this Component by name.
+     * %Set the value of a state variable allocated by this Component by name.
      *
      * @param state  the State for which to set the value
      * @param name   the name of the state variable
@@ -668,7 +676,7 @@ public:
     SimTK::Vector getStateVariableValues(const SimTK::State& state) const;
 
     /**
-     * Set all values of the state variables allocated by this Component.
+     * %Set all values of the state variables allocated by this Component.
      * Includes state variables allocated by its subcomponents.
      *
      * @param state   the State for which to get the value
@@ -696,7 +704,7 @@ public:
     double getDiscreteVariableValue(const SimTK::State& state, const std::string& name) const;
 
     /**
-     * Set the value of a discrete variable allocated by this Component by name.
+     * %Set the value of a discrete variable allocated by this Component by name.
      *
      * @param state  the State for which to set the value
      * @param name   the name of the dsicrete variable
@@ -852,7 +860,7 @@ public:
     }
 
     /**
-     *  Set cache variable value allocated by this Component by name.
+     *  %Set cache variable value allocated by this Component by name.
      *  All cache entries are lazily evaluated (on a need basis) so a set
      *  also marks the cache as valid.
      *
@@ -1162,7 +1170,7 @@ template <class T> friend class ComponentMeasure;
     virtual void computeStateVariableDerivatives(const SimTK::State& s) const;
 
     /**
-     * Set the derivative of a state variable by name when computed inside of  
+     * %Set the derivative of a state variable by name when computed inside of  
      * this Component's computeStateVariableDerivatives() method.
      *
      * @param state  the State for which to set the value
@@ -1736,8 +1744,9 @@ private:
     // Underlying SimTK custom measure ComponentMeasure, which implements
     // the realizations in the subsystem by calling private concrete methods on
     // the Component. Every model component has one of these, allocated
-    // in its extendAddToSystem() method, and placed in the System's default subsystem.
-    SimTK::MeasureIndex  _simTKcomponentIndex;
+    // in its extendAddToSystem() method, and placed in the System's default
+    // subsystem.
+    SimTK::ResetOnCopy<SimTK::MeasureIndex> _simTKcomponentIndex;
 
     // Structure to hold modeling option information. Modeling options are
     // integers 0..maxOptionValue. At run time we keep them in a Simbody

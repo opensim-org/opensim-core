@@ -170,7 +170,7 @@ public:
     @returns writable reference to the value as an Object
     @see getValueAsObject(), updValue\<T>() **/
     virtual Object& updValueAsObject(int index=-1) = 0;
-    /** Set the indicated value element to a new copy of the supplied object.
+    /** %Set the indicated value element to a new copy of the supplied object.
     If you already have a heap-allocated object you're willing to give up and
     want to avoid the extra copy, use adoptValueObject(). **/
     virtual void setValueAsObject(const Object& obj, int index=-1) = 0;

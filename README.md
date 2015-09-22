@@ -111,7 +111,7 @@ On Windows using Visual Studio
 
 * **operating system**: Windows 7 or 8.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.1.3
 * **compiler / IDE**: [Visual Studio 2015](https://www.visualstudio.com/).
     * *Visual Studio Community 2015* is sufficient and is free for everyone.
         If you want to use *Visual Studio Enterprise 2015*, you may be able 
@@ -120,7 +120,8 @@ On Windows using Visual Studio
     * Visual Studio 2015 does not install C++ 
       support by default. During the installation you must select 
       *Custom*, and check *Programming Languages > Visual C++ > Common Tools for Visual C++ 2015*.
-      You can uncheck all other boxes.
+      You can uncheck all other boxes. If you have already installed Visual
+      Studio without C++ support, simply re-run the installer and select *Modify*.
 * **physics engine**:
   [Simbody](https://github.com/simbody/simbody#windows-and-visual-studio) >= 3.6
 * **API documentation** (optional):
@@ -164,8 +165,8 @@ On Windows using Visual Studio
    `C:/opensim-core-build`, or some other path that is not inside your source
    directory. This is *not* where we are installing OpenSim-Core; see below.
 4. Click the **Configure** button.
-    1. Choose the *Visual Studio 12* generator (for Visual Studio 2013). To
-       build as 64-bit, select *Visual Studio 12 Win64*.
+    1. Choose the *Visual Studio 14* generator (for Visual Studio 2015). To
+       build as 64-bit, select *Visual Studio 14 Win64*.
     2. Click **Finish**.
 5. Where do you want to install OpenSim-Core on your computer? Set this by
    changing the `CMAKE_INSTALL_PREFIX` variable. We'll assume you set it to

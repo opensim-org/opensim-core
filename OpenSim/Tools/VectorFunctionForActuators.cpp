@@ -146,7 +146,7 @@ operator=(const VectorFunctionForActuators &aVectorFunction)
 // SET & GET
 //=============================================================================
 //-----------------------------------------------------------------------------
-// INTIAL TIME
+// INITIAL TIME
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
@@ -269,7 +269,7 @@ evaluate( const SimTK::State& s, double *aX, double *rF)
     manager.setInitialTime(_ti);
     manager.setFinalTime(_tf);
     manager.setSystem( _CMCActuatorSystem );
-    // tell the mangager to not call the analayses or write to storage 
+    // tell the manager to not call the analyses or write to storage 
     // while the CMCSubsystem is being integrated.
     manager.setPerformAnalyses(false); 
     manager.setWriteToStorage(false); 

@@ -60,22 +60,10 @@ public:
 // PUBLIC METHODS
 //=============================================================================
 
-    // Constructors are protected; has default destructor.
-
-    /** Implements a copy constructor just so it can invalidate the 
-    SimTK::Force index after copying. **/
-    Force(const Force &aForce);
-
-#ifndef SWIG
-    /** Implements a copy assignment operator just so it can invalidate the 
-    SimTK::Force index after the assignment. **/
-    Force& operator=(const Force &aForce);
-#endif
-
     /**
     * Tell SimBody to parallelize this force. Should be 
     * set to true for any forces that will take time to 
-    * complete thier calcForce method. Note that all forces
+    * complete their calcForce method. Note that all forces
     * that set this flag to false will be put in series on a
     * thread that is running in parallel with other forces
     * that marked this flag as true.
@@ -87,7 +75,7 @@ public:
 
     /** Return if the Force is disabled or not. */
     bool isDisabled(const SimTK::State& s) const;
-    /** Set the Force as disabled (true) or not (false). */
+    /** %Set the Force as disabled (true) or not (false). */
     void setDisabled(SimTK::State& s, bool disabled) const;
 
     /**
@@ -111,7 +99,9 @@ public:
     /** Return a flag indicating whether the Force is applied along a Path. If
     you override this method to return true for a specific subclass, it must
     also implement the getGeometryPath() method. **/
-    virtual bool hasGeometryPath() const { return getPropertyIndex("GeometryPath").isValid();};
+    virtual bool hasGeometryPath() const {
+        return getPropertyIndex("GeometryPath").isValid();
+    };
 
 protected:
     /** Default constructor sets up Force-level properties; can only be
@@ -173,7 +163,7 @@ protected:
      * @param state      state used only to determine which element of 
      *                      \a bodyForces to modify
      * @param body       the body to apply the force to
-     * @param point      the point at which to apply the force, specifieid in 
+     * @param point      the point at which to apply the force, specified in 
      *                      the body's frame
      * @param force      the force to apply, specified in the inertial 
      *                      (ground) reference frame
@@ -210,7 +200,7 @@ protected:
      *
      * @param state              state used only to determine which element of 
      *                              \a generalizedForces to modify
-     * @param coord              the generalized coordinate to to which the 
+     * @param coord              the generalized coordinate to which the 
      *                              force should be applied
      * @param force              the (scalar) force to apply
      * @param generalizedForces  the set of system generalizedForces to which
@@ -223,12 +213,11 @@ protected:
 
 protected:
     /** ID for the force in Simbody. */
-    SimTK::ForceIndex   _index;
+    SimTK::ResetOnCopy<SimTK::ForceIndex> _index;
 
 private:
     void setNull();
     void constructProperties();
-    void copyData(const Force &aForce);
 
     friend class ForceAdapter;
 

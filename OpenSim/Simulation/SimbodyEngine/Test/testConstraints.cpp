@@ -24,11 +24,11 @@
 //==========================================================================================================
 //  testConstraints builds OpenSim models using the OpenSim API and builds an equivalent
 //  Simbody system using the Simbody API for each test case. A test fails if the
-//  OpenSim and Simbody final states of the simulation are not equivelent (norm-err
+//  OpenSim and Simbody final states of the simulation are not equivalent (norm-err
 //  less than 10x integration error tolerance)
 //
 //  Tests Include:
-//      1. Test locking (constraint) mechansim on coordinates
+//      1. Test locking (constraint) mechanism on coordinates
 //      2. Test WelConstraint against Simbody Constraint::Weld
 //      3. PointOnLineConstraint against Simbody built-in PointOnLine constraint (samner)
 //      4. CoordinateCouplerConstraint as a custom knee 
@@ -150,7 +150,7 @@ int main()
         testPointOnLineConstraint();
         // Compare behavior of CoordinateCouplerConstraint as a custom knee
         testCoordinateCouplerConstraint();
-        // test OpenSim roll constraint against a composite of Simbody contraints
+        // test OpenSim roll constraint against a composite of Simbody constraints
         testRollingOnSurfaceConstraint();
     }
     catch(const OpenSim::Exception& e) {
@@ -490,20 +490,20 @@ void testCoordinateLocking()
 
     // create hip as a pin joint
     PinJoint hip("hip",ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
-
     // Rename hip coordinates for a pin joint
     hip.getCoordinateSet()[0].setName("hip_flex");
-    
+
     // Add the thigh body 
     osimModel->addBody(&osim_thigh);
     osimModel->addJoint(&hip);
 
     // Add OpenSim shank via a knee joint
-    OpenSim::Body osim_shank("shank", tibiaMass.getMass(), tibiaMass.getMassCenter(), tibiaMass.getInertia());
+    OpenSim::Body osim_shank("shank", tibiaMass.getMass(),
+        tibiaMass.getMassCenter(), tibiaMass.getInertia());
 
     // create pin knee joint
-    PinJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0), osim_shank, Vec3(0), Vec3(0));
-    knee.getCoordinateSet()[0].setName("knee_q");
+    PinJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0),
+                          osim_shank, Vec3(0), Vec3(0));
 
     // Add the shank body and knee joint
     osimModel->addBody(&osim_shank);
@@ -641,7 +641,7 @@ void testWeldConstraint()
     WeldConstraint footConstraint("footConstraint", ground, SimTK::Transform(weldInGround), osim_foot, SimTK::Transform(weldInFoot));
     osimModel->addConstraint(&footConstraint);
 
-    // BAD: but if model maintains ownership, it will attemtp to delete stack allocated objects
+    // BAD: but if model maintains ownership, it will attempt to delete stack allocated objects
     osimModel->disownAllComponents();
 
     osimModel->setGravity(gravity_vec);
@@ -832,7 +832,8 @@ void testCoordinateCouplerConstraint()
     osimModel->addJoint(&hip);
 
     // Add another body via a knee joint
-    OpenSim::Body osim_shank("shank", tibiaMass.getMass(), tibiaMass.getMassCenter(), tibiaMass.getInertia());
+    OpenSim::Body osim_shank("shank", tibiaMass.getMass(),
+        tibiaMass.getMassCenter(), tibiaMass.getInertia());
 
     // Define knee coordinates and axes for custom joint spatial transform
     SpatialTransform kneeTransform;
@@ -958,7 +959,7 @@ void testRollingOnSurfaceConstraint()
     // Get underlying mobilized bodies
     SimTK::MobilizedBody surface = matter.getGround();
 
-    // Add a ficticious massless body to be the "Case" reference body coincident with surface for the no-slip constraint
+    // Add a fictitious massless body to be the "Case" reference body coincident with surface for the no-slip constraint
     SimTK::MobilizedBody::Weld  cb(surface, SimTK::Body::Massless());
 
     // Constrain the rod to move on the ground surface
@@ -1008,8 +1009,7 @@ void testRollingOnSurfaceConstraint()
     osim_rod->addGeometry(cylGeom);
 
     // create rod as a free joint
-    auto rodJoint = new PlanarJoint("rodToGround", ground, Vec3(0), Vec3(0),
-                                                *osim_rod, Vec3(0), Vec3(0));
+    auto rodJoint = new PlanarJoint("rodToGround", ground.getName(), osim_rod->getName());
 
     // Add the thigh body which now also contains the hip joint to the model
     osimModel->addBody(osim_rod);

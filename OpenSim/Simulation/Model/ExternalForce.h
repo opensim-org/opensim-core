@@ -37,7 +37,7 @@ class Function;
  * and/or torque to a body as described by arrays (columns) of a Storage object.
  * The source of the Storage may be experimental sensor recording or user 
  * generated data. The Storage must be able to supply (1) an array of time, (2) 
- * arrays for the x,y,z, components of force and/or torque in time. Optionaly,
+ * arrays for the x,y,z, components of force and/or torque in time. Optionally,
  * (3) arrays for the point of force application in time. An ExternalForce 
  * must specify the identifier (e.g. Force1.x Force1.y Force1.z) for the force
  * components (columns) listed in the Storage either by individual labels or
@@ -45,7 +45,7 @@ class Function;
  * torque and optionally the point of force application must be specified. 
  *
  * If an identifier is supplied and it cannot uniquely identify the force data 
- * (e.g. the force, torque, or point) in the Storage, then an Excpetion is 
+ * (e.g. the force, torque, or point) in the Storage, then an Exception is 
  * thrown.
  *
  * An ExternalForce must apply at least a force or a torque and therefore both 

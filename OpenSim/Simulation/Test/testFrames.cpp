@@ -113,7 +113,7 @@ int main()
 
 void testBody()
 {
-    cout << "Running testBody" << endl;
+    cout << "\nRunning testBody" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
 
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
@@ -146,7 +146,7 @@ void testBody()
         ASSERT_EQUAL(p_known, xform.p(), SimTK::Vec3(SimTK::Eps),
             __FILE__, __LINE__,
             "testBody(): incorrect rod1 location in ground.");
-        // The rotation part is a pure bodyfixed Z-rotation by radAngle.
+        // The rotation part is a pure body-fixed Z-rotation by radAngle.
         SimTK::Vec3 angles = xform.R().convertRotationToBodyFixedXYZ();
         SimTK::Vec3 angs_known(0, 0, radAngle);
         ASSERT_EQUAL(angs_known, angles, SimTK::Vec3(SimTK::Eps), 
@@ -160,7 +160,7 @@ void testPhysicalOffsetFrameOnBody()
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
 
-    cout << "Running testOffsetFrameOnBody" << endl;
+    cout << "\nRunning testOffsetFrameOnBody" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
 
@@ -234,7 +234,7 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
 
-    cout << "Running testPhysicalOffsetFrameOnPhysicalOffsetFrame" << endl;
+    cout << "\nRunning testPhysicalOffsetFrameOnPhysicalOffsetFrame" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
     
@@ -297,7 +297,7 @@ void testPhysicalOffsetFrameOnBodySerialize()
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
 
-    cout << "Running testPhysicalOffsetFrameOnBodySerialize" << endl;
+    cout << "\nRunning testPhysicalOffsetFrameOnBodySerialize" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
 
@@ -357,8 +357,8 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(7, i, 0, __FILE__, __LINE__,
-        "testFilterByFrameType failed to find the 7 Frames in the model.");
+    ASSERT_EQUAL(9, i, 0, __FILE__, __LINE__,
+        "testFilterByFrameType failed to find the 9 Frames in the model.");
 
     i = 0;
     std::cout << "\nList all PhysicalFrames in the model." << std::endl;
@@ -366,7 +366,7 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(6, i, 0, __FILE__, __LINE__,
+    ASSERT_EQUAL(8, i, 0, __FILE__, __LINE__,
         "testFilterByFrameType failed to find 6 PhysicalFrames.");
 
     i = 0;
@@ -387,7 +387,7 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(3, i, 0, __FILE__, __LINE__,
+    ASSERT_EQUAL(5, i, 0, __FILE__, __LINE__,
         "testFilterByFrameType failed to find the 3 PhyscicalOffsetFrame in the model.");
 }
 
@@ -408,7 +408,7 @@ void testStationOnFrame()
     myStation->updConnector<PhysicalFrame>("reference_frame")
         .set_connectee_name("rod1");
     pendulum->addModelComponent(myStation);
-    // myStation should coinicde with com location of rod1 in ground
+    // myStation should coincide with com location of rod1 in ground
     SimTK::State& s = pendulum->initSystem();
     for (double ang = 0; ang <= 90.0; ang += 10.){
         double radAngle = SimTK::convertDegreesToRadians(ang);

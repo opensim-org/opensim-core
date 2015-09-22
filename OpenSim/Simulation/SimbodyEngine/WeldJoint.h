@@ -34,7 +34,7 @@ namespace OpenSim {
 /**
 A class implementing a Weld joint. The underlying implementation in Simbody is
 a SimTK::MobilizedBody::Weld. There is no relative motion of bodies joined by
-a weld. Weld joints are often used to to create composite bodies from
+a weld. Weld joints are often used to create composite bodies from
 smaller simpler bodies. You can also get the reaction force at the weld in the
 usual manner.
 
@@ -42,30 +42,12 @@ usual manner.
 */
 class OSIMSIMULATION_API WeldJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(WeldJoint, Joint);
-
-private:
-    static const int _numMobilities = 0;
-//=============================================================================
-// DATA
-//=============================================================================
-
-    /** Weld has no properties*/
-
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-    // CONSTRUCTION
-    WeldJoint();
-    // Convenience constructor
-    WeldJoint(const std::string &name, const PhysicalFrame& parent,
-        const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-        const PhysicalFrame& child,
-        const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-        bool reverse = false);
-    virtual ~WeldJoint();
-
-    int numCoordinates() const override {return _numMobilities;};
+    /** Use Joint's constructors. @see Joint */
+    using Joint::Joint;
 
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;

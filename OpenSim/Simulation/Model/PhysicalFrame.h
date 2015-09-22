@@ -58,7 +58,7 @@ public:
     // PROPERTIES
     //==============================================================================
     /* TODO: Both VisibleObject and the WrapObjectSet should NOT be properties
-    of the PhysicalFrame. This is an itermediate solution as we integrate Frames 
+    of the PhysicalFrame. This is an intermediate solution as we integrate Frames 
     use into the OpenSim API. These properties should be their own components with
     Connectors to the PhysicalFrames they attach to. This must be addressed prior
     to OpenSim 4.0 release. - aseth
@@ -98,7 +98,7 @@ public:
 
     The MobilizedBodyIndex is necessary to access the underlying MobilizedBody
     in the System. It allows access to physical quantities (e.g. forces)
-    associated with invidual PhysicalFrames. For examples, the underlying
+    associated with individual PhysicalFrames. For examples, the underlying
     MultibodySystem's net body forces are represented as a Vector of spatial
     forces (torque and force on each body) and it is indexed by the 
     MobilizedBodyIndex.
@@ -133,12 +133,12 @@ public:
 
     /** Scale PhysicalFrame related dimensions according to predetermined 
         ScaleFactors */
-    void scale(const SimTK::Vec3& aScaleFactors);
+    void scale(const SimTK::Vec3& scaleFactors);
 
     /** @name DEPRECATED API */
 
     ///@{
-    /** Deprecated methods for inermediate integration of Frames */
+    /** Deprecated methods for intermediate integration of Frames */
     /** Get the named wrap object, if it exists.
     *
     * @param aName Name of the wrap object.
@@ -158,7 +158,7 @@ protected:
     SimTK::Transform
         calcGroundTransform(const SimTK::State& state) const override;
 
-    /** @name Advanced: PhysicalFrame Devloper Interface
+    /** @name Advanced: PhysicalFrame Developer Interface
     These methods are intended for PhysicalFrame builders. */
     ///@{
     /**
@@ -167,7 +167,7 @@ protected:
     set by the end of PhysicalFrame::addToSystem()
         */
     void setMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix) const {
-        _mbIndex = mbix; 
+        const_cast<Self*>(this)->_mbIndex = mbix; 
     }
 
     /** Extend how PhysicalFrame determines its base Frame. */
@@ -193,7 +193,7 @@ private:
     /* ID for the underlying mobilized body in Simbody system.
     Only Joint can set, since it defines the mobilized body type and
     the connection to the parent body in the multibody tree. */
-    mutable SimTK::MobilizedBodyIndex _mbIndex;
+    SimTK::ResetOnCopy<SimTK::MobilizedBodyIndex> _mbIndex;
 
     virtual const SimTK::Body& extractInternalRigidBody() const {
         return _internalRigidBody;

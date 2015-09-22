@@ -225,7 +225,7 @@ void PistonActuator::computeForce(const SimTK::State& s,
         return;
     
     /* store _pointA and _pointB positions in the global frame.  If not
-    ** alread in the body frame, transform _pointA and _pointB into their
+    ** already in the body frame, transform _pointA and _pointB into their
     ** respective body frames. */
 
     SimTK::Vec3 pointA_inGround, pointB_inGround;
@@ -245,7 +245,7 @@ void PistonActuator::computeForce(const SimTK::State& s,
         engine.transformPosition(s, *_bodyB, _pointB, getModel().getGround(), pointB_inGround);
     }
 
-    // find the dirrection along which the actuator applies its force
+    // find the direction along which the actuator applies its force
     SimTK::Vec3 r = pointA_inGround - pointB_inGround;
 
     SimTK::UnitVec3 direction(r);
@@ -255,7 +255,7 @@ void PistonActuator::computeForce(const SimTK::State& s,
     setActuation(s,  forceMagnitude );
     SimTK::Vec3 force = forceMagnitude*direction;
 
-    // appy equal and opposite forces to the bodies
+    // apply equal and opposite forces to the bodies
     applyForceToPoint(s, *_bodyA, _pointA, force, bodyForces);
     applyForceToPoint(s, *_bodyB, _pointB, -force, bodyForces);
 }

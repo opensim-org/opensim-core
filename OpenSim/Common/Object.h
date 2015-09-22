@@ -258,23 +258,23 @@ public:
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
-    /** Set the name of the Object. */
+    /** %Set the name of the Object. */
     void setName(const std::string& name);
     /** Get the name of this Object. */
     const std::string& getName() const;
-    /** Set description, a one-liner summary. */
+    /** %Set description, a one-liner summary. */
     void setDescription(const std::string& description);
     /** Get description, a one-liner summary. */
     const std::string& getDescription() const;
 
     /** Get Authors of this Object */
     const std::string& getAuthors() const { return _authors; };
-    /** Set Authors of this object, call this method in your constructor if needed */
+    /** %Set Authors of this object. Call this method in your constructor if needed. */
     void setAuthors(const std::string& authors) { _authors=authors; };
 
     /** Get references or publications to cite if using this object. */
     const std::string& getReferences() const { return _references; };
-    /** Set references or publications to cite if using this object. */
+    /** %Set references or publications to cite if using this object. */
     void setReferences(const std::string& references) 
     {   _references=references; };
 
@@ -384,7 +384,7 @@ public:
 
     /** Register an instance of a class; if the class is already registered it
     will be replaced. This is normally called as part of the static
-    intialization of a dynamic library (DLL). The supplied object's concrete
+    initialization of a dynamic library (DLL). The supplied object's concrete
     class name will be used as a key, and a \e copy (via clone()) of the 
     supplied %Object is used as the default value for objects of this type when 
     created (typically during the deserialization process when reading an 
@@ -613,7 +613,7 @@ public:
         return this->isKindOf(type); 
     } 
 
-    /** Set the debug level to get verbose output. Zero means no debugging. **/
+    /** %Set the debug level to get verbose output. Zero means no debugging. **/
     static void setDebugLevel(int newLevel) {
         _debugLevel=newLevel; 
     };
@@ -718,7 +718,7 @@ protected:
     list lengths, and a zero-length initial value. The
     property must have a name (the empty string is not acceptable), and that
     name must be unique within this %Object's property table.
-    @returns The PropertyIndex of this property in the proprty table for this
+    @returns The PropertyIndex of this property in the property table for this
              object. 
     @see addProperty(), addOptionalProperty() **/
     template <class T> PropertyIndex
@@ -731,7 +731,7 @@ protected:
     indexing. Here the minimum size may be greater than zero, provided that
     the initial value has at least that many element (and no more than the
     allowed maximum).
-    @returns The PropertyIndex of this property in the proprty table for this
+    @returns The PropertyIndex of this property in the property table for this
              object. 
     @see addProperty(), addOptionalProperty() **/
     template <class T, template<class> class Container> PropertyIndex 
@@ -1085,7 +1085,7 @@ typedef ConcreteClass Self;                                                    \
 typedef SuperClass    Super;                                                   \
 OpenSim_OBJECT_JAVA_DEFS(ConcreteClass);
 
-// For nontemplate classes, the class name is identical to the supplied
+// For non-template classes, the class name is identical to the supplied
 // ConcreteClass argument.
 #define OpenSim_OBJECT_NONTEMPLATE_DEFS(ConcreteClass, SuperClass)             \
 static const std::string& getClassName()                                             \

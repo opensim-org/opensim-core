@@ -122,7 +122,7 @@ RRATool::RRATool(const string &aFileName, bool aLoadModel) :
  * Copy constructors for all Tools do not copy the Object's DOMnode
  * and XMLDocument.  The reason for this is that for the
  * object and all its derived classes to establish the correct connection
- * to the XML document nodes, the the object would need to reconstruct based
+ * to the XML document nodes, the object would need to reconstruct based
  * on the XML document not the values of the object's member variables.
  *
  * There are three proper ways to generate an XML document for a Tool:
@@ -131,7 +131,7 @@ RRATool::RRATool(const string &aFileName, bool aLoadModel) :
  * In this case, the XML document is created by parsing the XML file.
  *
  * 2) Construction by Tool(const XMLDocument *aDocument).
- * This constructor explictly requests construction based on an
+ * This constructor explicitly requests construction based on an
  * XML document that is held in memory.  In this way the proper connection
  * between an object's node and the corresponding node within the XML
  * document is established.
@@ -260,7 +260,7 @@ void RRATool::setupProperties()
 
     comment = "Flag (true or false) indicating whether or not to make an adjustment "
                  "in the center of mass of a body to reduced DC offsets in MX and MZ. "
-                 "If true, a new model is writen out that has altered anthropometry.";
+                 "If true, a new model is written out that has altered anthropometry.";
     _adjustCOMToReduceResidualsProp.setComment(comment);
     _adjustCOMToReduceResidualsProp.setName("adjust_com_to_reduce_residuals");
     _propertySet.append( &_adjustCOMToReduceResidualsProp );
@@ -316,7 +316,7 @@ operator=(const RRATool &aTool)
     // BASE CLASS
     AbstractTool::operator=(aTool);
 
-    // MEMEBER VARIABLES
+    // MEMBER VARIABLES
     _desiredPointsFileName = aTool._desiredPointsFileName;
     _desiredKinematicsFileName = aTool._desiredKinematicsFileName;
     _taskSetFileName = aTool._taskSetFileName;
@@ -360,7 +360,7 @@ bool RRATool::run()
     }
     // OUTPUT DIRECTORY
     // Do the maneuver to change then restore working directory 
-    // so that the parsing code behaves prope()rly if called from a different directory
+    // so that the parsing code behaves properly if called from a different directory
     string saveWorkingDirectory = IO::getCwd();
     string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
     IO::chDir(directoryOfSetupFile);
@@ -395,7 +395,7 @@ bool RRATool::run()
     controller->setTargetDT(.001);
     controller->setCheckTargetTime(true);
 
-    //Make sure system is uptodate with model (i.e. added actuators, etc...)
+    //Make sure system is up-to-date with model (i.e. added actuators, etc...)
     SimTK::State& s = _model->initSystem();
     _model->getMultibodySystem().realize(s, Stage::Position );
      taskSet.setModel(*_model);
@@ -621,7 +621,7 @@ bool RRATool::run()
     ControlSet *controlConstraints = NULL;
     if(_constraintsFileName!="") {
         controlConstraints = new ControlSet(_constraintsFileName);
-        cout << "WARNING: Using DEPRECATED Control Constrails file "<< _constraintsFileName << 
+        cout << "WARNING: Using DEPRECATED Control Constraints file "<< _constraintsFileName << 
             " in RRA, generally unnecessary.\nSupport will be dropped in the future." << endl;
     }
 
@@ -737,7 +737,7 @@ bool RRATool::run()
     // Initialize integrand controls using controls read in from file (which specify min/max control values)
     initializeControlSetUsingConstraints(NULL,controlConstraints, controller->updControlSet());
 
-    // Initial auxilliary states
+    // Initial auxiliary states
     time_t startTime,finishTime;
     struct tm *localTime;
     double elapsedTime;

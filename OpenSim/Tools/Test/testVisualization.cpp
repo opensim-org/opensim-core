@@ -33,7 +33,7 @@ using namespace SimTK;
 
 void testVisModel(string fileName);
 
-// Implmenetation of DecorativeGeometryImplementation that prints the representation to 
+// Implementation of DecorativeGeometryImplementation that prints the representation to 
 // a StringStream for comparison
 class DecorativeGeometryImplementationText : public SimTK::DecorativeGeometryImplementation
 {

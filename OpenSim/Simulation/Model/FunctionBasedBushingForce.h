@@ -39,8 +39,8 @@ namespace OpenSim {
 //==============================================================================
 /**
  * A class implementing a bushing force driven by functions relating forces to 
- * deviations.  Thes functions can be arbitrary, user defined functions that
- * caputure nonlinearities in biologic structures.  This Function Based Bushing
+ * deviations.  These functions can be arbitrary, user-defined functions that
+ * capture nonlinearities in biologic structures.  This Function Based Bushing
  * does not capture coupling between the deflections (e.g. force in x due to 
  * rotation in z).
  *
@@ -138,32 +138,32 @@ public:
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.
 
-    /** Set the name of the Body that will serve as body 1 for this bushing. **/
+    /** %Set the name of the Body that will serve as body 1 for this bushing. **/
     void setBody1ByName(const std::string& aBodyName);
-    /** Set the location and orientation (optional) for bushing frame on 
+    /** %Set the location and orientation (optional) for bushing frame on 
       * body 1. **/
     void setBody1BushingLocation(const SimTK::Vec3& location, 
                                  const SimTK::Vec3& orientation=SimTK::Vec3(0));
-    /** Set the name of the Body that will serve as body 2 for this bushing. **/
+    /** %Set the name of the Body that will serve as body 2 for this bushing. **/
     void setBody2ByName(const std::string& aBodyName);
-    /** Set the location and orientation (optional) for bushing frame on 
+    /** %Set the location and orientation (optional) for bushing frame on 
       * body 2. **/
     void setBody2BushingLocation(const SimTK::Vec3& location, 
                                  const SimTK::Vec3& orientation=SimTK::Vec3(0));
-    /** Set the value used to scale the bushing moment on body2 when drawing it to screen.  
+    /** %Set the value used to scale the bushing moment on body2 when drawing it to screen.  
       * A moment of magnitude |M| will be drawn on screen with a length of (|M|*scale).  **/
     void setMomentVisualScale(double scale) {set_moment_visual_scale(scale);};
-    /** Set the value used to scale the bushing force on body2 when drawing it to screen.  
+    /** %Set the value used to scale the bushing force on body2 when drawing it to screen.  
       * A force of magnitude |F| will be drawn on screen with a length of (|F|*scale).  **/
     void setForceVisualScale(double scale) {set_force_visual_scale(scale);}
-    /** Set the aspect ratio used to control the thickness of the bushing force and moment
+    /** %Set the aspect ratio used to control the thickness of the bushing force and moment
         in drawn in the visualizer.  ratio = length/diameter.*/
     void setVisualAspectRatio(double ratio) {set_visual_aspect_ratio(ratio);}
     //--------------------------------------------------------------------------
     // COMPUTATION
     //--------------------------------------------------------------------------
     /** Compute the deflection (spatial separation) of the two frames connected
-      * by the bushing force. Angualar displacement expressed in Euler angles.
+      * by the bushing force. Angular displacement expressed in Euler angles.
       * The force and potential energy are determined by the deflection.  */
     virtual SimTK::Vec6 computeDeflection(const SimTK::State& s) const;
 

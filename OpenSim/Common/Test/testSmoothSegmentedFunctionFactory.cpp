@@ -276,7 +276,7 @@ SimTK::Vector calcCentralDifference(SimTK::Vector x, SmoothSegmentedFunction& mc
     @param minTol   The minimum error allowed - this prevents the second order
                     error term from going to zero
     @param taylorErrorMult  This scales the error tolerance. The default error
-                            tolerance is the the 2nd order Taylor series
+                            tolerance is the 2nd-order Taylor series
                             term.
 */
 bool isFunctionContinuous(SimTK::Vector xV, 
@@ -336,7 +336,7 @@ bool isFunctionContinuous(SimTK::Vector xV,
             errLMX = minTol;
 
         if(errRMX < minTol)
-            errRMX = minTol; // to accomodate numerical
+            errRMX = minTol; // to accommodate numerical
                              //error in errL
 
         if(errL > errLMX || errR > errRMX){            
@@ -353,7 +353,7 @@ This function will scan through a vector and determine if it is monotonic or
 not
 
 @param y the vector of interest
-@param multEPS The tolerance on the monotoncity check, expressed as a scaling of
+@param multEPS The tolerance on the monotonicity check, expressed as a scaling of
                 SimTK::Eps
 @return true if the vector is monotonic, false if it is not
 */
@@ -510,7 +510,7 @@ void testQuinticBezier_Exceptions(){
     double curvinessEX2 = -0.01; //illegal value 
 
 
-    double dydx0EX1 = 0; //illeagle pair
+    double dydx0EX1 = 0; //illegal pair
     double dydx1EX1 = 0.1;
 
     SimTK_TEST_MUST_THROW(SimTK::Matrix test1 = SegmentedQuinticBezierToolkit::
@@ -550,8 +550,8 @@ void testQuinticBezier_Exceptions(){
     //Test exceptions for calcQuinticBezierCurveVal
     //=========================================================================
 
-    double uEX1 = -0.01; //illeagle
-    double uEX2 = 1.01;  //illeagle
+    double uEX1 = -0.01; //illegal
+    double uEX2 = 1.01;  //illegal
     SimTK::Vector xPtsEX(5);
     xPtsEX = 0;
 
@@ -963,7 +963,7 @@ void testMuscleCurveDerivatives(SmoothSegmentedFunction mcf,SimTK::Matrix mcfSam
      //   printMatrixToFile(mcfSample,"analyticDerivatives.csv");
      //   printMatrixToFile(numSample,"numericDerivatives.csv");
      //   printMatrixToFile(numError,"numAnalyticError.csv");
-     //   cout << "Matricies Printed" << endl;
+     //   cout << "Matrices Printed" << endl;
 
   printf("   passed: A tolerance of %fe-3 reached with a maximum relative error\n"
          "           of %fe-3 and %fe-3 for the first two derivatives\n"
@@ -1022,7 +1022,7 @@ void testMuscleCurveIntegral(SmoothSegmentedFunction mcf,SimTK::Matrix mcfSample
         double supdf = 0;
 
         if(mcf.isIntegralComputedLeftToRight()){
-            //Get the vector of accumulated errors left to rigth
+            //Get the vector of accumulated errors left to right
             intyCumError(0) = xWidth(0)*xWidth(0)*0.5*mcfSample(0,1);
             for(int i=1; i< intyCumError.nelt(); i++){
                 supdf = max(mcfSample(i,1),mcfSample(i-1,1));
@@ -1210,7 +1210,7 @@ int main(int argc, char* argv[])
 
         //3. Test numerically to see if the curve is C2 continuous
             testMuscleCurveC2Continuity(tendonCurve,tendonCurveSample);
-        //4. Test for montonicity where appropriate
+        //4. Test for monotonicity where appropriate
             testMonotonicity(tendonCurveSample);
 
         //5. Testing Exceptions
@@ -1274,7 +1274,7 @@ int main(int argc, char* argv[])
 
         //3. Test numerically to see if the curve is C2 continuous
             testMuscleCurveC2Continuity(fiberFLCurve,fiberFLCurveSample);
-        //4. Test for montonicity where appropriate
+        //4. Test for monotonicity where appropriate
 
             testMonotonicity(fiberFLCurveSample);
 
@@ -1337,7 +1337,7 @@ int main(int argc, char* argv[])
 
         //3. Test numerically to see if the curve is C2 continuous
             testMuscleCurveC2Continuity(fiberCECurve,fiberCECurveSample);
-        //4. Test for montonicity where appropriate
+        //4. Test for monotonicity where appropriate
 
             testMonotonicity(fiberCECurveSample);
         //5. Testing Exceptions
@@ -1395,7 +1395,7 @@ int main(int argc, char* argv[])
 
         //3. Test numerically to see if the curve is C2 continuous
             testMuscleCurveC2Continuity(fiberCEPhiCurve,fiberCEPhiCurveSample);
-        //4. Test for montonicity where appropriate
+        //4. Test for monotonicity where appropriate
             testMonotonicity(fiberCEPhiCurveSample);
         //5. Testing Exceptions
             cout << endl;
@@ -1459,7 +1459,7 @@ int main(int argc, char* argv[])
 
         //3. Test numerically to see if the curve is C2 continuous
             testMuscleCurveC2Continuity(fiberCECosPhiCurve,fiberCECosPhiCurveSample);
-        //4. Test for montonicity where appropriate
+        //4. Test for monotonicity where appropriate
 
             testMonotonicity(fiberCECosPhiCurveSample);
         //5. Test exceptions
@@ -1543,7 +1543,7 @@ int main(int argc, char* argv[])
 
         //3. Test numerically to see if the curve is C2 continuous
             testMuscleCurveC2Continuity(fiberFVCurve,fiberFVCurveSample);
-        //4. Test for montonicity where appropriate
+        //4. Test for monotonicity where appropriate
 
             testMonotonicity(fiberFVCurveSample);
         //5. Exception testing
@@ -1646,7 +1646,7 @@ int main(int argc, char* argv[])
 
         //3. Test numerically to see if the curve is C2 continuous
             testMuscleCurveC2Continuity(fiberFVInvCurve,fiberFVInvCurveSample);
-        //4. Test for montonicity where appropriate
+        //4. Test for monotonicity where appropriate
 
             testMonotonicity(fiberFVInvCurveSample);
 
@@ -1835,7 +1835,7 @@ int main(int argc, char* argv[])
             SimTK_TEST_MUST_THROW(double tst = fiberfalCurve.calcIntegral(0.0));
 
             //isIntegralAvailable doesn't throw an exception
-            //isIntegralComputedLeftToRight doesn't rhwo an exception
+            //isIntegralComputedLeftToRight doesn't throw an exception
             //getName doesn't throw an exception
             //getCurveDomain doesn't throw an exception
 

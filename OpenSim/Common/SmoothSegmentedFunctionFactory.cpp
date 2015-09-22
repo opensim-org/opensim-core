@@ -40,7 +40,7 @@ static double SMOOTHING = 0;   //The amount of smoothing to use when fitting
                                 //3rd order splines to the quintic Bezier
                                 //functions
 static bool DEBUG = true;    //When this is set to true, each function's debug
-                            //routine will be called, which ususally results
+                            //routine will be called, which usually results
                             //in a text file of its output being produced
 
 static double UTOL = (double)SimTK::Eps*1e2;

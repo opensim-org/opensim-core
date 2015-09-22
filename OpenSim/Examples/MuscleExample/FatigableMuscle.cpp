@@ -86,7 +86,7 @@ void FatigableMuscle::extendAddToSystem(SimTK::MultibodySystem& system) const
     addStateVariable("target_activation");
     addStateVariable("active_motor_units");
     addStateVariable("fatigued_motor_units");
-    // and their corresponding dervivatives
+    // and their corresponding derivatives
     addCacheVariable("target_activation_deriv", 0.0, SimTK::Stage::Dynamics);
     addCacheVariable("active_motor_units_deriv", 0.0, SimTK::Stage::Dynamics);
     addCacheVariable("fatigued_motor_units_deriv", 0.0, SimTK::Stage::Dynamics);

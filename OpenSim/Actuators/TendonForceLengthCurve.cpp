@@ -81,7 +81,7 @@ void TendonForceLengthCurve::setNull()
 
 void TendonForceLengthCurve::constructProperties()
 {
-    // A 4.9% strain matches the strain observed by Magnarius et al. during
+    // A 4.9% strain matches the strain observed by Maganaris et al. during
     // in-vivo measurements of tendon strain during a maximum isometric
     // contraction.
     constructProperty_strain_at_one_norm_force(0.049);
@@ -132,7 +132,7 @@ void TendonForceLengthCurve::ensureCurveUpToDate()
         //tdnProp[RefTendon_Ftoe_Idx] = FToe;
 
         // Assign the stiffness. By eyeball, this agrees well with Maganaris and
-        // Paul (2002), Magnussen (2001), and Sharkey (1995) in-vitro tendon
+        // Paul (2002), Magnusson (2001), and Sharkey (1995) in-vitro tendon
         // data.
         m_stiffnessAtOneNormForceInUse = 1.375/e0;
         m_normForceAtToeEndInUse       = 2.0/3.0;
@@ -290,11 +290,11 @@ calcReferenceTendon(double strainAtOneNormForce)
                                          + expkToe - FToe*expkToe + FToe);
     double kLin    = (1-FToe) / (e0 - eToe);
 
-    // Compute the (normalized) potental energy stored at e0. For a tendon with
+    // Compute the (normalized) potential energy stored at e0. For a tendon with
     // a strain of 0.04 under 1 unit load, the area computed using the
     // trapezoidal method in Matlab is 1.266816749781739e-002.
 
-    // Compute the potental energy stored in the toe region of the exponental.
+    // Compute the potential energy stored in the toe region of the exponential.
     double peNormToe = (FToe/(expkToe-1))*(   ((eToe/kToe)*exp(kToe) - eToe)
                                             - ((eToe/kToe)*exp(0.0)  -  0.0) );
     // Compute the potential energy stored in the linear region of the curve

@@ -47,38 +47,32 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     # directory.
     # On Linux, we override the default value because our installation does
     # not yet conform to the Filesystem Hierarchy Standard (FHS).
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}-install" CACHE PATH 
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}-install" CACHE PATH
         "The directory in which to install this project." FORCE)
 endif()
 
 
-# Build binary directory.
-# -----------------------
-set(BUILD_BINARY_DIR ${CMAKE_BINARY_DIR}
-    CACHE PATH
-    "The OpenSim build (not the install) puts all the libraries and executables together here (with /Release, etc. appended on some platforms).")
-
 # Make everything go in the same binary directory. (These are CMake-defined
 # variables.)
-set(EXECUTABLE_OUTPUT_PATH ${BUILD_BINARY_DIR})
-set(LIBRARY_OUTPUT_PATH ${BUILD_BINARY_DIR})
-link_directories(${BUILD_BINARY_DIR})
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
+link_directories(${CMAKE_BINARY_DIR})
 
+# OpenSim options.
+# ----------------
 
-# Specify number of cores to run for build
-set(PROCESSOR_COUNT 8 CACHE STRING "Number of processors in the CPU")
+# Specify number of cores to run tests.
+set(PROCESSOR_COUNT 8 CACHE STRING
+    "Number of concurrent jobs when running tests via RUN_TESTS_PARALLEL target.")
 mark_as_advanced(PROCESSOR_COUNT)
 
 # Try to use MathJax for Doxygen equations.
-# -----------------------------------------
 option(OPENSIM_DOXYGEN_USE_MATHJAX "Try to use MathJax to render Doxygen
 equations. If OFF, LATEX is used instead if you have it; otherwise we use
 MathJax from the internet (we don't download it). If we cannot download MathJax
 from the internet, we turn this option OFF." ON)
 
-
 # Simbody.
-# --------
 # This will be initialized to the environment variable of the same name
 # if it is set, otherwise it will be empty.
 set(SIMBODY_HOME $ENV{SIMBODY_HOME} CACHE
@@ -99,22 +93,13 @@ for both OpenSim and Simbody." ON)
 # Create a platform name useful for finding things in the Platform
 # directory.
 if(WIN32)
-    if(CMAKE_GENERATOR MATCHES "Visual Studio 10")
-        #NOTE: VC12 (VS2013) does not require explicit link line to Psapi library
-        #Specifying here so it will link for VC10
-        link_libraries(Psapi)
-        set(VCVERSION VC10)
-    endif()
-    set(Platform "Windows")
-    set(NATIVE_COPY_CMD copy)
+    set(PLATFORM_NAME Windows)
 elseif(APPLE)
-    set(Platform Mac)
     set(PLATFORM_NAME Mac)
-    set(NATIVE_COPY_CMD cp)
-else()
-    set(Platform Linux)
+elseif(UNIX)
     set(PLATFORM_NAME Linux)
-    set(NATIVE_COPY_CMD cp)
+else()
+    set(PLATFORM_NAME Unknown)
 endif()
 
 # In addition to the platform name we need to know the Application Binary
@@ -125,8 +110,6 @@ endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(PLATFORM_ABI x64)
-    set(ARCH64 ON)
-    #    set(LIB64 64) Ubuntu 12.05
 else()
     set(PLATFORM_ABI x86)
 endif()
@@ -265,17 +248,8 @@ if(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
 endif()
 
 set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're building the GUI and have SWIG and Java installed on your machine.)")
-mark_as_advanced( BUILD_JAVA_WRAPPING )
 
 set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping and have SWIG and Python installed on your machine.)")
-mark_as_advanced( BUILD_PYTHON_WRAPPING )
-
-# You can enable this advanced-variable feature to cause Visual Studio
-# or Makefiles to print the compile/link commands they are executing. Very
-# useful for debugging CMake stuff but messy and obscures errors and warnings
-# so should be off by default.
-set(CMAKE_VERBOSE_MAKEFILE OFF CACHE BOOL
-    "Enable this for verbose build output.")
 
 if(WIN32)
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
@@ -283,7 +257,9 @@ endif()
 
 include(InstallRequiredSystemLibraries)
 
-# C++11: In revision 8629, we started using std::unique_ptr, which requires
+# C++11
+# -----
+# In revision 8629, we started using std::unique_ptr, which requires
 # C++11 features to be enabled when using GCC or Clang.
 if(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
     # Using C++11 on OSX requires using libc++ instead of libstd++.
@@ -324,13 +300,13 @@ if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
         # one will still need to set DYLD_LIBRARY_PATH (or alter the RPATH in the
         # executables/libraries that depend on Simbody's libraries).
         set(CMAKE_MACOSX_RPATH ON)
-    
+
         set(CMAKE_INSTALL_FULL_LIBDIR "${CMAKE_INSTALL_PREFIX}/lib")
-    
+
         # Add the automatically determined parts of the RPATH
         # which point to directories outside the build tree to the install RPATH.
         set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-    
+
         # The RPATH to be used when installing, but only if it's not a system
         # directory.
         list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
@@ -431,7 +407,7 @@ if(${OPENSIM_COPY_SIMBODY})
         foreach(LIBF ${SIMBODY_BIN_FILES})
             get_filename_component(LIBF_ROOT ${LIBF} NAME)
             set(COPIED_LIB_FILES ${COPIED_LIB_FILES}
-                "${BUILD_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
+                "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
         endforeach()
 
         # This target depends on the destination copies of the Simbody files
@@ -443,17 +419,16 @@ if(${OPENSIM_COPY_SIMBODY})
             PROPERTIES PROJECT_LABEL "Library - Simbody Files")
 
         foreach(LIBF ${SIMBODY_BIN_FILES})
-            # message("LIB_FILE" ${LIBF})
             get_filename_component(LIBF_ROOT ${LIBF} NAME)
             get_filename_component(LIBF_SUFFIX ${LIBF} EXT)
-            set(COPIED_LIBF "${BUILD_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
+            set(COPIED_LIBF "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
             file(TO_NATIVE_PATH "${LIBF}" LIBF_SRC)
             file(TO_NATIVE_PATH "${COPIED_LIBF}" LIBF_DEST)
 
             # Copy Simbody files if they are out of date. This is invoked
             # because the SimbodyFiles target depends on these output files.
             add_custom_command(OUTPUT "${COPIED_LIBF}"
-                COMMAND ${NATIVE_COPY_CMD} "${LIBF_SRC}" "${LIBF_DEST}"
+                COMMAND ${CMAKE_COMMAND} -E copy "${LIBF_SRC}" "${LIBF_DEST}"
                 DEPENDS "${LIBF}"
                 COMMENT "Copy ${LIBF_SRC} -> ${LIBF_DEST}"
                 VERBATIM)
@@ -488,11 +463,11 @@ include(CTest)
 
 # Sets the number of CPUs testing would use
 set(cmd ${CMAKE_CTEST_COMMAND} -j${PROCESSOR_COUNT})
-if(MSVC)
+if(MSVC OR XCODE)
     set(cmd ${cmd} -C ${CMAKE_CFG_INTDIR})
-else(MSVC)
+else(MSVC OR XCODE)
     set(cmd ${cmd} -C ${CMAKE_BUILD_TYPE})
-endif(MSVC)
+endif(MSVC OR XCODE)
 add_custom_target(RUN_TESTS_PARALLEL
     COMMAND ${cmd}
 )
@@ -505,7 +480,7 @@ file(WRITE ${VERSION_FILE_PATH} "Product Version=${OPENSIM_MAJOR_VERSION}.${OPEN
 file(APPEND  ${VERSION_FILE_PATH} "\n")
 file(APPEND  ${VERSION_FILE_PATH} "Compiler=${CMAKE_GENERATOR}-${CMAKE_CXX_COMPILER_ID}")
 file(APPEND  ${VERSION_FILE_PATH} "\n")
-file(APPEND  ${VERSION_FILE_PATH} "Platform=${Platform}-${PLATFORM_ABI}")
+file(APPEND  ${VERSION_FILE_PATH} "Platform=${PLATFORM_NAME}-${PLATFORM_ABI}")
 file(APPEND  ${VERSION_FILE_PATH} "\n")
 install(FILES ${VERSION_FILE_PATH} DESTINATION sdk)
 
@@ -532,7 +507,6 @@ add_definitions(-DOSIM_SYS_INFO=${OPENSIM_SYSTEM_INFO}
 #-----------------------------------------------------------------------------
 set(BUILD_API_ONLY OFF CACHE BOOL "Build/install only headers, libraries,
     wrapping, tests; not applications (ik, rra, etc.).")
-mark_as_advanced( BUILD_API_ONLY )
 
 # This directory contains files (e.g., .osim) that multiple tests may want to
 # use. See the OpenSimCopySharedTestFiles function in
@@ -544,6 +518,7 @@ add_subdirectory(OpenSim)
 if(NOT BUILD_API_ONLY)
     add_subdirectory(Applications)
 endif()
+add_subdirectory(Bindings)
 
 add_subdirectory(cmake)
 add_subdirectory(doc)

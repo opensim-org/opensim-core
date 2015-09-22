@@ -278,7 +278,7 @@ WrapObject& WrapObject::operator=(const WrapObject& aWrapObject)
 /**
  * Calculate the wrapping of one path segment over one wrap object.
  *
- * @param aPoint1 The first patth point
+ * @param aPoint1 The first path point
  * @param aPoint2 The second path point
  * @param aPathWrap An object holding the parameters for this path/wrap-object pairing
  * @param aWrapResult The result of the wrapping (tangent points, etc.)
@@ -293,7 +293,7 @@ int WrapObject::wrapPathSegment(const SimTK::State& s, PathPoint& aPoint1, PathP
     Vec3 pt2(0.0);
 
     // Convert the path points from the frames of the bodies they are attached
-    // to to the frame of the wrap object's body
+    // to, to the frame of the wrap object's body
     //_model->getSimbodyEngine().transformPosition(s, aPoint1.getBody(), aPoint1.getLocation(), getBody(), pt1);
     pt1 = aPoint1.getBody()
         .findLocationInAnotherFrame(s, aPoint1.getLocation(), getBody());
