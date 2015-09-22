@@ -174,7 +174,7 @@ solve(const SimTK::State& s, const Array<double> &ax,const Array<double> &bx,
                     p[i] = -p[i];
                 }
 
-                // If the interpolate is bad, use bissection.
+                // If the interpolate is bad, use bisection.
                 if( p[i]<(0.75*cb*q[i] - 0.5*fabs(tol_act[i]*q[i])) && p[i]<fabs(0.5*prev_step[i]*q[i]) )
                     new_step[i] = p[i]/q[i];
             }

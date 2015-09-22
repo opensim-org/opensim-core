@@ -289,7 +289,7 @@ void Joint::extendAddToSystem(SimTK::MultibodySystem& system) const
 
     // The parent node in the multibody tree must part of the system
     if(get_reverse())
-        // this will be the child if the joint definition is revesed
+        // this will be the child if the joint definition is reversed
         getConnector<PhysicalFrame>("child_frame").getConnectee().addToSystem(system);
     else // otherwise it is the parent frame
         getConnector<PhysicalFrame>("parent_frame").getConnectee().addToSystem(system);
@@ -376,7 +376,7 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s,
     the mobilities of the joint (for example to satisfy prescribed motion). In 
     which case the joint power is the constraint forces projected onto the mobilities
     multiplied by the mobilities (internal coordinate velocities). Only constraints
-    internal to the joint are accounted for, not external constrainst that effect
+    internal to the joint are accounted for, not external constraints that effect
     joint motion. */
 double Joint::calcPower(const SimTK::State &s) const
 {
@@ -413,7 +413,7 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForceForMobilizedBody(const SimTK:
     if (nu == 0) // No mobility forces (weld joint?).
         return SimTK::SpatialVec(SimTK::Vec3(0), SimTK::Vec3(0));
 
-    // Construct the H (joint jacobian, joint transition) matrrix for this mobilizer
+    // Construct the H (joint Jacobian, joint transition) matrix for this mobilizer
     SimTK::Matrix transposeH_PB_w(nu, 3);
     SimTK::Matrix transposeH_PB_v(nu, 3);
     // from individual columns
@@ -607,7 +607,7 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
     const int& startingCoordinateIndex) const
 {
     // If not OpenSim body provided as the one being mobilized assume it is 
-    // and intermedidate body and ignore.
+    // and intermediate body and ignore.
     if (mobilized){
         // Index can only be assigned to a parent or child body connected by this
         // Joint

@@ -37,11 +37,11 @@ namespace OpenSim {
  * A class for representing a StepFunction.
  *
  *          {   start_value,    t <= start_time 
- * f(t) =   {   S-plolynomial(t), start_time < t < end_time
+ * f(t) =   {   S-polynomial(t), start_time < t < end_time
  *          {   end_value,      t >= end_time
  *
  * This class inherits from Function and so can be used as input to
- * any class requiring a Fuction as input.
+ * any class requiring a Function as input.
  *
  * @author Ajay Seth
  * @version 1.0

@@ -38,7 +38,7 @@
 /**
  * A class for storing an array of pointers to objects of type T.
  *
- * In constrast to class Array<T>, when an object is added to this array
+ * In contrast to class Array<T>, when an object is added to this array
  * a copy is not made.  Rather, a pointer to the added object is
  * stored in the array.
  *
@@ -83,7 +83,7 @@ protected:
 // METHODS
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //=============================================================================
-// CONTRUCTION
+// CONSTRUCTION
 //=============================================================================
 public:
 //_____________________________________________________________________________
@@ -950,7 +950,7 @@ T* getLast() const
  *
  * A binary search is performed (i.e., the array is repeatedly subdivided
  * into two bins one of which must contain the specified until the
- * approprite element is identified), so the performance of this method
+ * appropriate element is identified), so the performance of this method
  * is approximately ln(n), where n is the size of the array.
  *
  * @param aValue Value to which the array elements are compared.

@@ -85,7 +85,7 @@ class Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * <B>Bdot = basal_coefficient * (m_body^basal_exponent)</B>
  *     - m_body = mass of the entire model
  *     - basal_coefficient and basal_exponent are defined by their respective properties.\n
- * <I>Note that this quantity is muscle independant. Rather it is calculated on a whole body level.</I>
+ * <I>Note that this quantity is muscle independent. Rather it is calculated on a whole body level.</I>
  *
  *
  * <H2><B> ACTIVATION HEAT RATE (W) </B></H2>
@@ -103,7 +103,7 @@ class Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * If <I>maintenance_rate_on</I> is set to true, then Mdot is calculated as follows:\n
  * <B>Mdot = m * f * [ Mdot_slow * r * sin((pi/2)*u)    +    Mdot_fast * (1-r) * (1-cos((pi/2)*u)) ]</B>
  * - u = muscle excitation at the current time.
- * - f is a piecewise linear function that describes the normalized fiber length denendence
+ * - f is a piecewise linear function that describes the normalized fiber length dependence
  * of the maintenance heat rate (default curve is shown below):
  * \image html fig_NormalizedFiberLengthDependenceOfMaintenanceHeatRateBhargava2004.png
  *
@@ -319,7 +319,7 @@ public:
 
     /** Returns the column labels of the probe values for reporting. 
         Currently uses the Probe name as the column label, so be sure
-        to name your probe appropiately!*/
+        to name your probe appropriately!*/
     virtual OpenSim::Array<std::string> getProbeOutputLabels() const override;
 
 
@@ -344,10 +344,10 @@ public:
     @note It is important to first add the metabolic probe to the model before
     calling any other methods that may modify its properties. This is because 
     some methods (e.g. addMuscle() or useCalculatedMass) may require information
-    about the muscles to sucsessfully execute, and this information can only be
+    about the muscles to successfully execute, and this information can only be
     obtained if the metabolic probe is already 'connected' to the model.
     */
-    // Get the number of muscles being analysed in the metabolic analysis. */
+    // Get the number of muscles being analyzed in the metabolic analysis. */
     const int getNumMetabolicMuscles() const;
 
     /** Add a muscle and its parameters so that it can be included in the metabolic analysis. */

@@ -51,7 +51,7 @@ class JointSet;
  * Inverse Dynamics is the solution for the generalized-coordinate forces that
  * generate given generalized-coordinate accelerations at a given state.
  * This Tool determines the state from provided coordinate trajectories as
- * functions as that are twice differntiable to estimate velocities and
+ * functions as that are twice differentiable to estimate velocities and
  * accelerations.
  *
  * As an additional service, the InverseDynamicsTool can provide an equivalent 
@@ -81,11 +81,11 @@ protected:
     PropertyDbl _lowpassCutoffFrequencyProp;
     double &_lowpassCutoffFrequency;
 
-    /** name of storage file containing generalized forces from innverse dynamics */
+    /** name of storage file containing generalized forces from inverse dynamics */
     PropertyStr _outputGenForceFileNameProp;
     std::string &_outputGenForceFileName;
 
-    /** Idenitify the list of joints for which equivalent body forces acting 
+    /** Identify the list of joints for which equivalent body forces acting 
         at the joint frames should be reported */
     PropertyStrArray _jointsForReportingBodyForcesProp;
     Array<std::string> &_jointsForReportingBodyForces;
@@ -118,7 +118,7 @@ protected:
 private:
     void setNull();
     void setupProperties();
-    /* If CoorindatesFile property is populated, load data into a live _coordinateValues
+    /* If CoordinatesFile property is populated, load data into a live _coordinateValues
     storage object. */
     bool loadCoordinateValues();
 
@@ -135,7 +135,7 @@ public:
     //--------------------------------------------------------------------------
     void setCoordinateValues(const OpenSim::Storage& aStorage);
     /**
-     * get/set the name of the file to be used as ouput from the tool
+     * get/set the name of the file to be used as output from the tool
      */
     std::string getOutputGenForceFileName() const { return _outputGenForceFileName;}
     void setOutputGenForceFileName(const std::string& desiredOutputFileName) {

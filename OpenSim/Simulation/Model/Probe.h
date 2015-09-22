@@ -108,7 +108,7 @@ class Model;
  *        accessed by file at the end of a simulation. Probes, on the other
  *        hand, are ModelComponents and therefore can be accessed at any time
  *        during a simulation from the API, and can also be used to compute
- *        model values that are fed back into ths system through via custom
+ *        model values that are fed back into the system via custom
  *        designed Controllers. Note that Probe values can also be reported to
  *        file at the end of a simulation by attaching a ProbeReporter analysis
  *        to the simulation.

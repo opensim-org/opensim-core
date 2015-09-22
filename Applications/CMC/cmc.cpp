@@ -153,7 +153,7 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream<<"-PrintSetup, -PS                     Print a default setup file for cmc.exe (setup_cmc_default.xml).\n";
     aOStream<<"-Setup, -S          SetupFileName    Specify the name of the XML setup file for the CMC investigation.\n";
     aOStream<<"-PropertyInfo, -PI                   Print help information for properties in setup files.\n";
-    aOStream<<"-Library, -L        LibraryName      Specifiy a library to load. Do not include the extension (e.g., .lib or .dll).\n";
+    aOStream<<"-Library, -L        LibraryName      Specify a library to load. Do not include the extension (e.g., .lib or .dll).\n";
     aOStream<<"                                     To load more than one library, repeat the -Library command-line option.\n\n";
 
 }

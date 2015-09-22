@@ -189,12 +189,12 @@ void PathActuator::computeForce( const SimTK::State& s,
     // compute path's lengthening speed if necessary
     double speed = path.getLengtheningSpeed(s);
 
-    // the lengthening speed of this actutor is the "speed" of the actuator 
+    // the lengthening speed of this actuator is the "speed" of the actuator 
     // used to compute power
     setSpeed(s, speed);
 
     double force =0;
-    if( isActuationOverriden(s) ) {
+    if( isActuationOverridden(s) ) {
         force = computeOverrideActuation(s);
     } else {
         force = computeActuation(s);
@@ -244,9 +244,9 @@ void PathActuator::extendRealizeDynamics(const SimTK::State& state) const
 {
     Super::extendRealizeDynamics(state); // Mandatory first line
 
-    // if this force is disabled OR it is being overidden (not computing dynamics)
+    // if this force is disabled OR it is being overridden (not computing dynamics)
     // then don't compute the color of the path.
-    if (!isDisabled(state) && !isActuationOverriden(state)){
+    if (!isDisabled(state) && !isActuationOverridden(state)){
         const SimTK::Vec3 color = computePathColor(state);
         if (!color.isNaN())
             getGeometryPath().setColor(state, color);

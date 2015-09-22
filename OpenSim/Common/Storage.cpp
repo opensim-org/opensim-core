@@ -156,7 +156,7 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
     // There are situations where we don't want to read the whole file in advance just header
     if (readHeadersOnly) return;
 
-    //MM using the occurance of time and range in the column labels to distinguish between
+    //MM using the occurrence of time and range in the column labels to distinguish between
     //SIMM and non SIMMOtion files.
     Array<std::string> currentLabels = getColumnLabels();
     int indexTime = currentLabels.findIndex("time");
@@ -324,7 +324,7 @@ setNull()
  * other members of aStorage such as the name and the description.  To get
  * a complete copy, the copy constructor should be used.
  *
- * If this instance does not have enough capicity to hold the states
+ * If this instance does not have enough capacity to hold the states
  * of the specified storage (aStorage), the capacity is increased.
  */
 void Storage::
@@ -477,7 +477,7 @@ getStateIndex(const std::string &aColumnName, int startIndex) const
  * Set a labels string for the columns in this Storage instance.
  * 
  * A character string is used to label the columns.  Each separate column
- * label is usually delimited by a tab ("\t"), but any delimeter may
+ * label is usually delimited by a tab ("\t"), but any delimiter may
  * be used.
  * 
  * The first column is almost always "Time."  The other columns
@@ -645,7 +645,7 @@ getLastStateVector() const
 }
 //_____________________________________________________________________________
 /**
- * Get the StateVector at a spcified time index.
+ * Get the StateVector at a specified time index.
  *
  * @param aTimeIndex Time index at which to get the state vector:
  * 0 <= aTimeIndex < _storage.getSize().
@@ -1382,7 +1382,7 @@ append(const Array<StateVector> &aStorage)
 }
 //_____________________________________________________________________________
 /**
- * Append an array of data that occured at a specified time.
+ * Append an array of data that occurred at a specified time.
  *
  * @param aT Time stamp of the data.
  * @param aN Length of the array.
@@ -1409,7 +1409,7 @@ append(double aT,int aN,const double *aY,bool aCheckForDuplicateTime)
 }
 //_____________________________________________________________________________
 /**
- * Append an array of data that occured at a specified time.
+ * Append an array of data that occurred at a specified time.
  *
  * @param aT Time stamp of the data.
  * @param aY Vector.
@@ -1423,7 +1423,7 @@ append(double aT,const SimTK::Vector& aY,bool aCheckForDuplicateTime)
 }
 //_____________________________________________________________________________
 /**
- * Append an array of data that occured at a specified time.
+ * Append an array of data that occurred at a specified time.
  *
  * @param aT Time stamp of the data.
  * @param aY Array<double>.
@@ -1685,7 +1685,7 @@ subtract(Storage *aStorage)
 /**
  * Multiply all state vectors in this storage instance by a value.
  *
- * @param aValue Value by which to mutiply the state vectors.
+ * @param aValue Value by which to multiply the state vectors.
  * @see StateVector::multiply(double)
  */
 void Storage::
@@ -1729,7 +1729,7 @@ multiply(StateVector *aStateVector)
 }
 //_____________________________________________________________________________
 /**
- * Multipy this storage instance by a storage instance.
+ * Multiply this storage instance by a storage instance.
  *
  * Linear interpolation or extrapolation is used to get the values of the
  * states that correspond in time to the states held in this storage
@@ -1768,7 +1768,7 @@ multiply(Storage *aStorage)
  * Multiply entries at column aIndex by a value.
  *
  * @param aIndex is the index of the column to multiply
- * @param aValue Value by which to mutiply the column.
+ * @param aValue Value by which to multiply the column.
  */
 void Storage::
 multiplyColumn(int aIndex, double aValue)
@@ -1873,7 +1873,7 @@ divide(Storage *aStorage)
  * vectors stored in this storage instance.
  *
  * This method uses computeArea() to compute the area (integral) and then
- * simply divides by the the time interval (tf-ti).
+ * simply divides by the time interval (tf-ti).
  *
  * It is assumed that there is enough memory at aAve to hold aN states.
  * If aN exceeds the number of states held in storage, aN is disregarded.
@@ -2066,7 +2066,7 @@ integrate(double aTI,double aTF,int aN,double *rArea,Storage *rStorage) const
     // RECORD FIRST STATE
     if(rStorage) rStorage->append(aTI,n,rArea);
 
-    // GET RELAVENT STATE INDICES
+    // GET RELEVANT STATE INDICES
     int II = findIndex(aTI)+1;
     int FF = findIndex(aTF);
 
@@ -2405,12 +2405,12 @@ lowpassFIR(int aOrder,double aCutoffFrequency)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Find the index of the storage element that occured immediately before
+ * Find the index of the storage element that occurred immediately before
  * or at time aT ( aT <= getTime(index) ).
  *
  * This method can be much more efficient than findIndex(aT) if a good guess
  * is made for aI.
- * If aI corresponds to a state which occured later than aT, an exhaustive
+ * If aI corresponds to a state which occurred later than aT, an exhaustive
  * search is performed by calling findIndex(aT).
  *
  * @param aI Index at which to start searching.
@@ -2438,7 +2438,7 @@ findIndex(int aI,double aT) const
 }
 //_____________________________________________________________________________
 /**
- * Find the index of the storage element that occured immediately before
+ * Find the index of the storage element that occurred immediately before
  * or at a specified time ( getTime(index) <= aT ).
  *
  * This method is not very efficient because it always starts its search
@@ -2602,8 +2602,8 @@ void Storage::interpolateAt(const Array<double> &targetTimes)
 //_____________________________________________________________________________
 /**
  * Set name of output file to be written into.
- * This has the side effect of openning the file for writing. The header will not have the correct
- * number of rows but this may not be an issue for ersion 2 of the Storage class
+ * This has the side effect of opening the file for writing. The header will not have the correct
+ * number of rows but this may not be an issue for version 2 of the Storage class
  */
 void Storage::
 setOutputFileName(const std::string& aFileName)
@@ -2625,11 +2625,11 @@ setOutputFileName(const std::string& aFileName)
 /**
  * Print the contents of this storage instance to a file.
  *
- * The argument aMode specifies whether the file is openned for writting, "w",
- * or appending, "a".  If a bad value for aMode is sent in, the file is openned
+ * The argument aMode specifies whether the file is opened for writing, "w",
+ * or appending, "a".  If a bad value for aMode is sent in, the file is opened
  * for writing.
  *
- * The total number of characters written is returned.  If an error occured,
+ * The total number of characters written is returned.  If an error occurred,
  * a negative number is returned.
  *
  * @param aFileName Name of file to which to save.
@@ -2703,13 +2703,13 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
  * Print the contents of this storage instance to a file named by the argument
  * aFileaName using uniform time spacing.
  *
- * The argument aMode specifies whether the file is openned for writting, "w",
- * or appending, "a".  If a bad value for aMode is sent in, the file is openned
+ * The argument aMode specifies whether the file is opened for writing, "w",
+ * or appending, "a".  If a bad value for aMode is sent in, the file is opened
  * for writing.
  *
  * The argument aDT specifies the time spacing.
  *
- * The total number of characters written is returned.  If an error occured,
+ * The total number of characters written is returned.  If an error occurred,
  * a negative number is returned.
  */
 int Storage::
@@ -3022,7 +3022,7 @@ bool Storage::hasKey(const std::string& aKey) const
 
 //_____________________________________________________________________________
 /**
- * Check that a Token belongs to a list of resere
+ * Check that a Token belongs to a list of reserved keys
  *
  * @returns true on success (meaningful values of rNumRows, rNumColumns)
  */
@@ -3051,7 +3051,7 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
     while(!done){
         // NAME
         string line = IO::ReadLine(aStream);
-        // Always Strip leading and trainling spaces and tabs
+        // Always Strip leading and trailing spaces and tabs
         IO::TrimLeadingWhitespace(line);
         IO::TrimTrailingWhitespace(line);
         if(line.empty() && !aStream.good()) {
@@ -3144,7 +3144,7 @@ exchangeTimeColumnWith(int aColumnIndex)
 }
 //_____________________________________________________________________________
 /**
- * If that was a SIMM motion file postprocess it to account for
+ * If that was a SIMM motion file post-process it to account for
  * lack of time column, assumption of uniform time
  * other kinds of processing can be added here to account for calc_derivatives, ...
  *

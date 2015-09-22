@@ -98,7 +98,7 @@ void Controller::setDisabled(bool aTrueFalse)
     upd_isDisabled()=aTrueFalse;
 }
 
-// for any post XML deseraialization intialization
+// for any post XML deserialization initialization
 void Controller::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);

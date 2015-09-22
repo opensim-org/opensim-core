@@ -49,7 +49,7 @@ namespace OpenSim {
     @param concentricSlopeAtVmax
         The slope of the force-velocity curve at a normalized velocity of -1,
         which is the minimum slope of the concentric side of the force-velocity
-        curve. A physiologically accurate value for this paramter is 0, though
+        curve. A physiologically accurate value for this parameter is 0, though
         values greater than 0 are necessary when the force-velocity curve must
         be inverted.
     @param concentricSlopeNearVmax
@@ -60,7 +60,7 @@ namespace OpenSim {
         The slope of the force-velocity curve at a normalized velocity of 0,
         which is the maximum slope of the force-velocity curve. A
         physiologically accurate value for this parameter is 5 (according to
-        Leiber, page 55), which is the default value. Although this parameter
+        Lieber, page 55), which is the default value. Although this parameter
         can be changed, it must be positive and greater than
         max( (maxEccentricMultiplier-1)/1, 1). The value of this parameter also
         affects how much the eccentric and concentric curves can be bent by the
@@ -77,7 +77,7 @@ namespace OpenSim {
     @param maxEccentricVelocityForceMultiplier
         The value of the force-velocity curve (i.e., the force-velocity
         multiplier) at the maximum eccentric contraction velocity.
-        Physiologically acccurate values for this parameter range between 1.1
+        Physiologically accurate values for this parameter range between 1.1
         and 1.8, and may vary between subjects.
     @param concentricCurviness
         A dimensionless parameter between 0 and 1 that describes the shape of
@@ -126,7 +126,7 @@ namespace OpenSim {
 
     <B>References</B>
     \li Lieber, R.L. (2010) Skeletal %Muscle Structure, %Function, and
-        Plasticity: The Physiological Basis of Rehabilitiation, 3rd ed.
+        Plasticity: The Physiological Basis of Rehabilitation, 3rd ed.
         Baltimore: Lippincott Williams & Wilkins.
 
     Note that this object should be updated through the set methods provided.

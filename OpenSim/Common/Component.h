@@ -312,13 +312,14 @@ public:
     const SimTK::MultibodySystem& getSystem() const;
 
     /**
+
     * Check if this component has an underlying MultibodySystem.
     * Returns false if the System has not been created OR if this
     * Component has not added itself to the System.  */
     bool hasSystem() const { return !_system.empty(); }
 
     /**
-     * Get an iterator thru the underlying subcomponents that this component is 
+     * Get an iterator through the underlying subcomponents that this component is 
      * composed of. The hierarchy of Components/subComponents forms a tree. The 
      * tree structure is fixed when the system is created.
      * The order of the Components is that of tree preorder traversal so that a

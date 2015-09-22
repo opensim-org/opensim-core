@@ -39,8 +39,8 @@ namespace OpenSim {
 //==============================================================================
 /**
  * A class implementing a bushing force driven by functions relating forces to 
- * deviations.  Thes functions can be arbitrary, user defined functions that
- * caputure nonlinearities in biologic structures.  This Function Based Bushing
+ * deviations.  These functions can be arbitrary, user-defined functions that
+ * capture nonlinearities in biologic structures.  This Function Based Bushing
  * does not capture coupling between the deflections (e.g. force in x due to 
  * rotation in z).
  *
@@ -163,7 +163,7 @@ public:
     // COMPUTATION
     //--------------------------------------------------------------------------
     /** Compute the deflection (spatial separation) of the two frames connected
-      * by the bushing force. Angualar displacement expressed in Euler angles.
+      * by the bushing force. Angular displacement expressed in Euler angles.
       * The force and potential energy are determined by the deflection.  */
     virtual SimTK::Vec6 computeDeflection(const SimTK::State& s) const;
 

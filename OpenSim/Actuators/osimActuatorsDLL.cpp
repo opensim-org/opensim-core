@@ -36,7 +36,7 @@
 using namespace std;
 
 //
-// Define Plugin_Attach and Plugin_Detach below to be called by both windows and linux
+// Define Plugin_Attach and Plugin_Detach below to be called by both Windows and Linux
 //
 static void Plugin_Attach()
 {
@@ -50,7 +50,7 @@ static void Plugin_Detach()
 }
 
 //
-// The code below handles both windows and linux library entrypoints
+// The code below handles both Windows and Linux library entrypoints
 //
 #if defined(WIN32)
 //=============================================================================

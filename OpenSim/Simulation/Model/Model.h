@@ -117,7 +117,7 @@ public:
 //==============================================================================
     OpenSim_DECLARE_PROPERTY(assembly_accuracy, double,
     "Specify how accurate the resulting configuration of a model assembly "
-    "should be. This translates to the number of signficant digits in the "
+    "should be. This translates to the number of significant digits in the "
     "resulting coordinate values. Therefore, if you require initial conditions "
     "accurate to four significant digits, use a minimum of 1e-4 as the accuracy."
     "The default setting is 1e-9 as to satisfy the most stringent requirements by " 
@@ -172,7 +172,7 @@ public:
         "List of joints that connect the bodies.");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(FrameSet,
-        "List of Frames that various objects can be anchored to or expressed in, Body frames are builtin and not included in this list.");
+        "List of Frames that various objects can be anchored to or expressed in, Body frames are built-in and not included in this list.");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(ModelVisualPreferences,
         "Visual preferences for this model.");
@@ -295,7 +295,7 @@ public:
     to the Simbody MultibodySystem have been made, call this method to finalize 
     the MultibodySystem (by calling its realizeTopology() method), obtain an 
     initial state, and assemble it so that position constraints are 
-    satisified. The initStateFromProperties() method of each contained
+    satisfied. The initStateFromProperties() method of each contained
     ModelComponent will be invoked. A reference to the writable internally-
     maintained model State is returned (note that this does not affect the 
     system's default state (which is part of the model and hence read only).
@@ -876,17 +876,17 @@ public:
 
     /**
      * Model relinquishes ownership of all components such as: Bodies, Constraints, Forces, 
-     * ConactGeometry and so on. That means the freeing of the memory of these objects is up
+     * ContactGeometry and so on. That means the freeing of the memory of these objects is up
      * to the caller.
      */
     void disownAllComponents();
     /**
-     * Convenice function to turn on/off overriding the force for all actuators 
+     * Convenience function to turn on/off overriding the force for all actuators 
      */
     void overrideAllActuators( SimTK::State& s, bool flag);
 
     /**
-     * Get a log of errors/warnings ecountered when loading/constructing the model
+     * Get a log of errors/warnings encountered when loading/constructing the model
      */
     const std::string& getValidationLog() { return _validationLog; };
     void clearValidationLog() { _validationLog = ""; };

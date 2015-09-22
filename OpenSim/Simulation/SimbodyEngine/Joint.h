@@ -119,7 +119,7 @@ public:
 // METHODS
 //=============================================================================
     /** Default Constructor. Create an unnamed Joint with parent and child
-        frame connectors that are unsastisfied. */
+        frame connectors that are unsatisfied. */
     Joint();
 
     /** Convenience Constructor */
@@ -230,10 +230,10 @@ public:
     // Computation
     /** Given some system mobility (generalized) forces, calculate the 
     equivalent spatial body force for this Joint. Keep in mind that there are 
-    typically nm < 6 mobilities per joint with an infinte set of solutions that 
+    typically nm < 6 mobilities per joint with an infinite set of solutions that 
     can map nm gen forces to 6 spatial force components (3 for torque + 3 for 
     force). The solution returned provides the "most" effective force and torque
-    in the joint frame. This means the smallest magnituded force and/or torque 
+    in the joint frame. This means the smallest magnitude force and/or torque 
     that will result in the same generalized force. If a generalized force is 
     defined along/about a joint axis, then this should be evident in the 
     reported results as a force or torque on the same axis.  NOTE: Joints 
@@ -276,7 +276,7 @@ protected:
     \code{.cpp}
     class My2DofJoint::Joint {
         CoordinateIndex dof1{ constructCoordinate(Coordinate::MotionType::Rotational) };
-        CoordinateIndex dof2{ constructCoordinate(Coordinate::MotionType::Translatinal) };
+        CoordinateIndex dof2{ constructCoordinate(Coordinate::MotionType::Translational) };
         ...
     }
     \endcode
@@ -380,7 +380,7 @@ protected:
     the coordinates and speed values from the state of the MultibodySystem.
     As a convenience the startingCoorinateIndex is updated so
     that sequential calls will increment correctly based on the number of
-    mobilties the concrete MobilizedBody enables.
+    mobilities the concrete MobilizedBody enables.
 
     @param[in] inboard           an existing SimTK::MobilizedBody in the
                                  multibody tree

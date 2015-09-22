@@ -41,7 +41,7 @@ class Model;
 /**
  * A class that implements a force actuator acting between two points on two bodies.
  * The direction of the force is along the line between the points, with a positive
- * value acting to exapnd the distance between them.  This actuator has no states; 
+ * value acting to expand the distance between them.  This actuator has no states; 
  * the control is simply the force to be applied to the model.
  *
  * @author Matt DeMers

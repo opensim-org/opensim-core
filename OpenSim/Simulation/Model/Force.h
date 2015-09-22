@@ -63,7 +63,7 @@ public:
     /**
     * Tell SimBody to parallelize this force. Should be 
     * set to true for any forces that will take time to 
-    * complete thier calcForce method. Note that all forces
+    * complete their calcForce method. Note that all forces
     * that set this flag to false will be put in series on a
     * thread that is running in parallel with other forces
     * that marked this flag as true.
@@ -163,7 +163,7 @@ protected:
      * @param state      state used only to determine which element of 
      *                      \a bodyForces to modify
      * @param body       the body to apply the force to
-     * @param point      the point at which to apply the force, specifieid in 
+     * @param point      the point at which to apply the force, specified in 
      *                      the body's frame
      * @param force      the force to apply, specified in the inertial 
      *                      (ground) reference frame
@@ -200,7 +200,7 @@ protected:
      *
      * @param state              state used only to determine which element of 
      *                              \a generalizedForces to modify
-     * @param coord              the generalized coordinate to to which the 
+     * @param coord              the generalized coordinate to which the 
      *                              force should be applied
      * @param force              the (scalar) force to apply
      * @param generalizedForces  the set of system generalizedForces to which

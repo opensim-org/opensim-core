@@ -34,7 +34,7 @@ class Model;
 //=============================================================================
 //=============================================================================
 /**
- * The base (abstract) class for a family of objects repsonsible for solving
+ * The base (abstract) class for a family of objects responsible for solving
  * system equations (statics, dynamic, kinematics, muscle, etc...) given by a
  * model for values of interest.
  *
