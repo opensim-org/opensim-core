@@ -50,7 +50,7 @@ public:
         _dispContactResolution = 2.0;
     }
      void generateDecorations(const SimTK::State& state, 
-                             SimTK::Array_<SimTK::DecorativeGeometry>& geometry);
+                             SimTK::Array_<SimTK::DecorativeGeometry>& geometry) override;
     double getDispMarkerRadius() {return _dispMarkerRadius;}
     void   setDispMarkerRadius(double a) {_dispMarkerRadius=a;}
     double getDispMarkerOpacity() {return _dispMarkerOpacity;}

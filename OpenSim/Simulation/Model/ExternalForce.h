@@ -110,7 +110,7 @@ public:
     // assignment operator.
 
     // Copy properties from XML into member variables
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
     // ACCESS METHODS
     /**
@@ -174,13 +174,13 @@ public:
      * Methods used for reporting.
      * First identify the labels for individual components
      */
-    virtual OpenSim::Array<std::string> getRecordLabels() const;
+    OpenSim::Array<std::string> getRecordLabels() const override;
     /**
      * Given SimTK::State object extract all the values necessary to report 
      * forces, application location frame, etc. used in conjunction with 
      * getRecordLabels and should return same size Array.
      */
-    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const;
+    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
     /**
      * Methods to query the force properties to find out if it's a body vs. 
      * point force and/or if it applies a torque. 
@@ -216,9 +216,9 @@ protected:
     /**
      * Compute the force.
      */
-    virtual void computeForce(const SimTK::State& state, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const;
+    void computeForce(const SimTK::State& state, 
+                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+                      SimTK::Vector& generalizedForces) const override;
 
 private:
     void setNull();

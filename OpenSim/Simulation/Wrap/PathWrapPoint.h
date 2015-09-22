@@ -86,7 +86,7 @@ public:
     Array<SimTK::Vec3>& getWrapPath() { return _wrapPath; }
     double getWrapLength() const { return _wrapPathLength; }
     void setWrapLength(double aLength) { _wrapPathLength = aLength; }
-    const WrapObject* getWrapObject() const { return _wrapObject; }
+    const WrapObject* getWrapObject() const override { return _wrapObject; }
     void setWrapObject(const WrapObject* aWrapObject) { _wrapObject = aWrapObject; }
 
 private:

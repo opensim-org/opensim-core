@@ -93,7 +93,7 @@ public:
     {   return get_cord_length(); }
 
     /** Compute actuation for current state. **/
-    double computeActuation(const SimTK::State& s) const;
+    double computeActuation(const SimTK::State& s) const override;
 protected:
     /** how to display the McKibben
     VisibleObject _displayer; */

@@ -122,22 +122,22 @@ public:
 
     // OPTIMAL FORCE
     void setOptimalForce(double aOptimalForce);
-    double getOptimalForce() const;
+    double getOptimalForce() const override;
     // STRESS
 #ifndef SWIG
-    double getStress( const SimTK::State& s ) const;
+    double getStress( const SimTK::State& s ) const override;
     //--------------------------------------------------------------------------
     // APPLICATION
     //--------------------------------------------------------------------------
     virtual void computeForce(const SimTK::State& s, 
                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-                              SimTK::Vector& generalizedForces) const;
+                              SimTK::Vector& generalizedForces) const override;
 
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
     
-    virtual double  computeActuation( const SimTK::State& s) const;
+    double computeActuation( const SimTK::State& s) const override;
 
 #endif
     // Setup method to initialize Body reference
@@ -146,7 +146,7 @@ public:
     //--------------------------------------------------------------------------
     // XML
     //--------------------------------------------------------------------------
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
 //=============================================================================
 };  // END of class PistonActuator

@@ -220,7 +220,7 @@ public:
     //--------------------------------------------------------------------------
     // XML
     //--------------------------------------------------------------------------
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
 
 //=============================================================================
