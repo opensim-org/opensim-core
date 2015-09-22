@@ -1561,8 +1561,15 @@ template <class T> friend class ComponentMeasure;
     const StateVariable* findStateVariable(const std::string& name) const;
 
     /** Access the parent of this Component.
-        An exception is thrown if the Component has no parent. */
+        An exception is thrown if the Component has no parent.
+        @see hasParent() */
     const Component& getParent() const;
+
+
+    /** Check if this Component has a parent assigned or not.
+        A component may not have a parent assigned if it:
+        1) is the root component, or 2) has not been added to its parent. */
+    bool hasParent() const;
 
     /** %Set this Component's reference to its parent Component */
     void setParent(const Component& parent);

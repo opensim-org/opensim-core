@@ -180,10 +180,12 @@ void Component::connect(Component &root)
         try{
             const std::string& compName = connector.get_connectee_name();
             std::string::size_type front = compName.find("/");
-            if (front != 0) { // local name
-                // Local is considered (1) children 
+            if (front != 0) { // local (not path qualified) name
+                // A local Component is considered: 
+                // (1) one of this component's children 
                 const Component* comp = findComponent(compName);
-                if (!comp) {// and (2) siblings(same level)
+                // (2) OR, one of this component's siblings (same depth as this)
+                if (!comp && hasParent()) {
                     comp = getParent().findComponent(compName);
                 }
                 if (comp) {
@@ -481,17 +483,25 @@ int Component::getNumStateVariables() const
     return ns;
 }
 
+
 const Component& Component::getParent() const 
 {
-    if (_parent.empty()) {
+    if (!hasParent()) {
         std::string msg = "Component '" + getName() + "'::getParent(). " +
-            "Has no parent Component specified.";
+            "Has no parent Component assigned.\n" +
+            "Make sure the component was added to the Model (or its parent).";
         throw Exception(msg);
     }
     return _parent.getRef();
 }
 
-void Component::setParent(const Component& parent) {
+bool Component::hasParent() const
+{
+    return !_parent.empty();
+}
+
+void Component::setParent(const Component& parent)
+{
     _parent.reset(&parent);
 }
 
@@ -1045,7 +1055,7 @@ void Component::extendRealizeAcceleration(const SimTK::State& s) const
 
 const SimTK::MultibodySystem& Component::getSystem() const
 {
-    if (_system.empty()){
+    if (!hasSystem()){
         std::string msg = getConcreteClassName()+"::getSystem() ";
         msg += getName() + " has no reference to a System.\n";
         msg += "Make sure you added the Component to the Model and ";
