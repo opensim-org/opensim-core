@@ -809,7 +809,6 @@ void testExpressionBasedBushingForce()
     CoordinateSet &slider_coords = sliderY.upd_CoordinateSet();
     slider_coords[0].setName("ball_h");
     slider_coords[0].setRange(positionRange);
-    slider_coords[0].setMotionType(Coordinate::Translational);
     
     osimModel->addBody(&ball);
     osimModel->addJoint(&sliderY);
@@ -831,7 +830,10 @@ void testExpressionBasedBushingForce()
     Vec3 rotDamping(0);
     Vec3 transDamping(0);
     
-    ExpressionBasedBushingForce spring("base_body", Vec3(0), Vec3(0), "ball", Vec3(0), Vec3(0), transStiffness, rotStiffness, transDamping, rotDamping);
+    ExpressionBasedBushingForce spring("base_body", Vec3(0), Vec3(0), 
+        "ball", Vec3(0), Vec3(0), 
+        transStiffness, rotStiffness, transDamping, rotDamping);
+    
     spring.setName("linear_bushing");
     
     osimModel->addForce(&spring);
@@ -859,7 +861,7 @@ void testExpressionBasedBushingForce()
     double nsteps = 10;
     double dt = final_t/nsteps;
     
-    for(int i = 1; i <=nsteps; i++){
+    for(int i = 1; i <=nsteps; ++i){
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
