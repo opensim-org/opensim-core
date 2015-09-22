@@ -55,7 +55,7 @@ addons:
       # In case someone wants to check for memory leaks.
       - valgrind
       # To build doxygen documentation.
-      # TOO OLD - doxygen
+      # TOO OLD; see below. - doxygen
       # To run the python tests.
       - python-nose
       # To send a password to ssh.
@@ -104,9 +104,10 @@ before_install:
   #- ./configure --prefix=$HOME/swig && make && make -j8 install
   
   ## Doxygen.
-  - mkdir ~/doxygen && cd ~/doxygen
-  - wget http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.10.linux.bin.tar.gz
-  - tar xzf doxygen-1.8.10.linux.bin.tar.gz
+  # Need a doxygen that is more recent than that available through apt-get.
+  - if [ "$DOXY" = "on" ]; then mkdir ~/doxygen && cd ~/doxygen; fi
+  - if [ "$DOXY" = "on" ]; then wget http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.10.linux.bin.tar.gz; fi
+  - if [ "$DOXY" = "on" ]; then tar xzf doxygen-1.8.10.linux.bin.tar.gz; fi
 
   ## Detect if we should check memory leaks with valgrind.
   - cd $TRAVIS_BUILD_DIR
@@ -124,7 +125,7 @@ before_install:
 install:
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
   # Configure OpenSim.
-  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/" -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen # TODO -DOPENSIM_DOXYGEN_USE_MATHJAX=off
+  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DOPENSIM_SIMBODY_DOXYGEN_LOCATION:STRING="https://simtk.org/api_docs/simbody/latest/" -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off
   # Build OpenSim.
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
   - if [[ "$WRAP" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PyWrap; fi
