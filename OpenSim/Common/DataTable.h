@@ -138,9 +138,18 @@ public:
     }
 
 protected:
+    /** Get number of rows. Implemented by derived classes.                   */
     virtual size_t computeNumRows() const            = 0;
+    
+    /** Get number of columns. Implemented by derived classes.                */
     virtual size_t computeNumColumns() const         = 0;
+    
+    /** Check if metadata for independent column is valid . Implemented by 
+    derived classes.                                                          */
     virtual void validateIndependentMetaData() const = 0;
+
+    /** Check if metadata for dependent column is valid. Implemented by derived
+    classes.                                                                  */
     virtual void validateDependentsMetaData() const  = 0;
 
     TableMetaData       _tableMetaData;
