@@ -20,8 +20,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#ifndef OPENSIM_DATATABLE_H_
-#define OPENSIM_DATATABLE_H_
+#ifndef OPENSIM_DATA_TABLE_H_
+#define OPENSIM_DATA_TABLE_H_
 
 /** \file
 This file defines the  DataTable_ class, which is used by OpenSim to provide an 
@@ -290,4 +290,4 @@ using DataTable = DataTable_<SimTK::Real>;
 
 } // namespace OpenSim
 
-#endif //OPENSIM_DATATABLE_H_
+#endif //OPENSIM_DATA_TABLE_H_

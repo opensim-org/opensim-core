@@ -20,8 +20,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#ifndef OPENSIM_TIMESERIESDATATABLE_H_
-#define OPENSIM_TIMESERIESDATATABLE_H_
+#ifndef OPENSIM_TIME_SERIES_DATA_TABLE_H_
+#define OPENSIM_TIME_SERIES_DATA_TABLE_H_
 
 /** \file
 This file defines the TimeSeriesTable_ class, which is used by OpenSim to 
@@ -53,4 +53,4 @@ using TimeSeriesTable = TimeSeriesTable_<SimTK::Real>;
 
 } // namespace OpenSim
 
-#endif // OPENSIM_TIMESERIESDATATABLE_H_
+#endif // OPENSIM_TIME_SERIES_DATA_TABLE_H_

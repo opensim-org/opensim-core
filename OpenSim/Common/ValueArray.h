@@ -20,8 +20,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#ifndef OPENSIM_VALUEARRAY_H_
-#define OPENSIM_VALUEARRAY_H_
+#ifndef OPENSIM_VALUE_ARRAY_H_
+#define OPENSIM_VALUE_ARRAY_H_
 
 // Non-standard headers.
 #include "SimTKcommon.h"
@@ -97,4 +97,4 @@ private:
 
 }
 
-#endif // OPENSIM_VALUEARRAY_H_
+#endif // OPENSIM_VALUE_ARRAY_H_

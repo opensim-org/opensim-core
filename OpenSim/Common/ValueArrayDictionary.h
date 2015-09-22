@@ -20,8 +20,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#ifndef OPENSIM_VALUEARRAYDICTIONARY_H_
-#define OPENSIM_VALUEARRAYDICTIONARY_H_
+#ifndef OPENSIM_VALUE_ARRAY_DICTIONARY_H_
+#define OPENSIM_VALUE_ARRAY_DICTIONARY_H_
 
 #include "OpenSim/Common/ValueArray.h"
 
@@ -85,4 +85,4 @@ private:
 
 }
 
-#endif // OPENSIM_VALUEARRAYDICTIONARY_H_
+#endif // OPENSIM_VALUE_ARRAY_DICTIONARY_H_
