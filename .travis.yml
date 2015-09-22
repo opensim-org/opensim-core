@@ -78,6 +78,12 @@ before_install:
   # Without the following lines, ccache causes clang to not print in color.
   - if [ "$CC" == "clang" ]; then export CC="clang -fcolor-diagnostics"; fi;
   - if [ "$CXX" == "clang++" ]; then export CX="clang++ -fcolor-diagnostics"; fi;
+  
+  ## Doxygen.
+  # Need a doxygen that is more recent than that available through apt-get.
+  - if [ "$DOXY" = "on" ]; then mkdir ~/doxygen && cd ~/doxygen; fi
+  - if [ "$DOXY" = "on" ]; then wget http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.10.linux.bin.tar.gz; fi
+  - if [ "$DOXY" = "on" ]; then tar xzf doxygen-1.8.10.linux.bin.tar.gz; fi
 
   ## Install Simbody.
   # Clone Simbody into the Simbody directory. Don't need its history, and
@@ -104,12 +110,6 @@ before_install:
   - if [[ "$WRAP" = "on" ]]; then tar xzf rel-$SWIG_VER.tar.gz && cd swig-rel-$SWIG_VER; fi
   - if [[ "$WRAP" = "on" ]]; then sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache && make && make -j8 install; fi
   #- ./configure --prefix=$HOME/swig && make && make -j8 install
-  
-  ## Doxygen.
-  # Need a doxygen that is more recent than that available through apt-get.
-  - if [ "$DOXY" = "on" ]; then mkdir ~/doxygen && cd ~/doxygen; fi
-  - if [ "$DOXY" = "on" ]; then wget http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.10.linux.bin.tar.gz; fi
-  - if [ "$DOXY" = "on" ]; then tar xzf doxygen-1.8.10.linux.bin.tar.gz; fi
 
   ## Detect if we should check memory leaks with valgrind.
   - cd $TRAVIS_BUILD_DIR
