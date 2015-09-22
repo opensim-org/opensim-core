@@ -1564,7 +1564,7 @@ template <class T> friend class ComponentMeasure;
         An exception is thrown if the Component has no parent. */
     const Component& getParent() const;
 
-    /** Set this Component's reference to its parent Component */
+    /** %Set this Component's reference to its parent Component */
     void setParent(const Component& parent);
 
     //@} 
