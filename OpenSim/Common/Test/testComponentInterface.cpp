@@ -64,7 +64,8 @@ public:
 
 
     // Top level connection method for all encompassing Component
-    void buildComponentTreeAndConnect() { 
+    void buildComponentTreeAndConnect() {
+        finalizeFromProperties();
         initComponentTreeTraversal(*this);
         connect(*this);
     }
@@ -406,18 +407,13 @@ int main() {
         //Configure the connector to look for its dependency by this name
         //Will get resolved and connected automatically at Component connect
         bar.updConnector<Foo>("parentFoo").set_connectee_name("Foo");
-        bar.updConnector<Foo>("childFoo").set_connectee_name("Foo");
+        bar.updConnector<Foo>("childFoo").connect(foo);
         
         // add a subcomponent
         // connect internals
-        try{
-            theWorld.buildComponentTreeAndConnect();
-        }
-        catch (const std::exception& e) {
-            // Should fail to connect because child and parent Foo's are the same
-            // Component and a Bar connects two Foo's.
-            cout << e.what() << endl;
-        }
+        ASSERT_THROW( OpenSim::Exception,
+                      theWorld.buildComponentTreeAndConnect() );
+
 
         ComponentList<Component> worldTreeAsList = theWorld.getComponentList();
         std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
@@ -460,6 +456,9 @@ int main() {
         }
 
         theWorld.buildUpSystem(system);
+
+        const Foo& foo2found = theWorld.getComponent<Foo>("Foo2");
+        ASSERT(foo2 == foo2found);
 
         // do any other input/output connections
         foo.getInput("input1").connect(bar.getOutput("PotentialEnergy"));
@@ -509,9 +508,8 @@ int main() {
         
         world2->updComponent("Bar").getConnector<Foo>("childFoo");
         // We haven't called connect yet, so this connection isn't made yet.
-        ASSERT_THROW(OpenSim::Exception,
-                world2->updComponent("Bar").getConnectee<Foo>("childFoo");
-                );
+        ASSERT_THROW( OpenSim::Exception,
+                world2->updComponent("Bar").getConnectee<Foo>("childFoo") );
 
         ASSERT(theWorld == *world2, __FILE__, __LINE__,
             "Model serialization->deserialization FAILED");
