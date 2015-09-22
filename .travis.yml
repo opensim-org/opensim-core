@@ -96,7 +96,7 @@ before_install:
   # Build Simbody.
   - make -j8
   # Build Simbody's doxygen, so we can link to it from OpenSim's doxygen.
-  - make doxygen
+  - if [ "$DOXY" = "on" ]; then make doxygen; fi
   # Test Simbody.
   - ctest -j8 --output-on-failure
   # Install Simbody.
