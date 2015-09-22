@@ -54,7 +54,7 @@ build_script:
   - mkdir build
   - cd build
   # Configure.
-  - cmake .. -G"Visual Studio 14 2015 Win64" -DSIMBODY_HOME=C:\simbody -DCMAKE_INSTALL_PREFIX=%OPENSIM_HOME% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=OFF # TODO -DBUILD_SIMM_TRANSLATOR=ON
+  - cmake .. -G"Visual Studio 14 2015 Win64" -DSIMBODY_HOME=C:\simbody -DCMAKE_INSTALL_PREFIX=%OPENSIM_HOME% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON # TODO -DBUILD_SIMM_TRANSLATOR=ON
   # Build.
   - cmake --build . --target ALL_BUILD --config Release -- /maxcpucount:4 /verbosity:quiet
   
@@ -66,14 +66,11 @@ test_script:
   - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
   
   ### Test python wrapping.
-  #- set PATH=%OPENSIM_HOME%\bin;%PATH%
-  #
-  #
-  ## Move to the installed location of the python package.
-  #- cd %OPENSIM_HOME%\sdk\python
-  #
-  ## Run python tests.
-  #- nosetests -v
+  - set PATH=%OPENSIM_HOME%\bin;%PATH%
+  # Move to the installed location of the python package.
+  - cd %OPENSIM_HOME%\sdk\python
+  # Run python tests.
+  - nosetests -v
 
 after_test:
   - ## On master branch, create NuGet package for OpenSim.
