@@ -159,11 +159,12 @@ protected:
 
 
 /** DataTable_ is a in-memory storage container for data with support for 
-holding metadata. Data contains an independent column and a set of dependent 
-columns. The type of the independent column can be configured using ETX (
-template param). The type of the dependent columns, which together form a matrix
-, can be configured using ETY (template param). Independent and Dependent 
-columns can contain metadata. DataTable_ as a whole can contain metadata.     */
+holding metadata (using the base class AbstractDataTable). Data contains an 
+independent column and a set of dependent columns. The type of the independent 
+column can be configured using ETX (template param). The type of the dependent 
+columns, which together form a matrix, can be configured using ETY (template 
+param). Independent and Dependent columns can contain metadata. DataTable_ as a 
+whole can contain metadata.                                                   */
 template<typename ETX = double, typename ETY = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
 public:

@@ -32,8 +32,8 @@ provide an in-memory container for data access and manipulation.              */
 
 namespace OpenSim {
 
-/** TimeSeriesTable_ is a DataTable_ that treats the independent column as time.
-The time column is enforced to be strictly increasing.                        */
+/** TimeSeriesTable_ is a DataTable_ where the independent column is time of 
+type double. The time column is enforced to be strictly increasing.           */
 template<typename ETY = SimTK::Real>
 class TimeSeriesTable_ : public DataTable_<double, ETY> {
 public:
