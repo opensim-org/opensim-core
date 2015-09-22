@@ -60,6 +60,8 @@ addons:
       - python-nose
       # To send a password to ssh.
       - sshpass
+    ssh_known_hosts:
+      - web.sourceforge.net
 
 before_install:
 
@@ -160,6 +162,7 @@ script:
   # View resulting doxygen at myosin.sourceforge.net/<pull-request-number>
   # The `-e "ssh...` is for providing the password andautomatically
   # accepting the ssh key.
+  # https://sourceforge.net/p/forge/documentation/Project%20Web%20Services/
   - if [ "$DOXY" = "on" ]; then if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then rsync -az -e "sshpass -p rectusfemoris ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" $OPENSIM_HOME/sdk/doc/html_developer/ opensim-bot@web.sourceforge.net:/home/project-web/myosin/htdocs/$TRAVIS_PULL_REQUEST; fi; fi
 
   ## Ensure that there are no tabs in source code.
