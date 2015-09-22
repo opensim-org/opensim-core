@@ -163,7 +163,7 @@ script:
   # The `-e "ssh...` is for providing the password andautomatically
   # accepting the ssh key.
   # https://sourceforge.net/p/forge/documentation/Project%20Web%20Services/
-  - if [ "$DOXY" = "on" ]; then if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then rsync -az -e "sshpass -p rectusfemoris ssh" $OPENSIM_HOME/sdk/doc/html_developer/ opensim-bot@web.sourceforge.net:/home/project-web/myosin/htdocs/$TRAVIS_PULL_REQUEST; fi; fi
+  - if [ "$DOXY" = "on" ]; then if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then sshpass -p 'rectusfemoris' rsync -az -e ssh $OPENSIM_HOME/sdk/doc/html_developer/ opensim-bot@web.sourceforge.net:/home/project-web/myosin/htdocs/$TRAVIS_PULL_REQUEST; fi; fi
 
   ## Ensure that there are no tabs in source code.
   - cd $TRAVIS_BUILD_DIR
