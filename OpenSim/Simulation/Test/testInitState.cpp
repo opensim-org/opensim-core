@@ -154,9 +154,23 @@ void testMemoryUsage(const string& modelFile)
     // Setup OpenSim model
     // base footprint
     size_t mem0 = getCurrentRSS( );
-    Model model(modelFile);
+    size_t model_size{ 0 };
 
-    size_t model_size = getCurrentRSS( )-mem0;
+    Model model;
+
+    int ntries = 0;
+    while ((model_size == 0) && (ntries++ < 10)) {
+        model = Model(modelFile);
+        model_size = getCurrentRSS() - mem0;
+    }
+
+    if (ntries > 1) {
+        cout << "testMemoryUsage: required " << to_string(ntries);
+        cout << " load attempts to record a nonzero model_size." << endl;
+    }
+
+    cout << "*********************** testMemoryUsage ***********************" << endl;
+    cout << "MODEL: " << modelFile << " uses " << model_size / 1024.0 << "KB" << endl;
 
     ASSERT(model_size > 0, __FILE__, __LINE__,
         "testMemoryUsage: model size was found to be zero.\n"
@@ -185,8 +199,6 @@ void testMemoryUsage(const string& modelFile)
     long double dT = (long double)(clock()-startTime) / CLOCKS_PER_SEC;
     long double meanT = 1.0e3 * dT/MAX_N_TRIES; // in ms
     
-    cout << "*********************** testMemoryUsage ***********************" << endl;
-    cout << "MODEL: "<< modelFile <<" uses "<< model_size/1024.0 << "KB" << endl;
     cout << delta/1024 << "KB change in memory use after " << MAX_N_TRIES
          << " state initializations." << endl;
     cout << "Approximate leak size: " << leak/1024.0 << "KB or " << 
