@@ -158,6 +158,10 @@ void testMemoryUsage(const string& modelFile)
 
     size_t model_size = getCurrentRSS( )-mem0;
 
+    ASSERT(model_size > 0, __FILE__, __LINE__,
+        "testMemoryUsage: model size was found to be zero.\n"
+        "Memory instrumentation code failed to estimate model size correctly.");
+
     State state = model.initSystem();
 
     // initial footprint
@@ -165,9 +169,6 @@ void testMemoryUsage(const string& modelFile)
 
     // also time how long initializing the state takes
     clock_t startTime = clock();
-
-    //cout << "Initial memory use: " << mem1/1024 << "KB." << endl;
-
 
     for(int i=0; i< MAX_N_TRIES; ++i){
         state = model.initializeState();
@@ -178,13 +179,14 @@ void testMemoryUsage(const string& modelFile)
     // change
     int64_t delta = mem2-mem1;
     int64_t leak = delta/MAX_N_TRIES;
-    long double leak_percent = 100.0 * leak/model_size;
+
+    long double leak_percent = 100.0 * double(leak)/model_size;
 
     long double dT = (long double)(clock()-startTime) / CLOCKS_PER_SEC;
     long double meanT = 1.0e3 * dT/MAX_N_TRIES; // in ms
     
     cout << "*********************** testMemoryUsage ***********************" << endl;
-    cout << "MODEL: "<< modelFile <<" uses "<< model_size/1024 << "KB" << endl;
+    cout << "MODEL: "<< modelFile <<" uses "<< model_size/1024.0 << "KB" << endl;
     cout << delta/1024 << "KB change in memory use after " << MAX_N_TRIES
          << " state initializations." << endl;
     cout << "Approximate leak size: " << leak/1024.0 << "KB or " << 
