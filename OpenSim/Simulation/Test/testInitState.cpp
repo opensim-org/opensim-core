@@ -158,6 +158,17 @@ void testMemoryUsage(const string& modelFile)
 
     Model model;
 
+    // getCurrentRSS( ) can be unreliable at evaluating the memory usage of a
+    // current process because of caching, shared memory and a litany of 
+    // other reason including some platform specific details.
+    // When this occurs, the model_size is determined to be zero, which is not
+    // possible. This was leading to an invalid (NaN) leak % and the test was
+    // failing. Redoing the test (or restarting the CI tests) often remedies
+    // the issue (see #473) but it is a waste of time and CI resources.
+    // The following code was added to retry loading the model until a nonzero
+    // value is registered so that the test can proceed without requiring 
+    // to be rerun. It is not 100% that it will work, but it should be an
+    // improvement.
     int ntries = 0;
     while ((model_size == 0) && (ntries++ < 10)) {
         model = Model(modelFile);
