@@ -27,7 +27,7 @@ There are lots of ways to contribute to the OpenSim project, and people with wid
 - Ask and/or answer questions on the forum.
 - File bug reports, documentation problems, feature requests, and developer discussion topics using the GitHub [Issue tracker](https://github.com/opensim-org/opensim-core/issues).
 - Submit GitHub Pull Requests providing new features, examples, or bug fixes to code or documentation (see below).
-- If our hard work has helped you with yours, please considering acknowledging your use of OpenSim and encourage others to do so. Please cite the following papers:
+- If our hard work has helped you with yours, please consider acknowledging your use of OpenSim and encourage others to do so. Please cite the following papers:
 
     Delp SL, Anderson FC, Arnold AS, Loan P, Habib A, John CT, Guendelman E, Thelen DG (2007) OpenSim: open-source software to create and analyze dynamic simulations of movement. *IEEE Trans Biomed Eng* 54:1940–50.
 
@@ -41,7 +41,7 @@ Please don't surprise us with a big out-of-the-blue pull request (PR). Preferabl
 
 If you have never made a PR before, there are excellent GitHub tutorials to familiarize you with the concepts and steps like the [GitHub Bootcamp](https://help.github.com/categories/bootcamp/).
 
-When you are ready to make a PR, please adhere to following guidelines:
+When you are ready to make a PR, please adhere to the following guidelines:
 
 1. To help the people who review your pull request, include a detailed description of what changes or additions the PR includes and what you have done to test and verify the changes. Reference the existing Issue (or set of Issues) that documents the problem the PR is adressing (e.g., use ``#<issue_number>`` ). Also, please make sure detailed information about the commits is easily available.
 

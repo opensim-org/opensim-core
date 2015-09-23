@@ -17,5 +17,3 @@ if(BUILD_TESTING)
     add_subdirectory(Wrapping)
 endif()
 
-add_subdirectory(Future)
-
