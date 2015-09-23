@@ -193,7 +193,7 @@ void PointToPointActuator::computeForce(const SimTK::State& s,
     // Find the force magnitude and set it. Then form the force vector.
     double forceMagnitude;
 
-    if (isActuationOverriden(s)) {
+    if (isActuationOverridden(s)) {
         forceMagnitude = computeOverrideActuation(s);
     } else {
        forceMagnitude = computeActuation(s);

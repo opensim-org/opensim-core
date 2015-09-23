@@ -40,9 +40,9 @@ class Force;
 //=============================================================================
 /**
  A Solver to compute the induced accelerations of an applied "force" acting
- on the model. The solver can applyg constraints to replace external (contact)
+ on the model. The solver can apply constraints to replace external (contact)
  forces in order to decompose contributions of external reaction forces and to
- subsequentlt determine the induced (generalized) accelerations (udot).
+ subsequently determine the induced (generalized) accelerations (udot).
  The solver can compute the induced acceleration and constraint reaction force
  contributions for any model Force. 
  
@@ -75,7 +75,7 @@ class Force;
      system acceleration is called its "induced acceleration" and the 
      contribution to the reaction (or external) force is its "induced reaction".
      
-     NOTE, the sum of induced accelerations and reactions MUST must total to
+     NOTE, the sum of induced accelerations and reactions MUST total to
      the complete system acceleration or external force when all model forces
      are applied.  
      
@@ -123,7 +123,7 @@ public:
 // SOLVE 
 //----------------------------------------------------------------------------
     /** Solve for the induced (generalized) accelerations (udot) resulting 
-        from the suppied force. An supplied force is expressed as any 
+        from the supplied force. An supplied force is expressed as any 
         combination of mobility (generalized) forces and/or body forces.
         
         @param[in]  state                   current State of the model
@@ -166,10 +166,10 @@ public:
 
 
 //----------------------------------------------------------------------------
-/** Convenience cooridnate, body, or center of mass acceleration access after
+/** Convenience coordinate, body, or center of mass acceleration access after
     solving the system at the current state. NOTE, if the solver has not been
     called to solve for induced accelerations for a given force contributor,
-    an exception is thrown. These methods are intendted to provide low cost
+    an exception is thrown. These methods are intended to provide low cost
     access to accelerations in different forms once accelerations have already
     been resolved. */
 //----------------------------------------------------------------------------
@@ -182,7 +182,7 @@ public:
 protected:
     /** Helper functions */
     /** Internal use function to get the solved state that is realized to
-        Stage::Acceleration. If the state differes from the input state OR
+        Stage::Acceleration. If the state differs from the input state OR
         the state is not at the acceleration stage, an exception is thrown. */
     const SimTK::State& getSolvedState(const SimTK::State& s) const;
 

@@ -344,7 +344,7 @@ void ExternalForce::computeForce(const SimTK::State& state,
 }
 
 /**
- * Conevenince methods to access prescribed force functions
+ * Convenience methods to access prescribed force functions
  */
 Vec3 ExternalForce::getForceAtTime(double aTime) const  
 {

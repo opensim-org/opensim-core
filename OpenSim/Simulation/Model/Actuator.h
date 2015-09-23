@@ -181,21 +181,21 @@ public:
     /**
     * Enable/disable a ScalarActuator's override actuation.
     *
-    * The actuation normally produced by a ScalarActuator can be overriden and
-    * When the ScalarActuator's actuation is overriden, the ScalarActuator will
-    * by defualt produce a constant actuation which can be set with
+    * The actuation normally produced by a ScalarActuator can be overridden and
+    * When the ScalarActuator's actuation is overridden, the ScalarActuator will
+    * by default produce a constant actuation which can be set with
     * setOverrideActuation().
     *
     * @param s    current state
     * @param flag true = override ScalarActuator's output actuation
-    *             false = use ScalarActuator's computed forc (normal operation)
+    *             false = use ScalarActuator's computed force (normal operation)
     */
     void overrideActuation(SimTK::State& s, bool flag) const;
 
     /**
     *  return ScalarActuator's override status
     */
-    bool isActuationOverriden(const SimTK::State& s) const;
+    bool isActuationOverridden(const SimTK::State& s) const;
 
     /**
     * set the actuation value used when the override is true 

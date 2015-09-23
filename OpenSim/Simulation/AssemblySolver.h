@@ -48,7 +48,7 @@ class Model;
  * When the model (and the number of goals) is guaranteed not to change and the 
  * the initial state is close to the assembly solution (from initial assembly(),
  * then track() is a efficient method for updating the configuration to track
- * the small change to the desired coorindate value.
+ * the small change to the desired coordinate value.
  *
  * See SimTK::Assembler for more algorithmic details of the underlying solver.
  *
@@ -121,7 +121,7 @@ public:
     /** Obtain a model configuration that meets the assembly conditions  
         (desired values and constraints) given a state that satisfies or
         is close to satisfying the constraints. Note there can be no change
-        in the number of constrainst or desired coordinates. Desired
+        in the number of constraints or desired coordinates. Desired
         coordinate values can and should be updated between repeated calls
         to track a desired trajectory of coordinate values. */
     virtual void track(SimTK::State &s);

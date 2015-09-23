@@ -124,7 +124,7 @@ int main()
         ///////////////////////////////////////
 
         // GRAVITY
-        // Obtaine the default acceleration due to gravity
+        // Obtain the default acceleration due to gravity
         Vec3 gravity = osimModel.getGravity();
     
 
@@ -180,7 +180,7 @@ int main()
         // muscle2 control has slope of 0.95 starting 0.05 at t = 0
         slopeAndIntercept2[0] = 0.95/(finalTime-initialTime);  slopeAndIntercept2[1] = 0.05;
         
-        // Set the indiviudal muscle control functions for the prescribed muscle controller
+        // Set the individual muscle control functions for the prescribed muscle controller
         muscleController->prescribeControlForActuator("muscle1", new LinearFunction(slopeAndIntercept1));
         muscleController->prescribeControlForActuator("muscle2", new LinearFunction(slopeAndIntercept2));
 

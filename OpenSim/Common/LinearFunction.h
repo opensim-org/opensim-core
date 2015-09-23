@@ -39,7 +39,7 @@ namespace OpenSim {
  * dependent = slope*independent + intercept
  *
  * This class inherits from Function and so can be used as input to
- * any class requiring a Fuction as input.
+ * any class requiring a Function as input.
  *
  * @author Ajay Seth
  * @version 1.0

@@ -57,7 +57,7 @@ namespace OpenSim {
  * The purpose of a Connector is to specify: 1) the connectee type that the
  * Component is dependent on, 2) by when (what stage) the connector must be
  * connected in order for the component to function, 3) the name of a connectee
- * that can be found at run-time to satisfy the connecter, and 4) whether or
+ * that can be found at run-time to satisfy the connector, and 4) whether or
  * not it is connected. A Connector maintains a reference to the instance
  * (connectee) until it is disconnected.
  *
@@ -96,7 +96,7 @@ public:
     /** Convenience constructor 
         Create a Connector with specified name and stage at which it
         should be connected.
-    @param name             name of the connector, usually desribes its dependency. 
+    @param name             name of the connector, usually describes its dependency. 
     @param connectAtStage   Stage at which Connector should be connected. */
     AbstractConnector(const std::string& name, const SimTK::Stage& connectAtStage) :
         connectAtStage(connectAtStage) {
@@ -164,7 +164,7 @@ public:
         return !connectee.empty();
     }
 
-    /** Temporary access to the connectee for testing purposes. Real useage
+    /** Temporary access to the connectee for testing purposes. Real usage
         will be through the Connector (and Input) interfaces. 
         For example, Input should short circuit to its Output's getValue()
         once it is connected.

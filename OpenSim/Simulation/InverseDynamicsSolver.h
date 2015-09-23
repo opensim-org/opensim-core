@@ -32,15 +32,15 @@ class FunctionSet;
 //=============================================================================
 //=============================================================================
 /**
- * Solve for the generalized coordinate coordinate forces (1 per degree-of-
- * freedom) that satisfy the unconstrained equations of motion given kinemtics:
+ * Solve for the generalized coordinate forces (1 per degree-of-
+ * freedom) that satisfy the unconstrained equations of motion given kinematics:
  * q, u, u_dot
 
  * The InverseDynamics equation: Tau = M*u_dot-G(q)-C(q,u)-A(q,u,t,x)
  *
- * The InverseDynamicsSolver utiliizes efficient methods in Simbody(TM) to
+ * The InverseDynamicsSolver utilizes efficient methods in Simbody(TM) to
  * compute the generalized forces, Tau, without explicitly forming the Mass
- * matrix, M. System gravity, G, centrifugal and coriolis, C, forces are 
+ * matrix, M. System gravity, G, centrifugal and Coriolis, C, forces are 
  * computed internally.
  * Caller provides q,u,t (supplied by the State), the desired u_dot and the 
  * applied loads, A. If applied loads are due to forces in the model, these 
@@ -71,14 +71,14 @@ public:
     /** Solve the inverse dynamics system of equations for generalized 
         coordinate forces, Tau. Applied loads are computed by the model  
         according to the state.
-        @param[in] s    the system state spefyfing time, coordinates and speeds
+        @param[in] s    the system state specifying time, coordinates and speeds
         @param[in] udot the vector of generalized accelerations in the order
         */
     virtual SimTK::Vector solve(const SimTK::State& s, 
         const SimTK::Vector& udot = SimTK::Vector(0));
 
     /** Solve the inverse dynamics system of equations for generalized coordinate forces, Tau. 
-        Applied loads are explicity provided as generalized coordinate forces (MobilityForces)
+        Applied loads are explicitly provided as generalized coordinate forces (MobilityForces)
         and/or a Vector of Spatial-body forces */
     virtual SimTK::Vector solve(const SimTK::State& s, const SimTK::Vector& udot, 
         const SimTK::Vector& appliedMobilityForces, 

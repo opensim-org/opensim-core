@@ -71,7 +71,7 @@ protected:
 // METHODS
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //=============================================================================
-// CONTRUCTION
+// CONSTRUCTION
 //=============================================================================
 public:
 //_____________________________________________________________________________
@@ -95,7 +95,7 @@ virtual ~Array()
  * @param aSize Initial size of the array.  The array elements are
  * initialized to aDefaultValue.
  * @param aCapacity Initial capacity of the array.  The initial capacity
- * is guarranteed to be at least as large as aSize + 1.
+ * is guaranteed to be at least as large as aSize + 1.
  */
 Array(const T &aDefaultValue=T(),int aSize=0,int aCapacity=Array_CAPMIN)
 {
@@ -117,7 +117,7 @@ Array(const T &aDefaultValue=T(),int aSize=0,int aCapacity=Array_CAPMIN)
 }
 //_____________________________________________________________________________
 /**
- * Coppy constructor.
+ * Copy constructor.
  *
  * @param aArray Array to be copied.
  */
@@ -145,9 +145,9 @@ void setNull()
 // OPERATORS
 //=============================================================================
 public:
-// A non-operator version of operator== which we can use in java
+// A non-operator version of operator== which we can use in Java
 // NOTE: I tried to name it "equals" since that's the standard way to compare objects in
-// java, but didn't seem to work...  - Eran
+// Java, but didn't seem to work...  - Eran
 bool arrayEquals(const Array<T> &aArray) const
 {
     return *this == aArray;
@@ -497,7 +497,7 @@ int size() const {return getSize();}
  * Append a value onto the array.
  *
  * @param aValue Value to be appended.
- * @return New size of the array, or, equvalently, the index to the new
+ * @return New size of the array, or, equivalently, the index to the new
  * first empty element of the array.
  */
 int append(const T &aValue)
@@ -523,7 +523,7 @@ int append(const T &aValue)
  * Append an array of values.
  *
  * @param aArray Array of values to append.
- * @return New size of the array, or, equvalently, the index to the new
+ * @return New size of the array, or, equivalently, the index to the new
  * first empty element of the array.
  */
 int append(const Array<T> &aArray)
@@ -543,7 +543,7 @@ int append(const Array<T> &aArray)
  *
  * @param aSize Size of the array to append.
  * @param aArray Array of values to append.
- * @return New size of the array, or, equvalently, the index to the new
+ * @return New size of the array, or, equivalently, the index to the new
  * first empty element of the array.
  */
 int append(int aSize,const T *aArray)
@@ -575,7 +575,7 @@ int append(int aSize,const T *aArray)
  * from aIndex to the end of the array are shifted one place in the direction
  * of the end of the array.  If the specified index is greater than the
  * current size of the array, the size of the array is increased to aIndex+1
- * and the itervening new elements are initialized to the default value that
+ * and the intervening new elements are initialized to the default value that
  * was specified at the time of construction.
  * @return Size of the array after the insertion.
  */
@@ -844,7 +844,7 @@ int rfindIndex(const T &aValue) const
  *
  * A binary search is performed (i.e., the array is repeatedly subdivided
  * into two bins one of which must contain the specified until the
- * approprite element is identified), so the performance of this method
+ * appropriate element is identified), so the performance of this method
  * is approximately ln(n), where n is the size of the array.
  *
  * @param aValue Value to which the array elements are compared.

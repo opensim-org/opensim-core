@@ -190,7 +190,7 @@ getNY() const
     return(_nY);
 }
 //-----------------------------------------------------------------------------
-// MIN AND MAX INDPEPENDENT VARIABLES
+// MIN AND MAX INDEPENDENT VARIABLES
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
@@ -300,7 +300,7 @@ getMaxX(int aXIndex) const
 /**
  * Update the bounding box for the abscissae.
  *
- * This method should be overrided as needed by derived classes.
+ * This method should be overridden as needed by derived classes.
  */
 void VectorFunction::
 updateBoundingBox()

@@ -195,7 +195,7 @@ public:
     void setStepInterval(int aStepInterval);
     int getStepInterval() const;
 
-    // COLUMN LABLES
+    // COLUMN LABELS
     /**
      * %Set the column labels for this analysis.
      * @param aLabels an Array of strings (labels).

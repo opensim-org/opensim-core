@@ -49,7 +49,7 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class for recording and computting basic quantities (length, shortening
+ * A class for recording and computing basic quantities (length, shortening
  * velocity, tendon length, ...) for muscles during a simulation.
  *
  * @author Ajay Seth, Matthew Millard, Katherine Holzbaur, Frank C. Anderson 

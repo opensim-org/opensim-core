@@ -707,7 +707,7 @@ void Muscle::computeForce(const SimTK::State& s,
     // NOTE: Actuation could be negative, in particular during CMC, when the optimizer
     // is computing gradients, but in those cases the actuation will be 
     // overridden and will not be computed by the muscle
-    if (!isActuationOverriden(s) && (getActuation(s) < -SimTK::SqrtEps)) {
+    if (!isActuationOverridden(s) && (getActuation(s) < -SimTK::SqrtEps)) {
         string msg = getConcreteClassName()
             + "::computeForce, muscle "+ getName() + " force < 0";
         cout << msg << " at time = " << s.getTime() << endl;
@@ -749,14 +749,14 @@ void Muscle::updateGeometry(const SimTK::State& s)
 {
     double aFiberLength = getFiberLength(s);
     if (aFiberLength < SimTK::Eps){
-        cout << "Muscle::calcPennationAngle() ERRROR- fiber length is zero." << endl;
+        cout << "Muscle::calcPennationAngle() ERROR- fiber length is zero." << endl;
         return SimTK::NaN;
     }
     
     double value = _muscleWidth/aFiberLength;
 
     if(value >= 1.0){
-        cout << "Muscle::calcPennationAngle() ERRROR- pennation at 90 degrees." << endl;
+        cout << "Muscle::calcPennationAngle() ERROR- pennation at 90 degrees." << endl;
         return SimTK_PI/2.0;
     }
    else

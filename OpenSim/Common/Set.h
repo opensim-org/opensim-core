@@ -735,7 +735,7 @@ virtual T* getLast() const
  *
  * A binary search is performed (i.e., the array is repeatedly subdivided
  * into two bins one of which must contain the specified until the
- * approprite element is identified), so the performance of this method
+ * appropriate element is identified), so the performance of this method
  * is approximately ln(n), where n is the size of the array.
  *
  * @param aObject Value to which the array elements are compared.

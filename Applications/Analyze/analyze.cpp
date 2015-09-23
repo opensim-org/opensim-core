@@ -39,7 +39,7 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
 
 //_____________________________________________________________________________
 /**
- * Main routine for stepping thru a trajectory and running a set of
+ * Main routine for stepping through a trajectory and running a set of
  * analyses.
  */
 int main(int argc,char **argv)

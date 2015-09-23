@@ -30,7 +30,7 @@ using namespace OpenSim;
 using namespace std;
 
 #ifndef _WIN32
-// Current solution for linux compatibility is to remap LoadLibrary/GetProcAddress to dlopen/dlsym
+// Current solution for Linux compatibility is to remap LoadLibrary/GetProcAddress to dlopen/dlsym
 // using macros.  Also use macros for portable handles.
 //
 // LoadLibrary used to be a macro for dlopen but we want to transparently support
@@ -41,7 +41,7 @@ static void *LoadLibrary(const std::string &name, std::string &actualNameLoaded)
         std::string libName = OpenSim::IO::GetFileNameFromURI(name);
         if(libName.size()<3 || libName.substr(0,3)!="lib") { // if it doesn't already have lib prefix
             libName = OpenSim::IO::getParentDirectory(name) + "lib" + libName;
-            //std::cout << "Loading " << name << " failed, trying " << libName << " (for linux compatibility)" << std::endl;
+            //std::cout << "Loading " << name << " failed, trying " << libName << " (for Linux compatibility)" << std::endl;
             lib = dlopen(libName.c_str(), RTLD_LAZY | RTLD_GLOBAL); 
         }
     }

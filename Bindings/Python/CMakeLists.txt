@@ -1,10 +1,7 @@
 set(KIT opensim)
 set(UKIT PYOPENSIM)
 
-if(BUILD_PYTHON_WRAPPING)
-
 find_package(PythonLibs 2.7)
-#find_package(PythonInterp 2.7)
 
 if(NOT PYTHONLIBS_FOUND)
     message(FATAL_ERROR "Cannot build Python wrapping because "
@@ -20,7 +17,7 @@ set(swig_output_cxx_file_fullname
 set(swig_output_header_file_fullname
     ${CMAKE_CURRENT_BINARY_DIR}/pyOpenSim_wrap.h)
 set(swig_interface_file_fullname
-    ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/Python/swig/pyWrapOpenSim.i)
+    ${OpenSim_SOURCE_DIR}/Bindings/Python/swig/pyWrapOpenSim.i)
 
 # Using a custom command / custom target pair so that SWIG is only run when
 # it's out of date. Previously, we used a custom target only. But, custom
@@ -30,7 +27,7 @@ add_custom_command(
         ${swig_output_cxx_file_fullname} ${swig_output_header_file_fullname}
     COMMAND ${SWIG_EXECUTABLE} -v -c++ -python
         -I${OpenSim_SOURCE_DIR}
-        -I${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/
+        -I${OpenSim_SOURCE_DIR}/Bindings/
         -I${Simbody_INCLUDE_DIR}
         -o ${swig_output_cxx_file_fullname}
         -outdir ${CMAKE_CURRENT_BINARY_DIR}
@@ -43,7 +40,7 @@ add_custom_target(PyWrap
 
 set_target_properties(PyWrap PROPERTIES
     PROJECT_LABEL "Python - Generate source code"
-    FOLDER "Wrapping (scripting)")
+    FOLDER "Bindings")
 
 set(SOURCE_FILES OpenSimContext.cpp "${swig_output_cxx_file_fullname}")
 set(INCLUDE_FILES OpenSimContext.h "${swig_output_header_file_fullname}")
@@ -72,7 +69,7 @@ add_library(_${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 set_target_properties(_${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
    PROJECT_LABEL "Python - _${KIT}"
-   FOLDER "Wrapping (scripting)"
+   FOLDER "Bindings"
    PREFIX ""
 )
 if(WIN32)
@@ -110,5 +107,3 @@ install(FILES ${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim
               ${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim
         DESTINATION sdk/python/opensim/tests)
 INSTALL(DIRECTORY tests DESTINATION sdk/python/opensim)
-
-endif(BUILD_PYTHON_WRAPPING)

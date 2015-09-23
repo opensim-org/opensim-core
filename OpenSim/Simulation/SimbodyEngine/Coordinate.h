@@ -125,9 +125,9 @@ public:
     /** get the value of the Coordinate from the state */
     double getValue(const SimTK::State& s) const;
     /** set the value of the Coordinate on to the state.
-        optional flag to enforce the constraints immediatedly, which may 
+        optional flag to enforce the constraints immediately, which may 
         adjust its value in the state. Use getValue(s) to see if/how the
-        value was adjusted to satify the kinematic constraints. */
+        value was adjusted to satisfy the kinematic constraints. */
     void setValue(SimTK::State& s, double aValue, bool aEnforceContraints=true) const;
 
     /** get the speed value of the Coordinate from the state */
@@ -207,12 +207,12 @@ public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
-    /** default contructor*/
+    /** default constructor*/
     Coordinate();
 
     /** Convenience constructor */  
     Coordinate(const std::string &aName, MotionType aMotionType, 
-        double defualtValue, double aRangeMin, double aRangeMax);   
+        double defaultValue, double aRangeMin, double aRangeMax);   
     
     // Uses default (compiler-generated) destructor, copy constructor and copy 
     // assignment operator.
@@ -239,7 +239,7 @@ private:
     class CoordinateStateVariable : public StateVariable {
         public:
         // Constructors
-        /** Convience constructor for defining a Component added state variable */ 
+        /** Convenience constructor for defining a Component added state variable */ 
         explicit CoordinateStateVariable(const std::string& name, //state var name
                         const Component& owner,       //owning component
                         SimTK::SubsystemIndex subSysIndex,
@@ -257,7 +257,7 @@ private:
     class SpeedStateVariable : public StateVariable {
         public:
         // Constructors
-        /** Convience constructor for defining a Component added state variable */ 
+        /** Convenience constructor for defining a Component added state variable */ 
         explicit SpeedStateVariable(const std::string& name, //state var name
                         const Component& owner,       //owning component
                         SimTK::SubsystemIndex subSysIndex,
@@ -299,7 +299,7 @@ private:
     MotionType _motionType;
 
     /* Label for the related state that is the generalized speed of
-       thiss coordinated. */
+       this coordinate. */
     std::string _speedName;
 
     /* The OpenSim::Joint that owns this coordinate. */

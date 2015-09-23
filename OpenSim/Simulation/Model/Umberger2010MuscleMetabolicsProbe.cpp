@@ -83,7 +83,7 @@ void Umberger2010MuscleMetabolicsProbe::setNull()
 
 //_____________________________________________________________________________
 /**
- * Construct and initilize object properties.
+ * Construct and initialize object properties.
  */
 void Umberger2010MuscleMetabolicsProbe::constructProperties()
 {
@@ -377,7 +377,7 @@ SimTK::Vector Umberger2010MuscleMetabolicsProbe::computeProbeInputs(const State&
             }
 
 
-            // Fiber length dependance on scaled shortening heat rate
+            // Fiber length dependence on scaled shortening heat rate
             // (for both concentric and eccentric contractions).
             if (fiber_length_normalized > 1.0)
                 Sdot *= F_iso;  
@@ -546,7 +546,7 @@ Array<string> Umberger2010MuscleMetabolicsProbe::getProbeOutputLabels() const
 //=============================================================================
 //_____________________________________________________________________________
 /** 
-* Get the number of muscles being analysed in the metabolic analysis. 
+* Get the number of muscles being analyzed in the metabolic analysis. 
 */
 const int Umberger2010MuscleMetabolicsProbe::
     getNumMetabolicMuscles() const  

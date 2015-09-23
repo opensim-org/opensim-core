@@ -221,7 +221,7 @@ int WrapSphereObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK:
     SimTK::Vec3 aXvec = aPointP;                aXvec = aXvec.normalize();  // X = P
     SimTK::Vec3 aZvec = aPointP % aPointS;
     if(aZvec.norm()<=1.e-7) {
-        printf("WrapSphereObst: P and S are colinear with sphere center (no unique solution)\n");
+        printf("WrapSphereObst: P and S are collinear with sphere center (no unique solution)\n");
         return insideRadius;
     }                                           aZvec = aZvec.normalize();  // Z = P x S
     SimTK::Vec3 aYvec = aZvec % aXvec;          aYvec = aYvec.normalize();  // Y = Z x X

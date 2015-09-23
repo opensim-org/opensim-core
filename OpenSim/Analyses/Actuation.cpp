@@ -59,7 +59,7 @@ Actuation::~Actuation()
 //_____________________________________________________________________________
 /**
 * Construct an Actuation object for recording the Actuation of
-* a model's generalized coodinates during a simulation.
+* a model's generalized coordinates during a simulation.
 *
 * @param aModel Model for which the Actuation are to be recorded.
 */
@@ -98,7 +98,7 @@ Analysis(aFileName, false)
     allocateStorage();
 }
 
-// Copy constrctor and virtual copy 
+// Copy constructor and virtual copy 
 //_____________________________________________________________________________
 /**
 * Copy constructor.
@@ -173,7 +173,7 @@ void Actuation::setModel(Model& aModel)
         _na = 0;
 
     if (_na <= 0){
-        cout << "WARNING: Actuation analysis cancled. There are no Actuators in the model." << endl;
+        cout << "WARNING: Actuation analysis canceled. There are no Actuators in the model." << endl;
         return;
     }
 
@@ -343,7 +343,7 @@ getPowerStorage() const
 * Set the capacity increments of all storage instances.
 *
 * @param aIncrement Increment by which storage capacities will be increased
-* when storage capcities run out.
+* when storage capacities run out.
 */
 void Actuation::
 setStorageCapacityIncrements(int aIncrement)
@@ -405,10 +405,10 @@ record(const SimTK::State& s)
 * This method is called at the beginning of an analysis so that any
 * necessary initializations may be performed.
 *
-* This method is meant to be called at the begining of an integration in
+* This method is meant to be called at the beginning of an integration in
 * Model::integBeginCallback() and has the same argument list.
 *
-* This method should be overriden in the child class.  It is
+* This method should be overridden in the child class.  It is
 * included here so that the child class will not have to implement it if it
 * is not necessary.
 *
@@ -459,7 +459,7 @@ begin(SimTK::State& s)
 * When called during an integration, this method is meant to be called in
 * Model::integStepCallback(), which has the same argument list.
 *
-* This method should be overriden in derived classes.  It is
+* This method should be overridden in derived classes.  It is
 * included here so that the derived class will not have to implement it if
 * it is not necessary.
 *
@@ -484,7 +484,7 @@ step(const SimTK::State& s, int stepNumber)
 * This method is meant to be called at the end of an integration in
 * Model::integEndCallback() and has the same argument list.
 *
-* This method should be overriden in the child class.  It is
+* This method should be overridden in the child class.  It is
 * included here so that the child class will not have to implement it if it
 * is not necessary.
 * @param state System state

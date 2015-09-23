@@ -22,7 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 //==========================================================================================================
-//  testPrescribedForce tests the application of function speciefied forces applied to a body
+//  testPrescribedForce tests the application of function specified forces applied to a body
 //  as a force and torque on the body, with the point force application also a function
 //  Tests Include:
 //      1. No force

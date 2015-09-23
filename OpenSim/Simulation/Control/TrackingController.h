@@ -41,7 +41,7 @@ class Storage;
 /**
  * TrackingController is an abstract class from which all tracking type of
  * controllers should be derived. This class implements convenience methods
- * to construct dsired trajectories of desired model state values, like joint 
+ * to construct desired trajectories of desired model state values, like joint 
  * angles, from Storage (file) or user-supplied functions and provides methods 
  * for obtaining the error between model and desired state values.
  *

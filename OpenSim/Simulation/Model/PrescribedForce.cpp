@@ -267,7 +267,7 @@ void PrescribedForce::computeForce(const SimTK::State& state,
 }
 
 /**
- * Conevenince methods to access prescribed force functions
+ * Convenience methods to access prescribed force functions
  */
 Vec3 PrescribedForce::getForceAtTime(double aTime) const    
 {

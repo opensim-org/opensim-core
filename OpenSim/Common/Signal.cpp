@@ -140,7 +140,7 @@ SmoothSpline(int degree,double T,double fc,int N,double *times,double *sig,doubl
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * 3rd ORDER LOWPASS IIR BUTTERWORTH DIGITAL DIGITAL FILTER
+ * 3rd ORDER LOWPASS IIR BUTTERWORTH DIGITAL FILTER
  *
  * It is assumed that enough memory is allocated at sigf.
  * Note also that the first and last three data points are not filtered.
@@ -167,7 +167,7 @@ double *sigr;
     if(sig==NULL) return(-1);
     if(sigf==NULL) return(-1);
 
-    // CHECK THAT THE CUTOFF FREQUENCY IS LESS THAN HALF THE SAMPLE FREQUENCE
+    // CHECK THAT THE CUTOFF FREQUENCY IS LESS THAN HALF THE SAMPLE FREQUENCY
     fs = 1 / T;
     if (fc >= 0.5 * fs) {
         printf("\nCutoff frequency should be less than half sample frequency.");
@@ -242,7 +242,7 @@ double *sigr;
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * LOWPASS FIR NONRECURSIVE DIGITAL FILTER
+ * LOWPASS FIR NON-RECURSIVE DIGITAL FILTER
  *
  * It is permissible for sig and sigf to be the same array or overlap.
  *
@@ -318,7 +318,7 @@ LowpassFIR(int M,double T,double f,int N,double *sig,double *sigf)
 
 //_____________________________________________________________________________
 /**
- * BANDPASS FIR NONRECURSIVE DIGITAL FILTER
+ * BANDPASS FIR NON-RECURSIVE DIGITAL FILTER
  *
  * Note that sig and sigf must point to distinct locations in memory which do
  * not overlap.
@@ -607,7 +607,7 @@ sinc(double x)
 }
 //_____________________________________________________________________________
 /**
- * Hamming Window- dampens gibs phenominon infiltering functions.
+ * Hamming Window- dampens Gibbs phenomenon in filtering functions.
  */
 double Signal::
 hamming(int k,int M)
