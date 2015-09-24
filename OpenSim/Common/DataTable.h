@@ -105,12 +105,12 @@ public:
 
     /** Get number of rows.                                                   */
     size_t getNumRows() const {
-        return computeNumRows();
+        return implementGetNumRows();
     }
 
     /** Get number of columns.                                                */
     size_t getNumColumns() const {
-        return computeNumColumns();
+        return implementGetNumColumns();
     }
     
     /** Get metadata associated with the independent column.                  */
@@ -139,10 +139,10 @@ public:
 
 protected:
     /** Get number of rows. Implemented by derived classes.                   */
-    virtual size_t computeNumRows() const            = 0;
+    virtual size_t implementGetNumRows() const            = 0;
     
     /** Get number of columns. Implemented by derived classes.                */
-    virtual size_t computeNumColumns() const         = 0;
+    virtual size_t implementGetNumColumns() const         = 0;
     
     /** Check if metadata for independent column is valid . Implemented by 
     derived classes.                                                          */
@@ -249,11 +249,11 @@ public:
     }
 
 protected:
-    size_t computeNumRows() const override {
+    size_t implementGetNumRows() const override {
         return _depData.nrow();
     }
 
-    size_t computeNumColumns() const override {
+    size_t implementGetNumColumns() const override {
         return _depData.ncol();
     }
 
