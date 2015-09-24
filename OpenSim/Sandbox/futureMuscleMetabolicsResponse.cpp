@@ -16,7 +16,6 @@ public:
             const auto& coord = getConnectee<Coordinate>("coord");
             const auto value = coord.getValue(s);
             setCacheVariableValue(s, "term_1", get_strength() * value);
-            markCacheVariableValid(s, "term_1");
         }
         return getCacheVariableValue<double>(s, "term_1");
     }
@@ -25,7 +24,6 @@ public:
             const auto& coord = getConnectee<Coordinate>("coord");
             const auto speed = coord.getSpeedValue(s);
             setCacheVariableValue(s, "term_2", 2.0 * speed);
-            markCacheVariableValid(s, "term_2");
         }
         return getCacheVariableValue<double>(s, "term_2");
     }
@@ -34,7 +32,6 @@ public:
             const auto& coord = getConnectee<Coordinate>("coord");
             const auto speed = coord.getSpeedValue(s);
             setCacheVariableValue(s, "sum", getTerm1(s) + getTerm2(s));
-            markCacheVariableValid(s, "sum");
         }
         return getCacheVariableValue<double>(s, "sum");
     }
@@ -72,7 +69,8 @@ public:
     // Temporary solution:
     std::vector<std::shared_ptr<ComplexResponse>> responses;
 
-    // TODO how do we propagate this scaling_factor to the ComplexResponses?
+    // TODO propagate this scaling_factor to the ComplexResponses using
+    // Component::getParent.
     OpenSim_DECLARE_PROPERTY(scaling_factor, double, "Affects each coord.");
 
     double getTotalSum(const State& s) const {
