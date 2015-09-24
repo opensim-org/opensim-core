@@ -59,11 +59,11 @@ public:
 //=============================================================================
 public:
     /** Default Constructor. Create an unnamed WeldConstraint with frame
-        connectors that are unsastisfied. */
+        connectors that are unsatisfied. */
     WeldConstraint();
 
     /** Convenience Constructor.
-    Create a WeldConstraint bewteen two PhysicalFrames, frame1 and frame2.
+    Create a WeldConstraint between two PhysicalFrames, frame1 and frame2.
     @param[in] name         the name of this WeldConstraint 
     @param[in] frame1Name   the name of the first PhysicalFrame being constrained
     @param[in] frame2Name   the name of the second PhysicalFrame being constrained
