@@ -82,8 +82,7 @@ Joint::Joint(const std::string &name,
     // This is only required now because the search does not respect the local
     // (relative) name, which it should find immediately, and instead is searching
     // from the root of the tree.
-    : Joint(name, name + "/" + parent.getName() + "_offset",
-        name + "/" + child.getName() + "_offset")
+    : Joint(name, parent.getName() + "_offset", child.getName() + "_offset")
 {
     // PARENT TRANSFORM
     Rotation parentRotation(BodyRotationSequence,
@@ -579,17 +578,13 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 orientChildElt->getValueAs<Vec3>(orientation_in_child);
             }
 
-            // Avoid collision by prefixing the joint name to the connectee_name
-            // as to enforce a local search for the correct local offset
-            std::string jName = aNode.getOptionalAttributeValueAs<std::string>("name", "");
-
             // now append updated frames to the property list if they are not
             // identity transforms.
             if ((location_in_parent.norm() > 0.0) ||
                 (orientation_in_parent.norm() > 0.0)) {
                 XMLDocument::addPhysicalOffsetFrame(aNode, parentFrameName+"_offset",
                     parentFrameName, location_in_parent, orientation_in_parent);
-                parentNameElt->setValue(jName +"/"+parentFrameName + "_offset");
+                parentNameElt->setValue(parentFrameName + "_offset");
             }
 
             // again for the offset frame on the child
@@ -597,7 +592,7 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 (orientation_in_child.norm() > 0.0)) {
                 XMLDocument::addPhysicalOffsetFrame(aNode, childFrameName + "_offset",
                     childFrameName, location_in_child, orientation_in_child);
-                childNameElt->setValue(jName +"/"+childFrameName + "_offset");
+                childNameElt->setValue(childFrameName + "_offset");
             }
         }
     }

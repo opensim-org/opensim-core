@@ -1276,13 +1276,7 @@ void testPinJoint()
     ASSERT(knee2.get_CoordinateSet()[0].getName() == "knee_q");
 
     // Exercise new convenience constructor
-    // TODO. prefixing the joint name to the frame names should not be necessary.
-    // This is only required now because the search does not respect the local
-    // (relative) name, which it would find immediately, and instead is searching
-    // from the root of the tree. The "knee/" prefix can be removed here when 
-    // the deprecated constructor used to construct the knee Joint instance (to
-    // which we are comparing for this test) no longer has to force the local search.
-    PinJoint knee3("knee", "knee/thigh_offset", "knee/shank_offset");
+    PinJoint knee3("knee", "thigh_offset", "shank_offset");
     knee3.getCoordinateSet()[0].setName("knee_q"); // use the same coordinate name
     // and current way of specifying the offset locations of the joint
     // in the respective PhysicalFrames (e.g. Bodies)
