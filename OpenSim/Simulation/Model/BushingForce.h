@@ -89,7 +89,7 @@ public:
     // assignment operator.
 
     /** Potential energy is the elastic energy stored in the bushing. */
-    double computePotentialEnergy(const SimTK::State& s) const final;
+    double computePotentialEnergy(const SimTK::State& s) const final override;
 
     //--------------------------------------------------------------------------
     // Reporting

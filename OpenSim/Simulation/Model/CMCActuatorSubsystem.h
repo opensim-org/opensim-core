@@ -48,7 +48,7 @@ class CMCActuatorSystemRep : public System::Guts {
     CMCActuatorSystemRep() : SimTK::System::Guts( "CMCActuatorSystem", "2.0") {}
     
     // Required by the System::Guts interface.
-    /*virtual*/ CMCActuatorSystemRep* cloneImpl() const 
+    CMCActuatorSystemRep* cloneImpl() const override 
     {   return new CMCActuatorSystemRep(*this); }
 
     // This system doesn't have constraints, prescribed motion, or events so
@@ -72,14 +72,14 @@ class CMCActuatorSubsystemRep : public Subsystem::Guts {
   public:
   CMCActuatorSubsystemRep( Model* model);
 
-  CMCActuatorSubsystemRep* cloneImpl() const;
+  CMCActuatorSubsystemRep* cloneImpl() const override;
   ~CMCActuatorSubsystemRep();
 
   void setCompleteState(const SimTK::State& s);
   const SimTK::State& getCompleteState() const;
 
-  int realizeSubsystemTopologyImpl(State& s) const;
-  int realizeSubsystemDynamicsImpl(const State& s) const;
+  int realizeSubsystemTopologyImpl(State& s) const override;
+  int realizeSubsystemDynamicsImpl(const State& s) const override;
   void setSpeedCorrections(const double corrections[] );
   void setCoordinateCorrections(const double corrections[] );
   void setSpeedTrajectories(FunctionSet *aSet);

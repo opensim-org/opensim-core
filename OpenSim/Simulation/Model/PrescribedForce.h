@@ -116,7 +116,7 @@ public:
     // default destructor, copy constructor, copy assignment
 
     /** Copy in properties from XML. **/
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
     void setBodyName(const std::string& aBodyName) { set_body(aBodyName); }
     const std::string& getBodyName() const { return get_body(); }
@@ -229,20 +229,20 @@ public:
     /**
      * Methods used for reporting
      */
-    virtual OpenSim::Array<std::string> getRecordLabels() const;
+    OpenSim::Array<std::string> getRecordLabels() const override;
     /**
      * Given SimTK::State object extract all the values necessary to report 
      * forces, application location frame, etc. used in conjunction with 
      * getRecordLabels() and should return same size Array.
      */
-    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const;
+    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
 
 protected:
     /** ModelComponent interface. **/ 
     void extendConnectToModel(Model& model) override;
     /** Force interface. **/
-    virtual void computeForce
+    void computeForce
        (const SimTK::State&                state, 
         SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
         SimTK::Vector&                     generalizedForces) const override;

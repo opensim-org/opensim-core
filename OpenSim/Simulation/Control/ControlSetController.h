@@ -141,7 +141,7 @@ public:
      * @param s         system state 
      * @param controls  return control values 
      */
-    virtual void computeControls(const SimTK::State& s, SimTK::Vector& controls) const;
+    void computeControls(const SimTK::State& s, SimTK::Vector& controls) const override;
 
     virtual void setControlSetFileName( const std::string&  controlSetFileName );
     const std::string& getControlSetFileName() const {

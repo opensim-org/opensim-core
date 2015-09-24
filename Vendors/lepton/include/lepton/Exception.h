@@ -47,7 +47,7 @@ public:
     }
     ~Exception() throw() {
     }
-    const char* what() const throw() {
+    const char* what() const throw() override {
         return message.c_str();
     }
 private:

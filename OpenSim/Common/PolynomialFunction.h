@@ -95,7 +95,7 @@ public:
      *   at the SimTK::System level 
      * @return   Pointer to the underlying SimTK::Function
      */
-    virtual SimTK::Function* createSimTKFunction() const
+    SimTK::Function* createSimTKFunction() const override
     {
         return new SimTK::Function::Polynomial(get_coefficients());
     }

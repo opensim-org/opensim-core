@@ -166,7 +166,7 @@ public:
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
-    virtual void setModel(Model& aModel);
+    void setModel(Model& aModel) override;
     void setStorageCapacityIncrements(int aIncrement);
 
     Storage* getPennationAngleStorage() const { 
@@ -224,12 +224,12 @@ public:
     //--------------------------------------------------------------------------
     // ANALYSIS
     //--------------------------------------------------------------------------
-    virtual int
-        begin( SimTK::State& s );
-    virtual int
-        step(const SimTK::State& s, int setNumber );
-    virtual int
-        end( SimTK::State& s );
+    int
+        begin( SimTK::State& s ) override;
+    int
+        step(const SimTK::State& s, int setNumber ) override;
+    int
+        end( SimTK::State& s ) override;
 protected:
     virtual int
         record(const SimTK::State& s );
@@ -237,9 +237,9 @@ protected:
     // IO
     //--------------------------------------------------------------------------
 public:
-    virtual int
+    int
         printResults(const std::string &aBaseName,const std::string &aDir="",
-        double aDT=-1.0,const std::string &aExtension=".sto");
+        double aDT=-1.0,const std::string &aExtension=".sto") override;
     /** 
      * Intended for use only by GUI that holds one MuscleAnalysis and keeps changing attributes to generate various plots
      * For all other use cases, the code handles the allocation/deallocation of resources internally.

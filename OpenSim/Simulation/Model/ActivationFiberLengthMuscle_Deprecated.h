@@ -100,24 +100,24 @@ public:
     virtual void setPassiveForce(const SimTK::State& s, double aForce) const;
     virtual double getTendonForce(const SimTK::State& s) const;
     virtual void setTendonForce(const SimTK::State& s, double aForce) const;
-    virtual double getActivation(const SimTK::State& s) const;
-    virtual void setActivation(SimTK::State& s, double activation) const;
+    double getActivation(const SimTK::State& s) const override;
+    void setActivation(SimTK::State& s, double activation) const override;
     virtual double getActivationDeriv(const SimTK::State& s) const;
     virtual void setActivationDeriv(const SimTK::State& s, double activationDeriv) const;
     virtual double getExcitation( const SimTK::State& s) const;
-    virtual double getStress(const SimTK::State& s) const;
+    double getStress(const SimTK::State& s) const override;
 
 
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
-    virtual void computeInitialFiberEquilibrium(SimTK::State& s ) const;
+    void computeInitialFiberEquilibrium(SimTK::State& s ) const override;
     virtual double computeActuation( const SimTK::State& s ) const = 0;
     virtual double computeIsometricForce(SimTK::State& s, double activation) const = 0;
     //virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) const;
     
-    virtual double calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
-                                                      double aActivation) const;
+    double calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
+            double aActivation) const override;
 
     virtual double evaluateForceLengthVelocityCurve(double aActivation, double aNormalizedLength, double aNormalizedVelocity) const;
     virtual double calcPennation( double aFiberLength, double aOptimalFiberLength, double aInitialPennationAngle) const;
@@ -126,18 +126,18 @@ public:
     // SCALING
     //--------------------------------------------------------------------------
 protected:
-    virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+    void postScale(const SimTK::State& s, const ScaleSet& aScaleSet) override;
 
     //--------------------------------------------------------------------------
     // FORCE APPLICATION
     //--------------------------------------------------------------------------
-    virtual void computeForce(const SimTK::State& state, 
+    void computeForce(const SimTK::State& state, 
                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForce) const;
+                              SimTK::Vector& generalizedForce) const override;
 
-    virtual void extendAddToSystem(SimTK::MultibodySystem& system) const;
-    virtual void extendInitStateFromProperties(SimTK::State& s) const;
-    virtual void extendSetPropertiesFromState(const SimTK::State& state);
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
     virtual void setStateVariableDeriv(const SimTK::State& s, const std::string &aStateName, double aValue) const;
     virtual double getStateVariableDeriv(const SimTK::State& s, const std::string &aStateName) const;
@@ -145,9 +145,9 @@ protected:
     void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
     // Muscle interface
-    virtual void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const;
-    virtual void calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const;
-    virtual void calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const;
+    void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const override;
+    void calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const override;
+    void calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const override;
 
     virtual double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const
     {

@@ -371,7 +371,7 @@ public:
     bool createExternalLoads( const std::string &aExternalLoadsFileName,
                                      Model& aModel, const Storage *loadKinematics=NULL);
 
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
     virtual void loadQStorage (const std::string& statesFileName, Storage& rQStore) const;
 //=============================================================================
 };  // END of class AbstractTool

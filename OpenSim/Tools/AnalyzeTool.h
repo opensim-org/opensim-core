@@ -133,7 +133,7 @@ public:
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
-    virtual bool run() SWIG_DECLARE_EXCEPTION;
+    bool run() override SWIG_DECLARE_EXCEPTION;
     virtual bool run(bool plotting) SWIG_DECLARE_EXCEPTION;
 
     //--------------------------------------------------------------------------

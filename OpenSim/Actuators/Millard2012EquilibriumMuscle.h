@@ -341,7 +341,7 @@ public:
 
     /** @param s The state of the system.
         @param activation The desired activation level. */
-    void setActivation(SimTK::State& s, double activation) const;
+    void setActivation(SimTK::State& s, double activation) const override;
 
     /** @param fiberLength The default fiber length that is used to initialize
     the muscle. */
@@ -451,7 +451,7 @@ public:
 // PROTECTED METHODS
 //==============================================================================
 protected:
-    void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+    void postScale(const SimTK::State& s, const ScaleSet& aScaleSet) override;
 
     /** @returns Activation clamped to the permissible range (i.e., between
     minimum_activation and 1.0). */
