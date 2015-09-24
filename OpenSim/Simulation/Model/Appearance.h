@@ -34,8 +34,9 @@ class Body;
 class Model;
 
 /**
-VisualRepresentation is the OpenSim name used across the OpenSim API, it maps to
-SimTK::DecorativeGeometry::Representation.
+VisualRepresentation is the OpenSim name used across the OpenSim API, it is an 
+that describes in what form is Geometry displayed:  
+DrawPoints, DrawWireframe, DrawSurface are supported.
 */
 using VisualRepresentation = SimTK::DecorativeGeometry::Representation;
 
@@ -108,8 +109,8 @@ private:
 //=============================================================================
 //=============================================================================
 /**
- * A class that holds the Appearance properties of an object displayed 
- * in the OpenSim Visualizer.
+ * A class that holds the Appearance properties of Geometry displayed 
+ * in the OpenSim Visualizer. It affects how Geometry is displayed.
  * 
  * Appearance contains properties that apply to all geometry.
  * Geometry that have a surface so that it can be textured will utilize
@@ -128,9 +129,9 @@ public:
     OpenSim_DECLARE_PROPERTY(visible, bool, 
         "Flag indicating whether the associated Geometry is visible or hidden.")
     OpenSim_DECLARE_PROPERTY(opacity, double,
-            "The opacity (0-1) used to display the object. ");
+            "The opacity used to display the geometry between 0:transparent, 1:opaque. ");
     OpenSim_DECLARE_PROPERTY(color, SimTK::Vec3,
-        "The color (rgb) used to display the object. ");
+        "The color (rgb) used to display the geometry. ");
 
     OpenSim_DECLARE_PROPERTY(surface_appearance, SurfaceAppearance,
         "Visuals applied to surfaces associated with this Appearance. ");
@@ -159,7 +160,7 @@ protected:
         int documentVersion = versionNumber;
         if (documentVersion < XMLDocument::getLatestVersion()) {
             if (documentVersion < 30505) {
-                // if representation = 0 visible = false, else true
+                // if representation = 0 then  visible = false else  visible = true
                 SimTK::Xml::element_iterator iIter = 
                     aNode.element_begin("representation");
                 if (iIter != aNode.element_end()) {
