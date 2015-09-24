@@ -221,7 +221,7 @@ void ScalarActuator::overrideActuation(SimTK::State& s, bool flag) const
     setModelingOption(s, "override_actuation", int(flag));
 }
 
-bool ScalarActuator::isActuationOverriden(const SimTK::State& s) const
+bool ScalarActuator::isActuationOverridden(const SimTK::State& s) const
 {
     return (getModelingOption(s, "override_actuation") > 0);
 }

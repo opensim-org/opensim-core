@@ -154,9 +154,38 @@ void testMemoryUsage(const string& modelFile)
     // Setup OpenSim model
     // base footprint
     size_t mem0 = getCurrentRSS( );
-    Model model(modelFile);
+    size_t model_size{ 0 };
 
-    size_t model_size = getCurrentRSS( )-mem0;
+    Model model;
+
+    // getCurrentRSS( ) can be unreliable at evaluating the memory usage of a
+    // current process because of caching, shared memory and a litany of 
+    // other reason including some platform specific details.
+    // When this occurs, the model_size is determined to be zero, which is not
+    // possible. This was leading to an invalid (NaN) leak % and the test was
+    // failing. Redoing the test (or restarting the CI tests) often remedies
+    // the issue (see #473) but it is a waste of time and CI resources.
+    // The following code was added to retry loading the model until a nonzero
+    // value is registered so that the test can proceed without requiring 
+    // to be rerun. It is not 100% that it will work, but it should be an
+    // improvement.
+    int ntries = 0;
+    while ((model_size == 0) && (ntries++ < 10)) {
+        model = Model(modelFile);
+        model_size = getCurrentRSS() - mem0;
+    }
+
+    if (ntries > 1) {
+        cout << "testMemoryUsage: required " << to_string(ntries);
+        cout << " load attempts to record a nonzero model_size." << endl;
+    }
+
+    cout << "*********************** testMemoryUsage ***********************" << endl;
+    cout << "MODEL: " << modelFile << " uses " << model_size / 1024.0 << "KB" << endl;
+
+    ASSERT(model_size > 0, __FILE__, __LINE__,
+        "testMemoryUsage: model size was found to be zero.\n"
+        "Memory instrumentation code failed to estimate model size correctly.");
 
     State state = model.initSystem();
 
@@ -165,9 +194,6 @@ void testMemoryUsage(const string& modelFile)
 
     // also time how long initializing the state takes
     clock_t startTime = clock();
-
-    //cout << "Initial memory use: " << mem1/1024 << "KB." << endl;
-
 
     for(int i=0; i< MAX_N_TRIES; ++i){
         state = model.initializeState();
@@ -178,13 +204,12 @@ void testMemoryUsage(const string& modelFile)
     // change
     int64_t delta = mem2-mem1;
     int64_t leak = delta/MAX_N_TRIES;
-    long double leak_percent = 100.0 * leak/model_size;
+
+    long double leak_percent = 100.0 * double(leak)/model_size;
 
     long double dT = (long double)(clock()-startTime) / CLOCKS_PER_SEC;
     long double meanT = 1.0e3 * dT/MAX_N_TRIES; // in ms
     
-    cout << "*********************** testMemoryUsage ***********************" << endl;
-    cout << "MODEL: "<< modelFile <<" uses "<< model_size/1024 << "KB" << endl;
     cout << delta/1024 << "KB change in memory use after " << MAX_N_TRIES
          << " state initializations." << endl;
     cout << "Approximate leak size: " << leak/1024.0 << "KB or " << 

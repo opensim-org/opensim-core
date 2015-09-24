@@ -178,14 +178,35 @@ void Component::connect(Component &root)
         AbstractConnector& connector = upd_connectors(ix);
         connector.disconnect();
         try{
-            connector.findAndConnect(root);
+            const std::string& compName = connector.get_connectee_name();
+            std::string::size_type front = compName.find("/");
+            if (front != 0) { // local (not path qualified) name
+                // A local Component is considered: 
+                // (1) one of this component's children 
+                const Component* comp = findComponent(compName);
+                // (2) OR, one of this component's siblings (same depth as this)
+                if (!comp && hasParent()) {
+                    comp = getParent().findComponent(compName);
+                }
+                if (comp) {
+                    try { //Could still be the wrong type
+                        connector.connect(*comp);
+                    }
+                    catch (const std::exception& ex) {
+                        std::cout << ex.what() << "\nContinue to find ..." <<std::endl;
+                    }
+                }
+            }
+            if(!connector.isConnected()) {
+                connector.findAndConnect(root);
+            }
         }
-        catch (...) {
+        catch (const std::exception& x) {
             throw Exception(getConcreteClassName() +
-                "::connect() Could not find component '"
-                + connector.get_connectee_name() + "' to satisfy Connector<" +
+                "::connect() Failed to connect connector Connector<" +
                 connector.getConnecteeTypeName() + "> of '" + getName() + "' " +
-                "as a subcomponent of " + root.getName() + ".");
+                "as a subcomponent of " + root.getName() + ".\n Details:" 
+                + x.what());
         }
     }
 
@@ -462,6 +483,28 @@ int Component::getNumStateVariables() const
     return ns;
 }
 
+
+const Component& Component::getParent() const 
+{
+    if (!hasParent()) {
+        std::string msg = "Component '" + getName() + "'::getParent(). " +
+            "Has no parent Component assigned.\n" +
+            "Make sure the component was added to the Model (or its parent).";
+        throw Exception(msg);
+    }
+    return _parent.getRef();
+}
+
+bool Component::hasParent() const
+{
+    return !_parent.empty();
+}
+
+void Component::setParent(const Component& parent)
+{
+    _parent.reset(&parent);
+}
+
 const Component& Component::getComponent(const std::string& name) const
 {  
     const Component* found = findComponent(name);
@@ -483,7 +526,6 @@ Component& Component::updComponent(const std::string& name) const
     }
     return *const_cast<Component *>(found); 
 }
-
 
 const Component* Component::findComponent(const std::string& name,
     const StateVariable** rsv) const
@@ -788,7 +830,8 @@ setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value)
     }
 }
 
-void Component::constructOutputForStateVariable(const std::string& name) {
+void Component::constructOutputForStateVariable(const std::string& name)
+{
     constructOutput<double>(name,
             std::bind(&Component::getStateVariableValue,
                 this, std::placeholders::_1, name),
@@ -797,27 +840,29 @@ void Component::constructOutputForStateVariable(const std::string& name) {
 
 // Include another Component as a subcomponent of this one. If already a
 // subcomponent, it is not added to the list again.
-void Component::addComponent(Component *aComponent)
+void Component::addComponent(Component* component)
 {
     // Only add if the Component is not already a part of the model
     // So, add if empty
     if ( _components.empty() ){
-        _components.push_back(aComponent);
+        _components.push_back(component);
     }
     else{ //otherwise check that it isn't apart of the component already        
         SimTK::Array_<Component *>::iterator it =
-            std::find(_components.begin(), _components.end(), aComponent);
+            std::find(_components.begin(), _components.end(), component);
         if ( it == _components.end() ){
-            _components.push_back(aComponent);
+            _components.push_back(component);
             //std::cout << "Adding component " << aComponent->getName() << " as subcomponent of " << getName() << std::endl;
         }
         else{
             std::string msg = "ERROR- " +getConcreteClassName()+"::addComponent() '"
-                + getName() + "' already has '" + aComponent->getName() +
+                + getName() + "' already has '" + component->getName() +
                     "' as a subcomponent.";
             throw Exception(msg, __FILE__, __LINE__);
         }
     }
+
+    component->setParent(*this);
 }
 
 const int Component::getStateIndex(const std::string& name) const
@@ -1010,8 +1055,8 @@ void Component::extendRealizeAcceleration(const SimTK::State& s) const
 
 const SimTK::MultibodySystem& Component::getSystem() const
 {
-    if (_system.empty()){
-        std::string msg = "Component::getSystem() ";
+    if (!hasSystem()){
+        std::string msg = getConcreteClassName()+"::getSystem() ";
         msg += getName() + " has no reference to a System.\n";
         msg += "Make sure you added the Component to the Model and ";
         msg += "called Model::initSystem(). ";

@@ -84,13 +84,13 @@ public:
     //--------------------------------------------------------------------------
     /** get the number of referettes (individual signals) in this Reference. All
         return arrays are guaranteed to be this length */
-    virtual int getNumRefs() const {return 1;} ;
+    int getNumRefs() const override {return 1;} ;
     /** get the name(s) of the reference or its referettes */
-    virtual const SimTK::Array_<std::string>& getNames() const;
+    const SimTK::Array_<std::string>& getNames() const override;
     /** get the value of the Reference as a function of the state */
-    virtual void getValues(const SimTK::State &s, SimTK::Array_<double> &values) const;
+    void getValues(const SimTK::State &s, SimTK::Array_<double> &values) const override;
     /** get the weighting (importance) of meeting this Reference */
-    virtual void getWeights(const SimTK::State &s, SimTK::Array_<double>& weights) const;
+    void getWeights(const SimTK::State &s, SimTK::Array_<double>& weights) const override;
 
 
     //--------------------------------------------------------------------------

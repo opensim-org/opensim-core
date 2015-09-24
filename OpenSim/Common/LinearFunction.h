@@ -103,7 +103,7 @@ public:
     //--------------------------------------------------------------------------
     // EVALUATION
     //--------------------------------------------------------------------------
-    virtual SimTK::Function* createSimTKFunction() const;
+    SimTK::Function* createSimTKFunction() const override;
 
 //=============================================================================
 };  // END class LinearFunction

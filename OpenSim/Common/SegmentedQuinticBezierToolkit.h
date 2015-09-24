@@ -772,10 +772,10 @@ class MySystemGuts : public SimTK::System::Guts {
     MySystemGuts(const BezierData& bdata) : bdata(bdata) {}
 
     // Implement required System::Guts virtuals.
-    MySystemGuts* cloneImpl() const {return new MySystemGuts(*this);}
+    MySystemGuts* cloneImpl() const override {return new MySystemGuts(*this);}
 
     // During realizeTopology() we allocate the needed State.
-    int realizeTopologyImpl(SimTK::State& state) const {
+    int realizeTopologyImpl(SimTK::State& state) const override {
         // HERE'S WHERE THE IC GETS SET
         SimTK::Vector zInit(1, bdata._initalValue); // initial value for z
         state.allocateZ(SimTK::SubsystemIndex(0), zInit);
@@ -783,7 +783,7 @@ class MySystemGuts : public SimTK::System::Guts {
     }
 
     // During realizeAcceleration() we calculate the State derivative.
-    int realizeAccelerationImpl(const SimTK::State& state) const {
+    int realizeAccelerationImpl(const SimTK::State& state) const override {
         SimTK::Real x = state.getTime();
 
         if(bdata._flag_intLeftToRight == false){

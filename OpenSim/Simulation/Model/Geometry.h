@@ -167,7 +167,7 @@ public:
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const override final;
 
     /// Methods to support frame as a connection, implement Component interface
-    void constructConnectors();
+    void constructConnectors() override;
 
 private:
     

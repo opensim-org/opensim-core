@@ -123,7 +123,7 @@ public:
     /* Register types to be used when reading an InverseKinematicsTool object from xml file. */
     static void registerTypes();
     /* Handle reading older formats/Versioning */
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
     //---- Setters and getters for various attributes
     void setModel(Model& aModel) { _model = &aModel; };
@@ -165,7 +165,7 @@ public:
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
-    virtual bool run() SWIG_DECLARE_EXCEPTION;
+    bool run() override SWIG_DECLARE_EXCEPTION;
 
 
 //=============================================================================

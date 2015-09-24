@@ -707,7 +707,7 @@ void Muscle::computeForce(const SimTK::State& s,
     // NOTE: Actuation could be negative, in particular during CMC, when the optimizer
     // is computing gradients, but in those cases the actuation will be 
     // overridden and will not be computed by the muscle
-    if (!isActuationOverriden(s) && (getActuation(s) < -SimTK::SqrtEps)) {
+    if (!isActuationOverridden(s) && (getActuation(s) < -SimTK::SqrtEps)) {
         string msg = getConcreteClassName()
             + "::computeForce, muscle "+ getName() + " force < 0";
         cout << msg << " at time = " << s.getTime() << endl;

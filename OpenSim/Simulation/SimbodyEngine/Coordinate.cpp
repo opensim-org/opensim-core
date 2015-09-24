@@ -49,11 +49,11 @@ public:
     ModifiableConstant(const SimTK::Real& value, int argumentSize) : 
       value(value), argumentSize(argumentSize) { }
 
-    ModifiableConstant* clone() const {
+    ModifiableConstant* clone() const override {
         return new ModifiableConstant(this->value, this->argumentSize);
     }
 
-    SimTK::Real calcValue(const SimTK::Vector& x) const {
+    SimTK::Real calcValue(const SimTK::Vector& x) const override {
         assert(x.size() == argumentSize);
         return value;
     }
@@ -63,14 +63,14 @@ public:
         return calcDerivative(SimTK::ArrayViewConst_<int>(derivComponents),x);
     }
     SimTK::Real calcDerivative(const SimTK::Array_<int>& derivComponents, 
-        const SimTK::Vector& x) const {
+        const SimTK::Vector& x) const override {
         return 0;
     }
 
-    virtual int getArgumentSize() const {
+    int getArgumentSize() const override {
         return argumentSize;
     }
-    int getMaxDerivativeOrder() const {
+    int getMaxDerivativeOrder() const override {
         return std::numeric_limits<int>::max();
     }
 

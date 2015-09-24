@@ -117,10 +117,10 @@ public:
     //--------------------------------------------------------------------------
     // REQUIRED OPTIMIZATION TARGET METHODS
     //--------------------------------------------------------------------------
-    int objectiveFunc(const SimTK::Vector &x, bool new_coefficients, SimTK::Real& rP) const;
-    int gradientFunc(const SimTK::Vector &x, bool new_coefficients, SimTK::Vector &gradient) const;
-    int constraintFunc(const SimTK::Vector &x, bool new_coefficients, SimTK::Vector &constraints) const;
-    int constraintJacobian(const SimTK::Vector &x, bool new_coefficients, SimTK::Matrix &jac) const;
+    int objectiveFunc(const SimTK::Vector &x, bool new_coefficients, SimTK::Real& rP) const override;
+    int gradientFunc(const SimTK::Vector &x, bool new_coefficients, SimTK::Vector &gradient) const override;
+    int constraintFunc(const SimTK::Vector &x, bool new_coefficients, SimTK::Vector &constraints) const override;
+    int constraintJacobian(const SimTK::Vector &x, bool new_coefficients, SimTK::Matrix &jac) const override;
 
 private:
     void computeConstraintVector(SimTK::State& s, const SimTK::Vector &x, SimTK::Vector &c) const;
