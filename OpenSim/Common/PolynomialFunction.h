@@ -75,9 +75,9 @@ public:
     //--------------------------------------------------------------------------
     // SET AND GET Coefficients
     //--------------------------------------------------------------------------
-    /** Set coefficients for the polynomial f of variable x:
+    /** %Set coefficients for the polynomial f of variable x:
      * f(x) = a*x^n + b*x^(n-1) + ... + c 
-     * The size of the coffecient vector determines the order of the polynomial.
+     * The size of the coefficient vector determines the order of the polynomial.
      * n = size-1;
      * @param[in] coefficients      Vector of polynomial coefficients
      */
@@ -102,8 +102,8 @@ public:
 
 private:
     /**
-    * Construct the serializiable property member variables and
-    * assign their defualt values
+    * Construct the serializable property member variables and
+    * assign their default values
     */
     void constructProperties(){
         setAuthors("Carmichael Ong");

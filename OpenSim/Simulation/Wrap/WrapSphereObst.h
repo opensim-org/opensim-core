@@ -43,7 +43,7 @@ class WrapResult;
  * A class implementing a sphere obstacle for muscle wrapping, based on the
  * algorithm presented in Garner & Pandy (2000).
  *
- * @author Brian Garner, derivded from Peter Loan
+ * @author Brian Garner, derived from Peter Loan
  * @version 0.1
  */
 class OSIMSIMULATION_API WrapSphereObst : public WrapObject {

@@ -78,7 +78,7 @@ void GeometryPath::extendConnectToModel(Model& aModel)
         return;
 
     // Name the path points based on the current path
-    // (i.e., the set of currectly active points is numbered
+    // (i.e., the set of currently active points is numbered
     // 1, 2, 3, ...).
     namePathPoints(0);
 
@@ -93,7 +93,7 @@ void GeometryPath::extendConnectToModel(Model& aModel)
 
 //_____________________________________________________________________________
 /*
- * Create the SimTK state, dicrete and/or cache for this GeometryPath.
+ * Create the SimTK state, discrete and/or cache for this GeometryPath.
  */
  void GeometryPath::extendAddToSystem(SimTK::MultibodySystem& system) const 
 {
@@ -231,7 +231,7 @@ getCurrentPath(const SimTK::State& s)  const
     return getCacheVariableValue< Array<PathPoint*> >(s, "current_path");
 }
 
-// get the the path as PointForceDirections directions 
+// get the path as PointForceDirections directions 
 // CAUTION: the return points are heap allocated; you must delete them yourself! 
 // (TODO: that is really lame)
 void GeometryPath::

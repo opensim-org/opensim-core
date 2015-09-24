@@ -29,7 +29,7 @@ using namespace std;
 
 int main() {
     try {
-        // Create a storge from a std file "std_storage.sto"
+        // Create a storage from a std file "std_storage.sto"
         //ofstream checkRunDirFile("rundir.txt");
         //checkRunDirFile << "Run from here:\n\n";
         //checkRunDirFile.close();

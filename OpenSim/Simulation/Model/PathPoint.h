@@ -124,7 +124,7 @@ public:
     virtual void connectToModelAndPath(const Model& aModel, GeometryPath& aPath);
     virtual void update(const SimTK::State& s) { }
 
-    // get the relative velocity of the path point with resepct to the body
+    // get the relative velocity of the path point with respect to the body
     // it is connected to.
     virtual void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity);
     // get the partial of the point location w.r.t. to the coordinates (Q)

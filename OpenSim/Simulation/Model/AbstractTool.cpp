@@ -120,7 +120,7 @@ AbstractTool::AbstractTool(const string &aFileName, bool aUpdateFromXMLNode):
  * members of the object; that is, the object's DOMnode and XMLDocument
  * are not copied but set to NULL.  The reason for this is that for the
  * object and all its derived classes to establish the correct connection
- * to the XML document nodes, the the object would need to reconstruct based
+ * to the XML document nodes, the object would need to reconstruct based
  * on the XML document not the values of the object's member variables.
  *
  * There are three proper ways to generate an XML document for a AbstractTool:
@@ -129,7 +129,7 @@ AbstractTool::AbstractTool(const string &aFileName, bool aUpdateFromXMLNode):
  * In this case, the XML document is created by parsing the XML file.
  *
  * 2) Construction by AbstractTool(const XMLDocument *aDocument).
- * This constructor explictly requests construction based on an
+ * This constructor explicitly requests construction based on an
  * XML document.  In this way the proper connection between an object's node
  * and the corresponding node within the XML document is established.
  * This constructor is a copy constructor of sorts because all essential
@@ -300,7 +300,7 @@ operator=(const AbstractTool &aTool)
     // BASE CLASS
     Object::operator=(aTool);
 
-    // MEMEBER VARIABLES
+    // MEMBER VARIABLES
     _model = aTool._model;
 
     _modelFile = aTool._modelFile;
@@ -562,7 +562,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         return false;
     }
 
-    // This is required so that the references to other files inside ExternalLoads file are interpretted 
+    // This is required so that the references to other files inside ExternalLoads file are interpreted 
     // as relative paths
     std::string savedCwd = IO::getCwd();
     IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
@@ -572,7 +572,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     }
      catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
-        // And then we can rethrow the exception
+        // And then we can re-throw the exception
         cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName;
         cout << ". Please make sure the file exists and that it contains an ExternalLoads";
         cout << "object or create a fresh one." << endl;
@@ -586,7 +586,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     
     const Storage *loadKinematicsForPointTransformation = NULL;
     
-    //If the the Tool is already loading the storage allow it to pass it in for use rather than reloading and processing
+    //If the Tool is already loading the storage allow it to pass it in for use rather than reloading and processing
     if(loadKinematics && loadKinematics->getName() == loadKinematicsFileName){
         loadKinematicsForPointTransformation = loadKinematics;
     }
@@ -670,7 +670,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
                     }
                 }
         if (versionNumber<20001){
-            // if external loads .mot file has been speified, create 
+            // if external loads .mot file has been specified, create 
             // an XML file corresponding to it and set it as new external loads file
             SimTK::Xml::element_iterator it = aNode.element_begin("external_loads_file");
             if (it != aNode.element_end()){
@@ -779,7 +779,7 @@ void AbstractTool::loadQStorage (const std::string& statesFileName, Storage& rQS
 std::string AbstractTool::getControlsFileName() const
 {
     int numControllers = _controllerSet.getSize();
-    if (numControllers>=1){ // WE have potentially more than one, make sure there's controlset controller
+    if (numControllers>=1){ // We have potentially more than one, make sure there's controlset controller
         for(int i=0; i<numControllers; i++){
             OpenSim::Controller& controller= _controllerSet.get(i);
             if (dynamic_cast<OpenSim::ControlSetController *>(&controller)==0)
@@ -877,9 +877,9 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
     std::string forceLabels[9] = {"ground_force_vx", "ground_force_vy", "ground_force_vz", 
         "ground_force_px", "ground_force_py", "ground_force_pz", 
         "ground_torque_x", "ground_torque_y", "ground_torque_z"};
-    // We'll create upto 2 PrescribedForces
+    // We'll create up to 2 PrescribedForces
     if (body1Valid && body2Valid){
-        // Find first occurance of ground_force_vx
+        // Find first occurrence of ground_force_vx
         int indices[9][2];
         for(int i=0; i<9; i++){
             indices[i][0]= labels.findIndex(forceLabels[i]);

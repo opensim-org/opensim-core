@@ -71,7 +71,7 @@ public:
      */
     double getTransitionVelocity() const;
     /**
-     * Set the transition velocity for switching between static and dynamic friction.
+     * %Set the transition velocity for switching between static and dynamic friction.
      */
     void setTransitionVelocity(double velocity);
     

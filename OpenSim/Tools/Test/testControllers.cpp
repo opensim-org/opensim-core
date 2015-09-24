@@ -82,9 +82,9 @@ void testControlSetControllerOnBlock()
     // Create a 20 kg, 0.1 m^3 block body
     double blockMass = 20.0, blockSideLength = 0.1;
     Vec3 blockMassCenter(0), groundOrigin(0), blockInGround(0, blockSideLength/2, 0);
-    Inertia blockIntertia = Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
+    Inertia blockInertia = Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
 
-    OpenSim::Body block("block", blockMass, blockMassCenter, blockMass*blockIntertia);
+    OpenSim::Body block("block", blockMass, blockMassCenter, blockMass*blockInertia);
 
     //Create a free joint with 6 degrees-of-freedom
     SimTK::Vec3 noRotation(0);
@@ -178,9 +178,9 @@ void testPrescribedControllerOnBlock(bool disabled)
     // Create a 20 kg, 0.1 m^3 block body
     double blockMass = 20.0, blockSideLength = 0.1;
     Vec3 blockMassCenter(0), groundOrigin(0), blockInGround(0, blockSideLength/2, 0);
-    Inertia blockIntertia = Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
+    Inertia blockInertia = Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
 
-    OpenSim::Body block("block", blockMass, blockMassCenter, blockMass*blockIntertia);
+    OpenSim::Body block("block", blockMass, blockMassCenter, blockMass*blockInertia);
 
     //Create a free joint with 6 degrees-of-freedom
     SimTK::Vec3 noRotation(0);
@@ -273,9 +273,9 @@ void testCorrectionControllerOnBlock()
     // Create a 20 kg, 0.1 m^3 block body
     double blockMass = 20.0, blockSideLength = 0.1;
     Vec3 blockMassCenter(0), groundOrigin(0), blockInGround(0, blockSideLength/2, 0);
-    Inertia blockIntertia = Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
+    Inertia blockInertia = Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
 
-    OpenSim::Body block("block", blockMass, blockMassCenter, blockMass*blockIntertia);
+    OpenSim::Body block("block", blockMass, blockMassCenter, blockMass*blockInertia);
 
     //Create a free joint with 6 degrees-of-freedom
     SimTK::Vec3 noRotation(0);

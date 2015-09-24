@@ -102,7 +102,7 @@ public:
     //--------------------------------------------------------------------------
     ProbeReporter(Model *aModel=0);
     ProbeReporter(const std::string &aFileName);
-    // Copy constrctor and virtual copy 
+    // Copy constructor and virtual copy 
     ProbeReporter(const ProbeReporter &aObject);
     virtual ~ProbeReporter();
     

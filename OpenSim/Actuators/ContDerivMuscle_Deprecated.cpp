@@ -416,8 +416,8 @@ double ContDerivMuscle_Deprecated::computeActuation(const SimTK::State& s) const
  *
  * The size of the toe region (where the function transitions from one linear region to another) is parameterized
  * by "smoothcoef".  The bigger its value, the wider the toe region.  For smoothcoef=1, the area where the
- * discrepency between the linear models and the function is bigger than 0.1 is about [-0.04, 0.04], and the area
- * where it is bigger than 0.5 is smaller than [-0.01, 0.01], with maximum discrepency of about 0.7.
+ * discrepancy between the linear models and the function is bigger than 0.1 is about [-0.04, 0.04], and the area
+ * where it is bigger than 0.5 is smaller than [-0.01, 0.01], with maximum discrepancy of about 0.7.
  *
  * Note that while the tendon strain depends on the tendon length normalized in tendon slack length units, the
  * input to this function is assumed to be the tendon length normalized in optimal fiber length units, hence the
@@ -570,7 +570,7 @@ double ContDerivMuscle_Deprecated::getStress(const SimTK::State& s ) const
  * static equilibrium. Using the total muscle-tendon length, it finds the
  * fiber and tendon lengths so that the forces in each match. This routine
  * takes pennation angle into account, so its definition of static equilibrium
- * is when tendon_force = fiber_force * cos(pennation_angle). This funcion
+ * is when tendon_force = fiber_force * cos(pennation_angle). This function
  * will modify the object's values for _length, _fiberLength, _activeForce, 
  * and _passiveForce.
  *

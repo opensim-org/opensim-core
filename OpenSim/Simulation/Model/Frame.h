@@ -127,7 +127,7 @@ public:
     in another frame (A). This re-expression accounts for the difference
     in orientation between the frames. This is mathematically stated as:
         vec_A = R_AF*vec_F
-    which does not translate the vector. This is intended to reexpress
+    which does not translate the vector. This is intended to re-express
     physical vector quantities such as a frame's angular velocity or an
     applied force, from one frame to another without changing the physical
     quantity. If you have a position vector and want to change the point from

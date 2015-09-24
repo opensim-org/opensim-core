@@ -168,7 +168,7 @@ void PointActuator::computeForce(const SimTK::State& s,
 
     double force;
 
-    if (isActuationOverriden(s)) {
+    if (isActuationOverridden(s)) {
         force = computeOverrideActuation(s);
     } else {
        force = computeActuation(s);

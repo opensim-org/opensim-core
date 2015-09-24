@@ -147,7 +147,7 @@ public:
 
     /** @returns The normalized fiber length where the steep ascending limb of
     the active-force-length curve transitions to the minimum activation value
-    and simultaneously achives a first and second derivative of 0. */
+    and simultaneously achieves a first and second derivative of 0. */
     double getMinActiveFiberLength() const;
 
     /** @returns The normalized fiber length where the steep ascending limb
@@ -157,7 +157,7 @@ public:
 
     /** @returns The normalized fiber length where the descending limb of the
     active-force-length curve transitions to the minimum activation value and
-    simultaneously achives first and second derivatives of 0. */
+    simultaneously achieves first and second derivatives of 0. */
     double getMaxActiveFiberLength() const;
 
     /** @returns The slope of the shallow ascending limb

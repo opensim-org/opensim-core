@@ -40,7 +40,7 @@ namespace OpenSim {
  * A class implementing a Function and a scale factor for the function's value.
  *
  * This class inherits from Function and so can be used as input to
- * any class requiring a Fuction as input.
+ * any class requiring a Function as input.
  *
  * @author Peter Loan
  * @version 1.0

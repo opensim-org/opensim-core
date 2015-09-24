@@ -109,7 +109,7 @@ void PrescribedController::extendConnectToModel(Model& model)
         if(tcol < 0){
             tcol = columns.findIndex("t");
             if(tcol < 0){
-                throw Exception("PrescribedController::connectToModel pescribed "
+                throw Exception("PrescribedController::connectToModel prescribed "
                 "controls file was not specified as functions of time.",
                     __FILE__, __LINE__);
             }
@@ -153,7 +153,7 @@ void PrescribedController::extendConnectToModel(Model& model)
                 }
             }// if found in functions, it has already been prescribed
         }// end looping through columns
-    }// if no constrols storage specified, do nothing
+    }// if no controls storage specified, do nothing
 }
 
 

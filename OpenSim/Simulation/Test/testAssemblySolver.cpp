@@ -134,7 +134,7 @@ void testAssembleModelWithConstraints(string modelFile)
         model.getVisualizer().show(state);
     }
 
-    // Verify that the reaction forces at the constraints are not rediculously large
+    // Verify that the reaction forces at the constraints are not ridiculously large
     // They should sum to body-weight (more or less)
     model.getMultibodySystem().realize(state, Stage::Acceleration);
 
@@ -165,7 +165,7 @@ void testAssembleModelWithConstraints(string modelFile)
 
     ASSERT_EQUAL((totalYforce - bw - inertial) / bw, 0.0, SimTK::SqrtEps,
         __FILE__, __LINE__,
-        "Contraint force does not match body-weight plus inertial force (mg+ma).");
+        "Constraint force does not match body-weight plus inertial force (mg+ma).");
 
     //const CoordinateSet &coords = model.getCoordinateSet();
     double q_error = 0;
@@ -198,7 +198,7 @@ void testAssembleModelWithConstraints(string modelFile)
     int nPerr = positionErr.size();
     double pErrMag = positionErr.norm();
 
-    // get the configuration at the end of the simulaton
+    // get the configuration at the end of the simulation
     Vector q1 = state.getQ();
 
     model.updateAssemblyConditions(state);
@@ -231,7 +231,7 @@ void testAssembleModelWithConstraints(string modelFile)
     double q0Err = (q0_2 - q0_1).norm();
     double q1Err_1 = (q1_2 - q1_1).norm();
 
-    //cout << "******************* Init System Inital State *******************" << endl;
+    //cout << "******************* Init System Initial State *******************" << endl;
     for (int i = 0; i < q0_1.size(); i++) {
         cout << "Pre-simulation:" << i << " q0_1 = " << q0_1[i] << ", q0_2 = " << q0_2[i] << endl;
         ASSERT_EQUAL(q0_1[i], q0_2[i], 10*accuracy, __FILE__, __LINE__, "Initial state changed after 2nd call to initSystem");

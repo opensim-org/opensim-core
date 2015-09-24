@@ -36,17 +36,17 @@ namespace OpenSim {
  * A class implementing a collection of rolling-without-slipping and 
  * non-penetration constraints on a surface.  
  * The underlying Constraints in Simbody are:
- *      PointInPlane to oppose penetration into the ground (unitlaterally)
+ *      PointInPlane to oppose penetration into the ground (unilaterally)
  *      ConstantAngle about the normal to the enforce no twisting
  *      NoSlip1D along one axis of the plane
  *      NoSlip1D along the other axis
  *
- * mu = Coulomb Friction Coeefficient
+ * mu = Coulomb Friction Coefficient
  *
  * Each of these constraints have conditions dependent on the reaction forces
- * that they generate indiviudally and collectively:
+ * that they generate individually and collectively:
  *   PointInPlane normal force (Fn) must be positive (in the direction of the normal)
- *   ConstantAngle the reaction torque cannnot exceed contactRadius*mu*Fn
+ *   ConstantAngle the reaction torque cannot exceed contactRadius*mu*Fn
  *   Both NoSlip conditions are treated together, the magnitude of the combined  
  *   reaction forces (in the plane) cannot exceed mu*Fn
 
@@ -86,9 +86,9 @@ public:
     RollingOnSurfaceConstraint();
     virtual ~RollingOnSurfaceConstraint();
 
-    /** Set rolling body by its name */
+    /** %Set rolling body by its name */
     void setRollingBodyByName(const std::string& aBodyName);
-    /** Set surface body by its name */
+    /** %Set surface body by its name */
     void setSurfaceBodyByName(const std::string& aBodyName);
 
     /**
@@ -101,7 +101,7 @@ public:
     bool isDisabled(const SimTK::State& state) const override;
 
     /**
-    * Set whether or not the RollingOnSurfaceConstraint is disabled.
+    * %Set whether or not the RollingOnSurfaceConstraint is disabled.
     * Since the constraint is composed of multiple constraints, this method can
     * disable all the constraints, but enabling is not guaranteed. For example, if
     * the unilateral conditions are violated the constraint will be disabled.
@@ -125,7 +125,7 @@ public:
     * @param state  State of model
     * @param bodyForcesInAncestor   Vector of SpatialVecs contain constraint forces
     * @param mobilityForces     Vector of forces that act along the constrained
-    *                           mobilitities associated with this constraint
+    *                           mobilities associated with this constraint
     */
     void calcConstraintForces(const SimTK::State& state, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor,
         SimTK::Vector& mobilityForces) const override;
@@ -138,7 +138,7 @@ public:
     std::vector<bool> unilateralConditionsSatisfied(const SimTK::State& state) override;
 
 
-    /** Set whether constraint is enabled or disabled but use cached values for 
+    /** %Set whether constraint is enabled or disabled but use cached values for 
         unilateral conditions instead of automatic reevaluation */
     bool setDisabledWithCachedUnilateralConditions(bool isDisabled,
         SimTK::State& state){
@@ -158,7 +158,7 @@ protected:
      */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     /**
-     * Populate the the SimTK::State: with defaults for the RollingOnSurfaceConstraint.
+     * Populate the SimTK::State: with defaults for the RollingOnSurfaceConstraint.
      */
     void extendInitStateFromProperties(SimTK::State& state) const override;
     /**

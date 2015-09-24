@@ -348,7 +348,7 @@ calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce
  * static equilibrium. Using the total muscle-tendon length, it finds the
  * fiber and tendon lengths so that the forces in each match. This routine
  * takes pennation angle into account, so its definition of static equilibrium
- * is when tendon_force = fiber_force * cos(pennation_angle). This funcion
+ * is when tendon_force = fiber_force * cos(pennation_angle). This function
  * will modify the object's values for length, fiberLength, activeForce, 
  * and passiveForce.
  *

@@ -32,7 +32,7 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * This base (abstract) class defines the interface for objects repsonsible in 
+ * This base (abstract) class defines the interface for objects responsible in 
  * identifying a model output and its Reference value to be achieved
  * via optimization and/or tracking. Also contains a weighting that identifies 
  * the relative importance of achieving one Reference relative to others. The 
@@ -76,14 +76,14 @@ public:
     // Reference Interface
     //--------------------------------------------------------------------------
     /** get the number of referettes (individual signals) in this Reference. All
-        return arrays are gauranteed to be this length */
+        return arrays are guaranteed to be this length */
     virtual int getNumRefs() const = 0;
     /** get the time range for which the Reference is valid, which can and will be finite
-        if reference encapsulates experimental data. By defualt they are infinite */
+        if reference encapsulates experimental data. By default they are infinite */
     virtual SimTK::Vec2 getValidTimeRange() const { return SimTK::Vec2(-SimTK::Infinity, SimTK::Infinity); }
     /** get the name(s) of the reference or its referettes */
     virtual const SimTK::Array_<std::string>& getNames() const = 0;
-    /** get the value of the Reference as a funcion of the state */
+    /** get the value of the Reference as a function of the state */
     virtual void getValues(const SimTK::State &s, SimTK::Array_<T> &values) const = 0;
     /** get the weighting (importance) of meeting this Reference */
     virtual void getWeights(const SimTK::State &s, SimTK::Array_<double>& weights) const = 0;
