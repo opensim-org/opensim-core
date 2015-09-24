@@ -131,23 +131,23 @@ public:
     virtual double getAf() const { return _af; }
     virtual double getFlen() const { return _flen; }
     // Computed quantities
-    virtual double getNormalizedFiberLength(const SimTK::State& s) const;
-    virtual double getPassiveFiberForce(const SimTK::State& s) const;
-    virtual double getStress(const SimTK::State& s) const;
-    virtual double getActivation(const SimTK::State& s) const { return getStateVariableValue(s, STATE_ACTIVATION_NAME); }
-    virtual void setActivation(SimTK::State& s, double activation) const { setStateVariableValue(s, STATE_ACTIVATION_NAME, activation); }
-    virtual double getActivationDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_ACTIVATION_NAME); }
-    virtual void setActivationDeriv(const SimTK::State& s, double activationDeriv) const { setStateVariableDeriv(s, STATE_ACTIVATION_NAME, activationDeriv); }
-    virtual double getFiberLength(const SimTK::State& s) const { return getStateVariableValue(s, STATE_FIBER_LENGTH_NAME); }
-    virtual void setFiberLength(SimTK::State& s, double fiberLength) const { setStateVariableValue(s, STATE_FIBER_LENGTH_NAME, fiberLength); }
-    virtual double getFiberLengthDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_FIBER_LENGTH_NAME); }
-    virtual void setFiberLengthDeriv(const SimTK::State& s, double fiberLengthDeriv) const { setStateVariableDeriv(s, STATE_FIBER_LENGTH_NAME, fiberLengthDeriv); }
-    virtual void setTendonForce(const SimTK::State& s, double aForce) const;
-    virtual double getTendonForce( const SimTK::State& s) const;
+    double getNormalizedFiberLength(const SimTK::State& s) const override;
+    double getPassiveFiberForce(const SimTK::State& s) const override;
+    double getStress(const SimTK::State& s) const override;
+    double getActivation(const SimTK::State& s) const override { return getStateVariableValue(s, STATE_ACTIVATION_NAME); }
+    void setActivation(SimTK::State& s, double activation) const override { setStateVariableValue(s, STATE_ACTIVATION_NAME, activation); }
+    double getActivationDeriv(const SimTK::State& s) const override { return getStateVariableDeriv(s, STATE_ACTIVATION_NAME); }
+    void setActivationDeriv(const SimTK::State& s, double activationDeriv) const override { setStateVariableDeriv(s, STATE_ACTIVATION_NAME, activationDeriv); }
+    double getFiberLength(const SimTK::State& s) const override { return getStateVariableValue(s, STATE_FIBER_LENGTH_NAME); }
+    void setFiberLength(SimTK::State& s, double fiberLength) const override { setStateVariableValue(s, STATE_FIBER_LENGTH_NAME, fiberLength); }
+    double getFiberLengthDeriv(const SimTK::State& s) const override { return getStateVariableDeriv(s, STATE_FIBER_LENGTH_NAME); }
+    void setFiberLengthDeriv(const SimTK::State& s, double fiberLengthDeriv) const override { setStateVariableDeriv(s, STATE_FIBER_LENGTH_NAME, fiberLengthDeriv); }
+    void setTendonForce(const SimTK::State& s, double aForce) const override;
+    double getTendonForce( const SimTK::State& s) const override;
     virtual void setActiveForce(const SimTK::State& s, double aForce) const;
     virtual double getActiveForce( const SimTK::State& s) const;
-    virtual void setPassiveForce(const SimTK::State& s, double aForce) const;
-    virtual double getPassiveForce( const SimTK::State& s) const;
+    void setPassiveForce(const SimTK::State& s, double aForce) const override;
+    double getPassiveForce( const SimTK::State& s) const override;
 
 
 
@@ -158,13 +158,13 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
-    virtual void computeEquilibrium(SimTK::State& s ) const;
-    virtual double computeActuation(const SimTK::State& s) const;
+    void computeEquilibrium(SimTK::State& s ) const override;
+    double computeActuation(const SimTK::State& s) const override;
     double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
-    double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const;
-    double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;
+    double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const override;
+    double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const override;
     double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
-    virtual double computeIsometricForce(SimTK::State& s, double activation) const;
+    double computeIsometricForce(SimTK::State& s, double activation) const override;
 
 protected:
     // Model Component Interface

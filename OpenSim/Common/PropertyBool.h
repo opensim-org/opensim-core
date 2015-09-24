@@ -65,7 +65,7 @@ public:
     PropertyBool();
     PropertyBool(const std::string &aName,bool aValue);
     PropertyBool(const PropertyBool &aProperty);
-    /*virtual*/ PropertyBool* clone() const;
+    PropertyBool* clone() const override;
 
     //--------------------------------------------------------------------------
     // OPERATORS
@@ -80,11 +80,11 @@ public:
     // TYPE
     std::string getTypeName() const override;
     // VALUE
-    virtual void setValue(bool aValue);
-    virtual bool& getValueBool();
-    virtual const bool& getValueBool() const;
+    void setValue(bool aValue) override;
+    bool& getValueBool() override;
+    const bool& getValueBool() const override;
     // VALUE as String
-    virtual std::string toString() const;
+    std::string toString() const override;
 //=============================================================================
 };  // END of class PropertyBool
 

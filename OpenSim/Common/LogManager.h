@@ -43,7 +43,7 @@ public:
     StreamLogCallback(const std::string &aFilename);
     StreamLogCallback(std::ostream *aOut, bool aOwnsStream = true);
     ~StreamLogCallback();
-    void log(const std::string &aStr);
+    void log(const std::string &aStr) override;
 };
 
 
@@ -58,7 +58,7 @@ public:
 private:
     Array<LogCallback*> _logCallbacks;
 
-    int sync();
+    int sync() override;
 };
 /// @endcond
 

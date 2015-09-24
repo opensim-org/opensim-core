@@ -114,7 +114,7 @@ public:
     //--------------------------------------------------------------------------
     // EVALUATE
     //--------------------------------------------------------------------------
-    virtual void calcValue(const double *aX,double *rY, int aSize){
+    void calcValue(const double *aX,double *rY, int aSize) override {
         int N = getNX();
 
         // COMMON PART
@@ -137,11 +137,11 @@ public:
             //rY[i] = sum *aX[i]*aX[i]*aX[i] - sum*root*root*root; 
         }
     }
-    virtual void calcValue(const Array<double> &aX,Array<double> &rY){
+    void calcValue(const Array<double> &aX,Array<double> &rY) override {
         calcValue(&aX[0],&rY[0], aX.getSize());
     }
-    virtual void calcDerivative(const Array<double> &aX,Array<double> &rY,
-        const Array<int> &aDerivWRT){
+    void calcDerivative(const Array<double> &aX,Array<double> &rY,
+        const Array<int> &aDerivWRT) override {
             std::cout<<"\nExampleVectorFunctionUncoupledNxN.evalute(x,y,derivWRT): not implemented.\n";
     }
 

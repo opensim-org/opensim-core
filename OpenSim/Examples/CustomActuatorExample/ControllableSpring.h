@@ -103,7 +103,7 @@ public:
 ** direction between them. */
 void computeForce(const SimTK::State& s, 
                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+                              SimTK::Vector& generalizedForces) const override
 {
     // make sure the model and bodies are instantiated
     if (!_model) return;

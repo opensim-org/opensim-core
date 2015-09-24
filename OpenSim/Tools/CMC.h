@@ -200,7 +200,7 @@ public:
     /**
      * Controller interface
      */
-    virtual void computeControls(const SimTK::State& s, SimTK::Vector& controls) const;
+    void computeControls(const SimTK::State& s, SimTK::Vector& controls) const override;
     virtual void computeInitialStates(SimTK::State& s, double &rTI);
     /** CMC algorithm */
     virtual void computeControls(SimTK::State& s, ControlSet &rX);

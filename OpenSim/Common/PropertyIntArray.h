@@ -91,14 +91,14 @@ public:
     // TYPE
     std::string getTypeName() const override;
     // VALUE
-    virtual void setValue(const Array<int> &aArray);
-    virtual void setValue(int aSize,const int aArray[]);
-    virtual Array<int>& getValueIntArray();
-    virtual const Array<int>& getValueIntArray() const;
+    void setValue(const Array<int> &aArray) override;
+    void setValue(int aSize,const int aArray[]) override;
+    Array<int>& getValueIntArray() override;
+    const Array<int>& getValueIntArray() const override;
     // SIZE
-    virtual int getArraySize() const { return _array.getSize(); }
+    int getArraySize() const override { return _array.getSize(); }
     // VALUE as String
-    virtual std::string toString() const;
+    std::string toString() const override;
     void clearValues() override {
         _array.setSize(0);
     }

@@ -115,7 +115,7 @@ public:
         { set_coupled_coordinates_function(*aFunction); }
 
     // SCALE
-    virtual void scale(const ScaleSet& aScaleSet);
+    void scale(const ScaleSet& aScaleSet) override;
 
 protected:
     void extendConnectToModel(Model& aModel) override;

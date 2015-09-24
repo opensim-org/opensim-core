@@ -45,7 +45,7 @@ public:
     CompoundFunction(const SimTK::Function *cf, double scale) : f1(cf), scale(scale) {
     }
 
-    double calcValue(const SimTK::Vector& x) const {
+    double calcValue(const SimTK::Vector& x) const override {
         SimTK::Vector xf(1);
         xf[0] = x[0];
         return scale*f1->calcValue(xf)-x[1];
@@ -55,7 +55,7 @@ public:
         return calcDerivative(SimTK::ArrayViewConst_<int>(derivComponents),x); 
     }
 
-    double calcDerivative(const SimTK::Array_<int>& derivComponents, const SimTK::Vector& x) const {
+    double calcDerivative(const SimTK::Array_<int>& derivComponents, const SimTK::Vector& x) const override {
         if (derivComponents.size() == 1){
             if (derivComponents[0]==0){
                 SimTK::Vector x1(1);
@@ -75,10 +75,10 @@ public:
         return 0;
     }
 
-    int getArgumentSize() const {
+    int getArgumentSize() const override {
         return 2;
     }
-    int getMaxDerivativeOrder() const {
+    int getMaxDerivativeOrder() const override {
         return 2;
     }
 
