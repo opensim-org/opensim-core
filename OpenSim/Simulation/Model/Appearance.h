@@ -151,7 +151,7 @@ public:
     VisualRepresentation get_representation() const { 
         return (VisualRepresentation)get_surface_appearance().get_representation(); }
 
-    void set_representation(VisualRepresentation& rep) { 
+    void set_representation(const VisualRepresentation& rep) { 
         upd_surface_appearance().set_representation(rep); }
 
 protected:

@@ -96,10 +96,10 @@ int main()
         ground.addMeshGeometry("checkered_floor.vtp");
         // add anchors for the muscles to be fixed to
         Brick leftAnchorGeometry(SimTK::Vec3(0.05, 0.05, 0.05));
-        leftAnchorGeometry.setColor(SimTK::Vec3(0.0, 1.0, 0.0));
+        leftAnchorGeometry.upd_Appearance().set_color(SimTK::Vec3(0.0, 1.0, 0.0));
         Brick rightAnchorGeometry(SimTK::Vec3(0.05, 0.05, 0.05));
-        rightAnchorGeometry.setColor(SimTK::Vec3(1.0, 1.0, 0.0));
-        rightAnchorGeometry.setOpacity(0.5);
+        rightAnchorGeometry.upd_Appearance().set_color(SimTK::Vec3(1.0, 1.0, 0.0));
+        rightAnchorGeometry.upd_Appearance().set_opacity(0.5);
 
         // block is 0.1 by 0.1 by 0.1m cube and centered at origin. 
         // transform anchors to be placed at the two extremes of the sliding block (to come)
@@ -115,11 +115,11 @@ int main()
         
         Cylinder cylGeometry(0.2, .3);
         cylGeometry.setFrameName("CylAnchor");
-        cylGeometry.setRepresentation(VisualRepresentation::DrawWireframe);
+        cylGeometry.upd_Appearance().set_representation(VisualRepresentation::DrawWireframe);
         ground.addGeometry(cylGeometry);
 
         Ellipsoid ellipsoidGeometry(0.2, .7, .5);
-        ellipsoidGeometry.setColor(SimTK::Vec3(1.0, .5, 0.1));
+        ellipsoidGeometry.upd_Appearance().set_color(SimTK::Vec3(1.0, .5, 0.1));
         ellipsoidGeometry.setFrameName("EllipsoidAnchor");
         ground.addGeometry(ellipsoidGeometry);
         
