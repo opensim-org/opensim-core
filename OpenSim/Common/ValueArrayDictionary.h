@@ -93,6 +93,16 @@ public:
 
         return keys;
     }
+
+    /** Get begin iterator to the associative array.                          */
+    Dictionary::const_iterator getKeyValueBegin() const {
+        return _dictionary.cbegin();
+    }
+
+    /** Get begin iterator to the associative array.                          */
+    Dictionary::const_iterator getKeyValueEnd() const {
+        return _dictionary.cend();
+    }
 private:
     Dictionary _dictionary;
 };
