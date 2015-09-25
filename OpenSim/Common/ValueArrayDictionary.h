@@ -37,10 +37,30 @@ private:
                                 SimTK::ClonePtr<AbstractValueArray>>;
 
 public:
+    using AbstractValue = SimTK::AbstractValue;
+
+    /** Get the first entry of the array corresponding to the given key.      */
+    const AbstractValue& getValueForKey(const std::string& key) const {
+        return (*(_dictionary.at(key)))[0];
+    }
+
+    /** Set the value corresponding to a given key.                           */
+    template<typename ValueType>
+    void setValueForKey(const std::string& key,
+                        const ValueType& value) {
+        using Value = SimTK::ClonePtr<AbstractValueArray>;
+
+        auto value_array = new ValueArray<ValueType>{};
+        value_array->upd().push_back(SimTK::Value<ValueType>{value});
+        AbstractValueArray* absvalue_array{value_array};
+
+        _dictionary.emplace(key, Value{absvalue_array});
+    }
+
     /** Get the array corresponding to a given key.                           */
     const AbstractValueArray& 
     getValueArrayForKey(const std::string& key) const {
-        return *_dictionary.at(key);
+        return *(_dictionary.at(key));
     }
 
     /** Set the array corresponding to a given key.                           */
@@ -48,23 +68,17 @@ public:
                              const AbstractValueArray& abstractValueArray) {
         using Value = SimTK::ClonePtr<AbstractValueArray>;
 
-        _dictionary.emplace(key, 
-                            Value{abstractValueArray.clone()});
+        _dictionary.emplace(key, Value{abstractValueArray.clone()});
+    }
+
+    /** Remove a key and its associated array.                                */
+    void removeValueForKey(const std::string& key) {
+        _dictionary.erase(key);
     }
 
     /** Remove a key and its associated array.                                */
     void removeValueArrayForKey(const std::string& key) {
         _dictionary.erase(key);
-    }
-
-    /** Get begin iterator to the associative array.                          */
-    Dictionary::const_iterator getKeyValueBegin() const {
-        return _dictionary.cbegin();
-    }
-
-    /** Get begin iterator to the associative array.                          */
-    Dictionary::const_iterator getKeyValueEnd() const {
-        return _dictionary.cend();
     }
 
     /** Get all the existing keys as a std::vector.                           */
