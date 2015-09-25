@@ -597,7 +597,7 @@ void testBushingForce()
 
     osimModel->setGravity(gravity_vec);
 
-    BushingForce spring("ground", "ball",
+    BushingForce spring("", "ground", "ball",
         transStiffness, rotStiffness, transDamping, rotDamping);
 
     osimModel->addForce(&spring);

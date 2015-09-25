@@ -41,27 +41,71 @@ using namespace OpenSim;
 
 //_____________________________________________________________________________
 // Default constructor.
-BushingForce::BushingForce()
+BushingForce::BushingForce() : LinkTwoFrames<Force, PhysicalFrame>()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
-/* Convenience construction that creates the Offsets on the Physical Frames (e.g.
-   Bodies that the BushingForce acts between. */
-BushingForce::BushingForce( const std::string& frame1Name,
+BushingForce::BushingForce( const std::string& name,
+                            const std::string& frame1Name,
+                            const std::string& frame2Name)
+    : LinkTwoFrames<Force, PhysicalFrame>(name, frame1Name, frame2Name)
+{
+    setNull();
+    constructProperties();
+}
+
+/* Convenience construction with BushingForce's material properties */
+BushingForce::BushingForce( const std::string &name,
+                            const std::string& frame1Name,
                             const std::string& frame2Name,
                             const SimTK::Vec3& transStiffness,
                             const SimTK::Vec3& rotStiffness,
                             const SimTK::Vec3& transDamping,
                             const SimTK::Vec3& rotDamping )
+    : BushingForce(name, frame1Name, frame2Name)
+{
+    set_rotational_stiffness(rotStiffness);
+    set_translational_stiffness(transStiffness);
+    set_rotational_damping(rotDamping);
+    set_translational_damping(transDamping);
+}
+
+
+BushingForce::BushingForce(const std::string& name,
+    const std::string& frame1Name, const SimTK::Transform& transformInFrame1,
+    const std::string& frame2Name, const SimTK::Transform& transformInFrame2,
+    const SimTK::Vec3& transStiffness,
+    const SimTK::Vec3& rotStiffness,
+    const SimTK::Vec3& transDamping,
+    const SimTK::Vec3& rotDamping)
+    : LinkTwoFrames<Force, PhysicalFrame>(name,
+        frame1Name, transformInFrame1, frame2Name, transformInFrame2)
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
+    set_rotational_stiffness(rotStiffness);
+    set_translational_stiffness(transStiffness);
+    set_rotational_damping(rotDamping);
+    set_translational_damping(transDamping);
+}
 
-    updConnector<PhysicalFrame>("frame1").set_connectee_name(frame1Name);
-    updConnector<PhysicalFrame>("frame2").set_connectee_name(frame2Name);
-
+BushingForce::BushingForce(const std::string& name,
+    const std::string& frame1Name,
+    const SimTK::Vec3& locationInFrame1, const SimTK::Vec3& orientationInFrame1,
+    const std::string& frame2Name,
+    const SimTK::Vec3& locationInFrame2, const SimTK::Vec3& orientationInFrame2,
+    const SimTK::Vec3& transStiffness,
+    const SimTK::Vec3& rotStiffness,
+    const SimTK::Vec3& transDamping,
+    const SimTK::Vec3& rotDamping)
+    : LinkTwoFrames<Force, PhysicalFrame>(name,
+        frame1Name, locationInFrame1, orientationInFrame1,
+        frame2Name, locationInFrame2, orientationInFrame1)
+{
+    setNull();
+    constructProperties();
     set_rotational_stiffness(rotStiffness);
     set_translational_stiffness(transStiffness);
     set_rotational_damping(rotDamping);
@@ -84,110 +128,12 @@ void BushingForce::constructProperties()
     constructProperty_translational_stiffness(Vec3(0));
     constructProperty_rotational_damping(Vec3(0));
     constructProperty_translational_damping(Vec3(0));
-
-    //Default frames list is empty
-    constructProperty_frames();
-}
-
-//_____________________________________________________________________________
-/*
-* Construct Structural Connectors
-*/
-void BushingForce::constructConnectors() {
-    constructConnector<PhysicalFrame>("frame1");
-    constructConnector<PhysicalFrame>("frame2");
 }
 
 void BushingForce::updateFromXMLNode( SimTK::Xml::Element& aNode,
                                       int versionNumber)
 {
-    int documentVersion = versionNumber;
-    bool converting = false;
-    if (documentVersion < XMLDocument::getLatestVersion()){
-        if (documentVersion < 30505){
-            // replace old properties with latest use of PhysicalOffsetFrames properties
-            SimTK::Xml::element_iterator body1Element =
-                aNode.element_begin("body_1");
-            SimTK::Xml::element_iterator body2Element =
-                aNode.element_begin("body_2");
-            SimTK::Xml::element_iterator locBody1Elt =
-                aNode.element_begin("location_body_1");
-            SimTK::Xml::element_iterator orientBody1Elt =
-                aNode.element_begin("orientation_body_1");
-            SimTK::Xml::element_iterator locBody2Elt =
-                aNode.element_begin("location_body_2");
-            SimTK::Xml::element_iterator orientBody2Elt =
-                aNode.element_begin("orientation_body_2");
-
-            // The names of the two PhysicalFrames this bushing connects
-            std::string frame1Name("");
-            std::string frame2Name("");
-
-            if (body1Element != aNode.element_end()) {
-                body1Element->getValueAs<std::string>(frame1Name);
-            }
-
-            if (body2Element != aNode.element_end()) {
-                body2Element->getValueAs<std::string>(frame2Name);
-            }
-
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
-                "frame1", frame1Name);
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
-                "frame2", frame2Name);
-
-            Vec3 locationInFrame1(0);
-            Vec3 orientationInFrame1(0);
-            Vec3 locationInFrame2(0);
-            Vec3 orientationInFrame2(0);
-
-            if (locBody1Elt != aNode.element_end()) {
-                locBody1Elt->getValueAs<Vec3>(locationInFrame1);
-            }
-            if (orientBody1Elt != aNode.element_end()) {
-                orientBody1Elt->getValueAs<Vec3>(orientationInFrame1);
-            }
-            if (locBody2Elt != aNode.element_end()) {
-                locBody2Elt->getValueAs<Vec3>(locationInFrame2);
-            }
-            if (orientBody2Elt != aNode.element_end()) {
-                orientBody2Elt->getValueAs<Vec3>(orientationInFrame2);
-            }
-
-            // Avoid collision by prefixing the joint name to the connectee_name
-            // as to enforce a local search for the correct local offset
-            std::string pName = aNode.getOptionalAttributeValueAs<std::string>("name", "");
-
-            // now append updated frames to the property list if they are not
-            // identity transforms.
-            if ((locationInFrame1.norm() > 0.0) ||
-                (orientationInFrame1.norm() > 0.0)) {
-                XMLDocument::addPhysicalOffsetFrame(aNode, frame1Name + "_offset",
-                    frame1Name, locationInFrame1, orientationInFrame1);
-                body1Element->setValue(pName + "/" + frame1Name + "_offset");
-            }
-
-            // again for the offset frame on the child
-            if ((locationInFrame2.norm() > 0.0) ||
-                (orientationInFrame2.norm() > 0.0)) {
-                XMLDocument::addPhysicalOffsetFrame(aNode, frame2Name + "_offset",
-                    frame2Name, locationInFrame2, orientationInFrame2);
-                body2Element->setValue(pName + "/" + frame2Name + "_offset");
-            }
-
-        }
-    }
-    Super::updateFromXMLNode(aNode, versionNumber);
-}
-
-void BushingForce::extendFinalizeFromProperties()
-{
-    Super::extendFinalizeFromProperties();
-
-    //mark frames in property list as subcomponents
-    for (int i = 0; i < updProperty_frames().size(); ++i){
-        addComponent(&upd_frames(i));
-    }
+    LinkTwoFrames<Force, PhysicalFrame>::updateFromXMLNode(aNode, versionNumber);
 }
 
 // Add underly Simbody elements to the System after subcomponents
@@ -202,8 +148,8 @@ void BushingForce::
     const SimTK::Vec3& transDamping   = get_translational_damping();
 
     // get connected frames
-    const PhysicalFrame& frame1 = getConnectee<PhysicalFrame>("frame1");
-    const PhysicalFrame& frame2 = getConnectee<PhysicalFrame>("frame2");
+    const PhysicalFrame& frame1 = getFrame1();
+    const PhysicalFrame& frame2 = getFrame2();
 
     // Get underlying mobilized bodies
     const SimTK::MobilizedBody& b1 = frame1.getMobilizedBody();
@@ -249,8 +195,8 @@ double BushingForce::computePotentialEnergy(const SimTK::State& s) const
  */
 OpenSim::Array<std::string> BushingForce::getRecordLabels() const 
 {
-    const string& frame1Name = getConnectee<PhysicalFrame>("frame1").getName();
-    const string& frame2Name = getConnectee<PhysicalFrame>("frame2").getName();
+    const string& frame1Name = getFrame1().getName();
+    const string& frame2Name = getFrame2().getName();
 
     OpenSim::Array<std::string> labels("");
     labels.append(getName()+"."+frame1Name+".force.X");
@@ -274,8 +220,8 @@ OpenSim::Array<std::string> BushingForce::getRecordLabels() const
 OpenSim::Array<double> BushingForce::
 getRecordValues(const SimTK::State& state) const 
 {
-    const PhysicalFrame& frame1 = getConnectee<PhysicalFrame>("frame1");
-    const PhysicalFrame& frame2 = getConnectee<PhysicalFrame>("frame2");
+    const PhysicalFrame& frame1 = getFrame1();
+    const PhysicalFrame& frame2 = getFrame2();
 
     const string& frame1Name = frame1.getName();
     const string& frame2Name = frame2.getName();

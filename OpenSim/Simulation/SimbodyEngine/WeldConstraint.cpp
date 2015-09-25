@@ -45,7 +45,7 @@ WeldConstraint::~WeldConstraint()
 {
 }
 //_____________________________________________________________________________
-/**
+/*
  * Default constructor.
  */
 WeldConstraint::WeldConstraint() :
@@ -54,7 +54,7 @@ WeldConstraint::WeldConstraint() :
     setNull();
 }
 
-WeldConstraint::WeldConstraint( const std::string &name,
+WeldConstraint::WeldConstraint( const std::string& name,
                                 const std::string& frame1Name,
                                 const std::string& frame2Name)
     : LinkTwoFrames<Constraint, PhysicalFrame>(name, frame1Name, frame2Name)
@@ -186,79 +186,5 @@ void WeldConstraint::
 
 void WeldConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-    int documentVersion = versionNumber;
-    if (documentVersion < XMLDocument::getLatestVersion()) {
-        if (documentVersion < 30505) {
-            // replace old properties with latest use of PhysicalOffsetFrames properties
-            SimTK::Xml::element_iterator body1Element =
-                aNode.element_begin("body_1");
-            SimTK::Xml::element_iterator body2Element =
-                aNode.element_begin("body_2");
-            SimTK::Xml::element_iterator locBody1Elt =
-                aNode.element_begin("location_body_1");
-            SimTK::Xml::element_iterator orientBody1Elt =
-                aNode.element_begin("orientation_body_1");
-            SimTK::Xml::element_iterator locBody2Elt =
-                aNode.element_begin("location_body_2");
-            SimTK::Xml::element_iterator orientBody2Elt =
-                aNode.element_begin("orientation_body_2");
-
-            // The names of the two PhysicalFrames this bushing connects
-            std::string frame1Name("");
-            std::string frame2Name("");
-
-            if (body1Element != aNode.element_end()) {
-                body1Element->getValueAs<std::string>(frame1Name);
-            }
-
-            if (body2Element != aNode.element_end()) {
-                body2Element->getValueAs<std::string>(frame2Name);
-            }
-
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
-                "frame1", frame1Name);
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
-                "frame2", frame2Name);
-
-            Vec3 locationInFrame1(0);
-            Vec3 orientationInFrame1(0);
-            Vec3 locationInFrame2(0);
-            Vec3 orientationInFrame2(0);
-
-            if (locBody1Elt != aNode.element_end()) {
-                locBody1Elt->getValueAs<Vec3>(locationInFrame1);
-            }
-            if (orientBody1Elt != aNode.element_end()) {
-                orientBody1Elt->getValueAs<Vec3>(orientationInFrame1);
-            }
-            if (locBody2Elt != aNode.element_end()) {
-                locBody2Elt->getValueAs<Vec3>(locationInFrame2);
-            }
-            if (orientBody2Elt != aNode.element_end()) {
-                orientBody2Elt->getValueAs<Vec3>(orientationInFrame2);
-            }
-
-            // Avoid collision by prefixing the joint name to the connectee_name
-            // as to enforce a local search for the correct local offset
-            std::string pName = aNode.getOptionalAttributeValueAs<std::string>("name", "");
-
-            // now append updated frames to the property list if they are not
-            // identity transforms.
-            if ((locationInFrame1.norm() > 0.0) ||
-                (orientationInFrame1.norm() > 0.0)) {
-                XMLDocument::addPhysicalOffsetFrame(aNode, frame1Name + "_offset",
-                    frame1Name, locationInFrame1, orientationInFrame1);
-                body1Element->setValue(pName + "/" + frame1Name + "_offset");
-            }
-
-            // again for the offset frame on the child
-            if ((locationInFrame2.norm() > 0.0) ||
-                (orientationInFrame2.norm() > 0.0)) {
-                XMLDocument::addPhysicalOffsetFrame(aNode, frame2Name + "_offset",
-                    frame2Name, locationInFrame2, orientationInFrame2);
-                body2Element->setValue(pName + "/" + frame2Name + "_offset");
-            }
-        }
-    }
-    Super::updateFromXMLNode(aNode, versionNumber);
+    LinkTwoFrames<Constraint, PhysicalFrame>::updateFromXMLNode(aNode, versionNumber);
 }

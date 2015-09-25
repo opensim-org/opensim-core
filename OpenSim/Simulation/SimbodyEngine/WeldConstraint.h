@@ -58,9 +58,9 @@ public:
     @param[in] frame1Name   the name of the first PhysicalFrame being constrained
     @param[in] frame2Name   the name of the second PhysicalFrame being constrained
     */
-    WeldConstraint(const std::string &name,
-                const std::string& frame1Name,
-                const std::string& frame2Name );
+    WeldConstraint( const std::string& name,
+                    const std::string& frame1Name,
+                    const std::string& frame2Name );
 
     /** Backwards compatible Convenience Constructor 
     Construct a WeldConstraint where the weld frames are specified in terms of their

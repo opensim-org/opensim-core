@@ -70,7 +70,7 @@ public:
     LinkTwoFrames();
 
     /** Convenience Constructor.
-    Create a LinkTwoFrames Component bewteen two Frames identified by name.
+    Create a LinkTwoFrames Component between two Frames identified by name.
 
     @param[in] name         the name of this LinkTwoFrames component
     @param[in] frame1Name   the name of the first Frame being linked
@@ -82,7 +82,7 @@ public:
 
     /** Convenience Constructor
     Construct a LinkTwoFrames where the two frames are specified by name 
-    and ofset transforms on the respective frames.
+    and offset transforms on the respective frames.
 
     @param[in] name             the name of this LinkTwoFrames component
     @param[in] frame1Name       the first Frame that the component links
@@ -101,11 +101,11 @@ public:
     @param[in] name     the name of this LinkTwoFrames component
     @param[in] frame1   the first Frame that the component links
     @param[in] locationInFrame1    Vec3 of offset location on the first frame
-    @param[in] orientationInFrame1 Vec3 of orientation offse expressed as
+    @param[in] orientationInFrame1 Vec3 of orientation offset expressed as
                                    XYZ body-fixed Euler angles w.r.t frame1.
     @param[in] frame2    the second Frame that the component links
     @param[in] locationInFrame2    Vec3 of offset location on the second frame
-    @param[in] orientationInFrame1 Vec3 of orientation offse expressed as
+    @param[in] orientationInFrame1 Vec3 of orientation offset expressed as
                                    XYZ body-fixed Euler angles w.r.t frame2.
     */
     LinkTwoFrames(const std::string &name,
@@ -140,7 +140,7 @@ public:
      @return dq     Vec6 of (3) angular and (3) translational deflections. */
     SimTK::Vec6 computeDeflection(const SimTK::State& s) const;
     /** Compute the deflection rate (dqdot) of the two frames connected by
-         the bushing force. Angualar velocity is expressed as Euler angle
+         the bushing force. Angular velocity is expressed as Euler angle
         derivatives.
         NOTE: the value is only valid for small deviations and the behavior
         will become undefined at large angles (~90 degs). It is useful for
@@ -168,6 +168,9 @@ protected:
     void constructConnectors() override;
     void extendFinalizeFromProperties() override;
     void extendConnectToModel(Model& model) override; 
+    // update previous model formats for all components linking two frames
+    // in one place - here.
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
     /**@}**/
 
     /** Helper method to convert internal force expressed in the basis of the
@@ -196,7 +199,7 @@ protected:
         SimTK::Vec6 f, SimTK::Vector_<SimTK::SpatialVec>& physicalForces) const;
 
 private:
-
+    // create the frames property
     void constructProperties() override;
 
     //hang on to references to the individual frames for fast access
@@ -384,6 +387,8 @@ void LinkTwoFrames<C, F>::extendConnectToModel(Model& model)
     _frame1 = &(this->getConnector<F>("frame1").getConnectee());
     _frame2 = &(this->getConnector<F>("frame2").getConnectee());
 }
+
+
 //=============================================================================
 // UTILITY COMPUTATIONS
 //=============================================================================
@@ -547,6 +552,90 @@ void LinkTwoFrames<C, F>::addInPhysicalForcesFromInternal(
     physicalForces[frame2.getMobilizedBodyIndex()] += F_GB2;
     physicalForces[frame1.getMobilizedBodyIndex()] += F_GB1;
 }
+
+
+template <class C, class F>
+void LinkTwoFrames<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode, 
+                                            int versionNumber)
+{
+    using SimTK::Vec3;
+    int documentVersion = versionNumber;
+    if (documentVersion < XMLDocument::getLatestVersion()) {
+        if (documentVersion < 30505) {
+            // replace old properties with latest use of PhysicalOffsetFrames properties
+            SimTK::Xml::element_iterator body1Element =
+                aNode.element_begin("body_1");
+            SimTK::Xml::element_iterator body2Element =
+                aNode.element_begin("body_2");
+            SimTK::Xml::element_iterator locBody1Elt =
+                aNode.element_begin("location_body_1");
+            SimTK::Xml::element_iterator orientBody1Elt =
+                aNode.element_begin("orientation_body_1");
+            SimTK::Xml::element_iterator locBody2Elt =
+                aNode.element_begin("location_body_2");
+            SimTK::Xml::element_iterator orientBody2Elt =
+                aNode.element_begin("orientation_body_2");
+
+            // The names of the two PhysicalFrames this bushing connects
+            std::string frame1Name("");
+            std::string frame2Name("");
+
+            if (body1Element != aNode.element_end()) {
+                body1Element->getValueAs<std::string>(frame1Name);
+            }
+
+            if (body2Element != aNode.element_end()) {
+                body2Element->getValueAs<std::string>(frame2Name);
+            }
+
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                "frame1", frame1Name);
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                "frame2", frame2Name);
+
+            Vec3 locationInFrame1(0);
+            Vec3 orientationInFrame1(0);
+            Vec3 locationInFrame2(0);
+            Vec3 orientationInFrame2(0);
+
+            if (locBody1Elt != aNode.element_end()) {
+                locBody1Elt->getValueAs<Vec3>(locationInFrame1);
+            }
+            if (orientBody1Elt != aNode.element_end()) {
+                orientBody1Elt->getValueAs<Vec3>(orientationInFrame1);
+            }
+            if (locBody2Elt != aNode.element_end()) {
+                locBody2Elt->getValueAs<Vec3>(locationInFrame2);
+            }
+            if (orientBody2Elt != aNode.element_end()) {
+                orientBody2Elt->getValueAs<Vec3>(orientationInFrame2);
+            }
+
+            // Avoid collision by prefixing the joint name to the connectee_name
+            // as to enforce a local search for the correct local offset
+            std::string pName = aNode.getOptionalAttributeValueAs<std::string>("name", "");
+
+            // now append updated frames to the property list if they are not
+            // identity transforms.
+            if ((locationInFrame1.norm() > 0.0) ||
+                (orientationInFrame1.norm() > 0.0)) {
+                XMLDocument::addPhysicalOffsetFrame(aNode, frame1Name + "_offset",
+                    frame1Name, locationInFrame1, orientationInFrame1);
+                body1Element->setValue(pName + "/" + frame1Name + "_offset");
+            }
+
+            // again for the offset frame on the child
+            if ((locationInFrame2.norm() > 0.0) ||
+                (orientationInFrame2.norm() > 0.0)) {
+                XMLDocument::addPhysicalOffsetFrame(aNode, frame2Name + "_offset",
+                    frame2Name, locationInFrame2, orientationInFrame2);
+                body2Element->setValue(pName + "/" + frame2Name + "_offset");
+            }
+        }
+    }
+    Super::updateFromXMLNode(aNode, versionNumber);
+}
+
 
 } // end of namespace OpenSim
 #endif // OPENSIM_LINK_TWO_FRAMES_H_
