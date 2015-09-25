@@ -833,12 +833,11 @@ void testExpressionBasedBushingForce()
     Vec3 rotDamping(0);
     Vec3 transDamping(0);
     
-    ExpressionBasedBushingForce spring("base_body", Vec3(0), Vec3(0), 
+    ExpressionBasedBushingForce spring("linear_bushing",
+        "base_body", Vec3(0), Vec3(0), 
         "ball", Vec3(0), Vec3(0), 
         transStiffness, rotStiffness, transDamping, rotDamping);
-    
-    spring.setName("linear_bushing");
-    
+
     osimModel->addForce(&spring);
     
     osimModel->print("ExpressionBasedBushingForceModel.osim");

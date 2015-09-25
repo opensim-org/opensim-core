@@ -26,6 +26,7 @@
 
 // INCLUDE
 #include "Constraint.h"
+#include <OpenSim/Simulation/Model/LinkTwoFrames.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 namespace OpenSim {
@@ -43,20 +44,9 @@ class PhysicalOffsetFrame;
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API WeldConstraint : public Constraint {
+class OSIMSIMULATION_API WeldConstraint 
+    : public LinkTwoFrames<Constraint, PhysicalFrame> {
 OpenSim_DECLARE_CONCRETE_OBJECT(WeldConstraint, Constraint);
-public:
-//=============================================================================
-// PROPERTIES
-//=============================================================================
-    /** WeldConstraint defined frames used to connect PhysicalFrames like 
-        Bodies but offset from the body origin. */
-    OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalFrame,
-        "Physical frames needed to satisfy WeldConstraint connections.");
-
-//=============================================================================
-// METHODS
-//=============================================================================
 public:
     /** Default Constructor. Create an unnamed WeldConstraint with frame
         connectors that are unsatisfied. */
@@ -124,8 +114,6 @@ private:
     void setNull();
     // Construct WeldConstraint's properties
     void constructProperties() override;
-    // Construct WeldConstraint's connectors
-    void constructConnectors() override;
 
     // Some analyses (e.g. Induced Accelerations, update the constraint
     // location (Transform) based on experimental data. The constraint

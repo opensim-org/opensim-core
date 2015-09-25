@@ -49,19 +49,17 @@ WeldConstraint::~WeldConstraint()
  * Default constructor.
  */
 WeldConstraint::WeldConstraint() :
-    Constraint()
+    LinkTwoFrames<Constraint, PhysicalFrame>()
 {
     setNull();
-    constructInfrastructure();
 }
 
 WeldConstraint::WeldConstraint( const std::string &name,
                                 const std::string& frame1Name,
-                                const std::string& frame2Name) : WeldConstraint()
+                                const std::string& frame2Name)
+    : LinkTwoFrames<Constraint, PhysicalFrame>(name, frame1Name, frame2Name)
 {
-    setName(name);
-    updConnector<PhysicalFrame>("frame1").set_connectee_name(frame1Name);
-    updConnector<PhysicalFrame>("frame2").set_connectee_name(frame2Name);
+    setNull();
 }
 
 WeldConstraint::WeldConstraint(const std::string &name,
@@ -83,24 +81,10 @@ WeldConstraint::WeldConstraint(const std::string &name,
 WeldConstraint::WeldConstraint(const std::string &name,
     const PhysicalFrame& frame1, const SimTK::Transform& transformInFrame1,
     const PhysicalFrame& frame2, const SimTK::Transform& transformInFrame2)
-    : WeldConstraint()
+    : LinkTwoFrames<Constraint, PhysicalFrame>(name,
+        frame1.getName(), transformInFrame1, frame2.getName(), transformInFrame2)
 {
-    setName(name);
-
-    PhysicalOffsetFrame frame1Offset(frame1.getName() + "_offset",
-                                     frame1, transformInFrame1);
-
-    PhysicalOffsetFrame frame2Offset(frame2.getName() + "_offset", 
-                                    frame2, transformInFrame2);
-
-    // Append the offset frames to the Joints internal list of frames
-    append_frames(frame1Offset);
-    append_frames(frame2Offset);
-
-    updConnector<PhysicalFrame>("frame1").set_connectee_name(
-        getName() + "/" + frame1Offset.getName() );
-    updConnector<PhysicalFrame>("frame2").set_connectee_name(
-        getName() + "/" + frame2Offset.getName() );
+    setNull();
 }
 
 //=============================================================================
@@ -126,12 +110,6 @@ void WeldConstraint::constructProperties()
     constructProperty_frames();
 }
 
-void WeldConstraint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("frame1");
-    constructConnector<PhysicalFrame>("frame2");
-}
-
 void WeldConstraint::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
@@ -147,10 +125,8 @@ void WeldConstraint::
     Super::extendAddToSystemAfterSubcomponents(system);
 
     // Get underlying mobilized bodies
-    const PhysicalFrame& f1 = 
-        getConnector<PhysicalFrame>("frame1").getConnectee();
-    const PhysicalFrame& f2 = 
-        getConnector<PhysicalFrame>("frame2").getConnectee();
+    const PhysicalFrame& f1 = getFrame1();
+    const PhysicalFrame& f2 = getFrame2();
 
     SimTK::MobilizedBody b1 = f1.getMobilizedBody();
     SimTK::MobilizedBody b2 = f2.getMobilizedBody();
@@ -193,7 +169,7 @@ void WeldConstraint::
         updProperty_frames().adoptAndAppendValue(_internalOffset1.get());
         updConnector<PhysicalFrame>("frame1").connect(*_internalOffset1);
     }
-    else { // otherwise if is already "wired" up so just update
+    else { // otherwise it is already "wired" up so just update
         _internalOffset1->setOffsetTransform(in1);
     }
 
