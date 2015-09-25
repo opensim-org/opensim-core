@@ -71,13 +71,13 @@ public:
         _controller( controller ) {
     }
 
-    void handleEvent (SimTK::State& s, Real accuracy, bool& terminate) const {
+    void handleEvent (SimTK::State& s, Real accuracy, bool& terminate) const override {
         terminate = false;
         _controller->computeControls( s, _controller->updControlSet() );
         _controller->setTargetTime(s.getTime() + _controller->getTargetDT());
     }
 
-    Real getNextEventTime( const State& s, bool includeCurrent) const {
+    Real getNextEventTime( const State& s, bool includeCurrent) const override {
 
         if( _controller->getCheckTargetTime() ) {
             return( _controller->getTargetTime() );

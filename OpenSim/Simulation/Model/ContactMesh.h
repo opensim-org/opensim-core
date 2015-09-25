@@ -86,7 +86,7 @@ public:
         _geometry = source._geometry;
         _filename = source._filename;
     }
-    SimTK::ContactGeometry createSimTKContactGeometry();
+    SimTK::ContactGeometry createSimTKContactGeometry() override;
 
     // ACCESSORS
     /**

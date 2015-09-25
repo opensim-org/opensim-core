@@ -88,12 +88,12 @@ public:
      * The names of the quantities (column labels) is returned by this first function
      * getRecordLabels()
      */
-    OpenSim::Array<std::string> getRecordLabels() const ;
+    OpenSim::Array<std::string> getRecordLabels() const override ;
     /**
      * Given SimTK::State object extract all the values necessary to report forces, application location
      * frame, etc. used in conjunction with getRecordLabels and should return same size Array
      */
-    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
+    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override ;
 
     //--------------------------------------------------------------------------
     // COMPUTATIONS

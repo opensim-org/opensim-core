@@ -80,7 +80,7 @@ public:
     {   return get_GeometryPath(); }
     GeometryPath& updGeometryPath() 
     {   return upd_GeometryPath(); }
-    virtual bool hasGeometryPath() const { return true;};
+    bool hasGeometryPath() const override { return true;};
     virtual double getLength(const SimTK::State& s) const;
     virtual double getRestingLength() const 
     {   return get_resting_length(); }
@@ -99,9 +99,9 @@ public:
     // COMPUTATIONS
     //--------------------------------------------------------------------------
     virtual double computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const;
-    virtual void computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const;
+    void computeForce(const SimTK::State& s, 
+                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+                      SimTK::Vector& generalizedForces) const override;
 
     //--------------------------------------------------------------------------
     // SCALE
@@ -144,7 +144,7 @@ protected:
      * The names of the quantities (column labels) is returned by this first function
      * getRecordLabels()
      */
-    OpenSim::Array<std::string> getRecordLabels() const {
+    OpenSim::Array<std::string> getRecordLabels() const override {
         OpenSim::Array<std::string> labels("");
         labels.append(getName());
         return labels;
@@ -153,7 +153,7 @@ protected:
      * Given SimTK::State object extract all the values necessary to report forces, application location
      * frame, etc. used in conjunction with getRecordLabels and should return same size Array
      */
-    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {
+    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override {
         OpenSim::Array<double> values(1);
         values.append(getTension(state));
         return values;

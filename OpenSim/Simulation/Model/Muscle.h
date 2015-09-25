@@ -222,7 +222,7 @@ public:
     double getMusclePower(const SimTK::State& s) const;
     
     /** get the stress in the muscle (part of the Actuator interface as well) */
-    double getStress(const SimTK::State& s) const;
+    double getStress(const SimTK::State& s) const override;
     
     /** set the excitation (control) for this muscle. NOTE if controllers are connected to the
         muscle and are adding in their controls, and setExcitation is called after the model's
@@ -375,7 +375,7 @@ private:
     // Implement Object interface.
     //--------------------------------------------------------------------------
     /** Override of the default implementation to account for versioning. */
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
 
 //=============================================================================

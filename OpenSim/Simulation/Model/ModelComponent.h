@@ -128,7 +128,7 @@ public:
      */
     void addGeometry(OpenSim::Geometry& aGeometry);
 
-    void extendFinalizeFromProperties();
+    void extendFinalizeFromProperties() override;
 protected:
 template <class T> friend class ModelComponentSet;
 

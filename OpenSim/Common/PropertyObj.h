@@ -90,17 +90,17 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
 public:
-    virtual bool isValidObject(const Object *obj) const { return true; } // TODO: make this class templated and do type checking
+    bool isValidObject(const Object *obj) const override { return true; } // TODO: make this class templated and do type checking
     // TYPE
     std::string getTypeName() const override 
     {   return "Object"; }
     // VALUE
     // Got rid of setValue(Obj) since it would be dangerous to do so given that users of
     // PropertyObj would continue to hold a reference to the (deleted) object - Eran.
-    virtual Object& getValueObj();
-    virtual const Object& getValueObj() const;
+    Object& getValueObj() override;
+    const Object& getValueObj() const override;
     // VALUE as String
-    virtual std::string toString() const;
+    std::string toString() const override;
 
 //=============================================================================
 };  // END of class PropertyObj

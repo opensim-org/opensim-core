@@ -227,9 +227,9 @@ public:
     /** Compute the bushing force contribution to the system and add in to appropriate
       * bodyForce and/or system generalizedForce. 
       */
-    virtual void computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const;
+    void computeForce(const SimTK::State& s, 
+                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+                      SimTK::Vector& generalizedForces) const override;
 
     /** Potential energy calculation is not implemented */
 
@@ -242,11 +242,11 @@ public:
      * Provide name(s) of the quantities (column labels) of the force value(s) 
      * to be reported.
      */
-    virtual OpenSim::Array<std::string> getRecordLabels() const ;
+    OpenSim::Array<std::string> getRecordLabels() const override ;
     /**
     *  Provide the value(s) to be reported that correspond to the labels
     */
-    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
+    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override ;
 
 protected:
     //--------------------------------------------------------------------------

@@ -92,17 +92,17 @@ public:
     // TYPE
     std::string getTypeName() const override;
     // VALUE
-    virtual void setValue(const Array<double> &aArray);
-    virtual void setValue(int aSize,const double aArray[]);
+    void setValue(const Array<double> &aArray) override;
+    void setValue(int aSize,const double aArray[]) override;
 
-    virtual Array<double>& getValueDblArray();
+    Array<double>& getValueDblArray() override;
 #ifndef SWIG
-    virtual const Array<double>& getValueDblArray() const;
+    const Array<double>& getValueDblArray() const override;
 #endif
     // VALUE as String
-    virtual std::string toString() const;
+    std::string toString() const override;
     // SIZE
-    virtual int getArraySize() const { return _array.getSize(); }
+    int getArraySize() const override { return _array.getSize(); }
     void clearValues() override {
         _array.setSize(0);
     }

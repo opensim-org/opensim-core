@@ -48,7 +48,6 @@ using namespace std;
 //==============================================================================
 // Common Parameters for the simulations are just global.
 const static double integ_accuracy = 1.0e-4;
-const static double duration = 1.0;
 const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 //==============================================================================
 
@@ -57,6 +56,7 @@ void testExternalForce();
 void testSpringMass();
 void testBushingForce();
 void testFunctionBasedBushingForce();
+void testExpressionBasedBushingForce();
 void testElasticFoundation();
 void testHuntCrossleyForce();
 void testCoordinateLimitForce();
@@ -92,6 +92,12 @@ int main()
     catch (const std::exception& e){
         cout << e.what() <<endl; 
         failures.push_back("testFunctionBasedBushingForce");
+    }
+    
+    try { testExpressionBasedBushingForce(); }
+    catch (const std::exception& e){
+        cout << e.what() <<endl;
+        failures.push_back("testExpressionBasedBushingForce");
     }
 
     try { testElasticFoundation(); }
@@ -148,7 +154,6 @@ void testExpressionBasedCoordinateForce()
     double mass = 1;
     double stiffness = 10;
     double damp_coeff = 5;
-    double h0 = 0;
     double start_h = 0.5;
     double start_v = 0;
     double ball_radius = 0.25;
@@ -250,8 +255,6 @@ void testExpressionBasedPointToPointForce()
     using namespace SimTK;
 
     double mass = 100;
-    double h0 = 0;
-    double start_h = 0.5;
     double ball_radius = 0.25;
 
     Random::Uniform rand;
@@ -349,13 +352,7 @@ void testPathSpring()
     double stiffness = 10;
     double restlength = 0.5;
     double dissipation = 0.1;
-    double h0 = 0;
     double start_h = 0.5;
-    double ball_radius = 0.25;
-
-    double omega = sqrt(stiffness/mass);
-
-    double dh = mass*gravity_vec(1)/stiffness;
 
     // Setup OpenSim model
     Model *osimModel = new Model;
@@ -465,7 +462,6 @@ void testSpringMass()
     double mass = 1;
     double stiffness = 10;
     double restlength = 1.0;
-    double h0 = 0;
     double start_h = 0.5;
     double ball_radius = 0.25;
 
@@ -565,8 +561,6 @@ void testBushingForce()
 
     double mass = 1;
     double stiffness = 10;
-    double restlength = 0.0;
-    double h0 = 0;
     double start_h = 0.5;
     double ball_radius = 0.25;
 
@@ -684,8 +678,6 @@ void testFunctionBasedBushingForce()
 
     double mass = 1;
     double stiffness = 10;
-    double restlength = 0.0;
-    double h0 = 0;
     double start_h = 0.5;
     double ball_radius = 0.25;
 
@@ -782,6 +774,133 @@ void testFunctionBasedBushingForce()
 
     ASSERT(*copyOfSpring == spring);
 }
+
+void testExpressionBasedBushingForce()
+{
+    using namespace SimTK;
+    
+    double mass = 1;
+    double stiffness = 10;
+    double start_h = 0.5;
+    double ball_radius = 0.25;
+    
+    double omega = sqrt(stiffness/mass);
+    
+    double dh = mass*gravity_vec(1)/stiffness;
+    
+    // Setup OpenSim model
+    Model *osimModel = new Model;
+    osimModel->setName("ExpressionBasedBushingTest");
+    osimModel->setGravity(gravity_vec);
+
+    // Create ball body and attach it to ground
+    // with a vertical slider
+
+    const Ground& ground = osimModel->getGround();
+
+    OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
+    ball.addMeshGeometry("sphere.vtp");
+    ball.scale(Vec3(ball_radius), false);
+    
+    SliderJoint sliderY("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+    
+    double positionRange[2] = {-10, 10};
+    // Rename coordinates for a slider joint
+    CoordinateSet &slider_coords = sliderY.upd_CoordinateSet();
+    slider_coords[0].setName("ball_h");
+    slider_coords[0].setRange(positionRange);
+    
+    osimModel->addBody(&ball);
+    osimModel->addJoint(&sliderY);
+    
+    // Create base body and attach it to ground with a weld
+
+    OpenSim::Body base("base_body", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
+    base.addMeshGeometry("sphere.vtp");
+    base.scale(Vec3(ball_radius), false);
+    
+    WeldJoint weld("", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
+    osimModel->addBody(&base);
+    osimModel->addJoint(&weld);
+    
+    // create an ExpressionBasedBushingForce that represents an
+    // uncoupled, linear bushing between the ball body and welded base body
+    Vec3 rotStiffness(0);
+    Vec3 transStiffness(stiffness);
+    Vec3 rotDamping(0);
+    Vec3 transDamping(0);
+    
+    ExpressionBasedBushingForce spring("base_body", Vec3(0), Vec3(0), 
+        "ball", Vec3(0), Vec3(0), 
+        transStiffness, rotStiffness, transDamping, rotDamping);
+    
+    spring.setName("linear_bushing");
+    
+    osimModel->addForce(&spring);
+    
+    osimModel->print("ExpressionBasedBushingForceModel.osim");
+    
+    // Create the force reporter
+    ForceReporter* reporter = new ForceReporter(osimModel);
+    osimModel->addAnalysis(reporter);
+    
+    SimTK::State& osim_state = osimModel->initSystem();
+    
+    // set the initial height of the ball on slider
+    slider_coords[0].setValue(osim_state, start_h);
+    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
+    
+    //==========================================================================
+    // Compute the force and torque at the specified times.
+    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
+    integrator.setAccuracy(1e-6);
+    Manager manager(*osimModel,  integrator);
+    manager.setInitialTime(0.0);
+    
+    double final_t = 2.0;
+    double nsteps = 10;
+    double dt = final_t/nsteps;
+    
+    for(int i = 1; i <=nsteps; ++i){
+        manager.setFinalTime(dt*i);
+        manager.integrate(osim_state);
+        osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
+        Vec3 pos;
+        osimModel->updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        
+        // compute the height based on the analytic solution for 1-D spring-mass
+        // system with zero-velocity at initial offset.
+        double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
+
+        // check that the simulated solution is equivalent to the analytic solution
+        ASSERT_EQUAL(height, pos(1), 1e-4);
+        
+        // get the forces applied to the base and ball
+        Array<double> model_force = spring.getRecordValues(osim_state);
+        
+        // compute the expected force on the ball
+        double analytical_force = -stiffness*height;
+
+        // check analytical force corresponds to the force on the ball 
+        // in the Y direction, index = 7
+        ASSERT_EQUAL(analytical_force, model_force[7], 2e-4);
+        
+        manager.setInitialTime(dt*i);
+    }
+    
+    osimModel->disownAllComponents();
+    
+    manager.getStateStorage().print("expression_based_bushing_model_states.sto");
+    
+    // Save the forces
+    reporter->getForceStorage().print("expression_based_bushing_forces.mot");
+    
+    // Before exiting lets see if copying the spring works
+    ExpressionBasedBushingForce *copyOfSpring = spring.clone();
+    
+    ASSERT(*copyOfSpring == spring);
+}
+
 // Test our wrapping of elastic foundation in OpenSim
 // Simple simulation of bouncing ball with dissipation should generate contact
 // forces that settle to ball weight.
@@ -1028,8 +1147,6 @@ void testCoordinateLimitForce()
     // system KE + PE including strain energy in CLF
     double eSys0 = osimModel->getMultibodySystem().calcEnergy(osim_state);
 
-    // instantaneous power dissipation
-    double clfPowerDissipation = clf->getPowerDissipation(osim_state);
 
     //==========================================================================
     // Compute the force and torque at the specified times.
@@ -1058,7 +1175,6 @@ void testCoordinateLimitForce()
 
         // EK + EM of mass alone
         double eMass = 0.5*mass*v*v - mass*gravity_vec[1]*h;
-        double eSpringGuess = energy0-eMass;
         double e = eMass+clfE; 
         // system KE + PE including strain energy in CLF
         double eSys = osimModel->getMultibodySystem().calcEnergy(osim_state)+ ediss;
@@ -1067,7 +1183,6 @@ void testCoordinateLimitForce()
         ASSERT_EQUAL(1.0, eSys/eSys0, integ_accuracy, "CoordinateLimitForce Failed to conserve system energy");
 
         // get the forces applied to the ball by the limit force
-        double analytical_force = 0;
         if(h > (positionRange[1]+trans)){
             ASSERT_EQUAL(-K_upper*(h-positionRange[1])-damping*v, model_force[0], 1e-4);
         }
@@ -1193,9 +1308,6 @@ void testCoordinateLimitForceRotational()
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
-
-        double q = coord.getValue(osim_state);
-        double u = coord.getSpeedValue(osim_state);
 
         double ediss = clf->getDissipatedEnergy(osim_state);
         // system KE + PE including strain energy in CLF
