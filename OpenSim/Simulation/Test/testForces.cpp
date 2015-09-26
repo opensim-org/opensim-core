@@ -845,7 +845,7 @@ void testExpressionBasedBushingForceTranslational()
     
     osimModel->addForce(&spring);
     
-    osimModel->print("TranslationalExpressionBasedBushingForceModel.osim");
+    osimModel->print("ExpressionBasedBushingForceTranslationalModel.osim");
     
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(osimModel);
@@ -897,10 +897,10 @@ void testExpressionBasedBushingForceTranslational()
     
     osimModel->disownAllComponents();
     
-    manager.getStateStorage().print("translational_expression_based_bushing_model_states.sto");
+    manager.getStateStorage().print("expression_based_bushing_translational_model_states.sto");
     
     // Save the forces
-    reporter->getForceStorage().print("translational_expression_based_bushing_forces.mot");
+    reporter->getForceStorage().print("expression_based_bushing_translational_model_forces.mot");
     
     // Before exiting lets see if copying the spring works
     ExpressionBasedBushingForce *copyOfSpring = spring.clone();
@@ -932,7 +932,7 @@ void testExpressionBasedBushingForceRotational()
     osimModel->addJoint(&weld);
 
     // Create ball body and attach it to ground
-    // with a vertical slider
+    // with a pin joint
 
     OpenSim::Body ball("ball", mass, Vec3(0), 
         mass*SimTK::Inertia::sphere(ball_radius));
@@ -941,7 +941,7 @@ void testExpressionBasedBushingForceRotational()
         ball, Vec3(0), Vec3(Pi / 2, 0, 0));
 
     double thetaRange[2] = { -2*Pi, 2*Pi };
-    // Rename coordinates for a slider joint
+    // Rename coordinates for a pin joint
     CoordinateSet &pin_coords = pin.upd_CoordinateSet();
     pin_coords[0].setName("ball_theta");
     pin_coords[0].setRange(thetaRange);
@@ -966,7 +966,7 @@ void testExpressionBasedBushingForceRotational()
 
     osimModel->addForce(&spring);
 
-    osimModel->print("RotationalExpressionBasedBushingForceModel.osim");
+    osimModel->print("ExpressionBasedBushingForceRotationalModel.osim");
 
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(osimModel);
@@ -974,7 +974,7 @@ void testExpressionBasedBushingForceRotational()
 
     SimTK::State& osim_state = osimModel->initSystem();
 
-    // set the initial height of the ball on slider
+    // set the initial pin joint angle
     pin_coords[0].setValue(osim_state, start_theta);
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position);
 
@@ -1024,10 +1024,10 @@ void testExpressionBasedBushingForceRotational()
 
     osimModel->disownAllComponents();
 
-    manager.getStateStorage().print("rotational_expression_based_bushing_model_states.sto");
+    manager.getStateStorage().print("expression_based_bushing_rotational_model_states.sto");
 
     // Save the forces
-    reporter->getForceStorage().print("rotational_expression_based_bushing_forces.mot");
+    reporter->getForceStorage().print("expression_based_bushing_rotational_model_forces.mot");
 
     // Before exiting lets see if copying the spring works
     ExpressionBasedBushingForce *copyOfSpring = spring.clone();
