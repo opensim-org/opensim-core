@@ -73,7 +73,7 @@ public:
         return implementGetNumRows();
     }
 
-    /** Get number of columns.                                                */
+    /** Get number of dependent columns.                                      */
     size_t getNumColumns() const {
         return implementGetNumColumns();
     }
