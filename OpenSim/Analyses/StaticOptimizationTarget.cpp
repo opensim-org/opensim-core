@@ -479,7 +479,7 @@ objectiveFunc(const Vector &parameters, const bool new_parameters, Real &perform
     int na = _model->getActuators().getSize();
     double p = 0.0;
     for(int i=0;i<na;i++) {
-        p +=  pow(fabs(parameters[i]),_activationExponent);
+            p +=  pow(fabs(parameters[i]),_activationExponent);
     }
     performance = p;
 
@@ -516,9 +516,10 @@ gradientFunc(const Vector &parameters, const bool new_parameters, Vector &gradie
     for(int i=0;i<na;i++) {
         if(parameters[i] < 0) {
             gradient[i] =  -1.0 * _activationExponent * pow(fabs(parameters[i]),_activationExponent-1.0);
-        } else {
-            gradient[i] =  _activationExponent * pow(fabs(parameters[i]),_activationExponent-1.0);
-    }
+        }
+        else {
+            gradient[i] = _activationExponent * pow(fabs(parameters[i]), _activationExponent - 1.0);
+        }
     }
 
     //QueryPerformanceCounter(&stop);
@@ -672,8 +673,8 @@ computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vect
         ScalarActuator *act = dynamic_cast<ScalarActuator*>(&fs.get(i));
          if( act ) {
              act->setOverrideActuation(s, parameters[j] * _optimalForce[j]);
+             j++;
          }
-         j++;
     }
 
     _model->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);
