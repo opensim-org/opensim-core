@@ -50,7 +50,7 @@ namespace OpenSim {
  */
 class OSIMSIMULATION_API BushingForce 
     : public LinkTwoFrames<Force, PhysicalFrame> {
-OpenSim_DECLARE_CONCRETE_OBJECT(BushingForce, Force);
+OpenSim_DECLARE_CONCRETE_OBJECT(BushingForce, LinkTwoFrames);
 public:
 //==============================================================================
 // PROPERTIES
@@ -72,7 +72,7 @@ public:
     BushingForce();
 
     /** Convenience Constructor.
-    Create a WeldConstraint between two PhysicalFrames, frame1 and frame2.
+    Create a BushingForce between two PhysicalFrames, frame1 and frame2.
     @param[in] name         the name of this BushingForce
     @param[in] frame1Name   the name of the bushing's first PhysicalFrame
     @param[in] frame2Name   the name of the bushing's second PhysicalFrame
@@ -162,9 +162,6 @@ public:
     OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
 private:
-    /** Update the XML format of the BushingForce from older versions */
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
-
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface.
     //--------------------------------------------------------------------------

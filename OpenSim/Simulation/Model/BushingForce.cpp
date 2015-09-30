@@ -130,12 +130,6 @@ void BushingForce::constructProperties()
     constructProperty_translational_damping(Vec3(0));
 }
 
-void BushingForce::updateFromXMLNode( SimTK::Xml::Element& aNode,
-                                      int versionNumber)
-{
-    LinkTwoFrames<Force, PhysicalFrame>::updateFromXMLNode(aNode, versionNumber);
-}
-
 // Add underly Simbody elements to the System after subcomponents
 void BushingForce::
     extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) const

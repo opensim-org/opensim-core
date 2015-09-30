@@ -284,7 +284,7 @@ protected:
 #ifndef SWIG
     /// @class Joint::CoordinateIndex
     /// Unique integer type for local Coordinate indexing
-    SimTK_DEFINE_UNIQUE_INDEX_TYPE(CoordinateIndex)
+    SimTK_DEFINE_UNIQUE_INDEX_TYPE(CoordinateIndex);
 
     /** Utility for derived Joints to add Coordinate(s) to reflect its DOFs.
     Derived Joints must construct as many Coordinates as reflected by the

@@ -54,7 +54,7 @@ namespace OpenSim {
  */
 class OSIMSIMULATION_API ExpressionBasedBushingForce 
     : public LinkTwoFrames<Force, PhysicalFrame> {
-OpenSim_DECLARE_CONCRETE_OBJECT(ExpressionBasedBushingForce, Force);
+OpenSim_DECLARE_CONCRETE_OBJECT(ExpressionBasedBushingForce, LinkTwoFrames);
 public:
 //==============================================================================
 // PROPERTIES

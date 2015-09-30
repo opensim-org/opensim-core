@@ -46,7 +46,7 @@ class PhysicalOffsetFrame;
  */
 class OSIMSIMULATION_API WeldConstraint 
     : public LinkTwoFrames<Constraint, PhysicalFrame> {
-OpenSim_DECLARE_CONCRETE_OBJECT(WeldConstraint, Constraint);
+OpenSim_DECLARE_CONCRETE_OBJECT(WeldConstraint, LinkTwoFrames);
 public:
     /** Default Constructor. Create an unnamed WeldConstraint with frame
         connectors that are unsatisfied. */
@@ -98,17 +98,15 @@ public:
 
     virtual ~WeldConstraint();
 
-    // Method to set point locations for induced acceleration analysis
+    /** Advanced Method for computing induced accelerations given the constraint
+        applied at the point of contact specified. */
     virtual void setContactPointForInducedAccelerations(
         const SimTK::State &s, SimTK::Vec3 point);
 
 protected:
     /** Extend Component Interface. */
-    void extendFinalizeFromProperties() override;
     void extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system)
                                                                   const override;
-    /** Updating XML formating to latest revision */
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
 
 private:
     void setNull();
@@ -118,8 +116,8 @@ private:
     // Some analyses (e.g. Induced Accelerations, update the constraint
     // location (Transform) based on experimental data. The constraint
     // keeps its own internal frames to update.
-    SimTK::ReferencePtr<PhysicalOffsetFrame> _internalOffset1{ nullptr };
-    SimTK::ReferencePtr<PhysicalOffsetFrame> _internalOffset2{ nullptr };
+    SimTK::ResetOnCopy<std::unique_ptr<PhysicalOffsetFrame>> _internalOffset1{};
+    SimTK::ResetOnCopy<std::unique_ptr<PhysicalOffsetFrame>> _internalOffset2{};
 //=============================================================================
 };  // END of class WeldConstraint
 //=============================================================================

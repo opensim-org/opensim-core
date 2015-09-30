@@ -52,7 +52,7 @@ class Function;
  */
 class OSIMSIMULATION_API FunctionBasedBushingForce
     : public LinkTwoFrames<Force, PhysicalFrame> {
-OpenSim_DECLARE_CONCRETE_OBJECT(FunctionBasedBushingForce, Force);
+OpenSim_DECLARE_CONCRETE_OBJECT(FunctionBasedBushingForce, LinkTwoFrames);
 public:
 //==============================================================================
 // PROPERTIES

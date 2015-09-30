@@ -110,15 +110,6 @@ void WeldConstraint::constructProperties()
     constructProperty_frames();
 }
 
-void WeldConstraint::extendFinalizeFromProperties()
-{
-    Super::extendFinalizeFromProperties();
-
-    for (int i = 0; i < getProperty_frames().size(); ++i) {
-        addComponent(&upd_frames(i));
-    }
-}
-
 void WeldConstraint::
     extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) const
 {
@@ -147,10 +138,8 @@ void WeldConstraint::
     // make sure we are at the position stage
     getSystem().realize(s, SimTK::Stage::Position);
 
-    const PhysicalFrame& frame1 = 
-        getConnector<PhysicalFrame>("frame1").getConnectee();
-    const PhysicalFrame& frame2 =
-        getConnector<PhysicalFrame>("frame2").getConnectee();
+    const PhysicalFrame& frame1 = getFrame1();
+    const PhysicalFrame& frame2 = getFrame2();
     
     // For external forces we assume point position vector is defined 
     // wrt foot (i.e., frame2) because we are passing it in from a
@@ -162,9 +151,10 @@ void WeldConstraint::
     SimTK::Transform in2(frame2.getGroundTransform(s).R(), point);
 
     // Add new internal PhysicalOffSetFrames that the Constraint can update 
-    // without affecting any other components, ONLY if they don't exist already
-    if (_internalOffset1.empty()) {
-        _internalOffset1 = new PhysicalOffsetFrame(frame1, in1);
+    // without affecting any other components.
+    // ONLY add them if they don't exist already
+    if (!_internalOffset1.get()) {
+        _internalOffset1.reset(new PhysicalOffsetFrame(frame1, in1));
         _internalOffset1->setName("internal_" + frame1.getName());
         updProperty_frames().adoptAndAppendValue(_internalOffset1.get());
         updConnector<PhysicalFrame>("frame1").connect(*_internalOffset1);
@@ -173,8 +163,8 @@ void WeldConstraint::
         _internalOffset1->setOffsetTransform(in1);
     }
 
-    if (_internalOffset2.empty()) {
-        _internalOffset2 = new PhysicalOffsetFrame(frame2, in2);
+    if (!_internalOffset2.get()) {
+        _internalOffset2.reset(new PhysicalOffsetFrame(frame2, in2));
         _internalOffset2->setName("internal_" + frame2.getName());
         updProperty_frames().adoptAndAppendValue(_internalOffset2.get());
         updConnector<PhysicalFrame>("frame2").connect(*_internalOffset2);
@@ -182,9 +172,4 @@ void WeldConstraint::
     else {
         _internalOffset2->setOffsetTransform(in2);
     }
-}
-
-void WeldConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
-{
-    LinkTwoFrames<Constraint, PhysicalFrame>::updateFromXMLNode(aNode, versionNumber);
 }

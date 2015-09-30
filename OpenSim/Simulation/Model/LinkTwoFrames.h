@@ -124,11 +124,11 @@ public:
     const F& getFrame2() const;
 
     /** Compute the relative offset Transform between the two frames linked by 
-        this Component at a given State, expressed in frame 1. */
+        this LinkTwoFrames component at a given State, expressed in frame1. */
     SimTK::Transform computeRelativeOffset(const SimTK::State& s) const;
 
-    /** Compute the relative velocity between the two frames linked by
-    this Component at a given State, expressed in frame 1. */
+    /** Compute the relative spatial velocity between the two frames linked by
+        this LinkTwoFrames component at a given State, expressed in frame1. */
     SimTK::SpatialVec computeRelativeVeocity(const SimTK::State& s) const;
 
     /** Compute the deflection (spatial separation) of the two frames connected
@@ -179,13 +179,13 @@ protected:
         directed onto frame2 from frame1.
     @param state                const State of current system configuration
     @param[in] internalForce    Vec6 of forces in the basis of the deflection
-    @param[in,out] F_G1         SpatialVec Force (torque, force) of this
-                                LinkTwoFrames component applied to frame1
-    @param[in,out] F_G1         SpatialVec Force (torque, force) of this
-                                LinkTwoFrames component applied to frame2 */
+    @param[in,out] F1_G         SpatialVec Force (torque, force) applied to
+                                frame1 expressed in ground.
+    @param[in,out] F2_G         SpatialVec Force (torque, force) applied to
+                                frame2 expressed in ground. */
     void convertInternalForceToForcesOnFrames(
         const SimTK::State& s,
-        SimTK::Vec6 f, SimTK::SpatialVec& F_G1, SimTK::SpatialVec& F_G2) const;
+        SimTK::Vec6 f, SimTK::SpatialVec& F1_G, SimTK::SpatialVec& F2_G) const;
 
     /** Helper method to add in equivalent physical forces given internal forces
         expressed in the basis of the deflection between frame1 and frame2, dq,
@@ -460,7 +460,7 @@ SimTK::Vec6 LinkTwoFrames<C, F>::computeDeflectionRate(const SimTK::State& s) co
     SimTK::Vec6 dqdot(0);
     SimTK::Vec6 dq = computeDeflection(s);
 
-    // Evaluate evaluate relative transform
+    // Evaluate relative transform
     SimTK::Transform X_FM = this->computeRelativeOffset(s);
     // Evaluate velocity
     SimTK::SpatialVec V_FM = computeRelativeVeocity(s);
@@ -479,7 +479,7 @@ SimTK::Vec6 LinkTwoFrames<C, F>::computeDeflectionRate(const SimTK::State& s) co
 template <class C, class F>
 void LinkTwoFrames<C, F>::convertInternalForceToForcesOnFrames(
     const SimTK::State& s,
-    SimTK::Vec6 f, SimTK::SpatialVec& F_G1, SimTK::SpatialVec& F_G2) const
+    SimTK::Vec6 f, SimTK::SpatialVec& F1_G, SimTK::SpatialVec& F2_G) const
 {
     // internal force on body 2
     const SimTK::Vec3& fB2_q = f.getSubVec<3>(0); // in q basis
@@ -518,8 +518,8 @@ void LinkTwoFrames<C, F>::convertInternalForceToForcesOnFrames(
     // Re-express local vectors in the Ground frame.
     SimTK::Vec3 p_FM_G = X_GF.R()  * X_FM.p();    // 15 flops
 
-    F_G2 = SimTK::SpatialVec( mB2_G, fM_G);
-    F_G1 = SimTK::SpatialVec(-(mB2_G + p_FM_G % fM_G), -fM_G);
+    F2_G = SimTK::SpatialVec( mB2_G, fM_G);
+    F1_G = SimTK::SpatialVec(-(mB2_G + p_FM_G % fM_G), -fM_G);
 }
 
 // The method only makes sense for applying forces to PhysicalFrames so explicitly 
@@ -611,17 +611,13 @@ void LinkTwoFrames<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
                 orientBody2Elt->getValueAs<Vec3>(orientationInFrame2);
             }
 
-            // Avoid collision by prefixing the joint name to the connectee_name
-            // as to enforce a local search for the correct local offset
-            std::string pName = aNode.getOptionalAttributeValueAs<std::string>("name", "");
-
             // now append updated frames to the property list if they are not
             // identity transforms.
             if ((locationInFrame1.norm() > 0.0) ||
                 (orientationInFrame1.norm() > 0.0)) {
                 XMLDocument::addPhysicalOffsetFrame(aNode, frame1Name + "_offset",
                     frame1Name, locationInFrame1, orientationInFrame1);
-                body1Element->setValue(pName + "/" + frame1Name + "_offset");
+                body1Element->setValue(frame1Name + "_offset");
             }
 
             // again for the offset frame on the child
@@ -629,7 +625,7 @@ void LinkTwoFrames<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
                 (orientationInFrame2.norm() > 0.0)) {
                 XMLDocument::addPhysicalOffsetFrame(aNode, frame2Name + "_offset",
                     frame2Name, locationInFrame2, orientationInFrame2);
-                body2Element->setValue(pName + "/" + frame2Name + "_offset");
+                body2Element->setValue(frame2Name + "_offset");
             }
         }
     }
