@@ -182,6 +182,9 @@ if(${DOXYGEN_FOUND})
         list(APPEND DOXYGEN_TARGET_DEPENDENCIES "${html_images_binary_dir}")
 
     endforeach()
+    # Unset loop variables to avoid bugs later on.
+    unset(html_binary_dir)
+    unset(audience)
 
     # Define the doxygen target (now that we know the dependencies).
     # --------------------------------------------------------------
@@ -200,6 +203,7 @@ if(${DOXYGEN_FOUND})
     # Now create the command for running doxygen, which requires that we
     # have defined the doxygen target.
     foreach(audience ${DOXYGEN_AUDIENCES})
+
         # Run doxygen
         # -----------
         add_custom_command(TARGET doxygen
@@ -209,7 +213,7 @@ if(${DOXYGEN_FOUND})
     
         # Installation
         # ------------
-        install(DIRECTORY "${html_binary_dir}"
+        install(DIRECTORY "${PROJECT_BINARY_DIR}/html_${audience}/"
                 DESTINATION "sdk/doc/html_${audience}"
                 )
 
