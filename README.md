@@ -131,7 +131,7 @@ On Windows using Visual Studio
     * [TortoiseGit](https://code.google.com/p/tortoisegit/wiki/Download),
       intermediate; good for TortoiseSVN users;
     * [GitHub for Windows](https://windows.github.com/), easiest.
-* **Wrapping** (optional): [SWIG](http://www.swig.org/) 3.0.5
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.5
     * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
     * **python scripting** (optional):
         * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
@@ -245,7 +245,7 @@ On Mac using Xcode
 * **version control** (optional): git.
     * Xcode Command Line Tools gives you git on the command line.
     * [GitHub for Mac](https://mac.github.com), easiest.
-* **Wrapping** (optional): [SWIG](http://www.swig.org/) 3.0.5
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.5
     * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
     * **python scripting** (optional):
         * Mac's come with python, but you could also install:
@@ -338,7 +338,7 @@ On Mac using Xcode
 2. **Libraries**. Hopefully you can skip this step. This step is required if:
   1. You are using CMake version 2.8.11 or older.
   2. You plan on building C++ executables or libraries on top of OpenSim, *and* you plan to "install" them in the CMake sense of the word (that is, you're not going to simply use them from your project's build directory).
-  3. You plan to use the Java or MATLAB wrapping.
+  3. You plan to use the Java or MATLAB scripting.
 
   If any of these are true, then you must add OpenSim-Core libraries to your linker path. Open a terminal and type:
 
@@ -369,7 +369,7 @@ line below, we show the corresponding package.
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
 * **version control** (optional): git; `git`.
-* **Wrapping** (optional): [SWIG](http://www.swig.org/) 3.0.5; must get from SWIG website.
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.5; must get from SWIG website.
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7;
       `openjdk-6-jdk` or `openjdk-7-jdk`.
     * **python scripting** (optional): `python-dev`.
