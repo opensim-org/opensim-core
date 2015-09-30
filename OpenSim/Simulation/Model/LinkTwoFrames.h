@@ -132,30 +132,24 @@ public:
     SimTK::SpatialVec computeRelativeVeocity(const SimTK::State& s) const;
 
     /** Compute the deflection (spatial separation) of the two frames connected
-        by the LinkTwoFrames. Angular displacement expressed in Euler angles.
-        NOTE: the value is only valid for all deviations and the behavior
+        by the LinkTwoFrames. Angular deflections expressed in Euler angles.
+        NOTE: the value is only valid for small deflections and the behavior
            will become undefined at large angles (~90 degs). It is mainly useful
            for calculating errors for constraints and forces for computing 
            restoration forces.
      @return dq     Vec6 of (3) angular and (3) translational deflections. */
     SimTK::Vec6 computeDeflection(const SimTK::State& s) const;
     /** Compute the deflection rate (dqdot) of the two frames connected by
-         the bushing force. Angular velocity is expressed as Euler angle
-        derivatives.
-        NOTE: the value is only valid for small deviations and the behavior
-        will become undefined at large angles (~90 degs). It is useful for
-        calculating errors for constraints and forces for computing restoration
-        forces.
+        this LinkTwoFrames component. Angular velocity is expressed as Euler
+        angle derivatives.
     @return dqdot  Vec6 of (3) angular and (3) translational deflection rates. */
     SimTK::Vec6 computeDeflectionRate(const SimTK::State& s) const;
 
     /**
-    * Scale a joint based on XYZ scale factors for PhysicalFrames.
-    * Generic behavior is to scale the locations of parent and child offsets
-    * according to scale factors of the physical frame upon which they are located.
-    *
-    * Joint subclasses should invoke this method before scaling joint specific
-    * properties
+    * Scale the LinkTwoFrames component according to XYZ scale factors.
+    * Associate PhyscialFrames. Generic behavior is to scale the locations
+    * of PhyscialOffsetFrames according to the scale factors of the physical
+    * frame upon which they are attched.
     *
     * @param aScaleSet Set of XYZ scale factors for PhysicalFrames.
     */
