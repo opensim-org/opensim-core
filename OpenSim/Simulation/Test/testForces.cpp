@@ -56,7 +56,8 @@ void testExternalForce();
 void testSpringMass();
 void testBushingForce();
 void testFunctionBasedBushingForce();
-void testExpressionBasedBushingForce();
+void testExpressionBasedBushingForceTranslational();
+void testExpressionBasedBushingForceRotational();
 void testElasticFoundation();
 void testHuntCrossleyForce();
 void testCoordinateLimitForce();
@@ -94,10 +95,16 @@ int main()
         failures.push_back("testFunctionBasedBushingForce");
     }
     
-    try { testExpressionBasedBushingForce(); }
+    try { testExpressionBasedBushingForceTranslational(); }
     catch (const std::exception& e){
         cout << e.what() <<endl;
-        failures.push_back("testExpressionBasedBushingForce");
+        failures.push_back("testExpressionBasedBushingForceTranslational");
+    }
+
+    try { testExpressionBasedBushingForceRotational(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testExpressionBasedBushingForceRotational");
     }
 
     try { testElasticFoundation(); }
@@ -778,7 +785,7 @@ void testFunctionBasedBushingForce()
     ASSERT(*copyOfSpring == spring);
 }
 
-void testExpressionBasedBushingForce()
+void testExpressionBasedBushingForceTranslational()
 {
     using namespace SimTK;
     
@@ -793,7 +800,7 @@ void testExpressionBasedBushingForce()
     
     // Setup OpenSim model
     Model *osimModel = new Model;
-    osimModel->setName("ExpressionBasedBushingTest");
+    osimModel->setName("ExpressionBasedBushingTranslationTest");
     osimModel->setGravity(gravity_vec);
 
     // Create ball body and attach it to ground
@@ -837,10 +844,12 @@ void testExpressionBasedBushingForce()
         "base_body", Vec3(0), Vec3(0), 
         "ball", Vec3(0), Vec3(0), 
         transStiffness, rotStiffness, transDamping, rotDamping);
-
+    
+    spring.setName("translational_linear_bushing");
+    
     osimModel->addForce(&spring);
     
-    osimModel->print("ExpressionBasedBushingForceModel.osim");
+    osimModel->print("ExpressionBasedBushingForceTranslationalModel.osim");
     
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(osimModel);
@@ -892,14 +901,141 @@ void testExpressionBasedBushingForce()
     
     osimModel->disownAllComponents();
     
-    manager.getStateStorage().print("expression_based_bushing_model_states.sto");
+    manager.getStateStorage().print("expression_based_bushing_translational_model_states.sto");
     
     // Save the forces
-    reporter->getForceStorage().print("expression_based_bushing_forces.mot");
+    reporter->getForceStorage().print("expression_based_bushing_translational_model_forces.mot");
     
     // Before exiting lets see if copying the spring works
     ExpressionBasedBushingForce *copyOfSpring = spring.clone();
     
+    ASSERT(*copyOfSpring == spring);
+}
+
+void testExpressionBasedBushingForceRotational()
+{
+    using namespace SimTK;
+
+    double mass = 5;
+    double stiffness = 2;
+    double start_theta = Pi/6;
+    double ball_radius = 0.25;
+
+    // Setup OpenSim model
+    Model *osimModel = new Model;
+    osimModel->setName("ExpressionBasedBushingRotationalTest");
+    const Ground& ground = osimModel->getGround();
+
+    // Create base body and attach it to ground with a weld
+
+    OpenSim::Body base("base_body", mass, Vec3(0),
+        mass*SimTK::Inertia::sphere(ball_radius));
+
+    WeldJoint weld("", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
+    osimModel->addBody(&base);
+    osimModel->addJoint(&weld);
+
+    // Create ball body and attach it to ground
+    // with a pin joint
+
+    OpenSim::Body ball("ball", mass, Vec3(0), 
+        mass*SimTK::Inertia::sphere(ball_radius));
+
+    PinJoint pin("", ground, Vec3(0), Vec3( Pi / 2, 0, 0), 
+        ball, Vec3(0), Vec3(Pi / 2, 0, 0));
+
+    double thetaRange[2] = { -2*Pi, 2*Pi };
+    // Rename coordinates for a pin joint
+    CoordinateSet &pin_coords = pin.upd_CoordinateSet();
+    pin_coords[0].setName("ball_theta");
+    pin_coords[0].setRange(thetaRange);
+
+    osimModel->addBody(&ball);
+    osimModel->addJoint(&pin);
+
+    
+
+    // create an ExpressionBasedBushingForce that represents an
+    // uncoupled, linear bushing between the ball body and welded base body
+    Vec3 rotStiffness(stiffness);
+    Vec3 transStiffness(0);
+    Vec3 rotDamping(0);
+    Vec3 transDamping(0);
+
+    ExpressionBasedBushingForce spring("base_body", Vec3(0), Vec3(0),
+        "ball", Vec3(0), Vec3(0),
+        transStiffness, rotStiffness, transDamping, rotDamping);
+
+    spring.setName("rotational_linear_bushing");
+
+    osimModel->addForce(&spring);
+
+    osimModel->print("ExpressionBasedBushingForceRotationalModel.osim");
+
+    // Create the force reporter
+    ForceReporter* reporter = new ForceReporter(osimModel);
+    osimModel->addAnalysis(reporter);
+
+    SimTK::State& osim_state = osimModel->initSystem();
+
+    // set the initial pin joint angle
+    pin_coords[0].setValue(osim_state, start_theta);
+    osimModel->getMultibodySystem().realize(osim_state, Stage::Position);
+
+    //=========================================================================
+    // Compute the force and torque at the specified times.
+    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem());
+    integrator.setAccuracy(1e-6);
+    Manager manager(*osimModel, integrator);
+    manager.setInitialTime(0.0);
+
+    double final_t = 2.0;
+    double nsteps = 10;
+    double dt = final_t / nsteps;
+
+    double I_y = ball.getInertia().getMoments()[1];
+    
+    double omega = sqrt(stiffness / I_y);
+
+    for (int i = 1; i <= nsteps; ++i) {
+        manager.setFinalTime(dt*i);
+        manager.integrate(osim_state);
+        osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
+
+        // compute the current rotation about the y axis
+        double simulated_theta = pin_coords[0].getValue(osim_state);
+
+        // compute the rotation about y-axis from the analytic solution 
+        // for 1-D spring-mass system with zero-velocity at initial offset.
+        double analytical_theta = start_theta*cos(omega*osim_state.getTime());
+
+        // check that the simulated solution is 
+        //  equivalent to the analytic solution
+        ASSERT_EQUAL(analytical_theta, simulated_theta, 1e-4);
+
+        // get the forces applied to the base and ball
+        Array<double> model_forces = spring.getRecordValues(osim_state);
+
+        // compute the expected force on the ball
+        double analytical_moment = -stiffness*analytical_theta;
+
+        // check analytical moment corresponds to the moment on the ball 
+        // in the Y direction, index = 4
+        ASSERT_EQUAL(analytical_moment, model_forces[4], 2e-4);
+
+        manager.setInitialTime(dt*i);
+    }
+
+    osimModel->disownAllComponents();
+
+    manager.getStateStorage().print("expression_based_bushing_rotational_model_states.sto");
+
+    // Save the forces
+    reporter->getForceStorage().print("expression_based_bushing_rotational_model_forces.mot");
+
+    // Before exiting lets see if copying the spring works
+    ExpressionBasedBushingForce *copyOfSpring = spring.clone();
+
     ASSERT(*copyOfSpring == spring);
 }
 
