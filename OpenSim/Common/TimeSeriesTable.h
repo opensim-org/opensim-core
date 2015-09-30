@@ -38,6 +38,25 @@ template<typename ETY = SimTK::Real>
 class TimeSeriesTable_ : public DataTable_<double, ETY> {
 public:
     using RowVector = SimTK::RowVector_<ETY>;
+
+    TimeSeriesTable_()                                   = default;
+    TimeSeriesTable_(const TimeSeriesTable_&)            = default;
+    TimeSeriesTable_(TimeSeriesTable_&&)                 = default;
+    TimeSeriesTable_& operator=(const TimeSeriesTable_&) = default;
+    TimeSeriesTable_& operator=(TimeSeriesTable_&&)      = default;
+    ~TimeSeriesTable_()                                  = default;
+    
+    /** Construct a TimeSeriesTable_ from a DataTable_.                       */
+    TimeSeriesTable_(const DataTable_<double, ETY>& datatable) : 
+        DataTable_<double, ETY>{datatable} {
+        using DT = DataTable_<double, ETY>;
+
+        if(!std::is_sorted(DT::_indData.cbegin(), DT::_indData.cend()) ||
+           std::adjacent_find(DT::_indData.cbegin(), DT::_indData.cend()) != 
+           DT::_indData.cend())
+            throw Exception{"Independent column is not strictly increasing."};
+    }
+
 protected:
     void validateAppendRow(const double& time, 
                            const RowVector& row) const override {

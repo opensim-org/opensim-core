@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  example.cpp                           *
+ *                            OpenSim:  example2.cpp                          *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -22,10 +22,12 @@
 
 #include "OpenSim/Common/TimeSeriesTable.h"
 
+
+// This example demonstrates creating TimeSeriesTable from a DataTable.
 int main() {
     using namespace OpenSim;
 
-    TimeSeriesTable table{};
+    DataTable data_table{};
 
     ValueArray<std::string> value_array{};
     auto& vec = value_array.upd();
@@ -35,27 +37,41 @@ int main() {
     TimeSeriesTable::DependentsMetaData dep_metadata{};
     dep_metadata.setValueArrayForKey("labels", value_array);
 
-    table.setDependentsMetaData(dep_metadata);
+    data_table.setDependentsMetaData(dep_metadata);
 
     SimTK::RowVector_<double> row0{5, double{0}};
     
-    table.appendRow(0.00, row0);
+    data_table.appendRow(0.00, row0);
 
     auto row1 = row0 + 1;
 
-    table.appendRow(0.25, row1);
+    data_table.appendRow(0.25, row1);
 
     auto row2 = row1 + 1;
 
-    table.appendRow(0.50, row2);
+    data_table.appendRow(0.50, row2);
 
     auto row3 = row2 + 1;
 
-    table.appendRow(0.75, row3);
+    data_table.appendRow(0.75, row3);
     
     auto row4 = row3 + 1;
 
-    table.appendRow(1.00, row4);
+    data_table.appendRow(1.00, row4);
+
+    // Following construction of TimeSeriesTable succeeds because the DataTable
+    // has its independent column strictly increasing.
+    TimeSeriesTable timeseries_table{data_table};
+
+    // Editing the DataTable to not have strictly increasing independent column
+    // will fail the construction of TimeSeriesTable.
+    auto row5 = row4 + 1;
+    
+    data_table.appendRow(0.9, row5); // 0.9 is less than previous value (1.00).
+
+    try {
+        TimeSeriesTable timeseries_table_fail{data_table};
+    } catch(Exception&) {}
 
     return 0;
 }
