@@ -37,11 +37,11 @@ namespace OpenSim {
 //=================================================================================
 /**
  * A class implementing a Coupled Bushing Force.
- * A Couple Bushing Force is the force proportional to the deviation of two frames, 
+ * A Couple Bushing Force is the force proportional to the deflection of two frames, 
  * where components of the resulting BodyForce are coupled to any or all 
- * deviations, such that the general stiffness and damping matrices are 6x6.
+ * deflection, such that the general stiffness and damping matrices are 6x6.
  *
- * Deviations of an offset_frame (1) (on a PhysicalFrame e.g. a Body) and another 
+ * Deflection of an offset_frame (1) (on a PhysicalFrame e.g. a Body) and another 
  * offset_frame2 (on another PhysicalFrame) are expressed in terms of and x-y-z 
  * Euler angle sequence (for rotational deviation in radians) and x,y,z (distance
  * in m) of the bushing's offset_frame2 w.r.t. offset_frame1.
@@ -49,7 +49,7 @@ namespace OpenSim {
  * (m/s) of offset_frame2 in offset_frame1.
  *
  * @author Ajay Seth
- * @version 1.0
+
  */
 class OSIMPLUGIN_API CoupledBushingForce : public LinkTwoFrames<Force, PhysicalFrame> {
 OpenSim_DECLARE_CONCRETE_OBJECT(CoupledBushingForce, Force);

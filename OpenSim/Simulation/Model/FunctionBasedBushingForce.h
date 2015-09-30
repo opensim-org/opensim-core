@@ -37,11 +37,11 @@ class Function;
 //                             FUNCTION BASED BUSHING FORCE
 //==============================================================================
 /**
- * A class implementing a bushing force driven by functions relating forces to 
- * deviations.  Thes functions are user defined functions that can caputure
+ * A class implementing a bushing force specified by functions of the frame 
+ * deflections. These functions are user specified and can be used to capture
  * the nonlinearities of biologic structures.  This FunctionBasedBushing
  * does not capture coupling between the deflections (e.g. force in x due to 
- * rotation in z).
+ * rotation about z).
  *
  * A bushing force is the resistive force due to deviation between two frames. 
  * One can think of the Bushing as being composed of 3 translational and 3 

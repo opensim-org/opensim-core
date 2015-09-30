@@ -28,26 +28,24 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "Force.h"
 #include <OpenSim/Simulation/Model/LinkTwoFrames.h>
-#include <Vendors/lepton/include/Lepton.h>
-
 
 namespace OpenSim {
 
 //==============================================================================
-//                             EXPRESSION BASED BUSHING FORCE
+//                          EXPRESSION BASED BUSHING FORCE
 //==============================================================================
 /**
- * A class implementing a bushing force driven by expressions relating forces to 
- * deviations.  These expressions are user defined expressions 
- * provided as strings that are parsed and evaluated during a simulation.
+ * A class implementing a bushing force specified by expressions of the deflection
+ * between two bushing frames. These expressions are user specified as strings
+ * that are interpreted during a simulation.
  * Each expression can be a function of the bushing's rotational deflections 
  * (theta_x, theta_y, theta_z) and translational deflections, (delta_x, delta_y,
- * delta_z).  These user defined expressions can capture nonlinearities and 
+ * delta_z). These user defined expressions can capture nonlinearities and 
  * coupling common in biologic structures.  
  *
  * A bushing force is the resistive force due to deviation between two frames. 
  * One can think of the Bushing as being composed of 3 translational and 3 
- * torsional spring-dampers, which act along or about the bushing frame axess. 
+ * torsional spring-dampers, which act along or about the bushing frame axes. 
  * Orientations are measured as x-y-z body-fixed Euler rotations.
  *
  * @author Matt DeMers

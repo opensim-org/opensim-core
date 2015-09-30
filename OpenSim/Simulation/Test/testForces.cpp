@@ -962,7 +962,8 @@ void testExpressionBasedBushingForceRotational()
     Vec3 rotDamping(0);
     Vec3 transDamping(0);
 
-    ExpressionBasedBushingForce spring("base_body", Vec3(0), Vec3(0),
+    ExpressionBasedBushingForce spring("rotatinal_spring", 
+        "base_body", Vec3(0), Vec3(0),
         "ball", Vec3(0), Vec3(0),
         transStiffness, rotStiffness, transDamping, rotDamping);
 
