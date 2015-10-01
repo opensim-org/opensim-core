@@ -21,7 +21,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "OpenSim/Common/TimeSeriesTable.h"
-
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 // This example demonstrates creating TimeSeriesTable from a DataTable.
 int main() {
@@ -69,9 +69,8 @@ int main() {
     
     data_table.appendRow(0.9, row5); // 0.9 is less than previous value (1.00).
 
-    try {
-        TimeSeriesTable timeseries_table_fail{data_table};
-    } catch(Exception&) {}
+    ASSERT_THROW(OpenSim::Exception,
+                 TimeSeriesTable timeseries_table_fail{data_table});
 
     return 0;
 }
