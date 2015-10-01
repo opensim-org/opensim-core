@@ -48,7 +48,7 @@ public:
     
     /** Construct a TimeSeriesTable_ from a DataTable_.                       */
     TimeSeriesTable_(const DataTable_<double, ETY>& datatable) : 
-        DataTable_<double, ETY>{datatable} {
+        DataTable_<double, ETY>(datatable) {
         using DT = DataTable_<double, ETY>;
 
         if(!std::is_sorted(DT::_indData.cbegin(), DT::_indData.cend()) ||
