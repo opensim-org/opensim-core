@@ -150,7 +150,7 @@ public:
 
     /** Append row to the DataTable_.                                         */
     void appendRow(const ETX& indRow, const RowVector& depRow) {
-        validateAppendRow(indRow, depRow);
+        validateRow(_indData.size(), indRow, depRow);
 
         _indData.push_back(indRow);
 
@@ -213,6 +213,15 @@ public:
         return _depData.col(index);
     }
 
+    /** Set independent column at index.                                      */
+    void setIndependentColumnAtIndex(size_t index, const ETX& value) {
+        if(index >= _indData.size())
+            throw Exception{"Invalid index."};
+        
+        validateRow(index, value, _depData.row(index));
+        _indData[index] = value;
+    }
+
 protected:
     size_t implementGetNumRows() const override {
         return _depData.nrow();
@@ -252,7 +261,11 @@ protected:
         }
     }
 
-    virtual void validateAppendRow(const ETX&, const RowVector&) const {
+    /** Derived classes optionally can implement this function to validate
+    append/update operations.                                                 */
+    virtual void validateRow(size_t rowIndex, 
+                             const ETX&, 
+                             const RowVector&) const {
         // No operation.
     }
 

@@ -59,12 +59,26 @@ public:
     }
 
 protected:
-    void validateAppendRow(const double& time, 
-                           const RowVector& row) const override {
+    void validateRow(size_t rowIndex,
+                     const double& time, 
+                     const RowVector& row) const override {
         using DT = DataTable_<double, ETY>;
-        if(DT::_indData.size() > 0 && DT::_indData.back() >= time)
-            throw Exception{"Timestamp added for the row is less than or equal "
-                    "to the timestamp of the last existing row."};
+
+        if(rowIndex > 0) {
+            if(DT::_indData[rowIndex - 1] >= time)
+                throw Exception{"Timestamp added for row " + 
+                        std::to_string(rowIndex) + " is less than or equal to "
+                        "the timestamp for row " + 
+                        std::to_string(rowIndex - 1)};
+        }
+
+        if(rowIndex < DT::_indData.size() - 1) {
+            if(DT::_indData[rowIndex + 1] <= time)
+                throw Exception{"Timestamp added for row " +
+                        std::to_string(rowIndex) + " is greater than or equal "
+                        "to the timestamp for row " + 
+                        std::to_string(rowIndex + 1)};
+        }
     }
 }; // TimeSeriesTable_
 

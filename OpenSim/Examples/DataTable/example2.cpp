@@ -61,7 +61,7 @@ int main() {
 
     // Following construction of TimeSeriesTable succeeds because the DataTable
     // has its independent column strictly increasing.
-    TimeSeriesTable timeseries_table{data_table};
+    TimeSeriesTable timeseries_table1{data_table};
 
     // Editing the DataTable to not have strictly increasing independent column
     // will fail the construction of TimeSeriesTable.
@@ -70,7 +70,13 @@ int main() {
     data_table.appendRow(0.9, row5); // 0.9 is less than previous value (1.00).
 
     ASSERT_THROW(OpenSim::Exception,
-                 TimeSeriesTable timeseries_table_fail{data_table});
+                 TimeSeriesTable timeseries_table2{data_table});
+
+    // Edit the entry in the independent column to make the column strictly
+    // increasing.
+    data_table.setIndependentColumnAtIndex(5, 1.25);
+    // TimeSeriesTable construction now successful. 
+    TimeSeriesTable timeseries_table3{data_table};
 
     return 0;
 }
