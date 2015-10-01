@@ -64,6 +64,9 @@ protected:
                      const RowVector& row) const override {
         using DT = DataTable_<double, ETY>;
 
+        if(DT::_indData.empty())
+            return;
+
         if(rowIndex > 0) {
             if(DT::_indData[rowIndex - 1] >= time)
                 throw Exception{"Timestamp added for row " + 
