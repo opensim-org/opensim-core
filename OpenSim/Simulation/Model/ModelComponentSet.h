@@ -122,14 +122,14 @@ public:
     /**
      * Adding an object to the set causes its Model field to be set.
      */
-    bool insert(int aIndex, T* aObject)
+    bool insert(int aIndex, T* aObject) override
     {
         return Set<T>::insert(aIndex, aObject);
     }
     /**
      * Adding an object to the set causes its Model field to be set.
      */
-    bool set(int aIndex, T* aObject, bool preserveGroups = false)
+    bool set(int aIndex, T* aObject, bool preserveGroups = false) override
     {
         return Set<T>::set(aIndex, aObject, preserveGroups);
     }

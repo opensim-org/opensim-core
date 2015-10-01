@@ -224,6 +224,11 @@ public:
     @see getClassName() **/
     virtual const std::string& getConcreteClassName() const = 0;
 
+    /// @cond
+    // This is an assignment operator for use in Java.
+    virtual void assign(Object &aObject) = 0;
+    /// @endcond
+
     //--------------------------------------------------------------------------
     // OPERATORS
     //--------------------------------------------------------------------------
@@ -1091,13 +1096,13 @@ OpenSim_OBJECT_JAVA_DEFS(ConcreteClass);
 // For non-template classes, the class name is identical to the supplied
 // ConcreteClass argument.
 #define OpenSim_OBJECT_NONTEMPLATE_DEFS(ConcreteClass, SuperClass)             \
-static const std::string& getClassName()                                             \
+static const std::string& getClassName()                                       \
 {   static std::string name(#ConcreteClass); return name; }
 
 // For template classes ConcreteClass<TemplateArg>, we construct the class
 // name by assembling the pieces.
 #define OpenSim_OBJECT_TEMPLATE_DEFS(ConcreteClass, TArg, SuperClass)          \
-static const std::string& getClassName()                                             \
+static const std::string& getClassName()                                       \
 {   static std::string name = #ConcreteClass "_"                               \
                               + Object_GetClassName<TArg>::name()              \
                               + "_";                                           \
@@ -1106,8 +1111,8 @@ static const std::string& getClassName()                                        
 // This provides definitions for the two Object pure virtuals clone() and
 // getConcreteClassName().
 #define OpenSim_OBJECT_CONCRETE_DEFS(ConcreteClass)                            \
-ConcreteClass* clone() const override {return new ConcreteClass(*this);}    \
-const std::string& getConcreteClassName() const override                    \
+ConcreteClass* clone() const override {return new ConcreteClass(*this);}       \
+const std::string& getConcreteClassName() const override                       \
 {   return getClassName(); }                                                   \
 private:
 
@@ -1116,19 +1121,19 @@ private:
 // which allows it to be invoked ConcreteClass::clone() and return the correct
 // pointer type.
 #define OpenSim_OBJECT_ABSTRACT_DEFS(ConcreteClass)                            \
-ConcreteClass* clone() const override = 0;                                  \
-const std::string& getConcreteClassName() const override = 0;               \
+ConcreteClass* clone() const override = 0;                                     \
+const std::string& getConcreteClassName() const override = 0;                  \
 private:
 
-// Add public static method declaration in class to assist in downcasting arbitrary objects 
-// to the new type to support dynamic casting across JNI.
+// Add public static method declaration in class to assist in downcasting
+// arbitrary objects to the new type to support dynamic casting across JNI.
 #define OpenSim_OBJECT_JAVA_DEFS(thisClass) \
   public: \
   static thisClass* safeDownCast(OpenSim::Object *obj) \
   { \
       return dynamic_cast<thisClass *>(obj); \
   } \
-  virtual void assign(Object &aObject) \
+  void assign(Object &aObject) override \
   { \
       if (safeDownCast(&aObject)!=0) { \
           *this = *((thisClass*)(&aObject)); \
