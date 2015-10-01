@@ -182,9 +182,6 @@ if(${DOXYGEN_FOUND})
         list(APPEND DOXYGEN_TARGET_DEPENDENCIES "${html_images_binary_dir}")
 
     endforeach()
-    # Unset loop variables to avoid bugs later on.
-    unset(html_binary_dir)
-    unset(audience)
 
     # Define the doxygen target (now that we know the dependencies).
     # --------------------------------------------------------------
