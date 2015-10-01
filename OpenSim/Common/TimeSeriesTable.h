@@ -53,8 +53,9 @@ public:
 
         if(!std::is_sorted(DT::_indData.cbegin(), DT::_indData.cend()) ||
            std::adjacent_find(DT::_indData.cbegin(), DT::_indData.cend()) != 
-           DT::_indData.cend())
+           DT::_indData.cend()) {
             throw Exception{"Independent column is not strictly increasing."};
+        }
     }
 
 protected:
