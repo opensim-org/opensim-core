@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20201">
 <AnalyzeTool name="subject01_walk1">
   <!--Name of the .osim file used to construct a model.-->
   <model_file> subject01.osim </model_file>
@@ -59,3 +60,4 @@
 	    filtering. The default value is -1.0, so no filtering.-->
   <lowpass_cutoff_frequency_for_load_kinematics> -1 </lowpass_cutoff_frequency_for_load_kinematics>
 </AnalyzeTool>
+</OpenSimDocument>
