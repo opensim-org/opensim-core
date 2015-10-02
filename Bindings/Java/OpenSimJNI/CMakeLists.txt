@@ -41,7 +41,10 @@ add_custom_command(
         -o ${swig_generated_file_fullname}
         -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
         ${swig_interface_file_fullname}
-    DEPENDS "${swig_interface_file_fullname}")
+    DEPENDS "${swig_interface_file_fullname}"
+        "${OpenSim_SOURCE_DIR}/Bindings/opensim.i"
+        "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
+    )
     
 # This target actually depends on a lot more (all the produced .java files); 
 # but we will just use these two files as a proxy for all of those. All we need
