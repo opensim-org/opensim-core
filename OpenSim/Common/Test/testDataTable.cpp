@@ -112,7 +112,8 @@ int main() {
             if(row_i_2[j] != (row + i)[j])
                 throw Exception{"Test failed: row_i_2[j] != (row + i)[j]"};
 
-            if(table.getDependentColumnAtIndex(i)[j] != j)
+            const auto col_i = table.getDependentColumnAtIndex(i);
+            if(col_i[j] != j)
                 throw Exception{"Test failed: table.getDependentColumnAtIndex"
                         "(i)[j] != j"};
         }
