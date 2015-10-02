@@ -95,9 +95,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with a Joint. **/
-    /**@{**/
     OpenSim_DECLARE_UNNAMED_PROPERTY(CoordinateSet,
         "Set holding the generalized coordinates (q's) that parameterize this joint." );
 
@@ -113,7 +110,6 @@ public:
         "are often used to offset the connection from a Body's origin to another "
         "location of interest (e.g. the joint center). That offset can be added "
         "to the Joint. When the joint is delete so are the Frames in this list.");
-    /**@}**/
 
 //=============================================================================
 // METHODS
@@ -282,7 +278,7 @@ protected:
     \endcode
     */
 #ifndef SWIG
-    /// @class Joint::CoordinateIndex
+    /// @class CoordinateIndex
     /// Unique integer type for local Coordinate indexing
     SimTK_DEFINE_UNIQUE_INDEX_TYPE(CoordinateIndex);
 
