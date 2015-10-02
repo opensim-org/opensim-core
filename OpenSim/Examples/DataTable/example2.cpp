@@ -70,6 +70,8 @@ int main() {
     
     data_table.appendRow(0.9, row5); // 0.9 is less than previous value (1.00).
 
+    // Contruction of TimeSeriesTable fails because independent column is not
+    // strictly increasing. 
     ASSERT_THROW(OpenSim::Exception,
                  TimeSeriesTable timeseries_table2{data_table});
 
