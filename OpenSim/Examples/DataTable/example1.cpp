@@ -26,14 +26,14 @@
 int main() {
     using namespace OpenSim;
 
-    TimeSeriesTable table{};
+    DataTable table{};
 
     ValueArray<std::string> value_array{};
     auto& vec = value_array.upd();
     for(unsigned i = 0; i < 5; ++i)
         vec.push_back(SimTK::Value<std::string>{std::to_string(i)});
 
-    TimeSeriesTable::DependentsMetaData dep_metadata{};
+    DataTable::DependentsMetaData dep_metadata{};
     dep_metadata.setValueArrayForKey("labels", value_array);
 
     table.setDependentsMetaData(dep_metadata);
