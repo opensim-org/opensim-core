@@ -135,7 +135,7 @@ class DataTable_ : public AbstractDataTable {
 public:
     using RowVector     = SimTK::RowVector_<ETY>;
     using RowVectorView = SimTK::RowVectorView_<ETY>;
-    using ColumnVector  = SimTK::Vector_<ETY>;
+    using VectorView    = SimTK::VectorView_<ETY>;
 
     DataTable_()                             = default;
     DataTable_(const DataTable_&)            = default;
@@ -209,7 +209,7 @@ public:
     }
 
     /** Get dependent column.                                                 */
-    ColumnVector getDependentColumnAtIndex(size_t index) const {
+    VectorView getDependentColumnAtIndex(size_t index) const {
         return _depData.col(index);
     }
 
