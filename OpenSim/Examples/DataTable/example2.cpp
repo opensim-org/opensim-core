@@ -30,13 +30,13 @@ int main() {
 
     DataTable data_table{};
 
-    ValueArray<std::string> value_array{};
-    auto& vec = value_array.upd();
+    ValueArray<std::string> labelValues{};
+    auto& vec = labelValues.upd();
     for(unsigned i = 0; i < 5; ++i)
         vec.push_back(SimTK::Value<std::string>{std::to_string(i)});
 
     TimeSeriesTable::DependentsMetaData dep_metadata{};
-    dep_metadata.setValueArrayForKey("labels", value_array);
+    dep_metadata.setValueArrayForKey("labels", labelValues);
 
     data_table.setDependentsMetaData(dep_metadata);
 
