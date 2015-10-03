@@ -205,7 +205,7 @@ namespace SimTK {
 %include <OpenSim/Simulation/MomentArmSolver.h>
 
 %include <OpenSim/Simulation/Model/Frame.h>
-// Followig thee lines hacked in out of order to work around WrapObjects use in PhysicalFrame
+// Following three lines hacked in out of order to work around WrapObjects use in PhysicalFrame
 %include <OpenSim/Simulation/Wrap/WrapObject.h>
 %template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
 %include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
