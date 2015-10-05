@@ -301,7 +301,7 @@ template <class C, class F>
 const F& LinkTwoFrames<C, F>::getFrame1() const
 {
     if (!(this->isObjectUpToDateWithProperties() && !this->hasSystem())) {
-        _frame1 = &(this->getConnector<F>("frame1").getConnectee());
+        _frame1 = &(this->template getConnector<F>("frame1").getConnectee());
     }
     return _frame1.getRef();
 }
@@ -310,7 +310,7 @@ template <class C, class F>
 const F& LinkTwoFrames<C, F>::getFrame2() const
 {
     if (!(this->isObjectUpToDateWithProperties() && this->hasSystem())) {
-        _frame2 = &(this->getConnector<F>("frame2").getConnectee());
+        _frame2 = &(this->template getConnector<F>("frame2").getConnectee());
     }
     return _frame2.getRef();
 }
@@ -322,8 +322,8 @@ void LinkTwoFrames<C, F>::scale(const ScaleSet& scaleSet)
     SimTK::Vec3 frame2Factors(1.0);
 
     // Find the factors associated with the PhysicalFrames this Joint connects
-    const string& base1Name = this->getFrame1().findBaseFrame().getName();
-    const string& base2Name = this->getFrame2().findBaseFrame().getName();
+    const std::string& base1Name = this->getFrame1().findBaseFrame().getName();
+    const std::string& base2Name = this->getFrame2().findBaseFrame().getName();
     // Get scale factors
     bool found_b1 = false;
     bool found_b2 = false;
@@ -374,8 +374,8 @@ void LinkTwoFrames<C, F>::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model); //connect to frames 
     // now keep a reference to the frames
-    _frame1 = &(this->getConnector<F>("frame1").getConnectee());
-    _frame2 = &(this->getConnector<F>("frame2").getConnectee());
+    _frame1 = &(this->template getConnector<F>("frame1").getConnectee());
+    _frame2 = &(this->template getConnector<F>("frame2").getConnectee());
 }
 
 
