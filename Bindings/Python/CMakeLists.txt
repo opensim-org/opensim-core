@@ -32,7 +32,10 @@ add_custom_command(
         -o ${swig_output_cxx_file_fullname}
         -outdir ${CMAKE_CURRENT_BINARY_DIR}
         ${swig_interface_file_fullname}
-    DEPENDS ${swig_interface_file_fullname})
+    DEPENDS ${swig_interface_file_fullname}
+        "${OpenSim_SOURCE_DIR}/Bindings/opensim.i"
+        "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
+        )
 
 add_custom_target(PyWrap
     DEPENDS opensim.py ${swig_output_cxx_file_fullname}
