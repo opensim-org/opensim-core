@@ -204,7 +204,7 @@ OffsetFrame<C>::OffsetFrame(const std::string& name,
                             const C& parent, const SimTK::Transform& offset)
     : OffsetFrame(parent, offset)
 {
-    setName(name);
+    this->setName(name);
 }
 
 template <class C>
@@ -213,7 +213,7 @@ OffsetFrame<C>::OffsetFrame(const std::string& name,
                             const SimTK::Transform& offset)
     : OffsetFrame()
 {
-    setName(name);
+    this->setName(name);
     this->template updConnector<C>("parent").set_connectee_name(parentName);
     setOffsetTransform(offset);
 }

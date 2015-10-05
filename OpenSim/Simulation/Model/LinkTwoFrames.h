@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2015 Stanford University and the Authors                     *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -64,9 +64,7 @@ public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
-    /** By default, the LinkTwoFrames is not connected to any parent frame, and its
-    transform is an identity transform.
-    */
+    /** By default, the LinkTwoFrames is not connected to any frames and its.*/
     LinkTwoFrames();
 
     /** Convenience Constructor.
@@ -85,42 +83,48 @@ public:
     and offset transforms on the respective frames.
 
     @param[in] name             the name of this LinkTwoFrames component
-    @param[in] frame1Name       the first Frame that the component links
+    @param[in] frame1Name       the name of the first Frame being linked
     @param[in] offsetOnFrame1   offset Transform on the first frame
-    @param[in] frame2Name       the second Frame that the component links
+    @param[in] frame2Name       the name of the second Frame being linked
     @param[in] offsetOnFrame2   offset Transform on the second frame
     */
     LinkTwoFrames(const std::string &name,
-        const std::string& frame1Name, const SimTK::Transform& transformInFrame1,
-        const std::string& frame2Name, const SimTK::Transform& transformInFrame2);
+        const std::string& frame1Name,
+        const SimTK::Transform& transformInFrame1,
+        const std::string& frame2Name,
+        const SimTK::Transform& transformInFrame2);
 
     /** Backwards compatible Convenience Constructor
     LinkTwoFrames with offsets specified in terms of the location and 
     orientation in respective PhysicalFrames.
 
-    @param[in] name     the name of this LinkTwoFrames component
-    @param[in] frame1   the first Frame that the component links
+    @param[in] name             the name of this LinkTwoFrames component
+    @param[in] frame1Name       the name of the first Frame being linked
     @param[in] locationInFrame1    Vec3 of offset location on the first frame
     @param[in] orientationInFrame1 Vec3 of orientation offset expressed as
                                    XYZ body-fixed Euler angles w.r.t frame1.
-    @param[in] frame2    the second Frame that the component links
+    @param[in] frame2Name       the name of the second Frame being linked
     @param[in] locationInFrame2    Vec3 of offset location on the second frame
     @param[in] orientationInFrame1 Vec3 of orientation offset expressed as
                                    XYZ body-fixed Euler angles w.r.t frame2.
     */
     LinkTwoFrames(const std::string &name,
         const std::string& frame1Name,
-        const SimTK::Vec3& locationInFrame1, const SimTK::Vec3& orientationInFrame1,
+        const SimTK::Vec3& locationInFrame1,
+        const SimTK::Vec3& orientationInFrame1,
         const std::string& frame2Name,
-        const SimTK::Vec3& locationInFrame2, const SimTK::Vec3& orientationInFrame2);
+        const SimTK::Vec3& locationInFrame2,
+        const SimTK::Vec3& orientationInFrame2);
 
-    // use compiler generated destructor, copy constructor and assignment operator
+    // use compiler generated destructor, copy constructor & assignment operator
 
-    /** Access the first frame the LinkTwoFrames component connects. If an offset
-        was introduced at construction, then this will be the offset frame.*/
+    /** Access the first frame the LinkTwoFrames component connects.
+        Note, if an offset was introduced at construction, then this will be
+        the offset frame. */
     const F& getFrame1() const;
-    /** Access the second frame the LinkTwoFrames component connects If an offset
-        was introduced at construction, then this will be the offset frame.*/
+    /** Access the second frame the LinkTwoFrames component connects.
+        Note, if an offset was introduced at construction, then this will be
+        the offset frame. */
     const F& getFrame2() const;
 
     /** Compute the relative offset Transform between the two frames linked by 
@@ -132,28 +136,32 @@ public:
     SimTK::SpatialVec computeRelativeVeocity(const SimTK::State& s) const;
 
     /** Compute the deflection (spatial separation) of the two frames connected
-        by the LinkTwoFrames. Angular deflections expressed in Euler angles.
-        NOTE: the value is only valid for small deflections and the behavior
-           will become undefined at large angles (~90 degs). It is mainly useful
-           for calculating errors for constraints and forces for computing 
-           restoration forces.
+        by the LinkTwoFrames. Angular deflections expressed as XYZ body-fixed 
+        Euler angles of frame2 w.r.t frame1.
+        NOTE: When using deflections to compute spatial forces, these forces
+            may not be valid for large deflections, because Euler are unable
+            to uniquely distinguish and X rotaion angle of +/-180 degrees, 
+            and subsequent rotations that are +/-90 degs. It is mainly useful
+            for calculating errors for constraints and forces for computing 
+            restoration forces.
      @return dq     Vec6 of (3) angular and (3) translational deflections. */
     SimTK::Vec6 computeDeflection(const SimTK::State& s) const;
     /** Compute the deflection rate (dqdot) of the two frames connected by
         this LinkTwoFrames component. Angular velocity is expressed as Euler
-        angle derivatives.
+        (XYZ body-fixed) angle derivatives. Note that the derivatives 
+        become singular as the second Euler angle approaches 90 degs.
     @return dqdot  Vec6 of (3) angular and (3) translational deflection rates. */
     SimTK::Vec6 computeDeflectionRate(const SimTK::State& s) const;
 
     /**
     * Scale the LinkTwoFrames component according to XYZ scale factors.
-    * Associate PhyscialFrames. Generic behavior is to scale the locations
+    * Associate PhysicalFrames. Generic behavior is to scale the locations
     * of PhyscialOffsetFrames according to the scale factors of the physical
-    * frame upon which they are attched.
+    * frame upon which they are attached.
     *
-    * @param aScaleSet Set of XYZ scale factors for PhysicalFrames.
+    * @param scaleSet   Set of XYZ scale factors for PhysicalFrames.
     */
-    virtual void scale(const ScaleSet& aScaleSet);
+    virtual void scale(const ScaleSet& scaleSet);
 
 protected:
     /** @name Component Interface
@@ -167,38 +175,45 @@ protected:
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
     /**@}**/
 
-    /** Helper method to convert internal force expressed in the basis of the
-        deflection between frame1 and frame2, dq, as individual spatial forces
-        acting on each frame linked by this component. The internal force, f, is
-        directed onto frame2 from frame1.
-    @param state                const State of current system configuration
-    @param[in] internalForce    Vec6 of forces in the basis of the deflection
-    @param[in,out] F1_G         SpatialVec Force (torque, force) applied to
-                                frame1 expressed in ground.
-    @param[in,out] F2_G         SpatialVec Force (torque, force) applied to
-                                frame2 expressed in ground. */
+    /** Helper method to convert internal force expressed in the mobility basis
+        between frame1 and frame2, dq, as individual spatial forces acting on
+        each frame linked by this component. The internal force, f, is directed
+        onto frame2 from frame1.
+        In computeDeflection(), frame2's pose in frame1 is decomposed in to 6
+        internal coordinates dq (similar to the q's of a free joint). Their
+        derivatives, dqdot, form a internal coordinates "mobility" basis
+        that can be used to express frame2's spatial velocity in frame1 or to
+        apply internal (generalized) forces that apply equal and opposite
+        spatial forces to the two frames.
+    @param state            const State of current system configuration
+    @param[in] f            Vec6 of forces in the basis of the deflection
+    @param[in,out] F1_G     SpatialVec Force (torque, force) applied to
+                            frame1 expressed in ground.
+    @param[in,out] F2_G     SpatialVec Force (torque, force) applied to
+                            frame2 expressed in ground. */
     void convertInternalForceToForcesOnFrames(
-        const SimTK::State& s,
+        const SimTK::State& state,
         SimTK::Vec6 f, SimTK::SpatialVec& F1_G, SimTK::SpatialVec& F2_G) const;
 
-    /** Helper method to add in equivalent physical forces given internal forces
-        expressed in the basis of the deflection between frame1 and frame2, dq,
-        (and its time rate of change, dqdot), where the internal force, f, is 
-        applied to frame2. 
-    @param state                    const State of current system configuration
-    @param[in] internalForce        Vec6 of forces in the basis of the deflection 
-    @param[in,out] physicalForces   Vector of SpatialVec's (torque, force) on 
-                                    each PhysicalFrame in the System          */
+    /** Helper method to add in the equivalent system spatial forces given 
+        internal forces. Internal forces are expressed in the mobility basis as
+        parameterized by the deflection between frame1 and frame2, dq, and its
+        derivative, dqdot.
+    @param state                const State of current system configuration
+    @param[in] f                Vec6 of forces in the basis of the deflection 
+    @param[in,out] spatialForces   Vector of SpatialVec's (torque, force) on 
+                                   each PhysicalFrame in the System          
+    @see convertInternalForceToForcesOnFrames() */
     void addInPhysicalForcesFromInternal(const SimTK::State& state,
-        SimTK::Vec6 f, SimTK::Vector_<SimTK::SpatialVec>& physicalForces) const;
+        SimTK::Vec6 f, SimTK::Vector_<SimTK::SpatialVec>& spatialForces) const;
 
 private:
     // create the frames property
     void constructProperties() override;
 
     //hang on to references to the individual frames for fast access
-    mutable SimTK::ReferencePtr<const F> _frame1{};
-    mutable SimTK::ReferencePtr<const F> _frame2{};
+    mutable SimTK::ReferencePtr<const F> _frame1;
+    mutable SimTK::ReferencePtr<const F> _frame2;
 
 //=============================================================================
 }; // END of class OffsetFrame
@@ -249,25 +264,6 @@ LinkTwoFrames<C, F>::LinkTwoFrames(const std::string &name,
     updConnector<PhysicalFrame>("frame2")
         .set_connectee_name(frame2Offset.getName());
 }
-
-/*
-template <class C, class F>
-LinkTwoFrames<C, F>::LinkTwoFrames(const std::string &name,
-    const F& frame1,
-    const SimTK::Vec3& locationInFrame1, const SimTK::Vec3& orientationInFrame1,
-    const F& frame2,
-    const SimTK::Vec3& locationInFrame2, const SimTK::Vec3& orientationInFrame2)
-    : LinkTwoFrames(name,
-        frame1.getName(), SimTK::Transform(SimTK::Rotation(SimTK::BodyRotationSequence,
-            orientationInFrame1[0], SimTK::XAxis,
-            orientationInFrame1[1], SimTK::YAxis,
-            orientationInFrame1[2], SimTK::ZAxis), locationInFrame1),
-        frame2.getName(), SimTK::Transform(SimTK::Rotation(SimTK::BodyRotationSequence,
-            orientationInFrame2[0], SimTK::XAxis,
-            orientationInFrame2[1], SimTK::YAxis,
-            orientationInFrame2[2], SimTK::ZAxis), locationInFrame2))
-{}
-*/
 
 template <class C, class F>
 LinkTwoFrames<C, F>::LinkTwoFrames(const std::string& name,

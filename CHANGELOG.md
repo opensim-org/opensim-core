@@ -14,7 +14,7 @@ v4.0 (in development)
 Converting from v3.2 to v4.0
 -----------------------------
 - The Actuator class has been renamed to ScalarActuator (and Actuator_ has been renamed to Actuator) (PR #126).
-  If you have subclassed from Actuator, you must now subclass from ScalarActuator. 
+  If you have subclassed from Actuator, you must now subclass from ScalarActuator.
 - Methods like `Actuator::getForce` are renamed to use "Actuator" instead (e.g., `Actuator::getActuator`) (PR #209).
 - Markers are now ModelComponents (PR #188). Code is included for conversion on serialization/de-serialization.
 - `Body::getMassCenter` now returns a `Vec3` instead of taking a `Vec3` reference as an argument (commit cb0697d98).
@@ -23,14 +23,14 @@ Converting from v3.2 to v4.0
   - addToSystem -> extendAddToSystem
   - initStateFromProperties -> extendInitStateFromProperties
   - setPropertiesFromState -> extendSetPropertiesFromState
-  
-  The original methods (without `extend`) still exist, but they are now non-virtual. 
+
+  The original methods (without `extend`) still exist, but they are now non-virtual.
   To invoke `connectToModel` on an entire Model, you still call `Model::connectToModel`.
   This change has been made to make a distinction between the user interface and
   the Component developer (extension) interface. **IMPORTANT** The calls to
   `Super::addToSystem`, etc. in the implementation of these methods must now
   also use the `extend` variants. Otherwise, you will enter into an infinite recursion.
-- OpenSim now makes substantial use of C++11 features; if you compile OpenSim, your compiler 
+- OpenSim now makes substantial use of C++11 features; if you compile OpenSim, your compiler
   must support C++11. Also, any C++ project in which you use OpenSim must also be compiled with C++11.
 
 Bug Fixes
@@ -44,8 +44,13 @@ Bug Fixes
 
 New Classes
 -----------
-- Created Frame, PhysicalFrame, FixedFrame, Station and Marker ModelComponents (PR #188, PR #325, PR #339). Marker did not previously comply with the Model Component interface.  
 - Added a BodyActuator component, which applies a spatial force on a specified Point of a Body (PR #126)
+- Created Frame, PhysicalFrame, OffsetFrame, PhysicalOffsetFrame, Station and Marker ModelComponents (PR #188, PR #325, PR #339). Marker did not previously comply with the Model Component interface.
+- A Body is a PhysicalFrame
+- Connections to Bodies upgraded to PhysicalFrames and locations on these frames are now represented by PhysicalOffsetFrame (PR #370)
+- Joints were refactored so that the base Joint manages the parent and child frame connections, including the definition of local PhysicalOffsetFrames to handle offsets defined as separate location and orientation properties. (PR #589)  
+- The WeldConstraint and BushingForces (BushingForce, CoupledBushingForce, FunctionBasedBushingForce, and ExpressionBasedBushingForce) were similarly unified (like Joints) to handle the two Frames that these classes require to operate. A LinkTwoFrames intermediate class was introduced to house the common operations. Convenience constructors for WeldConstraint and BushingFrames were affected and now require the name of the Component as the first argument. (PR #649)
+
 
 Other Changes
 -------------
@@ -62,7 +67,7 @@ Documentation
 - Added a detailed README.md wtith build instructions, as well as guides to contributing and developing (CONTRIBUTING.md).
 - Included GIFs in Doxygen for several commonly used Joint types
 
-STILL NEED TO ADD: 
+STILL NEED TO ADD:
 - Additional changes to Model Component Interface, Iterator (any PRs labeled "New MCI")
 - PR #364
 - PR #370
