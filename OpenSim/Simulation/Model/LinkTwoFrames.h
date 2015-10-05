@@ -236,9 +236,9 @@ LinkTwoFrames<C, F>::LinkTwoFrames(const std::string &name,
     const std::string& frame1Name,
     const std::string& frame2Name) : LinkTwoFrames<C, F>()
 {
-    setName(name);
-    updConnector<F>("frame1").set_connectee_name(frame1Name);
-    updConnector<F>("frame2").set_connectee_name(frame2Name);
+    this->setName(name);
+    this->template updConnector<F>("frame1").set_connectee_name(frame1Name);
+    this->template updConnector<F>("frame2").set_connectee_name(frame2Name);
 }
 
 template <class C, class F>
@@ -247,7 +247,7 @@ LinkTwoFrames<C, F>::LinkTwoFrames(const std::string &name,
     const std::string& frame2Name, const SimTK::Transform& transformInFrame2)
     : LinkTwoFrames()
 {
-    setName(name);
+    this->setName(name);
 
     PhysicalOffsetFrame frame1Offset(frame1Name + "_offset",
         frame1Name, transformInFrame1);
@@ -259,9 +259,9 @@ LinkTwoFrames<C, F>::LinkTwoFrames(const std::string &name,
     append_frames(frame1Offset);
     append_frames(frame2Offset);
 
-    updConnector<PhysicalFrame>("frame1")
+    this->template updConnector<PhysicalFrame>("frame1")
         .set_connectee_name(frame1Offset.getName());
-    updConnector<PhysicalFrame>("frame2")
+    this->template updConnector<PhysicalFrame>("frame2")
         .set_connectee_name(frame2Offset.getName());
 }
 
