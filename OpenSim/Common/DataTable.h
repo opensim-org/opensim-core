@@ -37,8 +37,11 @@ namespace OpenSim {
 
 /** AbstractDataTable is the base-class of all DataTable_(templated) allowing 
 storage of DataTable_ templated on different types to be stored in a container 
-like std::vector. AbstractDataTable offers:
-- Interface to access column metadata of the DataTable_.
+like std::vector. DataTable_ represents a matrix and an additional column. The 
+columns of the matrix are dependent columns. The additional column is the
+independent column. All dependent columns and the independent column can have
+metadata. AbstractDataTable offers:
+- Interface to access metadata of independent column and dependent columns.
 - A heterogeneous container to store metadata associated with the DataTable_ in
   the form of key-value pairs where key is of type std::string and value can be
   of any type.
