@@ -23,10 +23,16 @@ platform: x64
 
 init:
   # Note: python 2.7 32bit is already on the path. We want v2.7 64bit,
-  # so we must add v2.7 64bit earlier on the PATH.
+  # so we must add v2.7 64bit earlier on the PATH so that CMake finds it when
+  # configuring.
+  # The Scripts directory is for putting nosetests on the path.
   # http://www.appveyor.com/docs/installed-software
-  - SET PATH=C:\Python27-x64\Scripts;%PATH%
+  - SET PATH=C:\Python27-x64\;%PATH%
   - SET OPENSIM_HOME=C:\OpenSim
+
+  # The following line, if uncommented, should allow you to remote-desktop into
+  # the Appveyor build machine.
+  # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   
 nuget:
   account_feed: true
@@ -65,12 +71,12 @@ test_script:
   ## Ensure we have no trouble installing.
   - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
   
-  ### Test python wrapping.
+  ## Test python wrapping.
   - set PATH=%OPENSIM_HOME%\bin;%PATH%
   # Move to the installed location of the python package.
   - cd %OPENSIM_HOME%\sdk\python
   # Run python tests.
-  - nosetests -v
+  - C:\Python27-x64\Scripts\nosetests -v
 
 after_test:
   - ## On master branch, create NuGet package for OpenSim.

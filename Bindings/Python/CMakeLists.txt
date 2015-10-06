@@ -1,15 +1,8 @@
 set(KIT opensim)
 
-find_package(PythonLibs 2.7)
-if(NOT PYTHONLIBS_FOUND)
-    message(FATAL_ERROR "Cannot build Python wrapping because "
-        "Python libraries were not found. Either turn "
-        "BUILD_PYTHON_WRAPPING off or install Python "
-        "libraries (on Ubuntu, sudo apt-get install python2.7-dev).")
-endif()
-
+# PythonInterp is supposed to come before PythonLibs.
 find_package(PythonInterp 2.7 REQUIRED)
-
+find_package(PythonLibs 2.7 REQUIRED)
 
 # Location of the opensim python package in the build directory, for testing.
 set(PYTHON_PACKAGE_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/opensim")
@@ -96,6 +89,23 @@ elseif(APPLE)
     set_target_properties(_${KIT} PROPERTIES SUFFIX ".so")
 endif()
 
+if(MSVC OR XCODE)
+    set_target_properties(_${KIT} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
+        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
+        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
+        LIBRARY_OUTPUT_DIRECTORY_DEBUG "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
+        LIBRARY_OUTPUT_DIRECTORY_RELEASE "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
+        LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
+        LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
+        ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
+        ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
+        ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO"${PYTHON_PACKAGE_BINARY_DIR}/opensim"
+        ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
+        )
+endif()
+
 if(${OPENSIM_USE_INSTALL_RPATH})
     set_target_properties(_${KIT} PROPERTIES
         INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
@@ -128,8 +138,14 @@ add_test(NAME python WORKING_DIRECTORY "${PYTHON_PACKAGE_BINARY_DIR}"
                 "${CMAKE_CURRENT_SOURCE_DIR}/tests" --verbose
     )
 if(WIN32)
+    # On Windows, CMake cannot use RPATH to hard code the location of libraries
+    # in the binary directory (DLL's don't have RPATH), so we must set PATH to
+    # find the right libraries. The location of the libraries depends on the
+    # build configuration, which is filled in for `$<CONFIG>`. We also don't
+    # want to accidentally use a different OpenSim build/installation somewhere
+    # on the machine.
     set_tests_properties(python PROPERTIES ENVIRONMENT
-        "PATH=${BUILD_BINARY_DIR}/${CMAKE_CFG_INTDIR}\\;$ENV{PATH}")
+        "PATH=${CMAKE_BINARY_DIR}/$<CONFIG>")
 endif()
 
 # Install python package.
