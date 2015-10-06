@@ -58,11 +58,11 @@ public:
     // PROPERTIES
     //==========================================================================
     OpenSim_DECLARE_PROPERTY(color, SimTK::Vec3,
-        "The color (rgb) used to display the object. ");
+        "The color, (red, green, blue), [0, 1], used to display the object.");
     OpenSim_DECLARE_PROPERTY(opacity, double,
-        "The opacity (0-1) used to display the object. ");
+        "The opacity, [0, 1], used to display the object.");
     OpenSim_DECLARE_PROPERTY(representation, int,
-        "The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. ");
+        "The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object.");
 
     //--------------------------------------------------------------------------
     // CONSTRUCTION
