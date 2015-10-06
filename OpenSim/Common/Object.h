@@ -61,15 +61,12 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Object>;
         #undef OSIMCOMMON_API
     #endif
     #define OSIMCOMMON_API
-    #ifdef override
-        #undef override
+
+    #ifdef SWIGJAVA
+        #define SWIG_DECLARE_EXCEPTION throw(OpenSim::Exception)
+    #else
+        #define SWIG_DECLARE_EXCEPTION
     #endif
-    #define override
-    #ifdef final
-        #undef final
-    #endif
-    #define final
-    #define SWIG_DECLARE_EXCEPTION throw(OpenSim::Exception)
 #else
     #define SWIG_DECLARE_EXCEPTION
 #endif
