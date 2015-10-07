@@ -52,6 +52,11 @@ New Classes
 - The WeldConstraint and BushingForces (BushingForce, CoupledBushingForce, FunctionBasedBushingForce, and ExpressionBasedBushingForce) were similarly unified (like Joints) to handle the two Frames that these classes require to operate. A LinkTwoFrames intermediate class was introduced to house the common operations. Convenience constructors for WeldConstraint and BushingFrames were affected and now require the name of the Component as the first argument. (PR #649)
 
 
+Python
+------
+- Improved error handling. Now, OpenSim's error messages show up as exceptions
+in Python.
+
 Other Changes
 -------------
 - There is now a formal CMake mechanism for using OpenSim in your own C++ project. See cmake/SampleCMakeLists.txt. (PR #187)

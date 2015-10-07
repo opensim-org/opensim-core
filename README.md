@@ -182,7 +182,8 @@ On Windows using Visual Studio
     * `BUILD_JAVA_WRAPPING` if you want to access OpenSim through MATLAB or
       Java; see dependencies above.
     * `BUILD_PYTHON_WRAPPING` if you want to access OpenSim through Python; see
-      dependencies above.
+      dependencies above. CMake sets `PYTHON_*` variables to tell you the
+      Python it will use for building the wrappers.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
     * It is very important to use Java or Python environment binary format compatible with API build **(either all 32 or 64 bit)**.
 8. Click the **Configure** button again. Then, click **Generate** to make
@@ -291,7 +292,8 @@ On Mac using Xcode
     * `BUILD_JAVA_WRAPPING` if you want to access OpenSim through MATLAB or
       Java; see dependencies above.
     * `BUILD_PYTHON_WRAPPING` if you want to access OpenSim through Python; see
-      dependencies above.
+      dependencies above. CMake sets `PYTHON_*` variables to tell you the
+      Python it will use for building the wrappers.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
 8. Click the **Configure** button again. Then, click **Generate** to create
    Xcode project files in the build directory.

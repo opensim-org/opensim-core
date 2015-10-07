@@ -20,6 +20,7 @@
 
 %include <SimTKcommon/Constants.h>
 %include <SWIGSimTK/Vec.h>
+
 // Vec3
 namespace SimTK {
 %template(Vec2) Vec<2>;
@@ -115,6 +116,7 @@ namespace SimTK {
 %template (PropertyString) OpenSim::Property<std::string>;
 %include <OpenSim/Common/Object.h>
 %include <OpenSim/Common/ObjectGroup.h>
+
 %include <OpenSim/Common/Set.h>
 %include <OpenSim/Common/StateVector.h>
 %template(ArrayStateVector) OpenSim::Array<OpenSim::StateVector>;

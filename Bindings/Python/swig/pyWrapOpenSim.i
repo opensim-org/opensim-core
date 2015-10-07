@@ -1,5 +1,4 @@
 %module(directors="1") opensim
-%module opensim
 #pragma SWIG nowarn=822,451,503,516,325
 // 401 is "Nothing known about base class *some-class*.
 //         Maybe you forgot to instantiate *some-template* using %template."
@@ -17,7 +16,6 @@ own project.
 %{
 #define SWIG_FILE_WITH_INIT
 #include <Bindings/OpenSimHeaders.h>
-#include <Bindings/Python/OpenSimContext.h>
 %}
 %{
 using namespace OpenSim;
@@ -40,13 +38,47 @@ using namespace SimTK;
 // Without these try-catch block, a SimTK or OpenSim exception causes the
 // program to crash.
 %include exception.i
+%exception {
+    try {
+        $action
+    } catch (const std::exception& e) {
+        std::string str("std::exception in '$fulldecl': ");
+        std::string what(e.what());
+        SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
+    }
+}
+// The following exception handling is preferred but causes too much bloat.
+//%exception {
+//    try {
+//        $action
+//    } catch (const SimTK::Exception::IndexOutOfRange& e) {
+//        SWIG_exception(SWIG_IndexError, e.what());
+//    } catch (const SimTK::Exception::Base& e) {
+//        std::string str("SimTK Simbody error in '$fulldecl': ");
+//        std::string what(e.what());
+//        SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
+//    } catch (const OpenSim::Exception& e) {
+//        std::string str("OpenSim error in '$fulldecl': ");
+//        std::string what(e.what());
+//        SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
+//    } catch (const std::exception& e) {
+//        std::string str("std::exception in '$fulldecl': ");
+//        std::string what(e.what());
+//        SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
+//    } catch (...) {
+//        SWIG_exception(SWIG_RuntimeError, "Unknown exception in '$fulldecl'.");
+//    }
+//}
 
+// Make sure clone does not leak memory
 %newobject *::clone;
 
 %rename(printToXML) OpenSim::Object::print(const std::string&) const;
 %rename(printToXML) OpenSim::XMLDocument::print(const std::string&);
 %rename(printToXML) OpenSim::XMLDocument::print();
 %rename(printToFile) OpenSim::Storage::print;
+%rename(NoType) OpenSim::Geometry::None;
+%rename(NoPreference) OpenSim::DisplayGeometry::None;
 
 %rename(appendNative) OpenSim::ForceSet::append(Force* aForce);
 
@@ -54,12 +86,75 @@ using namespace SimTK;
 %ignore *::operator[];
 %ignore *::operator=;
 
+// For reference (doesn't work and should not be necessary):
+// %rename(__add__) operator+;
+
 /* This file is for creation/handling of arrays */
 %include "std_carray.i";
 
 /* This interface file is for better handling of pointers and references */
 %include "typemaps.i"
 %include "std_string.i"
+
+// Typemaps
+// ========
+// Allow passing python objects into OpenSim functions. For example,
+// pass a list of 3 float's into a function that takes a Vec3 as an argument.
+/*
+TODO disabling these for now as the typemaps remove the ability to pass
+arguments using the C++ types. For example, with these typemaps,
+Model::setGravity() can no longer take a Vec3. We can revisit typemaps if we
+can keep the ability to use the original argument types.
+These typemaps work, though.
+%typemap(in) SimTK::Vec3 {
+    SimTK::Vec3 v;
+    if (!PySequence_Check($input)) {
+        PyErr_SetString(PyExc_ValueError, "Expected a sequence.");
+        return NULL;
+    }
+    if (PySequence_Length($input) != v.size()) {
+        PyErr_SetString(PyExc_ValueError,
+                "Size mismatch. Expected 3 elements.");
+        return NULL;
+    }
+    for (int i = 0; i < v.size(); ++i) {
+        PyObject* o = PySequence_GetItem($input, i);
+        if (PyNumber_Check(o)) {
+            v[i] = PyFloat_AsDouble(o);
+        } else {
+            PyErr_SetString(PyExc_ValueError,
+                "Sequence elements must be numbers.");
+            return NULL;
+        }
+    }
+    $1 = &v;
+};
+%typemap(in) const SimTK::Vec3& {
+    SimTK::Vec3 v;
+    if (!PySequence_Check($input)) {
+        PyErr_SetString(PyExc_ValueError, "Expected a sequence.");
+        return NULL;
+    }
+    if (PySequence_Length($input) != v.size()) {
+        PyErr_SetString(PyExc_ValueError,
+                "Size mismatch. Expected 3 elements.");
+        return NULL;
+    }
+    for (int i = 0; i < v.size(); ++i) {
+        PyObject* o = PySequence_GetItem($input, i);
+        if (PyNumber_Check(o)) {
+            v[i] = PyFloat_AsDouble(o);
+        } else {
+            PyErr_SetString(PyExc_ValueError,
+                "Sequence elements must be numbers.");
+            return NULL;
+        }
+    }
+    $1 = &v;
+};
+// This is how one would apply a generic typemap to specific arguments:
+//%apply const SimTK::Vec3& INPUT { const SimTK::Vec3& aGrav };
+*/
 
 // Memory management
 // =================
@@ -139,9 +234,6 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(UniversalJoint);
 EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 
 
-// Make sure clone does not leak memory
-%newobject *::clone; 
-
 %extend OpenSim::Array<double> {
 	void appendVec3(SimTK::Vec3 vec3) {
 		for(int i=0; i<3; i++)
@@ -205,9 +297,111 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 };
 };
 
+// Load OpenSim plugins TODO
+// ====================
+/*
+%extend OpenSim::Model {
+	static void LoadOpenSimLibrary(std::string libraryName){
+		LoadOpenSimLibrary(libraryName);
+	}
+}
+*/
+
+// %include "numpy.i"
+
+// Pythonic operators
+// ==================
+// Extend the template Vec class; these methods will apply for all template
+// parameters. This extend block must appear before the %template call in
+// opensim.i.
+%extend SimTK::Vec {
+    std::string __str__() const {
+        return $self->toString();
+    }
+    int __len__() const {
+        return $self->size();
+    }
+};
+
+%extend SimTK::Vector_ {
+    std::string __str__() const {
+        return $self->toString();
+    }
+    int __len__() const {
+        return $self->size();
+    }
+};
+
+%extend OpenSim::Set {
+%pythoncode %{
+    class SetIterator(object):
+        """
+        Use this object to iterate over a Set. You create an instance of
+        this nested class by calling Set.__iter__().
+        """
+        def __init__(self, set_obj, index):
+            """Construct an iterator for the Set `set`."""
+            self._set_obj = set_obj
+            self._index = index
+        def __iter__(self):
+            """This iterator is also iterable."""
+            return self
+        def next(self):
+            if self._index < self._set_obj.getSize():
+                current_index = self._index
+                self._index += 1
+                return self._set_obj.get(current_index)
+            else:
+                # This is how Python knows to stop iterating.
+                 raise StopIteration()
+
+    def __iter__(self):
+        """Get an iterator for this Set, starting at index 0."""
+        return self.SetIterator(self, 0)
+
+    def items(self):
+        """
+        A generator function that allows you to iterate over the key-value
+        pairs of this Set. You can use this in a for-loop as such::
+
+            for key, val in my_function_set.items():
+                # `val` is an item in the Set, and `key` is its name.
+                print key, val
+        """
+        index = 0
+        while index < self.getSize():
+            yield self.get(index).getName(), self.get(index)
+            index += 1
+%}
+};
 
 %include <Bindings/opensim.i>
-%include <Bindings/Python/OpenSimContext.h>
+
+// Pythonic operators
+// ==================
+%extend SimTK::Vec<3> {
+     double __getitem__(int i) const {
+        SimTK_INDEXCHECK_ALWAYS(i, $self->size(), "Vec3.__getitem__()");
+        return $self->operator[](i);
+    }
+    void __setitem__(int i, double value) {
+        SimTK_INDEXCHECK_ALWAYS(i, $self->size(), "Vec3.__setitem__()");
+        $self->operator[](i) = value;
+    }
+    //SimTK::Vec<3> __add__(const SimTK::Vec<3>& v) const {
+    //    return *($self) + v;
+    //}
+};
+%extend SimTK::Vector_<double> {
+    double __getitem__(int i) const {
+        SimTK_INDEXCHECK_ALWAYS(i, $self->size(), "Vector.__getitem__()");
+        return $self->operator[](i);
+    }
+    void __setitem__(int i, double value) {
+        SimTK_INDEXCHECK_ALWAYS(i, $self->size(), "Vector.__setitem__()");
+        $self->operator[](i) = value;
+    }
+};
 
 // Memory management
 // =================
