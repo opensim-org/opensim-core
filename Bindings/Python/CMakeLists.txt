@@ -210,6 +210,8 @@ add_custom_target(RunPythonTests
     COMMAND ${CMAKE_CTEST_COMMAND} --tests-regex python
                                    --build-config $<CONFIG>
                                    --extra-verbose
+    PROJECT_LABEL "Python - run tests"
+    FOLDER "Bindings")
     )
 
 
