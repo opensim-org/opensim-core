@@ -219,6 +219,10 @@ namespace SimTK {
 %template(ModelComponentSetFrames) OpenSim::ModelComponentSet<OpenSim::Frame>;
 %include <OpenSim/Simulation/Model/FrameSet.h>
 
+%include <OpenSim/Simulation/Model/LinkTwoFrames.h>
+%template(LinkTwoFramesForce) OpenSim::LinkTwoFrames<OpenSim::Force, OpenSim::PhysicalFrame>;
+%template(LinkTwoFramesConstraint) OpenSim::LinkTwoFrames<OpenSim::Constraint, OpenSim::PhysicalFrame>;
+
 %include <OpenSim/Simulation/Model/Force.h>
 %template(SetForces) OpenSim::Set<OpenSim::Force>;
 %template(ModelComponentSetForces) OpenSim::ModelComponentSet<OpenSim::Force>;
