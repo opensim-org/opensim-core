@@ -81,7 +81,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         constr.setConstantDistance(1)
         a.addConstraint(constr)
     
-        f = osim.BushingForce("ground", "body",
+        f = osim.BushingForce("bushing", "ground", "body",
                 osim.Vec3(2, 2, 2), osim.Vec3(1, 1, 1),
                 osim.Vec3(0, 0, 0), osim.Vec3(0, 0, 0))
         a.addForce(f)
