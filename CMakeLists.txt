@@ -462,10 +462,14 @@ enable_testing()
 include(CTest)
 
 # Sets the number of concurrent jobs that testing can use.
+if(MSVC OR XCODE)
+    set(OPENSIM_TEST_BUILD_CONFIG --build-config ${CMAKE_CFG_INTDIR})
+endif()
 add_custom_target(RUN_TESTS_PARALLEL
     COMMAND ${CMAKE_CTEST_COMMAND} --parallel ${PROCESSOR_COUNT}
-                                   --build-config $<CONFIG>
-)
+                                   ${OPENSIM_TEST_BUILD_CONFIG}
+                                   --output-on-failure
+                                   )
 
 
 # Create buildinfo.txt file and place under sdk to include product version, platform and compiler for troubleshooting purposes
