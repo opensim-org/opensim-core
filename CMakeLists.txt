@@ -461,15 +461,10 @@ endif(WIN32)
 enable_testing()
 include(CTest)
 
-# Sets the number of CPUs testing would use
-set(cmd ${CMAKE_CTEST_COMMAND} -j${PROCESSOR_COUNT})
-if(MSVC OR XCODE)
-    set(cmd ${cmd} -C ${CMAKE_CFG_INTDIR})
-else(MSVC OR XCODE)
-    set(cmd ${cmd} -C ${CMAKE_BUILD_TYPE})
-endif(MSVC OR XCODE)
+# Sets the number of concurrent jobs that testing can use.
 add_custom_target(RUN_TESTS_PARALLEL
-    COMMAND ${cmd}
+    COMMAND ${CMAKE_CTEST_COMMAND} --parallel ${PROCESSOR_COUNT}
+                                   --build-config $<CONFIG>
 )
 
 

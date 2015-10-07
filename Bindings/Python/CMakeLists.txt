@@ -190,6 +190,7 @@ add_test(NAME python WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
     COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
                 "${CMAKE_CURRENT_SOURCE_DIR}/tests" --verbose
     )
+
 if(WIN32)
     # On Windows, CMake cannot use RPATH to hard code the location of libraries
     # in the binary directory (DLL's don't have RPATH), so we must set PATH to
@@ -200,6 +201,16 @@ if(WIN32)
     set_tests_properties(python PROPERTIES ENVIRONMENT
         "PATH=${CMAKE_BINARY_DIR}/$<CONFIG>")
 endif()
+
+# Allow MSVC users to run only the python tests directly from the MSVC GUI.
+# The python tests are run from RUN_TESTS, so no need to run this target as
+# part of `BUILD_ALL` (e.g, in MSVC). Might need to set
+# EXCLUDE_FROM_DEFAULT_BUILD to achieve this?
+add_custom_target(RunPythonTests
+    COMMAND ${CMAKE_CTEST_COMMAND} --tests-regex python
+                                   --build-config $<CONFIG>
+                                   --extra-verbose
+    )
 
 
 # Install python package.
