@@ -130,7 +130,7 @@ install:
   - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/"
   # Build OpenSim.
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
-  - if [[ "$WRAP" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PyWrap; fi
+  - if [[ "$WRAP" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PythonBindings; fi
   # Build whatever remains (at least _opensim, tests and examples).
   - make -j$NPROC;
 
