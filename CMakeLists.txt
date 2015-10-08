@@ -87,6 +87,21 @@ need to set PATH to run OpenSim tests and examples; this is done via the
 SimbodyFiles project. If OFF, you likely must set those environment variables
 for both OpenSim and Simbody." ON)
 
+option(BUILD_API_ONLY "Build/install only headers, libraries,
+wrapping, tests; not applications (ik, rra, etc.)." OFF)
+
+
+# Don't install applications into system directories on UNIX.
+get_filename_component(ABS_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" REALPATH)
+if(UNIX AND 
+        ("${ABS_INSTALL_PREFIX}" STREQUAL "/usr" OR
+        "${ABS_INSTALL_PREFIX}" STREQUAL "/usr/local") AND
+        NOT ${BUILD_API_ONLY})
+    message(SEND_ERROR "Cannot install into /usr or /usr/local if building \
+    applications, since OpenSim executables conflict with vital UNIX \
+    executables. Either set BUILD_API_ONLY to ON or change \
+    CMAKE_INSTALL_PREFIX.")
+endif()
 
 # Platform.
 # ---------
@@ -505,8 +520,6 @@ add_definitions(-DOSIM_SYS_INFO=${OPENSIM_SYSTEM_INFO}
 
 
 #-----------------------------------------------------------------------------
-set(BUILD_API_ONLY OFF CACHE BOOL "Build/install only headers, libraries,
-    wrapping, tests; not applications (ik, rra, etc.).")
 
 # This directory contains files (e.g., .osim) that multiple tests may want to
 # use. See the OpenSimCopySharedTestFiles function in
