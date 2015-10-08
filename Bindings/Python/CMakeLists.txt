@@ -220,8 +220,13 @@ if(WIN32)
     # build configuration, which is filled in for `$<CONFIG>`. We also don't
     # want to accidentally use a different OpenSim build/installation somewhere
     # on the machine.
-    set_tests_properties(python PROPERTIES ENVIRONMENT
-        "PATH=${CMAKE_BINARY_DIR}/$<CONFIG>")
+    # TODO use the commented-out version when moving to CMake 3.0.
+    #set_tests_properties(python PROPERTIES ENVIRONMENT
+    #    "PATH=${CMAKE_BINARY_DIR}/$<CONFIG>")
+    foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
+        set_tests_properties(python_${cfg} PROPERTIES ENVIRONMENT
+            "PATH=${CMAKE_BINARY_DIR}/${cfg}")
+    endforeach()
 endif()
 
 # Allow MSVC users to run only the python tests directly from the MSVC GUI.
