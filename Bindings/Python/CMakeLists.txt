@@ -182,14 +182,36 @@ set_target_properties(PythonBindings PROPERTIES
 
 # Test.
 # =====
-add_test(NAME python WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
-    # This command runs all the python tests in the tests directory from the
-    # source tree. It's important to run the tests in the source tree so that
-    # one can edit the tests and immediately re-run the tests without any
-    # intermediate file copying.
-    COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
-                "${CMAKE_CURRENT_SOURCE_DIR}/tests" --verbose
-    )
+# This test runs all the python tests in the tests directory from the
+# source tree. It's important to run the tests in the source tree so that
+# one can edit the tests and immediately re-run the tests without any
+# intermediate file copying.
+# TODO when minimum cmake is v3.0.0 and add_test WORKING_DIRECTORY supports
+# generator expressions, use the following instead:
+#   add_test(NAME python
+#       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
+#       COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
+#                   --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+#                   --verbose
+#       )
+if(MSVC OR XCODE)
+    foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
+        add_test(NAME python_${cfg}
+            WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${cfg}"
+            COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
+                --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+                --verbose
+            CONFIGURATIONS ${cfg}
+            )
+    endforeach()
+else()
+    add_test(NAME python
+        WORKING_DIRECTORY "${OPENSIM_PYTHON_BINARY_DIR}"
+        COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
+            --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+            --verbose
+        )
+endif()
 
 if(WIN32)
     # On Windows, CMake cannot use RPATH to hard code the location of libraries
