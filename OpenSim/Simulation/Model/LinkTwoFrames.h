@@ -37,9 +37,9 @@ class PhysicalOffsetFrame;
 /**
  * LinkTwoFrames is a utility class to extend a Component such that it connects
  * two Frames. For example, a WeldConstraint and BushingForces operate between
- * two Frames to restrict their motion. A LinkTwoFrames<Force, PhysicalFrame>,
+ * two frames to restrict their motion. A LinkTwoFrames<Force, PhysicalFrame>,
  * for example, is a Force that operates between two PhyscialFrames and it is 
- * the base class for BushingForce.
+ * the base class for BushingForces.
  * (A class whose super class is a template parameter is called a mixin class.)
  *
  * @code class BushingForce : public LinkTwoFrames<Force, PhysicalFrame> @endcode
@@ -198,12 +198,18 @@ protected:
     /** Helper method to add in the equivalent system spatial forces given 
         internal forces. Internal forces are expressed in the mobility basis as
         parameterized by the deflection between frame1 and frame2, dq, and its
-        derivative, dqdot.
+        time derivative, dqdot.
+        The intended usage is within a Force::computeForce() which is tasked with
+        populating vectors of generalized forces and/or (mobilized body) spatial
+        forces. This method will populate (add in) the spatialForces given the 
+        internal force.
     @param state                const State of current system configuration
     @param[in] f                Vec6 of forces in the basis of the deflection 
     @param[in,out] spatialForces   Vector of SpatialVec's (torque, force) on 
-                                   each PhysicalFrame in the System          
-    @see convertInternalForceToForcesOnFrames() */
+                                   each PhysicalFrame's base frame in the System.
+                                   This is equivalent to each MobilizedBody.
+    @see convertInternalForceToForcesOnFrames() 
+    @see PhysicalFrame::findBaseFrame() */
     void addInPhysicalForcesFromInternal(const SimTK::State& state,
         SimTK::Vec6 f, SimTK::Vector_<SimTK::SpatialVec>& spatialForces) const;
 

@@ -35,15 +35,15 @@ namespace OpenSim {
 //                          EXPRESSION BASED BUSHING FORCE
 //==============================================================================
 /**
- * A class implementing a bushing force specified by expressions of the deflection
- * between two bushing frames. These expressions are user specified as strings
- * that are interpreted during a simulation.
- * Each expression can be a function of the bushing's rotational deflections 
+ * A class implementing a bushing force specified by expressions of the
+ * deflection between two bushing frames. These expressions are user specified
+ * as strings that are interpreted during a simulation.
+ * Each expression is a function of the bushing's rotational deflections 
  * (theta_x, theta_y, theta_z) and translational deflections, (delta_x, delta_y,
  * delta_z). These user defined expressions can capture nonlinearities and 
  * coupling common in biologic structures.  
  *
- * A bushing force is the resistive force due to deviation between two frames. 
+ * A bushing force is the resistive force due to defection between two frames. 
  * One can think of the Bushing as being composed of 3 translational and 3 
  * torsional spring-dampers, which act along or about the bushing frame axes. 
  * Orientations are measured as x-y-z body-fixed Euler rotations.
@@ -58,35 +58,41 @@ public:
 // PROPERTIES
 //==============================================================================
     OpenSim_DECLARE_PROPERTY(Mx_expression, std::string,
-        "Expression defining the contribution of theta_x deflection to the moment about body_2's x axis."
-        "The expression is a string and can not have any whitespace separating characters.");
+        "Expression defining the contribution of theta_x deflection to the "
+        "moment about body_2's x axis. The expression is a string and can not "
+        "have any whitespace separating characters.");
     OpenSim_DECLARE_PROPERTY(My_expression, std::string,
-        "Expression defining the contribution of theta_y deflection to the moment about body_2's y axis."
-        "The expression is a string and can not have any whitespace separating characters.");
+        "Expression defining the contribution of theta_y deflection to the "
+        "moment about body_2's y axis. The expression is a string and can not "
+        "have any whitespace separating characters.");
     OpenSim_DECLARE_PROPERTY(Mz_expression, std::string,
-        "Expression defining the contribution of theta_z deflection to the moment about body_2's z axis."
-        "The expression is a string and can not have any whitespace separating characters.");
+        "Expression defining the contribution of theta_z deflection to the "
+        "moment about body_2's z axis. The expression is a string and can not "
+        "have any whitespace separating characters.");
     OpenSim_DECLARE_PROPERTY(Fx_expression, std::string,
-        "Expression defining the contribution of x deflection to the force in the x direction."
-        "The expression is a string and can not have any whitespace separating characters.");
+        "Expression defining the contribution of x deflection to the force in "
+        "the x direction. The expression is a string and can not have any "
+        "whitespace separating characters.");
     OpenSim_DECLARE_PROPERTY(Fy_expression, std::string,
-        "Expression defining the contribution of y deflection to the force in the y direction."
-        "The expression is a string and can not have any whitespace separating characters.");
+        "Expression defining the contribution of y deflection to the force in "
+        "the y direction. The expression is a string and can not have any "
+        "whitespace separating characters.");
     OpenSim_DECLARE_PROPERTY(Fz_expression, std::string,
-        "Expression defining the contribution of z deflection to the force in the z direction."
-        "The expression is a string and can not have any whitespace separating characters.");
+        "Expression defining the contribution of z deflection to the force in "
+        "the z direction. The expression is a string and can not have any "
+        "whitespace separating characters.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(visual_aspect_ratio, double,
-        "Scalar number signifying the ratio of length/diameter used to display the force and "
-        "moment vectors.");
+        "Scalar number signifying the ratio of length/diameter used to display "
+        "the force and moment vectors.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(moment_visual_scale, double,
-        "Value multiplying the bushing moments before displaying the moment vector");
+        "Scale factor applied to the bushing moments before displaying them.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(force_visual_scale, double,
-        "Value multiplying the bushing forces before displaying the force vector");
+        "Scale factor applied to the bushing forces before displaying them.");
 
     OpenSim_DECLARE_PROPERTY(rotational_damping, SimTK::Vec3,
-        "Damping parameters resisting relative angular velocity.");
+        "Damping parameters resisting angular deflection rate (theta_dot).");
     OpenSim_DECLARE_PROPERTY(translational_damping, SimTK::Vec3,
-        "Damping parameters resisting relative translational velocity.");
+        "Damping parameters resisting translational deflection (delta_dot) .");
 
 //==============================================================================
 // PUBLIC METHODS
@@ -129,50 +135,52 @@ public:
     // assignment operator.
 
 
-    /** Set the value used to scale the bushing moment on body2 when drawing it to screen.  
-      * A moment of magnitude |M| will be drawn on screen with a length of (|M|*scale).  **/
+    /** Set the value used to scale the bushing moment on body2 when drawing it to
+        screen. A moment of magnitude |M| will be drawn on screen with a length of 
+        (|M|*scale).  **/
     void setMomentVisualScale(double scale) {set_moment_visual_scale(scale);};
-    /** Set the value used to scale the bushing force on body2 when drawing it to screen.  
-      * A force of magnitude |F| will be drawn on screen with a length of (|F|*scale).  **/
+    /** Set the value used to scale the bushing force on body2 when drawing it to
+        screen. A force of magnitude |F| will be drawn on screen with a length of
+        (|F|*scale).  **/
     void setForceVisualScale(double scale) {set_force_visual_scale(scale);}
-    /** Set the aspect ratio used to control the thickness of the bushing force and moment
-      * in drawn in the visualizer.  ratio = length/diameter.**/
+    /** Set the aspect ratio used to control the thickness of the bushing force
+        and moment in drawn in the visualizer.  ratio = length/diameter.**/
     void setVisualAspectRatio(double ratio) {set_visual_aspect_ratio(ratio);}
-    /** Set the expression defining Mx as a function of the bushing deflections theta_x, 
-      * theta_y, theta_z, delta_x, delta_y, delta_z **/
+    /** Set the expression defining Mx as a function of the bushing deflections 
+        theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
     void setMxExpression(std::string expression);
-    /** Set the expression defining My as a function of the bushing deflections theta_x, 
-      * theta_y, theta_z, delta_x, delta_y, delta_z **/
+    /** Set the expression defining My as a function of the bushing deflections
+        theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
     void setMyExpression(std::string expression);
-    /** Set the expression defining Mz as a function of the bushing deflections theta_x, 
-      * theta_y, theta_z, delta_x, delta_y, delta_z **/
+    /** Set the expression defining Mz as a function of the bushing deflections
+        theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
     void setMzExpression(std::string expression);
-    /** Set the expression defining Fx as a function of the bushing deflections theta_x, 
-      * theta_y, theta_z, delta_x, delta_y, delta_z **/
+    /** Set the expression defining Fx as a function of the bushing deflections
+        theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
     void setFxExpression(std::string expression);
-    /** Set the expression defining Fy as a function of the bushing deflections theta_x, 
-      * theta_y, theta_z, delta_x, delta_y, delta_z **/
+    /** Set the expression defining Fy as a function of the bushing deflections
+        theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
     void setFyExpression(std::string expression);
-    /** Set the expression defining Fz as a function of the bushing deflections theta_x, 
-      * theta_y, theta_z, delta_x, delta_y, delta_z **/
+    /** Set the expression defining Fz as a function of the bushing deflections
+        theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
     void setFzExpression(std::string expression);
-    /** Get the expression defining Mx as a function of the bushing deflections theta_x, 
-      * theta_y, theta_z, delta_x, delta_y, delta_z **/
+    /** Get the expression defining Mx as a function of the bushing deflections
+        theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
     std::string getMxExpression() { return get_Mx_expression(); }
-    /** Get the expression defining My as a function of the bushing deflections theta_x, 
-      * theta_y, theta_z, delta_x, delta_y, delta_z **/
+    /** Get the expression defining My as a function of the bushing deflections
+        theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
     std::string getMyExpression() { return get_My_expression(); }
-    /** Get the expression defining Mz as a function of the bushing deflections theta_x, 
-      * theta_y, theta_z, delta_x, delta_y, delta_z **/
+    /** Get the expression defining Mz as a function of the bushing deflections
+        theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
     std::string getMzExpression() { return get_Mz_expression(); }
-    /** Get the expression defining Fx as a function of the bushing deflections theta_x, 
-      * theta_y, theta_z, delta_x, delta_y, delta_z **/
+    /** Get the expression defining Fx as a function of the bushing deflections
+        theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
     std::string getFxExpression() { return get_Fx_expression(); }
-    /** Get the expression defining Fy as a function of the bushing deflections theta_x, 
-      * theta_y, theta_z, delta_x, delta_y, delta_z **/
+    /** Get the expression defining Fy as a function of the bushing deflections
+        theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
     std::string getFyExpression() { return get_Fy_expression(); }
-    /** Get the expression defining Fz as a function of the bushing deflections theta_x, 
-      * theta_y, theta_z, delta_x, delta_y, delta_z **/
+    /** Get the expression defining Fz as a function of the bushing deflections
+        theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
     std::string getFzExpression() { return get_Fz_expression(); }
 
     //--------------------------------------------------------------------------

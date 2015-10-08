@@ -26,27 +26,27 @@
 
 // INCLUDE
 #include "osimPluginDLL.h"
-#include <OpenSim/Common/Property.h>
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/LinkTwoFrames.h>
 
 namespace OpenSim {
 
-//=================================================================================
-//=================================================================================
+//==============================================================================
+//==============================================================================
 /**
  * A class implementing a Coupled Bushing Force.
- * A Couple Bushing Force is the force proportional to the deflection of two frames, 
- * where components of the resulting BodyForce are coupled to any or all 
- * deflection, such that the general stiffness and damping matrices are 6x6.
+ * A Coupled Bushing Force is the force proportional to the deflection between 
+ * frames where components of the resulting internal force are coupled to any 
+ * component of the (6d) deflection, such that the general stiffness and damping
+ * matrices are 6x6.
  *
- * Deflection of an offset_frame (1) (on a PhysicalFrame e.g. a Body) and another 
- * offset_frame2 (on another PhysicalFrame) are expressed in terms of and x-y-z 
- * Euler angle sequence (for rotational deviation in radians) and x,y,z (distance
- * in m) of the bushing's offset_frame2 w.r.t. offset_frame1.
- * Damping is applied to the relative angular velocity (rad/s) and linear velocity 
- * (m/s) of offset_frame2 in offset_frame1.
+ * The deflection of one frame (2) (on a PhysicalFrame, e.g. a Body) with respect
+ * to the another frame (1) (another PhysicalFrame) are expressed in terms of an
+ * X,Y,Z body-fixed Euler angle sequence (for rotational deviation in radians) 
+ * and x,y,z (distances in m) to describe bushing frame2 w.r.t. frame1.
+ * Damping is applied to the relative deflection angle derivatives (rad/s) and
+ * linear velocity (m/s) of frame2 expressed in frame1.
  *
  * @author Ajay Seth
 
