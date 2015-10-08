@@ -154,7 +154,7 @@ script:
   # Add OpenSim libraries to library path.
   - if [ "$WRAP" = "on" ]; then export LD_LIBRARY_PATH=$OPENSIM_HOME/lib; fi
   # Go to the python wrapping package directory.
-  - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/sdk/python; fi
+  - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/share/doc/OpenSim/python; fi
   # Run the python tests, verbosely.
   - if [ "$WRAP" = "on" ]; then nosetests -v; fi
     
