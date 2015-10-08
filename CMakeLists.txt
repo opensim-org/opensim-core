@@ -97,9 +97,9 @@ if(UNIX AND
         ("${ABS_INSTALL_PREFIX}" STREQUAL "/usr" OR
         "${ABS_INSTALL_PREFIX}" STREQUAL "/usr/local") AND
         NOT ${BUILD_API_ONLY})
-    message(SEND_ERROR "Cannot install into /usr or /usr/local if building \
-    applications, since OpenSim executables conflict with vital UNIX \
-    executables. Either set BUILD_API_ONLY to ON or change \
+    message(SEND_ERROR "Cannot install into /usr or /usr/local if building
+    applications, since OpenSim executables conflict with vital UNIX
+    executables. Either set BUILD_API_ONLY to ON or change
     CMAKE_INSTALL_PREFIX.")
 endif()
 
