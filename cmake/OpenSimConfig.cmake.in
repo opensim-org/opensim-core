@@ -38,13 +38,8 @@ list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
 
 if(@OPENSIM_COPY_SIMBODY@)
     # Simbody headers have been copied to OpenSim.
-    if(WIN32)
-        set(_SIMBODY_INCLUDE_RELPATH "include")
-    else()
-        set(_SIMBODY_INCLUDE_RELPATH "simbody")
-    endif()
     list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
-        "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@/SimTK/${_SIMBODY_INCLUDE_RELPATH}")
+        "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@/Simbody")
 else()
     # Refer to Simbody's own headers.
     list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS "@Simbody_INCLUDE_DIR@")

@@ -439,8 +439,8 @@ link_directories("${Simbody_LIB_DIR}")
 if(${OPENSIM_COPY_SIMBODY})
 
     # Install Simbody headers into OpenSim installation.
-    install(DIRECTORY "${Simbody_INCLUDE_DIR}"
-            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/SimTK")
+    install(DIRECTORY "${Simbody_INCLUDE_DIR}/"
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/Simbody")
 
     # Figure out which Simbody files need to be installed in the /bin
     # directory and which in the lib directory. Executables go in /bin on all
