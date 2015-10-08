@@ -87,6 +87,21 @@ need to set PATH to run OpenSim tests and examples; this is done via the
 SimbodyFiles project. If OFF, you likely must set those environment variables
 for both OpenSim and Simbody." ON)
 
+option(BUILD_API_ONLY "Build/install only headers, libraries,
+wrapping, tests; not applications (ik, rra, etc.)." OFF)
+
+
+# Don't install applications into system directories on UNIX.
+get_filename_component(ABS_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" REALPATH)
+if(UNIX AND 
+        ("${ABS_INSTALL_PREFIX}" STREQUAL "/usr" OR
+        "${ABS_INSTALL_PREFIX}" STREQUAL "/usr/local") AND
+        NOT ${BUILD_API_ONLY})
+    message(SEND_ERROR "Cannot install into /usr or /usr/local if building
+    applications, since OpenSim executables conflict with vital UNIX
+    executables. Either set BUILD_API_ONLY to ON or change
+    CMAKE_INSTALL_PREFIX.")
+endif()
 
 # Platform.
 # ---------
@@ -461,16 +476,15 @@ endif(WIN32)
 enable_testing()
 include(CTest)
 
-# Sets the number of CPUs testing would use
-set(cmd ${CMAKE_CTEST_COMMAND} -j${PROCESSOR_COUNT})
+# Sets the number of concurrent jobs that testing can use.
 if(MSVC OR XCODE)
-    set(cmd ${cmd} -C ${CMAKE_CFG_INTDIR})
-else(MSVC OR XCODE)
-    set(cmd ${cmd} -C ${CMAKE_BUILD_TYPE})
-endif(MSVC OR XCODE)
+    set(OPENSIM_TEST_BUILD_CONFIG --build-config ${CMAKE_CFG_INTDIR})
+endif()
 add_custom_target(RUN_TESTS_PARALLEL
-    COMMAND ${cmd}
-)
+    COMMAND ${CMAKE_CTEST_COMMAND} --parallel ${PROCESSOR_COUNT}
+                                   ${OPENSIM_TEST_BUILD_CONFIG}
+                                   --output-on-failure
+                                   )
 
 
 # Create buildinfo.txt file and place under sdk to include product version, platform and compiler for troubleshooting purposes
@@ -505,8 +519,6 @@ add_definitions(-DOSIM_SYS_INFO=${OPENSIM_SYSTEM_INFO}
 
 
 #-----------------------------------------------------------------------------
-set(BUILD_API_ONLY OFF CACHE BOOL "Build/install only headers, libraries,
-    wrapping, tests; not applications (ik, rra, etc.).")
 
 # This directory contains files (e.g., .osim) that multiple tests may want to
 # use. See the OpenSimCopySharedTestFiles function in
