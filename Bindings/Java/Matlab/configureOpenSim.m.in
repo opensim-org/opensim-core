@@ -39,7 +39,7 @@
             error('User cancelled function')
         end
         % Check if the correct OpenSim directory is selected
-        if ~exist(fullfile(openSimFolder, 'sdk', 'buildinfo.txt'))
+        if ~exist(fullfile(openSimFolder, '@CMAKE_INSTALL_SYSCONFDIR@', 'buildinfo.txt'))
             h = msgbox('Folder is not an OpenSim Install folder. Please select OpenSim Install folder','Error');
             uiwait(h)
         else
@@ -58,7 +58,7 @@
 %% Edit the librarypath.txt (need full path for print)
 % Create the string names used
     libraryFile = fullfile(mr, 'toolbox', 'local','librarypath.txt');
-    OpenSimLibPath  = fullfile(openSimFolder, 'bin');
+    OpenSimLibPath  = fullfile(openSimFolder, '@OPENSIM_INSTALL_SHAREDLIBDIR@');
 % Edit the library path txt file
     edit_path_txt_file(libraryFile,OpenSimLibPath)
 %% Edit Matlab path
@@ -115,13 +115,13 @@ function checkSystemInfo(openSimFolder)
  % check to see if the buildinfo.txt file is present. This file will give
  % us install type info that determines compatability between MATLAB and
  % opensim (both 64 bit?)
- if ~exist(fullfile(openSimFolder, 'sdk', 'buildinfo.txt'))
+ if ~exist(fullfile(openSimFolder, '@CMAKE_INSTALL_SYSCONFDIR@', 'buildinfo.txt'))
 	 % is systemInfo.txt file available?
      h = msgbox('Unable to check OpenSim version (64 or 32). Buildinfo.txt not found in OpenSim\SDK folder. Please download OpenSim 3.2', 'Error');
      uiwait(h)
      return
  else
-    fileID = fopen(fullfile(openSimFolder, 'sdk', 'buildinfo.txt'));
+    fileID = fopen(fullfile(openSimFolder, '@CMAKE_INSTALL_SYSCONFDIR@', 'buildinfo.txt'));
     OpenSimInstallInfo = textscan(fileID,'%s');
     fclose(fileID);
     platformID=char(OpenSimInstallInfo{1,1}{end,1});

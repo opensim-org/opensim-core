@@ -94,13 +94,13 @@ function(OpenSimAddLibrary)
     endif()
     install(TARGETS ${OSIMADDLIB_LIBRARY_NAME}
         EXPORT OpenSimTargets
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION "${OSIMADDLIB_LIBRARY_DESTINATION}"
-        ARCHIVE DESTINATION sdk/lib)
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        ARCHIVE DESTINATION "${OPENSIM_INSTALL_ARCHIVEDIR}")
 
     # Install headers.
     # ----------------
-    set(_INCLUDE_PREFIX sdk/include)
+    set(_INCLUDE_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}")
     if(OSIMADDLIB_VENDORLIB)
         set(_INCLUDE_PREFIX ${_INCLUDE_PREFIX}/Vendors)
     else()
@@ -233,7 +233,7 @@ function(OpenSimAddApplication APPNAME)
     include_directories(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors)
     add_executable(${APPNAME} ${APPNAME}.cpp)
     target_link_libraries(${APPNAME} osimTools)
-    install(TARGETS ${APPNAME} DESTINATION bin)
+    install(TARGETS ${APPNAME} DESTINATION "${CMAKE_INSTALL_BINDIR}")
     set_target_properties(${APPNAME} PROPERTIES
         FOLDER "Applications")
 

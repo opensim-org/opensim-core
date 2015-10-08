@@ -13,6 +13,7 @@ link_libraries(debug xerces-c_2D optimized xerces-c_2
 
 add_executable(convertFiles ${SOURCE_FILES} ${INCLUDE_FILES})
 
-set_target_properties(convertFiles PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Utilities - convertFiles")
+set_target_properties(convertFiles PROPERTIES
+    ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Utilities - convertFiles")
 
-install_targets(/bin/ convertFiles)
+install(TARGETS convertFiles DESTINATION "${CMAKE_INSTALL_BINDIR}")

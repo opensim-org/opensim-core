@@ -52,11 +52,13 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 
 
-# Make everything go in the same binary directory. (These are CMake-defined
-# variables.)
+# Make everything go in the same binary directory.
+# ------------------------------------------------
+# These are CMake-defined variables.
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 link_directories(${CMAKE_BINARY_DIR})
+
 
 # OpenSim options.
 # ----------------
@@ -86,6 +88,68 @@ Simbody dll's and exe's into the OpenSim build directory, so that you don't
 need to set PATH to run OpenSim tests and examples; this is done via the
 SimbodyFiles project. If OFF, you likely must set those environment variables
 for both OpenSim and Simbody." ON)
+
+
+# Configure installation directories across platforms.
+# ----------------------------------------------------
+#include(GNUInstallDirs)
+#
+#set(OPENSIM_INSTALL_UNIX_FHS_DEFAULT OFF)
+#if(UNIX)
+#    set(OPENSIM_INSTALL_UNIX_FHS_DEFAULT ON)
+#endif()
+#option(OPENSIM_INSTALL_UNIX_FHS
+#    "Organize installation according to UNIX Filesystem Hierarchy Standard (FHS)."
+#    ${OPENSIM_INSTALL_UNIX_FHS_DEFAULT ON)
+#if(WIN32)
+#    # Windows users probably aren't interested in this option.
+#    mark_as_advanced(OPENSIM_INSTALL_UNIX_FHS)
+#endif()
+#
+## GNUInstallDirs sets the variables CMAKE_INSTALL_*DIR; we modify/overwrite
+## them here.
+#if(${OPENSIM_INSTALL_UNIX_FHS})
+#    set(OPENSIM_INSTALL_ARCHIVEDIR "${CMAKE_INSTALL_LIBDIR}")
+#    set(OPENSIM_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/opensim")
+#    set(OPENSIM_INSTALL_MATLABDIR "${CMAKE_INSTALL_DOCDIR}/Scripts")
+#else()
+    #endif()
+
+# The *_INSTALL_*DIR variables that start with CMAKE_ are defined by
+# GNUInstallDirs. The ones starting with OPENSIM_ are not, but are still useful
+# for us.
+
+# Binaries, libraries, includes.
+set(CMAKE_INSTALL_BINDIR bin)
+set(CMAKE_INSTALL_INCLUDEDIR sdk/include)
+# TODO just use lib.
+if(WIN32)
+    set(CMAKE_INSTALL_LIBDIR sdk/lib)
+else()
+    set(CMAKE_INSTALL_LIBDIR lib)
+endif()
+# TODO set(CMAKE_INSTALL_LIBDIR lib)
+
+# Cross-platform location of shared libraries. Used in configureOpenSim.m.
+if(WIN32)
+    set(OPENSIM_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_BINDIR}")
+else()
+    set(OPENSIM_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_LIBDIR}")
+endif()
+
+set(OPENSIM_INSTALL_ARCHIVEDIR sdk/lib)
+
+set(OPENSIM_INSTALL_CMAKEDIR cmake) # UNIX: "${CMAKE_INSTALL_LIBDIR}/cmake/OpenSim")
+
+# Documentation, examples, bindings.
+set(CMAKE_INSTALL_DOCDIR sdk/doc)
+# SYSCONFDIR holds read-only single-machine machine-dependent data.
+set(CMAKE_INSTALL_SYSCONFDIR sdk) # buildinfo.txt
+set(OPENSIM_INSTALL_PYTHONDIR sdk/python) # UNIX: lib/python2.7/dist-packages
+set(OPENSIM_INSTALL_JAVAJARDIR sdk/Java) # UNIX: share/java
+set(OPENSIM_INSTALL_JAVASRCDIR sdk/Java) # UNIX: share/doc/java
+set(OPENSIM_INSTALL_CPPEXDIR sdk/APIExamples)
+set(OPENSIM_INSTALL_SCRIPTSDIR sdk/Scripts)
 
 
 # Platform.
@@ -365,18 +429,20 @@ link_directories("${Simbody_LIB_DIR}")
 if(${OPENSIM_COPY_SIMBODY})
 
     # Install Simbody headers into OpenSim installation.
-    install(DIRECTORY "${Simbody_INCLUDE_DIR}" DESTINATION sdk/include/SimTK)
+    install(DIRECTORY "${Simbody_INCLUDE_DIR}"
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/SimTK")
 
     # Figure out which Simbody files need to be installed in the /bin
     # directory and which in the lib directory. Executables go in /bin on all
     # platforms.  Libraries (shared or otherwise) go in /lib, except on Windows
     # where the ".dll" files go in bin along with executables. Anything that
     # is only needed for programmers goes in sdk/lib.
+    # TODO use SimbodyConfig.cmake variables instead of these globs.
     if(WIN32)
         file(GLOB SIMBODY_BIN_FILES
             ${Simbody_BIN_DIR}/*.dll
             ${Simbody_BIN_DIR}/*.exe)
-        file(GLOB SIMBODY_SDKLIB_FILES
+        file(GLOB SIMBODY_ARCHIVE_FILES
             ${Simbody_LIB_DIR}/*.lib)
     else()
         file(GLOB SIMBODY_BIN_FILES
@@ -387,14 +453,17 @@ if(${OPENSIM_COPY_SIMBODY})
             ${Simbody_LIB_DIR}/*SimTK*.so
             ${Simbody_LIB_DIR}/*SimTK*.so.*
             ${Simbody_LIB_DIR}/*SimTK*.dylib)
-        file(GLOB SIMBODY_SDKLIB_FILES
+        file(GLOB SIMBODY_ARCHIVE_FILES
             ${Simbody_LIB_DIR}/*SimTK*.a)
     endif()
 
     # Specify "PROGRAMS" rather than "FILES" so the execute bit gets set.
-    install(PROGRAMS ${SIMBODY_BIN_FILES} DESTINATION bin)
-    install(FILES ${SIMBODY_LIB_FILES}    DESTINATION lib)
-    install(FILES ${SIMBODY_SDKLIB_FILES} DESTINATION sdk/lib)
+    install(PROGRAMS    ${SIMBODY_BIN_FILES}
+            DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    install(FILES       ${SIMBODY_LIB_FILES}
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+    install(FILES       ${SIMBODY_ARCHIVE_FILES}
+            DESTINATION "${OPENSIM_INSTALL_ARCHIVEDIR}")
 
     # On Windows, we must copy Simbody libraries to the OpenSim build directory
     # so that the tests and examples can run without modifying the PATH
@@ -437,18 +506,6 @@ if(${OPENSIM_COPY_SIMBODY})
 endif()
 
 
-# Where do build products go in the build tree?
-# ---------------------------------------------
-if(NOT LIBRARY_OUTPUT_PATH)
-    set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR} CACHE INTERNAL
-        "Single output directory for building all libraries.")
-endif()
-if(NOT EXECUTABLE_OUTPUT_PATH)
-  set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR} CACHE INTERNAL
-      "Single output directory for building all executables.")
-endif()
-
-
 # Other than Windows we can debug without debuggable SimTK libraries
 if(WIN32)
     set(CMAKE_DEBUG_POSTFIX "_d" CACHE INTERNAL "" FORCE)
@@ -482,7 +539,7 @@ file(APPEND  ${VERSION_FILE_PATH} "Compiler=${CMAKE_GENERATOR}-${CMAKE_CXX_COMPI
 file(APPEND  ${VERSION_FILE_PATH} "\n")
 file(APPEND  ${VERSION_FILE_PATH} "Platform=${PLATFORM_NAME}-${PLATFORM_ABI}")
 file(APPEND  ${VERSION_FILE_PATH} "\n")
-install(FILES ${VERSION_FILE_PATH} DESTINATION sdk)
+install(FILES ${VERSION_FILE_PATH} DESTINATION "${CMAKE_INSTALL_SYSCONFDIR}")
 
 
 # Preprocessor definitions.

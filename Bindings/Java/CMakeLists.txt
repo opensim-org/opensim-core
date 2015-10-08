@@ -1,5 +1,4 @@
 #-----------------------------------------------------------------------------
-#set(CMAKE_DEBUG_POSTFIX "_d" CACHE INTERNAL "" FORCE)
 
 subdirs(OpenSimJNI)
 
@@ -36,6 +35,13 @@ if( JAVA_COMPILE )
    )
 endif( JAVA_COMPILE )
 
-install(DIRECTORY Matlab DESTINATION Scripts 
-    PATTERN "Matlab/Dynamic_Walker_Example" EXCLUDE)
+install(DIRECTORY Matlab DESTINATION "${OPENSIM_INSTALL_SCRIPTSDIR}"
+    PATTERN "Matlab/Dynamic_Walker_Example" EXCLUDE
+    PATTERN "Matlab/configureOpenSim.m.in" EXCLUDE)
 
+# This script contains paths into the OpenSim installation that may be
+# different on different platforms, so we configure it with CMake variables.
+configure_file(Matlab/configureOpenSim.m.in
+    "${CMAKE_CURRENT_BINARY_DIR}/configureOpenSim.m" @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/configureOpenSim.m"
+        DESTINATION "${OPENSIM_INSTALL_SCRIPTSDIR}/Matlab")

@@ -1,4 +1,5 @@
-install_files(/sdk/doc FILES "BuildOpenSimPluginSteps.pdf")
+install(FILES "BuildOpenSimPluginSteps.pdf"
+        DESTINATION "${CMAKE_INSTALL_DOCDIR}")
 
 find_package(Doxygen)
 
@@ -210,14 +211,14 @@ if(${DOXYGEN_FOUND})
     
         # Installation
         # ------------
-        install(DIRECTORY "${PROJECT_BINARY_DIR}/html_${audience}/"
-                DESTINATION "sdk/doc/html_${audience}"
+        install(DIRECTORY   "${PROJECT_BINARY_DIR}/html_${audience}/"
+                DESTINATION "${CMAKE_INSTALL_DOCDIR}/html_${audience}"
                 )
 
     endforeach()
 
     # This is just a shortcut to the Doxygen index.html, for the user
     # documentation.
-    install(FILES "OpenSimAPI.html" DESTINATION "sdk/doc")
+    install(FILES "OpenSimAPI.html" DESTINATION "${CMAKE_INSTALL_DOCDIR}")
 
 endif()

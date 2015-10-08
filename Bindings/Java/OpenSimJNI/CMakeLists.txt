@@ -86,20 +86,13 @@ add_dependencies(osim${KIT} JavaWrap)
 # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
 # or OpemSim/lib/*.dylib (Mac). Windows .lib files, and Linux/Mac .a static
 # archives are only needed at link time so go in sdk/lib.
-if(WIN32)
-    install(TARGETS osim${KIT}
-            RUNTIME DESTINATION bin
-            LIBRARY DESTINATION sdk/lib
-            ARCHIVE DESTINATION sdk/lib)
-else()
-    install(TARGETS osim${KIT}
-            RUNTIME DESTINATION bin
-            LIBRARY DESTINATION lib
-            ARCHIVE DESTINATION sdk/lib)
-endif()
+install(TARGETS osim${KIT}
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    ARCHIVE DESTINATION "${OPENSIM_INSTALL_ARCHIVEDIR}")
 
 install(DIRECTORY ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}/
-    DESTINATION sdk/Java/${SWIG_JAVA_PACKAGE_PATH})
+    DESTINATION "${OPENSIM_INSTALL_JAVASRCDIR}/${SWIG_JAVA_PACKAGE_PATH}")
 
 if(BUILD_TESTING)
     subdirs(Test)
