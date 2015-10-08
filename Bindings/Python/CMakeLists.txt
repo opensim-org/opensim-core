@@ -153,7 +153,9 @@ endif()
 
 # Install python package.
 # -----------------------
-install(FILES "${PYTHON_PACKAGE_BINARY_DIR}/setup.py" DESTINATION sdk/python)
-install(DIRECTORY "${PYTHON_PACKAGE_BINARY_DIR}/opensim" DESTINATION sdk/python)
+install(FILES "${PYTHON_PACKAGE_BINARY_DIR}/setup.py"
+        DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}")
+install(DIRECTORY "${PYTHON_PACKAGE_BINARY_DIR}/opensim"
+        DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}")
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests"
-        DESTINATION sdk/python/opensim)
+        DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")

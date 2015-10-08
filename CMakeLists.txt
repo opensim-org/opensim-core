@@ -92,43 +92,67 @@ for both OpenSim and Simbody." ON)
 
 # Configure installation directories across platforms.
 # ----------------------------------------------------
-#include(GNUInstallDirs)
-#
-#set(OPENSIM_INSTALL_UNIX_FHS_DEFAULT OFF)
-#if(UNIX)
-#    set(OPENSIM_INSTALL_UNIX_FHS_DEFAULT ON)
-#endif()
-#option(OPENSIM_INSTALL_UNIX_FHS
-#    "Organize installation according to UNIX Filesystem Hierarchy Standard (FHS)."
-#    ${OPENSIM_INSTALL_UNIX_FHS_DEFAULT ON)
-#if(WIN32)
-#    # Windows users probably aren't interested in this option.
-#    mark_as_advanced(OPENSIM_INSTALL_UNIX_FHS)
-#endif()
-#
-## GNUInstallDirs sets the variables CMAKE_INSTALL_*DIR; we modify/overwrite
-## them here.
-#if(${OPENSIM_INSTALL_UNIX_FHS})
-#    set(OPENSIM_INSTALL_ARCHIVEDIR "${CMAKE_INSTALL_LIBDIR}")
-#    set(OPENSIM_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/opensim")
-#    set(OPENSIM_INSTALL_MATLABDIR "${CMAKE_INSTALL_DOCDIR}/Scripts")
-#else()
-    #endif()
 
-# The *_INSTALL_*DIR variables that start with CMAKE_ are defined by
-# GNUInstallDirs. The ones starting with OPENSIM_ are not, but are still useful
-# for us.
-
-# Binaries, libraries, includes.
-set(CMAKE_INSTALL_BINDIR bin)
-set(CMAKE_INSTALL_INCLUDEDIR sdk/include)
-# TODO just use lib.
-if(WIN32)
-    set(CMAKE_INSTALL_LIBDIR sdk/lib)
-else()
-    set(CMAKE_INSTALL_LIBDIR lib)
+## OPENSIM_INSTALL_UNIX_FHS option.
+set(OPENSIM_INSTALL_UNIX_FHS_DEFAULT OFF)
+if(UNIX)
+    set(OPENSIM_INSTALL_UNIX_FHS_DEFAULT ON)
 endif()
-# TODO set(CMAKE_INSTALL_LIBDIR lib)
+
+option(OPENSIM_INSTALL_UNIX_FHS
+    "Organize installation according to UNIX Filesystem Hierarchy Standard."
+    ${OPENSIM_INSTALL_UNIX_FHS_DEFAULT})
+
+if(WIN32)
+    # Windows users probably aren't interested in this option.
+    mark_as_advanced(OPENSIM_INSTALL_UNIX_FHS)
+endif()
+
+## Set variables describing where everything gets installed.
+if(${OPENSIM_INSTALL_UNIX_FHS})
+
+    # Sets CMAKE_INSTALL_*DIR variables, some of which are used below.
+    include(GNUInstallDirs)
+
+    # Now set variables that depend on those set by GNUInstallDirs.
+
+    # There's a difference between the locations of these files we'd want
+    # when using apt-get, and what a build-from-source user would want. For
+    # now the focus is making sure that if a build-from-source user installs
+    # into /usr or /usr/local, they have a FHS-compliant OpenSim installation.
+
+    set(OPENSIM_INSTALL_ARCHIVEDIR "${CMAKE_INSTALL_LIBDIR}")
+    set(OPENSIM_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/OpenSim")
+    # On Ubuntu/Debian (apt-get), might want lib/python2.7/dist-packages
+    set(OPENSIM_INSTALL_PYTHONDIR "${CMAKE_INSTALL_DOCDIR}/python")
+    # On Ubuntu/Debian (apt-get), might want share/java
+    set(OPENSIM_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DOCDIR}/Java")
+    # On Ubuntu/Debian (apt-get), might want share/doc/OpenSim/java
+    set(OPENSIM_INSTALL_JAVASRCDIR "${CMAKE_INSTALL_DOCDIR}/Java")
+    set(OPENSIM_INSTALL_CPPEXDIR "${CMAKE_INSTALL_DOCDIR}/APIExamples")
+    set(OPENSIM_INSTALL_SCRIPTSDIR "${CMAKE_INSTALL_DOCDIR}/Scripts")
+
+else()
+
+    # Use our own installation layout.
+
+    # Set the variables that would have otherwise been set by GNUInstallDirs.
+    set(CMAKE_INSTALL_BINDIR bin)
+    set(CMAKE_INSTALL_INCLUDEDIR sdk/include)
+    set(CMAKE_INSTALL_LIBDIR lib)
+    set(CMAKE_INSTALL_DOCDIR sdk/doc)
+    # SYSCONFDIR holds read-only single-machine machine-dependent data.
+    set(CMAKE_INSTALL_SYSCONFDIR sdk)
+
+    set(OPENSIM_INSTALL_ARCHIVEDIR sdk/lib)
+    set(OPENSIM_INSTALL_CMAKEDIR cmake)
+    set(OPENSIM_INSTALL_PYTHONDIR sdk/python)
+    set(OPENSIM_INSTALL_JAVAJARDIR sdk/Java)
+    set(OPENSIM_INSTALL_JAVASRCDIR sdk/Java)
+    set(OPENSIM_INSTALL_CPPEXDIR sdk/APIExamples)
+    set(OPENSIM_INSTALL_SCRIPTSDIR sdk/Scripts)
+
+endif()
 
 # Cross-platform location of shared libraries. Used in configureOpenSim.m.
 if(WIN32)
@@ -136,20 +160,6 @@ if(WIN32)
 else()
     set(OPENSIM_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_LIBDIR}")
 endif()
-
-set(OPENSIM_INSTALL_ARCHIVEDIR sdk/lib)
-
-set(OPENSIM_INSTALL_CMAKEDIR cmake) # UNIX: "${CMAKE_INSTALL_LIBDIR}/cmake/OpenSim")
-
-# Documentation, examples, bindings.
-set(CMAKE_INSTALL_DOCDIR sdk/doc)
-# SYSCONFDIR holds read-only single-machine machine-dependent data.
-set(CMAKE_INSTALL_SYSCONFDIR sdk) # buildinfo.txt
-set(OPENSIM_INSTALL_PYTHONDIR sdk/python) # UNIX: lib/python2.7/dist-packages
-set(OPENSIM_INSTALL_JAVAJARDIR sdk/Java) # UNIX: share/java
-set(OPENSIM_INSTALL_JAVASRCDIR sdk/Java) # UNIX: share/doc/java
-set(OPENSIM_INSTALL_CPPEXDIR sdk/APIExamples)
-set(OPENSIM_INSTALL_SCRIPTSDIR sdk/Scripts)
 
 
 # Platform.
