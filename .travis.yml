@@ -100,7 +100,7 @@ before_install:
   # Test Simbody.
   - ctest -j8 --output-on-failure
   # Install Simbody.
-  - make -j8 install
+  - make -j8 install > /dev/null
 
   ## Install SWIG to build Java/python wrapping.
   - if [[ "$WRAP" = "on" ]]; then if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pcre; fi; fi
