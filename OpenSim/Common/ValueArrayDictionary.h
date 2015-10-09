@@ -30,6 +30,12 @@
 
 namespace OpenSim {
 
+class KeyNotFound : public Exception {
+public:
+    KeyNotFound(const std::string& expl) : Exception(expl) {}
+};
+
+
 /** ValueArrayDictionary represents an associative array mapping from a string 
 to an AbstractValueArray.                                                     */
 class ValueArrayDictionary {
@@ -42,7 +48,11 @@ public:
 
     /** Get the first entry of the array corresponding to the given key.      */
     const AbstractValue& getValueForKey(const std::string& key) const {
-        return (*(_dictionary.at(key)))[0];
+        try {
+            return (*(_dictionary.at(key)))[0];
+        } catch(std::out_of_range&) {
+            throw KeyNotFound{"Key "+ key + " not found."};
+        }
     }
 
     /** Set the value corresponding to a given key.                           */
@@ -61,7 +71,11 @@ public:
     /** Get the array corresponding to a given key.                           */
     const AbstractValueArray& 
     getValueArrayForKey(const std::string& key) const {
-        return *(_dictionary.at(key));
+        try {
+            return *(_dictionary.at(key));
+        } catch(std::out_of_range&) {
+            throw KeyNotFound{"Key " + key + " not found."};
+        }
     }
 
     /** Set the array corresponding to a given key.                           */

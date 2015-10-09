@@ -35,6 +35,21 @@ in-memory container for data access and manipulation.                         */
 
 namespace OpenSim {
 
+class InvalidRow : public Exception {
+public:
+    InvalidRow(const std::string& expl) : Exception(expl) {}
+};
+
+class RowDoesNotExist : public Exception {
+public:
+    RowDoesNotExist(const std::string& expl) : Exception(expl) {}
+};
+
+class ColumnDoesNotExist : public Exception {
+public:
+    ColumnDoesNotExist(const std::string& expl) : Exception(expl) {}
+};
+
 /** AbstractDataTable is the base-class of all DataTable_(templated) allowing 
 storage of DataTable_ templated on different types to be stored in a container 
 like std::vector. DataTable_ represents a matrix and an additional column. The 
@@ -162,11 +177,13 @@ public:
             try {
                 auto& labels = 
                     _dependentsMetaData.getValueArrayForKey("labels");
-                if(depRow.size() != labels.size())
-                    throw Exception{"Number of columns in the input row does "
-                            "not match the number of labels."};
-            } catch(std::out_of_range&) {
-                // No operation.
+                if(depRow.ncol() != labels.size())
+                    throw InvalidRow{"Number of columns in the input row does "
+                            "not match the number of labels. Expected : " +
+                            std::to_string(labels.size()) + ". Received: " +
+                            std::to_string(depRow.ncol()) + "."};
+            } catch(KeyNotFound&) {
+                // No "labels". So no operation.
             }
             _depData.resize(1, depRow.size());
         } else
@@ -177,6 +194,7 @@ public:
 
     /** Get row at index.                                                     */
     RowVectorView getRowAtIndex(size_t index) const {
+        throwIfRowDoesNotExist(index);
         return _depData.row(index);
     }
 
@@ -185,14 +203,15 @@ public:
         auto iter = std::find(_indData.cbegin(), _indData.cend(), ind);
 
         if(iter == _indData.cend())
-            throw Exception{"Independent column has no entry with value " +
-                    std::to_string(ind)};
+            throw RowDoesNotExist{"Independent column has no entry with "
+                    "value " + std::to_string(ind) + "."};
 
         return _depData.row(std::distance(_indData.cbegin(), iter));
     }
 
     /** Update row at index.                                                  */
     RowVectorView updRowAtIndex(size_t index) {
+        throwIfRowDoesNotExist(index);
         return _depData.updRow(index);
     }
 
@@ -201,8 +220,8 @@ public:
         auto iter = std::find(_indData.cbegin(), _indData.cend(), ind);
 
         if(iter == _indData.cend())
-            throw Exception{"Independent column has no entry with value " +
-                    std::to_string(ind)};
+            throw RowDoesNotExist{"Independent column has no entry with "
+                    "value " + std::to_string(ind) + "."};
 
         return _depData.updRow(std::distance(_indData.cbegin(), iter));
     }
@@ -214,19 +233,30 @@ public:
 
     /** Get dependent column.                                                 */
     VectorView getDependentColumnAtIndex(size_t index) const {
+        throwIfColumnDoesNotExist(index);
         return _depData.col(index);
     }
 
     /** Set independent column at index.                                      */
     void setIndependentColumnAtIndex(size_t index, const ETX& value) {
-        if(index >= _indData.size())
-            throw Exception{"Invalid index."};
-        
+        throwIfRowDoesNotExist(index);
         validateRow(index, value, _depData.row(index));
         _indData[index] = value;
     }
 
 protected:
+    void throwIfRowDoesNotExist(const size_t rowIndex) const {
+        if(rowIndex >= _indData.size())
+            throw RowDoesNotExist{"Row " + std::to_string(rowIndex) + " does "
+                    "not exist."};
+    }
+
+    void throwIfColumnDoesNotExist(const size_t colIndex) const {
+        if(colIndex >= static_cast<size_t>(_depData.ncol()))
+            throw ColumnDoesNotExist{"Column " + std::to_string(colIndex) + 
+                    "does not exist."};
+    }
+
     size_t implementGetNumRows() const override {
         return _depData.nrow();
     }
