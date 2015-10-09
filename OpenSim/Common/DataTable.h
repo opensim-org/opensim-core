@@ -50,6 +50,11 @@ public:
     ColumnDoesNotExist(const std::string& expl) : Exception(expl) {}
 };
 
+class InvalidMetaData : public Exception {
+public:
+    InvalidMetaData(const std::string& expl) : Exception(expl) {}
+};
+
 /** AbstractDataTable is the base-class of all DataTable_(templated) allowing 
 storage of DataTable_ templated on different types to be stored in a container 
 like std::vector. DataTable_ represents a matrix and an additional column. The 
@@ -269,29 +274,34 @@ protected:
         try {
             _independentMetaData.getValueForKey("labels");
         } catch(std::out_of_range&) {
-            throw Exception{"Independent metadata does not contain 'labels'."};
+            throw InvalidMetaData{"Independent metadata does not contain "
+                    "'labels'."};
         }
     }
 
     void validateDependentsMetaData() const override {
-        unsigned num_cols{};
+        unsigned numCols{};
         try {
-            num_cols = _dependentsMetaData.getValueArrayForKey("labels").size();
+            numCols = _dependentsMetaData.getValueArrayForKey("labels").size();
         } catch (std::out_of_range&) {
-            throw Exception{"Dependent metadata does not contain 'labels'."};
+            throw InvalidMetaData{"Dependent metadata does not contain "
+                    "'labels'."};
         }
 
-        if(num_cols == 0)
-            throw Exception{"Dependent metadata for 'labels' has length zero."};
+        if(numCols == 0)
+            throw InvalidMetaData{"Dependent metadata for 'labels' has length"
+                    " zero."};
 
-        if(_depData.ncol() != 0 && num_cols != _depData.ncol())
-            throw Exception{"Dependent metadata for 'labels' has incorrect "
-                    "length."};
+        if(_depData.ncol() != 0 && numCols != _depData.ncol())
+            throw InvalidMetaData{"Dependent metadata for 'labels' has "
+                    "incorrect length. Expected : " + 
+                    std::to_string(_depData.ncol()) + ". Recieved : " + 
+                    std::to_string(numCols) + "."};
 
         for(const std::string& key : _dependentsMetaData.getKeys()) {
-            if(num_cols != _dependentsMetaData.getValueArrayForKey(key).size())
-                throw Exception{"All entries in dependent metadata must have "
-                        "same length."};
+            if(numCols != _dependentsMetaData.getValueArrayForKey(key).size())
+                throw InvalidMetaData{"All entries in dependent metadata must"
+                        " have same length."};
         }
     }
 

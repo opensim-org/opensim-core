@@ -61,11 +61,11 @@ public:
                         const ValueType& value) {
         using Value = SimTK::ClonePtr<AbstractValueArray>;
 
-        auto value_array = new ValueArray<ValueType>{};
-        value_array->upd().push_back(SimTK::Value<ValueType>{value});
-        AbstractValueArray* absvalue_array{value_array};
+        auto valueArray = new ValueArray<ValueType>{};
+        valueArray->upd().push_back(SimTK::Value<ValueType>{value});
+        AbstractValueArray* absValueArray{valueArray};
 
-        _dictionary.emplace(key, Value{absvalue_array});
+        _dictionary.emplace(key, Value{absValueArray});
     }
 
     /** Get the array corresponding to a given key.                           */
@@ -102,8 +102,8 @@ public:
         std::transform(_dictionary.begin(), 
                        _dictionary.end(),
                        std::back_inserter(keys),
-                       [] (const Dictionary::value_type& key_value) {
-                           return key_value.first;
+                       [] (const Dictionary::value_type& keyValue) {
+                           return keyValue.first;
                        });
 
         return keys;
