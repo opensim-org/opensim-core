@@ -74,12 +74,12 @@ public:
 
     /** Access an element of the array using its index.                       */
     Value<T>& operator[](size_t index) override {
-        return _values[index];
+        return _values.at(index);
     } 
 
     /** Access an element of the array using its index.                       */
     const Value<T>& operator[](size_t index) const override {
-        return _values[index];
+        return _values.at(index);
     }
 
     /** Get the underlying array.                                             */
