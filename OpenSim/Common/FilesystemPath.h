@@ -1,7 +1,7 @@
-#ifndef _osimCommon_h_
-#define _osimCommon_h_
+#ifndef OPENSIM_FILESYSTEM_PATH_H_
+#define OPENSIM_FILESYSTEM_PATH_H_
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  osimCommon.h                           *
+ *                             OpenSim: FilesystemPath.h                      *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                     *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Author(s): Chris Dembia                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,32 +23,41 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Object.h"
-#include "RegisterTypes_osimCommon.h"
-#include "FunctionSet.h"
-#include "GCVSplineSet.h"
-#include "ScaleSet.h"
-#include "GCVSpline.h"
-#include "IO.h"
+#include "osimCommonDLL.h"
+#include <iostream>
 
-#include "FilesystemPath.h"
+namespace OpenSim {
+class OSIMCOMMON_API FilesystemPath {
+public:
+    FilesystemPath() {}
+    explicit FilesystemPath(const std::string& pathname)
+        : m_pathname(pathname) {}
+    const std::string& get() const {
+        // TODO rename.
+        return m_pathname;
+    }
 
-#include "Scale.h"
-#include "SimmSpline.h"
-#include "Constant.h"
-#include "Sine.h"
-#include "StepFunction.h"
-#include "LinearFunction.h"
-#include "PiecewiseConstantFunction.h"
-#include "PiecewiseLinearFunction.h"
+    bool operator==(const FilesystemPath& other) const {
+        // TODO
+        return m_pathname == other.m_pathname;
+    }
 
-#include "MultiplierFunction.h"
-#include "PolynomialFunction.h"
+private:
+    std::string m_pathname;
+};
 
-#include "ObjectGroup.h"
-#include "StorageInterface.h"
-#include "LoadOpenSimLibrary.h"
-#include "RegisterTypes_osimCommon.h"   // to expose RegisterTypes_osimCommon
-#include "SmoothSegmentedFunctionFactory.h"
+OSIMCOMMON_API inline std::ostream& operator<<(std::ostream& o,
+        const FilesystemPath& path) {
+    if (path.get().find(' ') == std::string::npos) {
+        o << path.get();
+    } else {
+        // TODO prepend spaces with escape character. or
+        // put the path in quotes.
+        o << path.get();
+    }
+    return o;
+}
 
-#endif // _osimCommon_h_
+} // namespace OpenSim
+
+#endif // OPENSIM_FILESYSTEM_PATH_H_

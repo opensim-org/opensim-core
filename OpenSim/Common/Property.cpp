@@ -105,5 +105,6 @@ namespace OpenSim {
 template class SimpleProperty<int>;
 template class SimpleProperty<double>;
 template class SimpleProperty<std::string>;
+template class SimpleProperty<FilesystemPath>;
 template class ObjectProperty<Object>;
 }

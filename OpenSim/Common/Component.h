@@ -852,9 +852,14 @@ public:
         }
         else{
             std::stringstream msg;
-            msg << "Component::isCacheVariableValid: ERR- name not found.\n "
+            msg << "Component::isCacheVariableValid: ERR- name '"
+                << name << "' not found.\n "
                 << "for component '"<< getName() << "' of type " 
-                << getConcreteClassName();
+                << getConcreteClassName() << ". ";
+            msg << "The available cache variables are: " << std::endl;
+            for (const auto& kv : _namedCacheVariableInfo) {
+                msg << "    '" << kv.first << "'" << std::endl;
+            }
             throw Exception(msg.str(),__FILE__,__LINE__);
         }
     }

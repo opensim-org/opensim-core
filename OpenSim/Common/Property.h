@@ -26,6 +26,7 @@
 // INCLUDES
 #include "AbstractProperty.h"
 #include "Exception.h"
+#include "FilesystemPath.h"
 
 #ifdef SWIG
 #undef override
@@ -627,6 +628,15 @@ template<> struct Property<std::string>::TypeHelper {
     static bool isEqual(const std::string& a, const std::string& b)
     {   return a==b; }
 };
+/** TypeHelper specialization for FilesystemPath. **/
+template<> struct Property<FilesystemPath>::TypeHelper {
+    static const bool IsObjectType = false;
+    static SimpleProperty<FilesystemPath>* 
+        create(const std::string& name, bool isOne);
+    static std::string getTypeName() {return "FilesystemPath";}
+    static bool isEqual(const FilesystemPath& a, const FilesystemPath& b)
+    {   return a==b; }
+};
 
 /** TypeHelper specialization for double. Note that isEqual() operator here
 returns true if values are equal to within a tolerance. We also say NaN==NaN, 
@@ -909,8 +919,8 @@ writeSimplePropertyToStream(std::ostream& o) const
     SimTK::writeUnformatted(o, rotTrans);
 }
 
-// We have to provide specializations for string because we want to ignore white space
-// if the property allows only one value
+// We have to provide specializations for string because we want to ignore
+// white space if the property allows only one value
 template<> inline bool SimpleProperty<std::string>::
 readSimplePropertyFromStream(std::istream& in)
 {
@@ -920,9 +930,47 @@ readSimplePropertyFromStream(std::istream& in)
         values.clear();
         values.push_back(instream.str());
         return true;
-   }
-   else
-       return SimTK::readUnformatted(in, values);
+    }
+    else
+        return SimTK::readUnformatted(in, values);
+}
+
+// We must provide a specialization for FilesystemPath since Simbody's
+// readUnformatted and writeUnformatted can't handle FilesystemPath.
+// Similarly as for strings, we ignore white space if the property allows only
+// one value.
+// TODO add >> operator to FilesystemPath.
+template<> inline bool SimpleProperty<FilesystemPath>::
+readSimplePropertyFromStream(std::istream& in)
+{
+    if (this->getMaxListSize()==1)
+    {
+        std::istringstream& instream = (std::istringstream&)(in);
+        values.clear();
+        values.push_back(FilesystemPath(instream.str()));
+        return true;
+    }
+    else {
+        SimTK::Array_<std::string, int> valuesAsStrings;
+        if (!SimTK::readUnformatted(in, valuesAsStrings)) { return false; }
+        values.clear();
+        for (const auto& entry : valuesAsStrings) {
+            values.push_back(FilesystemPath(entry));
+        }
+        return true;
+    }
+}
+
+template<> inline void SimpleProperty<FilesystemPath>::
+writeSimplePropertyToStream(std::ostream& o) const
+{
+    // TODO add << operator to FilesystemPath.
+    for (int ival = 0; ival < values.size(); ++ival) {
+        o << values[ival];
+        if (ival != values.size() - 1) {
+            o << " ";
+        }
+    }
 }
 
 
@@ -1069,6 +1117,10 @@ TypeHelper::create(const std::string& name, bool isOne)
 inline SimpleProperty<std::string>* Property<std::string>::
 TypeHelper::create(const std::string& name, bool isOne) 
 {   return new SimpleProperty<std::string>(name, isOne); }
+
+inline SimpleProperty<FilesystemPath>* Property<FilesystemPath>::
+TypeHelper::create(const std::string& name, bool isOne) 
+{   return new SimpleProperty<FilesystemPath>(name, isOne); }
 
 inline SimpleProperty<double>* Property<double>::
 TypeHelper::create(const std::string& name, bool isOne) 
