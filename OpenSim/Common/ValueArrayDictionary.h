@@ -46,7 +46,9 @@ private:
 public:
     using AbstractValue = SimTK::AbstractValue;
 
-    /** Get the first entry of the array corresponding to the given key.      */
+    /** Get the first entry of the array corresponding to the given key.      
+
+    \throws KeyNotFound If key is not found.                                  */
     const AbstractValue& getValueForKey(const std::string& key) const {
         try {
             return (*(_dictionary.at(key)))[0];
@@ -68,7 +70,9 @@ public:
         _dictionary.emplace(key, Value{absValueArray});
     }
 
-    /** Get the array corresponding to a given key.                           */
+    /** Get the array corresponding to a given key.                           
+
+    \throws KeyNotFound If key is not found.                                  */
     const AbstractValueArray& 
     getValueArrayForKey(const std::string& key) const {
         try {

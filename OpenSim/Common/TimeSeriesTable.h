@@ -33,6 +33,11 @@ provide an in-memory container for data access and manipulation.              */
 
 namespace OpenSim {
 
+class InvalidTable : public Exception {
+public:
+    InvalidTable(const std::string& expl) : Exception(expl) {}
+};
+
 /** TimeSeriesTable_ is a DataTable_ where the independent column is time of 
 type double. The time column is enforced to be strictly increasing.           */
 template<typename ETY = SimTK::Real>
@@ -47,7 +52,10 @@ public:
     TimeSeriesTable_& operator=(TimeSeriesTable_&&)      = default;
     ~TimeSeriesTable_()                                  = default;
     
-    /** Construct a TimeSeriesTable_ from a DataTable_.                       */
+    /** Construct a TimeSeriesTable_ from a DataTable_.                       
+
+    \throws InvalidTable If the input table's independent column is not strictly
+                         increasing.                                          */
     TimeSeriesTable_(const DataTable_<double, ETY>& datatable) : 
         DataTable_<double, ETY>(datatable) {
         using DT = DataTable_<double, ETY>;
@@ -55,11 +63,16 @@ public:
         if(!std::is_sorted(DT::_indData.cbegin(), DT::_indData.cend()) ||
            std::adjacent_find(DT::_indData.cbegin(), DT::_indData.cend()) != 
            DT::_indData.cend()) {
-            throw Exception{"Independent column is not strictly increasing."};
+            throw InvalidTable{"Independent column of the input table is not "
+                    "strictly increasing."};
         }
     }
 
 protected:
+    /** Validate the given row. 
+
+    \throws InvalidRow If the timestamp for the row breaks strictly increasing
+                       property of the indpedent column.                      */
     void validateRow(size_t rowIndex,
                      const double& time, 
                      const RowVector& row) const override {
@@ -70,7 +83,7 @@ protected:
 
         if(rowIndex > 0) {
             if(DT::_indData[rowIndex - 1] >= time)
-                throw Exception{"Timestamp added for row " + 
+                throw InvalidRow{"Timestamp added for row " + 
                         std::to_string(rowIndex) + " is less than or equal to "
                         "the timestamp for row " + 
                         std::to_string(rowIndex - 1)};
@@ -78,7 +91,7 @@ protected:
 
         if(rowIndex < DT::_indData.size() - 1) {
             if(DT::_indData[rowIndex + 1] <= time)
-                throw Exception{"Timestamp added for row " +
+                throw InvalidRow{"Timestamp added for row " +
                         std::to_string(rowIndex) + " is greater than or equal "
                         "to the timestamp for row " + 
                         std::to_string(rowIndex + 1)};

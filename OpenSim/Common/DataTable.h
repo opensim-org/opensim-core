@@ -172,7 +172,10 @@ public:
         return std::unique_ptr<AbstractDataTable>{new DataTable_{*this}};
     }
 
-    /** Append row to the DataTable_.                                         */
+    /** Append row to the DataTable_.                                         
+
+    \throws InvalidRow If the row added is invalid. Validity of the row added is
+                       decided by the derived class.                          */
     void appendRow(const ETX& indRow, const RowVector& depRow) {
         validateRow(_indData.size(), indRow, depRow);
 
@@ -197,13 +200,18 @@ public:
         _depData.updRow(_depData.nrow() - 1) = depRow;
     }
 
-    /** Get row at index.                                                     */
+    /** Get row at index.                                                     
+
+    \throws RowDoesNotExit If index is out of range.                          */
     RowVectorView getRowAtIndex(size_t index) const {
         throwIfRowDoesNotExist(index);
         return _depData.row(index);
     }
 
-    /** Get row corresponding to the given entry in the independent column.   */
+    /** Get row corresponding to the given entry in the independent column.   
+
+    \throws RowDoesNotExist If the independent column has no entry with given
+                            value.                                            */
     RowVectorView getRow(const ETX& ind) const {
         auto iter = std::find(_indData.cbegin(), _indData.cend(), ind);
 
@@ -214,13 +222,18 @@ public:
         return _depData.row(std::distance(_indData.cbegin(), iter));
     }
 
-    /** Update row at index.                                                  */
+    /** Update row at index.                                                  
+
+    \throws RowDoesNotExist If the index is out of range.                     */
     RowVectorView updRowAtIndex(size_t index) {
         throwIfRowDoesNotExist(index);
         return _depData.updRow(index);
     }
 
-    /** Update row corresponding to the given entry in the independent column.*/
+    /** Update row corresponding to the given entry in the independent column.
+
+    \throws RowDoesNotExist If the independent column has no entry with given
+                            value.                                            */
     RowVectorView updRow(const ETX& ind) {
         auto iter = std::find(_indData.cbegin(), _indData.cend(), ind);
 
@@ -236,13 +249,19 @@ public:
         return _indData;
     }
 
-    /** Get dependent column.                                                 */
+    /** Get dependent column.                                                 
+
+    \throws ColumnDoesNotExist If index is out of range.                      */
     VectorView getDependentColumnAtIndex(size_t index) const {
         throwIfColumnDoesNotExist(index);
         return _depData.col(index);
     }
 
-    /** Set independent column at index.                                      */
+    /** Set independent column at index.                                      
+
+    \throws RowDoesNotExist If index is out of range.                         
+    \throws InvalidRow If this operation invalidates the row. Validation is
+                       performed by derived classes.                          */
     void setIndependentColumnAtIndex(size_t index, const ETX& value) {
         throwIfRowDoesNotExist(index);
         validateRow(index, value, _depData.row(index));
@@ -250,26 +269,38 @@ public:
     }
 
 protected:
+    /** Throw if row index is out of range.
+
+    \throws RowDoesNotExist If rowIndex is out of range.                      */
     void throwIfRowDoesNotExist(const size_t rowIndex) const {
         if(rowIndex >= _indData.size())
             throw RowDoesNotExist{"Row " + std::to_string(rowIndex) + " does "
                     "not exist."};
     }
 
-    void throwIfColumnDoesNotExist(const size_t colIndex) const {
-        if(colIndex >= static_cast<size_t>(_depData.ncol()))
-            throw ColumnDoesNotExist{"Column " + std::to_string(colIndex) + 
+    /** Throw if column index is out of range.
+
+    \throws ColumnDoesNotExist If columnIndex is out of range.                */
+    void throwIfColumnDoesNotExist(const size_t columnIndex) const {
+        if(columnIndex >= static_cast<size_t>(_depData.ncol()))
+            throw ColumnDoesNotExist{"Column " + std::to_string(columnIndex) + 
                     "does not exist."};
     }
 
+    /** Get number of rows.                                                   */
     size_t implementGetNumRows() const override {
         return _depData.nrow();
     }
 
+    /** Get number of columns.                                                */
     size_t implementGetNumColumns() const override {
         return _depData.ncol();
     }
 
+    /** Validate metadata for independent column.                             
+    
+    \throws InvalidMetaData If independent column's metadata does not contain
+                            a key named "labels".                             */
     void validateIndependentMetaData() const override {
         try {
             _independentMetaData.getValueForKey("labels");
@@ -279,6 +310,14 @@ protected:
         }
     }
 
+    /** Validate metadata for dependent columns.
+
+    \throws InvalidMetaData (1) If metadata for dependent columns does not 
+                            contain a key named "labels". (2) If ValueArray
+                            for key "labels" does not have length equal to the
+                            number of columns in the table. (3) If not all
+                            entries in the metadata for dependent columns have
+                            the correct length (equal to nubmer of columns).  */
     void validateDependentsMetaData() const override {
         unsigned numCols{};
         try {
@@ -306,7 +345,10 @@ protected:
     }
 
     /** Derived classes optionally can implement this function to validate
-    append/update operations.                                                 */
+    append/update operations.                                                 
+
+    \throws InvalidRow If the given row considered invalid by the derived
+                       class.                                                 */
     virtual void validateRow(size_t rowIndex, 
                              const ETX&, 
                              const RowVector&) const {

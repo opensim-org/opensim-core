@@ -72,12 +72,16 @@ public:
         return _values.size();
     }
 
-    /** Access an element of the array using its index.                       */
+    /** Access an element of the array using its index.                       
+
+    \throws std::out_of_range If index is out of range.                       */
     Value<T>& operator[](size_t index) override {
         return _values.at(index);
     } 
 
-    /** Access an element of the array using its index.                       */
+    /** Access an element of the array using its index.                       
+
+    \throws std::out_of_range If index is out of range.                       */
     const Value<T>& operator[](size_t index) const override {
         return _values.at(index);
     }
