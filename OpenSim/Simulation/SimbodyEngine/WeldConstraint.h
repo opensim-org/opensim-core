@@ -66,14 +66,14 @@ public:
     Construct a WeldConstraint where the weld frames are specified in terms of their
     location and orientation in their respective PhysicalFrames. 
 
-    @param[in] name     the name of this WeldConstraint
-    @param[in] frame1   the first PhysicalFrame that the weld constrains
+    @param[in] name             the name of this WeldConstraint
+    @param[in] frame1           the first PhysicalFrame that the weld constrains
     @param[in] locationInFrame1    Vec3 of the location of the weld in the first frame
     @param[in] orientationInFrame1 Vec3 of the XYZ body-fixed Euler angles of the
                                    weld frame orientation in frame 1.
-    @param[in] frame2    the second PhysicalFrame that the weld constrains
+    @param[in] frame2               the second PhysicalFrame that the weld constrains
     @param[in] locationInFrame2    Vec3 of the location of the weld in the second frame
-    @param[in] orientationInFrame1 Vec3 of the XYZ body-fixed Euler angles
+    @param[in] orientationInFrame2 Vec3 of the XYZ body-fixed Euler angles
                                    of the weld frame orientation in frame2.
     */
     WeldConstraint(const std::string &name, 

@@ -52,7 +52,7 @@ namespace OpenSim {
 
  */
 class OSIMPLUGIN_API CoupledBushingForce : public LinkTwoFrames<Force, PhysicalFrame> {
-OpenSim_DECLARE_CONCRETE_OBJECT(CoupledBushingForce, Force);
+OpenSim_DECLARE_CONCRETE_OBJECT(CoupledBushingForce, LinkTwoFrames);
 public:
     //==============================================================================
     // PROPERTIES

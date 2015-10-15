@@ -109,7 +109,7 @@ public:
     @param[in] offset       The offset Transform between this frame and its parent
     */
     OffsetFrame(const std::string& name,
-                const std::string& parent,
+                const std::string& parentName,
                 const SimTK::Transform& offset);
 
     // use compiler generated destructor, copy constructor and assignment operator

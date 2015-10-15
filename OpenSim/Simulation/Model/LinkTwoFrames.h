@@ -90,9 +90,9 @@ public:
     */
     LinkTwoFrames(const std::string &name,
         const std::string& frame1Name,
-        const SimTK::Transform& transformInFrame1,
+        const SimTK::Transform& offsetOnFrame1,
         const std::string& frame2Name,
-        const SimTK::Transform& transformInFrame2);
+        const SimTK::Transform& offsetOnFrame2);
 
     /** Backwards compatible Convenience Constructor
     LinkTwoFrames with offsets specified in terms of the location and 
@@ -105,7 +105,7 @@ public:
                                    XYZ body-fixed Euler angles w.r.t frame1.
     @param[in] frame2Name       the name of the second Frame being linked
     @param[in] locationInFrame2    Vec3 of offset location on the second frame
-    @param[in] orientationInFrame1 Vec3 of orientation offset expressed as
+    @param[in] orientationInFrame2 Vec3 of orientation offset expressed as
                                    XYZ body-fixed Euler angles w.r.t frame2.
     */
     LinkTwoFrames(const std::string &name,
@@ -224,6 +224,8 @@ private:
 //=============================================================================
 }; // END of class OffsetFrame
 //=============================================================================
+
+
 
 //=============================================================================
 // Implementation of OffsetFrame<C> template methods
