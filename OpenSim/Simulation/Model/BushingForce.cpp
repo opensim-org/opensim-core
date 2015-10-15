@@ -41,7 +41,7 @@ using namespace OpenSim;
 
 //_____________________________________________________________________________
 // Default constructor.
-BushingForce::BushingForce() : LinkTwoFrames<Force, PhysicalFrame>()
+BushingForce::BushingForce() : TwoFrameLinker<Force, PhysicalFrame>()
 {
     setNull();
     constructProperties();
@@ -50,7 +50,7 @@ BushingForce::BushingForce() : LinkTwoFrames<Force, PhysicalFrame>()
 BushingForce::BushingForce( const std::string& name,
                             const std::string& frame1Name,
                             const std::string& frame2Name)
-    : LinkTwoFrames<Force, PhysicalFrame>(name, frame1Name, frame2Name)
+    : TwoFrameLinker<Force, PhysicalFrame>(name, frame1Name, frame2Name)
 {
     setNull();
     constructProperties();
@@ -80,7 +80,7 @@ BushingForce::BushingForce(const std::string& name,
     const SimTK::Vec3& rotStiffness,
     const SimTK::Vec3& transDamping,
     const SimTK::Vec3& rotDamping)
-    : LinkTwoFrames<Force, PhysicalFrame>(name,
+    : TwoFrameLinker<Force, PhysicalFrame>(name,
         frame1Name, transformInFrame1, frame2Name, transformInFrame2)
 {
     setNull();
@@ -100,7 +100,7 @@ BushingForce::BushingForce(const std::string& name,
     const SimTK::Vec3& rotStiffness,
     const SimTK::Vec3& transDamping,
     const SimTK::Vec3& rotDamping)
-    : LinkTwoFrames<Force, PhysicalFrame>(name,
+    : TwoFrameLinker<Force, PhysicalFrame>(name,
         frame1Name, locationInFrame1, orientationInFrame1,
         frame2Name, locationInFrame2, orientationInFrame1)
 {

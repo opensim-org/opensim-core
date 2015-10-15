@@ -49,7 +49,7 @@ WeldConstraint::~WeldConstraint()
  * Default constructor.
  */
 WeldConstraint::WeldConstraint() :
-    LinkTwoFrames<Constraint, PhysicalFrame>()
+    TwoFrameLinker<Constraint, PhysicalFrame>()
 {
     setNull();
 }
@@ -57,7 +57,7 @@ WeldConstraint::WeldConstraint() :
 WeldConstraint::WeldConstraint( const std::string& name,
                                 const std::string& frame1Name,
                                 const std::string& frame2Name)
-    : LinkTwoFrames<Constraint, PhysicalFrame>(name, frame1Name, frame2Name)
+    : TwoFrameLinker<Constraint, PhysicalFrame>(name, frame1Name, frame2Name)
 {
     setNull();
 }
@@ -81,7 +81,7 @@ WeldConstraint::WeldConstraint(const std::string &name,
 WeldConstraint::WeldConstraint(const std::string &name,
     const PhysicalFrame& frame1, const SimTK::Transform& transformInFrame1,
     const PhysicalFrame& frame2, const SimTK::Transform& transformInFrame2)
-    : LinkTwoFrames<Constraint, PhysicalFrame>(name,
+    : TwoFrameLinker<Constraint, PhysicalFrame>(name,
         frame1.getName(), transformInFrame1, frame2.getName(), transformInFrame2)
 {
     setNull();

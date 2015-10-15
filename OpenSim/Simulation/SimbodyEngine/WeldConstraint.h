@@ -26,7 +26,7 @@
 
 // INCLUDE
 #include "Constraint.h"
-#include <OpenSim/Simulation/Model/LinkTwoFrames.h>
+#include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 namespace OpenSim {
@@ -45,8 +45,8 @@ class PhysicalOffsetFrame;
  * @author Ajay Seth
  */
 class OSIMSIMULATION_API WeldConstraint 
-    : public LinkTwoFrames<Constraint, PhysicalFrame> {
-OpenSim_DECLARE_CONCRETE_OBJECT(WeldConstraint, LinkTwoFrames);
+    : public TwoFrameLinker<Constraint, PhysicalFrame> {
+OpenSim_DECLARE_CONCRETE_OBJECT(WeldConstraint, TwoFrameLinker);
 public:
     /** Default Constructor. Create an unnamed WeldConstraint with frame
         connectors that are unsatisfied. */

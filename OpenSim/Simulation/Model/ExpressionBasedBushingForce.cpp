@@ -52,7 +52,7 @@ std::string to_string(T const& value) {
 //_____________________________________________________________________________
 // Default constructor.
 ExpressionBasedBushingForce::ExpressionBasedBushingForce() :
-    LinkTwoFrames<Force, PhysicalFrame>()
+    TwoFrameLinker<Force, PhysicalFrame>()
 {
     setNull();
     constructProperties();
@@ -63,7 +63,7 @@ ExpressionBasedBushingForce::
 ExpressionBasedBushingForce(const std::string& name,
     const std::string& frame1Name,
     const std::string& frame2Name)
-    : LinkTwoFrames<Force, PhysicalFrame>(name, frame1Name, frame2Name)
+    : TwoFrameLinker<Force, PhysicalFrame>(name, frame1Name, frame2Name)
 {
     setNull();
     constructProperties();
@@ -79,7 +79,7 @@ ExpressionBasedBushingForce(const string&   name,
                             const string&   frame2Name,
                             const Vec3&     point2, 
                             const Vec3&     orientation2)
-    : LinkTwoFrames<Force, PhysicalFrame>(name,
+    : TwoFrameLinker<Force, PhysicalFrame>(name,
                                           frame1Name, point1, orientation1,
                                           frame2Name, point2, orientation2)
 {

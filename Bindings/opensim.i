@@ -255,9 +255,9 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/ExternalForce.h>
 %template(SetExternalForces) OpenSim::Set<OpenSim::ExternalForce>;
 
-%include <OpenSim/Simulation/Model/LinkTwoFrames.h>
-%template(LinkTwoFramesForce) OpenSim::LinkTwoFrames<OpenSim::Force, OpenSim::PhysicalFrame>;
-%template(LinkTwoFramesConstraint) OpenSim::LinkTwoFrames<OpenSim::Constraint, OpenSim::PhysicalFrame>;
+%include <OpenSim/Simulation/Model/TwoFrameLinker.h>
+%template(TwoFrameLinkerForce) OpenSim::TwoFrameLinker<OpenSim::Force, OpenSim::PhysicalFrame>;
+%template(TwoFrameLinkerConstraint) OpenSim::TwoFrameLinker<OpenSim::Constraint, OpenSim::PhysicalFrame>;
 
 %include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>

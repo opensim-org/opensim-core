@@ -1,7 +1,7 @@
-#ifndef OPENSIM_LINK_TWO_FRAMES_H_
-#define OPENSIM_LINK_TWO_FRAMES_H_
+#ifndef OPENSIM_TWO_FRAME_LINKER_H_
+#define OPENSIM_TWO_FRAME_LINKER_H_
 /* -------------------------------------------------------------------------- *
- *                        OpenSim:  LinkTwoFrames.h                           *
+ *                        OpenSim:  TwoFrameLinker.h                          *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -35,25 +35,25 @@ class PhysicalOffsetFrame;
 //=============================================================================
 //=============================================================================
 /**
- * LinkTwoFrames is a utility class to extend a Component such that it connects
+ * TwoFrameLinker is a utility class to extend a Component such that it connects
  * two Frames. For example, a WeldConstraint and BushingForces operate between
- * two frames to restrict their motion. A LinkTwoFrames<Force, PhysicalFrame>,
+ * two frames to restrict their motion. A TwoFrameLinker<Force, PhysicalFrame>,
  * for example, is a Force that operates between two PhyscialFrames and it is 
  * the base class for BushingForces.
  * (A class whose super class is a template parameter is called a mixin class.)
  *
- * @code class BushingForce : public LinkTwoFrames<Force, PhysicalFrame> @endcode
+ * @code class BushingForce : public TwoFrameLinker<Force, PhysicalFrame> @endcode
  *
  * @author Ajay Seth
  */
 template <class C = Component, class F = Frame>
-class LinkTwoFrames : public C {
-    OpenSim_DECLARE_ABSTRACT_OBJECT_T(LinkTwoFrames, C, C);
+class TwoFrameLinker : public C {
+    OpenSim_DECLARE_ABSTRACT_OBJECT_T(TwoFrameLinker, C, C);
 public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /// Frames added to satisfy the connectors of this LinkTwoFrames Component
+    /// Frames added to satisfy the connectors of this TwoFrameLinker Component
     OpenSim_DECLARE_LIST_PROPERTY(frames, F,
         "Frames created/added to satisfy this component's connections.");
 
@@ -64,41 +64,41 @@ public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
-    /** By default, the LinkTwoFrames is not connected to any frames and its.*/
-    LinkTwoFrames();
+    /** By default, the TwoFrameLinker is not connected to any frames and its.*/
+    TwoFrameLinker();
 
     /** Convenience Constructor.
-    Create a LinkTwoFrames Component between two Frames identified by name.
+    Create a TwoFrameLinker Component between two Frames identified by name.
 
-    @param[in] name         the name of this LinkTwoFrames component
+    @param[in] name         the name of this TwoFrameLinker component
     @param[in] frame1Name   the name of the first Frame being linked
     @param[in] frame2Name   the name of the second Frame being linked
     */
-    LinkTwoFrames(const std::string &name,
+    TwoFrameLinker(const std::string &name,
         const std::string& frame1Name,
         const std::string& frame2Name);
 
     /** Convenience Constructor
-    Construct a LinkTwoFrames where the two frames are specified by name 
+    Construct a TwoFrameLinker where the two frames are specified by name 
     and offset transforms on the respective frames.
 
-    @param[in] name             the name of this LinkTwoFrames component
+    @param[in] name             the name of this TwoFrameLinker component
     @param[in] frame1Name       the name of the first Frame being linked
     @param[in] offsetOnFrame1   offset Transform on the first frame
     @param[in] frame2Name       the name of the second Frame being linked
     @param[in] offsetOnFrame2   offset Transform on the second frame
     */
-    LinkTwoFrames(const std::string &name,
+    TwoFrameLinker(const std::string &name,
         const std::string& frame1Name,
         const SimTK::Transform& offsetOnFrame1,
         const std::string& frame2Name,
         const SimTK::Transform& offsetOnFrame2);
 
     /** Backwards compatible Convenience Constructor
-    LinkTwoFrames with offsets specified in terms of the location and 
+    TwoFrameLinker with offsets specified in terms of the location and 
     orientation in respective PhysicalFrames.
 
-    @param[in] name             the name of this LinkTwoFrames component
+    @param[in] name             the name of this TwoFrameLinker component
     @param[in] frame1Name       the name of the first Frame being linked
     @param[in] locationInFrame1    Vec3 of offset location on the first frame
     @param[in] orientationInFrame1 Vec3 of orientation offset expressed as
@@ -108,7 +108,7 @@ public:
     @param[in] orientationInFrame2 Vec3 of orientation offset expressed as
                                    XYZ body-fixed Euler angles w.r.t frame2.
     */
-    LinkTwoFrames(const std::string &name,
+    TwoFrameLinker(const std::string &name,
         const std::string& frame1Name,
         const SimTK::Vec3& locationInFrame1,
         const SimTK::Vec3& orientationInFrame1,
@@ -118,43 +118,43 @@ public:
 
     // use compiler generated destructor, copy constructor & assignment operator
 
-    /** Access the first frame the LinkTwoFrames component connects.
+    /** Access the first frame the TwoFrameLinker component connects.
         Note, if an offset was introduced at construction, then this will be
         the offset frame. */
     const F& getFrame1() const;
-    /** Access the second frame the LinkTwoFrames component connects.
+    /** Access the second frame the TwoFrameLinker component connects.
         Note, if an offset was introduced at construction, then this will be
         the offset frame. */
     const F& getFrame2() const;
 
     /** Compute the relative offset Transform between the two frames linked by 
-        this LinkTwoFrames component at a given State, expressed in frame1. */
+        this TwoFrameLinker component at a given State, expressed in frame1. */
     SimTK::Transform computeRelativeOffset(const SimTK::State& s) const;
 
     /** Compute the relative spatial velocity between the two frames linked by
-        this LinkTwoFrames component at a given State, expressed in frame1. */
+        this TwoFrameLinker component at a given State, expressed in frame1. */
     SimTK::SpatialVec computeRelativeVeocity(const SimTK::State& s) const;
 
     /** Compute the deflection (spatial separation) of the two frames connected
-        by the LinkTwoFrames. Angular deflections expressed as XYZ body-fixed 
+        by the TwoFrameLinker. Angular deflections expressed as XYZ body-fixed 
         Euler angles of frame2 w.r.t frame1.
         NOTE: When using deflections to compute spatial forces, these forces
-            may not be valid for large deflections, because Euler are unable
-            to uniquely distinguish and X rotaion angle of +/-180 degrees, 
+            may not be valid for large deflections, because Euler angles are 
+            unable to uniquely distinguish an X rotation angle of +/-180 degs,
             and subsequent rotations that are +/-90 degs. It is mainly useful
             for calculating errors for constraints and forces for computing 
             restoration forces.
      @return dq     Vec6 of (3) angular and (3) translational deflections. */
     SimTK::Vec6 computeDeflection(const SimTK::State& s) const;
     /** Compute the deflection rate (dqdot) of the two frames connected by
-        this LinkTwoFrames component. Angular velocity is expressed as Euler
+        this TwoFrameLinker component. Angular velocity is expressed as Euler
         (XYZ body-fixed) angle derivatives. Note that the derivatives 
         become singular as the second Euler angle approaches 90 degs.
     @return dqdot  Vec6 of (3) angular and (3) translational deflection rates. */
     SimTK::Vec6 computeDeflectionRate(const SimTK::State& s) const;
 
     /**
-    * Scale the LinkTwoFrames component according to XYZ scale factors.
+    * Scale the TwoFrameLinker component according to XYZ scale factors.
     * Associate PhysicalFrames. Generic behavior is to scale the locations
     * of PhyscialOffsetFrames according to the scale factors of the physical
     * frame upon which they are attached.
@@ -232,7 +232,7 @@ private:
 //=============================================================================
 // Default constructor
 template <class C, class F>
-LinkTwoFrames<C, F>::LinkTwoFrames() : C()
+TwoFrameLinker<C, F>::TwoFrameLinker() : C()
 {
     this->setAuthors("Ajay Seth");
     this->constructInfrastructure();
@@ -240,9 +240,9 @@ LinkTwoFrames<C, F>::LinkTwoFrames() : C()
 
 // Convenience constructors
 template <class C, class F>
-LinkTwoFrames<C, F>::LinkTwoFrames(const std::string &name,
+TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     const std::string& frame1Name,
-    const std::string& frame2Name) : LinkTwoFrames<C, F>()
+    const std::string& frame2Name) : TwoFrameLinker<C, F>()
 {
     this->setName(name);
     this->template updConnector<F>("frame1").set_connectee_name(frame1Name);
@@ -250,10 +250,10 @@ LinkTwoFrames<C, F>::LinkTwoFrames(const std::string &name,
 }
 
 template <class C, class F>
-LinkTwoFrames<C, F>::LinkTwoFrames(const std::string &name,
+TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     const std::string& frame1Name, const SimTK::Transform& transformInFrame1,
     const std::string& frame2Name, const SimTK::Transform& transformInFrame2)
-    : LinkTwoFrames()
+    : TwoFrameLinker()
 {
     this->setName(name);
 
@@ -274,12 +274,12 @@ LinkTwoFrames<C, F>::LinkTwoFrames(const std::string &name,
 }
 
 template <class C, class F>
-LinkTwoFrames<C, F>::LinkTwoFrames(const std::string& name,
+TwoFrameLinker<C, F>::TwoFrameLinker(const std::string& name,
     const std::string& frame1Name,
     const SimTK::Vec3& locationInFrame1, const SimTK::Vec3& orientationInFrame1,
     const std::string& frame2Name,
     const SimTK::Vec3& locationInFrame2, const SimTK::Vec3& orientationInFrame2)
-    : LinkTwoFrames(name,
+    : TwoFrameLinker(name,
         frame1Name, SimTK::Transform(SimTK::Rotation(SimTK::BodyRotationSequence,
             orientationInFrame1[0], SimTK::XAxis,
             orientationInFrame1[1], SimTK::YAxis,
@@ -292,21 +292,21 @@ LinkTwoFrames<C, F>::LinkTwoFrames(const std::string& name,
 
 
 template <class C, class F>
-void LinkTwoFrames<C, F>::constructProperties()
+void TwoFrameLinker<C, F>::constructProperties()
 {
     //Default frames list is empty
     this->constructProperty_frames();
 }
 
 template <class C, class F>
-void LinkTwoFrames<C,F>::constructConnectors()
+void TwoFrameLinker<C,F>::constructConnectors()
 {
     this->template constructConnector<F>("frame1");
     this->template constructConnector<F>("frame2");
 }
 
 template <class C, class F>
-const F& LinkTwoFrames<C, F>::getFrame1() const
+const F& TwoFrameLinker<C, F>::getFrame1() const
 {
     if (!(this->isObjectUpToDateWithProperties() && !this->hasSystem())) {
         _frame1 = &(this->template getConnector<F>("frame1").getConnectee());
@@ -315,7 +315,7 @@ const F& LinkTwoFrames<C, F>::getFrame1() const
 }
 
 template <class C, class F>
-const F& LinkTwoFrames<C, F>::getFrame2() const
+const F& TwoFrameLinker<C, F>::getFrame2() const
 {
     if (!(this->isObjectUpToDateWithProperties() && this->hasSystem())) {
         _frame2 = &(this->template getConnector<F>("frame2").getConnectee());
@@ -324,7 +324,7 @@ const F& LinkTwoFrames<C, F>::getFrame2() const
 }
 
 template<class C, class F>
-void LinkTwoFrames<C, F>::scale(const ScaleSet& scaleSet)
+void TwoFrameLinker<C, F>::scale(const ScaleSet& scaleSet)
 {
     SimTK::Vec3 frame1Factors(1.0);
     SimTK::Vec3 frame2Factors(1.0);
@@ -368,7 +368,7 @@ void LinkTwoFrames<C, F>::scale(const ScaleSet& scaleSet)
 }
 
 template<class C, class F>
-void LinkTwoFrames<C, F>::extendFinalizeFromProperties()
+void TwoFrameLinker<C, F>::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
     for (int i = 0; i < this->getProperty_frames().size(); ++i) {
@@ -378,7 +378,7 @@ void LinkTwoFrames<C, F>::extendFinalizeFromProperties()
 
 
 template<class C, class F>
-void LinkTwoFrames<C, F>::extendConnectToModel(Model& model) 
+void TwoFrameLinker<C, F>::extendConnectToModel(Model& model) 
 {
     Super::extendConnectToModel(model); //connect to frames 
     // now keep a reference to the frames
@@ -391,7 +391,7 @@ void LinkTwoFrames<C, F>::extendConnectToModel(Model& model)
 // UTILITY COMPUTATIONS
 //=============================================================================
 template <class C, class F>
-SimTK::Transform LinkTwoFrames<C, F>::computeRelativeOffset(const SimTK::State& s) const
+SimTK::Transform TwoFrameLinker<C, F>::computeRelativeOffset(const SimTK::State& s) const
 {
     // Define frame1 as the "fixed" frame, F
     SimTK::Transform X_GF = getFrame1().getGroundTransform(s);
@@ -402,7 +402,7 @@ SimTK::Transform LinkTwoFrames<C, F>::computeRelativeOffset(const SimTK::State& 
 }
 
 template <class C, class F>
-SimTK::Vec6 LinkTwoFrames<C, F>::computeDeflection(const SimTK::State& s) const
+SimTK::Vec6 TwoFrameLinker<C, F>::computeDeflection(const SimTK::State& s) const
 {
     SimTK::Transform X_FM = this->computeRelativeOffset(s);
 
@@ -418,7 +418,7 @@ SimTK::Vec6 LinkTwoFrames<C, F>::computeDeflection(const SimTK::State& s) const
 }
 
 template <class C, class F>
-SimTK::SpatialVec LinkTwoFrames<C, F>::computeRelativeVeocity(const SimTK::State& s) const
+SimTK::SpatialVec TwoFrameLinker<C, F>::computeRelativeVeocity(const SimTK::State& s) const
 {
     const F& frame1 = getFrame1();
     const F& frame2 = getFrame2();
@@ -453,7 +453,7 @@ SimTK::SpatialVec LinkTwoFrames<C, F>::computeRelativeVeocity(const SimTK::State
 }
 
 template <class C, class F>
-SimTK::Vec6 LinkTwoFrames<C, F>::computeDeflectionRate(const SimTK::State& s) const
+SimTK::Vec6 TwoFrameLinker<C, F>::computeDeflectionRate(const SimTK::State& s) const
 {
     SimTK::Vec6 dqdot(0);
     SimTK::Vec6 dq = computeDeflection(s);
@@ -475,7 +475,7 @@ SimTK::Vec6 LinkTwoFrames<C, F>::computeDeflectionRate(const SimTK::State& s) co
 }
 
 template <class C, class F>
-void LinkTwoFrames<C, F>::convertInternalForceToForcesOnFrames(
+void TwoFrameLinker<C, F>::convertInternalForceToForcesOnFrames(
     const SimTK::State& s,
     SimTK::Vec6 f, SimTK::SpatialVec& F1_G, SimTK::SpatialVec& F2_G) const
 {
@@ -523,7 +523,7 @@ void LinkTwoFrames<C, F>::convertInternalForceToForcesOnFrames(
 // The method only makes sense for applying forces to PhysicalFrames so explicitly 
 // specialize for PhysicalFrame.
 template <class C, class F>
-void LinkTwoFrames<C, F>::addInPhysicalForcesFromInternal(
+void TwoFrameLinker<C, F>::addInPhysicalForcesFromInternal(
         const SimTK::State& s,
         SimTK::Vec6 f, SimTK::Vector_<SimTK::SpatialVec>& physicalForces) const
 {
@@ -553,7 +553,7 @@ void LinkTwoFrames<C, F>::addInPhysicalForcesFromInternal(
 
 
 template <class C, class F>
-void LinkTwoFrames<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode, 
+void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode, 
                                             int versionNumber)
 {
     using SimTK::Vec3;
@@ -632,4 +632,4 @@ void LinkTwoFrames<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
 
 
 } // end of namespace OpenSim
-#endif // OPENSIM_LINK_TWO_FRAMES_H_
+#endif // OPENSIM_TWO_FRAME_LINKER_H_

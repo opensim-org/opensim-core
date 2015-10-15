@@ -26,7 +26,7 @@
 
 // INCLUDE
 #include "Force.h"
-#include <OpenSim/Simulation/Model/LinkTwoFrames.h>
+#include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 namespace OpenSim {
@@ -49,8 +49,8 @@ namespace OpenSim {
  * @author Ajay Seth
  */
 class OSIMSIMULATION_API BushingForce 
-    : public LinkTwoFrames<Force, PhysicalFrame> {
-OpenSim_DECLARE_CONCRETE_OBJECT(BushingForce, LinkTwoFrames);
+    : public TwoFrameLinker<Force, PhysicalFrame> {
+OpenSim_DECLARE_CONCRETE_OBJECT(BushingForce, TwoFrameLinker);
 public:
 //==============================================================================
 // PROPERTIES

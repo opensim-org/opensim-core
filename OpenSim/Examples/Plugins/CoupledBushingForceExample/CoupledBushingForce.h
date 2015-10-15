@@ -28,7 +28,7 @@
 #include "osimPluginDLL.h"
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
-#include <OpenSim/Simulation/Model/LinkTwoFrames.h>
+#include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 
 namespace OpenSim {
 
@@ -51,8 +51,8 @@ namespace OpenSim {
  * @author Ajay Seth
 
  */
-class OSIMPLUGIN_API CoupledBushingForce : public LinkTwoFrames<Force, PhysicalFrame> {
-OpenSim_DECLARE_CONCRETE_OBJECT(CoupledBushingForce, LinkTwoFrames);
+class OSIMPLUGIN_API CoupledBushingForce : public TwoFrameLinker<Force, PhysicalFrame> {
+OpenSim_DECLARE_CONCRETE_OBJECT(CoupledBushingForce, TwoFrameLinker);
 public:
     //==============================================================================
     // PROPERTIES

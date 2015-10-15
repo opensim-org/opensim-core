@@ -59,15 +59,15 @@ int main()
         availableComponents.push_back(availableJoints[i]);
     }
 
-    // then type LinkTwoFrames<Constraint>
-    ArrayPtrs<LinkTwoFrames<Constraint, PhysicalFrame> > availableLink2Constraints;
+    // then type TwoFrameLinker<Constraint>
+    ArrayPtrs<TwoFrameLinker<Constraint, PhysicalFrame> > availableLink2Constraints;
     Object::getRegisteredObjectsOfGivenType(availableLink2Constraints);
     for (int i = 0; i < availableLink2Constraints.size(); ++i) {
         availableComponents.push_back(availableLink2Constraints[i]);
     }
 
-    // then type LinkTwoFrames<Force> which are all the BushingForces
-    ArrayPtrs<LinkTwoFrames<Force, PhysicalFrame> > availableBushingForces;
+    // then type TwoFrameLinker<Force> which are all the BushingForces
+    ArrayPtrs<TwoFrameLinker<Force, PhysicalFrame> > availableBushingForces;
     Object::getRegisteredObjectsOfGivenType(availableBushingForces);
     for (int i = 0; i < availableBushingForces.size(); ++i) {
         availableComponents.push_back(availableBushingForces[i]);

@@ -42,7 +42,7 @@ using namespace OpenSim;
 //_____________________________________________________________________________
 // Default constructor.
 FunctionBasedBushingForce::FunctionBasedBushingForce() :
-    LinkTwoFrames<Force, PhysicalFrame>()
+    TwoFrameLinker<Force, PhysicalFrame>()
 {
     setNull();
     constructProperties();
@@ -57,7 +57,7 @@ FunctionBasedBushingForce::FunctionBasedBushingForce(const string&   name,
                                     const string&   frame2Name,
                                     const Vec3&     point2,
                                     const Vec3&     orientation2)
-    : LinkTwoFrames<Force, PhysicalFrame>(name,
+    : TwoFrameLinker<Force, PhysicalFrame>(name,
                                           frame1Name, point1, orientation1,
                                           frame2Name, point2, orientation2)
 {

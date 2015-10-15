@@ -49,7 +49,7 @@ CoupledBushingForce::~CoupledBushingForce()
 /**
  * Default constructor.
  */
-CoupledBushingForce::CoupledBushingForce() : LinkTwoFrames<Force, PhysicalFrame>()
+CoupledBushingForce::CoupledBushingForce() : TwoFrameLinker<Force, PhysicalFrame>()
 {
     setAuthors("Ajay Seth");
     constructProperties();
@@ -61,7 +61,7 @@ CoupledBushingForce::CoupledBushingForce( const std::string& name,
                                           const std::string& frame2Name,
                                           SimTK::Mat66 stiffnessMat,
                                           SimTK::Mat66 dampingMat)
-    : LinkTwoFrames<Force, PhysicalFrame>(name, frame1Name, frame2Name)
+    : TwoFrameLinker<Force, PhysicalFrame>(name, frame1Name, frame2Name)
 {
     setAuthors("Ajay Seth");
     constructProperties();
