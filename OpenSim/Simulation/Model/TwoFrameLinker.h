@@ -418,7 +418,7 @@ SimTK::Vec6 TwoFrameLinker<C, F>::computeDeflection(const SimTK::State& s) const
 }
 
 template <class C, class F>
-SimTK::SpatialVec TwoFrameLinker<C, F>::computeRelativeVeocity(const SimTK::State& s) const
+SimTK::SpatialVec TwoFrameLinker<C, F>::computeRelativeVelocity(const SimTK::State& s) const
 {
     const F& frame1 = getFrame1();
     const F& frame2 = getFrame2();
