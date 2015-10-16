@@ -42,7 +42,9 @@ class PhysicalOffsetFrame;
  * the base class for BushingForces.
  * (A class whose super class is a template parameter is called a mixin class.)
  *
- * @code class BushingForce : public TwoFrameLinker<Force, PhysicalFrame> @endcode
+ * @code 
+ *    class BushingForce : public TwoFrameLinker<Force, PhysicalFrame>
+ * @endcode
  *
  * @author Ajay Seth
  */
