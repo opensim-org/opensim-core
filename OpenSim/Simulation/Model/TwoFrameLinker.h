@@ -133,7 +133,7 @@ public:
 
     /** Compute the relative spatial velocity between the two frames linked by
         this TwoFrameLinker component at a given State, expressed in frame1. */
-    SimTK::SpatialVec computeRelativeVeocity(const SimTK::State& s) const;
+    SimTK::SpatialVec computeRelativeVelocity(const SimTK::State& s) const;
 
     /** Compute the deflection (spatial separation) of the two frames connected
         by the TwoFrameLinker. Angular deflections expressed as XYZ body-fixed 
@@ -461,7 +461,7 @@ SimTK::Vec6 TwoFrameLinker<C, F>::computeDeflectionRate(const SimTK::State& s) c
     // Evaluate relative transform
     SimTK::Transform X_FM = this->computeRelativeOffset(s);
     // Evaluate velocity
-    SimTK::SpatialVec V_FM = computeRelativeVeocity(s);
+    SimTK::SpatialVec V_FM = computeRelativeVelocity(s);
 
     // Need angular velocity in M frame for conversion to qdot.
     const SimTK::Vec3  w_FM_M = ~(X_FM.R()) * V_FM[0];
