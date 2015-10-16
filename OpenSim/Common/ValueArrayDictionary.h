@@ -32,7 +32,13 @@ namespace OpenSim {
 
 class KeyNotFound : public Exception {
 public:
-    KeyNotFound(const std::string& expl) : Exception(expl) {}
+    KeyNotFound(const std::string& file,
+                size_t line,
+                const std::string& key) {
+        std::string msg{file + ":" + std::to_string(line) + ": "};
+        msg += "Key '" + key + "' not found.";
+        setMessage(msg);
+    }
 };
 
 
@@ -50,11 +56,8 @@ public:
 
     \throws KeyNotFound If key is not found.                                  */
     const AbstractValue& getValueForKey(const std::string& key) const {
-        try {
-            return (*(_dictionary.at(key)))[0];
-        } catch(std::out_of_range&) {
-            throw KeyNotFound{"Key "+ key + " not found."};
-        }
+        throwIfKeyNotFound(key);
+        return (*(_dictionary.at(key)))[0];
     }
 
     /** Set the value corresponding to a given key.                           */
@@ -75,11 +78,8 @@ public:
     \throws KeyNotFound If key is not found.                                  */
     const AbstractValueArray& 
     getValueArrayForKey(const std::string& key) const {
-        try {
-            return *(_dictionary.at(key));
-        } catch(std::out_of_range&) {
-            throw KeyNotFound{"Key " + key + " not found."};
-        }
+        throwIfKeyNotFound(key);
+        return *(_dictionary.at(key));
     }
 
     /** Set the array corresponding to a given key.                           */
@@ -123,6 +123,11 @@ public:
         return _dictionary.cend();
     }
 private:
+    void throwIfKeyNotFound(const std::string& key) const {
+        if(_dictionary.find(key) != _dictionary.end())
+            throw KeyNotFound{__FILE__, __LINE__, key};
+    }
+
     Dictionary _dictionary;
 };
 

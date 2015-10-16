@@ -33,9 +33,49 @@ provide an in-memory container for data access and manipulation.              */
 
 namespace OpenSim {
 
-class InvalidTable : public Exception {
+class InvalidTable : public Exception {};
+
+class TimeColumnNotIncreasing : public InvalidTable {
 public:
-    InvalidTable(const std::string& expl) : Exception(expl) {}
+    TimeColumnNotIncreasing(const std::string& file, size_t line) {
+        std::string msg{file + ":" + std::to_string(line) + ": "};
+        msg += "Time column is not strictly increasing";
+        setMessage(msg);
+    } 
+};
+
+class InvalidTimestamp : public InvalidRow {};
+
+class TimestampLessThanEqualToPrevious : public InvalidTimestamp {
+public:
+    TimestampLessThanEqualToPrevious(const std::string& file,
+                                     size_t line,
+                                     size_t rowIndex,
+                                     double new_timestamp,
+                                     double prev_timestamp) {
+        std::string msg{file + ":" + std::to_string(line) + ": "};
+        msg += "Timestamp at row " + std::to_string(rowIndex) + " with value ";
+        msg += std::to_string(new_timestamp) + " is less-than/equal to ";
+        msg += "timestamp at row " + std::to_string(rowIndex - 1) + " with ";
+        msg += "value " + std::to_string(prev_timestamp);
+        setMessage(msg);
+    }
+};
+
+class TimestampGreaterThanEqualToNext : public InvalidTimestamp {
+public:
+    TimestampGreaterThanEqualToNext(const std::string& file,
+                                    size_t line,
+                                    size_t rowIndex,
+                                    double new_timestamp,
+                                    double next_timestamp) {
+        std::string msg{file + ":" + std::to_string(line) + ": "};
+        msg += "Timestamp at row " + std::to_string(rowIndex) + " with value ";
+        msg += std::to_string(new_timestamp) + " is greater-than/equal to ";
+        msg += "timestamp at row " + std::to_string(rowIndex + 1) + " with ";
+        msg += "value " + std::to_string(next_timestamp);
+        setMessage(msg);
+    }
 };
 
 /** TimeSeriesTable_ is a DataTable_ where the independent column is time of 
@@ -63,8 +103,7 @@ public:
         if(!std::is_sorted(DT::_indData.cbegin(), DT::_indData.cend()) ||
            std::adjacent_find(DT::_indData.cbegin(), DT::_indData.cend()) != 
            DT::_indData.cend()) {
-            throw InvalidTable{"Independent column of the input table is not "
-                    "strictly increasing."};
+            throw TimeColumnNotIncreasing{__FILE__, __LINE__};
         }
     }
 
@@ -83,18 +122,14 @@ protected:
 
         if(rowIndex > 0) {
             if(DT::_indData[rowIndex - 1] >= time)
-                throw InvalidRow{"Timestamp added for row " + 
-                        std::to_string(rowIndex) + " is less than or equal to "
-                        "the timestamp for row " + 
-                        std::to_string(rowIndex - 1)};
+                throw TimestampLessThanEqualToPrevious{__FILE__, __LINE__, 
+                        rowIndex, time, DT::_indData[rowIndex - 1]};
         }
 
         if(rowIndex < DT::_indData.size() - 1) {
             if(DT::_indData[rowIndex + 1] <= time)
-                throw InvalidRow{"Timestamp added for row " +
-                        std::to_string(rowIndex) + " is greater than or equal "
-                        "to the timestamp for row " + 
-                        std::to_string(rowIndex + 1)};
+                throw TimestampGreaterThanEqualToNext{__FILE__, __LINE__, 
+                        rowIndex, time, DT::_indData[rowIndex + 1]};
         }
     }
 }; // TimeSeriesTable_

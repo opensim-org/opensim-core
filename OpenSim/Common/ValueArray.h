@@ -30,6 +30,22 @@
 
 namespace OpenSim {
 
+class IndexOutOfRange : public Exception {
+public:
+    IndexOutOfRange(const std::string& file,
+                    size_t line,
+                    size_t index, 
+                    size_t min, 
+                    size_t max) {
+        std::string msg{file + ":" + std::to_string(line) + ": "};
+        msg += "min = " + std::to_string(min);
+        msg += " max = " + std::to_string(max);
+        msg += " index = " + std::to_string(index);
+
+        setMessage(msg);
+    }
+};
+
 /** ValueArray (of type T) represents an array of SimTK::Value (of type T). 
 AbstractValueArray is the base class of all ValueArray thereby hiding the type
 of the underlying array (which is T).                                         */
@@ -76,6 +92,7 @@ public:
 
     \throws std::out_of_range If index is out of range.                       */
     Value<T>& operator[](size_t index) override {
+        throwIfIndexOutOfRange(index);
         return _values.at(index);
     } 
 
@@ -83,6 +100,7 @@ public:
 
     \throws std::out_of_range If index is out of range.                       */
     const Value<T>& operator[](size_t index) const override {
+        throwIfIndexOutOfRange(index);
         return _values.at(index);
     }
 
@@ -97,6 +115,11 @@ public:
     }
 
 private:
+    void throwIfIndexOutOfRange(size_t index) const {
+        if(index >= _values.size())
+            throw IndexOutOfRange{__FILE__, __LINE__, index, 0, _values.size()};
+    }
+    
     std::vector<Value<T>> _values;
 };
 

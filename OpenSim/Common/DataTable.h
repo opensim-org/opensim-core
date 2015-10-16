@@ -35,24 +35,65 @@ in-memory container for data access and manipulation.                         */
 
 namespace OpenSim {
 
-class InvalidRow : public Exception {
+class InvalidRow : public Exception {};
+
+class IncorrectNumColumns : public InvalidRow {
 public:
-    InvalidRow(const std::string& expl) : Exception(expl) {}
+    IncorrectNumColumns(const std::string& file,
+                        size_t line,
+                        size_t expected,
+                        size_t received) {
+        std::string msg{file + ":" + std::to_string(line) + ": "};
+        msg += "expected = " + std::to_string(expected);
+        msg += " received = " + std::to_string(received);
+        setMessage(msg);
+    }
 };
 
-class RowDoesNotExist : public Exception {
+class RowIndexOutOfRange : public IndexOutOfRange {
 public:
-    RowDoesNotExist(const std::string& expl) : Exception(expl) {}
+    using IndexOutOfRange::IndexOutOfRange;
 };
 
-class ColumnDoesNotExist : public Exception {
+class ColumnIndexOutOfRange : public IndexOutOfRange {
 public:
-    ColumnDoesNotExist(const std::string& expl) : Exception(expl) {}
+    using IndexOutOfRange::IndexOutOfRange;
 };
 
-class InvalidMetaData : public Exception {
+class MissingMetaData : public Exception {
 public:
-    InvalidMetaData(const std::string& expl) : Exception(expl) {}
+    MissingMetaData(const std::string& file,
+                    size_t line,
+                    const std::string& key) {
+        std::string msg{file + ":" + std::to_string(line) + ": "};
+        msg += "Missing key '" + key + "'.";
+        setMessage(msg);
+    }
+};
+
+class IncorrectMetaDataLength : public Exception {
+public:
+    IncorrectMetaDataLength(const std::string& file,
+                            size_t line,
+                            const std::string& key,
+                            size_t expected,
+                            size_t received) {
+        std::string msg{file + ":" + std::to_string(line) + ": "};
+        msg += "Key = " + key ;
+        msg += " expected = " + std::to_string(expected);
+        msg += " received = " + std::to_string(received);
+        setMessage(msg);
+    }
+};
+
+class MetaDataLengthZero : public Exception {
+public:
+    MetaDataLengthZero(const std::string& file,
+                       size_t line,
+                       const std::string& key) {
+        std::string msg{file + ":" + std::to_string(line) + ": "};
+        msg += "Key = " + key ;
+    }
 };
 
 /** AbstractDataTable is the base-class of all DataTable_(templated) allowing 
@@ -174,8 +215,8 @@ public:
 
     /** Append row to the DataTable_.                                         
 
-    \throws InvalidRow If the row added is invalid. Validity of the row added is
-                       decided by the derived class.                          */
+    \throws IncorrectNumCoilumns If the row added is invalid. Validity of the 
+    row added is decided by the derived class.                                */
     void appendRow(const ETX& indRow, const RowVector& depRow) {
         validateRow(_indData.size(), indRow, depRow);
 
@@ -186,10 +227,8 @@ public:
                 auto& labels = 
                     _dependentsMetaData.getValueArrayForKey("labels");
                 if(depRow.ncol() != labels.size())
-                    throw InvalidRow{"Number of columns in the input row does "
-                            "not match the number of labels. Expected : " +
-                            std::to_string(labels.size()) + ". Received: " +
-                            std::to_string(depRow.ncol()) + "."};
+                    throw IncorrectNumColumns{__FILE__, __LINE__, 
+                            labels.size(), static_cast<size_t>(depRow.ncol())};
             } catch(KeyNotFound&) {
                 // No "labels". So no operation.
             }
@@ -202,44 +241,42 @@ public:
 
     /** Get row at index.                                                     
 
-    \throws RowDoesNotExit If index is out of range.                          */
+    \throws RowIndexOutOfRange If index is out of range.                      */
     RowVectorView getRowAtIndex(size_t index) const {
-        throwIfRowDoesNotExist(index);
+        throwIfRowIndexOutOfRange(index);
         return _depData.row(index);
     }
 
     /** Get row corresponding to the given entry in the independent column.   
 
-    \throws RowDoesNotExist If the independent column has no entry with given
-                            value.                                            */
+    \throws KeyNotFound If the independent column has no entry with given
+                        value.                                                */
     RowVectorView getRow(const ETX& ind) const {
         auto iter = std::find(_indData.cbegin(), _indData.cend(), ind);
 
         if(iter == _indData.cend())
-            throw RowDoesNotExist{"Independent column has no entry with "
-                    "value " + std::to_string(ind) + "."};
+            throw KeyNotFound{__FILE__, __LINE__, std::to_string(ind)};
 
         return _depData.row(std::distance(_indData.cbegin(), iter));
     }
 
     /** Update row at index.                                                  
 
-    \throws RowDoesNotExist If the index is out of range.                     */
+    \throws RowIndexOutOfRange If the index is out of range.                  */
     RowVectorView updRowAtIndex(size_t index) {
-        throwIfRowDoesNotExist(index);
+        throwIfRowIndexOutOfRange(index);
         return _depData.updRow(index);
     }
 
     /** Update row corresponding to the given entry in the independent column.
 
-    \throws RowDoesNotExist If the independent column has no entry with given
-                            value.                                            */
+    \throws KeyNotFound If the independent column has no entry with given
+                        value.                                                */
     RowVectorView updRow(const ETX& ind) {
         auto iter = std::find(_indData.cbegin(), _indData.cend(), ind);
 
         if(iter == _indData.cend())
-            throw RowDoesNotExist{"Independent column has no entry with "
-                    "value " + std::to_string(ind) + "."};
+            throw KeyNotFound{__FILE__, __LINE__, std::to_string(ind)};
 
         return _depData.updRow(std::distance(_indData.cbegin(), iter));
     }
@@ -251,19 +288,19 @@ public:
 
     /** Get dependent column.                                                 
 
-    \throws ColumnDoesNotExist If index is out of range.                      */
+    \throws ColumnIndexOutOfRange If index is out of range.                   */
     VectorView getDependentColumnAtIndex(size_t index) const {
-        throwIfColumnDoesNotExist(index);
+        throwIfColumnIndexOutOfRange(index);
         return _depData.col(index);
     }
 
     /** Set independent column at index.                                      
 
-    \throws RowDoesNotExist If index is out of range.                         
+    \throws RowIndexOutOfRange If index is out of range.                        
     \throws InvalidRow If this operation invalidates the row. Validation is
                        performed by derived classes.                          */
     void setIndependentColumnAtIndex(size_t index, const ETX& value) {
-        throwIfRowDoesNotExist(index);
+        throwIfRowIndexOutOfRange(index);
         validateRow(index, value, _depData.row(index));
         _indData[index] = value;
     }
@@ -271,20 +308,20 @@ public:
 protected:
     /** Throw if row index is out of range.
 
-    \throws RowDoesNotExist If rowIndex is out of range.                      */
-    void throwIfRowDoesNotExist(const size_t rowIndex) const {
+    \throws RowIndexOutOfRange If rowIndex is out of range.                   */
+    void throwIfRowIndexOutOfRange(const size_t rowIndex) const {
         if(rowIndex >= _indData.size())
-            throw RowDoesNotExist{"Row " + std::to_string(rowIndex) + " does "
-                    "not exist."};
+            throw RowIndexOutOfRange{__FILE__, __LINE__, 
+                    rowIndex, 0, _indData.size()};
     }
 
     /** Throw if column index is out of range.
 
-    \throws ColumnDoesNotExist If columnIndex is out of range.                */
-    void throwIfColumnDoesNotExist(const size_t columnIndex) const {
+    \throws ColumnIndexOutOfRange If columnIndex is out of range.             */
+    void throwIfColumnIndexOutOfRange(const size_t columnIndex) const {
         if(columnIndex >= static_cast<size_t>(_depData.ncol()))
-            throw ColumnDoesNotExist{"Column " + std::to_string(columnIndex) + 
-                    "does not exist."};
+            throw ColumnIndexOutOfRange{__FILE__, __LINE__, 
+                    columnIndex, 0, static_cast<size_t>(_depData.ncol())};
     }
 
     /** Get number of rows.                                                   */
@@ -305,8 +342,7 @@ protected:
         try {
             _independentMetaData.getValueForKey("labels");
         } catch(std::out_of_range&) {
-            throw InvalidMetaData{"Independent metadata does not contain "
-                    "'labels'."};
+            throw MissingMetaData{__FILE__, __LINE__, "labels"};
         }
     }
 
@@ -323,24 +359,20 @@ protected:
         try {
             numCols = _dependentsMetaData.getValueArrayForKey("labels").size();
         } catch (std::out_of_range&) {
-            throw InvalidMetaData{"Dependent metadata does not contain "
-                    "'labels'."};
+            throw MissingMetaData{__FILE__, __LINE__, "labels"};
         }
 
         if(numCols == 0)
-            throw InvalidMetaData{"Dependent metadata for 'labels' has length"
-                    " zero."};
+            throw MetaDataLengthZero{__FILE__, __LINE__, "labels"};
 
         if(_depData.ncol() != 0 && numCols != _depData.ncol())
-            throw InvalidMetaData{"Dependent metadata for 'labels' has "
-                    "incorrect length. Expected : " + 
-                    std::to_string(_depData.ncol()) + ". Recieved : " + 
-                    std::to_string(numCols) + "."};
+            throw IncorrectMetaDataLength{__FILE__, __LINE__, 
+                    "labels", static_cast<size_t>(_depData.ncol()), numCols};
 
         for(const std::string& key : _dependentsMetaData.getKeys()) {
             if(numCols != _dependentsMetaData.getValueArrayForKey(key).size())
-                throw InvalidMetaData{"All entries in dependent metadata must"
-                        " have same length."};
+                throw IncorrectMetaDataLength{__FILE__, __LINE__, key, numCols,
+                        _dependentsMetaData.getValueArrayForKey(key).size()};
         }
     }
 
