@@ -34,10 +34,11 @@ class IndexOutOfRange : public Exception {
 public:
     IndexOutOfRange(const std::string& file,
                     size_t line,
+                    const std::string& func,
                     size_t index, 
                     size_t min, 
                     size_t max) {
-        std::string msg{file + ":" + std::to_string(line) + ": "};
+        std::string msg{errorMessagePrefix(file, line, func)};
         msg += "min = " + std::to_string(min);
         msg += " max = " + std::to_string(max);
         msg += " index = " + std::to_string(index);
@@ -117,7 +118,7 @@ public:
 private:
     void throwIfIndexOutOfRange(size_t index) const {
         if(index >= _values.size())
-            throw IndexOutOfRange{__FILE__, __LINE__, index, 0, _values.size()};
+            throw IndexOutOfRange{__FILE__, __LINE__, __func__, index, 0, _values.size()};
     }
     
     std::vector<Value<T>> _values;

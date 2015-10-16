@@ -37,8 +37,10 @@ class InvalidTable : public Exception {};
 
 class TimeColumnNotIncreasing : public InvalidTable {
 public:
-    TimeColumnNotIncreasing(const std::string& file, size_t line) {
-        std::string msg{file + ":" + std::to_string(line) + ": "};
+    TimeColumnNotIncreasing(const std::string& file, 
+                            size_t line,
+                            const std::string& func) {
+        std::string msg{errorMessagePrefix(file, line, func)};
         msg += "Time column is not strictly increasing";
         setMessage(msg);
     } 
@@ -50,10 +52,11 @@ class TimestampLessThanEqualToPrevious : public InvalidTimestamp {
 public:
     TimestampLessThanEqualToPrevious(const std::string& file,
                                      size_t line,
+                                     const std::string& func,
                                      size_t rowIndex,
                                      double new_timestamp,
                                      double prev_timestamp) {
-        std::string msg{file + ":" + std::to_string(line) + ": "};
+        std::string msg{errorMessagePrefix(file, line, func)};
         msg += "Timestamp at row " + std::to_string(rowIndex) + " with value ";
         msg += std::to_string(new_timestamp) + " is less-than/equal to ";
         msg += "timestamp at row " + std::to_string(rowIndex - 1) + " with ";
@@ -66,10 +69,11 @@ class TimestampGreaterThanEqualToNext : public InvalidTimestamp {
 public:
     TimestampGreaterThanEqualToNext(const std::string& file,
                                     size_t line,
+                                    const std::string& func,
                                     size_t rowIndex,
                                     double new_timestamp,
                                     double next_timestamp) {
-        std::string msg{file + ":" + std::to_string(line) + ": "};
+        std::string msg{errorMessagePrefix(file, line, func)};
         msg += "Timestamp at row " + std::to_string(rowIndex) + " with value ";
         msg += std::to_string(new_timestamp) + " is greater-than/equal to ";
         msg += "timestamp at row " + std::to_string(rowIndex + 1) + " with ";
@@ -103,7 +107,7 @@ public:
         if(!std::is_sorted(DT::_indData.cbegin(), DT::_indData.cend()) ||
            std::adjacent_find(DT::_indData.cbegin(), DT::_indData.cend()) != 
            DT::_indData.cend()) {
-            throw TimeColumnNotIncreasing{__FILE__, __LINE__};
+            throw TimeColumnNotIncreasing{__FILE__, __LINE__, __func__};
         }
     }
 
@@ -123,13 +127,13 @@ protected:
         if(rowIndex > 0) {
             if(DT::_indData[rowIndex - 1] >= time)
                 throw TimestampLessThanEqualToPrevious{__FILE__, __LINE__, 
-                        rowIndex, time, DT::_indData[rowIndex - 1]};
+                        __func__, rowIndex, time, DT::_indData[rowIndex - 1]};
         }
 
         if(rowIndex < DT::_indData.size() - 1) {
             if(DT::_indData[rowIndex + 1] <= time)
                 throw TimestampGreaterThanEqualToNext{__FILE__, __LINE__, 
-                        rowIndex, time, DT::_indData[rowIndex + 1]};
+                        __func__, rowIndex, time, DT::_indData[rowIndex + 1]};
         }
     }
 }; // TimeSeriesTable_

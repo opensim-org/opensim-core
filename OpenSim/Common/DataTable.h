@@ -41,9 +41,10 @@ class IncorrectNumColumns : public InvalidRow {
 public:
     IncorrectNumColumns(const std::string& file,
                         size_t line,
+                        const std::string& func,
                         size_t expected,
                         size_t received) {
-        std::string msg{file + ":" + std::to_string(line) + ": "};
+        std::string msg{errorMessagePrefix(file, line, func)};
         msg += "expected = " + std::to_string(expected);
         msg += " received = " + std::to_string(received);
         setMessage(msg);
@@ -64,8 +65,9 @@ class MissingMetaData : public Exception {
 public:
     MissingMetaData(const std::string& file,
                     size_t line,
+                    const std::string& func,
                     const std::string& key) {
-        std::string msg{file + ":" + std::to_string(line) + ": "};
+        std::string msg{errorMessagePrefix(file, line, func)};
         msg += "Missing key '" + key + "'.";
         setMessage(msg);
     }
@@ -75,10 +77,11 @@ class IncorrectMetaDataLength : public Exception {
 public:
     IncorrectMetaDataLength(const std::string& file,
                             size_t line,
+                            const std::string& func,
                             const std::string& key,
                             size_t expected,
                             size_t received) {
-        std::string msg{file + ":" + std::to_string(line) + ": "};
+        std::string msg{errorMessagePrefix(file, line, func)};
         msg += "Key = " + key ;
         msg += " expected = " + std::to_string(expected);
         msg += " received = " + std::to_string(received);
@@ -90,8 +93,9 @@ class MetaDataLengthZero : public Exception {
 public:
     MetaDataLengthZero(const std::string& file,
                        size_t line,
+                       const std::string& func,
                        const std::string& key) {
-        std::string msg{file + ":" + std::to_string(line) + ": "};
+        std::string msg{errorMessagePrefix(file, line, func)};
         msg += "Key = " + key ;
     }
 };
@@ -227,7 +231,7 @@ public:
                 auto& labels = 
                     _dependentsMetaData.getValueArrayForKey("labels");
                 if(depRow.ncol() != labels.size())
-                    throw IncorrectNumColumns{__FILE__, __LINE__, 
+                    throw IncorrectNumColumns{__FILE__, __LINE__, __func__,
                             labels.size(), static_cast<size_t>(depRow.ncol())};
             } catch(KeyNotFound&) {
                 // No "labels". So no operation.
@@ -243,7 +247,7 @@ public:
 
     \throws RowIndexOutOfRange If index is out of range.                      */
     RowVectorView getRowAtIndex(size_t index) const {
-        throwIfRowIndexOutOfRange(index);
+        throwIfRowIndexOutOfRange(index, __func__);
         return _depData.row(index);
     }
 
@@ -255,7 +259,8 @@ public:
         auto iter = std::find(_indData.cbegin(), _indData.cend(), ind);
 
         if(iter == _indData.cend())
-            throw KeyNotFound{__FILE__, __LINE__, std::to_string(ind)};
+            throw KeyNotFound{__FILE__, __LINE__, __func__, 
+                    std::to_string(ind)};
 
         return _depData.row(std::distance(_indData.cbegin(), iter));
     }
@@ -264,7 +269,7 @@ public:
 
     \throws RowIndexOutOfRange If the index is out of range.                  */
     RowVectorView updRowAtIndex(size_t index) {
-        throwIfRowIndexOutOfRange(index);
+        throwIfRowIndexOutOfRange(index, __func__);
         return _depData.updRow(index);
     }
 
@@ -276,7 +281,8 @@ public:
         auto iter = std::find(_indData.cbegin(), _indData.cend(), ind);
 
         if(iter == _indData.cend())
-            throw KeyNotFound{__FILE__, __LINE__, std::to_string(ind)};
+            throw KeyNotFound{__FILE__, __LINE__, __func__, 
+                    std::to_string(ind)};
 
         return _depData.updRow(std::distance(_indData.cbegin(), iter));
     }
@@ -290,7 +296,7 @@ public:
 
     \throws ColumnIndexOutOfRange If index is out of range.                   */
     VectorView getDependentColumnAtIndex(size_t index) const {
-        throwIfColumnIndexOutOfRange(index);
+        throwIfColumnIndexOutOfRange(index, __func__);
         return _depData.col(index);
     }
 
@@ -300,7 +306,7 @@ public:
     \throws InvalidRow If this operation invalidates the row. Validation is
                        performed by derived classes.                          */
     void setIndependentColumnAtIndex(size_t index, const ETX& value) {
-        throwIfRowIndexOutOfRange(index);
+        throwIfRowIndexOutOfRange(index, __func__);
         validateRow(index, value, _depData.row(index));
         _indData[index] = value;
     }
@@ -309,18 +315,20 @@ protected:
     /** Throw if row index is out of range.
 
     \throws RowIndexOutOfRange If rowIndex is out of range.                   */
-    void throwIfRowIndexOutOfRange(const size_t rowIndex) const {
+    void throwIfRowIndexOutOfRange(const size_t rowIndex,
+                                   const std::string& func) const {
         if(rowIndex >= _indData.size())
-            throw RowIndexOutOfRange{__FILE__, __LINE__, 
+            throw RowIndexOutOfRange{__FILE__, __LINE__, func,
                     rowIndex, 0, _indData.size()};
     }
 
     /** Throw if column index is out of range.
 
     \throws ColumnIndexOutOfRange If columnIndex is out of range.             */
-    void throwIfColumnIndexOutOfRange(const size_t columnIndex) const {
+    void throwIfColumnIndexOutOfRange(const size_t columnIndex,
+                                      const std::string& func) const {
         if(columnIndex >= static_cast<size_t>(_depData.ncol()))
-            throw ColumnIndexOutOfRange{__FILE__, __LINE__, 
+            throw ColumnIndexOutOfRange{__FILE__, __LINE__, func,
                     columnIndex, 0, static_cast<size_t>(_depData.ncol())};
     }
 
@@ -342,7 +350,7 @@ protected:
         try {
             _independentMetaData.getValueForKey("labels");
         } catch(std::out_of_range&) {
-            throw MissingMetaData{__FILE__, __LINE__, "labels"};
+            throw MissingMetaData{__FILE__, __LINE__, __func__, "labels"};
         }
     }
 
@@ -359,19 +367,20 @@ protected:
         try {
             numCols = _dependentsMetaData.getValueArrayForKey("labels").size();
         } catch (std::out_of_range&) {
-            throw MissingMetaData{__FILE__, __LINE__, "labels"};
+            throw MissingMetaData{__FILE__, __LINE__, __func__, "labels"};
         }
 
         if(numCols == 0)
-            throw MetaDataLengthZero{__FILE__, __LINE__, "labels"};
+            throw MetaDataLengthZero{__FILE__, __LINE__, __func__, "labels"};
 
         if(_depData.ncol() != 0 && numCols != _depData.ncol())
-            throw IncorrectMetaDataLength{__FILE__, __LINE__, 
+            throw IncorrectMetaDataLength{__FILE__, __LINE__, __func__,
                     "labels", static_cast<size_t>(_depData.ncol()), numCols};
 
         for(const std::string& key : _dependentsMetaData.getKeys()) {
             if(numCols != _dependentsMetaData.getValueArrayForKey(key).size())
-                throw IncorrectMetaDataLength{__FILE__, __LINE__, key, numCols,
+                throw IncorrectMetaDataLength{__FILE__, __LINE__, __func__,
+                        key, numCols,
                         _dependentsMetaData.getValueArrayForKey(key).size()};
         }
     }

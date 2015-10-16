@@ -34,8 +34,9 @@ class KeyNotFound : public Exception {
 public:
     KeyNotFound(const std::string& file,
                 size_t line,
+                const std::string& func,
                 const std::string& key) {
-        std::string msg{file + ":" + std::to_string(line) + ": "};
+        std::string msg{errorMessagePrefix(file, line, func)};
         msg += "Key '" + key + "' not found.";
         setMessage(msg);
     }
@@ -56,7 +57,7 @@ public:
 
     \throws KeyNotFound If key is not found.                                  */
     const AbstractValue& getValueForKey(const std::string& key) const {
-        throwIfKeyNotFound(key);
+        throwIfKeyNotFound(key, __func__);
         return (*(_dictionary.at(key)))[0];
     }
 
@@ -78,7 +79,7 @@ public:
     \throws KeyNotFound If key is not found.                                  */
     const AbstractValueArray& 
     getValueArrayForKey(const std::string& key) const {
-        throwIfKeyNotFound(key);
+        throwIfKeyNotFound(key, __func__);
         return *(_dictionary.at(key));
     }
 
@@ -123,9 +124,10 @@ public:
         return _dictionary.cend();
     }
 private:
-    void throwIfKeyNotFound(const std::string& key) const {
+    void throwIfKeyNotFound(const std::string& key,
+                            const std::string& func) const {
         if(_dictionary.find(key) != _dictionary.end())
-            throw KeyNotFound{__FILE__, __LINE__, key};
+            throw KeyNotFound{__FILE__, __LINE__, func, key};
     }
 
     Dictionary _dictionary;

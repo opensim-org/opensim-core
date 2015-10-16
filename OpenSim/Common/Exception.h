@@ -93,6 +93,15 @@ public:
 //=============================================================================
 };  // END CLASS Exception
 
+
+inline
+std::string errorMessagePrefix(const std::string& file,
+                               size_t line,
+                               const std::string& func) {
+    return file + ":" + std::to_string(line) + ": In function '" + func + "': ";
+}
+
+
 }; //namespace
 //=============================================================================
 //=============================================================================
