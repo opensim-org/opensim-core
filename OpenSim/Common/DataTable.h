@@ -349,7 +349,7 @@ protected:
     void validateIndependentMetaData() const override {
         try {
             _independentMetaData.getValueForKey("labels");
-        } catch(std::out_of_range&) {
+        } catch(KeyNotFound&) {
             throw MissingMetaData{__FILE__, __LINE__, __func__, "labels"};
         }
     }
@@ -366,7 +366,7 @@ protected:
         unsigned numCols{};
         try {
             numCols = _dependentsMetaData.getValueArrayForKey("labels").size();
-        } catch (std::out_of_range&) {
+        } catch (KeyNotFound&) {
             throw MissingMetaData{__FILE__, __LINE__, __func__, "labels"};
         }
 

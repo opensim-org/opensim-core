@@ -126,7 +126,7 @@ public:
 private:
     void throwIfKeyNotFound(const std::string& key,
                             const std::string& func) const {
-        if(_dictionary.find(key) != _dictionary.end())
+        if(_dictionary.find(key) == _dictionary.end())
             throw KeyNotFound{__FILE__, __LINE__, func, key};
     }
 
