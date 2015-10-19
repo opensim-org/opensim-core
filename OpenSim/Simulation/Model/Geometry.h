@@ -157,15 +157,15 @@ protected:
         SimTK::Array_<SimTK::DecorativeGeometry>&) const = 0;
 
 private:
-    /// Compute Transform of this geometry relative to its base frame, utilizing 
-    /// passed in state. Both transform and body_id are set in the passed-in 
-    /// decorations as a side effect.
+    // Compute Transform of this geometry relative to its base frame, utilizing 
+    // passed in state. Both transform and body_id are set in the passed-in 
+    // decorations as a side effect.
     void setDecorativeGeometryTransform(
         SimTK::Array_<SimTK::DecorativeGeometry>& decorations,
         const SimTK::State& state) const;
 
-    /// Manage Appearance (how the Geometry is rendered) by applying Appearance 
-    /// from Geometry to DecorativeGeometry.
+    // Manage Appearance (how the Geometry is rendered) by applying Appearance 
+    // from Geometry to DecorativeGeometry.
     void setDecorativeGeometryAppearance(
         SimTK::DecorativeGeometry& decoration) const {
         decoration.setColor(get_Appearance().get_color());
