@@ -1,5 +1,6 @@
-# Ignore backup files created by editors like emacs.
+# Ignore backup files created by editors like emacs, vim.
 *~
+*.swp
 # Ignore cmake files.
 *CMakeCache.txt
 *CMakeFiles
