@@ -30,19 +30,6 @@
 
 namespace OpenSim {
 
-class KeyNotFound : public Exception {
-public:
-    KeyNotFound(const std::string& file,
-                size_t line,
-                const std::string& func,
-                const std::string& key) {
-        std::string msg{errorMessagePrefix(file, line, func)};
-        msg += "Key '" + key + "' not found.";
-        setMessage(msg);
-    }
-};
-
-
 /** ValueArrayDictionary represents an associative array mapping from a string 
 to an AbstractValueArray.                                                     */
 class ValueArrayDictionary {

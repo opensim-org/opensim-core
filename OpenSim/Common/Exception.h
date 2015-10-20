@@ -101,6 +101,34 @@ std::string errorMessagePrefix(const std::string& file,
     return file + ":" + std::to_string(line) + ": In function '" + func + "': ";
 }
 
+class IndexOutOfRange : public Exception {
+public:
+    IndexOutOfRange(const std::string& file,
+                    size_t line,
+                    const std::string& func,
+                    size_t index, 
+                    size_t min, 
+                    size_t max) {
+        std::string msg{errorMessagePrefix(file, line, func)};
+        msg += "min = " + std::to_string(min);
+        msg += " max = " + std::to_string(max);
+        msg += " index = " + std::to_string(index);
+
+        setMessage(msg);
+    }
+};
+
+class KeyNotFound : public Exception {
+public:
+    KeyNotFound(const std::string& file,
+                size_t line,
+                const std::string& func,
+                const std::string& key) {
+        std::string msg{errorMessagePrefix(file, line, func)};
+        msg += "Key '" + key + "' not found.";
+        setMessage(msg);
+    }
+};
 
 }; //namespace
 //=============================================================================
