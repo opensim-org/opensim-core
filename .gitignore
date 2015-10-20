@@ -1,5 +1,9 @@
+# Ignore backup files created by editors like emacs.
 *~
+# Ignore cmake files.
 *CMakeCache.txt
 *CMakeFiles
+# Ignore tmp directory/file. We use it sometimes to write debug information.
 tmp
+# Ignore build trees.
 build-*
