@@ -82,7 +82,7 @@ Exception::addMessage(const std::string& msg) {
 }
 
 const char*
-Exception::what() const {
+Exception::what() const noexcept {
     return getMessage();
 }
 
