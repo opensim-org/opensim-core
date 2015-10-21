@@ -44,7 +44,8 @@ public:
 
     \throws KeyNotFound If key is not found.                                  */
     const AbstractValue& getValueForKey(const std::string& key) const {
-        throwIfKeyNotFound(key, __func__);
+        OPENSIM_THROW_IF(isKeyNotFound(key),
+                         KeyNotFound, key);
         return (*(_dictionary.at(key)))[0];
     }
 
@@ -66,7 +67,8 @@ public:
     \throws KeyNotFound If key is not found.                                  */
     const AbstractValueArray& 
     getValueArrayForKey(const std::string& key) const {
-        throwIfKeyNotFound(key, __func__);
+        OPENSIM_THROW_IF(isKeyNotFound(key),
+                         KeyNotFound, key);
         return *(_dictionary.at(key));
     }
 
@@ -111,10 +113,8 @@ public:
         return _dictionary.cend();
     }
 private:
-    void throwIfKeyNotFound(const std::string& key,
-                            const std::string& func) const {
-        if(_dictionary.find(key) == _dictionary.end())
-            throw KeyNotFound{__FILE__, __LINE__, func, key};
+    bool isKeyNotFound(const std::string& key) const {
+        return _dictionary.find(key) == _dictionary.end();
     }
 
     Dictionary _dictionary;

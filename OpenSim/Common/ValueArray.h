@@ -76,7 +76,8 @@ public:
 
     \throws std::out_of_range If index is out of range.                       */
     Value<T>& operator[](size_t index) override {
-        throwIfIndexOutOfRange(index);
+        OPENSIM_THROW_IF(isIndexOutOfRange(index), 
+                         IndexOutOfRange, index, 0, _values.size());
         return _values.at(index);
     } 
 
@@ -84,7 +85,8 @@ public:
 
     \throws std::out_of_range If index is out of range.                       */
     const Value<T>& operator[](size_t index) const override {
-        throwIfIndexOutOfRange(index);
+        OPENSIM_THROW_IF(isIndexOutOfRange(index), 
+                         IndexOutOfRange, index, 0, _values.size());
         return _values.at(index);
     }
 
@@ -99,12 +101,10 @@ public:
     }
 
 private:
-    void throwIfIndexOutOfRange(size_t index) const {
-        if(index >= _values.size())
-            throw IndexOutOfRange{__FILE__, __LINE__, __func__, 
-                    index, 0, _values.size()};
+    bool isIndexOutOfRange(size_t index) const {
+        return index >= _values.size();
     }
-    
+
     std::vector<Value<T>> _values;
 };
 

@@ -238,9 +238,10 @@ public:
             try {
                 auto& labels = 
                     _dependentsMetaData.getValueArrayForKey("labels");
-                if(depRow.ncol() != labels.size())
-                    throw IncorrectNumColumns{__FILE__, __LINE__, __func__,
-                            labels.size(), static_cast<size_t>(depRow.ncol())};
+                OPENSIM_THROW_IF(depRow.ncol() != labels.size(),
+                                 IncorrectNumColumns, 
+                                 labels.size(), 
+                                 static_cast<size_t>(depRow.ncol()));
             } catch(KeyNotFound&) {
                 // No "labels". So no operation.
             }
@@ -255,7 +256,8 @@ public:
 
     \throws RowIndexOutOfRange If index is out of range.                      */
     RowVectorView getRowAtIndex(size_t index) const {
-        throwIfRowIndexOutOfRange(index, __func__);
+        OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
+                         RowIndexOutOfRange, index, 0, _indData.size())
         return _depData.row(index);
     }
 
@@ -266,9 +268,8 @@ public:
     RowVectorView getRow(const ETX& ind) const {
         auto iter = std::find(_indData.cbegin(), _indData.cend(), ind);
 
-        if(iter == _indData.cend())
-            throw KeyNotFound{__FILE__, __LINE__, __func__, 
-                    std::to_string(ind)};
+        OPENSIM_THROW_IF(iter == _indData.cend(),
+                         KeyNotFound, std::to_string(ind));
 
         return _depData.row(std::distance(_indData.cbegin(), iter));
     }
@@ -277,7 +278,8 @@ public:
 
     \throws RowIndexOutOfRange If the index is out of range.                  */
     RowVectorView updRowAtIndex(size_t index) {
-        throwIfRowIndexOutOfRange(index, __func__);
+        OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
+                         RowIndexOutOfRange, index, 0, _indData.size());
         return _depData.updRow(index);
     }
 
@@ -288,9 +290,8 @@ public:
     RowVectorView updRow(const ETX& ind) {
         auto iter = std::find(_indData.cbegin(), _indData.cend(), ind);
 
-        if(iter == _indData.cend())
-            throw KeyNotFound{__FILE__, __LINE__, __func__, 
-                    std::to_string(ind)};
+        OPENSIM_THROW_IF(iter == _indData.cend(),
+                         KeyNotFound, std::to_string(ind));
 
         return _depData.updRow(std::distance(_indData.cbegin(), iter));
     }
@@ -304,7 +305,9 @@ public:
 
     \throws ColumnIndexOutOfRange If index is out of range.                   */
     VectorView getDependentColumnAtIndex(size_t index) const {
-        throwIfColumnIndexOutOfRange(index, __func__);
+        OPENSIM_THROW_IF(isColumnIndexOutOfRange(index),
+                         ColumnIndexOutOfRange, index, 0,
+                         static_cast<size_t>(_depData.ncol()));
         return _depData.col(index);
     }
 
@@ -314,30 +317,19 @@ public:
     \throws InvalidRow If this operation invalidates the row. Validation is
                        performed by derived classes.                          */
     void setIndependentColumnAtIndex(size_t index, const ETX& value) {
-        throwIfRowIndexOutOfRange(index, __func__);
+        OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
+                         RowIndexOutOfRange, index, 0, _indData.size());
         validateRow(index, value, _depData.row(index));
         _indData[index] = value;
     }
 
 protected:
-    /** Throw if row index is out of range.
-
-    \throws RowIndexOutOfRange If rowIndex is out of range.                   */
-    void throwIfRowIndexOutOfRange(const size_t rowIndex,
-                                   const std::string& func) const {
-        if(rowIndex >= _indData.size())
-            throw RowIndexOutOfRange{__FILE__, __LINE__, func,
-                    rowIndex, 0, _indData.size()};
+    bool isRowIndexOutOfRange(size_t index) const {
+        return index >= _indData.size();
     }
 
-    /** Throw if column index is out of range.
-
-    \throws ColumnIndexOutOfRange If columnIndex is out of range.             */
-    void throwIfColumnIndexOutOfRange(const size_t columnIndex,
-                                      const std::string& func) const {
-        if(columnIndex >= static_cast<size_t>(_depData.ncol()))
-            throw ColumnIndexOutOfRange{__FILE__, __LINE__, func,
-                    columnIndex, 0, static_cast<size_t>(_depData.ncol())};
+    bool isColumnIndexOutOfRange(size_t index) const {
+        return index >= static_cast<size_t>(_depData.ncol());
     }
 
     /** Get number of rows.                                                   */
@@ -358,7 +350,7 @@ protected:
         try {
             _independentMetaData.getValueForKey("labels");
         } catch(KeyNotFound&) {
-            throw MissingMetaData{__FILE__, __LINE__, __func__, "labels"};
+            OPENSIM_THROW(MissingMetaData, "labels");
         }
     }
 
@@ -375,21 +367,23 @@ protected:
         try {
             numCols = _dependentsMetaData.getValueArrayForKey("labels").size();
         } catch (KeyNotFound&) {
-            throw MissingMetaData{__FILE__, __LINE__, __func__, "labels"};
+            OPENSIM_THROW(MissingMetaData, "labels");
         }
 
-        if(numCols == 0)
-            throw MetaDataLengthZero{__FILE__, __LINE__, __func__, "labels"};
+        OPENSIM_THROW_IF(numCols == 0,
+                         MetaDataLengthZero,"labels");
 
-        if(_depData.ncol() != 0 && numCols != _depData.ncol())
-            throw IncorrectMetaDataLength{__FILE__, __LINE__, __func__,
-                    "labels", static_cast<size_t>(_depData.ncol()), numCols};
+        OPENSIM_THROW_IF(_depData.ncol() != 0 && numCols != _depData.ncol(),
+                         IncorrectMetaDataLength, "labels", 
+                         static_cast<size_t>(_depData.ncol()), numCols);
 
         for(const std::string& key : _dependentsMetaData.getKeys()) {
-            if(numCols != _dependentsMetaData.getValueArrayForKey(key).size())
-                throw IncorrectMetaDataLength{__FILE__, __LINE__, __func__,
-                        key, numCols,
-                        _dependentsMetaData.getValueArrayForKey(key).size()};
+            OPENSIM_THROW_IF(numCols != 
+                             _dependentsMetaData.
+                             getValueArrayForKey(key).size(),
+                             IncorrectMetaDataLength, key, numCols,
+                             _dependentsMetaData.
+                             getValueArrayForKey(key).size());
         }
     }
 

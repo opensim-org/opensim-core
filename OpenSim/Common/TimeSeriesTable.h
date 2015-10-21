@@ -115,11 +115,12 @@ public:
         DataTable_<double, ETY>(datatable) {
         using DT = DataTable_<double, ETY>;
 
-        if(!std::is_sorted(DT::_indData.cbegin(), DT::_indData.cend()) ||
-           std::adjacent_find(DT::_indData.cbegin(), DT::_indData.cend()) != 
-           DT::_indData.cend()) {
-            throw TimeColumnNotIncreasing{__FILE__, __LINE__, __func__};
-        }
+        OPENSIM_THROW_IF(!std::is_sorted(DT::_indData.cbegin(), 
+                                         DT::_indData.cend()) ||
+                         std::adjacent_find(DT::_indData.cbegin(), 
+                                            DT::_indData.cend()) != 
+                         DT::_indData.cend(),
+                         TimeColumnNotIncreasing);
     }
 
 protected:
@@ -136,15 +137,15 @@ protected:
             return;
 
         if(rowIndex > 0) {
-            if(DT::_indData[rowIndex - 1] >= time)
-                throw TimestampLessThanEqualToPrevious{__FILE__, __LINE__, 
-                        __func__, rowIndex, time, DT::_indData[rowIndex - 1]};
+            OPENSIM_THROW_IF(DT::_indData[rowIndex - 1] >= time,
+                             TimestampLessThanEqualToPrevious, rowIndex, time, 
+                             DT::_indData[rowIndex - 1]);
         }
 
         if(rowIndex < DT::_indData.size() - 1) {
-            if(DT::_indData[rowIndex + 1] <= time)
-                throw TimestampGreaterThanEqualToNext{__FILE__, __LINE__, 
-                        __func__, rowIndex, time, DT::_indData[rowIndex + 1]};
+            OPENSIM_THROW_IF(DT::_indData[rowIndex + 1] <= time,
+                             TimestampGreaterThanEqualToNext, rowIndex, time, 
+                             DT::_indData[rowIndex + 1]);
         }
     }
 }; // TimeSeriesTable_
