@@ -33,20 +33,27 @@ provide an in-memory container for data access and manipulation.              */
 
 namespace OpenSim {
 
-class InvalidTable : public Exception {};
+class InvalidTable : public Exception {
+public:
+    using Exception::Exception;
+};
 
 class TimeColumnNotIncreasing : public InvalidTable {
 public:
     TimeColumnNotIncreasing(const std::string& file, 
                             size_t line,
-                            const std::string& func) {
-        std::string msg{errorMessagePrefix(file, line, func)};
-        msg += "Time column is not strictly increasing";
-        setMessage(msg);
+                            const std::string& func) :
+        InvalidTable(file, line, func) {
+        std::string msg = "Time column is not strictly increasing";
+
+        addMessage(msg);
     } 
 };
 
-class InvalidTimestamp : public InvalidRow {};
+class InvalidTimestamp : public InvalidRow {
+public:
+    using InvalidRow::InvalidRow;
+};
 
 class TimestampLessThanEqualToPrevious : public InvalidTimestamp {
 public:
@@ -55,13 +62,15 @@ public:
                                      const std::string& func,
                                      size_t rowIndex,
                                      double new_timestamp,
-                                     double prev_timestamp) {
-        std::string msg{errorMessagePrefix(file, line, func)};
-        msg += "Timestamp at row " + std::to_string(rowIndex) + " with value ";
-        msg += std::to_string(new_timestamp) + " is less-than/equal to ";
-        msg += "timestamp at row " + std::to_string(rowIndex - 1) + " with ";
-        msg += "value " + std::to_string(prev_timestamp);
-        setMessage(msg);
+                                     double prev_timestamp) :
+        InvalidTimestamp(file, line, func) {
+        std::string msg = "Timestamp at row " + std::to_string(rowIndex);
+        msg += " with value " + std::to_string(new_timestamp);
+        msg += " is less-than/equal to timestamp at row ";
+        msg += std::to_string(rowIndex - 1) + " with value ";
+        msg += std::to_string(prev_timestamp);
+
+        addMessage(msg);
     }
 };
 
@@ -72,13 +81,15 @@ public:
                                     const std::string& func,
                                     size_t rowIndex,
                                     double new_timestamp,
-                                    double next_timestamp) {
-        std::string msg{errorMessagePrefix(file, line, func)};
-        msg += "Timestamp at row " + std::to_string(rowIndex) + " with value ";
-        msg += std::to_string(new_timestamp) + " is greater-than/equal to ";
-        msg += "timestamp at row " + std::to_string(rowIndex + 1) + " with ";
-        msg += "value " + std::to_string(next_timestamp);
-        setMessage(msg);
+                                    double next_timestamp) :
+        InvalidTimestamp(file, line, func) {
+        std::string msg = "Timestamp at row " + std::to_string(rowIndex);
+        msg += " with value " + std::to_string(new_timestamp);
+        msg += " is greater-than/equal to timestamp at row "; 
+        msg += std::to_string(rowIndex + 1) + " with value "; 
+        msg += std::to_string(next_timestamp);
+
+        addMessage(msg);
     }
 };
 

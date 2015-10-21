@@ -35,7 +35,10 @@ in-memory container for data access and manipulation.                         */
 
 namespace OpenSim {
 
-class InvalidRow : public Exception {};
+class InvalidRow : public Exception {
+public:
+    using Exception::Exception;
+};
 
 class IncorrectNumColumns : public InvalidRow {
 public:
@@ -43,11 +46,12 @@ public:
                         size_t line,
                         const std::string& func,
                         size_t expected,
-                        size_t received) {
-        std::string msg{errorMessagePrefix(file, line, func)};
-        msg += "expected = " + std::to_string(expected);
+                        size_t received) :
+        InvalidRow(file, line, func) {
+        std::string msg = "expected = " + std::to_string(expected);
         msg += " received = " + std::to_string(received);
-        setMessage(msg);
+
+        addMessage(msg);
     }
 };
 
@@ -66,10 +70,11 @@ public:
     MissingMetaData(const std::string& file,
                     size_t line,
                     const std::string& func,
-                    const std::string& key) {
-        std::string msg{errorMessagePrefix(file, line, func)};
-        msg += "Missing key '" + key + "'.";
-        setMessage(msg);
+                    const std::string& key) :
+        Exception(file, line, func) {
+        std::string msg = "Missing key '" + key + "'.";
+
+        addMessage(msg);
     }
 };
 
@@ -80,12 +85,13 @@ public:
                             const std::string& func,
                             const std::string& key,
                             size_t expected,
-                            size_t received) {
-        std::string msg{errorMessagePrefix(file, line, func)};
-        msg += "Key = " + key ;
+                            size_t received) :
+        Exception(file, line, func) {
+        std::string msg = "Key = " + key ;
         msg += " expected = " + std::to_string(expected);
         msg += " received = " + std::to_string(received);
-        setMessage(msg);
+
+        addMessage(msg);
     }
 };
 
@@ -94,9 +100,11 @@ public:
     MetaDataLengthZero(const std::string& file,
                        size_t line,
                        const std::string& func,
-                       const std::string& key) {
-        std::string msg{errorMessagePrefix(file, line, func)};
-        msg += "Key = " + key ;
+                       const std::string& key) :
+        Exception(file, line, func) {
+        std::string msg = "Key = " + key;
+
+        addMessage(msg);
     }
 };
 

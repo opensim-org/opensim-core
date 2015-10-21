@@ -101,7 +101,8 @@ public:
 private:
     void throwIfIndexOutOfRange(size_t index) const {
         if(index >= _values.size())
-            throw IndexOutOfRange{__FILE__, __LINE__, __func__, index, 0, _values.size()};
+            throw IndexOutOfRange{__FILE__, __LINE__, __func__, 
+                    index, 0, _values.size()};
     }
     
     std::vector<Value<T>> _values;

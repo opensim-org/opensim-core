@@ -67,14 +67,29 @@ protected:
     std::string _file;
     /** Line number at which the error occurred. */
     int _line;
+    /** Delimiter/separator used to separate different parts of the message.  */
+    static const std::string _msgSeparator;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
     // CONSTRUCTORS
-    Exception(const std::string &aMsg="",const std::string &aFile="",int aLine=-1);
+    Exception(const std::string &aMsg="",
+              const std::string &aFile="",
+              int aLine=-1);
+
+    /** Call this constructor from derived classes to add file, line and 
+    function information to the error message                                 */
+    Exception(const std::string& file,
+              size_t line,
+              const std::string& func);
+
     virtual ~Exception() throw() {}
+
+protected:
+    void addMessage(const std::string& msg);
+
 private:
     void setNull();
 
@@ -88,18 +103,11 @@ public:
     virtual void print(std::ostream &aOut) const;
 #endif
     // override virtual function from std::exception
-    const char* what() const throw() override {return getMessage();}
+    const char* what() const noexcept override;
 
 //=============================================================================
 };  // END CLASS Exception
 
-
-inline
-std::string errorMessagePrefix(const std::string& file,
-                               size_t line,
-                               const std::string& func) {
-    return file + ":" + std::to_string(line) + ": In function '" + func + "': ";
-}
 
 class IndexOutOfRange : public Exception {
 public:
@@ -108,13 +116,13 @@ public:
                     const std::string& func,
                     size_t index, 
                     size_t min, 
-                    size_t max) {
-        std::string msg{errorMessagePrefix(file, line, func)};
-        msg += "min = " + std::to_string(min);
+                    size_t max) :
+        Exception(file, line, func) {
+        std::string msg = "min = " + std::to_string(min);
         msg += " max = " + std::to_string(max);
         msg += " index = " + std::to_string(index);
 
-        setMessage(msg);
+        addMessage(msg);
     }
 };
 
@@ -123,10 +131,11 @@ public:
     KeyNotFound(const std::string& file,
                 size_t line,
                 const std::string& func,
-                const std::string& key) {
-        std::string msg{errorMessagePrefix(file, line, func)};
-        msg += "Key '" + key + "' not found.";
-        setMessage(msg);
+                const std::string& key) :
+        Exception(file, line, func) {
+        std::string msg = "Key '" + key + "' not found.";
+
+        addMessage(msg);
     }
 };
 
