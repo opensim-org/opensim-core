@@ -100,6 +100,8 @@ protected:
 //=============================================================================
 public:
     // CONSTRUCTORS
+    /** This constructor is for backward compatibility. Use the constructor
+    taking file, line, func.                                                  */
     Exception(const std::string &aMsg="",
               const std::string &aFile="",
               int aLine=-1);
