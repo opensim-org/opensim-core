@@ -376,8 +376,8 @@ endif()
 set(OPENSIM_USE_INSTALL_RPATH FALSE)
 if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
     option(OPENSIM_NO_LIBRARY_PATH_ENV_VAR
-        "If ON, you don't need to set the LD_LIBRARY_PATH (Linux) or
-        DYLD_LIBRARY_PATH (Mac) to make use of OpenSim's executables.
+        "If ON, you don't need to set 
+        DYLD_LIBRARY_PATH (on OSX) to make use of OpenSim's executables.
         Instead, we bake the location of OpenSim's libraries into the
         executables, so the executables already know where to find the
         libraries. This uses the RPATH mechanism." ON)

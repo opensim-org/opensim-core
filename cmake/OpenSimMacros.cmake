@@ -238,8 +238,17 @@ function(OpenSimAddApplication APPNAME)
         FOLDER "Applications")
 
     if(${OPENSIM_USE_INSTALL_RPATH})
+        # TODO @executable_path only makes sense on OSX, so if we use RPATH on
+        # Linux we'll have to revisit.
+
+        # bin_dir_to_install_dir is most likely "../"
+        file(RELATIVE_PATH bin_dir_to_install_dir
+            "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}"
+            "${CMAKE_INSTALL_PREFIX}")
+        set(bin_dir_to_lib_dir
+            "${bin_dir_to_install_dir}${CMAKE_INSTALL_LIBDIR}")
         set_target_properties(${APPNAME} PROPERTIES
-            INSTALL_RPATH "\@executable_path/../lib"
+            INSTALL_RPATH "\@executable_path/${bin_dir_to_lib_dir}"
             )
     endif()
 
