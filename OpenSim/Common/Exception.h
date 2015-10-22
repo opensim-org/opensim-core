@@ -76,8 +76,23 @@ allows us to add more details (eg class name) later easily.                   */
 
 /**
  * A class for basic exception functionality.
+ * To create exception classes in OpenSim, use the following guidlines.
+ * If the intention is the derive from an exception named (say) BaseException
+ * that is part of OpenSim, use the following blueprint:
+ * \code{.cpp}
+ *     class MyNewException : public BaseException {
+ *     public:
+ *         MyNewException(const std::string& file,
+ *                        size_t line,
+ *                        const std::string& func,
+ *                        <more parameters as appropriate>) :
+ *         BaseException(flie, line, func) {
+ *             std::string message = <create the desired message>;
+ *             addMessage(message);
+ *         }
+ *     };
+ * \endcode
  *
- * @version 1.0
  * @author Frank C. Anderson
  */
 class OSIMCOMMON_API Exception  : public std::exception {
