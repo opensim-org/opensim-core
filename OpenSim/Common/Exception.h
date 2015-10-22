@@ -76,6 +76,7 @@ allows us to add more details (eg class name) later easily.                   */
 
 /**
  * A class for basic exception functionality.
+ * \if developer
  * To create exception classes in OpenSim, use the following guidlines.
  * If the intention is the derive from an exception named (say) BaseException
  * that is part of OpenSim, use the following blueprint:
@@ -95,6 +96,7 @@ allows us to add more details (eg class name) later easily.                   */
  * Exception class manages the concatenation of error messages from all the 
  * derived classes. When creating new exceptions, remember to call addMessage()
  * as shown above if the exception class does have any error message.
+ * \endif
  *
  * @author Frank C. Anderson
  */
