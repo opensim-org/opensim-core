@@ -78,7 +78,10 @@ Exception::Exception(const std::string& file,
 
 void
 Exception::addMessage(const std::string& msg) {
-    _msg += _msgSeparator + msg;
+    if(_msg.length() == 0)
+        _msg = msg;
+    else
+        _msg = msg + _msgSeparator + _msg;
 }
 
 const char*

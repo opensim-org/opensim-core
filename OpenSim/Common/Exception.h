@@ -92,6 +92,9 @@ allows us to add more details (eg class name) later easily.                   */
  *         }
  *     };
  * \endcode
+ * Exception class manages the concatenation of error messages from all the 
+ * derived classes. When creating new exceptions, remember to call addMessage()
+ * as shown above if the exception class does have any error message.
  *
  * @author Frank C. Anderson
  */
