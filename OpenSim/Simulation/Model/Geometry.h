@@ -138,7 +138,7 @@ public:
     // END DEPRECATED
 
     /// Implement method from Component interface. Subclasses only need to 
-    /// implement createDecorativeGeometry to generate an Array of 
+    /// implement implementCreateDecorativeGeometry to generate an Array of 
     /// SimTK::DecorativeGeometry. From then on, setting Transforms & Appearance 
     /// is handled by the base class Geometry to avoid duplication. 
     void generateDecorations
@@ -153,7 +153,7 @@ public:
 protected:
     /// Map this Geometry into a list of primitives aka SimTK::DecorativeGeometry 
     /// and return the result in the passed in Array.
-    virtual void createDecorativeGeometry(
+    virtual void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>&) const = 0;
 
 private:
@@ -232,7 +232,7 @@ protected:
     /** Virtual method to map LineGeometry to SimTK::Array of
     SimTK::DecorativeGeometry.  Appearance, Transforms are handled by base
     Geometry class. */
-    void createDecorativeGeometry(
+    void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
     void constructProperties(){
@@ -277,7 +277,7 @@ public:
 protected:
     /** Virtual method to map Arrow to SimTK::Array of SimTK::DecorativeGeometry.
     Appearance, Transforms are handled by base Geometry class. */
-    void createDecorativeGeometry(
+    void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
     void constructProperties(){
@@ -367,7 +367,7 @@ public:
 protected:
     /// Virtual method to map Sphere to Array of SimTK::DecorativeGeometry.
     /// Appearance, Transforms are handled by base Geometry class
-    void createDecorativeGeometry(
+    void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
     void constructProperties(){
@@ -408,7 +408,7 @@ protected:
     /** Virtual method to map Ellipsoid to SimTK::Array_ of
     SimTK::DecorativeGeometry.  Appearance, Transforms are handled by base
     Geometry class. */
-    void createDecorativeGeometry(
+    void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
     void constructProperties() {
@@ -454,7 +454,7 @@ public:
 protected:
     /** Virtual method to map Cylinder to SimTK::Array_ of SimTK::DecorativeGeometry.
     Appearance, Transforms are handled by base Geometry class. */
-    void createDecorativeGeometry(
+    void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
     void constructProperties() {
@@ -499,7 +499,7 @@ public:
 protected:
     /** Method to map Cone to SimTK::Array of SimTK::DecorativeGeometry.
     Appearance, Transforms are handled by base Geometry class. */
-    void createDecorativeGeometry(
+    void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
     void constructProperties() {
@@ -540,7 +540,7 @@ public:
 protected:
     /** Method to map Cone to Array of SimTK::DecorativeGeometry.
     Appearance, Transforms are handled by base Geometry class. */
-    void createDecorativeGeometry(
+    void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override {};
 };
 
@@ -572,7 +572,7 @@ public:
     ~Brick() {}
 protected:
     /// Method to map Brick to Array of SimTK::DecorativeGeometry.
-    void createDecorativeGeometry(
+    void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 
 };
@@ -610,7 +610,7 @@ public:
     };
 protected:
     /// Method to map Mesh to Array of SimTK::DecorativeGeometry.
-    void createDecorativeGeometry(
+    void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 
 };
@@ -636,7 +636,7 @@ public:
     virtual ~FrameGeometry() {};
 protected:
     /// Method to map FrameGeometry to Array of SimTK::DecorativeGeometry.
-    void createDecorativeGeometry(
+    void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
     void constructInfrastructure() {
