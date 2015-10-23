@@ -86,21 +86,11 @@ before_install:
   - if [ "$DOXY" = "on" ]; then tar xzf doxygen-1.8.10.linux.bin.tar.gz; fi
 
   ## Install Simbody.
-  # Clone Simbody into the Simbody directory. Don't need its history, and
-  # only need the master branch.
-  - git clone https://github.com/simbody/simbody.git ~/simbody-source --depth 1 --branch master
-  - cd ~/simbody-source
-  # Configure Simbody. No matter how we're compiling OpenSim,
-  # compile Simbody with clang for a faster build (allows us to use 8 procs).
-  - cmake . -DBUILD_VISUALIZER=off -DBUILD_EXAMPLES=off -DCMAKE_INSTALL_PREFIX=~/simbody-install -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=$BTYPE -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen
-  # Build Simbody.
-  - make -j8
-  # Build Simbody's doxygen, so we can link to it from OpenSim's doxygen.
-  - if [ "$DOXY" = "on" ]; then make doxygen; fi
-  # Test Simbody.
-  - ctest -j8 --output-on-failure
-  # Install Simbody.
-  - make -j8 install > /dev/null
+  # The Simbody travis script uploads the latestsimbody binaries to bintray.
+  - SIMBODYZIP=simbody-latest_$TRAVIS_OS_NAME.zip
+  - wget https://dl.bintray.com/chrisdembia/opensim-testing/$SIMBODYZIP
+  # Put Simbody in ~/simbody.
+  - unzip $SIMBODYZIP -d ~
 
   ## Install SWIG to build Java/python wrapping.
   - if [[ "$WRAP" = "on" ]]; then if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pcre; fi; fi
@@ -127,7 +117,7 @@ before_install:
 install:
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
   # Configure OpenSim.
-  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/"
+  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/"
   # Build OpenSim.
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
   - if [[ "$WRAP" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PythonBindings; fi
