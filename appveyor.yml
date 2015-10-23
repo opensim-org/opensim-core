@@ -23,10 +23,16 @@ platform: x64
 
 init:
   # Note: python 2.7 32bit is already on the path. We want v2.7 64bit,
-  # so we must add v2.7 64bit earlier on the PATH.
+  # so we must add v2.7 64bit earlier on the PATH so that CMake finds it when
+  # configuring.
+  # The Scripts directory is for putting nosetests on the path.
   # http://www.appveyor.com/docs/installed-software
-  - SET PATH=C:\Python27-x64\Scripts;%PATH%
+  - SET PATH=C:\Python27-x64\;%PATH%
   - SET OPENSIM_HOME=C:\OpenSim
+
+  # The following line, if uncommented, should allow you to remote-desktop into
+  # the Appveyor build machine.
+  # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   
 nuget:
   account_feed: true
@@ -37,7 +43,7 @@ install:
   - choco install swig --version 3.0.5 -y
   
   ## Install python-nose for python testing.
-  - pip install nose
+  - C:\Python27-x64\Scripts\pip install nose
   
   ## Simbody.
   # Simbody's installation is pushed to our Appveyor NuGet account feed.
@@ -67,21 +73,10 @@ test_script:
   
   ## Test python wrapping.
   - set PATH=%OPENSIM_HOME%\bin;%PATH%
-  
-  # Copy over model files needed for testing.
-  # TODO this is temporary until we have a proper way to distribute models.
-  # The md command makes directories.
-  - cd %APPVEYOR_BUILD_DIR%
-  - md %OPENSIM_HOME%\Models\Arm26
-  - copy OpenSim\Tools\Test\arm26.osim %OPENSIM_HOME%\Models\Arm26\arm26.osim
-  - md %OPENSIM_HOME%\Models\Gait10dof18musc
-  - copy Applications\CMC\test\gait10dof18musc_subject01.osim %OPENSIM_HOME%\Models\Gait10dof18musc\gait10dof18musc.osim
-  
   # Move to the installed location of the python package.
   - cd %OPENSIM_HOME%\sdk\python
-  
   # Run python tests.
-  - nosetests -v
+  - C:\Python27-x64\Scripts\nosetests -v
 
 after_test:
   - ## On master branch, create NuGet package for OpenSim.
