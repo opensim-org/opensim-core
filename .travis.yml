@@ -193,7 +193,7 @@ before_deploy:
   # Zip up the installation using a file name that identifies where
   # the binaries were built.
   - mkdir ~/binstar-packages
-  - ZIPNAME=opensim-core-latest_$TRAVIS_OS_NAME.zip
+  - ZIPNAME=opensim-core-latest_$TRAVIS_OS_NAME_$BTYPE.zip
   - # Zip up opensim relative to where it's installed.
   - cd $OPENSIM_HOME/../
   - zip --recurse-paths --quiet ~/binstar-packages/$ZIPNAME opensim-core
@@ -216,4 +216,4 @@ deploy:
     branch: bintray
     # Upload for both linux (once) and OSX. Might need to modify the condition
     # if we change the build matrix.
-    condition: "$CC = clang && $BTYPE = RelWithDebInfo"
+    condition: "$CC = clang"
