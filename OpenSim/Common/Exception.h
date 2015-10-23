@@ -87,7 +87,7 @@ allows us to add more details (eg class name) later easily.                   */
  *                        size_t line,
  *                        const std::string& func,
  *                        <more parameters as appropriate>) :
- *         BaseException(flie, line, func) {
+ *         BaseException(file, line, func) {
  *             std::string message = <create the desired message>;
  *             addMessage(message);
  *         }
