@@ -71,7 +71,7 @@ void Geometry::generateDecorations(bool fixed, const ModelDisplayHints& hints, c
 {
     if (!fixed) return; // serialized Geometry is assumed fixed
     SimTK::Array_<SimTK::DecorativeGeometry> decos;
-    createDecorativeGeometry(decos);
+    implementCreateDecorativeGeometry(decos);
     if (decos.size() == 0) return;
     setDecorativeGeometryTransform(decos, state);
     for (unsigned i = 0; i < decos.size(); i++){
@@ -101,7 +101,7 @@ void Geometry::setDecorativeGeometryTransform(SimTK::Array_<SimTK::DecorativeGeo
         decorations[i].setIndexOnBody(i);
     }
 }
-void Sphere::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void Sphere::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
     DecorativeSphere deco(get_radius());
@@ -109,7 +109,7 @@ void Sphere::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& 
     decoGeoms.push_back(deco);
 }
 
-void Cylinder::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void Cylinder::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
     DecorativeCylinder deco(get_radius(), get_half_height());
@@ -117,7 +117,7 @@ void Cylinder::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>
     decoGeoms.push_back(deco);
 }
 
-void Cone::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void Cone::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
     DecorativeCone deco(get_origin(), SimTK::UnitVec3(get_direction()), get_height(), get_base_radius());
@@ -125,7 +125,7 @@ void Cone::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& de
     decoGeoms.push_back(deco);
 }
 
-void LineGeometry::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void LineGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
     DecorativeLine deco(get_start_point(), get_end_point());
@@ -134,7 +134,7 @@ void LineGeometry::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeome
 }
 
 
-void Arrow::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void Arrow::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
     SimTK::Vec3 endPt(get_length()*get_direction());
@@ -144,7 +144,7 @@ void Arrow::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& d
     decoGeoms.push_back(deco);
 }
 
-void Ellipsoid::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void Ellipsoid::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
     DecorativeEllipsoid deco(get_radii());
@@ -152,7 +152,7 @@ void Ellipsoid::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry
     decoGeoms.push_back(deco);
 }
 
-void Brick::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void Brick::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
     DecorativeBrick deco(get_half_lengths());
@@ -160,7 +160,7 @@ void Brick::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& d
     decoGeoms.push_back(deco);
 }
 
-void FrameGeometry::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void FrameGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
     DecorativeFrame deco(1.0);
@@ -169,7 +169,7 @@ void FrameGeometry::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeom
     decoGeoms.push_back(deco);
 }
 
-void Mesh::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const std::string& file = get_mesh_file();
     // TODO: when API visualizer changes to use DecorativeGeometry::MeshFile instead of 

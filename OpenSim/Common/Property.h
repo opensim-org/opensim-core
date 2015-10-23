@@ -27,13 +27,6 @@
 #include "AbstractProperty.h"
 #include "Exception.h"
 
-#ifdef SWIG
-#undef override
-#define override
-#undef final
-#define final
-#endif
-
 namespace OpenSim {
 
 template <class T> class SimpleProperty;
