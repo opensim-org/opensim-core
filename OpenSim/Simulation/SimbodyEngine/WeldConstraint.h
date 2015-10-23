@@ -26,78 +26,98 @@
 
 // INCLUDE
 #include "Constraint.h"
+#include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 namespace OpenSim {
 
+class PhysicalOffsetFrame;
+
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Weld Constraint.  The underlying Constraint in Simbody
- * is a Constraint::Weld
+ * A class implementing a Weld Constraint. A WeldConstraint eliminates up to
+ * 6 dofs of a model by fixing two PhysicalFrames together at their origins
+ * aligning their axes.  PhysicalFrames are generally Ground, Body, or
+ * PhysicalOffsetFrame attached to a PhysicalFrame.
+ * The underlying Constraint in Simbody is a SimTK::Constraint::Weld.
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API WeldConstraint : public Constraint {
-OpenSim_DECLARE_CONCRETE_OBJECT(WeldConstraint, Constraint);
-
-//=============================================================================
-// DATA
-//=============================================================================
+class OSIMSIMULATION_API WeldConstraint 
+    : public TwoFrameLinker<Constraint, PhysicalFrame> {
+OpenSim_DECLARE_CONCRETE_OBJECT(WeldConstraint, TwoFrameLinker);
 public:
-
-    /** Properties */
-    OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
-        "Location of the weld in first body specified in body1 reference frame.");
-    OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
-        "Location of the weld in second body specified in body2 reference frame.");
-    OpenSim_DECLARE_PROPERTY(orientation_body_1, SimTK::Vec3,
-        "Orientation of the weld axes on body1 specified in body1's reference frame."  
-        "Euler XYZ body-fixed rotation angles are used to express the orientation.");
-    OpenSim_DECLARE_PROPERTY(orientation_body_2, SimTK::Vec3,
-        "Orientation of the weld axes on body2 specified in body2's reference frame."
-        "Euler XYZ body-fixed rotation angles are used to express the orientation.");
-
-//=============================================================================
-// METHODS
-//=============================================================================
-public:
-    // CONSTRUCTION
+    /** Default Constructor. Create an unnamed WeldConstraint with frame
+        connectors that are unsatisfied. */
     WeldConstraint();
-    // Convenience constructors
+
+    /** Convenience Constructor.
+    Create a WeldConstraint between two PhysicalFrames, frame1 and frame2.
+    @param[in] name         the name of this WeldConstraint 
+    @param[in] frame1Name   the name of the first PhysicalFrame being constrained
+    @param[in] frame2Name   the name of the second PhysicalFrame being constrained
+    */
+    WeldConstraint( const std::string& name,
+                    const std::string& frame1Name,
+                    const std::string& frame2Name );
+
+    /** Backwards compatible Convenience Constructor 
+    Construct a WeldConstraint where the weld frames are specified in terms of their
+    location and orientation in their respective PhysicalFrames. 
+
+    @param[in] name             the name of this WeldConstraint
+    @param[in] frame1           the first PhysicalFrame that the weld constrains
+    @param[in] locationInFrame1    Vec3 of the location of the weld in the first frame
+    @param[in] orientationInFrame1 Vec3 of the XYZ body-fixed Euler angles of the
+                                   weld frame orientation in frame 1.
+    @param[in] frame2               the second PhysicalFrame that the weld constrains
+    @param[in] locationInFrame2    Vec3 of the location of the weld in the second frame
+    @param[in] orientationInFrame2 Vec3 of the XYZ body-fixed Euler angles
+                                   of the weld frame orientation in frame2.
+    */
     WeldConstraint(const std::string &name, 
-        const PhysicalFrame& body1, SimTK::Vec3 locationInBody1, SimTK::Vec3 orientationInBody1,
-        const PhysicalFrame& body2, SimTK::Vec3 locationInBody2, SimTK::Vec3 orientationInBody2);
+        const PhysicalFrame& frame1,
+        const SimTK::Vec3& locationInFrame1, const SimTK::Vec3& orientationInFrame1,
+        const PhysicalFrame& frame2,
+        const SimTK::Vec3& locationInFrame2, const SimTK::Vec3& orientationInFrame2);
+
+    /** Convenience Constructor
+    Construct a WeldConstraint where the weld frames are specified in terms of their
+    transforms in their respective PhysicalFrames.
+
+    @param[in] name         the name of this WeldConstraint
+    @param[in] frame1       the first PhysicalFrame that the weld constrains
+    @param[in] transformInFrame1    Transform of the weld in the first frame
+    @param[in] frame2       the second PhysicalFrame that the weld constrains
+    @param[in] transformInFrame2    Transform of the weld in the second frame
+    */
     WeldConstraint(const std::string &name,
-        const PhysicalFrame& body1, SimTK::Transform transformInBody1,
-        const PhysicalFrame& body2, SimTK::Transform transformInBody2);
+        const PhysicalFrame& frame1, const SimTK::Transform& transformInFrame1,
+        const PhysicalFrame& frame2, const SimTK::Transform& transformInFrame2);
 
     virtual ~WeldConstraint();
 
-    //SET 
-    void setBody1ByName(const std::string& aBodyName);
-    void setBody1WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
-    void setBody2ByName(const std::string& aBodyName);
-    void setBody2WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
-
-    // Method to set point locations for induced acceleration analysis
-    void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point) override;
+    /** Advanced Method for computing induced accelerations given the constraint
+        applied at the point of contact specified. */
+    virtual void setContactPointForInducedAccelerations(
+        const SimTK::State &s, SimTK::Vec3 point);
 
 protected:
-    /**
-    * Extend Component Interface.
-    */
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    /** Updating XML formating to latest revision */
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
-
+    /** Extend Component Interface. */
+    void extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system)
+                                                                  const override;
 
 private:
     void setNull();
-    /** Construct WeldConstraint's properties */
+    // Construct WeldConstraint's properties
     void constructProperties() override;
-    /** Construct WeldConstraint's connectors */
-    void constructConnectors() override;
+
+    // Some analyses (e.g. Induced Accelerations, update the constraint
+    // location (Transform) based on experimental data. The constraint
+    // keeps its own internal frames to update.
+    SimTK::ResetOnCopy<std::unique_ptr<PhysicalOffsetFrame>> _internalOffset1{};
+    SimTK::ResetOnCopy<std::unique_ptr<PhysicalOffsetFrame>> _internalOffset2{};
 //=============================================================================
 };  // END of class WeldConstraint
 //=============================================================================
