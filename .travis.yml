@@ -10,16 +10,16 @@ matrix:
   include:
     - os: linux
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=on  DOXY=on  NPROC=1
+      env: BTYPE=RelWithDebInfo WRAP=on  DOXY=on  NPROC=1 DEPLOY=yes
     - os: linux
       compiler: gcc
-      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3
+      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=no
     - os: linux
       compiler: clang
-      env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3
+      env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3 DEPLOY=yes
     - os: osx
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3
+      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=yes
 
 env:
   global:
@@ -193,7 +193,7 @@ before_deploy:
   # Zip up the installation using a file name that identifies where
   # the binaries were built.
   - mkdir ~/binstar-packages
-  - ZIPNAME=opensim-core-latest_$TRAVIS_OS_NAME_$BTYPE.zip
+  - ZIPNAME=opensim-core-latest_${TRAVIS_OS_NAME}_${BTYPE}.zip
   - # Zip up opensim relative to where it's installed.
   - cd $OPENSIM_HOME/../
   - zip --recurse-paths --quiet ~/binstar-packages/$ZIPNAME opensim-core
@@ -216,4 +216,4 @@ deploy:
     branch: bintray
     # Upload for both linux (once) and OSX. Might need to modify the condition
     # if we change the build matrix.
-    condition: "$CC = clang"
+    condition: "$DEPLOY = yes"
