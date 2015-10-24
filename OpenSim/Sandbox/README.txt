@@ -4,7 +4,8 @@ far-out explorations to nearly-complete prototypes.
 
 This folder can include C++ (.cpp, .h) files, Python (.py) files, MATLAB (.m)
 files, etc. The folder can also contain Markdown (.md) files if it's easier to
-express an idea with a mixture of text and pseudocode.
+express an idea with a mixture of text and pseudocode; the Markdown files
+render nicely on the GitHub website.
 
 There is an executable target for every
 C++ file whose name begins with `future`, but these executables are not
