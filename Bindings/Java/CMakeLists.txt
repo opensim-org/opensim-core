@@ -44,4 +44,4 @@ install(DIRECTORY Matlab DESTINATION "${OPENSIM_INSTALL_SCRIPTSDIR}"
 configure_file(Matlab/configureOpenSim.m.in
     "${CMAKE_CURRENT_BINARY_DIR}/configureOpenSim.m" @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/configureOpenSim.m"
-        DESTINATION "${OPENSIM_INSTALL_SCRIPTSDIR}/Matlab")
+        DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")

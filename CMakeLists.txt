@@ -160,6 +160,8 @@ else()
 
 endif()
 
+set(OPENSIM_INSTALL_MATLABEXDIR "${OPENSIM_INSTALL_SCRIPTSDIR}/Matlab")
+
 # Cross-platform location of shared libraries. Used in configureOpenSim.m.
 if(WIN32)
     set(OPENSIM_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_BINDIR}")
