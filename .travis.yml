@@ -212,8 +212,7 @@ deploy:
   user: chrisdembia
   skip_cleanup: true
   # API key is encrypted with travis.
-  key:
-    secure: MOCuM6THnBR82ClEmWFmqVM/GEiNtimz7dMmWUnmgU4gWAU9DBq0OelifQ6XAAhEqZGz0IbVyRo+zDGWRUEC/EIAb9PhTSg6W/XX+zykAQCsIr3BMvOE6v5MXNz/JMFKxZoFmmrL1WR4a4KUOQANr7derYkIZUy/9CnUkJgQGKE=
+  key: $BINTRAY_API_KEY
   on:
     branch: bintray
     # Upload for both linux (once) and OSX. Might need to modify the condition
