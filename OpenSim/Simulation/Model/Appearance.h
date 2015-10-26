@@ -56,7 +56,7 @@ public:
     OpenSim_DECLARE_PROPERTY(representation, int,
      "The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(texture_file, std::string,
-        "Name of file containing texture. ");
+        "Name of file containing texture.");
 
     //--------------------------------------------------------------------------
     // CONSTRUCTION
@@ -129,14 +129,14 @@ public:
     OpenSim_DECLARE_PROPERTY(visible, bool, 
         "Flag indicating whether the associated Geometry is visible or hidden.")
     OpenSim_DECLARE_PROPERTY(opacity, double,
-            "The opacity used to display the geometry between 0:transparent, 1:opaque. ");
+        "The opacity used to display the geometry between 0:transparent, 1:opaque.");
     OpenSim_DECLARE_PROPERTY(color, SimTK::Vec3,
-        "The color (rgb) used to display the geometry. ");
+        "The color, (red, green, blue), [0, 1], used to display the geometry. ");
 
     OpenSim_DECLARE_PROPERTY(surface_properties, SurfaceProperties,
-        "Visuals applied to surfaces associated with this Appearance. ");
+        "Visuals applied to surfaces associated with this Appearance.");
     OpenSim_DECLARE_PROPERTY(curve_properties, CurveProperties,
-        "Visuals applied to curves or line drawings associated with this Appearance. ");
+        "Visuals applied to curves or line drawings associated with this Appearance.");
 
 
     //--------------------------------------------------------------------------
