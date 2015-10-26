@@ -112,8 +112,6 @@ protected:
     std::string _file;
     /** Line number at which the error occurred. */
     int _line;
-    /** Delimiter/separator used to separate different parts of the message.  */
-    static const std::string _msgSeparator;
 
 //=============================================================================
 // METHODS
@@ -135,7 +133,10 @@ public:
     virtual ~Exception() throw() {}
 
 protected:
+    /** Add to the error message that will be returned for the exception.     */
     void addMessage(const std::string& msg);
+    /** Delimiter/separator used to separate different parts of the message.  */
+    static const std::string msgSeparator();
 
 private:
     void setNull();

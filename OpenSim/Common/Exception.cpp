@@ -41,8 +41,6 @@ using namespace OpenSim;
 using namespace std;
 
 
-const std::string Exception::_msgSeparator{"\n"};
-
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -72,7 +70,7 @@ exception()
 Exception::Exception(const std::string& file,
                      size_t line,
                      const std::string& func) {
-    addMessage(file + ":" + std::to_string(line) + _msgSeparator + 
+    addMessage(file + ":" + std::to_string(line) + msgSeparator() + 
                "In function '" + func + "'");
 }
 
@@ -81,7 +79,12 @@ Exception::addMessage(const std::string& msg) {
     if(_msg.length() == 0)
         _msg = msg;
     else
-        _msg = msg + _msgSeparator + _msg;
+        _msg = msg + msgSeparator() + _msg;
+}
+
+const std::string 
+Exception::msgSeparator() {
+    return "\n";
 }
 
 const char*
