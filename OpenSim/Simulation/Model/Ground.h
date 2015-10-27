@@ -30,10 +30,10 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
-* Ground is the inertial reference frame; also, the orientation of all Frames 
-* and the location of points can be expressed in this frame. As a 
-* PhysicalFrame, Ground supports physical connections (e.g. Joints, 
-* Constraints), and forces can be applied to it.
+* Ground provides an inertial reference frame in which the
+* motion of all Frames and points may conveniently and efficiently 
+* be expressed. As a PhysicalFrame, Ground supports physical connections
+* (e.g. Joints, Constraints), and forces can be applied to it.
 *
 * @author Ajay Seth
 */
