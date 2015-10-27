@@ -30,9 +30,10 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
-* Ground is a PhysicalFrame in which all Frames (transforms) and Points 
-* (locations) can be expressed. As a PhysicalFrame it supports physical 
-* connections (e.g. Joints, Constraints) and forces can be applied to it.
+* Ground is the Newtonian reference frame in which the equations of motion 
+* are solved; the orientation of all Frames and the location of points 
+* can be expressed in this frame. As a PhysicalFrame, Ground supports physical 
+* connections (e.g. Joints, Constraints), and forces can be applied to it.
 *
 * @author Ajay Seth
 */
