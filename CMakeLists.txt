@@ -100,26 +100,14 @@ option(BUILD_API_ONLY "Build/install only headers, libraries,
 wrapping, tests; not applications (ik, rra, etc.)." OFF)
 
 
-# Don't install applications into system directories on UNIX.
-get_filename_component(ABS_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" REALPATH)
-if(UNIX AND 
-        ("${ABS_INSTALL_PREFIX}" STREQUAL "/usr" OR
-        "${ABS_INSTALL_PREFIX}" STREQUAL "/usr/local") AND
-        NOT ${BUILD_API_ONLY})
-    message(SEND_ERROR "Cannot install into /usr or /usr/local if building
-    applications, since OpenSim executables conflict with vital UNIX
-    executables. Either set BUILD_API_ONLY to ON or change
-    CMAKE_INSTALL_PREFIX.")
-endif()
-
 # Configure installation directories across platforms.
 # ----------------------------------------------------
 
 ## OPENSIM_INSTALL_UNIX_FHS option.
 set(OPENSIM_INSTALL_UNIX_FHS_DEFAULT OFF)
-# if(UNIX) TODO change the default on UNIX?
-#     set(OPENSIM_INSTALL_UNIX_FHS_DEFAULT ON)
-# endif()
+if(UNIX)
+    set(OPENSIM_INSTALL_UNIX_FHS_DEFAULT ON)
+endif()
 
 option(OPENSIM_INSTALL_UNIX_FHS
     "Organize installation according to UNIX Filesystem Hierarchy Standard."
@@ -179,11 +167,32 @@ else()
 
 endif()
 
+set(OPENSIM_INSTALL_MATLABEXDIR "${OPENSIM_INSTALL_SCRIPTSDIR}/Matlab")
+
 # Cross-platform location of shared libraries. Used in configureOpenSim.m.
 if(WIN32)
     set(OPENSIM_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_BINDIR}")
 else()
     set(OPENSIM_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_LIBDIR}")
+endif()
+
+
+# On UNIX, be careful about installing into system directories.
+# -------------------------------------------------------------
+get_filename_component(ABS_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" REALPATH)
+if(UNIX AND ("${ABS_INSTALL_PREFIX}" STREQUAL "/usr" OR
+             "${ABS_INSTALL_PREFIX}" STREQUAL "/usr/local"))
+    if(${BUILD_API_ONLY} AND ${OPENSIM_INSTALL_UNIX_FHS})
+        # In this case it's fine to install into /usr or /usr/local.
+    else()
+        message(SEND_ERROR "
+        Cannot install into /usr or /usr/local if building
+        applications (since OpenSim executable names conflict with those of
+        vital UNIX executables) or if the OpenSim installation does not
+        conform to the UNIX Filesystem Hierarchy Standard. Either (a) set
+        BUILD_API_ONLY and OPENSIM_INSTALL_UNIX_FHS to ON, or (b) change
+        CMAKE_INSTALL_PREFIX.")
+    endif()
 endif()
 
 
