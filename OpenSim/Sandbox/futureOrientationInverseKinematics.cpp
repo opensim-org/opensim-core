@@ -1,4 +1,29 @@
-#include <OpenSim/OpenSim.h>
+/* ------------------------------------------------------------------------- *
+*             OpenSim:  futureOrientationInverseKinematics.cpp               *
+* -------------------------------------------------------------------------- *
+* The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
+* See http://opensim.stanford.edu and the NOTICE file for more information.  *
+* OpenSim is developed at Stanford University and supported by the US        *
+* National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
+* through the Warrior Web program.                                           *
+*                                                                            *
+* Copyright (c) 2005-2015 Stanford University and the Authors                *
+* Author(s): Dimitar Stanev                                                  *
+*                                                                            *
+* Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+* not use this file except in compliance with the License. You may obtain a  *
+* copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
+*                                                                            *
+* Unless required by applicable law or agreed to in writing, software        *
+* distributed under the License is distributed on an "AS IS" BASIS,          *
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+* See the License for the specific language governing permissions and        *
+* limitations under the License.                                             *
+* -------------------------------------------------------------------------- */
+
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/MarkerData.h>
+#include <OpenSim/Analyses/Kinematics.h>
 #include <Simbody.h>
 #include <iostream>
 
@@ -84,7 +109,7 @@ public:
         SimTK::OrientationSensors* imus = new SimTK::OrientationSensors();
     
         // add markers
-        addCustomMarkers(model, *markers, *imus);	
+        addCustomMarkers(model, *markers, *imus);   
     
         // result storage
         OpenSim::Kinematics kinematics(&model);
@@ -155,7 +180,6 @@ private:
     void addCustomMarkers(OpenSim::Model& model, 
         SimTK::Markers& markers, SimTK::OrientationSensors& imus)
     {
-
         // add orientation osensor
         m_humerus_mx = imus.addOSensor(
             "humerus",
@@ -174,7 +198,6 @@ private:
             1);
         
     
-
         // finalize observation order (to allocate ObservationIx)
         static const char* osensor_observation_order[OSENSORS] = {"humerus", "radius"};
         imus.defineObservationOrder(OSENSORS, osensor_observation_order);
@@ -191,7 +214,6 @@ private:
 */
 int main()
 {
-
     try {
       
         OrientationIK ik(
@@ -214,7 +236,7 @@ int main()
         return 1;
     }
     
-    system("pause");
+    //system("pause");
     
     return 0;
 }
