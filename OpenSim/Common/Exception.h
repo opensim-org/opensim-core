@@ -105,7 +105,7 @@ class OSIMCOMMON_API Exception  : public std::exception {
 //=============================================================================
 // DATA
 //=============================================================================
-protected:
+private:
     /** A user set message for the exception. */
     std::string _msg;
     /** File in which the error occurred. */
