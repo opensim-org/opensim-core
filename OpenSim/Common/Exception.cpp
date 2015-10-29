@@ -67,6 +67,26 @@ exception()
 //#endif
 }
 
+Exception::Exception(const std::string& file,
+                     size_t line,
+                     const std::string& func) {
+    addMessage(file + ":" + std::to_string(line) + "\n" + "In function '" + 
+               func + "'");
+}
+
+void
+Exception::addMessage(const std::string& msg) {
+    if(_msg.length() == 0)
+        _msg = msg;
+    else
+        _msg = msg + "\n" + _msg;
+}
+
+const char*
+Exception::what() const noexcept {
+    return getMessage();
+}
+
 //-----------------------------------------------------------------------------
 // NULL
 //-----------------------------------------------------------------------------
