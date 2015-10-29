@@ -21,13 +21,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//==========================================================================================================
-//  testAssemblySolver loads models with constraints to verify that constraints are
-//  adequately satisfied or that an appropriate exception is thrown.
+//=============================================================================
+// testAssemblySolver loads models with constraints to verify that constraints
+// are adequately satified or that an appropriate exception is thrown.
 //
-//==========================================================================================================
+//=============================================================================
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 using namespace OpenSim;
 using namespace std;
