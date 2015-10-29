@@ -135,8 +135,6 @@ public:
 protected:
     /** Add to the error message that will be returned for the exception.     */
     void addMessage(const std::string& msg);
-    /** Delimiter/separator used to separate different parts of the message.  */
-    static const std::string msgSeparator();
 
 private:
     void setNull();

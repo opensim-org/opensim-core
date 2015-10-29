@@ -70,8 +70,8 @@ exception()
 Exception::Exception(const std::string& file,
                      size_t line,
                      const std::string& func) {
-    addMessage(file + ":" + std::to_string(line) + msgSeparator() + 
-               "In function '" + func + "'");
+    addMessage(file + ":" + std::to_string(line) + "\n" + "In function '" + 
+               func + "'");
 }
 
 void
@@ -79,12 +79,7 @@ Exception::addMessage(const std::string& msg) {
     if(_msg.length() == 0)
         _msg = msg;
     else
-        _msg = msg + msgSeparator() + _msg;
-}
-
-const std::string 
-Exception::msgSeparator() {
-    return "\n";
+        _msg = msg + "\n" + _msg;
 }
 
 const char*
