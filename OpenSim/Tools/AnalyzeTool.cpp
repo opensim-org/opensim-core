@@ -212,7 +212,7 @@ void AnalyzeTool::setupProperties()
                  "appropriate for the model. In a storage file, unlike a motion file (.mot), non-uniform time spacing "
                  "is allowed.  If the user-specified initial time for a simulation does not correspond exactly to "
                  "one of the time stamps in this file, interpolation is NOT used because it is sometimes necessary to "
-                 "an exact set of states for analyses.  Instead, the closest earlier set of states is used.";
+                 "use an exact set of states for analyses.  Instead, the closest earlier set of states is used.";
     _statesFileNameProp.setComment(comment);
     _statesFileNameProp.setName("states_file");
     _propertySet.append( &_statesFileNameProp );
