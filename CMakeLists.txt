@@ -340,6 +340,11 @@ if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
 endif()
 
 
+## Find BTK.
+find_package(BTK REQUIRED)
+include(${BTK_USE_FILE})
+
+
 # Find Simbody.
 # -------------
 # As of Simbody 3.4, Simbody has a SimbodyConfig.cmake file, which is a
