@@ -58,7 +58,6 @@ set_target_properties(JavaWrap PROPERTIES
     FOLDER "Bindings"
     )
 
-
 set(SOURCE_FILES "${swig_generated_file_fullname}" OpenSimContext.cpp)
 set(INCLUDE_FILES "${swig_generated_header_fullname}" OpenSimContext.h)
 
@@ -81,6 +80,12 @@ set_target_properties(osim${KIT} PROPERTIES
 )
 
 add_dependencies(osim${KIT} JavaWrap)
+
+if(${OPENSIM_USE_INSTALL_RPATH})
+    set_target_properties(osim${KIT} PROPERTIES
+        INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
+        )
+endif()
 
 # Shared libraries are needed at runtime for applications, so we put them
 # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)

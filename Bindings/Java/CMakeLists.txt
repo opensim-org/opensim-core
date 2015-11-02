@@ -19,11 +19,11 @@ if( JAVA_COMPILE )
   # message( "WD=" ${CMAKE_BINARY_DIR}"/Bindings/Java/OpenSimJNI/src/" )
 
   add_custom_target( JavaCompile
-     COMMAND ${JAVA_COMPILE} 
-     ${CMAKE_BINARY_DIR}/Bindings/Java/OpenSimJNI/src/org/opensim/modeling/*.java 
-     -source 1.6 -target 1.6
-     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/Bindings/Java/OpenSimJNI/src
-     )
+      COMMAND ${JAVA_COMPILE} 
+      ${CMAKE_BINARY_DIR}/Bindings/Java/OpenSimJNI/src/org/opensim/modeling/*.java 
+      -source 1.6 -target 1.6
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/Bindings/Java/OpenSimJNI/src
+      )
      
   set_target_properties(JavaCompile PROPERTIES FOLDER "Bindings")
 
@@ -32,8 +32,13 @@ if( JAVA_COMPILE )
                    COMMAND ${JAVA_ARCHIVE} -cvf org-opensim-modeling.jar
                    org/opensim/modeling/*.class
                    WORKING_DIRECTORY
-                   ${CMAKE_BINARY_DIR}/Bindings/Java/OpenSimJNI/src/
+                   ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/
    )
+
+   install(FILES
+       "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/org-opensim-modeling.jar"
+       DESTINATION sdk/Java)
+
 endif( JAVA_COMPILE )
 
 install(DIRECTORY Matlab DESTINATION Scripts 
