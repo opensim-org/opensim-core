@@ -191,7 +191,6 @@ before_cache:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then ccache --show-stats; fi
 
 before_deploy:
-
   # Zip up the installation using a file name that identifies where
   # the binaries were built.
   - mkdir ~/binstar-packages
