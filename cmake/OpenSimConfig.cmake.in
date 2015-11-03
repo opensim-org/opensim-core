@@ -66,3 +66,21 @@ include("@PACKAGE_OPENSIM_INSTALL_CMAKE_DIR@/@CMAKE_PROJECT_NAME@Targets.cmake")
 list(APPEND @CMAKE_PROJECT_NAME@_LIBRARIES osimTools)
 
 check_required_components(OpenSim)
+
+# Simbody
+# -------
+# The files OpenSimTargets-debug.cmake, OpenSimTargets-release.cmake, etc.
+# list the Simbody libraries as dependencies by name (e.g., `SimTKmath`).
+# Consider a CMake project that uses OpenSim: If CMake doesn't know of any
+# targets named `SimTKmath`, then CMake will assume that `SimTKmath` is the
+# name of a library, *not of a target*, and will add `-lSimTKmath` to the link
+# line and assume that the library is on the (DY)LD_LIBRARY_PATH or in a
+# directory mentioned in a call to `link_directories()`. However, if you've
+# only built debug libraries, then there is no libSimTKmath.so (on Linux); there
+# is only a libSimTKmath_d.so. So, we better tell CMake about a SimTKmath
+# target; and that's why we make sure projects that use OpenSim have also
+# imported Simbody's targts (that's what this find_package() does).
+# TODO this doesn't properly handle the OPENSIM_COPY_SIMBODY option.
+find_package(Simbody @SIMBODY_VERSION_TO_USE@ REQUIRED
+    PATHS "@Simbody_ROOT_DIR@"
+    NO_MODULE NO_DEFAULT_PATH)
