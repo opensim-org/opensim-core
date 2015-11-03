@@ -100,7 +100,7 @@ Building from the source code
 We support a few ways of building OpenSim:
 
 1. [On Windows using Microsoft Visual Studio](#on-windows-using-visual-studio).
-2. [On OSX using Xcode](#on-osx-using-xcode).
+2. [On Mac OSX using Xcode](#on-mac-osx-using-xcode).
 3. [On Ubuntu using Unix Makefiles](#on-ubuntu-using-unix-makefiles).
 
 
@@ -229,12 +229,12 @@ directory to your `PATH` environment variable.
    the semicolon!
 
 
-On OSX using Xcode
-==================
+On Mac OSX using Xcode
+======================
 
 #### Get the dependencies
 
-* **operating system**: OSX 10.8 or later.
+* **operating system**: Mac OSX 10.8 or later.
 * **cross-platform build system**:
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8
 * **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 5, through
@@ -249,7 +249,7 @@ On OSX using Xcode
 * **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.5
     * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
     * **python scripting** (optional):
-        * OSX comes with python, but you could also use:
+        * Mac OSX comes with python, but you could also use:
         * [`brew install python`](http://brew.sh),
         * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
