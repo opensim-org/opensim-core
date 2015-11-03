@@ -22,6 +22,11 @@
 #ifndef OPENSIM_C3D_FILE_ADAPTER_H_
 #define OPENSIM_C3D_FILE_ADAPTER_H_
 
+#include "btkAcquisitionFileReader.h"
+#include "btkAcquisition.h"
+#include "btkForcePlatformsExtractor.h"
+#include "btkGroundReactionWrenchFilter.h"
+
 #include "FileAdapter.h"
 
 namespace OpenSim {
@@ -60,6 +65,9 @@ protected:
 
     void extendWrite(const InputTables& tables,
                      const std::string& fileName) const override;
+
+private:
+    static const std::unordered_map<std::string, std::size_t> _unit_index;
 };
 
 } // namespace OpenSim

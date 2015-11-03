@@ -30,78 +30,6 @@
 #include <chrono>
 
 int main() {
-    const size_t num_iters{1000000000};
-    const size_t num_letters{10};
-    const size_t num_elems{1000};
-    std::string letters{"abcdefghijklmnopqrstuvwxyz"};
-    std::vector<double> vec{};
-    std::map<std::string, size_t> umap{};
-    std::vector<std::string> keys{};
-    for(size_t i = 0; i < num_elems; ++i) {
-        vec.push_back(i);
-        std::string key{};
-        for(size_t l = 0; l < num_letters; ++l)
-            key += letters.at(rand() % num_letters);
-        umap.insert({key, i});
-        keys.push_back(key);
-    }
-
-    std::vector<size_t> index{};
-    for(size_t i = 0; i < num_iters; ++i) {
-        // index.push_back(rand() % num_elems);
-        index.push_back(i % num_elems);
-    }
-
-    {
-        std::chrono::time_point<std::chrono::system_clock> start, end;
-        start = std::chrono::system_clock::now();
-        for(size_t i = 0; i < num_iters; ++i) {
-            auto result = index[i];
-        }
-        end = std::chrono::system_clock::now();
-        std::chrono::duration<double> secs{end - start};
-        std::cout << "indices -- " << secs.count() 
-                  << " secs" << std::endl;
-    }
-
-    {
-        std::chrono::time_point<std::chrono::system_clock> start, end;
-        start = std::chrono::system_clock::now();
-        for(size_t i = 0; i < num_iters; ++i) {
-            auto result = vec[index[i]];
-        }
-        end = std::chrono::system_clock::now();
-        std::chrono::duration<double> secs{end - start};
-        std::cout << "std::vector -- " << secs.count() 
-                  << " secs" << std::endl;
-    }
-
-    {
-        std::chrono::time_point<std::chrono::system_clock> start, end;
-        start = std::chrono::system_clock::now();
-        for(size_t i = 0; i < num_iters; ++i) {
-            auto result = keys[index[i]];
-        }
-        end = std::chrono::system_clock::now();
-        std::chrono::duration<double> secs{end - start};
-        std::cout << "keys -- " << secs.count() 
-                  << " secs" << std::endl;
-    }
-
-    {
-        std::chrono::time_point<std::chrono::system_clock> start, end;
-        start = std::chrono::system_clock::now();
-        for(size_t i = 0; i < num_iters; ++i) {
-            auto result = umap[keys[index[i]]];
-        }
-        end = std::chrono::system_clock::now();
-        std::chrono::duration<double> secs{end - start};
-        std::cout << "std::unordered_map -- " << secs.count() 
-                  << " secs" << std::endl;
-    }
-
-
-
     using namespace OpenSim;
 
     C3DFileAdapter c3d_adapter{};
@@ -109,19 +37,93 @@ int main() {
                                    // "walking5.c3d");
                                    // "walking2.c3d");
                                    // "treadMillRunning.c3d");
-                                   // "singleLegLanding.c3d");
-                                   "singleLeglanding_2.c3d");
+                                   "singleLegLanding.c3d");
+                                   // "singleLeglanding_2.c3d");
 
     auto&    marker_table = std::get<0>(tables);
     auto&     force_table = std::get<1>(tables);
     auto& usr_force_table = std::get<2>(tables);
 
-    // std::cout << marker_table->getNumRows() << " "
-    //           << marker_table->getNumColumns() << std::endl;
-    // std::cout << force_table->getNumRows() << " "
-    //           << force_table->getNumColumns() << std::endl;
-    // std::cout << usr_force_table->getNumRows() << " "
-    //           << usr_force_table->getNumColumns() << std::endl;
+    if(marker_table->getNumRows() != 0) {
+        std::cout << "--------------Markers-----------------" << std::endl;
+
+    std::cout << "Dim: " 
+              << marker_table->getNumRows() << " "
+              << marker_table->getNumColumns() 
+              << std::endl;
+    std::cout << "DataRate: " 
+              << marker_table->getTableMetaData().
+                               getValueForKey("DataRate").
+                               getValue<std::string>()
+              << std::endl;
+    std::cout << "Units: " 
+              << marker_table->getTableMetaData().
+                               getValueForKey("Units").
+                               getValue<std::string>()
+              << std::endl << std::endl;
+    }
+
+    if(usr_force_table->getNumRows() != 0) {
+        std::cout << "--------------User Forces-----------------" << std::endl;
+
+    std::cout << "Dim: "
+              << usr_force_table->getNumRows() << " "
+              << usr_force_table->getNumColumns()
+              << std::endl;
+    std::cout << "DataRate: "
+              << usr_force_table->getTableMetaData().
+                                  getValueForKey("DataRate").
+                                  getValue<std::string>()
+              << std::endl;
+    std::cout << "Units: "
+              << usr_force_table->getTableMetaData().
+                                  getValueForKey("Units").
+                                  getValue<std::string>()
+              << std::endl << std::endl;
+    }
+
+    if(force_table->getNumRows() != 0) {
+        std::cout << "--------------Forces-----------------" << std::endl;
+
+    std::cout << "Dim: "
+              << force_table->getNumRows() << " "
+              << force_table->getNumColumns()
+              << std::endl;
+    std::cout << "DataRate: "
+              << force_table->getTableMetaData().
+                              getValueForKey("DataRate").
+                              getValue<std::string>()
+              << std::endl;
+    std::cout << "CalibrationMatrices: \n";
+    for(const auto& elem : force_table->getTableMetaData().
+            getValueForKey("CalibrationMatrices").
+            getValue<std::vector<btk::ForcePlatform::CalMatrix>>())
+        std::cout << elem << std::endl;
+    std::cout << "Corners: \n";
+    for(const auto& elem : force_table->getTableMetaData().
+            getValueForKey("Corners").
+            getValue<std::vector<btk::ForcePlatform::Corners>>())
+        std::cout << elem << std::endl;
+    std::cout << "Origins: \n";
+    for(const auto& elem : force_table->getTableMetaData().
+            getValueForKey("Origins").
+            getValue<std::vector<btk::ForcePlatform::Origin>>())
+        std::cout << elem << std::endl;
+    std::cout << "Types: \n";
+    for(const auto& elem : force_table->getTableMetaData().
+            getValueForKey("Types").
+            getValue<std::vector<unsigned>>())
+        std::cout << elem << std::endl;
+
+    const auto& labels = force_table->getDependentsMetaData().
+        getValueArrayForKey("labels");
+    const auto& units = force_table->getDependentsMetaData().
+        getValueArrayForKey("units");
+    for(size_t i = 0; i < labels.size(); ++i)
+        std::cout << "[ " << labels[i].getValue<std::string>() << " " 
+                  << units[i].getValue<std::string>() << " ] ";
+    std::cout << std::endl;
+    }
 
 
     // TRCFileAdapter trc_adapter{};

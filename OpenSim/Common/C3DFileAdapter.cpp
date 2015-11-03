@@ -1,14 +1,17 @@
 #include "C3DFileAdapter.h"
 
-#include "btkAcquisitionFileReader.h"
-#include "btkAcquisition.h"
-#include "btkForcePlatformsExtractor.h"
-#include "btkGroundReactionWrenchFilter.h"
-
 namespace OpenSim {
 
     template<typename T>
     class shrik;
+
+const std::unordered_map<std::string, size_t>
+C3DFileAdapter::_unit_index{{"marker", 0},
+                            {"angle" , 1},
+                            {"force" , 2},
+                            {"moment", 3},
+                            {"power" , 4},
+                            {"scalar", 5}};
 
 C3DFileAdapter*
 C3DFileAdapter::clone() const {
@@ -76,10 +79,11 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         ValueArray<std::string> marker_labels{};
         for(auto it = marker_pts->Begin();
             it != marker_pts->End();
-            ++it)
+            ++it) {
             marker_labels.
             upd().
             push_back(SimTK::Value<std::string>((*it)->GetLabel()));
+        }
 
         MarkerTable::DependentsMetaData marker_dep_metadata{};
         marker_dep_metadata.setValueArrayForKey("labels", marker_labels);
@@ -104,6 +108,17 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     }
 
     if(usr_force_pts->GetItemNumber() != 0) {
+        usr_force_table.
+            updTableMetaData().
+            setValueForKey("DataRate", 
+                           std::to_string(acquisition->GetAnalogFrequency()));
+
+        usr_force_table.
+            updTableMetaData().
+            setValueForKey("Units", 
+                           acquisition->GetPointUnits().
+                           at(_unit_index.at("force")));
+
         ValueArray<std::string> force_labels{};
         for(auto it = usr_force_pts->Begin();
             it != usr_force_pts->End();
@@ -199,13 +214,29 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
                            std::to_string(acquisition->GetAnalogFrequency()));
 
         ValueArray<std::string> labels{};
-        size_t fp{1};
+        ValueArray<std::string> units{};
         for(size_t fp = 1; fp <= fp_force_pts->GetItemNumber(); ++fp) {
             auto fp_str = std::to_string(fp);
+
             labels.upd().push_back(SimTK::Value<std::string>("f" + fp_str));
+            auto force_unit = acquisition->GetPointUnits().
+                at(_unit_index.at("force"));
+            units.upd().push_back(SimTK::Value<std::string>(force_unit));
+
             labels.upd().push_back(SimTK::Value<std::string>("m" + fp_str));
+            auto moment_unit = acquisition->GetPointUnits().
+                at(_unit_index.at("moment"));
+            units.upd().push_back(SimTK::Value<std::string>(moment_unit));
+
             labels.upd().push_back(SimTK::Value<std::string>("p" + fp_str));
+            auto position_unit = acquisition->GetPointUnits().
+                at(_unit_index.at("marker"));
+            units.upd().push_back(SimTK::Value<std::string>(position_unit));
         }
+        ForceTable::DependentsMetaData force_dep_metadata{};
+        force_dep_metadata.setValueArrayForKey("labels", labels);
+        force_dep_metadata.setValueArrayForKey("units", units);
+        force_table.setDependentsMetaData(force_dep_metadata);
 
         double time_step{1.0 / acquisition->GetAnalogFrequency()};
         for(size_t f = 0;
