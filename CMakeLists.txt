@@ -63,7 +63,6 @@ endif()
 # variables.)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
-link_directories(${CMAKE_BINARY_DIR})
 
 # OpenSim options.
 # ----------------
@@ -379,7 +378,6 @@ endif()
 # Directories for Simbody headers and libraries for building.
 # -----------------------------------------------------------
 include_directories("${Simbody_INCLUDE_DIR}")
-link_directories("${Simbody_LIB_DIR}")
 
 
 # Copy files over from the Simbody installation.
@@ -442,7 +440,6 @@ if(${OPENSIM_COPY_SIMBODY})
 
         foreach(LIBF ${SIMBODY_BIN_FILES})
             get_filename_component(LIBF_ROOT ${LIBF} NAME)
-            get_filename_component(LIBF_SUFFIX ${LIBF} EXT)
             set(COPIED_LIBF "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
             file(TO_NATIVE_PATH "${LIBF}" LIBF_SRC)
             file(TO_NATIVE_PATH "${COPIED_LIBF}" LIBF_DEST)

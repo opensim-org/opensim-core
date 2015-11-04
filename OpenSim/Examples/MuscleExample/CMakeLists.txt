@@ -33,7 +33,6 @@ endif()
 find_package(OpenSim REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")
 
 include_directories(${OpenSim_INCLUDE_DIRS})
-link_directories(${OpenSim_LIB_DIR})
 
 # Configure this project.
 # -----------------------
