@@ -44,6 +44,10 @@ foreach(simbodylib ${Simbody_LIBRARIES})
     OpenSimWriteImportedTarget(OPENSIM_COPY_SIMBODY_IMPORTED_TARGETS
         ${simbodylib})
 endforeach()
+# TODO can maybe use generator expressions instead of the mess above.
+# TODO also, look into installing imported targets
+# TODO also, look into re-configuring the SimbodyConfig.cmake / copying over
+# its config files.
 
 # The generated file must not be named OpenSimConfig.cmake, otherwise CMake
 # will pick it up and think that the build tree contains an OpenSim
