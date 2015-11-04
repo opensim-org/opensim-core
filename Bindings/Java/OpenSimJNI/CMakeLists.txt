@@ -1,37 +1,12 @@
 set(KIT JavaJNI)
 set(UKIT JAVAJNI)
 
-include(${CMAKE_ROOT}/Modules/FindJava.cmake)
-include(${CMAKE_ROOT}/Modules/FindJNI.cmake)
-
-if(JAVA_INCLUDE_PATH)
-
-# Run command to generate OpenSimJNI_wrap.cxx
-set(swig_generated_file_fullname
-    ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI_wrap.cxx)
-set(swig_generated_header_fullname
-    ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI_wrap.h)
-set(swig_interface_file_fullname
-    ${OpenSim_SOURCE_DIR}/Bindings/Java/swig/javaWrapOpenSim.i)
-set(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling"
-    CACHE STRING
-    "The wrapping is built as the Java package specified in this variable.")
-
-# Replace periods with slashes (to make a path).
-# Syntax for find-replace:
-# string(REGEX REPLACE <pattern> <replacement string>
-#                      <target variable> <source string>)
-string(REGEX REPLACE "\\." "/"
-       SWIG_JAVA_PACKAGE_PATH ${OPENSIM_JAVA_WRAPPING_PACKAGE})
-
-set(SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR
-    ${CMAKE_CURRENT_BINARY_DIR}/src/${SWIG_JAVA_PACKAGE_PATH})
-
-# We place the .java files in this folder.
-execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
-    ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR})
+# For building C++ wrapper.
+find_package(JNI 1.6 REQUIRED)
 
 add_custom_command(
+    # This target actually creates a lot more (all the produced .java files); 
+    # but we will just use these two files as a proxy for all of those.
     OUTPUT "${swig_generated_file_fullname}" "${swig_generated_header_fullname}"
     COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
         -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
@@ -42,20 +17,9 @@ add_custom_command(
         -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
         ${swig_interface_file_fullname}
     DEPENDS "${swig_interface_file_fullname}"
-        "${OpenSim_SOURCE_DIR}/Bindings/opensim.i"
-        "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
-    )
-    
-# This target actually depends on a lot more (all the produced .java files); 
-# but we will just use these two files as a proxy for all of those. All we need
-# is for this target to depend on outputs of the command above.
-add_custom_target(JavaWrap
-    DEPENDS "${swig_generated_file_fullname}"
-            "${swig_generated_header_fullname}")
-
-set_target_properties(JavaWrap PROPERTIES
-    PROJECT_LABEL "Java - Generate source code"
-    FOLDER "Bindings"
+            "${CMAKE_SOURCE_DIR}/Bindings/opensim.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
+    COMMENT "Generating java bindings source code with SWIG."
     )
 
 set(SOURCE_FILES "${swig_generated_file_fullname}" OpenSimContext.cpp)
@@ -78,8 +42,6 @@ set_target_properties(osim${KIT} PROPERTIES
    PROJECT_LABEL "Java - osim${KIT}"
    FOLDER "Bindings"
 )
-
-add_dependencies(osim${KIT} JavaWrap)
 
 if(${OPENSIM_USE_INSTALL_RPATH})
     set_target_properties(osim${KIT} PROPERTIES
@@ -108,7 +70,4 @@ install(DIRECTORY ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}/
 
 if(BUILD_TESTING)
     subdirs(Test)
-endif(BUILD_TESTING)
-
-
-endif(JAVA_INCLUDE_PATH)
+endif()
