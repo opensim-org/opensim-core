@@ -153,9 +153,7 @@ script:
   # The `-e "ssh...` is for providing the password andautomatically
   # accepting the ssh key.
   # https://sourceforge.net/p/forge/documentation/Project%20Web%20Services/
-  # MYOSIN_SOURCEFORGE_PASSWORD is a hidden environment variable that we set
-  # at https://travis-ci.org/opensim-org/opensim-core/settings.
-  - if [ "$DOXY" = "on" ]; then if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then rsync -az -e "sshpass -p $MYOSIN_SOURCEFORGE_PASSWORD ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" $OPENSIM_HOME/sdk/doc/html_developer/ opensim-bot@web.sourceforge.net:/home/project-web/myosin/htdocs/$TRAVIS_PULL_REQUEST; fi; fi
+  - if [ "$DOXY" = "on" ]; then if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then rsync -az -e "sshpass -p rectusfemoris ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" $OPENSIM_HOME/sdk/doc/html_developer/ opensim-bot@web.sourceforge.net:/home/project-web/myosin/htdocs/$TRAVIS_PULL_REQUEST; fi; fi
   # If we're uploading doxygen, we also want to delete old
   # doxygen files from the server so they don't build up indefinitely.
   # However, ssh'ing into the server takes a while, so we only do this
@@ -163,14 +161,14 @@ script:
   - if [[ "$DOXY" = "on" && "$TRAVIS_PULL_REQUEST" != "false" && $(python -c "import random; print(random.random() < 0.01)") = "True" ]]; then CLEAN_UP_MYOSIN=0; else CLEAN_UP_MYOSIN=1; fi
   - if [ $CLEAN_UP_MYOSIN = "0" ]; then echo "This build is randomly selected to delete old folders from myosin.sourceforge.net."; fi
   # Creates an environment at sourceforge that we can ssh into.
-  - if [ $CLEAN_UP_MYOSIN = "0" ]; then sshpass -p $MYOSIN_SOURCEFORGE_PASSWORD ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null opensim-bot,myosin@shell.sourceforge.net create; fi
+  - if [ $CLEAN_UP_MYOSIN = "0" ]; then sshpass -p rectusfemoris ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null opensim-bot,myosin@shell.sourceforge.net create; fi
   # Now that the environment is created, we can run a command on the server.
   # mindepth and maxdepth makes sure that we only look to delete folders
   # in the htdocs folder, and we don't look at subdirectories.
   # We only look for folders (`-type d`).
   # We delete folders older than 30 days (`-mtime +30`).
   # The "shutdown" command shuts down the ssh environment.
-  - if [ $CLEAN_UP_MYOSIN = "0" ]; then sshpass -p $MYOSIN_SOURCEFORGE_PASSWORD ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null opensim-bot,myosin@shell.sourceforge.net 'cd /home/project-web/myosin/htdocs && find . -mindepth 1 -maxdepth 1 -type d -mtime +30 | xargs rm -rf && shutdown'; fi
+  - if [ $CLEAN_UP_MYOSIN = "0" ]; then sshpass -p rectusfemoris ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null opensim-bot,myosin@shell.sourceforge.net 'cd /home/project-web/myosin/htdocs && find . -mindepth 1 -maxdepth 1 -type d -mtime +30 | xargs rm -rf && shutdown'; fi
   
   ## Ensure that there are no tabs in source code.
   - cd $TRAVIS_BUILD_DIR
@@ -191,7 +189,6 @@ before_cache:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then ccache --show-stats; fi
 
 before_deploy:
-
   # Zip up the installation using a file name that identifies where
   # the binaries were built.
   - mkdir ~/binstar-packages
