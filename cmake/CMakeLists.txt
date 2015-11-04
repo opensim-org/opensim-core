@@ -18,7 +18,7 @@ macro(OpenSimWriteImportedTarget varname targetname)
     endif()
 
     set(${varname} "${${varname}}\n    add_library(${targetname} ${_static_or_shared} IMPORTED)")
-    set(${varname} "${${varname}}\n    set_target_properties(${targetname} PROPERTIES IMPORTED_CONFIGURATIONS ${_configs})")
+    set(${varname} "${${varname}}\n    set_target_properties(${targetname} PROPERTIES IMPORTED_CONFIGURATIONS \"${_configs}\")")
     get_property(_configs TARGET ${targetname} PROPERTY IMPORTED_CONFIGURATIONS)
     foreach(_cfg ${_configs})
         get_property(_imploc_old TARGET ${targetname} PROPERTY

@@ -105,5 +105,6 @@ else()
     # TODO IMPLIB
     # TODO Linux
     # TODO RPATH
+    # TODO multiple configurations.
     @OPENSIM_COPY_SIMBODY_IMPORTED_TARGETS@
 endif()
