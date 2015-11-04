@@ -38,7 +38,7 @@ add_subdirectory(OpenSimJNI)
 find_package(Java 1.6 REQUIRED)
 
 add_custom_command(
-    OUTPUT src/org-opensim-modeling.jar
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/src/org-opensim-modeling.jar
     DEPENDS "${swig_generated_file_fullname}"
     COMMAND ${JAVA_COMPILE} 
             ${CMAKE_CURRENT_BINARY_DIR}/src/org/opensim/modeling/*.java 
@@ -52,7 +52,7 @@ add_custom_command(
 # Umbrella target for assembling the java bindings in the build tree.
 # -------------------------------------------------------------------
 add_custom_target(JavaBindings ALL
-    DEPENDS src/org-opensim-modeling.jar
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/src/org-opensim-modeling.jar
     )
 
 add_dependencies(JavaBindings osimJavaJNI)
@@ -63,7 +63,7 @@ set_target_properties(JavaBindings PROPERTIES
 
 # Install.
 # --------
-install(FILES src/org-opensim-modeling.jar
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/org-opensim-modeling.jar
     DESTINATION sdk/Java)
 
 install(DIRECTORY Matlab DESTINATION Scripts 

@@ -349,13 +349,13 @@ if("${SIMBODY_HOME}" STREQUAL "")
     # we shouldn't let that fail silently and still search for
     # Simbody elsewhere; they may never realize
     # we are not using their requested installation of Simbody.
-    find_package(Simbody ${SIMBODY_VERSION_TO_USE}
+    find_package(Simbody ${SIMBODY_VERSION_TO_USE} QUIET
         NO_MODULE)
 else()
     # Find the package using the user-specified path.
     # NO_DEFAULT_PATH will cause find_package to only
     # look in the provided PATHS.
-    find_package(Simbody ${SIMBODY_VERSION_TO_USE}
+    find_package(Simbody ${SIMBODY_VERSION_TO_USE} QUIET
         PATHS "${SIMBODY_HOME}" NO_MODULE NO_DEFAULT_PATH)
 endif()
 # This variable appears in the CMake GUI and could confuse users,
