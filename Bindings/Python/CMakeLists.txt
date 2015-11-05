@@ -176,7 +176,7 @@ add_custom_target(PythonBindings ALL
 add_dependencies(PythonBindings _${KIT})
 
 set_target_properties(PythonBindings PROPERTIES
-    PROJECT_LABEL "Python - assemble package"
+    PROJECT_LABEL "Python - umbrella target"
     FOLDER "Bindings")
 
 
