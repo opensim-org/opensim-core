@@ -16,6 +16,10 @@ if(BUILD_API_EXAMPLES)
 
     add_subdirectory(SymbolicExpressionReporter)
 
+add_subdirectory(DataTable)
+install(DIRECTORY DataTable 
+        DESTINATION sdk/APIExamples)
+
 elseif()
 
     add_subdirectory(ControllerExample)
