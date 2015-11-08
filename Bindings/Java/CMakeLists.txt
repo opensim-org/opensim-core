@@ -64,9 +64,9 @@ set_target_properties(JavaBindings PROPERTIES
 # Install.
 # --------
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/org-opensim-modeling.jar
-    DESTINATION sdk/Java)
+    DESTINATION ${OPENSIM_INSTALL_JAVAJARDIR})
 
-install(DIRECTORY Matlab DESTINATION "${OPENSIM_INSTALL_SCRIPTSDIR}"
+install(DIRECTORY Matlab/ DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}"
     PATTERN "Matlab/Dynamic_Walker_Example" EXCLUDE
     PATTERN "Matlab/configureOpenSim.m.in" EXCLUDE)
 

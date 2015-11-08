@@ -12,13 +12,11 @@ if(BUILD_API_EXAMPLES)
         checkEnvironment
         SimpleOptimizationExample
         SymbolicExpressionReporter
+        DataTable
         DESTINATION "${OPENSIM_INSTALL_CPPEXDIR}")
 
     add_subdirectory(SymbolicExpressionReporter)
-
-add_subdirectory(DataTable)
-install(DIRECTORY DataTable 
-        DESTINATION sdk/APIExamples)
+    add_subdirectory(DataTable)
 
 elseif()
 
