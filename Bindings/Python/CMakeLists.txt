@@ -14,8 +14,6 @@ else()
     set(OPENSIM_PYTHON_BINARY_DIR
         "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 endif()
-# Location of the opensim python package in the installation (relative).
-set(OPENSIM_PYTHON_INSTALL_DIR sdk/python)
 
 
 # Generate source code for wrapper using SWIG.
@@ -95,7 +93,7 @@ endif()
 
 if(${OPENSIM_USE_INSTALL_RPATH})
     set_target_properties(_${KIT} PROPERTIES
-        INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
+        INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
         )
 endif()
     
@@ -135,7 +133,7 @@ macro(OpenSimPutFileInPythonPackage source_full_path relative_dest_dir)
     # Python package in the installation.
     # -----------------------------------
     install(FILES "${source_full_path}"
-        DESTINATION "${OPENSIM_PYTHON_INSTALL_DIR}/${relative_dest_dir}")
+        DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/${relative_dest_dir}")
 
 endmacro()
 
@@ -248,7 +246,7 @@ add_custom_target(RunPythonTests
 # It's important that we use install(TARGETS) to install the _opensim library
 # because this causes CMake to remove the build-tree RPATH from the library
 # (which is set temporarily for libraries in the build tree).
-install(TARGETS _${KIT} DESTINATION "${OPENSIM_PYTHON_INSTALL_DIR}/opensim")
+install(TARGETS _${KIT} DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
 # Install the test scripts.
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests"
-        DESTINATION "${OPENSIM_PYTHON_INSTALL_DIR}/opensim")
+        DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
