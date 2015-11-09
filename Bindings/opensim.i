@@ -414,7 +414,6 @@ namespace SimTK {
 %include <OpenSim/Actuators/PointToPointActuator.h>
 %include <OpenSim/Actuators/ClutchedPathSpring.h>
 %include <OpenSim/Actuators/SpringGeneralizedForce.h>
-%include <OpenSim/Actuators/Thelen2003Muscle.h>
 %include <OpenSim/Actuators/RigidTendonMuscle.h>
 %include <OpenSim/Actuators/ActiveForceLengthCurve.h>
 %include <OpenSim/Actuators/FiberCompressiveForceCosPennationCurve.h>
@@ -427,6 +426,7 @@ namespace SimTK {
 %include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
 %include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 
+%include <OpenSim/Actuators/Thelen2003Muscle.h>
 %include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 %include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>
 
