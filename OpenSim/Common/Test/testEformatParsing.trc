@@ -1,4 +1,4 @@
-PathFileType	4	(X/Y/Z)	C:/Documents and Settings/Khatib/My Documents/Ellen/experiments-jan2012/feb 12/chris_mri-prot-writing-trial-11-twosheet-right.trc																																								
+PathFileType	4	(X/Y/Z)	testEformatParsing.trc																																								
 DataRate	CameraRate	NumFrames	NumMarkers	Units	OrigDataRate	OrigDataStartFrame	OrigNumFrames																																				
 119.88012	119.88012	5	14	m	119.88012	1	5																																				
 Frame#	Time	RFAsuperior			RUA1			RACR			RUA3			RFAradius			RLEL			RMCP5			C7			RMCP3			LCLAV			RMCP1			RUA2			RMEL			RFAulna		
