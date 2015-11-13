@@ -23,6 +23,15 @@ class TestBasics(unittest.TestCase):
         adm = muscle.get_MuscleFirstOrderActivationDynamicModel()
         adm.get_activation_time_constant()
 
+    def test_SimTKArray(self):
+        # Initally created to test the creation of a separate simbody module.
+        ad = osim.SimTKArrayDouble()
+        ad.push_back(1)
+
+        av3 = osim.SimTKArrayVec3()
+        av3.push_back(osim.Vec3(8))
+        assert av3.at(0).get(0) == 8
+
 
 
 

@@ -8,3 +8,6 @@
 tmp
 # Ignore build trees.
 build*
+
+# python
+*.pyc

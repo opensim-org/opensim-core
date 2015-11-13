@@ -441,6 +441,8 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 	}
 }
 
+%include <Bindings/preliminaries.i>
+%include <Bindings/simbody.i>
 %include <Bindings/opensim.i>
 %include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
 

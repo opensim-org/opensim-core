@@ -375,6 +375,8 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 %}
 };
 
+%include <Bindings/preliminaries.i>
+%include <Bindings/simbody.i>
 %include <Bindings/opensim.i>
 
 // Pythonic operators

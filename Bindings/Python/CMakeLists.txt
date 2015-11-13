@@ -48,15 +48,15 @@ endmacro()
 
 # Generates source code for python module and then compiles it.
 # Here are the arguments:
-# MODULE: Name of python module.
-# INTERFACEFILE: Name of SWIG interface file for this module, in the `swig` dir.
+# MODULE: Name of python module. The module is build with the interface file
+#       named ${MODULE}_python.i.
 # DEPENDS: Full paths of files that the SWIG command depends on. TODO REMOVE.
 macro(OpenSimAddSwigPythonModule)
     # Parse arguments.
     # ----------------
     # http://www.cmake.org/cmake/help/v2.8.9/cmake.html#module:CMakeParseArguments
     set(options)
-    set(oneValueArgs MODULE INTERFACEFILE)
+    set(oneValueArgs MODULE)
     set(multiValueArgs DEPENDS)
     cmake_parse_arguments(
         OSIMSWIGPY "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -68,7 +68,7 @@ macro(OpenSimAddSwigPythonModule)
     set(_output_cxx_file "${_output_file_prefix}.cxx")
     set(_output_header_file "${_output_file_prefix}.h")
     set(_interface_file
-        "${CMAKE_CURRENT_SOURCE_DIR}/swig/${OSIMSWIGPY_INTERFACEFILE}")
+        "${CMAKE_CURRENT_SOURCE_DIR}/swig/${OSIMSWIGPY_MODULE}_python.i")
 
     add_custom_command(
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${OSIMSWIGPY_MODULE}.py"
@@ -164,8 +164,13 @@ endmacro()
 
 # Build python modules (generate binding source code and compile it).
 # ===================================================================
-OpenSimAddSwigPythonModule(MODULE opensim INTERFACEFILE pyWrapOpenSim.i
+#OpenSimAddSwigPythonModule(MODULE simbody
+#    DEPENDS "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
+#            "${OpenSim_SOURCE_DIR}/Bindings/opensim.i"
+#    )
+OpenSimAddSwigPythonModule(MODULE opensim
     DEPENDS "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
+            "${OpenSim_SOURCE_DIR}/Bindings/simbody.i"
             "${OpenSim_SOURCE_DIR}/Bindings/opensim.i"
     )
 

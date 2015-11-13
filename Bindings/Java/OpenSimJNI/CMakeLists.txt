@@ -17,6 +17,8 @@ add_custom_command(
         -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
         ${swig_interface_file_fullname}
     DEPENDS "${swig_interface_file_fullname}"
+            "${CMAKE_SOURCE_DIR}/Bindings/preliminaries.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simbody.i"
             "${CMAKE_SOURCE_DIR}/Bindings/opensim.i"
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
     COMMENT "Generating java bindings source code with SWIG."
