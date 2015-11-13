@@ -1,4 +1,11 @@
 %module(directors="1") simbody
+#pragma SWIG nowarn=822,451,503,516,325
+// 401 is "Nothing known about base class *some-class*.
+//         Maybe you forgot to instantiate *some-template* using %template."
+// When wrapping new classes it's good to uncomment the line below to make sure
+// you've wrapped your new class properly. However, SWIG generates lots of 401
+// errors that are very difficult to resolve.
+#pragma SWIG nowarn=401
 
 // TODO only use the necessary headers.
 %{
@@ -12,7 +19,7 @@ using namespace SimTK;
 %}
 
 
-%include "preliminaries_python.i"
+%include "python_preliminaries.i"
 
 
 // Relay exceptions to the target language.

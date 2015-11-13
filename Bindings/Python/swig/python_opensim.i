@@ -18,10 +18,10 @@ using namespace SimTK;
 
 %}
 
-%include "preliminaries_python.i"
+%include "python_preliminaries.i"
 
 // Tell SWIG about the simbody classes.
-%import "simbody_python.i"
+%import "python_simbody.i"
 
 %feature("director") OpenSim::SimtkLogCallback;
 %feature("director") SimTK::DecorativeGeometryImplementation;

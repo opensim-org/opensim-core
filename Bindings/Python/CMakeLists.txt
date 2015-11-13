@@ -68,7 +68,7 @@ macro(OpenSimAddSwigPythonModule)
     set(_output_cxx_file "${_output_file_prefix}.cxx")
     set(_output_header_file "${_output_file_prefix}.h")
     set(_interface_file
-        "${CMAKE_CURRENT_SOURCE_DIR}/swig/${OSIMSWIGPY_MODULE}_python.i")
+        "${CMAKE_CURRENT_SOURCE_DIR}/swig/python_${OSIMSWIGPY_MODULE}.i")
 
     add_custom_command(
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${OSIMSWIGPY_MODULE}.py"
@@ -166,7 +166,7 @@ endmacro()
 # ===================================================================
 OpenSimAddSwigPythonModule(MODULE simbody
     DEPENDS "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
-            "swig/preliminaries_python.i"
+            "swig/python_preliminaries.i"
             "${OpenSim_SOURCE_DIR}/Bindings/simbody.i"
     )
 #OpenSimAddSwigPythonModule(MODULE opensim
