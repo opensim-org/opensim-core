@@ -164,15 +164,18 @@ endmacro()
 
 # Build python modules (generate binding source code and compile it).
 # ===================================================================
-#OpenSimAddSwigPythonModule(MODULE simbody
+OpenSimAddSwigPythonModule(MODULE simbody
+    DEPENDS "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
+            "swig/preliminaries_python.i"
+            "${OpenSim_SOURCE_DIR}/Bindings/simbody.i"
+    )
+#OpenSimAddSwigPythonModule(MODULE opensim
 #    DEPENDS "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
+#            "swig/preliminaries_python.i"
+#            "${OpenSim_SOURCE_DIR}/Bindings/preliminaries.i"
+#            "${OpenSim_SOURCE_DIR}/Bindings/simbody.i"
 #            "${OpenSim_SOURCE_DIR}/Bindings/opensim.i"
 #    )
-OpenSimAddSwigPythonModule(MODULE opensim
-    DEPENDS "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
-            "${OpenSim_SOURCE_DIR}/Bindings/simbody.i"
-            "${OpenSim_SOURCE_DIR}/Bindings/opensim.i"
-    )
 
 
 # Copy files to create complete package in the build tree.

@@ -7,11 +7,6 @@
 // errors that are very difficult to resolve.
 #pragma SWIG nowarn=401
 
-/*
-For consistency with the rest of the API, we use camel-case for variable names.
-This breaks Python PEP 8 convention, but allows us to be consistent within our
-own project.
-*/
 
 %{
 #define SWIG_FILE_WITH_INIT
@@ -23,12 +18,14 @@ using namespace SimTK;
 
 %}
 
+%include "preliminaries_python.i"
+
+// Tell SWIG about the simbody classes.
+%import "simbody_python.i"
+
 %feature("director") OpenSim::SimtkLogCallback;
 %feature("director") SimTK::DecorativeGeometryImplementation;
 %feature("notabstract") ControlLinear;
-
-/** Pass Doxygen documentation to python wrapper */
-%feature("autodoc", "3");
 
 %rename(OpenSimObject) OpenSim::Object;
 %rename(OpenSimException) OpenSim::Exception;
@@ -37,7 +34,7 @@ using namespace SimTK;
 // This causes substantial code bloat and possibly hurts performance.
 // Without these try-catch block, a SimTK or OpenSim exception causes the
 // program to crash.
-%include exception.i
+%include "exception.i"
 %exception {
     try {
         $action
@@ -70,9 +67,6 @@ using namespace SimTK;
 //    }
 //}
 
-// Make sure clone does not leak memory
-%newobject *::clone;
-
 %rename(printToXML) OpenSim::Object::print(const std::string&) const;
 %rename(printToXML) OpenSim::XMLDocument::print(const std::string&);
 %rename(printToXML) OpenSim::XMLDocument::print();
@@ -82,79 +76,9 @@ using namespace SimTK;
 
 %rename(appendNative) OpenSim::ForceSet::append(Force* aForce);
 
-/* If needed %extend will be used, these operators are not supported.*/
-%ignore *::operator[];
-%ignore *::operator=;
-
 // For reference (doesn't work and should not be necessary):
 // %rename(__add__) operator+;
 
-/* This file is for creation/handling of arrays */
-%include "std_carray.i";
-
-/* This interface file is for better handling of pointers and references */
-%include "typemaps.i"
-%include "std_string.i"
-
-// Typemaps
-// ========
-// Allow passing python objects into OpenSim functions. For example,
-// pass a list of 3 float's into a function that takes a Vec3 as an argument.
-/*
-TODO disabling these for now as the typemaps remove the ability to pass
-arguments using the C++ types. For example, with these typemaps,
-Model::setGravity() can no longer take a Vec3. We can revisit typemaps if we
-can keep the ability to use the original argument types.
-These typemaps work, though.
-%typemap(in) SimTK::Vec3 {
-    SimTK::Vec3 v;
-    if (!PySequence_Check($input)) {
-        PyErr_SetString(PyExc_ValueError, "Expected a sequence.");
-        return NULL;
-    }
-    if (PySequence_Length($input) != v.size()) {
-        PyErr_SetString(PyExc_ValueError,
-                "Size mismatch. Expected 3 elements.");
-        return NULL;
-    }
-    for (int i = 0; i < v.size(); ++i) {
-        PyObject* o = PySequence_GetItem($input, i);
-        if (PyNumber_Check(o)) {
-            v[i] = PyFloat_AsDouble(o);
-        } else {
-            PyErr_SetString(PyExc_ValueError,
-                "Sequence elements must be numbers.");
-            return NULL;
-        }
-    }
-    $1 = &v;
-};
-%typemap(in) const SimTK::Vec3& {
-    SimTK::Vec3 v;
-    if (!PySequence_Check($input)) {
-        PyErr_SetString(PyExc_ValueError, "Expected a sequence.");
-        return NULL;
-    }
-    if (PySequence_Length($input) != v.size()) {
-        PyErr_SetString(PyExc_ValueError,
-                "Size mismatch. Expected 3 elements.");
-        return NULL;
-    }
-    for (int i = 0; i < v.size(); ++i) {
-        PyObject* o = PySequence_GetItem($input, i);
-        if (PyNumber_Check(o)) {
-            v[i] = PyFloat_AsDouble(o);
-        } else {
-            PyErr_SetString(PyExc_ValueError,
-                "Sequence elements must be numbers.");
-            return NULL;
-        }
-    }
-    $1 = &v;
-};
-// This is how one would apply a generic typemap to specific arguments:
-//%apply const SimTK::Vec3& INPUT { const SimTK::Vec3& aGrav };
-*/
 
 // Memory management
 // =================
@@ -314,23 +238,6 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 // Extend the template Vec class; these methods will apply for all template
 // parameters. This extend block must appear before the %template call in
 // opensim.i.
-%extend SimTK::Vec {
-    std::string __str__() const {
-        return $self->toString();
-    }
-    int __len__() const {
-        return $self->size();
-    }
-};
-
-%extend SimTK::Vector_ {
-    std::string __str__() const {
-        return $self->toString();
-    }
-    int __len__() const {
-        return $self->size();
-    }
-};
 
 %extend OpenSim::Set {
 %pythoncode %{
@@ -376,34 +283,7 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 };
 
 %include <Bindings/preliminaries.i>
-%include <Bindings/simbody.i>
 %include <Bindings/opensim.i>
-
-// Pythonic operators
-// ==================
-%extend SimTK::Vec<3> {
-     double __getitem__(int i) const {
-        SimTK_INDEXCHECK_ALWAYS(i, $self->size(), "Vec3.__getitem__()");
-        return $self->operator[](i);
-    }
-    void __setitem__(int i, double value) {
-        SimTK_INDEXCHECK_ALWAYS(i, $self->size(), "Vec3.__setitem__()");
-        $self->operator[](i) = value;
-    }
-    //SimTK::Vec<3> __add__(const SimTK::Vec<3>& v) const {
-    //    return *($self) + v;
-    //}
-};
-%extend SimTK::Vector_<double> {
-    double __getitem__(int i) const {
-        SimTK_INDEXCHECK_ALWAYS(i, $self->size(), "Vector.__getitem__()");
-        return $self->operator[](i);
-    }
-    void __setitem__(int i, double value) {
-        SimTK_INDEXCHECK_ALWAYS(i, $self->size(), "Vector.__setitem__()");
-        $self->operator[](i) = value;
-    }
-};
 
 // Memory management
 // =================
