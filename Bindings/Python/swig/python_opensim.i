@@ -27,21 +27,26 @@ using namespace SimTK;
 %feature("director") SimTK::DecorativeGeometryImplementation;
 %feature("notabstract") ControlLinear;
 
-%rename(OpenSimObject) OpenSim::Object;
+%rename(OpenSimObject) OpenSim::Object; // TODO remove
 %rename(OpenSimException) OpenSim::Exception;
 
 // Relay exceptions to the target language.
 // This causes substantial code bloat and possibly hurts performance.
 // Without these try-catch block, a SimTK or OpenSim exception causes the
 // program to crash.
+// We use SWIG_exception_fail instead of SWIG_exception due to some fluke where
+// SWIG_exception isn't defined for this module (because we're importing
+// another module?).
 %include "exception.i"
+// Delete any previous exception handlers.
+%exception;
 %exception {
     try {
         $action
     } catch (const std::exception& e) {
         std::string str("std::exception in '$fulldecl': ");
         std::string what(e.what());
-        SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
+        SWIG_exception_fail(SWIG_RuntimeError, (str + what).c_str());
     }
 }
 // The following exception handling is preferred but causes too much bloat.
@@ -223,13 +228,7 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 
 // Load OpenSim plugins TODO
 // ====================
-/*
-%extend OpenSim::Model {
-	static void LoadOpenSimLibrary(std::string libraryName){
-		LoadOpenSimLibrary(libraryName);
-	}
-}
-*/
+//%include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 // %include "numpy.i"
 

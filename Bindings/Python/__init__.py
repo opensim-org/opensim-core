@@ -1,2 +1,2 @@
 from simbody import *
-# TODO from opensim import *
+from opensim import *

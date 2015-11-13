@@ -17,8 +17,8 @@ else()
         "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 endif()
 
-# Helper macros/functions.
-# ========================
+# Helper macros.
+# ==============
 
 # Helper function to for copying files into the python package.
 macro(OpenSimPutFileInPythonPackage source_full_path relative_dest_dir)
@@ -50,7 +50,8 @@ endmacro()
 # Here are the arguments:
 # MODULE: Name of python module. The module is build with the interface file
 #       named ${MODULE}_python.i.
-# DEPENDS: Full paths of files that the SWIG command depends on. TODO REMOVE.
+# DEPENDS: Names of other python modules on which this module depends. 
+#            TODO recursive?
 macro(OpenSimAddSwigPythonModule)
     # Parse arguments.
     # ----------------
@@ -70,6 +71,17 @@ macro(OpenSimAddSwigPythonModule)
     set(_interface_file
         "${CMAKE_CURRENT_SOURCE_DIR}/swig/python_${OSIMSWIGPY_MODULE}.i")
 
+    # Assemble dependencies.
+    set(_dependencies "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
+                "swig/python_preliminaries.i"
+                "${OpenSim_SOURCE_DIR}/Bindings/preliminaries.i"
+                "${OpenSim_SOURCE_DIR}/Bindings/${OSIMSWIGPY_MODULE}.i"
+                )
+    foreach(_depmodule ${OSIMSWIGPY_DEPENDS})
+        list(APPEND _dependencies "swig/python_${_depmodule}.i"
+            "${OpenSim_SOURCE_DIR}/Bindings/${_depmodule}.i")
+    endforeach()
+
     add_custom_command(
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${OSIMSWIGPY_MODULE}.py"
             ${_output_cxx_file} ${_output_header_file}
@@ -81,9 +93,8 @@ macro(OpenSimAddSwigPythonModule)
             -o ${_output_cxx_file}
             -outdir "${CMAKE_CURRENT_BINARY_DIR}"
             ${_interface_file}
-        DEPENDS ${_interface_file}
-            ${OSIMSWIGPY_DEPENDS}
-            COMMENT "Generating python bindings source code with SWIG; module ${OSIMSWIGPY_MODULE}."
+        DEPENDS ${_interface_file} ${_dependencies}
+            COMMENT "Generating python bindings source code with SWIG: ${OSIMSWIGPY_MODULE} module."
         )
 
     # Compile python wrapper files into a library.
@@ -164,18 +175,8 @@ endmacro()
 
 # Build python modules (generate binding source code and compile it).
 # ===================================================================
-OpenSimAddSwigPythonModule(MODULE simbody
-    DEPENDS "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
-            "swig/python_preliminaries.i"
-            "${OpenSim_SOURCE_DIR}/Bindings/simbody.i"
-    )
-#OpenSimAddSwigPythonModule(MODULE opensim
-#    DEPENDS "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
-#            "swig/preliminaries_python.i"
-#            "${OpenSim_SOURCE_DIR}/Bindings/preliminaries.i"
-#            "${OpenSim_SOURCE_DIR}/Bindings/simbody.i"
-#            "${OpenSim_SOURCE_DIR}/Bindings/opensim.i"
-#    )
+OpenSimAddSwigPythonModule(MODULE simbody)
+OpenSimAddSwigPythonModule(MODULE opensim DEPENDS simbody)
 
 
 # Copy files to create complete package in the build tree.
@@ -286,7 +287,7 @@ add_dependencies(RunPythonTests PythonBindings)
 
 # Install python package.
 # =======================
-# Most of the files are installed via the above functions/macros.
+# Most of the files are installed via the above macros.
 # Install the test scripts.
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests"
         DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")

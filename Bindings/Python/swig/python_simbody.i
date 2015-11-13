@@ -10,10 +10,9 @@
 // TODO only use the necessary headers.
 %{
 #define SWIG_FILE_WITH_INIT
-#include <Bindings/OpenSimHeaders.h>
+#include <Simbody.h>
 %}
 %{
-using namespace OpenSim;
 using namespace SimTK;
 
 %}
@@ -27,13 +26,15 @@ using namespace SimTK;
 // Without these try-catch block, a SimTK or OpenSim exception causes the
 // program to crash.
 %include "exception.i"
+// Delete any previous exception handlers.
+%exception; 
 %exception {
     try {
         $action
     } catch (const std::exception& e) {
         std::string str("std::exception in '$fulldecl': ");
         std::string what(e.what());
-        SWIG_exception(SWIG_RuntimeError, (str + what).c_str());
+        SWIG_exception_fail(SWIG_RuntimeError, (str + what).c_str());
     }
 }
 
@@ -148,3 +149,4 @@ These typemaps work, though.
         $self->operator[](i) = value;
     }
 };
+
