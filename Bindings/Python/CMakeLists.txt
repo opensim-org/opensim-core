@@ -185,7 +185,8 @@ endmacro()
 # ===================================================================
 OpenSimAddSwigPythonModule(MODULE simbody)
 OpenSimAddSwigPythonModule(MODULE opensim DEPENDS simbody)
-OpenSimAddSwigPythonModule(MODULE tools DEPENDS opensim simbody)
+OpenSimAddSwigPythonModule(MODULE analyses DEPENDS opensim simbody)
+OpenSimAddSwigPythonModule(MODULE tools DEPENDS analyses opensim simbody)
 
 
 # Copy files to create complete package in the build tree.

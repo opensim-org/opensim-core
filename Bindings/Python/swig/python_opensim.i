@@ -299,6 +299,7 @@ SET_ADOPT_HELPER(Marker);
 SET_ADOPT_HELPER(Control);
 SET_ADOPT_HELPER(Frame);
 SET_ADOPT_HELPER(Force);
+SET_ADOPT_HELPER(Analysis);
 
 // These didn't work with the macro for some reason. I got complaints about
 // multiple definitions of, e.g.,  Function in the target language.

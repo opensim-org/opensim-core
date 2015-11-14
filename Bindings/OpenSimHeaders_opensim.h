@@ -1,5 +1,5 @@
-#ifndef OPENSIM_OPENSIM_HEADERS_H_
-#define OPENSIM_OPENSIM_HEADERS_H_
+#ifndef OPENSIM_OPENSIM_HEADERS_OPENSIM_H_
+#define OPENSIM_OPENSIM_HEADERS_OPENSIM_H_
 /* This header file is only used with SWIG to create bindings.
 */
 
@@ -102,20 +102,6 @@
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 
-#include <OpenSim/Analyses/osimAnalysesDLL.h>
-#include <OpenSim/Analyses/Actuation.h>
-#include <OpenSim/Analyses/Kinematics.h>
-#include <OpenSim/Analyses/MuscleAnalysis.h>
-#include <OpenSim/Analyses/InverseDynamics.h>
-#include <OpenSim/Analyses/StaticOptimization.h>
-#include <OpenSim/Analyses/ForceReporter.h>
-#include <OpenSim/Analyses/PointKinematics.h>
-#include <OpenSim/Analyses/BodyKinematics.h>
-#include <OpenSim/Analyses/JointReaction.h>
-#include <OpenSim/Analyses/StatesReporter.h>
-#include <OpenSim/Analyses/InducedAccelerations.h>
-#include <OpenSim/Analyses/ProbeReporter.h>
-
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 #include <OpenSim/Simulation/Wrap/WrapSphere.h>
@@ -205,5 +191,5 @@
 #include <OpenSim/Simulation/CoordinateReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 
-#endif // OPENSIM_OPENSIM_HEADERS_H_
+#endif // OPENSIM_OPENSIM_HEADERS_OPENSIM_H_
 

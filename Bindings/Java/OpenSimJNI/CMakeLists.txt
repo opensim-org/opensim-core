@@ -20,8 +20,10 @@ add_custom_command(
             "${CMAKE_SOURCE_DIR}/Bindings/preliminaries.i"
             "${CMAKE_SOURCE_DIR}/Bindings/simbody.i"
             "${CMAKE_SOURCE_DIR}/Bindings/opensim.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/analyses.i"
             "${CMAKE_SOURCE_DIR}/Bindings/tools.i"
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_opensim.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_analyses.h"
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_tools.h"
     COMMENT "Generating java bindings source code with SWIG."
     )

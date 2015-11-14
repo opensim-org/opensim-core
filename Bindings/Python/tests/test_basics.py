@@ -33,12 +33,25 @@ class TestBasics(unittest.TestCase):
         assert av3.at(0).get(0) == 8
 
     def test_ToolAndModel(self):
+        # Test tools module.
         cmc = osim.CMCTool()
         model = osim.Model()
         model.setName('alphabet')
         cmc.setModel(model)
         assert cmc.getModel().getName() == 'alphabet'
 
+    def test_AnalysisToolModel(self):
+        # Test analyses module.
+        cmc = osim.CMCTool()
+        model = osim.Model()
+        model.setName('eggplant')
+        fr = osim.ForceReporter()
+        fr.setName('strong')
+        cmc.setModel(model)
+        cmc.getAnalysisSet().adoptAndAppend(fr)
+
+        assert cmc.getModel().getName() == 'eggplant'
+        assert cmc.getAnalysisSet().get(0).getName() == 'strong'
 
 
 

@@ -1,4 +1,4 @@
-%module(directors="1") tools
+%module(directors="1") analyses
 #pragma SWIG nowarn=822,451,503,516,325
 // 401 is "Nothing known about base class *some-class*.
 //         Maybe you forgot to instantiate *some-template* using %template."
@@ -11,7 +11,6 @@
 #define SWIG_FILE_WITH_INIT
 #include <Bindings/OpenSimHeaders_opensim.h>
 #include <Bindings/OpenSimHeaders_analyses.h>
-#include <Bindings/OpenSimHeaders_tools.h>
 %}
 
 %{
@@ -23,7 +22,7 @@ using namespace SimTK;
 %include "python_preliminaries.i"
 
 // Tell SWIG about the opensim module.
-%import "python_analyses.i"
+%import "python_opensim.i"
 
 // Relay exceptions to the target language.
 // This causes substantial code bloat and possibly hurts performance.
@@ -50,11 +49,9 @@ using namespace SimTK;
 // Include all the OpenSim code.
 // =============================
 %include <Bindings/preliminaries.i>
-%include <Bindings/tools.i>
+%include <Bindings/analyses.i>
 
 
 // Memory management
 // =================
-SET_ADOPT_HELPER(IKTask);
-SET_ADOPT_HELPER(Measurement);
-SET_ADOPT_HELPER(MarkerPair);
+// None.

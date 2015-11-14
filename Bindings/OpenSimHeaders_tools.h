@@ -1,5 +1,5 @@
-#ifndef OPENSIM_OPENSIM_TOOLS_HEADERS_H_
-#define OPENSIM_OPENSIM_TOOLS_HEADERS_H_
+#ifndef OPENSIM_OPENSIM_HEADERS_TOOLS_H_
+#define OPENSIM_OPENSIM_HEADERS_TOOLS_H_
 /* This header file is only used with SWIG to create bindings.
 */
 
@@ -36,5 +36,5 @@
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
 
-#endif // OPENSIM_OPENSIM_TOOLS_HEADERS_H_
+#endif // OPENSIM_OPENSIM_HEADERS_TOOLS_H_
 
