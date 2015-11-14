@@ -51,7 +51,7 @@ endmacro()
 # MODULE: Name of python module. The module is build with the interface file
 #       named ${MODULE}_python.i.
 # DEPENDS: Names of other python modules on which this module depends. 
-macro(OpenSimAddSwigPythonModule)
+macro(OpenSimAddPythonModule)
     # Parse arguments.
     # ----------------
     # http://www.cmake.org/cmake/help/v2.8.9/cmake.html#module:CMakeParseArguments
@@ -183,10 +183,11 @@ endmacro()
 
 # Build python modules (generate binding source code and compile it).
 # ===================================================================
-OpenSimAddSwigPythonModule(MODULE simbody)
-OpenSimAddSwigPythonModule(MODULE opensim DEPENDS simbody)
-OpenSimAddSwigPythonModule(MODULE analyses DEPENDS opensim simbody)
-OpenSimAddSwigPythonModule(MODULE tools DEPENDS analyses opensim simbody)
+OpenSimAddPythonModule(MODULE simbody)
+OpenSimAddPythonModule(MODULE opensim DEPENDS simbody)
+OpenSimAddPythonModule(MODULE actuators DEPENDS opensim simbody)
+OpenSimAddPythonModule(MODULE analyses DEPENDS actuators opensim simbody)
+OpenSimAddPythonModule(MODULE tools DEPENDS analyses opensim simbody)
 
 
 # Copy files to create complete package in the build tree.

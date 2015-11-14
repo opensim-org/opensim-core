@@ -81,7 +81,6 @@
 #include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 
-#include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Control/Control.h>
@@ -158,7 +157,6 @@
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
 
-#include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
@@ -170,18 +168,6 @@
 #include <OpenSim/Simulation/Model/BushingForce.h>
 #include <OpenSim/Simulation/Model/FunctionBasedBushingForce.h>
 #include <OpenSim/Simulation/Model/ExpressionBasedBushingForce.h>
-#include <OpenSim/Actuators/CoordinateActuator.h>
-#include <OpenSim/Actuators/PointActuator.h>
-#include <OpenSim/Actuators/TorqueActuator.h>
-#include <OpenSim/Actuators/BodyActuator.h>
-#include <OpenSim/Actuators/PointToPointActuator.h>
-#include <OpenSim/Actuators/ClutchedPathSpring.h>
-#include <OpenSim/Actuators/SpringGeneralizedForce.h>
-#include <OpenSim/Actuators/Thelen2003Muscle.h>
-#include <OpenSim/Actuators/RigidTendonMuscle.h>
-#include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
-#include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>
-#include <OpenSim/Actuators/ClutchedPathSpring.h>
 
 #include <OpenSim/Common/MarkerData.h>
 

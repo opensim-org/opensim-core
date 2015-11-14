@@ -10,6 +10,7 @@
 %{
 #define SWIG_FILE_WITH_INIT
 #include <Bindings/OpenSimHeaders_opensim.h>
+#include <Bindings/OpenSimHeaders_actuators.h>
 #include <Bindings/OpenSimHeaders_analyses.h>
 %}
 
@@ -21,8 +22,8 @@ using namespace SimTK;
 
 %include "python_preliminaries.i"
 
-// Tell SWIG about the opensim module.
-%import "python_opensim.i"
+// Tell SWIG about the modules we depend on.
+%import "python_actuators.i"
 
 // Relay exceptions to the target language.
 // This causes substantial code bloat and possibly hurts performance.

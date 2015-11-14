@@ -4,6 +4,7 @@
 %{
 
 #include <Bindings/OpenSimHeaders_opensim.h>
+#include <Bindings/OpenSimHeaders_actuators.h>
 #include <Bindings/OpenSimHeaders_analyses.h>
 #include <Bindings/OpenSimHeaders_tools.h>
 #include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
@@ -446,6 +447,7 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 %include <Bindings/preliminaries.i>
 %include <Bindings/simbody.i>
 %include <Bindings/opensim.i>
+%include <Bindings/actuators.i>
 %include <Bindings/analyses.i>
 %include <Bindings/tools.i>
 %include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
