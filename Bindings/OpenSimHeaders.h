@@ -1,7 +1,6 @@
 #ifndef OPENSIM_OPENSIM_HEADERS_H_
 #define OPENSIM_OPENSIM_HEADERS_H_
-/* This header file contains all headers to be included in Glue code
- used to create various bindings of OpenSim.
+/* This header file is only used with SWIG to create bindings.
 */
 
 #include <OpenSim/version.h>
@@ -103,9 +102,6 @@
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 
-#include <OpenSim/Tools/osimToolsDLL.h>
-#include <OpenSim/Tools/ForwardTool.h>
-
 #include <OpenSim/Analyses/osimAnalysesDLL.h>
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/Kinematics.h>
@@ -201,41 +197,13 @@
 #include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>
 #include <OpenSim/Actuators/ClutchedPathSpring.h>
 
-#include <OpenSim/Tools/IKTask.h>
-#include <OpenSim/Tools/IKMarkerTask.h>
-#include <OpenSim/Tools/IKCoordinateTask.h>
-#include <OpenSim/Tools/IKTaskSet.h>
 #include <OpenSim/Common/MarkerData.h>
-
-#include <OpenSim/Tools/MarkerPair.h>
-#include <OpenSim/Tools/MarkerPairSet.h>
-#include <OpenSim/Tools/Measurement.h>
-#include <OpenSim/Tools/MeasurementSet.h>
-
-#include <OpenSim/Tools/GenericModelMaker.h>
-#include <OpenSim/Tools/ModelScaler.h>
-#include <OpenSim/Tools/MarkerPlacer.h>
-#include <OpenSim/Tools/Tool.h>
 
 #include <OpenSim/Simulation/Solver.h>
 #include <OpenSim/Simulation/AssemblySolver.h>
 #include <OpenSim/Simulation/MarkersReference.h>
 #include <OpenSim/Simulation/CoordinateReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
-#include <OpenSim/Tools/DynamicsTool.h>
-#include <OpenSim/Tools/InverseDynamicsTool.h>
-
-#include <OpenSim/Tools/TrackingTask.h>
-#include <OpenSim/Tools/CMC_Task.h>
-#include <OpenSim/Tools/CMC_Joint.h>
-#include <OpenSim/Tools/CMC_Point.h>
-#include <OpenSim/Tools/CMC_TaskSet.h>
-
-#include <OpenSim/Tools/CMCTool.h>
-#include <OpenSim/Tools/RRATool.h>
-#include <OpenSim/Tools/ScaleTool.h>
-#include <OpenSim/Tools/AnalyzeTool.h>
-#include <OpenSim/Tools/InverseKinematicsTool.h>
 
 #endif // OPENSIM_OPENSIM_HEADERS_H_
 

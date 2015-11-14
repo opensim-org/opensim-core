@@ -4,6 +4,7 @@
 %{
 
 #include <Bindings/OpenSimHeaders.h>
+#include <Bindings/OpenSimToolsHeaders.h>
 #include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
 
 #include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
@@ -444,6 +445,7 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 %include <Bindings/preliminaries.i>
 %include <Bindings/simbody.i>
 %include <Bindings/opensim.i>
+%include <Bindings/tools.i>
 %include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
 
 %include <Bindings/Java/OpenSimJNI/OpenSimContext.h>

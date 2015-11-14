@@ -21,3 +21,21 @@ own project.
 /* If needed %extend will be used, these operators are not supported.*/
 %ignore *::operator[];
 %ignore *::operator=;
+
+
+// Memory management
+// =================
+/*
+A macro to facilitate adding adoptAndAppend methods to these sets.
+
+note: ## is a "glue" operator: `a ## b` --> `ab`.
+*/
+%define SET_ADOPT_HELPER(NAME)
+%extend OpenSim:: ## NAME ## Set {
+%pythoncode %{
+    def adoptAndAppend(self, a ## NAME):
+        a ## NAME._markAdopted()
+        return super(NAME ## Set, self).adoptAndAppend(a ## NAME)
+%}
+};
+%enddef

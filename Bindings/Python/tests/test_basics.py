@@ -32,6 +32,13 @@ class TestBasics(unittest.TestCase):
         av3.push_back(osim.Vec3(8))
         assert av3.at(0).get(0) == 8
 
+    def test_ToolAndModel(self):
+        cmc = osim.CMCTool()
+        model = osim.Model()
+        model.setName('alphabet')
+        cmc.setModel(model)
+        assert cmc.getModel().getName() == 'alphabet'
+
 
 
 

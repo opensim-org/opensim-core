@@ -12,21 +12,23 @@
 #define SWIG_FILE_WITH_INIT
 #include <Bindings/OpenSimHeaders.h>
 %}
+
 %{
 using namespace OpenSim;
 using namespace SimTK;
-
 %}
 
 %include "python_preliminaries.i"
 
-// Tell SWIG about the simbody classes.
+// Tell SWIG about the simbody module.
 %import "python_simbody.i"
 
+// TODO these should be removed because they appear in opensim.i.
 %feature("director") OpenSim::SimtkLogCallback;
 %feature("director") SimTK::DecorativeGeometryImplementation;
 %feature("notabstract") ControlLinear;
 
+// TODO remove both of these; they already appear in opensim.i
 %rename(OpenSimObject) OpenSim::Object; // TODO remove
 %rename(OpenSimException) OpenSim::Exception;
 
@@ -281,34 +283,18 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 %}
 };
 
+
+// Include all the OpenSim code.
+// =============================
 %include <Bindings/preliminaries.i>
 %include <Bindings/opensim.i>
 
+
 // Memory management
 // =================
-
-/*
-A macro to facilitate adding adoptAndAppend methods to these sets. For NAME ==
-Geometry, the macro expands to:
-
-note: ## is a "glue" operator: `a ## b` --> `ab`.
-*/
-%define SET_ADOPT_HELPER(NAME)
-%extend OpenSim:: ## NAME ## Set {
-%pythoncode %{
-    def adoptAndAppend(self, a ## NAME):
-        a ## NAME._markAdopted()
-        return super(NAME ## Set, self).adoptAndAppend(a ## NAME)
-%}
-};
-%enddef
-
 SET_ADOPT_HELPER(Scale);
 SET_ADOPT_HELPER(BodyScale);
 SET_ADOPT_HELPER(PathPoint);
-SET_ADOPT_HELPER(IKTask);
-SET_ADOPT_HELPER(MarkerPair);
-SET_ADOPT_HELPER(Measurement);
 SET_ADOPT_HELPER(Marker);
 SET_ADOPT_HELPER(Control);
 SET_ADOPT_HELPER(Frame);

@@ -7,14 +7,13 @@
 // errors that are very difficult to resolve.
 #pragma SWIG nowarn=401
 
-// TODO only use the necessary headers.
 %{
 #define SWIG_FILE_WITH_INIT
 #include <Simbody.h>
 %}
+
 %{
 using namespace SimTK;
-
 %}
 
 

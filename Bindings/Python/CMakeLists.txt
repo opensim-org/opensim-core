@@ -72,11 +72,13 @@ macro(OpenSimAddSwigPythonModule)
         "${CMAKE_CURRENT_SOURCE_DIR}/swig/python_${OSIMSWIGPY_MODULE}.i")
 
     # Assemble dependencies.
-    set(_dependencies "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
-                "swig/python_preliminaries.i"
-                "${OpenSim_SOURCE_DIR}/Bindings/preliminaries.i"
-                "${OpenSim_SOURCE_DIR}/Bindings/${OSIMSWIGPY_MODULE}.i"
-                )
+    set(_dependencies
+        "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
+        "${OpenSim_SOURCE_DIR}/Bindings/OpenSimToolsHeaders.h" # TODO
+        "swig/python_preliminaries.i"
+        "${OpenSim_SOURCE_DIR}/Bindings/preliminaries.i"
+        "${OpenSim_SOURCE_DIR}/Bindings/${OSIMSWIGPY_MODULE}.i"
+        )
     foreach(_depmodule ${OSIMSWIGPY_DEPENDS})
         list(APPEND _dependencies "swig/python_${_depmodule}.i"
             "${OpenSim_SOURCE_DIR}/Bindings/${_depmodule}.i")
@@ -177,6 +179,7 @@ endmacro()
 # ===================================================================
 OpenSimAddSwigPythonModule(MODULE simbody)
 OpenSimAddSwigPythonModule(MODULE opensim DEPENDS simbody)
+OpenSimAddSwigPythonModule(MODULE tools DEPENDS opensim simbody)
 
 
 # Copy files to create complete package in the build tree.
