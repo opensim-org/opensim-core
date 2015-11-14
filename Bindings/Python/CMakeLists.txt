@@ -138,7 +138,7 @@ macro(OpenSimAddPythonModule)
     
     # Set target properties for various platforms.
     # --------------------------------------------
-    # Resulting library must be named _opensim.so on Unix, _opensim.pyd on Windows.
+    # Resulting library must be named with .so on Unix, .pyd on Windows.
     set_target_properties(${_libname} PROPERTIES
         PROJECT_LABEL "Python - ${_libname}"
         FOLDER "Bindings"
@@ -184,10 +184,13 @@ endmacro()
 # Build python modules (generate binding source code and compile it).
 # ===================================================================
 OpenSimAddPythonModule(MODULE simbody)
-OpenSimAddPythonModule(MODULE opensim DEPENDS simbody)
-OpenSimAddPythonModule(MODULE actuators DEPENDS opensim simbody)
-OpenSimAddPythonModule(MODULE analyses DEPENDS actuators opensim simbody)
-OpenSimAddPythonModule(MODULE tools DEPENDS analyses opensim simbody)
+OpenSimAddPythonModule(MODULE common DEPENDS simbody)
+OpenSimAddPythonModule(MODULE simulation DEPENDS common simbody)
+OpenSimAddPythonModule(MODULE actuators DEPENDS simulation common simbody)
+OpenSimAddPythonModule(MODULE analyses
+                       DEPENDS actuators simulation common simbody)
+OpenSimAddPythonModule(MODULE tools
+                       DEPENDS analyses actuators simulation common simbody)
 
 
 # Copy files to create complete package in the build tree.
@@ -224,7 +227,7 @@ endforeach()
 # that macro assembles the OPENSIM_PYTHON_PACKAGE_FILES list.
 add_custom_target(PythonBindings ALL DEPENDS ${OPENSIM_PYTHON_PACKAGE_FILES})
 
-# Require the _opensim library to be built.
+# Require the libraries to be built.
 add_dependencies(PythonBindings ${OPENSIM_PYTHON_PACKAGE_LIBRARY_TARGETS})
 
 set_target_properties(PythonBindings PROPERTIES

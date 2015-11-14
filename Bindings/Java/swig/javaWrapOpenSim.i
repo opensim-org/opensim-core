@@ -3,7 +3,8 @@
 #pragma SWIG nowarn=822,451,503,516,325,401
 %{
 
-#include <Bindings/OpenSimHeaders_opensim.h>
+#include <Bindings/OpenSimHeaders_common.h>
+#include <Bindings/OpenSimHeaders_simulation.h>
 #include <Bindings/OpenSimHeaders_actuators.h>
 #include <Bindings/OpenSimHeaders_analyses.h>
 #include <Bindings/OpenSimHeaders_tools.h>
@@ -446,7 +447,8 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 
 %include <Bindings/preliminaries.i>
 %include <Bindings/simbody.i>
-%include <Bindings/opensim.i>
+%include <Bindings/common.i>
+%include <Bindings/simulation.i>
 %include <Bindings/actuators.i>
 %include <Bindings/analyses.i>
 %include <Bindings/tools.i>

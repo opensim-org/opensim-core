@@ -22,6 +22,13 @@ own project.
 %ignore *::operator[];
 %ignore *::operator=;
 
+// For reference (doesn't work and should not be necessary):
+// %rename(__add__) operator+;
+
+// Rename
+// ======
+%rename(NoType) OpenSim::Geometry::None;
+%rename(NoPreference) OpenSim::DisplayGeometry::None;
 
 // Memory management
 // =================

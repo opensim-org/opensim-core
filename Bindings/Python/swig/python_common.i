@@ -1,4 +1,4 @@
-%module(directors="1") opensim
+%module(directors="1") common
 #pragma SWIG nowarn=822,451,503,516,325
 // 401 is "Nothing known about base class *some-class*.
 //         Maybe you forgot to instantiate *some-template* using %template."
@@ -10,7 +10,7 @@
 
 %{
 #define SWIG_FILE_WITH_INIT
-#include <Bindings/OpenSimHeaders_opensim.h>
+#include <Bindings/OpenSimHeaders_common.h>
 %}
 
 %{
@@ -22,15 +22,6 @@ using namespace SimTK;
 
 // Tell SWIG about the simbody module.
 %import "python_simbody.i"
-
-// TODO these should be removed because they appear in opensim.i.
-%feature("director") OpenSim::SimtkLogCallback;
-%feature("director") SimTK::DecorativeGeometryImplementation;
-%feature("notabstract") ControlLinear;
-
-// TODO remove both of these; they already appear in opensim.i
-%rename(OpenSimObject) OpenSim::Object; // TODO remove
-%rename(OpenSimException) OpenSim::Exception;
 
 // Relay exceptions to the target language.
 // This causes substantial code bloat and possibly hurts performance.
@@ -78,13 +69,6 @@ using namespace SimTK;
 %rename(printToXML) OpenSim::XMLDocument::print(const std::string&);
 %rename(printToXML) OpenSim::XMLDocument::print();
 %rename(printToFile) OpenSim::Storage::print;
-%rename(NoType) OpenSim::Geometry::None;
-%rename(NoPreference) OpenSim::DisplayGeometry::None;
-
-%rename(appendNative) OpenSim::ForceSet::append(Force* aForce);
-
-// For reference (doesn't work and should not be necessary):
-// %rename(__add__) operator+;
 
 
 // Memory management
@@ -102,67 +86,6 @@ care of deleting it.
             self.thisown = False
 %}
 };
-
-/*
-The added component is not responsible for its own memory management anymore
-once added to the Model.  These lines must go at this point in this .i file. I
-originally had them at the bottom, and then they didn't work!
-
-note: ## is a "glue" operator: `a ## b` --> `ab`.
-*/
-%define MODEL_ADOPT_HELPER(NAME)
-%pythonappend OpenSim::Model::add ## NAME %{
-    adoptee._markAdopted()
-%}
-%enddef
-
-MODEL_ADOPT_HELPER(ModelComponent);
-MODEL_ADOPT_HELPER(Body);
-MODEL_ADOPT_HELPER(Probe);
-MODEL_ADOPT_HELPER(Joint);
-MODEL_ADOPT_HELPER(Frame);
-MODEL_ADOPT_HELPER(Constraint);
-MODEL_ADOPT_HELPER(ContactGeometry);
-MODEL_ADOPT_HELPER(Analysis);
-MODEL_ADOPT_HELPER(Force);
-MODEL_ADOPT_HELPER(Controller);
-
-/*
-Extend concrete Joints to use the inherited base constructors.
-This is only necessary because SWIG does not generate these inherited
-constructors provided by C++11's 'using' (e.g. using Joint::Joint) declaration.
-Note that CustomJoint and EllipsoidJoint do implement their own
-constructors because they have additional arguments.
-*/
-%define EXPOSE_JOINT_CONSTRUCTORS_HELPER(NAME)
-%extend OpenSim::NAME {
-	NAME(const std::string& name,
-         const std::string& parentName,
-         const std::string& childName) {
-		return new NAME(name, parentName, childName, false);
-	}
-	
-	NAME(const std::string& name,
-         const PhysicalFrame& parent,
-         const SimTK::Vec3& locationInParent,
-         const SimTK::Vec3& orientationInParent,
-         const PhysicalFrame& child,
-         const SimTK::Vec3& locationInChild,
-         const SimTK::Vec3& orientationInChild) {
-		return new NAME(name, parent, locationInParent, orientationInParent,
-					child, locationInChild, orientationInChild, false);
-	}
-};
-%enddef
-
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(FreeJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(BallJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(PinJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(SliderJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(WeldJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(GimbalJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(UniversalJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 
 
 %extend OpenSim::Array<double> {
@@ -238,7 +161,7 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 // ==================
 // Extend the template Vec class; these methods will apply for all template
 // parameters. This extend block must appear before the %template call in
-// opensim.i.
+// common.i.
 
 %extend OpenSim::Set {
 %pythoncode %{
@@ -287,44 +210,19 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 // Include all the OpenSim code.
 // =============================
 %include <Bindings/preliminaries.i>
-%include <Bindings/opensim.i>
+%include <Bindings/common.i>
 
 
 // Memory management
 // =================
 SET_ADOPT_HELPER(Scale);
-SET_ADOPT_HELPER(BodyScale);
-SET_ADOPT_HELPER(PathPoint);
-SET_ADOPT_HELPER(Marker);
-SET_ADOPT_HELPER(Control);
-SET_ADOPT_HELPER(Frame);
-SET_ADOPT_HELPER(Force);
-SET_ADOPT_HELPER(Analysis);
 
-// These didn't work with the macro for some reason. I got complaints about
+// This didn't work with the macro for some reason. I got complaints about
 // multiple definitions of, e.g.,  Function in the target language.
 %extend OpenSim::FunctionSet {
 %pythoncode %{
     def adoptAndAppend(self, aFunction):
         aFunction._markAdopted()
         return super(FunctionSet, self).adoptAndAppend(aFunction)
-%}
-};
-
-%extend OpenSim::ProbeSet {
-%pythoncode %{
-    def adoptAndAppend(self, aProbe):
-        aProbe._markAdopted()
-        return super(ProbeSet, self).adoptAndAppend(aProbe)
-%}
-};
-
-// Attempt to solve segfault when calling ForceSet::append()
-// from scripting.
-%extend OpenSim::ForceSet {
-%pythoncode %{
-    def append(self, aForce):
-        aForce._markAdopted()
-        return self.appendNative(aForce)
 %}
 };
