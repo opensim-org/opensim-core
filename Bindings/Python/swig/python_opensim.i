@@ -10,7 +10,7 @@
 
 %{
 #define SWIG_FILE_WITH_INIT
-#include <Bindings/OpenSimHeaders.h>
+#include <Bindings/OpenSimHeaders_opensim.h>
 %}
 
 %{

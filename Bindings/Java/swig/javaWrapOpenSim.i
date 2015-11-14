@@ -3,8 +3,8 @@
 #pragma SWIG nowarn=822,451,503,516,325,401
 %{
 
-#include <Bindings/OpenSimHeaders.h>
-#include <Bindings/OpenSimToolsHeaders.h>
+#include <Bindings/OpenSimHeaders_opensim.h>
+#include <Bindings/OpenSimHeaders_tools.h>
 #include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
 
 #include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>

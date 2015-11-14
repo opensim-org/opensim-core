@@ -51,7 +51,6 @@ endmacro()
 # MODULE: Name of python module. The module is build with the interface file
 #       named ${MODULE}_python.i.
 # DEPENDS: Names of other python modules on which this module depends. 
-#            TODO recursive?
 macro(OpenSimAddSwigPythonModule)
     # Parse arguments.
     # ----------------
@@ -73,17 +72,25 @@ macro(OpenSimAddSwigPythonModule)
 
     # Assemble dependencies.
     set(_dependencies
-        "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
-        "${OpenSim_SOURCE_DIR}/Bindings/OpenSimToolsHeaders.h" # TODO
         "swig/python_preliminaries.i"
         "${OpenSim_SOURCE_DIR}/Bindings/preliminaries.i"
         "${OpenSim_SOURCE_DIR}/Bindings/${OSIMSWIGPY_MODULE}.i"
         )
+    if(NOT ${OSIMSWIGPY_MODULE} STREQUAL "simbody")
+        list(APPEND _dependencies
+            "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders_${OSIMSWIGPY_MODULE}.h")
+    endif()
     foreach(_depmodule ${OSIMSWIGPY_DEPENDS})
-        list(APPEND _dependencies "swig/python_${_depmodule}.i"
+        list(APPEND _dependencies
+            "swig/python_${_depmodule}.i"
             "${OpenSim_SOURCE_DIR}/Bindings/${_depmodule}.i")
+        if(NOT ${_depmodule} STREQUAL "simbody")
+            list(APPEND _dependencies
+                "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders_${_depmodule}.h")
+        endif()
     endforeach()
 
+    # Run swig.
     add_custom_command(
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${OSIMSWIGPY_MODULE}.py"
             ${_output_cxx_file} ${_output_header_file}
@@ -124,7 +131,6 @@ macro(OpenSimAddSwigPythonModule)
                         ${OpenSim_SOURCE_DIR}/Vendors 
                         ${PYTHON_INCLUDE_PATH}
                         )
-    
 
     add_library(${_libname} SHARED ${_output_cxx_file} ${_output_header_file})
     
