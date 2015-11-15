@@ -39,6 +39,8 @@ class Bar;
 // own custom type. or use brace initialization to call the constructor of a
 // class. e.g. OpenSim_DECLARE_PROPERTY(x, Constant, "", {1, 2, 3, 4}).
 
+// TODO test deprecation warnings.
+
 // Helper macros.
 // ==============
 
@@ -161,6 +163,7 @@ class Bar;
     /* OpenSim_DECLARE_PROPERTY(gamma, Function, "Abstract class (included)."); */ \
     /* OpenSim_DECLARE_PROPERTY(neptune, Bar, "Forward-declared class."); */
 
+// TODO doesn't make sense. REMOVE.
 #define DECLARE_OPTIONAL_PROPERTIES_UI \
     OpenSim_DECLARE_OPTIONAL_PROPERTY(alphao, double, "built-in type."); \
     OpenSim_DECLARE_OPTIONAL_PROPERTY(zetao, Vec3, "non-Object."); \
@@ -170,25 +173,31 @@ class Bar;
 
 // With an initial value provided.
 #define DECLARE_OPTIONAL_INIT_PROPERTIES_UI \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(alphaoi, double, "built-in type."); \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(zetaoi, Vec3, "non-Object."); \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(betaoi, Constant, "Concrete."); \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(gammaoi, Function, "Abstract."); \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(neptuneoi, Bar, "Forward-declared.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(alphaoi, double, "built-in type.", 52); \
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(zetaoi, Vec3, "non-Object.", Vec3(7, 1, 5)); \
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(betaoi, Constant, "Concrete.", Constant(1)); \
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(gammaoi, Function, "Abstract.", GCVSpline()); \
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(neptuneoi, Bar, "Forward-declared.", Bar(5));
 
 #define DECLARE_UNNAMED_PROPERTIES_UI \
-    OpenSim_DECLARE_UNNAMED_PROPERTY(Constant, "Concrete."); \
-    OpenSim_DECLARE_UNNAMED_PROPERTY(Function, "Abstract."); \
+    OpenSim_DECLARE_UNNAMED_PROPERTY(Constant, "Concrete.", Constant(15)); \
+    OpenSim_DECLARE_UNNAMED_PROPERTY(Function, "Abstract.", Constant(12)); \
     OpenSim_DECLARE_UNNAMED_PROPERTY(Bar, "Forward-declared.");
 
 #define DECLARE_LIST_PROPERTIES_UI \
-    OpenSim_DECLARE_LIST_PROPERTY(alphal, double, "built-in type."); \
-    OpenSim_DECLARE_LIST_PROPERTY(zetal, Vec3, "non-Object."); \
-    OpenSim_DECLARE_LIST_PROPERTY(betal, Constant, "Concrete."); \
-    OpenSim_DECLARE_LIST_PROPERTY(gammal, Function, "Abstract."); \
-    OpenSim_DECLARE_LIST_PROPERTY(neptunel, Bar, "Forward-declared.");
+    OpenSim_DECLARE_LIST_PROPERTY(alphal, double, "built-in type.", \
+            std::vector<double>{1,2}); \
+    OpenSim_DECLARE_LIST_PROPERTY(zetal, Vec3, "non-Object.", \
+            {Vec3(0), Vec3(15), Vec3(17, 12, 1)}); \
+    OpenSim_DECLARE_LIST_PROPERTY(betal, Constant, "Concrete.", \
+            std::vector<Constant>{Constant(), Constant(6)}); \
+    OpenSim_DECLARE_LIST_PROPERTY(gammal, Function, "Abstract.", \
+            std::vector<Function>()); \
+    OpenSim_DECLARE_LIST_PROPERTY(neptunel, Bar, "Forward-declared.", \
+            {Bar(1.5), Bar(5)});
 
 // These will use the constructProperty_() variant that doesn't take arguments.
+// TODO doesn't make sense. REMOVE.
 #define DECLARE_LIST_EMPTY_PROPERTIES_UI \
     OpenSim_DECLARE_LIST_PROPERTY(alphal0, double, "built-in type."); \
     OpenSim_DECLARE_LIST_PROPERTY(zetal0, Vec3, "non-Object."); \
@@ -197,28 +206,42 @@ class Bar;
     OpenSim_DECLARE_LIST_PROPERTY(neptunel0, Bar, "Forward-declared.");
 
 #define DECLARE_LIST_SIZE_PROPERTIES_UI \
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE(alphals, double, 3, "built-in type."); \
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE(zetals, Vec3, 3, "non-Object."); \
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE(betals, Constant, 3, "Concrete."); \
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE(alphals, double, 3, "built-in type.", \
+            {6, 3, 1}); \
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE(zetals, Vec3, 3, "non-Object.", \
+            std::vector<Vec3>{Vec3(5), Vec3(0), Vec3(1)}); \
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE(betals, Constant, 3, "Concrete.", \
+            {Constant(60), Constant(5), Constant(21)}); \
     /* Don't know how to make a list property of abstract type that must have more */ \
     /* than 0 elements (SIZE, ATLEAST, RANGE). */ \
     /* TODO OpenSim_DECLARE_LIST_PROPERTY_SIZE(gammals, Function, 3, "Abstract."); */ \
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE(neptunels, Bar, 3, "Forward-declared.");
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE(neptunels, Bar, 3, "Forward-declared.", \
+            std::vector<Bar>{Bar(5), Bar(12)});
 
 #define DECLARE_LIST_ATLEAST_PROPERTIES_UI \
-    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(alphall, double, 2, "built-in type."); \
-    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(zetall, Vec3, 2, "non-Object."); \
-    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(betall, Constant, 2, "Concrete."); \
+    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(alphall, double, 2, "built-in type.", \
+            {5, 1, 17}); \
+    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(zetall, Vec3, 2, "non-Object.", \
+            {Vec3(12), Vec3(10)}); \
+    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(betall, Constant, 2, "Concrete.", \
+            {Constant(7), Constant(0), Constant(-16), Constant(-10)}); \
     /* TODO OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(gammall, Function, 2, "Abstract."); */ \
-    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(neptunell, Bar, 2, "Forward-declared.");
+    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(neptunell, Bar, 2, "Forward-declared.", \
+            {Bar(4.1), Bar(9)});
 
 #define DECLARE_LIST_ATMOST_PROPERTIES_UI \
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(alphalm, double, 5, "built-in type."); \
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(zetalm, Vec3, 5, "non-Object."); \
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(betalm, Constant, 5, "Concrete."); \
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(gammalm, Function, 5, "Abstract."); \
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(neptunelm, Bar, 5, "Forward-declared class.");
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(alphalm, double, 5, "built-in type.", \
+            {19, 12, 6, 1, 4}); \
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(zetalm, Vec3, 5, "non-Object.", \
+            {Vec3(-1, -2, -3), Vec3(-7, 5, 3)}); \
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(betalm, Constant, 5, "Concrete.", \
+            {Constant(-58)}); \
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(gammalm, Function, 5, "Abstract.", \
+            std::vector<Function>()); \
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(neptunelm, Bar, 5, "Forward-declared class.", \
+            {Bar(5), Bar(10), Bar(-5)});
 
+// TODO doesn't make sense. REMOVE.
 #define DECLARE_LIST_ATMOST_EMPTY_PROPERTIES_UI \
     /* These will use the constructProperty_() variant that doesn't take arguments. */ \
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(alphalm0, double, 5, "built-in type."); \
@@ -228,11 +251,15 @@ class Bar;
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(neptunelm0, Bar, 5, "Forward-declared class.");
 
 #define DECLARE_LIST_RANGE_PROPERTIES_UI \
-    OpenSim_DECLARE_LIST_PROPERTY_RANGE(alphalr, double, 4, 6, "built-in type."); \
-    OpenSim_DECLARE_LIST_PROPERTY_RANGE(zetalr, Vec3, 4, 6, "non-Object."); \
-    OpenSim_DECLARE_LIST_PROPERTY_RANGE(betalr, Constant, 4, 6, "Concrete."); \
+    OpenSim_DECLARE_LIST_PROPERTY_RANGE(alphalr, double, 4, 6, "built-in type.", \
+            {1, 2, 7, 5, 3, 9}); \
+    OpenSim_DECLARE_LIST_PROPERTY_RANGE(zetalr, Vec3, 4, 6, "non-Object.", \
+            {Vec3(-3), Vec3(0), Vec3(-15, 1, 3), Vec3(-1), Vec3(5)}); \
+    OpenSim_DECLARE_LIST_PROPERTY_RANGE(betalr, Constant, 4, 6, "Concrete.", \
+            {Constant(1), Constant(), Constant(5), Constant(-1)}); \
     /* TODO OpenSim_DECLARE_LIST_PROPERTY_RANGE(gammalr, Function, 4, 6, "Abstract."); */ \
-    OpenSim_DECLARE_LIST_PROPERTY_RANGE(neptunelr, Bar, 4, 6, "Forward-declared");
+    OpenSim_DECLARE_LIST_PROPERTY_RANGE(neptunelr, Bar, 4, 6, "Forward-declared", \
+            Array<Bar>(Bar(5), 4));
 
 
 // Construct.
