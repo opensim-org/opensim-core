@@ -1091,6 +1091,8 @@ TypeHelper::create(const std::string& name, bool isOne)
 SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
 #endif
 
+// Helper macros.
+// --------------
 // Used by OpenSim_DECLARE_PROPERTY_HELPER below to control the members
 // that are used with SWIG.
 // The `init` argument is an optional in-class member initializer (C++11)
@@ -1134,6 +1136,23 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
     int append_##name(const T& value)                                       \
     {   return this->updProperty_##name().appendValue(value); }
 
+// Helper macros for LIST properties.
+// ----------------------------------
+#ifndef SWIG // SWIG 3.0.6 can't handle variadic templates.
+#define OpenSim_DECLARE_LIST_PROPERTY_HELPER_CONSTRUCT(                     \
+        name, T, comment, minSize, maxSize)                                 \
+    template <template <class, class...> class Container>                   \
+    void constructProperty_##name(const Container<T>& initValue)            \
+    {   PropertyIndex_##name = this->template addListProperty<T>(#name,     \
+            comment, minSize, maxSize, initValue); }                        \
+    template <template <class, class...> class Container>                   \
+    void set_##name(const Container<T>& value)                              \
+    {   updProperty_##name().setValue(value); }
+#else
+#define OpenSim_DECLARE_LIST_PROPERTY_HELPER_CONSTRUCT(                     \
+        name, T, comment, minSize, maxSize)
+#endif
+
 // All of the list properties share a constructor and set method that take
 // a "template template" argument allowing initialization from any container
 // of objects of type T that has a size() method and operator[] indexing.
@@ -1142,13 +1161,8 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
                                              minSize, maxSize)              \
     OpenSim_DECLARE_PROPERTY_HELPER(name,T,)                                \
     /** @cond **/                                                           \
-    template <template <class, class...> class Container>                   \
-    void constructProperty_##name(const Container<T>& initValue)            \
-    {   PropertyIndex_##name = this->template addListProperty<T>(#name,     \
-            comment, minSize, maxSize, initValue); }                        \
-    template <template <class, class...> class Container>                   \
-    void set_##name(const Container<T>& value)                              \
-    {   updProperty_##name().setValue(value); }                             \
+    OpenSim_DECLARE_LIST_PROPERTY_HELPER_CONSTRUCT(                         \
+            name, T, comment, minSize, maxSize)                             \
     /** @endcond **/
 
 
@@ -1232,6 +1246,7 @@ struct Create<T, 0> {
 
 /* TODO OpenSim_DECLARE_PROPERTY_HELPER(pname,T, = PropertyIndex(std::is_default_constructible<T>::value ? this->template addProperty<T>(#pname, comment,Create<T>::create()) : SimTK::InvalidIndex))                            */ 
 
+#ifndef SWIG // SWIG 3.0.6 can't handle the assignment to `value`.
 struct char256 { char x[256]; };
 template <typename T>
 char256 is_complete_helper(int(*)[sizeof(T)]);
@@ -1241,6 +1256,7 @@ template <typename T>
 struct is_complete {
     enum { value = sizeof(is_complete_helper<T>(0)) != 1 };
 };
+#endif
 
 // This variant uses the default constructor to initialize the property
 // (possible because of C++11 in-class member initializers), and thus requires

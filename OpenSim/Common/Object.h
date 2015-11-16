@@ -739,11 +739,13 @@ protected:
     @returns The PropertyIndex of this property in the property table for this
              object. 
     @see addProperty(), addOptionalProperty() **/
+#ifndef SWIG // SWIG 3.0.6 Can't handle variadic template parameters.
     template <class T, template<class, class...> class Container> PropertyIndex 
     addListProperty(const std::string&  name, 
                     const std::string&  comment,
                     int minSize, int maxSize,
                     const Container<T>& valueList);
+#endif
 
     /** Look up a property by name and return its PropertyIndex if it is
     found. If no property of that name is present, the returned index
@@ -972,6 +974,7 @@ addListProperty(const std::string& name,
     return PropertyIndex(_propertyTable.adoptProperty(p));
 }
 
+#ifndef SWIG // SWIG 3.0.6 Can't handle the variadic template parameters.
 template <class T, template<class, class...> class Container> PropertyIndex Object::
 addListProperty(const std::string&  name, 
                 const std::string&  comment,
@@ -999,7 +1002,7 @@ addListProperty(const std::string&  name,
 
     return PropertyIndex(_propertyTable.adoptProperty(p));
 }
-
+#endif
 
 
 //==============================================================================
