@@ -22,16 +22,39 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/GCVSpline.h>
+#include <OpenSim/Common/SimmSpline.h>
 
 using namespace OpenSim;
 using namespace SimTK;
 using SimTK::Vec3;
 
+// We use deprecated versions of constructProperties_() for testing, but
+// we don't to see the warnings since we use these methods intentionally.
+#if defined(__clang__) || defined(__GNUG__)
+    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(__MSC_VER)
+    #pragma warning( disable : 4996 )
+#endif
+
 namespace OpenSim {
 
 class Bar;
+class Foo;
+
+class MyComponent : public Component {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MyComponent, Component);
+public:
+    MyComponent() = default;
+    MyComponent(int val) : value(val) {}
+    bool operator==(const MyComponent& other) const {
+        return value == other.value;
+    }
+private:
+    int value;
+};
 
 // TODO test deserialization, etc. or, at least the "value is default" stuff.
 
@@ -40,6 +63,8 @@ class Bar;
 // class. e.g. OpenSim_DECLARE_PROPERTY(x, Constant, "", {1, 2, 3, 4}).
 
 // TODO test deprecation warnings.
+// TODO Due to a bug in our xml syntax, we must choose types for the unnamed
+// properties that are not used for any of the other properties.
 
 // Helper macros.
 // ==============
@@ -82,9 +107,9 @@ class Bar;
     OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(neptuneoi, Bar, "Forward-declared.");
 
 #define DECLARE_UNNAMED_PROPERTIES(suffix) \
-    OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(Constant, "Concrete."); \
-    OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(Function, "Abstract."); \
-    OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(Bar, "Forward-declared.");
+    OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(SimmSpline, "Concrete."); \
+    OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(Component, "Abstract."); \
+    OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(Foo, "Forward-declared.");
 
 #define DECLARE_LIST_PROPERTIES(suffix) \
     OpenSim_DECLARE_LIST_PROPERTY##suffix(alphal, double, "built-in type."); \
@@ -180,9 +205,9 @@ class Bar;
     OpenSim_DECLARE_OPTIONAL_PROPERTY(neptuneoi, Bar, "Forward-declared.", Bar(5));
 
 #define DECLARE_UNNAMED_PROPERTIES_UI \
-    OpenSim_DECLARE_UNNAMED_PROPERTY(Constant, "Concrete.", Constant(15)); \
-    OpenSim_DECLARE_UNNAMED_PROPERTY(Function, "Abstract.", Constant(12)); \
-    OpenSim_DECLARE_UNNAMED_PROPERTY(Bar, "Forward-declared.");
+    OpenSim_DECLARE_UNNAMED_PROPERTY(SimmSpline, "Concrete.", SimmSpline()); \
+    OpenSim_DECLARE_UNNAMED_PROPERTY(Component, "Abstract.", MyComponent(12)); \
+    OpenSim_DECLARE_UNNAMED_PROPERTY(Foo, "Forward-declared.");
 
 #define DECLARE_LIST_PROPERTIES_UI \
     OpenSim_DECLARE_LIST_PROPERTY(alphal, double, "built-in type.", \
@@ -290,11 +315,6 @@ class Bar;
     constructProperty_betao(); \
     constructProperty_gammao(); \
     constructProperty_neptuneo(); \
-    set_alphao(25); \
-    set_zetao(Vec3(3, 1, 4)); \
-    set_betao(Constant(42)); \
-    set_gammao(GCVSpline()); \
-    set_neptuneo(Bar());
 
 #define CONSTRUCT_OPTIONAL_INIT_PROPERTIES \
     constructProperty_alphaoi(13); \
@@ -304,16 +324,15 @@ class Bar;
     constructProperty_neptuneoi(Bar());
 
 #define CONSTRUCT_UNNAMED_PROPERTIES \
-    constructProperty_Constant(Constant()); \
-    constructProperty_Function(GCVSpline()); \
-    constructProperty_Bar(Bar());
+    constructProperty_SimmSpline(SimmSpline()); \
+    constructProperty_Component(MyComponent()); \
+    constructProperty_Foo(Foo());
 
 #define CONSTRUCT_LIST_PROPERTIES \
     constructProperty_alphal(std::vector<double>{6, 3, 2, 7}); \
     constructProperty_zetal(std::vector<Vec3>{Vec3(1.5, 3, 4.6), Vec3(6)}); \
     constructProperty_betal(std::vector<Constant>{Constant()}); \
     constructProperty_gammal(std::vector<Function>()); \
-    append_gammal(Constant(1)); \
     constructProperty_neptunel(std::vector<Bar>{Bar(), Bar(12)});
 
 #define CONSTRUCT_LIST_EMPTY_PROPERTIES \
@@ -322,11 +341,6 @@ class Bar;
     constructProperty_betal0(); \
     constructProperty_gammal0(); \
     constructProperty_neptunel0(); \
-    append_alphal0(91); \
-    append_zetal0(Vec3(15)); \
-    append_betal0(Constant(12)); \
-    append_gammal0(GCVSpline()); \
-    append_neptunel0(Bar());
 
 #define CONSTRUCT_LIST_SIZE_PROPERTIES \
     constructProperty_alphals(std::vector<double>{6, 5, 4}); \
@@ -348,7 +362,6 @@ class Bar;
     constructProperty_zetalm(std::vector<Vec3>()); \
     constructProperty_betalm(std::vector<Constant>{Constant()}); \
     constructProperty_gammalm(std::vector<Function>()); \
-    append_gammalm(GCVSpline()); \
     constructProperty_neptunelm( \
             std::vector<Bar>{Bar(5), Bar(2), Bar(), Bar(), Bar()});
 
@@ -358,11 +371,6 @@ class Bar;
     constructProperty_betalm0(); \
     constructProperty_gammalm0(); \
     constructProperty_neptunelm0(); \
-    append_alphalm0(5); \
-    append_zetalm0(Vec3(8)); \
-    append_betalm0(Constant(10)); \
-    append_gammalm0(Constant(8)); \
-    append_neptunelm0(Bar());
 
 #define CONSTRUCT_LIST_RANGE_PROPERTIES \
     constructProperty_alphalr(std::vector<double>{1, 2, 3, 4, 5}); \
@@ -372,6 +380,44 @@ class Bar;
             std::vector<Constant>{Constant(), Constant(), Constant(), Constant()}); \
     /* TODO constructProperty_gammalr(std::vector<Function>{GCVSpline()}); */ \
     constructProperty_neptunelr(std::vector<Bar>{Bar(), Bar(), Bar(), Bar()});
+
+
+// This is to ensure all properties have values. We only set properties that
+// don't have a default value.
+#define SET_ALL_PROPERTY_VALUES \
+    SET_OPTIONAL_PROPERTY_VALUES \
+    SET_LIST_PROPERTY_VALUES \
+    SET_LIST_EMPTY_PROPERTY_VALUES \
+    SET_LIST_ATMOST_PROPERTY_VALUES \
+    SET_LIST_ATMOST_EMPTY_PROPERTY_VALUES
+
+#define SET_OPTIONAL_PROPERTY_VALUES \
+    set_alphao(25); \
+    set_zetao(Vec3(3, 1, 4)); \
+    set_betao(Constant(42)); \
+    set_gammao(GCVSpline()); \
+    set_neptuneo(Bar());
+
+#define SET_LIST_PROPERTY_VALUES \
+    append_gammal(Constant(1));
+
+#define SET_LIST_EMPTY_PROPERTY_VALUES \
+    append_alphal0(91); \
+    append_zetal0(Vec3(15)); \
+    append_betal0(Constant(12)); \
+    append_gammal0(GCVSpline()); \
+    append_neptunel0(Bar());
+
+#define SET_LIST_ATMOST_PROPERTY_VALUES \
+    append_gammalm(GCVSpline());
+
+#define SET_LIST_ATMOST_EMPTY_PROPERTY_VALUES \
+    append_alphalm0(5); \
+    append_zetalm0(Vec3(8)); \
+    append_betalm0(Constant(10)); \
+    append_gammalm0(Constant(8)); \
+    append_neptunelm0(Bar());
+
 
 #define COPY_ALL_PROPERTIES \
     COPY_REQUIRED_PROPERTIES \
@@ -408,9 +454,9 @@ class Bar;
     copyProperty_neptuneoi(source);
 
 #define COPY_UNNAMED_PROPERTIES \
-    copyProperty_Constant(source); \
-    copyProperty_Function(source); \
-    copyProperty_Bar(source);
+    copyProperty_SimmSpline(source); \
+    copyProperty_Component(source); \
+    copyProperty_Foo(source);
 
 #define COPY_LIST_PROPERTIES \
     copyProperty_alphal(source); \
@@ -475,6 +521,7 @@ class BackwardsCompatibility33 : public Object {
 public:
     DECLARE_ALL_PROPERTIES()
     BackwardsCompatibility33();
+    void setPropertyValues();
 };
 
 // Similar to the above class, but this time we implement a custom copy
@@ -486,6 +533,7 @@ public:
     BackwardsCompatibility33CustomCopy();
     // Copy constructor.
     BackwardsCompatibility33CustomCopy(const BackwardsCompatibility33CustomCopy&);
+    void setPropertyValues();
 };
 
 // TODO may be unnecessary; achieved by backwards-compatibility.
@@ -501,6 +549,7 @@ class Uninitialized40 : public Object {
 public:
     DECLARE_REQUIRED_PROPERTIES(_UNINIT);
     Uninitialized40();
+    void setPropertyValues();
 };
 
 class Uninitialized40CustomCopy : public Object {
@@ -509,6 +558,7 @@ public:
     DECLARE_REQUIRED_PROPERTIES(_UNINIT);
     Uninitialized40CustomCopy();
     Uninitialized40CustomCopy(const Uninitialized40CustomCopy&);
+    void setPropertyValues();
 };
 
 // Test the new macro variants that take a default value.
@@ -520,6 +570,8 @@ public:
 
     // No need to separately construct the properties, so we don't need
     // to define the default constructor ourselves :).
+
+    void setPropertyValues();
 };
 
 class UserInitialized40CustomCopy : public Object {
@@ -530,6 +582,8 @@ public:
 
     UserInitialized40CustomCopy() = default;
     UserInitialized40CustomCopy(const UserInitialized40CustomCopy&);
+
+    void setPropertyValues();
 };
 
 // Definition of forward-declared class.
@@ -539,6 +593,17 @@ public:
     Bar() : value(0) {}
     Bar(int val) : value(val) {}
     bool operator==(const Bar& other) const {
+        return value == other.value;
+    }
+private:
+    int value;
+};
+class Foo : public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(Foo, Object);
+public:
+    Foo() : value(0) {}
+    Foo(int val) : value(val) {}
+    bool operator==(const Foo& other) const {
         return value == other.value;
     }
 private:
@@ -554,6 +619,10 @@ BackwardsCompatibility33::BackwardsCompatibility33() {
     CONSTRUCT_ALL_PROPERTIES
 }
 
+void BackwardsCompatibility33::setPropertyValues() {
+    SET_ALL_PROPERTY_VALUES
+}
+
 // BackwardsCompatibility33CustomCopy
 // ----------------------------------
 BackwardsCompatibility33CustomCopy::BackwardsCompatibility33CustomCopy() {
@@ -565,11 +634,19 @@ BackwardsCompatibility33CustomCopy::BackwardsCompatibility33CustomCopy(
     COPY_ALL_PROPERTIES
 }
 
+void BackwardsCompatibility33CustomCopy::setPropertyValues() {
+    SET_ALL_PROPERTY_VALUES
+}
+
 // Uninitialized40
 // ---------------
 Uninitialized40::Uninitialized40() {
     CONSTRUCT_REQUIRED_PROPERTIES
     // TODO include the rest of the properties
+}
+
+void Uninitialized40::setPropertyValues() {
+// TODO     SET_PROPERTY_VALUES
 }
 
 // Uninitialized40CustomCopy
@@ -585,6 +662,16 @@ Uninitialized40CustomCopy::Uninitialized40CustomCopy(
     // TODO include the rest of the properties
 }
 
+void Uninitialized40CustomCopy::setPropertyValues() {
+// TODO     SET_PROPERTY_VALUES
+}
+
+// UserInitialized40
+// -----------------
+void UserInitialized40::setPropertyValues() {
+// TODO     SET_PROPERTY_VALUES
+}
+
 // UserInitialized40CustomCopy
 // ---------------------------
 UserInitialized40CustomCopy::UserInitialized40CustomCopy(
@@ -593,8 +680,18 @@ UserInitialized40CustomCopy::UserInitialized40CustomCopy(
     // TODO include the rest of the properties
 }
 
+void UserInitialized40CustomCopy::setPropertyValues() {
+// TODO    SET_PROPERTY_VALUES
+}
+
 } // namespace
 
+#define COMPARE_TO_COPY2(prop_name) \
+    std::cout << #prop_name << ": " << obj1->get_##prop_name() << " " << obj2->get_##prop_name() << std::endl; \
+    SimTK_ASSERT_ALWAYS(obj1->get_##prop_name() == obj2->get_##prop_name(), \
+            "Property '" #prop_name "' was not copied correctly.");
+
+    /*std::cout << #prop_name << ": " << obj.get_##prop_name() << " " << copy->get_##prop_name() << std::endl; \*/
 #define COMPARE_TO_COPY(prop_name) \
     SimTK_ASSERT_ALWAYS(obj.get_##prop_name() == copy->get_##prop_name(), \
             "Property '" #prop_name "' was not copied correctly.");
@@ -605,9 +702,33 @@ UserInitialized40CustomCopy::UserInitialized40CustomCopy(
                 "Property '" #prop_name "' was not copied correctly."); \
     }
 
+/* For backwards compatibility, we have in some cases changed the
+implementation of constructProperty_prop_name() to just call set_prop_name().
+However, constructProperty_prop_name() marks the provided value as default,
+whereas set_prop_name() marks the value as *not* default.  However, in this
+particular case, the value *should* be default to preserve behavior. So this
+test just ensures that our new implementations of constructProperty_prop_name()
+preserves the default value. We test this by making sure that no properties are
+written when we serialize, since that's the correct behavior when the defaults
+are set up correctly. */
+template <typename T>
+void testDefaults() {
+    T obj;
+    obj.print("default_" + obj.getConcreteClassName() + ".xml");
+
+    Xml::Document xml("default_" + obj.getConcreteClassName() + ".xml");
+    auto elem = xml.getRootElement().getRequiredElement(obj.getConcreteClassName());
+    // Must use filter since there *should* be a comment node, and we want to
+    // ignore it.
+    SimTK_ASSERT_ALWAYS(!elem.hasNode(Xml::ElementNode),
+            "All of the properties of this object have their default value, "
+            "but were not properly marked as such.");
+}
+
 template <typename T>
 void testCopyAndAccess() {
     T obj;
+    obj.setPropertyValues();
     auto* copy = obj.clone();
 
     COMPARE_TO_COPY(alpha);
@@ -630,9 +751,9 @@ void testCopyAndAccess() {
     COMPARE_TO_COPY(neptuneoi);
 
     // UNNAMED properties.
-    COMPARE_TO_COPY(Constant);
-    COMPARE_TO_COPY(Function);
-    COMPARE_TO_COPY(Bar);
+    COMPARE_TO_COPY(SimmSpline);
+    COMPARE_TO_COPY(Component);
+    COMPARE_TO_COPY(Foo);
 
     COMPARE_TO_COPY_LIST(alphal);
     COMPARE_TO_COPY_LIST(zetal);
@@ -678,8 +799,21 @@ void testCopyAndAccess() {
     */
 }
 
+
 int main(int argc, char* argv[]) {
     SimTK_START_TEST("testSerializationInClassInit");
+
+        // Register types.
+        Object::registerType(Bar());
+        Object::registerType(Foo());
+        Object::registerType(MyComponent());
+        Object::registerType(BackwardsCompatibility33());
+        Object::registerType(BackwardsCompatibility33CustomCopy());
+        Object::registerType(Uninitialized40());
+        Object::registerType(Uninitialized40CustomCopy());
+        Object::registerType(UserInitialized40());
+        Object::registerType(UserInitialized40CustomCopy());
+
         SimTK_SUBTEST(testCopyAndAccess<BackwardsCompatibility33>);
         SimTK_SUBTEST(testCopyAndAccess<BackwardsCompatibility33CustomCopy>);
         // TODO SimTK_SUBTEST(testCopyAndAccess<DefaultInitialized>);
@@ -687,6 +821,15 @@ int main(int argc, char* argv[]) {
         SimTK_SUBTEST(testCopyAndAccess<Uninitialized40CustomCopy>);
         SimTK_SUBTEST(testCopyAndAccess<UserInitialized40>);
         SimTK_SUBTEST(testCopyAndAccess<UserInitialized40CustomCopy>);
+
+        SimTK_SUBTEST(testDefaults<BackwardsCompatibility33>);
+        SimTK_SUBTEST(testDefaults<BackwardsCompatibility33CustomCopy>);
+        // TODO SimTK_SUBTEST(testDefaults<DefaultInitialized>);
+        SimTK_SUBTEST(testDefaults<Uninitialized40>);
+        SimTK_SUBTEST(testDefaults<Uninitialized40CustomCopy>);
+        SimTK_SUBTEST(testDefaults<UserInitialized40>);
+        SimTK_SUBTEST(testDefaults<UserInitialized40CustomCopy>);
+
     SimTK_END_TEST();
 }
 
