@@ -36,7 +36,7 @@ function(OpenSimAddLibrary)
     set(options VENDORLIB LOWERINCLUDEDIRNAME)
     set(oneValueArgs KIT AUTHORS)
     set(multiValueArgs LINKLIBS INCLUDES SOURCES TESTDIRS INCLUDEDIRS)
-    CMAKE_PARSE_ARGUMENTS(
+    cmake_parse_arguments(
         OSIMADDLIB "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     string(TOUPPER "${OSIMADDLIB_KIT}" OSIMADDLIB_UKIT)
@@ -179,7 +179,7 @@ function(OpenSimAddTests)
         set(options)
         set(oneValueArgs)
         set(multiValueArgs TESTPROGRAMS DATAFILES LINKLIBS SOURCES)
-        CMAKE_PARSE_ARGUMENTS(
+        cmake_parse_arguments(
             OSIMADDTESTS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
         # If EXECUTABLE_OUTPUT_PATH is set, then that's where the tests will be
