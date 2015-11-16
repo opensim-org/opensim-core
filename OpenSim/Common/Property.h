@@ -1194,14 +1194,16 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
 #define OpenSim_OVERLOAD_MACRO_4(_1,_2,_3,_4,MACRO_NAME,...) \
    MACRO_NAME
 
+#define OpenSim_OVERLOAD_MACRO_3(_1,_2,_3,MACRO_NAME,...) \
+   MACRO_NAME
+
 
 // OpenSim_DECLARE_PROPERTY: the required, single-value variant.
 // -------------------------------------------------------------
 // The next few helper macros are used to implement OpenSim_DECLARE_PROPERTY,
 // which appears after the helper macros.
 
-// This is called for OpenSim_DECLARE_PROPERTY whether or not
-// the default property value is given to the macro.
+// This is called for all variants of OpenSim_DECLARE_PROPERTY.
 #define OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment, initComment)     \
     /** comment initComment                                              */ \
     /** This property appears in XML files under                         */ \
@@ -1288,8 +1290,8 @@ struct is_complete {
                     PropertyIndex(SimTK::InvalidIndex) :                    \
                     this->template addProperty<T>(#pname,comment,T())       \
               )                    )                                        \
-    DEPRECATED_14("Remove the call to this method and provide default "     \
-                  "value as 4-th argument to OpenSim_DECLARE_PROPERTY.")    \
+    DEPRECATED_14("Remove the call to this method and provide the default " \
+                  "value as 4th argument to OpenSim_DECLARE_PROPERTY.")     \
     void constructProperty_##pname(const T& value) {                        \
         /* TODO in this case people should not be calling constructPr*/ \
         /*std::cout << "DEBUG default init constructible " << #pname << std::endl;*/ \
@@ -1342,19 +1344,16 @@ A data member is also created but is intended for internal use only:
 @relates OpenSim::Property **/
 // See comment above for OpenSim_OVERLOAD_MACRO_4 to understand how this works.
 #ifndef SWIG
-
 #define OpenSim_DECLARE_PROPERTY(...)                                       \
     OpenSim_OVERLOAD_MACRO_4(__VA_ARGS__,                                   \
             OpenSim_DECLARE_PROPERTY_USERINIT,                              \
             OpenSim_DECLARE_PROPERTY_DEFAULTINIT)(__VA_ARGS__)
-
 #else
 // SWIG has trouble with the complex macro above; here, we provide a simpler
 // and sufficient version. SWIG also allows providing 0 variadic arguments.
 #define OpenSim_DECLARE_PROPERTY(pname, T, comment, ...)                    \
     OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \
     OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)
-
 #endif
 
 // This variant is nearly identical to what OpenSim_DECLARE_PROPERTY contained
@@ -1376,19 +1375,9 @@ A data member is also created but is intended for internal use only:
 // UNNAMED property macros.
 // ------------------------
 
-/** Declare a required, unnamed property holding exactly one object of type
-T derived from %OpenSim's Object class and identified by that object's class 
-name rather than a property name. At construction, this property must be 
-initialized with an object of type T.
-@relates OpenSim::Property **/
-#define OpenSim_DECLARE_UNNAMED_PROPERTY(T, comment)                        \
-    /** @cond **/                                                           \
-    OpenSim_DECLARE_PROPERTY_HELPER(T,T,)                                   \
-    void constructProperty_##T(const T& initValue)                          \
-    {   PropertyIndex_##T =                                                 \
-            this->template addProperty<T>("", comment, initValue); }        \
-    /** @endcond **/                                                        \
-    /** comment                                                          */ \
+// This is called for all variants of OpenSim_DECLARE_UNNAMED_PROPERTY.
+#define OpenSim_DECLARE_UNNAMED_PROPERTY_COMMON(T, comment, initComment)    \
+    /** comment initComment                                              */ \
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<%##T##\></b>.                                       */ \
     /** This property was generated with the                             */ \
@@ -1409,6 +1398,59 @@ initialized with an object of type T.
     void set_##T(const T& value)                                            \
     {   updProperty_##T().setValue(value); }                                \
     /** @}                                                               */
+
+// This variant TODO
+#define OpenSim_DECLARE_UNNAMED_PROPERTY_DEFAULTINIT(T, comment)            \
+    static_assert(is_complete<T>::value, "TODO");                           \
+    static_assert(std::is_default_constructible<T>::value, "TODO");         \
+    /** @cond **/                                                           \
+    OpenSim_DECLARE_PROPERTY_HELPER(T,T,                                    \
+            = (this->hasProperty(#T) ?                                      \
+                    PropertyIndex(SimTK::InvalidIndex) :                    \
+                    this->template addProperty<T>("", comment, T())         \
+              )                    )                                        \
+    DEPRECATED_14("Remove the call to this method and provide the default " \
+                  "value as the 3rd argument to "                           \
+                  "OpenSim_DECLARE_UNNAMED_PROPERTY.")                      \
+    void constructProperty_##T(const T& value) {                            \
+        set_##T(value);                                                     \
+        updProperty_##T().setValueIsDefault(true);                          \
+    }                                                                       \
+    /** @endcond **/                                                        \
+    OpenSim_DECLARE_UNNAMED_PROPERTY_COMMON(T, comment,)
+
+// This variant TODO
+#define OpenSim_DECLARE_UNNAMED_PROPERTY_USERINIT(T, comment, init)         \
+    /** @cond **/                                                           \
+    OpenSim_DECLARE_PROPERTY_HELPER(T, T,                                   \
+            = (this->hasProperty(#T) ?                                      \
+                    PropertyIndex(SimTK::InvalidIndex) :                    \
+                    this->template addProperty<T>("", comment, T())         \
+              )                    )                                        \
+    /** @endcond **/                                                        \
+    OpenSim_DECLARE_UNNAMED_PROPERTY_COMMON(T, comment,                     \
+            Default value: `init`.)
+
+/** Declare a required, unnamed property holding exactly one object of type
+T derived from %OpenSim's Object class and identified by that object's class 
+name rather than a property name. At construction, this property must be 
+initialized with an object of type T.
+@relates OpenSim::Property **/
+// See comment above for OpenSim_OVERLOAD_MACRO_4 to understand how this works.
+#define OpenSim_DECLARE_UNNAMED_PROPERTY(...)                               \
+    OpenSim_OVERLOAD_MACRO_3(__VA_ARGS__,                                   \
+            OpenSim_DECLARE_UNNAMED_PROPERTY_USERINIT,                      \
+            OpenSim_DECLARE_UNNAMED_PROPERTY_DEFAULTINIT)(__VA_ARGS__)
+
+// This variant TODO
+#define OpenSim_DECLARE_UNNAMED_PROPERTY_UNINIT(T, comment)                 \
+    /** @cond **/                                                           \
+    OpenSim_DECLARE_PROPERTY_HELPER(T,T,)                                   \
+    void constructProperty_##T(const T& initValue)                          \
+    {   PropertyIndex_##T =                                                 \
+            this->template addProperty<T>("", comment, initValue); }        \
+    /** @endcond **/                                                        \
+    OpenSim_DECLARE_UNNAMED_PROPERTY_COMMON(T, comment,)
 
 
 // All other property macros.

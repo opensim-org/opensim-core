@@ -71,6 +71,7 @@ private:
 
 // Declare without an initial value argument.
 // ------------------------------------------
+// TODO test *ALL* if set to _UNINIT.
 #define DECLARE_ALL_PROPERTIES(suffix) \
     DECLARE_REQUIRED_PROPERTIES(suffix) \
     DECLARE_OPTIONAL_PROPERTIES(suffix) \
@@ -109,8 +110,8 @@ private:
 
 #define DECLARE_UNNAMED_PROPERTIES(suffix) \
     OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(SimmSpline, "Concrete."); \
-    OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(Component, "Abstract."); \
-    OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(Foo, "Forward-declared.");
+    /* OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(Component, "Abstract."); */ \
+    /* OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(Foo, "Forward-declared."); */
 
 #define DECLARE_LIST_PROPERTIES(suffix) \
     OpenSim_DECLARE_LIST_PROPERTY##suffix(alphal, double, "built-in type."); \
@@ -207,8 +208,8 @@ private:
 
 #define DECLARE_UNNAMED_PROPERTIES_UI \
     OpenSim_DECLARE_UNNAMED_PROPERTY(SimmSpline, "Concrete.", SimmSpline()); \
-    OpenSim_DECLARE_UNNAMED_PROPERTY(Component, "Abstract.", MyComponent(12)); \
-    OpenSim_DECLARE_UNNAMED_PROPERTY(Foo, "Forward-declared.");
+    /* OpenSim_DECLARE_UNNAMED_PROPERTY(Component, "Abstract.", MyComponent(12)); */ \
+    /* OpenSim_DECLARE_UNNAMED_PROPERTY(Foo, "Forward-declared."); */
 
 #define DECLARE_LIST_PROPERTIES_UI \
     OpenSim_DECLARE_LIST_PROPERTY(alphal, double, "built-in type.", \
@@ -326,8 +327,8 @@ private:
 
 #define CONSTRUCT_UNNAMED_PROPERTIES \
     constructProperty_SimmSpline(SimmSpline()); \
-    constructProperty_Component(MyComponent()); \
-    constructProperty_Foo(Foo());
+    /* constructProperty_Component(MyComponent()); */ \
+    /* constructProperty_Foo(Foo()); */
 
 #define CONSTRUCT_LIST_PROPERTIES \
     constructProperty_alphal(std::vector<double>{6, 3, 2, 7}); \
@@ -456,8 +457,8 @@ private:
 
 #define COPY_UNNAMED_PROPERTIES \
     copyProperty_SimmSpline(source); \
-    copyProperty_Component(source); \
-    copyProperty_Foo(source);
+    /* copyProperty_Component(source); */ \
+    /* copyProperty_Foo(source); */
 
 #define COPY_LIST_PROPERTIES \
     copyProperty_alphal(source); \
@@ -549,6 +550,7 @@ class Uninitialized40 : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(Uninitialized40, Object);
 public:
     DECLARE_REQUIRED_PROPERTIES(_UNINIT);
+    DECLARE_UNNAMED_PROPERTIES(_UNINIT);
     Uninitialized40();
     void setPropertyValues();
 };
@@ -557,6 +559,7 @@ class Uninitialized40CustomCopy : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(Uninitialized40CustomCopy, Object);
 public:
     DECLARE_REQUIRED_PROPERTIES(_UNINIT);
+    DECLARE_UNNAMED_PROPERTIES(_UNINIT);
     Uninitialized40CustomCopy();
     Uninitialized40CustomCopy(const Uninitialized40CustomCopy&);
     void setPropertyValues();
@@ -567,6 +570,7 @@ class UserInitialized40 : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(UserInitialized40, Object);
 public:
     DECLARE_REQUIRED_PROPERTIES_UI
+    DECLARE_UNNAMED_PROPERTIES_UI
     // TODO more properties.
 
     // No need to separately construct the properties, so we don't need
@@ -579,6 +583,7 @@ class UserInitialized40CustomCopy : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(UserInitialized40CustomCopy, Object);
 public:
     DECLARE_REQUIRED_PROPERTIES_UI
+    DECLARE_UNNAMED_PROPERTIES_UI
     // TODO more properties.
 
     UserInitialized40CustomCopy() = default;
@@ -643,6 +648,7 @@ void BackwardsCompatibility33CustomCopy::setPropertyValues() {
 // ---------------
 Uninitialized40::Uninitialized40() {
     CONSTRUCT_REQUIRED_PROPERTIES
+    CONSTRUCT_UNNAMED_PROPERTIES
     // TODO include the rest of the properties
 }
 
@@ -654,12 +660,14 @@ void Uninitialized40::setPropertyValues() {
 // -------------------------
 Uninitialized40CustomCopy::Uninitialized40CustomCopy() {
     CONSTRUCT_REQUIRED_PROPERTIES
+    CONSTRUCT_UNNAMED_PROPERTIES
     // TODO include the rest of the properties
 }
 
 Uninitialized40CustomCopy::Uninitialized40CustomCopy(
         const Uninitialized40CustomCopy& source) : Object(source) {
     COPY_REQUIRED_PROPERTIES
+    COPY_UNNAMED_PROPERTIES
     // TODO include the rest of the properties
 }
 
@@ -678,6 +686,7 @@ void UserInitialized40::setPropertyValues() {
 UserInitialized40CustomCopy::UserInitialized40CustomCopy(
         const UserInitialized40CustomCopy& source) : Object(source) {
     COPY_REQUIRED_PROPERTIES
+    COPY_UNNAMED_PROPERTIES
     // TODO include the rest of the properties
 }
 
@@ -733,6 +742,10 @@ void testCopyAndAccess() {
     COMPARE_TO_COPY(beta);
     // TODO COMPARE_TO_COPY(gamma);
     // TODO COMPARE_TO_COPY(neptune);
+    //
+    COMPARE_TO_COPY(SimmSpline);
+    // TODO COMPARE_TO_COPY(Component);
+    // TODO COMPARE_TO_COPY(Foo);
 
     /* TODO
     COMPARE_TO_COPY(alphao);
@@ -746,11 +759,6 @@ void testCopyAndAccess() {
     COMPARE_TO_COPY(betaoi);
     COMPARE_TO_COPY(gammaoi);
     COMPARE_TO_COPY(neptuneoi);
-
-    // UNNAMED properties.
-    COMPARE_TO_COPY(SimmSpline);
-    COMPARE_TO_COPY(Component);
-    COMPARE_TO_COPY(Foo);
 
     COMPARE_TO_COPY_LIST(alphal);
     COMPARE_TO_COPY_LIST(zetal);
