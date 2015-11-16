@@ -59,11 +59,11 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(active_force_length_curve, Function,
+    OpenSim_DECLARE_PROPERTY_UNINIT(active_force_length_curve, Function,
         "Function representing active force-length behavior of muscle fibers");
-    OpenSim_DECLARE_PROPERTY(passive_force_length_curve, Function,
+    OpenSim_DECLARE_PROPERTY_UNINIT(passive_force_length_curve, Function,
         "Function representing passive force-length behavior of muscle fibers");
-    OpenSim_DECLARE_PROPERTY(force_velocity_curve, Function,
+    OpenSim_DECLARE_PROPERTY_UNINIT(force_velocity_curve, Function,
         "Function representing force-velocity behavior of muscle fibers");
 
 //==============================================================================

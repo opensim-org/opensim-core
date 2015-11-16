@@ -737,7 +737,7 @@ protected:
     @returns The PropertyIndex of this property in the proprty table for this
              object. 
     @see addProperty(), addOptionalProperty() **/
-    template <class T, template<class> class Container> PropertyIndex 
+    template <class T, template<class, class...> class Container> PropertyIndex 
     addListProperty(const std::string&  name, 
                     const std::string&  comment,
                     int minSize, int maxSize,
@@ -778,13 +778,6 @@ private:
     void updateDefaultObjectsFromXMLNode();
     void updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent);
 
-    // TODO relocate
-protected:
-    template <typename T, bool DEFCON = std::is_default_constructible<T>::value>
-    struct PropertyConstructHelper {
-        static PropertyIndex create(Object* obj, const std::string& name,
-                                                 const std::string& comment);
-    };
 
 //==============================================================================
 // DATA
@@ -977,7 +970,7 @@ addListProperty(const std::string& name,
     return PropertyIndex(_propertyTable.adoptProperty(p));
 }
 
-template <class T, template<class> class Container> PropertyIndex Object::
+template <class T, template<class, class...> class Container> PropertyIndex Object::
 addListProperty(const std::string&  name, 
                 const std::string&  comment,
                 int minSize, int maxSize,
@@ -1005,21 +998,6 @@ addListProperty(const std::string&  name,
     return PropertyIndex(_propertyTable.adoptProperty(p));
 }
 
-template <typename T>
-struct Object::PropertyConstructHelper<T, true> {
-    static PropertyIndex create(Object* obj, const std::string& name,
-                                                   const std::string& comment) {
-        return obj->template addProperty<T>(name, comment, T());
-    }
-};
-
-template <typename T>
-struct Object::PropertyConstructHelper<T, false> {
-    static PropertyIndex create(Object* obj, const std::string& name,
-                                                   const std::string& comment) {
-        return PropertyIndex(SimTK::InvalidIndex);
-    }
-};
 
 
 //==============================================================================

@@ -64,11 +64,11 @@ public:
         "Parameter used in time constant of ramping up and ramping down of muscle force");
     OpenSim_DECLARE_PROPERTY(damping, double,
         "Damping factor related to maximum contraction velocity");
-    OpenSim_DECLARE_PROPERTY(tendon_force_length_curve, Function,
+    OpenSim_DECLARE_PROPERTY_UNINIT(tendon_force_length_curve, Function,
         "Function representing force-length behavior of tendon");
-    OpenSim_DECLARE_PROPERTY(active_force_length_curve, Function,
+    OpenSim_DECLARE_PROPERTY_UNINIT(active_force_length_curve, Function,
         "Function representing active force-length behavior of muscle fibers");
-    OpenSim_DECLARE_PROPERTY(passive_force_length_curve, Function,
+    OpenSim_DECLARE_PROPERTY_UNINIT(passive_force_length_curve, Function,
         "Function representing passive force-length behavior of muscle fibers");
 
 //=============================================================================

@@ -1,5 +1,5 @@
-#ifndef __Constant_h__
-#define __Constant_h__
+#ifndef OPENSIM_CONSTANT_H_
+#define OPENSIM_CONSTANT_H_
 /* -------------------------------------------------------------------------- *
  *                            OpenSim:  Constant.h                            *
  * -------------------------------------------------------------------------- *
@@ -99,4 +99,4 @@ public:
 
 } // end of namespace OpenSim
 
-#endif  // __Constant_h__
+#endif  // OPENSIM_CONSTANT_H_

@@ -60,7 +60,7 @@ public:
         "resting length of the ligament");
     OpenSim_DECLARE_PROPERTY(pcsa_force, double,
         "force magnitude that scales the force-length curve");
-    OpenSim_DECLARE_PROPERTY(force_length_curve, Function,
+    OpenSim_DECLARE_PROPERTY_UNINIT(force_length_curve, Function,
         "Function representing the force-length behavior of the ligament");
 
 

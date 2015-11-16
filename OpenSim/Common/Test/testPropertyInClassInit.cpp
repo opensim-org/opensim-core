@@ -686,11 +686,7 @@ void UserInitialized40CustomCopy::setPropertyValues() {
 
 } // namespace
 
-#define COMPARE_TO_COPY2(prop_name) \
-    std::cout << #prop_name << ": " << obj1->get_##prop_name() << " " << obj2->get_##prop_name() << std::endl; \
-    SimTK_ASSERT_ALWAYS(obj1->get_##prop_name() == obj2->get_##prop_name(), \
-            "Property '" #prop_name "' was not copied correctly.");
-
+// TODO remove 
     /*std::cout << #prop_name << ": " << obj.get_##prop_name() << " " << copy->get_##prop_name() << std::endl; \*/
 #define COMPARE_TO_COPY(prop_name) \
     SimTK_ASSERT_ALWAYS(obj.get_##prop_name() == copy->get_##prop_name(), \

@@ -1143,17 +1143,17 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
 
 // All of the list properties share a constructor and set method that take
 // a "template template" argument allowing initialization from any container
-// of objects of type T that has a size() methods and operator[] indexing.
+// of objects of type T that has a size() method and operator[] indexing.
 // And they also include all the methods from the generic helper above.
 #define OpenSim_DECLARE_LIST_PROPERTY_HELPER(name, T, comment,              \
                                              minSize, maxSize)              \
     OpenSim_DECLARE_PROPERTY_HELPER(name,T,)                                \
     /** @cond **/                                                           \
-    template <template <class> class Container>                             \
+    template <template <class, class...> class Container>                   \
     void constructProperty_##name(const Container<T>& initValue)            \
     {   PropertyIndex_##name = this->template addListProperty<T>(#name,     \
             comment, minSize, maxSize, initValue); }                        \
-    template <template <class> class Container>                             \
+    template <template <class, class...> class Container>                   \
     void set_##name(const Container<T>& value)                              \
     {   updProperty_##name().setValue(value); }                             \
     /** @endcond **/
@@ -1239,35 +1239,49 @@ struct Create<T, 0> {
 
 /* TODO OpenSim_DECLARE_PROPERTY_HELPER(pname,T, = PropertyIndex(std::is_default_constructible<T>::value ? this->template addProperty<T>(#pname, comment,Create<T>::create()) : SimTK::InvalidIndex))                            */ 
 
+struct char256 { char x[256]; };
+template <typename T>
+char256 is_complete_helper(int(*)[sizeof(T)]);
+template <typename>
+char is_complete_helper(...);
+template <typename T>
+struct is_complete {
+    enum { value = sizeof(is_complete_helper<T>(0)) != 1 };
+};
+
 // For backwards compatibility: the user initializes the property themselves
 // during class construction with constructProperty_prop_name().
 #define OpenSim_DECLARE_PROPERTY_DEFAULTINIT(pname, T, comment)             \
+    static_assert(is_complete<T>::value,                                    \
+            "Use OpenSim_DECLARE_PROPERTY_UNINIT or include the header "    \
+            "that defines the class you're using for this "                 \
+            "OpenSim property. "                                            \
+            "The issue is that you are creating this property using a "     \
+            "class that is only forward-declared. This macro, "             \
+            "OpenSim_DECLARE_PROPERTY with 3 arguments, "                   \
+            "tries to default-construct the property, and that's not "      \
+            "possible for a class that is forward declared.");              \
+    static_assert(std::is_default_constructible<T>::value,                  \
+            "Use OpenSim_DECLARE_PROPERTY_UNINIT or give default value as " \
+            "4th argument to OpenSim_DECLARE_PROPERTY. "                    \
+            "By not providing a 4th argument to this macro, you imply "     \
+            "that you want its default to be a default-constructed "        \
+            "object. However, we cannot default-construct an object of "    \
+            "the given type; e.g., it's abstract or doesn't have a "        \
+            "default constructor.");                                        \
     /** @cond **/                                                           \
-    static_assert(std::is_default_constructible< T >::value, "DEBUG err");   \
     OpenSim_DECLARE_PROPERTY_HELPER(pname,T,                                \
-            = Object::PropertyConstructHelper<T>::create(                   \
-                this, #pname, comment))                                     \
+            = (this->hasProperty(#pname) ? PropertyIndex(SimTK::InvalidIndex) : this->template addProperty<T>(#pname,comment,T())))           \
+            /*= hasProperty(#pname) ? PropertyIndex(SimTK::InvalidIndex) : this->template addProperty<T>(#pname,comment,T()))          */  \
+            /*= PropertyIndex_##pname.isValid() ? PropertyIndex(SimTK::InvalidIndex) : this->template addProperty<T>(#pname,comment,T()))            */ \
+            /*= this->template addProperty<T>(#pname,comment,T())) */           \
+    DEPRECATED_14("Remove the call to this method and provide default "     \
+                  "value as 4-th argument to OpenSim_DECLARE_PROPERTY.")    \
     void constructProperty_##pname(const T& value) {                        \
-        if (std::is_default_constructible<T>::value) {                      \
-            /* TODO in this case people should not be calling constructPr*/ \
-            std::cout << "DEBUG default init constructible " << #pname << std::endl; \
-            set_##pname(value);                                             \
-        } else {                                                            \
-            std::cout << "DEBUG defaultinit " << #pname << std::endl;       \
-            PropertyIndex_##pname =                                         \
-                this->template addProperty<T>(#pname,comment,value);        \
-        }                                                                   \
-    }                                                                       \
-    /** @endcond **/                                                        \
-    OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)
-
-
-#define OpenSim_DECLARE_PROPERTY_UNINIT(pname, T, comment)                  \
-    /** @cond **/                                                           \
-    OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \
-    void constructProperty_##pname(const T& initValue) {                    \
-        PropertyIndex_##pname =                                             \
-            this->template addProperty<T>(#pname,comment,initValue);        \
+        /* TODO in this case people should not be calling constructPr*/ \
+        /*std::cout << "DEBUG default init constructible " << #pname << std::endl;*/ \
+        set_##pname(value);                                                 \
+        updProperty_##pname().setValueIsDefault(true);                      \
     }                                                                       \
     /** @endcond **/                                                        \
     OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)
@@ -1276,10 +1290,13 @@ struct Create<T, 0> {
 // use the macro in their class header. In this case, we do *not* define a
 // constructProperty_prop_name() method, since that could lead to unintended
 // behavior (providing a default value twice).
+// TODO will need to handle copying in a special way here as well
+// (not just with the DEFAULTINIT).
 #define OpenSim_DECLARE_PROPERTY_USERINIT(pname, T, comment, init)          \
     /** @cond **/                                                           \
     OpenSim_DECLARE_PROPERTY_HELPER(pname,T,                                \
-            = this->template addProperty<T>(#pname,comment,init))           \
+            = (this->hasProperty(#pname) ? PropertyIndex(SimTK::InvalidIndex) : this->template addProperty<T>(#pname,comment,init)))           \
+            /*= this->template addProperty<T>(#pname,comment,init))          */ \
     /** @endcond **/                                                        \
     OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,                      \
             Default value: `init`.)
@@ -1326,6 +1343,25 @@ A data member is also created but is intended for internal use only:
     OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)
 
 #endif
+
+//    OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \
+//    void constructProperty_##pname(const T& initValue) {                    \
+//        PropertyIndex_##pname =                                             \
+//            this->template addProperty<T>(#pname,comment,initValue);        \
+//    }                                                                       \
+//    /** @endcond **/                                                        \
+//    OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)
+
+
+#define OpenSim_DECLARE_PROPERTY_UNINIT(pname, T, comment)                  \
+    /** @cond **/                                                           \
+    OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \
+    void constructProperty_##pname(const T& initValue) {                    \
+        PropertyIndex_##pname =                                             \
+            this->template addProperty<T>(#pname,comment,initValue);        \
+    }                                                                       \
+    /** @endcond **/                                                        \
+    OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)
 
 
 // All other property macros.

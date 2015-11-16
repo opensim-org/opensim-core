@@ -66,7 +66,7 @@ public:
     generalized coordinate(s) used to represent the amount of displacement 
     about/along the specified axis. If none is specified a Constant function
     is applied. **/
-    OpenSim_DECLARE_PROPERTY(function, Function,
+    OpenSim_DECLARE_PROPERTY_UNINIT(function, Function,
        "Transform function of the generalized coordinates used to \
        represent the amount of displacement along a specified axis.");
 
