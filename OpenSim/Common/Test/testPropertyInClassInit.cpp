@@ -74,9 +74,9 @@ private:
 // TODO test *ALL* if set to _UNINIT.
 #define DECLARE_ALL_PROPERTIES(suffix) \
     DECLARE_REQUIRED_PROPERTIES(suffix) \
+    DECLARE_UNNAMED_PROPERTIES(suffix) \
     DECLARE_OPTIONAL_PROPERTIES(suffix) \
     DECLARE_OPTIONAL_INIT_PROPERTIES(suffix) \
-    DECLARE_UNNAMED_PROPERTIES(suffix) \
     DECLARE_LIST_PROPERTIES(suffix) \
     DECLARE_LIST_EMPTY_PROPERTIES(suffix) \
     DECLARE_LIST_SIZE_PROPERTIES(suffix) \
@@ -93,6 +93,11 @@ private:
     /* OpenSim_DECLARE_PROPERTY(neptune, Bar, "Forward-declared class."); */
 // TODO enable these other properties for the UNINIT case.
 
+#define DECLARE_UNNAMED_PROPERTIES(suffix) \
+    OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(SimmSpline, "Concrete."); \
+    /* OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(Component, "Abstract."); */ \
+    /* OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(Foo, "Forward-declared."); */
+
 #define DECLARE_OPTIONAL_PROPERTIES(suffix) \
     OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(alphao, double, "built-in type."); \
     OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(zetao, Vec3, "non-Object."); \
@@ -107,11 +112,6 @@ private:
     OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(betaoi, Constant, "Concrete."); \
     OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(gammaoi, Function, "Abstract."); \
     OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(neptuneoi, Bar, "Forward-declared.");
-
-#define DECLARE_UNNAMED_PROPERTIES(suffix) \
-    OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(SimmSpline, "Concrete."); \
-    /* OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(Component, "Abstract."); */ \
-    /* OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(Foo, "Forward-declared."); */
 
 #define DECLARE_LIST_PROPERTIES(suffix) \
     OpenSim_DECLARE_LIST_PROPERTY##suffix(alphal, double, "built-in type."); \
@@ -172,9 +172,9 @@ private:
 // "UI" stands for "USERINIT".
 #define DECLARE_ALL_PROPERTIES_UI \
     DECLARE_REQUIRED_PROPERTIES_UI \
+    DECLARE_UNNAMED_PROPERTIES_UI \
     DECLARE_OPTIONAL_PROPERTIES_UI \
     DECLARE_OPTIONAL_INIT_PROPERTIES_UI \
-    DECLARE_UNNAMED_PROPERTIES_UI \
     DECLARE_LIST_PROPERTIES_UI \
     DECLARE_LIST_EMPTY_PROPERTIES_UI \
     DECLARE_LIST_SIZE_PROPERTIES_UI \
@@ -189,6 +189,11 @@ private:
     OpenSim_DECLARE_PROPERTY(beta, Constant, "Concrete class (included).", Constant(19)); \
     /* OpenSim_DECLARE_PROPERTY(gamma, Function, "Abstract class (included)."); */ \
     /* OpenSim_DECLARE_PROPERTY(neptune, Bar, "Forward-declared class."); */
+
+#define DECLARE_UNNAMED_PROPERTIES_UI \
+    OpenSim_DECLARE_UNNAMED_PROPERTY(SimmSpline, "Concrete.", SimmSpline()); \
+    /* OpenSim_DECLARE_UNNAMED_PROPERTY(Component, "Abstract.", MyComponent(12)); */ \
+    /* OpenSim_DECLARE_UNNAMED_PROPERTY(Foo, "Forward-declared."); */
 
 // TODO doesn't make sense. REMOVE.
 #define DECLARE_OPTIONAL_PROPERTIES_UI \
@@ -205,11 +210,6 @@ private:
     OpenSim_DECLARE_OPTIONAL_PROPERTY(betaoi, Constant, "Concrete.", Constant(1)); \
     OpenSim_DECLARE_OPTIONAL_PROPERTY(gammaoi, Function, "Abstract.", GCVSpline()); \
     OpenSim_DECLARE_OPTIONAL_PROPERTY(neptuneoi, Bar, "Forward-declared.", Bar(5));
-
-#define DECLARE_UNNAMED_PROPERTIES_UI \
-    OpenSim_DECLARE_UNNAMED_PROPERTY(SimmSpline, "Concrete.", SimmSpline()); \
-    /* OpenSim_DECLARE_UNNAMED_PROPERTY(Component, "Abstract.", MyComponent(12)); */ \
-    /* OpenSim_DECLARE_UNNAMED_PROPERTY(Foo, "Forward-declared."); */
 
 #define DECLARE_LIST_PROPERTIES_UI \
     OpenSim_DECLARE_LIST_PROPERTY(alphal, double, "built-in type.", \
@@ -293,9 +293,9 @@ private:
 // ----------
 #define CONSTRUCT_ALL_PROPERTIES \
     CONSTRUCT_REQUIRED_PROPERTIES \
+    CONSTRUCT_UNNAMED_PROPERTIES \
     CONSTRUCT_OPTIONAL_PROPERTIES \
     CONSTRUCT_OPTIONAL_INIT_PROPERTIES \
-    CONSTRUCT_UNNAMED_PROPERTIES \
     CONSTRUCT_LIST_PROPERTIES \
     CONSTRUCT_LIST_EMPTY_PROPERTIES \
     CONSTRUCT_LIST_SIZE_PROPERTIES \
@@ -311,6 +311,11 @@ private:
     /* TODO constructProperty_gamma(GCVSpline()); */ \
     /* TODO constructProperty_neptune(Bar()); */
 
+#define CONSTRUCT_UNNAMED_PROPERTIES \
+    constructProperty_SimmSpline(SimmSpline()); \
+    /* constructProperty_Component(MyComponent()); */ \
+    /* constructProperty_Foo(Foo()); */
+
 #define CONSTRUCT_OPTIONAL_PROPERTIES \
     constructProperty_alphao(); \
     constructProperty_zetao(); \
@@ -324,11 +329,6 @@ private:
     constructProperty_betaoi(Constant(13)); \
     constructProperty_gammaoi(GCVSpline()); \
     constructProperty_neptuneoi(Bar());
-
-#define CONSTRUCT_UNNAMED_PROPERTIES \
-    constructProperty_SimmSpline(SimmSpline()); \
-    /* constructProperty_Component(MyComponent()); */ \
-    /* constructProperty_Foo(Foo()); */
 
 #define CONSTRUCT_LIST_PROPERTIES \
     constructProperty_alphal(std::vector<double>{6, 3, 2, 7}); \
@@ -423,9 +423,9 @@ private:
 
 #define COPY_ALL_PROPERTIES \
     COPY_REQUIRED_PROPERTIES \
+    COPY_UNNAMED_PROPERTIES \
     COPY_OPTIONAL_PROPERTIES \
     COPY_OPTIONAL_INIT_PROPERTIES \
-    COPY_UNNAMED_PROPERTIES \
     COPY_LIST_PROPERTIES \
     COPY_LIST_EMPTY_PROPERTIES \
     COPY_LIST_SIZE_PROPERTIES \
@@ -441,6 +441,11 @@ private:
     /* TODO copyProperty_gamma(source); */ \
     /* TODO copyProperty_neptune(source); */ \
 
+#define COPY_UNNAMED_PROPERTIES \
+    copyProperty_SimmSpline(source); \
+    /* copyProperty_Component(source); */ \
+    /* copyProperty_Foo(source); */
+
 #define COPY_OPTIONAL_PROPERTIES \
     copyProperty_alphao(source); \
     copyProperty_zetao(source); \
@@ -454,11 +459,6 @@ private:
     copyProperty_betaoi(source); \
     copyProperty_gammaoi(source); \
     copyProperty_neptuneoi(source);
-
-#define COPY_UNNAMED_PROPERTIES \
-    copyProperty_SimmSpline(source); \
-    /* copyProperty_Component(source); */ \
-    /* copyProperty_Foo(source); */
 
 #define COPY_LIST_PROPERTIES \
     copyProperty_alphal(source); \
