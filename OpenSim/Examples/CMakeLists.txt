@@ -18,6 +18,10 @@ add_subdirectory(DataTable)
 install(DIRECTORY DataTable 
         DESTINATION sdk/APIExamples)
 
+add_subdirectory(DataAdapter)
+install(DIRECTORY DataAdapter 
+        DESTINATION sdk/APIExamples)
+
 elseif()
 
 add_subdirectory(ControllerExample)
