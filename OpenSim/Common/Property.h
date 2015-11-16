@@ -1249,8 +1249,12 @@ struct is_complete {
     enum { value = sizeof(is_complete_helper<T>(0)) != 1 };
 };
 
-// For backwards compatibility: the user initializes the property themselves
-// during class construction with constructProperty_prop_name().
+// This variant uses the default constructor to initialize the property
+// (possible because of C++11 in-class member initializers), and thus requires
+// the minimal effort from developers. This variant also provides backwards
+// compatibility with OpenSim 3.3, etc. in the case that T is
+// default-constructible. We only define constructProperty_prop_name() for
+// backwards-compatibility.
 #define OpenSim_DECLARE_PROPERTY_DEFAULTINIT(pname, T, comment)             \
     static_assert(is_complete<T>::value,                                    \
             "Use OpenSim_DECLARE_PROPERTY_UNINIT or include the header "    \
@@ -1271,10 +1275,10 @@ struct is_complete {
             "default constructor.");                                        \
     /** @cond **/                                                           \
     OpenSim_DECLARE_PROPERTY_HELPER(pname,T,                                \
-            = (this->hasProperty(#pname) ? PropertyIndex(SimTK::InvalidIndex) : this->template addProperty<T>(#pname,comment,T())))           \
-            /*= hasProperty(#pname) ? PropertyIndex(SimTK::InvalidIndex) : this->template addProperty<T>(#pname,comment,T()))          */  \
-            /*= PropertyIndex_##pname.isValid() ? PropertyIndex(SimTK::InvalidIndex) : this->template addProperty<T>(#pname,comment,T()))            */ \
-            /*= this->template addProperty<T>(#pname,comment,T())) */           \
+            = (this->hasProperty(#pname) ?                                  \
+                    PropertyIndex(SimTK::InvalidIndex) :                    \
+                    this->template addProperty<T>(#pname,comment,T())       \
+              )                    )                                        \
     DEPRECATED_14("Remove the call to this method and provide default "     \
                   "value as 4-th argument to OpenSim_DECLARE_PROPERTY.")    \
     void constructProperty_##pname(const T& value) {                        \
@@ -1286,17 +1290,17 @@ struct is_complete {
     /** @endcond **/                                                        \
     OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)
 
-// With C++11, we can allow developers to provide a default argument when they
+// In this variant, developers provide a default argument when they
 // use the macro in their class header. In this case, we do *not* define a
-// constructProperty_prop_name() method, since that could lead to unintended
-// behavior (providing a default value twice).
-// TODO will need to handle copying in a special way here as well
-// (not just with the DEFAULTINIT).
+// constructProperty_prop_name() method, since it is unnecessary and
+// could lead to unintended behavior (providing a default value twice).
 #define OpenSim_DECLARE_PROPERTY_USERINIT(pname, T, comment, init)          \
     /** @cond **/                                                           \
     OpenSim_DECLARE_PROPERTY_HELPER(pname,T,                                \
-            = (this->hasProperty(#pname) ? PropertyIndex(SimTK::InvalidIndex) : this->template addProperty<T>(#pname,comment,init)))           \
-            /*= this->template addProperty<T>(#pname,comment,init))          */ \
+            = (this->hasProperty(#pname) ?                                  \
+                    PropertyIndex(SimTK::InvalidIndex) :                    \
+                    this->template addProperty<T>(#pname,comment,init)      \
+              )                    )                                        \
     /** @endcond **/                                                        \
     OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,                      \
             Default value: `init`.)
@@ -1336,7 +1340,7 @@ A data member is also created but is intended for internal use only:
             OpenSim_DECLARE_PROPERTY_DEFAULTINIT)(__VA_ARGS__)
 
 #else
-// SWIG has trouble with the complex macro above;, here, we provide a simpler
+// SWIG has trouble with the complex macro above; here, we provide a simpler
 // and sufficient version. SWIG also allows providing 0 variadic arguments.
 #define OpenSim_DECLARE_PROPERTY(pname, T, comment, ...)                    \
     OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \
@@ -1344,15 +1348,11 @@ A data member is also created but is intended for internal use only:
 
 #endif
 
-//    OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \
-//    void constructProperty_##pname(const T& initValue) {                    \
-//        PropertyIndex_##pname =                                             \
-//            this->template addProperty<T>(#pname,comment,initValue);        \
-//    }                                                                       \
-//    /** @endcond **/                                                        \
-//    OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)
-
-
+// This variant is nearly identical to what OpenSim_DECLARE_PROPERTY contained
+// in OpenSim 3.3, etc., and has the same behavior of that older version. The
+// reason we allow for this option is that it's not always possible to
+// initialize the property using the in-class member initializers (e.g., when
+// the class is only forward-declared or is not default-constructible).
 #define OpenSim_DECLARE_PROPERTY_UNINIT(pname, T, comment)                  \
     /** @cond **/                                                           \
     OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \

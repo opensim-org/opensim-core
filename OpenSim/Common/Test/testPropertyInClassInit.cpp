@@ -90,6 +90,7 @@ private:
     OpenSim_DECLARE_PROPERTY##suffix(beta, Constant, "Concrete class (included)."); \
     /* OpenSim_DECLARE_PROPERTY(gamma, Function, "Abstract class (included)."); */ \
     /* OpenSim_DECLARE_PROPERTY(neptune, Bar, "Forward-declared class."); */
+// TODO enable these other properties for the UNINIT case.
 
 #define DECLARE_OPTIONAL_PROPERTIES(suffix) \
     OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(alphao, double, "built-in type."); \
