@@ -1177,12 +1177,12 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
 // which I want to dispatch to FOO3(a, b, c) or FOO4(a, b, c, d), respectively.
 // Then I can define FOO as:
 //   FOO(...) OpenSim_OVERLOAD_MACRO_4(__VA_ARGS__, FOO4, FOO3)(__VA_ARGS__)
-// FOO is a variadic macro whose arguments are given by __VA_ARGS__ (from the
-// preprocessor). If I pass 3 arguments to FOO, then argument MACRO_NAME to the
-// macro below is set to FOO3 (arguments _1 through _4 are always ignored). My
-// original 3 arguments to FOO are passed to FOO3 via the `(__VA_ARGS__)` bit
-// at the end of my definition of FOO.
-// This particular incantation allows for at most 4 arguments. As defined
+// FOO is a variadic macro whose arguments are available as __VA_ARGS__ (from
+// the preprocessor). If I pass 3 arguments to FOO, then the argument
+// MACRO_NAME in the macro below is set to FOO3 (arguments _1 through _4 are
+// always ignored).  My original 3 arguments to FOO are passed to FOO3 via the
+// `(__VA_ARGS__)` bit at the end of the definition of FOO.
+// This particular incarnation allows between 1 and 4 arguments. As defined
 // above, FOO will only accept 3 or 4 arguments.
 #define OpenSim_OVERLOAD_MACRO_4(_1,_2,_3,_4,MACRO_NAME,...) \
    MACRO_NAME
@@ -1364,8 +1364,8 @@ A data member is also created but is intended for internal use only:
     OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)
 
 
-// All other property macros.
-// --------------------------
+// UNNAMED property macros.
+// ------------------------
 
 /** Declare a required, unnamed property holding exactly one object of type
 T derived from %OpenSim's Object class and identified by that object's class 
@@ -1400,6 +1400,10 @@ initialized with an object of type T.
     void set_##T(const T& value)                                            \
     {   updProperty_##T().setValue(value); }                                \
     /** @}                                                               */
+
+
+// All other property macros.
+// --------------------------
 
 /** Declare a property of the given \a pname containing an optional value of
 the given type T (that is, the value list can be of length 0 or 1 only).
