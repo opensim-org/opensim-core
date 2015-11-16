@@ -24,10 +24,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include "CoupledBushingForce.h"
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/Model.h>
-
-#include "CoupledBushingForce.h"
 
 //=============================================================================
 // STATICS
@@ -50,37 +49,26 @@ CoupledBushingForce::~CoupledBushingForce()
 /**
  * Default constructor.
  */
-CoupledBushingForce::CoupledBushingForce() : Force()
+CoupledBushingForce::CoupledBushingForce() : TwoFrameLinker<Force, PhysicalFrame>()
 {
-    setNull();
+    setAuthors("Ajay Seth");
+    constructProperties();
 }
 
 /* Convenience constructor */
-CoupledBushingForce::CoupledBushingForce( const std::string& frame1Name,
+CoupledBushingForce::CoupledBushingForce( const std::string& name,
+                                          const std::string& frame1Name,
                                           const std::string& frame2Name,
                                           SimTK::Mat66 stiffnessMat,
-                                          SimTK::Mat66 dampingMat) : Force()
+                                          SimTK::Mat66 dampingMat)
+    : TwoFrameLinker<Force, PhysicalFrame>(name, frame1Name, frame2Name)
 {
-    setNull();
-    constructInfrastructure();
-
-    updConnector<PhysicalFrame>("frame1").set_connectee_name(frame1Name);
-    updConnector<PhysicalFrame>("frame2").set_connectee_name(frame2Name);
+    setAuthors("Ajay Seth");
+    constructProperties();
 
     _stiffnessMatrix = stiffnessMat;
     _dampingMatrix = dampingMat;
     updatePropertiesFromMatrices();
-}
-
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this CoupledBushingForce to their null values.
- */
-void CoupledBushingForce::setNull()
-{
-    setAuthors("Ajay Seth");
-    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -104,155 +92,39 @@ void CoupledBushingForce::constructProperties()
     constructProperty_damping_row4(Vec6(0));
     constructProperty_damping_row5(Vec6(0));
     constructProperty_damping_row6(Vec6(0));
-
-    //Default frames list is empty
-    constructProperty_frames();
-}
-
-//_____________________________________________________________________________
-/*
-* Construct Structural Connectors
-*/
-void CoupledBushingForce::constructConnectors() {
-    constructConnector<PhysicalFrame>("frame1");
-    constructConnector<PhysicalFrame>("frame2");
 }
 
 void CoupledBushingForce::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
-
-    //mark frames in property list as subcomponents
-    for (int i = 0; i < updProperty_frames().size(); ++i){
-        addComponent(&upd_frames(i));
-    }
-
     finalizeMatricesFromProperties();
 }
-
 
 //=============================================================================
 // COMPUTATION
 //=============================================================================
-/** Compute the deflection (spatial separation) of the two frames connected
-    by the bushing force. Angular displacement expressed in Euler angles.
-    The force and potential energy are determined by the deflection.  */
-SimTK::Vec6 CoupledBushingForce::computeDeflection(const SimTK::State& s) const
-{
-    // get connected frames
-    const PhysicalFrame& frame1 = getConnectee<PhysicalFrame>("frame1");
-    const PhysicalFrame& frame2 = getConnectee<PhysicalFrame>("frame2");
-
-    // Define the frame on body 1 is the "fixed" frame, F
-    Transform X_GF = frame1.getGroundTransform(s);
-    // Define the frame on body 2 as the "moving" frame, M
-    Transform X_GM = frame2.getGroundTransform(s);
-    // Express M in F
-    Transform X_FM = ~X_GF * X_GM;    
-
-    // Calculate stiffness generalized forces of bushing by first computing
-    // the deviation of the two frames measured by dq
-    Vec6 dq(0);
-    // First 3 are rotational deviations
-    dq.updSubVec<3>(0) = X_FM.R().convertRotationToBodyFixedXYZ();
-    // Second 3 are translational
-    dq.updSubVec<3>(3) = X_FM.p();
-
-    return dq;
-}
-
-/**
- * Compute the force contribution to the system and add in to appropriate
+/* Compute the force contribution to the system and add in to appropriate
  * bodyForce and/or system generalizedForce.
  * CoupledBushingForce implementation based SimTK::Force::LinearBushing
- * developed and implemented by Michael Sherman.
- */
+ * developed and implemented by Michael Sherman. */
 void CoupledBushingForce::computeForce(const SimTK::State& s, 
                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
                               SimTK::Vector& generalizedForces) const
 {
-    // get connected frames
-    const PhysicalFrame& frame1 = getConnectee<PhysicalFrame>("frame1");
-    const PhysicalFrame& frame2 = getConnectee<PhysicalFrame>("frame2");
-
-    const Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
-    const Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
-
-    Transform X_GF = frame1.getGroundTransform(s);
-    Transform X_GM = frame2.getGroundTransform(s);
-    Transform X_FM = ~X_GF * X_GM;
-    const Rotation& R_GF = X_GF.R();
-    const Rotation& R_GM = X_GM.R();
-    const Rotation& R_FM = X_FM.R();
-
     // Calculate stiffness generalized forces of bushing by first computing
     // the deviation of the two frames measured by dq
-    Vec6 dq = computeDeflection(s);
+    Vec6 fk = -_stiffnessMatrix*computeDeflection(s);
 
-    // Evaluate the force in the bushing frame affixed to body1 (F) 
-    Vec6 fk = _stiffnessMatrix*dq;
+    // velocity dependent force according to the speed of frame2
+    // relative to frame1 
+    Vec6 fv = -_dampingMatrix * computeDeflectionRate(s);
 
-    // Now evaluate velocities.
-    const SpatialVec& V_GB1 = frame1.getMobilizedBody().getBodyVelocity(s);
-    const SpatialVec& V_GB2 = frame2.getMobilizedBody().getBodyVelocity(s);
+    // total bushing force in the internal basis of the deflection (dq) 
+    Vec6 f = fk + fv; 
 
-    // Re-express local vectors in the Ground frame.
-    Vec3 p_B1F_G = X_GB1.R() * frame1.findTransformInBaseFrame().p();
-    Vec3 p_B2M_G = X_GB2.R() * frame2.findTransformInBaseFrame().p();
-    Vec3 p_FM_G  =  X_GF.R()  * X_FM.p();    // 15 flops
-
-    SpatialVec V_GF(V_GB1[0], V_GB1[1] + V_GB1[0] % p_B1F_G);
-    SpatialVec V_GM(V_GB2[0], V_GB2[1] + V_GB2[0] % p_B2M_G);
-
-    // This is the velocity of M in F, but with the time derivative
-    // taken in the Ground frame.
-    const SpatialVec V_FM_G = V_GM - V_GF;
-
-    // To get derivative in F, we must remove the part due to the
-    // angular velocity w_GF of F in G.
-    SpatialVec V_FM = ~R_GF * SpatialVec(V_FM_G[0], 
-                                 V_FM_G[1] - V_GF[0] % p_FM_G);
-
-    // Need angular velocity in M frame for conversion to qdot.
-    const Vec3  w_FM_M = ~R_FM * V_FM[0];
-    const Mat33 N_FM   = Rotation::calcNForBodyXYZInBodyFrame(dq.getSubVec<3>(0));
-    Vec6 dqdot(0);
-    dqdot.updSubVec<3>(0) = N_FM * w_FM_M;
-    dqdot.updSubVec<3>(3) = V_FM[1];
-
-    // velocity dependent force according to the speed of frame2 on 
-    // body2 relative to frame1 
-    Vec6 fv = _dampingMatrix * dqdot;
-
-    Vec6 f = -(fk+fv); // generalized forces on body 2
-    const Vec3& fB2_q = f.getSubVec<3>(0); // in q basis
-    const Vec3& fM_F  = f.getSubVec<3>(3); // acts at M, but exp. in F frame
-
-    // Calculate the matrix relating q-space generalized forces to a real-space
-    // moment vector. We know qforce = ~H * moment (where H is the
-    // the hinge matrix for a mobilizer using qdots as generalized speeds).
-    // In that case H would be N^-1, qforce = ~(N^-1)*moment so
-    // moment = ~N*qforce. Caution: our N wants the moment in the outboard
-    // body frame, in this case M.
-    const Vec3  mB2_M = ~N_FM * fB2_q; // moment acting on body 2, exp. in M
-    const Vec3  mB2_G =  R_GM * mB2_M; // moment on body 2, now exp. in G
-
-    // Transform force from F frame to ground. This is the force to 
-    // apply to body 2 at point OM; -f goes on body 1 at the same
-    // spatial location. Here we actually apply it at OF so we have to
-    // account for the moment produced by the shift from OM.
-    const Vec3 fM_G = R_GF*fM_F;
-
-    SpatialVec F_GM(  mB2_G,                       fM_G);
-    SpatialVec F_GF(-(mB2_G + p_FM_G % fM_G) , -fM_G);
-
-    // Shift forces to body origins.
-    SpatialVec F_GB2(F_GM[0] + p_B2M_G % F_GM[1], F_GM[1]);
-    SpatialVec F_GB1(F_GF[0] + p_B1F_G % F_GF[1], F_GF[1]);
-
-    // Apply (add-in) the body forces to the system set of body forces
-    bodyForces[frame2.getMobilizedBodyIndex()] += F_GB2;
-    bodyForces[frame1.getMobilizedBodyIndex()] += F_GB1;
+    // convert internal forces to spatial and add then add to system
+    // physical (body) forces
+    addInPhysicalForcesFromInternal(s, f, bodyForces);
 }
 
 /** Potential energy stored in the bushing is purely a function of the deflection
@@ -260,7 +132,7 @@ void CoupledBushingForce::computeForce(const SimTK::State& s,
 double CoupledBushingForce::computePotentialEnergy(const SimTK::State& s) const
 {
     Vec6 dq = computeDeflection(s);
-    // Energy stored in the bushing
+    // Energy stored in the linear bushing
     double U = 0.5*(~dq*_stiffnessMatrix*dq);
     return U;
 }
@@ -312,8 +184,8 @@ getRecordValues(const SimTK::State& state) const
     const PhysicalFrame& frame1 = getConnectee<PhysicalFrame>("frame1");
     const PhysicalFrame& frame2 = getConnectee<PhysicalFrame>("frame2");
 
-    const SimTK::Force::LinearBushing &simtkSpring =
-        (SimTK::Force::LinearBushing &)(_model->getForceSubsystem().getForce(_index));
+    const SimTK::Force::Custom &simtkSpring =
+        (SimTK::Force::Custom &)(_model->getForceSubsystem().getForce(_index));
 
     SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
     SimTK::Vector_<SimTK::Vec3> particleForces(0);

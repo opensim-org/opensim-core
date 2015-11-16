@@ -157,7 +157,7 @@ getValueBool()
 /**
  * Get a constant reference to the value of this property.
  *
- * @return Contant reference to the value of this property.
+ * @return Constant reference to the value of this property.
  */
 const bool& PropertyBool::
 getValueBool() const
@@ -166,9 +166,9 @@ getValueBool() const
 }
 //_____________________________________________________________________________
 /**
- * Get a String represeting the value of this property.
+ * Get a String representing the value of this property.
  *
- * @return Constant reference to a String represeting the value of this property.
+ * @return Constant reference to a String representing the value of this property.
  */
 string PropertyBool::
 toString() const

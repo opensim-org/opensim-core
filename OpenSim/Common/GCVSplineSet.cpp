@@ -80,7 +80,7 @@ GCVSplineSet(const char *aFileName) :
  * be fit.  If negative, the variance will be estimated.  If 0.0, the fit will
  * try to fit the data points exactly- no smoothing.  If
  * positive, the fits will be smoothed according to the specified variance.
- * The larger the error veriance, the more the smoothing.  Note that this is
+ * The larger the error variance, the more the smoothing.  Note that this is
  * the error variance assumed for each column in the Storage.  If different
  * variances should be set for the various columns, you will need to
  * construct each GCVSpline individually.
@@ -137,11 +137,11 @@ construct(int aDegree,const Storage *aStore,double aErrorVariance)
     char tmp[32];
     std::string name;
 
-    // LOOP THROUGHT THE STATES
+    // LOOP THROUGH THE STATES
     int nTime=1,nData=1;
     double *times=NULL,*data=NULL;
     GCVSpline *spline;
-    //printf("GCVSplineSet.construct:  contructing splines...\n");
+    //printf("GCVSplineSet.construct:  constructing splines...\n");
     for(int i=0;nData>0;i++) {
 
         // GET TIMES AND DATA

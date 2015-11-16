@@ -114,17 +114,17 @@ public:
     bool getUseModelForceSet() { return _useModelForceSet; }
     void setUseModelForceSet(bool aUseModelForceSet) { _useModelForceSet = aUseModelForceSet; }
 
-    virtual void setModel(Model& aModel);
+    void setModel(Model& aModel) override;
     //--------------------------------------------------------------------------
     // ANALYSIS
     //--------------------------------------------------------------------------
 #ifndef SWIG
-    virtual int
-        begin(SimTK::State& s );
-    virtual int
-        step(const SimTK::State& s, int setNumber );
-    virtual int
-        end(SimTK::State& s );
+    int
+        begin(SimTK::State& s ) override;
+    int
+        step(const SimTK::State& s, int setNumber ) override;
+    int
+        end(SimTK::State& s ) override;
 protected:
     virtual int
         record(const SimTK::State& s );
@@ -133,9 +133,9 @@ protected:
     // IO
     //--------------------------------------------------------------------------
 public:
-    virtual int
+    int
         printResults(const std::string &aBaseName,const std::string &aDir="",
-        double aDT=-1.0,const std::string &aExtension=".sto");
+        double aDT=-1.0,const std::string &aExtension=".sto") override;
 
 //=============================================================================
 };  // END of class InverseDynamics

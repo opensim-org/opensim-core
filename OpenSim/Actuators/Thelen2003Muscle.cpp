@@ -341,7 +341,7 @@ double  Thelen2003Muscle::computeActuation(const SimTK::State& s) const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
                     "Thelen2003Muscle: Muscle is not"
-                    " to date with properties");
+                    " up to date with properties");
 
     const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
     const FiberVelocityInfo& mvi = getFiberVelocityInfo(s);
@@ -620,7 +620,7 @@ void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s,
         double dmcldt = getLengtheningSpeed(s);
 
         //default values that are appropriate when fiber length has been clamped
-        //to its mimimum allowable value.
+        //to its minimum allowable value.
     
 
         double fse  = calcfse(tl/tendonSlackLen);    
@@ -1066,13 +1066,13 @@ SimTK::Vector Thelen2003Muscle::
                 //between the tendon and the fiber according to their relative 
                 //stiffness:
                 //
-                //Fm = Ft at equilbrium
+                //Fm = Ft at equilibrium
                 //Fm = Km*lceAT
                 //Ft = Kt*xt
                 //dFm_d_xm = Km*dlceAT + dKm_d_t*lceAT (assume dKm_d_t = 0)
                 //dFt_d_xt = Kt*dtl + dKt_d_t*dtl (assume dKt_d_t = 0)
                 //
-                //This is a hueristic. The above assumptions are necessary as 
+                //This is a heuristic. The above assumptions are necessary as 
                 //computing the partial derivatives of Km or Kt w.r.t. requires 
                 //acceleration level knowledge, which is not available in 
                 //general.
@@ -1696,7 +1696,7 @@ double Thelen2003Muscle::calcfpefisoPE(double lceN) const
         double fpePE_len = (fiso/(exp(kpe)-1))
             *( (lenR*e0/kpe)*exp( (kpe/e0)*( (len/lenR)-1)) - len); 
         
-        //PE stored between 0 and 1 for the exponental function that is 
+        //PE stored between 0 and 1 for the exponential function that is 
         //used to represent fpe for normalized fiber lengths > 1.
         len = lenR;
         double fpePE_0 = (fiso/(exp(kpe)-1))
@@ -1730,7 +1730,7 @@ double Thelen2003Muscle::calcdlceN(double act,double fal,double actFalFv) const
     double flen = get_Flen();
     double Fmlen_afl = flen*afl;
 
-    double dlcedFm = 0.0; //partial deriviative of contactile element
+    double dlcedFm = 0.0; //partial derivative of contractile element
                           // velocity w.r.t. Fm
 
     double b = 0;
@@ -1782,7 +1782,7 @@ double Thelen2003Muscle::calcdlceN(double act,double fal,double actFalFv) const
             dlcedFm = (0.25 + 0.75*a)*(1)/b 
                     - ((0.25 + 0.75*a)*(Fm0-afl)/(b*b))*db;
 
-            //Linearily extrapolate Eqn. 6 from Thelen 2003 to compute
+            //Linearly extrapolate Eqn. 6 from Thelen 2003 to compute
             //the new value for dlceN/dFm
             dlceN = dlce0 + dlcedFm*(Fm-Fm0);            
         }

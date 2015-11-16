@@ -154,7 +154,7 @@ void MarkerSet::addNamePrefix(const string& prefix)
 {
     int i;
 
-    // Cycle thru set and add prefix
+    // Cycle through set and add prefix
     for (i = 0; i < getSize(); i++)
         get(i).setName(prefix + get(i).getName());
 }

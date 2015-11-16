@@ -50,8 +50,8 @@ namespace OpenSim {
  * value such that for any particular set of independent variables there is
  * only one unique dependent value.  Values of the function and its derivatives
  * are obtained by calling the calcValue() method.  The curve may or may not
- * be finite or diferentiable; the calcValue() method returns values between
- * <tt>-SimTK::Infinity</tt> and <tt>SimTK::Infinity</tt>, or it returns <tt>SimTK::NaN</tt>
+ * be finite or differentiable; the calcValue() method returns values between
+ * -`SimTK::Infinity` and `SimTK::Infinity`, or it returns `SimTK::NaN`
  * (not a number) if the curve is not defined.
  * Currently, functions of up to 3 variables (x,y,z) are supported.
  *

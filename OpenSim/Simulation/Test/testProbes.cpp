@@ -160,7 +160,7 @@ Main test driver to be used on any muscle model (derived from Muscle) so new
 cases should be easy to add currently, the test only verifies that the work
 done by the muscle corresponds to the change in system energy.
 
-TODO: Test will fail wih prescribe motion until the work done by this
+TODO: Test will fail with prescribed motion until the work done by this
 constraint is accounted for.
 ================================================================================
 */
@@ -279,7 +279,7 @@ void simulateMuscle(
     PrescribedController * muscleController = new PrescribedController();
     if (control != NULL){
         muscleController->setActuators(model.updActuators());
-        // Set the indiviudal muscle control functions 
+        // Set the individual muscle control functions 
         //for the prescribed muscle controller
         muscleController->prescribeControlForActuator("muscle", control->clone());
 
@@ -307,7 +307,7 @@ void simulateMuscle(
     //muscWorkProbe->setName("ActuatorWork");
     muscWorkProbe->setOperation("integrate");
     SimTK::Vector ic1(1);
-    ic1 = 9.0;      // some arbitary initial condition.
+    ic1 = 9.0;      // some arbitrary initial condition.
     muscWorkProbe->setInitialConditions(ic1);
     model.addProbe(muscWorkProbe);
     model.setup();

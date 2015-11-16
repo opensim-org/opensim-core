@@ -44,7 +44,7 @@ class Model;
  * OpenSim::CoordinateCouplerConstraint assumes that there is one coordinate
  * (dependent) whose value is coupled to the value(s) of other (independent)
  * coordinate(s). In reality all coordinates are coupled and at assembly all
- * can be varied to satsify the constraint function.
+ * can be varied to satisfy the constraint function.
  *
  * @author Ajay Seth
  * @version 1.0
@@ -65,7 +65,7 @@ protected:
 
     OpenSim_DECLARE_LIST_PROPERTY(independent_coordinate_names, std::string, 
         "List of names of the right hand side (independent) coordinates. "
-        "Note the conatraint function above, must be able to handle multiple "
+        "Note the constraint function above, must be able to handle multiple "
         "coordinate values if more than one coordinate name is provided.");
 
     OpenSim_DECLARE_PROPERTY(dependent_coordinate_name, std::string, 
@@ -85,7 +85,7 @@ public:
 
     // GET AND SET
     /** Access the list of names of the right hand side (independent) coordinates. 
-        Note the conatraint function, must be able to handle multiple 
+        Note the constraint function, must be able to handle multiple 
         coordinate values if more than one coordinate name is provided. */
     void setIndependentCoordinateNames(const Array<std::string> &aCoordNames) 
         { set_independent_coordinate_names(aCoordNames); }
@@ -115,7 +115,7 @@ public:
         { set_coupled_coordinates_function(*aFunction); }
 
     // SCALE
-    virtual void scale(const ScaleSet& aScaleSet);
+    void scale(const ScaleSet& aScaleSet) override;
 
 protected:
     void extendConnectToModel(Model& aModel) override;

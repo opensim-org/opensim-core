@@ -118,7 +118,7 @@ public:
                                    double optimalPennationAngle,
                                    double maximumPennationAngle);
 
-    /** @returns The height of the fixed-width paralleogram. */
+    /** @returns The height of the fixed-width parallelogram. */
     double getParallelogramHeight() const;
 
     /** @returns The minimum possible fiber length. */
@@ -313,7 +313,7 @@ public:
     @param muscleVelocity
         The lengthening velocity of the musculotendon actuator (m/s).
     @param tendonVelocity
-        The lengening velocity of the tendon (m/s).
+        The lengthening velocity of the tendon (m/s).
     @return
         The lengthening velocity of the fiber (m/s).
     */

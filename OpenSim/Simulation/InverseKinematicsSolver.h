@@ -50,7 +50,7 @@ class MarkersReference;
  * When the model (and the number of goals) is guaranteed not to change and the 
  * the initial state is close to the InverseKinematics solution (from initial assemble(),
  * then track() is a efficient method for updating the configuration to track
- * the small change to the desired coorindate value.
+ * the small change to the desired coordinate value.
  *
  * See SimTK::Assembler for more algorithmic details of the underlying solver.
  *
@@ -92,7 +92,7 @@ public:
     /** Obtain a model configuration that meets the InverseKinematics conditions  
         (desired values and constraints) given a state that satisfies or
         is close to satisfying the constraints. Note there can be no change
-        in the number of constrainst or desired coordinates. Desired
+        in the number of constraints or desired coordinates. Desired
         coordinate values can and should be updated between repeated calls
         to track a desired trajectory of coordinate values. */
     //virtual void track(SimTK::State &s);
@@ -125,20 +125,20 @@ public:
     /** Compute and return the distance errors between all model marker and observations. */
     void computeCurrentSquaredMarkerErrors(SimTK::Array_<double> &markerErrors);
     /** Marker locations and errors may be computed in an order that is different
-        from tasks file or listed in the model. Retrun the corresponding marker
+        from tasks file or listed in the model. Return the corresponding marker
         name for an index in the list of marker locations/errors returned by the
         solver. */
     std::string getMarkerNameForIndex(int markerIndex) const;
 
 protected:
     /** Internal method to convert the CoordinateReferences into goals of the 
-        assembly solver. Subclasses, can add oveeride  to include other goals  
+        assembly solver. Subclasses can override to include other goals  
         such as point of interest matching (Marker tracking). This method is
         automatically called by assemble. */
-    virtual void setupGoals(SimTK::State &s);
+    virtual void setupGoals(SimTK::State &s) override;
     /** Internal method to update the time, reference values and/or their 
         weights that define the goals, based on the passed in state */
-    virtual void updateGoals(const SimTK::State &s);
+    virtual void updateGoals(const SimTK::State &s) override;
 
 private:
     // Non-accessible cache of the marker values to be matched at a given state

@@ -101,8 +101,8 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATION
     //--------------------------------------------------------------------------
-    virtual double computeActuation( const SimTK::State& s ) const;
-    virtual double computeIsometricForce(SimTK::State& s, double activation) const;
+    double computeActuation( const SimTK::State& s ) const override;
+    double computeIsometricForce(SimTK::State& s, double activation) const override;
 
     virtual const Function& getActiveForceLengthCurve() const;
     virtual bool setActiveForceLengthCurve(const Function& aActiveForceLengthCurve);
@@ -116,8 +116,8 @@ protected:
     void extendConnectToModel(Model& aModel)  override;
 
     // Super interface
-    double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const;
-    double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;
+    double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const override;
+    double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const override;
 
 private:
     double calcNonzeroPassiveForce(const SimTK::State& s, double aNormFiberLength, double aNormFiberVelocity) const;

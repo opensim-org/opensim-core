@@ -5,22 +5,22 @@
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
- * OpenSim is developed at Stanford University and supported by the US        
- * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    
- * through the Warrior Web program.                                           
- *                                                                            
- * Copyright (c) 2005-2015 Stanford University and the Authors                
- * Author(s): Matt DeMers Ajay Seth, Ayman Habib                              
- *                                                                            
- * Licensed under the Apache License, Version 2.0 (the "License"); you may    
+ * OpenSim is developed at Stanford University and supported by the US        *
+ * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
+ * through the Warrior Web program.                                           *
+ *                                                                            *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Author(s): Matt DeMers Ajay Seth, Ayman Habib                              *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
- * copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         
- *                                                                            
- * Unless required by applicable law or agreed to in writing, software        
- * distributed under the License is distributed on an "AS IS" BASIS,          
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
- * See the License for the specific language governing permissions and        
- * limitations under the License.                                             
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
@@ -80,20 +80,37 @@ public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
-    /**
-    By default, the frame is not connected to any parent frame, and its
+    /** By default, the frame is not connected to any parent frame, and its
     transform is an identity transform.
     */
     OffsetFrame();
 
-    /**
-    A convenience constructor that initializes the parent connection and
-    offset property of this OffsetFrame.
-     
+    /** A convenience constructor that initializes the parent connection and
+    offset Transform in the parent frame.
     @param[in] parent   The parent reference frame.
     @param[in] offset   The offset transform between this frame and its parent
     */
     OffsetFrame(const C& parent, const SimTK::Transform& offset);
+
+    /**  A convenience constructor that initializes the parent connection by 
+        name and of the offset Transform in the parent frame.
+    @param[in] name         The name of this OffsetFrame.
+    @param[in] parent       The parent reference frame.
+    @param[in] offset       The offset Transform between this frame and its parent
+    */
+    OffsetFrame(const std::string& name, 
+                const C& parent,
+                const SimTK::Transform& offset);
+
+    /**  A convenience constructor that initializes the parent connection by
+    name and of the offset Transform in the parent frame.
+    @param[in] name         The name of this OffsetFrame.
+    @param[in] parentName   The name of the parent reference Frame.
+    @param[in] offset       The offset Transform between this frame and its parent
+    */
+    OffsetFrame(const std::string& name,
+                const std::string& parentName,
+                const SimTK::Transform& offset);
 
     // use compiler generated destructor, copy constructor and assignment operator
 
@@ -101,6 +118,7 @@ public:
     void setParentFrame(const C& parent);
     /** Get the parent reference frame*/
     const C& getParentFrame() const;
+
     /**
     Get the transform that describes the translational and rotational offset
     of this frame (F frame) relative to its parent frame (B frame).  This method
@@ -127,6 +145,10 @@ public:
     @param offset   The transform between this frame and its parent frame.
     */
     void setOffsetTransform(const SimTK::Transform& offset);
+
+
+    /** Scale the offset given scale factors for spatial (XYZ) dimensions */
+    void scale(const SimTK::Vec3& scaleFactors);
 
 protected:
     /** The transform X_GF for this OffsetFrame, F, in ground, G.*/
@@ -170,12 +192,29 @@ OffsetFrame<C>::OffsetFrame() : C()
 
 // Convenience constructors
 template <class C>
-OffsetFrame<C>::OffsetFrame(const C& parent,
-    const SimTK::Transform& offset) : C()
+OffsetFrame<C>::OffsetFrame(const C& parent, const SimTK::Transform& offset)
+    : OffsetFrame()
 {
-    setNull();
-    this->constructInfrastructure();
     setParentFrame(parent);
+    setOffsetTransform(offset);
+}
+
+template <class C>
+OffsetFrame<C>::OffsetFrame(const std::string& name, 
+                            const C& parent, const SimTK::Transform& offset)
+    : OffsetFrame(parent, offset)
+{
+    this->setName(name);
+}
+
+template <class C>
+OffsetFrame<C>::OffsetFrame(const std::string& name,
+                            const std::string& parentName,
+                            const SimTK::Transform& offset)
+    : OffsetFrame()
+{
+    this->setName(name);
+    this->template updConnector<C>("parent").set_connectee_name(parentName);
     setOffsetTransform(offset);
 }
 
@@ -237,10 +276,16 @@ template <class C>
 void OffsetFrame<C>::setOffsetTransform(const SimTK::Transform& xform)
 {
     _offsetTransform = xform;
-    // Make sure properties are updated in case we either call gettters or
+    // Make sure properties are updated in case we either get properties or
     // serialize after this call
     set_translation(xform.p());
     set_orientation(xform.R().convertRotationToBodyFixedXYZ());
+}
+
+template<class C>
+inline void OffsetFrame<C>::scale(const SimTK::Vec3 & scaleFactors)
+{
+    upd_translation() = get_translation().elementwiseMultiply(scaleFactors);
 }
 
 template<class C>

@@ -52,7 +52,7 @@ typedef std::map<std::string, std::string, std::less<std::string> > MapKeysToVal
  * stored statevectors are monotonically increasing.
  *
  * When stored as a file, the statevectors are stored in rows.  This first
- * value in a row is the time stamp at which the states occured.  The
+ * value in a row is the time stamp at which the states occurred.  The
  * rest of the elements in a row are the states.  Therefore, each column of
  * data in a file corresponds to a particular state.
  *
@@ -152,19 +152,19 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
     // SIZE
-    virtual int getSize() const { return(_storage.getSize()); }
+    int getSize() const override { return(_storage.getSize()); }
     // STATEVECTOR
     int getSmallestNumberOfStates() const;
-    virtual StateVector* getStateVector(int aTimeIndex) const;
-    virtual StateVector* getLastStateVector() const;
+    StateVector* getStateVector(int aTimeIndex) const override;
+    StateVector* getLastStateVector() const override;
     // TIME
-    virtual double getFirstTime() const;
-    virtual double getLastTime() const;
+    double getFirstTime() const override;
+    double getLastTime() const override;
     double getMinTimeStep() const;
     bool getTime(int aTimeIndex,double &rTime,int aStateIndex=-1) const;
     virtual int getTimeColumn(double *&rTimes,int aStateIndex=-1) const;
-    virtual int getTimeColumn(Array<double>& rTimes,int aStateIndex=-1) const;
-    virtual void getTimeColumnWithStartTime(Array<double>& rTimes,double startTime=0.0) const;
+    int getTimeColumn(Array<double>& rTimes,int aStateIndex=-1) const override;
+    void getTimeColumnWithStartTime(Array<double>& rTimes,double startTime=0.0) const override;
     // HEADERS, Key-Value pairs
     void addKeyValuePair(const std::string& aKey, const std::string& aValue);
     void getValueForKey(const std::string& aKey, std::string& rValue) const;
@@ -183,7 +183,7 @@ public:
 #endif
     int getDataAtTime(double aTime,int aN,double **rData) const;
     int getDataAtTime(double aTime,int aN,double *rData) const;
-    int getDataAtTime(double aTime,int aN,Array<double> &rData) const;
+    int getDataAtTime(double aTime,int aN,Array<double> &rData) const override;
     int getDataAtTime(double aTime,int aN,SimTK::Vector& v) const;
     int getDataColumn(int aStateIndex,double *&rData) const;
     int getDataColumn(int aStateIndex,Array<double> &rData) const;
@@ -191,7 +191,7 @@ public:
     void setDataColumnToFixedValue(const std::string& columnName, double newValue);
     void setDataColumn(int aStateIndex,const Array<double> &aData);
     int getDataColumn(const std::string& columnName,double *&rData) const;
-    void getDataColumn(const std::string& columnName, Array<double>& data, double startTime=0.0);
+    void getDataColumn(const std::string& columnName, Array<double>& data, double startTime=0.0) override;
 #ifndef SWIG
     /** A data block, like a vector for a force, point, etc... will span multiple "columns"
         It is desirable to access the block as a single entity provided an identifier that is common 
@@ -231,15 +231,15 @@ public:
     //--------------------------------------------------------------------------
     // STORAGE
     //--------------------------------------------------------------------------
-    virtual int append(const StateVector &aVec, bool aCheckForDuplicateTime=true);
-    virtual int append(const Array<StateVector> &aArray);
-    virtual int append(double aT,int aN,const double *aY, bool aCheckForDuplicateTime=true);
-    virtual int append(double aT,const SimTK::Vector& aY, bool aCheckForDuplicateTime=true);
+    int append(const StateVector &aVec, bool aCheckForDuplicateTime=true) override;
+    int append(const Array<StateVector> &aArray) override;
+    int append(double aT,int aN,const double *aY, bool aCheckForDuplicateTime=true) override;
+    int append(double aT,const SimTK::Vector& aY, bool aCheckForDuplicateTime=true) override;
     virtual int append(double aT,const Array<double>& aY, bool aCheckForDuplicateTime=true);
-    virtual int append(double aT, const SimTK::Vec3& aY,bool aCheckForDuplicateTime=true){
+    int append(double aT, const SimTK::Vec3& aY,bool aCheckForDuplicateTime=true) override {
         return append(aT, 3, &aY[0], aCheckForDuplicateTime);
     }
-    virtual int store(int aStep,double aT,int aN,const double *aY);
+    int store(int aStep,double aT,int aN,const double *aY) override;
 
     //--------------------------------------------------------------------------
     // OPERATIONS
@@ -279,8 +279,8 @@ public:
     //--------------------------------------------------------------------------
     // UTILITY
     //--------------------------------------------------------------------------
-    virtual int findIndex(double aT) const;
-    virtual int findIndex(int aI,double aT) const;
+    int findIndex(double aT) const override;
+    int findIndex(int aI,double aT) const override;
     void findFrameRange(double aStartTime, double aEndTime, int& oStartFrame, int& oEndFrame) const;
     double resample(double aDT, int aDegree);
     double resampleLinear(double aDT);
@@ -298,7 +298,7 @@ public:
     //--------------------------------------------------------------------------
     bool print(const std::string &aFileName,const std::string &aMode="w", const std::string& aComment="") const;
     int print(const std::string &aFileName,double aDT,const std::string &aMode="w") const;
-    void setOutputFileName(const std::string& aFileName) ;
+    void setOutputFileName(const std::string& aFileName) override ;
     // convenience function for Analyses and DerivCallbacks
     static void printResult(const Storage *aStorage,const std::string &aName,
         const std::string &aDir,double aDT,const std::string &aExtension);

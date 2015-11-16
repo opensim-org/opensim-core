@@ -50,17 +50,17 @@ class CMC;
  * equations, meaning there may be non-linear behavior and delays in force
  * production.
  *
- * The performance criterion is the sum of actutor stresses squared. The
+ * The performance criterion is the sum of actuator stresses squared. The
  * desired accelerations are achieved by imposing a set of constraints.
  * The desired accelerations are computed according to the Proportional
  * Derivative (PD) control in order to drive the dynamic model toward a set
  * of target kinematic trajectories.
  *
  * Because the desired accelerations are achieved by imposing a set of
- * linear hard constraints, this optimiztion target can fail if the desired
- * accelreations cannot be achieved.  To insure that the constraints can
+ * linear hard constraints, this optimization target can fail if the desired
+ * accelerations cannot be achieved.  To insure that the constraints can
  * be achieved, a number of sufficiently strong actuators can be added
- * to the model.  Althernatively, one can use a different optimization
+ * to the model.  Alternatively, one can use a different optimization
  * target ActuatorForceTarget.  The benefits of using the fast
  * target are both speed and tracking accuracy.
  * 
@@ -111,15 +111,15 @@ private:
 
 public:
 
-    bool prepareToOptimize(SimTK::State& s, double *x);
+    bool prepareToOptimize(SimTK::State& s, double *x) override;
 
     //--------------------------------------------------------------------------
     // REQUIRED OPTIMIZATION TARGET METHODS
     //--------------------------------------------------------------------------
-    int objectiveFunc(const SimTK::Vector &aF, bool new_coefficients, SimTK::Real& rP) const;
-    int gradientFunc(const SimTK::Vector &x, bool new_coefficients, SimTK::Vector &gradient) const;
-    int constraintFunc( const SimTK::Vector &x, bool new_coefficients, SimTK::Vector &constraints) const;
-    int constraintJacobian(const SimTK::Vector &x, bool new_coefficients, SimTK::Matrix &jac) const;
+    int objectiveFunc(const SimTK::Vector &aF, bool new_coefficients, SimTK::Real& rP) const override;
+    int gradientFunc(const SimTK::Vector &x, bool new_coefficients, SimTK::Vector &gradient) const override;
+    int constraintFunc( const SimTK::Vector &x, bool new_coefficients, SimTK::Vector &constraints) const override;
+    int constraintJacobian(const SimTK::Vector &x, bool new_coefficients, SimTK::Matrix &jac) const override;
     CMC* getController() {return (_controller); }
 private:
     void computeConstraintVector(SimTK::State& s, const SimTK::Vector &x, SimTK::Vector &c) const;

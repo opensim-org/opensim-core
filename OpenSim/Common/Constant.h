@@ -37,7 +37,7 @@ namespace OpenSim {
  * A class for representing a constant value.
  *
  * This class inherits from Function and so can be used as input to
- * any class requiring a Fuction as input.
+ * any class requiring a Function as input.
  *
  * @author Peter Loan, Ajay Seth
  * @version 1.0
@@ -86,12 +86,12 @@ public:
     //--------------------------------------------------------------------------
     // EVALUATION
     //--------------------------------------------------------------------------
-    virtual double calcValue(const SimTK::Vector& xUnused) const
+    double calcValue(const SimTK::Vector& xUnused) const override
     {
         return _value;
     }
     const double getValue() const { return _value; }
-    SimTK::Function* createSimTKFunction() const;
+    SimTK::Function* createSimTKFunction() const override;
 //=============================================================================
 };  // END class Constant
 //=============================================================================

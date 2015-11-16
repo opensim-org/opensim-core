@@ -4,18 +4,18 @@
 # Requires CMake 2.8.8.
 include(CMakePackageConfigHelpers)
 
-set(OPENSIM_INSTALL_CMAKE_DIR cmake)
-
 # The generated file must not be named OpenSimConfig.cmake, otherwise CMake
 # will pick it up and think that the build tree contains an OpenSim
 # installation.
 configure_package_config_file(
     OpenSimConfig.cmake.in
     "${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfigToInstall.cmake"
-    INSTALL_DESTINATION "${OPENSIM_INSTALL_CMAKE_DIR}"
+    INSTALL_DESTINATION "${OPENSIM_INSTALL_CMAKEDIR}"
     PATH_VARS # Variables to edit in OpenSimConfig.cmake.in.
         CMAKE_INSTALL_PREFIX
-        OPENSIM_INSTALL_CMAKE_DIR
+        CMAKE_INSTALL_INCLUDEDIR
+        CMAKE_INSTALL_LIBDIR
+        OPENSIM_INSTALL_CMAKEDIR
     )
 
 # Version file.
@@ -25,7 +25,7 @@ write_basic_config_version_file(
     COMPATIBILITY SameMajorVersion)
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfigToInstall.cmake"
-    DESTINATION "${OPENSIM_INSTALL_CMAKE_DIR}"
+    DESTINATION "${OPENSIM_INSTALL_CMAKEDIR}"
     RENAME OpenSimConfig.cmake
     )
 
@@ -34,7 +34,7 @@ install(
         "SampleCMakeLists.txt"
         "${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfigVersion.cmake"
     DESTINATION
-        "${OPENSIM_INSTALL_CMAKE_DIR}"
+        "${OPENSIM_INSTALL_CMAKEDIR}"
         )
 
-install(EXPORT OpenSimTargets DESTINATION "${OPENSIM_INSTALL_CMAKE_DIR}")
+install(EXPORT OpenSimTargets DESTINATION "${OPENSIM_INSTALL_CMAKEDIR}")

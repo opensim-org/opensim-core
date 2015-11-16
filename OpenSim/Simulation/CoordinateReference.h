@@ -83,14 +83,14 @@ public:
     // Reference Interface
     //--------------------------------------------------------------------------
     /** get the number of referettes (individual signals) in this Reference. All
-        return arrays are gauranteed to be this length */
-    virtual int getNumRefs() const {return 1;} ;
+        return arrays are guaranteed to be this length */
+    int getNumRefs() const override {return 1;} ;
     /** get the name(s) of the reference or its referettes */
-    virtual const SimTK::Array_<std::string>& getNames() const;
-    /** get the value of the Reference as a funcion of the state */
-    virtual void getValues(const SimTK::State &s, SimTK::Array_<double> &values) const;
+    const SimTK::Array_<std::string>& getNames() const override;
+    /** get the value of the Reference as a function of the state */
+    void getValues(const SimTK::State &s, SimTK::Array_<double> &values) const override;
     /** get the weighting (importance) of meeting this Reference */
-    virtual void getWeights(const SimTK::State &s, SimTK::Array_<double>& weights) const;
+    void getWeights(const SimTK::State &s, SimTK::Array_<double>& weights) const override;
 
 
     //--------------------------------------------------------------------------
@@ -107,7 +107,7 @@ public:
     /** set the weighting (importance) of meeting this CoordinateReference */
     void setWeight(double weight);
 
-    /** Set the coordinate value as a function of time. */
+    /** %Set the coordinate value as a function of time. */
     void setValueFunction(const OpenSim::Function& function)
     {
         _coordinateValueFunction = function.clone();

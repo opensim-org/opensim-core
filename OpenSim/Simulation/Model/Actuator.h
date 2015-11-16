@@ -83,7 +83,7 @@ private:
     //--------------------------------------------------------------------------
 protected:
     // ModelComponent Interface
-    virtual void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     // Update the geometry attached to the actuator. Use inertial frame.
     virtual void updateGeometry();
@@ -156,14 +156,14 @@ public:
     virtual double getControl(const SimTK::State& s ) const;
 
     //Model building
-    virtual int numControls() const {return 1;};
+    int numControls() const override {return 1;};
 
     // Accessing actuation, speed, and power of a scalar valued actuator
     virtual void setActuation(const SimTK::State& s, double aActuation) const;
     virtual double getActuation(const SimTK::State& s) const;
     virtual void setSpeed( const SimTK::State& s, double aspeed) const;
     virtual double getSpeed( const SimTK::State& s) const;
-    virtual double getPower(const SimTK::State& s) const { return getActuation(s)*getSpeed(s); }
+    double getPower(const SimTK::State& s) const override { return getActuation(s)*getSpeed(s); }
     virtual double getStress(const SimTK::State& s) const;
     virtual double getOptimalForce() const;
 
@@ -181,21 +181,21 @@ public:
     /**
     * Enable/disable a ScalarActuator's override actuation.
     *
-    * The actuation normally produced by a ScalarActuator can be overriden and
-    * When the ScalarActuator's actuation is overriden, the ScalarActuator will
-    * by defualt produce a constant actuation which can be set with
+    * The actuation normally produced by a ScalarActuator can be overridden and
+    * When the ScalarActuator's actuation is overridden, the ScalarActuator will
+    * by default produce a constant actuation which can be set with
     * setOverrideActuation().
     *
     * @param s    current state
     * @param flag true = override ScalarActuator's output actuation
-    *             false = use ScalarActuator's computed forc (normal operation)
+    *             false = use ScalarActuator's computed force (normal operation)
     */
     void overrideActuation(SimTK::State& s, bool flag) const;
 
     /**
     *  return ScalarActuator's override status
     */
-    bool isActuationOverriden(const SimTK::State& s) const;
+    bool isActuationOverridden(const SimTK::State& s) const;
 
     /**
     * set the actuation value used when the override is true 
@@ -227,7 +227,7 @@ protected:
      * simulation. The names of the quantities (column labels) is returned
      * by this first function getRecordLabels()
      */
-    OpenSim::Array<std::string> getRecordLabels() const {
+    OpenSim::Array<std::string> getRecordLabels() const override {
         OpenSim::Array<std::string> labels("");
         labels.append(getName());
         return labels;
@@ -237,7 +237,7 @@ protected:
      * actuation, application location frame, etc. used in conjunction 
      * with getRecordLabels and should return same size Array
      */
-    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {
+    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override {
         OpenSim::Array<double> values(1);
         values.append(getActuation(state));
         return values;

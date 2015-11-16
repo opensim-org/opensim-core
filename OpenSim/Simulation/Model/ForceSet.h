@@ -94,14 +94,14 @@ public:
     void invokeConnectToModel(Model& aModel) override;
 
     // FORCE
-    bool remove(int aIndex);
+    bool remove(int aIndex) override;
     bool append(Force *aForce);
 #ifndef SWIG
     bool append(Force &aForce);
 #endif
     bool append(ForceSet &aForceSet, bool aAllowDuplicateNames=false);
     bool set(int aIndex, Force *aForce);
-    bool insert(int aIndex, Force *aObject);
+    bool insert(int aIndex, Force *aObject) override;
 
     // subsets 
     const Set<Actuator>& getActuators() const;

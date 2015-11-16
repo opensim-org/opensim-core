@@ -53,7 +53,7 @@ class ControlSet;
 //=============================================================================
 //=============================================================================
 /**
- * A concrete tool for perfroming forward dynamics simulations
+ * A concrete tool for performing forward dynamics simulations
  *
  * @author Frank C. Anderson
  * @version 1.0
@@ -87,7 +87,7 @@ protected:
     /** pointer to the simulation Manager */
     Manager* _manager;
 
-    /*** Private place to save some deserializtion info in case needed later */
+    /*** Private place to save some deserialization info in case needed later */
     std::string _parsingLog;
 //=============================================================================
 // METHODS
@@ -114,7 +114,7 @@ public:
         operator=(const ForwardTool &aForwardTool);
 #endif
 
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
@@ -133,7 +133,7 @@ public:
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
-    virtual bool run() SWIG_DECLARE_EXCEPTION;
+    bool run() override SWIG_DECLARE_EXCEPTION;
     void printResults();
 
     //--------------------------------------------------------------------------

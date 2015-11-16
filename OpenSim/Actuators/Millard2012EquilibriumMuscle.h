@@ -147,7 +147,7 @@ method can find a solution to the equilibrium equation.
 When either of these singularity-free formulations is selected, the minimum
 active-force-length value and the minimum permissible activation are set to
 zero. This is done as a convenience for the user, as these changes make the
-results of the model more realistic yet incur no performance penality. The
+results of the model more realistic yet incur no performance penalty. The
 maximum pennation angle is left as acos(0.1) or 84.3 degrees, as allowing higher
 pennation angles results in an increasingly stiff fiber velocity state as
 pennation angle increases.
@@ -341,7 +341,7 @@ public:
 
     /** @param s The state of the system.
         @param activation The desired activation level. */
-    void setActivation(SimTK::State& s, double activation) const;
+    void setActivation(SimTK::State& s, double activation) const override;
 
     /** @param fiberLength The default fiber length that is used to initialize
     the muscle. */
@@ -451,7 +451,7 @@ public:
 // PROTECTED METHODS
 //==============================================================================
 protected:
-    void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+    void postScale(const SimTK::State& s, const ScaleSet& aScaleSet) override;
 
     /** @returns Activation clamped to the permissible range (i.e., between
     minimum_activation and 1.0). */
@@ -476,7 +476,7 @@ protected:
                                double aValue) const;
 
 //==============================================================================
-// MUSCLE INFERFACE REQUIREMENTS
+// MUSCLE INTERFACE REQUIREMENTS
 //==============================================================================
     /** Calculate the position-related values associated with the muscle state
     (fiber and tendon lengths, normalized lengths, pennation angle, etc.). */
@@ -543,7 +543,7 @@ private:
         @param fal active-force-length multiplier
         @param fpe passive-force-length multiplier
         @param fse tendon-force-length multiplier
-        @param beta damping coefficent
+        @param beta damping coefficient
         @param cosPhi cosine of pennation angle
         @returns [0] dlceN_dt
                  [1] err
@@ -630,7 +630,7 @@ private:
         @param ds_d_dlce derivative of the damping scaling w.r.t. fiber length
         @param dlceN_dt normalized fiber velocity (1 is the max. fiber velocity)
         @param the maximum contraction velocity in m/s
-        @return the partial derivative of fiber force w.r.t normilized fiber
+        @return the partial derivative of fiber force w.r.t normalized fiber
     velocity */
     double calc_DFiberForce_DNormFiberVelocity(double fiso,
                                                double a,

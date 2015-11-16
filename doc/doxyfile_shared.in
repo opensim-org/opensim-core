@@ -1565,6 +1565,7 @@ EXPAND_AS_DEFINED      = OpenSim_DECLARE_PROPERTY \
                          OpenSim_DECLARE_LIST_PROPERTY_ATMOST \
                          OpenSim_DECLARE_LIST_PROPERTY_RANGE \
                          OpenSim_DECLARE_PROPERTY_HELPER \
+                         SWIG_DECLARE_EXCEPTION
 
 # If the SKIP_FUNCTION_MACROS tag is set to YES (the default) then 
 # doxygen's preprocessor will remove all references to function-like macros 

@@ -71,7 +71,7 @@ private:
     Storage *_stateStore;
 
    int _steps;
-   /** Number of integration step trys. */
+   /** Number of integration step tries. */
    int _trys;
    /** Maximum number of steps in an integration. */
    int _maxSteps;
@@ -142,7 +142,7 @@ public:
 
     // Integrator
     SimTK::Integrator& getIntegrator() const;
-    /** Set the integrator*/
+    /** %Set the integrator */
     void setIntegrator( SimTK::Integrator&);
     // Initial and final times
     void setInitialTime(double aTI);
@@ -151,7 +151,7 @@ public:
     double getFinalTime() const;
     void setFirstDT(double aDT);
     double getFirstDT() const;
-       // SEPECIFIED TIME STEP
+       // SPECIFIED TIME STEP
    void setUseSpecifiedDT(bool aTrueFalse);
    bool getUseSpecifiedDT() const;
    // CONSTANT TIME STEP

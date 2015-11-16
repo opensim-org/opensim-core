@@ -67,7 +67,7 @@ namespace OpenSim {
  )
  \f]
 
- which is then integrated to simualate the musculotendon dynamics. In general, 
+ which is then integrated to simulate the musculotendon dynamics. In general, 
  the previous equation has 4 singularity conditions:
 
  -# \f$ a(t) \rightarrow 0 \f$
@@ -263,7 +263,7 @@ protected:
 
     /** calculate muscle's fiber and tendon potential energy */
     void calcMusclePotentialEnergyInfo(const SimTK::State& s,
-        MusclePotentialEnergyInfo& mpei) const;
+        MusclePotentialEnergyInfo& mpei) const override;
 
     /** Calculate activation rate */
     double calcActivationRate(const SimTK::State& s) const override; 

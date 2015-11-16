@@ -41,7 +41,7 @@ class Model;
 /**
  * A class that implements a force actuator acting between two points on two bodies.
  * The direction of the force is along the line between the points, with a positive
- * value acting to exapnd the distance between them.  This actuator has no states; 
+ * value acting to expand the distance between them.  This actuator has no states; 
  * the control is simply the force to be applied to the model.
  *
  * @author Matt DeMers
@@ -79,14 +79,14 @@ public:
     PointToPointActuator(const std::string& bodyNameA, 
                          const std::string& bodyNameB);
     
-    /** Set the 'pointA' property to the supplied value; frame is interpreted
+    /** %Set the 'pointA' property to the supplied value; frame is interpreted
     according to the 'points_are_global' property. **/
     void setPointA(const SimTK::Vec3& pointAPos) 
     {   set_pointA(pointAPos); } ;
     /** Return the current value of the 'pointA' property. **/
     const SimTK::Vec3& getPointA() const 
     {   return get_pointA(); };
-    /** Set the 'pointB' property to the supplied value; frame is interpreted
+    /** %Set the 'pointB' property to the supplied value; frame is interpreted
     according to the 'points_are_global' property. **/
     void setPointB(const SimTK::Vec3& pointBPos) 
     {   set_pointB(pointBPos); } ;
@@ -94,7 +94,7 @@ public:
     const SimTK::Vec3& getPointB() const 
     {   return get_pointB(); };
 
-    /** Set the 'points_are_global' property that determines how to interpret
+    /** %Set the 'points_are_global' property that determines how to interpret
     the 'pointA' and 'pointB' location vectors: if not global (Ground frame) 
     then they are in the local frame of 'bodyA' and 'bodyB' respectively. **/
     void setPointsAreGlobal(bool isGlobal) 
@@ -103,7 +103,7 @@ public:
     bool getPointsAreGlobal() const
     {   return get_points_are_global(); };
 
-    /** Set the 'optimal_force' property. **/
+    /** %Set the 'optimal_force' property. **/
     void setOptimalForce(double optimalForce)
     {   set_optimal_force(optimalForce); }
     /** Get the current value of the 'optimal_force' property. **/

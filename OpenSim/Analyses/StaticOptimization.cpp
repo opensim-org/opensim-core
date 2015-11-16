@@ -78,7 +78,7 @@ StaticOptimization::StaticOptimization(Model *aModel) :
     if(aModel) setModel(*aModel);
     else allocateStorage();
 }
-// Copy constrctor and virtual copy 
+// Copy constructor and virtual copy 
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -97,6 +97,7 @@ StaticOptimization::StaticOptimization(const StaticOptimization &aStaticOptimiza
     setNull();
     // COPY TYPE AND NAME
     *this = aStaticOptimization;
+    _forceReporter = nullptr;
 }
 
 //=============================================================================
@@ -123,7 +124,7 @@ operator=(const StaticOptimization &aStaticOptimization)
     _activationExponent=aStaticOptimization._activationExponent;
     _convergenceCriterion=aStaticOptimization._convergenceCriterion;
     _maximumIterations=aStaticOptimization._maximumIterations;
-
+    _forceReporter = nullptr;
     _useMusclePhysiology=aStaticOptimization._useMusclePhysiology;
     return(*this);
 }
@@ -140,7 +141,6 @@ void StaticOptimization::setNull()
     // OTHER VARIABLES
     _useModelForceSet = true;
     _activationStorage = NULL;
-    _forceStorage = NULL;
     _ownsForceSet = false;
     _forceSet = NULL;
     _activationExponent=2;
@@ -148,7 +148,7 @@ void StaticOptimization::setNull()
     _numCoordinateActuators = 0;
     _convergenceCriterion = 1e-4;
     _maximumIterations = 100;
-
+    _forceReporter = nullptr;
     setName("StaticOptimization");
 }
 //_____________________________________________________________________________
@@ -209,7 +209,11 @@ constructColumnLabels()
     Array<string> labels;
     labels.append("time");
     if(_model) 
-        for (int i=0; i < _forceSet->getSize(); i++) labels.append(_forceSet->get(i).getName());
+        for (int i = 0; i < _forceSet->getActuators().getSize(); i++) {
+            if (ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->getActuators().get(i))) {
+                labels.append(act->getName());
+            }
+        }
     setColumnLabels(labels);
 }
 
@@ -223,10 +227,6 @@ allocateStorage()
     _activationStorage = new Storage(1000,"Static Optimization");
     _activationStorage->setDescription(getDescription());
     _activationStorage->setColumnLabels(getColumnLabels());
-
-    _forceStorage = new Storage(1000,"Static Optimization");
-    _forceStorage->setDescription(getDescription());
-    _forceStorage->setColumnLabels(getColumnLabels());
 
 }
 
@@ -242,7 +242,6 @@ void StaticOptimization::
 deleteStorage()
 {
     delete _activationStorage; _activationStorage = NULL;
-    delete _forceStorage; _forceStorage = NULL;
 }
 
 //=============================================================================
@@ -283,7 +282,10 @@ getActivationStorage()
 Storage* StaticOptimization::
 getForceStorage()
 {
-    return(_forceStorage);
+    if (_forceReporter)
+        return(&_forceReporter->updForceStorage());
+    else
+        return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -300,7 +302,6 @@ void StaticOptimization::
 setStorageCapacityIncrements(int aIncrement)
 {
     _activationStorage->setCapacityIncrement(aIncrement);
-    _forceStorage->setCapacityIncrement(aIncrement);
 }
 
 //=============================================================================
@@ -374,10 +375,12 @@ record(const SimTK::State& s)
     // Parameter bounds
     SimTK::Vector lowerBounds(na), upperBounds(na);
     for(int i=0,j=0;i<fs.getSize();i++) {
-        ScalarActuator& act = *dynamic_cast<ScalarActuator*>(&fs.get(i));
-        lowerBounds(j) = act.getMinControl();
-        upperBounds(j) = act.getMaxControl();
-        j++;
+        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fs.get(i));
+        if (act) {
+            lowerBounds(j) = act->getMinControl();
+            upperBounds(j) = act->getMaxControl();
+            j++;
+        }
     }
     
     target.setParameterLimits(lowerBounds, upperBounds);
@@ -469,6 +472,7 @@ record(const SimTK::State& s)
                     incompleteModel = true;
                 }
             }
+            _forceReporter->step(sWorkingCopy, 1);
             if(incompleteModel) cout << msgIncomplete << endl;
         }
     }
@@ -494,7 +498,7 @@ record(const SimTK::State& s)
     SimTK::Vector forces(na);
     target.getActuation(const_cast<SimTK::State&>(sWorkingCopy), _parameters,forces);
 
-    _forceStorage->append(sWorkingCopy.getTime(),na,&forces[0]);
+    _forceReporter->step(sWorkingCopy, 1);
 
     return 0;
 }
@@ -503,7 +507,7 @@ record(const SimTK::State& s)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration 
+ * This method is meant to be called at the beginning of an integration 
  *
  * @param s Current state .
  *
@@ -547,15 +551,15 @@ begin(SimTK::State& s )
         }
 
         SimTK::State& sWorkingCopy = _modelWorkingCopy->initSystem();
-
         // Set modeling options for Actuators to be overriden
-        for(int i=0,j=0; i<_forceSet->getSize(); i++) {
+        for(int i=0; i<_forceSet->getSize(); i++) {
             ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
             if( act ) {
                 act->overrideActuation(sWorkingCopy, true);
             }
         }
 
+        sWorkingCopy.setTime(s.getTime());
         sWorkingCopy.setQ(s.getQ());
         sWorkingCopy.setU(s.getU());
         sWorkingCopy.setZ(s.getZ());
@@ -578,10 +582,14 @@ begin(SimTK::State& s )
         int nacc = _accelerationIndices.getSize();
 
         if(na < nacc) 
-            throw(Exception("StaticOptimization: ERROR- overconstrained "
+            throw(Exception("StaticOptimization: ERROR- over-constrained "
                 "system -- need at least as many forces as there are degrees of freedom.\n") );
 
-        _parameters.resize(na);
+        _forceReporter.reset(new ForceReporter(_modelWorkingCopy));
+        _forceReporter->begin(sWorkingCopy);
+        _forceReporter->updForceStorage().reset();
+
+        _parameters.resize(_modelWorkingCopy->getNumControls());
         _parameters = 0;
     }
 
@@ -596,11 +604,11 @@ begin(SimTK::State& s )
 
     // RESET STORAGE
     _activationStorage->reset(s.getTime());
-    _forceStorage->reset(s.getTime());
+    _forceReporter->updForceStorage().reset(s.getTime());
 
     // RECORD
     int status = 0;
-    if(_activationStorage->getSize()<=0 && _forceStorage->getSize()<=0) {
+    if(_activationStorage->getSize()<=0) {
         status = record(s);
         const Set<Actuator>& fs = _modelWorkingCopy->getActuators();
         for(int k=0;k<fs.getSize();k++) {
@@ -626,7 +634,7 @@ begin(SimTK::State& s )
  * the execution of a forward integrations or after the integration by
  * feeding it the necessary data.
  *
- * This method should be overriden in derived classes.  It is
+ * This method should be overridden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
  * it is not necessary.
  *
@@ -689,7 +697,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
     Storage::printResult(_activationStorage,aBaseName+"_"+getName()+"_activation",aDir,aDT,aExtension);
 
     // FORCES
-    Storage::printResult(_forceStorage,aBaseName+"_"+getName()+"_force",aDir,aDT,aExtension);
+    Storage::printResult(getForceStorage(),aBaseName+"_"+getName()+"_force",aDir,aDT,aExtension);
 
     // Make a ControlSet out of activations for use in forward dynamics
     ControlSet cs(*_activationStorage);

@@ -114,7 +114,7 @@ protected:
      */
     void copyData(const ControlSetController &aController);
 
-    // for any post XML deserialization intialization
+    // for any post XML deserialization initialization
     void extendFinalizeFromProperties() override;
 
     //--------------------------------------------------------------------------
@@ -141,7 +141,7 @@ public:
      * @param s         system state 
      * @param controls  return control values 
      */
-    virtual void computeControls(const SimTK::State& s, SimTK::Vector& controls) const;
+    void computeControls(const SimTK::State& s, SimTK::Vector& controls) const override;
 
     virtual void setControlSetFileName( const std::string&  controlSetFileName );
     const std::string& getControlSetFileName() const {
@@ -149,7 +149,7 @@ public:
     }
 
    /** 
-    *   return the min an max times that a controller knows how to supply controlls for 
+    *   return the min an max times that a controller knows how to supply controls for 
     */ 
    double getFirstTime() const;
    double getLastTime() const;

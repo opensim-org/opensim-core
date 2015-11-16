@@ -30,7 +30,7 @@ using namespace OpenSim;
 using namespace std;
 
 static Model dummyModel;
-const double acceptableMemoryLeakPercent = 2.0;
+const double acceptableMemoryLeakPercent = 1.0;
 const bool reportAllMemoryLeaks = true;
 
 
@@ -59,15 +59,25 @@ int main()
         availableComponents.push_back(availableJoints[i]);
     }
 
-    // continue with Constraint, Force, Actuator, ...
+    // then type TwoFrameLinker<Constraint>
+    ArrayPtrs<TwoFrameLinker<Constraint, PhysicalFrame> > availableLink2Constraints;
+    Object::getRegisteredObjectsOfGivenType(availableLink2Constraints);
+    for (int i = 0; i < availableLink2Constraints.size(); ++i) {
+        availableComponents.push_back(availableLink2Constraints[i]);
+    }
+
+    // then type TwoFrameLinker<Force> which are all the BushingForces
+    ArrayPtrs<TwoFrameLinker<Force, PhysicalFrame> > availableBushingForces;
+    Object::getRegisteredObjectsOfGivenType(availableBushingForces);
+    for (int i = 0; i < availableBushingForces.size(); ++i) {
+        availableComponents.push_back(availableBushingForces[i]);
+    }
+
+    // continue with other Constraints, Forces, Actuators, ...
     //Examples of updated forces that pass
     ArrayPtrs<PointToPointSpring> availablePointToPointSpring;
     Object::getRegisteredObjectsOfGivenType(availablePointToPointSpring);
     availableComponents.push_back(availablePointToPointSpring[0]);
-
-    ArrayPtrs<BushingForce> availableBushingForce;
-    Object::getRegisteredObjectsOfGivenType(availableBushingForce);
-    availableComponents.push_back(availableBushingForce[0]);
 
     for (unsigned int i = 0; i < availableComponents.size(); i++) {
         try {
@@ -142,8 +152,12 @@ void testComponent(const Component& instanceToTest)
     string serializationFilename =
         "testing_serialization_" + className + ".xml";
     instance->print(serializationFilename);
+
     Object* deserializedInstance =
         static_cast<Object*>(Object::makeObjectFromFile(serializationFilename));
+
+    const size_t instanceSize = getCurrentRSS();
+
     if (!(*deserializedInstance == *instance))
     {
         cout << "XML for serialized instance:" << endl;
@@ -155,6 +169,7 @@ void testComponent(const Component& instanceToTest)
             ", deserialization did not produce an identical object.",
             __FILE__, __LINE__);
     }
+
     // TODO should try to delete even if exception is thrown.
     delete deserializedInstance;
 
@@ -275,28 +290,27 @@ void testComponent(const Component& instanceToTest)
 
     // 10. Test for memory leaks by copying and deleting.
     // --------------------------------------------------
-    const long double leakTol = 0.1; //percent
-
     cout << "Testing for memory leaks from copying." << endl;
     {
         unsigned int nCopies = 100;
         const size_t initMemory = getCurrentRSS();
+
         for (unsigned int ileak = 0; ileak < nCopies; ++ileak)
         {
             Component* copy = instance->clone();
             delete copy;
         }
-        const int64_t increaseInMemory = getCurrentRSS() - initMemory;
-        const long double leakPercent = (100.0*increaseInMemory/initMemory)/nCopies;
+        const size_t increaseInMemory = getCurrentRSS() - initMemory;
+        const long double leakPercent = (100.0*increaseInMemory/instanceSize)/nCopies;
 
         stringstream msg;
         msg << className << ".clone() increased memory use by "
             << setprecision(3) << leakPercent << "%";
 
-        ASSERT(leakPercent < leakTol, __FILE__, __LINE__,
-            msg.str() + "excceeds tolerance (" + to_string(leakTol) + ").\n"
-            "Initial memory: " +
-            to_string(initMemory / 1024) + "KB increaseed by " +
+        ASSERT(leakPercent < acceptableMemoryLeakPercent, __FILE__, __LINE__,
+            msg.str() + "exceeds acceptable tolerance (" + 
+            to_string(acceptableMemoryLeakPercent) + ").\n Instance size: " +
+            to_string(instanceSize / 1024) + "KB increased by " +
             to_string(increaseInMemory / 1024) + "KB over " + to_string(nCopies) +
             " iterations = " + to_string(leakPercent) + "%.\n"); // << endl;
 
@@ -312,12 +326,13 @@ void testComponent(const Component& instanceToTest)
         unsigned int nLoops = 100;
         SimTK::State& finalInitState(initState);
         const size_t initMemory = getCurrentRSS();
+
         for (unsigned int ileak = 0; ileak < nLoops; ++ileak)
         {
             finalInitState = model.initSystem();
         }
-        const int64_t increaseInMemory = getCurrentRSS() - initMemory;
-        const long double leakPercent = (100.0*increaseInMemory/initMemory)/nLoops;
+        const size_t increaseInMemory = getCurrentRSS() - initMemory;
+        const long double leakPercent = (100.0*increaseInMemory/instanceSize)/nLoops;
 
         ASSERT_EQUAL(0.0,
                 (finalInitState.getY() - initState.getY()).norm(),
@@ -329,10 +344,10 @@ void testComponent(const Component& instanceToTest)
         msg << className << ".initSystem() increased memory use by "
             << setprecision(3) << leakPercent << "%.";
 
-        ASSERT(leakPercent < leakTol, __FILE__, __LINE__,
-            msg.str() + "\nExcceeds tolerance of " + to_string(leakTol) + "%.\n" 
-            + "Initial memory: " +
-            to_string(initMemory / 1024) + "KB increased by " +
+        ASSERT(leakPercent < acceptableMemoryLeakPercent, __FILE__, __LINE__,
+            msg.str() + "\nExceeds acceptable tolerance of " +
+            to_string(acceptableMemoryLeakPercent) + "%.\n Instance size: " +
+            to_string(instanceSize / 1024) + "KB increased by " +
             to_string(increaseInMemory / 1024) + "KB over " + to_string(nLoops) +
             " iterations = " + to_string(leakPercent) + "%.\n"); // << endl;
 

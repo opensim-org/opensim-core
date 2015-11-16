@@ -246,7 +246,7 @@ public:
     /** Initialize Component's state variable values from its properties */
     void initStateFromProperties(SimTK::State& state) const;
 
-    /** Set Component's properties given a state. */
+    /** %Set Component's properties given a state. */
     void setPropertiesFromState(const SimTK::State& state);
 
     // End of Component Structural Interface (public non-virtual).
@@ -306,23 +306,30 @@ public:
     /**
      * Get the underlying MultibodySystem that this component is connected to.
      * Make sure you have called Model::initSystem() prior to accessing the System.
-     * Throws an Exception if the System has not been created OR the this
-     * Component has not been added itself to the System.
-     */
+     * Throws an Exception if the System has not been created or the Component
+     * has not added itself to the System.
+     * @see hasSystem().  */
     const SimTK::MultibodySystem& getSystem() const;
 
     /**
-     * Get an iterator thru the underlying subcomponents that this component is 
+
+    * Check if this component has an underlying MultibodySystem.
+    * Returns false if the System has not been created OR if this
+    * Component has not added itself to the System.  */
+    bool hasSystem() const { return !_system.empty(); }
+
+    /**
+     * Get an iterator through the underlying subcomponents that this component is 
      * composed of. The hierarchy of Components/subComponents forms a tree. The 
      * tree structure is fixed when the system is created.
      * The order of the Components is that of tree preorder traversal so that a
      * component is processed before its subcomponents. All addComponent calls 
-     * must be done before calling this method on the top model.
-     */
+     * must be done before calling this method on the top model. */
     template <typename T = Component>
     ComponentList<T> getComponentList() const {
         return ComponentList<T>(*this);
     }
+
     /**
      * Class to hold the list of components/subcomponents to iterate over.
     */
@@ -349,16 +356,40 @@ public:
 
     template <class C>
     const C& getComponent(const std::string& name) const {
+        const Component& comp = getComponent(name);
+        const C* compC = dynamic_cast<const C*>(&comp);
+
+        if (compC) {
+            return *compC;
+        }
+
+        //TODO only use the component iterator when they can be used upon construction
         ComponentList<C> compsList = getComponentList<C>();
+
+        std::vector<const C*> foundCs;
         for (const C& comp : compsList) {
-            if (comp.getName() == name){
-                return comp;
+            if (comp.getName() == name) {
+                foundCs.push_back(&comp);
             }
         }
-        std::stringstream msg;
-        msg << getConcreteClassName() + ": ERR- Cannot find '" << name
-            << "' of type " << compsList.begin()->getConcreteClassName() << ".";
-        throw Exception(msg.str(), __FILE__, __LINE__);
+
+        if (foundCs.size() == 1) {
+            //unique type and name match!
+            return *foundCs[0];
+        }
+
+        // Only error cases remain
+        std::string msg = getConcreteClassName() + " '" + getName() + "': ERROR- ";
+
+        // too many components of the right type with the same name
+        if (foundCs.size() > 1) {
+            msg +="Found multiple '" + name + "'s of type "+ C::getClassName() + ".";
+            throw Exception(msg, __FILE__, __LINE__);
+        }
+
+        // otherwise, no component of that name and type exists.
+        msg += "Cannot find '" + name + "' of type " + C::getClassName() + ".";
+        throw Exception(msg, __FILE__, __LINE__);
     }
 
     /**
@@ -583,7 +614,7 @@ public:
     int getModelingOption(const SimTK::State& state, const std::string& name) const;
 
     /**
-     * Set the value of a ModelingOption flag for this Component.
+     * %Set the value of a ModelingOption flag for this Component.
      * if the integer value exceeds the number of option names used to
      * define the options, an exception is thrown. The SimTK::State 
      * Stage will be reverted back to Stage::Instance.
@@ -648,7 +679,7 @@ public:
     double getStateVariableValue(const SimTK::State& state, const std::string& name) const;
 
     /**
-     * Set the value of a state variable allocated by this Component by name.
+     * %Set the value of a state variable allocated by this Component by name.
      *
      * @param state  the State for which to set the value
      * @param name   the name of the state variable
@@ -668,7 +699,7 @@ public:
     SimTK::Vector getStateVariableValues(const SimTK::State& state) const;
 
     /**
-     * Set all values of the state variables allocated by this Component.
+     * %Set all values of the state variables allocated by this Component.
      * Includes state variables allocated by its subcomponents.
      *
      * @param state   the State for which to get the value
@@ -696,7 +727,7 @@ public:
     double getDiscreteVariableValue(const SimTK::State& state, const std::string& name) const;
 
     /**
-     * Set the value of a discrete variable allocated by this Component by name.
+     * %Set the value of a discrete variable allocated by this Component by name.
      *
      * @param state  the State for which to set the value
      * @param name   the name of the dsicrete variable
@@ -852,7 +883,7 @@ public:
     }
 
     /**
-     *  Set cache variable value allocated by this Component by name.
+     *  %Set cache variable value allocated by this Component by name.
      *  All cache entries are lazily evaluated (on a need basis) so a set
      *  also marks the cache as valid.
      *
@@ -1162,7 +1193,7 @@ template <class T> friend class ComponentMeasure;
     virtual void computeStateVariableDerivatives(const SimTK::State& s) const;
 
     /**
-     * Set the derivative of a state variable by name when computed inside of  
+     * %Set the derivative of a state variable by name when computed inside of  
      * this Component's computeStateVariableDerivatives() method.
      *
      * @param state  the State for which to set the value
@@ -1347,14 +1378,14 @@ template <class T> friend class ComponentMeasure;
     void constructOutputForStateVariable(const std::string& name);
     
     /**
-     * Add another Component as a subcomponent of this Component.  Component
+     * Add another Component as a subcomponent of this Component. Component
      * methods (e.g. addToSystem(), initStateFromProperties(), ...) are
      * therefore invoked on subcomponents when called on this Component.
      * Realization is also performed automatically on subcomponents. This
      * Component does not take ownership of designated subcomponents and does
      * not destroy them when the Component.
      */
-    void addComponent(Component *aComponent);
+    void addComponent(Component* component);
 
     /** Clear all designations of (sub)components for this Component. 
       * Components are not deleted- the list of references to its components is cleared. */
@@ -1523,23 +1554,37 @@ template <class T> friend class ComponentMeasure;
          by owning component(s). */
     const Component* findComponent(const std::string& name, 
                                    const StateVariable** rsv = nullptr) const;
-    
+
     /** Similarly find a Connector of this Component (also amongst its subcomponents) */
     const AbstractConnector* findConnector(const std::string& name) const;
 
     const StateVariable* findStateVariable(const std::string& name) const;
 
+    /** Access the parent of this Component.
+        An exception is thrown if the Component has no parent.
+        @see hasParent() */
+    const Component& getParent() const;
+
+
+    /** Check if this Component has a parent assigned or not.
+        A component may not have a parent assigned if it:
+        1) is the root component, or 2) has not been added to its parent. */
+    bool hasParent() const;
+
+    /** %Set this Component's reference to its parent Component */
+    void setParent(const Component& parent);
+
     //@} 
 
 private:
-    // Construct the table of serializable properties for a Component.
+    // Construct the table of serializeable properties for a Component.
     // Base constructs property that contains the structural connectors.
     virtual void constructProperties() {}
 
     //Construct the table of structural Connectors this component requires to
     //hookup to other components in order to function. For example, a Joint needs 
     //a parent body in order to join its owning body to the model. A Connector
-    //formalizes this dependendency. The Component is inoperable until the Connector
+    //formalizes this dependency. The Component is inoperable until the Connector
     //is satisfied. Connectors are not to be confused with subcomponents, with the key 
     //difference being that a subcomponent is part of and owned by the component, 
     //whereas a Connector is a requirement or a "slot" that must be satisfied by
@@ -1711,6 +1756,11 @@ private:
 
     /// Base Component must create underlying resources in computational System.
     void baseAddToSystem(SimTK::MultibodySystem& system) const;
+
+    // Reference to the parent Component of this Component. It is not the previous
+    // in the tree, but is the Component one level up that owns this one.
+    SimTK::ReferencePtr<const Component> _parent;
+
     // Reference pointer to the successor of the current Component in Pre-order traversal
     SimTK::ReferencePtr<Component> _nextComponent;
     // PathName

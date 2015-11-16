@@ -87,7 +87,7 @@ protected:
 
     /** Utility node for speeding up searches for control values in
     getControlValue() and elsewhere.  Without this node, a control node would
-    need to be contructed, but this is too expensive.  It is better to contruct
+    need to be constructed, but this is too expensive.  It is better to construct
     a node up front, and then just alter the time. */
     ControlLinearNode _searchNode;
 
@@ -108,11 +108,11 @@ protected:
     /**
      * Connect properties to local pointers.
      */
-    virtual void setupProperties();
+    void setupProperties() override;
     
 private:
     /**
-     * Set the member data to their NULL values.
+     * %Set the member data to their NULL values.
      */
     void setNull();
     /**
@@ -121,7 +121,7 @@ private:
      * Currently, simple linear extrapolation using the first two nodes is
      * used.
      *
-     * @param aT Time at which to evalute the control curve.
+     * @param aT Time at which to evaluate the control curve.
      * @return Extrapolated value of the control curve.
      */
     double extrapolateBefore(double aT) const;
@@ -131,7 +131,7 @@ private:
      * Currently, simple linear extrapolation using the last two nodes is
      * used.
      *
-     * @param aT Time at which to evalute the control curve.
+     * @param aT Time at which to evaluate the control curve.
      * @return Extrapolated value of the control curve.
      */
     double extrapolateAfter(double aT) const;
@@ -141,7 +141,7 @@ private:
      * Currently, simple linear extrapolation using the first two nodes is
      * used.
      *
-     * @param aT Time at which to evalute the control curve.
+     * @param aT Time at which to evaluate the control curve.
      * @return Extrapolated value of the control curve.
      */
     double extrapolateMinBefore(double aT) const;
@@ -151,7 +151,7 @@ private:
      * Currently, simple linear extrapolation using the last two nodes is
      * used.
      *
-     * @param aT Time at which to evalute the control curve.
+     * @param aT Time at which to evaluate the control curve.
      * @return Extrapolated value of the control curve.
      */
     double extrapolateMinAfter(double aT) const;
@@ -161,7 +161,7 @@ private:
      * Currently, simple linear extrapolation using the first two nodes is
      * used.
      *
-     * @param aT Time at which to evalute the control curve.
+     * @param aT Time at which to evaluate the control curve.
      * @return Extrapolated value of the control curve.
      */
     double extrapolateMaxBefore(double aT) const;
@@ -171,7 +171,7 @@ private:
      * Currently, simple linear extrapolation using the last two nodes is
      * used.
      *
-     * @param aT Time at which to evalute the control curve.
+     * @param aT Time at which to evaluate the control curve.
      * @return Extrapolated value of the control curve.
      */
     double extrapolateMaxAfter(double aT) const;
@@ -228,13 +228,13 @@ public:
     /// @see setKv()
     double getKv() const;
     // PARAMETERS
-    virtual int getNumParameters() const;
+    int getNumParameters() const override;
 
-    virtual void setParameterMin(int aI,double aMin);
-    virtual double getParameterMin(int aI) const;
+    void setParameterMin(int aI,double aMin) override;
+    double getParameterMin(int aI) const override;
 
-    virtual void setParameterMax(int aI,double aMax);
-    virtual double getParameterMax(int aI) const;
+    void setParameterMax(int aI,double aMax) override;
+    double getParameterMax(int aI) const override;
     /**
      * Get the time at which a parameter (control curve value) is specified.
      *
@@ -245,7 +245,7 @@ public:
      * @param aI Index of the parameter.
      * @throws Exception if aI is invalid.
      */
-    virtual double getParameterTime(int aI) const;
+    double getParameterTime(int aI) const override;
     /**
      * @param aI Index of the parameter.
      * @param rTLower The time of parameter aI-1 or of
@@ -255,7 +255,7 @@ public:
      * aI if there is no parameter aI+1.  If there are no ControlLinearNode's
      * at all or if aI is invalid, rTUpper is given the value SimTK::NaN.
      */
-    virtual void getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const;
+    void getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const override;
 
     /**
      * @param aT time
@@ -266,17 +266,17 @@ public:
      * if aT is greater than the time of the last node, the index of the last
      * node (i.e., size-1) is returned.
      */
-    virtual int getParameterList(double aT,Array<int> &rList);
-    virtual int getParameterList(double aT1,double aT2,Array<int> &rList);
+    int getParameterList(double aT,Array<int> &rList) override;
+    int getParameterList(double aT1,double aT2,Array<int> &rList) override;
 
     /**
      * @param aI Index of the parameter.
      * @param aP The parameter value is simply the value of
      * the aI-th ControlLinearNode (which is the value of the control curve).
      */
-    virtual void setParameterValue(int aI,double aP);
+    void setParameterValue(int aI,double aP) override;
     /// @see setParameterValue()
-    virtual double getParameterValue(int aI) const;
+    double getParameterValue(int aI) const override;
 
     // CONTROL VALUE
     /**
@@ -284,22 +284,22 @@ public:
      * the specified time equals the time of an existing ControlLinearNode,
      * in which case the parameters of that control node are changed.
      */
-    virtual void setControlValue(double aT,double aX);
-    virtual double getControlValue(double aT);
-    virtual double getControlValueMin(double aT=0.0);
+    void setControlValue(double aT,double aX) override;
+    double getControlValue(double aT) override;
+    double getControlValueMin(double aT=0.0) override;
     /**
      * This method adds a set of control parameters at the specified time unless
      * the specified time equals the time of an existing control node, in which
      * case the parameters of that control node are changed.
      */
-    virtual void setControlValueMin(double aT,double aX);
-    virtual double getControlValueMax(double aT=0.0);
+    void setControlValueMin(double aT,double aX) override;
+    double getControlValueMax(double aT=0.0) override;
     /**
      * This method adds a set of control parameters at the specified time unless
      * the specified time equals the time of an existing control node, in which
      * case the parameters of that control node are changed.
      */
-    virtual void setControlValueMax(double aT,double aX);
+    void setControlValueMax(double aT,double aX) override;
     
     // NODE ARRAY
     void clearControlNodes();
@@ -329,11 +329,11 @@ public:
     /**
      * The time corresponding to the first ControlLinearNode.
      */
-    virtual const double getFirstTime() const;
+    const double getFirstTime() const override;
     /**
      * The time corresponding to the last ControlLinearNode
      */
-    virtual const double getLastTime() const;
+    const double getLastTime() const override;
 
     // SIMPLIFY
     /**
@@ -353,7 +353,7 @@ public:
      * this method.
      * @throws Exception if an error is encountered.
      */
-    virtual void simplify(const PropertySet &aProperties);
+    void simplify(const PropertySet &aProperties) override;
     /**
      * Another interface to simplify that:
      * (1) does not require properties, and (2) returns bool on failure
@@ -368,7 +368,7 @@ public:
      *
      * @param aT Time at which to compute a new, filtered control value
      */
-    virtual void filter(double aT);
+    void filter(double aT) override;
 
     /**
      * Linearly interpolate or extrapolate given two points.

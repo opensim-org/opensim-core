@@ -173,7 +173,7 @@ public:
     double getFiberVelocity(const SimTK::State& s) const;
     /** get normalize fiber velocity (fiber_lengths/s / max_contraction_velocity) */
     double getNormalizedFiberVelocity(const SimTK::State& s) const;
-    /** get the current afiber velocity (m/s) projected onto the tendon direction */
+    /** get the current fiber velocity (m/s) projected onto the tendon direction */
     double getFiberVelocityAlongTendon(const SimTK::State& s) const;
     /** get pennation angular velocity (radians/s) */
     double getPennationAngularVelocity(const SimTK::State& s) const;
@@ -222,7 +222,7 @@ public:
     double getMusclePower(const SimTK::State& s) const;
     
     /** get the stress in the muscle (part of the Actuator interface as well) */
-    double getStress(const SimTK::State& s) const;
+    double getStress(const SimTK::State& s) const override;
     
     /** set the excitation (control) for this muscle. NOTE if controllers are connected to the
         muscle and are adding in their controls, and setExcitation is called after the model's
@@ -253,7 +253,7 @@ public:
 
     ///@cond
     //--------------------------------------------------------------------------
-    // Estimate the muscle force for a given actiavtion based on a rigid tendon 
+    // Estimate the muscle force for a given activation based on a rigid tendon 
     // assumption and neglecting passive fiber force. This provides a linear 
     // relationship between activation and force. This is used by CMC and 
     // StaticOptimization to solve the muscle force redundancy problem.
@@ -359,7 +359,7 @@ protected:
     void extendInitStateFromProperties(SimTK::State& state) const override;
     
     // Update the geometry attached to the muscle (location of muscle points and connecting segments
-    //  all in global/interial frame)
+    //  all in global/inertial frame)
     virtual void updateGeometry(const SimTK::State& s);
     // End of Interfaces imposed by parent classes.
     //@} 
@@ -375,7 +375,7 @@ private:
     // Implement Object interface.
     //--------------------------------------------------------------------------
     /** Override of the default implementation to account for versioning. */
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
 
 //=============================================================================
@@ -559,7 +559,7 @@ protected:
             Generally this curve has a value of 1 at a fiber velocity of 0, 
             has a value of between 1.4-1.8 at the maximum eccentric contraction
             velocity and a value of 0 at the maximum concentric contraction 
-            velocity. The force velocit curve, which computes this term,  
+            velocity. The force velocity curve, which computes this term,  
             is usually an interpolation of an experimental curve.
 
         [6] This vector is left for the muscle modeler to populate with any
@@ -637,7 +637,7 @@ protected:
 
         [1] This is a quantity that ranges between 0 and 1 that dictates how
             on or activated a muscle is. This term may or may not have its own
-            time dependent behaviour depending on the muscle model.
+            time dependent behavior depending on the muscle model.
 
         [2] fiberForceAlongTendon is the fraction of the force that is developed
             by the fiber that is transmitted to the tendon. This fraction 
@@ -679,7 +679,7 @@ protected:
 
         [11] This vector is left for the muscle modeler to populate with any
              computationally expensive quantities that might be of interest 
-             after dynamics caclulations are completed but maybe of use
+             after dynamics calculations are completed but maybe of use
              in computing muscle derivatives or reporting values of interest.
 
     */
@@ -738,13 +738,13 @@ protected:
         energy of the muscle (fiber + tendon) complex.
         
         The function that populates this struct, calcMusclePotentialEnrgyInfo, can
-        be called when position information is known. This function is the 
-        dependendent on calcMuscleLengthInfo. 
+        be called when position information is known. This function is
+        dependent on calcMuscleLengthInfo.
 
         NAME                     DIMENSION              UNITS
-        fiberPotentalEnergy      force*distance         J (Nm)   [1]
-        tendonPotentalEnergy     force*distance         J (Nm)   [2]
-        musclePotentalEnergy     force*distance         J (Nm)   [3]
+        fiberPotentialEnergy      force*distance         J (Nm)   [1]
+        tendonPotentialEnergy     force*distance         J (Nm)   [2]
+        musclePotentialEnergy     force*distance         J (Nm)   [3]
 
         userDefinedPotentialEnergyExtras                         [4]
 

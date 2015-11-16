@@ -67,7 +67,7 @@ public:
      * @param aX Constant value of the control.
      * @param aName Name of the control.
      */
-    ControlConstant(double aX=0.0,const char *aName="UNKOWN");
+    ControlConstant(double aX=0.0,const char *aName="UNKNOWN");
     ControlConstant(const ControlConstant &aControl);
     virtual ~ControlConstant();
 
@@ -75,7 +75,7 @@ private:
     void setNull();
     void copyData(const ControlConstant &aControl);
 protected:
-    void setupProperties();
+    void setupProperties() override;
     
 
     //--------------------------------------------------------------------------
@@ -90,13 +90,13 @@ public:
     //--------------------------------------------------------------------------
     // PARAMETERS
     // Number
-    virtual int getNumParameters() const;
+    int getNumParameters() const override;
     // Min
-    virtual void setParameterMin(int aI,double aMin);
-    virtual double getParameterMin(int aI) const;
+    void setParameterMin(int aI,double aMin) override;
+    double getParameterMin(int aI) const override;
     // Max
-    virtual void setParameterMax(int aI,double aMax);
-    virtual double getParameterMax(int aI) const;
+    void setParameterMax(int aI,double aMax) override;
+    double getParameterMax(int aI) const override;
     // Time and Neighborhood
     /**
      * For ControlConstant, parameters are not associated with any specific time.
@@ -104,47 +104,47 @@ public:
      * @param aI Index of the parameter.
      * @return SimTK::NaN
      */
-    virtual double getParameterTime(int aI) const;
+    double getParameterTime(int aI) const override;
     /**
      * @param aI Index of the parameter.
      * @param rTLower -%SimTK::Infinity
      * @param rTUpper %SimTK::Infinity
      */
-    virtual void getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const;
+    void getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const override;
 
     /**
      * @param aT time
      * @param rList Parameter at index 0 (i.e., the value of the constant)
      * is the only parameter on the list.
      */
-    virtual int getParameterList(double aT,Array<int> &rList);
-    virtual int getParameterList(double aT1,double aT2,Array<int> &rList);
+    int getParameterList(double aT,Array<int> &rList) override;
+    int getParameterList(double aT1,double aT2,Array<int> &rList) override;
 
     /**
      * @param aI Only 0 is valid for ControlConstant.
      * @param aX The constant value of this control curve.
      */
-    virtual void setParameterValue(int aI,double aX);
+    void setParameterValue(int aI,double aX) override;
     /**
      * @see setParameterValue()
      * @param aI Only 0 is valid for ControlConstant.
      * @return The constant value of this control curve.
      */
-    virtual double getParameterValue(int aI) const;
+    double getParameterValue(int aI) const override;
 
     /**
      * @param aT Not used since the control value is constant in time.
      * @param aX Control value.
      */
-    virtual void setControlValue(double aT,double aX);
+    void setControlValue(double aT,double aX) override;
     /**
      * @param aT Not used since the control value is constant in time.
      */
-    virtual double getControlValue(double aT);
-    virtual double getControlValueMin(double aT=0.0);
-    virtual void setControlValueMin(double aT,double aX);
-    virtual double getControlValueMax(double aT=0.0);
-    virtual void setControlValueMax(double aT,double aX);
+    double getControlValue(double aT) override;
+    double getControlValueMin(double aT=0.0) override;
+    void setControlValueMin(double aT,double aX) override;
+    double getControlValueMax(double aT=0.0) override;
+    void setControlValueMax(double aT,double aX) override;
 
 //=============================================================================
 };  // END of class ControlConstant

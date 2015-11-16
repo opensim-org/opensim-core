@@ -34,7 +34,7 @@
 /**
  * A class that implements a force actuator acting between two points on two bodies.
  * The direction of the force is along the line between the points, with a positive
- * value acting to exapnd the distance between them.  This actuator has no states; 
+ * value acting to expand the distance between them.  This actuator has no states; 
  * the control is simply the force to be applied to the model.
  *
  * @author Matt DeMers
@@ -122,22 +122,22 @@ public:
 
     // OPTIMAL FORCE
     void setOptimalForce(double aOptimalForce);
-    double getOptimalForce() const;
+    double getOptimalForce() const override;
     // STRESS
 #ifndef SWIG
-    double getStress( const SimTK::State& s ) const;
+    double getStress( const SimTK::State& s ) const override;
     //--------------------------------------------------------------------------
     // APPLICATION
     //--------------------------------------------------------------------------
     virtual void computeForce(const SimTK::State& s, 
                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-                              SimTK::Vector& generalizedForces) const;
+                              SimTK::Vector& generalizedForces) const override;
 
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
     
-    virtual double  computeActuation( const SimTK::State& s) const;
+    double computeActuation( const SimTK::State& s) const override;
 
 #endif
     // Setup method to initialize Body reference
@@ -146,7 +146,7 @@ public:
     //--------------------------------------------------------------------------
     // XML
     //--------------------------------------------------------------------------
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
 //=============================================================================
 };  // END of class PistonActuator

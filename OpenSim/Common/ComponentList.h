@@ -66,13 +66,13 @@ public:
     /** Construct a ComponentFilter that selects all Components. */
     ComponentFilterMatchAll() {}
     /** The method isMatch() returns true always. */
-    bool isMatch(const Component& comp) const {
+    bool isMatch(const Component& comp) const override {
         return true;
     }
     /** Destructor of ComponentFilterMatchAll, does nothing. */
     ~ComponentFilterMatchAll() {}
     /** Method to clone the filter. */
-    ComponentFilterMatchAll* clone() const {
+    ComponentFilterMatchAll* clone() const override {
         return new ComponentFilterMatchAll(*this);
     }
 };
@@ -163,7 +163,7 @@ class ComponentListIterator :
 {
     friend class ComponentList<T>;
 public:
-    /// Check that the component under the cuurent iterator is same 
+    /// Check that the component under the current iterator is same 
     /// (has same address) as right-hand iter.
     bool operator==(const ComponentListIterator& iter) const {
         return this->equals(iter);

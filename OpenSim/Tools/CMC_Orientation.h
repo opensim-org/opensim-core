@@ -77,8 +77,8 @@ public:
     // COMPUTATIONS
     //--------------------------------------------------------------------------
     virtual void computeDesiredAccelerations();
-    virtual void computeJacobian();
-    virtual void computeEffectiveMassMatrix();
+    void computeJacobian() override;
+    void computeEffectiveMassMatrix() override;
 
 
 //=============================================================================

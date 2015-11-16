@@ -116,13 +116,13 @@ public:
     // default destructor, copy constructor, copy assignment
 
     /** Copy in properties from XML. **/
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
     void setBodyName(const std::string& aBodyName) { set_body(aBodyName); }
     const std::string& getBodyName() const { return get_body(); }
 
     /**
-     * Set the functions which specify the force to apply.  By default the 
+     * %Set the functions which specify the force to apply.  By default the 
      * force is specified in inertial coordinates.
      * This can be changed by calling setForceIsInGlobalFrame().
      *
@@ -147,7 +147,7 @@ public:
         const OpenSim::Storage& kineticsStore);
     void clearForceFunctions() { updForceFunctions().setSize(0); }
     /**
-     * Set the functions which specify the point at which to apply the force.  
+     * %Set the functions which specify the point at which to apply the force.  
      * By default the point is specified in the body's local coordinates.  
      * This can be changed by calling setPointIsInGlobalFrame().
      *
@@ -172,7 +172,7 @@ public:
         const OpenSim::Storage& kineticsStore) ;
     void clearPointFunctions() { updPointFunctions().setSize(0); }
     /**
-     * Set the functions which specify the torque to apply. By default the 
+     * %Set the functions which specify the torque to apply. By default the 
      * torque is specified in inertial coordinates.
      * This can be changed by calling setForceIsInGlobalFrame().
      *
@@ -200,14 +200,14 @@ public:
     /** Get whether the force and torque are specified in inertial coordinates 
     or in the body's local coordinates. **/
     bool getForceIsInGlobalFrame() const {return get_forceIsGlobal();}
-    /** Set whether the force and torque are specified in inertial coordinates 
+    /** %Set whether the force and torque are specified in inertial coordinates 
     or in the body's local coordinates. **/
     void setForceIsInGlobalFrame(bool isGlobal) 
     {   set_forceIsGlobal(isGlobal); }
     /** Get whether the point is specified in inertial coordinates or in the 
     body's local coordinates. **/
     bool getPointIsInGlobalFrame() const {return get_pointIsGlobal();}
-    /** Set whether the point is specified in inertial coordinates or in the 
+    /** %Set whether the point is specified in inertial coordinates or in the 
     body's local coordinates. **/
     void setPointIsInGlobalFrame(bool isGlobal)
     {   set_pointIsGlobal(isGlobal); }
@@ -229,20 +229,20 @@ public:
     /**
      * Methods used for reporting
      */
-    virtual OpenSim::Array<std::string> getRecordLabels() const;
+    OpenSim::Array<std::string> getRecordLabels() const override;
     /**
      * Given SimTK::State object extract all the values necessary to report 
      * forces, application location frame, etc. used in conjunction with 
      * getRecordLabels() and should return same size Array.
      */
-    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const;
+    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
 
 protected:
     /** ModelComponent interface. **/ 
     void extendConnectToModel(Model& model) override;
     /** Force interface. **/
-    virtual void computeForce
+    void computeForce
        (const SimTK::State&                state, 
         SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
         SimTK::Vector&                     generalizedForces) const override;

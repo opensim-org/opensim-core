@@ -45,7 +45,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
        ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
              numKnobs(numParameters), OptimizerSystem(numParameters), si(s), osimModel(aModel){}
                 
-    int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const {
+    int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const override {
 
         // make a copy of out initial states
         State s = si;
@@ -53,7 +53,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
         // Update the coordinate value of r_elbow_flex
         OpenSim::Coordinate& elbowFlexCoord = osimModel.updCoordinateSet().get("r_elbow_flex");
         elbowFlexCoord.setValue(s, newControls[0]);
-        // Now equilibriate muscles at this configuration
+        // Now equilibrate muscles at this configuration
         const Set<Muscle> &muscleSet = osimModel.getMuscles();
         // Make sure other muscle states are initialized the same with 1.0 activation, 0.1 fiberLength followed by equilibrium computation
         for(int i=0; i< muscleSet.getSize(); i++ ){

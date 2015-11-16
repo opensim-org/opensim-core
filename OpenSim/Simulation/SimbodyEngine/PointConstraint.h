@@ -63,7 +63,7 @@ public:
     * Convenience Constructor.
     *
     * @param body1          first PhysicalFrame connected by the constraint
-    * @param locationBody1  point fixed on body1 where the contraint is applied
+    * @param locationBody1  point fixed on body1 where the constraint is applied
     * @param body2          second PhysicalFrame connected by the constraint
     * @param locationBody2: point fixed on body2 where the constraint is applied
     */
@@ -78,7 +78,7 @@ public:
     void setBody2PointLocation(SimTK::Vec3 location);
 
     /** Method to set point location of contact during an induced acceleration analysis */
-    virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point);
+    void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point) override;
 
 
 protected:

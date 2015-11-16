@@ -43,7 +43,7 @@ class WrapResult;
  * A class implementing a cylinder obstacle for muscle wrapping, based on
  * algorithm presented in Garner & Pandy (2000).
  *
- * @author Brian Garner, derivded from Peter Loan
+ * @author Brian Garner, derived from Peter Loan
  * @version 0.1
  */
 class OSIMSIMULATION_API WrapDoubleCylinderObst : public WrapObject {
@@ -67,7 +67,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WrapDoubleCylinderObst, WrapObject);
 
     // Facilitate prescription of wrapping direction around obstacle: "righthand" or "lefthand".
     // In traversing from the 1st point (P) to the 2nd (S), the path will wrap either
-    //    righthanded or lefthanded about the obstacle's z-axis.
+    //    right-handed or left-handed about the obstacle's z-axis.
     PropertyStr _wrapUcylDirectionNameProp;
     std::string& _wrapUcylDirectionName;
     WrapDirectionEnum _wrapUcylDirection;
@@ -109,7 +109,7 @@ public:
 #ifndef SWIG
     WrapDoubleCylinderObst& operator=(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst);
 #endif
-   void copyData(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst);
+    void copyData(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst);
 
     double getRadius() const { return _radiusUcyl; }
     void setRadius(double aRadius) { _radiusUcyl = aRadius; }
@@ -118,13 +118,13 @@ public:
     //WrapDirectionEnum getWrapDirection() const { return _wrapUcylDirection; }
     int getWrapDirection() const { return (int)_wrapUcylDirection; }
 
-    virtual const char* getWrapTypeName() const;
-    virtual std::string getDimensionsString() const;
-    virtual void scale(const SimTK::Vec3& aScaleFactors) { }
+    const char* getWrapTypeName() const override;
+    std::string getDimensionsString() const override;
+    void scale(const SimTK::Vec3& aScaleFactors) override { }
     virtual void connectToModelAndBody(Model& aModel, OpenSim::Body& aBody);
 #ifndef SWIG
-    virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
+    int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
 #endif
 protected:
     void setupProperties();

@@ -50,7 +50,7 @@ AssemblySolver::AssemblySolver
     _accuracy = 1e-4;
 
     // Get model coordinates
-    const CoordinateSet &modelCoordSet = getModel().getCoordinateSet();
+    const CoordinateSet& modelCoordSet = getModel().getCoordinateSet();
 
     SimTK::Array_<CoordinateReference>::iterator p;
 
@@ -88,7 +88,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
     _assembler = new SimTK::Assembler(getModel().getMultibodySystem());
     _assembler->setAccuracy(_accuracy);
 
-    // Define weights on constraints. Note can be spefified SimTK::Infinity to strictly enforce constraint
+    // Define weights on constraints. Note can be specified SimTK::Infinity to strictly enforce constraint
     // otherwise the weighted constraint error becomes a goal.
     _assembler->setSystemConstraintsWeight(_constraintWeight);
 
@@ -96,7 +96,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
     _coordinateAssemblyConditions.clear();
 
     // Get model coordinates
-    const CoordinateSet &modelCoordSet = getModel().getCoordinateSet();
+    const CoordinateSet& modelCoordSet = getModel().getCoordinateSet();
 
     // Restrict solution to set range of any of the coordinates that are clamped
     for(int i=0; i<modelCoordSet.getSize(); ++i){
@@ -213,8 +213,8 @@ void AssemblySolver::assemble(SimTK::State &state)
         state.updU() = s.getU();
 
         // Get model coordinates
-        const CoordinateSet &modelCoordSet = getModel().getCoordinateSet();
-        // Make sure the locks in orignal state are restored
+        const CoordinateSet& modelCoordSet = getModel().getCoordinateSet();
+        // Make sure the locks in original state are restored
         for(int i=0; i< modelCoordSet.getSize(); ++i){
             bool isLocked = modelCoordSet[i].getLocked(state);
             if(isLocked)
@@ -243,7 +243,7 @@ void AssemblySolver::assemble(SimTK::State &state)
 /** Obtain a model configuration that meets the assembly conditions  
     (desired values and constraints) given a state that satisfies or
     is close to satisfying the constraints. Note there can be no change
-    in the number of constrainst or desired coordinates. Desired
+    in the number of constraints or desired coordinates. Desired
     coordinate values can and should be updated between repeated calls
     to track a desired trajectory of coordinate values. */
 void AssemblySolver::track(SimTK::State &s)

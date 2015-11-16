@@ -21,13 +21,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//==========================================================================================================
-//  testAssemblySolver loads models with constraints to verify that constraints are
-//  adequately satified or that an appropriate exception is thrown.
+//=============================================================================
+// testAssemblySolver loads models with constraints to verify that constraints
+// are adequately satified or that an appropriate exception is thrown.
 //
-//==========================================================================================================
+//=============================================================================
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -114,10 +115,10 @@ void testAssembleModelWithConstraints(string modelFile)
         for (int i = 0; i < js.getSize(); ++i){
             const Joint& j = js[i];
             viz.addDecoration(j.getParentFrame().getMobilizedBodyIndex(),
-                j.getParentTransform(),
+                j.getParentFrame().findTransformInBaseFrame(),
                 SimTK::DecorativeFrame(0.05));
             viz.addDecoration(j.getChildFrame().getMobilizedBodyIndex(),
-                j.getChildTransform(),
+                j.getChildFrame().findTransformInBaseFrame(),
                 SimTK::DecorativeFrame(0.033));
             viz.addDecoration(j.getChildFrame().getMobilizedBodyIndex(),
                 Transform(),
@@ -133,7 +134,7 @@ void testAssembleModelWithConstraints(string modelFile)
         model.getVisualizer().show(state);
     }
 
-    // Verify that the reaction forces at the constraints are not rediculously large
+    // Verify that the reaction forces at the constraints are not ridiculously large
     // They should sum to body-weight (more or less)
     model.getMultibodySystem().realize(state, Stage::Acceleration);
 
@@ -164,7 +165,7 @@ void testAssembleModelWithConstraints(string modelFile)
 
     ASSERT_EQUAL((totalYforce - bw - inertial) / bw, 0.0, SimTK::SqrtEps,
         __FILE__, __LINE__,
-        "Contraint force does not match body-weight plus inertial force (mg+ma).");
+        "Constraint force does not match body-weight plus inertial force (mg+ma).");
 
     //const CoordinateSet &coords = model.getCoordinateSet();
     double q_error = 0;
@@ -197,7 +198,7 @@ void testAssembleModelWithConstraints(string modelFile)
     int nPerr = positionErr.size();
     double pErrMag = positionErr.norm();
 
-    // get the configuration at the end of the simulaton
+    // get the configuration at the end of the simulation
     Vector q1 = state.getQ();
 
     model.updateAssemblyConditions(state);
@@ -230,7 +231,7 @@ void testAssembleModelWithConstraints(string modelFile)
     double q0Err = (q0_2 - q0_1).norm();
     double q1Err_1 = (q1_2 - q1_1).norm();
 
-    //cout << "******************* Init System Inital State *******************" << endl;
+    //cout << "******************* Init System Initial State *******************" << endl;
     for (int i = 0; i < q0_1.size(); i++) {
         cout << "Pre-simulation:" << i << " q0_1 = " << q0_1[i] << ", q0_2 = " << q0_2[i] << endl;
         ASSERT_EQUAL(q0_1[i], q0_2[i], 10*accuracy, __FILE__, __LINE__, "Initial state changed after 2nd call to initSystem");
@@ -250,15 +251,16 @@ void testAssemblySatisfiesConstraints(string modelFile)
     using namespace SimTK;
 
     cout << "****************************************************************************" << endl;
-    cout << " testAssemblySatisfiesConstraints :: "<< modelFile << endl;
+    cout << " testAssemblySatisfiesConstraints :: " << modelFile << endl;
     cout << "****************************************************************************\n" << endl;
     //==========================================================================================================
     // Setup OpenSim model
     Model model(modelFile);
+    model.print(modelFile + "_latest.osim");
     // In Simbody 3.4, rod constraints are handled differently than in Simbody
-    // 3.4. This leads to a decrease in the accuracy that the assembly solver
+    // 3.3. This leads to a decrease in the accuracy that the assembly solver
     // achieves, even though the constraints are achieved to the same extent.
-    // Therefore, it is reasonable to reduce the accuracy (increase the value
+    // Therefore, it is reasonable to loosen the accuracy (increase the value
     // of assembly_accuracy) for assembly.
     model.set_assembly_accuracy(1e-8);
 
@@ -293,11 +295,11 @@ void testAssemblySatisfiesConstraints(string modelFile)
     for(int i=0; i<N; ++i){
         kneeAngle = upper-i*delta;
         coords[0].setValue(state, kneeAngle, true);
-        //model.getVisualizer().show(state);
+//        model.getVisualizer().show(state);
         cerr = calcLigamentLengthError(state, model);
         qerr = coords[0].getValue(state)-kneeAngle;
-        //cout << "Assembly errors:: cerr = " << cerr << " m,  qerr = " 
-        //  << convertRadiansToDegrees(qerr) << " degrees" << endl;
+//        cout << "Assembly errors:: cerr = " << cerr << " m,  qerr = " 
+//          << convertRadiansToDegrees(qerr) << " degrees" << endl;
         ASSERT_EQUAL(0.0, cerr, model.get_assembly_accuracy(),
             __FILE__, __LINE__, "Constraints NOT satisfied to within assembly accuracy");
     }

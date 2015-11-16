@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
 
         cout << endl;
         cout<<"*****************************************************"<<endl;
-        printf("TEST: Actvation bounds %f and 1 \n",amin);
+        printf("TEST: Activation bounds %f and 1 \n",amin);
         cout<<"       respected during step response"<<endl;
         cout << endl;
 
@@ -413,7 +413,7 @@ void printMatrixToFile( const SimTK::Matrix& data, const std::string& filename)
   error term from going to zero
 
   @param taylorErrorMult  This scales the error tolerance. The default error
-  tolerance is the the 2nd order Taylor series
+  tolerance is the 2nd-order Taylor series
   term.
   */
 bool isFunctionContinuous(const SimTK::Vector& xV, const SimTK::Vector& yV,
@@ -473,7 +473,7 @@ bool isFunctionContinuous(const SimTK::Vector& xV, const SimTK::Vector& yV,
             errLMX = minTol;
 
         if(errRMX < minTol)
-            errRMX = minTol; // to accomodate numerical
+            errRMX = minTol; // to accommodate numerical
         //error in errL
 
         if(errL > errLMX || errR > errRMX){
@@ -579,10 +579,10 @@ class MySystemGuts : public SimTK::System::Guts {
     MySystemGuts(const FunctionData afuncData) : funcData(afuncData) {}
 
     // Implement required System::Guts virtuals.
-    MySystemGuts* cloneImpl() const {return new MySystemGuts(*this);}
+    MySystemGuts* cloneImpl() const override {return new MySystemGuts(*this);}
 
     // During realizeTopology() we allocate the needed State.
-    int realizeTopologyImpl(State& state) const {
+    int realizeTopologyImpl(State& state) const override {
         // HERE'S WHERE THE IC GETS SET
         Vector zInit(1, funcData.m_ic); // initial value for z
         state.allocateZ(SubsystemIndex(0), zInit);
@@ -590,7 +590,7 @@ class MySystemGuts : public SimTK::System::Guts {
     }
 
     // During realizeAcceleration() we calculate the State derivative.
-    int realizeAccelerationImpl(const State& state) const {
+    int realizeAccelerationImpl(const State& state) const override {
         Real x = state.getTime();
         Real z = state.getZ()[0];
 
