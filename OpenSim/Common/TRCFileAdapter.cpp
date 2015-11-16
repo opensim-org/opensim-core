@@ -3,18 +3,17 @@
 
 namespace OpenSim {
 
-const std::string TRCFileAdapter::delimiter_write_{"\t"};
-const std::string TRCFileAdapter::delimiters_read_{" \t"};
-const std::string TRCFileAdapter::newline_{"\n"};
-const std::string TRCFileAdapter::frame_num_column_label_{"Frame#"};
-const std::string TRCFileAdapter::time_column_label_{"Time"};
-const std::string TRCFileAdapter::x_label_{"X"};
-const std::string TRCFileAdapter::y_label_{"Y"};
-const std::string TRCFileAdapter::z_label_{"Z"};
-const std::string TRCFileAdapter::num_markers_label_{"NumMarkers"};
-const std::string TRCFileAdapter::num_frames_label_{"NumFrames"};
-const unsigned    TRCFileAdapter::data_starts_at_row_{7};
-const std::vector<std::string> TRCFileAdapter::metadata_keys_{"DataRate", 
+const std::string TRCFileAdapter::_delimiterWrite{"\t"};
+const std::string TRCFileAdapter::_delimitersRead{" \t"};
+const std::string TRCFileAdapter::_frameNumColumnLabel{"Frame#"};
+const std::string TRCFileAdapter::_timeColumnLabel{"Time"};
+const std::string TRCFileAdapter::_xLabel{"X"};
+const std::string TRCFileAdapter::_yLabel{"Y"};
+const std::string TRCFileAdapter::_zLabel{"Z"};
+const std::string TRCFileAdapter::_numMarkersLabel{"NumMarkers"};
+const std::string TRCFileAdapter::_numFramesLabel{"NumFrames"};
+const unsigned    TRCFileAdapter::_dataStartsAtLine{6};
+const std::vector<std::string> TRCFileAdapter::_metadataKeys{"DataRate", 
         "CameraRate", "NumFrames", "NumMarkers", "Units", "OrigDataRate", 
         "OrigDataStartFrame", "OrigNumFrames"};
 
@@ -37,108 +36,142 @@ TRCFileAdapter::write(const TRCFileAdapter::Table& table,
 
 TRCFileAdapter::OutputTables
 TRCFileAdapter::extendRead(const std::string& fileName) const {
-    if(fileName.empty())
-        throw Exception{"Input filename is not set."};
+    OPENSIM_THROW_IF(fileName.empty(),
+                     EmptyFileName);
 
     std::ifstream in_stream{fileName};
+    OPENSIM_THROW_IF(!in_stream.good(),
+                     FileDoesNotExist,
+                     fileName);
 
     std::unique_ptr<Table> table{new Table{}};
 
+    // Callable to get the next line in form of vector of tokens.
+    auto nextLine = [&] {
+        return getNextLine(in_stream, _delimitersRead);
+    };
+
     // First line of the stream is considered the header.
-    std::string line{};
-    std::getline(in_stream, line);
-    table->updTableMetaData().setValueForKey("header", line);
+    std::string header{};
+    std::getline(in_stream, header);
+    auto header_tokens = tokenize(header, _delimitersRead);
+    OPENSIM_THROW_IF(header_tokens.empty(),
+                     FileIsEmpty,
+                     fileName);        
+    OPENSIM_THROW_IF(header_tokens.at(0) != "PathFileType",
+                     MissingHeader);
+    table->updTableMetaData().setValueForKey("header", header);
 
     // Read the line containing metadata keys.
-    std::getline(in_stream, line);
-    auto keys = tokenize(line, delimiters_read_);
+    auto keys = nextLine();
+    OPENSIM_THROW_IF(keys.size() != _metadataKeys.size(),
+                     IncorrectNumMetaDataKeys,
+                     fileName,
+                     _metadataKeys.size(), 
+                     keys.size());
+
+    for(size_t i = 0; i < keys.size(); ++i)
+        OPENSIM_THROW_IF(keys[i] != _metadataKeys[i],
+                         UnexpectedMetaDataKey,
+                         fileName,
+                         _metadataKeys[i],
+                         keys[i]);
 
     // Read the line containing metadata values.
-    std::getline(in_stream, line);
-    auto values = tokenize(line, delimiters_read_);
-
-    if(keys.size() != values.size())
-        throw Exception{"Number of metadata keys and values do not match"};
+    auto values = nextLine();
+    OPENSIM_THROW_IF(keys.size() != values.size(),
+                     MetaDataLengthMismatch,
+                     fileName,
+                     keys.size(),
+                     values.size());
 
     // Fill up the metadata container.
     for(std::size_t i = 0; i < keys.size(); ++i)
         table->updTableMetaData().setValueForKey(keys[i], values[i]);
 
+    auto num_markers_expected = 
+        std::stoul(table->
+                   getTableMetaData().
+                   getValueForKey(_numMarkersLabel).
+                   template getValue<std::string>());
+
     // Read the line containing column labels and fill up the column labels
     // container.
-    std::getline(in_stream, line);
-    auto column_labels = tokenize(line, delimiters_read_);
+    auto column_labels = nextLine();
+    OPENSIM_THROW_IF(column_labels.size() != num_markers_expected + 2,
+                     IncorrectNumColumnLabels,
+                     fileName,
+                     num_markers_expected + 2,
+                     column_labels.size());
 
     // Column 0 should be the frame number. Check and get rid of it as it is
     // not used. The whole column is discarded as the data is read in.
-    if(column_labels[0] != frame_num_column_label_)
-        throw Exception{"Expected label for column 0 to be '" +
-                frame_num_column_label_ + "' but found it to be '" +
-                column_labels[0] + "'."};
+    OPENSIM_THROW_IF(column_labels[0] != _frameNumColumnLabel,
+                     UnexpectedColumnLabel,
+                     fileName,
+                     _frameNumColumnLabel,
+                     column_labels[0]);
     column_labels.erase(column_labels.begin());
 
     // Column 0 (originally column 1 before removing frame number) should
     // now be the time column. Check and get rid of it. The data in this
     // column is maintained separately from rest of the data.
-    if(column_labels[0] != time_column_label_)
-        throw Exception{"Expected label for column 1 to be '" +
-                time_column_label_ + "' but found it to be '" +
-                column_labels[0] + "'."};
+    OPENSIM_THROW_IF(column_labels[0] != _timeColumnLabel,
+                     UnexpectedColumnLabel,
+                     fileName,
+                     _timeColumnLabel,
+                     column_labels[0]);
     column_labels.erase(column_labels.begin());
 
     // Read in the next line of column labels containing (Xdd, Ydd, Zdd)
     // tuples where dd is a 1 or 2 digit subscript. For example --
     // X1, Y1, Z1, X2, Y2, Z2, ... so on.
     // Check and ignore these labels.
-    std::getline(in_stream, line);
-    auto xyz_labels_found = tokenize(line, delimiters_read_);
-    auto num_markers_expected = 
-        std::stoul(table->
-                   getTableMetaData().
-                   getValueForKey(num_markers_label_).
-                   template getValue<std::string>());
-    decltype(xyz_labels_found) xyz_labels_expected{};
-    xyz_labels_expected.reserve(num_markers_expected * 3);
-    for(int i = 1; i <= num_markers_expected; ++i)
-        for(auto& letter : {x_label_, y_label_, z_label_})
-            xyz_labels_expected.push_back(letter + std::to_string(i));
-    if(xyz_labels_found != xyz_labels_expected)
-        throw Exception{"Expected secondary column labels to "
-                "be of form X1, Y1, Z1, X2, Y2, Z2, ... so on. There must "
-                "be one (X,Y,Z) triplet per marker."};
+    auto xyz_labels_found = nextLine();
+    for(int i = 1; i <= num_markers_expected; ++i) {
+        size_t j = 0;
+        for(auto& letter : {_xLabel, _yLabel, _zLabel}) {
+            const size_t ind = ((i - 1) * 3) + j++;
+            const std::string expected{letter + std::to_string(i)};
+            OPENSIM_THROW_IF(xyz_labels_found.at(ind) != expected,
+                             UnexpectedColumnLabel,
+                             fileName,
+                             expected,
+                             xyz_labels_found.at(ind));
+        }
+    }
 
     // Read the rows one at a time and fill up the time column container and
     // the data container.
     auto num_frames_expected = 
         std::stoul(table->
                    getTableMetaData().
-                   getValueForKey(num_frames_label_).
+                   getValueForKey(_numFramesLabel).
                    template getValue<std::string>());
-    std::size_t row_num{data_starts_at_row_ - 1};
-    while(std::getline(in_stream, line)) {
-        auto row = tokenize(line, delimiters_read_);
-        ++row_num;
-
-        if(row.size() != column_labels.size() * 3 + 2)
-            throw Exception{"There are " + 
-                    std::to_string(column_labels.size() * 3 + 2) + 
-                    " column labels but row " + std::to_string(row_num) + 
-                    " contains " + std::to_string(row.size()) + " columns."};
+    std::size_t line_num{_dataStartsAtLine - 1};
+    auto row = nextLine();
+    while(!row.empty()) {
+        ++line_num;
+        size_t expected{column_labels.size() * 3 + 2};
+        OPENSIM_THROW_IF(row.size() != expected,
+                         RowLengthMismatch,
+                         fileName,
+                         line_num,
+                         expected,
+                         row.size());
 
         // Columns 2 till the end are data.
-        auto num_markers_expected = 
-            std::stoi(table->
-                      getTableMetaData().
-                      getValueForKey(num_markers_label_).
-                      template getValue<std::string>());
-        Table::RowVector row_vector{num_markers_expected};
+        Table::RowVector row_vector{static_cast<int>(num_markers_expected)};
+        size_t ind{0};
         for(std::size_t c = 2; c < column_labels.size() * 3 + 2; c += 3)
-            row_vector[c] = SimTK::Vec3{std::stod(row[c]),
-                                        std::stod(row[c+1]),
-                                        std::stod(row[c+2])};
+            row_vector[ind++] = SimTK::Vec3{std::stod(row.at(c)),
+                                            std::stod(row.at(c+1)),
+                                            std::stod(row.at(c+2))};
 
         // Column 1 is time.
-        table->appendRow(std::stod(row[1]), std::move(row_vector));
+        table->appendRow(std::stod(row.at(1)), std::move(row_vector));
+
+        row = nextLine();
     }
 
     // Set the column labels of the table.
@@ -146,7 +179,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     for(const auto& cl : column_labels)
         value_array.upd().push_back(SimTK::Value<std::string>{cl});
     Table::DependentsMetaData dep_metadata{};
-    dep_metadata.setValueForKey("labels", value_array);
+    dep_metadata.setValueArrayForKey("labels", value_array);
     table->setDependentsMetaData(dep_metadata);
 
     OutputTables output_tables{};
@@ -158,135 +191,149 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
 void
 TRCFileAdapter::extendWrite(const InputTables& absTables, 
                             const std::string& fileName) const {
-    auto& table = dynamic_cast<const Table&>(*absTables[0]);
+    OPENSIM_THROW_IF(absTables.empty(),
+                     NoTableFound);
 
-    if(fileName.empty())
-        throw Exception{"Input filename is not set."};
+    const Table* table{};
+    try {
+        table = dynamic_cast<const Table*>(absTables.at(0));
+    } catch(std::bad_cast&) {
+        OPENSIM_THROW(IncorrectTableType);
+    }
+
+    OPENSIM_THROW_IF(fileName.empty(),
+                     EmptyFileName);
 
     std::ofstream out_stream{fileName};
 
     // First line of the stream is the header.
     try {
-    out_stream << table.
+    out_stream << table->
                   getTableMetaData().
                   getValueForKey("header").
                   getValue<std::string>() << std::endl;
-    } catch(std::out_of_range&) {
+    } catch(KeyNotFound&) {
         out_stream << "PathFileType\t4\t(X/Y/Z)\t" << fileName << std::endl;
     }
 
     // Line containing metadata keys.
-    out_stream << metadata_keys_[0];
-    for(unsigned i = 1; i < metadata_keys_.size(); ++i)
-        out_stream << delimiter_write_ << metadata_keys_[i];
+    out_stream << _metadataKeys[0];
+    for(unsigned i = 1; i < _metadataKeys.size(); ++i)
+        out_stream << _delimiterWrite << _metadataKeys[i];
     out_stream << std::endl;
 
     // Line containing metadata values.
     std::string datarate;
     try {
-        datarate = table.
+        datarate = table->
                    getTableMetaData().
-                   getValueForKey(metadata_keys_[0]).
+                   getValueForKey(_metadataKeys[0]).
                    getValue<std::string>();
-    } catch(std::out_of_range&) {
-        throw Exception{"Metadata 'DataRate' missing."};
+    } catch(KeyNotFound&) {
+        OPENSIM_THROW(MissingMetaData,
+                      "DataRate");
     }
-    out_stream << datarate << delimiter_write_;
+    out_stream << datarate << _delimiterWrite;
     try {
-        out_stream << table.
+        out_stream << table->
                       getTableMetaData().
-                      getValueForKey(metadata_keys_[1]).
+                      getValueForKey(_metadataKeys[1]).
                       getValue<std::string>()
-                   << delimiter_write_;
-    } catch(std::out_of_range&) {
-        out_stream << datarate << delimiter_write_;
+                   << _delimiterWrite;
+    } catch(KeyNotFound&) {
+        out_stream << datarate << _delimiterWrite;
     }
     try {
-        out_stream << table.
+        out_stream << table->
                       getTableMetaData().
-                      getValueForKey(metadata_keys_[2]).
+                      getValueForKey(_metadataKeys[2]).
                       getValue<std::string>()
-                   << delimiter_write_;
-    } catch(std::out_of_range&) {
-        out_stream << table.getNumRows() << delimiter_write_;
+                   << _delimiterWrite;
+    } catch(KeyNotFound&) {
+        out_stream << table->getNumRows() << _delimiterWrite;
     }
     try {
-        out_stream << table.
+        out_stream << table->
                       getTableMetaData().
-                      getValueForKey(metadata_keys_[3]).
+                      getValueForKey(_metadataKeys[3]).
                       getValue<std::string>()
-                   << delimiter_write_;
-    } catch(std::out_of_range&) {
-        out_stream << table.getNumColumns() << delimiter_write_;
+                   << _delimiterWrite;
+    } catch(KeyNotFound&) {
+        out_stream << table->getNumColumns() << _delimiterWrite;
     }
     try {
-        out_stream << table.
+        out_stream << table->
                       getTableMetaData().
-                      getValueForKey(metadata_keys_[4]).
+                      getValueForKey(_metadataKeys[4]).
                       getValue<std::string>()
-                   << delimiter_write_;
-    } catch(std::out_of_range&) {
-        throw Exception{"Metadata 'Units' missing."};
+                   << _delimiterWrite;
+    } catch(KeyNotFound&) {
+        OPENSIM_THROW(MissingMetaData,
+                      "Units");
     }
     try {
-        out_stream << table.
+        out_stream << table->
                       getTableMetaData().
-                      getValueForKey(metadata_keys_[5]).
+                      getValueForKey(_metadataKeys[5]).
                       getValue<std::string>()
-                   << delimiter_write_;
-    } catch(std::out_of_range&) {
-        out_stream << datarate << delimiter_write_;
+                   << _delimiterWrite;
+    } catch(KeyNotFound&) {
+        out_stream << datarate << _delimiterWrite;
     }
     try {
-        out_stream << table.
+        out_stream << table->
                       getTableMetaData().
-                      getValueForKey(metadata_keys_[6]).
+                      getValueForKey(_metadataKeys[6]).
                       getValue<std::string>()
-                   << delimiter_write_;
-    } catch(std::out_of_range&) {
-        out_stream << 0 << delimiter_write_;
+                   << _delimiterWrite;
+    } catch(KeyNotFound&) {
+        out_stream << 0 << _delimiterWrite;
     }
     try {
-        out_stream << table.
+        out_stream << table->
                       getTableMetaData().
-                      getValueForKey(metadata_keys_[7]).
+                      getValueForKey(_metadataKeys[7]).
                       getValue<std::string>();
-    } catch(std::out_of_range&) {
-        out_stream << table.getNumRows();
+    } catch(KeyNotFound&) {
+        out_stream << table->getNumRows();
     }
     out_stream << std::endl;
 
     // Line containing column labels.
-    out_stream << frame_num_column_label_ << delimiter_write_
-               << time_column_label_      << delimiter_write_;
-    for(unsigned col = 0; col < table.getNumColumns(); ++col)
-        out_stream << table.
+    out_stream << _frameNumColumnLabel << _delimiterWrite
+               << _timeColumnLabel     << _delimiterWrite;
+    for(unsigned col = 0; col < table->getNumColumns(); ++col)
+        out_stream << table->
                       getDependentsMetaData().
                       getValueArrayForKey("labels")[col].
                       getValue<std::string>()
-                   << delimiter_write_ << delimiter_write_ << delimiter_write_;
+                   << _delimiterWrite << _delimiterWrite << _delimiterWrite;
     out_stream << std::endl;
 
     // Line containing xyz component labels for each marker.
-    out_stream << delimiter_write_ << delimiter_write_;
-    for(unsigned col = 0; col <= table.getNumColumns(); ++col)
-        for(auto& letter : {x_label_, y_label_, z_label_})
-            out_stream << (letter + std::to_string(col)) << delimiter_write_;
+    out_stream << _delimiterWrite << _delimiterWrite;
+    for(unsigned col = 1; col <= table->getNumColumns(); ++col)
+        for(auto& letter : {_xLabel, _yLabel, _zLabel})
+            out_stream << (letter + std::to_string(col)) << _delimiterWrite;
     out_stream << std::endl;
 
     // Empty line.
     out_stream << std::endl;
 
     // Data rows.
-    for(unsigned row = 0; row < table.getNumRows(); ++row) {
-        out_stream << row                  << delimiter_write_ 
-                   << table.getIndependentColumn()[row] << delimiter_write_;
-        for(unsigned col = 0; col < table.getNumColumns(); ++col) {
-            const auto& row_r = table.getRowAtIndex(row);
+    for(unsigned row = 0; row < table->getNumRows(); ++row) {
+        constexpr auto prec = std::numeric_limits<double>::digits10 + 1;
+        constexpr auto width = std::numeric_limits<double>::max_digits10;
+        out_stream << row + 1                           << _delimiterWrite
+                   << std::setprecision(prec) 
+                   << table->getIndependentColumn()[row] << _delimiterWrite;
+        for(unsigned col = 0; col < table->getNumColumns(); ++col) {
+            const auto& row_r = table->getRowAtIndex(row);
             const auto& elt = row_r[col];
-            out_stream << elt[0] << delimiter_write_
-                       << elt[1] << delimiter_write_
-                       << elt[2] << delimiter_write_;
+            out_stream << std::setprecision(prec) 
+                       << elt[0] << _delimiterWrite
+                       << elt[1] << _delimiterWrite
+                       << elt[2] << _delimiterWrite;
         }
         out_stream << std::endl;
     }

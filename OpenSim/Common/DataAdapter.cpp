@@ -1,36 +1,44 @@
-#include "DataAdapter.h"
-
+#include "Adapters.h"
 
 namespace OpenSim {
 
 DataAdapter::RegisteredDataAdapters 
-DataAdapter::registered_data_adapters{};
+DataAdapter::_registeredDataAdapters{};
 
-void 
+bool 
 DataAdapter::registerDataAdapter(const std::string& identifier,
                                  const DataAdapter& adapter) {
-    if(registered_data_adapters.find(identifier) != 
-       registered_data_adapters.end())
-        throw Exception{"DataAdapter::registerDataAdapter() adapter for '" +
-                identifier + "' already registered."};
+    OPENSIM_THROW_IF(_registeredDataAdapters.find(identifier) != 
+                     _registeredDataAdapters.end(),
+                     DataAdapterAlreadyRegistered,
+                     identifier);
 
-    auto kv = std::make_pair(identifier, 
-                             std::unique_ptr<DataAdapter>{adapter.clone()});
+    auto result = _registeredDataAdapters.emplace(identifier, 
+                                 std::unique_ptr<DataAdapter>{adapter.clone()});
 
-    registered_data_adapters.insert(std::move(kv));
+    return result.second;
 }
 
 std::unique_ptr<DataAdapter> 
 DataAdapter::createAdapter(const std::string& identifier) {
     try {
         DataAdapter* adapter = 
-            registered_data_adapters.at(identifier)->clone();
+            _registeredDataAdapters.at(identifier)->clone();
         return std::unique_ptr<DataAdapter>{adapter};
     } catch(std::out_of_range&) {
-        throw Exception{"No DataAdapter was found among the "
-                "registered DataAdapters for the identifier: " + identifier 
-                + "."};
+        OPENSIM_THROW(NoRegisteredDataAdapter,
+                      identifier);
     }
+}
+
+namespace {
+
+// Automatic registration of OpenSim adapters. There will be one call per 
+// registration. The return values (of type bool) are AND(ed) together to
+// initialize this variable. This variable exists only for this purpose.
+bool 
+registerAdapters{DataAdapter::registerDataAdapter("trc", TRCFileAdapter{})};
+
 }
 
 }

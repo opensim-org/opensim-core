@@ -26,8 +26,152 @@
 
 namespace OpenSim {
 
+class MissingHeader : public IOError {
+public:
+    using IOError::IOError;
+};
+
+class IncorrectNumMetaDataKeys : public IOError {
+public: 
+    IncorrectNumMetaDataKeys(const std::string& file,
+                             size_t line,
+                             const std::string& func,
+                             const std::string& filename,
+                             size_t expected,
+                             size_t received) :
+        IOError(file, line, func) {
+        std::string msg = "Error reading MetaData in file '" + filename + "'. ";
+        msg += "Incorrect number of keys. ";
+        msg += "Expected = " + std::to_string(expected) + ". ";
+        msg += "Received = " + std::to_string(received) + ". ";
+
+        addMessage(msg);
+    }
+};
+
+class UnexpectedMetaDataKey : public IOError {
+public:
+    UnexpectedMetaDataKey(const std::string& file,
+                          size_t line,
+                          const std::string& func,
+                          const std::string& filename,
+                          const std::string& expected,
+                          const std::string& received) :
+        IOError(file, line, func) {
+        std::string msg = "Error reading MetaData in file '" + filename + "'. ";
+        msg += "Unexpected key. ";
+        msg += "Expected = " + expected + ". ";
+        msg += "Received = " + received + ".";
+
+        addMessage(msg);
+    }
+};
+
+class MetaDataLengthMismatch : public IOError {
+public:
+    MetaDataLengthMismatch(const std::string& file,
+                           size_t line,
+                           const std::string& func,
+                           const std::string& filename,
+                           size_t keys_len,
+                           size_t values_len) :
+        IOError(file, line, func) {
+        std::string msg = "Error reading Metadata in file '" + filename + "'. ";
+        msg += "Number of keys and values do not match. ";
+        msg += "Keys = " + std::to_string(keys_len) + ". ";
+        msg += "Values = " + std::to_string(values_len) + ". ";
+
+        addMessage(msg);
+    }
+};
+
+class IncorrectNumColumnLabels : public IOError {
+public:
+    IncorrectNumColumnLabels(const std::string& file,
+                             size_t line,
+                             const std::string& func,
+                             const std::string& filename,
+                             size_t expected,
+                             size_t received) :
+        IOError(file, line, func) {
+        std::string msg = "Error reading column Labels in file '" + filename;
+        msg += "'. Unexpected number of column labels. ";
+        msg += "Expected = " + std::to_string(expected) + ". ";
+        msg += "Recieved = " + std::to_string(received) + ".";
+
+        addMessage(msg);
+    }
+};
+
+class UnexpectedColumnLabel : public IOError {
+public:
+    UnexpectedColumnLabel(const std::string& file,
+                          size_t line,
+                          const std::string& func,
+                          const std::string& filename,
+                          const std::string& expected,
+                          const std::string& received) :
+        IOError(file, line, func) {
+        std::string msg = "Error reading column Labels in file '" + filename;
+        msg += "'. Unexpected column label. ";
+        msg += "Expected = " + expected + ". ";
+        msg += "Received = " + received + ". ";
+
+        addMessage(msg);
+    }
+};
+
+class RowLengthMismatch : public IOError {
+public:
+    RowLengthMismatch(const std::string& file,
+                      size_t line,
+                      const std::string& func,
+                      const std::string& filename,
+                      size_t line_num,
+                      size_t expected,
+                      size_t received) :
+        IOError(file, line, func) {
+        std::string msg = "Error reading rows in file '" + filename + "'. ";
+        msg += "Unexpected number of columns in line ";
+        msg += std::to_string(line_num) + ". ";
+        msg += "Expected = " + std::to_string(expected) + ". ";
+        msg += "Received = " + std::to_string(received) + ". ";
+
+        addMessage(msg);
+    }
+};
+
+class NoTableFound : public InvalidArgument {
+public:
+    NoTableFound(const std::string& file,
+                 size_t line,
+                 const std::string& func) :
+        InvalidArgument(file, line, func) {
+        std::string msg = "No table to write.";
+
+        addMessage(msg);
+    }
+};
+
+class IncorrectTableType : public InvalidArgument {
+public:
+    IncorrectTableType(const std::string& file,
+                       size_t line,
+                       const std::string& func) :
+        InvalidArgument(file, line, func) {
+        std::string msg = "Incorrect Table type.";
+
+        addMessage(msg);
+    }
+};
+
+/** TRCFileAdapter is a FileAdapter that reads and writes TRC files. It accepts
+(when writing) and returns (when reading) a specific type of DataTable referred 
+to as Table in this class. Be sure to expect/provide that table when working
+with this adapter.                                                            */
 class TRCFileAdapter : public FileAdapter {
 public:
+    /** Type of the table returned by the read and accepted by the write.     */
     using Table = TimeSeriesTable_<SimTK::Vec3>;
 
     TRCFileAdapter()                                 = default;
@@ -39,30 +183,45 @@ public:
     
     TRCFileAdapter* clone() const override;
 
+    /** Read a given TRC file. The filename provided need not contain ".trc". */
     std::unique_ptr<Table> read(const std::string& fileName) const;
 
+    /** Write a table to a TRC file. The filename provided need not contain 
+    ".trc".                                                                   */
     void write(const Table& table, 
                const std::string& fileName) const;
 
 protected:
+    /** Implementation of the read functionality.                             */
     OutputTables extendRead(const std::string& fileName) const override;
 
+    /** Implementation of the write functionality.                            */
     void extendWrite(const InputTables& tables, 
                      const std::string& fileName) const override;
     
 private:
-    static const std::string              delimiter_write_;
-    static const std::string              delimiters_read_;
-    static const std::string              newline_;
-    static const std::string              frame_num_column_label_;
-    static const std::string              time_column_label_;
-    static const std::string              x_label_;
-    static const std::string              y_label_;
-    static const std::string              z_label_;
-    static const std::string              num_markers_label_;
-    static const std::string              num_frames_label_;
-    static const unsigned                 data_starts_at_row_;
-    static const std::vector<std::string> metadata_keys_;
+    /** Delimiter used for writing.                                           */
+    static const std::string              _delimiterWrite;
+    /** Delimiters used for reading.                                          */
+    static const std::string              _delimitersRead;
+    /** Column label of the column representing frame number.                 */
+    static const std::string              _frameNumColumnLabel;
+    /** Column label of the column representing time.                         */
+    static const std::string              _timeColumnLabel;
+    /** Letter used to represent x-component.                                 */
+    static const std::string              _xLabel;
+    /** Letter used to represent y-component.                                 */
+    static const std::string              _yLabel;
+    /** Letter used to represent z-component.                                 */
+    static const std::string              _zLabel;
+    /** Metadata key representing number of markers.                          */
+    static const std::string              _numMarkersLabel;
+    /** Metadata key representing number of frames.                           */
+    static const std::string              _numFramesLabel;
+    /** Line number at which the data rows start.                             */
+    static const unsigned                 _dataStartsAtLine;
+    /** Ordered collection of metadata keys.                                  */
+    static const std::vector<std::string> _metadataKeys;
 };
 
 } // namespace OpenSim

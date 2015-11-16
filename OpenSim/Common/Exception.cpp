@@ -70,7 +70,7 @@ exception()
 Exception::Exception(const std::string& file,
                      size_t line,
                      const std::string& func) {
-    addMessage(file + ":" + std::to_string(line) + "\n" + "In function '" + 
+    addMessage(file + ":" + std::to_string(line) + "  " + "In function '" + 
                func + "'");
 }
 

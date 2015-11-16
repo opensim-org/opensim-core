@@ -155,6 +155,18 @@ public:
 };  // END CLASS Exception
 
 
+class InvalidArgument : public Exception {
+public:
+    InvalidArgument(const std::string& file,
+                    size_t line,
+                    const std::string& func) :
+        Exception(file, line, func) {
+        std::string msg = "Invalid Argument.";
+
+        addMessage(msg);
+    }
+};
+
 class IndexOutOfRange : public Exception {
 public:
     IndexOutOfRange(const std::string& file,
@@ -183,6 +195,11 @@ public:
 
         addMessage(msg);
     }
+};
+
+class IOError : public Exception {
+public:
+    using Exception::Exception;
 };
 
 }; //namespace

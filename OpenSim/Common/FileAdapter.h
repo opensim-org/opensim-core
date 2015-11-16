@@ -32,10 +32,60 @@
 
 namespace OpenSim {
 
-/** FileAdapter class for constructing DataAdapters that specifically access
-data sources that are files. It provides utilities for resolving paths and
-format parsing.
-Concrete classes handle the individual formats and specific DataTypes.        */
+class EmptyFileName : public InvalidArgument {
+public:
+    EmptyFileName(const std::string& file,
+                  size_t line,
+                  const std::string& func) :
+        InvalidArgument(file, line, func) {
+        std::string msg = "Filename is empty.";
+
+        addMessage(msg);
+    }
+};
+
+class FileDoesNotExist : public IOError {
+public:
+    FileDoesNotExist(const std::string& file,
+                     size_t line,
+                     const std::string& func,
+                     const std::string filename) :
+        IOError(file, line, func) {
+        std::string msg = "File '" + filename + "' does not exist.";
+
+        addMessage(msg);
+    }
+};
+
+class FileIsEmpty : public IOError {
+public:
+    FileIsEmpty(const std::string& file,
+                size_t line,
+                const std::string& func,
+                const std::string& filename) :
+        IOError(file, line, func) {
+        std::string msg = "File '" + filename + "' is empty.";
+
+        addMessage(msg);
+    }
+};
+
+class FileExtensionNotFound : public InvalidArgument {
+public:
+    FileExtensionNotFound(const std::string& file,
+                          size_t line,
+                          const std::string& func,
+                          const std::string& filename) :
+        InvalidArgument(file, line, func) {
+        std::string msg = "Error inferring extension for file '";
+        msg += filename + "'.";
+
+        addMessage(msg);
+    }
+};
+
+/** FileAdapter is a DataAdapter that reads and writes files with methods
+readFile and writeFile respectively.                                          */
 class FileAdapter : public DataAdapter {
 public:
     FileAdapter()                              = default;
@@ -44,17 +94,35 @@ public:
     FileAdapter& operator=(const FileAdapter&) = default;
     FileAdapter& operator=(FileAdapter&&)      = default;
     virtual ~FileAdapter()                     = default;
- 
+
+    /** Read a file with the given name. Returns a collection of tables 
+    depending on the contents of the file read. For example, a TRC file contains
+    just one table whereas a C3D file might contain multiple tables. Refer to
+    the specific adapter's documentation to see what was returned.            */
     static OutputTables readFile(const std::string& fileName);
 
+    /** Write a collection of tables to the given file. Different file formats
+    require different number/type of tables. See specific adapter's 
+    documentation to see what is required.                                    */
     static void writeFile(const InputTables& tables, 
                           const std::string& fileName);
-    
+
+protected:    
+    /** Convenience function to find the extension from a filename.           */
     static
     std::string findExtension(const std::string& filename);
 
+    /** Tokenize/split a given string using the given delimiters. The delimters 
+    are each required to be one character and the string is split if/when any 
+    of those characters are found. For example, a delimiter string " \t" 
+    specifies that either a space or a tab can act as the delimiter.          */
     std::vector<std::string> tokenize(const std::string& str, 
                                       const std::string& delims) const;
+
+    /** Get the next line from the stream and tokenize/split the line using
+    the given delimiters.                                                     */
+    std::vector<std::string> getNextLine(std::istream& stream,
+                                         const std::string& delims) const;
 };
 
 } // OpenSim namespace
