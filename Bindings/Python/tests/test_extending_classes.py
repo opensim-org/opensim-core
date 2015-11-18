@@ -10,15 +10,10 @@ import opensim as osim
 test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
                         'tests')
 
+@osim.declare_concrete_object
 class MyAnalysis(osim.Analysis):
     def __init__(self):
         super(MyAnalysis, self).__init__()
-    def getConcreteClassName(self):
-        return "MyAnalysis"
-    def clone(self):
-        return MyAnalysis().__disown__()
-    def setModel(self, model):
-        pass
     def begin(self, state):
         self.test_begin = 61
         return 1
