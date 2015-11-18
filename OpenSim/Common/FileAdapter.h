@@ -84,6 +84,80 @@ public:
     }
 };
 
+class UnexpectedColumnLabel : public IOError {
+public:
+    UnexpectedColumnLabel(const std::string& file,
+                          size_t line,
+                          const std::string& func,
+                          const std::string& filename,
+                          const std::string& expected,
+                          const std::string& received) :
+        IOError(file, line, func) {
+        std::string msg = "Error reading column Labels in file '" + filename;
+        msg += "'. Unexpected column label. ";
+        msg += "Expected = " + expected + ". ";
+        msg += "Received = " + received + ". ";
+
+        addMessage(msg);
+    }
+};
+
+class RowLengthMismatch : public IOError {
+public:
+    RowLengthMismatch(const std::string& file,
+                      size_t line,
+                      const std::string& func,
+                      const std::string& filename,
+                      size_t line_num,
+                      size_t expected,
+                      size_t received) :
+        IOError(file, line, func) {
+        std::string msg = "Error reading rows in file '" + filename + "'. ";
+        msg += "Unexpected number of columns in line ";
+        msg += std::to_string(line_num) + ". ";
+        msg += "Expected = " + std::to_string(expected) + ". ";
+        msg += "Received = " + std::to_string(received) + ". ";
+
+        addMessage(msg);
+    }
+};
+
+class NoTableFound : public InvalidArgument {
+public:
+    NoTableFound(const std::string& file,
+                 size_t line,
+                 const std::string& func) :
+        InvalidArgument(file, line, func) {
+        std::string msg = "No table to write.";
+
+        addMessage(msg);
+    }
+};
+
+class IncorrectTableType : public InvalidArgument {
+public:
+    IncorrectTableType(const std::string& file,
+                       size_t line,
+                       const std::string& func) :
+        InvalidArgument(file, line, func) {
+        std::string msg = "Incorrect Table type.";
+
+        addMessage(msg);
+    }
+};
+
+class TableMissingHeader : public Exception {
+public:
+    TableMissingHeader(const std::string& file,
+                       size_t line,
+                       const std::string& func) :
+        Exception(file, line, func) {
+        std::string msg = "Table does not have metadata for 'header'.";
+
+        addMessage(msg);
+    }
+};
+
 /** FileAdapter is a DataAdapter that reads and writes files with methods
 readFile and writeFile respectively.                                          */
 class FileAdapter : public DataAdapter {

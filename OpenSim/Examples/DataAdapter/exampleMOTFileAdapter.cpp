@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  exampleTRCFileAdapter.cpp             *
+ *                            OpenSim:  exampleMOTFileAdapter.cpp             *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -22,27 +22,28 @@
  * -------------------------------------------------------------------------- */
 
 #include "OpenSim/Common/Adapters.h"
+#include <algorithm>
 
 int main() {
-    std::string filename{"OpenSim/Common/Test/TRCFileWithNANs.trc"};
+    std::string filename{"OpenSim/Tests/ExampleMain/tugOfWar_forces.mot"};
 
     // There are two ways to read the file:
     // (1) Use the specific adapter to read the file. This requires you to know
-    //     the format of the file. Use a TRCFileAdapter to read TRC file.
+    //     the format of the file. Use a MOTFileAdapter to read MOT file.
     // (2) Use the generic FileAdapter to read the file and let it take care
     //     of picking the right Adapter for the given file format.
 
-    // First method. Knowing that the file is a TRC file, use the TRCFileAdapter
+    // First method. Knowing that the file is a MOT file, use the MOTFileAdapter
     // directly to read the flie.
-    OpenSim::TRCFileAdapter trcfileadapter{};
-    auto table1 = trcfileadapter.read(filename);
+    OpenSim::MOTFileAdapter motfileadapter{};
+    auto table1 = motfileadapter.read(filename);
 
     // Second method. Use the generic FileAdapter. The result is a collection
-    // of tables. For a TRC file, this collection will contain just one table. 
+    // of tables. For a MOT file, this collection will contain just one table. 
     // This table will be an AbstractDataTable. It will have to be casted to the
     //  concrete type to access the data.
     auto& abstable2 = OpenSim::FileAdapter::readFile(filename).at(0);
-    auto table2 = static_cast<OpenSim::TRCFileAdapter::Table*>(abstable2.get());
+    auto table2 = static_cast<OpenSim::MOTFileAdapter::Table*>(abstable2.get());
 
     // From this point on, both table1 and table2 represent the same type of
     // DataTable and so both support the same operations. Below code 
@@ -52,12 +53,7 @@ int main() {
     // Metadata of the table.
     std::cout << table1->
                  getTableMetaData().
-                 getValueForKey("DataRate").
-                 getValue<std::string>() << std::endl;
-
-    std::cout << table1->
-                 getTableMetaData().
-                 getValueForKey("Units").
+                 getValueForKey("header").
                  getValue<std::string>() << std::endl;
 
     // Column labels of the table.
@@ -73,7 +69,7 @@ int main() {
               << table1->getNumColumns() << std::endl;
 
     // Individual rows of the table.
-    for(size_t i = 0; i < table1->getNumRows(); ++i)
+    for(size_t i = 0; i < std::min(table1->getNumRows(), size_t(3)); ++i)
         std::cout << table1->getRowAtIndex(i) << std::endl;
 
     // See documentation for TimeSeriesTable for full set of operations

@@ -37,7 +37,8 @@ namespace {
 // registration. The return values (of type bool) are AND(ed) together to
 // initialize this variable. This variable exists only for this purpose.
 bool 
-registerAdapters{DataAdapter::registerDataAdapter("trc", TRCFileAdapter{})};
+registerAdapters{DataAdapter::registerDataAdapter("trc", TRCFileAdapter{}) &&
+                 DataAdapter::registerDataAdapter("mot", MOTFileAdapter{})};
 
 }
 

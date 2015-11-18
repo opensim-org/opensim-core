@@ -211,16 +211,16 @@ TRCFileAdapter::extendWrite(const InputTables& absTables,
     out_stream << table->
                   getTableMetaData().
                   getValueForKey("header").
-                  getValue<std::string>() << std::endl;
+                  getValue<std::string>() << "\n";
     } catch(KeyNotFound&) {
-        out_stream << "PathFileType\t4\t(X/Y/Z)\t" << fileName << std::endl;
+        out_stream << "PathFileType\t4\t(X/Y/Z)\t" << fileName << "\n";
     }
 
     // Line containing metadata keys.
     out_stream << _metadataKeys[0];
     for(unsigned i = 1; i < _metadataKeys.size(); ++i)
         out_stream << _delimiterWrite << _metadataKeys[i];
-    out_stream << std::endl;
+    out_stream << "\n";
 
     // Line containing metadata values.
     std::string datarate;
@@ -297,7 +297,7 @@ TRCFileAdapter::extendWrite(const InputTables& absTables,
     } catch(KeyNotFound&) {
         out_stream << table->getNumRows();
     }
-    out_stream << std::endl;
+    out_stream << "\n";
 
     // Line containing column labels.
     out_stream << _frameNumColumnLabel << _delimiterWrite
@@ -308,17 +308,17 @@ TRCFileAdapter::extendWrite(const InputTables& absTables,
                       getValueArrayForKey("labels")[col].
                       getValue<std::string>()
                    << _delimiterWrite << _delimiterWrite << _delimiterWrite;
-    out_stream << std::endl;
+    out_stream << "\n";
 
     // Line containing xyz component labels for each marker.
     out_stream << _delimiterWrite << _delimiterWrite;
     for(unsigned col = 1; col <= table->getNumColumns(); ++col)
         for(auto& letter : {_xLabel, _yLabel, _zLabel})
             out_stream << (letter + std::to_string(col)) << _delimiterWrite;
-    out_stream << std::endl;
+    out_stream << "\n";
 
     // Empty line.
-    out_stream << std::endl;
+    out_stream << "\n";
 
     // Data rows.
     for(unsigned row = 0; row < table->getNumRows(); ++row) {
@@ -327,15 +327,15 @@ TRCFileAdapter::extendWrite(const InputTables& absTables,
         out_stream << row + 1                           << _delimiterWrite
                    << std::setprecision(prec) 
                    << table->getIndependentColumn()[row] << _delimiterWrite;
+        const auto& row_r = table->getRowAtIndex(row);
         for(unsigned col = 0; col < table->getNumColumns(); ++col) {
-            const auto& row_r = table->getRowAtIndex(row);
             const auto& elt = row_r[col];
             out_stream << std::setprecision(prec) 
                        << elt[0] << _delimiterWrite
                        << elt[1] << _delimiterWrite
                        << elt[2] << _delimiterWrite;
         }
-        out_stream << std::endl;
+        out_stream << "\n";
     }
 }
 

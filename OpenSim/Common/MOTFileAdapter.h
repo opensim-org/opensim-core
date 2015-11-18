@@ -1,8 +1,7 @@
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  Adapters.h                            *
+ *                          OpenSim:  MOTFileAdapter.h                        *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
- * See http://opensim.stanford.edu and the NOTICE file for more information.  *
  * OpenSim is developed at Stanford University and supported by the US        *
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
@@ -20,7 +19,45 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "DataAdapter.h"
+#ifndef OPENSIM_MOT_FILE_ADAPTER_H_
+#define OPENSIM_MOT_FILE_ADAPTER_H_
+
 #include "FileAdapter.h"
-#include "TRCFileAdapter.h"
-#include "MOTFileAdapter.h"
+
+
+namespace OpenSim {
+
+class MOTFileAdapter : public FileAdapter {
+public:
+    using Table = TimeSeriesTable_<double>;
+
+    MOTFileAdapter()                                 = default;
+    MOTFileAdapter(const MOTFileAdapter&)            = default;
+    MOTFileAdapter(MOTFileAdapter&&)                 = default;
+    MOTFileAdapter& operator=(const MOTFileAdapter&) = default;
+    MOTFileAdapter& operator=(MOTFileAdapter&&)      = default;
+    ~MOTFileAdapter()                                = default;
+
+    MOTFileAdapter* clone() const override;
+
+    std::unique_ptr<Table> read(const std::string& filename) const;
+
+    void write(const Table& table,
+               const std::string& filename) const;
+
+protected:
+    OutputTables extendRead(const std::string& filename) const override;
+
+    void extendWrite(const InputTables& tables,
+                     const std::string& filename) const override;
+
+private:
+    static const std::string _delimiterWrite;
+    static const std::string _delimitersRead;
+    static const std::string _endHeaderString;
+    static const std::string _timeColumnLabel;
+};
+
+}
+
+#endif // OPENSIM_MOT_FILE_ADAPTER_H_

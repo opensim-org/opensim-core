@@ -103,68 +103,6 @@ public:
     }
 };
 
-class UnexpectedColumnLabel : public IOError {
-public:
-    UnexpectedColumnLabel(const std::string& file,
-                          size_t line,
-                          const std::string& func,
-                          const std::string& filename,
-                          const std::string& expected,
-                          const std::string& received) :
-        IOError(file, line, func) {
-        std::string msg = "Error reading column Labels in file '" + filename;
-        msg += "'. Unexpected column label. ";
-        msg += "Expected = " + expected + ". ";
-        msg += "Received = " + received + ". ";
-
-        addMessage(msg);
-    }
-};
-
-class RowLengthMismatch : public IOError {
-public:
-    RowLengthMismatch(const std::string& file,
-                      size_t line,
-                      const std::string& func,
-                      const std::string& filename,
-                      size_t line_num,
-                      size_t expected,
-                      size_t received) :
-        IOError(file, line, func) {
-        std::string msg = "Error reading rows in file '" + filename + "'. ";
-        msg += "Unexpected number of columns in line ";
-        msg += std::to_string(line_num) + ". ";
-        msg += "Expected = " + std::to_string(expected) + ". ";
-        msg += "Received = " + std::to_string(received) + ". ";
-
-        addMessage(msg);
-    }
-};
-
-class NoTableFound : public InvalidArgument {
-public:
-    NoTableFound(const std::string& file,
-                 size_t line,
-                 const std::string& func) :
-        InvalidArgument(file, line, func) {
-        std::string msg = "No table to write.";
-
-        addMessage(msg);
-    }
-};
-
-class IncorrectTableType : public InvalidArgument {
-public:
-    IncorrectTableType(const std::string& file,
-                       size_t line,
-                       const std::string& func) :
-        InvalidArgument(file, line, func) {
-        std::string msg = "Incorrect Table type.";
-
-        addMessage(msg);
-    }
-};
-
 /** TRCFileAdapter is a FileAdapter that reads and writes TRC files. It accepts
 (when writing) and returns (when reading) a specific type of DataTable referred 
 to as Table in this class. Be sure to expect/provide that table when working
@@ -184,20 +122,20 @@ public:
     TRCFileAdapter* clone() const override;
 
     /** Read a given TRC file. The filename provided need not contain ".trc". */
-    std::unique_ptr<Table> read(const std::string& fileName) const;
+    std::unique_ptr<Table> read(const std::string& filename) const;
 
     /** Write a table to a TRC file. The filename provided need not contain 
     ".trc".                                                                   */
     void write(const Table& table, 
-               const std::string& fileName) const;
+               const std::string& filename) const;
 
 protected:
     /** Implementation of the read functionality.                             */
-    OutputTables extendRead(const std::string& fileName) const override;
+    OutputTables extendRead(const std::string& filename) const override;
 
     /** Implementation of the write functionality.                            */
     void extendWrite(const InputTables& tables, 
-                     const std::string& fileName) const override;
+                     const std::string& filename) const override;
     
 private:
     /** Delimiter used for writing.                                           */
