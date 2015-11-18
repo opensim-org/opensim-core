@@ -41,6 +41,10 @@ using namespace SimTK;
     }
 }
 
+// Directors
+// =========
+%feature("director") OpenSim::Analysis;
+
 // Rename
 // ======
 
