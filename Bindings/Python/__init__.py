@@ -16,6 +16,7 @@ def declare_concrete_object(original_class):
     def getConcreteClassName(self):
         return original_class.__name__
     def clone(self):
+        # TODO this implementation is incorrect!
         return original_class().__disown__()
 
     original_class.getConcreteClassName = getConcreteClassName
