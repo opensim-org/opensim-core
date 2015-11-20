@@ -146,7 +146,7 @@ public:
     registry. **/
     StreamDataAdapter(iostream& stream, const std::string& formatKey) 
     :   m_stream(stream) {
-        m_formatter = createDataStreamFormatter(formatKey);
+        m_formatter = DataStreamFormatter::createFormatter(formatKey);
     }
 private:
     OutputTables implementRead() const override 
