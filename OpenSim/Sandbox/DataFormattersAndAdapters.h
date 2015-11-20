@@ -170,7 +170,7 @@ the DataStreamFormatters. Users will use the FileDataAdapter instead. **/
 class FileStreamDataAdapter : public StreamDataAdapter {
 public:
     FileStreamDataAdapter(const std::string& pathName)
-    :   StreamDataAdapter(std::fstrea(pathName), 
+    :   StreamDataAdapter(std::fstream(pathName), 
                           findExtension(pathName)) {}
 };
 
