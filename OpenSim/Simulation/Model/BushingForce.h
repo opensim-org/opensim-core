@@ -96,15 +96,15 @@ public:
     Construct a BushingForce where the two frames are specified by the name
     and offset transforms on the respective frames.
 
-    @param[in] name             the name of this BushingForce 
-    @param[in] frame1Name       first PhysicalFrame that the bushing connects
-    @param[in] offsetOnFrame1   offset Transform on the first frame
-    @param[in] frame2Name       second PhysicalFrame that the bushing connects
-    @param[in] offsetOnFrame2   offset Transform on the second frame
-    @param[in] transStiffness   Vec3 of translational dx,dy,dz stiffnesses
-    @param[in] rotStiffness     Vec3 of rotational dq_x, dq_y, dq_z stiffnesses
-    @param[in] transDamping     Vec3 of translational (dx/dt, dy/dt, dz/dt) damping_
-    @param[in] rotStiffness     Vec3 of rotational (dq_x/dt, dq_y/dt, dq_z/dt) damping.
+    @param[in] name              the name of this BushingForce 
+    @param[in] frame1Name        first PhysicalFrame that the bushing connects
+    @param[in] transformInFrame1 offset Transform on the first frame
+    @param[in] frame2Name        second PhysicalFrame that the bushing connects
+    @param[in] transformInFrame2 offset Transform on the second frame
+    @param[in] transStiffness    translational (dx, dy, dz) stiffnesses
+    @param[in] rotStiffness      rotational (dq_x, dq_y, dq_z) stiffnesses
+    @param[in] transDamping      translational (dx/dt, dy/dt, dz/dt) damping
+    @param[in] rotDamping        rotational (dq_x/dt, dq_y/dt, dq_z/dt) damping
     */
     BushingForce(const std::string &name,
         const std::string& frame1Name, const SimTK::Transform& transformInFrame1,
@@ -127,12 +127,12 @@ public:
                                    bushing frame orientation in frame 1.
     @param[in] frame2Name          name of the second PhysicalFrame of the bushing
     @param[in] locationInFrame2    Vec3 location of the weld in the second frame
-    @param[in] orientationInFrame1 Vec3 of the XYZ body-fixed Euler angles of the
+    @param[in] orientationInFrame2 Vec3 of the XYZ body-fixed Euler angles of the
                                    bushing frame orientation in frame2.
-    @param[in] transStiffness      Vec3 of translational dx,dy,dz stiffnesses
-    @param[in] rotStiffness        Vec3 of rotational dq_x, dq_y, dq_z stiffnesses
-    @param[in] transDamping   Vec3 of translational (dx/dt, dy/dt, dz/dt) damping_
-    @param[in] rotStiffness   Vec3 of rotational (dq_x/dt, dq_y/dt, dq_z/dt) damping.
+    @param[in] transStiffness      translational (dx, dy, dz) stiffnesses
+    @param[in] rotStiffness        rotational (dq_x, dq_y, dq_z) stiffnesses
+    @param[in] transDamping        translational (dx/dt, dy/dt, dz/dt) damping
+    @param[in] rotDamping          rotational (dq_x/dt, dq_y/dt, dq_z/dt) damping
     */
     BushingForce(const std::string &name,
         const std::string& frame1Name,
