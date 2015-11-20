@@ -36,8 +36,8 @@ the gravity compensation is considered.
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 
-#include "TaskSpace/TaskBasedController.h"
-#include "TaskSpace/TaskSpace.h"
+#include "TaskBasedController.h"
+#include "TaskSpace.h"
 
 using namespace OpenSim;
 using namespace SimTK;
