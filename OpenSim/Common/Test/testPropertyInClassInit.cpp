@@ -170,128 +170,6 @@ private:
     OpenSim_DECLARE_LIST_PROPERTY_RANGE##suffix(neptunelr, Bar, 4, 6, "Forward-declared");
 
 
-// Declare *with* an initial value argument.
-// -----------------------------------------
-// "UI" stands for "USERINIT".
-#define DECLARE_ALL_PROPERTIES_UI(suffix) \
-    DECLARE_REQUIRED_PROPERTIES_UI(suffix) \
-    DECLARE_UNNAMED_PROPERTIES_UI(suffix) \
-    DECLARE_OPTIONAL_PROPERTIES_UI(suffix) \
-    DECLARE_OPTIONAL_INIT_PROPERTIES_UI(suffix) \
-    DECLARE_LIST_PROPERTIES_UI(suffix) \
-    DECLARE_LIST_EMPTY_PROPERTIES_UI(suffix) \
-    DECLARE_LIST_SIZE_PROPERTIES_UI(suffix) \
-    DECLARE_LIST_ATLEAST_PROPERTIES_UI(suffix) \
-    DECLARE_LIST_ATMOST_PROPERTIES_UI(suffix) \
-    DECLARE_LIST_ATMOST_EMPTY_PROPERTIES_UI(suffix) \
-    DECLARE_LIST_RANGE_PROPERTIES_UI(suffix)
-
-#define DECLARE_REQUIRED_PROPERTIES_UI(suffix) \
-    OpenSim_DECLARE_PROPERTY##suffix(alpha, double, "built-in type.", 12); \
-    OpenSim_DECLARE_PROPERTY##suffix(zeta, Vec3, "non-Object.", Vec3(12, 8, 15)); \
-    OpenSim_DECLARE_PROPERTY##suffix(beta, Constant, "Concrete class (included).", Constant(19)); \
-    /* OpenSim_DECLARE_PROPERTY##suffix(gamma, Function, "Abstract class (included)."); */ \
-    /* OpenSim_DECLARE_PROPERTY##suffix(neptune, Bar, "Forward-declared class."); */
-
-#define DECLARE_UNNAMED_PROPERTIES_UI(suffix) \
-    OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(SimmSpline, "Concrete.", SimmSpline()); \
-    /* OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(Component, "Abstract.", MyComponent(12)); */ \
-    /* OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(Foo, "Forward-declared."); */
-
-// TODO doesn't make sense. REMOVE.
-#define DECLARE_OPTIONAL_PROPERTIES_UI(suffix) \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(alphao, double, "built-in type."); \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(zetao, Vec3, "non-Object."); \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(betao, Constant, "Concrete."); \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(gammao, Function, "Abstract."); \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(neptuneo, Bar, "Forward-declared.");
-
-// With an initial value provided.
-#define DECLARE_OPTIONAL_INIT_PROPERTIES_UI(suffix) \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(alphaoi, double, "built-in type.", 52); \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(zetaoi, Vec3, "non-Object.", Vec3(7, 1, 5)); \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(betaoi, Constant, "Concrete.", Constant(1)); \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(gammaoi, Function, "Abstract.", GCVSpline()); \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(neptuneoi, Bar, "Forward-declared.", Bar(5));
-
-#define DECLARE_LIST_PROPERTIES_UI(suffix) \
-    OpenSim_DECLARE_LIST_PROPERTY##suffix(alphal, double, "built-in type.", \
-            std::vector<double>{1,2}); \
-    OpenSim_DECLARE_LIST_PROPERTY##suffix(zetal, Vec3, "non-Object.", \
-            {Vec3(0), Vec3(15), Vec3(17, 12, 1)}); \
-    OpenSim_DECLARE_LIST_PROPERTY##suffix(betal, Constant, "Concrete.", \
-            std::vector<Constant>{Constant(), Constant(6)}); \
-    OpenSim_DECLARE_LIST_PROPERTY##suffix(gammal, Function, "Abstract.", \
-            std::vector<Function>()); \
-    OpenSim_DECLARE_LIST_PROPERTY##suffix(neptunel, Bar, "Forward-declared.", \
-            {Bar(1.5), Bar(5)});
-
-// These will use the constructProperty_() variant that doesn't take arguments.
-// TODO doesn't make sense. REMOVE.
-#define DECLARE_LIST_EMPTY_PROPERTIES_UI(suffix) \
-    OpenSim_DECLARE_LIST_PROPERTY##suffix(alphal0, double, "built-in type."); \
-    OpenSim_DECLARE_LIST_PROPERTY##suffix(zetal0, Vec3, "non-Object."); \
-    OpenSim_DECLARE_LIST_PROPERTY##suffix(betal0, Constant, "Concrete."); \
-    OpenSim_DECLARE_LIST_PROPERTY##suffix(gammal0, Function, "Abstract."); \
-    OpenSim_DECLARE_LIST_PROPERTY##suffix(neptunel0, Bar, "Forward-declared.");
-
-#define DECLARE_LIST_SIZE_PROPERTIES_UI(suffix) \
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE##suffix(alphals, double, 3, "built-in type.", \
-            {6, 3, 1}); \
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE##suffix(zetals, Vec3, 3, "non-Object.", \
-            std::vector<Vec3>{Vec3(5), Vec3(0), Vec3(1)}); \
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE##suffix(betals, Constant, 3, "Concrete.", \
-            {Constant(60), Constant(5), Constant(21)}); \
-    /* Don't know how to make a list property of abstract type that must have more */ \
-    /* than 0 elements (SIZE, ATLEAST, RANGE). */ \
-    /* TODO OpenSim_DECLARE_LIST_PROPERTY_SIZE##suffix(gammals, Function, 3, "Abstract."); */ \
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE##suffix(neptunels, Bar, 3, "Forward-declared.", \
-            std::vector<Bar>{Bar(5), Bar(12)});
-
-#define DECLARE_LIST_ATLEAST_PROPERTIES_UI(suffix) \
-    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST##suffix(alphall, double, 2, "built-in type.", \
-            {5, 1, 17}); \
-    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST##suffix(zetall, Vec3, 2, "non-Object.", \
-            {Vec3(12), Vec3(10)}); \
-    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST##suffix(betall, Constant, 2, "Concrete.", \
-            {Constant(7), Constant(0), Constant(-16), Constant(-10)}); \
-    /* TODO OpenSim_DECLARE_LIST_PROPERTY_ATLEAST##suffix(gammall, Function, 2, "Abstract."); */ \
-    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST##suffix(neptunell, Bar, 2, "Forward-declared.", \
-            {Bar(4.1), Bar(9)});
-
-#define DECLARE_LIST_ATMOST_PROPERTIES_UI(suffix) \
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(alphalm, double, 5, "built-in type.", \
-            {19, 12, 6, 1, 4}); \
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(zetalm, Vec3, 5, "non-Object.", \
-            {Vec3(-1, -2, -3), Vec3(-7, 5, 3)}); \
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(betalm, Constant, 5, "Concrete.", \
-            {Constant(-58)}); \
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(gammalm, Function, 5, "Abstract.", \
-            std::vector<Function>()); \
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(neptunelm, Bar, 5, "Forward-declared class.", \
-            {Bar(5), Bar(10), Bar(-5)});
-
-// TODO doesn't make sense. REMOVE.
-// These will use the constructProperty_() variant that doesn't take arguments.
-#define DECLARE_LIST_ATMOST_EMPTY_PROPERTIES_UI(suffix) \
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(alphalm0, double, 5, "built-in type."); \
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(zetalm0, Vec3, 5, "non-Object."); \
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(betalm0, Constant, 5, "Concrete."); \
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(gammalm0, Function, 5, "Abstract."); \
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(neptunelm0, Bar, 5, "Forward-declared class.");
-
-#define DECLARE_LIST_RANGE_PROPERTIES_UI(suffix) \
-    OpenSim_DECLARE_LIST_PROPERTY_RANGE##suffix(alphalr, double, 4, 6, "built-in type.", \
-            {1, 2, 7, 5, 3, 9}); \
-    OpenSim_DECLARE_LIST_PROPERTY_RANGE##suffix(zetalr, Vec3, 4, 6, "non-Object.", \
-            {Vec3(-3), Vec3(0), Vec3(-15, 1, 3), Vec3(-1), Vec3(5)}); \
-    OpenSim_DECLARE_LIST_PROPERTY_RANGE##suffix(betalr, Constant, 4, 6, "Concrete.", \
-            {Constant(1), Constant(), Constant(5), Constant(-1)}); \
-    /* TODO OpenSim_DECLARE_LIST_PROPERTY_RANGE##suffix(gammalr, Function, 4, 6, "Abstract."); */ \
-    OpenSim_DECLARE_LIST_PROPERTY_RANGE##suffix(neptunelr, Bar, 4, 6, "Forward-declared", \
-            Array<Bar>(Bar(5), 4));
-
-
 // Construct.
 // ----------
 #define CONSTRUCT_ALL_PROPERTIES \
@@ -387,6 +265,133 @@ private:
     constructProperty_neptunelr(std::vector<Bar>{Bar(), Bar(), Bar(), Bar()});
 
 
+// Declare *with* an initial value argument.
+// -----------------------------------------
+// "UI" stands for "USERINIT".
+#define DECLARE_ALL_PROPERTIES_UI(suffix) \
+    DECLARE_REQUIRED_PROPERTIES_UI(suffix) \
+    DECLARE_UNNAMED_PROPERTIES_UI(suffix) \
+    DECLARE_OPTIONAL_PROPERTIES_UI(suffix) \
+
+//    DECLARE_OPTIONAL_INIT_PROPERTIES_UI(suffix) \
+//    DECLARE_LIST_PROPERTIES_UI(suffix) \
+//    DECLARE_LIST_EMPTY_PROPERTIES_UI(suffix) \
+//    DECLARE_LIST_SIZE_PROPERTIES_UI(suffix) \
+//    DECLARE_LIST_ATLEAST_PROPERTIES_UI(suffix) \
+//    DECLARE_LIST_ATMOST_PROPERTIES_UI(suffix) \
+//    DECLARE_LIST_ATMOST_EMPTY_PROPERTIES_UI(suffix) \
+//    DECLARE_LIST_RANGE_PROPERTIES_UI(suffix)
+
+#define DECLARE_REQUIRED_PROPERTIES_UI(suffix) \
+    OpenSim_DECLARE_PROPERTY##suffix(alpha, double, "built-in type.", 12); \
+    OpenSim_DECLARE_PROPERTY##suffix(zeta, Vec3, "non-Object.", Vec3(12, 8, 15)); \
+    OpenSim_DECLARE_PROPERTY##suffix(beta, Constant, "Concrete class (included).", Constant(19)); \
+    /* OpenSim_DECLARE_PROPERTY##suffix(gamma, Function, "Abstract class (included)."); */ \
+    /* OpenSim_DECLARE_PROPERTY##suffix(neptune, Bar, "Forward-declared class."); */
+
+#define DECLARE_UNNAMED_PROPERTIES_UI(suffix) \
+    OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(SimmSpline, "Concrete.", SimmSpline()); \
+    /* OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(Component, "Abstract.", MyComponent(12)); */ \
+    /* OpenSim_DECLARE_UNNAMED_PROPERTY##suffix(Foo, "Forward-declared."); */
+
+// Doesn't make sense to test the 3-argument OPTIONAL_PROPERTY macros; they
+// can't be USERINIT. However, we leave them here so we can use the same test
+// functions.
+#define DECLARE_OPTIONAL_PROPERTIES_UI(suffix) \
+    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(alphao, double, "built-in type."); \
+    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(zetao, Vec3, "non-Object."); \
+    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(betao, Constant, "Concrete."); \
+    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(gammao, Function, "Abstract."); \
+    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(neptuneo, Bar, "Forward-declared.");
+
+// With an initial value provided.
+#define DECLARE_OPTIONAL_INIT_PROPERTIES_UI(suffix) \
+    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(alphaoi, double, "built-in type.", 52); \
+    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(zetaoi, Vec3, "non-Object.", Vec3(7, 1, 5)); \
+    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(betaoi, Constant, "Concrete.", Constant(1)); \
+    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(gammaoi, Function, "Abstract.", GCVSpline()); \
+    OpenSim_DECLARE_OPTIONAL_PROPERTY##suffix(neptuneoi, Bar, "Forward-declared.", Bar(5));
+
+#define DECLARE_LIST_PROPERTIES_UI(suffix) \
+    OpenSim_DECLARE_LIST_PROPERTY##suffix(alphal, double, "built-in type.", \
+            std::vector<double>{1,2}); \
+    OpenSim_DECLARE_LIST_PROPERTY##suffix(zetal, Vec3, "non-Object.", \
+            {Vec3(0), Vec3(15), Vec3(17, 12, 1)}); \
+    OpenSim_DECLARE_LIST_PROPERTY##suffix(betal, Constant, "Concrete.", \
+            std::vector<Constant>{Constant(), Constant(6)}); \
+    OpenSim_DECLARE_LIST_PROPERTY##suffix(gammal, Function, "Abstract.", \
+            std::vector<Function>()); \
+    OpenSim_DECLARE_LIST_PROPERTY##suffix(neptunel, Bar, "Forward-declared.", \
+            {Bar(1.5), Bar(5)});
+
+// These will use the constructProperty_() variant that doesn't take arguments.
+// TODO doesn't make sense. REMOVE.
+#define DECLARE_LIST_EMPTY_PROPERTIES_UI(suffix) \
+    OpenSim_DECLARE_LIST_PROPERTY##suffix(alphal0, double, "built-in type."); \
+    OpenSim_DECLARE_LIST_PROPERTY##suffix(zetal0, Vec3, "non-Object."); \
+    OpenSim_DECLARE_LIST_PROPERTY##suffix(betal0, Constant, "Concrete."); \
+    OpenSim_DECLARE_LIST_PROPERTY##suffix(gammal0, Function, "Abstract."); \
+    OpenSim_DECLARE_LIST_PROPERTY##suffix(neptunel0, Bar, "Forward-declared.");
+
+#define DECLARE_LIST_SIZE_PROPERTIES_UI(suffix) \
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE##suffix(alphals, double, 3, "built-in type.", \
+            {6, 3, 1}); \
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE##suffix(zetals, Vec3, 3, "non-Object.", \
+            std::vector<Vec3>{Vec3(5), Vec3(0), Vec3(1)}); \
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE##suffix(betals, Constant, 3, "Concrete.", \
+            {Constant(60), Constant(5), Constant(21)}); \
+    /* Don't know how to make a list property of abstract type that must have more */ \
+    /* than 0 elements (SIZE, ATLEAST, RANGE). */ \
+    /* TODO OpenSim_DECLARE_LIST_PROPERTY_SIZE##suffix(gammals, Function, 3, "Abstract."); */ \
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE##suffix(neptunels, Bar, 3, "Forward-declared.", \
+            std::vector<Bar>{Bar(5), Bar(12)});
+
+#define DECLARE_LIST_ATLEAST_PROPERTIES_UI(suffix) \
+    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST##suffix(alphall, double, 2, "built-in type.", \
+            {5, 1, 17}); \
+    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST##suffix(zetall, Vec3, 2, "non-Object.", \
+            {Vec3(12), Vec3(10)}); \
+    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST##suffix(betall, Constant, 2, "Concrete.", \
+            {Constant(7), Constant(0), Constant(-16), Constant(-10)}); \
+    /* TODO OpenSim_DECLARE_LIST_PROPERTY_ATLEAST##suffix(gammall, Function, 2, "Abstract."); */ \
+    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST##suffix(neptunell, Bar, 2, "Forward-declared.", \
+            {Bar(4.1), Bar(9)});
+
+#define DECLARE_LIST_ATMOST_PROPERTIES_UI(suffix) \
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(alphalm, double, 5, "built-in type.", \
+            {19, 12, 6, 1, 4}); \
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(zetalm, Vec3, 5, "non-Object.", \
+            {Vec3(-1, -2, -3), Vec3(-7, 5, 3)}); \
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(betalm, Constant, 5, "Concrete.", \
+            {Constant(-58)}); \
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(gammalm, Function, 5, "Abstract.", \
+            std::vector<Function>()); \
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(neptunelm, Bar, 5, "Forward-declared class.", \
+            {Bar(5), Bar(10), Bar(-5)});
+
+// TODO doesn't make sense. REMOVE.
+// These will use the constructProperty_() variant that doesn't take arguments.
+#define DECLARE_LIST_ATMOST_EMPTY_PROPERTIES_UI(suffix) \
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(alphalm0, double, 5, "built-in type."); \
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(zetalm0, Vec3, 5, "non-Object."); \
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(betalm0, Constant, 5, "Concrete."); \
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(gammalm0, Function, 5, "Abstract."); \
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(neptunelm0, Bar, 5, "Forward-declared class.");
+
+#define DECLARE_LIST_RANGE_PROPERTIES_UI(suffix) \
+    OpenSim_DECLARE_LIST_PROPERTY_RANGE##suffix(alphalr, double, 4, 6, "built-in type.", \
+            {1, 2, 7, 5, 3, 9}); \
+    OpenSim_DECLARE_LIST_PROPERTY_RANGE##suffix(zetalr, Vec3, 4, 6, "non-Object.", \
+            {Vec3(-3), Vec3(0), Vec3(-15, 1, 3), Vec3(-1), Vec3(5)}); \
+    OpenSim_DECLARE_LIST_PROPERTY_RANGE##suffix(betalr, Constant, 4, 6, "Concrete.", \
+            {Constant(1), Constant(), Constant(5), Constant(-1)}); \
+    /* TODO OpenSim_DECLARE_LIST_PROPERTY_RANGE##suffix(gammalr, Function, 4, 6, "Abstract."); */ \
+    OpenSim_DECLARE_LIST_PROPERTY_RANGE##suffix(neptunelr, Bar, 4, 6, "Forward-declared", \
+            Array<Bar>(Bar(5), 4));
+
+
+// Set property values.
+// --------------------
 // This is to ensure all properties have values. We only set properties that
 // don't have a default value.
 #define SET_ALL_PROPERTY_VALUES \
@@ -401,7 +406,7 @@ private:
     set_zetao(Vec3(3, 1, 4)); \
     set_betao(Constant(42)); \
     set_gammao(GCVSpline()); \
-    set_neptuneo(Bar());
+    set_neptuneo(Bar(65));
 
 #define SET_LIST_PROPERTY_VALUES \
     append_gammal(Constant(1));
@@ -438,6 +443,20 @@ private:
     COPY_LIST_ATMOST_PROPERTIES \
     COPY_LIST_ATMOST_EMPTY_PROPERTIES \
     COPY_LIST_RANGE_PROPERTIES
+
+#define COPY_USERINIT_PROPERTIES \
+    COPY_REQUIRED_TYPICAL_PROPERTIES \
+    COPY_UNNAMED_TYPICAL_PROPERTIES \
+    COPY_OPTIONAL_PROPERTIES \
+
+    //COPY_OPTIONAL_INIT_PROPERTIES \
+    //COPY_LIST_PROPERTIES \
+    //COPY_LIST_EMPTY_PROPERTIES \
+    //COPY_LIST_SIZE_PROPERTIES \
+    //COPY_LIST_ATLEAST_PROPERTIES \
+    //COPY_LIST_ATMOST_PROPERTIES \
+    //COPY_LIST_ATMOST_EMPTY_PROPERTIES \
+    //COPY_LIST_RANGE_PROPERTIES
 
 #define COPY_REQUIRED_TYPICAL_PROPERTIES \
     copyProperty_alpha(source); \
@@ -551,6 +570,7 @@ class Uninitialized40 : public Object {
 public:
     DECLARE_REQUIRED_PROPERTIES(_UNINIT)
     DECLARE_UNNAMED_PROPERTIES(_UNINIT)
+    DECLARE_OPTIONAL_PROPERTIES(_UNINIT)
     Uninitialized40();
     void setPropertyValues();
 };
@@ -560,17 +580,18 @@ class Uninitialized40CustomCopy : public Object {
 public:
     DECLARE_REQUIRED_PROPERTIES(_UNINIT)
     DECLARE_UNNAMED_PROPERTIES(_UNINIT)
+    DECLARE_OPTIONAL_PROPERTIES(_UNINIT)
     Uninitialized40CustomCopy();
     Uninitialized40CustomCopy(const Uninitialized40CustomCopy&);
     void setPropertyValues();
 };
 
-// Test the new macro variants that take a default value.
+// Test the new macro variants that take a default/initial value.
+// TODO try variadic macros (remove use for _USERINIT suffix).
 class UserInitialized40 : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(UserInitialized40, Object);
 public:
-    DECLARE_REQUIRED_PROPERTIES_UI(_USERINIT)
-    DECLARE_UNNAMED_PROPERTIES_UI(_USERINIT)
+    DECLARE_ALL_PROPERTIES_UI()
     // TODO more properties.
 
     // No need to separately construct the properties, so we don't need
@@ -582,8 +603,7 @@ public:
 class UserInitialized40CustomCopy : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(UserInitialized40CustomCopy, Object);
 public:
-    DECLARE_REQUIRED_PROPERTIES_UI(_USERINIT)
-    DECLARE_UNNAMED_PROPERTIES_UI(_USERINIT)
+    DECLARE_ALL_PROPERTIES_UI()
     // TODO more properties.
 
     UserInitialized40CustomCopy() = default;
@@ -592,7 +612,9 @@ public:
     void setPropertyValues();
 };
 
-// Definition of forward-declared class.
+// Definition of forward-declared classes.
+// =======================================
+
 class Bar : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(Bar, Object);
 public:
@@ -646,11 +668,12 @@ void BackwardsCompatibility33CustomCopy::setPropertyValues() {
 Uninitialized40::Uninitialized40() {
     CONSTRUCT_REQUIRED_PROPERTIES
     CONSTRUCT_UNNAMED_PROPERTIES
+    CONSTRUCT_OPTIONAL_PROPERTIES
     // TODO include the rest of the properties
 }
 
 void Uninitialized40::setPropertyValues() {
-// TODO     SET_PROPERTY_VALUES
+    SET_OPTIONAL_PROPERTY_VALUES
 }
 
 // Uninitialized40CustomCopy
@@ -658,6 +681,7 @@ void Uninitialized40::setPropertyValues() {
 Uninitialized40CustomCopy::Uninitialized40CustomCopy() {
     CONSTRUCT_REQUIRED_PROPERTIES
     CONSTRUCT_UNNAMED_PROPERTIES
+    CONSTRUCT_OPTIONAL_PROPERTIES
     // TODO include the rest of the properties
 }
 
@@ -667,30 +691,31 @@ Uninitialized40CustomCopy::Uninitialized40CustomCopy(
     COPY_REQUIRED_SPECIAL_PROPERTIES
     COPY_UNNAMED_TYPICAL_PROPERTIES
     COPY_UNNAMED_SPECIAL_PROPERTIES
+    COPY_OPTIONAL_PROPERTIES
     // TODO include the rest of the properties
 }
 
 void Uninitialized40CustomCopy::setPropertyValues() {
-// TODO     SET_PROPERTY_VALUES
+    SET_OPTIONAL_PROPERTY_VALUES
 }
 
 // UserInitialized40
 // -----------------
 void UserInitialized40::setPropertyValues() {
-// TODO     SET_PROPERTY_VALUES
+    SET_OPTIONAL_PROPERTY_VALUES
 }
 
 // UserInitialized40CustomCopy
 // ---------------------------
 UserInitialized40CustomCopy::UserInitialized40CustomCopy(
         const UserInitialized40CustomCopy& source) : Object(source) {
-    COPY_REQUIRED_TYPICAL_PROPERTIES
-    COPY_UNNAMED_TYPICAL_PROPERTIES
+    COPY_USERINIT_PROPERTIES
     // TODO include the rest of the properties
 }
 
 void UserInitialized40CustomCopy::setPropertyValues() {
-// TODO    SET_PROPERTY_VALUES
+    // TODO 
+    SET_OPTIONAL_PROPERTY_VALUES
 }
 
 } // namespace
@@ -743,13 +768,13 @@ void testCopyAndAccessTypical() {
 
     COMPARE_TO_COPY(SimmSpline);
 
-    /* TODO
     COMPARE_TO_COPY(alphao);
     COMPARE_TO_COPY(zetao);
     COMPARE_TO_COPY(betao);
     COMPARE_TO_COPY(gammao);
     COMPARE_TO_COPY(neptuneo);
 
+    /* TODO
     COMPARE_TO_COPY(alphaoi);
     COMPARE_TO_COPY(zetaoi);
     COMPARE_TO_COPY(betaoi);

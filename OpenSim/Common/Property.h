@@ -1344,7 +1344,9 @@ A data member is also created but is intended for internal use only:
 // See comment above for OpenSim_OVERLOAD_MACRO_4 to understand how this works.
 //#ifndef SWIG
 #define OpenSim_DECLARE_PROPERTY(...)                                       \
-    OpenSim_DECLARE_PROPERTY_UNINIT(__VA_ARGS__)
+    OpenSim_OVERLOAD_MACRO_4(__VA_ARGS__,                                   \
+            OpenSim_DECLARE_PROPERTY_USERINIT,                              \
+            OpenSim_DECLARE_PROPERTY_UNINIT)(__VA_ARGS__)
 
 //    OpenSim_OVERLOAD_MACRO_4(__VA_ARGS__,                                   \
 //            OpenSim_DECLARE_PROPERTY_USERINIT,                              \
@@ -1416,10 +1418,10 @@ initialized with an object of type T.
 @relates OpenSim::Property **/
 // See comment above for OpenSim_OVERLOAD_MACRO_4 to understand how this works.
 #define OpenSim_DECLARE_UNNAMED_PROPERTY(...)                               \
-    OpenSim_DECLARE_UNNAMED_PROPERTY_UNINIT(__VA_ARGS__)
-//    OpenSim_OVERLOAD_MACRO_3(__VA_ARGS__,                                   \
-//            OpenSim_DECLARE_UNNAMED_PROPERTY_USERINIT,                      \
-//            OpenSim_DECLARE_UNNAMED_PROPERTY_DEFAULTINIT)(__VA_ARGS__)
+    OpenSim_OVERLOAD_MACRO_3(__VA_ARGS__,                                   \
+            OpenSim_DECLARE_UNNAMED_PROPERTY_USERINIT,                      \
+            OpenSim_DECLARE_UNNAMED_PROPERTY_UNINIT)(__VA_ARGS__)
+// TODO    OpenSim_DECLARE_UNNAMED_PROPERTY_UNINIT(__VA_ARGS__)
 
 // OPTIONAL property macros.
 // -------------------------
@@ -1491,7 +1493,9 @@ The property may be constructed as empty, or with initialization to a single
 value of type T.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_OPTIONAL_PROPERTY(...)                              \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY_UNINIT(__VA_ARGS__)
+    OpenSim_OVERLOAD_MACRO_4(__VA_ARGS__,                                   \
+            OpenSim_DECLARE_OPTIONAL_PROPERTY_USERINIT,                     \
+            OpenSim_DECLARE_OPTIONAL_PROPERTY_UNINIT)(__VA_ARGS__)
 
 // All other property macros.
 // --------------------------
