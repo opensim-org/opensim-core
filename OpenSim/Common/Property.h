@@ -1301,6 +1301,21 @@ struct is_complete {
     /** @endcond **/                                                        \
     OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)
 
+// This variant is nearly identical to what OpenSim_DECLARE_PROPERTY contained
+// in OpenSim 3.3, etc., and has the same behavior of that older version. The
+// reason we allow for this option is that it's not always possible to
+// initialize the property using the in-class member initializers (e.g., when
+// the class is only forward-declared or is not default-constructible).
+#define OpenSim_DECLARE_PROPERTY_UNINIT(pname, T, comment)                  \
+    /** @cond **/                                                           \
+    OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \
+    void constructProperty_##pname(const T& initValue) {                    \
+        PropertyIndex_##pname =                                             \
+            this->template addProperty<T>(#pname,comment,initValue);        \
+    }                                                                       \
+    /** @endcond **/                                                        \
+    OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)
+
 // In this variant, developers provide a default argument when they
 // use the macro in their class header. In this case, we do *not* define a
 // constructProperty_prop_name() method, since it is unnecessary and
@@ -1343,33 +1358,20 @@ A data member is also created but is intended for internal use only:
 
 @relates OpenSim::Property **/
 // See comment above for OpenSim_OVERLOAD_MACRO_4 to understand how this works.
-#ifndef SWIG
+//#ifndef SWIG
 #define OpenSim_DECLARE_PROPERTY(...)                                       \
-    OpenSim_OVERLOAD_MACRO_4(__VA_ARGS__,                                   \
-            OpenSim_DECLARE_PROPERTY_USERINIT,                              \
-            OpenSim_DECLARE_PROPERTY_DEFAULTINIT)(__VA_ARGS__)
-#else
+    OpenSim_DECLARE_PROPERTY_UNINIT(__VA_ARGS__)
+
+//    OpenSim_OVERLOAD_MACRO_4(__VA_ARGS__,                                   \
+//            OpenSim_DECLARE_PROPERTY_USERINIT,                              \
+//            OpenSim_DECLARE_PROPERTY_DEFAULTINIT)(__VA_ARGS__)
+//#else
 // SWIG has trouble with the complex macro above; here, we provide a simpler
 // and sufficient version. SWIG also allows providing 0 variadic arguments.
-#define OpenSim_DECLARE_PROPERTY(pname, T, comment, ...)                    \
-    OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \
-    OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)
-#endif
-
-// This variant is nearly identical to what OpenSim_DECLARE_PROPERTY contained
-// in OpenSim 3.3, etc., and has the same behavior of that older version. The
-// reason we allow for this option is that it's not always possible to
-// initialize the property using the in-class member initializers (e.g., when
-// the class is only forward-declared or is not default-constructible).
-#define OpenSim_DECLARE_PROPERTY_UNINIT(pname, T, comment)                  \
-    /** @cond **/                                                           \
-    OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \
-    void constructProperty_##pname(const T& initValue) {                    \
-        PropertyIndex_##pname =                                             \
-            this->template addProperty<T>(#pname,comment,initValue);        \
-    }                                                                       \
-    /** @endcond **/                                                        \
-    OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)
+//#define OpenSim_DECLARE_PROPERTY(pname, T, comment, ...)                    \
+//    OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \
+//    OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)
+//#endif
 
 
 // UNNAMED property macros.
@@ -1398,6 +1400,16 @@ A data member is also created but is intended for internal use only:
     void set_##T(const T& value)                                            \
     {   updProperty_##T().setValue(value); }                                \
     /** @}                                                               */
+
+// This variant TODO
+#define OpenSim_DECLARE_UNNAMED_PROPERTY_UNINIT(T, comment)                 \
+    /** @cond **/                                                           \
+    OpenSim_DECLARE_PROPERTY_HELPER(T,T,)                                   \
+    void constructProperty_##T(const T& initValue)                          \
+    {   PropertyIndex_##T =                                                 \
+            this->template addProperty<T>("", comment, initValue); }        \
+    /** @endcond **/                                                        \
+    OpenSim_DECLARE_UNNAMED_PROPERTY_COMMON(T, comment,)
 
 // This variant TODO
 #define OpenSim_DECLARE_UNNAMED_PROPERTY_DEFAULTINIT(T, comment)            \
@@ -1438,19 +1450,10 @@ initialized with an object of type T.
 @relates OpenSim::Property **/
 // See comment above for OpenSim_OVERLOAD_MACRO_4 to understand how this works.
 #define OpenSim_DECLARE_UNNAMED_PROPERTY(...)                               \
-    OpenSim_OVERLOAD_MACRO_3(__VA_ARGS__,                                   \
-            OpenSim_DECLARE_UNNAMED_PROPERTY_USERINIT,                      \
-            OpenSim_DECLARE_UNNAMED_PROPERTY_DEFAULTINIT)(__VA_ARGS__)
-
-// This variant TODO
-#define OpenSim_DECLARE_UNNAMED_PROPERTY_UNINIT(T, comment)                 \
-    /** @cond **/                                                           \
-    OpenSim_DECLARE_PROPERTY_HELPER(T,T,)                                   \
-    void constructProperty_##T(const T& initValue)                          \
-    {   PropertyIndex_##T =                                                 \
-            this->template addProperty<T>("", comment, initValue); }        \
-    /** @endcond **/                                                        \
-    OpenSim_DECLARE_UNNAMED_PROPERTY_COMMON(T, comment,)
+    OpenSim_DECLARE_UNNAMED_PROPERTY_UNINIT(__VA_ARGS__)
+//    OpenSim_OVERLOAD_MACRO_3(__VA_ARGS__,                                   \
+//            OpenSim_DECLARE_UNNAMED_PROPERTY_USERINIT,                      \
+//            OpenSim_DECLARE_UNNAMED_PROPERTY_DEFAULTINIT)(__VA_ARGS__)
 
 
 // All other property macros.
