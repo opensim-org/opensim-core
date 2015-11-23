@@ -80,10 +80,12 @@ public:
         std::unordered_map<std::string, std::unique_ptr<DataAdapter>>;
     /** Collection of tables returned by reading methods implemented in derived
     classes.                                                                  */
-    using OutputTables = std::vector<std::unique_ptr<AbstractDataTable>>;
+    using OutputTables = std::unordered_map<std::string,
+                                            std::unique_ptr<AbstractDataTable>>;
     /** Collection of tables accepted by writing methods implemented in derived
     classes.                                                                  */
-    using InputTables  = std::vector<const AbstractDataTable*>;
+    using InputTables  = std::unordered_map<std::string,
+                                            const AbstractDataTable*>;
 
     virtual DataAdapter* clone() const = 0;
 

@@ -115,8 +115,9 @@ int main() {
     }
 
     for(const auto& filename : filenames) {
-        auto table = std::move(FileAdapter::readFile(filename).at(0));
-        DataAdapter::InputTables tables{table.get()};
+        auto table = std::move(FileAdapter::readFile(filename).at("markers"));
+        DataAdapter::InputTables tables{};
+        tables.emplace(std::string{"table"}, table.get());
         FileAdapter::writeFile(tables, tmpfile);
         compareFiles(filename, tmpfile);
     }

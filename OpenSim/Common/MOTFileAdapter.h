@@ -45,6 +45,8 @@ public:
     void write(const Table& table,
                const std::string& filename) const;
 
+    static const std::string _table;
+
 protected:
     OutputTables extendRead(const std::string& filename) const override;
 

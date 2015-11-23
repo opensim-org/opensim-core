@@ -129,6 +129,9 @@ public:
     void write(const Table& table, 
                const std::string& filename) const;
 
+    /** Key used for marker table returned.                                   */
+    static const std::string              _markers;
+
 protected:
     /** Implementation of the read functionality.                             */
     OutputTables extendRead(const std::string& filename) const override;

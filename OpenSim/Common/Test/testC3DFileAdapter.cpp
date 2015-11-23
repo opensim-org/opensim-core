@@ -32,13 +32,15 @@
 int main() {
     using namespace OpenSim;
 
+    std::string filename{"/home/shrik/Downloads/"
+            // "walking5.c3d"};
+            // "walking2.c3d"};
+            // "treadMillRunning.c3d"};
+            // "singleLegLanding.c3d"};
+            "singleLeglanding_2.c3d"};
+
     C3DFileAdapter c3d_adapter{};
-    auto tables = c3d_adapter.read("/home/shrik/Downloads/"
-                                   // "walking5.c3d");
-                                   // "walking2.c3d");
-                                   // "treadMillRunning.c3d");
-                                   "singleLegLanding.c3d");
-                                   // "singleLeglanding_2.c3d");
+    auto tables = c3d_adapter.read(filename);
 
     auto&    marker_table = std::get<0>(tables);
     auto&     force_table = std::get<1>(tables);
@@ -61,6 +63,26 @@ int main() {
                                getValueForKey("Units").
                                getValue<std::string>()
               << std::endl << std::endl;
+    std::cout << marker_table->getRow(0) << std::endl;
+
+    auto& events_table = marker_table->getTableMetaData().
+                                      getValueForKey("events").
+                                 getValue<std::vector<C3DFileAdapter::Event>>();
+    for(const auto& elem : events_table)
+        std::cout << "label: " << elem.label << " | "
+                  << "time: " << elem.time << " | "
+                  << "frame: " << elem.frame << " | "
+                  << "description: " << elem.description << "\n";
+
+    auto& labels = marker_table->getDependentsMetaData().
+                                 getValueArrayForKey("labels");
+    for(size_t i = 0; i < labels.size(); ++i)
+        std::cout << labels[i].getValue<std::string>() << " ";
+    std::cout << "\n";
+
+    marker_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
+    TRCFileAdapter trc_adapter{};
+    trc_adapter.write(*marker_table, filename + ".markers.trc");
     }
 
     if(usr_force_table->getNumRows() != 0) {
@@ -80,6 +102,7 @@ int main() {
                                   getValueForKey("Units").
                                   getValue<std::string>()
               << std::endl << std::endl;
+    std::cout << usr_force_table->getRow(0) << std::endl;
     }
 
     if(force_table->getNumRows() != 0) {
@@ -123,7 +146,15 @@ int main() {
         std::cout << "[ " << labels[i].getValue<std::string>() << " " 
                   << units[i].getValue<std::string>() << " ] ";
     std::cout << std::endl;
+    std::cout << force_table->getRow(0) << std::endl;
+
+
+    force_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
+    TRCFileAdapter trc_adapter{};
+    trc_adapter.write(*force_table, filename + ".forces.trc");
     }
+
+
 
 
     // TRCFileAdapter trc_adapter{};

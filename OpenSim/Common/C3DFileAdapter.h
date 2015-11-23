@@ -60,6 +60,10 @@ public:
 
     void write(const Tables& markerTable, const std::string& fileName) const;
 
+    static const std::string _markers;
+    static const std::string _forces;
+    static const std::string _usrForces;
+
 protected:
     OutputTables extendRead(const std::string& fileName) const override;
 

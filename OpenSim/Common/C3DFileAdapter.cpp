@@ -2,8 +2,9 @@
 
 namespace OpenSim {
 
-    template<typename T>
-    class shrik;
+const std::string C3DFileAdapter::_markers{"markers"};
+const std::string C3DFileAdapter::_forces{"forces"};
+const std::string C3DFileAdapter::_usrForces{"usrforces"};
 
 const std::unordered_map<std::string, size_t>
 C3DFileAdapter::_unit_index{{"marker", 0},
@@ -21,9 +22,9 @@ C3DFileAdapter::clone() const {
 C3DFileAdapter::Tables
 C3DFileAdapter::read(const std::string& fileName) const {
     auto tables = extendRead(fileName);
-    auto    abs_marker_table = tables[0].release();
-    auto     abs_force_table = tables[1].release();
-    auto abs_usr_force_table = tables[2].release();
+    auto    abs_marker_table = tables.at(_markers  ).release();
+    auto     abs_force_table = tables.at(_forces   ).release();
+    auto abs_usr_force_table = tables.at(_usrForces).release();
     auto    marker_table = static_cast<MarkerTable*>(   abs_marker_table);
     auto     force_table = static_cast< ForceTable*>(    abs_force_table);
     auto usr_force_table = static_cast< ForceTable*>(abs_usr_force_table);
@@ -48,9 +49,9 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     auto&    marker_table = *(new MarkerTable{});
     auto&     force_table = *(new  ForceTable{});
     auto& usr_force_table = *(new  ForceTable{});
-    tables.emplace_back(   &marker_table);
-    tables.emplace_back(    &force_table);
-    tables.emplace_back(&usr_force_table);
+    tables.emplace(_markers,   std::unique_ptr<MarkerTable>(&marker_table));
+    tables.emplace(_forces,    std::unique_ptr<ForceTable>(&force_table));
+    tables.emplace(_usrForces, std::unique_ptr<ForceTable>(&usr_force_table));
 
     auto    marker_pts = btk::PointCollection::New();
     auto usr_force_pts = btk::PointCollection::New();
@@ -284,7 +285,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         force_table.updTableMetaData().setValueForKey("events", event_table);
     usr_force_table.updTableMetaData().setValueForKey("events", event_table);
 
-    return tables;
+    return std::move(tables);
 }
 
 void

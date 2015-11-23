@@ -2,6 +2,7 @@
 
 namespace OpenSim {
 
+const std::string CSVFileAdapter::_table{"table"};
 const std::string CSVFileAdapter::delimiter_read_{","};
 const std::string CSVFileAdapter::delimiter_write_{","};
 const std::string CSVFileAdapter::time_column_label_{"time"};
@@ -13,14 +14,16 @@ CSVFileAdapter::clone() const {
 
 std::unique_ptr<CSVFileAdapter::Table>
 CSVFileAdapter::read(const std::string& fileName) const {
-    auto abs_table = extendRead(fileName).at(0).release();
+    auto abs_table = extendRead(fileName).at(_table).release();
     return std::unique_ptr<Table>{static_cast<Table*>(abs_table)};
 }
 
 void 
 CSVFileAdapter::write(const CSVFileAdapter::Table& table, 
                       const std::string& fileName) const {
-    extendWrite({&table}, fileName);
+    InputTables tables{};
+    tables.emplace(_table, &table);
+    extendWrite(tables, fileName);
 }
 
 CSVFileAdapter::OutputTables 
@@ -67,7 +70,7 @@ CSVFileAdapter::extendRead(const std::string& fileName) const {
     }
 
     OutputTables output_tables{};
-    output_tables.emplace_back(table.release());
+    output_tables.emplace(_table, std::unique_ptr<Table>(table.release()));
 
     return std::move(output_tables);
 }
@@ -75,7 +78,7 @@ CSVFileAdapter::extendRead(const std::string& fileName) const {
 void
 CSVFileAdapter::extendWrite(const InputTables& absTables,
                             const std::string& fileName) const {
-    auto& table = dynamic_cast<const Table&>(*absTables[0]);
+    auto& table = dynamic_cast<const Table&>(*absTables.at(_table));
 
     if(fileName.empty())
         throw Exception{"Input filename is not set."};

@@ -4,6 +4,7 @@
 
 namespace OpenSim {
 
+const std::string MOTFileAdapter::_table{"table"};
 const std::string MOTFileAdapter::_delimiterWrite{"\t"};
 const std::string MOTFileAdapter::_delimitersRead{" \t"};
 const std::string MOTFileAdapter::_endHeaderString{"endheader"};
@@ -16,14 +17,16 @@ MOTFileAdapter::clone() const {
 
 std::unique_ptr<MOTFileAdapter::Table>
 MOTFileAdapter::read(const std::string& fileName) const {
-    auto abs_table = extendRead(fileName).at(0).release();
+    auto abs_table = extendRead(fileName).at(_table).release();
     return std::unique_ptr<Table>{static_cast<Table*>(abs_table)};
 }
 
 void 
 MOTFileAdapter::write(const MOTFileAdapter::Table& table, 
                       const std::string& fileName) const {
-    extendWrite({&table}, fileName);
+    InputTables tables{};
+    tables.emplace(_table, &table);
+    extendWrite(tables, fileName);
 }
 
 MOTFileAdapter::OutputTables
@@ -105,7 +108,7 @@ MOTFileAdapter::extendRead(const std::string& fileName) const {
     }
 
     OutputTables output_tables{};
-    output_tables.emplace_back(table.release());
+    output_tables.emplace(_table, std::unique_ptr<Table>(table.release()));
 
     return std::move(output_tables);
 }
@@ -118,7 +121,10 @@ MOTFileAdapter::extendWrite(const InputTables& absTables,
 
     const Table* table{};
     try {
-        table = dynamic_cast<const Table*>(absTables.at(0));
+        table = dynamic_cast<const Table*>(absTables.at(_table));
+    } catch(std::out_of_range&) {
+        OPENSIM_THROW(KeyMissing,
+                      _table);
     } catch(std::bad_cast&) {
         OPENSIM_THROW(IncorrectTableType);
     }

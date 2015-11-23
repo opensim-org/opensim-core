@@ -3,6 +3,7 @@
 
 namespace OpenSim {
 
+const std::string TRCFileAdapter::_markers{"markers"};
 const std::string TRCFileAdapter::_delimiterWrite{"\t"};
 const std::string TRCFileAdapter::_delimitersRead{" \t"};
 const std::string TRCFileAdapter::_frameNumColumnLabel{"Frame#"};
@@ -24,14 +25,16 @@ TRCFileAdapter::clone() const {
 
 std::unique_ptr<TRCFileAdapter::Table>
 TRCFileAdapter::read(const std::string& fileName) const {
-    auto abs_table = extendRead(fileName).at(0).release();
+    auto abs_table = extendRead(fileName).at(_markers).release();
     return std::unique_ptr<Table>{static_cast<Table*>(abs_table)};
 }
 
 void 
 TRCFileAdapter::write(const TRCFileAdapter::Table& table, 
                       const std::string& fileName) const {
-    extendWrite({&table}, fileName);
+    InputTables tables{};
+    tables.emplace(_markers, &table);
+    extendWrite(tables, fileName);
 }
 
 TRCFileAdapter::OutputTables
@@ -183,7 +186,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     table->setDependentsMetaData(dep_metadata);
 
     OutputTables output_tables{};
-    output_tables.emplace_back(table.release());
+    output_tables.emplace(_markers, std::unique_ptr<Table>(table.release()));
 
     return std::move(output_tables);
 }
@@ -196,7 +199,10 @@ TRCFileAdapter::extendWrite(const InputTables& absTables,
 
     const Table* table{};
     try {
-        table = dynamic_cast<const Table*>(absTables.at(0));
+        table = dynamic_cast<const Table*>(absTables.at(_markers));
+    } catch(std::out_of_range) {
+        OPENSIM_THROW(KeyMissing,
+                      _markers);
     } catch(std::bad_cast&) {
         OPENSIM_THROW(IncorrectTableType);
     }

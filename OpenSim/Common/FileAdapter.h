@@ -134,6 +134,19 @@ public:
     }
 };
 
+class KeyMissing : public InvalidArgument {
+public:
+    KeyMissing(const std::string& file,
+               size_t line,
+               const std::string& func,
+               const std::string& key) :
+        InvalidArgument(file, line, func) {
+        std::string msg = "Key '" + key + "' missing.";
+
+        addMessage(msg);
+    }
+};
+
 class IncorrectTableType : public InvalidArgument {
 public:
     IncorrectTableType(const std::string& file,
