@@ -1437,7 +1437,7 @@ A data member is also created but is intended for internal use only:
     OpenSim_DECLARE_PROPERTY_HELPER(T, T,                                   \
             = (this->hasProperty(#T) ?                                      \
                     PropertyIndex(SimTK::InvalidIndex) :                    \
-                    this->template addProperty<T>("", comment, T())         \
+                    this->template addProperty<T>("", comment, init)        \
               )                    )                                        \
     /** @endcond **/                                                        \
     OpenSim_DECLARE_UNNAMED_PROPERTY_COMMON(T, comment,                     \
@@ -1455,27 +1455,12 @@ initialized with an object of type T.
 //            OpenSim_DECLARE_UNNAMED_PROPERTY_USERINIT,                      \
 //            OpenSim_DECLARE_UNNAMED_PROPERTY_DEFAULTINIT)(__VA_ARGS__)
 
+// OPTIONAL property macros.
+// -------------------------
 
-// All other property macros.
-// --------------------------
-
-/** Declare a property of the given \a pname containing an optional value of
-the given type T (that is, the value list can be of length 0 or 1 only).
-The property may be constructed as empty, or with initialization to a single
-value of type T.
-@relates OpenSim::Property **/
-#define OpenSim_DECLARE_OPTIONAL_PROPERTY(pname, T, comment)                \
-    /** @cond **/                                                           \
-    OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \
-    void constructProperty_##pname()                                        \
-    {   PropertyIndex_##pname =                                             \
-            this->template addOptionalProperty<T>(#pname, comment); }       \
-    void constructProperty_##pname(const T& initValue)                      \
-    {   PropertyIndex_##pname =                                             \
-            this->template addOptionalProperty<T>(#pname, comment,          \
-                                                  initValue); }             \
-    /** @endcond **/                                                        \
-    /** comment                                                          */ \
+// This is called for all variants of OpenSim_DECLARE_OPTIONAL_PROPERTY.
+#define OpenSim_DECLARE_OPTIONAL_PROPERTY_COMMON(pname, T, comment, initComment) \
+    /** comment initComment                                              */ \
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##pname##\></b>.                                    */ \
     /** This property was generated with                                 */ \
@@ -1496,6 +1481,49 @@ value of type T.
     void set_##pname(const T& value)                                        \
     {   updProperty_##pname().setValue(value); }                            \
     /** @}                                                               */
+
+// This variant TODO
+#define OpenSim_DECLARE_OPTIONAL_PROPERTY_NOINIT(pname, T, comment)         \
+    /** @cond **/                                                           \
+    OpenSim_DECLARE_PROPERTY_HELPER(pname, T,                               \
+            = (this->hasProperty(#pname) ?                                  \
+                    PropertyIndex(SimTK::InvalidIndex) :                    \
+                    this->template addOptionalProperty<T>(#pname, comment)  \
+              )                    )                                        \
+    DEPRECATED_14("Remove the call to this method; it is no longer needed " \
+                  "to construct this property and no longer does anything.")\
+    void constructProperty_##pname() {}                                     \
+    void constructProperty_##pname(const T& value) {                        \
+        set_##pname(value);                                                 \
+        updProperty_##pname().setValueIsDefault(true);                      \
+    }                                                                       \
+    /** @endcond **/                                                        \
+    OpenSim_DECLARE_OPTIONAL_PROPERTY_COMMON(pname, T, comment,)
+
+// This variant TODO
+#define OpenSim_DECLARE_OPTIONAL_PROPERTY_USERINIT(pname, T, comment, init) \
+    /** @cond **/                                                           \
+    OpenSim_DECLARE_PROPERTY_HELPER(pname, T,                               \
+            = (this->hasProperty(#pname) ?                                  \
+                    PropertyIndex(SimTK::InvalidIndex) :                    \
+                    this->template addOptionalProperty<T>(#pname, comment,  \
+                                                          init)             \
+              )                    )                                        \
+    /** @endcond **/                                                        \
+    OpenSim_DECLARE_OPTIONAL_PROPERTY_COMMON(pname, T, comment,             \
+            Default value: `init`.)
+
+
+/** Declare a property of the given \a pname containing an optional value of
+the given type T (that is, the value list can be of length 0 or 1 only).
+The property may be constructed as empty, or with initialization to a single
+value of type T.
+@relates OpenSim::Property **/
+#define OpenSim_DECLARE_OPTIONAL_PROPERTY(...)                              \
+    OpenSim_DECLARE_OPTIONAL_PROPERTY_UNINIT(__VA_ARGS__)
+
+// All other property macros.
+// --------------------------
 
 /** Declare a property of the given \a pname containing a variable-length
 list of values of the given type T. The property may be constructed as empty, 
