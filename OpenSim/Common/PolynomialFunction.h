@@ -46,7 +46,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PolynomialFunction, Function);
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(coefficients, SimTK::Vector,
+    OpenSim_DECLARE_PROPERTY_USERINIT(coefficients, SimTK::Vector,
         "Coefficients of a polynomial function, from highest to lowest order."
         "Polynomial order is n-1, where n is the number of coefficients.",
         SimTK::Vector(1, 1)

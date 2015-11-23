@@ -154,8 +154,8 @@ private:
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(gammalm, Function, 5, "Abstract."); \
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(neptunelm, Bar, 5, "Forward-declared class.");
 
+// These will use the constructProperty_() variant that doesn't take arguments.
 #define DECLARE_LIST_ATMOST_EMPTY_PROPERTIES(suffix) \
-    /* These will use the constructProperty_() variant that doesn't take arguments. */ \
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(alphalm0, double, 5, "built-in type."); \
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(zetalm0, Vec3, 5, "non-Object."); \
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(betalm0, Constant, 5, "Concrete."); \
@@ -272,8 +272,8 @@ private:
             {Bar(5), Bar(10), Bar(-5)});
 
 // TODO doesn't make sense. REMOVE.
+// These will use the constructProperty_() variant that doesn't take arguments.
 #define DECLARE_LIST_ATMOST_EMPTY_PROPERTIES_UI(suffix) \
-    /* These will use the constructProperty_() variant that doesn't take arguments. */ \
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(alphalm0, double, 5, "built-in type."); \
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(zetalm0, Vec3, 5, "non-Object."); \
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST##suffix(betalm0, Constant, 5, "Concrete."); \
@@ -541,13 +541,6 @@ public:
     void setPropertyValues();
 };
 
-// TODO may be unnecessary; achieved by backwards-compatibility.
-//class DefaultInitialized : public Object {
-//    OpenSim_DECLARE_CONCRETE_OBJECT(DefaultInitialized, Object);
-//public:
-//    // TODO
-//};
-
 // Test the new _UNINIT macro variants that are introduced in version 4.0.
 class Uninitialized40 : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(Uninitialized40, Object);
@@ -627,7 +620,6 @@ private:
 BackwardsCompatibility33::BackwardsCompatibility33() {
     CONSTRUCT_ALL_PROPERTIES
 }
-
 void BackwardsCompatibility33::setPropertyValues() {
     SET_ALL_PROPERTY_VALUES
 }
@@ -637,12 +629,10 @@ void BackwardsCompatibility33::setPropertyValues() {
 BackwardsCompatibility33CustomCopy::BackwardsCompatibility33CustomCopy() {
     CONSTRUCT_ALL_PROPERTIES
 }
-
 BackwardsCompatibility33CustomCopy::BackwardsCompatibility33CustomCopy(
         const BackwardsCompatibility33CustomCopy& source) : Object(source) {
     COPY_ALL_PROPERTIES
 }
-
 void BackwardsCompatibility33CustomCopy::setPropertyValues() {
     SET_ALL_PROPERTY_VALUES
 }
@@ -824,7 +814,6 @@ int main(int argc, char* argv[]) {
 
         SimTK_SUBTEST(testCopyAndAccess<BackwardsCompatibility33>);
         SimTK_SUBTEST(testCopyAndAccess<BackwardsCompatibility33CustomCopy>);
-        // TODO SimTK_SUBTEST(testCopyAndAccess<DefaultInitialized>);
         SimTK_SUBTEST(testCopyAndAccess<Uninitialized40>);
         SimTK_SUBTEST(testCopyAndAccess<Uninitialized40CustomCopy>);
         SimTK_SUBTEST(testCopyAndAccess<UserInitialized40>);
@@ -832,7 +821,6 @@ int main(int argc, char* argv[]) {
 
         SimTK_SUBTEST(testDefaults<BackwardsCompatibility33>);
         SimTK_SUBTEST(testDefaults<BackwardsCompatibility33CustomCopy>);
-        // TODO SimTK_SUBTEST(testDefaults<DefaultInitialized>);
         SimTK_SUBTEST(testDefaults<Uninitialized40>);
         SimTK_SUBTEST(testDefaults<Uninitialized40CustomCopy>);
         SimTK_SUBTEST(testDefaults<UserInitialized40>);

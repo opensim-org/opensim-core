@@ -80,7 +80,7 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(connectee_name, std::string,
+    OpenSim_DECLARE_PROPERTY_USERINIT(connectee_name, std::string,
         "Name of the component this Connector should be connected to.", "");
 
     //--------------------------------------------------------------------------

@@ -1266,40 +1266,7 @@ struct is_complete {
 // compatibility with OpenSim 3.3, etc. in the case that T is
 // default-constructible. We only define constructProperty_prop_name() for
 // backwards-compatibility.
-#define OpenSim_DECLARE_PROPERTY_DEFAULTINIT(pname, T, comment)             \
-    static_assert(is_complete<T>::value,                                    \
-            "Use OpenSim_DECLARE_PROPERTY_UNINIT or include the header "    \
-            "that defines the class you're using for this "                 \
-            "OpenSim property. "                                            \
-            "The issue is that you are creating this property using a "     \
-            "class that is only forward-declared. This macro, "             \
-            "OpenSim_DECLARE_PROPERTY with 3 arguments, "                   \
-            "tries to default-construct the property, and that's not "      \
-            "possible for a class that is forward declared.");              \
-    static_assert(std::is_default_constructible<T>::value,                  \
-            "Use OpenSim_DECLARE_PROPERTY_UNINIT or give default value as " \
-            "4th argument to OpenSim_DECLARE_PROPERTY. "                    \
-            "By not providing a 4th argument to this macro, you imply "     \
-            "that you want its default to be a default-constructed "        \
-            "object. However, we cannot default-construct an object of "    \
-            "the given type; e.g., it's abstract or doesn't have a "        \
-            "default constructor.");                                        \
-    /** @cond **/                                                           \
-    OpenSim_DECLARE_PROPERTY_HELPER(pname,T,                                \
-            = (this->hasProperty(#pname) ?                                  \
-                    PropertyIndex(SimTK::InvalidIndex) :                    \
-                    this->template addProperty<T>(#pname,comment,T())       \
-              )                    )                                        \
-    DEPRECATED_14("Remove the call to this method and provide the default " \
-                  "value as 4th argument to OpenSim_DECLARE_PROPERTY.")     \
-    void constructProperty_##pname(const T& value) {                        \
-        /* TODO in this case people should not be calling constructPr*/ \
-        /*std::cout << "DEBUG default init constructible " << #pname << std::endl;*/ \
-        set_##pname(value);                                                 \
-        updProperty_##pname().setValueIsDefault(true);                      \
-    }                                                                       \
-    /** @endcond **/                                                        \
-    OpenSim_DECLARE_PROPERTY_COMMON(pname, T, comment,)
+// TODO 
 
 // This variant is nearly identical to what OpenSim_DECLARE_PROPERTY contained
 // in OpenSim 3.3, etc., and has the same behavior of that older version. The
@@ -1322,6 +1289,23 @@ struct is_complete {
 // could lead to unintended behavior (providing a default value twice).
 #define OpenSim_DECLARE_PROPERTY_USERINIT(pname, T, comment, init)          \
     /** @cond **/                                                           \
+    static_assert(is_complete<T>::value,                                    \
+            "Use OpenSim_DECLARE_PROPERTY_UNINIT or include the header "    \
+            "that defines the class you're using for this "                 \
+            "OpenSim property. "                                            \
+            "The issue is that you are creating this property using a "     \
+            "class that is only forward-declared. This macro, "             \
+            "OpenSim_DECLARE_PROPERTY with 3 arguments, "                   \
+            "tries to default-construct the property, and that's not "      \
+            "possible for a class that is forward declared.");              \
+    static_assert(std::is_default_constructible<T>::value,                  \
+            "Use OpenSim_DECLARE_PROPERTY_UNINIT or give default value as " \
+            "4th argument to OpenSim_DECLARE_PROPERTY. "                    \
+            "By not providing a 4th argument to this macro, you imply "     \
+            "that you want its default to be a default-constructed "        \
+            "object. However, we cannot default-construct an object of "    \
+            "the given type; e.g., it's abstract or doesn't have a "        \
+            "default constructor.");                                        \
     OpenSim_DECLARE_PROPERTY_HELPER(pname,T,                                \
             = (this->hasProperty(#pname) ?                                  \
                     PropertyIndex(SimTK::InvalidIndex) :                    \
@@ -1412,28 +1396,10 @@ A data member is also created but is intended for internal use only:
     OpenSim_DECLARE_UNNAMED_PROPERTY_COMMON(T, comment,)
 
 // This variant TODO
-#define OpenSim_DECLARE_UNNAMED_PROPERTY_DEFAULTINIT(T, comment)            \
-    static_assert(is_complete<T>::value, "TODO");                           \
-    static_assert(std::is_default_constructible<T>::value, "TODO");         \
-    /** @cond **/                                                           \
-    OpenSim_DECLARE_PROPERTY_HELPER(T,T,                                    \
-            = (this->hasProperty(#T) ?                                      \
-                    PropertyIndex(SimTK::InvalidIndex) :                    \
-                    this->template addProperty<T>("", comment, T())         \
-              )                    )                                        \
-    DEPRECATED_14("Remove the call to this method and provide the default " \
-                  "value as the 3rd argument to "                           \
-                  "OpenSim_DECLARE_UNNAMED_PROPERTY.")                      \
-    void constructProperty_##T(const T& value) {                            \
-        set_##T(value);                                                     \
-        updProperty_##T().setValueIsDefault(true);                          \
-    }                                                                       \
-    /** @endcond **/                                                        \
-    OpenSim_DECLARE_UNNAMED_PROPERTY_COMMON(T, comment,)
-
-// This variant TODO
 #define OpenSim_DECLARE_UNNAMED_PROPERTY_USERINIT(T, comment, init)         \
     /** @cond **/                                                           \
+    static_assert(is_complete<T>::value, "TODO");                           \
+    static_assert(std::is_default_constructible<T>::value, "TODO");         \
     OpenSim_DECLARE_PROPERTY_HELPER(T, T,                                   \
             = (this->hasProperty(#T) ?                                      \
                     PropertyIndex(SimTK::InvalidIndex) :                    \
@@ -1483,7 +1449,7 @@ initialized with an object of type T.
     /** @}                                                               */
 
 // This variant TODO
-#define OpenSim_DECLARE_OPTIONAL_PROPERTY_NOINIT(pname, T, comment)         \
+#define OpenSim_DECLARE_OPTIONAL_PROPERTY_UNINIT(pname, T, comment)         \
     /** @cond **/                                                           \
     OpenSim_DECLARE_PROPERTY_HELPER(pname, T,                               \
             = (this->hasProperty(#pname) ?                                  \
@@ -1501,8 +1467,13 @@ initialized with an object of type T.
     OpenSim_DECLARE_OPTIONAL_PROPERTY_COMMON(pname, T, comment,)
 
 // This variant TODO
+// TODO might not need the static_asserts, since the user might get an error
+// before we can give them an error (since they would be passing in something
+// they've tried to construct.
 #define OpenSim_DECLARE_OPTIONAL_PROPERTY_USERINIT(pname, T, comment, init) \
     /** @cond **/                                                           \
+    static_assert(is_complete<T>::value, "TODO");                           \
+    static_assert(std::is_default_constructible<T>::value, "TODO");         \
     OpenSim_DECLARE_PROPERTY_HELPER(pname, T,                               \
             = (this->hasProperty(#pname) ?                                  \
                     PropertyIndex(SimTK::InvalidIndex) :                    \
