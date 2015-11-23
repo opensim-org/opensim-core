@@ -425,8 +425,10 @@ private:
 
 
 #define COPY_ALL_PROPERTIES \
-    COPY_REQUIRED_PROPERTIES \
-    COPY_UNNAMED_PROPERTIES \
+    COPY_REQUIRED_TYPICAL_PROPERTIES \
+    COPY_REQUIRED_SPECIAL_PROPERTIES \
+    COPY_UNNAMED_TYPICAL_PROPERTIES \
+    COPY_UNNAMED_SPECIAL_PROPERTIES \
     COPY_OPTIONAL_PROPERTIES \
     COPY_OPTIONAL_INIT_PROPERTIES \
     COPY_LIST_PROPERTIES \
@@ -437,17 +439,19 @@ private:
     COPY_LIST_ATMOST_EMPTY_PROPERTIES \
     COPY_LIST_RANGE_PROPERTIES
 
-#define COPY_REQUIRED_PROPERTIES \
+#define COPY_REQUIRED_TYPICAL_PROPERTIES \
     copyProperty_alpha(source); \
     copyProperty_zeta(source); \
-    copyProperty_beta(source); \
-    /* TODO copyProperty_gamma(source); */ \
-    /* TODO copyProperty_neptune(source); */ \
+    copyProperty_beta(source);
+#define COPY_REQUIRED_SPECIAL_PROPERTIES \
+    copyProperty_gamma(source); \
+    copyProperty_neptune(source);
 
-#define COPY_UNNAMED_PROPERTIES \
-    copyProperty_SimmSpline(source); \
-    /* copyProperty_Component(source); */ \
-    /* copyProperty_Foo(source); */
+#define COPY_UNNAMED_TYPICAL_PROPERTIES \
+    copyProperty_SimmSpline(source);
+#define COPY_UNNAMED_SPECIAL_PROPERTIES \
+    copyProperty_Component(source); \
+    copyProperty_Foo(source); 
 
 #define COPY_OPTIONAL_PROPERTIES \
     copyProperty_alphao(source); \
@@ -659,8 +663,10 @@ Uninitialized40CustomCopy::Uninitialized40CustomCopy() {
 
 Uninitialized40CustomCopy::Uninitialized40CustomCopy(
         const Uninitialized40CustomCopy& source) : Object(source) {
-    COPY_REQUIRED_PROPERTIES
-    COPY_UNNAMED_PROPERTIES
+    COPY_REQUIRED_TYPICAL_PROPERTIES
+    COPY_REQUIRED_SPECIAL_PROPERTIES
+    COPY_UNNAMED_TYPICAL_PROPERTIES
+    COPY_UNNAMED_SPECIAL_PROPERTIES
     // TODO include the rest of the properties
 }
 
@@ -678,8 +684,8 @@ void UserInitialized40::setPropertyValues() {
 // ---------------------------
 UserInitialized40CustomCopy::UserInitialized40CustomCopy(
         const UserInitialized40CustomCopy& source) : Object(source) {
-    COPY_REQUIRED_PROPERTIES
-    COPY_UNNAMED_PROPERTIES
+    COPY_REQUIRED_TYPICAL_PROPERTIES
+    COPY_UNNAMED_TYPICAL_PROPERTIES
     // TODO include the rest of the properties
 }
 
@@ -724,8 +730,9 @@ void testDefaults() {
             "but were not properly marked as such.");
 }
 
+// This tests all properties whose initial value can be specified in the macro.
 template <typename T>
-void testCopyAndAccess() {
+void testCopyAndAccessTypical() {
     T obj;
     obj.setPropertyValues();
     auto* copy = obj.clone();
@@ -733,12 +740,8 @@ void testCopyAndAccess() {
     COMPARE_TO_COPY(alpha);
     COMPARE_TO_COPY(zeta);
     COMPARE_TO_COPY(beta);
-    // TODO COMPARE_TO_COPY(gamma);
-    // TODO COMPARE_TO_COPY(neptune);
 
     COMPARE_TO_COPY(SimmSpline);
-    // TODO COMPARE_TO_COPY(Component);
-    // TODO COMPARE_TO_COPY(Foo);
 
     /* TODO
     COMPARE_TO_COPY(alphao);
@@ -750,14 +753,10 @@ void testCopyAndAccess() {
     COMPARE_TO_COPY(alphaoi);
     COMPARE_TO_COPY(zetaoi);
     COMPARE_TO_COPY(betaoi);
-    COMPARE_TO_COPY(gammaoi);
-    COMPARE_TO_COPY(neptuneoi);
 
     COMPARE_TO_COPY_LIST(alphal);
     COMPARE_TO_COPY_LIST(zetal);
     COMPARE_TO_COPY_LIST(betal);
-    COMPARE_TO_COPY_LIST(gammal);
-    COMPARE_TO_COPY_LIST(neptunel);
 
     COMPARE_TO_COPY_LIST(alphal0);
     COMPARE_TO_COPY_LIST(zetal0);
@@ -768,20 +767,14 @@ void testCopyAndAccess() {
     COMPARE_TO_COPY_LIST(alphals);
     COMPARE_TO_COPY_LIST(zetals);
     COMPARE_TO_COPY_LIST(betals);
-    // TODO COMPARE_TO_COPY_LIST(gammals);
-    COMPARE_TO_COPY_LIST(neptunels);
 
     COMPARE_TO_COPY_LIST(alphall);
     COMPARE_TO_COPY_LIST(zetall);
     COMPARE_TO_COPY_LIST(betall);
-    // TODO COMPARE_TO_COPY_LIST(gammall);
-    COMPARE_TO_COPY_LIST(neptunell);
 
     COMPARE_TO_COPY_LIST(alphalm);
     COMPARE_TO_COPY_LIST(zetalm);
     COMPARE_TO_COPY_LIST(betalm);
-    COMPARE_TO_COPY_LIST(gammalm);
-    COMPARE_TO_COPY_LIST(neptunelm);
 
     COMPARE_TO_COPY_LIST(alphalm0);
     COMPARE_TO_COPY_LIST(zetalm0);
@@ -792,6 +785,38 @@ void testCopyAndAccess() {
     COMPARE_TO_COPY_LIST(alphalr);
     COMPARE_TO_COPY_LIST(zetalr);
     COMPARE_TO_COPY_LIST(betalr);
+    */
+}
+
+// TODO 
+template <typename T>
+void testCopyAndAccessSpecial() {
+    T obj;
+    obj.setPropertyValues();
+    auto* copy = obj.clone();
+
+    COMPARE_TO_COPY(gamma);
+    COMPARE_TO_COPY(neptune);
+
+    COMPARE_TO_COPY(Component);
+    COMPARE_TO_COPY(Foo);
+
+    /*
+    COMPARE_TO_COPY(gammaoi);
+    COMPARE_TO_COPY(neptuneoi);
+
+    COMPARE_TO_COPY_LIST(gammal);
+    COMPARE_TO_COPY_LIST(neptunel);
+
+    // TODO COMPARE_TO_COPY_LIST(gammals);
+    COMPARE_TO_COPY_LIST(neptunels);
+
+    // TODO COMPARE_TO_COPY_LIST(gammall);
+    COMPARE_TO_COPY_LIST(neptunell);
+
+    COMPARE_TO_COPY_LIST(gammalm);
+    COMPARE_TO_COPY_LIST(neptunelm);
+
     // TODO COMPARE_TO_COPY_LIST(gammalr);
     COMPARE_TO_COPY_LIST(neptunelr);
     */
@@ -812,12 +837,17 @@ int main(int argc, char* argv[]) {
         Object::registerType(UserInitialized40());
         Object::registerType(UserInitialized40CustomCopy());
 
-        SimTK_SUBTEST(testCopyAndAccess<BackwardsCompatibility33>);
-        SimTK_SUBTEST(testCopyAndAccess<BackwardsCompatibility33CustomCopy>);
-        SimTK_SUBTEST(testCopyAndAccess<Uninitialized40>);
-        SimTK_SUBTEST(testCopyAndAccess<Uninitialized40CustomCopy>);
-        SimTK_SUBTEST(testCopyAndAccess<UserInitialized40>);
-        SimTK_SUBTEST(testCopyAndAccess<UserInitialized40CustomCopy>);
+        SimTK_SUBTEST(testCopyAndAccessTypical<BackwardsCompatibility33>);
+        SimTK_SUBTEST(testCopyAndAccessTypical<BackwardsCompatibility33CustomCopy>);
+        SimTK_SUBTEST(testCopyAndAccessTypical<Uninitialized40>);
+        SimTK_SUBTEST(testCopyAndAccessTypical<Uninitialized40CustomCopy>);
+        SimTK_SUBTEST(testCopyAndAccessTypical<UserInitialized40>);
+        SimTK_SUBTEST(testCopyAndAccessTypical<UserInitialized40CustomCopy>);
+
+        SimTK_SUBTEST(testCopyAndAccessSpecial<BackwardsCompatibility33>);
+        SimTK_SUBTEST(testCopyAndAccessSpecial<BackwardsCompatibility33CustomCopy>);
+        SimTK_SUBTEST(testCopyAndAccessSpecial<Uninitialized40>);
+        SimTK_SUBTEST(testCopyAndAccessSpecial<Uninitialized40CustomCopy>);
 
         SimTK_SUBTEST(testDefaults<BackwardsCompatibility33>);
         SimTK_SUBTEST(testDefaults<BackwardsCompatibility33CustomCopy>);
