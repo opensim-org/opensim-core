@@ -90,20 +90,25 @@ int main() {
     using namespace OpenSim;
 
     std::vector<std::string> filenames{};
-    filenames.push_back("Applications/IK/test/constraintTest_ik_new.mot");
-    filenames.push_back("Applications/IK/test/std_subject01_walk1_ik.mot");
-    filenames.push_back("Applications/CMC/test/"
+    filenames.push_back("../../../Applications/IK/test/"
+                        "constraintTest_ik_new.mot");
+    filenames.push_back("../../../Applications/IK/test/"
+                        "std_subject01_walk1_ik.mot");
+    filenames.push_back("../../../Applications/CMC/test/"
                         "gait10dof18musc_subject01_walk_grf.mot");
-    filenames.push_back("Applications/CMC/test/runningModel_GRF_data.mot");
-    filenames.push_back("Applications/Analyze/test/"
+    filenames.push_back("../../../Applications/CMC/test/"
+                        "runningModel_GRF_data.mot");
+    filenames.push_back("../../../Applications/Analyze/test/"
                         "subject02_running_arms_ik.mot");
-    filenames.push_back("Applications/Analyze/test/subject01_walk1_grf.mot");
-    filenames.push_back("OpenSim/Tests/MuscleExample/"
+    filenames.push_back("../../../Applications/Analyze/test/"
+                        "subject01_walk1_grf.mot");
+    filenames.push_back("../../../OpenSim/Tests/MuscleExample/"
                         "tugOfWar_fatigue_forces.mot");
-    filenames.push_back("OpenSim/Tests/MuscleExample/std_tugOfWar_forces.mot");
-    filenames.push_back("OpenSim/Tests/CustomActuatorExample/"
+    filenames.push_back("../../../OpenSim/Tests/MuscleExample/"
+                        "std_tugOfWar_forces.mot");
+    filenames.push_back("../../../OpenSim/Tests/CustomActuatorExample/"
                         "actuator_forces.mot");
-    filenames.push_back("OpenSim/Tests/CustomActuatorExample/"
+    filenames.push_back("../../../OpenSim/Tests/CustomActuatorExample/"
                         "SpringActuatedLeg_states_degrees.mot");
     std::string tmpfile{"testmotfileadapter.mot"};
 

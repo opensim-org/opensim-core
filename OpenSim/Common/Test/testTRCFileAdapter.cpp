@@ -90,14 +90,15 @@ int main() {
     using namespace OpenSim;
 
     std::vector<std::string> filenames{};
-    filenames.push_back("OpenSim/Common/Test/TRCFileWithNANs.trc");
-    filenames.push_back("OpenSim/Common/Test/testEformatParsing.trc");
-    filenames.push_back("OpenSim/Common/Test/testNaNsParsing.trc");
-    filenames.push_back("Applications/IK/test/"
+    filenames.push_back("../../../OpenSim/Common/Test/TRCFileWithNANs.trc");
+    filenames.push_back("../../../OpenSim/Common/Test/testEformatParsing.trc");
+    filenames.push_back("../../../OpenSim/Common/Test/testNaNsParsing.trc");
+    filenames.push_back("../../../Applications/IK/test/"
                         "subject01_synthetic_marker_data.trc");
-    filenames.push_back("Applications/IK/test/constraintTest.trc");
-    filenames.push_back("Applications/Scale/test/subject01_static.trc");
-    filenames.push_back("OpenSim/Sandbox/"
+    filenames.push_back("../../../Applications/IK/test/constraintTest.trc");
+    filenames.push_back("../../../Applications/Scale/test/"
+                        "subject01_static.trc");
+    filenames.push_back("../../../OpenSim/Sandbox/"
                         "futureOrientationInverseKinematics.trc");
     std::string tmpfile{"testtrcfileadapter.trc"};
 
