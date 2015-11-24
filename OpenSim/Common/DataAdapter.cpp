@@ -36,9 +36,14 @@ namespace {
 // Automatic registration of OpenSim adapters. There will be one call per 
 // registration. The return values (of type bool) are AND(ed) together to
 // initialize this variable. This variable exists only for this purpose.
+// bool 
+// registerAdapters{DataAdapter::registerDataAdapter("trc", TRCFileAdapter{}) &&
+//                  DataAdapter::registerDataAdapter("csv", CSVFileAdapter{}) &&
+//                  DataAdapter::registerDataAdapter("mot", MOTFileAdapter{})};
 bool 
 registerAdapters{DataAdapter::registerDataAdapter("trc", TRCFileAdapter{}) &&
-                 DataAdapter::registerDataAdapter("mot", MOTFileAdapter{})};
+                 DataAdapter::registerDataAdapter("mot", MOTFileAdapter{}) &&
+                 DataAdapter::registerDataAdapter("csv", CSVFileAdapter{})};
 
 }
 

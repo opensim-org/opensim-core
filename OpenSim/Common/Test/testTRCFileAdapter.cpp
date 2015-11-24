@@ -20,7 +20,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Common/TRCFileAdapter.h"
+#include "OpenSim/Common/Adapters.h"
 
 #include <fstream>
 #include <cstdio>

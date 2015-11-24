@@ -22,16 +22,16 @@
 #ifndef OPENSIM_MOT_FILE_ADAPTER_H_
 #define OPENSIM_MOT_FILE_ADAPTER_H_
 
-#include "FileAdapter.h"
+#include "DelimFileAdapter.h"
 
 
 namespace OpenSim {
 
-class MOTFileAdapter : public FileAdapter {
+/** MOTFileAdapter is a DelimFileAdapter that presets the delimiters 
+appropriately for MOT files.                                                  */
+class MOTFileAdapter : public DelimFileAdapter {
 public:
-    using Table = TimeSeriesTable_<double>;
-
-    MOTFileAdapter()                                 = default;
+    MOTFileAdapter();
     MOTFileAdapter(const MOTFileAdapter&)            = default;
     MOTFileAdapter(MOTFileAdapter&&)                 = default;
     MOTFileAdapter& operator=(const MOTFileAdapter&) = default;
@@ -39,25 +39,6 @@ public:
     ~MOTFileAdapter()                                = default;
 
     MOTFileAdapter* clone() const override;
-
-    std::unique_ptr<Table> read(const std::string& filename) const;
-
-    void write(const Table& table,
-               const std::string& filename) const;
-
-    static const std::string _table;
-
-protected:
-    OutputTables extendRead(const std::string& filename) const override;
-
-    void extendWrite(const InputTables& tables,
-                     const std::string& filename) const override;
-
-private:
-    static const std::string _delimiterWrite;
-    static const std::string _delimitersRead;
-    static const std::string _endHeaderString;
-    static const std::string _timeColumnLabel;
 };
 
 }

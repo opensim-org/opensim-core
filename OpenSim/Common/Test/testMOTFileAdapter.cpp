@@ -20,7 +20,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Common/MOTFileAdapter.h"
+#include "OpenSim/Common/Adapters.h"
 
 #include <fstream>
 #include <cstdio>
@@ -115,7 +115,7 @@ int main() {
     }
 
     for(const auto& filename : filenames) {
-        auto table = std::move(FileAdapter::readFile(filename).at("markers"));
+        auto table = std::move(FileAdapter::readFile(filename).at("table"));
         DataAdapter::InputTables tables{};
         tables.emplace(std::string{"table"}, table.get());
         FileAdapter::writeFile(tables, tmpfile);

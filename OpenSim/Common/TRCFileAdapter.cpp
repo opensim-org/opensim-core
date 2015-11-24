@@ -186,7 +186,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     table->setDependentsMetaData(dep_metadata);
 
     OutputTables output_tables{};
-    output_tables.emplace(_markers, std::unique_ptr<Table>(table.release()));
+    output_tables.emplace(_markers, std::unique_ptr<Table>{table.release()});
 
     return std::move(output_tables);
 }

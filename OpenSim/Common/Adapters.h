@@ -23,4 +23,6 @@
 #include "DataAdapter.h"
 #include "FileAdapter.h"
 #include "TRCFileAdapter.h"
+#include "DelimFileAdapter.h"
 #include "MOTFileAdapter.h"
+#include "CSVFileAdapter.h"

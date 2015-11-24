@@ -129,7 +129,7 @@ public:
     void write(const Table& table, 
                const std::string& filename) const;
 
-    /** Key used for marker table returned.                                   */
+    /** Key used for table associative array returned/accepted by write/read. */
     static const std::string              _markers;
 
 protected:

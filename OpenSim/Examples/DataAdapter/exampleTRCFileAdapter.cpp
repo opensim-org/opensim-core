@@ -41,7 +41,7 @@ int main() {
     // of tables. For a TRC file, this collection will contain just one table. 
     // This table will be an AbstractDataTable. It will have to be casted to the
     //  concrete type to access the data.
-    auto& abstable2 = OpenSim::FileAdapter::readFile(filename).at(0);
+    auto& abstable2 = OpenSim::FileAdapter::readFile(filename).at("markers");
     auto table2 = static_cast<OpenSim::TRCFileAdapter::Table*>(abstable2.get());
 
     // From this point on, both table1 and table2 represent the same type of
