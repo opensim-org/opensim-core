@@ -1,37 +1,12 @@
 set(KIT JavaJNI)
 set(UKIT JAVAJNI)
 
-include(${CMAKE_ROOT}/Modules/FindJava.cmake)
-include(${CMAKE_ROOT}/Modules/FindJNI.cmake)
-
-if(JAVA_INCLUDE_PATH)
-
-# Run command to generate OpenSimJNI_wrap.cxx
-set(swig_generated_file_fullname
-    ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI_wrap.cxx)
-set(swig_generated_header_fullname
-    ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI_wrap.h)
-set(swig_interface_file_fullname
-    ${OpenSim_SOURCE_DIR}/Bindings/Java/swig/javaWrapOpenSim.i)
-set(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling"
-    CACHE STRING
-    "The wrapping is built as the Java package specified in this variable.")
-
-# Replace periods with slashes (to make a path).
-# Syntax for find-replace:
-# string(REGEX REPLACE <pattern> <replacement string>
-#                      <target variable> <source string>)
-string(REGEX REPLACE "\\." "/"
-       SWIG_JAVA_PACKAGE_PATH ${OPENSIM_JAVA_WRAPPING_PACKAGE})
-
-set(SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR
-    ${CMAKE_CURRENT_BINARY_DIR}/src/${SWIG_JAVA_PACKAGE_PATH})
-
-# We place the .java files in this folder.
-execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
-    ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR})
+# For building C++ wrapper.
+find_package(JNI 1.6 REQUIRED)
 
 add_custom_command(
+    # This target actually creates a lot more (all the produced .java files); 
+    # but we will just use these two files as a proxy for all of those.
     OUTPUT "${swig_generated_file_fullname}" "${swig_generated_header_fullname}"
     COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
         -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
@@ -42,22 +17,20 @@ add_custom_command(
         -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
         ${swig_interface_file_fullname}
     DEPENDS "${swig_interface_file_fullname}"
-        "${OpenSim_SOURCE_DIR}/Bindings/opensim.i"
-        "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/preliminaries.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simbody.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/common.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simulation.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/actuators.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/analyses.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/tools.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_common.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_simulation.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_actuators.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_analyses.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_tools.h"
+    COMMENT "Generating java bindings source code with SWIG."
     )
-    
-# This target actually depends on a lot more (all the produced .java files); 
-# but we will just use these two files as a proxy for all of those. All we need
-# is for this target to depend on outputs of the command above.
-add_custom_target(JavaWrap
-    DEPENDS "${swig_generated_file_fullname}"
-            "${swig_generated_header_fullname}")
-
-set_target_properties(JavaWrap PROPERTIES
-    PROJECT_LABEL "Java - Generate source code"
-    FOLDER "Bindings"
-    )
-
 
 set(SOURCE_FILES "${swig_generated_file_fullname}" OpenSimContext.cpp)
 set(INCLUDE_FILES "${swig_generated_header_fullname}" OpenSimContext.h)
@@ -80,30 +53,24 @@ set_target_properties(osim${KIT} PROPERTIES
    FOLDER "Bindings"
 )
 
-add_dependencies(osim${KIT} JavaWrap)
+if(${OPENSIM_USE_INSTALL_RPATH})
+    set_target_properties(osim${KIT} PROPERTIES
+        INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
+        )
+endif()
 
 # Shared libraries are needed at runtime for applications, so we put them
 # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
 # or OpemSim/lib/*.dylib (Mac). Windows .lib files, and Linux/Mac .a static
 # archives are only needed at link time so go in sdk/lib.
-if(WIN32)
-    install(TARGETS osim${KIT}
-            RUNTIME DESTINATION bin
-            LIBRARY DESTINATION sdk/lib
-            ARCHIVE DESTINATION sdk/lib)
-else()
-    install(TARGETS osim${KIT}
-            RUNTIME DESTINATION bin
-            LIBRARY DESTINATION lib
-            ARCHIVE DESTINATION sdk/lib)
-endif()
+install(TARGETS osim${KIT}
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    ARCHIVE DESTINATION "${OPENSIM_INSTALL_ARCHIVEDIR}")
 
 install(DIRECTORY ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}/
-    DESTINATION sdk/Java/${SWIG_JAVA_PACKAGE_PATH})
+    DESTINATION "${OPENSIM_INSTALL_JAVASRCDIR}/${SWIG_JAVA_PACKAGE_PATH}")
 
 if(BUILD_TESTING)
     subdirs(Test)
-endif(BUILD_TESTING)
-
-
-endif(JAVA_INCLUDE_PATH)
+endif()

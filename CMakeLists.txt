@@ -59,11 +59,13 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 
 
-# Make everything go in the same binary directory. (These are CMake-defined
-# variables.)
+# Make everything go in the same binary directory.
+# ------------------------------------------------
+# These are CMake-defined variables.
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 link_directories(${CMAKE_BINARY_DIR})
+
 
 # OpenSim options.
 # ----------------
@@ -98,17 +100,101 @@ option(BUILD_API_ONLY "Build/install only headers, libraries,
 wrapping, tests; not applications (ik, rra, etc.)." OFF)
 
 
-# Don't install applications into system directories on UNIX.
-get_filename_component(ABS_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" REALPATH)
-if(UNIX AND 
-        ("${ABS_INSTALL_PREFIX}" STREQUAL "/usr" OR
-        "${ABS_INSTALL_PREFIX}" STREQUAL "/usr/local") AND
-        NOT ${BUILD_API_ONLY})
-    message(SEND_ERROR "Cannot install into /usr or /usr/local if building
-    applications, since OpenSim executables conflict with vital UNIX
-    executables. Either set BUILD_API_ONLY to ON or change
-    CMAKE_INSTALL_PREFIX.")
+# Configure installation directories across platforms.
+# ----------------------------------------------------
+
+## OPENSIM_INSTALL_UNIX_FHS option.
+set(OPENSIM_INSTALL_UNIX_FHS_DEFAULT OFF)
+if(UNIX)
+    set(OPENSIM_INSTALL_UNIX_FHS_DEFAULT ON)
 endif()
+
+option(OPENSIM_INSTALL_UNIX_FHS
+    "Organize installation according to UNIX Filesystem Hierarchy Standard."
+    ${OPENSIM_INSTALL_UNIX_FHS_DEFAULT})
+
+if(WIN32)
+    # Windows users probably aren't interested in this option.
+    mark_as_advanced(OPENSIM_INSTALL_UNIX_FHS)
+endif()
+
+## Set variables describing where everything gets installed.
+if(${OPENSIM_INSTALL_UNIX_FHS})
+
+    # Sets CMAKE_INSTALL_*DIR variables, some of which are used below.
+    include(GNUInstallDirs)
+    # Do *NOT* try to use the CMAKE_INSTALL_FULL_*DIR variables created by
+    # GNUInstallDirs; they are only defined if OPENSIM_INSTALL_UNIX_FHS is ON.
+
+    # Now set variables that depend on those set by GNUInstallDirs.
+
+    # There's a difference between the locations of these files we'd want
+    # when using apt-get, and what a build-from-source user would want. For
+    # now the focus is making sure that if a build-from-source user installs
+    # into /usr or /usr/local, they have a FHS-compliant OpenSim installation.
+
+    set(OPENSIM_INSTALL_ARCHIVEDIR "${CMAKE_INSTALL_LIBDIR}")
+    set(OPENSIM_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/OpenSim")
+    # Location of the opensim python package in the installation.
+    # On Ubuntu/Debian (apt-get), might want lib/python2.7/dist-packages
+    set(OPENSIM_INSTALL_PYTHONDIR "${CMAKE_INSTALL_DOCDIR}/python")
+    # On Ubuntu/Debian (apt-get), might want share/java
+    set(OPENSIM_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DOCDIR}/Java")
+    # On Ubuntu/Debian (apt-get), might want share/doc/OpenSim/java
+    set(OPENSIM_INSTALL_JAVASRCDIR "${CMAKE_INSTALL_DOCDIR}/Java")
+    set(OPENSIM_INSTALL_CPPEXDIR "${CMAKE_INSTALL_DOCDIR}/APIExamples")
+    set(OPENSIM_INSTALL_SCRIPTSDIR "${CMAKE_INSTALL_DOCDIR}/Scripts")
+
+else()
+
+    # Use our own installation layout.
+
+    # Set the variables that would have otherwise been set by GNUInstallDirs.
+    set(CMAKE_INSTALL_BINDIR bin)
+    set(CMAKE_INSTALL_INCLUDEDIR sdk/include)
+    set(CMAKE_INSTALL_LIBDIR lib)
+    set(CMAKE_INSTALL_DOCDIR sdk/doc)
+    # SYSCONFDIR holds read-only single-machine machine-dependent data.
+    set(CMAKE_INSTALL_SYSCONFDIR sdk)
+
+    set(OPENSIM_INSTALL_ARCHIVEDIR sdk/lib)
+    set(OPENSIM_INSTALL_CMAKEDIR cmake)
+    set(OPENSIM_INSTALL_PYTHONDIR sdk/python)
+    set(OPENSIM_INSTALL_JAVAJARDIR sdk/Java)
+    set(OPENSIM_INSTALL_JAVASRCDIR sdk/Java)
+    set(OPENSIM_INSTALL_CPPEXDIR sdk/APIExamples)
+    set(OPENSIM_INSTALL_SCRIPTSDIR sdk/Scripts)
+
+endif()
+
+set(OPENSIM_INSTALL_MATLABEXDIR "${OPENSIM_INSTALL_SCRIPTSDIR}/Matlab")
+
+# Cross-platform location of shared libraries. Used in configureOpenSim.m.
+if(WIN32)
+    set(OPENSIM_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_BINDIR}")
+else()
+    set(OPENSIM_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_LIBDIR}")
+endif()
+
+
+# On UNIX, be careful about installing into system directories.
+# -------------------------------------------------------------
+get_filename_component(ABS_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" REALPATH)
+if(UNIX AND ("${ABS_INSTALL_PREFIX}" STREQUAL "/usr" OR
+             "${ABS_INSTALL_PREFIX}" STREQUAL "/usr/local"))
+    if(${BUILD_API_ONLY} AND ${OPENSIM_INSTALL_UNIX_FHS})
+        # In this case it's fine to install into /usr or /usr/local.
+    else()
+        message(SEND_ERROR "
+        Cannot install into /usr or /usr/local if building
+        applications (since OpenSim executable names conflict with those of
+        vital UNIX executables) or if the OpenSim installation does not
+        conform to the UNIX Filesystem Hierarchy Standard. Either (a) set
+        BUILD_API_ONLY and OPENSIM_INSTALL_UNIX_FHS to ON, or (b) change
+        CMAKE_INSTALL_PREFIX.")
+    endif()
+endif()
+
 
 # Platform.
 # ---------
@@ -306,8 +392,8 @@ endif()
 set(OPENSIM_USE_INSTALL_RPATH FALSE)
 if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
     option(OPENSIM_NO_LIBRARY_PATH_ENV_VAR
-        "If ON, you don't need to set the LD_LIBRARY_PATH (Linux) or
-        DYLD_LIBRARY_PATH (Mac) to make use of OpenSim's executables.
+        "If ON, you don't need to set 
+        DYLD_LIBRARY_PATH (on OSX) to make use of OpenSim's executables.
         Instead, we bake the location of OpenSim's libraries into the
         executables, so the executables already know where to find the
         libraries. This uses the RPATH mechanism." ON)
@@ -323,8 +409,6 @@ if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
         # executables/libraries that depend on Simbody's libraries).
         set(CMAKE_MACOSX_RPATH ON)
 
-        set(CMAKE_INSTALL_FULL_LIBDIR "${CMAKE_INSTALL_PREFIX}/lib")
-
         # Add the automatically determined parts of the RPATH
         # which point to directories outside the build tree to the install RPATH.
         set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -332,7 +416,7 @@ if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
         # The RPATH to be used when installing, but only if it's not a system
         # directory.
         list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
-            "${CMAKE_INSTALL_FULL_LIBDIR}" isSystemDir)
+            "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" isSystemDir)
         if("${isSystemDir}" STREQUAL "-1")
             set(OPENSIM_USE_INSTALL_RPATH TRUE)
         endif()
@@ -361,13 +445,13 @@ if("${SIMBODY_HOME}" STREQUAL "")
     # we shouldn't let that fail silently and still search for
     # Simbody elsewhere; they may never realize
     # we are not using their requested installation of Simbody.
-    find_package(Simbody ${SIMBODY_VERSION_TO_USE} QUIET
+    find_package(Simbody ${SIMBODY_VERSION_TO_USE}
         NO_MODULE)
 else()
     # Find the package using the user-specified path.
     # NO_DEFAULT_PATH will cause find_package to only
     # look in the provided PATHS.
-    find_package(Simbody ${SIMBODY_VERSION_TO_USE} QUIET
+    find_package(Simbody ${SIMBODY_VERSION_TO_USE}
         PATHS "${SIMBODY_HOME}" NO_MODULE NO_DEFAULT_PATH)
 endif()
 # This variable appears in the CMake GUI and could confuse users,
@@ -392,18 +476,20 @@ link_directories("${Simbody_LIB_DIR}")
 if(${OPENSIM_COPY_SIMBODY})
 
     # Install Simbody headers into OpenSim installation.
-    install(DIRECTORY "${Simbody_INCLUDE_DIR}" DESTINATION sdk/include/SimTK)
+    install(DIRECTORY "${Simbody_INCLUDE_DIR}/"
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/Simbody")
 
     # Figure out which Simbody files need to be installed in the /bin
     # directory and which in the lib directory. Executables go in /bin on all
     # platforms.  Libraries (shared or otherwise) go in /lib, except on Windows
     # where the ".dll" files go in bin along with executables. Anything that
     # is only needed for programmers goes in sdk/lib.
+    # TODO use SimbodyConfig.cmake variables instead of these globs.
     if(WIN32)
         file(GLOB SIMBODY_BIN_FILES
             ${Simbody_BIN_DIR}/*.dll
             ${Simbody_BIN_DIR}/*.exe)
-        file(GLOB SIMBODY_SDKLIB_FILES
+        file(GLOB SIMBODY_ARCHIVE_FILES
             ${Simbody_LIB_DIR}/*.lib)
     else()
         file(GLOB SIMBODY_BIN_FILES
@@ -414,14 +500,17 @@ if(${OPENSIM_COPY_SIMBODY})
             ${Simbody_LIB_DIR}/*SimTK*.so
             ${Simbody_LIB_DIR}/*SimTK*.so.*
             ${Simbody_LIB_DIR}/*SimTK*.dylib)
-        file(GLOB SIMBODY_SDKLIB_FILES
+        file(GLOB SIMBODY_ARCHIVE_FILES
             ${Simbody_LIB_DIR}/*SimTK*.a)
     endif()
 
     # Specify "PROGRAMS" rather than "FILES" so the execute bit gets set.
-    install(PROGRAMS ${SIMBODY_BIN_FILES} DESTINATION bin)
-    install(FILES ${SIMBODY_LIB_FILES}    DESTINATION lib)
-    install(FILES ${SIMBODY_SDKLIB_FILES} DESTINATION sdk/lib)
+    install(PROGRAMS    ${SIMBODY_BIN_FILES}
+            DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    install(FILES       ${SIMBODY_LIB_FILES}
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+    install(FILES       ${SIMBODY_ARCHIVE_FILES}
+            DESTINATION "${OPENSIM_INSTALL_ARCHIVEDIR}")
 
     # On Windows, we must copy Simbody libraries to the OpenSim build directory
     # so that the tests and examples can run without modifying the PATH
@@ -464,18 +553,6 @@ if(${OPENSIM_COPY_SIMBODY})
 endif()
 
 
-# Where do build products go in the build tree?
-# ---------------------------------------------
-if(NOT LIBRARY_OUTPUT_PATH)
-    set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR} CACHE INTERNAL
-        "Single output directory for building all libraries.")
-endif()
-if(NOT EXECUTABLE_OUTPUT_PATH)
-  set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR} CACHE INTERNAL
-      "Single output directory for building all executables.")
-endif()
-
-
 # Other than Windows we can debug without debuggable SimTK libraries
 if(WIN32)
     set(CMAKE_DEBUG_POSTFIX "_d" CACHE INTERNAL "" FORCE)
@@ -508,7 +585,7 @@ file(APPEND  ${VERSION_FILE_PATH} "Compiler=${CMAKE_GENERATOR}-${CMAKE_CXX_COMPI
 file(APPEND  ${VERSION_FILE_PATH} "\n")
 file(APPEND  ${VERSION_FILE_PATH} "Platform=${PLATFORM_NAME}-${PLATFORM_ABI}")
 file(APPEND  ${VERSION_FILE_PATH} "\n")
-install(FILES ${VERSION_FILE_PATH} DESTINATION sdk)
+install(FILES ${VERSION_FILE_PATH} DESTINATION "${CMAKE_INSTALL_SYSCONFDIR}")
 
 
 # Preprocessor definitions.

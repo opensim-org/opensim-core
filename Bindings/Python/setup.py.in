@@ -12,7 +12,7 @@ setup(name='opensim',
       url='http://opensim.stanford.edu/',
       license='Apache 2.0',
       packages=['opensim'],
-      package_data={'opensim': ['_opensim.*']},
+      package_data={'opensim': ['_*.*']},
       include_package_data=True,
       classifiers=[
           'Intended Audience :: Science/Research',

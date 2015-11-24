@@ -36,7 +36,7 @@ function(OpenSimAddLibrary)
     set(options VENDORLIB LOWERINCLUDEDIRNAME)
     set(oneValueArgs KIT AUTHORS)
     set(multiValueArgs LINKLIBS INCLUDES SOURCES TESTDIRS INCLUDEDIRS)
-    CMAKE_PARSE_ARGUMENTS(
+    cmake_parse_arguments(
         OSIMADDLIB "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     string(TOUPPER "${OSIMADDLIB_KIT}" OSIMADDLIB_UKIT)
@@ -94,13 +94,13 @@ function(OpenSimAddLibrary)
     endif()
     install(TARGETS ${OSIMADDLIB_LIBRARY_NAME}
         EXPORT OpenSimTargets
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION "${OSIMADDLIB_LIBRARY_DESTINATION}"
-        ARCHIVE DESTINATION sdk/lib)
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        ARCHIVE DESTINATION "${OPENSIM_INSTALL_ARCHIVEDIR}")
 
     # Install headers.
     # ----------------
-    set(_INCLUDE_PREFIX sdk/include)
+    set(_INCLUDE_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}")
     if(OSIMADDLIB_VENDORLIB)
         set(_INCLUDE_PREFIX ${_INCLUDE_PREFIX}/Vendors)
     else()
@@ -179,7 +179,7 @@ function(OpenSimAddTests)
         set(options)
         set(oneValueArgs)
         set(multiValueArgs TESTPROGRAMS DATAFILES LINKLIBS SOURCES)
-        CMAKE_PARSE_ARGUMENTS(
+        cmake_parse_arguments(
             OSIMADDTESTS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
         # If EXECUTABLE_OUTPUT_PATH is set, then that's where the tests will be
@@ -233,13 +233,22 @@ function(OpenSimAddApplication APPNAME)
     include_directories(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors)
     add_executable(${APPNAME} ${APPNAME}.cpp)
     target_link_libraries(${APPNAME} osimTools)
-    install(TARGETS ${APPNAME} DESTINATION bin)
+    install(TARGETS ${APPNAME} DESTINATION "${CMAKE_INSTALL_BINDIR}")
     set_target_properties(${APPNAME} PROPERTIES
         FOLDER "Applications")
 
     if(${OPENSIM_USE_INSTALL_RPATH})
+        # TODO @executable_path only makes sense on OSX, so if we use RPATH on
+        # Linux we'll have to revisit.
+
+        # bin_dir_to_install_dir is most likely "../"
+        file(RELATIVE_PATH bin_dir_to_install_dir
+            "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}"
+            "${CMAKE_INSTALL_PREFIX}")
+        set(bin_dir_to_lib_dir
+            "${bin_dir_to_install_dir}${CMAKE_INSTALL_LIBDIR}")
         set_target_properties(${APPNAME} PROPERTIES
-            INSTALL_RPATH "\@executable_path/../lib"
+            INSTALL_RPATH "\@executable_path/${bin_dir_to_lib_dir}"
             )
     endif()
 
