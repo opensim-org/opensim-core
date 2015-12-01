@@ -77,10 +77,10 @@ SetDefaultCMakeBuildType()
 ####################### Add dependencies below.
 
 AddDependency(NAME BTK
-              URL  git@github.com:Biomechanical-ToolKit/BTKCore.git
+              URL  https://github.com/Biomechanical-ToolKit/BTKCore.git
               TAG  2c39651138d53537d4bfb72238cf5b085dd3ccf7)
 
 
 AddDependency(NAME simbody
-              URL  git@github.com:simbody/simbody.git
+              URL  https://github.com/simbody/simbody.git
               TAG  ed67885db8983405e0724e63e62bf8e9316b2493)
