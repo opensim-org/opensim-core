@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 2.8)
 
 include(ExternalProject)
 include(CMakeParseArguments)
@@ -16,9 +16,9 @@ endfunction()
 
 # Set the default for CMAKE_BUILD_TYPE.
 function(SetDefaultCMakeBuildType)
-    string(CONCAT DOCSTRING "Build type to use for dependencies. Possible "
-                            "values -- Debug, Release, RelWithDebInfo, "
-                            "MinSizeRel.")
+    set(DOCSTRING "Build type to use for dependencies. Possible values --")
+    set(DOCSTRING "${DOCSTRING} Debug, Release, RelWithDebInfo, MinSizeRel.")
+
     set(CMAKE_BUILD_TYPE
         RelWithDebInfo
         CACHE
@@ -39,8 +39,8 @@ function(AddDependency)
 
     # Check for presence of required arguments.
     if(NOT DEP_NAME OR NOT DEP_URL OR NOT DEP_TAG)
-        string(CONCAT MSG "One or more required arguments are missing. "
-                          "Please check the AddDependency() call.")
+        set(MSG "One or more required arguments are missing. Please check the ")
+        set(MSG "${MSG}AddDependency() call.")
         message(FATAL_ERROR ${MSG})
     endif()
 
