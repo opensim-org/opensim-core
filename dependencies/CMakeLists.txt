@@ -46,7 +46,7 @@ function(AddDependency)
 
     # Add a cache entry providing option for user to use (or not) superbuild.
     set(SUPERBUILD_${DEP_NAME} ON CACHE BOOL 
-        "Automatically download, configure and build ${DEP_NAME}")
+        "Automatically download, configure, build and install ${DEP_NAME}")
 
     if(SUPERBUILD_${DEP_NAME})
         set(SOURCE_DIR  ${CMAKE_SOURCE_DIR}/${DEP_NAME})
