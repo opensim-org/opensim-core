@@ -423,6 +423,20 @@ if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
     endif()
 endif()
 
+set(OPENSIM_DEPENDENCIES_DIR 
+    "" 
+    CACHE 
+    PATH
+    "Directory containing installed binaries of OpenSim dependencies.")
+
+find_package(BTK 
+    REQUIRED
+    HINTS ${OPENSIM_DEPENDENCIES_DIR}/BTK/share/btk-0.4dev)
+
+if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
+    set(SIMBODY_HOME ${OPENSIM_DEPENDENCIES_DIR}/simbody)
+endif()
+
 
 # Find Simbody.
 # -------------
