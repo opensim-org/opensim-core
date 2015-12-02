@@ -57,6 +57,7 @@ install:
 
 build_script:
   ## Superbuild dependencies.
+  - pwd
   - set OPENSIM_SOURCES_DIR = pwd
   - mkdir %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cd %OPENSIM_DEPENDENCIES_BUILD_DIR%
