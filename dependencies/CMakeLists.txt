@@ -25,8 +25,7 @@ function(SetDefaultCMakeBuildType)
         RelWithDebInfo
         CACHE
         STRING
-        ${DOCSTRING}
-        FORCE)
+        ${DOCSTRING})
 endfunction()
 
 # Add a dependency. Arguments:
