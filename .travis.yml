@@ -119,7 +119,7 @@ before_install:
   # Run superbuild to download, configure, build and install dependencies.
   - mkdir $OPENSIM_DEPENDENCIES_BUILD_DIR
   - cd $OPENSIM_DEPENDENCIES_BUILD_DIR
-  - cmake $TRAVIS_BUILD_DIR/dependencies -DCMAKE_INSTALL_PREFIX=$OPENSIM_DEPENDENCIES_INSTALL_DIR
+  - cmake $TRAVIS_BUILD_DIR/dependencies -DCMAKE_INSTALL_PREFIX=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_BUILD_TYPE=$BTYPE
   - make -j$NPROC
 
 install:
