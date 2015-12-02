@@ -61,7 +61,8 @@ build_script:
   - mkdir %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cd %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cmake %OPENSIM_SOURCES_DIR%\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX=%OPENSIM_DEPENDENCIES_INSTALL_DIR%
-  - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
+  - cmake --build . --target ALL_BUILD --config Release -- /maxcpucount:4 /verbosity:quiet
+  - cmake --build . --target install   --config Release -- /maxcpucount:4 /verbosity:quiet
   - cd %OPENSIM_SOURCES_DIR%
   ## Configure and build OpenSim.
   # Must create separate build dir, otherwise can't read test files
