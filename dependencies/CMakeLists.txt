@@ -6,12 +6,14 @@ include(CMakeParseArguments)
 # Set the default for CMAKE_INSTALL_PREFIX.
 function(SetDefaultCMakeInstallPrefix)
     get_filename_component(BASE_DIR ${CMAKE_BINARY_DIR} DIRECTORY)
-    set(CMAKE_INSTALL_PREFIX 
-        ${BASE_DIR}/opensim_dependencies-install 
-        CACHE
-        PATH
-        "Directory to install binaries of OpenSim dependencies."
-        FORCE)
+    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+        set(CMAKE_INSTALL_PREFIX 
+            ${BASE_DIR}/opensim_dependencies-install 
+            CACHE
+            PATH
+            "Directory to install binaries of OpenSim dependencies."
+            FORCE)
+    endif()
 endfunction()
 
 # Set the default for CMAKE_BUILD_TYPE.
