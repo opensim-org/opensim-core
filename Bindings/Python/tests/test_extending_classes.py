@@ -31,7 +31,8 @@ class MyModelComponent(osim.ModelComponent):
         super(MyModelComponent, self).__init__()
     def extendAddToSystem(self, *args, **kwargs):
         print("DEBUG!!!!")
-        self.addStateVariale("funstate")
+        self.addStateVariable("funstate")
+        print("DEBUG????")
         
 class TestExtendingClasses(unittest.TestCase):
     def test_analysis_forward_adopt(self):
@@ -58,6 +59,36 @@ class TestExtendingClasses(unittest.TestCase):
         assert analysis.test_begin == 61
         assert analysis.test_step == 51
         #assert analysis.test_end == 37 # TODO fails.
+
+    def test_analysis_clone(self):
+        # Adopt the analysis and run the ForwardTool.
+        #model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        myanalysis = MyAnalysis()
+        myanalysis.setName('my_analysis')
+
+        #import copy
+        #copy.deepcopy(myanalysis)
+
+        # Add our python subclass to the model.
+        #model.getAnalysisSet().adoptAndAppend(myanalysis)
+
+        # Simple tests.
+        #analysis = model.getAnalysisSet().get(0)
+
+    def test_analysis_concreteclassname(self):
+        # Adopt the analysis and run the ForwardTool.
+        model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        state = model.initSystem()
+        myanalysis = MyAnalysis()
+        myanalysis.setName('my_analysis')
+
+        # Add our python subclass to the model.
+        model.getAnalysisSet().adoptAndAppend(myanalysis)
+
+        # Simple tests.
+        analysis = model.getAnalysisSet().get(0)
+        print analysis.getConcreteClassName()
+        assert analysis.getConcreteClassName() == 'MyAnalysis'
 
     def test_analysis_forward_clone(self):
         # Adopt the analysis and run the ForwardTool.
@@ -95,6 +126,14 @@ class TestExtendingClasses(unittest.TestCase):
     def test_printToXML(self):
         ma = MyAnalysis()
         ma.printToXML('test_MyAnalysis.xml')
+
+    def test_ModelComponent_addToSystem(self):
+        # Adopt the analysis and run the ForwardTool.
+        model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        mc = MyModelComponent()
+        model.addModelComponent(mc)
+        mc.extendAddToSystem()
+        state = model.initSystem()
 
     def test_ModelComponent(self):
         # Adopt the analysis and run the ForwardTool.

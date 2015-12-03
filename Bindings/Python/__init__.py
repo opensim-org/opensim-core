@@ -5,6 +5,8 @@ from actuators import *
 from analyses import *
 from tools import *
 
+import copy
+
 # TODO consider moving this to the interface files.
 def declare_concrete_object(original_class):
     """This method should be used as a decorator to achieve the similar
@@ -17,6 +19,13 @@ def declare_concrete_object(original_class):
         return original_class.__name__
     def clone(self):
         # TODO this implementation is incorrect!
+        print "DEBUG", type(original_class().__disown__()), "ENDDEBUG"
+        #print "DEBUG", type(copy.deepcopy(self)), "ENDDEBUG"
+        #return None
+        #return copy.deepcopy(self) #None
+        obj = self.__class__()
+        obj._markAdopted()
+        #return obj #original_class().__disown__()
         return original_class().__disown__()
 
     original_class.getConcreteClassName = getConcreteClassName

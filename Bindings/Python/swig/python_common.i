@@ -65,6 +65,13 @@ using namespace SimTK;
 //    }
 //}
 
+// Directors
+// =========
+%feature("director") OpenSim::Component;
+
+// Rename
+// ======
+
 %rename(printToXML) OpenSim::Object::print(const std::string&) const;
 %rename(printToXML) OpenSim::XMLDocument::print(const std::string&);
 %rename(printToXML) OpenSim::XMLDocument::print();
