@@ -6,6 +6,7 @@ import os
 import unittest
 
 import opensim as osim
+import copy
 
 test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
                         'tests')
@@ -23,6 +24,13 @@ class MyAnalysis(osim.Analysis):
         print("END!!!!")
         self.test_end = 37
         return 1
+    def clone(self):
+        # this's wrong sinc no cloning is done but seems unrelated to SWIG wiring
+        print("CLONING!")
+        return self
+    def getConcreteClassName(self):
+        print("in getConcreteClassName")
+        return "MyAnalysis"
 
 
 @osim.declare_concrete_object
@@ -48,7 +56,7 @@ class TestExtendingClasses(unittest.TestCase):
 
         # Simple tests.
         analysis = model.getAnalysisSet().get(0)
-        # assert analysis.getConcreteClassName() == 'MyAnalysis'
+        assert analysis.getConcreteClassName() == 'MyAnalysis'
         analysis.begin(state)
 
         # Run tool.
@@ -63,7 +71,7 @@ class TestExtendingClasses(unittest.TestCase):
 
     def test_analysis_clone(self):
         # Adopt the analysis and run the ForwardTool.
-        #model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        model = osim.Model(os.path.join(test_dir, "arm26.osim"))
         myanalysis = MyAnalysis()
         myanalysis.setName('my_analysis')
 
@@ -71,7 +79,7 @@ class TestExtendingClasses(unittest.TestCase):
         #copy.deepcopy(myanalysis)
 
         # Add our python subclass to the model.
-        #model.getAnalysisSet().adoptAndAppend(myanalysis)
+        model.getAnalysisSet().cloneAndAppend(myanalysis)
 
         # Simple tests.
         #analysis = model.getAnalysisSet().get(0)

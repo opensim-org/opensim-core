@@ -67,6 +67,8 @@ using namespace SimTK;
 
 // Directors
 // =========
+%feature("director") OpenSim::Object::clone; 
+%feature("director") OpenSim::Object::getConcreteClassName; 
 %feature("director") OpenSim::Component;
 
 // Rename
