@@ -32,7 +32,7 @@ init:
   - SET OPENSIM_SOURCE_DIR=C:\projects\opensim-core
   - SET OPENSIM_BUILD_DIR=C:\projects\opensim_build
   - SET OPENSIM_INSTALL_DIR=C:\projects\opensim_install
-  - SET OPENSIM_DEPENDENCIES_SORUCE_DIR=%OPENSIM_SOURCE_DIR%\dependencies
+  - SET OPENSIM_DEPENDENCIES_SOURCE_DIR=%OPENSIM_SOURCE_DIR%\dependencies
   - SET OPENSIM_DEPENDENCIES_BUILD_DIR=C:\projects\opensim_dependencies_build
   - SET OPENSIM_DEPENDENCIES_INSTALL_DIR=C:\projects\opensim_dependencies_install
 
