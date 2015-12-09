@@ -6,9 +6,17 @@ include(CMakeParseArguments)
 # Set the default for CMAKE_INSTALL_PREFIX.
 function(SetDefaultCMakeInstallPrefix)
     get_filename_component(BASE_DIR ${CMAKE_BINARY_DIR} DIRECTORY)
+    # Default install prefix for OpenSim dependencies. If user changes
+    # CMAKE_INSTALL_PREFIX, this directory will be removed.
+    set(DEFAULT_CMAKE_INSTALL_PREFIX 
+        ${BASE_DIR}/opensim_dependencies_install
+        CACHE
+        INTERNAL
+        "Default CMAKE_INSTALL_PREFIX for OpenSim dependencies.")
+
     if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
         set(CMAKE_INSTALL_PREFIX 
-            ${BASE_DIR}/opensim_dependencies-install 
+            ${DEFAULT_CMAKE_INSTALL_PREFIX}
             CACHE
             PATH
             "Directory to install binaries of OpenSim dependencies."
@@ -16,16 +24,29 @@ function(SetDefaultCMakeInstallPrefix)
     endif()
 endfunction()
 
+# CMake doesn't clear prefix directories when user changes it. 
+# Remove it to avoid confusion.
+function(RemoveDefaultInstallDirIfEmpty DIR)
+    file(GLOB CONTENTS ${DIR}/*)
+    if(NOT CONTENTS)
+        file(REMOVE_RECURSE ${DIR})
+    endif()
+endfunction()
+
 # Set the default for CMAKE_BUILD_TYPE.
 function(SetDefaultCMakeBuildType)
-    set(DOCSTRING "Build type to use for dependencies. Possible values --")
-    set(DOCSTRING "${DOCSTRING} Debug, Release, RelWithDebInfo, MinSizeRel.")
+    # CMAKE_BUILD_TYPE is only applicable for single configuration generators.
+    if(NOT CMAKE_CONFIGURATION_TYPES)
+        set(DOCSTRING "Build type to use for dependencies. Possible values --")
+        set(DOCSTRING "${DOCSTRING} Debug, Release, RelWithDebInfo,")
+        set(DOCSTRING "${DOCSTRING} MinSizeRel.")
 
-    set(CMAKE_BUILD_TYPE
-        RelWithDebInfo
-        CACHE
-        STRING
-        ${DOCSTRING})
+        set(CMAKE_BUILD_TYPE
+            RelWithDebInfo
+            CACHE
+            STRING
+            ${DOCSTRING})
+    endif()
 endfunction()
 
 # Add a dependency. Arguments:
@@ -54,8 +75,14 @@ function(AddDependency)
         set(BINARY_DIR  ${CMAKE_BINARY_DIR}/${DEP_NAME})
         set(INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${DEP_NAME})
 
-        set(CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
-                       -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE})
+        set(DEFAULT_INSTALL_DIR ${DEFAULT_CMAKE_INSTALL_PREFIX}/${DEP_NAME})
+        RemoveDefaultInstallDirIfEmpty(${DEFAULT_INSTALL_DIR})
+
+        set(CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR})
+        if(NOT CMAKE_CONFIGURATION_TYPES)
+            list(APPEND CMAKE_ARGS
+                -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE})
+        endif()
         list(APPEND CMAKE_ARGS ${DEP_CMAKE_ARGS})
 
         ExternalProject_Add(${DEP_NAME}
@@ -78,10 +105,15 @@ SetDefaultCMakeBuildType()
 ####################### Add dependencies below.
 
 AddDependency(NAME BTK
-              URL  https://github.com/Biomechanical-ToolKit/BTKCore.git
-              TAG  2c39651138d53537d4bfb72238cf5b085dd3ccf7)
+              URL  https://github.com/klshrinidhi/BTKCore.git
+              TAG  8b892c16cca8ad9ab81ea3123fe59add8b3835a9)
 
 
 AddDependency(NAME simbody
               URL  https://github.com/simbody/simbody.git
               TAG  ed67885db8983405e0724e63e62bf8e9316b2493)
+
+
+#######################
+
+RemoveDefaultInstallDirIfEmpty(${DEFAULT_CMAKE_INSTALL_PREFIX})
