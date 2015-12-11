@@ -38,17 +38,19 @@ int main()
         // Could also have events e.g. between heel_strike and toe_off
         MuscleLineOfActionReporter musclePathReporter(model);
         // Either filtering by Group, or wildcards would be useful
+        // another option is to pass in a filter method that selects what objects to report
         musclePathReporter.selectMuscles("R_hip_flex");
 
-        for (timeFrame : traj) {
+        for (auto timeFrame : traj) {
             // Don't necessarily have to pass state or state-reference around
+            // but knowing that the model is stateless this maybe necessary
             State s = model.applyFrame(timeFrame);
             // Results are accumulated into internal table(s) 
-            musclePathReporter.computeMusclePaths(s);
+            musclePathReporter.computePaths(s);
             
         }
         // I expect for every frame to get a sequence of [body-point, vector] for each selected muscle
-        // this could be variable length depending on wrapping/vio-point engagement
+        // this could be variable length depending on wrapping/via-point(s) engagement
         musclePathReporter.print("musclePaths.sto");
     }
     catch (const std::exception& ex)
