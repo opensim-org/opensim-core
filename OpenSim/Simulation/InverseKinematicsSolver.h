@@ -1,5 +1,5 @@
-#ifndef __InverseKinematicsSolver_h__
-#define __InverseKinematicsSolver_h__
+#ifndef OPENSIM_INVERSE_KINEMATICS_SOLVER_H_
+#define OPENSIM_INVERSE_KINEMATICS_SOLVER_H_
 /* -------------------------------------------------------------------------- *
  *                    OpenSim:  InverseKinematicsSolver.h                     *
  * -------------------------------------------------------------------------- *
@@ -42,20 +42,22 @@ class MarkersReference;
  * solution and can be used to seed the constrained problem near to a solution.
  *
  * The InverseKinematics objective: 
- *   min J = sum(Wm*(m_i-md_i)^T*(m_i-md_i)) + sum(Wq_i*(q_i-qd_i)^2)) + [Wc*sum(c_err)^2]
- * where m_i and md_i are the model and desired marker coordinates (Vec3) 
- * iff Wc == Infinity, second term is not included, but
- *  A is subject to the constraint equations:  G(q)-Go = 0
+ \f[
+    min J = sum(Wm*(m_i-md_i)^T*(m_i-md_i)) + sum(Wq_i*(q_i-qd_i)^2)) +
+    [Wc*sum(c_{err})^2]
+ \f]
+ * where m_i and md_i are the model and desired marker coordinates (Vec3). 
+ * When Wc == Infinity, the second term is not included, but instead
+ * q is subject to the constraint equations:  G(q)-Go = 0
  *
  * When the model (and the number of goals) is guaranteed not to change and the 
- * the initial state is close to the InverseKinematics solution (from initial assemble(),
- * then track() is a efficient method for updating the configuration to track
- * the small change to the desired coordinate value.
+ * the initial state is close to the InverseKinematics solution (from the 
+ * initial assemble(), then track() is an efficient method for updating the
+ * configuration to determine the small change in coordinate values, q.
  *
  * See SimTK::Assembler for more algorithmic details of the underlying solver.
  *
  * @author Ajay Seth
- * @version 1.0
  */
 class OSIMSIMULATION_API InverseKinematicsSolver: public AssemblySolver
 {
@@ -150,4 +152,4 @@ private:
 //=============================================================================
 } // namespace
 
-#endif // __InverseKinematicsSolver_h__
+#endif // OPENSIM_INVERSE_KINEMATICS_SOLVER_H_
