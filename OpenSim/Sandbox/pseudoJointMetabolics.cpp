@@ -57,26 +57,47 @@ int main()
             ReporterChannel& currMuscleMomentArms =
                 momentArms.get(currMuscle.getName());
             
-            // Calculate the sum of all moment arms.
-            ReporterChannel& momentArmTotal = reporter.addCalculation("+",
-                currMuscleMomentArms.get("hip_flexion_r"),
-                currMuscleMomentArms.get("knee_flexion_r"),
-                currMuscleMomentArms.get("ankle_flexion_r"),
-                currMuscleMomentArms.get("hip_flexion_l"),
-                currMuscleMomentArms.get("knee_flexion_l"),
+            // Calculate the absolute value of each moment arm.
+            ReporterChannel& momentArmHipR = reporter.addCalculation("abs",
+                currMuscleMomentArms.get("hip_flexion_r") );
+            ReporterChannel& momentArmKneeR = reporter.addCalculation("abs",
+                currMuscleMomentArms.get("knee_flexion_r") );
+            ReporterChannel& momentArmAnkleR = reporter.addCalculation("abs",
+                currMuscleMomentArms.get("ankle_flexion_r") );
+            ReporterChannel& momentArmHipL = reporter.addCalculation("abs",
+                currMuscleMomentArms.get("hip_flexion_l") );
+            ReporterChannel& momentArmKneeL = reporter.addCalculation("abs",
+                currMuscleMomentArms.get("knee_flexion_l") );
+            ReporterChannel& momentArmAnkleL = reporter.addCalculation("abs",
                 currMuscleMomentArms.get("ankle_flexion_l") );
             
-            // Do not report this channel (internal calculation only).
+            // Calculate the sum of all moment arms.
+            ReporterChannel& momentArmTotal = reporter.addCalculation("+",
+                momentArmHipR, momentArmKneeR, momentArmAnkleR,
+                momentArmHipL, momentArmKneeL, momentArmAnkleL);
+            
+            // Do not report these internal calculations.
+            momentArmHipR.mute();
+            momentArmKneeR.mute();
+            momentArmAnkleR.mute();
+            momentArmHipL.mute();
+            momentArmKneeL.mute();
+            momentArmAnkleL.mute();
             momentArmTotal.mute();
             
-            // Assign appropriate fraction of metabolic power to right hip.
+            // Assign appropriate fraction of metabolic power to each joint.
             reporter.addCalculation("*", currMusclePower,
-                reporter.addCalculation("/",
-                    currMuscleMomentArms.get("hip_flexion_r"),
-                    momentArmTotal) );
-            
-            // Repeat for other joints.
-            
+                reporter.addCalculation("/", momentArmHipR, momentArmTotal) );
+            reporter.addCalculation("*", currMusclePower,
+                reporter.addCalculation("/", momentArmKneeR, momentArmTotal) );
+            reporter.addCalculation("*", currMusclePower,
+                reporter.addCalculation("/", momentArmAnkleR, momentArmTotal) );
+            reporter.addCalculation("*", currMusclePower,
+                reporter.addCalculation("/", momentArmHipL, momentArmTotal) );
+            reporter.addCalculation("*", currMusclePower,
+                reporter.addCalculation("/", momentArmKneeL, momentArmTotal) );
+            reporter.addCalculation("*", currMusclePower,
+                reporter.addCalculation("/", momentArmAnkleL, momentArmTotal) );
         }
         
         // Create, configure, and execute study.
