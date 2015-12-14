@@ -51,9 +51,9 @@ class MarkersReference;
  * q is subject to the constraint equations: 
  *      \f[ G(q)-Go = 0 \f]
  *
- * When the model (and the number of goals) is guaranteed not to change and the 
- * the initial state is close to the InverseKinematics solution (from the 
- * initial assemble(), then track() is an efficient method for updating the
+ * When the model (and the number of goals) is guaranteed not to change and
+ * the initial state is close to the InverseKinematics solution (i.e. from the 
+ * initial assemble()), then track() is an efficient method for updating the
  * configuration to determine the small change in coordinate values, q.
  *
  * See SimTK::Assembler for more algorithmic details of the underlying solver.
