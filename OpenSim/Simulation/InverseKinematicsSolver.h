@@ -42,13 +42,14 @@ class MarkersReference;
  * solution and can be used to seed the constrained problem near to a solution.
  *
  * The InverseKinematics objective: 
- \f[
-    min J = sum(Wm*(m_i-md_i)^T*(m_i-md_i)) + sum(Wq_i*(q_i-qd_i)^2)) +
-    [Wc*sum(c_{err})^2]
- \f]
+ * \f[
+ *   min: J = sum(Wm*(m_i-md_i)^T*(m_i-md_i)) + sum(Wq_i*(q_i-qd_i)^2)) +
+ *            [Wc*sum(c_{err})^2]
+ * \f]
  * where m_i and md_i are the model and desired marker coordinates (Vec3). 
  * When Wc == Infinity, the second term is not included, but instead
- * q is subject to the constraint equations:  G(q)-Go = 0
+ * q is subject to the constraint equations: 
+ *      \f[ G(q)-Go = 0 \f]
  *
  * When the model (and the number of goals) is guaranteed not to change and the 
  * the initial state is close to the InverseKinematics solution (from the 
