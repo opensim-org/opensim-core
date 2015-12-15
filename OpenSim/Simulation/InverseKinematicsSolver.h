@@ -1,5 +1,5 @@
-#ifndef __InverseKinematicsSolver_h__
-#define __InverseKinematicsSolver_h__
+#ifndef OPENSIM_INVERSE_KINEMATICS_SOLVER_H_
+#define OPENSIM_INVERSE_KINEMATICS_SOLVER_H_
 /* -------------------------------------------------------------------------- *
  *                    OpenSim:  InverseKinematicsSolver.h                     *
  * -------------------------------------------------------------------------- *
@@ -36,26 +36,31 @@ class MarkersReference;
 /**
  * Solve for the coordinates (degrees-of-freedom) of the model that satisfy the
  * set of constraints imposed on the model as well as set of desired coordinate
- * values.  The InverseKinematics provides the option to convert the problem to  
+ * values.  The InverseKinematics provides the option to convert the problem to
  * an approximate one where the constraint violations are treated as penalties
- * to be minimized rather than strictly enforced. This can speed up the time
- * solution and can be used to seed the constrained problem near to a solution.
+ * to be minimized rather than strictly enforced. This can speedup the solution
+ * time and can be used to seed the constrained problem closer to the solution.
  *
  * The InverseKinematics objective: 
- *   min J = sum(Wm*(m_i-md_i)^T*(m_i-md_i)) + sum(Wq_i*(q_i-qd_i)^2)) + [Wc*sum(c_err)^2]
- * where m_i and md_i are the model and desired marker coordinates (Vec3) 
- * iff Wc == Infinity, second term is not included, but
- *  A is subject to the constraint equations:  G(q)-Go = 0
+ * \f[
+ *   min: J = sum(Wm_i*(m_i-md_i)^T*(m_i-md_i)) + sum(Wq_j*(q_j-qd_j)^2)) +
+ *            [Wc*sum(c_{err})^2]
+ * \f]
+ * where m_i and md_i are the model and desired marker locations (Vec3); q_j
+ * and qd_j are model and desired joint coordinates. Wm_i and Wq_j are the
+ * marker and coordinate weightings, respectively, and Wc is the weighting on
+ * constraint errors. When Wc == Infinity, the second term is not included,
+ * but instead q is subject to the constraint equations: 
+ *      \f[ c_{err} = G(q)-Go = 0 \f]
  *
- * When the model (and the number of goals) is guaranteed not to change and the 
- * the initial state is close to the InverseKinematics solution (from initial assemble(),
- * then track() is a efficient method for updating the configuration to track
- * the small change to the desired coordinate value.
+ * When the model (and the number of goals) is guaranteed not to change and
+ * the initial state is close to the InverseKinematics solution (i.e. from the 
+ * initial assemble()), then track() is an efficient method for updating the
+ * configuration to determine the small change in coordinate values, q.
  *
  * See SimTK::Assembler for more algorithmic details of the underlying solver.
  *
  * @author Ajay Seth
- * @version 1.0
  */
 class OSIMSIMULATION_API InverseKinematicsSolver: public AssemblySolver
 {
@@ -150,4 +155,4 @@ private:
 //=============================================================================
 } // namespace
 
-#endif // __InverseKinematicsSolver_h__
+#endif // OPENSIM_INVERSE_KINEMATICS_SOLVER_H_
