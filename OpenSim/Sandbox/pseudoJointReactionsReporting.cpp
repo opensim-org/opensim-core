@@ -49,7 +49,9 @@ main() {
     DependentsMetaData forcesMetaData = results.getDependentsMetaData();
 
     // define meta data to associate reference frames with joint reaction forces
+    // in what frame is the spatial force applied to?
     ValueArray<string> appliedToFrame(results.getNumCols());
+    // in what frame is spatial force (torque and point of application) expressed?
     ValueArray<string> expressedinFrame(results.getNumCols());
 
     size_t index = forcesMetaData.getIndexForLabel("knee_reaction_force");
