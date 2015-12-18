@@ -12,8 +12,9 @@ main() {
     FileAdapter fileAdpater;"
     auto grfs = filedapter.read("subject_02_grfs.mot", "forces");
 
-    // External force created from table, force/torque/point identifiers,
+    // External force created from table, with force/torque/point column labels,
     // to which frame (PhysicalFrame) the force is applied to and expressed in.
+    // ExternalForce(table, forceColumn, torqueColumn, pointColumn, appliedTo, expressedIn)
     ExternalForce rGrf(grfs, "force_r", "torque_r", "point_r", "foot_r", "ground");
     ExternalForce lGrf(grfs, "force_l", "torque_l", "point_l", "foot_l", "ground");
     model.addForce(rGrf);
@@ -40,14 +41,15 @@ main() {
 
     // initialize the model and underlying system
     jointReactionsStudy.initSystem();
-    // realize the model to the reporting stage 
+    // realize the model to the reporting stage for each state of interest
     for (const auto& state : states)
         jointReactionsStudy.realizeReport(state);
 
-    // in memory results to pass on for further analysis
+    // access results to pass on for further analysis
     auto results = jointReactionsReporter.getResults();
+    
+    /** Current Interface for specifying meta data 
     DependentsMetaData forcesMetaData = results.getDependentsMetaData();
-
     // define meta data to associate reference frames with joint reaction forces
     // in what frame is the spatial force applied to?
     ValueArray<string> appliedToFrame(results.getNumCols());
@@ -62,6 +64,21 @@ main() {
 
     // update the meta data of reaction forces table
     results.setDependentsMetaData(forcesMetaData);
+    */
+
+    // Proposed interface for specifying meta data
+    // For indepenent column it could be updIndependentColumnMetaData, but
+    // for the main block of dependent data we could lose the Dependents qualifier
+    MetaData& forcesMetaData = results.updMetaData(); 
+    // Add field with a default value with each dependent data column
+    // is templated by type but defaults to string.
+    forcesMetaData.addField("applied_to_frame", "");
+    // By default external forces are expressed in ground
+    forcesMetaData.addField("exprressed_in_frame", "ground");
+    // Update the meta data associated with the reaction force we reexpressed
+    forcesMetaData["knee_reaction_force"].updFieldValue("applied_to_frame") = child.getName();
+    forcesMetaData["knee_reaction_force"].updFieldValue("exprressed_in_frame") = parent.getName();
+
     // write it to file
     fileAdapter.write("reactionForces.sto", results);
 }
