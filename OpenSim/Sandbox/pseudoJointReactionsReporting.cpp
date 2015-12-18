@@ -70,12 +70,12 @@ main() {
     // For indepenent column it could be updIndependentColumnMetaData, but
     // for the main block of dependent data we could lose the Dependents qualifier
     MetaData& forcesMetaData = results.updMetaData(); 
-    // Add field with a default value with each dependent data column
-    // is templated by type but defaults to string.
+    // Add field with a default value (templated by type) but defaults to string.
+    // A field value is associated with each data column.
     forcesMetaData.addField("applied_to_frame", "");
     // By default external forces are expressed in ground
     forcesMetaData.addField("exprressed_in_frame", "ground");
-    // Update the meta data associated with the reaction force we reexpressed
+    // Update the meta data associated with the reaction force (column) we reexpressed
     forcesMetaData["knee_reaction_force"].updFieldValue("applied_to_frame") = child.getName();
     forcesMetaData["knee_reaction_force"].updFieldValue("exprressed_in_frame") = parent.getName();
 
