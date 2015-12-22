@@ -22,7 +22,8 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/osimSimulation.h>
-#include <chrono>
+#include <random>
+#include <OpenSim/Common/Constant.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -72,7 +73,7 @@ void testPopulateTrajectory() {
     integrator.setReturnEveryInternalStep(true);
 
     StatesTrajectory states;
-    const double finalTime = 0.15;
+    const double finalTime = 0.05;
     std::vector<double> times;
     while (ts.getState().getTime() < finalTime) {
         ts.stepTo(finalTime);
@@ -98,7 +99,24 @@ void createStateStorageFile() {
     // To assist with creating interesting (non-zero) coordinate values:
     model.updCoordinateSet().get("pelvis_ty").setDefaultLocked(true);
 
-    // TODO add controllers so the muscle states are interesting.
+    // Randomly assign muscle excitations to create interesting activation
+    // histories.
+    auto* controller = new PrescribedController();
+    // For consistent results, use same seed each time.
+    std::default_random_engine generator(0); 
+    // Uniform distribution between 0.1 and 0.9.
+    std::uniform_real_distribution<double> distribution(0.1, 0.8);
+
+    for (int im = 0; im < model.getMuscles().getSize(); ++im) {
+        controller->addActuator(model.getMuscles()[im]);
+        controller->prescribeControlForActuator(
+            model.getMuscles()[im].getName(),
+            new Constant(distribution(generator))
+            );
+    }
+
+    model.addController(controller);
+
     auto& initState = model.initSystem();
     SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
     Manager manager(model, integrator);
@@ -119,12 +137,7 @@ void testFromStatesStorageGivesCorrectStates() {
 
         Storage sto(statesStoFname);
 
-        auto start = std::chrono::system_clock::now();
         auto states = StatesTrajectory::createFromStatesStorage(model, sto);
-        auto end = std::chrono::system_clock::now();
-        std::chrono::duration<double> elapsed = (end - start);
-    
-        std::cout << "DEBUG duration: " << elapsed.count() << std::endl;
 
         // Test that the states are correct, and also that the iterator works.
         // -------------------------------------------------------------------
