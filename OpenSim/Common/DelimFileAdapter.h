@@ -34,7 +34,7 @@ functions return/accept a specific type of DataTable referred to as Table in
 this class.                                                                   
 Header in the file is assumed to end with string "endheader" occupying a full
 line.                                                                         */
-class DelimFileAdapter : public FileAdapter {
+class OSIMCOMMON_API DelimFileAdapter : public FileAdapter {
 public:
     /** Type of the table returned by the read and accepted by the write.     */
     using Table = TimeSeriesTable_<double>;

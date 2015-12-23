@@ -107,7 +107,7 @@ public:
 (when writing) and returns (when reading) a specific type of DataTable referred 
 to as Table in this class. Be sure to expect/provide that table when working
 with this adapter.                                                            */
-class TRCFileAdapter : public FileAdapter {
+class OSIMCOMMON_API TRCFileAdapter : public FileAdapter {
 public:
     /** Type of the table returned by the read and accepted by the write.     */
     using Table = TimeSeriesTable_<SimTK::Vec3>;

@@ -173,7 +173,7 @@ public:
 
 /** FileAdapter is a DataAdapter that reads and writes files with methods
 readFile and writeFile respectively.                                          */
-class FileAdapter : public DataAdapter {
+class OSIMCOMMON_API FileAdapter : public DataAdapter {
 public:
     FileAdapter()                              = default;
     FileAdapter(const FileAdapter&)            = default;

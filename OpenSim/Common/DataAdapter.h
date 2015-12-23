@@ -24,8 +24,9 @@
 #define OPENSIM_DATA_ADAPTER_H_
 
 // Non-standard headers.
+#include "osimCommonDLL.h"
 #include "SimTKcommon.h"
-#include "OpenSim/Common/Exception.h"
+#include "Exception.h"
 #include "TimeSeriesTable.h"
 
 // Standard headers.
@@ -73,7 +74,7 @@ concrete DataAdpaters, given a string identifier of the type of adapter.
 The adapter knows the source format and data flow (read, write, both).
 String identifiers can be associated with file formats according to known
 file extensions.                                                              */
-class DataAdapter {
+class OSIMCOMMON_API DataAdapter {
 public:
     /** Type of the registry containing registered adapters.                  */
     using RegisteredDataAdapters = 

@@ -93,10 +93,10 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
         table->updTableMetaData().setValueForKey(keys[i], values[i]);
 
     auto num_markers_expected = 
-        std::stoul(table->
-                   getTableMetaData().
-                   getValueForKey(_numMarkersLabel).
-                   template getValue<std::string>());
+        std::stoi(table->
+                  getTableMetaData().
+                  getValueForKey(_numMarkersLabel).
+                  template getValue<std::string>());
 
     // Read the line containing column labels and fill up the column labels
     // container.
@@ -146,11 +146,6 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
 
     // Read the rows one at a time and fill up the time column container and
     // the data container.
-    auto num_frames_expected = 
-        std::stoul(table->
-                   getTableMetaData().
-                   getValueForKey(_numFramesLabel).
-                   template getValue<std::string>());
     std::size_t line_num{_dataStartsAtLine - 1};
     auto row = nextLine();
     while(!row.empty()) {
@@ -329,7 +324,6 @@ TRCFileAdapter::extendWrite(const InputTables& absTables,
     // Data rows.
     for(unsigned row = 0; row < table->getNumRows(); ++row) {
         constexpr auto prec = std::numeric_limits<double>::digits10 + 1;
-        constexpr auto width = std::numeric_limits<double>::max_digits10;
         out_stream << row + 1                           << _delimiterWrite
                    << std::setprecision(prec) 
                    << table->getIndependentColumn()[row] << _delimiterWrite;

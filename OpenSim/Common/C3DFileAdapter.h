@@ -31,7 +31,7 @@
 
 namespace OpenSim {
 
-class C3DFileAdapter : public FileAdapter {
+class OSIMCOMMON_API C3DFileAdapter : public FileAdapter {
 public:
     struct Event {
         std::string label;

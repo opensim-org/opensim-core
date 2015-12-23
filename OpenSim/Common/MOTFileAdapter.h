@@ -29,7 +29,7 @@ namespace OpenSim {
 
 /** MOTFileAdapter is a DelimFileAdapter that presets the delimiters 
 appropriately for MOT files.                                                  */
-class MOTFileAdapter : public DelimFileAdapter {
+class OSIMCOMMON_API MOTFileAdapter : public DelimFileAdapter {
 public:
     MOTFileAdapter();
     MOTFileAdapter(const MOTFileAdapter&)            = default;
