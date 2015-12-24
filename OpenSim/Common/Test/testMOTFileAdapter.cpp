@@ -91,8 +91,6 @@ int main() {
 
     std::vector<std::string> filenames{};
     filenames.push_back("../../../Applications/IK/test/"
-                        "constraintTest_ik_new.mot");
-    filenames.push_back("../../../Applications/IK/test/"
                         "std_subject01_walk1_ik.mot");
     filenames.push_back("../../../Applications/CMC/test/"
                         "gait10dof18musc_subject01_walk_grf.mot");
@@ -103,13 +101,7 @@ int main() {
     filenames.push_back("../../../Applications/Analyze/test/"
                         "subject01_walk1_grf.mot");
     filenames.push_back("../../../OpenSim/Tests/MuscleExample/"
-                        "tugOfWar_fatigue_forces.mot");
-    filenames.push_back("../../../OpenSim/Tests/MuscleExample/"
                         "std_tugOfWar_forces.mot");
-    filenames.push_back("../../../OpenSim/Tests/CustomActuatorExample/"
-                        "actuator_forces.mot");
-    filenames.push_back("../../../OpenSim/Tests/CustomActuatorExample/"
-                        "SpringActuatedLeg_states_degrees.mot");
     std::string tmpfile{"testmotfileadapter.mot"};
 
     for(const auto& filename : filenames) {

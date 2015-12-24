@@ -162,7 +162,6 @@ DelimFileAdapter::extendWrite(const InputTables& absTables,
     // Data rows.
     for(unsigned row = 0; row < table->getNumRows(); ++row) {
         constexpr auto prec = std::numeric_limits<double>::digits10 + 1;
-        constexpr auto width = std::numeric_limits<double>::max_digits10;
         out_stream << std::setprecision(prec)
                    << table->getIndependentColumn()[row];
         const auto& row_r = table->getRowAtIndex(row);

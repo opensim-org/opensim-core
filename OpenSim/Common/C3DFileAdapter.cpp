@@ -91,7 +91,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         marker_table.setDependentsMetaData(marker_dep_metadata);
 
         double time_step{1.0 / acquisition->GetPointFrequency()};
-        for(size_t f = 0; 
+        for(int f = 0; 
             f < marker_pts->GetFrontItem()->GetFrameNumber();
             ++f) {
             SimTK::RowVector_<SimTK::Vec3> row{marker_pts->GetItemNumber()};
@@ -134,7 +134,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         usr_force_table.setDependentsMetaData(force_dep_metadata);
 
         double time_step{1.0 / acquisition->GetAnalogFrequency()};
-        for(size_t f = 0;
+        for(int f = 0;
             f < usr_force_pts->GetFrontItem()->GetFrameNumber();
             ++f) {
             SimTK::RowVector_<SimTK::Vec3> row{usr_force_pts->GetItemNumber()};
@@ -216,7 +216,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
 
         ValueArray<std::string> labels{};
         ValueArray<std::string> units{};
-        for(size_t fp = 1; fp <= fp_force_pts->GetItemNumber(); ++fp) {
+        for(int fp = 1; fp <= fp_force_pts->GetItemNumber(); ++fp) {
             auto fp_str = std::to_string(fp);
 
             labels.upd().push_back(SimTK::Value<std::string>("f" + fp_str));
@@ -240,7 +240,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         force_table.setDependentsMetaData(force_dep_metadata);
 
         double time_step{1.0 / acquisition->GetAnalogFrequency()};
-        for(size_t f = 0;
+        for(int f = 0;
             f < fp_force_pts->GetFrontItem()->GetFrameNumber();
             ++f) {
             SimTK::RowVector_<SimTK::Vec3>
