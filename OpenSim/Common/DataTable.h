@@ -272,7 +272,8 @@ public:
         OPENSIM_THROW_IF(iter == _indData.cend(),
                          KeyNotFound, std::to_string(ind));
 
-        return _depData.row(std::distance(_indData.cbegin(), iter));
+        auto rowInd = std::distance(_indData.cbegin(), iter);
+        return _depData.row(static_cast<int>(rowInd));
     }
 
     /** Update row at index.                                                  
@@ -364,7 +365,7 @@ protected:
                             entries in the metadata for dependent columns have
                             the correct length (equal to nubmer of columns).  */
     void validateDependentsMetaData() const override {
-        unsigned numCols{};
+        size_t numCols{};
         try {
             numCols = _dependentsMetaData.getValueArrayForKey("labels").size();
         } catch (KeyNotFound&) {

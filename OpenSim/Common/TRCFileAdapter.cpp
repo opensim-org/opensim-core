@@ -93,10 +93,10 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
         table->updTableMetaData().setValueForKey(keys[i], values[i]);
 
     auto num_markers_expected = 
-        std::stoi(table->
-                  getTableMetaData().
-                  getValueForKey(_numMarkersLabel).
-                  template getValue<std::string>());
+        std::stoul(table->
+                   getTableMetaData().
+                   getValueForKey(_numMarkersLabel).
+                   template getValue<std::string>());
 
     // Read the line containing column labels and fill up the column labels
     // container.

@@ -74,10 +74,6 @@ int main() {
     for(size_t i = 0; i < labels.size(); ++i)
         std::cout << labels[i].getValue<std::string>() << " ";
     std::cout << "\n";
-
-    marker_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
-    TRCFileAdapter trc_adapter{};
-    trc_adapter.write(*marker_table, filename + ".markers.trc");
     }
 
     if(usr_force_table->getNumRows() != 0) {
@@ -142,6 +138,7 @@ int main() {
                   << units[i].getValue<std::string>() << " ] ";
     std::cout << std::endl;
     std::cout << force_table->getRow(0) << std::endl;
+    }
 
 
     return 0;
