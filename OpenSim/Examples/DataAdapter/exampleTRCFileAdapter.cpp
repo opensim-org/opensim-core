@@ -24,7 +24,7 @@
 #include "OpenSim/Common/Adapters.h"
 
 int main() {
-    std::string filename{"OpenSim/Common/Test/TRCFileWithNANs.trc"};
+    std::string filename{"OpenSim/Examples/DataAdapter/TRCFileWithNANs.trc"};
 
     // There are two ways to read the file:
     // (1) Use the specific adapter to read the file. This requires you to know
