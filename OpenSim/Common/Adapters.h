@@ -26,3 +26,4 @@
 #include "DelimFileAdapter.h"
 #include "MOTFileAdapter.h"
 #include "CSVFileAdapter.h"
+#include "C3DFileAdapter.h"

@@ -32,13 +32,19 @@
 int main() {
     using namespace OpenSim;
 
-    std::string filename{"/home/shrik/Downloads/"
-            // "walking5.c3d"};
-            // "walking2.c3d"};
-            // "treadMillRunning.c3d"};
-            // "singleLegLanding.c3d"};
-            "singleLeglanding_2.c3d"};
+    std::vector<std::string> filenames{};
+    filenames.push_back("aStaticTrial_2.c3d");
+    filenames.push_back("aStaticTrial.c3d");
+    filenames.push_back("doubleLegLanding.c3d");
+    filenames.push_back("jogging.c3d");
+    filenames.push_back("sideCutting.c3d");
+    filenames.push_back("singleLeglanding_2.c3d");
+    filenames.push_back("singleLegLanding.c3d");
+    filenames.push_back("treadMillRunning.c3d");
+    filenames.push_back("walking2.c3d");
+    filenames.push_back("walking5.c3d");
 
+    for(const auto& filename : filenames) {
     C3DFileAdapter c3d_adapter{};
     auto tables = c3d_adapter.read(filename);
 
@@ -47,122 +53,54 @@ int main() {
     auto& usr_force_table = std::get<2>(tables);
 
     if(marker_table->getNumRows() != 0) {
-        std::cout << "--------------Markers-----------------" << std::endl;
-
-    std::cout << "Dim: " 
-              << marker_table->getNumRows() << " "
-              << marker_table->getNumColumns() 
-              << std::endl;
-    std::cout << "DataRate: " 
-              << marker_table->getTableMetaData().
-                               getValueForKey("DataRate").
-                               getValue<std::string>()
-              << std::endl;
-    std::cout << "Units: " 
-              << marker_table->getTableMetaData().
-                               getValueForKey("Units").
-                               getValue<std::string>()
-              << std::endl << std::endl;
-    std::cout << marker_table->getRow(0) << std::endl;
-
-    auto& events_table = marker_table->getTableMetaData().
-                                      getValueForKey("events").
-                                 getValue<std::vector<C3DFileAdapter::Event>>();
-    for(const auto& elem : events_table)
-        std::cout << "label: " << elem.label << " | "
-                  << "time: " << elem.time << " | "
-                  << "frame: " << elem.frame << " | "
-                  << "description: " << elem.description << "\n";
-
-    auto& labels = marker_table->getDependentsMetaData().
-                                 getValueArrayForKey("labels");
-    for(size_t i = 0; i < labels.size(); ++i)
-        std::cout << labels[i].getValue<std::string>() << " ";
-    std::cout << "\n";
-
     marker_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
     TRCFileAdapter trc_adapter{};
     trc_adapter.write(*marker_table, filename + ".markers.trc");
     }
 
     if(usr_force_table->getNumRows() != 0) {
-        std::cout << "--------------User Forces-----------------" << std::endl;
-
-    std::cout << "Dim: "
-              << usr_force_table->getNumRows() << " "
-              << usr_force_table->getNumColumns()
-              << std::endl;
-    std::cout << "DataRate: "
-              << usr_force_table->getTableMetaData().
-                                  getValueForKey("DataRate").
-                                  getValue<std::string>()
-              << std::endl;
-    std::cout << "Units: "
-              << usr_force_table->getTableMetaData().
-                                  getValueForKey("Units").
-                                  getValue<std::string>()
-              << std::endl << std::endl;
-    std::cout << usr_force_table->getRow(0) << std::endl;
+    usr_force_table->updTableMetaData().setValueForKey("Units", 
+                                                       std::string{"mm"});
+    TRCFileAdapter trc_adapter{};
+    trc_adapter.write(*usr_force_table, filename + ".usrforces.trc");
     }
 
     if(force_table->getNumRows() != 0) {
-        std::cout << "--------------Forces-----------------" << std::endl;
-
-    std::cout << "Dim: "
-              << force_table->getNumRows() << " "
-              << force_table->getNumColumns()
-              << std::endl;
-    std::cout << "DataRate: "
-              << force_table->getTableMetaData().
-                              getValueForKey("DataRate").
-                              getValue<std::string>()
-              << std::endl;
-    std::cout << "CalibrationMatrices: \n";
-    for(const auto& elem : force_table->getTableMetaData().
-            getValueForKey("CalibrationMatrices").
-            getValue<std::vector<btk::ForcePlatform::CalMatrix>>())
-        std::cout << elem << std::endl;
-    std::cout << "Corners: \n";
-    for(const auto& elem : force_table->getTableMetaData().
-            getValueForKey("Corners").
-            getValue<std::vector<btk::ForcePlatform::Corners>>())
-        std::cout << elem << std::endl;
-    std::cout << "Origins: \n";
-    for(const auto& elem : force_table->getTableMetaData().
-            getValueForKey("Origins").
-            getValue<std::vector<btk::ForcePlatform::Origin>>())
-        std::cout << elem << std::endl;
-    std::cout << "Types: \n";
-    for(const auto& elem : force_table->getTableMetaData().
-            getValueForKey("Types").
-            getValue<std::vector<unsigned>>())
-        std::cout << elem << std::endl;
-
-    const auto& labels = force_table->getDependentsMetaData().
-        getValueArrayForKey("labels");
-    const auto& units = force_table->getDependentsMetaData().
-        getValueArrayForKey("units");
-    for(size_t i = 0; i < labels.size(); ++i)
-        std::cout << "[ " << labels[i].getValue<std::string>() << " " 
-                  << units[i].getValue<std::string>() << " ] ";
-    std::cout << std::endl;
-    std::cout << force_table->getRow(0) << std::endl;
-
-
     force_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
     TRCFileAdapter trc_adapter{};
     trc_adapter.write(*force_table, filename + ".forces.trc");
     }
+    }
 
+    for(const auto& filename : filenames) {
+        auto tables = FileAdapter::readFile(filename);
 
+        using MT = C3DFileAdapter::MarkerTable;
+        using FT = C3DFileAdapter::ForceTable;
 
+        auto    marker_table = dynamic_cast<MT*>(tables.at("markers").get());
+        auto     force_table = dynamic_cast<FT*>(tables.at("forces").get());
+        auto usr_force_table = dynamic_cast<FT*>(tables.at("usrforces").get());
 
-    // TRCFileAdapter trc_adapter{};
-    // trc_adapter.write(*marker_table, "/home/shrik/Downloads/markers.trc");
+    if(marker_table->getNumRows() != 0) {
+    marker_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
+    TRCFileAdapter trc_adapter{};
+    trc_adapter.write(*marker_table, filename + ".markers.trc");
+    }
 
-    // force_table->updTableMetaData().setValueForKey("Units", std::string{"N"});
+    if(usr_force_table->getNumRows() != 0) {
+    usr_force_table->updTableMetaData().setValueForKey("Units", 
+                                                       std::string{"mm"});
+    TRCFileAdapter trc_adapter{};
+    trc_adapter.write(*usr_force_table, filename + ".usrforces.trc");
+    }
 
-    // trc_adapter.write(*force_table, "/home/shrik/Downloads/forces.trc");
-    
+    if(force_table->getNumRows() != 0) {
+    force_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
+    TRCFileAdapter trc_adapter{};
+    trc_adapter.write(*force_table, filename + ".forces.trc");
+    }
+    }
+
     return 0;
 }

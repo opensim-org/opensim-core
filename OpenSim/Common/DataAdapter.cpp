@@ -43,7 +43,8 @@ namespace {
 bool 
 registerAdapters{DataAdapter::registerDataAdapter("trc", TRCFileAdapter{}) &&
                  DataAdapter::registerDataAdapter("mot", MOTFileAdapter{}) &&
-                 DataAdapter::registerDataAdapter("csv", CSVFileAdapter{})};
+                 DataAdapter::registerDataAdapter("csv", CSVFileAdapter{}) &&
+                 DataAdapter::registerDataAdapter("c3d", C3DFileAdapter{})};
 
 }
 
