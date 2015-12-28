@@ -43,8 +43,15 @@ public:
             const std::string& func,
             std::vector<std::string> missingStates) :
             OpenSim::Exception(file, line, func) {
-        addMessage("");
- //       TODO
+        std::string msg = "The following columns are missing from the ";
+        msg += "states Storage: ";
+        for (int i = 0; i < (missingStates.size() - 1); ++i) {
+            msg += missingStates[i] + ", ";
+        }
+        msg += missingStates[missingStates.size() - 1] + ".";
+
+        // TODO message should account for pre-v4.0 column names.
+        addMessage(msg);
     }
 };
 
@@ -55,7 +62,15 @@ public:
             const std::string& func,
             std::vector<std::string> extraStates) :
             OpenSim::Exception(file, line, func) {
- //       TODO
+        std::string msg = "The following columns from the states Storage ";
+        msg += "are not Model states: ";
+        for (int i = 0; i < (extraStates.size() - 1); ++i) {
+            msg += extraStates[i] + ", ";
+        }
+        msg += extraStates[extraStates.size() - 1] + ".";
+
+        // TODO message should account for pre-v4.0 column names.
+        addMessage(msg);
     }
 };
 

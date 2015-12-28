@@ -40,6 +40,7 @@ using namespace SimTK;
 // variable).
 // TODO appending a state that fails the sequential time check.
 // TODO test for exception when appending states that are not sequential.
+// TODO accessing acceleration-level outputs.
 
 const std::string statesStoFname = "testStatesTrajectory_readStorage_states.sto";
 
