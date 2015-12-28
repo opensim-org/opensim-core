@@ -292,6 +292,12 @@ public:
                          double startTime=SimTK::NaN, double endTime=SimTK::NaN);
     //void checkAgainstStandard(Storage standard, Array<double> &tolerances, std::string testFile = "", int testFileLine = -1, std::string errorMessage = "Exception");
     void compareWithStandard(Storage& standard, Array<std::string> &columnsUsed, Array<double> &comparisons);
+    /**
+     * Force column labels for a Storage object to become unique. This is done by
+     * prepending the string (n_) as needed where n=1, 2, ...
+     *
+     * @returns true if labels were already unique.
+     **/
     bool makeStorageLabelsUnique();
     //--------------------------------------------------------------------------
     // IO

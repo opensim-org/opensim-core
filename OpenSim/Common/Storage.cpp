@@ -3314,34 +3314,30 @@ void Storage::compareWithStandard(Storage& standard, Array<string> &columnsUsed,
     columnsUsed.setSize(columns);
     comparisons.setSize(columns);
 }
-/**
- * Force column labels for a Storage object to become unique. This is done by prepending the string (n_)
- * as needed where n=1, 2, ...
- *
- * @returns true if labels were changed false otherwise.
- **/
+
 bool Storage::makeStorageLabelsUnique() {
     Array<std::string> lbls = getColumnLabels();
-    std::string offending="";
-    bool changedLabels=false;
-    for(int i=0; i< lbls.getSize(); i++){
-        bool isUnique= (lbls.findIndex(lbls[i])==i);
-        if (!isUnique){ // Make new names
-            offending =lbls[i];
-            bool exist=true;
-            std::string newName =offending;
+    std::string offending = "";
+    bool changedLabels = false;
+    for(int i = 0; i < lbls.getSize(); i++){
+        bool isUnique = (lbls.findIndex(lbls[i]) == i);
+        if (!isUnique) { // Make new names
+            offending = lbls[i];
+            bool exist = true;
+            std::string newName = offending;
             changedLabels = true;
-            int c=1;
-            while(exist){
+            int c = 1;
+            while (exist) {
                 char cString[20];
                 sprintf(cString,"%d", c);
-                newName = std::string(cString)+"_"+offending;
-                exist= (lbls.findIndex(newName)!=-1);
+                newName = std::string(cString) + "_" + offending;
+                exist = (lbls.findIndex(newName) != -1);
                 c++;
             }
-            lbls[i]= newName;
+            lbls[i] = newName;
         }
     }
     if (changedLabels) setColumnLabels(lbls);
-    return (!changedLabels);
+    const bool labelsWereUnique = (!changedLabels);
+    return labelsWereUnique;
 }
