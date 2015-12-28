@@ -29,14 +29,9 @@ using namespace OpenSim;
 using namespace SimTK;
 
 // TODO what happens if the storage file has a hole? NaN?
-// TODO append two trajectories.
-// TODO ensure sequential.
-// TODO formFromStorage versus readStorage.
-// TODO test API for populating a StatesTrajectory.
 // TODO test modeling options (locked coordinates, etc.)
 // TODO option to fill out a statestrajectory muscle states by equilibrating.
 // TODO test convenience createFromStorage(model, filename).
-// TODO createFromStorage if model seems to be the wrong one.
 // TODO createFromKinematicsStorage
 // TODO append two StateTrajectories together.
 // TODO bounds checking of get() vs upd().
@@ -44,7 +39,7 @@ using namespace SimTK;
 // TODO handle pre-4.0 state storages (without the full paths to the state
 // variable).
 // TODO appending a state that fails the sequential time check.
-// TODO unique column names?
+// TODO test for exception when appending states that are not sequential.
 
 const std::string statesStoFname = "testStatesTrajectory_readStorage_states.sto";
 
