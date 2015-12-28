@@ -85,10 +85,17 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
 
     // Check if the Storage has columns that are not states in the Model.
     std::vector<std::string> extraColumnNames;
+    // Also, assemble the names of the states that we will actually set in the
+    // trajectory, along with the corresponding dependent-column index.
+    std::map<std::string, int> statesToFillUp;
     // Skip the time column label.
     for (int is = 1; is < stoLabels.getSize(); ++is) {
         if (modelStateNames.findIndex(stoLabels[is]) == -1) {
             extraColumnNames.push_back(stoLabels[is]);
+        }
+        else {
+            // Subtract 1 to account for the 'time' column.
+            statesToFillUp[stoLabels[is]] = is - 1;
         }
     }
     OPENSIM_THROW_IF(!allowExtraColumns && !extraColumnNames.empty(),
@@ -115,16 +122,9 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
         }
 
         // Fill up current State with the data for the current time.
-        for (int icol = 0; icol < numDependentColumns; ++icol) {
-            // TODO use set<>.
-            if (modelStateNames.findIndex(stoLabels[icol + 1]) != -1) {
-                /*std::find(extraColumnNames.begin(), extraColumnNames.end(),
-                        stoLabels[icol + 1])
-                    != extraColumnNames.end()) {*/
-                // Storage labels include time at index 0, so add 1 to skip.
-                localModel.setStateVariableValue(state,
-                        stoLabels[icol + 1], dependentValues[icol]);
-            }
+        for (const auto& kv : statesToFillUp) {
+            localModel.setStateVariableValue(state,
+                    kv.first, dependentValues[kv.second]);
         }
 
         // Make a copy of the edited state and put it in the trajectory.
