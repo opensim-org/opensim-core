@@ -36,11 +36,30 @@ class Storage;
 class Model;
 
 // TODO doxygen, associate with StatesTrajectory class.
-class StatesMissingFromStorage : OpenSim::Exception {
-    using Exception::Exception;
+// TODO make nested classes.
+class MissingColumnsInStatesStorage : public OpenSim::Exception {
+public:
+    MissingColumnsInStatesStorage(const std::string& file, size_t line,
+            const std::string& func,
+            std::vector<std::string> missingStates) :
+            OpenSim::Exception(file, line, func) {
+        addMessage("");
+ //       TODO
+    }
 };
 
-class StatesMissingFromModel : OpenSim::Exception {
+class ExtraColumnsInStatesStorage : public OpenSim::Exception {
+public:
+    ExtraColumnsInStatesStorage(
+            const std::string& file, size_t line,
+            const std::string& func,
+            std::vector<std::string> extraStates) :
+            OpenSim::Exception(file, line, func) {
+ //       TODO
+    }
+};
+
+class NonUniqueColumnsInStatesStorage : public OpenSim::Exception {
     using Exception::Exception;
 };
 
@@ -149,6 +168,8 @@ public:
      *
      * TODO we expect the Storage file to specify each state for all time. what
      * if a certain variable is missing at a specific time?
+     *
+     * TODO backwards compatibility with 3.3-and-earlier states storage files.
      * 
      * @param model The Model to which the states belong. A Model is necessary
      *      since the storage file lists the state variables by name.
@@ -171,16 +192,16 @@ public:
     // TODO assemble, equilibrateMuscles?
     static StatesTrajectory createFromStatesStorage(const Model& model,
             const Storage& sto,
-            bool checkMissingFromStorage = true,
-            bool checkMissingFromModel = true);
+            bool allowMissingColumns = false,
+            bool allowExtraColumns = false);
 
     /** Convenience form of createFromStatesStorage that takes the path to a
      * Storage file instead of a Storage object.
      */
     static StatesTrajectory createFromStatesStorage(const Model& model,
             const std::string& filepath,
-            bool checkMissingFromStorage = true,
-            bool checkMissingFromModel = true);
+            bool allowMissingColumns = false,
+            bool allowExtraColumns = false);
     /// @}
 
 private:
