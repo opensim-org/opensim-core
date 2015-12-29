@@ -24,23 +24,27 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <random>
 #include <OpenSim/Common/Constant.h>
+#include <cstdio>
 
 using namespace OpenSim;
 using namespace SimTK;
 
-// TODO what happens if the storage file has a hole? NaN?
-// TODO test modeling options (locked coordinates, etc.)
-// TODO option to fill out a statestrajectory muscle states by equilibrating.
-// TODO test convenience createFromStorage(model, filename).
-// TODO createFromKinematicsStorage
-// TODO append two StateTrajectories together.
 // TODO bounds checking of get() vs upd().
+// TODO python wrapping.
+// TODO write documentation for StatesTrajectory.
+
+// TODO example code.
+// TODO test convenience createFromStorage(model, filename).
+// TODO handle pre-4.0 state storages (w/out full paths to the state variable).
+// TODO what happens if the storage file has a hole? NaN?
+// TODO option to fill out a statestrajectory muscle states by equilibrating.
+// TODO option to assemble() model.
 // TODO segfaults if state is not realized.
-// TODO handle pre-4.0 state storages (without the full paths to the state
-// variable).
-// TODO appending a state that fails the sequential time check.
-// TODO test for exception when appending states that are not sequential.
 // TODO accessing acceleration-level outputs.
+
+// TODO append two StateTrajectories together.
+// TODO createFromKinematicsStorage
+// TODO test modeling options (locked coordinates, etc.)
 
 const std::string statesStoFname = "testStatesTrajectory_readStorage_states.sto";
 
@@ -395,6 +399,22 @@ void testEqualityOperator() {
 }
 */
 
+void testAppendTimesAreNonDecreasing() {
+    Model model("gait2354_simbody.osim");
+    auto& state = model.initSystem();
+    state.setTime(1.0);
+
+    StatesTrajectory states;
+    states.append(state);
+
+    // Multiple states can have the same time; does not throw an exception:
+    states.append(state);
+
+    state.setTime(0.9999);
+    SimTK_TEST_MUST_THROW_EXC(states.append(state),
+            SimTK::Exception::APIArgcheckFailed);
+}
+
 void testModifyStates() {
     // TODO when we have a proper states serialization, use that instead of a
     // STO file.
@@ -413,6 +433,9 @@ void testModifyStates() {
 
 int main() {
     SimTK_START_TEST("testStatesTrajectory");
+    
+        // Make sure the states Storage file doesn't already exist.
+        remove(statesStoFname.c_str());
 
         SimTK_SUBTEST(testPopulateTrajectory);
 
@@ -424,8 +447,9 @@ int main() {
         SimTK_SUBTEST(testFromStatesStorageUniqueColumnLabels);
 
         // TODO SimTK_SUBTEST(testEqualityOperator);
-        // TODO read from proper State serialization.
 
+        SimTK_SUBTEST(testAppendTimesAreNonDecreasing);
+        // TODO read from proper State serialization.
         SimTK_SUBTEST(testModifyStates);
 
     SimTK_END_TEST();
