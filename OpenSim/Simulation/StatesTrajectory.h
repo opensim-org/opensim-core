@@ -211,12 +211,11 @@ public:
             bool allowExtraColumns = false);
 
     /** Convenience form of createFromStatesStorage that takes the path to a
-     * Storage file instead of a Storage object.
+     * Storage file instead of a Storage object. This convenience form uses the
+     * default values for `allowMissingColumns and `allowExtraColumns`.
      */
     static StatesTrajectory createFromStatesStorage(const Model& model,
-            const std::string& filepath,
-            bool allowMissingColumns = false,
-            bool allowExtraColumns = false);
+            const std::string& filepath);
     /// @}
 
 private:

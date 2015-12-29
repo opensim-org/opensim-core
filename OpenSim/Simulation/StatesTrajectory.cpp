@@ -141,9 +141,6 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
 
 StatesTrajectory StatesTrajectory::createFromStatesStorage(
         const Model& model,
-        const std::string& filepath,
-        bool checkMissingFromStorage,
-        bool checkMissingFromModel) {
-    return createFromStatesStorage(model, Storage(filepath),
-            checkMissingFromStorage, checkMissingFromModel);
+        const std::string& filepath) {
+    return createFromStatesStorage(model, Storage(filepath));
 }
