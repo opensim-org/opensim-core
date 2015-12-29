@@ -352,7 +352,40 @@ void testFromStatesStorageUniqueColumnLabels() {
     // names (/value and /speed).
 }
 
+void testCopying() {
+    Model model("gait2354_simbody.osim");
+    auto& state = model.initSystem();
+
+    StatesTrajectory states;
+    {
+        state.setTime(0.5);
+        states.append(state);
+        state.setTime(1.3);
+        states.append(state);
+        state.setTime(3.5);
+        states.append(state);
+    }
+
+    {
+        StatesTrajectory statesCopyConstruct(states);
+        SimTK_TEST_EQ((int)statesCopyConstruct.getSize(), (int)states.getSize());
+        for (int i = 0; i < states.getSize(); ++i) {
+            SimTK_TEST_EQ(statesCopyConstruct[i].getTime(), states[i].getTime());
+        }
+    }
+
+    {
+        StatesTrajectory statesCopyAssign;
+        statesCopyAssign = states;
+        SimTK_TEST_EQ((int)statesCopyAssign.getSize(), (int)states.getSize());
+        for (int i = 0; i < states.getSize(); ++i) {
+            SimTK_TEST_EQ(statesCopyAssign[i].getTime(), states[i].getTime());
+        }
+    }
+}
 /*
+SimTK::State does not have an equality operator, so we can't test equality of
+two StatesTrajectory's yet.
 void testEqualityOperator() {
     // Test trajectories that hold a single state.
     {
@@ -374,7 +407,7 @@ void testEqualityOperator() {
             differentState.setTime(53.67);
 
             StatesTrajectory differentStates;
-            differentStates.append(differenState);
+            differentStates.append(differentState);
 
             SimTK_TEST(states != differentStates);
         }
@@ -387,7 +420,7 @@ void testEqualityOperator() {
         // Copy assignment.
         // ----------------
         StatesTrajectory statesB3 = statesB;
-        SimTK_TEST(statesB2 == statesB);
+        SimTK_TEST(statesB3 == statesB);
         // TODO ensure two non-equal copied states come up as such.
 
     }
@@ -444,7 +477,7 @@ void testModifyStates() {
         coord0.setValue(state, 2.0 + coord0.getValue(state));
     }
 
-    // Test setting an entire State element.
+    // Test replacing an entire State element.
     // TODO this is probably not desirable, as it allows violating the ordering
     // of the trajectory.
     const double time15 = states[15].getTime();
@@ -469,6 +502,7 @@ int main() {
         SimTK_SUBTEST(testFromStatesStorageInconsistentModel);
         SimTK_SUBTEST(testFromStatesStorageUniqueColumnLabels);
 
+        SimTK_SUBTEST(testCopying);
         // TODO SimTK_SUBTEST(testEqualityOperator);
 
         SimTK_SUBTEST(testAppendTimesAreNonDecreasing);
