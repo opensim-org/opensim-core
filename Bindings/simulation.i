@@ -197,6 +197,8 @@
 %include <OpenSim/Simulation/AssemblySolver.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
 
+%include <OpenSim/Simulation/StatesTrajectory.h>
+
 // Iterators.
 // TODO rename to singular form.
 %template(FramesList) OpenSim::ComponentList<OpenSim::Frame>;
