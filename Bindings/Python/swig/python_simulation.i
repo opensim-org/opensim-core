@@ -200,7 +200,9 @@ SET_ADOPT_HELPER(Analysis);
     const SimTK::State&  __getitem__(int i) const {
         return $self->get(i);
     }
-    void __setitem__(int i, const SimTK::State& value) {
-        $self->upd(i) = value;
-    }
 };
+    // TODO don't allow assigning through operator, since that would allow
+    // violating the ordering of the trajectory.
+    //void __setitem__(int i, const SimTK::State& value) {
+    //    $self->upd(i) = value;
+    //}

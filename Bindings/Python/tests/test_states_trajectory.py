@@ -23,6 +23,7 @@ class TestStatesTrajectory(unittest.TestCase):
         forward = osim.ForwardTool()
         forward.setModel(model)
         forward.setName('test_states_trajectory_gait1018')
+        forward.setFinalTime(0.1)
         forward.run()
 
         states = osim.StatesTrajectory.createFromStatesStorage(
@@ -38,8 +39,46 @@ class TestStatesTrajectory(unittest.TestCase):
         for state in states:
             model.calcMassCenterPosition(state)
 
-#    def test_modify_states(self):
-#        assert False
-#
-#    def test_states_storage_optional_arguments(self):
-#        assert False
+    def test_modify_states(self):
+        model = osim.Model(os.path.join(test_dir,
+            "gait10dof18musc_subject01.osim"))
+        model.initSystem()
+
+        states = osim.StatesTrajectory.createFromStatesStorage(
+                model, self.states_sto_fname)
+
+        states[0].setTime(4)
+        assert states[0].getTime() == 4
+
+        self.assertNotAlmostEqual(model.getStateVariableValue(states[2],
+                "ground_pelvis/pelvis_tilt/value"), 8)
+        model.setStateVariableValue(states[2],
+                "ground_pelvis/pelvis_tilt/value", 8)
+        self.assertAlmostEqual(model.getStateVariableValue(states[2],
+                "ground_pelvis/pelvis_tilt/value"), 8)
+
+        # Assigning is not allowed, since it easily allows people to violate
+        # the ordering of the trajectory.
+        # Also, the assignment `states.upd(5) = states[2]` is not possible in
+        # Python ('can't assign to function call').
+        def test_setitem():
+            states[5] = states[2]
+        self.assertRaises(TypeError, test_setitem)
+
+
+    def test_states_storage_optional_arguments(self):
+        # Try all combinations of optional arguments, just to ensure the
+        # wrapping works.
+        model = osim.Model(os.path.join(test_dir,
+            "gait10dof18musc_subject01.osim"))
+        sto = osim.Storage(self.states_sto_fname)
+        states = osim.StatesTrajectory.createFromStatesStorage(
+                model, sto)
+        states = osim.StatesTrajectory.createFromStatesStorage(
+                model, sto, False, False)
+        states = osim.StatesTrajectory.createFromStatesStorage(
+                model, sto, False, True)
+        states = osim.StatesTrajectory.createFromStatesStorage(
+                model, sto, True, False)
+        states = osim.StatesTrajectory.createFromStatesStorage(
+                model, sto, True, True)
