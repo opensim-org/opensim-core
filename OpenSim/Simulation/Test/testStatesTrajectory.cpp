@@ -29,7 +29,6 @@
 using namespace OpenSim;
 using namespace SimTK;
 
-// TODO bounds checking of get() vs upd().
 // TODO python wrapping.
 // TODO write documentation for StatesTrajectory.
 
@@ -415,6 +414,21 @@ void testAppendTimesAreNonDecreasing() {
             SimTK::Exception::APIArgcheckFailed);
 }
 
+void testBoundsCheck() {
+    // TODO when we have a proper states serialization, use that instead of a
+    // STO file.
+    Model model("gait2354_simbody.osim");
+    model.initSystem();
+    StatesTrajectory states = StatesTrajectory::
+        createFromStatesStorage(model, statesStoFname);
+    
+    states[states.getSize() + 100];
+    SimTK_TEST_MUST_THROW_EXC(states.get(states.getSize() + 100),
+            std::out_of_range);
+    SimTK_TEST_MUST_THROW_EXC(states.upd(states.getSize() + 100),
+            std::out_of_range);
+}
+
 void testModifyStates() {
     // TODO when we have a proper states serialization, use that instead of a
     // STO file.
@@ -449,6 +463,7 @@ int main() {
         // TODO SimTK_SUBTEST(testEqualityOperator);
 
         SimTK_SUBTEST(testAppendTimesAreNonDecreasing);
+        SimTK_SUBTEST(testBoundsCheck);
         // TODO read from proper State serialization.
         SimTK_SUBTEST(testModifyStates);
 
