@@ -34,6 +34,7 @@ using namespace SimTK;
 
 // TODO example code.
 // TODO test convenience createFromStorage(model, filename).
+// TODO reassigning a single element using upd(i).
 // TODO handle pre-4.0 state storages (w/out full paths to the state variable).
 // TODO what happens if the storage file has a hole? NaN?
 // TODO option to fill out a statestrajectory muscle states by equilibrating.
@@ -437,10 +438,18 @@ void testModifyStates() {
     StatesTrajectory states = StatesTrajectory::
         createFromStatesStorage(model, statesStoFname);
 
+    // Test modifying a single state variable value at all times.
     for (auto& state : states) {
         auto& coord0 = model.getCoordinateSet()[0];
         coord0.setValue(state, 2.0 + coord0.getValue(state));
     }
+
+    // Test setting an entire State element.
+    // TODO this is probably not desirable, as it allows violating the ordering
+    // of the trajectory.
+    const double time15 = states[15].getTime();
+    states[30] = states[15];
+    SimTK_TEST_EQ(states[30].getTime(), time15);
 
     // TODO print state trajectory.
 }
