@@ -82,3 +82,39 @@ class TestStatesTrajectory(unittest.TestCase):
                 model, sto, True, False)
         states = osim.StatesTrajectory.createFromStatesStorage(
                 model, sto, True, True)
+
+    def test_populate_trajectory(self):
+        model = osim.Model(os.path.join(test_dir,
+            "gait10dof18musc_subject01.osim"))
+        state = model.initSystem()
+        states = osim.StatesTrajectory()
+        states.append(state)
+        state.setTime(1.0)
+        states.append(state)
+
+        self.assertEqual(states.getSize(), 2)
+        self.assertEqual(states[1].getTime(), 1.0)
+
+    def test_out_of_range(self):
+        model = osim.Model(os.path.join(test_dir,
+            "gait10dof18musc_subject01.osim"))
+        state = model.initSystem()
+        states = osim.StatesTrajectory()
+        states.append(state)
+        state.setTime(1.0)
+        states.append(state)
+
+        # TODO this exception message could be better...
+        self.assertRaises(RuntimeError, lambda: states[2].getTime())
+
+
+
+
+
+
+
+
+
+
+
+
