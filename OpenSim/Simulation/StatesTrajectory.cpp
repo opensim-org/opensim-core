@@ -81,7 +81,8 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
         }
     }
     OPENSIM_THROW_IF(!allowMissingColumns && !missingColumnNames.empty(),
-            MissingColumnsInStatesStorage, missingColumnNames);
+            MissingColumnsInStatesStorage, 
+            localModel.getName(), missingColumnNames);
 
     // Check if the Storage has columns that are not states in the Model.
     std::vector<std::string> extraColumnNames;
@@ -99,7 +100,8 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
         }
     }
     OPENSIM_THROW_IF(!allowExtraColumns && !extraColumnNames.empty(),
-            ExtraColumnsInStatesStorage, extraColumnNames);
+            ExtraColumnsInStatesStorage,
+            localModel.getName(), extraColumnNames);
 
     // Fill up trajectory.
     // -------------------

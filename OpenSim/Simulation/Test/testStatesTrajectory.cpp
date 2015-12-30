@@ -29,18 +29,22 @@
 using namespace OpenSim;
 using namespace SimTK;
 
-// TODO python wrapping.
 // TODO write documentation for StatesTrajectory.
 
 // TODO example code.
 // TODO test convenience createFromStorage(model, filename).
 // TODO reassigning a single element using upd(i).
 // TODO handle pre-4.0 state storages (w/out full paths to the state variable).
+//      use a separate "state variable name converter" class?
 // TODO what happens if the storage file has a hole? NaN?
 // TODO option to fill out a statestrajectory muscle states by equilibrating.
 // TODO option to assemble() model.
 // TODO segfaults if state is not realized.
 // TODO accessing acceleration-level outputs.
+// TODO get rid of sequential invariant, or get better at enforcing it? Just
+// allow checking if it's true?
+// TODO allow removing states.
+// TODO store a model within a StatesTrajectory.
 
 // TODO append two StateTrajectories together.
 // TODO createFromKinematicsStorage
@@ -368,6 +372,8 @@ void testCopying() {
 
     {
         StatesTrajectory statesCopyConstruct(states);
+        // Ideally we'd check for equality (operator==()), but State does not
+        // have an equality operator.
         SimTK_TEST_EQ((int)statesCopyConstruct.getSize(), (int)states.getSize());
         for (int i = 0; i < states.getSize(); ++i) {
             SimTK_TEST_EQ(statesCopyConstruct[i].getTime(), states[i].getTime());
@@ -383,6 +389,7 @@ void testCopying() {
         }
     }
 }
+
 /*
 SimTK::State does not have an equality operator, so we can't test equality of
 two StatesTrajectory's yet.
@@ -483,6 +490,10 @@ void testModifyStates() {
     const double time15 = states[15].getTime();
     states[30] = states[15];
     SimTK_TEST_EQ(states[30].getTime(), time15);
+
+    const double time20 = states[20].getTime();
+    states.upd(40) = states[20];
+    SimTK_TEST_EQ(states[40].getTime(), time20);
 
     // TODO print state trajectory.
 }
