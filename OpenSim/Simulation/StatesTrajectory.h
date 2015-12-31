@@ -101,14 +101,15 @@ public:
 // likely to be interested in a more general State container that doesn't
 // assume the states are sequential in time.
 
-/** A sequence of SimTK::State%s that can be saved to a plain-text file. The
- * trajectory can also be populated from such a file. The states within the
- * trajectory should be sequential in time, though this is only weakly
- * enforced. You may obtain a StatesTrajectory from a simulation, or other
- * numerical methods whose task is to produce a trajectory of states.
+/** A sequence of SimTK::State%s that can be saved to a plain-text (OST) file.
+ * The trajectory can also be populated from such a file. The states within the
+ * trajectory should be ordered nondecreasing in time, though this is only
+ * weakly enforced. You may obtain a StatesTrajectory from a simulation, or
+ * other numerical methods whose task is to produce a trajectory of states.
  *
- * This class was introduced in OpenSim version 4.0, and largely replaces the
- * need for @ref Analysis "Analyses".
+ * This class was introduced in OpenSim version 4.0, and enables scripting
+ * (Python/MATLAB) and C++ users to postprocess their results much more
+ * flexibly than with an Analysis.
  *
  * ### Using with a %Model 
  * A StatesTrajectory is not very useful on its own, since neither the
@@ -131,12 +132,9 @@ public:
  * you can perform some (weak) checks with compatibleWith().
  *
  * TODO acceleration-level calculations?
- * TODO before making use of the states, model must be initSystem(), also none
- * of the cache exists, so you might need to realize the model to certain
- * levels.
  *
  * ### File format
- * StatesTrajectory files use the file extension `.OST`, and use the XML
+ * StatesTrajectory files use the file extension `.OST`, with the XML
  * format. Therefore, you can edit a StatesTrajectory file in a typical text
  * editing program, or in Python/MATLAB using XML libraries. However, the
  * easiest way to modify an OST file is to load it as a StatesTrajectory object
@@ -161,8 +159,9 @@ public:
  * model (TODO might want to save the cache variables, b/c some of them are
  * expensive to re-compute, e.g. with CMC).
  *
- * TODO easily can edit individual states to violate the sequential nature of
- * the states.
+ * OpenSim::Object%s (Model OSIM files, Tool setup files) also use an
+ * XML format, but that format is *completely unrelated* to the XML format used
+ * for OST files.
  *
  * ### Usage
  * Here are a few basic things you can do with a StatesTrajectory, assuming you
@@ -241,6 +240,27 @@ public:
     const SimTK::State& operator[](size_t index) const {
         return m_states[index];
     }
+    /** Get a const reference to the state at a given index in the trajectory.
+     *  
+     * Use this instead of upd() if you don't want to accidentally edit the
+     * provided state (though, in Python and MATLAB, both get() and upd() allow
+     * you to modify the provided state.
+
+     * @throws std::out_of_range if the index is greater than the size of the
+     *                           trajectory.
+     */
+    const SimTK::State& get(size_t index) const {
+        return m_states.at(index);
+    }
+    /** Get a const reference to the first state in the trajectory. */
+    const SimTK::State& front() const { 
+        return m_states.front();
+    }
+    /** Get a const reference to the last state in the trajectory. */
+    const SimTK::State& back() const { 
+        return m_states.back();
+    }
+
     /** Get a modifiable reference to the state at a given index in the
      * trajectory.
      * Here's an example of setting a state variable value in the first state
@@ -257,19 +277,6 @@ public:
     SimTK::State& operator[](size_t index) {
         return m_states[index];
     }
-
-    /** Get a const reference to the state at a given index in the trajectory.
-     *  
-     * Use this instead of upd() if you don't want to accidentally edit the
-     * provided state (though, in Python and MATLAB, both get() and upd() allow
-     * you to modify the provided state.
-
-     * @throws std::out_of_range if the index is greater than the size of the
-     *                           trajectory.
-     */
-    const SimTK::State& get(size_t index) const {
-        return m_states.at(index);
-    }
     /** Get a modifiable reference to the state at a given index in the
      * trajectory.
      *
@@ -283,30 +290,21 @@ public:
     SimTK::State& upd(size_t index) {
         return m_states.at(index);
     }
-
-    /** Get a const reference to the first state in the trajectory. */
-    const SimTK::State& front() const { 
-        return m_states.front();
-    }
     /** Get a modifiable reference to the first state in the trajectory. */
-    const SimTK::State& front() { 
+    SimTK::State& front() { 
         return m_states.front();
-    }
-    /** Get a const reference to the last state in the trajectory. */
-    const SimTK::State& back() const { 
-        return m_states.back();
     }
     /** Get a modifiable reference to the last state in the trajectory. */
-    const SimTK::State& back() { 
+    SimTK::State& back() { 
         return m_states.back();
     }
 
     /// @}
     
-    /** Iterator type allowing modification of the trajectory. Most users do
+    /** Iterator type that allows modifying the trajectory. Most users do
      * not need to understand what this is. */
     typedef std::vector<SimTK::State>::iterator iterator;
-    /** Iterator type that does not allow modification of the trajectory.
+    /** Iterator type that does not allow modifying the trajectory.
      * Most users do not need to understand what this is. */
     typedef std::vector<SimTK::State>::const_iterator const_iterator;
 
@@ -388,14 +386,19 @@ public:
      * exactly reproduce results from the initial state trajectory; constraints
      * may not be satisfied, etc.
      * 
+     * #### History
      * Before OpenSim 4.0, the only way to save states to a file was as
      * a Storage file, typically called a states storage file and named
      * `*_states.sto`. You can use this function to create a StatesTrajectory
      * from such a Storage file. OpenSim 4.0 introduced the ability to save and
-     * read a complete StatesTrajectory to/from an XML file, and so this
+     * read a complete StatesTrajectory to/from an OST file, and so this
      * function should only be used when you are stuck with pre-4.0 files.
      *
-     * TODO backwards compatibility with pre-4.0 states storage files.
+     * @note The naming convention for state variables changed in OpenSim v4.0;
+     * `calcn_r/ankle_angle_r/speed` used to be `ankle_angle_r_u`,
+     * `soleus_r/activation` used to be `soleus_r.activation`, etc. This
+     * function can handle %Storage column labels that use the pre-v4.0 naming
+     * convention.
      * 
      * @param model The Model to which the states belong. A Model is necessary
      *      since the storage file lists the state variables by name.
@@ -408,6 +411,18 @@ public:
      *      columns in the Storage that do not correspond to continuous state
      *      variables in the Model. If true, such columns of the Storage are
      *      ignored.
+     *
+     * #### Usage
+     * Here is how you might use this function in python:
+     * @code{.py}
+     * import opensim
+     * model = opensim.Model("subject01.osim")
+     * model.initSystem()
+     * states = opensim.StatesTrajectory.createFromStatesStorage(
+     *              model, "subject01_states.sto")
+     * print(states[0].getTime())
+     * print(model.getStateVariableValue(states[0], "knee/flexion/value"))
+     * @endcode
      * 
      * @throws MissingColumnsInStatesStorage See the description of the
      *      `allowMissingColumns` argument.
@@ -422,7 +437,7 @@ public:
      *      (inDegrees=yes); angular quantities must use radians to properly
      *      create the trajectory.
      */
-    // TODO assemble, equilibrateMuscles? at least add a related comment
+    // TODO assemble, equilibrateMuscles?
     static StatesTrajectory createFromStatesStorage(const Model& model,
             const Storage& sto,
             bool allowMissingColumns = false,
