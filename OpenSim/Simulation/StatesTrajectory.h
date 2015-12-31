@@ -283,6 +283,24 @@ public:
     SimTK::State& upd(size_t index) {
         return m_states.at(index);
     }
+
+    /** Get a const reference to the first state in the trajectory. */
+    const SimTK::State& front() const { 
+        return m_states.front();
+    }
+    /** Get a modifiable reference to the first state in the trajectory. */
+    const SimTK::State& front() { 
+        return m_states.front();
+    }
+    /** Get a const reference to the last state in the trajectory. */
+    const SimTK::State& back() const { 
+        return m_states.back();
+    }
+    /** Get a modifiable reference to the last state in the trajectory. */
+    const SimTK::State& back() { 
+        return m_states.back();
+    }
+
     /// @}
     
     /** Iterator type allowing modification of the trajectory. Most users do

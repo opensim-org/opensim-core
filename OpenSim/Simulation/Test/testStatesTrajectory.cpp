@@ -99,6 +99,18 @@ void testPopulateTrajectory() {
 
 }
 
+void testFrontBack() {
+    Model model("arm26.osim");
+    const auto& state = model.initSystem();
+    StatesTrajectory states;
+    states.append(state);
+    states.append(state);
+    states.append(state);
+
+    SimTK_TEST(&states.front() == &states[0]);
+    SimTK_TEST(&states.back() == &states[2]);
+}
+
 // Create states storage file to for states storage tests.
 void createStateStorageFile() {
 
@@ -673,6 +685,7 @@ int main() {
         remove(statesStoFname.c_str());
 
         SimTK_SUBTEST(testPopulateTrajectory);
+        SimTK_SUBTEST(testFrontBack);
 
         // Test creation of trajectory from states storage.
         // ------------------------------------------------
