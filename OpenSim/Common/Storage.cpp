@@ -3340,3 +3340,12 @@ bool Storage::makeStorageLabelsUnique() {
     const bool labelsWereUnique = (!changedLabels);
     return labelsWereUnique;
 }
+
+bool Storage::storageLabelsAreUnique() const {
+    const auto& lbls = getColumnLabels();
+    for(int i = 0; i < lbls.getSize(); i++) {
+        const bool isUnique = (lbls.findIndex(lbls[i]) == i);
+        if (!isUnique) return false;
+    }
+    return true;
+}
