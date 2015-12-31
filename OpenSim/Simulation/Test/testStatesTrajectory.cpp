@@ -565,6 +565,24 @@ void testIntegrityChecks() {
     const auto& s2354 = gait2354.initSystem();
     // TODO add models with events, unilateral constraints, etc.
 
+    // Times are nondecreasing.
+    {
+        StatesTrajectory states;
+        auto state0(s26);
+        state0.setTime(0.5);
+        auto state1(s26);
+        state1.setTime(0.6);
+
+        states.append(state0);
+        states.append(state1);
+
+        SimTK_TEST(states.consistent());
+
+        states[1].setTime(0.2);
+
+        SimTK_TEST(!states.consistent());
+    }
+
     {
         StatesTrajectory states;
         // An empty trajectory is consistent.

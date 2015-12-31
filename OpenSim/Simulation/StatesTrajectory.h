@@ -323,11 +323,36 @@ public:
 
     /// @name Checks for integrity
     /// @{
-    /** TODO */
-    // TODO where to check for sequential times?
+    /** Checks if times are non-decreasing and all the states have the same
+     * number of state variables, constraints, etc. Returns true if the state
+     * times are non-decreasing and if the following quantities are the same
+     * for all states in the trajectory:
+     * - number of generalized coordinates (Q's)
+     * - number of generalized speeds (U's)
+     * - number of auxiliary state variables (Z's)
+     * - number of position constraints (QErr's)
+     * - number of velocity constraints (UErr's)
+     * - number of acceleration constraints (UDotErr's)
+     * - number of constraint Lagrange multipliers
+     * - number of event triggers
+     *
+     * Returns false otherwise.
+     */
     // TODO should we check for consistency whenever appending?
+    // TODO an option to throw an exception with detailed information about the
+    // mismatch?
     bool consistent() const;
-    /** TODO */
+    /** Weak check for if the trajectory can be used with the given model.
+     * Returns true if the trajectory is consistent() and if the following
+     * quantities are the same:
+     * - number of model state variables and number of Y's in the state 
+     * - number of coordinates in the model and number of Q's in state
+     * - number of speeds in the model and number of U's in state
+     *
+     * Returns false otherwise. This method **cannot** gaurantee that the
+     * trajectory will work with the given model, and makes no attempt to
+     * determine if the trajectory was generated with the given model.
+     */
     bool compatibleWith(const Model& model);
     /// @}
 

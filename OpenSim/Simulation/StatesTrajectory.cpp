@@ -52,6 +52,11 @@ bool StatesTrajectory::consistent() const {
     for (int itime = 1; itime < getSize(); ++itime) {
         const auto& curState = get(itime);
 
+        // Times are non-decreasing.
+        if (curState.getTime() < get(itime - 1).getTime()) {
+            return false;
+        }
+
         // TODO this logic should be pushed to the SimTK::State class, so that
         // the check can evolve with the State class.
         // Then the body of this loop would be simply be:
