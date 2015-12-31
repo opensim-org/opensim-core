@@ -31,7 +31,6 @@ using namespace SimTK;
 
 // TODO write documentation for StatesTrajectory.
 
-// TODO front(), back().
 // TODO example code.
 // TODO detailed exceptions when integrity checks fail.
 // TODO what happens if the storage file has a hole? NaN?
@@ -41,7 +40,6 @@ using namespace SimTK;
 // TODO accessing acceleration-level outputs.
 // TODO get rid of sequential invariant, or get better at enforcing it? Just
 // allow checking if it's true?
-// TODO profile / speed up the test.
 
 // TODO allow removing states.
 // TODO append two StateTrajectories together.
@@ -683,11 +681,20 @@ void testModifyStates() {
 int main() {
     SimTK_START_TEST("testStatesTrajectory");
     
-        // Make sure the states Storage file doesn't already exist.
+        // Make sure the states Storage file doesn't already exist; we'll
+        // generate it later and we don't want to use a stale one by accident.
         remove(statesStoFname.c_str());
 
         SimTK_SUBTEST(testPopulateTrajectory);
         SimTK_SUBTEST(testFrontBack);
+        SimTK_SUBTEST(testBoundsCheck);
+        SimTK_SUBTEST(testIntegrityChecks);
+        SimTK_SUBTEST(testAppendTimesAreNonDecreasing);
+        SimTK_SUBTEST(testCopying);
+
+        // Using a pre-4.0 states storage file with old column names.
+        SimTK_SUBTEST(testFromStatesStoragePre40CorrectStates);
+        SimTK_SUBTEST1(testFromStatesStorageInconsistentModel, pre40StoFname);
 
         // Test creation of trajectory from states storage.
         // ------------------------------------------------
@@ -695,19 +702,8 @@ int main() {
         SimTK_SUBTEST(testFromStatesStorageGivesCorrectStates);
         SimTK_SUBTEST1(testFromStatesStorageInconsistentModel, statesStoFname);
         SimTK_SUBTEST(testFromStatesStorageUniqueColumnLabels);
-
-        // Using a pre-4.0 states storage file with old column names.
-        SimTK_SUBTEST(testFromStatesStoragePre40CorrectStates);
-        SimTK_SUBTEST1(testFromStatesStorageInconsistentModel, pre40StoFname);
-
-        SimTK_SUBTEST(testCopying);
         // TODO SimTK_SUBTEST(testEqualityOperator);
-
-        // TODO move these above if possible.
-        SimTK_SUBTEST(testAppendTimesAreNonDecreasing);
-        SimTK_SUBTEST(testBoundsCheck);
-        SimTK_SUBTEST(testIntegrityChecks);
-        SimTK_SUBTEST(testModifyStates);
+        SimTK_SUBTEST(testModifyStates); // TODO should move toward the top.
 
     SimTK_END_TEST();
 }
