@@ -255,6 +255,10 @@ void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
 
         const auto stateNames = model.getStateVariableNames();
         Storage sto(stoFilepath);
+        if (stoFilepath == pre40StoFname) {
+            // So the test doesn't take so long; this file has almost 700 rows.
+            sto.resampleLinear(0.01);
+        }
 
         // Create new Storage with fewer columns.
         auto labels = sto.getColumnLabels();
@@ -284,26 +288,19 @@ void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
                 );
 
         // No exception if allowing missing columns.
-        #if defined(NDEBUG)
-            // The unspecified states are set to NaN (for at least two random
-            // states).
-            auto states = StatesTrajectory::createFromStatesStorage(
-                    model, stoMissingCols, true);
-            SimTK_TEST(SimTK::isNaN(
-                        model.getStateVariableValue(states[0], origLabel10)));
-            SimTK_TEST(SimTK::isNaN(
-                        model.getStateVariableValue(states[4], origLabel15)));
-            // Behavior is independent of value for allowMissingColumns.
-            StatesTrajectory::createFromStatesStorage(model, stoMissingCols,
-                    true, true);
-            StatesTrajectory::createFromStatesStorage(model, stoMissingCols,
-                    true, false);
-        #else
-            // In DEBUG, even setting a state variable to NaN causes an
-            // exception.
-            SimTK_TEST_MUST_THROW(StatesTrajectory::createFromStatesStorage(
-                        model, stoMissingCols, true));
-        #endif
+        // The unspecified states are set to NaN (for at least two random
+        // states).
+        auto states = StatesTrajectory::createFromStatesStorage(
+                model, stoMissingCols, true);
+        SimTK_TEST(SimTK::isNaN(
+                    model.getStateVariableValue(states[0], origLabel10)));
+        SimTK_TEST(SimTK::isNaN(
+                    model.getStateVariableValue(states[4], origLabel15)));
+        // Behavior is independent of value for allowMissingColumns.
+        StatesTrajectory::createFromStatesStorage(model, stoMissingCols,
+                true, true);
+        StatesTrajectory::createFromStatesStorage(model, stoMissingCols,
+                true, false);
     }
 
     // States are missing from the Model.
@@ -378,6 +375,8 @@ void testFromStatesStoragePre40CorrectStates() {
     Model model("gait2354_simbody.osim");
 
     Storage sto(pre40StoFname);
+    // So the test doesn't take so long.
+    sto.resampleLinear(0.01);
     auto states = StatesTrajectory::createFromStatesStorage(model, sto);
 
     model.initSystem();
