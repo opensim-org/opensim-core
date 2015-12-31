@@ -171,7 +171,6 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     StatesTrajectory states;
 
     // Make a copy of the model so that we can get a corresponding state.
-    // TODO avoid initSystem() if `model` already has a non-null WorkingState.
     Model localModel(model);
 
     // We'll keep editing this state as we loop through time.
@@ -181,23 +180,17 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     const auto& stoLabels = sto.getColumnLabels();
     int numDependentColumns = stoLabels.getSize() - 1;
 
-    // In case the storage comes from a version of OpenSim prior to 4.0,
-    // we must convert the column names from the old state variable names to
-    // the new ones that use "paths."
-    // TODO auto stoLabels(origStoLabels);
-    // TODO convertStatesStorageLabelsToPaths(model, stoLabels);
-
     // Error checking.
     // ===============
     // Angular quantities must be expressed in radians.
-    // TODO we could also manually convert the necessary
-    // coordinates/speeds to radians.
+    // TODO we could also manually convert the necessary coords/speeds to
+    // radians.
     OPENSIM_THROW_IF(sto.isInDegrees(), StatesStorageIsInDegrees);
 
     // makeStorageLabelsUnique() returns true if labels were unique already.
     // TODO we're making a copy of all the data in order to just check the
     // storage labels; that shouldn't be necessary.
-    OPENSIM_THROW_IF(!Storage(sto).makeStorageLabelsUnique(),
+    OPENSIM_THROW_IF(!sto.storageLabelsAreUnique(),
             NonUniqueColumnsInStatesStorage);
 
     // Check if states are missing from the Storage.

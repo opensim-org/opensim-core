@@ -83,7 +83,10 @@ public:
 
 class NonUniqueColumnsInStatesStorage : public OpenSim::Exception {
 public:
-    using Exception::Exception;
+    NonUniqueColumnsInStatesStorage(const std::string& file, size_t line,
+            const std::string& func) : OpenSim::Exception(file, line, func) {
+        addMessage("States Storage column labels are not unique.");
+    }
 };
 
 class StatesStorageIsInDegrees : public OpenSim::Exception {
@@ -418,8 +421,8 @@ public:
      * import opensim
      * model = opensim.Model("subject01.osim")
      * model.initSystem()
-     * states = opensim.StatesTrajectory.createFromStatesStorage(
-     *              model, "subject01_states.sto")
+     * sto = opensim.Storage("subject01_states.sto")
+     * states = opensim.StatesTrajectory.createFromStatesStorage(model, sto)
      * print(states[0].getTime())
      * print(model.getStateVariableValue(states[0], "knee/flexion/value"))
      * @endcode
