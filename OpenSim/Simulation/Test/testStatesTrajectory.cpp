@@ -31,11 +31,14 @@ using namespace SimTK;
 
 // TODO write documentation for StatesTrajectory.
 
+// TODO inDegrees.
+// TODO front(), back().
 // TODO example code.
 // TODO test convenience createFromStorage(model, filename).
 // TODO reassigning a single element using upd(i).
 // TODO handle pre-4.0 state storages (w/out full paths to the state variable).
 //      use a separate "state variable name converter" class?
+// TODO detailed exceptions when integrity checks fail.
 // TODO what happens if the storage file has a hole? NaN?
 // TODO option to fill out a statestrajectory muscle states by equilibrating.
 // TODO option to assemble() model.
@@ -51,6 +54,7 @@ using namespace SimTK;
 // TODO test modeling options (locked coordinates, etc.)
 
 const std::string statesStoFname = "testStatesTrajectory_readStorage_states.sto";
+const std::string pre40StoFname = "std_subject01_walk1_states.sto";
 
 // Helper function to get a state variable value from a storage file.
 Real getStorageEntry(const Storage& sto,
@@ -133,76 +137,78 @@ void testFromStatesStorageGivesCorrectStates() {
 
     // Read in trajectory.
     // -------------------
-    {
-        // It's important that we try using a model that is not initialized,
-        // since `readStorage()` should be able to work with such a model.
-        Model model("gait2354_simbody.osim");
-        model.initSystem();
+    Model model("gait2354_simbody.osim");
 
-        Storage sto(statesStoFname);
+    Storage sto(statesStoFname);
 
-        auto states = StatesTrajectory::createFromStatesStorage(model, sto);
+    // It's important that we have not yet initialized the model, 
+    // since `createFromStatesStorage()` should be able to work with such a
+    // model.
+    auto states = StatesTrajectory::createFromStatesStorage(model, sto);
 
-        // Test that the states are correct, and also that the iterator works.
-        // -------------------------------------------------------------------
-        int itime = 0;
-        double currTime;
-        for (const auto& state : states) {
-            // Time.
-            sto.getTime(itime, currTime);
-            SimTK_TEST_EQ(currTime, state.getTime());
+    // However, we eventually *do* need to call initSystem() to make use of the
+    // trajectory with the model.
+    model.initSystem();
 
-            // Multibody states.
-            for (int ic = 0; ic < model.getCoordinateSet().getSize(); ++ic) {
-                const auto& coord = model.getCoordinateSet().get(ic);
-                auto coordName = coord.getName();
-                auto jointName = coord.getJoint().getName();
-                auto coordPath = jointName + "/" + coordName;
-                // Coordinate.
-                SimTK_TEST_EQ(getStorageEntry(sto, itime, coordPath + "/value"),
-                              coord.getValue(state));
+    // Test that the states are correct, and also that the iterator works.
+    // -------------------------------------------------------------------
+    int itime = 0;
+    double currTime;
+    for (const auto& state : states) {
+        // Time.
+        sto.getTime(itime, currTime);
+        SimTK_TEST_EQ(currTime, state.getTime());
 
-                // Speed.
-                SimTK_TEST_EQ(getStorageEntry(sto, itime, coordPath + "/speed"),
-                              coord.getSpeedValue(state));
-            }
+        // Multibody states.
+        for (int ic = 0; ic < model.getCoordinateSet().getSize(); ++ic) {
+            const auto& coord = model.getCoordinateSet().get(ic);
+            auto coordName = coord.getName();
+            auto jointName = coord.getJoint().getName();
+            auto coordPath = jointName + "/" + coordName;
+            // Coordinate.
+            SimTK_TEST_EQ(getStorageEntry(sto, itime, coordPath + "/value"),
+                    coord.getValue(state));
 
-            // Muscle states.
-            for (int im = 0; im < model.getMuscles().getSize(); ++im) {
-                const auto& muscle = model.getMuscles().get(im);
-                auto muscleName = muscle.getName();
-
-                // Activation.
-                // TODO Simply accessing these state variables requires realizing
-                // to Velocity; I think this is a bug.
-                model.getMultibodySystem().realize(state, SimTK::Stage::Velocity);
-                SimTK_TEST_EQ(
-                        getStorageEntry(sto, itime, muscleName + "/activation"),
-                        muscle.getActivation(state));
-
-                // Fiber length.
-                SimTK_TEST_EQ(
-                        getStorageEntry(sto, itime, muscleName + "/fiber_length"), 
-                        muscle.getFiberLength(state));
-
-                // More complicated computation based on state.
-                SimTK_TEST(!SimTK::isNaN(muscle.getFiberForce(state)));
-            }
-
-            // More complicated computations based on state.
-            auto loc = model.getBodySet().get("tibia_r")
-                .findLocationInAnotherFrame(state,
-                                            SimTK::Vec3(1, 0.5, 0.25),
-                                            model.getGround());
-            SimTK_TEST(!loc.isNaN());
-
-            SimTK_TEST(!model.calcMassCenterVelocity(state).isNaN());
-            // TODO acceleration-level stuff gives segfault.
-            // TODO model.getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
-            // TODO SimTK_TEST(!model.calcMassCenterAcceleration(state).isNaN());
-
-            itime++;
+            // Speed.
+            SimTK_TEST_EQ(getStorageEntry(sto, itime, coordPath + "/speed"),
+                    coord.getSpeedValue(state));
         }
+
+        // Muscle states.
+        for (int im = 0; im < model.getMuscles().getSize(); ++im) {
+            const auto& muscle = model.getMuscles().get(im);
+            auto muscleName = muscle.getName();
+
+            // Activation.
+            // TODO Simply accessing these state variables requires realizing
+            // to Velocity; I think this is a bug.
+            model.getMultibodySystem().realize(state, SimTK::Stage::Velocity);
+            SimTK_TEST_EQ(
+                    getStorageEntry(sto, itime, muscleName + "/activation"),
+                    muscle.getActivation(state));
+
+            // Fiber length.
+            SimTK_TEST_EQ(
+                    getStorageEntry(sto, itime, muscleName + "/fiber_length"), 
+                    muscle.getFiberLength(state));
+
+            // More complicated computation based on state.
+            SimTK_TEST(!SimTK::isNaN(muscle.getFiberForce(state)));
+        }
+
+        // More complicated computations based on state.
+        auto loc = model.getBodySet().get("tibia_r")
+            .findLocationInAnotherFrame(state,
+                    SimTK::Vec3(1, 0.5, 0.25),
+                    model.getGround());
+        SimTK_TEST(!loc.isNaN());
+
+        SimTK_TEST(!model.calcMassCenterVelocity(state).isNaN());
+        // TODO acceleration-level stuff gives segfault.
+        // TODO model.getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
+        // TODO SimTK_TEST(!model.calcMassCenterAcceleration(state).isNaN());
+
+        itime++;
     }
 }
 
@@ -238,19 +244,27 @@ Storage newStorageWithRemovedRows(const Storage& origSto,
     return sto;
 }
 
-void testFromStatesStorageInconsistentModel() {
+void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
 
     // States are missing from the Storage.
     // ------------------------------------
     {
         Model model("gait2354_simbody.osim");
-        Storage sto(statesStoFname);
+        // Needed for getting state variable names.
+        model.initSystem();
+
+        const auto stateNames = model.getStateVariableNames();
+        Storage sto(stoFilepath);
 
         // Create new Storage with fewer columns.
         auto labels = sto.getColumnLabels();
-        auto origLabel10 = labels[10];
-        auto origLabel15 = labels[15];
-        Storage stoMissingCols = newStorageWithRemovedRows(sto, {10, 15});
+
+        auto origLabel10 = stateNames[10];
+        auto origLabel15 = stateNames[15];
+        Storage stoMissingCols = newStorageWithRemovedRows(sto, {
+                // gymnastics to be compatible with pre-v4.0 column names:
+                sto.getStateIndex(origLabel10) + 1,
+                sto.getStateIndex(origLabel15) + 1});
 
         // Test that an exception is thrown.
         SimTK_TEST_MUST_THROW_EXC(
@@ -275,7 +289,6 @@ void testFromStatesStorageInconsistentModel() {
             // states).
             auto states = StatesTrajectory::createFromStatesStorage(
                     model, stoMissingCols, true);
-            model.initSystem();
             SimTK_TEST(SimTK::isNaN(
                         model.getStateVariableValue(states[0], origLabel10)));
             SimTK_TEST(SimTK::isNaN(
@@ -297,7 +310,7 @@ void testFromStatesStorageInconsistentModel() {
     // ----------------------------------
     {
         Model model("gait2354_simbody.osim");
-        Storage sto(statesStoFname);
+        Storage sto(stoFilepath);
         // Remove a few of the muscles.
         model.updForceSet().remove(0);
         model.updForceSet().remove(10);
@@ -354,6 +367,80 @@ void testFromStatesStorageUniqueColumnLabels() {
 
     // TODO unique even considering old and new formats for state variable
     // names (/value and /speed).
+}
+
+void testFromStatesStoragePre40CorrectStates() {
+    // This test is very similar to testFromStatesStorageGivesCorrectStates
+    // TODO could avoid duplication since getStateIndex handles pre-4.0 names.
+
+    // Read in trajectory.
+    // -------------------
+    Model model("gait2354_simbody.osim");
+
+    Storage sto(pre40StoFname);
+    auto states = StatesTrajectory::createFromStatesStorage(model, sto);
+
+    model.initSystem();
+
+    // Test that the states are correct.
+    // ---------------------------------
+    int itime = 0;
+    double currTime;
+    for (const auto& state : states) {
+        // Time.
+        sto.getTime(itime, currTime);
+        SimTK_TEST_EQ(currTime, state.getTime());
+
+        // Multibody states.
+        for (int ic = 0; ic < model.getCoordinateSet().getSize(); ++ic) {
+            const auto& coord = model.getCoordinateSet().get(ic);
+            auto coordName = coord.getName();
+
+            // Coordinate.
+            SimTK_TEST_EQ(getStorageEntry(sto, itime, coordName),
+                    coord.getValue(state));
+
+            // Speed.
+            SimTK_TEST_EQ(getStorageEntry(sto, itime, coordName + "_u"),
+                    coord.getSpeedValue(state));
+        }
+
+        // Muscle states.
+        for (int im = 0; im < model.getMuscles().getSize(); ++im) {
+            const auto& muscle = model.getMuscles().get(im);
+            auto muscleName = muscle.getName();
+
+            // Activation.
+            // TODO Simply accessing these state variables requires realizing
+            // to Velocity; I think this is a bug.
+            model.getMultibodySystem().realize(state, SimTK::Stage::Velocity);
+            SimTK_TEST_EQ(
+                    getStorageEntry(sto, itime, muscleName + ".activation"),
+                    muscle.getActivation(state));
+
+            // Fiber length.
+            SimTK_TEST_EQ(
+                    getStorageEntry(sto, itime, muscleName + ".fiber_length"), 
+                    muscle.getFiberLength(state));
+
+            // More complicated computation based on state.
+            SimTK_TEST(!SimTK::isNaN(muscle.getFiberForce(state)));
+        }
+
+        // More complicated computations based on state.
+        auto loc = model.getBodySet().get("tibia_r")
+            .findLocationInAnotherFrame(state,
+                    SimTK::Vec3(1, 0.5, 0.25),
+                    model.getGround());
+        SimTK_TEST(!loc.isNaN());
+
+        SimTK_TEST(!model.calcMassCenterVelocity(state).isNaN());
+        // TODO acceleration-level stuff gives segfault.
+        // TODO model.getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
+        // TODO SimTK_TEST(!model.calcMassCenterAcceleration(state).isNaN());
+
+        itime++;
+    }
 }
 
 void testCopying() {
@@ -470,6 +557,70 @@ void testBoundsCheck() {
             std::out_of_range);
 }
 
+void testIntegrityChecks() {
+    Model arm26("arm26.osim");
+    const auto& s26 = arm26.initSystem();
+
+    Model gait2354("gait2354_simbody.osim");
+    const auto& s2354 = gait2354.initSystem();
+    // TODO add models with events, unilateral constraints, etc.
+
+    {
+        StatesTrajectory states;
+        // An empty trajectory is consistent.
+        states.consistent();
+
+        // A length-1 trajectory is consistent.
+        states.append(s26);
+        states.consistent();
+
+        // This trajectory is compatible with the arm26 model.
+        states.compatibleWith(arm26);
+
+        // Not compatible with gait2354 model.
+        // Ensures a lower-dimensional trajectory can't pass for a higher
+        // dimensional model.
+        SimTK_TEST(!states.compatibleWith(gait2354));
+
+        // The checks still work with more than 1 state.
+        states.append(s26);
+        states.append(s26);
+        states.consistent();
+        states.compatibleWith(arm26);
+        SimTK_TEST(!states.compatibleWith(gait2354));
+    }
+
+    {
+        StatesTrajectory states;
+        states.append(s2354);
+
+        // Reverse of the previous check; to ensure that a larger-dimensional
+        // trajectory can't pass for the smaller dimensional model.
+        states.compatibleWith(gait2354);
+        SimTK_TEST(!states.compatibleWith(arm26));
+
+        // Check still works with more than 1 state.
+        states.append(s2354);
+        states.append(s2354);
+        states.consistent();
+        states.compatibleWith(gait2354);
+        SimTK_TEST(!states.compatibleWith(arm26));
+    }
+
+    {
+        // No issue when just appending inconsistent states.
+        StatesTrajectory states;
+        states.append(s26);
+        states.append(s2354);
+
+        // Consistency check fails.
+        SimTK_TEST(!states.consistent());
+    }
+
+    // TODO Show weakness of the test: two models with the same number of Q's, U's,
+    // and Z's both pass the check. 
+}
+
 void testModifyStates() {
     // TODO when we have a proper states serialization, use that instead of a
     // STO file.
@@ -510,15 +661,19 @@ int main() {
         // ------------------------------------------------
         createStateStorageFile();
         SimTK_SUBTEST(testFromStatesStorageGivesCorrectStates);
-        SimTK_SUBTEST(testFromStatesStorageInconsistentModel);
+        SimTK_SUBTEST1(testFromStatesStorageInconsistentModel, statesStoFname);
         SimTK_SUBTEST(testFromStatesStorageUniqueColumnLabels);
+
+        // Using a pre-4.0 states storage file with old column names.
+        SimTK_SUBTEST(testFromStatesStoragePre40CorrectStates);
+        SimTK_SUBTEST1(testFromStatesStorageInconsistentModel, pre40StoFname);
 
         SimTK_SUBTEST(testCopying);
         // TODO SimTK_SUBTEST(testEqualityOperator);
 
         SimTK_SUBTEST(testAppendTimesAreNonDecreasing);
         SimTK_SUBTEST(testBoundsCheck);
-        // TODO read from proper State serialization.
+        SimTK_SUBTEST(testIntegrityChecks);
         SimTK_SUBTEST(testModifyStates);
 
     SimTK_END_TEST();

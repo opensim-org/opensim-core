@@ -45,13 +45,13 @@ public:
             const std::string& modelName,
             std::vector<std::string> missingStates) :
             OpenSim::Exception(file, line, func) {
-        std::string msg = "The following are states in Model '" + modelName;
-        msg += "' but are missing from the ";
-        msg += "states Storage: ";
+        std::string msg = "The following ";
+        msg += std::to_string(missingStates.size()) + " states from Model '";
+        msg += modelName + "' are missing from the states Storage:\n";
         for (int i = 0; i < (missingStates.size() - 1); ++i) {
-            msg += missingStates[i] + ", ";
+            msg += "    " + missingStates[i] + "\n";
         }
-        msg += missingStates[missingStates.size() - 1] + ".";
+        msg += "    " + missingStates.back();
 
         // TODO message should account for pre-v4.0 column names.
         addMessage(msg);
@@ -70,12 +70,13 @@ public:
             const std::string& modelName,
             std::vector<std::string> extraStates) :
             OpenSim::Exception(file, line, func) {
-        std::string msg = "The following columns from the states Storage ";
-        msg += "are not states in Model '" + modelName + "': ";
+        std::string msg = "The following ";
+        msg += std::to_string(extraStates.size()) + " columns from the ";
+        msg += "states Storage are not states in Model '" + modelName + "':\n";
         for (int i = 0; i < (extraStates.size() - 1); ++i) {
-            msg += extraStates[i] + ", ";
+            msg += "    " + extraStates[i] + "\n";
         }
-        msg += extraStates[extraStates.size() - 1] + ".";
+        msg += "    " + extraStates.back();
 
         // TODO message should account for pre-v4.0 column names.
         addMessage(msg);
@@ -83,7 +84,19 @@ public:
 };
 
 class NonUniqueColumnsInStatesStorage : public OpenSim::Exception {
+public:
     using Exception::Exception;
+};
+
+class StatesStorageIsInDegrees : public OpenSim::Exception {
+public:
+    StatesStorageIsInDegrees(const std::string& file, size_t line,
+            const std::string& func) : OpenSim::Exception(file, line, func) {
+        addMessage("States Storage is in degrees, but this is inappropriate "
+                "for creating a StatesTrajectory. Edit the Storage so that "
+                "angles are in radians, and set 'inDegrees' to "
+                "yes in the header.");
+    }
 };
 
 // This class is part of OpenSim instead of Simbody since Simbody users are
@@ -178,6 +191,13 @@ class NonUniqueColumnsInStatesStorage : public OpenSim::Exception {
  * model.initSystem();
  * double knee_angle = model.getStateVariableValue(states[0], "knee/flexion/value");
  * Vec3 com = model.calcMassCenterPosition(states[0]);
+ * @endcode
+ *
+ * Depending on the quantity you want to obtain, you may also need to realize
+ * the state to a certain stage:
+ * @code{.cpp}
+ * model.getMultibodySystem().realize(states[0], SimTK::Stage::Velocity);
+ * model.getMuscles().get("soleus_r").getActivation(states[0]);
  * @endcode
  *
  * You can iterate through a trajectory to access the value of a state variable
@@ -306,6 +326,7 @@ public:
     /// @name Checks for integrity
     /// @{
     /** TODO */
+    // TODO where to check for sequential times?
     // TODO should we check for consistency whenever appending?
     bool consistent() const;
     /** TODO */
@@ -337,7 +358,7 @@ public:
      * 
      * @param model The Model to which the states belong. A Model is necessary
      *      since the storage file lists the state variables by name.
-     * @param sto   The Storage object containing state values.
+     * @param sto The Storage object containing state values.
      * @param allowMissingColumns If false, throws exception if there are
      *      continuous state variables in the Model for which there is no
      *      column in the Storage. If true, no exception is thrown but such
@@ -352,8 +373,15 @@ public:
      * 
      * @throws ExtraColumnsInStatesStorage See the description of the
      *      `allowExtraColumns` argument.
+     *
+     * @throws NonUniqueColumnsInStatesStorage Thrown if multiple columns in
+     *      the Storage have the same name.
+     * 
+     * @throws StatesStorageIsInDegrees Thrown if the Storage is in degrees
+     *      (inDegrees=yes); angular quantities must use radians to properly
+     *      create the trajectory.
      */
-    // TODO assemble, equilibrateMuscles?
+    // TODO assemble, equilibrateMuscles? at least add a related comment
     static StatesTrajectory createFromStatesStorage(const Model& model,
             const Storage& sto,
             bool allowMissingColumns = false,
@@ -365,6 +393,27 @@ public:
     static StatesTrajectory createFromStatesStorage(const Model& model,
             const std::string& filepath);
     /// @}
+
+private:
+
+    /** In OpenSim 4.0, the names of the state variables were changed to use
+     * "paths." This function attempts to convert the following categories of
+     * state variables:
+     *
+     * - coordinate value: `ankle_angle_r` -> `calcn_r/ankle_angle_r/value`
+     * - coordinate speed: `ankle_angle_r_u` -> `calcn_r/ankle_angle_r/speed`
+     * - muscle activation: `soleus_r.activation` -> `soleus_r/activation`
+     * - muscle fiber length: `soleus_r.fiber_length` -> `soleus_r/fiber_length`
+     *
+     * This conversion should cover most cases, but is certainly not
+     * comprehensive. Most importantly, we cannot update the state names that
+     * third-party plugins may have used.
+     *
+     * The column labels are converted in place (TODO).
+     */
+//TODO    static void convertStatesStorageLabelsToPaths(const Model& model,
+//            Array<std::string>& labels);
+
 };
 
 } // namespace

@@ -43,6 +43,116 @@ void StatesTrajectory::append(const SimTK::State& state) {
     m_states.push_back(state);
 }
 
+bool StatesTrajectory::consistent() const {
+    // An empty or size-1 trajectory is necessarily consistent.
+    if (getSize() <= 1) return true;
+
+    const auto& state0 = get(0);
+
+    for (int itime = 1; itime < getSize(); ++itime) {
+        const auto& curState = get(itime);
+
+        // TODO this logic should be pushed to the SimTK::State class, so that
+        // the check can evolve with the State class.
+        // Then the body of this loop would be simply be:
+        //      state0.consistentWith(curState);
+
+        if (state0.getNumSubsystems() != curState.getNumSubsystems()) {
+            return false;
+        }
+
+        // State variables.
+        if (state0.getNQ() != curState.getNQ()) {
+            return false;
+        }
+        if (state0.getNU() != curState.getNU()) {
+            return false;
+        }
+        if (state0.getNZ() != curState.getNZ()) {
+            return false;
+        }
+
+        // Constraints.
+        if (state0.getNQErr() != curState.getNQErr()) {
+            return false;
+        }
+        if (state0.getNUErr() != curState.getNUErr()) {
+            return false;
+        }
+        if (state0.getNUDotErr() != curState.getNUDotErr()) {
+            return false;
+        }
+        if (state0.getNMultipliers() != curState.getNMultipliers()) {
+            return false;
+        }
+
+        // Events.
+        if (state0.getNEventTriggers() != curState.getNEventTriggers()) {
+            return false;
+        }
+
+        // Per-subsystem quantities.
+        // TODO we could get rid of the total-over-subsystems checks above, but
+        // those checks would let us exit earlier.
+        for (SimTK::SubsystemIndex isub(0); isub < state0.getNumSubsystems();
+                ++isub) {
+            if (state0.getNQ(isub) != curState.getNQ(isub)) {
+                return false;
+            }
+            if (state0.getNU(isub) != curState.getNU(isub)) {
+                return false;
+            }
+            if (state0.getNZ(isub) != curState.getNZ(isub)) {
+                return false;
+            }
+            if (state0.getNQErr(isub) != curState.getNQErr(isub)) {
+                return false;
+            }
+            if (state0.getNUErr(isub) != curState.getNUErr(isub)) {
+                return false;
+            }
+            if (state0.getNUDotErr(isub) != curState.getNUDotErr(isub)) {
+                return false;
+            }
+            if (state0.getNMultipliers(isub) != curState.getNMultipliers(isub)) {
+                return false;
+            }
+            for(SimTK::Stage stage = SimTK::Stage::LowestValid;
+                    stage <= SimTK::Stage::HighestRuntime; ++stage) {
+                if (state0.getNEventTriggersByStage(isub, stage) !=
+                        curState.getNEventTriggersByStage(isub, stage)) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+bool StatesTrajectory::compatibleWith(const Model& model) {
+    // An empty trajectory is necessarily compatible.
+    if (getSize() == 0) return true;
+
+    if (!consistent()) return false;
+
+    // Since we now know all the states are consistent with each other, we only
+    // need to check if the first one is compatible with the model.
+    const auto& state0 = get(0);
+
+    if (model.getNumStateVariables() != state0.getNY()) {
+        return false;
+    }
+    if (model.getNumCoordinates() != state0.getNQ()) {
+        return false;
+    }
+    if (model.getNumSpeeds() != state0.getNU()) {
+        return false;
+    }
+    // TODO number of constraints.
+
+    return true;
+}
+
 StatesTrajectory StatesTrajectory::createFromStatesStorage(
         const Model& model,
         const Storage& sto,
@@ -50,7 +160,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
         bool allowExtraColumns) {
 
     // Assemble the required objects.
-    // ------------------------------
+    // ==============================
 
     // This is what we'll return.
     StatesTrajectory states;
@@ -66,18 +176,39 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     const auto& stoLabels = sto.getColumnLabels();
     int numDependentColumns = stoLabels.getSize() - 1;
 
+    // In case the storage comes from a version of OpenSim prior to 4.0,
+    // we must convert the column names from the old state variable names to
+    // the new ones that use "paths."
+    // TODO auto stoLabels(origStoLabels);
+    // TODO convertStatesStorageLabelsToPaths(model, stoLabels);
+
     // Error checking.
-    // ---------------
+    // ===============
+    // Angular quantities must be expressed in radians.
+    // TODO we could also manually convert the necessary
+    // coordinates/speeds to radians.
+    OPENSIM_THROW_IF(sto.isInDegrees(), StatesStorageIsInDegrees);
+
     // makeStorageLabelsUnique() returns true if labels were unique already.
+    // TODO we're making a copy of all the data in order to just check the
+    // storage labels; that shouldn't be necessary.
     OPENSIM_THROW_IF(!Storage(sto).makeStorageLabelsUnique(),
             NonUniqueColumnsInStatesStorage);
 
-    const auto& modelStateNames = localModel.getStateVariableNames();
     // Check if states are missing from the Storage.
+    // ---------------------------------------------
+    const auto& modelStateNames = localModel.getStateVariableNames();
     std::vector<std::string> missingColumnNames;
+    // Also, assemble the names of the states that we will actually set in the
+    // trajectory, along with the corresponding state index.
+    std::map<int, std::string> statesToFillUp;
     for (int is = 0; is < modelStateNames.getSize(); ++is) {
-        if (stoLabels.findIndex(modelStateNames[is]) == -1) {
+        // getStateIndex() will check for pre-4.0 column names.
+        const int stateIndex = sto.getStateIndex(modelStateNames[is]);
+        if (stateIndex == -1) {
             missingColumnNames.push_back(modelStateNames[is]);
+        } else {
+            statesToFillUp[stateIndex] = modelStateNames[is];
         }
     }
     OPENSIM_THROW_IF(!allowMissingColumns && !missingColumnNames.empty(),
@@ -85,26 +216,27 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
             localModel.getName(), missingColumnNames);
 
     // Check if the Storage has columns that are not states in the Model.
-    std::vector<std::string> extraColumnNames;
-    // Also, assemble the names of the states that we will actually set in the
-    // trajectory, along with the corresponding dependent-column index.
-    std::map<std::string, int> statesToFillUp;
-    // Skip the time column label.
-    for (int is = 1; is < stoLabels.getSize(); ++is) {
-        if (modelStateNames.findIndex(stoLabels[is]) == -1) {
-            extraColumnNames.push_back(stoLabels[is]);
-        }
-        else {
-            // Subtract 1 to account for the 'time' column.
-            statesToFillUp[stoLabels[is]] = is - 1;
+    // ------------------------------------------------------------------
+    if (!allowExtraColumns) {
+        if (numDependentColumns > statesToFillUp.size()) {
+            std::vector<std::string> extraColumnNames;
+            // We want the actual column names, not the state names; the two
+            // might be different b/c the state names changed in v4.0.
+            for (int ic = 1; ic < stoLabels.getSize(); ++ic) {
+                // Has this label been marked as a model state?
+                // stateIndex = columnIndex - 1 (b/c of the time column).
+                if (statesToFillUp.count(ic - 1) == 0) {
+                    extraColumnNames.push_back(stoLabels[ic]);
+                }
+            }
+            OPENSIM_THROW(ExtraColumnsInStatesStorage, localModel.getName(),
+                    extraColumnNames);
         }
     }
-    OPENSIM_THROW_IF(!allowExtraColumns && !extraColumnNames.empty(),
-            ExtraColumnsInStatesStorage,
-            localModel.getName(), extraColumnNames);
+
 
     // Fill up trajectory.
-    // -------------------
+    // ===================
 
     // Working memory.
     SimTK::Vector dependentValues(numDependentColumns);
@@ -126,7 +258,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
         // Fill up current State with the data for the current time.
         for (const auto& kv : statesToFillUp) {
             localModel.setStateVariableValue(state,
-                    kv.first, dependentValues[kv.second]);
+                    kv.second, dependentValues[kv.first]);
         }
 
         // Make a copy of the edited state and put it in the trajectory.
@@ -135,10 +267,8 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
 
     return states;
 
-    // Adjust configuration to match constraints and other goals
-    // TODO model.assemble(s);
-
-    // TODO set NaN for unknown state variables.
+    // TODO Adjust configuration to match constraints and other goals?
+    //      model.assemble(s);
 }
 
 StatesTrajectory StatesTrajectory::createFromStatesStorage(
@@ -146,3 +276,53 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
         const std::string& filepath) {
     return createFromStatesStorage(model, Storage(filepath));
 }
+
+
+    /* TODO
+static void StatesTrajectory::convertStatesStorageLabelsToPaths(
+        const Model& model,
+        Array<std::string>& labels) {
+    // Skip time label.
+    for (int i = 1; i < labels.getSize(); ++i) {
+        auto& label = labels[i];
+
+        // Label is the name of a coordinate.
+        // e.g., ankle_angle_r -> calcn_r/ankle_angle_r/value
+        if (model.getCoordinateSet().contains(label)) {
+            const auto& coord = model.getCoordinateSet().get(label);
+            const auto& jointName = coord.getJoint().getName();
+            label = jointName + "/" + label + "/value";
+            // No need to perform the rest of the checks.
+            continue;
+        }
+
+        // Label is (name of a coordinate) + "_u".
+        // e.g., ankle_angle_r_u -> calcn_r/ankle_angle_r/speed
+        const int suffix_idx = label.find_last_of("_u");
+        if (suffix_idx == (label.size() - 2)) {
+            const auto coordName = label.substr(0, suffix_idx);
+
+            // It's not enough that the label ends with _u.
+            if (model.getCoordinateSet().contains(label)) {
+                const auto& jointName = coord.getJoint().getName();
+                label = jointName + "/" + coordName + "/speed";
+                // No need to perform the rest of the checks.
+                continue;
+            }
+        }
+
+        // Label is (name of a muscle) + "." + something else.
+        const int dot_idx = label.find_last_of(".");
+        const auto muscleName = label.substr(0, dot_idx);
+        if (model.getMuscles().contains(muscleName)) {
+        }
+        //}model.getMuscles().get(muscleName)) {
+
+    }
+}
+*/
+
+
+
+
+
