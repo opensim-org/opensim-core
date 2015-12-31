@@ -31,7 +31,6 @@ using namespace SimTK;
 
 // TODO write documentation for StatesTrajectory.
 
-// TODO inDegrees.
 // TODO front(), back().
 // TODO example code.
 // TODO test convenience createFromStorage(model, filename).
@@ -47,11 +46,12 @@ using namespace SimTK;
 // TODO get rid of sequential invariant, or get better at enforcing it? Just
 // allow checking if it's true?
 // TODO allow removing states.
-// TODO store a model within a StatesTrajectory.
+// TODO profile / speed up the test.
 
 // TODO append two StateTrajectories together.
 // TODO createFromKinematicsStorage
 // TODO test modeling options (locked coordinates, etc.)
+// TODO store a model within a StatesTrajectory.
 
 const std::string statesStoFname = "testStatesTrajectory_readStorage_states.sto";
 const std::string pre40StoFname = "std_subject01_walk1_states.sto";

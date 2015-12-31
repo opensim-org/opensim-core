@@ -278,51 +278,5 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
 }
 
 
-    /* TODO
-static void StatesTrajectory::convertStatesStorageLabelsToPaths(
-        const Model& model,
-        Array<std::string>& labels) {
-    // Skip time label.
-    for (int i = 1; i < labels.getSize(); ++i) {
-        auto& label = labels[i];
-
-        // Label is the name of a coordinate.
-        // e.g., ankle_angle_r -> calcn_r/ankle_angle_r/value
-        if (model.getCoordinateSet().contains(label)) {
-            const auto& coord = model.getCoordinateSet().get(label);
-            const auto& jointName = coord.getJoint().getName();
-            label = jointName + "/" + label + "/value";
-            // No need to perform the rest of the checks.
-            continue;
-        }
-
-        // Label is (name of a coordinate) + "_u".
-        // e.g., ankle_angle_r_u -> calcn_r/ankle_angle_r/speed
-        const int suffix_idx = label.find_last_of("_u");
-        if (suffix_idx == (label.size() - 2)) {
-            const auto coordName = label.substr(0, suffix_idx);
-
-            // It's not enough that the label ends with _u.
-            if (model.getCoordinateSet().contains(label)) {
-                const auto& jointName = coord.getJoint().getName();
-                label = jointName + "/" + coordName + "/speed";
-                // No need to perform the rest of the checks.
-                continue;
-            }
-        }
-
-        // Label is (name of a muscle) + "." + something else.
-        const int dot_idx = label.find_last_of(".");
-        const auto muscleName = label.substr(0, dot_idx);
-        if (model.getMuscles().contains(muscleName)) {
-        }
-        //}model.getMuscles().get(muscleName)) {
-
-    }
-}
-*/
-
-
-
 
 

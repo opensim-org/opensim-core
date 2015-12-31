@@ -53,7 +53,6 @@ public:
         }
         msg += "    " + missingStates.back();
 
-        // TODO message should account for pre-v4.0 column names.
         addMessage(msg);
     }
 };
@@ -78,7 +77,6 @@ public:
         }
         msg += "    " + extraStates.back();
 
-        // TODO message should account for pre-v4.0 column names.
         addMessage(msg);
     }
 };
@@ -393,26 +391,6 @@ public:
     static StatesTrajectory createFromStatesStorage(const Model& model,
             const std::string& filepath);
     /// @}
-
-private:
-
-    /** In OpenSim 4.0, the names of the state variables were changed to use
-     * "paths." This function attempts to convert the following categories of
-     * state variables:
-     *
-     * - coordinate value: `ankle_angle_r` -> `calcn_r/ankle_angle_r/value`
-     * - coordinate speed: `ankle_angle_r_u` -> `calcn_r/ankle_angle_r/speed`
-     * - muscle activation: `soleus_r.activation` -> `soleus_r/activation`
-     * - muscle fiber length: `soleus_r.fiber_length` -> `soleus_r/fiber_length`
-     *
-     * This conversion should cover most cases, but is certainly not
-     * comprehensive. Most importantly, we cannot update the state names that
-     * third-party plugins may have used.
-     *
-     * The column labels are converted in place (TODO).
-     */
-//TODO    static void convertStatesStorageLabelsToPaths(const Model& model,
-//            Array<std::string>& labels);
 
 };
 
