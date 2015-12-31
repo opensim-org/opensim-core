@@ -243,6 +243,9 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     // Fill up trajectory.
     // ===================
 
+    // Reserve the memory we'll need to fit all the states.
+    states.m_states.reserve(sto.getSize());
+
     // Working memory.
     SimTK::Vector dependentValues(numDependentColumns);
 

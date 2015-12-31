@@ -33,10 +33,6 @@ using namespace SimTK;
 
 // TODO front(), back().
 // TODO example code.
-// TODO test convenience createFromStorage(model, filename).
-// TODO reassigning a single element using upd(i).
-// TODO handle pre-4.0 state storages (w/out full paths to the state variable).
-//      use a separate "state variable name converter" class?
 // TODO detailed exceptions when integrity checks fail.
 // TODO what happens if the storage file has a hole? NaN?
 // TODO option to fill out a statestrajectory muscle states by equilibrating.
@@ -45,9 +41,9 @@ using namespace SimTK;
 // TODO accessing acceleration-level outputs.
 // TODO get rid of sequential invariant, or get better at enforcing it? Just
 // allow checking if it's true?
-// TODO allow removing states.
 // TODO profile / speed up the test.
 
+// TODO allow removing states.
 // TODO append two StateTrajectories together.
 // TODO createFromKinematicsStorage
 // TODO test modeling options (locked coordinates, etc.)
@@ -267,10 +263,8 @@ void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
 
         const auto stateNames = model.getStateVariableNames();
         Storage sto(stoFilepath);
-        if (stoFilepath == pre40StoFname) {
-            // So the test doesn't take so long; this file has almost 700 rows.
-            sto.resampleLinear(0.01);
-        }
+        // So the test doesn't take so long.
+        sto.resampleLinear((sto.getLastTime() - sto.getFirstTime()) / 10);
 
         // Create new Storage with fewer columns.
         auto labels = sto.getColumnLabels();
@@ -320,6 +314,9 @@ void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
     {
         Model model("gait2354_simbody.osim");
         Storage sto(stoFilepath);
+        // So the test doesn't take so long.
+        sto.resampleLinear((sto.getLastTime() - sto.getFirstTime()) / 10);
+
         // Remove a few of the muscles.
         model.updForceSet().remove(0);
         model.updForceSet().remove(10);
@@ -554,14 +551,18 @@ void testAppendTimesAreNonDecreasing() {
 }
 
 void testBoundsCheck() {
-    // TODO when we have a proper states serialization, use that instead of a
-    // STO file.
     Model model("gait2354_simbody.osim");
-    model.initSystem();
-    StatesTrajectory states = StatesTrajectory::
-        createFromStatesStorage(model, statesStoFname);
+    const auto& state = model.initSystem();
+    StatesTrajectory states;
+    states.append(state);
+    states.append(state);
+    states.append(state);
+    states.append(state);
     
     states[states.getSize() + 100];
+    states[4];
+    states[5];
+    SimTK_TEST_MUST_THROW_EXC(states.get(4), std::out_of_range);
     SimTK_TEST_MUST_THROW_EXC(states.get(states.getSize() + 100),
             std::out_of_range);
     SimTK_TEST_MUST_THROW_EXC(states.upd(states.getSize() + 100),
@@ -655,6 +656,7 @@ void testModifyStates() {
     // STO file.
     Model model("gait2354_simbody.osim");
     model.initSystem();
+    // Test the convenience variant that takes a filename directly.
     StatesTrajectory states = StatesTrajectory::
         createFromStatesStorage(model, statesStoFname);
 
@@ -701,6 +703,7 @@ int main() {
         SimTK_SUBTEST(testCopying);
         // TODO SimTK_SUBTEST(testEqualityOperator);
 
+        // TODO move these above if possible.
         SimTK_SUBTEST(testAppendTimesAreNonDecreasing);
         SimTK_SUBTEST(testBoundsCheck);
         SimTK_SUBTEST(testIntegrityChecks);
