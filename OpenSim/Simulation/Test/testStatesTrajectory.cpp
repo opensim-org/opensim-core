@@ -29,18 +29,14 @@
 using namespace OpenSim;
 using namespace SimTK;
 
-// TODO write documentation for StatesTrajectory.
-
-// TODO example code.
 // TODO detailed exceptions when integrity checks fail.
-// TODO what happens if the storage file has a hole? NaN?
-// TODO option to fill out a statestrajectory muscle states by equilibrating.
-// TODO option to assemble() model.
-// TODO segfaults if state is not realized.
+// TODO currently, one gets segfaults if state is not realized.
 // TODO accessing acceleration-level outputs.
 // TODO get rid of sequential invariant, or get better at enforcing it? Just
 // allow checking if it's true?
 
+// TODO option to fill out a statestrajectory muscle states by equilibrating.
+// TODO option to assemble() model.
 // TODO allow removing states.
 // TODO append two StateTrajectories together.
 // TODO createFromKinematicsStorage
@@ -65,7 +61,6 @@ void testPopulateTrajectory() {
     // To assist with creating interesting (non-zero) coordinate values:
     model.updCoordinateSet().get("pelvis_ty").setDefaultLocked(true);
 
-    // TODO add controllers so the muscle states are interesting.
     auto& state = model.initSystem();
 
     SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
@@ -449,6 +444,25 @@ void testFromStatesStoragePre40CorrectStates() {
     }
 }
 
+void testFromStatesStorageAllRowsHaveSameLength() {
+    // Missing data in individual rows leads to an incorrect StatesTrajectory
+    // and could really confuse users.
+    Model model("gait2354_simbody.osim");
+    model.initSystem();
+
+    const auto stateNames = model.getStateVariableNames();
+    Storage sto(statesStoFname);
+    // Append a too-short state vector.
+    std::vector<double> v(model.getNumStateVariables() - 10, 1.0);
+    StateVector sv(25.0, model.getNumStateVariables() - 10, v.data());
+    sto.append(sv);
+
+    SimTK_TEST_MUST_THROW_EXC(
+            StatesTrajectory::createFromStatesStorage(model, sto),
+            VaryingNumberOfStatesPerRow);
+}
+
+
 void testCopying() {
     Model model("gait2354_simbody.osim");
     auto& state = model.initSystem();
@@ -692,18 +706,20 @@ int main() {
         SimTK_SUBTEST(testAppendTimesAreNonDecreasing);
         SimTK_SUBTEST(testCopying);
 
+        // Test creation of trajectory from astates storage.
+        // -------------------------------------------------
         // Using a pre-4.0 states storage file with old column names.
         SimTK_SUBTEST(testFromStatesStoragePre40CorrectStates);
         SimTK_SUBTEST1(testFromStatesStorageInconsistentModel, pre40StoFname);
 
-        // Test creation of trajectory from states storage.
-        // ------------------------------------------------
+        // v4.0 states storage
         createStateStorageFile();
         SimTK_SUBTEST(testFromStatesStorageGivesCorrectStates);
         SimTK_SUBTEST1(testFromStatesStorageInconsistentModel, statesStoFname);
         SimTK_SUBTEST(testFromStatesStorageUniqueColumnLabels);
         // TODO SimTK_SUBTEST(testEqualityOperator);
         SimTK_SUBTEST(testModifyStates); // TODO should move toward the top.
+        SimTK_SUBTEST(testFromStatesStorageAllRowsHaveSameLength);
 
     SimTK_END_TEST();
 }

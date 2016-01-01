@@ -100,6 +100,21 @@ public:
     }
 };
 
+class VaryingNumberOfStatesPerRow : public OpenSim::Exception {
+public:
+    VaryingNumberOfStatesPerRow(const std::string& file, size_t line,
+            const std::string& func,
+            int numDepColumns, int smallestNumStates) :
+                OpenSim::Exception(file, line, func) {
+        std::string msg = "States Storage has varying number of entries ";
+        msg += "per row (from " + std::to_string(smallestNumStates) + " to ";
+        msg += std::to_string(numDepColumns) + "). You must provide a ";
+        msg += "States Storage that has the same number ";
+        msg += "of entires in every row.";
+        addMessage(msg);
+    }
+};
+
 // This class is part of OpenSim instead of Simbody since Simbody users are
 // likely to be interested in a more general State container that doesn't
 // assume the states are sequential in time.
@@ -398,7 +413,7 @@ public:
      * function should only be used when you are stuck with pre-4.0 files.
      *
      * @note The naming convention for state variables changed in OpenSim v4.0;
-     * `calcn_r/ankle_angle_r/speed` used to be `ankle_angle_r_u`,
+     * `ankle_r/ankle_angle_r/speed` used to be `ankle_angle_r_u`,
      * `soleus_r/activation` used to be `soleus_r.activation`, etc. This
      * function can handle %Storage column labels that use the pre-v4.0 naming
      * convention.

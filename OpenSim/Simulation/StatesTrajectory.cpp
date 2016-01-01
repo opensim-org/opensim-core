@@ -193,6 +193,12 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     OPENSIM_THROW_IF(!sto.storageLabelsAreUnique(),
             NonUniqueColumnsInStatesStorage);
 
+    // To be safe, we don't process storages in which individual rows are
+    // missing values.
+    OPENSIM_THROW_IF(numDependentColumns != sto.getSmallestNumberOfStates(),
+            VaryingNumberOfStatesPerRow,
+            numDependentColumns, sto.getSmallestNumberOfStates());
+
     // Check if states are missing from the Storage.
     // ---------------------------------------------
     const auto& modelStateNames = localModel.getStateVariableNames();
