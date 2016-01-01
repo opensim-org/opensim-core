@@ -695,8 +695,8 @@ void testModifyStates() {
 int main() {
     SimTK_START_TEST("testStatesTrajectory");
     
-        // With MSVC, the actuators library is not loaded automatically.
-        #if defined(_MSC_VER)
+        // actuators library is not loaded automatically (unless using clang).
+        #if !defined(__clang__)
             LoadOpenSimLibrary("osimActuators");
         #endif
 
