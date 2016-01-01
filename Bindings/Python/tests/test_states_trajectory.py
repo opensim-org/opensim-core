@@ -6,7 +6,6 @@ import opensim as osim
 test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
                         'tests')
 
-# TODO append
 # TODO __setitem__
 
 class TestStatesTrajectory(unittest.TestCase):

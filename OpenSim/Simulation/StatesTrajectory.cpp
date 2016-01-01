@@ -187,9 +187,8 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     // radians.
     OPENSIM_THROW_IF(sto.isInDegrees(), StatesStorageIsInDegrees);
 
-    // makeStorageLabelsUnique() returns true if labels were unique already.
-    // TODO we're making a copy of all the data in order to just check the
-    // storage labels; that shouldn't be necessary.
+    // If column labels aren't unique, It's unclear which column the user
+    // wanted to use for the related state variable.
     OPENSIM_THROW_IF(!sto.storageLabelsAreUnique(),
             NonUniqueColumnsInStatesStorage);
 
