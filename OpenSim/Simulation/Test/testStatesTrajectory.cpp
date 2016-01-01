@@ -695,6 +695,11 @@ void testModifyStates() {
 int main() {
     SimTK_START_TEST("testStatesTrajectory");
     
+        // With MSVC, the actuators library is not loaded automatically.
+        #if defined(_MSC_VER)
+            LoadOpenSimLibrary("osimActuators");
+        #endif
+
         // Make sure the states Storage file doesn't already exist; we'll
         // generate it later and we don't want to use a stale one by accident.
         remove(statesStoFname.c_str());
