@@ -51,9 +51,9 @@ namespace OpenSim {
 
 
 /** @name Macros to throw OpenSim exceptions
-The purpose of these macros is to avoid having to provide the first few
-arguments (which are common to all OpenSim exceptions) to the exception
-constructor in the throw statements.
+The purpose of these macros is to aid with consistent message formatting,
+include file/line/function information in all messages, and to make it easier
+for developers to produce good messages.
 @{
  */
 /**  
@@ -111,8 +111,6 @@ OPENSIM_THROW_IF(result != 5, ResultIsIncorrect, result, 5);
  * derived classes. When creating new exceptions, remember to call addMessage()
  * as shown above if the exception class does have any error message.
  * \endif
- *
- * @author Frank C. Anderson
  */
 class OSIMCOMMON_API Exception  : public std::exception {
 
