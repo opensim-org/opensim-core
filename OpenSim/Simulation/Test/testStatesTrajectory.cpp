@@ -22,8 +22,9 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/osimSimulation.h>
-#include <random>
 #include <OpenSim/Common/Constant.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <random>
 #include <cstdio>
 
 using namespace OpenSim;
