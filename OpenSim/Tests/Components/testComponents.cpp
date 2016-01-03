@@ -300,8 +300,8 @@ void testComponent(const Component& instanceToTest)
             Component* copy = instance->clone();
             delete copy;
         }
-        const size_t increaseInMemory = getCurrentRSS() - initMemory;
-        const long double leakPercent = (100.0*increaseInMemory/instanceSize)/nCopies;
+        const int increaseInMemory = (int)getCurrentRSS() - (int)initMemory;
+        const long double leakPercent = (100.0*increaseInMemory/initMemory)/nCopies;
 
         stringstream msg;
         msg << className << ".clone() increased memory use by "
@@ -331,8 +331,8 @@ void testComponent(const Component& instanceToTest)
         {
             finalInitState = model.initSystem();
         }
-        const size_t increaseInMemory = getCurrentRSS() - initMemory;
-        const long double leakPercent = (100.0*increaseInMemory/instanceSize)/nLoops;
+        const int increaseInMemory = (int)getCurrentRSS() - (int)initMemory;
+        const long double leakPercent = (100.0*increaseInMemory/initMemory)/nLoops;
 
         ASSERT_EQUAL(0.0,
                 (finalInitState.getY() - initState.getY()).norm(),
