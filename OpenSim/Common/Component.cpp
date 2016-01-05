@@ -24,6 +24,7 @@
 
 // INCLUDES
 #include "OpenSim/Common/Component.h"
+#include "OpenSim/Common/Set.h"
 //#include "OpenSim/Common/ComponentOutput.h"
 
 using namespace SimTK;
@@ -120,6 +121,14 @@ Component::Component(const std::string& fileName, bool updFromXMLNode)
     finalizeFromProperties();
 }
 
+Component::Component(const std::string& name, Component* owner) : Component()
+{
+    setName(name);
+    if (owner) {
+        owner->markAsSubcomponent(this);
+    }
+}
+
 Component::Component(SimTK::Xml::Element& element) 
 :   Object(element)
 {
@@ -147,7 +156,7 @@ Component& Component::operator=(const Component &component)
 void Component::finalizeFromProperties()
 {
     reset();
-    clearComponents();
+    markPropertiesAsSubcomponents();
     extendFinalizeFromProperties();
     componentsFinalizeFromProperties();
     setObjectIsUpToDateWithProperties();
@@ -838,9 +847,44 @@ void Component::constructOutputForStateVariable(const std::string& name)
             SimTK::Stage::Model);
 }
 
+// mark components owned as properties as subcomponents
+void Component::markPropertiesAsSubcomponents()
+{
+    // if being invoked either constructing a new Component
+    // or the properties have been modified. In the latter case
+    // we must make sure that pointers to old properties are cleared
+    _components.clear();
+
+    // Now mark properties that are Components as subcomponents
+    for (int i = 0; i < getNumProperties(); ++i) {
+        auto& prop = updPropertyByIndex(i);
+        if (prop.isObjectProperty()) {
+            for (int j = 0; j < prop.size(); ++j) {
+                Object& obj = prop.updValueAsObject(j);
+                if (Component* comp = dynamic_cast<Component*>(&obj) ) {
+                    markAsSubcomponent(comp);
+                }
+                //Set<Component>* objects = dynamic_cast<Set<Component>*>(&obj)
+                else {
+                    std::string objType = obj.getConcreteClassName();
+                    if (obj.hasProperty("objects")) {
+                        auto& objectsProp = obj.updPropertyByName("objects");
+                        for (int k = 0; k < objectsProp.size(); ++k) {
+                            Object& obj = objectsProp.updValueAsObject(k);
+                            if (Component* comp = dynamic_cast<Component*>(&obj) )
+                                markAsSubcomponent(comp);
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+}
+
 // Include another Component as a subcomponent of this one. If already a
 // subcomponent, it is not added to the list again.
-void Component::addComponent(Component* component)
+void Component::markAsSubcomponent(Component* component)
 {
     // Only add if the Component is not already a part of the model
     // So, add if empty
@@ -855,10 +899,11 @@ void Component::addComponent(Component* component)
             //std::cout << "Adding component " << aComponent->getName() << " as subcomponent of " << getName() << std::endl;
         }
         else{
-            std::string msg = "ERROR- " +getConcreteClassName()+"::addComponent() '"
+            std::string msg = "WARNING- " +getConcreteClassName()+"::markAsSubcomponent() '"
                 + getName() + "' already has '" + component->getName() +
                     "' as a subcomponent.";
-            throw Exception(msg, __FILE__, __LINE__);
+            std::cout << msg << std::endl;
+            //throw Exception(msg, __FILE__, __LINE__);
         }
     }
 

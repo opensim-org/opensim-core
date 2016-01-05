@@ -178,12 +178,6 @@ void Joint::extendFinalizeFromProperties()
     // add all coordinates listed under this joint 
     for (int i = 0; i < coords.getSize(); ++i) {
         coords[i].setJoint(*this);
-        // Append a pointer otherwise the model will make a copy that will not
-        // be updated properly
-        addComponent(&coords[i]);
-    }
-    for (int i = 0; i < getProperty_frames().size(); ++i) {
-        addComponent(&upd_frames(i));
     }
 }
 

@@ -170,7 +170,6 @@ protected:
         These methods adhere to the Component Interface**/
     /**@{**/
     void constructConnectors() override;
-    void extendFinalizeFromProperties() override;
     void extendConnectToModel(Model& model) override; 
     // update previous model formats for all components linking two frames
     // in one place - here.
@@ -368,16 +367,6 @@ void TwoFrameLinker<C, F>::scale(const ScaleSet& scaleSet)
             offset->scale(frame2Factors);
     }
 }
-
-template<class C, class F>
-void TwoFrameLinker<C, F>::extendFinalizeFromProperties()
-{
-    Super::extendFinalizeFromProperties();
-    for (int i = 0; i < this->getProperty_frames().size(); ++i) {
-        this->addComponent(&upd_frames(i));
-    }
-}
-
 
 template<class C, class F>
 void TwoFrameLinker<C, F>::extendConnectToModel(Model& model) 

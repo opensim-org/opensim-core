@@ -30,6 +30,12 @@ using namespace SimTK;
 class Foo;
 class Bar;
 
+class Sub : public Component {
+    OpenSim_DECLARE_CONCRETE_OBJECT(Sub, Component);
+public:
+    Sub(const std::string& name = "", Component* owner = nullptr)
+        : Component(name, owner) {}
+}; //end class Sub
 
 class TheWorld : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(TheWorld, Component);
@@ -38,7 +44,7 @@ public:
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_LIST_PROPERTY(components, Component, 
-        "List of internal components");
+        "List of serialized internal components");
 
     TheWorld() : Component() {
         // Constructing own properties, connectors, inputs or connectors? Must invoke!
@@ -59,13 +65,12 @@ public:
     void add(Component* comp) {
         // add it the property list of components that owns and serializes them
         updProperty_components().adoptAndAppendValue(comp);
-        addComponent(comp);
+        markAsSubcomponent(comp);
     }
 
 
     // Top level connection method for all encompassing Component
     void buildComponentTreeAndConnect() {
-        finalizeFromProperties();
         initComponentTreeTraversal(*this);
         connect(*this);
     }
@@ -79,14 +84,6 @@ public:
 
 protected:
     // Component interface implementation
-    void extendFinalizeFromProperties() override {
-        Super::extendFinalizeFromProperties();
-        // Mark components listed in properties as subcomponents
-        for (int i = 0; i < getProperty_components().size(); ++i){
-            addComponent(&upd_components(i));
-        }
-    }
-    
     void extendAddToSystem(MultibodySystem& system) const override {
         if (system.hasMatterSubsystem()){
             matter = system.updMatterSubsystem();
@@ -120,6 +117,8 @@ private:
     // keep track of the force added by the component
     mutable ForceIndex fix;
 
+    Sub internalSub{ "internalSub", this };
+
 }; // end of TheWorld
 
 
@@ -133,7 +132,8 @@ public:
     OpenSim_DECLARE_LIST_PROPERTY_SIZE(inertia, double, 6,
         "inertia {Ixx, Iyy, Izz, Ixy, Ixz, Iyz}");
 
-    Foo() : Component() {
+    Foo(const std::string& name ="", Component* owner = nullptr)
+        : Component(name, owner) {
         constructInfrastructure();
         m_ctr = 0;
         m_mutableCtr = 0;
@@ -232,7 +232,6 @@ private:
     mutable MobilizedBodyIndex bindex;
     ReferencePtr<TheWorld> world;
 
-    
 }; // End of class Foo
 
 class Bar : public Component {
@@ -346,12 +345,6 @@ protected:
         // Mark components listed in properties as subcomponents
         Foo& foo1 = upd_Foo1();
         Foo& foo2 = upd_Foo2();
-        
-        // clear sub component designation of any previous components
-        clearComponents();
-        //now add them
-        addComponent(&foo1);
-        addComponent(&foo2);
 
         // update CompoundFoo's properties based on it sub Foos
         double orig_mass = get_mass();
@@ -504,7 +497,7 @@ int main() {
         }
 
         MultibodySystem system2;
-        TheWorld *world2 = new TheWorld(modelFile);
+        TheWorld *world2 = new TheWorld(modelFile, true);
         
         world2->updComponent("Bar").getConnector<Foo>("childFoo");
         // We haven't called connect yet, so this connection isn't made yet.

@@ -227,9 +227,6 @@ void PathActuator::extendFinalizeFromProperties()
 {
     GeometryPath &path = updGeometryPath();
 
-    clearComponents();
-    addComponent(&path);
-
     // Set owner here in case errors happen later so we can put useful message about responsible party.
     path.setOwner(this);
 

@@ -239,6 +239,7 @@ void testAutomaticLoopJointBreaker();
 int main()
 {
     int itc = 0;
+
     SimTK::Array_<std::string> failures;
     //Register new Joint types for testing 
     Object::registerType(CompoundJoint());
@@ -1792,7 +1793,7 @@ void testEquivalentBodyForceFromGeneralizedForce()
     // Actuators that will fail to register and the model will not load.
     LoadOpenSimLibrary("osimActuators");
 
-    Model gaitModel("testJointConstraints.osim", false);
+    Model gaitModel("testJointConstraints.osim", true);
     gaitModel.print("testJointConstraints.osim_30503.osim");
 
     testEquivalentBodyForceForGenForces(gaitModel);

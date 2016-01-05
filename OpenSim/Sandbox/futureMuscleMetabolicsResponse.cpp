@@ -102,7 +102,7 @@ private:
     void extendFinalizeFromProperties() {
         Super::extendFinalizeFromProperties();
         for (auto& response : responses) {
-            addComponent(response.get());
+            markAsSubcomponent(response.get());
         }
     }
     void constructOutputs() override {

@@ -82,13 +82,8 @@ void ModelComponent::extendConnect(Component &root)
 void ModelComponent::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
-    int geomSize = getProperty_geometry().size();
-    if (geomSize > 0){
-        for (int i = 0; i < geomSize; ++i){
-            addComponent(&upd_geometry(i));
-        }
-    }
 }
+
 // Base class implementation of virtual method.
 void ModelComponent::connectToModel(Model& model)
 {

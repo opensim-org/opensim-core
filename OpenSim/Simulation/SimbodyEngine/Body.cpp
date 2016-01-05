@@ -619,7 +619,7 @@ Body* Body::addSlave()
     _slaves.push_back(slave);
 
     //add to list of subcomponents to automatically add to system and initialize
-    addComponent(slave);
+    markAsSubcomponent(slave);
 
     return slave;
 }

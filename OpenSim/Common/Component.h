@@ -198,6 +198,11 @@ public:
     Component(const std::string& aFileName,
         bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
 
+    /** Construct Component as a subcomponent member of another Component.
+        Automatically marks the component as a subcomponent of the owner.
+        A subcomponent MUST be named. **/
+    explicit Component(const std::string& name, Component* owner=nullptr);
+
     /** Construct Component from a specific node in an XML document. **/
     explicit Component(SimTK::Xml::Element& aNode);
 
@@ -223,7 +228,7 @@ public:
     Component Extension Interface (e.g. #extendFinalizeFromProperties) 
     that can be implemented by subclasses of Components.
 
-    Component ensures that the corresponding calls are propogated to all of its
+    Component ensures that the corresponding calls are propagated to all of its
     (sub)components. */
 
     ///@{
@@ -935,6 +940,17 @@ template <class T> friend class ComponentMeasure;
         constructOutputs();
     }
 
+    /**
+    * Mark another Component as a subcomponent of this Component. Component
+    * methods (e.g. addToSystem(), initStateFromProperties(), ...) are
+    * therefore invoked on subcomponents when called on this Component.
+    * Realization is also performed automatically on subcomponents. This
+    * member function does not take ownership, it is assumed that the
+    * the component is a data member or property of this Component.
+    */
+    void markAsSubcomponent(Component* component);
+
+
     /** @name  Component Extension Interface
     The interface ensures that deserialization, resolution of inter-connections,
     and handling of dependencies are performed systematically and prior to 
@@ -946,9 +962,9 @@ template <class T> friend class ComponentMeasure;
     with the line "Super::extend<xxx>(args);" to ensure that the parent class
     is called before the child class method.
     
-    The base class implementations ensures that the 
-    corresponding calls are made to any subcomponents that have been specified 
-    by derived %Component objects, via calls to the addComponent() method. 
+    The base class implementations ensures that the corresponding calls are made
+    to any subcomponents that have been specified by derived %Component objects,
+    according to the markAsSubcomponent() method. 
     So assuming that your concrete %Component and all intermediate classes from
     which it derives properly follow the requirement of calling the Super class 
     method first, the order of operations enforced here for a call to a single 
@@ -974,7 +990,6 @@ template <class T> friend class ComponentMeasure;
         void MyComponent::extendFinalizeFromProperties() {
             Super::extendFinalizeFromProperties(); // invoke parent class method
             // ... your code goes here
-            // ... addComponent(...) that are listed in or formed from properties
             // ... initialize any internal data structures 
         }
         @endcode   */
@@ -1376,16 +1391,6 @@ template <class T> friend class ComponentMeasure;
      * the corresponding state variable.
      */
     void constructOutputForStateVariable(const std::string& name);
-    
-    /**
-     * Add another Component as a subcomponent of this Component. Component
-     * methods (e.g. addToSystem(), initStateFromProperties(), ...) are
-     * therefore invoked on subcomponents when called on this Component.
-     * Realization is also performed automatically on subcomponents. This
-     * Component does not take ownership of designated subcomponents and does
-     * not destroy them when the Component.
-     */
-    void addComponent(Component* component);
 
     /** Clear all designations of (sub)components for this Component. 
       * Components are not deleted- the list of references to its components is cleared. */
@@ -1606,6 +1611,13 @@ private:
     //an Output is a redirect to a method on the Component and a specification of 
     //the return type, @see addOutput()
     virtual void constructOutputs() {}
+
+
+    //Mark components that are properties of this Component as subcomponents of
+    //this Component. This happens automatically upon construction of the 
+    //component. If Component property added programmatically, then you must
+    //also markAsSubcomponent() on that component.
+    void markPropertiesAsSubcomponents();
 
     /// Invoke finalizeFromProperties() on the (sub)components of this Component.
     void componentsFinalizeFromProperties() const;
