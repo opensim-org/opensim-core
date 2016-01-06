@@ -153,10 +153,14 @@ void testComponent(const Component& instanceToTest)
         "testing_serialization_" + className + ".xml";
     instance->print(serializationFilename);
 
+    const size_t memoryUsageBeforeConstructing = getCurrentRSS();
+    
     Object* deserializedInstance =
         static_cast<Object*>(Object::makeObjectFromFile(serializationFilename));
 
-    const size_t instanceSize = getCurrentRSS();
+    const int instanceSize = (int)getCurrentRSS() - (int)memoryUsageBeforeConstructing;
+    cout << "Memory usage before constructing: " << memoryUsageBeforeConstructing / 1024 << " KB" << endl;
+    cout << "Size of instance: " << instanceSize / 1024 << "KB" << endl;
 
     if (!(*deserializedInstance == *instance))
     {
@@ -301,18 +305,18 @@ void testComponent(const Component& instanceToTest)
             delete copy;
         }
         const int increaseInMemory = (int)getCurrentRSS() - (int)initMemory;
-        const long double leakPercent = (100.0*increaseInMemory/initMemory)/nCopies;
+        const long double leakPercent = (100.0*increaseInMemory/instanceSize)/nCopies;
 
         stringstream msg;
         msg << className << ".clone() increased memory use by "
-            << setprecision(3) << leakPercent << "%";
+            << setprecision(3) << leakPercent << "%.";
 
         ASSERT(leakPercent < acceptableMemoryLeakPercent, __FILE__, __LINE__,
-            msg.str() + "exceeds acceptable tolerance (" + 
-            to_string(acceptableMemoryLeakPercent) + ").\n Instance size: " +
-            to_string(instanceSize / 1024) + "KB increased by " +
+            msg.str() + "\nThis exceeds the tolerance of " + 
+            to_string(acceptableMemoryLeakPercent) + ".\n Memory increased from " +
+            to_string(instanceSize / 1024) + "KB to " +
             to_string(increaseInMemory / 1024) + "KB over " + to_string(nCopies) +
-            " iterations = " + to_string(leakPercent) + "%.\n"); // << endl;
+            " iterations.");
 
         if (reportAllMemoryLeaks && increaseInMemory>0)
             cout << msg.str()  << endl;
@@ -332,7 +336,7 @@ void testComponent(const Component& instanceToTest)
             finalInitState = model.initSystem();
         }
         const int increaseInMemory = (int)getCurrentRSS() - (int)initMemory;
-        const long double leakPercent = (100.0*increaseInMemory/initMemory)/nLoops;
+        const long double leakPercent = (100.0*increaseInMemory/instanceSize)/nLoops;
 
         ASSERT_EQUAL(0.0,
                 (finalInitState.getY() - initState.getY()).norm(),
@@ -345,11 +349,11 @@ void testComponent(const Component& instanceToTest)
             << setprecision(3) << leakPercent << "%.";
 
         ASSERT(leakPercent < acceptableMemoryLeakPercent, __FILE__, __LINE__,
-            msg.str() + "\nExceeds acceptable tolerance of " +
-            to_string(acceptableMemoryLeakPercent) + "%.\n Instance size: " +
-            to_string(instanceSize / 1024) + "KB increased by " +
+            msg.str() + "\nThis exceeds the tolerance of " +
+            to_string(acceptableMemoryLeakPercent) + "%.\n Memory increased from " +
+            to_string(instanceSize / 1024) + "KB to " +
             to_string(increaseInMemory / 1024) + "KB over " + to_string(nLoops) +
-            " iterations = " + to_string(leakPercent) + "%.\n"); // << endl;
+            " iterations."); // << endl;
 
         if (reportAllMemoryLeaks && increaseInMemory>0)
             cout << msg.str() << endl;
