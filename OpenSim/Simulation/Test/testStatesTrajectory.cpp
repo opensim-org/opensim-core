@@ -37,10 +37,8 @@ using namespace SimTK;
 // allow checking if it's true?
 
 // TODO option to fill out a statestrajectory muscle states by equilibrating.
-// TODO option to assemble() model.
 // TODO allow removing states.
 // TODO append two StateTrajectories together.
-// TODO createFromKinematicsStorage
 // TODO test modeling options (locked coordinates, etc.)
 // TODO store a model within a StatesTrajectory.
 
@@ -273,18 +271,18 @@ void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
         // Test that an exception is thrown.
         SimTK_TEST_MUST_THROW_EXC(
                 StatesTrajectory::createFromStatesStorage(model, stoMissingCols),
-                MissingColumnsInStatesStorage
+                StatesTrajectory::MissingColumnsInStatesStorage
                 );
         // Check some other similar calls.
         SimTK_TEST_MUST_THROW_EXC(
                 StatesTrajectory::createFromStatesStorage(model, stoMissingCols,
                     false, true),
-                MissingColumnsInStatesStorage
+                StatesTrajectory::MissingColumnsInStatesStorage
                 );
         SimTK_TEST_MUST_THROW_EXC(
                 StatesTrajectory::createFromStatesStorage(model, stoMissingCols,
                     false, false),
-                MissingColumnsInStatesStorage
+                StatesTrajectory::MissingColumnsInStatesStorage
                 );
 
         // No exception if allowing missing columns.
@@ -319,17 +317,17 @@ void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
         // Test that an exception is thrown.
         SimTK_TEST_MUST_THROW_EXC(
                 StatesTrajectory::createFromStatesStorage(model, sto),
-                ExtraColumnsInStatesStorage
+                StatesTrajectory::ExtraColumnsInStatesStorage
                 );
         SimTK_TEST_MUST_THROW_EXC(
                 StatesTrajectory::createFromStatesStorage(model, sto,
                     true, false),
-                ExtraColumnsInStatesStorage
+                StatesTrajectory::ExtraColumnsInStatesStorage
                 );
         SimTK_TEST_MUST_THROW_EXC(
                 StatesTrajectory::createFromStatesStorage(model, sto,
                     false, false),
-                ExtraColumnsInStatesStorage
+                StatesTrajectory::ExtraColumnsInStatesStorage
                 );
 
         // No exception if allowing extra columns, and behavior is
@@ -351,19 +349,19 @@ void testFromStatesStorageUniqueColumnLabels() {
    
     SimTK_TEST_MUST_THROW_EXC(
             StatesTrajectory::createFromStatesStorage(model, sto),
-            NonUniqueColumnsInStatesStorage);
+            StatesTrajectory::NonUniqueColumnsInStatesStorage);
     SimTK_TEST_MUST_THROW_EXC(
             StatesTrajectory::createFromStatesStorage(model, sto, true, true),
-            NonUniqueColumnsInStatesStorage);
+            StatesTrajectory::NonUniqueColumnsInStatesStorage);
     SimTK_TEST_MUST_THROW_EXC(
             StatesTrajectory::createFromStatesStorage(model, sto, true, false),
-            NonUniqueColumnsInStatesStorage);
+            StatesTrajectory::NonUniqueColumnsInStatesStorage);
     SimTK_TEST_MUST_THROW_EXC(
             StatesTrajectory::createFromStatesStorage(model, sto, false, true),
-            NonUniqueColumnsInStatesStorage);
+            StatesTrajectory::NonUniqueColumnsInStatesStorage);
     SimTK_TEST_MUST_THROW_EXC(
             StatesTrajectory::createFromStatesStorage(model, sto, false, false),
-            NonUniqueColumnsInStatesStorage);
+            StatesTrajectory::NonUniqueColumnsInStatesStorage);
 
     // TODO unique even considering old and new formats for state variable
     // names (/value and /speed).
@@ -460,7 +458,7 @@ void testFromStatesStorageAllRowsHaveSameLength() {
 
     SimTK_TEST_MUST_THROW_EXC(
             StatesTrajectory::createFromStatesStorage(model, sto),
-            VaryingNumberOfStatesPerRow);
+            StatesTrajectory::VaryingNumberOfStatesPerRow);
 }
 
 
@@ -601,36 +599,36 @@ void testIntegrityChecks() {
         states.append(state0);
         states.append(state1);
 
-        SimTK_TEST(states.consistent());
+        SimTK_TEST(states.isConsistent());
 
         states[1].setTime(0.2);
 
-        SimTK_TEST(!states.consistent());
+        SimTK_TEST(!states.isConsistent());
     }
 
     {
         StatesTrajectory states;
         // An empty trajectory is consistent.
-        states.consistent();
+        states.isConsistent();
 
         // A length-1 trajectory is consistent.
         states.append(s26);
-        states.consistent();
+        states.isConsistent();
 
         // This trajectory is compatible with the arm26 model.
-        states.compatibleWith(arm26);
+        states.isCompatibleWith(arm26);
 
         // Not compatible with gait2354 model.
         // Ensures a lower-dimensional trajectory can't pass for a higher
         // dimensional model.
-        SimTK_TEST(!states.compatibleWith(gait2354));
+        SimTK_TEST(!states.isCompatibleWith(gait2354));
 
         // The checks still work with more than 1 state.
         states.append(s26);
         states.append(s26);
-        states.consistent();
-        states.compatibleWith(arm26);
-        SimTK_TEST(!states.compatibleWith(gait2354));
+        states.isConsistent();
+        states.isCompatibleWith(arm26);
+        SimTK_TEST(!states.isCompatibleWith(gait2354));
     }
 
     {
@@ -639,15 +637,15 @@ void testIntegrityChecks() {
 
         // Reverse of the previous check; to ensure that a larger-dimensional
         // trajectory can't pass for the smaller dimensional model.
-        states.compatibleWith(gait2354);
-        SimTK_TEST(!states.compatibleWith(arm26));
+        states.isCompatibleWith(gait2354);
+        SimTK_TEST(!states.isCompatibleWith(arm26));
 
         // Check still works with more than 1 state.
         states.append(s2354);
         states.append(s2354);
-        states.consistent();
-        states.compatibleWith(gait2354);
-        SimTK_TEST(!states.compatibleWith(arm26));
+        states.isConsistent();
+        states.isCompatibleWith(gait2354);
+        SimTK_TEST(!states.isCompatibleWith(arm26));
     }
 
     {
@@ -657,7 +655,7 @@ void testIntegrityChecks() {
         states.append(s2354);
 
         // Consistency check fails.
-        SimTK_TEST(!states.consistent());
+        SimTK_TEST(!states.isConsistent());
     }
 
     // TODO Show weakness of the test: two models with the same number of Q's, U's,

@@ -43,7 +43,7 @@ void StatesTrajectory::append(const SimTK::State& state) {
     m_states.push_back(state);
 }
 
-bool StatesTrajectory::consistent() const {
+bool StatesTrajectory::isConsistent() const {
     // An empty or size-1 trajectory is necessarily consistent.
     if (getSize() <= 1) return true;
 
@@ -60,7 +60,7 @@ bool StatesTrajectory::consistent() const {
         // TODO this logic should be pushed to the SimTK::State class, so that
         // the check can evolve with the State class.
         // Then the body of this loop would be simply be:
-        //      state0.consistentWith(curState);
+        //      state0.isConsistentWith(curState);
 
         if (state0.getNumSubsystems() != curState.getNumSubsystems()) {
             return false;
@@ -134,11 +134,11 @@ bool StatesTrajectory::consistent() const {
     return true;
 }
 
-bool StatesTrajectory::compatibleWith(const Model& model) {
+bool StatesTrajectory::isCompatibleWith(const Model& model) {
     // An empty trajectory is necessarily compatible.
     if (getSize() == 0) return true;
 
-    if (!consistent()) return false;
+    if (!isConsistent()) return false;
 
     // Since we now know all the states are consistent with each other, we only
     // need to check if the first one is compatible with the model.
