@@ -57,79 +57,10 @@ bool StatesTrajectory::isConsistent() const {
             return false;
         }
 
-        // TODO this logic should be pushed to the SimTK::State class, so that
-        // the check can evolve with the State class.
-        // Then the body of this loop would be simply be:
-        //      state0.isConsistentWith(curState);
-
-        if (state0.getNumSubsystems() != curState.getNumSubsystems()) {
+        if (!isConsistent(state0, curState)) {
             return false;
         }
 
-        // State variables.
-        if (state0.getNQ() != curState.getNQ()) {
-            return false;
-        }
-        if (state0.getNU() != curState.getNU()) {
-            return false;
-        }
-        if (state0.getNZ() != curState.getNZ()) {
-            return false;
-        }
-
-        // Constraints.
-        if (state0.getNQErr() != curState.getNQErr()) {
-            return false;
-        }
-        if (state0.getNUErr() != curState.getNUErr()) {
-            return false;
-        }
-        if (state0.getNUDotErr() != curState.getNUDotErr()) {
-            return false;
-        }
-        if (state0.getNMultipliers() != curState.getNMultipliers()) {
-            return false;
-        }
-
-        // Events.
-        if (state0.getNEventTriggers() != curState.getNEventTriggers()) {
-            return false;
-        }
-
-        // Per-subsystem quantities.
-        // TODO we could get rid of the total-over-subsystems checks above, but
-        // those checks would let us exit earlier.
-        for (SimTK::SubsystemIndex isub(0); isub < state0.getNumSubsystems();
-                ++isub) {
-            if (state0.getNQ(isub) != curState.getNQ(isub)) {
-                return false;
-            }
-            if (state0.getNU(isub) != curState.getNU(isub)) {
-                return false;
-            }
-            if (state0.getNZ(isub) != curState.getNZ(isub)) {
-                return false;
-            }
-            if (state0.getNQErr(isub) != curState.getNQErr(isub)) {
-                return false;
-            }
-            if (state0.getNUErr(isub) != curState.getNUErr(isub)) {
-                return false;
-            }
-            if (state0.getNUDotErr(isub) != curState.getNUDotErr(isub)) {
-                return false;
-            }
-            if (state0.getNMultipliers(isub) != curState.getNMultipliers(isub)) {
-                return false;
-            }
-            for(SimTK::Stage stage = SimTK::Stage::LowestValid;
-                    stage <= SimTK::Stage::HighestRuntime; ++stage) {
-                if (state0.getNEventTriggersByStage(isub, stage) !=
-                        curState.getNEventTriggersByStage(isub, stage)) {
-                    return false;
-                }
-            }
-        }
     }
     return true;
 }
@@ -155,6 +86,79 @@ bool StatesTrajectory::isCompatibleWith(const Model& model) {
     }
     // TODO number of constraints.
 
+    return true;
+}
+
+bool StatesTrajectory::isConsistent(const SimTK::State& stateA,
+                                    const SimTK::State& stateB) {
+    if (stateA.getNumSubsystems() != stateB.getNumSubsystems()) {
+        return false;
+    }
+
+    // State variables.
+    if (stateA.getNQ() != stateB.getNQ()) {
+        return false;
+    }
+    if (stateA.getNU() != stateB.getNU()) {
+        return false;
+    }
+    if (stateA.getNZ() != stateB.getNZ()) {
+        return false;
+    }
+
+    // Constraints.
+    if (stateA.getNQErr() != stateB.getNQErr()) {
+        return false;
+    }
+    if (stateA.getNUErr() != stateB.getNUErr()) {
+        return false;
+    }
+    if (stateA.getNUDotErr() != stateB.getNUDotErr()) {
+        return false;
+    }
+    if (stateA.getNMultipliers() != stateB.getNMultipliers()) {
+        return false;
+    }
+
+    // Events.
+    if (stateA.getNEventTriggers() != stateB.getNEventTriggers()) {
+        return false;
+    }
+
+    // Per-subsystem quantities.
+    // TODO we could get rid of the total-over-subsystems checks above, but
+    // those checks would let us exit earlier.
+    for (SimTK::SubsystemIndex isub(0); isub < stateA.getNumSubsystems();
+            ++isub) {
+        if (stateA.getNQ(isub) != stateB.getNQ(isub)) {
+            return false;
+        }
+        if (stateA.getNU(isub) != stateB.getNU(isub)) {
+            return false;
+        }
+        if (stateA.getNZ(isub) != stateB.getNZ(isub)) {
+            return false;
+        }
+        if (stateA.getNQErr(isub) != stateB.getNQErr(isub)) {
+            return false;
+        }
+        if (stateA.getNUErr(isub) != stateB.getNUErr(isub)) {
+            return false;
+        }
+        if (stateA.getNUDotErr(isub) != stateB.getNUDotErr(isub)) {
+            return false;
+        }
+        if (stateA.getNMultipliers(isub) != stateB.getNMultipliers(isub)) {
+            return false;
+        }
+        for(SimTK::Stage stage = SimTK::Stage::LowestValid;
+                stage <= SimTK::Stage::HighestRuntime; ++stage) {
+            if (stateA.getNEventTriggersByStage(isub, stage) !=
+                    stateB.getNEventTriggersByStage(isub, stage)) {
+                return false;
+            }
+        }
+    }
     return true;
 }
 

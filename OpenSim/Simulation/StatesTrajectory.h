@@ -312,6 +312,26 @@ public:
     /// @}
 
 private:
+
+    /** Checks if two states have the same number of state variables,
+     * constraints, etc. Returns true if the following quantities are the same
+     * for both states:
+     * - number of generalized coordinates (Q's)
+     * - number of generalized speeds (U's)
+     * - number of auxiliary state variables (Z's)
+     * - number of position constraints (QErr's)
+     * - number of velocity constraints (UErr's)
+     * - number of acceleration constraints (UDotErr's)
+     * - number of constraint Lagrange multipliers
+     * - number of event triggers
+     *
+     * Returns false otherwise.
+     */
+    // TODO this function should be pushed to the SimTK::State class, so that
+    // the check can evolve with the State class.
+    static bool isConsistent(const SimTK::State& stateA,
+                             const SimTK::State& stateB);
+
     std::vector<SimTK::State> m_states;
 
 public:
