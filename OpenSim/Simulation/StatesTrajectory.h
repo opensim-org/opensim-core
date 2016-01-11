@@ -362,7 +362,7 @@ public:
         }
     };
     
-    /** TODO copy documentation with fancy doxygen syntax? */
+    /** Thrown by createFromStatesStorage(). */
     class NonUniqueColumnsInStatesStorage : public OpenSim::Exception {
     public:
         NonUniqueColumnsInStatesStorage(const std::string& file, size_t line,
@@ -371,7 +371,7 @@ public:
         }
     };
     
-    /** TODO */
+    /** Thrown by createFromStatesStorage(). */
     class StatesStorageIsInDegrees : public OpenSim::Exception {
     public:
         StatesStorageIsInDegrees(const std::string& file, size_t line,
@@ -383,7 +383,7 @@ public:
         }
     };
     
-    /** TODO */
+    /** Thrown by createFromStatesStorage(). */
     class VaryingNumberOfStatesPerRow : public OpenSim::Exception {
     public:
         VaryingNumberOfStatesPerRow(const std::string& file, size_t line,
