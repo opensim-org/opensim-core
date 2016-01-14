@@ -36,20 +36,30 @@ class Storage;
 class Model;
 
 
-// This class is part of OpenSim instead of Simbody since Simbody users are
-// likely to be interested in a more general State container that doesn't
-// assume the states are sequential in time.
+// Design note: This class is part of OpenSim instead of Simbody since Simbody
+// users are likely to be interested in a more general State container that
+// doesn't assume the states are sequential in time.
 
 /** A sequence of SimTK::State%s that can be saved to a plain-text (OSTATES)
- * file.  The trajectory can also be populated from such a file. The states
- * within the trajectory should be ordered nondecreasing in time, though this
- * is only weakly enforced. You may obtain a StatesTrajectory from a
- * simulation, or other numerical methods whose task is to produce a trajectory
- * of states.
+ * file.  The trajectory can also be populated from such a file. You may obtain
+ * a StatesTrajectory from a simulation, or other numerical methods whose task
+ * is to produce a trajectory of states.
  *
  * This class was introduced in OpenSim version 4.0, and enables scripting
  * (Python/MATLAB) and C++ users to postprocess their results much more
  * flexibly than with an Analysis.
+ *
+ * ### Guarantees
+ * This class is designed to ensure the following:
+ * - The states are ordered nondecreasing in time (adjacent states *can* have
+ *   the same time).
+ * - All states in the trajectory are consistent with each other (see
+ *   isConsistent()).
+ *
+ * @note These gaurantees apply when using this class through C++, Java,
+ * or the %OpenSim GUI, but **not** through Python or MATLAB. This is because
+ * Python and MATLAB do not enforce constness and thus allow modifying the
+ * trajectory.
  *
  * ### Using with a %Model 
  * A StatesTrajectory is not very useful on its own, since neither the
@@ -92,13 +102,13 @@ class Model;
  * (continuous) state variables | yes
  * discrete state variables     | yes
  * modeling options             | yes
- * cache variables              | no
+ * cache variables              | no (TODO)
  *
  * The cache variables (e.g., total system mass, control signals) are not saved
  * to the OSTATES file because they can be regenerated from the other data and
  * the model.
  *
- * OpenSim::Object%s (Model OSIM files, Tool setup files) also use an
+ * %OpenSim Object%s (Model OSIM files, Tool setup files) also use an
  * XML format, but that format is *completely unrelated* to the XML format used
  * for OSTATES files.
  *
@@ -278,6 +288,18 @@ public:
 
     /// @name Checks for integrity
     /// @{
+
+    /** Checks isNondecreasingInTime() and isConsistent().
+     * The design of this class is such that this method should always return
+     * true. This check may be more useful in Python or MATLAB, in which it's
+     * possible to edit the trajectory such that this method could return
+     * false.  */
+    // TODO better name?
+    bool hasIntegrity() const;
+
+    /** Returns true if times are non-decreasing; false otherwise. */
+    bool isNondecreasingInTime() const;
+
     /** Checks if times are non-decreasing and all the states have the same
      * number of state variables, constraints, etc. Returns true if the state
      * times are non-decreasing and if the following quantities are the same
@@ -293,12 +315,12 @@ public:
      *
      * Returns false otherwise.
      */
-    // TODO should we check for consistency whenever appending?
     // TODO an option to throw an exception with detailed information about the
     // mismatch?
     bool isConsistent() const;
+
     /** Weak check for if the trajectory can be used with the given model.
-     * Returns true if the trajectory is isConsistent() and if the following
+     * Returns true if the trajectory isConsistent() and if the following
      * quantities are the same:
      * - number of model state variables and number of Y's in the state 
      * - number of coordinates in the model and number of Q's in state
@@ -326,6 +348,9 @@ private:
      * - number of event triggers
      *
      * Returns false otherwise.
+     *
+     * This method does NOT check for any relationship between the times in the
+     * two states.
      */
     // TODO this function should be pushed to the SimTK::State class, so that
     // the check can evolve with the State class.
@@ -335,6 +360,21 @@ private:
     std::vector<SimTK::State> m_states;
 
 public:
+
+    /** Thrown when trying to append a state that is not consistent with the
+     * rest of the trajectory. */
+    class InconsistentState : public OpenSim::Exception {
+    public:
+        InconsistentState(const std::string& file, size_t line,
+                const std::string& func, const double& stateTime) :
+                OpenSim::Exception(file, line, func) {
+            std::ostringstream msg;
+            msg << "Cannot append the provided state (time " <<
+                stateTime << " seconds) to the trajectory because it is " <<
+                "inconsistent with the trajectory.";
+            addMessage(msg.str());
+        }
+    };
 
     /** Thrown when trying to create a StatesTrajectory from a states Storage, and
      * the Storage does not contain a column for every continuous state variable.

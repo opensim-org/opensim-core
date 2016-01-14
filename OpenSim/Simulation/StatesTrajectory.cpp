@@ -33,14 +33,39 @@ size_t StatesTrajectory::getSize() const {
 
 void StatesTrajectory::append(const SimTK::State& state) {
     if (!m_states.empty()) {
+
         SimTK_APIARGCHECK2_ALWAYS(m_states.back().getTime() <= state.getTime(),
                 "StatesTrajectory", "append", 
                 "New state's time (%f) must be equal to or greater than the "
                 "time for the last state in the trajectory (%f).",
                 state.getTime(), m_states.back().getTime()
                 );
+
+        // We assume the trajectory (before appending) is already consistent, 
+        // so we only need to check consistency with a single state in the
+        // trajectory.
+        OPENSIM_THROW_IF(!isConsistent(m_states.back(), state),
+          InconsistentState, state.getTime());
     }
     m_states.push_back(state);
+}
+
+bool StatesTrajectory::hasIntegrity() const {
+    return isNondecreasingInTime() && isConsistent();
+}
+
+bool StatesTrajectory::isNondecreasingInTime() const {
+    // An empty or size-1 trajectory necessarily has nondecreasing times.
+    if (getSize() <= 1) return true;
+
+    for (int itime = 1; itime < getSize(); ++itime) {
+
+        if (get(itime).getTime() < get(itime - 1).getTime()) {
+            return false;
+        }
+
+    }
+    return true;
 }
 
 bool StatesTrajectory::isConsistent() const {
@@ -50,14 +75,8 @@ bool StatesTrajectory::isConsistent() const {
     const auto& state0 = get(0);
 
     for (int itime = 1; itime < getSize(); ++itime) {
-        const auto& curState = get(itime);
 
-        // Times are non-decreasing.
-        if (curState.getTime() < get(itime - 1).getTime()) {
-            return false;
-        }
-
-        if (!isConsistent(state0, curState)) {
+        if (!isConsistent(state0, get(itime))) {
             return false;
         }
 

@@ -36,8 +36,8 @@ using namespace SimTK;
 // TODO get rid of sequential invariant, or get better at enforcing it? Just
 // allow checking if it's true?
 
-// TODO option to fill out a statestrajectory muscle states by equilibrating.
-// TODO allow removing states.
+// TODO check that we cannot append inconsistent states.
+
 // TODO append two StateTrajectories together.
 // TODO test modeling options (locked coordinates, etc.)
 // TODO store a model within a StatesTrajectory.
@@ -600,23 +600,28 @@ void testIntegrityChecks() {
         states.append(state1);
 
         SimTK_TEST(states.isConsistent());
+        SimTK_TEST(states.isNondecreasingInTime());
+        SimTK_TEST(states.hasIntegrity());
 
         states[1].setTime(0.2);
 
-        SimTK_TEST(!states.isConsistent());
+        SimTK_TEST(states.isConsistent());
+        SimTK_TEST(!states.isNondecreasingInTime());
+        SimTK_TEST(!states.hasIntegrity());
     }
 
+    // Consistency and compatibility with a model.
     {
         StatesTrajectory states;
         // An empty trajectory is consistent.
-        states.isConsistent();
+        SimTK_TEST(states.isConsistent());
 
         // A length-1 trajectory is consistent.
         states.append(s26);
-        states.isConsistent();
+        SimTK_TEST(states.isConsistent());
 
         // This trajectory is compatible with the arm26 model.
-        states.isCompatibleWith(arm26);
+        SimTK_TEST(states.isCompatibleWith(arm26));
 
         // Not compatible with gait2354 model.
         // Ensures a lower-dimensional trajectory can't pass for a higher
@@ -626,8 +631,10 @@ void testIntegrityChecks() {
         // The checks still work with more than 1 state.
         states.append(s26);
         states.append(s26);
-        states.isConsistent();
-        states.isCompatibleWith(arm26);
+        SimTK_TEST(states.isNondecreasingInTime());
+        SimTK_TEST(states.isConsistent());
+        SimTK_TEST(states.hasIntegrity());
+        SimTK_TEST(states.isCompatibleWith(arm26));
         SimTK_TEST(!states.isCompatibleWith(gait2354));
     }
 
@@ -637,25 +644,31 @@ void testIntegrityChecks() {
 
         // Reverse of the previous check; to ensure that a larger-dimensional
         // trajectory can't pass for the smaller dimensional model.
-        states.isCompatibleWith(gait2354);
+        SimTK_TEST(states.isCompatibleWith(gait2354));
         SimTK_TEST(!states.isCompatibleWith(arm26));
 
         // Check still works with more than 1 state.
         states.append(s2354);
         states.append(s2354);
-        states.isConsistent();
-        states.isCompatibleWith(gait2354);
+        SimTK_TEST(states.isNondecreasingInTime());
+        SimTK_TEST(states.isConsistent());
+        SimTK_TEST(states.hasIntegrity());
+        SimTK_TEST(states.isCompatibleWith(gait2354));
         SimTK_TEST(!states.isCompatibleWith(arm26));
     }
 
     {
-        // No issue when just appending inconsistent states.
+        // Cannot append inconsistent states.
         StatesTrajectory states;
         states.append(s26);
-        states.append(s2354);
+        SimTK_TEST_MUST_THROW_EXC(states.append(s2354),
+                StatesTrajectory::InconsistentState);
 
-        // Consistency check fails.
-        SimTK_TEST(!states.isConsistent());
+        // Same check, but swap the models.
+        StatesTrajectory states2;
+        states2.append(s2354);
+        SimTK_TEST_MUST_THROW_EXC(states2.append(s26),
+                StatesTrajectory::InconsistentState);
     }
 
     // TODO Show weakness of the test: two models with the same number of Q's, U's,
