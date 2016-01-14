@@ -40,7 +40,7 @@ class Model;
 // users are likely to be interested in a more general State container that
 // doesn't assume the states are sequential in time.
 
-/** A sequence of SimTK::State%s that can be saved to a plain-text (OSTATES)
+/** A sequence of SimTK::State%s that can be saved to a plain-text OSTATES
  * file.  The trajectory can also be populated from such a file. You may obtain
  * a StatesTrajectory from a simulation, or other numerical methods whose task
  * is to produce a trajectory of states. Users can modify the trajectory by
@@ -81,7 +81,7 @@ class Model;
  * scientific study.
  *
  * To increase your confidence that a StatesTrajectory matches a given Model,
- * you can perform some (weak) checks with isCompatibleWith().
+ * you can perform some weak checks with isCompatibleWith().
  *
  * TODO acceleration-level calculations?
  *
@@ -239,9 +239,8 @@ public:
     /** Returns true if times are non-decreasing; false otherwise. */
     bool isNondecreasingInTime() const;
 
-    /** Checks if times are non-decreasing and all the states have the same
-     * number of state variables, constraints, etc. Returns true if the state
-     * times are non-decreasing and if the following quantities are the same
+    /** Checks if the states have the same number of state variables,
+     * constraints, etc. Returns true if the following quantities are the same
      * for all states in the trajectory:
      * - number of generalized coordinates (Q's)
      * - number of generalized speeds (U's)

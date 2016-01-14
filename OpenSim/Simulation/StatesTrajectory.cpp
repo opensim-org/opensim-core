@@ -295,9 +295,6 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     }
 
     return states;
-
-    // TODO Adjust configuration to match constraints and other goals?
-    //      model.assemble(s);
 }
 
 StatesTrajectory StatesTrajectory::createFromStatesStorage(
