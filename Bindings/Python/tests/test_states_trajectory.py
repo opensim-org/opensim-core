@@ -6,7 +6,7 @@ import opensim as osim
 test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
                         'tests')
 
-# TODO __setitem__
+# TODO add more tests of the integrity checks.
 
 class TestStatesTrajectory(unittest.TestCase):
     states_sto_fname = "test_states_trajectory_gait1018_states.sto"
@@ -106,6 +106,33 @@ class TestStatesTrajectory(unittest.TestCase):
         # TODO this exception message could be better...
         self.assertRaises(RuntimeError, lambda: states[2].getTime())
 
+    def test_integrity_checks(self):
+        model = osim.Model(os.path.join(test_dir,
+            "gait10dof18musc_subject01.osim"))
+        state = model.initSystem()
+        states = osim.StatesTrajectory()
+        states.append(state)
+        state.setTime(1.0)
+        states.append(state)
+        self.assertTrue(states.isNondecreasingInTime())
+        self.assertTrue(states.isConsistent())
+        self.assertTrue(states.hasIntegrity())
+
+        # Cannot append a state with an earlier time than the last one.
+        state.setTime(0.5)
+        self.assertRaises(RuntimeError, states.append, state)
+
+        # However, since python doesn't have constness, we can edit the time of
+        # a state in the trajectory.
+        state.setTime(1.5)
+        states.append(state)
+        self.assertTrue(states.isNondecreasingInTime())
+        states.back().setTime(0.25)
+        self.assertFalse(states.isNondecreasingInTime())
+        self.assertTrue(states.isConsistent())
+        self.assertFalse(states.hasIntegrity())
+
+        # TODO check violating isConsistent() (might need a different model).
 
 
 

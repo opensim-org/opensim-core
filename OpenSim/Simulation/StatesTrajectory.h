@@ -43,7 +43,9 @@ class Model;
 /** A sequence of SimTK::State%s that can be saved to a plain-text (OSTATES)
  * file.  The trajectory can also be populated from such a file. You may obtain
  * a StatesTrajectory from a simulation, or other numerical methods whose task
- * is to produce a trajectory of states.
+ * is to produce a trajectory of states. Users can modify the trajectory by
+ * appending states to it, but users cannot modify the individual states that
+ * are already in the trajectory.
  *
  * This class was introduced in OpenSim version 4.0, and enables scripting
  * (Python/MATLAB) and C++ users to postprocess their results much more
@@ -85,14 +87,10 @@ class Model;
  *
  * ### File format
  * StatesTrajectory files use the file extension `.OSTATES`, with the XML
- * format. Therefore, you can edit a StatesTrajectory file in a typical text
- * editing program, or in Python/MATLAB using XML libraries. However, the
- * easiest way to modify an OSTATES file is to load it as a StatesTrajectory
- * object (in C++, Python, MATLAB), modify the StatesTrajectory object, and
- * write it to an OSTATES again. This only allows limited types of modification
- * (appending SimTK::State%s, editing state variable values), and does not
- * allow more drastic modifications like removing or adding state variables in
- * each SimTK::State.
+ * format. Therefore, you could theoretically edit a StatesTrajectory file in
+ * a typical text editing program, or in Python/MATLAB using XML libraries
+ * (such a process is is likely to be painful; consider using the
+ * createFromStatesStorage() utility instead).
  *
  * A SimTK::State object contains many different types of data, but only some
  * are saved into the OSTATES file:
@@ -156,14 +154,6 @@ class Model;
  * }
  * @endcode
  *
- * If you have a modifiable (non-const) trajectory, you could also modify
- * the individual states:
- * @code{.cpp}
- * for (auto& state : states) {
- *     model.setStateVariableValue(state, "knee/flexion/value", 1.0);
- * }
- * @endcode
- *
  */
 class OSIMSIMULATION_API StatesTrajectory {
 public:
@@ -173,7 +163,7 @@ public:
     /** The number of SimTK::State%s in the trajectory. */
     size_t getSize() const;
 
-    /// @name Accessing and modifying individual SimTK::State%s
+    /// @name Accessing individual SimTK::State%s
     /// @{
     /** Get a const reference to the state at a given index in the trajectory.
      * Here's an example of getting a state variable value from the first state
@@ -190,10 +180,6 @@ public:
         return m_states[index];
     }
     /** Get a const reference to the state at a given index in the trajectory.
-     *  
-     * Use this instead of upd() if you don't want to accidentally edit the
-     * provided state (though, in Python and MATLAB, both get() and upd() allow
-     * you to modify the provided state.
 
      * @throws std::out_of_range if the index is greater than the size of the
      *                           trajectory.
@@ -210,68 +196,21 @@ public:
         return m_states.back();
     }
 
-    /** Get a modifiable reference to the state at a given index in the
-     * trajectory.
-     * Here's an example of setting a state variable value in the first state
-     * in the trajectory.
-     * @code{.cpp}
-     * Model model("subject01.osim");
-     * StatesTrajectory states = getStatesTrajectorySomehow();
-     * auto& state = states[0];
-     * // The following line modifies the first state in `states`:
-     * model.setStateVariableValue(state, "knee/flexion/value", 0.5);
-     * @endcode
-     * This function does not check if the index is larger than the
-     * size of the trajectory; see upd() if you want this check. */
-    SimTK::State& operator[](size_t index) {
-        return m_states[index];
-    }
-    /** Get a modifiable reference to the state at a given index in the
-     * trajectory.
-     *
-     * Use this instead of get() if you want to edit the provided state.
-     * However, you can only use this method if your StatesTrajectory is
-     * modifiable (non-const).
-     *
-     * @throws std::out_of_range if the index is greater than the size of the
-     *                           trajectory.
-     */
-    SimTK::State& upd(size_t index) {
-        return m_states.at(index);
-    }
-    /** Get a modifiable reference to the first state in the trajectory. */
-    SimTK::State& front() { 
-        return m_states.front();
-    }
-    /** Get a modifiable reference to the last state in the trajectory. */
-    SimTK::State& back() { 
-        return m_states.back();
-    }
-
     /// @}
     
-    /** Iterator type that allows modifying the trajectory. Most users do
-     * not need to understand what this is. */
-    typedef std::vector<SimTK::State>::iterator iterator;
     /** Iterator type that does not allow modifying the trajectory.
      * Most users do not need to understand what this is. */
     typedef std::vector<SimTK::State>::const_iterator const_iterator;
 
-    /** @name Iterating through the trajectory
-     * @{ */
-    /** Iterator pointing to first SimTK::State, only available if the
-     * trajectory is modifiable (non-const). */
-    iterator begin() { return m_states.begin(); }
-    /** Iterator pointing to the end of the trajectory, only available if the
-     * trajectory is modifiable (non-const). */
-    iterator end() { return m_states.end(); }
+    /// @name Iterating through the trajectory
+    /// @{
 
     /** Iterator pointing to first SimTK::State; does not allow modifying the
      * states. */
-    const_iterator cbegin() const { return m_states.cbegin(); }
+    const_iterator begin() const { return m_states.cbegin(); }
     /** Iterator pointing to end of the trajectory; does not allow modifying the
      * states. */
-    const_iterator cend() const { return m_states.cend(); }
+    const_iterator end() const { return m_states.cend(); }
     /// @}
 
     /// @name Populating the trajectory with states

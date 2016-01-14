@@ -33,10 +33,6 @@ using namespace SimTK;
 // TODO detailed exceptions when integrity checks fail.
 // TODO currently, one gets segfaults if state is not realized.
 // TODO accessing acceleration-level outputs.
-// TODO get rid of sequential invariant, or get better at enforcing it? Just
-// allow checking if it's true?
-
-// TODO check that we cannot append inconsistent states.
 
 // TODO append two StateTrajectories together.
 // TODO test modeling options (locked coordinates, etc.)
@@ -364,12 +360,13 @@ void testFromStatesStorageUniqueColumnLabels() {
             StatesTrajectory::NonUniqueColumnsInStatesStorage);
 
     // TODO unique even considering old and new formats for state variable
-    // names (/value and /speed).
+    // names (/value and /speed) in the same file.
 }
 
 void testFromStatesStoragePre40CorrectStates() {
     // This test is very similar to testFromStatesStorageGivesCorrectStates
-    // TODO could avoid duplication since getStateIndex handles pre-4.0 names.
+    // TODO could avoid the duplicate function since getStateIndex handles
+    // pre-4.0 names.
 
     // Read in trajectory.
     // -------------------
@@ -576,8 +573,6 @@ void testBoundsCheck() {
     SimTK_TEST_MUST_THROW_EXC(states.get(4), std::out_of_range);
     SimTK_TEST_MUST_THROW_EXC(states.get(states.getSize() + 100),
             std::out_of_range);
-    SimTK_TEST_MUST_THROW_EXC(states.upd(states.getSize() + 100),
-            std::out_of_range);
 }
 
 void testIntegrityChecks() {
@@ -603,7 +598,9 @@ void testIntegrityChecks() {
         SimTK_TEST(states.isNondecreasingInTime());
         SimTK_TEST(states.hasIntegrity());
 
-        states[1].setTime(0.2);
+        // Users should never do this const cast; it's just for the sake of
+        // the test.
+        const_cast<SimTK::State*>(&states[1])->setTime(0.2);
 
         SimTK_TEST(states.isConsistent());
         SimTK_TEST(!states.isNondecreasingInTime());
@@ -675,34 +672,6 @@ void testIntegrityChecks() {
     // and Z's both pass the check. 
 }
 
-void testModifyStates() {
-    // TODO when we have a proper states serialization, use that instead of a
-    // STO file.
-    Model model("gait2354_simbody.osim");
-    model.initSystem();
-    // Test the convenience variant that takes a filename directly.
-    StatesTrajectory states = StatesTrajectory::
-        createFromStatesStorage(model, statesStoFname);
-
-    // Test modifying a single state variable value at all times.
-    for (auto& state : states) {
-        auto& coord0 = model.getCoordinateSet()[0];
-        coord0.setValue(state, 2.0 + coord0.getValue(state));
-    }
-
-    // Test replacing an entire State element.
-    // TODO this is probably not desirable, as it allows violating the ordering
-    // of the trajectory.
-    const double time15 = states[15].getTime();
-    states[30] = states[15];
-    SimTK_TEST_EQ(states[30].getTime(), time15);
-
-    const double time20 = states[20].getTime();
-    states.upd(40) = states[20];
-    SimTK_TEST_EQ(states[40].getTime(), time20);
-
-    // TODO print state trajectory.
-}
 
 int main() {
     SimTK_START_TEST("testStatesTrajectory");
@@ -735,7 +704,6 @@ int main() {
         SimTK_SUBTEST1(testFromStatesStorageInconsistentModel, statesStoFname);
         SimTK_SUBTEST(testFromStatesStorageUniqueColumnLabels);
         // TODO SimTK_SUBTEST(testEqualityOperator);
-        SimTK_SUBTEST(testModifyStates); // TODO should move toward the top.
         SimTK_SUBTEST(testFromStatesStorageAllRowsHaveSameLength);
 
     SimTK_END_TEST();
