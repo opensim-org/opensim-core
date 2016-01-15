@@ -92,15 +92,6 @@ before_install:
   # Put Simbody in ~/simbody (-q: quiet).
   - unzip -q $SIMBODYZIP -d ~
 
-  ## Install BTK
-  - cd
-  - git clone https://github.com/klshrinidhi/BTKCore.git
-  - cd BTKCore
-  - mkdir build
-  - cd build
-  - cmake ../ -DCMAKE_INSTALL_PREFIX=~/BTKCore/install -DBUILD_SHARED_LIBS=ON
-  - make install
-
   ## Install SWIG to build Java/python wrapping.
   - if [[ "$WRAP" = "on" ]]; then if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pcre; fi; fi
   - if [[ "$WRAP" = "on" ]]; then mkdir ~/swig-source && cd ~/swig-source; fi
@@ -124,6 +115,16 @@ before_install:
   - if [ "$BTYPE" = "Debug" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testInitState|testPrescribedForce|testInducedAccelerations|testAssemblySolver|testCMC|testOptimizationExample|testComponents|testForward"; fi
 
 install:
+  ## Install BTK
+  - cd
+  - git clone https://github.com/klshrinidhi/BTKCore.git
+  - cd BTKCore
+  - mkdir build
+  - cd build
+  - cmake ../ -DCMAKE_INSTALL_PREFIX=~/BTKCore/install -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=$BTYPE
+  - make -jNPROC install
+  - cd
+
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
   # Configure OpenSim.
   - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/" -DBTK_DIR=~/BTKCore/install/share/btk-0.4dev
