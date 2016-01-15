@@ -98,8 +98,8 @@ before_install:
   - cd BTKCore
   - mkdir build
   - cd build
-  - cmake ../ -DCMAKE_INSTALL_PREFIX=~/BTKCore/install
-  - make install
+  - cmake ../ -DCMAKE_INSTALL_PREFIX=~/BTKCore/install -DBUILD_SHARED_LIBS=ON
+  - make -jNPROC install
 
   ## Install SWIG to build Java/python wrapping.
   - if [[ "$WRAP" = "on" ]]; then if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pcre; fi; fi
