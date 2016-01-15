@@ -122,7 +122,7 @@ install:
   - mkdir build
   - cd build
   - cmake ../ -DCMAKE_INSTALL_PREFIX=~/BTKCore/install -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=$BTYPE
-  - make -jNPROC install
+  - make -j$NPROC install
   - cd
 
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
