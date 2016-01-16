@@ -118,7 +118,7 @@ install:
   ## Install BTK
   - cmake --version
   - cd
-  - git clone https://github.com/klshrinidhi/BTKCore.git
+  - git clone --branch=cmake-macosx-rpath https://github.com/chrisdembia/BTKCore.git
   - cd BTKCore
   - mkdir build
   - cd build
