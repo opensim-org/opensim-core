@@ -116,6 +116,7 @@ before_install:
 
 install:
   ## Install BTK
+  - cmake --version
   - cd
   - git clone https://github.com/klshrinidhi/BTKCore.git
   - cd BTKCore
