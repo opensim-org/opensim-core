@@ -40,7 +40,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
-using SimTK::Vec3; using SimTK::State; using SimTK::Vector; using SimTK::Xml;
+using SimTK::Vec3; using SimTK::State; using SimTK::Vector;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -62,7 +62,7 @@ TransformAxis::TransformAxis(const Array<string>& coordNames,
     setAxis(axis);
 }
 // Constructor from XML node.
-TransformAxis::TransformAxis(Xml::Element& aNode) {
+TransformAxis::TransformAxis(SimTK::Xml::Element& aNode) {
     setNull();
     constructProperties();
     updateFromXMLNode(aNode);
@@ -182,7 +182,7 @@ void TransformAxis::setFunction(const OpenSim::Function& func)
 
 
 void TransformAxis::updateFromXMLNode
-   (Xml::Element& node, int versionNumber)
+   (SimTK::Xml::Element& node, int versionNumber)
 {
     // Version before refactoring spatialTransform.
     // TODO: this is handled in CustomJoint's updateFromXMLNode() method
