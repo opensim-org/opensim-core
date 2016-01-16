@@ -136,7 +136,7 @@ install:
   - make -j$NPROC;
 
 script:
-  - otool -L testC3DFileAdapter
+  - otool -l testC3DFileAdapter
   # Test OpenSim.
   # TODO On Debug, we need to tell travis not to timeout if it doesn't get
   # any output for more than 10 minutes. We do this using "travis_wait".
