@@ -68,6 +68,12 @@ before_install:
   # to use the new gcc.
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
 
+  - if [ "$CXX" == "clang++" ]; then deb http://llvm.org/apt/jessie/ llvm-toolchain-jessie-3.7 main; fi
+  - if [ "$CXX" == "clang++" ]; then sudo apt-get update; fi
+  - if [ "$CXX" == "clang++" ]; then sudo apt-get install clang-3.7; fi
+  - if [ "$CXX" == "clang++" ]; then export CC="clang-3.7"; fi
+  - if [ "$CXX" == "clang++" ]; then export CXX="clang++-3.7"; fi
+
   ## Set up ccache.
   # Lots of this is borrowed from https://github.com/weitjong/Urho3D/blob/master/.travis.yml.
   # Put /usr/lib/ccache on the path.
