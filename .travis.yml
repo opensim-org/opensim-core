@@ -116,9 +116,8 @@ before_install:
 
 install:
   ## Install BTK
-  - cmake --version
   - cd
-  - git clone --branch=cmake-macosx-rpath https://github.com/chrisdembia/BTKCore.git
+  - git clone https://github.com/klshrinidhi/BTKCore.git
   - cd BTKCore
   - mkdir build
   - cd build
@@ -136,7 +135,6 @@ install:
   - make -j$NPROC;
 
 script:
-  - otool -l testC3DFileAdapter
   # Test OpenSim.
   # TODO On Debug, we need to tell travis not to timeout if it doesn't get
   # any output for more than 10 minutes. We do this using "travis_wait".
