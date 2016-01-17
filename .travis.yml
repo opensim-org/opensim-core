@@ -74,6 +74,9 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "clang++" ]; then sudo apt-get install -y --allow-unauthenticated $CLANG_CC; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "clang++" ]; then export  CC="$CLANG_CC"; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "clang++" ]; then export CXX="$CLANG_CXX"; fi
+  # Clang produces so many warnings that travis says they are too long to display. So suppress warnings.
+  - if [ "$CC"  == "$CLANG_CC" ];  then export CMAKE_CC_FLAGS="-w"; fi
+  - if [ "$CXX" == "$CLANG_CXX" ]; then export CMAKE_CXX_FLAGS="-w"; fi
   ################################### Setup latest compilers for Linux (End)
 
   ## Set up ccache.
@@ -126,7 +129,7 @@ install:
 
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
   # Configure OpenSim.
-  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/"
+  - cmake $TRAVIS_BUILD_DIR -DCMAKE_CC_FLAGS="$CMAKE_CC_FLAGS" -DCMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS" -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/"
   # Build OpenSim.
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
   - if [[ "$WRAP" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PythonBindings; fi
