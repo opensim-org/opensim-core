@@ -259,7 +259,7 @@ public:
     RowVectorView getRowAtIndex(size_t index) const {
         OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
                          RowIndexOutOfRange, index, 0, _indData.size())
-        return _depData.row(index);
+        return _depData.row((int)index);
     }
 
     /** Get row corresponding to the given entry in the independent column.   
@@ -272,8 +272,7 @@ public:
         OPENSIM_THROW_IF(iter == _indData.cend(),
                          KeyNotFound, std::to_string(ind));
 
-        auto rowInd = std::distance(_indData.cbegin(), iter);
-        return _depData.row(static_cast<int>(rowInd));
+        return _depData.row((int)std::distance(_indData.cbegin(), iter));
     }
 
     /** Update row at index.                                                  
@@ -282,7 +281,7 @@ public:
     RowVectorView updRowAtIndex(size_t index) {
         OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
                          RowIndexOutOfRange, index, 0, _indData.size());
-        return _depData.updRow(index);
+        return _depData.updRow((int)index);
     }
 
     /** Update row corresponding to the given entry in the independent column.
@@ -295,7 +294,7 @@ public:
         OPENSIM_THROW_IF(iter == _indData.cend(),
                          KeyNotFound, std::to_string(ind));
 
-        return _depData.updRow(std::distance(_indData.cbegin(), iter));
+        return _depData.updRow((int)std::distance(_indData.cbegin(), iter));
     }
 
     /** Get independent column.                                               */
@@ -310,7 +309,7 @@ public:
         OPENSIM_THROW_IF(isColumnIndexOutOfRange(index),
                          ColumnIndexOutOfRange, index, 0,
                          static_cast<size_t>(_depData.ncol()));
-        return _depData.col(index);
+        return _depData.col((int)index);
     }
 
     /** Set independent column at index.                                      
@@ -321,7 +320,7 @@ public:
     void setIndependentColumnAtIndex(size_t index, const ETX& value) {
         OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
                          RowIndexOutOfRange, index, 0, _indData.size());
-        validateRow(index, value, _depData.row(index));
+        validateRow(index, value, _depData.row((int)index));
         _indData[index] = value;
     }
 
@@ -367,7 +366,8 @@ protected:
     void validateDependentsMetaData() const override {
         size_t numCols{};
         try {
-            numCols = _dependentsMetaData.getValueArrayForKey("labels").size();
+            numCols = (unsigned)_dependentsMetaData
+                                        .getValueArrayForKey("labels").size();
         } catch (KeyNotFound&) {
             OPENSIM_THROW(MissingMetaData, "labels");
         }

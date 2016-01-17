@@ -48,7 +48,6 @@
 
 using namespace OpenSim;
 using namespace std;
-using SimTK::Xml;
 using SimTK::Vec3;
 using SimTK::Transform;
 

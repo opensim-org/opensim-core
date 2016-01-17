@@ -1,4 +1,6 @@
 
+add_subdirectory(TaskSpace)
+
 file(GLOB TO_COMPILE "future*.cpp")
 
 # These executables are *not* tests.
@@ -6,7 +8,7 @@ file(GLOB TO_COMPILE "future*.cpp")
 include_directories(${OpenSim_SOURCE_DIR}
                     ${OpenSim_SOURCE_DIR}/Vendors)
 
-set(SANDBOX_FILES 
+set(SANDBOX_FILES
     "futureOrientationInverseKinematics.osim"
     "futureOrientationInverseKinematics.trc"
 )
@@ -21,5 +23,5 @@ foreach(exec_file ${TO_COMPILE})
     target_link_libraries(${_target_name} osimTools)
     set_target_properties(${_target_name} PROPERTIES
         FOLDER "Future sandbox"
-        )
+    )
 endforeach()
