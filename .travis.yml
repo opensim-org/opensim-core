@@ -4,7 +4,7 @@
 language: cpp
 
 # Use container-based infrastructure to allow caching (for ccache).
-# sudo: false
+sudo: false
     
 matrix:
   include:
@@ -40,6 +40,8 @@ addons:
     sources:
       # For gcc >= 4.8
       - ubuntu-toolchain-r-test
+      # For clang.
+      - llvm-toolchain-precise-3.7
       # For cmake >= 2.8.8 (for CMakePackageConfigHelpers)
       - kubuntu-backports
     packages:
@@ -51,7 +53,8 @@ addons:
       # and the Travis Ubuntu 12.04 machines have an older version of gcc. Even if
       # building with Clang, we need the newer libstdc++ that we get by updating to
       # gcc-4.8.  See https://github.com/travis-ci/travis-ci/issues/979.
-      - g++-4.8
+      - gcc-5
+      - clang-3.7
       # In case someone wants to check for memory leaks.
       - valgrind
       # To build doxygen documentation.
@@ -62,18 +65,19 @@ addons:
       - sshpass
 
 before_install:
+  # Latest compilers.
+  - GCC_CC="gcc-5"
+  - GCC_CXX="g++-5"
+  - CLANG_CC="clang-3.7"
+  - CLANG_CXX="clang++-3.7"
 
-  ## Set up environment variables.
-  # Only if compiling with gcc, update environment variables
-  # to use the new gcc.
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+  # Use latest gcc installed above.
+  - if [ "$CXX" == "g++" ]; then export  CC=$GCC_CC; fi
+  - if [ "$CXX" == "g++" ]; then export CXX=$GCC_CXX; fi
 
-  # Upgrade clang for linux.
-  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "clang++" ]; then sudo add-apt-repository -y 'deb http://llvm.org/apt/jessie/ llvm-toolchain-jessie-3.7 main'; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "clang++" ]; then sudo apt-get update; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "clang++" ]; then sudo apt-get install -y --allow-unauthenticated clang-3.7; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "clang++" ]; then export CC="clang-3.7"; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "clang++" ]; then export CXX="clang++-3.7"; fi
+  # Use latest clang installed above.
+  - if [ "$CXX" == "clang++" ]; then export  CC=$CLANG_CC; fi
+  - if [ "$CXX" == "clang++" ]; then export CXX=$CLANG_CXX; fi
 
   ## Set up ccache.
   # Lots of this is borrowed from https://github.com/weitjong/Urho3D/blob/master/.travis.yml.
@@ -83,8 +87,8 @@ before_install:
   # have a symlink in the ccache symlinks directory, so workaround it
   - ln -s $(which ccache) $HOME/clang && ln -s $(which ccache) $HOME/clang++ && export PATH=$HOME:$PATH
   # Without the following lines, ccache causes clang to not print in color.
-  - if [ "$CC" == "clang" ]; then export CC="clang -fcolor-diagnostics"; fi;
-  - if [ "$CXX" == "clang++" ]; then export CX="clang++ -fcolor-diagnostics"; fi;
+  - if [ "$CC"  == "$CLANG_CC" ]; then export   CC="$CLANG_CC  -fcolor-diagnostics"; fi;
+  - if [ "$CXX" == "$CLANG_CXX" ]; then export CXX="$CLANG_CXX -fcolor-diagnostics"; fi;
   
   ## Doxygen.
   # Need a doxygen that is more recent than that available through apt-get.
