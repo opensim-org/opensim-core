@@ -4,7 +4,7 @@
 language: cpp
 
 # Use container-based infrastructure to allow caching (for ccache).
-sudo: false
+# sudo: false
     
 matrix:
   include:
@@ -38,20 +38,12 @@ addons:
   # Dependencies on linux.
   apt:
     sources:
-      # For gcc >= 4.8
-      - ubuntu-toolchain-r-test
       # For cmake >= 2.8.8 (for CMakePackageConfigHelpers)
       - kubuntu-backports
     packages:
       - cmake
       # For Simbody.
       - liblapack-dev
-      # C++11 on Ubuntu. Update to gcc 4.8, which provides full C++11 support.  We
-      # use this script because if building Simbody with C++11, we need gcc-4.8,
-      # and the Travis Ubuntu 12.04 machines have an older version of gcc. Even if
-      # building with Clang, we need the newer libstdc++ that we get by updating to
-      # gcc-4.8.  See https://github.com/travis-ci/travis-ci/issues/979.
-      - g++-4.8
       # In case someone wants to check for memory leaks.
       - valgrind
       # To build doxygen documentation.
@@ -62,11 +54,27 @@ addons:
       - sshpass
 
 before_install:
+  ################################### Setup latest compilers for Linux (Begin)
+  # Latest compilers.
+  - GCC_CC="gcc-5"
+  - GCC_CXX="g++-5"
+  - CLANG_CC="clang-3.7"
+  - CLANG_CXX="clang++-3.7"
 
-  ## Set up environment variables.
-  # Only if compiling with gcc, update environment variables
-  # to use the new gcc.
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+  # Upgrade gcc for linux.
+  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "g++" ]; then sudo add-apt-repository -y 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu precise main'; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "g++" ]; then sudo apt-get update; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "g++" ]; then sudo apt-get install -y --allow-unauthenticated $GCC_CC $GCC_CXX; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "g++" ]; then export  CC="$GCC_CC"; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "g++" ]; then export CXX="$GCC_CXX"; fi
+
+  # Upgrade clang for linux.
+  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "clang++" ]; then sudo add-apt-repository -y 'deb http://llvm.org/apt/jessie/ llvm-toolchain-jessie-3.7 main'; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "clang++" ]; then sudo apt-get update; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "clang++" ]; then sudo apt-get install -y --allow-unauthenticated $CLANG_CC; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "clang++" ]; then export  CC="$CLANG_CC"; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" == "clang++" ]; then export CXX="$CLANG_CXX"; fi
+  ################################### Setup latest compilers for Linux (End)
 
   ## Set up ccache.
   # Lots of this is borrowed from https://github.com/weitjong/Urho3D/blob/master/.travis.yml.
@@ -76,8 +84,8 @@ before_install:
   # have a symlink in the ccache symlinks directory, so workaround it
   - ln -s $(which ccache) $HOME/clang && ln -s $(which ccache) $HOME/clang++ && export PATH=$HOME:$PATH
   # Without the following lines, ccache causes clang to not print in color.
-  - if [ "$CC" == "clang" ]; then export CC="clang -fcolor-diagnostics"; fi;
-  - if [ "$CXX" == "clang++" ]; then export CX="clang++ -fcolor-diagnostics"; fi;
+  - if [ "$CC"  == "$CLANG_CC" ]; then export   CC="$CLANG_CC  -fcolor-diagnostics"; fi;
+  - if [ "$CXX" == "$CLANG_CXX" ]; then export CXX="$CLANG_CXX -fcolor-diagnostics"; fi;
   
   ## Doxygen.
   # Need a doxygen that is more recent than that available through apt-get.
@@ -115,9 +123,19 @@ before_install:
   - if [ "$BTYPE" = "Debug" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testInitState|testPrescribedForce|testInducedAccelerations|testAssemblySolver|testCMC|testOptimizationExample|testComponents|testForward"; fi
 
 install:
+  ## Install BTK
+  - cd
+  - git clone https://github.com/klshrinidhi/BTKCore.git
+  - cd BTKCore
+  - mkdir build
+  - cd build
+  - cmake ../ -DCMAKE_INSTALL_PREFIX=~/BTKCore/install -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=$BTYPE
+  - make -j$NPROC install
+  - cd
+
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
   # Configure OpenSim.
-  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/"
+  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/" -DBTK_DIR=~/BTKCore/install/share/btk-0.4dev
   # Build OpenSim.
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
   - if [[ "$WRAP" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PythonBindings; fi
