@@ -206,16 +206,8 @@ public:
     /** Construct Component from a specific node in an XML document. **/
     explicit Component(SimTK::Xml::Element& aNode);
 
-    /** Copy Constructor. Required to perform custom handling of 
-        internal references to subcomonents and system indices.
-        The copy has to be connected in order to function. */
-    Component(const Component& source);
+    /** Use default copy constructor and assignment operator. */ 
 
-    /** Copy assignment.  Required to disconnect Connectors.
-        and reset indices. Musct call connect() on Component
-        after is has been assigned to another. */
-    Component& operator=(const Component &component);
-    
     /** Destructor is virtual to allow concrete Component to cleanup. **/
     virtual ~Component() {}
 
@@ -332,6 +324,8 @@ public:
      * must be done before calling this method on the top model. */
     template <typename T = Component>
     ComponentList<T> getComponentList() const {
+        Component* mutableThis = const_cast<Component*>(this);
+        mutableThis->initComponentTreeTraversal(*mutableThis);
         return ComponentList<T>(*this);
     }
 
@@ -503,7 +497,7 @@ public:
     //@} end of Component Connector Access methods
 
     /** Define OutputsIterator for convenience */
-    typedef std::map<std::string, std::unique_ptr<const AbstractOutput> >::
+    typedef std::map<std::string, SimTK::ClonePtr<AbstractOutput> >::
         const_iterator OutputsIterator;
 
     /** @name Component Inputs and Outputs Access methods
@@ -522,7 +516,7 @@ public:
         auto it = _inputsTable.find(name);
 
         if (it != _inputsTable.end()) {
-            return *it->second;
+            return it->second.getRef(); 
         }
         else {
             std::string::size_type back = name.rfind("/");
@@ -551,7 +545,7 @@ public:
         auto it = _outputsTable.find(name);
 
         if (it != _outputsTable.end()) {
-            return *it->second;
+            return it->second.getRef();
         }
         else {
             std::string::size_type back = name.rfind("/");
@@ -920,6 +914,9 @@ public:
     }
     // End of Model Component State Accessors.
     //@} 
+
+
+    void dumpSubcomponents(int depth=0) const;
 
 protected:
 
@@ -1314,7 +1311,8 @@ template <class T> friend class ComponentMeasure;
     template <typename T>
     void constructInput(const std::string& name,
         const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance) {
-        _inputsTable[name] = std::unique_ptr<AbstractInput>(new Input<T>(name, requiredAtStage));
+        _inputsTable[name] 
+            = SimTK::ClonePtr<AbstractInput>(new Input<T>(name, requiredAtStage));
     }
 
     /**
@@ -1376,7 +1374,7 @@ template <class T> friend class ComponentMeasure;
     void constructOutput(const std::string& name, 
         const std::function<T(const SimTK::State&)> outputFunction, 
         const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
-        _outputsTable[name] = std::unique_ptr<const AbstractOutput>(new
+        _outputsTable[name] = SimTK::ClonePtr<AbstractOutput>(new
                 Output<T>(name, outputFunction, dependsOn));
     }
 
@@ -1789,11 +1787,10 @@ private:
     std::map<std::string, int> _connectorsTable;
 
     // Table of Component's Inputs indexed by name.
-    std::map<std::string, std::unique_ptr<const AbstractInput> > _inputsTable;
+    std::map<std::string, SimTK::ClonePtr<AbstractInput> > _inputsTable;
 
     // Table of Component's Outputs indexed by name.
-    std::map<std::string, std::unique_ptr<const AbstractOutput> >
-        _outputsTable;
+    std::map<std::string, SimTK::ClonePtr<AbstractOutput> > _outputsTable;
 
     // Underlying SimTK custom measure ComponentMeasure, which implements
     // the realizations in the subsystem by calling private concrete methods on
@@ -1822,7 +1819,7 @@ private:
         AddedStateVariable() : StateVariable(),
             invalidatesStage(SimTK::Stage::Empty)  {}
 
-        /** Convience constructor for defining a Component added state variable */ 
+        /** Convenience constructor for defining a Component added state variable */ 
         explicit AddedStateVariable(const std::string& name, //state var name
                         const Component& owner,       //owning component
                         SimTK::Stage invalidatesStage,//stage this variable invalidates

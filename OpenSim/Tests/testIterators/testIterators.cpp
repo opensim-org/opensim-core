@@ -54,7 +54,8 @@ int main()
         std::string filename = "arm26.osim";
 
         Model model(filename);
-        model.initSystem();
+        model.dumpSubcomponents();
+
         ComponentList<Component> componentsList = model.getComponentList();
         std::cout << "list begin: " << componentsList.begin()->getName() << std::endl;
         int numComponents = 0;
@@ -115,6 +116,11 @@ int main()
         // Components = Model+3Body+3Marker+2(Joint+Coordinate)+6(Muscle+GeometryPath)
         // Should test against 1+#Bodies+#Markers+#Joints+#Constraints+#Coordinates+#Forces+#ForcesWithPath+..
         // Would that account for internal (split-bodies etc.?)
+
+        // To test states we must have added the components to the system
+        // which is done when the model creates and initializes the system
+        SimTK::State state = model.initSystem();
+
         int numJointsWithStateVariables = 0;
         ComponentList<Joint> jointsWithStates = model.getComponentList<Joint>();
         ComponentWithStateVariables myFilter;

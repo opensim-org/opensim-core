@@ -111,14 +111,12 @@ private:
 Component::Component() : Object()
 {
     constructProperty_connectors();
-    finalizeFromProperties();
 }
 
 Component::Component(const std::string& fileName, bool updFromXMLNode)
 :   Object(fileName, updFromXMLNode)
 {
     constructProperty_connectors();
-    finalizeFromProperties();
 }
 
 Component::Component(const std::string& name, Component* owner) : Component()
@@ -129,29 +127,10 @@ Component::Component(const std::string& name, Component* owner) : Component()
     }
 }
 
-Component::Component(SimTK::Xml::Element& element) 
-:   Object(element)
+Component::Component(SimTK::Xml::Element& element) : Object(element)
 {
     constructProperty_connectors();
-    finalizeFromProperties();
 }
-
-Component::Component(const Component& source) : Object(source)
-{
-    //Object copy will handle the properties table.
-    //But need to copy Component specific property indices.
-    copyProperty_connectors(source);
-    finalizeFromProperties();
-}
-
-Component& Component::operator=(const Component &component)
-{
-    // Object handles assignment of all properties
-    Super::operator=(component);
-    finalizeFromProperties();
-    return *this;
-}
-
 
 void Component::finalizeFromProperties()
 {
@@ -211,11 +190,11 @@ void Component::connect(Component &root)
             }
         }
         catch (const std::exception& x) {
-            throw Exception(getConcreteClassName() +
-                "::connect() Failed to connect connector Connector<" +
-                connector.getConnecteeTypeName() + "> of '" + getName() + "' " +
-                "as a subcomponent of " + root.getName() + ".\n Details:" 
-                + x.what());
+            throw Exception(getConcreteClassName() + "'" + getName() +"'"
+                "::connect() \nFailed to connect Connector<" +
+                connector.getConnecteeTypeName() + "> '" + connector.getName() +
+                "' as a subcomponent of " + root.getName() + 
+                ".\n Details:" + x.what());
         }
     }
 
@@ -539,10 +518,20 @@ Component& Component::updComponent(const std::string& name) const
 const Component* Component::findComponent(const std::string& name,
     const StateVariable** rsv) const
 {
+    if (name.empty()) {
+        std::string msg = "Component::findComponent cannot find a nameless subcomponent ";
+        msg +=  "within " + getConcreteClassName()+ " '" + getName() + "'.";
+        throw Exception(msg);
+    }
+
     const Component* found = NULL;
     std::string::size_type front = name.find("/");
     std::string subname = name;
     std::string remainder = "";
+
+    if (this->getName() == name) {
+        return this;
+    }
 
     // Follow the provided path
     if (front < name.length()){
@@ -1171,5 +1160,18 @@ void Component::AddedStateVariable::
 }
 
 
+void Component::dumpSubcomponents(int depth) const
+{
+    std::string tabs;
+    for (int t = 0; t < depth; ++t) {
+        tabs += "\t";
+    }
+
+    std::cout << tabs << getConcreteClassName();
+    std::cout << " '" << getName() << "'s Components:" << std::endl;
+    for (size_t i = 0; i < _components.size(); ++i) {
+        _components[int(i)]->dumpSubcomponents(depth + 1);
+    }
+}
 
 } // end of namespace OpenSim

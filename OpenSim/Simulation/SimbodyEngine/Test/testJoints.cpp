@@ -958,7 +958,7 @@ void testWeldJoint(bool randomizeBodyOrder)
     int b_order[] = {0, 1, 2, 3};
     int j_order[] = { 0, 1, 2, 3 };
     if(randomizeBodyOrder){
-        cout << " Randomizing Bodies to exercise SimbodyEngine:: connectBodies() " << endl;
+        cout << " Randomizing Bodies to exercise model's multibody graph maker " << endl;
         cout << "================================================================" << endl;
         Random::Uniform randomOrder(0, 4);
         randomOrder.setSeed(clock());
@@ -994,8 +994,15 @@ void testWeldJoint(bool randomizeBodyOrder)
 
     }
 
+    // Can add bodies in random order, but joints depending on those bodies
+    // have to be added afterwards
     for(int i=0; i<4; i++){
         osimModel->addBody(&tempBodySet[b_order[i]]);
+     }
+
+    // Add joints in any order as long as the bodies (PhysicalFrames) they
+    // must connect to exist.
+    for (int i = 0; i < 4; i++) {
         osimModel->addJoint(&tempJointSet[j_order[i]]);
     }
 
@@ -2124,7 +2131,7 @@ void testAutomaticLoopJointBreaker()
     UniversalJoint ankle("ankle", shank, ankleInTibia, zvec,
                                    foot, ankleInFoot, zvec);
 
-    // Join the foot to the floor via Weld
+    // Join the foot to the floor via a pin joint
     PinJoint footToFloor("footToFloor", foot, zvec, zvec, 
                                       ground, zvec, zvec);
 
@@ -2158,12 +2165,15 @@ void testAutomaticLoopJointBreaker()
     std::string file("testModelWithLoopJoint.osim");
     model.print(file);
 
-    
     Model loadedModel(file);
-
     SimTK::State &s2 = loadedModel.initSystem();
 
+    int ncoords2 = loadedModel.getNumCoordinates();
+    int nconstraints2 = loadedModel.getNumConstraints();
+
     ASSERT(model == loadedModel);
+
+    model.print("testModelWithLoopJoint_loadedInitSys.osim");
 
     SimTK::Vec3 acc2 = model.calcMassCenterAcceleration(s2);
 

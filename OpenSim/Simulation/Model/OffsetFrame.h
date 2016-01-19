@@ -195,6 +195,7 @@ template <class C>
 OffsetFrame<C>::OffsetFrame(const C& parent, const SimTK::Transform& offset)
     : OffsetFrame()
 {
+    this->setName(parent.getName() + "_offset_frame");
     setParentFrame(parent);
     setOffsetTransform(offset);
 }

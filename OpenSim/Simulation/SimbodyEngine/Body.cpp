@@ -49,7 +49,6 @@ using SimTK::DecorativeGeometry;
  */
 Body::Body() : PhysicalFrame()
 {
-    //_body = this;
     constructProperties();
 }
 
@@ -65,8 +64,6 @@ Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,
     set_mass(aMass);
     set_mass_center(aMassCenter);
     setInertia(aInertia);
-    // Better use name search or more robust method
-    upd_geometry(0).setFrameName(aName);
 }
 
 //_____________________________________________________________________________
@@ -395,19 +392,19 @@ SimTK::MassProperties Body::getMassProperties() const
 
 void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-    if (versionNumber < XMLDocument::getLatestVersion()){
+    if (versionNumber < XMLDocument::getLatestVersion()) {
         if (versionNumber < 30500) {
             SimTK::Vec6 newInertia(1.0, 1.0, 1.0, 0., 0., 0.);
             std::string inertiaComponents[] = { "inertia_xx", "inertia_yy", "inertia_zz", "inertia_xy", "inertia_xz", "inertia_yz" };
-            for (int i = 0; i<6; ++i){
+            for (int i = 0; i < 6; ++i) {
                 SimTK::Xml::element_iterator iIter = aNode.element_begin(inertiaComponents[i]);
-                if (iIter != aNode.element_end()){
+                if (iIter != aNode.element_end()) {
                     newInertia[i] = iIter->getValueAs<double>();
                     aNode.removeNode(iIter);
                 }
             }
             std::ostringstream strs;
-            for (int i = 0; i < 6; ++i){
+            for (int i = 0; i < 6; ++i) {
                 strs << newInertia[i];
                 if (i < 5) strs << " ";
             }
@@ -415,195 +412,8 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             SimTK::Xml::Element inertiaNode("inertia", strInertia);
             aNode.insertNodeAfter(aNode.element_end(), inertiaNode);
         }
-        if (versionNumber < 30502){
-            // Find node for <VisibleObject> remove it then create Geometry for the 
-            SimTK::Xml::element_iterator iIter = aNode.element_begin("VisibleObject");
-            if (iIter != aNode.element_end()){
-                SimTK::Xml::Element visObjElement = SimTK::Xml::Element::getAs(aNode.removeNode(iIter));
-                // Scale factors
-                SimTK::Vec3 outerScaleFactors(1.0);
-                SimTK::Xml::element_iterator outerScaleFactortIter = visObjElement.element_begin("scale_factors");
-                if (outerScaleFactortIter != visObjElement.element_end()){
-                    outerScaleFactors = outerScaleFactortIter->getValueAs<SimTK::Vec3>();
-                }
-                SimTK::Vec6 outerTransform(0.0);
-                SimTK::Xml::element_iterator outerTransformIter = visObjElement.element_begin("transform");
-                if (outerTransformIter != visObjElement.element_end()){
-                    outerTransform = outerTransformIter->getValueAs<SimTK::Vec6>();
-                }
-                
-                if (versionNumber < 20101) {
-                    SimTK::Xml::element_iterator geometryIter = visObjElement.element_begin("geometry_files");
-                    SimTK::Array_<SimTK::String> oldGeometryFiles;
-                    if (geometryIter != aNode.element_end()){
-                        geometryIter->getValueAs(oldGeometryFiles);
-                    }
-                    std::string bodyName = aNode.getRequiredAttribute("name").getValue();
-                    SimTK::Xml::Element geometrySetNode("geometry");
-                    aNode.insertNodeAfter(aNode.element_end(), geometrySetNode);
-                    // Create Mesh node for each item in oldGeometryFiles
-                    for (unsigned ng = 0; ng < oldGeometryFiles.size(); ng++) {
-                        SimTK::Xml::Element meshNode("Mesh");
-                        std::string geomName = bodyName + "_geom_" + to_string(ng);
-                        meshNode.setAttributeValue("name", geomName);
-                        SimTK::Xml::Element meshFileNode("mesh_file", oldGeometryFiles[ng]);
-                        std::stringstream localScaleStr;
-                        localScaleStr << outerScaleFactors[0] << " " << outerScaleFactors[1]
-                            << " " << outerScaleFactors[2];
-                        SimTK::Xml::Element scaleFactorsNode("scale_factors", localScaleStr.str());
-                        meshNode.insertNodeAfter(meshNode.element_end(), scaleFactorsNode);
-                        meshNode.insertNodeAfter(meshNode.element_end(), meshFileNode);
-                        XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", bodyName);
-                        geometrySetNode.insertNodeAfter(geometrySetNode.element_end(), meshNode);
-                    }
-                }
-                else {
-                    SimTK::Xml::element_iterator geomSetIter = visObjElement.element_begin("GeometrySet");
-                    if (geomSetIter != visObjElement.element_end()){
-                        convertDisplayGeometryToGeometryXML(aNode, outerScaleFactors, outerTransform, *geomSetIter);
-                        geomSetIter->setElementTag("geometry");
-                    }
-                }
-                // Regardless add a node for FrameGeometry to control the display of BodyFrame
-                std::string bodyName = aNode.getRequiredAttribute("name").getValue();
-                SimTK::Xml::Element bodyFrameNode("FrameGeometry");
-                bodyFrameNode.setAttributeValue("name", bodyName + "_body_frame");
-                XMLDocument::addConnector(bodyFrameNode, "Connector_Frame_", "frame", bodyName);
-                SimTK::Xml::Element appearanceNode("Appearance");
-                SimTK::Xml::Element frameRepresentation("representation");
-                frameRepresentation.setValue("0");
-                appearanceNode.insertNodeAfter(appearanceNode.element_end(), frameRepresentation);
-                bodyFrameNode.insertNodeAfter(bodyFrameNode.element_end(), appearanceNode);
-                SimTK::Xml::element_iterator geomSetIter = aNode.element_begin("geometry");
-                if (geomSetIter != aNode.element_end()){
-                    geomSetIter->insertNodeAfter(geomSetIter->node_end(), bodyFrameNode);
-                 }
-            }
-        }
     }
     Super::updateFromXMLNode(aNode, versionNumber);
-}
-
-void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
-    const SimTK::Vec3& outerScaleFactors, const SimTK::Vec6& outerTransform, 
-    SimTK::Xml::Element& geomSetElement) const
-{
-    std::string bodyName = bodyNode.getRequiredAttribute("name").getValue();
-
-    SimTK::Xml::element_iterator objectsIter = geomSetElement.element_begin("objects");
-
-    if (objectsIter != geomSetElement.element_end()){
-        SimTK::Xml::Element geometrySetNode("geometry");
-        bodyNode.insertNodeAfter(bodyNode.element_end(), geometrySetNode);
-
-        SimTK::Xml::element_iterator displayGeomIter = objectsIter->element_begin("DisplayGeometry");
-        int counter = 1;
-        while (displayGeomIter != objectsIter->element_end()){
-            // Create a <Mesh> Element and populate it
-            SimTK::Xml::Element meshNode("Mesh");
-            std::string geomName = bodyName + "_geom_" + to_string(counter);
-            meshNode.setAttributeValue("name", geomName);
-            // geometry_file
-            std::string geomFile = "";
-            SimTK::Xml::element_iterator geomFileIter = displayGeomIter->element_begin("geometry_file");
-            if (geomFileIter != displayGeomIter->element_end()){
-                geomFile = geomFileIter->getValueAs<SimTK::String>();
-            }
-            // transform
-            SimTK::Vec6 localXform(0.);
-            SimTK::Xml::element_iterator localXformIter = displayGeomIter->element_begin("transform");
-            if (localXformIter != displayGeomIter->element_end()){
-                localXform = localXformIter->getValueAs<SimTK::Vec6>();
-            }
-            if (localXform.norm() > SimTK::Eps){
-                // Create a Frame
-                std::string frameName = bodyName + "_Frame_" + to_string(counter);
-                SimTK::Xml::Element frameNode("frame_name", frameName);
-                meshNode.insertNodeAfter(meshNode.element_end(), frameNode);
-
-                SimTK::Xml::Element modelNode = bodyNode;
-                do {
-                modelNode = modelNode.getParentElement();
-                SimTK::String edump;
-                modelNode.writeToString(edump);
-                } while (modelNode.getElementTag() != "Model" && !modelNode.isTopLevelNode());
-
-                SimTK::Xml::element_iterator frameSetIter = modelNode.element_begin("FrameSet");
-                SimTK::Xml::element_iterator frameSetObjectsIter;
-                if (frameSetIter != modelNode.element_end()){
-                    frameSetObjectsIter = frameSetIter->element_begin("objects");
-                }
-                else {
-                    SimTK::Xml::Element frameSetNode("FrameSet");
-                    modelNode.insertNodeAfter(modelNode.element_end(), frameSetNode);
-                    SimTK::Xml::Element frameSetObjectsNode("objects");
-                    frameSetNode.insertNodeAfter(frameSetNode.element_end(), frameSetObjectsNode);
-                    frameSetObjectsIter = frameSetNode.element_begin("objects");
-                }
-                createFrameForXform(frameSetObjectsIter, frameName, localXform, bodyName);
-                                
-                XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", frameName);
-            }
-            else
-                XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", bodyName);
-            // scale_factor
-            SimTK::Vec3 localScale(1.);
-            SimTK::Xml::element_iterator localScaleIter = displayGeomIter->element_begin("scale_factors");
-            if (localScaleIter != displayGeomIter->element_end()){
-                localScale = localScaleIter->getValueAs<SimTK::Vec3>();
-            }
-            // Now compose scale factors and transforms and create new node to insert into bodyNode
-             SimTK::Xml::Element meshFileNode("mesh_file", geomFile);
-             std::stringstream localScaleStr;
-             localScaleStr << localScale[0] * outerScaleFactors[0] << " " << localScale[1] * outerScaleFactors[1] 
-                 << " " << localScale[2] * outerScaleFactors[2];
-             SimTK::Xml::Element scaleFactorsNode("scale_factors", localScaleStr.str());
-             meshNode.insertNodeAfter(meshNode.element_end(), scaleFactorsNode);
-             meshNode.insertNodeAfter(meshNode.element_end(), meshFileNode);
-             SimTK::Xml::Element appearanceNode("Appearance");
-             // Move color and opacity under Appearance
-             SimTK::Xml::element_iterator colorIter = displayGeomIter->element_begin("color");
-             if (colorIter != displayGeomIter->element_end()){
-                 appearanceNode.insertNodeAfter(appearanceNode.element_end(), displayGeomIter->removeNode(colorIter));
-             }
-             SimTK::Xml::element_iterator opacityIter = displayGeomIter->element_begin("opacity");
-             if (opacityIter != displayGeomIter->element_end()){
-                 appearanceNode.insertNodeAfter(appearanceNode.element_end(), displayGeomIter->removeNode(opacityIter));
-             }
-             SimTK::Xml::element_iterator reprIter = displayGeomIter->element_begin("display_preference");
-             if (reprIter != displayGeomIter->element_end()){
-                 reprIter->setElementTag("representation");
-                 if (reprIter->getValue() == "4"){
-                     // Enum changed to go 0-3 instead of 0-4
-                     SimTK::String rep = "3";
-                     reprIter->setValue(rep);
-                 }
-                 appearanceNode.insertNodeAfter(appearanceNode.element_end(), displayGeomIter->removeNode(reprIter));
-             }
-             meshNode.insertNodeAfter(meshNode.element_end(), appearanceNode);
-             // Insert Mesh into parent
-             geometrySetNode.insertNodeAfter(geometrySetNode.element_end(), meshNode);
-             displayGeomIter++;
-             counter++;
-        }
-    }
-}
-// This private method creates a frame in the owner model document with passed in name and content relative to bodyName
-void Body::createFrameForXform(const SimTK::Xml::element_iterator& frameSetIter, const std::string& frameName, const SimTK::Vec6& localXform, const std::string& bodyName) const
-{
-    SimTK::Xml::Element frameNode("PhysicalOffsetFrame");
-    frameNode.setAttributeValue("name", frameName);
-    stringstream ss;
-    ss << localXform[3] << " " << localXform[4] << " " << localXform[5];
-    SimTK::Xml::Element translationNode("translation", ss.str());
-    ss.clear();
-    ss << localXform[0] << " " << localXform[1] << " " << localXform[2];
-    SimTK::Xml::Element orientationNode("rotation", ss.str());
-    frameNode.insertNodeAfter(frameNode.element_end(), translationNode);
-    frameNode.insertNodeAfter(frameNode.element_end(), orientationNode);
-    frameSetIter->insertNodeAfter(frameSetIter->element_end(), frameNode);
-    XMLDocument::addConnector(frameNode, "Connector_PhysicalFrame_", "parent", bodyName);
-
 }
 
 Body* Body::addSlave()

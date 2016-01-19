@@ -114,7 +114,6 @@ void PathSpring::extendFinalizeFromProperties()
     Super::extendFinalizeFromProperties();
 
     GeometryPath& path = upd_GeometryPath();
-    path.setName("path");
     path.setDefaultColor(DefaultPathSpringColor);
 
     // Resting length must be greater than 0.0.

@@ -114,6 +114,9 @@ Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt)
 {
     Coordinate* coord = new Coordinate();
     coord->setMotionType(mt);
+    //Joint has control over what is the motion type during construction
+    //and it should be considered its default value
+    coord->updProperty_motion_type().setValueIsDefault(true);
     coord->setName(getName() + "_coord_"
         + std::to_string(get_CoordinateSet().getSize()));
     // CoordinateSet takes ownership

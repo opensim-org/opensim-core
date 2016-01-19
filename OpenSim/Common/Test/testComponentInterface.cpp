@@ -65,14 +65,12 @@ public:
     void add(Component* comp) {
         // add it the property list of components that owns and serializes them
         updProperty_components().adoptAndAppendValue(comp);
-        markAsSubcomponent(comp);
+        finalizeFromProperties();
     }
 
-
     // Top level connection method for all encompassing Component
-    void buildComponentTreeAndConnect() {
-        initComponentTreeTraversal(*this);
-        connect(*this);
+    void connect() {
+        Super::connect(*this);
     }
     void buildUpSystem(MultibodySystem& system) { addToSystem(system); }
 
@@ -397,6 +395,9 @@ int main() {
         bar.setName("Bar");
         theWorld.add(&bar);
 
+        Bar barEqual(bar);
+        barEqual = bar;
+
         //Configure the connector to look for its dependency by this name
         //Will get resolved and connected automatically at Component connect
         bar.updConnector<Foo>("parentFoo").set_connectee_name("Foo");
@@ -405,7 +406,7 @@ int main() {
         // add a subcomponent
         // connect internals
         ASSERT_THROW( OpenSim::Exception,
-                      theWorld.buildComponentTreeAndConnect() );
+                      theWorld.connect() );
 
 
         ComponentList<Component> worldTreeAsList = theWorld.getComponentList();
@@ -441,7 +442,7 @@ int main() {
         string connectorName = bar.updConnector<Foo>("childFoo").getConcreteClassName();
 
         // Bar should connect now
-        theWorld.buildComponentTreeAndConnect();
+        theWorld.connect();
 
         std::cout << "Iterate over only Foo's." << std::endl;
         for (auto& component : theWorld.getComponentList<Foo>()) {
@@ -508,7 +509,7 @@ int main() {
             "Model serialization->deserialization FAILED");
 
         world2->setName("InternalWorld");
-        world2->buildComponentTreeAndConnect();
+        world2->connect();
 
         world2->updComponent("Bar").getConnector<Foo>("childFoo");
         ASSERT("Foo2" ==
@@ -522,6 +523,7 @@ int main() {
         // Test copy assignment
         TheWorld world3;
         world3= *world2;
+        world3.finalizeFromProperties();
         world3.getComponent("Bar").getConnector<Foo>("parentFoo");
 
         ASSERT(world3 == (*world2), __FILE__, __LINE__, 
@@ -529,7 +531,7 @@ int main() {
 
         // Add second world as the internal model of the first
         theWorld.add(world2);
-        theWorld.buildComponentTreeAndConnect();
+        theWorld.connect();
 
         Bar& bar2 = *new Bar();
         bar2.setName("bar2");

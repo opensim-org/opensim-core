@@ -117,7 +117,8 @@ Coordinate::Coordinate(const std::string &aName, MotionType aMotionType,
 void Coordinate::constructProperties(void)
 {
     setAuthors("Ajay Seth, Ayman Habib, Michael Sherman");
-    constructProperty_motion_type("rotational");
+    //The motion type of a Coordinate is determined by its parent Joint
+    constructProperty_motion_type("set_by_joint");
     
     constructProperty_default_value(0.0);
     constructProperty_default_speed_value(0.0);
@@ -145,16 +146,7 @@ void Coordinate::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    string prefix = "Coordinate(" + getName() + ")::connectToModel: ";
-
-    if((IO::Lowercase(get_motion_type()) == "rotational") || get_motion_type() == "")
-        _motionType = Rotational;
-    else if(IO::Lowercase(get_motion_type()) == "translational")
-        _motionType = Translational;
-    else if(IO::Lowercase(get_motion_type()) == "coupled")
-        _motionType = Coupled;
-    else
-        throw Exception(prefix+"Unknown motion type. Use rotational, translational, or coupled.");
+    string prefix = "Coordinate(" + getName() + ")::extendFinalizeFromProperties: ";
 
     // Make sure the default value is within the range when clamped
     if (get_clamped()){
@@ -429,20 +421,24 @@ void Coordinate::setRangeMax(double aMax)
  * Set coordinate's motion type.
  *
  */
- void Coordinate::setMotionType(MotionType aMotionType)
+ void Coordinate::setMotionType(MotionType motionType)
  {
-     _motionType = aMotionType;
-     updProperty_motion_type().setValueIsDefault(false);
+     if (_motionType == motionType) {
+         return;
+     }
+
+     _motionType = motionType;
+
      //Also update the motionTypeName so that it is serialized with the model
-     switch(aMotionType){
+     switch(motionType){
         case(Rotational) :  
-            upd_motion_type() = "rotational";
+            //upd_motion_type() = "rotational";
             break;
         case(Translational) :
-            upd_motion_type() = "translational";
+            //upd_motion_type() = "translational";
             break;
         case(Coupled) :
-            upd_motion_type() = "coupled";
+            //upd_motion_type() = "coupled";
             break;
         default :
             throw(Exception("Coordinate: Attempting to specify an undefined motion type."));

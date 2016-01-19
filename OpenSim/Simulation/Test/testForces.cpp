@@ -604,22 +604,20 @@ void testBushingForce()
 
     osimModel->setGravity(gravity_vec);
 
-    BushingForce spring("", "ground", "ball",
+    BushingForce spring("bushing", "ground", "ball",
         transStiffness, rotStiffness, transDamping, rotDamping);
 
     osimModel->addForce(&spring);
-    osimModel->setup();
     const BushingForce& bushingForce =
-        osimModel->getComponent<BushingForce>("");
+        osimModel->getComponent<BushingForce>("bushing");
 
     osimModel->print("BushingForceModel.osim");
 
     Model previousVersionModel("BushingForceModel_30000.osim", true);
     previousVersionModel.print("BushingForceModel_30000_in_Latest.osim");
-    previousVersionModel.setup();
-    const BushingForce& bushingForceFromPrevious =
-        previousVersionModel.getComponent<BushingForce>("");
 
+    const BushingForce& bushingForceFromPrevious =
+        previousVersionModel.getComponent<BushingForce>("bushing");
 
     ASSERT(bushingForce == bushingForceFromPrevious, __FILE__, __LINE__,
         "current bushing force FAILED to match bushing force from previous model.");
@@ -1245,7 +1243,7 @@ void testCoordinateLimitForce()
     osimModel->print("CoordinateLimitForceTest.osim");
 
     // Check serialization and deserialization
-    Model* loadedModel = new Model("CoordinateLimitForceTest.osim", false);
+    Model* loadedModel = new Model("CoordinateLimitForceTest.osim");
 
     ASSERT(*loadedModel == *osimModel,
         "Deserialized CoordinateLimitForceTest failed to be equivalent to original.");

@@ -121,7 +121,8 @@ int main()
 
         testModel.print("allComponents.osim");
 
-        Model deserializedModel("allComponents.osim", false);
+        Model deserializedModel("allComponents.osim");
+
         ASSERT(testModel == deserializedModel,  
             "deserializedModel FAILED to match original model.");       
     }

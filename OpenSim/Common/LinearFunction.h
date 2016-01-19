@@ -92,12 +92,11 @@ public:
     /** %Set intercept */
     void setIntercept(double intercept) {_coefficients[1] = intercept; }
     /** Get Coefficients */
-    const Array<double> getCoefficients() const
-    { return _coefficients; }
+    const Array<double> getCoefficients() const { return _coefficients; }
     /** Get Slope */
-    double getSlope() { return _coefficients[0]; }
+    double getSlope() const { return _coefficients[0]; }
     /** Get Intercept */ 
-    double getIntercept() { return _coefficients[1]; }
+    double getIntercept() const { return _coefficients[1]; }
     
 
     //--------------------------------------------------------------------------
