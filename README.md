@@ -158,7 +158,7 @@ On Windows using Visual Studio
 
   This will give you a bleeding-edge version of OpenSim-Core.
   
-#### [Optional] Download, Configure & Build OpenSim dependencies
+#### [Optional] Superbuild -- Download, Configure & Build OpenSim dependencies
 1. Open CMake-gui.
 2. In the field **Where is the source code**, specify `C:/opensim-core-source/dependencies`.
 3. In the field **Where to build the binaries**, specify a directory under which to build dependencies. Lets say this is  `c:/opensim-core-dependencies-build`.
@@ -171,7 +171,7 @@ On Windows using Visual Studio
 7. Click the **Configure** button again. Then, click **Generate** to make Visual Studio project files in the build directory.
 8. Open **Powershell**.
 9. Go to build directory you specified in step 3 using `cd c:/opensim-core-dependencies-build`.
-10. Download, compile and install using `cmake --build . --target INSTALL --config Release`. Possible options for `--config` in this command are --
+10. Download, compile and install using `cmake --build . --config Release`. Possible options for `--config` in this command are --
     * **Debug**: debugger symbols; no optimizations (more than 10x slower).
       Library names end with `_d`.
     * **Release**: no debugger symbols; optimized.
@@ -201,8 +201,10 @@ On Windows using Visual Studio
    changing the `CMAKE_INSTALL_PREFIX` variable. We'll assume you set it to
    `C:/opensim-core`. If you choose a different installation location, make
    sure to use *yours* where we use `C:/opensim-core` below.
+6. If you previously used the optional superbuild procedure to download, configure, compile and install dependencies, set the variable `OPENSIM_DEPENDENCIES_DIR` to the root directory you specified there for installation of dependencies. In our example, it would be `c:/opensim-core-dependencies-install`. Skip step 6 and 7.
 6. Tell CMake where you installed Simbody by setting the `SIMBODY_HOME`
    variable to where you installed Simbody (e.g., `C:/Simbody`).
+7. Tell CMake where you installed BTK by setting the variable `BTK_DIR` to where you installed BTK. If root directory of BTK installation is `c:/BTKCore-install`, then set this variable to `c:/BTKCore-install/share/btk-0.4dev`.
 7. Set the remaining configuration options.
     * `BUILD_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
