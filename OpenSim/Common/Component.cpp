@@ -875,24 +875,23 @@ void Component::markPropertiesAsSubcomponents()
 // subcomponent, it is not added to the list again.
 void Component::markAsSubcomponent(Component* component)
 {
-    // Only add if the Component is not already a part of the model
+    // Only add if the component is not already a part of this Component
     // So, add if empty
     if ( _components.empty() ){
         _components.push_back(component);
     }
-    else{ //otherwise check that it isn't apart of the component already        
+    else{ //otherwise check that it isn't a part of the component already
         SimTK::Array_<Component *>::iterator it =
             std::find(_components.begin(), _components.end(), component);
         if ( it == _components.end() ){
             _components.push_back(component);
-            //std::cout << "Adding component " << aComponent->getName() << " as subcomponent of " << getName() << std::endl;
         }
         else{
-            std::string msg = "WARNING- " +getConcreteClassName()+"::markAsSubcomponent() '"
+            std::string msg = getConcreteClassName()+"::markAsSubcomponent() '"
                 + getName() + "' already has '" + component->getName() +
                     "' as a subcomponent.";
             std::cout << msg << std::endl;
-            //throw Exception(msg, __FILE__, __LINE__);
+            throw Exception(msg, __FILE__, __LINE__);
         }
     }
 

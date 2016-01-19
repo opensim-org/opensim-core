@@ -489,7 +489,7 @@ public:
         }
         else{
             std::stringstream msg;
-            msg << "Component::getConnection() ERR- Connector '" << name << "' not connected.\n "
+            msg << "Component::getConnectee() ERR- Connector '" << name << "' not connected.\n "
                 << "for component '" << getName() << "' of type " << getConcreteClassName();
             throw Exception(msg.str(), __FILE__, __LINE__);
         }
@@ -501,7 +501,7 @@ public:
         const_iterator OutputsIterator;
 
     /** @name Component Inputs and Outputs Access methods
-        Access inputs and ouputs by name and iterate over all outputs.
+        Access inputs and outputs by name and iterate over all outputs.
     */
     //@{ 
 
@@ -1762,8 +1762,6 @@ protected:
     SimTK::Array_<Component *>  _components;
 
 private:
-    class Connection;
-
     /// Base Component must create underlying resources in computational System.
     void baseAddToSystem(SimTK::MultibodySystem& system) const;
 

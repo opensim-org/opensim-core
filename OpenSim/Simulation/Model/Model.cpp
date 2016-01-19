@@ -114,8 +114,9 @@ Model::Model(const string &aFileName, const bool finalize) :
     setNull();
     updateFromXMLDocument();
 
-    if(finalize)
+    if (finalize) {
         finalizeFromProperties();
+    }
 
     _fileName = aFileName;
     cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
@@ -569,14 +570,9 @@ void Model::createMultibodyTree()
                 name = js[i].getParentFrameName() + "_to_" + js[i].getChildFrameName();
             }
 
-            // TODO Remove this when subcomponents can be iterated upon construction.
-            // We are only calling finalizeFromProperties so that any offset frames
-            // belonging to the Joint are marked as subcomponents and can be found.
-            //js[i].finalizeFromProperties();
-            //markAsSubcomponent(&js[i]);
-            // TODO Remove this when subcomponents can be iterated upon construction.
             // Currently we need to take a first pass at connecting the joints in 
-            // order to find the frames that they attach to and their underlying bodies.
+            // order to ask the joint for the frames that they attach to and 
+            // and determine their underlying base (physical) frames.
             js[i].connect(*this);
 
             // Use joints to define the underlying multibody tree
@@ -644,10 +640,10 @@ void Model::extendConnectToModel(Model &model)
                 WeldConstraint* weld = new WeldConstraint(outb->getName()+"_weld",
                                                           *outbMaster, o, *outb, o);
 
-                // Add to list of subcomponents but not to serialized ConstraintSet
-                // TODO: add to a private list of owned components that are not
-                // serialized so that the weld can be destroyed. This is currently a leak!
-                updModel().markAsSubcomponent(weld);
+                // TODO: add all added compoents to a private list of owned components
+                // that are not serialized so that they are destroyed.
+                // Currently this is a leak.
+                markAsSubcomponent(weld);
             }
         }
 
@@ -707,14 +703,14 @@ void Model::extendConnectToModel(Model &model)
             WeldConstraint* weld = new WeldConstraint( joint.getName()+"_Loop",
                 parent, joint.getParentFrame().findTransformInBaseFrame(),
                 child, joint.getChildFrame().findTransformInBaseFrame());
-            addConstraint(weld);
+            markAsSubcomponent(weld);
         }
         else if (joint.getConcreteClassName() == "BallJoint") {
             PointConstraint* point = new PointConstraint(
                 parent, joint.getParentFrame().findTransformInBaseFrame().p(),
                 child, joint.getChildFrame().findTransformInBaseFrame().p());
             point->setName(joint.getName() + "_Loop");
-            addConstraint(point);
+            markAsSubcomponent(point);
         }
         else if (joint.getConcreteClassName() == "FreeJoint") {
             // A "free" loop constraint is no constraint at all so we can
@@ -737,7 +733,6 @@ void Model::extendConnectToModel(Model &model)
 
     // TODO: Get rid of the SimbodyEngine
     updSimbodyEngine().connectSimbodyEngineToModel(*this);
-
 }
 
 

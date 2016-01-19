@@ -522,7 +522,7 @@ int main() {
 
         // Test copy assignment
         TheWorld world3;
-        world3= *world2;
+        world3 = *world2;
         world3.finalizeFromProperties();
         world3.getComponent("Bar").getConnector<Foo>("parentFoo");
 
