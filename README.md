@@ -123,7 +123,8 @@ On Windows using Visual Studio
       You can uncheck all other boxes. If you have already installed Visual
       Studio without C++ support, simply re-run the installer and select *Modify*.
 * **physics engine**:
-  [Simbody](https://github.com/simbody/simbody#windows-and-visual-studio) >= 3.6
+  [Simbody](https://github.com/simbody/simbody#windows-and-visual-studio) >= 3.6 (Skip this if you want OpenSim to download, configure and install the right version for you.)
+* **C3D Support**: [BTKCore](https://github.com/Biomechanical-ToolKit/BTKCore) (Skip this if you want OpenSim to download, configure and install the right version for you.)
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git. There are many options:
