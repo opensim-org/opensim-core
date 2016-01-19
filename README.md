@@ -157,6 +157,34 @@ On Windows using Visual Studio
         $ git clone https://github.com/opensim-org/opensim-core.git C:/opensim-core-source
 
   This will give you a bleeding-edge version of OpenSim-Core.
+  
+#### [Optional] Download, Configure & Build OpenSim dependencies
+1. Open CMake-gui.
+2. In the field **Where is the source code**, specify `C:/opensim-core-source/dependencies`.
+3. In the field **Where to build the binaries**, specify a directory under which to build dependencies. Lets say this is  `c:/opensim-core-dependencies-build`.
+4. Click the **Configure** button.
+    1. Choose the *Visual Studio 14* generator (for Visual Studio 2015). To
+       build as 64-bit, select *Visual Studio 14 Win64*.
+    2. Click **Finish**.
+5. Where do you want to install OpenSim dependencies on your computer ? Set this by changing the `CMAKE_INSTALL_PREFIX` variable. Lets say this is `c:/opensim-core-dependencies-install`.
+6. Variables named `SUPERBUILD_<dependency-name>` allow you to selectively download dependencies. By default, all dependencies are downloaded, configured and built.
+7. Click the **Configure** button again. Then, click **Generate** to make Visual Studio project files in the build directory.
+8. Open **Powershell**.
+9. Go to build directory you specified in step 3 using `cd c:/opensim-core-dependencies-build`.
+10. Download, compile and install using `cmake --build . --target INSTALL --config Release`. Possible options for `--config` in this command are --
+    * **Debug**: debugger symbols; no optimizations (more than 10x slower).
+      Library names end with `_d`.
+    * **Release**: no debugger symbols; optimized.
+    * **RelWithDebInfo**: debugger symbols; optimized. Bigger but not slower
+      than Release; choose this if unsure.
+    * **MinSizeRel**: minimum size; optimized.
+
+    You at least want release libraries (the last 3 count as release), but you
+    can have debug libraries coexist with them. To do this, run the command once with each option. You
+    should install the release configuration *last* to ensure that you use the
+    release version of the command-line applications instead of the slow debug
+    versions. Remember the option you used. This will be needed when buiding OpenSim.
+11. If you like, you can now remove the directory used for building dependencies (`c:/opensim-core-dependencies-build`). 
 
 #### Configure and generate project files
 
