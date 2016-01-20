@@ -1,3 +1,7 @@
+# This CMake file implements the super-build procedure to download, configure,
+# compile and install all OpenSim dependencies. Using super-build is optional.
+# OpenSim does not use this file directly.
+
 project(OpenSimDependencies)
 cmake_minimum_required(VERSION 2.8)
 
