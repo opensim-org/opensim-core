@@ -427,7 +427,8 @@ set(OPENSIM_DEPENDENCIES_DIR
     "" 
     CACHE 
     PATH
-    "Directory containing installed binaries of OpenSim dependencies.")
+    "Directory containing installed binaries of OpenSim dependencies. Set this"
+    "only if you used the Superbuild procedure to install dependencies. ")
 
 find_package(BTK 
     REQUIRED
