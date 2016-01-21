@@ -100,7 +100,7 @@ XMLDocument::XMLDocument()
  * @param aFileName File name of the XML document.
  */
 XMLDocument::XMLDocument(const string &aFileName) :
-Xml::Document(aFileName)
+SimTK::Xml::Document(aFileName)
 {
 
 
@@ -278,7 +278,7 @@ void XMLDocument::copyDefaultObjects(const XMLDocument &aDocument){
 /*static*/ 
 void  XMLDocument::renameChildNode(SimTK::Xml::Element& aNode, std::string oldElementName, std::string newElementName)
 {
-    Xml::element_iterator elmtIter(aNode.element_begin(oldElementName));
+    SimTK::Xml::element_iterator elmtIter(aNode.element_begin(oldElementName));
     if (elmtIter!=aNode.element_end()){
         elmtIter->setElementTag(newElementName);
     }
@@ -292,8 +292,8 @@ bool XMLDocument::isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoub
         equal = (_documentVersion == aOtherDocument._documentVersion);
     if (!equal) return false;
     // Get Roots 
-    Xml::Element root1=  getRootElement();
-    Xml::Element root2=  aOtherDocument.getRootElement();
+    SimTK::Xml::Element root1=  getRootElement();
+    SimTK::Xml::Element root2=  aOtherDocument.getRootElement();
 
     //if (!equal) return false;
     // Cycle through children and compare. Order is assumed to be the same for now

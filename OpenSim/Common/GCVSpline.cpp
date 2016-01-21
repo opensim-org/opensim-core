@@ -294,8 +294,8 @@ init(Function* aFunction)
                     y[i] = 1.0;
             }
             *this = GCVSpline(degree, order, x, y);
-            delete x;
-            delete y;
+            delete [] x;
+            delete [] y;
         } else if (xyFunc.getNumberOfPoints() < order) {
             // A GCVSpline must have at least getOrder() data points.
             // Use as many data points as aFunction has, and then fill
@@ -316,8 +316,8 @@ init(Function* aFunction)
                 y[i] = y[i-1];
             }
             *this = GCVSpline(degree, order, x, y);
-            delete x;
-            delete y;
+            delete [] x;
+            delete [] y;
         } else {
             *this = GCVSpline(degree, xyFunc.getNumberOfPoints(),
                 xyFunc.getXValues(), xyFunc.getYValues());
