@@ -146,23 +146,22 @@ void Coordinate::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    string prefix = "Coordinate(" + getName() + ")::extendFinalizeFromProperties: ";
+    string prefix = "Coordinate("+getName()+")::extendFinalizeFromProperties: ";
 
     // Make sure the default value is within the range when clamped
     if (get_clamped()){
         // Make sure the range is min to max.
-        if (get_range(1) < get_range(0)){
-            throw Exception(prefix+"Maximum coordinate range less than minimum.");
-        }
+        SimTK_ERRCHK_ALWAYS(get_range(0) <= get_range(1), prefix.c_str(),
+            "Maximum coordinate range less than minimum.");
+
         double dv = get_default_value();
-        if (dv < (get_range(0) - SimTK::SqrtEps)){
-            cerr << prefix + "Default coordinate value is less than range minimum." << endl;
-            cerr << "Default value = " << dv << "  < min = " << get_range(0) << endl;
-        }
-        else if (dv >(get_range(1) + SimTK::SqrtEps)){
-            cerr << prefix + "Default coordinate value is greater than range maximum." << endl;
-            cerr << "Default value = " << dv << "  > max = " << get_range(1) << endl;
-        }       
+        SimTK_ERRCHK2_ALWAYS(dv > (get_range(0) - SimTK::SqrtEps), prefix.c_str(),
+            "Default coordinate value is less than range minimum.\n" 
+            "Default value = %d  < min = %d.", dv,  get_range(0));
+
+        SimTK_ERRCHK2_ALWAYS(dv < (get_range(1) + SimTK::SqrtEps), prefix.c_str(),
+            "Default coordinate value is greater than range maximum.\n"
+            "Default value = %d > max = %d.", dv, get_range(1));    
     }
 
     _lockedWarningGiven=false;

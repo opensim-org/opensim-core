@@ -33,8 +33,9 @@ static Model dummyModel;
 const double acceptableMemoryLeakPercent = 1.0;
 const bool reportAllMemoryLeaks = true;
 
-
 void testComponent(const Component& instanceToTest);
+void testCloning(Component* instance);
+void testSerialization(Component* instance);
 
 void addObjectAsComponentToModel(Object* instance, Model& model);
 
@@ -138,59 +139,20 @@ void testComponent(const Component& instanceToTest)
     // 2. Ensure that cloning produces an exact copy.
     // ----------------------------------------------
     // This will find missing calls to copyProperty_<name>().
-    cout << "Cloning the component." << endl;
-    Component* copyInstance = instance->clone();
-    if (!(*copyInstance == *instance))
-    {
-        cout << "XML serialization for the first instance:" << endl;
-        cout << instance->dump() << endl;
-        cout << "XML serialization for the clone:" << endl;
-        cout << copyInstance->dump() << endl;
-        throw Exception(
-            "testComponents: for " + className +
-            ", clone() did not produce an identical object.",
-            __FILE__, __LINE__);
-    }
-    // TODO should try to delete even if exception is thrown.
-    delete copyInstance;
+    testCloning(instance);
 
     // 3. Serialize and de-serialize.
     // ------------------------------
-    // This will find issues with serialization.
+    // This will find issues with de/serialization.
     cout << "Serializing and deserializing component." << endl;
-    string serializationFilename =
-        "testing_serialization_" + className + ".xml";
-    instance->print(serializationFilename);
-
-    Object* deserializedInstance =
-        static_cast<Object*>(Object::makeObjectFromFile(serializationFilename));
+    testSerialization(instance);
 
     const size_t instanceSize = getCurrentRSS();
 
-    if (!(*deserializedInstance == *instance))
-    {
-        cout << "XML for serialized instance:" << endl;
-        cout << instance->dump() << endl;
-        cout << "XML for serialization of deserialized instance:" << endl;
-        cout << deserializedInstance->dump() << endl;
-        throw Exception(
-            "testComponents: for " + className +
-            ", deserialization did not produce an identical object.",
-            __FILE__, __LINE__);
-    }
+    // 4. Verify Components structural attributes
 
-    // TODO should try to delete even if exception is thrown.
-    delete deserializedInstance;
-
-    // 4. Set up the aggregate component.
     // -------------------------------------------------------------------
     cout << "Set up aggregate component." << endl;
-    if (model.getName() == "dummyModel")
-    {
-        // User did not provide a model; create a fresh model.
-        model = Model();
-    }
-
     // 5. Add this component to an aggregate component.
     // ------------------------------------------------
     addObjectAsComponentToModel(instance, model);
@@ -362,6 +324,99 @@ void testComponent(const Component& instanceToTest)
         if (reportAllMemoryLeaks && increaseInMemory>0)
             cout << msg.str() << endl;
     }
+}
+
+void testComponentEquivalence(const Component* a, const Component* b) 
+{
+    const string& className = a->getConcreteClassName();
+
+    bool same = *a == *b;
+    ASSERT(same, __FILE__, __LINE__,
+        className + " components are not equivalent in properties.");
+
+    int nc_a = a->getNumConnectors();
+    int nc_b = b->getNumConnectors();
+    cout << className << " getNumConnectors: " << nc_a << endl;
+    ASSERT(nc_a==nc_b, __FILE__, __LINE__, 
+        className + "components differ in number of connectors.");
+
+    int nin_a = a->getNumInputs();
+    int nin_b = b->getNumInputs();
+    cout << className << " getNumInputs: " << nin_a << endl;
+    ASSERT(nin_a == nin_b, __FILE__, __LINE__,
+        className + " components differ in number of inputs.");
+
+    int nout_a = a->getNumOutputs();
+    int nout_b = b->getNumOutputs();
+    cout << className << " getNumOutputs: " << nout_a << endl;
+    ASSERT(nout_a == nout_b, __FILE__, __LINE__, 
+        className + " components differ in number of outputs.");
+
+    ComponentList<Component> aSubsList = a->getComponentList<Component>();
+    ComponentList<Component> bSubsList = a->getComponentList<Component>();
+    auto iter_a = aSubsList.begin();
+    auto iter_b = bSubsList.begin();
+
+    //Subcomponents must be equivalent too!
+    while (iter_a != aSubsList.end() && iter_b != aSubsList.end()) {
+        const Component& asub = *iter_a;
+        const Component& bsub = *iter_b;
+        testComponentEquivalence(&asub, &bsub);
+        ++iter_a;
+        ++iter_b;
+    }
+}
+
+void testCloning(Component* instance)
+{
+    cout << "Cloning the component." << endl;
+    Component* copyInstance = instance->clone();
+    if (!(*copyInstance == *instance))
+    {
+        cout << "XML serialization for the first instance:" << endl;
+        cout << instance->dump() << endl;
+        cout << "XML serialization for the clone:" << endl;
+        cout << copyInstance->dump() << endl;
+        const string& className = instance->getConcreteClassName();
+        throw Exception(
+            "testComponents: for " + className +
+            ", clone() did not produce an identical object.",
+            __FILE__, __LINE__);
+    }
+
+    instance->finalizeFromProperties();
+    copyInstance->finalizeFromProperties();
+
+    testComponentEquivalence(instance, copyInstance);
+    delete copyInstance;
+}
+
+void testSerialization(Component* instance)
+{
+    const string& className = instance->getConcreteClassName();
+    string serializationFilename =
+        "testing_serialization_" + className + ".xml";
+    instance->print(serializationFilename);
+
+    Object* deserializedInstance =
+        static_cast<Object*>(Object::makeObjectFromFile(serializationFilename));
+
+    if (!(*deserializedInstance == *instance))
+    {
+        cout << "XML for serialized instance:" << endl;
+        cout << instance->dump() << endl;
+        cout << "XML for serialization of deserialized instance:" << endl;
+        cout << deserializedInstance->dump() << endl;
+        throw Exception(
+            "testComponents: for " + className +
+            ", deserialization did not produce an identical object.",
+            __FILE__, __LINE__);
+    }
+
+    Component* deserializedComp = dynamic_cast<Component *>(deserializedInstance);
+
+    testComponentEquivalence(instance, deserializedComp);
+    delete deserializedInstance;
 }
 
 void addObjectAsComponentToModel(Object* instance, Model& model)

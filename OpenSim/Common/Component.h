@@ -428,6 +428,16 @@ public:
         return getProperty_connectors().size();
     }
 
+    /** Access the number of Inputs that this component has. */
+    int getNumInputs() const {
+        return int(_inputsTable.size());
+    }
+
+    /** Access the number of Outputs that this component has. */
+    int getNumOutputs() const {
+        return int(_outputsTable.size());
+    }
+
     /** Access a read-only Connector by index.
     @see getNumConnectors()
      */
