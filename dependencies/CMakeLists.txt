@@ -126,4 +126,4 @@ AddDependency(NAME simbody
 
 #######################
 
-RemoveDefaultInstallDirIfEmpty(${DEFAULT_CMAKE_INSTALL_PREFIX})
+RemoveDefaultInstallDirIfEmpty("${DEFAULT_CMAKE_INSTALL_PREFIX}")
