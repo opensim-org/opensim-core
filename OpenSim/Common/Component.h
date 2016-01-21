@@ -953,7 +953,7 @@ template <class T> friend class ComponentMeasure;
     * therefore invoked on subcomponents when called on this Component.
     * Realization is also performed automatically on subcomponents. This
     * member function does not take ownership, it is assumed that the
-    * the component is a data member or property of this Component.
+    * component is a data member or property of this Component.
     */
     void markAsSubcomponent(Component* component);
 

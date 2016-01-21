@@ -1,7 +1,7 @@
 #ifndef OPENSIM_PLANAR_JOINT_H_
 #define OPENSIM_PLANAR_JOINT_H_
-/* -------------------------------------------------------------------------- *
- *                         OpenSim:  PlanarrJoint.h                           *
+/* -------------------------------------------------------- ----------------- *
+ *                         OpenSim:  PlanarJoint.h                            *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
