@@ -100,6 +100,9 @@ function(AddDependency)
             CMAKE_CACHE_ARGS ${CMAKE_ARGS}
             BINARY_DIR       ${BINARY_DIR}/build
             INSTALL_DIR      ${INSTALL_DIR})
+    else()
+        file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/${DEP_NAME})
+        file(REMOVE_RECURSE ${CMAKE_INSTALL_PREFIX}/${DEP_NAME})
     endif()
 endfunction()
 
