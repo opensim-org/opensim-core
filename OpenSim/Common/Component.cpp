@@ -845,30 +845,43 @@ void Component::markPropertiesAsSubcomponents()
     _components.clear();
 
     // Now mark properties that are Components as subcomponents
+    //loop over all its properties
     for (int i = 0; i < getNumProperties(); ++i) {
         auto& prop = updPropertyByIndex(i);
+        // check if property is of type Object
         if (prop.isObjectProperty()) {
+            // a property is a list so cycle through its contents
             for (int j = 0; j < prop.size(); ++j) {
                 Object& obj = prop.updValueAsObject(j);
+                // if the object is a Component mark it
                 if (Component* comp = dynamic_cast<Component*>(&obj) ) {
                     markAsSubcomponent(comp);
                 }
-                //Set<Component>* objects = dynamic_cast<Set<Component>*>(&obj)
                 else {
+                    // otherwise it may be a Set (of objects), and
+                    // would prefer to do something like this to test:
+                    //  Set<Component>* objects = dynamic_cast<Set<Component>*>(obj)
+                    // Instead we can see if the object has a property called
+                    // "objects" which is a PropertyObjArray used by Set<T>.
+                    // knowing the object Type is useful for debugging
+                    // and it could be used to strengthen the test (e.g. scan  
+                    // for "Set" in the type name). 
                     std::string objType = obj.getConcreteClassName();
                     if (obj.hasProperty("objects")) {
+                        // get the PropertyObjArray if the object has one
                         auto& objectsProp = obj.updPropertyByName("objects");
+                        // loop over the objects in the PropertyObjArray
                         for (int k = 0; k < objectsProp.size(); ++k) {
                             Object& obj = objectsProp.updValueAsObject(k);
+                            // if the object is a Component mark it
                             if (Component* comp = dynamic_cast<Component*>(&obj) )
                                 markAsSubcomponent(comp);
-                        }
-                    }
-                }
-            }
-        }
-
-    }
+                        } // loop over objects and mark it if it is a component
+                    } // end if property is a Set with "objects" inside
+                } // end of if/else property value is an Object or something else
+            } // loop over the property list
+        } // end if property is an Object
+    } // loop over properties
 }
 
 // Include another Component as a subcomponent of this one. If already a
