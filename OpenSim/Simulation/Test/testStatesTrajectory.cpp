@@ -30,6 +30,8 @@
 using namespace OpenSim;
 using namespace SimTK;
 
+// TODO more informative "IndexOutOfRange" exception when using get().
+
 // TODO detailed exceptions when integrity checks fail.
 // TODO currently, one gets segfaults if state is not realized.
 // TODO accessing acceleration-level outputs.
@@ -493,6 +495,132 @@ void testCopying() {
     }
 }
 
+void testAccessByTime() {
+    Model model("gait2354_simbody.osim");
+    auto& state = model.initSystem();
+
+    // Make a trajectory with different times.
+    StatesTrajectory states;
+    state.setTime(0.5);
+    states.append(state); // 0
+    state.setTime(1.3);
+    states.append(state); // 1
+    state.setTime(3.5);
+    states.append(state); // 2
+    state.setTime(4.1);
+    states.append(state); // 3
+    
+    // Nearest before.
+    SimTK_TEST(&states.getNearestBefore(0.5) == &states[0]);
+    SimTK_TEST(&states.getNearestBefore(0.5000001) == &states[0]);
+    SimTK_TEST(&states.getNearestBefore(1.299999999) == &states[0]);
+
+    SimTK_TEST(&states.getNearestBefore(1.3) == &states[1]);
+    SimTK_TEST(&states.getNearestBefore(1.300001) == &states[1]);
+    SimTK_TEST(&states.getNearestBefore(3.49999) == &states[1]);
+
+    SimTK_TEST(&states.getNearestBefore(4.1) == &states[3]);
+    SimTK_TEST(&states.getNearestBefore(4.2) == &states[3]);
+    SimTK_TEST(&states.getNearestBefore(153.7) == &states[3]);
+
+    // Nearest after.
+    SimTK_TEST(&states.getNearestAfter(-100.0) == &states[0]);
+    SimTK_TEST(&states.getNearestAfter(0) == &states[0]);
+    SimTK_TEST(&states.getNearestAfter(0.1) == &states[0]);
+    SimTK_TEST(&states.getNearestAfter(0.4999999999) == &states[0]);
+    SimTK_TEST(&states.getNearestAfter(0.5) == &states[0]);
+
+    SimTK_TEST(&states.getNearestAfter(1.3000000000001) == &states[2]);
+    SimTK_TEST(&states.getNearestAfter(1.31) == &states[2]);
+    SimTK_TEST(&states.getNearestAfter(1.4) == &states[2]);
+    SimTK_TEST(&states.getNearestAfter(3.4) == &states[2]);
+    SimTK_TEST(&states.getNearestAfter(3.4999999999999) == &states[2]);
+    SimTK_TEST(&states.getNearestAfter(3.5) == &states[2]);
+    
+    SimTK_TEST(&states.getNearestAfter(4.0001) == &states[3]);
+    SimTK_TEST(&states.getNearestAfter(4.1) == &states[3]);
+
+    // Exception if there is not a state before/after the specified time.
+    SimTK_TEST_MUST_THROW_EXC(states.getNearestBefore(0.25),
+            StatesTrajectory::TimeOutOfRange);
+    SimTK_TEST_MUST_THROW_EXC(states.getNearestBefore(0.0),
+            StatesTrajectory::TimeOutOfRange);
+    SimTK_TEST_MUST_THROW_EXC(states.getNearestBefore(-1.0),
+            StatesTrajectory::TimeOutOfRange);
+    SimTK_TEST_MUST_THROW_EXC(states.getNearestBefore(.499999),
+            StatesTrajectory::TimeOutOfRange);
+
+    SimTK_TEST_MUST_THROW_EXC(states.getNearestAfter(4.10000001),
+            StatesTrajectory::TimeOutOfRange);
+    SimTK_TEST_MUST_THROW_EXC(states.getNearestAfter(1050.9),
+            StatesTrajectory::TimeOutOfRange);
+
+    // Simulate the scenario that the tolerance is intended to handle.
+    // TODO
+    // TODO SimTK_TEST(&states.getNearestBefore(1.299, 0.001) == &states[1]);
+
+    // Using a custom tolerance.
+    SimTK_TEST(&states.getNearestBefore(0.499, 0.001) == &states[0]);
+    SimTK_TEST(&states.getNearestBefore(0.495, 0.005) == &states[0]);
+    SimTK_TEST(&states.getNearestBefore(1.2991, 0.001) == &states[1]);
+    SimTK_TEST(&states.getNearestBefore(1.298999, 0.001) == &states[0]);
+    SimTK_TEST(&states.getNearestBefore(4.099, 0.001) == &states[3]);
+    SimTK_TEST(&states.getNearestBefore(4.098, 0.001) == &states[2]);
+
+    SimTK_TEST(&states.getNearestAfter(0.501, 0.001) == &states[0]);
+    SimTK_TEST(&states.getNearestAfter(0.503, 0.003) == &states[0]);
+    // Past the tolerance, we get the next state.
+    SimTK_TEST(&states.getNearestAfter(0.50301, 0.003) == &states[1]);
+    SimTK_TEST(&states.getNearestAfter(1.301, 0.001) == &states[1]);
+    SimTK_TEST(&states.getNearestAfter(1.301001, 0.001) == &states[2]);
+    SimTK_TEST(&states.getNearestAfter(4.1005, 0.001) == &states[3]);
+    SimTK_TEST(&states.getNearestAfter(4.101, 0.001) == &states[3]);
+
+    // Test exceptions with custom tolerance.
+    SimTK_TEST_MUST_THROW_EXC(states.getNearestBefore(0.498, 0.001),
+            StatesTrajectory::TimeOutOfRange);
+    SimTK_TEST_MUST_THROW_EXC(states.getNearestBefore(0.498999, 0.001),
+            StatesTrajectory::TimeOutOfRange);
+    SimTK_TEST_MUST_THROW_EXC(states.getNearestAfter(4.102, 0.001),
+            StatesTrajectory::TimeOutOfRange);
+    SimTK_TEST_MUST_THROW_EXC(states.getNearestAfter(4.10100001, 0.001),
+            StatesTrajectory::TimeOutOfRange);
+
+    // Make sure that we get the right state when there are multiple with
+    // the same time.
+    // TODO
+    states.append(state); // 4. This state has time 4.1.
+    states.append(state); // 5
+    state.setTime(5.8);
+    states.append(state); // 6
+    states.append(state); // 7
+    SimTK_TEST(&states.getNearestAfter(4.0) == &states[3]);
+    SimTK_TEST(&states.getNearestAfter(4.1) == &states[3]);
+    SimTK_TEST(&states.getNearestBefore(5.0) == &states[5]);
+    SimTK_TEST(&states.getNearestBefore(4.1) == &states[5]);
+
+    SimTK_TEST(&states.getNearestAfter(4.1004999, 0.0005) == &states[3]);
+    SimTK_TEST(&states.getNearestBefore(4.0995, 0.0005) == &states[5]);
+
+    SimTK_TEST(&states.getNearestAfter(5.8) == &states[6]);
+    SimTK_TEST(&states.getNearestBefore(5.8) == &states[7]);
+    SimTK_TEST_MUST_THROW_EXC(states.getNearestAfter(5.800001),
+            StatesTrajectory::TimeOutOfRange);
+
+    // TODO also check behavior when multiple states all fall within a
+    // "SignificantReal" window, or fall in whatever the tolerance is.
+    //
+    // TODO check that we get the right behavior when the time IS a number that
+    // can be exactly represented as a float.
+
+    // Get a container view.
+    // TODO make a new StatesTrajectoryView class, or use SimTK::Array_
+    // TODO uh oh...might want to make the class compatible, and then introduce
+    // it into the inheritance hierarchy...
+
+    // Or just provide iterators?
+}
+
 /*
 SimTK::State does not have an equality operator, so we can't test equality of
 two StatesTrajectory's yet.
@@ -691,6 +819,7 @@ int main() {
         SimTK_SUBTEST(testIntegrityChecks);
         SimTK_SUBTEST(testAppendTimesAreNonDecreasing);
         SimTK_SUBTEST(testCopying);
+        SimTK_SUBTEST(testAccessByTime);
 
         // Test creation of trajectory from astates storage.
         // -------------------------------------------------

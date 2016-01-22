@@ -31,6 +31,47 @@ size_t StatesTrajectory::getSize() const {
     return m_states.size();
 }
 
+const SimTK::State& StatesTrajectory::getNearestBefore(const double& time,
+        const double& tolerance) {
+    // Need a custom comparision function to extract the time from the state.
+    auto compare = [](const double& t, const SimTK::State& s) {
+                return t < s.getTime();
+            };
+    // upper_bound() finds the first element whose time is greater than the
+    // given time.
+    // TODO tolerance.
+    auto upper = std::upper_bound(m_states.begin(), m_states.end(),
+                                  time + tolerance, compare);
+
+    // If the first element is greater than the given time, then there are no
+    // elements before the given time.
+    OPENSIM_THROW_IF(upper == m_states.begin(),
+            TimeOutOfRange, time);
+
+    // We step back one element to get the last element
+    // whose time is less than or equal to the given time.
+    return *(upper - 1);
+    // TODO return *upper; // TODO - m_states.begin();
+}
+
+const SimTK::State& StatesTrajectory::getNearestAfter(const double& time,
+        const double& tolerance) {
+    // Need a custom comparision function to extract the time from the state.
+    auto compare = [](const SimTK::State& s, const double& t) {
+                return s.getTime() < t;
+            };
+    // lower_bound() finds the first element whose time is greater than or
+    // equal to the given time.
+    auto lower = std::lower_bound(m_states.begin(), m_states.end(),
+                                  time - tolerance, compare);
+
+    // If the iterator is end(), there are no states after the given time.
+    OPENSIM_THROW_IF(lower == m_states.end(),
+            TimeOutOfRange, time);
+
+    return *lower; // TODO  - m_states.begin();
+}
+
 void StatesTrajectory::append(const SimTK::State& state) {
     if (!m_states.empty()) {
 

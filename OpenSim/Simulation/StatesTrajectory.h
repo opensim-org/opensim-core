@@ -184,6 +184,8 @@ public:
      * @throws std::out_of_range if the index is greater than the size of the
      *                           trajectory.
      */
+    // TODO throw OpenSIm IndexOutOfRange exception, and update Doxygen to
+    // remove out_of_range.
     const SimTK::State& get(size_t index) const {
         return m_states.at(index);
     }
@@ -195,7 +197,23 @@ public:
     const SimTK::State& back() const { 
         return m_states.back();
     }
+    /** TODO */
+    const SimTK::State& getNearestBefore(const double& time) {
+        return getNearestBefore(time, SimTK::SignificantReal);
+    }
+    /** Get a const reference to the state just after a given time. This allows
+     * accessing TODO.
+     * */
+    const SimTK::State& getNearestAfter(const double& time) {
+        return getNearestAfter(time, SimTK::SignificantReal);
+    }
+    const SimTK::State& getNearestBefore(const double& time,
+            const double& threshold);
+    const SimTK::State& getNearestAfter(const double& time,
+            const double& threshold);
+    // TODO getBetween(startTime, endTime);
 
+    /** Get the index of the staet just after the given time. */
     /// @}
     
     /** Iterator type that does not allow modifying the trajectory.
@@ -298,6 +316,16 @@ private:
     std::vector<SimTK::State> m_states;
 
 public:
+
+    /** Thrown when TODO */
+    class TimeOutOfRange : public OpenSim::Exception {
+    public:
+        TimeOutOfRange(const std::string& file, size_t line,
+                const std::string& func, const double& requestedTime) :
+                OpenSim::Exception(file, line, func) {
+            // TODO
+        }
+    };
 
     /** Thrown when trying to append a state that is not consistent with the
      * rest of the trajectory. */
