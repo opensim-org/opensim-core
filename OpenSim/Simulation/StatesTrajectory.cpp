@@ -31,7 +31,7 @@ size_t StatesTrajectory::getSize() const {
     return m_states.size();
 }
 
-const SimTK::State& StatesTrajectory::getNearestBefore(const double& time,
+size_t StatesTrajectory::getIndexBefore(const double& time,
         const double& tolerance) {
     // Need a custom comparision function to extract the time from the state.
     auto compare = [](const double& t, const SimTK::State& s) {
@@ -48,13 +48,12 @@ const SimTK::State& StatesTrajectory::getNearestBefore(const double& time,
     OPENSIM_THROW_IF(upper == m_states.begin(),
             TimeOutOfRange, time);
 
-    // We step back one element to get the last element
-    // whose time is less than or equal to the given time.
-    return *(upper - 1);
-    // TODO return *upper; // TODO - m_states.begin();
+    // We step back one element to get the last element whose time is less than
+    // or equal to the given time.
+    return (upper - 1) - m_states.begin();
 }
 
-const SimTK::State& StatesTrajectory::getNearestAfter(const double& time,
+size_t StatesTrajectory::getIndexAfter(const double& time,
         const double& tolerance) {
     // Need a custom comparision function to extract the time from the state.
     auto compare = [](const SimTK::State& s, const double& t) {
@@ -69,7 +68,7 @@ const SimTK::State& StatesTrajectory::getNearestAfter(const double& time,
     OPENSIM_THROW_IF(lower == m_states.end(),
             TimeOutOfRange, time);
 
-    return *lower; // TODO  - m_states.begin();
+    return lower - m_states.begin();
 }
 
 void StatesTrajectory::append(const SimTK::State& state) {

@@ -496,7 +496,7 @@ void testCopying() {
 }
 
 void testAccessByTime() {
-    Model model("gait2354_simbody.osim");
+    Model model("arm26.osim");
     auto& state = model.initSystem();
 
     // Make a trajectory with different times.
@@ -511,114 +511,141 @@ void testAccessByTime() {
     states.append(state); // 3
     
     // Nearest before.
-    SimTK_TEST(&states.getNearestBefore(0.5) == &states[0]);
-    SimTK_TEST(&states.getNearestBefore(0.5000001) == &states[0]);
-    SimTK_TEST(&states.getNearestBefore(1.299999999) == &states[0]);
+    SimTK_TEST(states.getIndexBefore(0.5) == 0);
+    SimTK_TEST(states.getIndexBefore(0.5000001) == 0);
+    SimTK_TEST(states.getIndexBefore(1.299999999) == 0);
 
-    SimTK_TEST(&states.getNearestBefore(1.3) == &states[1]);
-    SimTK_TEST(&states.getNearestBefore(1.300001) == &states[1]);
-    SimTK_TEST(&states.getNearestBefore(3.49999) == &states[1]);
+    SimTK_TEST(states.getIndexBefore(1.3) == 1);
+    SimTK_TEST(states.getIndexBefore(1.300001) == 1);
+    SimTK_TEST(states.getIndexBefore(3.49999) == 1);
 
-    SimTK_TEST(&states.getNearestBefore(4.1) == &states[3]);
-    SimTK_TEST(&states.getNearestBefore(4.2) == &states[3]);
-    SimTK_TEST(&states.getNearestBefore(153.7) == &states[3]);
+    SimTK_TEST(states.getIndexBefore(4.1) == 3);
+    SimTK_TEST(states.getIndexBefore(4.2) == 3);
+    SimTK_TEST(states.getIndexBefore(153.7) == 3);
 
     // Nearest after.
-    SimTK_TEST(&states.getNearestAfter(-100.0) == &states[0]);
-    SimTK_TEST(&states.getNearestAfter(0) == &states[0]);
-    SimTK_TEST(&states.getNearestAfter(0.1) == &states[0]);
-    SimTK_TEST(&states.getNearestAfter(0.4999999999) == &states[0]);
-    SimTK_TEST(&states.getNearestAfter(0.5) == &states[0]);
+    SimTK_TEST(states.getIndexAfter(-100.0) == 0);
+    SimTK_TEST(states.getIndexAfter(0) == 0);
+    SimTK_TEST(states.getIndexAfter(0.1) == 0);
+    SimTK_TEST(states.getIndexAfter(0.4999999999) == 0);
+    SimTK_TEST(states.getIndexAfter(0.5) == 0);
 
-    SimTK_TEST(&states.getNearestAfter(1.3000000000001) == &states[2]);
-    SimTK_TEST(&states.getNearestAfter(1.31) == &states[2]);
-    SimTK_TEST(&states.getNearestAfter(1.4) == &states[2]);
-    SimTK_TEST(&states.getNearestAfter(3.4) == &states[2]);
-    SimTK_TEST(&states.getNearestAfter(3.4999999999999) == &states[2]);
-    SimTK_TEST(&states.getNearestAfter(3.5) == &states[2]);
+    SimTK_TEST(states.getIndexAfter(1.3000000000001) == 2);
+    SimTK_TEST(states.getIndexAfter(1.31) == 2);
+    SimTK_TEST(states.getIndexAfter(1.4) == 2);
+    SimTK_TEST(states.getIndexAfter(3.4) == 2);
+    SimTK_TEST(states.getIndexAfter(3.4999999999999) == 2);
+    SimTK_TEST(states.getIndexAfter(3.5) == 2);
     
-    SimTK_TEST(&states.getNearestAfter(4.0001) == &states[3]);
-    SimTK_TEST(&states.getNearestAfter(4.1) == &states[3]);
+    SimTK_TEST(states.getIndexAfter(4.0001) == 3);
+    SimTK_TEST(states.getIndexAfter(4.1) == 3);
 
     // Exception if there is not a state before/after the specified time.
-    SimTK_TEST_MUST_THROW_EXC(states.getNearestBefore(0.25),
+    SimTK_TEST_MUST_THROW_EXC(states.getIndexBefore(0.25),
             StatesTrajectory::TimeOutOfRange);
-    SimTK_TEST_MUST_THROW_EXC(states.getNearestBefore(0.0),
+    SimTK_TEST_MUST_THROW_EXC(states.getIndexBefore(0.0),
             StatesTrajectory::TimeOutOfRange);
-    SimTK_TEST_MUST_THROW_EXC(states.getNearestBefore(-1.0),
+    SimTK_TEST_MUST_THROW_EXC(states.getIndexBefore(-1.0),
             StatesTrajectory::TimeOutOfRange);
-    SimTK_TEST_MUST_THROW_EXC(states.getNearestBefore(.499999),
+    SimTK_TEST_MUST_THROW_EXC(states.getIndexBefore(.499999),
             StatesTrajectory::TimeOutOfRange);
 
-    SimTK_TEST_MUST_THROW_EXC(states.getNearestAfter(4.10000001),
+    SimTK_TEST_MUST_THROW_EXC(states.getIndexAfter(4.10000001),
             StatesTrajectory::TimeOutOfRange);
-    SimTK_TEST_MUST_THROW_EXC(states.getNearestAfter(1050.9),
+    SimTK_TEST_MUST_THROW_EXC(states.getIndexAfter(1050.9),
             StatesTrajectory::TimeOutOfRange);
 
     // Simulate the scenario that the tolerance is intended to handle.
-    // TODO
-    // TODO SimTK_TEST(&states.getNearestBefore(1.299, 0.001) == &states[1]);
+    {
+        // Pretend that the original states had times of 4.0 and 5.0, but
+        // that they were serialized (to a storage file) with limited precision
+        // and were written as 3.999999 and 5.000001. Now, the user
+        // thinks these times are still 4.0, and 5.0, and will end up
+        // getting the wrong states.
+        StatesTrajectory states2;
+        state.setTime(1.9);
+        states2.append(state); // 0
+        state.setTime(3.999999);
+        states2.append(state); // 1
+        state.setTime(4.5);
+        states2.append(state); // 2
+        state.setTime(5.000001);
+        states2.append(state); // 3
+        state.setTime(9.3);
+        states2.append(state); // 4
+        SimTK_TEST(states2.getIndexAfter(4.0) != 1);
+        SimTK_TEST(states2.getIndexBefore(5.0) != 3);
+    }
 
+    // Back to the original trajectory.
     // Using a custom tolerance.
-    SimTK_TEST(&states.getNearestBefore(0.499, 0.001) == &states[0]);
-    SimTK_TEST(&states.getNearestBefore(0.495, 0.005) == &states[0]);
-    SimTK_TEST(&states.getNearestBefore(1.2991, 0.001) == &states[1]);
-    SimTK_TEST(&states.getNearestBefore(1.298999, 0.001) == &states[0]);
-    SimTK_TEST(&states.getNearestBefore(4.099, 0.001) == &states[3]);
-    SimTK_TEST(&states.getNearestBefore(4.098, 0.001) == &states[2]);
+    SimTK_TEST(states.getIndexBefore(0.499, 0.001) == 0);
+    SimTK_TEST(states.getIndexBefore(0.495, 0.005) == 0);
+    SimTK_TEST(states.getIndexBefore(1.2991, 0.001) == 1);
+    SimTK_TEST(states.getIndexBefore(1.298999, 0.001) == 0);
+    SimTK_TEST(states.getIndexBefore(4.099, 0.001) == 3);
+    SimTK_TEST(states.getIndexBefore(4.098, 0.001) == 2);
 
-    SimTK_TEST(&states.getNearestAfter(0.501, 0.001) == &states[0]);
-    SimTK_TEST(&states.getNearestAfter(0.503, 0.003) == &states[0]);
+    SimTK_TEST(states.getIndexAfter(0.501, 0.001) == 0);
+    SimTK_TEST(states.getIndexAfter(0.503, 0.003) == 0);
     // Past the tolerance, we get the next state.
-    SimTK_TEST(&states.getNearestAfter(0.50301, 0.003) == &states[1]);
-    SimTK_TEST(&states.getNearestAfter(1.301, 0.001) == &states[1]);
-    SimTK_TEST(&states.getNearestAfter(1.301001, 0.001) == &states[2]);
-    SimTK_TEST(&states.getNearestAfter(4.1005, 0.001) == &states[3]);
-    SimTK_TEST(&states.getNearestAfter(4.101, 0.001) == &states[3]);
+    SimTK_TEST(states.getIndexAfter(0.50301, 0.003) == 1);
+    SimTK_TEST(states.getIndexAfter(1.301, 0.001) == 1);
+    SimTK_TEST(states.getIndexAfter(1.301001, 0.001) == 2);
+    SimTK_TEST(states.getIndexAfter(4.1005, 0.001) == 3);
+    SimTK_TEST(states.getIndexAfter(4.101, 0.001) == 3);
 
     // Test exceptions with custom tolerance.
-    SimTK_TEST_MUST_THROW_EXC(states.getNearestBefore(0.498, 0.001),
+    SimTK_TEST_MUST_THROW_EXC(states.getIndexBefore(0.498, 0.001),
             StatesTrajectory::TimeOutOfRange);
-    SimTK_TEST_MUST_THROW_EXC(states.getNearestBefore(0.498999, 0.001),
+    SimTK_TEST_MUST_THROW_EXC(states.getIndexBefore(0.498999, 0.001),
             StatesTrajectory::TimeOutOfRange);
-    SimTK_TEST_MUST_THROW_EXC(states.getNearestAfter(4.102, 0.001),
+    SimTK_TEST_MUST_THROW_EXC(states.getIndexAfter(4.102, 0.001),
             StatesTrajectory::TimeOutOfRange);
-    SimTK_TEST_MUST_THROW_EXC(states.getNearestAfter(4.10100001, 0.001),
+    SimTK_TEST_MUST_THROW_EXC(states.getIndexAfter(4.10100001, 0.001),
             StatesTrajectory::TimeOutOfRange);
 
     // Make sure that we get the right state when there are multiple with
     // the same time.
-    // TODO
-    states.append(state); // 4. This state has time 4.1.
+    state.setTime(4.1); // Same time as before.
+    states.append(state); // 4.
     states.append(state); // 5
     state.setTime(5.8);
     states.append(state); // 6
     states.append(state); // 7
-    SimTK_TEST(&states.getNearestAfter(4.0) == &states[3]);
-    SimTK_TEST(&states.getNearestAfter(4.1) == &states[3]);
-    SimTK_TEST(&states.getNearestBefore(5.0) == &states[5]);
-    SimTK_TEST(&states.getNearestBefore(4.1) == &states[5]);
+    SimTK_TEST(states.getIndexAfter(4.0) == 3);
+    SimTK_TEST(states.getIndexAfter(4.1) == 3);
+    SimTK_TEST(states.getIndexBefore(5.0) == 5);
+    SimTK_TEST(states.getIndexBefore(4.1) == 5);
 
-    SimTK_TEST(&states.getNearestAfter(4.1004999, 0.0005) == &states[3]);
-    SimTK_TEST(&states.getNearestBefore(4.0995, 0.0005) == &states[5]);
+    SimTK_TEST(states.getIndexAfter(4.1004999, 0.0005) == 3);
+    SimTK_TEST(states.getIndexBefore(4.0995, 0.0005) == 5);
 
-    SimTK_TEST(&states.getNearestAfter(5.8) == &states[6]);
-    SimTK_TEST(&states.getNearestBefore(5.8) == &states[7]);
-    SimTK_TEST_MUST_THROW_EXC(states.getNearestAfter(5.800001),
+    SimTK_TEST(states.getIndexAfter(5.8) == 6);
+    SimTK_TEST(states.getIndexBefore(5.8) == 7);
+    SimTK_TEST_MUST_THROW_EXC(states.getIndexAfter(5.800001),
             StatesTrajectory::TimeOutOfRange);
 
-    // TODO also check behavior when multiple states all fall within a
-    // "SignificantReal" window, or fall in whatever the tolerance is.
-    //
-    // TODO check that we get the right behavior when the time IS a number that
-    // can be exactly represented as a float.
-
-    // Get a container view.
-    // TODO make a new StatesTrajectoryView class, or use SimTK::Array_
-    // TODO uh oh...might want to make the class compatible, and then introduce
-    // it into the inheritance hierarchy...
-
-    // Or just provide iterators?
+    // Iterate across the states between two times.
+    /*
+    {
+        std::vector<int> indices{1, 2, 3};
+        int index = 0;
+        for (const auto& state : states.getBetween(1.0, 4.0)) {
+            SimTK_TEST(&state == &states.get(indices[index]));
+            index++;
+        }
+    }
+    // Test iterating with a tolerance.
+    {
+        std::vector<int> indices{1, 2, 3};
+        int index = 0;
+        for (const auto& state : states.getBetween(1.301, 4.099, 0.01)) {
+            SimTK_TEST(&state == &states.get(indices[index]));
+            index++;
+        }
+    }
+    */
 }
 
 /*

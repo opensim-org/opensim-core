@@ -197,20 +197,18 @@ public:
     const SimTK::State& back() const { 
         return m_states.back();
     }
-    /** TODO */
-    const SimTK::State& getNearestBefore(const double& time) {
-        return getNearestBefore(time, SimTK::SignificantReal);
+    size_t getIndexBefore(const double& time) {
+        return getIndexBefore(time, 0);
     }
+    size_t getIndexAfter(const double& time) {
+        return getIndexAfter(time, 0);
+    }
+    /** TODO */
     /** Get a const reference to the state just after a given time. This allows
      * accessing TODO.
      * */
-    const SimTK::State& getNearestAfter(const double& time) {
-        return getNearestAfter(time, SimTK::SignificantReal);
-    }
-    const SimTK::State& getNearestBefore(const double& time,
-            const double& threshold);
-    const SimTK::State& getNearestAfter(const double& time,
-            const double& threshold);
+    size_t getIndexBefore(const double& time, const double& tolerance);
+    size_t getIndexAfter(const double& time, const double& tolerance);
     // TODO getBetween(startTime, endTime);
 
     /** Get the index of the staet just after the given time. */
