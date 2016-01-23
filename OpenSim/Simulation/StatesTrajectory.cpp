@@ -64,10 +64,18 @@ StatesTrajectory::IteratorRange StatesTrajectory::getBetween(
             "StatesTrajectory", "getBetween",
             "startTime (%f) must be less than or equal to endTime (%f)",
             startTime, endTime);
+
+    // If startTime < endTime < front().getTime(), then `start` points to
+    // front(), which will cause iterating over the *entire* trajectory. To
+    // prevent this, we have to detect if front().getTime() > endTime.
+    if (!m_states.empty() && front().getTime() > endTime) {
+        return makeIteratorRange(end(), end());
+    }
+
     // Must add one to the last iterator since it's supposed to point past
     // the end.
     return makeIteratorRange(getIteratorAfter(startTime, tolerance),
-            getIteratorBefore(endTime, tolerance) + 1);
+                             getIteratorBefore(endTime, tolerance) + 1);
 }
 
 StatesTrajectory::const_iterator

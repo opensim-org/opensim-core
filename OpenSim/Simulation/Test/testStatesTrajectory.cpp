@@ -666,6 +666,13 @@ void testAccessByTime() {
         }
         SimTK_TEST(count == 0);
     }
+    {
+        int count = 0;
+        for (const auto& state : states.getBetween(-50, -40.3)) {
+            count++;
+        }
+        SimTK_TEST(count == 0);
+    }
     // Test trying to use endTime > startTime.
     {
         SimTK_TEST_MUST_THROW_EXC(states.getBetween(4.5, 1.1),

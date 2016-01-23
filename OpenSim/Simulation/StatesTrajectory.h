@@ -219,7 +219,7 @@ public:
     const SimTK::State& get(size_t index) const {
         try {
             return m_states.at(index);
-        } catch (const std::out_of_range& e) {
+        } catch (const std::out_of_range&) {
             OPENSIM_THROW(IndexOutOfRange, index, 0, m_states.size() - 1);
         }
     }
