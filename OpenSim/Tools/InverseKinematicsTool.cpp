@@ -467,7 +467,7 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
         }
         if (versionNumber <= 20201){
             // get filename and use SimTK::Xml to parse it
-            SimTK::Xml doc = SimTK::Xml(newFileName);
+            SimTK::Xml::Document doc = SimTK::Xml::Document(newFileName);
             Xml::Element root = doc.getRootElement();
             if (root.getElementTag()=="OpenSimDocument"){
                 int curVersion = root.getRequiredAttributeValueAs<int>("Version");

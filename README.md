@@ -114,12 +114,13 @@ On Windows using Visual Studio
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.1.3
 * **compiler / IDE**: [Visual Studio 2015](https://www.visualstudio.com/).
     * *Visual Studio Community 2015* is sufficient and is free for everyone.
-        If you want to use *Visual Studio Enterprise 2015*, you may be able 
-        to get it for free at [Dreamspark](https://www.dreamspark.com) if 
+        If you want to use *Visual Studio Enterprise 2015*, you may be able
+        to get it for free at [Dreamspark](https://www.dreamspark.com) if
         you are at an academic institution.
-    * Visual Studio 2015 does not install C++ 
-      support by default. During the installation you must select 
-      *Custom*, and check *Programming Languages > Visual C++ > Common Tools for Visual C++ 2015*.
+    * Visual Studio 2015 does not install C++
+      support by default. During the installation you must select
+      *Custom*, and check *Programming Languages > Visual C++ > Common Tools
+      for Visual C++ 2015*.
       You can uncheck all other boxes. If you have already installed Visual
       Studio without C++ support, simply re-run the installer and select *Modify*.
 * **physics engine**:
@@ -136,10 +137,12 @@ On Windows using Visual Studio
     * **python scripting** (optional):
         * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
+    * The choice between 32-bit/64-bit must be the same between Java, Python,
+      and OpenSim.
 
 #### Download the OpenSim-Core source code
 
-* Method 1; If you want to get going quickly, download the source code from
+* Method 1: If you want to get going quickly, download the source code from
   https://github.com/opensim-org/opensim-core/releases, for the version of
   OpenSim you want. We'll assume you unzipped the source code into
   `C:/opensim-core-source`.
@@ -166,7 +169,8 @@ On Windows using Visual Studio
    directory. This is *not* where we are installing OpenSim-Core; see below.
 4. Click the **Configure** button.
     1. Choose the *Visual Studio 14* generator (for Visual Studio 2015). To
-       build as 64-bit, select *Visual Studio 14 Win64*.
+       build as 64-bit, select *Visual Studio 14 Win64*. The choice between
+       32-bit/64-bit must be the same across all dependencies.
     2. Click **Finish**.
 5. Where do you want to install OpenSim-Core on your computer? Set this by
    changing the `CMAKE_INSTALL_PREFIX` variable. We'll assume you set it to
@@ -185,7 +189,6 @@ On Windows using Visual Studio
       dependencies above. CMake sets `PYTHON_*` variables to tell you the
       Python it will use for building the wrappers.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
-    * It is very important to use Java or Python environment binary format compatible with API build **(either all 32 or 64 bit)**.
 8. Click the **Configure** button again. Then, click **Generate** to make
    Visual Studio project files in the build directory.
 
@@ -221,7 +224,8 @@ In order to use the OpenSim-Core command-line applications or use OpenSim-Core
 libraries in your own application, you must add the OpenSim-Core `bin/`
 directory to your `PATH` environment variable.
 
-1. In the Start menu (Windows 7) or screen (Windows 8), search `environment`.
+1. In the Windows toolbar (Windows 10), Start screen (Windows 8) or Start menu
+   (Windows 7), search `environment`.
 2. Select **Edit the system environment variables**.
 3. Click **Environment Variables...**.
 4. Under **System variables**, click **Path**, then click **Edit**.
@@ -342,18 +346,24 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
 #### Set environment variables
 
 1. **Executables**. If you want to run OpenSim-Core's executables from
-   anywhere on your computer, you must update your PATH. *Note* some of the names of OpenSim-Core executables conflict with some UNIX commands (e.g., `id`). To give preference to OpenSim-Core's executables, we must *prepend* OpenSim-Core's `bin/` directory to the path. Open a terminal and type:
+   anywhere on your computer, you must update your PATH. *Note* some of the
+   names of OpenSim-Core executables conflict with some UNIX commands (e.g.,
+   `id`). To give preference to OpenSim-Core's executables, we must *prepend*
+   OpenSim-Core's `bin/` directory to the path. Open a terminal and type:
 
         $ echo 'export PATH=~/opensim-core/bin:$PATH' >> ~/.bash_profile
 
 2. **Libraries**. Hopefully you can skip this step. This step is required if:
   1. You are using CMake version 2.8.11 or older.
-  2. You plan on building C++ executables or libraries on top of OpenSim, *and* you plan to "install" them in the CMake sense of the word (that is, you're not going to simply use them from your project's build directory).
+  2. You plan on building C++ executables or libraries on top of OpenSim, *and*
+     you plan to "install" them in the CMake sense of the word (that is, you're
+     not going to simply use them from your project's build directory).
   3. You plan to use the Java or MATLAB scripting.
 
-  If any of these are true, then you must add OpenSim-Core libraries to your linker path. Open a terminal and type:
+  If any of these are true, then you must add OpenSim-Core libraries to your
+  linker path. Open a terminal and type:
 
-          $ echo 'export DYLD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bash_profile
+          $ echo 'export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bash_profile
 
 Your changes will only take effect in new terminal windows.
 
@@ -433,10 +443,10 @@ And you could get all the optional dependencies via:
 
     You at least want release libraries (the last 3 count as release), but you
     can have debug libraries coexist with them. To do this, go through the
-    installation process twice, once for each of the two configurations. It is
+    installation process twice, once for each of the two build types. It is
     typical to use a different build directory for each build type (e.g.,
     `~/opensim-core-build-debug` and `~/opensim-core-build-release`). You
-    should install the release configuration *last* to ensure that you use the
+    should install the release build type *last* to ensure that you use the
     release version of the command-line applications instead of the slow debug
     versions.
 8. Set the remaining configuration options.

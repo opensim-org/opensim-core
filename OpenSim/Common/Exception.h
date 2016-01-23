@@ -50,36 +50,50 @@
 namespace OpenSim {
 
 
-/** Macros to throw OpenSim exceptions. The purpose of these macros is to avoid
-having to provide the first few arguments (which are common to all OpenSim
-exceptions) to the exception constructor in the throw statements. This also
-allows us to add more details (eg class name) later easily.                   */
+/** @name Macros to throw OpenSim exceptions
+The purpose of these macros is to aid with consistent message formatting,
+include file/line/function information in all messages, and to make it easier
+for developers to produce good messages.
+@{
+ */
+/**  
+@relates OpenSim::Exception */
+#define OPENSIM_THROW(EXCEPTION, ...)                                \
+    throw EXCEPTION{__FILE__, __LINE__, __func__, __VA_ARGS__};
 
+/**
+This macro checks the given condition and throws the given exception if the
+condition is true. Here's an example that throws an exception if some result is
+incorrect, and passes `result` and `5` to the constructor of the
+`ResultIsIncorrect` exception:
+@code
+auto result = getSomeResult();
+OPENSIM_THROW_IF(result != 5, ResultIsIncorrect, result, 5);
+@endcode
+@relates OpenSim::Exception
+ */
+// These macros also allow us to add more details (eg class name) later easily.
 // Note -- Extra braces enclosing "if" are to avoid problems when these macros 
 // are called within if-else statements like:
-// \code{.cpp}
 //           if(<some condition>)
 //               OPENSIM_THROW_IF(<arguments>)
 //           else
 //               <some statements>
-// \endcode                                                                     
-#define OPENSIM_THROW(EXCEPTION, ...)                                \
-    throw EXCEPTION{__FILE__, __LINE__, __func__, __VA_ARGS__};
-
 #define OPENSIM_THROW_IF(CONDITION, EXCEPTION, ...)                  \
     {                                                                \
     if(CONDITION)                                                    \
         OPENSIM_THROW(EXCEPTION, __VA_ARGS__)                        \
     }
 
+/** @} **/
 
 
 /**
  * A class for basic exception functionality.
  * \if developer
  * To create exception classes in OpenSim, use the following guidlines.
- * If the intention is the derive from an exception named (say) BaseException
- * that is part of OpenSim, use the following blueprint:
+ * If the intention is to derive from an exception named, for example,
+ * BaseException that is part of OpenSim, use the following blueprint:
  * \code{.cpp}
  *     class MyNewException : public BaseException {
  *     public:
@@ -97,8 +111,6 @@ allows us to add more details (eg class name) later easily.                   */
  * derived classes. When creating new exceptions, remember to call addMessage()
  * as shown above if the exception class does have any error message.
  * \endif
- *
- * @author Frank C. Anderson
  */
 class OSIMCOMMON_API Exception  : public std::exception {
 

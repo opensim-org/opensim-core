@@ -152,12 +152,12 @@ else()
     # Set the variables that would have otherwise been set by GNUInstallDirs.
     set(CMAKE_INSTALL_BINDIR bin)
     set(CMAKE_INSTALL_INCLUDEDIR sdk/include)
-    set(CMAKE_INSTALL_LIBDIR lib)
+    set(CMAKE_INSTALL_LIBDIR sdk/lib)
     set(CMAKE_INSTALL_DOCDIR sdk/doc)
     # SYSCONFDIR holds read-only single-machine machine-dependent data.
     set(CMAKE_INSTALL_SYSCONFDIR sdk)
 
-    set(OPENSIM_INSTALL_ARCHIVEDIR sdk/lib)
+    set(OPENSIM_INSTALL_ARCHIVEDIR "${CMAKE_INSTALL_LIBDIR}")
     set(OPENSIM_INSTALL_CMAKEDIR cmake)
     set(OPENSIM_INSTALL_PYTHONDIR sdk/python)
     set(OPENSIM_INSTALL_JAVAJARDIR sdk/Java)
@@ -227,7 +227,11 @@ set(BUILD_PLATFORM "${PLATFORM_NAME}:${PLATFORM_ABI}" CACHE STRING
     FORCE)
 
 if(NOT MSVC AND NOT XCODE AND NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Debug or Release build" FORCE)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
+        "Choose the type of build." FORCE)
+    # Set the possible values of build type for cmake-gui
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
+        "MinSizeRel" "RelWithDebInfo")
 endif()
 
 ## Choose the maximum level of x86 instruction set that the compiler is
