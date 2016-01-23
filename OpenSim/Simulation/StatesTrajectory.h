@@ -32,6 +32,36 @@
 
 namespace OpenSim {
 
+/** Helper class to use range for loops with a pair of iterators. This class
+ * should only be used when you're sure the iterators are valid. Don't use this
+ * class directly; instead, use makeIteratorRange(). */
+// http://stackoverflow.com/questions/6167598/why-was-pair-range-access-removed-from-c11
+template <class Iterator>
+class IteratorRange {
+public:
+    IteratorRange(Iterator first, Iterator last)
+        : m_first(first), m_last(last) {}
+    Iterator begin() const { return m_first; }
+    Iterator end() const { return m_last; }
+private:
+    const Iterator m_first;
+    const Iterator m_last;
+};
+
+/** Make an IteratorRange object to be used in a range for loop
+ * @code
+ * for (auto& x : makeIteratorRange(v.begin(), v.end())) {
+ *     ...
+ * }
+ * @endcode
+ * @relates IteratorRange
+ */
+template <class Iterator>
+IteratorRange<Iterator> makeIteratorRange(Iterator first, Iterator last) {
+    return IteratorRange<Iterator>(first, last);
+}
+
+
 class Storage;
 class Model;
 
@@ -100,7 +130,7 @@ class Model;
  * (continuous) state variables | yes
  * discrete state variables     | yes
  * modeling options             | yes
- * cache variables              | no (TODO)
+ * cache variables              | no
  *
  * The cache variables (e.g., total system mass, control signals) are not saved
  * to the OSTATES file because they can be regenerated from the other data and
@@ -197,36 +227,81 @@ public:
     const SimTK::State& back() const { 
         return m_states.back();
     }
+
+    /** Get the index of the state just before (or at) the given time.
+     * @throws TimeOutOfRange If there are no states before the given time.
+     * @throws Exception If the trajectory is empty.
+     * @see getIndexBefore(const double&, const double&)
+     */
     size_t getIndexBefore(const double& time) {
         return getIndexBefore(time, 0);
     }
+    /** Get the index of the state just after (or at) the given time.
+     * @throws TimeOutOfRange If there are no states after the given time.
+     * @throws Exception If the trajectory is empty.
+     * @see getIndexAfter(const double&, const double&)
+     * */
     size_t getIndexAfter(const double& time) {
         return getIndexAfter(time, 0);
     }
-    /** TODO */
-    /** Get a const reference to the state just after a given time. This allows
-     * accessing TODO.
-     * */
-    size_t getIndexBefore(const double& time, const double& tolerance);
-    size_t getIndexAfter(const double& time, const double& tolerance);
-    // TODO getBetween(startTime, endTime);
-
-    /** Get the index of the staet just after the given time. */
     /// @}
     
     /** Iterator type that does not allow modifying the trajectory.
      * Most users do not need to understand what this is. */
     typedef std::vector<SimTK::State>::const_iterator const_iterator;
 
+    /** A helper type to allow using range for loops over a subset of the
+     * trajectory. */
+    typedef IteratorRange<const_iterator> IteratorRange;
+
     /// @name Iterating through the trajectory
     /// @{
 
     /** Iterator pointing to first SimTK::State; does not allow modifying the
-     * states. */
+     * states. Allows using this class in a range for loop. */
     const_iterator begin() const { return m_states.cbegin(); }
-    /** Iterator pointing to end of the trajectory; does not allow modifying the
-     * states. */
+    /** Iterator pointing past the end of the trajectory. Allows using this
+     * class in a range for loop. */
     const_iterator end() const { return m_states.cend(); }
+    /** Iterate over the states in a given time interval (inclusive).
+     *
+     * @code
+     * for (const auto& state : states.getBetween(0.5, 1.5)) {
+     *     state.getTime();
+     * }
+     * @endcode
+     *
+     * The startTime must be less than or equal to the endTime.
+     *
+     * @see getBetween(const double&, const double&, const double&)
+     */
+    IteratorRange getBetween(const double& startTime, const double& endTime) {
+        return getBetween(startTime, endTime, 0);
+    }
+    /** Iterator pointing to the state just before (or at) the given time. 
+     * If there are no states before the given time, then the returned iterator
+     * matches end():
+     * @code
+     * auto it = states.getIteratorBefore(0.3);
+     * if (it == states.end()) std::cout << "No states before." << std::endl;
+     * @endcode
+     * @see getIteratorBefore(const double&, const double&)
+     * */
+    const_iterator getIteratorBefore(const double& time) {
+        return getIteratorBefore(time, 0);
+    }
+    /** Iterator pointing to the state just after (or at) the given time.
+     * If there are no states after the given time, then the returned iterator
+     * matches end():
+     * @code
+     * auto it = states.getIteratorAfter(3.1);
+     * if (it == states.end()) std::cout << "No states after." << std::endl;
+     * @endcode
+     * @see getIteratorAfter(const double&, const double&)
+     * */
+    const_iterator getIteratorAfter(const double& time) {
+        return getIteratorAfter(time, 0);
+    }
     /// @}
 
     /// @name Populating the trajectory with states
@@ -287,6 +362,85 @@ public:
     bool isCompatibleWith(const Model& model);
     /// @}
 
+    /// @name Advanced: access states by time with a tolerance
+    /// @{
+    /** Same as getIndexBefore(), but accepts a tolerance to handle imprecise
+     * times. For example, if the trajectory contains states with times 1.3
+     * and 1.5 and you ask for the index of the state before time 1.4, you'll
+     * normally get the state with time 1.3. However, if you set a tolerance of
+     * 0.15, then you'll get the state with time 1.5 (because it is the state
+     * just before 1.55 = 1.4 + 0.15).
+     *
+     * It is unlikely you'll need to use this tolerance, but it might be useful
+     * in cases where you observe the state times in less than full precision
+     * (perhaps in console output or storage files). Consider this scenario:
+     * the in-memory time of a state is actually 1.500001 but it is printed to
+     * the console as 1.500; you might be tempted to get this state by asking
+     * for the one that is before/at time 1.5, but this would end up giving you
+     * the state at time 1.3. You could remedy this issue by setting the
+     * tolerance to 1e-3 (the precision of the console output).
+     *
+     * @throws TimeOutOfRange If there are no states before the given time.
+     * @throws Exception If the trajectory is empty.
+     */
+    size_t getIndexBefore(const double& time, const double& tolerance) {
+        OPENSIM_THROW_IF(m_states.empty(), Exception, "Trajectory is empty.");
+
+        const auto it = getIteratorBefore(time, tolerance);
+
+        OPENSIM_THROW_IF(it == m_states.end(),
+            TimeOutOfRange, time, "before",
+            m_states.front().getTime(), m_states.back().getTime());
+
+        return it - m_states.begin();
+    }
+    /** Same as getIndexAfter(), but accepts a tolerance to handle imprecise
+     * times.
+     * See getIndexBefore(const double&, const double&) for an explanation.
+     *
+     * @throws TimeOutOfRange If there are no states after the given time.
+     * @throws Exception If the trajectory is empty.
+     */
+    size_t getIndexAfter(const double& time, const double& tolerance) {
+        OPENSIM_THROW_IF(m_states.empty(), Exception, "Trajectory is empty.");
+
+        const auto it = getIteratorAfter(time, tolerance);
+
+        OPENSIM_THROW_IF(it == m_states.end(),
+            TimeOutOfRange, time, "after",
+            m_states.front().getTime(), m_states.back().getTime());
+
+        return it - m_states.begin();
+    }
+    /** Same as getBetween(), but accepts a tolerance to handle
+     * imprecise times.
+     * See getIndexBefore(const double&, const double&) for an explanation.
+     */
+    IteratorRange getBetween(const double& startTime, const double& endTime, 
+            const double& tolerance) {
+        SimTK_APIARGCHECK2_ALWAYS(startTime <= endTime,
+                "StatesTrajectory", "getBetween",
+                "startTime (%f) must be less than or equal to endTime (%s)",
+                startTime, endTime);
+        // Must add one to the last iterator since it's supposed to point past
+        // the end.
+        return makeIteratorRange(getIteratorAfter(startTime, tolerance),
+                                 getIteratorBefore(endTime, tolerance) + 1);
+    }
+    /** Same as getIteratorBefore(), but accepts a tolerance to handle
+     * imprecise times.
+     * See getIndexBefore(const double&, const double&) for an explanation.
+     */
+    const_iterator getIteratorBefore(const double& time,
+            const double& tolerance);
+    /** Same as getIteratorAfter(), but accepts a tolerance to handle
+     * imprecise times.
+     * See getIndexBefore(const double&, const double&) for an explanation.
+     */
+    const_iterator getIteratorAfter(const double& time,
+            const double& tolerance);
+    /// @}
+
 private:
 
     /** Checks if two states have the same number of state variables,
@@ -315,13 +469,19 @@ private:
 
 public:
 
-    /** Thrown when TODO */
+    /** Thrown when asking for a state at a time that is out of range. */
     class TimeOutOfRange : public OpenSim::Exception {
     public:
         TimeOutOfRange(const std::string& file, size_t line,
-                const std::string& func, const double& requestedTime) :
+                const std::string& func,
+                const double& requestedTime, const std::string& sense,
+                const double& firstTime, const double& lastTime) :
                 OpenSim::Exception(file, line, func) {
-            // TODO
+            std::ostringstream msg;
+            msg << "There are no states with a time " << sense << " " <<
+                requestedTime << "; the range of times is [" <<
+                firstTime << ", " << lastTime << "].";
+            addMessage(msg.str());
         }
     };
 

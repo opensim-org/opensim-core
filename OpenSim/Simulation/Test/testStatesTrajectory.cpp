@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Chris Dembia                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -31,6 +31,8 @@ using namespace OpenSim;
 using namespace SimTK;
 
 // TODO more informative "IndexOutOfRange" exception when using get().
+// TODO exception or just end() for time out of range?
+    // Think about GUI, Python, etc.
 
 // TODO detailed exceptions when integrity checks fail.
 // TODO currently, one gets segfaults if state is not realized.
@@ -608,7 +610,7 @@ void testAccessByTime() {
     // Make sure that we get the right state when there are multiple with
     // the same time.
     state.setTime(4.1); // Same time as before.
-    states.append(state); // 4.
+    states.append(state); // 4
     states.append(state); // 5
     state.setTime(5.8);
     states.append(state); // 6
@@ -627,25 +629,58 @@ void testAccessByTime() {
             StatesTrajectory::TimeOutOfRange);
 
     // Iterate across the states between two times.
-    /*
     {
         std::vector<int> indices{1, 2, 3};
         int index = 0;
         for (const auto& state : states.getBetween(1.0, 4.0)) {
-            SimTK_TEST(&state == &states.get(indices[index]));
+            SimTK_TEST(&state == &states.get(indices.at(index)));
             index++;
         }
+    }
+    // Iterate over a small interval that doesn't include any states.
+    {
+        int count = 0;
+        for (const auto& state : states.getBetween(2.0, 2.1)) {
+            count++;
+        }
+        SimTK_TEST(count == 0);
+    }
+    // Iterate over all states with the same time.
+    {
+        int count = 0;
+        for (const auto& state : states.getBetween(4.1, 4.1)) {
+            count++;
+        }
+        SimTK_TEST(count == 3);
     }
     // Test iterating with a tolerance.
     {
-        std::vector<int> indices{1, 2, 3};
+        std::vector<int> indices{1, 2, 3, 4, 5};
         int index = 0;
         for (const auto& state : states.getBetween(1.301, 4.099, 0.01)) {
-            SimTK_TEST(&state == &states.get(indices[index]));
+            SimTK_TEST(&state == &states.get(indices.at(index)));
             index++;
         }
     }
-    */
+    // Test iterating over an empty range.
+    {
+        int count = 0;
+        for (const auto& state : states.getBetween(1000.0, 1010.0)) {
+            count++;
+        }
+        SimTK_TEST(count == 0);
+    }
+    // Test trying to use endTime > startTime.
+    {
+        SimTK_TEST_MUST_THROW_EXC(states.getBetween(4.5, 1.1),
+                SimTK::Exception::APIArgcheckFailed);
+    }
+    // Test trying to use endTime > startTime beyond the valid times.
+    {
+        SimTK_TEST_MUST_THROW_EXC(states.getBetween(2000.0, 1580.0),
+                SimTK::Exception::APIArgcheckFailed);
+    }
+
 }
 
 /*
@@ -829,7 +864,7 @@ void testIntegrityChecks() {
 
 
 int main() {
-    SimTK_START_TEST("testStatesTrajectory");
+    // TODO SimTK_START_TEST("testStatesTrajectory");
     
         // actuators library is not loaded automatically (unless using clang).
         #if !defined(__clang__)
@@ -862,5 +897,5 @@ int main() {
         // TODO SimTK_SUBTEST(testEqualityOperator);
         SimTK_SUBTEST(testFromStatesStorageAllRowsHaveSameLength);
 
-    SimTK_END_TEST();
+    // TODO SimTK_END_TEST();
 }

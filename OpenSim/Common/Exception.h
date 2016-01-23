@@ -125,10 +125,17 @@ public:
               int aLine=-1);
 
     /** Call this constructor from derived classes to add file, line and 
-    function information to the error message                                 */
+    function information to the error message.                                */
     Exception(const std::string& file,
               size_t line,
               const std::string& func);
+
+    /** Use this when you want to throw an Exception (with OPENSIM_THROW or
+    OPENSIM_THROW_IF) and also provide a message.                             */
+    Exception(const std::string& file,
+              size_t line,
+              const std::string& func,
+              const std::string& msg);
 
     virtual ~Exception() throw() {}
 
