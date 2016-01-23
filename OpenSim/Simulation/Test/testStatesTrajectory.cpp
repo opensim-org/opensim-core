@@ -683,6 +683,16 @@ void testAccessByTime() {
         SimTK_TEST_MUST_THROW_EXC(states.getBetween(2000.0, 1580.0),
                 SimTK::Exception::APIArgcheckFailed);
     }
+    // Test on an empty trajectory.
+    {
+        int count = 0;
+        StatesTrajectory emptyTraj;
+        for (const auto& state : emptyTraj.getBetween(1.6, 6.2)) {
+            count++;
+        }
+        std::cout << "DEBUG " << count << std::endl;
+        SimTK_TEST(count == 0);
+    }
 
 }
 

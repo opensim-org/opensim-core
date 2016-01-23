@@ -68,7 +68,7 @@ StatesTrajectory::IteratorRange StatesTrajectory::getBetween(
     // If startTime < endTime < front().getTime(), then `start` points to
     // front(), which will cause iterating over the *entire* trajectory. To
     // prevent this, we have to detect if front().getTime() > endTime.
-    if (!m_states.empty() && front().getTime() > endTime) {
+    if (m_states.empty() || front().getTime() > endTime) {
         return makeIteratorRange(end(), end());
     }
 
