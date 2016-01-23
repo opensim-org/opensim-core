@@ -30,10 +30,6 @@
 using namespace OpenSim;
 using namespace SimTK;
 
-// TODO more informative "IndexOutOfRange" exception when using get().
-// TODO exception or just end() for time out of range?
-    // Think about GUI, Python, etc.
-
 // TODO detailed exceptions when integrity checks fail.
 // TODO currently, one gets segfaults if state is not realized.
 // TODO accessing acceleration-level outputs.
@@ -760,9 +756,9 @@ void testBoundsCheck() {
     states[states.getSize() + 100];
     states[4];
     states[5];
-    SimTK_TEST_MUST_THROW_EXC(states.get(4), std::out_of_range);
+    SimTK_TEST_MUST_THROW_EXC(states.get(4), IndexOutOfRange);
     SimTK_TEST_MUST_THROW_EXC(states.get(states.getSize() + 100),
-            std::out_of_range);
+            IndexOutOfRange);
 }
 
 void testIntegrityChecks() {

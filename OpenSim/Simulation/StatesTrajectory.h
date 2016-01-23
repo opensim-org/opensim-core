@@ -217,7 +217,11 @@ public:
     // TODO throw OpenSIm IndexOutOfRange exception, and update Doxygen to
     // remove out_of_range.
     const SimTK::State& get(size_t index) const {
-        return m_states.at(index);
+        try {
+            return m_states.at(index);
+        } catch (const std::out_of_range& e) {
+            OPENSIM_THROW(IndexOutOfRange, index, 0, m_states.size() - 1);
+        }
     }
     /** Get a const reference to the first state in the trajectory. */
     const SimTK::State& front() const { 
