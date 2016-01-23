@@ -690,7 +690,6 @@ void testAccessByTime() {
         for (const auto& state : emptyTraj.getBetween(1.6, 6.2)) {
             count++;
         }
-        std::cout << "DEBUG " << count << std::endl;
         SimTK_TEST(count == 0);
     }
 

@@ -37,11 +37,11 @@ size_t StatesTrajectory::getIndexBefore(const double& time,
 
     const auto it = getIteratorBefore(time, tolerance);
 
-    OPENSIM_THROW_IF(it == m_states.end(),
+    OPENSIM_THROW_IF(it == end(),
             TimeOutOfRange, time, "before",
             m_states.front().getTime(), m_states.back().getTime());
 
-    return it - m_states.begin();
+    return it - begin();
 }
 
 size_t StatesTrajectory::getIndexAfter(const double& time,
@@ -50,11 +50,11 @@ size_t StatesTrajectory::getIndexAfter(const double& time,
 
     const auto it = getIteratorAfter(time, tolerance);
 
-    OPENSIM_THROW_IF(it == m_states.end(),
+    OPENSIM_THROW_IF(it == end(),
             TimeOutOfRange, time, "after",
             m_states.front().getTime(), m_states.back().getTime());
 
-    return it - m_states.begin();
+    return it - begin();
 }
 
 StatesTrajectory::IteratorRange StatesTrajectory::getBetween(
@@ -88,13 +88,12 @@ StatesTrajectory::getIteratorBefore(const double& time,
     // upper_bound() finds the first element whose time is greater than the
     // given time.
     // TODO tolerance.
-    auto upper = std::upper_bound(m_states.begin(), m_states.end(),
-                                  time + tolerance, compare);
+    auto upper = std::upper_bound(begin(), end(), time + tolerance, compare);
 
     // If the first element is greater than the given time, then there are no
     // elements before the given time.
-    if (upper == m_states.begin()) {
-        return m_states.end();
+    if (upper == begin()) {
+        return end();
     }
 
     // We step back one element to get the last element whose time is less than
@@ -112,8 +111,7 @@ StatesTrajectory::getIteratorAfter(const double& time,
     // lower_bound() finds the first element whose time is greater than or
     // equal to the given time.
     // If the iterator is end(), there are no states after the given time.
-    auto lower = std::lower_bound(m_states.begin(), m_states.end(),
-                                  time - tolerance, compare);
+    auto lower = std::lower_bound(begin(), end(), time - tolerance, compare);
 
     return lower;
 }
