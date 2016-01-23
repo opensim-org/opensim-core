@@ -213,7 +213,7 @@ deploy:
   # API key is encrypted with travis.
   key: $BINTRAY_API_KEY
   on:
-    branch: bintray
+    branch: master
     # Upload for both linux (once) and OSX. Might need to modify the condition
     # if we change the build matrix.
     condition: "$DEPLOY = yes"
