@@ -211,8 +211,8 @@ public:
     }
     /** Get a const reference to the state at a given index in the trajectory.
 
-     * @throws std::out_of_range if the index is greater than the size of the
-     *                           trajectory.
+     * @throws IndexOutOfRange If the index is greater than the size of the
+     *                         trajectory.
      */
     // TODO throw OpenSIm IndexOutOfRange exception, and update Doxygen to
     // remove out_of_range.
@@ -387,17 +387,7 @@ public:
      * @throws TimeOutOfRange If there are no states before the given time.
      * @throws Exception If the trajectory is empty.
      */
-    size_t getIndexBefore(const double& time, const double& tolerance) {
-        OPENSIM_THROW_IF(m_states.empty(), Exception, "Trajectory is empty.");
-
-        const auto it = getIteratorBefore(time, tolerance);
-
-        OPENSIM_THROW_IF(it == m_states.end(),
-            TimeOutOfRange, time, "before",
-            m_states.front().getTime(), m_states.back().getTime());
-
-        return it - m_states.begin();
-    }
+    size_t getIndexBefore(const double& time, const double& tolerance);
     /** Same as getIndexAfter(), but accepts a tolerance to handle imprecise
      * times.
      * See getIndexBefore(const double&, const double&) for an explanation.
@@ -405,32 +395,13 @@ public:
      * @throws TimeOutOfRange If there are no states after the given time.
      * @throws Exception If the trajectory is empty.
      */
-    size_t getIndexAfter(const double& time, const double& tolerance) {
-        OPENSIM_THROW_IF(m_states.empty(), Exception, "Trajectory is empty.");
-
-        const auto it = getIteratorAfter(time, tolerance);
-
-        OPENSIM_THROW_IF(it == m_states.end(),
-            TimeOutOfRange, time, "after",
-            m_states.front().getTime(), m_states.back().getTime());
-
-        return it - m_states.begin();
-    }
+    size_t getIndexAfter(const double& time, const double& tolerance);
     /** Same as getBetween(), but accepts a tolerance to handle
      * imprecise times.
      * See getIndexBefore(const double&, const double&) for an explanation.
      */
     IteratorRange getBetween(const double& startTime, const double& endTime, 
-            const double& tolerance) {
-        SimTK_APIARGCHECK2_ALWAYS(startTime <= endTime,
-                "StatesTrajectory", "getBetween",
-                "startTime (%f) must be less than or equal to endTime (%s)",
-                startTime, endTime);
-        // Must add one to the last iterator since it's supposed to point past
-        // the end.
-        return makeIteratorRange(getIteratorAfter(startTime, tolerance),
-                                 getIteratorBefore(endTime, tolerance) + 1);
-    }
+            const double& tolerance);
     /** Same as getIteratorBefore(), but accepts a tolerance to handle
      * imprecise times.
      * See getIndexBefore(const double&, const double&) for an explanation.

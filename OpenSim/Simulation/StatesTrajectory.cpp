@@ -31,6 +31,45 @@ size_t StatesTrajectory::getSize() const {
     return m_states.size();
 }
 
+size_t StatesTrajectory::getIndexBefore(const double& time,
+        const double& tolerance) {
+    OPENSIM_THROW_IF(m_states.empty(), Exception, "Trajectory is empty.");
+
+    const auto it = getIteratorBefore(time, tolerance);
+
+    OPENSIM_THROW_IF(it == m_states.end(),
+            TimeOutOfRange, time, "before",
+            m_states.front().getTime(), m_states.back().getTime());
+
+    return it - m_states.begin();
+}
+
+size_t StatesTrajectory::getIndexAfter(const double& time,
+        const double& tolerance) {
+    OPENSIM_THROW_IF(m_states.empty(), Exception, "Trajectory is empty.");
+
+    const auto it = getIteratorAfter(time, tolerance);
+
+    OPENSIM_THROW_IF(it == m_states.end(),
+            TimeOutOfRange, time, "after",
+            m_states.front().getTime(), m_states.back().getTime());
+
+    return it - m_states.begin();
+}
+
+StatesTrajectory::IteratorRange StatesTrajectory::getBetween(
+        const double& startTime, const double& endTime, 
+        const double& tolerance) {
+    SimTK_APIARGCHECK2_ALWAYS(startTime <= endTime,
+            "StatesTrajectory", "getBetween",
+            "startTime (%f) must be less than or equal to endTime (%f)",
+            startTime, endTime);
+    // Must add one to the last iterator since it's supposed to point past
+    // the end.
+    return makeIteratorRange(getIteratorAfter(startTime, tolerance),
+            getIteratorBefore(endTime, tolerance) + 1);
+}
+
 StatesTrajectory::const_iterator
 StatesTrajectory::getIteratorBefore(const double& time,
         const double& tolerance) {
