@@ -876,7 +876,7 @@ void testIntegrityChecks() {
 
 
 int main() {
-    // TODO SimTK_START_TEST("testStatesTrajectory");
+    SimTK_START_TEST("testStatesTrajectory");
     
         // actuators library is not loaded automatically (unless using clang).
         #if !defined(__clang__)
@@ -909,5 +909,5 @@ int main() {
         // TODO SimTK_SUBTEST(testEqualityOperator);
         SimTK_SUBTEST(testFromStatesStorageAllRowsHaveSameLength);
 
-    // TODO SimTK_END_TEST();
+    SimTK_END_TEST();
 }
