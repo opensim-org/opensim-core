@@ -198,11 +198,6 @@ public:
     Component(const std::string& aFileName,
         bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
 
-    /** Construct Component as a subcomponent member of another Component.
-        Automatically marks the component as a subcomponent of the owner.
-        A subcomponent MUST be named. **/
-    explicit Component(const std::string& name, Component* owner=nullptr);
-
     /** Construct Component from a specific node in an XML document. **/
     explicit Component(SimTK::Xml::Element& aNode);
 
@@ -930,6 +925,19 @@ public:
 
 protected:
 
+    /** Construct Component as a subcomponent member of another Component.
+    Automatically marks this component as a subcomponent of the owner.
+    A subcomponent MUST be named. **/
+    explicit Component(const std::string& name, Component* owner);
+
+    template<class C=Component>
+    C& constructSubcomponent(const std::string& name) {
+        C* component = new C();
+        component->setName(name);
+        this->markAsSubcomponent(component);
+        return *component;
+    }
+
 class StateVariable;
 //template <class T> friend class ComponentSet;
 // Give the ComponentMeasure access to the realize() methods.
@@ -948,15 +956,13 @@ template <class T> friend class ComponentMeasure;
     }
 
     /**
-    * Mark another Component as a subcomponent of this Component. Component
+    * Adopt a component as a subcomponent of this Component. Component
     * methods (e.g. addToSystem(), initStateFromProperties(), ...) are
-    * therefore invoked on subcomponents when called on this Component.
-    * Realization is also performed automatically on subcomponents. This
-    * member function does not take ownership, it is assumed that the
-    * component is a data member or property of this Component.
+    * automatically invoked on subcomponents when called on this Component.
+    * Realization is also performed automatically on subcomponents. All
+    * subcomponents are owned, therefore this Component takes ownership. 
     */
-    void markAsSubcomponent(Component* component);
-
+    void adoptSubcomponent(Component* subcomponent);
 
     /** @name  Component Extension Interface
     The interface ensures that deserialization, resolution of inter-connections,
@@ -1772,6 +1778,10 @@ protected:
     SimTK::Array_<Component *>  _components;
 
 private:
+    /// Internally used mark the subcomponents that are owned otherwise owned 
+    /// because they are data member, properties or adoptees of this Component.
+    void markAsSubcomponent(Component* subcomponent);
+
     /// Base Component must create underlying resources in computational System.
     void baseAddToSystem(SimTK::MultibodySystem& system) const;
 
@@ -1806,6 +1816,9 @@ private:
     // in its extendAddToSystem() method, and placed in the System's default
     // subsystem.
     SimTK::ResetOnCopy<SimTK::MeasureIndex> _simTKcomponentIndex;
+
+    // Hold onto adopted components
+    std::vector<SimTK::ClonePtr<Component>> _adoptees;
 
     // Structure to hold modeling option information. Modeling options are
     // integers 0..maxOptionValue. At run time we keep them in a Simbody

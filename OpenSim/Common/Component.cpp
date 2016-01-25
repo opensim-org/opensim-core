@@ -884,7 +884,7 @@ void Component::markPropertiesAsSubcomponents()
     } // loop over properties
 }
 
-// Include another Component as a subcomponent of this one. If already a
+// mark a Component as a subcomponent of this one. If already a
 // subcomponent, it is not added to the list again.
 void Component::markAsSubcomponent(Component* component)
 {
@@ -904,12 +904,21 @@ void Component::markAsSubcomponent(Component* component)
                 + getName() + "' already has '" + component->getName() +
                     "' as a subcomponent.";
             std::cout << msg << std::endl;
-            throw Exception(msg, __FILE__, __LINE__);
+            //throw Exception(msg, __FILE__, __LINE__);
         }
     }
 
     component->setParent(*this);
 }
+
+
+// Include another Component as a subcomponent of this one. If already a
+// subcomponent, it is not added to the list again.
+void Component::adoptSubcomponent(Component* subcomponent)
+{
+    _adoptees.push_back(SimTK::ClonePtr<Component>(subcomponent));
+}
+
 
 const int Component::getStateIndex(const std::string& name) const
 {

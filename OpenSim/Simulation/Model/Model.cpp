@@ -643,7 +643,7 @@ void Model::extendConnectToModel(Model &model)
                 // TODO: add all added compoents to a private list of owned components
                 // that are not serialized so that they are destroyed.
                 // Currently this is a leak.
-                markAsSubcomponent(weld);
+                adoptSubcomponent(weld);
             }
         }
 
@@ -703,14 +703,14 @@ void Model::extendConnectToModel(Model &model)
             WeldConstraint* weld = new WeldConstraint( joint.getName()+"_Loop",
                 parent, joint.getParentFrame().findTransformInBaseFrame(),
                 child, joint.getChildFrame().findTransformInBaseFrame());
-            markAsSubcomponent(weld);
+            adoptSubcomponent(weld);
         }
         else if (joint.getConcreteClassName() == "BallJoint") {
             PointConstraint* point = new PointConstraint(
                 parent, joint.getParentFrame().findTransformInBaseFrame().p(),
                 child, joint.getChildFrame().findTransformInBaseFrame().p());
             point->setName(joint.getName() + "_Loop");
-            markAsSubcomponent(point);
+            adoptSubcomponent(point);
         }
         else if (joint.getConcreteClassName() == "FreeJoint") {
             // A "free" loop constraint is no constraint at all so we can

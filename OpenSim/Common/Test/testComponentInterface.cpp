@@ -33,8 +33,8 @@ class Bar;
 class Sub : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(Sub, Component);
 public:
-    Sub(const std::string& name = "", Component* owner = nullptr)
-        : Component(name, owner) {}
+    Sub() = default;
+    virtual ~Sub() = default;
 }; //end class Sub
 
 class TheWorld : public Component {
@@ -115,7 +115,7 @@ private:
     // keep track of the force added by the component
     mutable ForceIndex fix;
 
-    Sub internalSub{ "internalSub", this };
+    Sub internalSub{ constructSubcomponent<Sub>("internalSub") };
 
 }; // end of TheWorld
 
@@ -590,6 +590,8 @@ int main() {
         // Ensure the connection works.
         ASSERT_EQUAL(3.5, foo.getInputValue<double>(s, "fiberLength"), 1e-10);
         ASSERT_EQUAL(1.5, foo.getInputValue<double>(s, "activation"), 1e-10);
+
+        theWorld.dumpSubcomponents();
 
         theWorld.print("Doubled" + modelFile);
     }
