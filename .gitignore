@@ -11,3 +11,6 @@ build*
 
 # python
 *.pyc
+
+# Ignore directories under 'dependencies'
+dependencies/*

@@ -152,12 +152,12 @@ else()
     # Set the variables that would have otherwise been set by GNUInstallDirs.
     set(CMAKE_INSTALL_BINDIR bin)
     set(CMAKE_INSTALL_INCLUDEDIR sdk/include)
-    set(CMAKE_INSTALL_LIBDIR lib)
+    set(CMAKE_INSTALL_LIBDIR sdk/lib)
     set(CMAKE_INSTALL_DOCDIR sdk/doc)
     # SYSCONFDIR holds read-only single-machine machine-dependent data.
     set(CMAKE_INSTALL_SYSCONFDIR sdk)
 
-    set(OPENSIM_INSTALL_ARCHIVEDIR sdk/lib)
+    set(OPENSIM_INSTALL_ARCHIVEDIR "${CMAKE_INSTALL_LIBDIR}")
     set(OPENSIM_INSTALL_CMAKEDIR cmake)
     set(OPENSIM_INSTALL_PYTHONDIR sdk/python)
     set(OPENSIM_INSTALL_JAVAJARDIR sdk/Java)
@@ -425,6 +425,23 @@ if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
             set(OPENSIM_USE_INSTALL_RPATH TRUE)
         endif()
     endif()
+endif()
+
+set(OPENSIM_DEPENDENCIES_DIR 
+    "" 
+    CACHE 
+    PATH
+    "Directory containing installed binaries of OpenSim dependencies. Set this
+     only if you used the Superbuild procedure to install dependencies. ")
+
+find_package(BTK 
+    REQUIRED
+    HINTS "${OPENSIM_DEPENDENCIES_DIR}/BTK/share/btk-0.4dev")
+CopyDependencyDLLsForWin(BTK ${BTK_INSTALL_PREFIX})
+
+
+if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
+    set(SIMBODY_HOME "${OPENSIM_DEPENDENCIES_DIR}/simbody")
 endif()
 
 
