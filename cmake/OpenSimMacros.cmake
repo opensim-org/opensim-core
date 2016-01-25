@@ -253,3 +253,29 @@ function(OpenSimAddApplication APPNAME)
     endif()
 
 endfunction()
+
+
+# Function to copy DLL files from dependency install directory into OpenSim 
+# build and install directories. This is a Windows specific function enabled 
+# only for Windows platform. Intention is to allow runtime loader to find all 
+# the required DLLs without need for editing PATH variable.
+function(CopyDependencyDLLsForWin DEP_NAME DEP_INSTALL_DIR)
+    # On Windows, copy dlls into OpenSim binary directory.
+    if(WIN32)
+        file(GLOB_RECURSE DLLS ${DEP_INSTALL_DIR}/*.dll)
+        if(NOT DLLS)
+            message(FATAL_ERROR "Zero DLLs found in directory "
+                                "${DEP_INSTALL_DIR}.")
+        endif()
+        foreach(DLL IN LISTS DLLS)
+            get_filename_component(DLL_NAME ${DLL} NAME)
+            set(DEST_DIR ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR})
+            add_custom_command(OUTPUT ${DLL_NAME}
+                               COMMAND cmake -E copy ${DLL} ${DEST_DIR}
+                               COMMENT "Copying ${DLL_NAME} to ${DEST_DIR}")
+            list(APPEND DLL_NAMES ${DLL_NAME})
+        endforeach()
+        add_custom_target("Copy_${DEP_NAME}_DLLs" ALL DEPENDS ${DLL_NAMES})
+        install(FILES ${DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
+    endif()
+endfunction()
