@@ -121,29 +121,11 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 // Allow iterating through a StatesTrajectory.
 // This extend block must appear before the %template call in simulation.i.
 
+// TODO remove.
+%rename(_getBetween) OpenSim::StatesTrajectory::getBetween;
+
 %extend OpenSim::StatesTrajectory {
 %pythoncode %{
-    class StatesTrajectoryIterator(object):
-        """
-        Use this object to iterate over a StatesTrajectory.
-        You create an instance of this nested class by calling
-        StatesTrajectory.__iter__().
-        """
-        def __init__(self, states_obj, index):
-            """Construct an iterator for the given StatesTrajectory."""
-            self._states_obj = states_obj
-            self._index = index
-        def __iter__(self):
-            """This iterator is also iterable."""
-            return self
-        def next(self):
-            if self._index < self._states_obj.getSize():
-                current_index = self._index
-                self._index += 1
-                return self._states_obj.get(current_index)
-            else:
-                # This is how Python knows to stop iterating.
-                raise StopIteration()
 
     def __iter__(self):
         """Get an iterator for this Set, to be used as such (where `states` is
@@ -152,7 +134,15 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
             for state in states:
                 model.calcMassCenterPosition(state)
         """
-        return self.StatesTrajectoryIterator(self, 0)
+        it = self.begin()
+        while it != self.end():
+            yield it.next()
+
+    def getBetween(self, *args, **kwargs):
+        iter_range = self._getBetween(*args, **kwargs)
+        it = iter_range.begin()
+        while it != iter_range.end():
+            yield it.next()
 %}
 };
 
@@ -201,8 +191,3 @@ SET_ADOPT_HELPER(Analysis);
         return $self->get(i);
     }
 };
-    // TODO don't allow assigning through operator, since that would allow
-    // violating the ordering of the trajectory.
-    //void __setitem__(int i, const SimTK::State& value) {
-    //    $self->upd(i) = value;
-    //}

@@ -62,7 +62,7 @@ StatesTrajectory::IteratorRange StatesTrajectory::getBetween(
         const double& tolerance) {
     SimTK_APIARGCHECK2_ALWAYS(startTime <= endTime,
             "StatesTrajectory", "getBetween",
-            "startTime (%f) must be less than or equal to endTime (%f)",
+            "startTime (%f) must be less than or equal to endTime (%f).",
             startTime, endTime);
 
     // If startTime < endTime < front().getTime(), then `start` points to

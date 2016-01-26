@@ -198,6 +198,13 @@
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
 
 %include <OpenSim/Simulation/StatesTrajectory.h>
+// TODO we already made a StdVectorState in simbody.i, but this is required
+// to create type traits for the simulation module. Ideally, we would not need
+// the following line:
+%template(_StdVectorState) std::vector<SimTK::State>;
+// This enables iterating using the getBetween() method.
+%template(IteratorRangeStatesTrajectoryIterator) 
+    OpenSim::IteratorRange<OpenSim::StatesTrajectory::const_iterator>;
 
 // Iterators.
 // TODO rename to singular form.

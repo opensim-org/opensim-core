@@ -91,3 +91,5 @@ namespace SimTK {
 // State & Stage
 %include <SWIGSimTK/Stage.h>
 %include <SWIGSimTK/State.h>
+// Used for StatesTrajectory iterating.
+%template(StdVectorState) std::vector<SimTK::State>;
