@@ -51,13 +51,10 @@ void PhysicalFrame::constructProperties()
 {
     constructProperty_WrapObjectSet(WrapObjectSet());
 
-    updProperty_geometry().setAllowableListSize(1, 1000);
-
     FrameGeometry frm;
     frm.setName("frame_geometry");
     frm.upd_Appearance().set_visible(false);
     updProperty_geometry().setValue(0, frm);
-    //updProperty_geometry().setValueIsDefault(true);
 }
 
 void PhysicalFrame::extendFinalizeFromProperties()

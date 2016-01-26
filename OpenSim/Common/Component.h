@@ -201,11 +201,12 @@ public:
     /** Construct Component from a specific node in an XML document. **/
     explicit Component(SimTK::Xml::Element& aNode);
 
-    /** Use default copy constructor and assignment operator. */ 
+    /** Use default copy constructor and assignment operator. */
+    Component(const Component&) = default;
+    Component& operator=(const Component&) = default;
 
     /** Destructor is virtual to allow concrete Component to cleanup. **/
-    virtual ~Component() {}
-
+    virtual ~Component() = default;
 
     /** @name Component Structural Interface
     The structural interface ensures that deserialization, resolution of 
@@ -404,8 +405,7 @@ public:
     */
     //@{ 
     
-    /** Access the number of Connectors that this component has. 
-        Get the number of Connectors and then access a Connector by index.
+    /** Get the number of Connectors and then access a Connector by index.
         For example:
         @code
         for (int i = 0; i < myComp.getNumConnectors(); ++i){
@@ -920,7 +920,8 @@ public:
     // End of Model Component State Accessors.
     //@} 
 
-
+    /** Debugging method to list all subcomponents by name and recurse
+        into these components to list their subcomponents, and so on. */
     void dumpSubcomponents(int depth=0) const;
 
 protected:
@@ -960,7 +961,7 @@ template <class T> friend class ComponentMeasure;
     * methods (e.g. addToSystem(), initStateFromProperties(), ...) are
     * automatically invoked on subcomponents when called on this Component.
     * Realization is also performed automatically on subcomponents. All
-    * subcomponents are owned, therefore this Component takes ownership. 
+    * subcomponents are owned, therefore this Component also takes ownership.
     */
     void adoptSubcomponent(Component* subcomponent);
 
@@ -976,8 +977,15 @@ template <class T> friend class ComponentMeasure;
     is called before the child class method.
     
     The base class implementations ensures that the corresponding calls are made
-    to any subcomponents that have been specified by derived %Component objects,
-    according to the markAsSubcomponent() method. 
+    to any subcomponents which are owned by this Component. Ownership is
+    established by the subcomponent being a data member (not serialized), a 
+    property (serialized), of created and adopted based on other settings
+    or options that arise from the properties. For example, a Model (Component)
+    may have to split a body and add a Weld constraint to handle a closed
+    loop specified by Joints that are properties of the Model. The new Body and
+    Weld (components) are created and adopted as part of connecting the model to
+    form a valid multibody tree.
+
     So assuming that your concrete %Component and all intermediate classes from
     which it derives properly follow the requirement of calling the Super class 
     method first, the order of operations enforced here for a call to a single 
@@ -1626,18 +1634,25 @@ private:
     //the return type, @see addOutput()
     virtual void constructOutputs() {}
 
-
     //Mark components that are properties of this Component as subcomponents of
     //this Component. This happens automatically upon construction of the 
     //component. If Component property added programmatically, then you must
     //also markAsSubcomponent() on that component.
     void markPropertiesAsSubcomponents();
 
+    // Internal use: mark the subcomponents that are owned by this Component
+    // because they are data member, properties or adoptees of this Component.
+    void markAsSubcomponent(Component* subcomponent);
+
+
     /// Invoke finalizeFromProperties() on the (sub)components of this Component.
     void componentsFinalizeFromProperties() const;
 
     /// Invoke connect() on the (sub)components of this Component.
     void componentsConnect(Component& root) const;
+
+    /// Base Component must create underlying resources in computational System.
+    void baseAddToSystem(SimTK::MultibodySystem& system) const;
 
     /// Invoke addToSystem() on the (sub)components of this Component.
     void componentsAddToSystem(SimTK::MultibodySystem& system) const;
@@ -1778,13 +1793,6 @@ protected:
     SimTK::Array_<Component *>  _components;
 
 private:
-    /// Internally used mark the subcomponents that are owned otherwise owned 
-    /// because they are data member, properties or adoptees of this Component.
-    void markAsSubcomponent(Component* subcomponent);
-
-    /// Base Component must create underlying resources in computational System.
-    void baseAddToSystem(SimTK::MultibodySystem& system) const;
-
     // Reference to the parent Component of this Component. It is not the previous
     // in the tree, but is the Component one level up that owns this one.
     SimTK::ReferencePtr<const Component> _parent;
