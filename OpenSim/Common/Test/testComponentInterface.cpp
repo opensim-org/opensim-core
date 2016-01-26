@@ -130,8 +130,7 @@ public:
     OpenSim_DECLARE_LIST_PROPERTY_SIZE(inertia, double, 6,
         "inertia {Ixx, Iyy, Izz, Ixy, Ixz, Iyz}");
 
-    Foo(const std::string& name ="", Component* owner = nullptr)
-        : Component(name, owner) {
+    Foo() : Component() {
         constructInfrastructure();
         m_ctr = 0;
         m_mutableCtr = 0;

@@ -119,14 +119,6 @@ Component::Component(const std::string& fileName, bool updFromXMLNode)
     constructProperty_connectors();
 }
 
-Component::Component(const std::string& name, Component* owner) : Component()
-{
-    setName(name);
-    if (owner) {
-        owner->markAsSubcomponent(this);
-    }
-}
-
 Component::Component(SimTK::Xml::Element& element) : Object(element)
 {
     constructProperty_connectors();
