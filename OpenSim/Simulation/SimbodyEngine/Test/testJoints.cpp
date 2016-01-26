@@ -2083,6 +2083,10 @@ void testAutomaticJointReversal()
 
 void testAutomaticLoopJointBreaker()
 {
+    cout << endl;
+    cout << "===========================================================" << endl;
+    cout << " Test Automatic Loop Joint Breaker  " << endl;
+    cout << "===========================================================" << endl;
     // Setup OpenSim model
     Model model;
     //OpenSim bodies
@@ -2158,6 +2162,8 @@ void testAutomaticLoopJointBreaker()
     SimTK::Vec3 acc = model.calcMassCenterAcceleration(s);
     // number of active constraints
     int nc = model.getMatterSubsystem().getConstraintMultipliers(s).size();
+
+    cout << "Number of model constraints:" << nconstraints << "  Number of system constraints: " << nc << endl;
 
     ASSERT(nc == 6, __FILE__, __LINE__,
         "Loop closure failed to adequately constrain tree.");

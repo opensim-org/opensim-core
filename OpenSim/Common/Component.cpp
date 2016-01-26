@@ -917,6 +917,7 @@ void Component::markAsSubcomponent(Component* component)
 void Component::adoptSubcomponent(Component* subcomponent)
 {
     _adoptees.push_back(SimTK::ClonePtr<Component>(subcomponent));
+    markAsSubcomponent(subcomponent);
 }
 
 
