@@ -114,16 +114,22 @@ On Windows using Visual Studio
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.1.3
 * **compiler / IDE**: [Visual Studio 2015](https://www.visualstudio.com/).
     * *Visual Studio Community 2015* is sufficient and is free for everyone.
-        If you want to use *Visual Studio Enterprise 2015*, you may be able 
-        to get it for free at [Dreamspark](https://www.dreamspark.com) if 
+        If you want to use *Visual Studio Enterprise 2015*, you may be able
+        to get it for free at [Dreamspark](https://www.dreamspark.com) if
         you are at an academic institution.
-    * Visual Studio 2015 does not install C++ 
-      support by default. During the installation you must select 
-      *Custom*, and check *Programming Languages > Visual C++ > Common Tools for Visual C++ 2015*.
+    * Visual Studio 2015 does not install C++
+      support by default. During the installation you must select
+      *Custom*, and check *Programming Languages > Visual C++ > Common Tools
+      for Visual C++ 2015*.
       You can uncheck all other boxes. If you have already installed Visual
       Studio without C++ support, simply re-run the installer and select *Modify*.
-* **physics engine**:
-  [Simbody](https://github.com/simbody/simbody#windows-and-visual-studio) >= 3.6
+* **physics engine**: Simbody >= 3.6. Two options:
+    * Let OpenSim get this for you using superbuild (see below).
+    * [Build on your own](
+      https://github.com/simbody/simbody#windows-using-visual-studio).
+* **C3D file support**: Biomechanical-ToolKit Core. Two options:
+    * Let OpenSim get this for you using superbuild (see below).
+    * [Build on your own](https://github.com/Biomechanical-ToolKit/BTKCore).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git. There are many options:
@@ -136,10 +142,12 @@ On Windows using Visual Studio
     * **python scripting** (optional):
         * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
+    * The choice between 32-bit/64-bit must be the same between Java, Python,
+      and OpenSim.
 
 #### Download the OpenSim-Core source code
 
-* Method 1; If you want to get going quickly, download the source code from
+* Method 1: If you want to get going quickly, download the source code from
   https://github.com/opensim-org/opensim-core/releases, for the version of
   OpenSim you want. We'll assume you unzipped the source code into
   `C:/opensim-core-source`.
@@ -157,23 +165,75 @@ On Windows using Visual Studio
 
   This will give you a bleeding-edge version of OpenSim-Core.
 
+#### [Optional] Superbuild: download and build OpenSim dependencies
+1. Open the CMake GUI.
+2. In the field **Where is the source code**, specify
+   `C:/opensim-core-source/dependencies`.
+3. In the field **Where to build the binaries**, specify a directory under
+   which to build dependencies. Let's say this is
+   `C:/opensim-core-dependencies-build`.
+4. Click the **Configure** button.
+    1. Choose the *Visual Studio 14* generator (for Visual Studio 2015). To
+       build as 64-bit, select *Visual Studio 14 Win64*.
+    2. Click **Finish**.
+5. Where do you want to install OpenSim dependencies on your computer? Set this
+   by changing the `CMAKE_INSTALL_PREFIX` variable. Let's say this is
+   `C:/opensim-core-dependencies-install`.
+6. Variables named `SUPERBUILD_<dependency-name>` allow you to selectively
+   download dependencies. By default, all dependencies are downloaded,
+   configured and built.
+7. Click the **Configure** button again. Then, click **Generate** to make
+   Visual Studio project files in the build directory.
+9. Go to the build directory you specified in step 3 using the command:
+
+        cd C:/opensim-core-dependencies-build
+
+10. Use CMake to download, compile and install the dependencies:
+
+        cmake --build . --config RelWithDebInfo
+
+   Alternative values for `--config` in this command are:
+    * **Debug**: debugger symbols; no optimizations (more than 10x slower).
+      Library names end with `_d`.
+    * **Release**: no debugger symbols; optimized.
+    * **RelWithDebInfo**: debugger symbols; optimized. Bigger but not slower
+      than Release; choose this if unsure.
+    * **MinSizeRel**: minimum size; optimized.
+
+      You must run this command for each of the configurations you plan to use
+      with OpenSim (see below). You should run this command for the release
+      configuration *last* to ensure that you use the release version of the
+      command-line applications instead of the slow debug versions.
+11. If you like, you can now remove the directory used for building
+    dependencies (`c:/opensim-core-dependencies-build`).
+
 #### Configure and generate project files
 
-1. Open CMake.
+1. Open the CMake GUI.
 2. In the field **Where is the source code**, specify `C:/opensim-core-source`.
 3. In the field **Where to build the binaries**, specify something like
    `C:/opensim-core-build`, or some other path that is not inside your source
    directory. This is *not* where we are installing OpenSim-Core; see below.
 4. Click the **Configure** button.
     1. Choose the *Visual Studio 14* generator (for Visual Studio 2015). To
-       build as 64-bit, select *Visual Studio 14 Win64*.
+       build as 64-bit, select *Visual Studio 14 Win64*. The choice between
+       32-bit/64-bit must be the same across all dependencies.
     2. Click **Finish**.
 5. Where do you want to install OpenSim-Core on your computer? Set this by
    changing the `CMAKE_INSTALL_PREFIX` variable. We'll assume you set it to
    `C:/opensim-core`. If you choose a different installation location, make
    sure to use *yours* where we use `C:/opensim-core` below.
-6. Tell CMake where you installed Simbody by setting the `SIMBODY_HOME`
-   variable to where you installed Simbody (e.g., `C:/Simbody`).
+6. Tell CMake where to find dependencies. This depends on how you got them.
+    * Superbuild: Set the variable `OPENSIM_DEPENDENCIES_DIR` to the root
+      directory you specified with superbuild for installation of dependencies.
+      In our example, it would be `c:/opensim-core-dependencies-install`.
+    * Obtained on your own:
+        1. Simbody: Set the `SIMBODY_HOME` variable to where you installed
+           Simbody (e.g., `C:/Simbody`).
+        2. BTK: Set the variable `BTK_DIR` to the directory containing
+           `BTKConfig.cmake`. If the root directory of your BTK installation is
+           `C:/BTKCore-install`, then set this variable to
+           `C:/BTKCore-install/share/btk-0.4dev`.
 7. Set the remaining configuration options.
     * `BUILD_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
@@ -185,7 +245,6 @@ On Windows using Visual Studio
       dependencies above. CMake sets `PYTHON_*` variables to tell you the
       Python it will use for building the wrappers.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
-    * It is very important to use Java or Python environment binary format compatible with API build **(either all 32 or 64 bit)**.
 8. Click the **Configure** button again. Then, click **Generate** to make
    Visual Studio project files in the build directory.
 
@@ -221,7 +280,8 @@ In order to use the OpenSim-Core command-line applications or use OpenSim-Core
 libraries in your own application, you must add the OpenSim-Core `bin/`
 directory to your `PATH` environment variable.
 
-1. In the Start menu (Windows 7) or screen (Windows 8), search `environment`.
+1. In the Windows toolbar (Windows 10), Start screen (Windows 8) or Start menu
+   (Windows 7), search `environment`.
 2. Select **Edit the system environment variables**.
 3. Click **Environment Variables...**.
 4. Under **System variables**, click **Path**, then click **Edit**.
@@ -239,8 +299,12 @@ On Mac OSX using Xcode
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8
 * **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 5, through
   the Mac App Store.
-* **physics engine**:
-  [Simbody](https://github.com/simbody/simbody#installing) >= 3.6.
+* **physics engine**: Simbody >= 3.6. Two options:
+  * Let OpenSim get this for you using superbuild (see below).
+  * [Build on your own](https://github.com/simbody/simbody#installing).
+* **C3D file support**: Biomechanical-ToolKit Core. Two options:
+  * Let OpenSim get this for you using superbuild (see below).
+  * [Build on your own](https://github.com/Biomechanical-ToolKit/BTKCore).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git.
@@ -273,9 +337,46 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
 
   This will give you a bleeding-edge version of OpenSim-Core.
 
+#### [Optional] Superbuild: download and build OpenSim dependencies
+1. Open the CMake GUI.
+2. In the field **Where is the source code**, specify
+   `~/opensim-core-source/dependencies`.
+3. In the field **Where to build the binaries**, specify a directory under
+   which to build dependencies. Let's say this is
+   `~/opensim-core-dependencies-build`.
+4. Click the **Configure** button. Choose **Xcode**. Click **Finish**.
+5. Where do you want to install OpenSim dependencies on your computer? Set this
+   by changing the `CMAKE_INSTALL_PREFIX` variable. Let's say this is
+   `~/opensim-core-dependencies-install`.
+6. Variables named `SUPERBUILD_<dependency-name>` allow you to selectively
+   download dependencies. By default, all dependencies are downloaded,
+   configured and built.
+7. Click the **Configure** button again. Then, click **Generate** to make Xcode
+   files in the build directory.
+8. Open `~/opensim-core-dependencies/build/OpenSimDependencies.xcodeproj` in
+   Xcode.
+9. Choose your **Build Configuration** for the **ALL_BUILD** Scheme by pressing
+   `Command-Shift ,` (or, `Command-LessThan`), or navigating to **Product ->
+   Scheme -> Edit Scheme...**; and changing the **Build Configuration** field.
+    * **Debug**: debugger symbols; no optimizations (more than 10x slower).
+    Library names end with `_d`.
+    * **Release**: no debugger symbols; optimized.
+    * **RelWithDebInfo**: debugger symbols; optimized. Bigger but not slower
+    than Release; choose this if unsure.
+    * **MinSizeRel**: minimum size; optimized.
+
+    You must build each of the configurations you plan to use with OpenSim (see
+    below). You should install the release configuration *last* to ensure that
+    you use the release version of the command-line applications instead of the
+    slow debug versions.
+
+10. Compile. Run the Scheme **ALL_BUILD** by clicking the play button in the
+   upper left. If necessary, change the build configuration (previous step) and
+   run **ALL_BUILD** again.
+
 #### Configure and generate project files
 
-1. Open CMake.
+1. Open the CMake GUI.
 2. In the field **Where is the source code**, specify `~/opensim-core-source`.
 3. In the field **Where to build the binaries**, specify something like
    `~/opensim-core-build`, or some other path that is not inside your source
@@ -285,10 +386,19 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
    changing the `CMAKE_INSTALL_PREFIX` variable. We'll assume you set it to
    `~/opensim-core`. If you choose a different installation location, make
    sure to use *yours* where we use `~/opensim-core` below. You should *not*
-   use `/usr/`, `/usr/local/`, etc. (because our installation does not yet conform to the [FHS](http://www.pathname.com/fhs/)).
-6. Tell CMake where you installed Simbody by setting the `SIMBODY_HOME`
-   variable to where you installed Simbody (e.g., `~/simbody`). If you
-   installed Simbody using `brew`, then CMake will find Simbody automatically.
+   use `/usr/`, `/usr/local/`, etc. (because our installation does not yet
+   conform to the [FHS](http://www.pathname.com/fhs/)).
+6. Tell CMake where to find dependencies. This depends on how you got them.
+    * Superbuild: Set the variable `OPENSIM_DEPENDENCIES_DIR` to the root
+      directory you specified with superbuild for installation of dependencies.
+      In our example, it would be `~/opensim-core-dependencies-install`.
+    * Obtained on your own:
+        1. Simbody: Set the `SIMBODY_HOME` variable to where you installed
+           Simbody (e.g., `~/simbody`). If you installed Simbody using `brew`,
+           then CMake will find Simbody automatically.
+        2. BTK: Set the `BTK_DIR` variable to the directory containing
+           `BTKConfig.cmake`. If you installed BTK in `~/BTKCore-install`, then
+           set `BTK_DIR` to `~/BTKCore-install/share/btk-0.4dev`
 7. Set the remaining configuration options.
     * `BUILD_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
@@ -342,18 +452,24 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
 #### Set environment variables
 
 1. **Executables**. If you want to run OpenSim-Core's executables from
-   anywhere on your computer, you must update your PATH. *Note* some of the names of OpenSim-Core executables conflict with some UNIX commands (e.g., `id`). To give preference to OpenSim-Core's executables, we must *prepend* OpenSim-Core's `bin/` directory to the path. Open a terminal and type:
+   anywhere on your computer, you must update your PATH. *Note* some of the
+   names of OpenSim-Core executables conflict with some UNIX commands (e.g.,
+   `id`). To give preference to OpenSim-Core's executables, we must *prepend*
+   OpenSim-Core's `bin/` directory to the path. Open a terminal and type:
 
         $ echo 'export PATH=~/opensim-core/bin:$PATH' >> ~/.bash_profile
 
 2. **Libraries**. Hopefully you can skip this step. This step is required if:
   1. You are using CMake version 2.8.11 or older.
-  2. You plan on building C++ executables or libraries on top of OpenSim, *and* you plan to "install" them in the CMake sense of the word (that is, you're not going to simply use them from your project's build directory).
+  2. You plan on building C++ executables or libraries on top of OpenSim, *and*
+     you plan to "install" them in the CMake sense of the word (that is, you're
+     not going to simply use them from your project's build directory).
   3. You plan to use the Java or MATLAB scripting.
 
-  If any of these are true, then you must add OpenSim-Core libraries to your linker path. Open a terminal and type:
+  If any of these are true, then you must add OpenSim-Core libraries to your
+  linker path. Open a terminal and type:
 
-          $ echo 'export DYLD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bash_profile
+          $ echo 'export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bash_profile
 
 Your changes will only take effect in new terminal windows.
 
@@ -373,9 +489,13 @@ line below, we show the corresponding package.
   or from this [third party
   PPA](https://launchpad.net/~robotology/+archive/ubuntu/ppa).
 * **compiler**: [gcc](http://gcc.gnu.org) >= 4.8; `g++-4.8`, or
-      [Clang](http://clang.llvm.org) >= 3.4; `clang-3.4`.
-* **physics engine**:
-  [Simbody](https://github.com/simbody/simbody#installing) >= 3.6.
+  [Clang](http://clang.llvm.org) >= 3.4; `clang-3.4`.
+* **physics engine**: Simbody >= 3.6. Two options:
+  * Let OpenSim get this for you using superbuild (see below).
+  * [Build on your own](https://github.com/simbody/simbody#installing).
+* **C3D file support**: Biomechanical-ToolKit Core. Two options:
+  * Let OpenSim get this for you using superbuild (see below).
+  * [Build on your own](https://github.com/Biomechanical-ToolKit/BTKCore).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
@@ -407,9 +527,49 @@ And you could get all the optional dependencies via:
 
   This will give you a bleeding-edge version of OpenSim-Core.
 
+#### [Optional] Superbuild: download and build OpenSim dependencies
+1. Open the CMake GUI.
+2. In the field **Where is the source code**, specify
+   `~/opensim-core-source/dependencies`.
+3. In the field **Where to build the binaries**, specify a directory under
+   which to build dependencies. Let's say this is
+   `~/opensim-core-dependencies-build`.
+4. Click the **Configure** button. Choose *Unix Makefiles*. Click **Finish**.
+5. Where do you want to install OpenSim dependencies on your computer? Set this
+   by changing the `CMAKE_INSTALL_PREFIX` variable. Let's say this is
+   `~/opensim-core-dependencies-install`.
+6. Variables named `SUPERBUILD_<dependency-name>` allow you to selectively
+   download dependencies. By default, all dependencies are downloaded,
+   configured and built.
+7. Choose your build type by setting `CMAKE_BUILD_TYPE` to one of the following:
+    * **Debug**: debugger symbols; no optimizations (more than 10x slower).
+    Library names end with `_d`.
+    * **Release**: no debugger symbols; optimized.
+    * **RelWithDebInfo**: debugger symbols; optimized. Bigger but not slower
+    than Release; choose this if unsure.
+    * **MinSizeRel**: minimum size; optimized.
+
+    You must perform the superbuild procedure for each of the
+    build types you plan to use with OpenSim (see below). You might want to
+    use different build directories for each build type, though you can use
+    the same install directory for all build types. You should install the
+    release build type *last* to ensure that you use the release version of
+    the command-line applications instead of the slow debug versions.
+8. Click the **Configure** button again. Then, click **Generate** to make Unix
+   Makefiles in the build directory.
+9. Open a terminal and navigate to the build directory.
+
+        $ cd ~/opensim-core-dependencies-build
+
+3. Compile. Use the `-jn` flag to build using `n` concurrent jobs (potentially
+   in parallel); this will greatly speed up your build. For example:
+
+        $ make -j8
+11. If necessary, repeat this whole procedure for other build types.
+
 #### Configure and generate project files
 
-1. Open CMake.
+1. Open the CMake GUI.
 2. In the field **Where is the source code**, specify `~/opensim-core-source`.
 3. In the field **Where to build the binaries**, specify something like
    `~/opensim-core-build`, or some other path that is not inside your source
@@ -419,10 +579,20 @@ And you could get all the optional dependencies via:
    changing the `CMAKE_INSTALL_PREFIX` variable. We'll assume you set it to
    `~/opensim-core`. If you choose a different installation location, make
    sure to use *yours* where we use `~/opensim-core` below. You should *not*
-   use `/usr/`, `/usr/local/`, etc. (because our installation does not yet conform to the [FHS](http://www.pathname.com/fhs/)), but [`/opt/`](http://www.tldp.org/LDP/Linux-Filesystem-Hierarchy/html/opt.html) is okay.
-6. Tell CMake where you installed Simbody by setting the `SIMBODY_HOME`
-   variable to where you installed Simbody (e.g., `~/simbody`). If you
-   installed Simbody using `brew`, then CMake will find Simbody automatically.
+   use `/usr/`, `/usr/local/`, etc. (because our installation does not yet
+   conform to the [FHS](http://www.pathname.com/fhs/)), but
+   [`/opt/`](http://www.tldp.org/LDP/Linux-Filesystem-Hierarchy/html/opt.html)
+   is okay.
+6. Tell CMake where to find dependencies. This depends on how you got them.
+    * Superbuild: Set the variable `OPENSIM_DEPENDENCIES_DIR` to the root
+      directory you specified with superbuild for installation of dependencies.
+      In our example, it would be `~/opensim-core-dependencies-install`.
+    * Obatained on your own:
+        1. Simbody: Set the `SIMBODY_HOME` variable to where you installed
+           Simbody (e.g., `~/simbody`).
+        2. BTK: Set the `BTK_DIR` variable to the directory containing
+           `BTKConfig.cmake`. If you installed BTK in `~/BTK-install`, then set
+           `BTK-DIR` to `~/BTK-install/share/btk-0.4dev`.
 7. Choose your build type by setting `CMAKE_BUILD_TYPE` to one of the following:
     * **Debug**: debugger symbols; no optimizations (more than 10x slower).
     Library names end with `_d`.
@@ -433,10 +603,10 @@ And you could get all the optional dependencies via:
 
     You at least want release libraries (the last 3 count as release), but you
     can have debug libraries coexist with them. To do this, go through the
-    installation process twice, once for each of the two configurations. It is
+    installation process twice, once for each of the two build types. It is
     typical to use a different build directory for each build type (e.g.,
     `~/opensim-core-build-debug` and `~/opensim-core-build-release`). You
-    should install the release configuration *last* to ensure that you use the
+    should install the release build type *last* to ensure that you use the
     release version of the command-line applications instead of the slow debug
     versions.
 8. Set the remaining configuration options.
