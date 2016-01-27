@@ -979,7 +979,7 @@ template <class T> friend class ComponentMeasure;
     The base class implementations ensures that the corresponding calls are made
     to any subcomponents which are owned by this Component. Ownership is
     established by the subcomponent being a data member (not serialized), a 
-    property (serialized), of created and adopted based on other settings
+    property (serialized), or created and adopted based on other settings
     or options that arise from the properties. For example, a Model (Component)
     may have to split a body and add a Weld constraint to handle a closed
     loop specified by Joints that are properties of the Model. The new Body and
