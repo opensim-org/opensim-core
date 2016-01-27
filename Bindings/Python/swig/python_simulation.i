@@ -146,6 +146,11 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 %}
 };
 
+// TODO we already made a StdVectorState in simbody.i, but this is required
+// to create type traits for the simulation module. Ideally, we would not need
+// the following line:
+%template(_StdVectorState) std::vector<SimTK::State>;
+
 
 // Include all the OpenSim code.
 // =============================
