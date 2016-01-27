@@ -182,13 +182,33 @@ protected:
     /** @name Component Extension methods.
     PhysicalFrame extension of Component interface. */
     /**@{**/
-    void extendConnectToModel(Model& aModel) override;
+    /// Associate a FrameGeometry (visualization) with the this PhysicalFrame
+    void extendFinalizeFromProperties() override;
+    /// Connect bound WrapObjects
+    void extendConnectToModel(Model& model) override;
     /**@}**/
+
+    /** Override to account for version updates in the XML format. */
+    void updateFromXMLNode(SimTK::Xml::Element& aNode,
+        int versionNumber = -1) override;
 
 private:
 
     /* Component construction interface */
     void constructProperties() override;
+
+    /* Utility to convert Geometry version 3.2 to recent 4.0 format */
+    void convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& aNode,
+        const SimTK::Vec3& outerScaleFactors,
+        const SimTK::Vec6& outerTransform,
+        SimTK::Xml::Element& geomSetElement) const;
+
+    /* Utility to construct a PhysicalOffsetFrame from properties of an
+       offset transform. */
+    void createFrameForXform(const SimTK::Xml::element_iterator&,
+        const std::string& frameName,
+        const SimTK::Vec6& localXform, const std::string& bodyName) const;
+
 
     /* ID for the underlying mobilized body in Simbody system.
     Only Joint can set, since it defines the mobilized body type and
@@ -207,7 +227,7 @@ private:
     // counter-part in the underlying system
     friend class Joint;
 
-    //==========================================================================
+    //=========================================================================
 };  // END of class PhysicalFrame
 
 //=============================================================================

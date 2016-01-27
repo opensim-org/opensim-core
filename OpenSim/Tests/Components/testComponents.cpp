@@ -33,8 +33,9 @@ static Model dummyModel;
 const double acceptableMemoryLeakPercent = 1.0;
 const bool reportAllMemoryLeaks = true;
 
-
 void testComponent(const Component& instanceToTest);
+void testCloning(Component* instance);
+void testSerialization(Component* instance);
 
 void addObjectAsComponentToModel(Object* instance, Model& model);
 
@@ -78,6 +79,15 @@ int main()
     ArrayPtrs<PointToPointSpring> availablePointToPointSpring;
     Object::getRegisteredObjectsOfGivenType(availablePointToPointSpring);
     availableComponents.push_back(availablePointToPointSpring[0]);
+
+    /** //Uncomment when dependencies of CoordinateCouplerConstraints are 
+    // specified as Connectors 
+    ArrayPtrs<Constraint> availableConstraints;
+    Object::getRegisteredObjectsOfGivenType(availableConstraints);
+    for (int i = 0; i < availableConstraints.size(); ++i) {
+        availableComponents.push_back(availableConstraints[i]);
+    }
+    */
 
     for (unsigned int i = 0; i < availableComponents.size(); i++) {
         try {
@@ -129,64 +139,24 @@ void testComponent(const Component& instanceToTest)
     // 2. Ensure that cloning produces an exact copy.
     // ----------------------------------------------
     // This will find missing calls to copyProperty_<name>().
-    cout << "Cloning the component." << endl;
-    Component* copyInstance = instance->clone();
-    if (!(*copyInstance == *instance))
-    {
-        cout << "XML serialization for the first instance:" << endl;
-        cout << instance->dump() << endl;
-        cout << "XML serialization for the clone:" << endl;
-        cout << copyInstance->dump() << endl;
-        throw Exception(
-            "testComponents: for " + className +
-            ", clone() did not produce an identical object.",
-            __FILE__, __LINE__);
-    }
-    // TODO should try to delete even if exception is thrown.
-    delete copyInstance;
+    testCloning(instance);
 
     // 3. Serialize and de-serialize.
     // ------------------------------
-    // This will find issues with serialization.
+    // This will find issues with de/serialization.
     cout << "Serializing and deserializing component." << endl;
-    string serializationFilename =
-        "testing_serialization_" + className + ".xml";
-    instance->print(serializationFilename);
-
-    Object* deserializedInstance =
-        static_cast<Object*>(Object::makeObjectFromFile(serializationFilename));
+    testSerialization(instance);
 
     const size_t instanceSize = getCurrentRSS();
 
-    if (!(*deserializedInstance == *instance))
-    {
-        cout << "XML for serialized instance:" << endl;
-        cout << instance->dump() << endl;
-        cout << "XML for serialization of deserialized instance:" << endl;
-        cout << deserializedInstance->dump() << endl;
-        throw Exception(
-            "testComponents: for " + className +
-            ", deserialization did not produce an identical object.",
-            __FILE__, __LINE__);
-    }
+    // 4. Verify Components structural attributes
 
-    // TODO should try to delete even if exception is thrown.
-    delete deserializedInstance;
-
-    // 4. Set up the aggregate component.
     // -------------------------------------------------------------------
     cout << "Set up aggregate component." << endl;
-    if (model.getName() == "dummyModel")
-    {
-        // User did not provide a model; create a fresh model.
-        model = Model();
-    }
-
     // 5. Add this component to an aggregate component.
     // ------------------------------------------------
     addObjectAsComponentToModel(instance, model);
 
-    
 
     // 6. Connect up the aggregate; check that connections are correct.
     // ----------------------------------------------------------------
@@ -356,41 +326,130 @@ void testComponent(const Component& instanceToTest)
     }
 }
 
-void addObjectAsComponentToModel(Object* instance, Model& model)
+void testComponentEquivalence(const Component* a, const Component* b) 
 {
-    const string& className = instance->getConcreteClassName();
+    const string& className = a->getConcreteClassName();
 
-    cout << "Adding " << className << " to the model." << endl;
-    if (Object::isObjectTypeDerivedFrom< Analysis >(className))
-        model.addAnalysis(dynamic_cast<Analysis*>(instance));
-    else if (Object::isObjectTypeDerivedFrom< Body >(className))
-        model.addBody(dynamic_cast<Body*>(instance));
-    else if (Object::isObjectTypeDerivedFrom< Constraint >(className))
-        model.addConstraint(dynamic_cast<Constraint*>(instance));
-    else if (Object::isObjectTypeDerivedFrom< ContactGeometry >(className))
-        model.addContactGeometry(dynamic_cast<ContactGeometry*>(instance));
-    else if (Object::isObjectTypeDerivedFrom< Controller >(className))
-        model.addController(dynamic_cast<Controller*>(instance));
-    else if (Object::isObjectTypeDerivedFrom< Force >(className))
-        model.addForce(dynamic_cast<Force*>(instance));
-    else if (Object::isObjectTypeDerivedFrom< Probe >(className))
-        model.addProbe(dynamic_cast<Probe*>(instance));
-    else if (Object::isObjectTypeDerivedFrom< Joint >(className))
-        model.addJoint(dynamic_cast<Joint*>(instance));
-    else if (Object::isObjectTypeDerivedFrom< Frame >(className))
-        model.addFrame(dynamic_cast<Frame*>(instance));
-    else if (Object::isObjectTypeDerivedFrom< ModelComponent >(className))
-        model.addModelComponent(dynamic_cast<ModelComponent*>(instance));
-    else
+    bool same = *a == *b;
+    ASSERT(same, __FILE__, __LINE__,
+        className + " components are not equivalent in properties.");
+
+    int nc_a = a->getNumConnectors();
+    int nc_b = b->getNumConnectors();
+    cout << className << " getNumConnectors: " << nc_a << endl;
+    ASSERT(nc_a==nc_b, __FILE__, __LINE__, 
+        className + "components differ in number of connectors.");
+
+    int nin_a = a->getNumInputs();
+    int nin_b = b->getNumInputs();
+    cout << className << " getNumInputs: " << nin_a << endl;
+    ASSERT(nin_a == nin_b, __FILE__, __LINE__,
+        className + " components differ in number of inputs.");
+
+    int nout_a = a->getNumOutputs();
+    int nout_b = b->getNumOutputs();
+    cout << className << " getNumOutputs: " << nout_a << endl;
+    ASSERT(nout_a == nout_b, __FILE__, __LINE__, 
+        className + " components differ in number of outputs.");
+
+    ComponentList<Component> aSubsList = a->getComponentList<Component>();
+    ComponentList<Component> bSubsList = a->getComponentList<Component>();
+    auto iter_a = aSubsList.begin();
+    auto iter_b = bSubsList.begin();
+
+    //Subcomponents must be equivalent too!
+    while (iter_a != aSubsList.end() && iter_b != aSubsList.end()) {
+        const Component& asub = *iter_a;
+        const Component& bsub = *iter_b;
+        testComponentEquivalence(&asub, &bsub);
+        ++iter_a;
+        ++iter_b;
+    }
+}
+
+void testCloning(Component* instance)
+{
+    cout << "Cloning the component." << endl;
+    Component* copyInstance = instance->clone();
+    if (!(*copyInstance == *instance))
     {
-        throw Exception(className + " is not a ModelComponent.",
+        cout << "XML serialization for the first instance:" << endl;
+        cout << instance->dump() << endl;
+        cout << "XML serialization for the clone:" << endl;
+        cout << copyInstance->dump() << endl;
+        const string& className = instance->getConcreteClassName();
+        throw Exception(
+            "testComponents: for " + className +
+            ", clone() did not produce an identical object.",
             __FILE__, __LINE__);
     }
 
-    try {
-        // Current Component iterator requirement to build the component list (tree)
-        // forces us to connect the model so we can traverse subcomponents
-        model.connect(model);
+    instance->finalizeFromProperties();
+    copyInstance->finalizeFromProperties();
+
+    testComponentEquivalence(instance, copyInstance);
+    delete copyInstance;
+}
+
+void testSerialization(Component* instance)
+{
+    const string& className = instance->getConcreteClassName();
+    string serializationFilename =
+        "testing_serialization_" + className + ".xml";
+    instance->print(serializationFilename);
+
+    Object* deserializedInstance =
+        static_cast<Object*>(Object::makeObjectFromFile(serializationFilename));
+
+    if (!(*deserializedInstance == *instance))
+    {
+        cout << "XML for serialized instance:" << endl;
+        cout << instance->dump() << endl;
+        cout << "XML for serialization of deserialized instance:" << endl;
+        cout << deserializedInstance->dump() << endl;
+        throw Exception(
+            "testComponents: for " + className +
+            ", deserialization did not produce an identical object.",
+            __FILE__, __LINE__);
+    }
+
+    Component* deserializedComp = dynamic_cast<Component *>(deserializedInstance);
+
+    testComponentEquivalence(instance, deserializedComp);
+    delete deserializedInstance;
+}
+
+void addObjectAsComponentToModel(Object* instance, Model& model)
+{
+    const string& className = instance->getConcreteClassName();
+    cout << "Adding " << className << " to the model." << endl;
+
+    try{
+        if (Object::isObjectTypeDerivedFrom< Analysis >(className))
+            model.addAnalysis(dynamic_cast<Analysis*>(instance));
+        else if (Object::isObjectTypeDerivedFrom< Body >(className))
+            model.addBody(dynamic_cast<Body*>(instance));
+        else if (Object::isObjectTypeDerivedFrom< Constraint >(className))
+            model.addConstraint(dynamic_cast<Constraint*>(instance));
+        else if (Object::isObjectTypeDerivedFrom< ContactGeometry >(className))
+            model.addContactGeometry(dynamic_cast<ContactGeometry*>(instance));
+        else if (Object::isObjectTypeDerivedFrom< Controller >(className))
+            model.addController(dynamic_cast<Controller*>(instance));
+        else if (Object::isObjectTypeDerivedFrom< Force >(className))
+            model.addForce(dynamic_cast<Force*>(instance));
+        else if (Object::isObjectTypeDerivedFrom< Probe >(className))
+            model.addProbe(dynamic_cast<Probe*>(instance));
+        else if (Object::isObjectTypeDerivedFrom< Joint >(className))
+            model.addJoint(dynamic_cast<Joint*>(instance));
+        else if (Object::isObjectTypeDerivedFrom< Frame >(className))
+            model.addFrame(dynamic_cast<Frame*>(instance));
+        else if (Object::isObjectTypeDerivedFrom< ModelComponent >(className))
+            model.addModelComponent(dynamic_cast<ModelComponent*>(instance));
+        else
+        {
+            throw Exception(className + " is not a ModelComponent.",
+                __FILE__, __LINE__);
+        }
     }
     // It is more than likely that connect() will fail, but the subcomponents tree
     // will be traversable, so we can continue to resolve dependencies by visiting
@@ -398,7 +457,7 @@ void addObjectAsComponentToModel(Object* instance, Model& model)
     catch (const std::exception& e) {
         cout << "testComponents: Model unable to connect after adding ";
         cout << instance->getName() << endl;
-        cout << "ERROR :'" << e.what() << "'" << endl;
+        cout << "ERROR: " << e.what() << "'" << endl;
         cout << "Possible that dependency was not added yet. Continuing...." << endl;
     }
 }

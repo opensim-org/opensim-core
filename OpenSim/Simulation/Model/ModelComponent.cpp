@@ -32,19 +32,25 @@ namespace OpenSim {
 //==============================================================================
 //                             MODEL COMPONENT
 //==============================================================================
-ModelComponent::ModelComponent() : _model(nullptr) 
+ModelComponent::ModelComponent() : Component()
 {
-    constructProperty_geometry();
+    constructInfrastructure();
 }
 
+
 ModelComponent::ModelComponent(const std::string& fileName, bool updFromXMLNode)
-:   Component(fileName, updFromXMLNode), _model(nullptr)
+:   Component(fileName, updFromXMLNode)
 {
-    constructProperty_geometry();
+    constructInfrastructure();
 }
 
 ModelComponent::ModelComponent(SimTK::Xml::Element& element) 
-:   Component(element), _model(nullptr)
+:   Component(element)
+{
+    constructInfrastructure();
+}
+
+void ModelComponent::constructProperties()
 {
     constructProperty_geometry();
 }
@@ -82,13 +88,8 @@ void ModelComponent::extendConnect(Component &root)
 void ModelComponent::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
-    int geomSize = getProperty_geometry().size();
-    if (geomSize > 0){
-        for (int i = 0; i < geomSize; ++i){
-            addComponent(&upd_geometry(i));
-        }
-    }
 }
+
 // Base class implementation of virtual method.
 void ModelComponent::connectToModel(Model& model)
 {

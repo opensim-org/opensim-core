@@ -33,7 +33,7 @@ ContactSphere::ContactSphere() :
     setNull();
 }
 
-ContactSphere::ContactSphere(double radius, const SimTK::Vec3& location, Body& body) :
+ContactSphere::ContactSphere(double radius, const SimTK::Vec3& location, PhysicalFrame& body) :
     ContactGeometry(location, SimTK::Vec3(0.0), body),
     _radius(_radiusProp.getValueDbl())
 {
@@ -42,7 +42,7 @@ ContactSphere::ContactSphere(double radius, const SimTK::Vec3& location, Body& b
     _radius = radius;
 }
 
-ContactSphere::ContactSphere(double radius, const SimTK::Vec3& location, Body& body, const std::string& name) :
+ContactSphere::ContactSphere(double radius, const SimTK::Vec3& location, PhysicalFrame& body, const std::string& name) :
     ContactGeometry(location, SimTK::Vec3(0.0), body),
     _radius(_radiusProp.getValueDbl())
 {

@@ -1,5 +1,5 @@
-#ifndef _OPENSIM_GEOMETRY_H_
-#define _OPENSIM_GEOMETRY_H_
+#ifndef OPENSIM_GEOMETRY_H_
+#define OPENSIM_GEOMETRY_H_
 /* -------------------------------------------------------------------------- *
  *                            OpenSim:  Geometry.h                            *
  * -------------------------------------------------------------------------- *
@@ -73,18 +73,12 @@ public:
     //--------------------------------------------------------------------------
 public:
     /// Default constructor, does nothing
-    Geometry()
-    {
+    Geometry() {
         setNull();
         constructInfrastructure();
-
-        constructProperty_scale_factors(SimTK::Vec3(1));
-        constructProperty_Appearance(Appearance());
     }
     /// Convenience constructor that takes a Frame
-    Geometry(const Frame& frame):
-        Geometry()
-    {
+    Geometry(const Frame& frame) : Geometry() {
         setFrame(frame);
     }
 
@@ -147,8 +141,6 @@ public:
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const override final;
 
-    /// Methods to support frame as a connection, implement Component interface
-    void constructConnectors() override;
 
 protected:
     /// Map this Geometry into a list of primitives aka SimTK::DecorativeGeometry 
@@ -178,10 +170,19 @@ private:
             decoration.setRepresentation(SimTK::DecorativeGeometry::Hide);
     };
 
-    void setNull()
-    {
+    /// Specify the default values for properties of Geometry
+    void constructProperties() override {
+        constructProperty_scale_factors(SimTK::Vec3(1));
+        constructProperty_Appearance(Appearance());
+    }
+
+    /// Define the connector to the Frame that Geometry connects to.
+    void constructConnectors() override;
+
+    void setNull() {
         setAuthors("Ayman Habib");
-    }    //=====================================================================
+    }
+//=============================================================================
 };  // END of class Geometry
 
 /**
@@ -626,10 +627,9 @@ public:
     OpenSim_DECLARE_PROPERTY(display_radius, double,
         "The radius of the arrow-shaft used to display the frame.");
     /// Default constructor
-    FrameGeometry(double scale=1.0) :
-        Geometry()
+    FrameGeometry(double scale=0.2) : Geometry()
     {
-       constructInfrastructure();
+       constructProperties();
        set_scale_factors(SimTK::Vec3(scale));
     }
     /// destructor
@@ -639,12 +639,12 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructInfrastructure() {
-        constructProperty_display_radius(.005);
+    void constructProperties() override {
+        constructProperty_display_radius(.004);
     }
 };
 }; //namespace
 //=============================================================================
 //=============================================================================
 
-#endif //__OPENSIM_GEOMETRY_H__
+#endif //OPENSIM_GEOMETRY_H__

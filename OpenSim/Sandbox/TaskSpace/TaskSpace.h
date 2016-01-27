@@ -219,25 +219,25 @@ protected:
     {
         Super::extendConnectToModel(model);
 
-        addComponent(&m_jacobian);
+        markAsSubcomponent(&m_jacobian);
         m_jacobian.setTaskSpace(this);
-        addComponent(&m_jacobianTranspose);
+        markAsSubcomponent(&m_jacobianTranspose);
         m_jacobianTranspose.setTaskSpace(this);
-        addComponent(&m_inertia);
+        markAsSubcomponent(&m_inertia);
         m_inertia.setTaskSpace(this);
-        addComponent(&m_inertiaInverse);
+        markAsSubcomponent(&m_inertiaInverse);
         m_inertiaInverse.setTaskSpace(this);
-        addComponent(&m_jacobianInverse);
+        markAsSubcomponent(&m_jacobianInverse);
         m_jacobianInverse.setTaskSpace(this);
-        addComponent(&m_jacobianInverseTranspose);
+        markAsSubcomponent(&m_jacobianInverseTranspose);
         m_jacobianInverseTranspose.setTaskSpace(this);
-        addComponent(&m_inertialForces);
+        markAsSubcomponent(&m_inertialForces);
         m_inertialForces.setTaskSpace(this);
-        addComponent(&m_gravity);
+        markAsSubcomponent(&m_gravity);
         m_gravity.setTaskSpace(this);
-        addComponent(&m_nullspace);
+        markAsSubcomponent(&m_nullspace);
         m_nullspace.setTaskSpace(this);
-        addComponent(&m_nullspaceTranspose);
+        markAsSubcomponent(&m_nullspaceTranspose);
         m_nullspaceTranspose.setTaskSpace(this);
     }
 

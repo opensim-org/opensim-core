@@ -114,6 +114,9 @@ Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt)
 {
     Coordinate* coord = new Coordinate();
     coord->setMotionType(mt);
+    //Joint has control over what is the motion type during construction
+    //and it should be considered its default value
+    coord->updProperty_motion_type().setValueIsDefault(true);
     coord->setName(getName() + "_coord_"
         + std::to_string(get_CoordinateSet().getSize()));
     // CoordinateSet takes ownership
@@ -178,12 +181,6 @@ void Joint::extendFinalizeFromProperties()
     // add all coordinates listed under this joint 
     for (int i = 0; i < coords.getSize(); ++i) {
         coords[i].setJoint(*this);
-        // Append a pointer otherwise the model will make a copy that will not
-        // be updated properly
-        addComponent(&coords[i]);
-    }
-    for (int i = 0; i < getProperty_frames().size(); ++i) {
-        addComponent(&upd_frames(i));
     }
 }
 

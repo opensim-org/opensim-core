@@ -48,25 +48,29 @@ int main()
 
 void testCopyModel(string fileName)
 {
-    size_t mem1 = getCurrentRSS( );
-    cout << "Memory use BEFORE load, copy and init: " << mem1/1024 << "KB" << endl;
+    size_t mem0 = getCurrentRSS( );
+
+    // Automatically finalizes properties by default when loading from file
+    Model* model = new Model(fileName, false);
+
+    size_t mem1 = getCurrentRSS() - mem0;
+
+    cout << "Memory use of '" << fileName <<"' model: " << mem1/1024 << "KB" << endl;
 
     Model *test = nullptr;
-    for (int i = 0; i < 1000; ++i){
-        test = new Model();
+    for (int i = 0; i < 10; ++i){
+        test = new Model(fileName);
         delete test;
     }
     
-    
-    Model* model = new Model(fileName, false);
-    //model->print("clone_" + fileName);
+        //model->print("clone_" + fileName);
 
     //SimTK::State& defaultState = model->initSystem();
     
     Model* modelCopy = new Model(*model);
     // At this point properties should all match. assert that
     ASSERT(*model==*modelCopy);
-    ASSERT(model->getActuators().getSize() == modelCopy->getActuators().getSize());
+    ASSERT( model->getActuators().getSize() == modelCopy->getActuators().getSize() );
 
     //SimTK::State& defaultStateOfCopy = modelCopy->initSystem();
     // Compare state
