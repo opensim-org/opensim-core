@@ -76,7 +76,7 @@ build_script:
   - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet /p:TreatWarningsAsErrors="true"
 
   # TODO
-  #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   
 test_script:
   ## Run tests.
