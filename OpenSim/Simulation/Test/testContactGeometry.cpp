@@ -108,11 +108,10 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
     // Setup OpenSim model
     Model *osimModel = new Model;
 
-    //OpenSim bodies
-    OpenSim::Body& ground = *new OpenSim::Body("ground", SimTK::Infinity,
-        Vec3(0), Inertia());
-    osimModel->addBody(&ground);
+    //OpenSim Ground
+    Ground& ground = osimModel->updGround();
 
+    // Add Body
     OpenSim::Body ball;
     ball.setName("ball");
     ball.set_mass(mass);
@@ -228,11 +227,10 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
     // Setup OpenSim model
     Model *osimModel = new Model;
 
-    //OpenSim bodies
-    OpenSim::Body& ground = *new OpenSim::Body("ground", SimTK::Infinity,
-        Vec3(0), Inertia());
-    osimModel->addBody(&ground);
+    //OpenSim Ground
+    Ground& ground = osimModel->updGround();
 
+    // Add Body
     OpenSim::Body ball;
     ball.setName("ball");
     ball.setMass(mass);

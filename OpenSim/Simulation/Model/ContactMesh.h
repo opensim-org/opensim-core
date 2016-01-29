@@ -55,21 +55,26 @@ public:
      * Construct a ContactMesh.
      *
      * @param filename     the name of the file to load the mesh from
-     * @param location     the location of the mesh within the Body it is attached to
-     * @param orientation  the orientation of the mesh within the Body it is attached to
-     * @param body         the Body this mesh is attached to
+     * @param location     the location of the mesh within the PhysicalFrame it is attached to
+     * @param orientation  the orientation of the mesh within the PhysicalFrame it is attached to
+     * @param frame        the PhysicalFrame this mesh is attached to
      */
-    ContactMesh(const std::string& filename, const SimTK::Vec3& location, const SimTK::Vec3& orientation, Body& body);
+    ContactMesh(const std::string& filename,
+                const SimTK::Vec3& location, const SimTK::Vec3& orientation,
+                PhysicalFrame& frame);
     /**
      * Construct a ContactMesh.
      *
      * @param filename     the name of the file to load the mesh from
-     * @param location     the location of the mesh within the Body it is attached to
-     * @param orientation  the orientation of the mesh within the Body it is attached to
-     * @param body         the Body this mesh is attached to
+     * @param location     the location of the mesh within the PhysicalFrame it is attached to
+     * @param orientation  the orientation of the mesh within the PhysicalFrame it is attached to
+     * @param frame        the PhysicalFrame this mesh is attached to
      * @param name         the name of this object
      */
-    ContactMesh(const std::string& filename, const SimTK::Vec3& location, const SimTK::Vec3& orientation, Body& body, const std::string& name);
+    ContactMesh(const std::string& filename,
+                const SimTK::Vec3& location, const SimTK::Vec3& orientation,
+                PhysicalFrame& frame, const std::string& name);
+
     ContactMesh(const ContactMesh& geom);
 
     #ifndef SWIG

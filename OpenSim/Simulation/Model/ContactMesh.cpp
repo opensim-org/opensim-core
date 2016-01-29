@@ -37,7 +37,7 @@ ContactMesh::ContactMesh() :
     setupProperties();
 }
 
-ContactMesh::ContactMesh(const std::string& filename, const SimTK::Vec3& location, const SimTK::Vec3& orientation, Body& body) :
+ContactMesh::ContactMesh(const std::string& filename, const SimTK::Vec3& location, const SimTK::Vec3& orientation, PhysicalFrame& body) :
     ContactGeometry(location, orientation, body),
     _filename(_filenameProp.getValueStr()),
     _geometry(NULL)
@@ -57,7 +57,7 @@ ContactMesh::ContactMesh(const std::string& filename, const SimTK::Vec3& locatio
     }
 }
 
-ContactMesh::ContactMesh(const std::string& filename, const SimTK::Vec3& location, const SimTK::Vec3& orientation, Body& body, const std::string& name) :
+ContactMesh::ContactMesh(const std::string& filename, const SimTK::Vec3& location, const SimTK::Vec3& orientation, PhysicalFrame& body, const std::string& name) :
     ContactGeometry(location, orientation, body),
     _filename(_filenameProp.getValueStr()),
     _geometry(NULL)

@@ -86,8 +86,6 @@ void Ligament::extendFinalizeFromProperties()
 
     GeometryPath& path = upd_GeometryPath();
     path.setDefaultColor(DefaultLigamentColor);
-    addComponent(&path);
-    path.setOwner(this);
 }
 
 

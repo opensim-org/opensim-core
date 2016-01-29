@@ -48,7 +48,6 @@ Ground::Ground() : PhysicalFrame()
 
 /*
 * Implementation of Frame interface by Ground.
-* 
 */
 SimTK::Transform Ground::
     calcGroundTransform(const SimTK::State& s) const

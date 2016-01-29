@@ -104,7 +104,7 @@ static OpenSim::Object* randomize(OpenSim::Object* obj)
             continue;
         if (ts == "bool"&& !isList) ap.updValue<bool>() = !ap.getValue<bool>();
         else if (ts == "integer"&& !isList) ap.updValue<int>() = rand();
-        else if (ts == "double" && !isList) ap.updValue<double>() = (double)rand();
+        else if (ts == "double" && !isList) ap.updValue<double>() = (double)rand()/RAND_MAX;
         else if (ts == "Vec3" && !isList){
             Property<SimTK::Vec3>& prop = Property<SimTK::Vec3>::updAs(ap);
             prop = SimTK::Vec3(abs(rand()), abs(rand()), abs(rand()));

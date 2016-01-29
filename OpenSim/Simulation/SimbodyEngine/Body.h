@@ -124,13 +124,6 @@ private:
         return _internalRigidBody;
     }
 
-    /** Convert old format Geometry version 3.2 to recent 4.0 format */
-    void convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& aNode, 
-                                             const SimTK::Vec3& outerScaleFactors, 
-                                             const SimTK::Vec6& outerTransform, 
-                                             SimTK::Xml::Element& geomSetElement) const;
-    void createFrameForXform(const SimTK::Xml::element_iterator&, const std::string& frameName, 
-                                            const SimTK::Vec6& localXform, const std::string& bodyName) const;
     // mutable because fist get constructs tensor from properties
     mutable SimTK::Inertia _inertia;
 

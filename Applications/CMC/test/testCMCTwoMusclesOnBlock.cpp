@@ -125,12 +125,10 @@ void testTwoMusclesOnBlock() {
     Storage fwd_result("twoMusclesOnBlock_ForwardResults/twoMusclesOnBlock_forward_states.sto");
     Storage cmc_result("twoMusclesOnBlock_ResultsCMC/twoMusclesOnBlock_tugOfWar_states.sto");
 
-    Array<double> rms_tols(0.0025, 6);
-    rms_tols[1] = 0.001; // block_u
+    Array<double> rms_tols(0.001, 6);
+    rms_tols[1] = 0.0025; // block_u
     rms_tols[2] = 0.05;  // muscle 1 activation
-    rms_tols[3] = 0.001; // muscle 1 fiber length 
     rms_tols[4] = 0.05;  // muscle 2 activation
-    rms_tols[5] = 0.001; // muscle 2 fiber length 
 
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
     string base = "testTwoMusclesOnBlock "+ muscleType;
