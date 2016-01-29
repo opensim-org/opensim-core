@@ -72,11 +72,12 @@ build_script:
   - cd %OPENSIM_BUILD_DIR%
   # Configure.
   - cmake %OPENSIM_SOURCE_DIR% -G"Visual Studio 14 2015 Win64" -DSIMBODY_HOME=C:\simbody -DOPENSIM_DEPENDENCIES_DIR=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DCMAKE_INSTALL_PREFIX=%OPENSIM_INSTALL_DIR% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON # TODO -DBUILD_SIMM_TRANSLATOR=ON
-  # Build.
-  - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet /p:TreatWarningsAsErrors="true"
 
   # TODO
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
+  # Build.
+  - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet /p:TreatWarningsAsErrors="true"
   
 test_script:
   ## Run tests.
