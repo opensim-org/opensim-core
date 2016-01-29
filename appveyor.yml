@@ -101,3 +101,6 @@ build_script:
     #  - IF DEFINED DISTR cd %APPVEYOR_BUILD_FOLDER%
     #  - IF DEFINED DISTR nuget pack .opensim-core.nuspec -BasePath %OPENSIM_HOME%
     #  - IF DEFINED DISTR appveyor PushArtifact opensim-core.0.0.0.nupkg
+    #
+on_finish:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
