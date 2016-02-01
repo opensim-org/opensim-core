@@ -176,23 +176,33 @@ void testFromStatesStorageGivesCorrectStates() {
             auto muscleName = muscle.getName();
 
             // Activation.
-            // TODO Simply accessing these state variables requires realizing
-            // to Velocity; I think this is a bug.
-            model.getMultibodySystem().realize(state, SimTK::Stage::Velocity);
-            SimTK_TEST_EQ(
-                    getStorageEntry(sto, itime, muscleName + "/activation"),
-                    muscle.getActivation(state));
+            {
+                std::string stateVarName = muscleName + "/activation";
+                SimTK_TEST_EQ(
+                        getStorageEntry(sto, itime, stateVarName),
+                        muscle.getStateVariableValue(state, stateVarName));
+            }
 
             // Fiber length.
-            SimTK_TEST_EQ(
-                    getStorageEntry(sto, itime, muscleName + "/fiber_length"), 
-                    muscle.getFiberLength(state));
+            {
+                std::string stateVarName = muscleName + "/fiber_length";
+                SimTK_TEST_EQ(
+                        getStorageEntry(sto, itime, stateVarName), 
+                        muscle.getStateVariableValue(state, stateVarName));
+            }
 
-            // More complicated computation based on state.
+        }
+
+        // More complicated computation based on state.
+        // These calculations require that the state is realized to velocity.
+        model.getMultibodySystem().realize(state, SimTK::Stage::Velocity);
+
+        for (int im = 0; im < model.getMuscles().getSize(); ++im) {
+            const auto& muscle = model.getMuscles().get(im);
+            auto muscleName = muscle.getName();
             SimTK_TEST(!SimTK::isNaN(muscle.getFiberForce(state)));
         }
 
-        // More complicated computations based on state.
         auto loc = model.getBodySet().get("tibia_r")
             .findLocationInAnotherFrame(state,
                     SimTK::Vec3(1, 0.5, 0.25),
@@ -200,6 +210,7 @@ void testFromStatesStorageGivesCorrectStates() {
         SimTK_TEST(!loc.isNaN());
 
         SimTK_TEST(!model.calcMassCenterVelocity(state).isNaN());
+
         // TODO acceleration-level stuff gives segfault.
         // TODO model.getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
         // TODO SimTK_TEST(!model.calcMassCenterAcceleration(state).isNaN());
@@ -769,9 +780,12 @@ void testBoundsCheck() {
     states.append(state);
     states.append(state);
     
-    states[states.getSize() + 100];
-    states[4];
-    states[5];
+    #ifdef NDEBUG
+        // In DEBUG, Visual Studio puts asserts into the index operator.
+        states[states.getSize() + 100];
+        states[4];
+        states[5];
+    #endif
     SimTK_TEST_MUST_THROW_EXC(states.get(4), IndexOutOfRange);
     SimTK_TEST_MUST_THROW_EXC(states.get(states.getSize() + 100),
             IndexOutOfRange);

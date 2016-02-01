@@ -35,10 +35,6 @@ init:
   - SET OPENSIM_DEPENDENCIES_SOURCE_DIR=%OPENSIM_SOURCE_DIR%\dependencies
   - SET OPENSIM_DEPENDENCIES_BUILD_DIR=C:\projects\opensim_dependencies_build
   - SET OPENSIM_DEPENDENCIES_INSTALL_DIR=C:\projects\opensim_dependencies_install
-
-  # The following line, if uncommented, should allow you to remote-desktop into
-  # the Appveyor build machine.
-  # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   
 nuget:
   account_feed: true
@@ -73,34 +69,33 @@ build_script:
   # Configure.
   - cmake %OPENSIM_SOURCE_DIR% -G"Visual Studio 14 2015 Win64" -DSIMBODY_HOME=C:\simbody -DOPENSIM_DEPENDENCIES_DIR=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DCMAKE_INSTALL_PREFIX=%OPENSIM_INSTALL_DIR% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON # TODO -DBUILD_SIMM_TRANSLATOR=ON
 
-  # TODO
-  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  # Build.
+  - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet /p:TreatWarningsAsErrors="true"
+  
+test_script:
+  ## Run tests.
+  - ctest --parallel 4 --build-config Release --output-on-failure
 
-    #  # Build.
-    #  - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet /p:TreatWarningsAsErrors="true"
-    #  
-    #test_script:
-    #  ## Run tests.
-    #  - ctest --parallel 4 --build-config Release --output-on-failure
-    #
-    #  ## Ensure we have no trouble installing.
-    #  - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
-    #  
-    #  ## Test python wrapping.
-    #  - set PATH=%OPENSIM_INSTALL_DIR%\bin;%PATH%
-    #  # Move to the installed location of the python package.
-    #  - cd %OPENSIM_INSTALL_DIR%\sdk\python
-    #  # Run python tests.
-    #  - C:\Python27-x64\Scripts\nosetests -v
-    #
-    #after_test:
-    #  - ## On master branch, create NuGet package for OpenSim.
-    #  - # Detect if we are on the master branch.
-    #  - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
-    #  - # Create and upload NuGet package.
-    #  - IF DEFINED DISTR cd %APPVEYOR_BUILD_FOLDER%
-    #  - IF DEFINED DISTR nuget pack .opensim-core.nuspec -BasePath %OPENSIM_HOME%
-    #  - IF DEFINED DISTR appveyor PushArtifact opensim-core.0.0.0.nupkg
-    #
-on_finish:
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  ## Ensure we have no trouble installing.
+  - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
+  
+  ## Test python wrapping.
+  - set PATH=%OPENSIM_INSTALL_DIR%\bin;%PATH%
+  # Move to the installed location of the python package.
+  - cd %OPENSIM_INSTALL_DIR%\sdk\python
+  # Run python tests.
+  - C:\Python27-x64\Scripts\nosetests -v
+
+after_test:
+  - ## On master branch, create NuGet package for OpenSim.
+  - # Detect if we are on the master branch.
+  - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
+  - # Create and upload NuGet package.
+  - IF DEFINED DISTR cd %APPVEYOR_BUILD_FOLDER%
+  - IF DEFINED DISTR nuget pack .opensim-core.nuspec -BasePath %OPENSIM_HOME%
+  - IF DEFINED DISTR appveyor PushArtifact opensim-core.0.0.0.nupkg
+
+# The following, if uncommented, should allow you to remote-desktop into
+# the Appveyor build machine.
+#on_finish:
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
