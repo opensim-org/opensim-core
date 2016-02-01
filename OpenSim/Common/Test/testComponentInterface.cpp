@@ -592,6 +592,11 @@ int main() {
 
         theWorld.dumpSubcomponents();
 
+        std::cout << "Iterate over all Components in the world." << std::endl;
+        for (auto& component : theWorld.getComponentList<Component>()) {
+            std::cout << "Iterator is at: " << component.getName() << std::endl;
+        }
+
         theWorld.print("Doubled" + modelFile);
     }
     catch (const std::exception& e) {

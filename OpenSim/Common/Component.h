@@ -321,7 +321,7 @@ public:
     template <typename T = Component>
     ComponentList<T> getComponentList() const {
         Component* mutableThis = const_cast<Component*>(this);
-        mutableThis->initComponentTreeTraversal(*mutableThis);
+        mutableThis->initComponentTreeTraversal(*this);
         return ComponentList<T>(*this);
     }
 
@@ -935,7 +935,7 @@ protected:
     C& constructSubcomponent(const std::string& name) {
         C* component = new C();
         component->setName(name);
-        this->markAsSubcomponent(component);
+        _memberSubcomponents.push_back(SimTK::ReferencePtr<Component>(component));
         return *component;
     }
 
@@ -1050,25 +1050,7 @@ template <class T> friend class ComponentMeasure;
     The implementation populates _nextComponent ReferencePtr with a pointer to 
     the next Component in tree pre-order traversal.
     */
-    void initComponentTreeTraversal(Component &root) {
-        // Going down the tree, node is followed by all its
-        // children in order, last child's successor is the parent's successor.
-        for (unsigned int i = 0; i < _components.size(); i++){
-            if (i == _components.size() - 1){
-                // use parent's sibling if any
-                if (this == &root) // only to be safe if root changes
-                    _components[i]->_nextComponent = nullptr;
-                else
-                    _components[i]->_nextComponent = _nextComponent.get();
-            }
-            else
-                _components[i]->_nextComponent = _components[i + 1];
-        }
-        // recur to handle children of subcomponents
-        for (unsigned int i = 0; i < _components.size(); i++){
-            _components[i]->initComponentTreeTraversal(root);
-        }
-    }
+    void initComponentTreeTraversal(const Component &root) const;
 
     ///@cond
     /** Opportunity to remove connection related information. 
@@ -1414,10 +1396,11 @@ template <class T> friend class ComponentMeasure;
      */
     void constructOutputForStateVariable(const std::string& name);
 
-    /** Clear all designations of (sub)components for this Component. 
-      * Components are not deleted- the list of references to its components is cleared. */
-    void clearComponents() {
-        _components.clear();
+    /** Clear all designations of (sub)components that are properties of this
+        Component. Components are not deleted- the list of references to its
+        subcomponents is cleared. */
+    void clearPropertySubcomponents() {
+        _propertySubcomponents.clear();
     }
 
     /** Add a modeling option (integer flag stored in the State) for use by 
@@ -1701,10 +1684,10 @@ public:
     }
     void dumpPathName() const {
          std::cout << getConcreteClassName() << ": ID= " << getPathName() << std::endl;
-         for (unsigned int i = 0; i<_components.size(); i++)
-             _components[i]->dumpPathName();
-
+         for (unsigned int i = 0; i<_propertySubcomponents.size(); i++)
+             _propertySubcomponents[i]->dumpPathName();
      }
+
 protected:
     // Populate _pathName for Component and all its children
     void populatePathName(const std::string& parentPath) {
@@ -1712,8 +1695,8 @@ protected:
             _pathName = parentPath + "/" + getConcreteClassName();
         else
             _pathName = parentPath+"/"+getName();
-        for (unsigned int i = 0; i<_components.size(); i++)
-            _components[i]->populatePathName(getPathName());
+        for (unsigned int i = 0; i<_propertySubcomponents.size(); i++)
+            _propertySubcomponents[i]->populatePathName(getPathName());
     }
     //Derived Components must create concrete StateVariables to expose their state 
     //variables. When exposing state variables allocated by the underlying Simbody
@@ -1790,7 +1773,7 @@ protected:
     // These are just references, don't delete them!
     // TODO: subcomponents should not be exposed to derived classes to trash.
     //       Need to provide universal access via const iterators -aseth
-    SimTK::Array_<Component *>  _components;
+    SimTK::Array_<SimTK::ReferencePtr<Component> >  _propertySubcomponents;
 
 private:
     // Reference to the parent Component of this Component. It is not the previous
@@ -1798,7 +1781,7 @@ private:
     SimTK::ReferencePtr<const Component> _parent;
 
     // Reference pointer to the successor of the current Component in Pre-order traversal
-    SimTK::ReferencePtr<Component> _nextComponent;
+    mutable SimTK::ReferencePtr<const Component> _nextComponent;
     // PathName
     std::string _pathName;
 
@@ -1825,8 +1808,12 @@ private:
     // subsystem.
     SimTK::ResetOnCopy<SimTK::MeasureIndex> _simTKcomponentIndex;
 
+
+    // Keep fixed list of data member Components upon construction
+    SimTK::Array_<SimTK::ReferencePtr<Component>> _memberSubcomponents;
     // Hold onto adopted components
-    std::vector<SimTK::ClonePtr<Component>> _adoptees;
+    SimTK::Array_<SimTK::ClonePtr<Component>> _adoptedSubcomponents;
+
 
     // Structure to hold modeling option information. Modeling options are
     // integers 0..maxOptionValue. At run time we keep them in a Simbody
@@ -1960,8 +1947,15 @@ ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
         return *this;
     // If _node has children then successor is first child
     // move _node to point to it
-    if (_node->_components.size() > 0)
-        _node = _node->_components[0];
+    if (_node->_memberSubcomponents.size() > 0) {
+        _node = _node->_memberSubcomponents[0].get();
+    }
+    else if (_node->_propertySubcomponents.size() > 0) {
+        _node = _node->_propertySubcomponents[0].get();
+    }
+    else if (_node->_adoptedSubcomponents.size() > 0) {
+        _node = _node->_adoptedSubcomponents[0].get();
+    }
     // If processing a subtree under _root we stop when our successor is the same
     // as the successor of _root as this indicates we're leaving the _root's subtree.
     else if (_node->_nextComponent.get() == _root._nextComponent.get())
@@ -1980,8 +1974,15 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
     while (_node != nullptr && (dynamic_cast<const T*>(_node) == nullptr || 
                                 !_filter.isMatch(*_node) || 
                                 (_node == &_root))){
-        if (_node->_components.size() > 0)
-            _node = _node->_components[0];
+        if (_node->_memberSubcomponents.size() > 0) {
+            _node = _node->_memberSubcomponents[0].get();
+        }
+        else if (_node->_propertySubcomponents.size() > 0) {
+            _node = _node->_propertySubcomponents[0].get();
+        }
+        else if (_node->_adoptedSubcomponents.size() > 0) {
+            _node = _node->_adoptedSubcomponents[0].get();
+        }
         else {
             if (_node->_nextComponent.get() == _root._nextComponent.get()){ // end of subtree under _root
                 _node = nullptr;
