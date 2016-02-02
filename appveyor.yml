@@ -63,7 +63,7 @@ build_script:
   ## Superbuild dependencies. 
   - mkdir %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cd %OPENSIM_DEPENDENCIES_BUILD_DIR%
-  - cmake %OPENSIM_DEPENDENCIES_SOURCE_DIR% -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DSUPERBUILD_SIMBODY=OFF
+  - cmake %OPENSIM_DEPENDENCIES_SOURCE_DIR% -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DSUPERBUILD_simbody=OFF
   - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet
   - mkdir %OPENSIM_BUILD_DIR%
   ## Configure and build OpenSim.
