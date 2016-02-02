@@ -706,55 +706,6 @@ void testAccessByTime() {
 
 }
 
-/*
-SimTK::State does not have an equality operator, so we can't test equality of
-two StatesTrajectory's yet.
-void testEqualityOperator() {
-    // Test trajectories that hold a single state.
-    {
-        Model model("gait2354_simbody.osim");
-        const auto& state = model.initSystem();
-
-        StatesTrajectory statesA;
-        statesA.append(state);
-
-        StatesTrajectory statesB;
-        statesB.append(state);
-
-        SimTK_TEST(statesA == statesB);
-
-        // Ensure that two different trajectories are not equal.
-        // -----------------------------------------------------
-        {
-            SimTK::State differentState(state);
-            differentState.setTime(53.67);
-
-            StatesTrajectory differentStates;
-            differentStates.append(differentState);
-
-            SimTK_TEST(states != differentStates);
-        }
-
-        // Copy constructor.
-        // -----------------
-        StatesTrajectory statesB2(statesB);
-        SimTK_TEST(statesB2 == statesB);
-
-        // Copy assignment.
-        // ----------------
-        StatesTrajectory statesB3 = statesB;
-        SimTK_TEST(statesB3 == statesB);
-        // TODO ensure two non-equal copied states come up as such.
-
-    }
-    
-    // TODO auto state1 = SimTK::State(state);
-    // TODO state1.setTime(
-    // TODO auto state2 = SimTK::State(state1);
-    // TODO better testing of copy constructor.
-}
-*/
-
 void testAppendTimesAreNonDecreasing() {
     Model model("gait2354_simbody.osim");
     auto& state = model.initSystem();
@@ -920,7 +871,6 @@ int main() {
         SimTK_SUBTEST(testFromStatesStorageGivesCorrectStates);
         SimTK_SUBTEST1(testFromStatesStorageInconsistentModel, statesStoFname);
         SimTK_SUBTEST(testFromStatesStorageUniqueColumnLabels);
-        // TODO SimTK_SUBTEST(testEqualityOperator);
         SimTK_SUBTEST(testFromStatesStorageAllRowsHaveSameLength);
 
     SimTK_END_TEST();
