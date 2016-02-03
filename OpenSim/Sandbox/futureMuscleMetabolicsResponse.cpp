@@ -63,48 +63,44 @@ class AggregateResponse : public ModelComponent {
 public:
     AggregateResponse() { constructInfrastructure(); }
 // TODO want to use list property, but that makes clones and inputs/outputs
-// don't get copied yet.
+// don't get copied yet. For now treat Responses as internal to the Aggregate
 //    OpenSim_DECLARE_LIST_PROPERTY(responses, ComplexResponse,
 //            "for individual coordinates.");
-    // Temporary solution:
-    std::vector<std::shared_ptr<ComplexResponse>> responses;
 
     // TODO propagate this scaling_factor to the ComplexResponses using
     // Component::getParent.
     OpenSim_DECLARE_PROPERTY(scaling_factor, double, "Affects each coord.");
 
+    void addResponse(ComplexResponse* response) {
+        adoptSubcomponent(response);
+    }
+
     double getTotalSum(const State& s) const {
         const double basalRate = 1.0;
         double totalSum = 1.0;
-        for (const auto& response : responses) {
-            totalSum += response->getOutputValue<double>(s, "sum");
+        for (const auto& response : getComponentList<ComplexResponse>()) {
+            totalSum += response.getOutputValue<double>(s, "sum");
         }
         return totalSum;
     }
 
     double getTotalTerm1(const State& s) const {
         double totalTerm1=0;
-        for (const auto& response : responses) {
-            totalTerm1 += response->getOutputValue<double>(s, "term_1");
+        for (const auto& response : getComponentList<ComplexResponse>()) {
+            totalTerm1 += response.getOutputValue<double>(s, "term_1");
         }
         return totalTerm1;
     }
 
     double getTotalTerm2(const State& s) const {
         double totalTerm2=0;
-        for (const auto& response : responses) {
-            totalTerm2 += response->getOutputValue<double>(s, "term_2");
+        for (const auto& response : getComponentList<ComplexResponse>()) {
+            totalTerm2 += response.getOutputValue<double>(s, "term_2");
         }
         return totalTerm2;
     }
 
 private:
-    void extendFinalizeFromProperties() {
-        Super::extendFinalizeFromProperties();
-        for (auto& response : responses) {
-            markAsSubcomponent(response.get());
-        }
-    }
     void constructOutputs() override {
         constructOutput<double>("total_sum",
                 &AggregateResponse::getTotalSum, SimTK::Stage::Position);
@@ -165,20 +161,24 @@ void testComplexResponse() {
 
     auto aggregate = new AggregateResponse();
     aggregate->setName("aggregate_response");
-    aggregate->responses.push_back(
-            std::shared_ptr<ComplexResponse>(new ComplexResponse()));
-    aggregate->responses[0]->setName("complex_response_j1");
-    aggregate->responses[0]->updConnector<Coordinate>("coord")
-        .set_connectee_name("j1_coord_0");
-    aggregate->responses.push_back(
-            std::shared_ptr<ComplexResponse>(new ComplexResponse()));
-    aggregate->responses[1]->setName("complex_response_j2");
-    aggregate->responses[1]->updConnector<Coordinate>("coord")
-        .set_connectee_name("j2_coord_0");
+    
+    // Add individual responses to the aggregate response 
+    auto response1 = new ComplexResponse();
+    response1->setName("complex_response_j1");
+    response1->updConnector<Coordinate>("coord").connect(j1->get_CoordinateSet()[0]);
+    // add to aggregate which takes ownership
+    aggregate->addResponse(response1);
+
+    // now create response 2
+    auto response2 = new ComplexResponse();
+    response2->setName("complex_response_j2");
+    response2->updConnector<Coordinate>("coord").connect(j2->get_CoordinateSet()[0]);
+    // add to aggregate which takes ownership
+    aggregate->addResponse(response2);
 
     auto reporter = new ConsoleReporter<double>();
     reporter->setName("reporter");
-    reporter->getInput("input1").connect(aggregate->responses[0]->getOutput("sum"));
+    reporter->getInput("input1").connect(response1->getOutput("sum"));
     //reporter->getInput("input2").connect(aggregate->responses[1]->getOutput("sum"));
     reporter->getInput("input3").connect(aggregate->getOutput("total_sum"));
     // TODO connect by path: reporter->getInput("input").connect("/complex_response/sum");
