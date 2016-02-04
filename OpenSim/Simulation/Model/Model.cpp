@@ -639,9 +639,7 @@ void Model::extendConnectToModel(Model &model)
                 WeldConstraint* weld = new WeldConstraint(outb->getName()+"_weld",
                                                           *outbMaster, o, *outb, o);
 
-                // TODO: add all added compoents to a private list of owned components
-                // that are not serialized so that they are destroyed.
-                // Currently this is a leak.
+                // include within adopted list of owned components
                 adoptSubcomponent(weld);
             }
         }
@@ -675,6 +673,19 @@ void Model::extendConnectToModel(Model &model)
                     _propertySubcomponents[m + nb].reset(jointToSwap);
                     it->reset(compToMoveOut);
                 }
+            }
+            int jx = joints.getIndex(jointToSwap, m);
+            //if in the set but not already in the right order
+            if ((jx >= 0) && (jx != m)) {
+                // perform a move to put the joint in tree order
+                // this is necessary ONLY because some tools assume that the
+                // order or joints and specifically coordinates is the
+                // order of the mobility (generalized) forces.
+                // IDTool, StaticOptimization and RRA for example will fail.
+                // TODO: when the tools are fixed/removed remove this as well.
+                jointToSwap = &joints.get(jx);
+                joints.set(jx, &joints.get(m));
+                joints.set(m, jointToSwap);
             }
             // Update the directionality of the joint according to tree's
             // preferential direction
