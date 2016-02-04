@@ -305,7 +305,6 @@ public:
     const SimTK::MultibodySystem& getSystem() const;
 
     /**
-
     * Check if this component has an underlying MultibodySystem.
     * Returns false if the System has not been created OR if this
     * Component has not added itself to the System.  */
@@ -316,18 +315,16 @@ public:
      * composed of. The hierarchy of Components/subComponents forms a tree. The 
      * tree structure is fixed when the system is created.
      * The order of the Components is that of tree preorder traversal so that a
-     * component is processed before its subcomponents. All addComponent calls 
-     * must be done before calling this method on the top model. */
+     * component is traversed before its subcomponents. */
     template <typename T = Component>
     ComponentList<T> getComponentList() const {
-        Component* mutableThis = const_cast<Component*>(this);
-        mutableThis->initComponentTreeTraversal(*this);
+        initComponentTreeTraversal(*this);
         return ComponentList<T>(*this);
     }
 
     /**
      * Class to hold the list of components/subcomponents to iterate over.
-    */
+     */
     template <typename T>
     friend class ComponentList;
     /**
