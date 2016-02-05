@@ -268,7 +268,6 @@ bool InverseKinematicsTool::run()
 
         _model->printBasicInfo(cout);
 
-
         // Do the maneuver to change then restore working directory 
         // so that the parsing code behaves properly if called from a different directory.
         string saveWorkingDirectory = IO::getCwd();

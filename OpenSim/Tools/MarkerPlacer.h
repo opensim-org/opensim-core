@@ -63,6 +63,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MarkerPlacer, Object);
 // DATA
 //=============================================================================
 private:
+    using MarkerTable = TimeSeriesTable_<SimTK::Vec3>;
 
 protected:
     // whether or not to apply marker placer
@@ -198,7 +199,17 @@ public:
 private:
     void setNull();
     void setupProperties();
-    void moveModelMarkersToPose(SimTK::State& s, Model& aModel, MarkerData& aPose);
+    void moveModelMarkersToPose(SimTK::State& s, 
+                                Model& aModel, 
+                                MarkerTable& aPose);
+
+    void averageFrames(MarkerTable& markerTable,
+                       double aThreshold,
+                       double aStartTime = -SimTK::Infinity,
+                       double aEndTime   =  SimTK::Infinity);
+    void convertUnits(const Model * const aModel,
+                      MarkerTable& markerTable);
+
 //=============================================================================
 };  // END of class MarkerPlacer
 //=============================================================================

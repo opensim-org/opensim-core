@@ -25,7 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "MarkerPlacer.h"
-#include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Common/GCVSplineSet.h>
@@ -38,6 +37,7 @@
 #include <OpenSim/Simulation/CoordinateReference.h>
 #include "IKCoordinateTask.h"
 #include <OpenSim/Analyses/StatesReporter.h>
+#include <OpenSim/Common/Adapters.h>
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -242,17 +242,27 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
     /* Load the static pose marker file, and average all the
      * frames in the user-specified time range.
      */
-    MarkerData staticPose(aPathToSubject + _markerFileName);
+    auto&& markers = FileAdapter::readFile(aPathToSubject + _markerFileName);
+    auto staticPose = dynamic_cast<MarkerTable&>(*(markers.at("markers")));
+
+
     if (_timeRange.getSize()<2) 
         throw Exception("MarkerPlacer::processModel, time_range is unspecified.");
 
-    staticPose.averageFrames(_maxMarkerMovement, _timeRange[0], _timeRange[1]);
-    staticPose.convertToUnits(aModel->getLengthUnits());
+    averageFrames(staticPose, _maxMarkerMovement, _timeRange[0], _timeRange[1]);
+
+    convertUnits(aModel, staticPose);
 
     /* Delete any markers from the model that are not in the static
      * pose marker file.
      */
-    aModel->deleteUnusedMarkers(staticPose.getMarkerNames());
+    auto& labels = staticPose.
+                   getDependentsMetaData().
+                   getValueArrayForKey("labels");
+    Array<std::string> markerNames{};
+    for(size_t i = 0; i < labels.size(); ++i)
+        markerNames.append(labels[i].getValue<std::string>());
+    aModel->deleteUnusedMarkers(markerNames);
 
     // Construct the system and get the working state when done changing the model
     SimTK::State& s = aModel->initSystem();
@@ -349,7 +359,38 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
     _outputStorage->setName("static pose");
     //_outputStorage->print("statesReporterOutput.sto");
     Storage markerStorage;
-    staticPose.makeRdStorage(*_outputStorage);
+
+    //********************* Fill up storage with marker data - Begin
+    auto& rStorage = *_outputStorage;
+    // Clear existing frames.
+    rStorage.reset(0);
+    // Make Column labels.
+    Array<std::string> columnLabels{};
+    columnLabels.append("time");
+    for(size_t i = 0; i < staticPose.getNumColumns(); ++i) {
+        columnLabels.append(labels[i].getValue<std::string>() + "_tx");
+        columnLabels.append(labels[i].getValue<std::string>() + "_ty");
+        columnLabels.append(labels[i].getValue<std::string>() + "_tz");
+    }
+    rStorage.setColumnLabels(columnLabels);
+
+    // Store the marker coordinates in an array of doubles and add it to the
+    // Storage.
+    for(size_t i = 0; i < staticPose.getNumRows(); ++i) {
+        const auto& frame = staticPose.getRowAtIndex(i);
+        std::vector<double> row{};
+        for(size_t j = 0; j < staticPose.getNumColumns(); ++j) {
+            const auto& marker = frame[j];
+            row.push_back(marker[0]);
+            row.push_back(marker[1]);
+            row.push_back(marker[2]);
+        }
+        rStorage.append(staticPose.getIndependentColumn()[i],
+                        row.size(),
+                        row.data());
+    }
+    //********************* Fill up storage with marker data - End
+
     _outputStorage->getStateVector(0)->setTime(s.getTime());
     statesReporter.updStatesStorage().addToRdStorage(*_outputStorage, s.getTime(), s.getTime());
     //_outputStorage->print("statesReporterOutputWithMarkers.sto");
@@ -386,10 +427,13 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
  * @param aModel the model to use
  * @param aPose the static-pose marker cloud to get the marker locations from
  */
-void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel, MarkerData& aPose)
+void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, 
+                                          Model& aModel, 
+                                          MarkerTable& aPose)
 {
-    aPose.averageFrames(0.01);
-    const MarkerFrame &frame = aPose.getFrame(0);
+    averageFrames(aPose, 0.01);
+
+    const auto& frame = aPose.getRowAtIndex(0);
 
     const SimbodyEngine& engine = aModel.getSimbodyEngine();
 
@@ -402,32 +446,157 @@ void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel, Marker
 
         if (true/*!modelMarker.getFixed()*/)
         {
-            int index = aPose.getMarkerIndex(modelMarker.getName());
-            if (index >= 0)
+            auto& labels = aPose.
+                           getDependentsMetaData().
+                           getValueArrayForKey("labels");
+            std::vector<std::string> markernames{};
+            for(size_t i = 0; i < labels.size(); ++i) 
+                markernames.push_back(labels[i].getValue<std::string>());
+            auto iter = std::find(markernames.cbegin(),
+                                  markernames.cend(),
+                                  modelMarker.getName());
+            if (iter != markernames.cend())
             {
-                Vec3 globalMarker = frame.getMarker(index);
+                auto index = iter - markernames.cbegin();
+                Vec3 globalMarker = frame[index];
                 if (!globalMarker.isNaN())
                 {
                     Vec3 pt, pt2;
                     Vec3 globalPt = globalMarker;
-                    double conversionFactor = aPose.getUnits().convertTo(aModel.getLengthUnits());
+                    auto units = Units{aPose.
+                                       getTableMetaData().
+                                       getValueForKey("Units").
+                                       getValue<std::string>()};
+                    auto modelUnits = aModel.getLengthUnits();
+                    double conversionFactor = units.convertTo(modelUnits);
                     pt = conversionFactor*globalPt;
                     pt2 = modelMarker.getReferenceFrame().findLocationInAnotherFrame(s, pt, aModel.getGround());
                     modelMarker.set_location(pt2);
                 }
                 else
                 {
-                    cout << "___WARNING___: marker " << modelMarker.getName() << " does not have valid coordinates in " << aPose.getFileName() << endl;
+                    cout << "___WARNING___: marker " << modelMarker.getName() << " does not have valid coordinates." << endl;
                     cout << "               It will not be moved to match location in marker file." << endl;
                 }
             }
         }
     }
 
-    cout << "Moved markers in model " << aModel.getName() << " to match locations in marker file " << aPose.getFileName() << endl;
+    cout << "Moved markers in model " << aModel.getName() << " to match locations in marker file." << endl;
 }
 
 Storage *MarkerPlacer::getOutputStorage() 
 {
     return _outputStorage; ;
+}
+
+void MarkerPlacer::averageFrames(MarkerTable& markerTable,
+                                 double aThreshold,
+                                 double aStartTime,
+                                 double aEndTime) {
+    const auto& timecol = markerTable.getIndependentColumn();
+
+    if(aStartTime > aEndTime)
+        throw Exception{"Start Time > End Time."};
+    if(aStartTime > timecol.back())
+        throw Exception{"Start Time lies after last frame."};
+    if(aEndTime < timecol.front())
+        throw Exception{"End Time lies before first frame."};
+
+    const auto begind = std::lower_bound(timecol.cbegin(), 
+                                         timecol.cend(), 
+                                         aStartTime) - timecol.cbegin();
+    const auto endind = std::upper_bound(timecol.cbegin(), 
+                                         timecol.cend(), 
+                                         aEndTime) - 1 - timecol.cbegin();
+
+    if(begind > endind)
+        throw Exception{"Zero frames between start and end time."};
+
+    MarkerTable::RowVector minrow{static_cast<int>(markerTable.getNumColumns()),
+                                  SimTK::Vec3{SimTK::Infinity}};
+    MarkerTable::RowVector maxrow{static_cast<int>(markerTable.getNumColumns()),
+                                  SimTK::Vec3{-SimTK::Infinity}};
+    MarkerTable::RowVector avgrow{static_cast<int>(markerTable.getNumColumns()),
+                                  SimTK::Vec3{SimTK::NaN}};
+    double avgtime{};
+    for(size_t i = begind; i < endind; ++i) {
+        avgtime += markerTable.getIndependentColumn()[i];
+        const auto row = markerTable.getRowAtIndex(i);
+        for(size_t m = 0; m < markerTable.getNumColumns(); ++m) {
+            const auto pt = row[m];
+            if(!pt.isNaN()) {
+                if(avgrow[m].isNaN())
+                    avgrow[m] = pt;
+                else
+                    avgrow[m] += pt;
+            }
+            if(aThreshold > 0) {
+                for(size_t j = 0; j < 3; ++j) {
+                    minrow[m][j] = std::min(minrow[m][j], pt[j]);
+                    maxrow[m][j] = std::max(maxrow[m][j], pt[j]);
+                }
+            }
+        }
+    }
+    avgtime /= endind - begind;
+    avgrow /= endind - begind;
+    
+    MarkerTable newMarkerTable{};
+    newMarkerTable.updTableMetaData() = markerTable.getTableMetaData();
+    newMarkerTable.setDependentsMetaData(markerTable.getDependentsMetaData());
+    for(size_t i = 0; i < begind; ++i) {
+        newMarkerTable.appendRow(markerTable.getIndependentColumn()[i],
+                                 markerTable.getRowAtIndex(i));
+    }
+    newMarkerTable.appendRow(avgtime, avgrow);
+    for(size_t i = endind + 1; i < markerTable.getNumRows(); ++i) {
+        newMarkerTable.appendRow(markerTable.getIndependentColumn()[i],
+                                 markerTable.getRowAtIndex(i));
+    }
+
+    auto& labels = newMarkerTable.
+                   getDependentsMetaData().
+                   getValueArrayForKey("labels");
+
+    for(size_t m = 0; m < newMarkerTable.getNumColumns(); ++m) {
+        if(avgrow[m].isNaN())
+            std::cout << "__WARNING__: marker " 
+                      << labels[m].getValue<std::string>() 
+                      << " is missing in frames " << begind << " to " << endind 
+                      << ". Coordinates will be set to NaN." << std::endl;
+        else if(maxrow[m][0] - minrow[m][0] > aThreshold ||
+                maxrow[m][1] - minrow[m][1] > aThreshold ||
+                maxrow[m][2] - minrow[m][2] > aThreshold) {
+            double maxdim = maxrow[m][0] - minrow[m][0];
+            maxdim = std::max(maxdim, maxrow[m][1] - minrow[m][1]);
+            maxdim = std::max(maxdim, maxrow[m][2] - minrow[m][2]);
+            std::cout << "__WARNING__: movement of marker " 
+                      << labels[m].getValue<std::string>() << " is " << maxdim 
+                      << " (threshold = " << aThreshold << ")" 
+                      << std::endl;
+        }
+    }
+
+    std::cout << "Averaged frames from time " << _timeRange[0] << " to "
+              << _timeRange[1] << " (frames " << begind << " to " << endind 
+              << ")" << std::endl;
+
+    markerTable = newMarkerTable;
+}
+
+
+void MarkerPlacer::convertUnits(const Model * const aModel,
+                                MarkerTable& markerTable) {
+    auto units = markerTable.
+                 getTableMetaData().
+                 getValueForKey("Units").
+                 getValue<std::string>();
+    double scaleFactor = Units{units}.convertTo(aModel->getLengthUnits());
+    if(fabs(scaleFactor - 1.0) > SimTK::Eps) {
+        if(!SimTK::isNaN(scaleFactor)) {
+            for(size_t i = 0; i < markerTable.getNumRows(); ++i)
+                markerTable.updRowAtIndex(i) *= scaleFactor;
+        }
+    }
 }

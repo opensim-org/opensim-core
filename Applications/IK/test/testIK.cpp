@@ -39,6 +39,7 @@ int main()
 
         InverseKinematicsTool ik1("subject01_Setup_InverseKinematics.xml");
         ik1.run();
+
         Storage result1(ik1.getOutputMotionFileName()), standard("std_subject01_walk1_ik.mot");
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard, Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 failed");
         cout << "testInverseKinematicsGait2354 passed" << endl;
