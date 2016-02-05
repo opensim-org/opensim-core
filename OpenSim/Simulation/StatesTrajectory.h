@@ -256,7 +256,7 @@ public:
 
     /** A helper type to allow using range for loops over a subset of the
      * trajectory. */
-    using IteratorRange = OpenSim::IteratorRange<const_iterator>;
+    typedef IteratorRange<const_iterator> IteratorRange;
 
     /// @name Iterating through the trajectory
     /// @{
