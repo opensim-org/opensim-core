@@ -1521,6 +1521,11 @@ PrintPropertyInfo(ostream &aOStream,
     }
 }
 
+void Object::
+PrintPropertyInfo(const string &className, const string &propertyName) {
+    PrintPropertyInfo(std::cout, className, propertyName);
+}
+
 
 //=============================================================================
 // Utilities, factory methods

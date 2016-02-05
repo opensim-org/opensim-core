@@ -67,6 +67,10 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Object>;
     #else
         #define SWIG_DECLARE_EXCEPTION
     #endif
+    #ifdef DEPRECATED_14
+        #undef DEPRECATED_14
+        #define DEPRECATED_14(MSG)
+    #endif
 #else
     #define SWIG_DECLARE_EXCEPTION
 #endif
@@ -370,6 +374,9 @@ public:
     static void PrintPropertyInfo(std::ostream&         os,
                                   const std::string&    className,
                                   const std::string&    propertyName);
+    /** Convenience form that uses std::cout for the std::ostream. **/
+    static void PrintPropertyInfo(const std::string&    className,
+                                  const std::string&    propertyName);
     /**@}**/
     //--------------------------------------------------------------------------
 
@@ -643,10 +650,12 @@ public:
     static Object* SafeCopy(const Object *aObject) 
     {   return aObject ? aObject->clone() : 0; }
 
-    /** OBSOLETE alternate name for registerType(). **/
+    /** <b>(Deprecated)</b> Use registerType(). **/
+    //DEPRECATED_14("Use registerType()")
     static void RegisterType(const Object& defaultObject) 
     {   registerType(defaultObject); }
-    /** OBSOLETE alternate name for renameType(). **/
+    /** <b>(Deprecated)</b> Use renameType(). **/
+    //DEPRECATED_14("Use renameType()")
     static void RenameType(const std::string& oldName, 
                            const std::string& newName) 
     {   renameType(oldName, newName); }
