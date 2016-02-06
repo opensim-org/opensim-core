@@ -141,7 +141,7 @@ void MarkersReference::populateFromMarkerData(MarkerTable& aMarkerData)
 SimTK::Vec2 MarkersReference::getValidTimeRange() const
 {
     const auto& indCol = _markerData.getIndependentColumn();
-    return Vec2(indCol.front(), indCol.back());
+    return SimTK::Vec2(indCol.front(), indCol.back());
 }
 
 // utility to define object properties including their tags, comments and 
@@ -165,7 +165,8 @@ const SimTK::Array_<std::string>& MarkersReference::getNames() const
 }
 
 /** get the values of the MarkersReference */
-void  MarkersReference::getValues(const SimTK::State &s, SimTK::Array_<Vec3> &values) const
+void  MarkersReference::getValues(const SimTK::State &s, 
+                                  SimTK::Array_<SimTK::Vec3> &values) const
 {
     double time =  s.getTime();
 
@@ -190,13 +191,18 @@ void  MarkersReference::getValues(const SimTK::State &s, SimTK::Array_<Vec3> &va
 }
 
 /** get the speed value of the MarkersReference */
-void MarkersReference::getSpeedValues(const SimTK::State &s, SimTK::Array_<Vec3> &speedValues) const
+void 
+MarkersReference::getSpeedValues(const SimTK::State &s, 
+                                 SimTK::Array_<SimTK::Vec3> &speedValues) const
 {
     throw Exception("MarkersReference: getSpeedValues not implemented.");
 }
 
 /** get the acceleration value of the MarkersReference */
-void MarkersReference::getAccelerationValues(const SimTK::State &s, SimTK::Array_<Vec3> &accValues) const
+void 
+MarkersReference::getAccelerationValues(const SimTK::State &s, 
+                                        SimTK::Array_<SimTK::Vec3> &accValues) 
+const
 {
     throw Exception("MarkersReference: getAccelerationValues not implemented.");
 }
