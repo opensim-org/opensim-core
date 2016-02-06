@@ -26,7 +26,6 @@
 #include <OpenSim/Common/Adapters.h>
 
 using namespace std;
-using namespace SimTK;
 
 namespace OpenSim {
 
