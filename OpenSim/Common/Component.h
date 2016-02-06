@@ -201,19 +201,12 @@ public:
     /** Construct Component from a specific node in an XML document. **/
     explicit Component(SimTK::Xml::Element& aNode);
 
-    /** Copy Constructor. Required to perform custom handling of 
-        internal references to subcomonents and system indices.
-        The copy has to be connected in order to function. */
-    Component(const Component& source);
+    /** Use default copy constructor and assignment operator. */
+    Component(const Component&) = default;
+    Component& operator=(const Component&) = default;
 
-    /** Copy assignment.  Required to disconnect Connectors.
-        and reset indices. Musct call connect() on Component
-        after is has been assigned to another. */
-    Component& operator=(const Component &component);
-    
     /** Destructor is virtual to allow concrete Component to cleanup. **/
-    virtual ~Component() {}
-
+    virtual ~Component() = default;
 
     /** @name Component Structural Interface
     The structural interface ensures that deserialization, resolution of 
@@ -223,7 +216,7 @@ public:
     Component Extension Interface (e.g. #extendFinalizeFromProperties) 
     that can be implemented by subclasses of Components.
 
-    Component ensures that the corresponding calls are propogated to all of its
+    Component ensures that the corresponding calls are propagated to all of its
     (sub)components. */
 
     ///@{
@@ -327,6 +320,8 @@ public:
      * must be done before calling this method on the top model. */
     template <typename T = Component>
     ComponentList<T> getComponentList() const {
+        Component* mutableThis = const_cast<Component*>(this);
+        mutableThis->initComponentTreeTraversal(*mutableThis);
         return ComponentList<T>(*this);
     }
 
@@ -410,8 +405,7 @@ public:
     */
     //@{ 
     
-    /** Access the number of Connectors that this component has. 
-        Get the number of Connectors and then access a Connector by index.
+    /** Get the number of Connectors and then access a Connector by index.
         For example:
         @code
         for (int i = 0; i < myComp.getNumConnectors(); ++i){
@@ -427,6 +421,16 @@ public:
      */
     int getNumConnectors() const {
         return getProperty_connectors().size();
+    }
+
+    /** Access the number of Inputs that this component has. */
+    int getNumInputs() const {
+        return int(_inputsTable.size());
+    }
+
+    /** Access the number of Outputs that this component has. */
+    int getNumOutputs() const {
+        return int(_outputsTable.size());
     }
 
     /** Access a read-only Connector by index.
@@ -490,7 +494,7 @@ public:
         }
         else{
             std::stringstream msg;
-            msg << "Component::getConnection() ERR- Connector '" << name << "' not connected.\n "
+            msg << "Component::getConnectee() ERR- Connector '" << name << "' not connected.\n "
                 << "for component '" << getName() << "' of type " << getConcreteClassName();
             throw Exception(msg.str(), __FILE__, __LINE__);
         }
@@ -498,11 +502,11 @@ public:
     //@} end of Component Connector Access methods
 
     /** Define OutputsIterator for convenience */
-    typedef std::map<std::string, std::unique_ptr<const AbstractOutput> >::
+    typedef std::map<std::string, SimTK::ClonePtr<AbstractOutput> >::
         const_iterator OutputsIterator;
 
     /** @name Component Inputs and Outputs Access methods
-        Access inputs and ouputs by name and iterate over all outputs.
+        Access inputs and outputs by name and iterate over all outputs.
     */
     //@{ 
 
@@ -517,7 +521,7 @@ public:
         auto it = _inputsTable.find(name);
 
         if (it != _inputsTable.end()) {
-            return *it->second;
+            return it->second.getRef(); 
         }
         else {
             std::string::size_type back = name.rfind("/");
@@ -546,7 +550,7 @@ public:
         auto it = _outputsTable.find(name);
 
         if (it != _outputsTable.end()) {
-            return *it->second;
+            return it->second.getRef();
         }
         else {
             std::string::size_type back = name.rfind("/");
@@ -916,7 +920,24 @@ public:
     // End of Model Component State Accessors.
     //@} 
 
+    /** Debugging method to list all subcomponents by name and recurse
+        into these components to list their subcomponents, and so on. */
+    void dumpSubcomponents(int depth=0) const;
+
 protected:
+
+    /** Construct Component as a subcomponent member of another Component.
+    Automatically marks this component as a subcomponent of the owner.
+    A subcomponent MUST be named. **/
+    explicit Component(const std::string& name, Component* owner);
+
+    template<class C=Component>
+    C& constructSubcomponent(const std::string& name) {
+        C* component = new C();
+        component->setName(name);
+        this->markAsSubcomponent(component);
+        return *component;
+    }
 
 class StateVariable;
 //template <class T> friend class ComponentSet;
@@ -935,6 +956,15 @@ template <class T> friend class ComponentMeasure;
         constructOutputs();
     }
 
+    /**
+    * Adopt a component as a subcomponent of this Component. Component
+    * methods (e.g. addToSystem(), initStateFromProperties(), ...) are
+    * automatically invoked on subcomponents when called on this Component.
+    * Realization is also performed automatically on subcomponents. All
+    * subcomponents are owned, therefore this Component also takes ownership.
+    */
+    void adoptSubcomponent(Component* subcomponent);
+
     /** @name  Component Extension Interface
     The interface ensures that deserialization, resolution of inter-connections,
     and handling of dependencies are performed systematically and prior to 
@@ -946,9 +976,16 @@ template <class T> friend class ComponentMeasure;
     with the line "Super::extend<xxx>(args);" to ensure that the parent class
     is called before the child class method.
     
-    The base class implementations ensures that the 
-    corresponding calls are made to any subcomponents that have been specified 
-    by derived %Component objects, via calls to the addComponent() method. 
+    The base class implementations ensures that the corresponding calls are made
+    to any subcomponents which are owned by this Component. Ownership is
+    established by the subcomponent being a data member (not serialized), a 
+    property (serialized), or created and adopted based on other settings
+    or options that arise from the properties. For example, a Model (Component)
+    may have to split a body and add a Weld constraint to handle a closed
+    loop specified by Joints that are properties of the Model. The new Body and
+    Weld (components) are created and adopted as part of connecting the model to
+    form a valid multibody tree.
+
     So assuming that your concrete %Component and all intermediate classes from
     which it derives properly follow the requirement of calling the Super class 
     method first, the order of operations enforced here for a call to a single 
@@ -974,7 +1011,6 @@ template <class T> friend class ComponentMeasure;
         void MyComponent::extendFinalizeFromProperties() {
             Super::extendFinalizeFromProperties(); // invoke parent class method
             // ... your code goes here
-            // ... addComponent(...) that are listed in or formed from properties
             // ... initialize any internal data structures 
         }
         @endcode   */
@@ -1299,7 +1335,8 @@ template <class T> friend class ComponentMeasure;
     template <typename T>
     void constructInput(const std::string& name,
         const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance) {
-        _inputsTable[name] = std::unique_ptr<AbstractInput>(new Input<T>(name, requiredAtStage));
+        _inputsTable[name] 
+            = SimTK::ClonePtr<AbstractInput>(new Input<T>(name, requiredAtStage));
     }
 
     /**
@@ -1361,7 +1398,7 @@ template <class T> friend class ComponentMeasure;
     void constructOutput(const std::string& name, 
         const std::function<T(const SimTK::State&)> outputFunction, 
         const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
-        _outputsTable[name] = std::unique_ptr<const AbstractOutput>(new
+        _outputsTable[name] = SimTK::ClonePtr<AbstractOutput>(new
                 Output<T>(name, outputFunction, dependsOn));
     }
 
@@ -1376,16 +1413,6 @@ template <class T> friend class ComponentMeasure;
      * the corresponding state variable.
      */
     void constructOutputForStateVariable(const std::string& name);
-    
-    /**
-     * Add another Component as a subcomponent of this Component. Component
-     * methods (e.g. addToSystem(), initStateFromProperties(), ...) are
-     * therefore invoked on subcomponents when called on this Component.
-     * Realization is also performed automatically on subcomponents. This
-     * Component does not take ownership of designated subcomponents and does
-     * not destroy them when the Component.
-     */
-    void addComponent(Component* component);
 
     /** Clear all designations of (sub)components for this Component. 
       * Components are not deleted- the list of references to its components is cleared. */
@@ -1607,11 +1634,25 @@ private:
     //the return type, @see addOutput()
     virtual void constructOutputs() {}
 
+    //Mark components that are properties of this Component as subcomponents of
+    //this Component. This happens automatically upon construction of the 
+    //component. If Component property added programmatically, then you must
+    //also markAsSubcomponent() on that component.
+    void markPropertiesAsSubcomponents();
+
+    // Internal use: mark the subcomponents that are owned by this Component
+    // because they are data member, properties or adoptees of this Component.
+    void markAsSubcomponent(Component* subcomponent);
+
+
     /// Invoke finalizeFromProperties() on the (sub)components of this Component.
     void componentsFinalizeFromProperties() const;
 
     /// Invoke connect() on the (sub)components of this Component.
     void componentsConnect(Component& root) const;
+
+    /// Base Component must create underlying resources in computational System.
+    void baseAddToSystem(SimTK::MultibodySystem& system) const;
 
     /// Invoke addToSystem() on the (sub)components of this Component.
     void componentsAddToSystem(SimTK::MultibodySystem& system) const;
@@ -1752,11 +1793,6 @@ protected:
     SimTK::Array_<Component *>  _components;
 
 private:
-    class Connection;
-
-    /// Base Component must create underlying resources in computational System.
-    void baseAddToSystem(SimTK::MultibodySystem& system) const;
-
     // Reference to the parent Component of this Component. It is not the previous
     // in the tree, but is the Component one level up that owns this one.
     SimTK::ReferencePtr<const Component> _parent;
@@ -1777,11 +1813,10 @@ private:
     std::map<std::string, int> _connectorsTable;
 
     // Table of Component's Inputs indexed by name.
-    std::map<std::string, std::unique_ptr<const AbstractInput> > _inputsTable;
+    std::map<std::string, SimTK::ClonePtr<AbstractInput> > _inputsTable;
 
     // Table of Component's Outputs indexed by name.
-    std::map<std::string, std::unique_ptr<const AbstractOutput> >
-        _outputsTable;
+    std::map<std::string, SimTK::ClonePtr<AbstractOutput> > _outputsTable;
 
     // Underlying SimTK custom measure ComponentMeasure, which implements
     // the realizations in the subsystem by calling private concrete methods on
@@ -1789,6 +1824,9 @@ private:
     // in its extendAddToSystem() method, and placed in the System's default
     // subsystem.
     SimTK::ResetOnCopy<SimTK::MeasureIndex> _simTKcomponentIndex;
+
+    // Hold onto adopted components
+    std::vector<SimTK::ClonePtr<Component>> _adoptees;
 
     // Structure to hold modeling option information. Modeling options are
     // integers 0..maxOptionValue. At run time we keep them in a Simbody
@@ -1810,7 +1848,7 @@ private:
         AddedStateVariable() : StateVariable(),
             invalidatesStage(SimTK::Stage::Empty)  {}
 
-        /** Convience constructor for defining a Component added state variable */ 
+        /** Convenience constructor for defining a Component added state variable */ 
         explicit AddedStateVariable(const std::string& name, //state var name
                         const Component& owner,       //owning component
                         SimTK::Stage invalidatesStage,//stage this variable invalidates

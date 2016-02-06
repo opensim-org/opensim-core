@@ -47,7 +47,6 @@ using namespace OpenSim;
 CustomJoint::CustomJoint()
 {
     constructProperties();
-    constructCoordinates();
 }
 
 
@@ -63,7 +62,6 @@ CustomJoint::CustomJoint(const std::string &name,
 {
     constructProperties();
     set_SpatialTransform(aSpatialTransform);
-    constructCoordinates();
 }
 
 CustomJoint::CustomJoint(const std::string& name,
@@ -80,7 +78,6 @@ CustomJoint::CustomJoint(const std::string& name,
 {
     constructProperties();
     set_SpatialTransform(aSpatialTransform);
-    constructCoordinates();
 }
 
 //_____________________________________________________________________________
@@ -101,42 +98,22 @@ void CustomJoint::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    // Form an array of pointers to the coordinates in the order that they are
-    // referenced in the SpatialTransform. Add Coordinates to the joint's
-    // CoordinateSet of the Coordinate does not already exist.
-    Array<Coordinate*> coords;
-    for (int i = 0; i < 6; ++i) {
-        const TransformAxis& transform = getSpatialTransform()[i];
-        for (int j = 0; j < transform.getCoordinateNames().size(); ++j) {
-            const std::string& coordNameForAxis = transform.getCoordinateNames()[j];
-            int fix = get_CoordinateSet().getIndex(coordNameForAxis);
-            Coordinate* c = nullptr;
-            if(fix < 0) { // not found
-                c = new Coordinate();
-                c->setName(coordNameForAxis);
-                upd_CoordinateSet().adoptAndAppend(c);
-            }
-            else {
-                c = &(upd_CoordinateSet().get(transform.getCoordinateNames()[j]));
-            }
+    //CustomJoint can only construct the coordinates once SpatialTransform is specified 
+    constructCoordinates();
 
-            // If the coordinate is not already in the array, add it.
-            if (coords.findIndex(c) == -1)
-                coords.append(c);
+    // Axes should be independent otherwise Simbody throws an exception in extendAddToSystem
+    double tol = 1e-5;
+    // Verify that none of the rotation axes are collinear
+    const std::vector<SimTK::Vec3> axes = getSpatialTransform().getAxes();
+    for (int startIndex = 0; startIndex <= 3; startIndex += 3) {
+        if (((axes[startIndex + 0] % axes[startIndex + 1]).norm() < tol) ||
+            ((axes[startIndex + 0] % axes[startIndex + 2]).norm() < tol) ||
+            ((axes[startIndex + 1] % axes[startIndex + 2]).norm() < tol)) {
+            throw(Exception("CustomJoint '" + getName() +
+                "' has collinear axes and are not well-defined."
+                " Please fix and retry loading."));
         }
     }
-
-    // Reorder the coordinates so that they match their order in the SpatialTransform.
-    int nc = getCoordinateSet().getSize();
-    // Now remove all the coordinates from the set (without deleting),
-    // and add them back in the right order.
-    bool currentOwnership = getCoordinateSet().getMemoryOwner();
-    upd_CoordinateSet().setMemoryOwner(false);
-    for (int i = 0; i < nc; ++i)
-        upd_CoordinateSet().remove(0);
-    upd_CoordinateSet().setMemoryOwner(currentOwnership);
-    for (int i = 0; i < coords.getSize(); ++i)
-        upd_CoordinateSet().adoptAndAppend(coords[i]);
 }
 
 void CustomJoint::extendConnectToModel(Model& aModel)
@@ -207,8 +184,8 @@ void CustomJoint::constructCoordinates()
             coordinateSet.adoptAndAppend(coord);
         }
         else {
-            //if already in the set it was already specified 
-            continue;
+            //otherwise already in the set 
+            coord = &coordinateSet.get(coordIndex);
         }
 
         // Determine if the MotionType of the Coordinate based
@@ -218,21 +195,21 @@ void CustomJoint::constructCoordinates()
         Coordinate::MotionType mt = Coordinate::MotionType::Coupled;
         for (int j = 0; j < 3; ++j){
             if (spatialTransform[j]
-                .getCoordinateNamesInArray().findIndex(coordName) >= 0){
-                mt = Coordinate::MotionType::Rotational;
-                break;
-            }
-        }
-        for (int j = 0; j < 3; ++j){
-            if (spatialTransform[j + 3]
-                .getCoordinateNamesInArray().findIndex(coordName) >= 0){
-                if (mt == Coordinate::MotionType::Rotational){
-                    // already had a Rotational contribution so must be coupled
-                    mt = Coordinate::MotionType::Coupled;
+                    .getCoordinateNamesInArray().findIndex(coordName) >= 0) {
+                const LinearFunction* lf = nullptr;
+                if (spatialTransform[j].hasFunction()) {
+                    lf = dynamic_cast<const LinearFunction*>(&spatialTransform[j].get_function());
+                    // displacement on axis is directly proportional to the coordinate value
+                    if (lf && lf->getSlope() == 1.0) {
+                        // coordinate is the axis displacement
+                        if (i < 3)
+                            // coordinate dof is about rotational axis 
+                            mt = Coordinate::MotionType::Rotational;
+                        else // along translational axis
+                            mt = Coordinate::MotionType::Translational;
+                        break;
+                    }
                 }
-                // otherwise just Translational
-                else mt = Coordinate::MotionType::Translational;
-                break;
             }
         }
         coord->setMotionType(mt);
@@ -427,36 +404,4 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 
     // Delegate to superclass now.
     Super::updateFromXMLNode(aNode, versionNumber);
-
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-
-    // Fix coordinate type post deserialization
-    // Fix coordinate type post deserialization
-    for (int i=0; i<coordinateSet.getSize(); i++){
-        OpenSim::Coordinate& nextCoord = coordinateSet.get(i);
-        // Find TransformAxis for the coordinate and use it to set Coordinate's motionType
-        for(int axisIndex=0; axisIndex<6; axisIndex++){
-            const TransformAxis& nextAxis = getSpatialTransform()[axisIndex];
-            const Property<std::string>& coordNames = nextAxis.getCoordinateNames();
-            if (coordNames.findIndex(nextCoord.getName())!=-1){
-                coordinateSet.get(i).setMotionType((axisIndex>2)? 
-                        Coordinate::Translational : Coordinate::Rotational);
-                break;
-            }
-        }
-    }
-    // Axes should be independent otherwise Simbody throws an exception in extendAddToSystem
-    double tol = 1e-5;
-    // Verify that none of the rotation axes are collinear
-    const std::vector<SimTK::Vec3> axes=getSpatialTransform().getAxes();
-    for(int startIndex=0; startIndex<=3; startIndex+=3){
-        if(((axes[startIndex+0]%axes[startIndex+1]).norm() < tol)||
-            ((axes[startIndex+0]%axes[startIndex+2]).norm() < tol)||
-            ((axes[startIndex+1]%axes[startIndex+2]).norm() < tol)){
-                throw(Exception("CustomJoint " + getName() + 
-                    " has collinear axes and so is not well-defined."
-                    " Please fix and retry loading.."));
-        }
-    }
-    updProperty_SpatialTransform().setValueIsDefault(false);
 }

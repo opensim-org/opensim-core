@@ -30,6 +30,12 @@ using namespace SimTK;
 class Foo;
 class Bar;
 
+class Sub : public Component {
+    OpenSim_DECLARE_CONCRETE_OBJECT(Sub, Component);
+public:
+    Sub() = default;
+    virtual ~Sub() = default;
+}; //end class Sub
 
 class TheWorld : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(TheWorld, Component);
@@ -38,7 +44,7 @@ public:
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_LIST_PROPERTY(components, Component, 
-        "List of internal components");
+        "List of serialized internal components");
 
     TheWorld() : Component() {
         // Constructing own properties, connectors, inputs or connectors? Must invoke!
@@ -59,15 +65,12 @@ public:
     void add(Component* comp) {
         // add it the property list of components that owns and serializes them
         updProperty_components().adoptAndAppendValue(comp);
-        addComponent(comp);
+        finalizeFromProperties();
     }
 
-
     // Top level connection method for all encompassing Component
-    void buildComponentTreeAndConnect() {
-        finalizeFromProperties();
-        initComponentTreeTraversal(*this);
-        connect(*this);
+    void connect() {
+        Super::connect(*this);
     }
     void buildUpSystem(MultibodySystem& system) { addToSystem(system); }
 
@@ -79,14 +82,6 @@ public:
 
 protected:
     // Component interface implementation
-    void extendFinalizeFromProperties() override {
-        Super::extendFinalizeFromProperties();
-        // Mark components listed in properties as subcomponents
-        for (int i = 0; i < getProperty_components().size(); ++i){
-            addComponent(&upd_components(i));
-        }
-    }
-    
     void extendAddToSystem(MultibodySystem& system) const override {
         if (system.hasMatterSubsystem()){
             matter = system.updMatterSubsystem();
@@ -119,6 +114,8 @@ private:
 
     // keep track of the force added by the component
     mutable ForceIndex fix;
+
+    Sub internalSub{ constructSubcomponent<Sub>("internalSub") };
 
 }; // end of TheWorld
 
@@ -232,7 +229,6 @@ private:
     mutable MobilizedBodyIndex bindex;
     ReferencePtr<TheWorld> world;
 
-    
 }; // End of class Foo
 
 class Bar : public Component {
@@ -346,12 +342,6 @@ protected:
         // Mark components listed in properties as subcomponents
         Foo& foo1 = upd_Foo1();
         Foo& foo2 = upd_Foo2();
-        
-        // clear sub component designation of any previous components
-        clearComponents();
-        //now add them
-        addComponent(&foo1);
-        addComponent(&foo2);
 
         // update CompoundFoo's properties based on it sub Foos
         double orig_mass = get_mass();
@@ -404,6 +394,9 @@ int main() {
         bar.setName("Bar");
         theWorld.add(&bar);
 
+        Bar barEqual(bar);
+        barEqual = bar;
+
         //Configure the connector to look for its dependency by this name
         //Will get resolved and connected automatically at Component connect
         bar.updConnector<Foo>("parentFoo").set_connectee_name("Foo");
@@ -412,7 +405,7 @@ int main() {
         // add a subcomponent
         // connect internals
         ASSERT_THROW( OpenSim::Exception,
-                      theWorld.buildComponentTreeAndConnect() );
+                      theWorld.connect() );
 
 
         ComponentList<Component> worldTreeAsList = theWorld.getComponentList();
@@ -448,7 +441,7 @@ int main() {
         string connectorName = bar.updConnector<Foo>("childFoo").getConcreteClassName();
 
         // Bar should connect now
-        theWorld.buildComponentTreeAndConnect();
+        theWorld.connect();
 
         std::cout << "Iterate over only Foo's." << std::endl;
         for (auto& component : theWorld.getComponentList<Foo>()) {
@@ -504,7 +497,7 @@ int main() {
         }
 
         MultibodySystem system2;
-        TheWorld *world2 = new TheWorld(modelFile);
+        TheWorld *world2 = new TheWorld(modelFile, true);
         
         world2->updComponent("Bar").getConnector<Foo>("childFoo");
         // We haven't called connect yet, so this connection isn't made yet.
@@ -515,7 +508,7 @@ int main() {
             "Model serialization->deserialization FAILED");
 
         world2->setName("InternalWorld");
-        world2->buildComponentTreeAndConnect();
+        world2->connect();
 
         world2->updComponent("Bar").getConnector<Foo>("childFoo");
         ASSERT("Foo2" ==
@@ -528,7 +521,8 @@ int main() {
 
         // Test copy assignment
         TheWorld world3;
-        world3= *world2;
+        world3 = *world2;
+        world3.finalizeFromProperties();
         world3.getComponent("Bar").getConnector<Foo>("parentFoo");
 
         ASSERT(world3 == (*world2), __FILE__, __LINE__, 
@@ -536,7 +530,7 @@ int main() {
 
         // Add second world as the internal model of the first
         theWorld.add(world2);
-        theWorld.buildComponentTreeAndConnect();
+        theWorld.connect();
 
         Bar& bar2 = *new Bar();
         bar2.setName("bar2");
@@ -595,6 +589,8 @@ int main() {
         // Ensure the connection works.
         ASSERT_EQUAL(3.5, foo.getInputValue<double>(s, "fiberLength"), 1e-10);
         ASSERT_EQUAL(1.5, foo.getInputValue<double>(s, "activation"), 1e-10);
+
+        theWorld.dumpSubcomponents();
 
         theWorld.print("Doubled" + modelFile);
     }

@@ -85,7 +85,7 @@ using namespace SimTK;
 /**
  * Default constructor.
  */
-Model::Model() :
+Model::Model() : ModelComponent(),
     _fileName("Unassigned"),
     _analysisSet(AnalysisSet()),
     _coordinateSet(CoordinateSet()),
@@ -130,7 +130,6 @@ Model::Model(const string &aFileName, const bool finalize) :
 /*virtual*/
 void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-    
     if (versionNumber < XMLDocument::getLatestVersion()){
         cout << "Updating Model file from " << versionNumber << " to latest format..." << endl;
         // Version has to be 1.6 or later, otherwise assert
@@ -153,7 +152,7 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             // Now handling the rename of ActuatorSet to ForceSet
             XMLDocument::renameChildNode(aNode, "ActuatorSet", "ForceSet");
         }
-        if (versionNumber < 30500) {
+        if (versionNumber < 30501) {
             // Create JointSet node after BodySet under <OpenSimDocument>/<Model>
             SimTK::Xml::Element jointSetElement("JointSet");
             SimTK::Xml::Element jointObjects("objects");
@@ -165,7 +164,36 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             SimTK::Xml::element_iterator bodyIter = objects_node->element_begin("Body");
             for (; bodyIter != objects_node->element_end(); ++bodyIter) {
                 std::string body_name = bodyIter->getOptionalAttributeValue("name");
-                //cout << "Processing body " <<  body_name << std::endl;
+                if (body_name == "ground") {
+                    SimTK::Xml::Element newGroundElement("Ground");
+                    newGroundElement.setAttributeValue("name", "ground");
+
+                    SimTK::Xml::element_iterator geometryIter = bodyIter->element_begin("geometry");
+                    if (geometryIter != bodyIter->element_end()) {
+                        SimTK::Xml::Element cloneOfGeomety = geometryIter->clone();
+                        newGroundElement.insertNodeAfter(newGroundElement.node_end(), cloneOfGeomety);
+                    }
+
+                    SimTK::Xml::element_iterator visObjIter = bodyIter->element_begin("VisibleObject");
+                    SimTK::Xml::Element cloneOfVisObj = visObjIter->clone();
+                    newGroundElement.insertNodeAfter(newGroundElement.node_end(), cloneOfVisObj);
+
+                    SimTK::Xml::element_iterator wrapSetIter = bodyIter->element_begin("WrapObjectSet");
+                    SimTK::Xml::Element cloneOfWrapSet = wrapSetIter->clone();
+                    newGroundElement.insertNodeAfter(newGroundElement.node_end(), cloneOfWrapSet);
+
+                    String test;
+                    newGroundElement.writeToString(test);
+
+                    objects_node->eraseNode(bodyIter);
+
+                    aNode.insertNodeBefore(bodySetNode, newGroundElement);
+                    break;
+                }
+            }
+            bodyIter = objects_node->element_begin("Body");
+            for (; bodyIter != objects_node->element_end(); ++bodyIter) {
+                std::string body_name = bodyIter->getOptionalAttributeValue("name");
                 SimTK::Xml::element_iterator  joint_node = bodyIter->element_begin("Joint");
                 if (joint_node->element_begin() != joint_node->element_end()){
                     SimTK::Xml::Element detach_joint_node = joint_node->clone();
@@ -472,6 +500,24 @@ void Model::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
+    if(getForceSet().getSize()>0)
+    {
+        ForceSet &fs = updForceSet();
+        // Update internal subsets of the ForceSet
+        fs.updActuators();
+        fs.updMuscles();
+    }
+
+    if (getValidationLog().size() > 0) {
+        cout << "The following Errors/Warnings were encountered interpreting properties of the model. " <<
+            getValidationLog() << endl;
+    }
+
+    updCoordinateSet().populate(*this);
+}
+
+void Model::createMultibodyTree()
+{
     // building the system for the first time, need to tell
     // multibodyTree builder what joints are available
     _multibodyTree.clearGraph();
@@ -480,87 +526,53 @@ void Model::extendFinalizeFromProperties()
 
     ArrayPtrs<OpenSim::Joint> availablJointTypes;
     Object::getRegisteredObjectsOfGivenType<OpenSim::Joint>(availablJointTypes);
-    for (int i = 0; i< availablJointTypes.getSize(); i++){
+    for (int i = 0; i< availablJointTypes.getSize(); i++) {
         OpenSim::Joint* jt = availablJointTypes[i];
         if ((jt->getConcreteClassName() == "WeldJoint") ||
             (jt->getConcreteClassName() == "FreeJoint")) {
             continue;
         }
-        else{
+        else {
             _multibodyTree.addJointType(
                 availablJointTypes[i]->getConcreteClassName(),
                 availablJointTypes[i]->numCoordinates(), false);
         }
     }
 
-    // clear all subcomponent designations since they will be specified here.
-    // Note addBody and addJoint call addComponent.
-    clearComponents();
-
     Ground& ground = updGround();
-    // The Ground frame is a subcomponent of the model.
-    addComponent(&ground);
-
-    // Construct a multibody tree according to the PhysicalFrames in the
+    // assemble a multibody tree according to the PhysicalFrames in the
     // OpenSim model, which include Ground and Bodies
     _multibodyTree.addBody(ground.getName(), 0, false, &ground);
 
-    if(getBodySet().getSize()>0)
+    if (getBodySet().getSize()>0)
     {
         BodySet& bs = updBodySet();
-        for (int i = 0; i<bs.getSize(); ++i){
-            //handle deprecated models with ground as a Body
-            if (bs[i].getName() == "ground"){
-                ground.upd_WrapObjectSet() = bs[i].get_WrapObjectSet();
-                int geomSize = bs[i].getNumGeometry();
-                for (int g = 0; g < geomSize-1; ++g){ 
-                    // geomSize-1 since last geometry is a FrameGeometry for 
-                    // what used to be GroundBody. ground has one already
-                    ground.addGeometry(bs[i].upd_geometry(g));
-                }
-                // remove and then decrement the counter
-                bs.remove(i--);
-                continue;
-            }
-            // add the Body to the list of subcomponents for this Model
-            addComponent(&bs[i]);
-
-            _multibodyTree.addBody(bs[i].getName(), 
-                                   bs[i].getMass(), 
-                                   false, 
-                                   &bs[i]); 
+        for (int i = 0; i<bs.getSize(); ++i) {
+            _multibodyTree.addBody(bs[i].getName(),
+                bs[i].getMass(),
+                false,
+                &bs[i]);
         }
-    }
-
-    FrameSet& fs = updFrameSet();
-    int nf = fs.getSize();
-    for (int i = 0; i<nf; ++i) {
-        addComponent(&fs[i]);
     }
 
     // Complete multibody tree description by indicating how "bodies" are
     // connected by joints.
-    if(getJointSet().getSize()>0)
+    if (getJointSet().getSize()>0)
     {
         JointSet &js = updJointSet();
 
         int nj = js.getSize();
-        for (int i = 0; i<nj; ++i){
+        for (int i = 0; i<nj; ++i) {
             std::string name = js[i].getName();
             IO::TrimWhitespace(name);
 
-            if (name.empty()){
+            if (name.empty()) {
                 name = js[i].getParentFrameName() + "_to_" + js[i].getChildFrameName();
             }
 
-            // TODO Remove this when subcomponents can be iterated upon construction.
-            // We are only calling finalizeFromProperties so that any offset frames
-            // belonging to the Joint are marked as subcomponents and can be found.
-            js[i].finalizeFromProperties();
-            addComponent(&js[i]);
-            // TODO Remove this when subcomponents can be iterated upon construction.
             // Currently we need to take a first pass at connecting the joints in 
-            // order to find the frames that they attach to and their underlying bodies.
+            // order to ask the joint for the frames that they attach to and 
+            // and determine their underlying base (physical) frames.
             js[i].connect(*this);
 
             // Use joints to define the underlying multibody tree
@@ -574,68 +586,6 @@ void Model::extendFinalizeFromProperties()
                 &js[i]);
         }
     }
-
-    if(getConstraintSet().getSize()>0)
-    {
-        ConstraintSet &cs = updConstraintSet();
-        int nc = cs.getSize();
-        for (int i = 0; i<nc; ++i){
-            addComponent(&cs[i]);
-        }
-    }
-
-    if(getForceSet().getSize()>0)
-    {
-        ForceSet &fs = updForceSet();
-        int nf = fs.getSize();
-        for (int i = 0; i<nf; ++i){
-            addComponent(&fs[i]);
-        }
-        // Update internal subsets of the ForceSet
-        fs.updActuators();
-        fs.updMuscles();
-    }
-
-    if(getControllerSet().getSize()>0)
-    {
-        ControllerSet &clrs = updControllerSet();
-        int nclr = clrs.getSize();
-        for (int i = 0; i<nclr; ++i){
-            addComponent(&clrs[i]);
-        }
-    }
-
-    if(get_ComponentSet().getSize()>0)
-    {
-        int nc = get_ComponentSet().getSize();
-        for (int i = 0; i<nc; ++i){
-            addComponent(&get_ComponentSet()[i]);
-        }
-    }
-
-    if(getProbeSet().getSize()>0)
-    {
-        ProbeSet &ps = updProbeSet();
-        int np = ps.getSize();
-        for (int i = 0; i<np; ++i){
-            addComponent(&ps[i]);
-        }
-    }
-
-    if (getMarkerSet().getSize() > 0)
-    {
-        MarkerSet& ms = updMarkerSet();
-        int nf = ms.getSize();
-        for (int i = 0; i<nf; ++i)
-            addComponent(&ms[i]);
-    }
-
-    if (getValidationLog().size() > 0) {
-        cout << "The following Errors/Warnings were encountered while building the model. " <<
-            getValidationLog() << endl;
-    }
-
-    updCoordinateSet().populate(*this);
 }
 
 void Model::extendConnectToModel(Model &model)
@@ -647,6 +597,8 @@ void Model::extendConnectToModel(Model &model)
             " is being connected to model " <<
             model.getName() << "." << endl;
     }
+
+    createMultibodyTree();
 
     // Model is connected so build the Multibody tree to represent it
     _multibodyTree.generateGraph();
@@ -688,8 +640,10 @@ void Model::extendConnectToModel(Model &model)
                 WeldConstraint* weld = new WeldConstraint(outb->getName()+"_weld",
                                                           *outbMaster, o, *outb, o);
 
-                // Add to list of subcomponents but not serialize ConstraintSet
-                updModel().addComponent(weld);
+                // TODO: add all added compoents to a private list of owned components
+                // that are not serialized so that they are destroyed.
+                // Currently this is a leak.
+                adoptSubcomponent(weld);
             }
         }
 
@@ -706,7 +660,6 @@ void Model::extendConnectToModel(Model &model)
             std::string jname = "free_" + child->getName();
             SimTK::Vec3 zeroVec(0.0);
             Joint* free = new FreeJoint(jname, ground->getName(), child->getName());
-            free->finalizeFromProperties();
             addJoint(free);
         }
         else{
@@ -750,15 +703,14 @@ void Model::extendConnectToModel(Model &model)
             WeldConstraint* weld = new WeldConstraint( joint.getName()+"_Loop",
                 parent, joint.getParentFrame().findTransformInBaseFrame(),
                 child, joint.getChildFrame().findTransformInBaseFrame());
-            addConstraint(weld);
-
+            adoptSubcomponent(weld);
         }
         else if (joint.getConcreteClassName() == "BallJoint") {
             PointConstraint* point = new PointConstraint(
                 parent, joint.getParentFrame().findTransformInBaseFrame().p(),
                 child, joint.getChildFrame().findTransformInBaseFrame().p());
             point->setName(joint.getName() + "_Loop");
-            addConstraint(point);
+            adoptSubcomponent(point);
         }
         else if (joint.getConcreteClassName() == "FreeJoint") {
             // A "free" loop constraint is no constraint at all so we can
@@ -771,9 +723,6 @@ void Model::extendConnectToModel(Model &model)
             "Unrecognized loop constraint type '" + joint.getConcreteClassName() + "'.");
     }
 
-    // Create iterator here to include newly added components
-    initComponentTreeTraversal(*this);
-
     // Reorder coordinates in order of the underlying mobilities
     updCoordinateSet().populate(*this);
     updFrameSet().invokeConnectToModel(*this);
@@ -784,7 +733,6 @@ void Model::extendConnectToModel(Model &model)
 
     // TODO: Get rid of the SimbodyEngine
     updSimbodyEngine().connectSimbodyEngineToModel(*this);
-
 }
 
 
@@ -817,11 +765,11 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 /**
  * Add any Component derived from ModelComponent to the Model.
  */
-void Model::addModelComponent(ModelComponent* aComponent)
+void Model::addModelComponent(ModelComponent* component)
 {
-    if(aComponent){
-        addComponent(aComponent);
-        upd_ComponentSet().adoptAndAppend(aComponent);
+    if(component){
+        upd_ComponentSet().adoptAndAppend(component);
+        finalizeFromProperties();
     }
 }
 
@@ -833,7 +781,7 @@ void Model::addBody(OpenSim::Body* body)
 {
     if (body){
         updBodySet().adoptAndAppend(body);
-        addComponent(body);
+        finalizeFromProperties();
     }
 }
 
@@ -845,7 +793,7 @@ void Model::addFrame(OpenSim::Frame* frame)
 {
     if (frame){
         updFrameSet().adoptAndAppend(frame);
-        addComponent(frame);
+        finalizeFromProperties();
     }
 }
 //_____________________________________________________________________________
@@ -856,7 +804,7 @@ void Model::addMarker(OpenSim::Marker* marker)
 {
     if (marker){
         updMarkerSet().adoptAndAppend(marker);
-        addComponent(marker);
+        finalizeFromProperties();
     }
 }
 
@@ -868,7 +816,7 @@ void Model::addJoint(Joint* joint)
 {
     if (joint){
         updJointSet().adoptAndAppend(joint);
-        addComponent(joint);
+        finalizeFromProperties();
         updCoordinateSet().populate(*this);
     }
 }
@@ -877,11 +825,11 @@ void Model::addJoint(Joint* joint)
 /**
  * Add a constraint to the Model.
  */
-void Model::addConstraint(OpenSim::Constraint *aConstraint)
+void Model::addConstraint(OpenSim::Constraint *constraint)
 {
-    if(aConstraint){
-        addComponent(aConstraint);
-        updConstraintSet().adoptAndAppend(aConstraint);
+    if(constraint){
+        updConstraintSet().adoptAndAppend(constraint);
+        finalizeFromProperties();
     }
 }
 
@@ -889,11 +837,11 @@ void Model::addConstraint(OpenSim::Constraint *aConstraint)
 /**
  * Add a force to the Model.
  */
-void Model::addForce(OpenSim::Force *aForce)
+void Model::addForce(OpenSim::Force *force)
 {
-    if(aForce){
-        addComponent(aForce);
-        updForceSet().adoptAndAppend(aForce);
+    if(force){
+        updForceSet().adoptAndAppend(force);
+        finalizeFromProperties();
     }
 }
 
@@ -901,11 +849,11 @@ void Model::addForce(OpenSim::Force *aForce)
 /**
  * Add a probe to the Model.
  */
-void Model::addProbe(OpenSim::Probe *aProbe)
+void Model::addProbe(OpenSim::Probe *probe)
 {
-    if(aProbe){
-        addComponent(aProbe);
-        updProbeSet().adoptAndAppend(aProbe);
+    if(probe){
+        updProbeSet().adoptAndAppend(probe);
+        finalizeFromProperties();
     }
 }
 
@@ -924,10 +872,12 @@ void Model::removeProbe(OpenSim::Probe *aProbe)
 /**
  * Add a contact geometry to the Model.
  */
-void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)
+void Model::addContactGeometry(OpenSim::ContactGeometry *contactGeometry)
 {
-    addComponent(aContactGeometry);
-    updContactGeometrySet().adoptAndAppend(aContactGeometry);
+    if (contactGeometry) {
+        updContactGeometrySet().adoptAndAppend(contactGeometry);
+        finalizeFromProperties();
+    }
 }
 
 //_____________________________________________________________________________
@@ -937,8 +887,8 @@ void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)
 void Model::addController(Controller *aController)
 {
     if (aController) {
-        addComponent(aController);
         updControllerSet().adoptAndAppend(aController);
+        finalizeFromProperties();
     }
 }
 //_____________________________________________________________________________
@@ -950,8 +900,9 @@ void Model::addController(Controller *aController)
  */
 void Model::setup()
 {
+    // finalize the model and its subcomponents from its properties
+    // automatically marks properties that are Components as subcomponents
     finalizeFromProperties();
-    
     //now connect the Model and all its subcomponents all up
     connect(*this);
 

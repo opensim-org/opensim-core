@@ -83,7 +83,7 @@ public:
     }
 
     double getTotalTerm1(const State& s) const {
-        double totalTerm1;
+        double totalTerm1=0;
         for (const auto& response : responses) {
             totalTerm1 += response->getOutputValue<double>(s, "term_1");
         }
@@ -91,7 +91,7 @@ public:
     }
 
     double getTotalTerm2(const State& s) const {
-        double totalTerm2;
+        double totalTerm2=0;
         for (const auto& response : responses) {
             totalTerm2 += response->getOutputValue<double>(s, "term_2");
         }
@@ -102,7 +102,7 @@ private:
     void extendFinalizeFromProperties() {
         Super::extendFinalizeFromProperties();
         for (auto& response : responses) {
-            addComponent(response.get());
+            markAsSubcomponent(response.get());
         }
     }
     void constructOutputs() override {

@@ -349,7 +349,6 @@ void testFilterByFrameType()
 
     // add OffsetFrame to the model
     pendulumWFrame->addFrame(anOffset);
-    pendulumWFrame->initSystem();
 
     std::cout << "\nList all Frames in the model." << std::endl;
     int i = 0;
@@ -357,6 +356,7 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
+
     ASSERT_EQUAL(9, i, 0, __FILE__, __LINE__,
         "testFilterByFrameType failed to find the 9 Frames in the model.");
 

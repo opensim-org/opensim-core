@@ -51,7 +51,7 @@ class ModelDisplayHints;
  * @tparam  T   This must be a concrete class derived from ModelComponent.
  */
 
-template <class T>
+template <class T=ModelComponent>
 class ModelComponentSet : public Set<T> {
 OpenSim_DECLARE_CONCRETE_OBJECT_T(ModelComponentSet, T, Set<T>);
 

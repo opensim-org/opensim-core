@@ -956,17 +956,17 @@ private:
     // %Set the values of all data members to an appropriate "null" value.
     void setNull();
 
-    void setDefaultProperties();
-    void createMultibodySystem();
-
-    // Copy only the model-defining data members from source.
-//  void copyData(const Model& source);
-
-    // Connect properties to local pointers.
+    // Construct the properties of a Model.
     void constructProperties();
+    void setDefaultProperties();
 
     // construct outputs
     void constructOutputs() override;
+
+    // Utility to build a connected graph (tree) of the multibody system
+    void createMultibodyTree();
+
+    void createMultibodySystem();
 
     void createAssemblySolver(const SimTK::State& s);
 
