@@ -218,10 +218,11 @@ public:
     void setHeaderToken(const std::string &aToken);
     const std::string& getHeaderToken() const;
     // COLUMN LABELS
-    /** Get the column index corresponding to specified column name. Attempts
-     * to handle the change in state variable names that occurred in OpenSim
-     * version 4.0; for example, if you search for `<coord-name>/speed` and it
-     * is not found, then this function looks for `<coord-name>_u`.
+    /** Get the column index corresponding to specified column name. This
+     * function attempts to handle the change in state variable names that
+     * occurred in OpenSim version 4.0; for example, if you search for
+     * `<coord-name>/speed` and it is not found, then this function looks for
+     * `<coord-name>_u`.
      *
      * @return State index of column or -1.  Note that the returned index is
      * equivalent to the state index.  For example, for the first column in a

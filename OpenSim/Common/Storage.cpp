@@ -415,59 +415,58 @@ getHeaderToken() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 // added a default Parameter for startIndex. -Ayman
+// TODO startIndex is being ignored.
 const int Storage::
 getStateIndex(const std::string &aColumnName, int startIndex) const
 {
     int thisColumnIndex = _columnLabels.findIndex(aColumnName);
-    if (thisColumnIndex >= 0)
-        // subtract 1 because time is included in the labels but not 
-        // in the "state vector"
-        return thisColumnIndex - 1;
 
-    // Assume column labels follow pre-v4.0 state variable labeling
-    // ------------------------------------------------------------
-    // Redo search with what the pre-v4.0 label might have been.
+    if (thisColumnIndex == -1) {
+        // Assume column labels follow pre-v4.0 state variable labeling.
+        // Redo search with what the pre-v4.0 label might have been.
 
-    // First, try just the last element of the path.
-    std::string::size_type back = aColumnName.rfind("/");
-    std::string prefix = aColumnName.substr(0, back);
-    std::string shortName = aColumnName.substr(back + 1,
-                                               aColumnName.length() - back);
-
-    thisColumnIndex = _columnLabels.findIndex(shortName);
-    if (thisColumnIndex >= 0)
-        return thisColumnIndex - 1;
-
-    // If that didn't work, do specific checks for coordinate state names
-    // (<coord_name>/value and <coord_name>/speed) and muscle state names
-    // (<muscle_name>/activation <muscle_name>/fiber_length).
-    if (shortName == "value") {
-        // pre-v4.0 did not have "/value" so remove it if here
-        back = prefix.rfind("/");
-        shortName = prefix.substr(back + 1, prefix.length());
+        // First, try just the last element of the path.
+        std::string::size_type back = aColumnName.rfind("/");
+        std::string prefix = aColumnName.substr(0, back);
+        std::string shortName = aColumnName.substr(back + 1,
+                                                   aColumnName.length() - back);
         thisColumnIndex = _columnLabels.findIndex(shortName);
-    }
-    else if (shortName == "speed") {
-        // replace "/speed" (the v4.0 labeling for speeds) with "_u"
-        back = prefix.rfind("/");
-        shortName = prefix.substr(back + 1, prefix.length() - back) + "_u";
-        thisColumnIndex = _columnLabels.findIndex(shortName);
-    }
-    else if (back < aColumnName.length()) {
-        // try replacing the '/' with '.' in the last segment
-        shortName = aColumnName;
-        shortName.replace(back, 1, ".");
-        back = shortName.rfind("/");
-        shortName = shortName.substr(back + 1, shortName.length() - back);
-        thisColumnIndex = _columnLabels.findIndex(shortName);
+
+        if (thisColumnIndex == -1) {
+            // If that didn't work, do specific checks for coordinate state names
+            // (<coord_name>/value and <coord_name>/speed) and muscle state names
+            // (<muscle_name>/activation <muscle_name>/fiber_length).
+            if (shortName == "value") {
+                // pre-v4.0 did not have "/value" so remove it if here
+                back = prefix.rfind("/");
+                shortName = prefix.substr(back + 1, prefix.length());
+                thisColumnIndex = _columnLabels.findIndex(shortName);
+            }
+            else if (shortName == "speed") {
+                // replace "/speed" (the v4.0 labeling for speeds) with "_u"
+                back = prefix.rfind("/");
+                shortName =
+                        prefix.substr(back + 1, prefix.length() - back) + "_u";
+                thisColumnIndex = _columnLabels.findIndex(shortName);
+            }
+            else if (back < aColumnName.length()) {
+                // try replacing the '/' with '.' in the last segment
+                shortName = aColumnName;
+                shortName.replace(back, 1, ".");
+                back = shortName.rfind("/");
+                shortName = shortName.substr(back + 1,
+                                             shortName.length() - back);
+                thisColumnIndex = _columnLabels.findIndex(shortName);
+            }
+        }
     }
 
-    if (thisColumnIndex >= 0)
-        // subtract 1 because time is included in the labels but not 
-        // in the "state vector"
-        return thisColumnIndex - 1;
+    if (thisColumnIndex == -1)
+        return -1;
 
-    return -1;
+    // subtract 1 because time is included in the labels but not
+    // in the "state vector"
+    return thisColumnIndex - 1;
 }
 
 
