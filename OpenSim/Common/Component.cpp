@@ -202,17 +202,17 @@ void Component::connect(Component &root)
 
 
 // Call connect on all components and find unconnected Connectors a
-void Component::componentsConnect(Component& root) const
+void Component::componentsConnect(Component& root) 
 {
     // First give the subcomponents the opportunity to connect themselves
     for (unsigned int i = 0; i<_memberSubcomponents.size(); ++i) {
-        _memberSubcomponents[i].get()->connect(root);
+        _memberSubcomponents[i].upd()->connect(root);
     }
     for(unsigned int i=0; i<_propertySubcomponents.size(); ++i){
         _propertySubcomponents[i].get()->connect(root);
     }
     for (unsigned int i = 0; i<_adoptedSubcomponents.size(); ++i) {
-        const_cast<Component*>(_adoptedSubcomponents[i].get())->connect(root);
+        _adoptedSubcomponents[i].upd()->connect(root);
     }
 }
 
@@ -268,10 +268,12 @@ void Component::baseAddToSystem(SimTK::MultibodySystem& system) const
 
 void Component::componentsAddToSystem(SimTK::MultibodySystem& system) const
 {
-    // Invoke same method on subcomponents. TODO: is this right? The 
-    // subcomponents add themselves to the system before the parent component.
-    for(unsigned int i=0; i<_propertySubcomponents.size(); i++)
+    for (unsigned int i = 0; i<_memberSubcomponents.size(); ++i)
+        _memberSubcomponents[i]->addToSystem(system);
+    for (unsigned int i = 0; i<_propertySubcomponents.size(); ++i)
         _propertySubcomponents[i]->addToSystem(system);
+    for(unsigned int i=0; i<_adoptedSubcomponents.size(); ++i)
+        _adoptedSubcomponents[i]->addToSystem(system);
 }
 
 void Component::initStateFromProperties(SimTK::State& state) const
@@ -282,8 +284,12 @@ void Component::initStateFromProperties(SimTK::State& state) const
 
 void Component::componentsInitStateFromProperties(SimTK::State& state) const
 {
-    for(unsigned int i=0; i < _propertySubcomponents.size(); i++)
+    for (unsigned int i = 0; i<_memberSubcomponents.size(); ++i)
+        _memberSubcomponents[i]->initStateFromProperties(state);
+    for (unsigned int i = 0; i<_propertySubcomponents.size(); ++i)
         _propertySubcomponents[i]->initStateFromProperties(state);
+    for (unsigned int i = 0; i<_adoptedSubcomponents.size(); ++i)
+        _adoptedSubcomponents[i]->initStateFromProperties(state);
 }
 
 void Component::setPropertiesFromState(const SimTK::State& state)
@@ -294,8 +300,12 @@ void Component::setPropertiesFromState(const SimTK::State& state)
 
 void Component::componentsSetPropertiesFromState(const SimTK::State& state)
 {
-    for(unsigned int i=0; i < _propertySubcomponents.size(); i++)
+    for (unsigned int i = 0; i<_memberSubcomponents.size(); ++i)
+        _memberSubcomponents[i]->setPropertiesFromState(state);
+    for (unsigned int i = 0; i<_propertySubcomponents.size(); ++i)
         _propertySubcomponents[i]->setPropertiesFromState(state);
+    for (unsigned int i = 0; i<_adoptedSubcomponents.size(); ++i)
+        _adoptedSubcomponents[i]->setPropertiesFromState(state);
 }
 
 // Base class implementation of virtual method. Note that we're not handling
@@ -488,8 +498,30 @@ bool Component::hasParent() const
 
 void Component::setParent(const Component& parent)
 {
+    if (&parent == this) {
+        std::string msg = "Component '" + getName() + "'::setParent(). " +
+            "Attempted to set itself as its parent.";
+        throw Exception(msg);
+    }
+    else if (_parent.get() == &parent) {
+        return;
+    }
+
     _parent.reset(&parent);
 }
+
+std::string Component::getFullPathName() const
+{
+    std::string pathName = getName();
+    const Component* up = this;
+
+    while (up && up->hasParent()) {
+        up = &up->getParent();
+        pathName = up->getName() + "/" + pathName;
+    }
+    return pathName;
+}
+
 
 const Component& Component::getComponent(const std::string& name) const
 {  
@@ -837,10 +869,10 @@ void Component::constructOutputForStateVariable(const std::string& name)
 // mark components owned as properties as subcomponents
 void Component::markPropertiesAsSubcomponents()
 {
-    // if being invoked either constructing a new Component
+    // Method can be invoked for either constructing a new Component
     // or the properties have been modified. In the latter case
     // we must make sure that pointers to old properties are cleared
-    clearPropertySubcomponents();
+    _propertySubcomponents.clear();
 
     // Now mark properties that are Components as subcomponents
     //loop over all its properties
@@ -853,7 +885,7 @@ void Component::markPropertiesAsSubcomponents()
                 Object& obj = prop.updValueAsObject(j);
                 // if the object is a Component mark it
                 if (Component* comp = dynamic_cast<Component*>(&obj) ) {
-                    markAsSubcomponent(comp);
+                    markAsPropertySubcomponent(comp);
                 }
                 else {
                     // otherwise it may be a Set (of objects), and
@@ -873,7 +905,7 @@ void Component::markPropertiesAsSubcomponents()
                             Object& obj = objectsProp.updValueAsObject(k);
                             // if the object is a Component mark it
                             if (Component* comp = dynamic_cast<Component*>(&obj) )
-                                markAsSubcomponent(comp);
+                                markAsPropertySubcomponent(comp);
                         } // loop over objects and mark it if it is a component
                     } // end if property is a Set with "objects" inside
                 } // end of if/else property value is an Object or something else
@@ -884,7 +916,7 @@ void Component::markPropertiesAsSubcomponents()
 
 // mark a Component as a subcomponent of this one. If already a
 // subcomponent, it is not added to the list again.
-void Component::markAsSubcomponent(Component* component)
+void Component::markAsPropertySubcomponent(Component* component)
 {
     // Only add if the component is not already a part of this Component
     // So, add if empty
@@ -915,9 +947,26 @@ void Component::markAsSubcomponent(Component* component)
 // subcomponent, it is not added to the list again.
 void Component::adoptSubcomponent(Component* subcomponent)
 {
+    subcomponent->setParent(*this);
     _adoptedSubcomponents.push_back(SimTK::ClonePtr<Component>(subcomponent));
-    markAsSubcomponent(subcomponent);
 }
+
+
+size_t Component::getNumMemberSubcomponents() const
+{
+    return _memberSubcomponents.size();
+}
+
+size_t Component::getNumPropertySubcomponents() const
+{
+    return _propertySubcomponents.size();
+}
+
+size_t Component::getNumAdoptedSubcomponents() const
+{
+    return _adoptedSubcomponents.size();
+}
+
 
 
 const int Component::getStateIndex(const std::string& name) const

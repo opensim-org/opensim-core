@@ -317,7 +317,7 @@ private:
 }; // End of class Bar
 
 // Create 2nd level derived class to verify that Component interface
-// hold up.
+// holds up.
 class CompoundFoo : public Foo {
     OpenSim_DECLARE_CONCRETE_OBJECT(CompoundFoo, Foo);
 public:
@@ -381,7 +381,25 @@ int main() {
 
         TheWorld theWorld;
         theWorld.setName("World");
-        
+
+        TheWorld* cloneWorld = theWorld.clone();
+        cloneWorld->setName("ClonedWorld");
+
+        TheWorld copyWorld(theWorld);
+        copyWorld.setName("CopiedWorld");
+
+        const Sub& theSub = theWorld.getComponent<Sub>("internalSub");
+        const Sub& cloneSub = cloneWorld->getComponent<Sub>("internalSub");
+        const Sub& copySub = copyWorld.getComponent<Sub>("internalSub");
+
+        // The clone and copy intern Sub components should be different
+        // allocation (address) from original internal Sub
+        ASSERT(&theSub != &cloneSub);
+        ASSERT(&theSub != &copySub);
+        // But their contents/values should be identical 
+        ASSERT(theSub == cloneSub);
+        ASSERT(theSub == copySub);
+
         // let component add its stuff to the system
         Foo& foo = *new Foo();
         foo.setName("Foo");
@@ -413,21 +431,19 @@ int main() {
         for (ComponentList<Component>::const_iterator it = worldTreeAsList.begin();
             it != worldTreeAsList.end();
             ++it) {
-            std::cout << "Iterator is at: " << it->getName() << std::endl;
+            std::cout << "Iterator is at: " << it->getFullPathName() << std::endl;
         }
 
         
         std::cout << "Using range-for loop: " << std::endl;
         for (const Component& component : worldTreeAsList) {
-            std::cout << "Iterator is at: " << component.getName() << std::endl;
+            std::cout << "Iterator is at: " << component.getFullPathName() << std::endl;
         }
-        for (auto& component : worldTreeAsList) {
-            std::cout << "Iterator is at: " << component.getName() << std::endl;
-        }
+
         
         std::cout << "Iterate over only Foo's." << std::endl;
         for (auto& component : theWorld.getComponentList<Foo>()) {
-            std::cout << "Iterator is at: " << component.getName() << std::endl;
+            std::cout << "Iterator is at: " << component.getFullPathName() << std::endl;
         }
         
 
@@ -437,17 +453,16 @@ int main() {
 
         theWorld.add(&foo2);
 
+        std::cout << "Iterate over Foo's after adding Foo2." << std::endl;
+        for (auto& component : theWorld.getComponentList<Foo>()) {
+            std::cout << "Iter at: " << component.getFullPathName() << std::endl;
+        }
+
         bar.updConnector<Foo>("childFoo").set_connectee_name("Foo2");
         string connectorName = bar.updConnector<Foo>("childFoo").getConcreteClassName();
 
         // Bar should connect now
         theWorld.connect();
-
-        std::cout << "Iterate over only Foo's." << std::endl;
-        for (auto& component : theWorld.getComponentList<Foo>()) {
-            std::cout << "Iterator is at: " << component.getName() << std::endl;
-        }
-
         theWorld.buildUpSystem(system);
 
         const Foo& foo2found = theWorld.getComponent<Foo>("Foo2");
@@ -549,12 +564,17 @@ int main() {
         bar2.updConnector<Foo>("parentFoo").set_connectee_name("BigFoo");
         bar2.updConnector<Foo>("childFoo").set_connectee_name("Foo");
 
-        //world3.connect();
+        world3.setName("World3");
         world3.print("Compound_" + modelFile);
 
+        cout << "Adding world3 to theWorld" << endl;
+        theWorld.add(world3.clone());
+        cout << "Connecting theWorld:" << endl;
+        theWorld.connect();
+
         MultibodySystem system3;
+        cout << "Building theWorld's system:" << endl;
         theWorld.buildUpSystem(system3);
-        //SimTK::Visualizer viz2(system2);
 
         // Connect our state variables.
         foo.getInput("fiberLength").connect(bar.getOutput("fiberLength"));
@@ -594,10 +614,26 @@ int main() {
 
         std::cout << "Iterate over all Components in the world." << std::endl;
         for (auto& component : theWorld.getComponentList<Component>()) {
-            std::cout << "Iterator is at: " << component.getName() << std::endl;
+            std::cout << "Iterator is at: " << component.getFullPathName() << std::endl;
         }
 
-        theWorld.print("Doubled" + modelFile);
+        // Should fail to get Component when path is not specified
+        ASSERT_THROW(OpenSim::Exception,
+            theWorld.getComponent<CompoundFoo>("BigFoo") );
+
+        // With path to the component it should work
+        auto& bigFoo = theWorld.getComponent<CompoundFoo>("World/World3/BigFoo");
+        const Sub& topSub = theWorld.getComponent<Sub>("InternalWorld/internalSub");
+        
+        // Should also be able to get top-level
+        auto& topFoo = theWorld.getComponent<Foo>("Foo2");
+        cout << "Top level Foo2 path name: " << topFoo.getFullPathName() << endl;
+
+        // And the leaf Foo2 from BigFoo
+        auto& leafFoo = bigFoo.getComponent<Foo>("Foo2");
+        cout << "Leaf level Foo2 path name: " << leafFoo.getFullPathName() << endl;
+
+        theWorld.print("Nested_" + modelFile);
     }
     catch (const std::exception& e) {
         cout << e.what() <<endl;

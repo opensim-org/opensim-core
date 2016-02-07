@@ -910,8 +910,6 @@ void Model::setup()
     finalizeFromProperties();
     //now connect the Model and all its subcomponents all up
     connect(*this);
-
-    populatePathName("");
 }
 
 //_____________________________________________________________________________

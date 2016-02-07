@@ -332,6 +332,15 @@ public:
      */
     template <typename T>
     friend class ComponentListIterator;
+
+
+    /** Get the complete pathname for this Component to its ancestral Component,
+     *  which is the root of the tree to which this Component belongs.
+     * For example: a Coordinate Components would have a full path name like:
+     *  `/arm26/elbow_r/flexion`. Accessing a Component by its fullPathName from
+     * root is guaranteed to be unique. */
+    std::string getFullPathName() const;
+
     /**
      * Get a subcomponent of this Component by its name. 
      * Note using a component's full "path" name is faster and will provide a
@@ -348,19 +357,25 @@ public:
 
     template <class C>
     const C& getComponent(const std::string& name) const {
-        const Component& comp = getComponent(name);
-        const C* compC = dynamic_cast<const C*>(&comp);
-
-        if (compC) {
-            return *compC;
-        }
-
-        //TODO only use the component iterator when they can be used upon construction
         ComponentList<C> compsList = getComponentList<C>();
 
         std::vector<const C*> foundCs;
         for (const C& comp : compsList) {
-            if (comp.getName() == name) {
+            if (comp.getFullPathName() == name) {
+                foundCs.push_back(&comp);
+            } // if a child of this Component, one should not need
+              // to specify this Component's full path name 
+            else if (comp.getFullPathName() == (getFullPathName() + "/" + name) ) {
+                foundCs.push_back(&comp);
+            } // otherwise, we just have a type and name match
+              // which we may need to support for compatibility with older models
+              // where only names were used (not path or type)
+              // TODO replace with an exception 
+            else if (comp.getName() == name) {
+                std::string msg = "WARNING-- Component '" + getName() + "::getComponent<";
+                msg += comp.getConcreteClassName() + ">('" + name + "'):\n located '";
+                msg += comp.getFullPathName() + "' which is not a complete path name match.";
+                std::cout << msg << std::endl;
                 foundCs.push_back(&comp);
             }
         }
@@ -922,24 +937,21 @@ public:
     void dumpSubcomponents(int depth=0) const;
 
 protected:
+    class StateVariable;
+    //template <class T> friend class ComponentSet;
+    // Give the ComponentMeasure access to the realize() methods.
+    template <class T> friend class ComponentMeasure;
 
-    /** Construct Component as a subcomponent member of another Component.
-    Automatically marks this component as a subcomponent of the owner.
-    A subcomponent MUST be named. **/
-    explicit Component(const std::string& name, Component* owner);
-
+    /** Construct a subcomponent as a data member of this Component. All Component
+        interface calls are automatically invoked on its subcomponents. */
     template<class C=Component>
     C& constructSubcomponent(const std::string& name) {
         C* component = new C();
         component->setName(name);
-        _memberSubcomponents.push_back(SimTK::ReferencePtr<Component>(component));
+        component->setParent(*this);
+        _memberSubcomponents.push_back(SimTK::ClonePtr<Component>(component));
         return *component;
     }
-
-class StateVariable;
-//template <class T> friend class ComponentSet;
-// Give the ComponentMeasure access to the realize() methods.
-template <class T> friend class ComponentMeasure;
 
   /** Single call to construct the underlying infrastructure of a Component, which
      include: 1) its properties, 2) its structural connectors (to other components),
@@ -961,6 +973,13 @@ template <class T> friend class ComponentMeasure;
     * subcomponents are owned, therefore this Component also takes ownership.
     */
     void adoptSubcomponent(Component* subcomponent);
+
+    /** Get the number of Subcomponents that are data members of this Component */
+    size_t getNumMemberSubcomponents() const;
+    /** Get the number of Subcomponents that are properties of this Component */
+    size_t getNumPropertySubcomponents() const;
+    /** Get the number of Subcomponents adopted by this Component */
+    size_t getNumAdoptedSubcomponents() const;
 
     /** @name  Component Extension Interface
     The interface ensures that deserialization, resolution of inter-connections,
@@ -1393,13 +1412,6 @@ template <class T> friend class ComponentMeasure;
      */
     void constructOutputForStateVariable(const std::string& name);
 
-    /** Clear all designations of (sub)components that are properties of this
-        Component. Components are not deleted- the list of references to its
-        subcomponents is cleared. */
-    void clearPropertySubcomponents() {
-        _propertySubcomponents.clear();
-    }
-
     /** Add a modeling option (integer flag stored in the State) for use by 
     this Component. Each modeling option is identified by its own 
     \a optionName, specified here. Modeling options enable the model
@@ -1572,7 +1584,6 @@ template <class T> friend class ComponentMeasure;
         @see hasParent() */
     const Component& getParent() const;
 
-
     /** Check if this Component has a parent assigned or not.
         A component may not have a parent assigned if it:
         1) is the root component, or 2) has not been added to its parent. */
@@ -1616,20 +1627,19 @@ private:
 
     //Mark components that are properties of this Component as subcomponents of
     //this Component. This happens automatically upon construction of the 
-    //component. If Component property added programmatically, then you must
-    //also markAsSubcomponent() on that component.
+    //component. If a Component property is added programmatically, then one must
+    //also mark it by calling markAsPropertySubcomponent() with that component.
     void markPropertiesAsSubcomponents();
 
-    // Internal use: mark the subcomponents that are owned by this Component
-    // because they are data member, properties or adoptees of this Component.
-    void markAsSubcomponent(Component* subcomponent);
-
+    // Internal use: mark as a subcomponent, a component that is owned by this 
+    // Component by virtue of being one of its properties.
+    void markAsPropertySubcomponent(Component* subcomponent);
 
     /// Invoke finalizeFromProperties() on the (sub)components of this Component.
     void componentsFinalizeFromProperties() const;
 
     /// Invoke connect() on the (sub)components of this Component.
-    void componentsConnect(Component& root) const;
+    void componentsConnect(Component& root);
 
     /// Base Component must create underlying resources in computational System.
     void baseAddToSystem(SimTK::MultibodySystem& system) const;
@@ -1675,26 +1685,9 @@ private:
             _connectorsTable[connector.getName()] = ix;
         }
     }
-public:
-    const std::string& getPathName() const {
-        return _pathName;
-    }
-    void dumpPathName() const {
-         std::cout << getConcreteClassName() << ": ID= " << getPathName() << std::endl;
-         for (unsigned int i = 0; i<_propertySubcomponents.size(); i++)
-             _propertySubcomponents[i]->dumpPathName();
-     }
+
 
 protected:
-    // Populate _pathName for Component and all its children
-    void populatePathName(const std::string& parentPath) {
-        if (getName().empty())
-            _pathName = parentPath + "/" + getConcreteClassName();
-        else
-            _pathName = parentPath+"/"+getName();
-        for (unsigned int i = 0; i<_propertySubcomponents.size(); i++)
-            _propertySubcomponents[i]->populatePathName(getPathName());
-    }
     //Derived Components must create concrete StateVariables to expose their state 
     //variables. When exposing state variables allocated by the underlying Simbody
     //component (MobilizedBody, Constraint, Force, etc...) use its interface to 
@@ -1779,8 +1772,6 @@ private:
 
     // Reference pointer to the successor of the current Component in Pre-order traversal
     mutable SimTK::ReferencePtr<const Component> _nextComponent;
-    // PathName
-    std::string _pathName;
 
     // Reference pointer to the system that this component belongs to.
     SimTK::ReferencePtr<SimTK::MultibodySystem> _system;
@@ -1807,7 +1798,7 @@ private:
 
 
     // Keep fixed list of data member Components upon construction
-    SimTK::Array_<SimTK::ReferencePtr<Component>> _memberSubcomponents;
+    SimTK::Array_<SimTK::ClonePtr<Component>> _memberSubcomponents;
     // Hold onto adopted components
     SimTK::Array_<SimTK::ClonePtr<Component>> _adoptedSubcomponents;
 

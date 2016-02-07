@@ -269,9 +269,9 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     append_frames(frame2Offset);
 
     this->template updConnector<PhysicalFrame>("frame1")
-        .set_connectee_name(frame1Offset.getName());
+        .set_connectee_name(frame1Offset.getFullPathName());
     this->template updConnector<PhysicalFrame>("frame2")
-        .set_connectee_name(frame2Offset.getName());
+        .set_connectee_name(frame2Offset.getFullPathName());
 }
 
 template <class C, class F>

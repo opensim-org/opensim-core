@@ -215,7 +215,6 @@ int main()
         si.getU().dump("Initial u's");
         std::cout << "Initial time: " << si.getTime() << std::endl;
 
-        osimModel.dumpPathName();
         // Integrate
         manager.setInitialTime(t0);
         manager.setFinalTime(tf);
