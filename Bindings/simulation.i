@@ -200,7 +200,7 @@
 %include <OpenSim/Simulation/StatesTrajectory.h>
 // This enables iterating using the getBetween() method.
 %template(IteratorRangeStatesTrajectoryIterator) 
-    OpenSim::IteratorRange<OpenSim::StatesTrajectory::const_iterator>;
+    SimTK::IteratorRange<OpenSim::StatesTrajectory::const_iterator>;
 
 // Iterators.
 // TODO rename to singular form.

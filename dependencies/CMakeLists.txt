@@ -121,7 +121,7 @@ AddDependency(NAME       BTK
 
 AddDependency(NAME simbody
               URL  https://github.com/simbody/simbody.git
-              TAG  ed67885db8983405e0724e63e62bf8e9316b2493)
+              TAG  5259e3441732d8c3fb4b36797fcfdcda8c5aa8f8)
 
 
 #######################

@@ -3,6 +3,9 @@
 %include <SimTKcommon.h>
 
 %include <SimTKcommon/Constants.h>
+
+%include <SimTKcommon/internal/IteratorRange.h>
+
 %include <SWIGSimTK/Vec.h>
 
 // Vec3
