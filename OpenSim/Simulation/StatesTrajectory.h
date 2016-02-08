@@ -125,9 +125,9 @@ class Model;
  * const SimTK::Vector& generalizedCoordinateValues = states[0].getQ();
  * @endcode
  *
- * To do most things with the StatesTrajectory, you'll need a model. **It is
- * essential that you've called `Model::initSystem()` before you try to use any
- * states with the model**:
+ * To do most things with the StatesTrajectory, you'll need a model as well as
+ * its underlying SimTK::System. **It is therefore required that you call
+ * `Model::initSystem()` before you try to use any states with the model**:
  * @code{.cpp}
  * Model model("subject01.osim");
  * model.initSystem();
