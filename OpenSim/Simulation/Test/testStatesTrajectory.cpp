@@ -582,8 +582,14 @@ void testAccessByTime() {
         states2.append(state); // 3
         state.setTime(9.3);
         states2.append(state); // 4
+        // The user would *expect* to get index 1, but does not, since 
+        // the tolerance is 0:
         SimTK_TEST(states2.getIndexAfter(4.0) != 1);
+        // The user would *expect* to get index 3, but does not, since 
+        // the tolerance is 0:
         SimTK_TEST(states2.getIndexBefore(5.0) != 3);
+        // (If the user had specified a tolerance of 1e-6 or greater, then they
+        // would have gotten the indices they expected.)
     }
 
     // Back to the original trajectory.

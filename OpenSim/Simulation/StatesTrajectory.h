@@ -47,8 +47,8 @@ class Model;
  * are already in the trajectory.
  *
  * This class was introduced in OpenSim version 4.0, and enables scripting
- * (Python/MATLAB) and C++ users to postprocess their results much more
- * flexibly than with an Analysis.
+ * (Python/MATLAB) and C++ users to postprocess their results with greater ease
+ * and more versatility than with an Analysis.
  *
  * ### Guarantees
  * This class is designed to ensure the following:
@@ -82,10 +82,8 @@ class Model;
  * To increase your confidence that a StatesTrajectory matches a given Model,
  * you can perform some weak checks with isCompatibleWith().
  *
- * TODO acceleration-level calculations?
- *
  * ### File format
- * StatesTrajectory files use the file extension `.OSTATES`, with the XML
+ * StatesTrajectory files use the file extension `.ostates`, with the XML
  * format. Therefore, you could theoretically edit a StatesTrajectory file in
  * a typical text editing program, or in Python/MATLAB using XML libraries
  * (such a process is is likely to be painful; consider using the
@@ -95,15 +93,16 @@ class Model;
  * are saved into the OSTATES file:
  * 
  * type of data                 | saved in OSTATES?
- * ---------------------------- | -------------
+ * ---------------------------- | -----------------
  * (continuous) state variables | yes
  * discrete state variables     | yes
  * modeling options             | yes
  * cache variables              | no
  *
  * The cache variables (e.g., total system mass, control signals) are not saved
- * to the OSTATES file because they can be regenerated from the other data and
- * the model.
+ * to the OSTATES file because they can be computed from the state variables
+ * and are not necessary for describing the state of the system (see
+ * Component::addStateVariable).
  *
  * %OpenSim Object%s (Model OSIM files, Tool setup files) also use an
  * XML format, but that format is *completely unrelated* to the XML format used
@@ -183,8 +182,6 @@ public:
      * @throws IndexOutOfRange If the index is greater than the size of the
      *                         trajectory.
      */
-    // TODO throw OpenSIm IndexOutOfRange exception, and update Doxygen to
-    // remove out_of_range.
     const SimTK::State& get(size_t index) const {
         try {
             return m_states.at(index);
@@ -437,7 +434,7 @@ public:
                 const std::string& func, const double& stateTime) :
                 OpenSim::Exception(file, line, func) {
             std::ostringstream msg;
-            msg << "Cannot append the provided state (time " <<
+            msg << "Cannot append the provided state (at time = " <<
                 stateTime << " seconds) to the trajectory because it is " <<
                 "inconsistent with the trajectory.";
             addMessage(msg.str());
@@ -507,7 +504,7 @@ public:
             addMessage("States Storage is in degrees, but this is inappropriate "
                     "for creating a StatesTrajectory. Edit the Storage so that "
                     "angles are in radians, and set 'inDegrees' to "
-                    "yes in the header.");
+                    "no in the header.");
         }
     };
     
