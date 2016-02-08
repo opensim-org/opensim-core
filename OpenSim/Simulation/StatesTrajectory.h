@@ -32,39 +32,8 @@
 
 namespace OpenSim {
 
-/** Helper class to use range for loops with a pair of iterators. This class
- * should only be used when you're sure the iterators are valid. Don't use this
- * class directly; instead, use makeIteratorRange(). */
-// http://stackoverflow.com/questions/6167598/why-was-pair-range-access-removed-from-c11
-template <class Iterator>
-class IteratorRange {
-public:
-    IteratorRange(Iterator first, Iterator last)
-        : m_first(first), m_last(last) {}
-    Iterator begin() const { return m_first; }
-    Iterator end() const { return m_last; }
-private:
-    const Iterator m_first;
-    const Iterator m_last;
-};
-
-/** Make an IteratorRange object to be used in a range for loop
- * @code
- * for (auto& x : makeIteratorRange(v.begin(), v.end())) {
- *     ...
- * }
- * @endcode
- * @relates IteratorRange
- */
-template <class Iterator>
-IteratorRange<Iterator> makeIteratorRange(Iterator first, Iterator last) {
-    return IteratorRange<Iterator>(first, last);
-}
-
-
 class Storage;
 class Model;
-
 
 // Design note: This class is part of OpenSim instead of Simbody since Simbody
 // users are likely to be interested in a more general State container that
@@ -256,7 +225,7 @@ public:
 
     /** A helper type to allow using range for loops over a subset of the
      * trajectory. */
-    typedef IteratorRange<const_iterator> IteratorRange;
+    typedef SimTK::IteratorRange<const_iterator> IteratorRange;
 
     /// @name Iterating through the trajectory
     /// @{
