@@ -720,7 +720,7 @@ Your changes will only take effect in new terminal windows.
 * In **Terminal** --
  * `sudo add-apt-repository ppa:george-edison55/cmake-3.x`
  * `sudo apt-get update`
- * `sudo apt-get install git cmake cmake-curses-gui clang-3.6`
+ * `sudo apt-get install git cmake cmake-curses-gui clang-3.6 freeglut3-dev libxi-dev libxmu-dev liblapack-dev`
  * `sudo rm -f /usr/bin/cc /usr/bin/c++`
  * `sudo ln -s /usr/bin/clang-3.6 /usr/bin/cc`
  * `sudo ln -s /usr/bin/clang++-3.6 /usr/bin/c++`
