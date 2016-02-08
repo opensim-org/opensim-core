@@ -288,6 +288,28 @@ directory to your `PATH` environment variable.
 5. Add **C:/opensim-core/bin;** to the front of of the text field. Don't forget
    the semicolon!
 
+#### For the impatient
+
+* Get **Visual Studio Community** from [here](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx).
+ * Choose *Custom' installation*.
+ * Choose *Programming Languages* -> *Visual C++*.
+* Get **git** from [here](https://git-scm.com/downloads).
+ * Choose *Use Git from the Windows Command Prompt*.
+* Get **CMake** from [here](https://cmake.org/download/).
+ * Choose *Add CMake to the system PATH for all users*.
+* In **PowerShell** --
+ * `git clone https://github.com/opensim-org/opensim-core.git`
+ * `mkdir opensim_dependencies_build`
+ * `cd .\opensim_dependencies_build`
+ * `cmake ..\opensim-core\dependencies -DCMAKE_INSTALL_PREFIX="..\opensim_dependencies_install"`
+ * `cmake --build . --config RelWithDebInfo -- /maxcpucount:8`
+ * `cd ..`
+ * `mkdir opensim_build`
+ * `cd .\opensim_build`
+ * `cmake ..\opensim-core -DCMAKE_INSTALL_PREFIX="..\opensim_install" -DOPENSIM_DEPENDENCIES_DIR="..\opensim_dependencies_install"`
+ * `cmake --build . --config RelWithDebInfo -- /maxcpucount:8`
+ * `ctest -C RelWithDebInfo --parallel 8`
+
 
 On Mac OSX using Xcode
 ======================
