@@ -69,12 +69,12 @@ StatesTrajectory::IteratorRange StatesTrajectory::getBetween(
     // front(), which will cause iterating over the *entire* trajectory. To
     // prevent this, we have to detect if front().getTime() > endTime.
     if (m_states.empty() || front().getTime() > endTime) {
-        return makeIteratorRange(end(), end());
+        return SimTK::makeIteratorRange(end(), end());
     }
 
     // Must add one to the last iterator since it's supposed to point past
     // the end.
-    return makeIteratorRange(getIteratorAfter(startTime, tolerance),
+    return SimTK::makeIteratorRange(getIteratorAfter(startTime, tolerance),
                              getIteratorBefore(endTime, tolerance) + 1);
 }
 
