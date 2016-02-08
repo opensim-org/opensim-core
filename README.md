@@ -288,7 +288,7 @@ directory to your `PATH` environment variable.
 5. Add **C:/opensim-core/bin;** to the front of of the text field. Don't forget
    the semicolon!
 
-#### For the impatient
+#### For the impatient (Windows)
 
 * Get **Visual Studio Community** from [here](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx).
  * Choose *Custom' installation*.
@@ -495,6 +495,24 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
 
 Your changes will only take effect in new terminal windows.
 
+#### For the impatient (Mac OS X)
+
+* Get **Xcode** from the App store. Open **Xcode** and *Agree* to license agreement.
+* In **Terminal** --
+ * `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
+ * `brew install cmake`
+ * `git clone https://github.com/opensim-org/opensim-core.git`
+ * `cd opensim-core`
+ * `mkdir opensim_dependencies_build`
+ * `cd opensim_dependencies_build`
+ * `cmake ../opensim-core/dependencies -DCMAKE_INSTALL_PREFIX="~/opensim_dependencies_install" -DCMAKE_BUILD_TYPE=RelWithDebInfo`
+ * `make -j8`
+ * `cd ..`
+ * `mkdir opensim_build`
+ * `cd opensim_build`
+ * `cmake ../opensim-core -DCMAKE_INSTALL_PREFIX="~/opensim_install" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install"`
+ * `make -j8`
+ * `ctest -j8`
 
 On Ubuntu using Unix Makefiles
 ==============================
