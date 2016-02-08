@@ -99,7 +99,7 @@ Building from the source code
 
 We support a few ways of building OpenSim:
 
-1. [On Windows using Microsoft Visual Studio](#on-windows-using-visual-studio).
+1. [On Windows using Microsoft Visual Studio](#on-windows-using-visual-studio). In a rush? Use [these instructions](#for-the-impatient). 
 2. [On Mac OSX using Xcode](#on-mac-osx-using-xcode).
 3. [On Ubuntu using Unix Makefiles](#on-ubuntu-using-unix-makefiles).
 
