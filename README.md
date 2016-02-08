@@ -101,7 +101,7 @@ We support a few ways of building OpenSim:
 
 1. [On Windows using Microsoft Visual Studio](#on-windows-using-visual-studio). In a rush? Use [these instructions](#for-the-impatient-windows). 
 2. [On Mac OSX using Xcode](#on-mac-osx-using-xcode). In a rush? Use [these instructions](#for-the-impatient-mac-os-x).
-3. [On Ubuntu using Unix Makefiles](#on-ubuntu-using-unix-makefiles).
+3. [On Ubuntu using Unix Makefiles](#on-ubuntu-using-unix-makefiles). In a rush? Use [these instructions](#for-the-impatient-ubuntu).
 
 
 On Windows using Visual Studio
@@ -502,7 +502,6 @@ Your changes will only take effect in new terminal windows.
  * `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
  * `brew install cmake`
  * `git clone https://github.com/opensim-org/opensim-core.git`
- * `cd opensim-core`
  * `mkdir opensim_dependencies_build`
  * `cd opensim_dependencies_build`
  * `cmake ../opensim-core/dependencies -DCMAKE_INSTALL_PREFIX="~/opensim_dependencies_install" -DCMAKE_BUILD_TYPE=RelWithDebInfo`
@@ -715,3 +714,24 @@ Your changes will only take effect in new terminal windows.
 [running_gif]: doc/images/opensim_running.gif
 [simple_example_gif]: doc/images/opensim_double_pendulum_muscle.gif
 [java]: http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase6-419409.html
+
+#### For the impatient (ubuntu)
+
+* In **Terminal** --
+ * `sudo add-apt-repository ppa:george-edison55/cmake-3.x`
+ * `sudo apt-get update`
+ * `sudo apt-get install git cmake cmake-curses-gui clang-3.6`
+ * `sudo rm -f /usr/bin/cc /usr/bin/c++`
+ * `sudo ln -s /usr/bin/clang-3.6 /usr/bin/cc`
+ * `sudo ln -s /usr/bin/clang++-3.6 /usr/bin/c++`
+ * `git clone https://github.com/opensim-org/opensim-core.git`
+ * `mkdir opensim_dependencies_build`
+ * `cd opensim_dependencies_build`
+ * `cmake ../opensim-core/dependencies/ -DCMAKE_INSTALL_PREFIX='~/opensim_dependencies_install' -DCMAKE_BUILD_TYPE=RelWithDebInfo`
+ * `make -j8`
+ * `cd ..`
+ * `mkdir opensim_build`
+ * `cd opensim_build`
+ * `cmake ../opensim-core -DCMAKE_INSTALL_PREFIX="~/opensim_install" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install"`
+ * `make -j8`
+ * `ctest -j8`
