@@ -715,7 +715,7 @@ Your changes will only take effect in new terminal windows.
 [simple_example_gif]: doc/images/opensim_double_pendulum_muscle.gif
 [java]: http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase6-419409.html
 
-#### For the impatient (ubuntu)
+#### For the impatient (Ubuntu)
 
 * In **Terminal** --
  * `sudo add-apt-repository ppa:george-edison55/cmake-3.x`
