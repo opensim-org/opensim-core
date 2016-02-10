@@ -90,6 +90,9 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MarkersReference, Reference_<SimTK::Vec3>);
 // MEMBER VARIABLES
 //=============================================================================
 
+public:
+    using MarkerTable = TimeSeriesTable_<SimTK::Vec3>;
+
 protected:
 
     /** Specify the reference markers value from a file of columns in time. */
@@ -109,7 +112,6 @@ private:
     // Implementation details
 
     // Use a specialized data structure for holding the marker data
-    using MarkerTable = TimeSeriesTable_<SimTK::Vec3>;
     MarkerTable _markerData;
     // marker names inside the marker data
     SimTK::Array_<std::string> _markerNames;
