@@ -733,6 +733,6 @@ Your changes will only take effect in new terminal windows.
  * `cd ..`
  * `mkdir opensim_build`
  * `cd opensim_build`
- * `cmake ../opensim-core -DCMAKE_INSTALL_PREFIX="~/opensim_install" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install"`
+ * `cmake ../opensim-core -DCMAKE_INSTALL_PREFIX="~/opensim_install" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" -DBUILD_PYTHON_WRAPPING=ON`
  * `make -j8`
  * `ctest -j8`
