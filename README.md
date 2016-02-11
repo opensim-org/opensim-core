@@ -721,7 +721,7 @@ Your changes will only take effect in new terminal windows.
  * `sudo add-apt-repository ppa:george-edison55/cmake-3.x`
  * `sudo apt-add-repository ppa:fenics-packages/fenics-exp`
  * `sudo apt-get update`
- * `sudo apt-get install git cmake cmake-curses-gui clang-3.6 freeglut3-dev libxi-dev libxmu-dev liblapack-dev swig3.0 python-dev`
+ * `sudo apt-get install git cmake cmake-curses-gui clang-3.6 freeglut3-dev libxi-dev libxmu-dev liblapack-dev swig3.0 python-dev openjdk-7-jdk`
  * `sudo rm -f /usr/bin/cc /usr/bin/c++`
  * `sudo ln -s /usr/bin/clang-3.6 /usr/bin/cc`
  * `sudo ln -s /usr/bin/clang++-3.6 /usr/bin/c++`
@@ -733,6 +733,6 @@ Your changes will only take effect in new terminal windows.
  * `cd ..`
  * `mkdir opensim_build`
  * `cd opensim_build`
- * `cmake ../opensim-core -DCMAKE_INSTALL_PREFIX="~/opensim_install" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" -DBUILD_PYTHON_WRAPPING=ON`
+ * `cmake ../opensim-core -DCMAKE_INSTALL_PREFIX="~/opensim_install" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" -DBUILD_PYTHON_WRAPPING=ON -DBUILD_JAVA_WRAPPING=ON`
  * `make -j8`
  * `ctest -j8`
