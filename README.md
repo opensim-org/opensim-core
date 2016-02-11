@@ -728,6 +728,7 @@ In **Terminal** --
  sudo rm -f /usr/bin/cc /usr/bin/c++
  sudo ln -s /usr/bin/clang-3.6 /usr/bin/cc
  sudo ln -s /usr/bin/clang++-3.6 /usr/bin/c++
+ export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
  git clone https://github.com/opensim-org/opensim-core.git
  mkdir opensim_dependencies_build
  cd opensim_dependencies_build
