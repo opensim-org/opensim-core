@@ -544,15 +544,9 @@ void Model::createMultibodyTree()
     // OpenSim model, which include Ground and Bodies
     _multibodyTree.addBody(ground.getName(), 0, false, &ground);
 
-    if (getBodySet().getSize()>0)
-    {
-        BodySet& bs = updBodySet();
-        for (int i = 0; i<bs.getSize(); ++i) {
-            _multibodyTree.addBody(bs[i].getName(),
-                bs[i].getMass(),
-                false,
-                &bs[i]);
-        }
+    for(auto& body : getComponentList<Body>()) {
+        _multibodyTree.addBody(body.getName(), body.getMass(), false, 
+                               const_cast<Body*>(&body));
     }
 
     // Complete multibody tree description by indicating how "bodies" are

@@ -1,6 +1,31 @@
 #include <OpenSim/OpenSim.h>
 
 namespace OpenSim {
+
+class ComponentContainer : public ModelComponent {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ComponentContainer, Component);
+
+public:
+    OpenSim_DECLARE_LIST_PROPERTY(components, Component, 
+                                  "List of serialized internal components");
+
+    ComponentContainer() {
+        constructInfrastructure();
+    }
+
+    void adopt(Component* comp) {
+        // add it the property list of components that owns and serializes them
+        updProperty_components().adoptAndAppendValue(comp);
+        finalizeFromProperties();
+    }
+
+private:
+    void constructProperties() override {
+        constructProperty_components();
+    }
+};
+
+
 /**
  * This produces a control signal k * a, where `k` is the gain property, and
  * `a` is the activation input. This is intended to model proportional
@@ -70,14 +95,17 @@ int main() {
     model.setUseVisualizer(true);
     // model.setGravity(Vec3(0));
 
+    auto device = new OpenSim::ComponentContainer{};
+    device->setName("device");
+
     // Two body(s), with mass of 1 kg, center of mass at the
     // origin of their respective frames, and moments/products of inertia of 
     // zero.
     auto massA   = new OpenSim::Body("massA",    1, Vec3(0), Inertia(0));
+    device->adopt(massA);
     auto massB   = new OpenSim::Body("massB",    1, Vec3(0), Inertia(0));
-    // massB->append_geometry(sphere);
+    device->adopt(massB);
     auto loadOnB = new OpenSim::Body("loadOnB", 10, Vec3(0), Inertia(0));
-    // loadOnB->append_geometry(sphere);
 
     OpenSim::Sphere sphere{0.1};
     sphere.setName("sphere");
@@ -120,11 +148,11 @@ int main() {
     controller->setName("controller");
     controller->getInput("activation").
                 connect(controller->getOutput("constant"));
-    controller->updConnector<OpenSim::Actuator>("device").connect(*pathActuator);
+    controller->updConnector<OpenSim::Actuator>("device").
+                connect(*pathActuator);
 
     // Add bodies and joints to the model.
-    model.addBody(massA); 
-    model.addBody(massB);
+    model.addModelComponent(device);
     model.addBody(loadOnB);
     model.addJoint(anchorA);
     model.addJoint(jointAtoB); 
@@ -137,7 +165,6 @@ int main() {
 
     // Configure the model.
     auto& state = model.initSystem();
-    model.equilibrateMuscles(state);
 
     // Add display geometry.
     model.updMatterSubsystem().setShowDefaultGeometry(true);

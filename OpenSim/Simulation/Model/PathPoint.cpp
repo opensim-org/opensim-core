@@ -151,12 +151,19 @@ void PathPoint::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
 
     // Look up the body by name in the kinematics engine and
     // store a pointer to it.
-    if (!aModel.getBodySet().contains(_bodyName))
-    {
+    auto components =  aModel.getComponentList<Body>();
+    auto iter = std::find_if(components.begin(),
+                             components.end(),
+                             [&] (const Body& body) {
+                                 return body.getName() == _bodyName;
+                             });
+
+    if(iter == components.end()) {
         string errorMessage = "Body " + _bodyName + " referenced in path" + aPath.getName() + " not found in model " + aModel.getName();
         throw Exception(errorMessage);
     }
-    _body = &const_cast<Model*>(&aModel)->updBodySet().get(_bodyName);
+
+    _body = &(*iter);
 }
 
 //_____________________________________________________________________________
