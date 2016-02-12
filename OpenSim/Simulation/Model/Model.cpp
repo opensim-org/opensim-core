@@ -551,35 +551,65 @@ void Model::createMultibodyTree()
 
     // Complete multibody tree description by indicating how "bodies" are
     // connected by joints.
-    if (getJointSet().getSize()>0)
-    {
-        JointSet &js = updJointSet();
-
-        int nj = js.getSize();
-        for (int i = 0; i<nj; ++i) {
-            std::string name = js[i].getName();
-            IO::TrimWhitespace(name);
-
-            if (name.empty()) {
-                name = js[i].getParentFrameName() + "_to_" + js[i].getChildFrameName();
-            }
-
-            // Currently we need to take a first pass at connecting the joints in 
-            // order to ask the joint for the frames that they attach to and 
-            // and determine their underlying base (physical) frames.
-            js[i].connect(*this);
-
-            // Use joints to define the underlying multibody tree
-            _multibodyTree.addJoint(name,
-                js[i].getConcreteClassName(),
-                // Multibody tree builder only cares about bodies not intermediate
-                // frames that joints actually connect to.
-                js[i].getParentFrame().findBaseFrame().getName(),
-                js[i].getChildFrame().findBaseFrame().getName(),
-                false,
-                &js[i]);
+    for(auto& joint : getComponentList<Joint>()) {
+        auto name = joint.getName();
+        IO::TrimWhitespace(name);
+        
+        if (name.empty()) {
+            name = joint.getParentFrameName(); 
+            name +="_to_" + joint.getChildFrameName();
         }
+       
+        // Currently we need to take a first pass at connecting the joints 
+        // in order to ask the joint for the frames that they attach to and 
+        // and determine their underlying base (physical) frames.
+        const_cast<Joint&>(joint).connect(*this);
+        
+        // Use joints to define the underlying multibody tree
+        _multibodyTree.addJoint(name,
+                                joint.getConcreteClassName(),
+                                // Multibody tree builder only cares about 
+                                // bodies not intermediate frames that 
+                                // joints actually connect to.
+                                joint.getParentFrame().
+                                      findBaseFrame().
+                                      getName(),
+                                joint.getChildFrame().
+                                      findBaseFrame().
+                                      getName(),
+                                false,
+                                const_cast<Joint*>(&joint));
     }
+
+    // if (getJointSet().getSize()>0)
+    // {
+    //     JointSet &js = updJointSet();
+
+    //     int nj = js.getSize();
+    //     for (int i = 0; i<nj; ++i) {
+    //         std::string name = js[i].getName();
+    //         IO::TrimWhitespace(name);
+
+    //         if (name.empty()) {
+    //             name = js[i].getParentFrameName() + "_to_" + js[i].getChildFrameName();
+    //         }
+
+    //         // Currently we need to take a first pass at connecting the joints in 
+    //         // order to ask the joint for the frames that they attach to and 
+    //         // and determine their underlying base (physical) frames.
+    //         js[i].connect(*this);
+
+    //         // Use joints to define the underlying multibody tree
+    //         _multibodyTree.addJoint(name,
+    //             js[i].getConcreteClassName(),
+    //             // Multibody tree builder only cares about bodies not intermediate
+    //             // frames that joints actually connect to.
+    //             js[i].getParentFrame().findBaseFrame().getName(),
+    //             js[i].getChildFrame().findBaseFrame().getName(),
+    //             false,
+    //             &js[i]);
+    //     }
+    // }
 }
 
 void Model::extendConnectToModel(Model &model)
@@ -656,30 +686,37 @@ void Model::extendConnectToModel(Model &model)
             Joint* free = new FreeJoint(jname, ground->getName(), child->getName());
             addJoint(free);
         }
-        else{
-            Component* compToMoveOut = _components.at(m+nb);
-            // reorder the joint components in the order of the multibody tree
-            Joint* jointToSwap = static_cast<Joint*>(mob.getJointRef());
-            it = std::find(_components.begin(), _components.end(), jointToSwap);
-            if (it != _components.end()){
-                // Only if the joint is not in the correct sequence the swap
-                if (compToMoveOut != jointToSwap){
-                    _components[m + nb] = jointToSwap;
-                    *it = compToMoveOut;
-                }
-            }
-            //(static_cast<Component*>(jointToSwap));
-            int jx = joints.getIndex(jointToSwap, m);
-            //if in the set but not already in the right order
-            if ((jx >= 0) && (jx != m)){
-                // perform a move to put the joint in correct order
-                jointToSwap = &joints.get(jx);
-                joints.set(jx, &joints.get(m));
-                joints.set(m, jointToSwap);
-            }
-        }
+        // else{
+        //     Component* compToMoveOut = _components.at(m+nb);
+        //     // reorder the joint components in the order of the multibody tree
+        //     Joint* jointToSwap = static_cast<Joint*>(mob.getJointRef());
+        //     it = std::find(_components.begin(), _components.end(), jointToSwap);
+        //     if (it != _components.end()){
+        //         // Only if the joint is not in the correct sequence the swap
+        //         if (compToMoveOut != jointToSwap){
+        //             _components[m + nb] = jointToSwap;
+        //             *it = compToMoveOut;
+        //         }
+        //     }
+        //     //(static_cast<Component*>(jointToSwap));
+
+        //     int jx = joints.getIndex(jointToSwap, m);
+
+        //     std::cout << "m = " << m << std::endl
+        //               << "jx = " << jx << std::endl;
+
+        //     //if in the set but not already in the right order
+        //     if ((jx >= 0) && (jx != m)){
+        //         // perform a move to put the joint in correct order
+        //         jointToSwap = &joints.get(jx);
+        //         joints.set(jx, &joints.get(m));
+        //         joints.set(m, jointToSwap);
+        //     }
+        // }
         // Update the directionality of the joint to tree's preferential direction
-        joints[m].upd_reverse() = mob.isReversedFromJoint();
+        static_cast<Joint*>(mob.getJointRef())->upd_reverse() = 
+            mob.isReversedFromJoint();
+        // joints[m].upd_reverse() = mob.isReversedFromJoint();
     
     }
     joints.setMemoryOwner(isMemoryOwner);

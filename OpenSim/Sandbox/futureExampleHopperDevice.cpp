@@ -119,25 +119,15 @@ int main() {
     sphere.setColor(Vec3{0, 0, 1});
     massB->append_geometry(sphere);
 
-
     // Joints that connect the bodies together.
-    auto anchorA = new OpenSim::WeldJoint("anchorA",
-                                          // Parent body, location in parent, 
-                                          // orientation in parent.
-                                          model.getGround(), Vec3(0), Vec3(0),
-                                          // Child body, location in child, 
-                                          // orientation in child.
-                                          *massA, Vec3(0), Vec3(0));
-    // device->adopt(anchorA);
-    auto jointAtoB = new OpenSim::SliderJoint("AtoB",
-                                              *massA, Vec3(0), Vec3(0), 
-                                              *massB, Vec3(0), Vec3(0));
-    // device->adopt(jointAtoB);
+    auto anchorA = new OpenSim::WeldJoint("anchorA", "ground", "massA");
+    device->adopt(anchorA);
+    auto jointAtoB = new OpenSim::SliderJoint("AtoB", "massA", "massB");
+    device->adopt(jointAtoB);
     // Set the distance between massA and massB as 1.
     jointAtoB->getCoordinateSet()[0].setDefaultValue(1);
-    auto anchorB = new OpenSim::WeldJoint("anchorB",
-                                          *massB, Vec3(0), Vec3(0),
-                                          *loadOnB, Vec3(0), Vec3(0));
+    auto anchorB = new OpenSim::WeldJoint("anchorB", "massB", "loadOnB");
+    device->adopt(anchorB);
 
     // Actuator connecting the two masses.
     auto pathActuator = new OpenSim::PathActuator();
@@ -158,11 +148,6 @@ int main() {
     // Add bodies and joints to the model.
     model.addModelComponent(device);
     model.addBody(loadOnB);
-    model.addJoint(anchorA);
-    model.addJoint(jointAtoB); 
-    model.addJoint(anchorB);
-    //model.addForce(pathActuator);
-    //model.addController(controller);
 
     // Print the model.
     model.print("exampleHopperDevice.xml");
