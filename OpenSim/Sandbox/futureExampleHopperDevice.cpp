@@ -122,15 +122,17 @@ int main() {
 
     // Joints that connect the bodies together.
     auto anchorA = new OpenSim::WeldJoint("anchorA",
-                                         // Parent body, location in parent, 
-                                         // orientation in parent.
-                                         model.getGround(), Vec3(0), Vec3(0),
-                                         // Child body, location in child, 
-                                         // orientation in child.
-                                         *massA, Vec3(0), Vec3(0));
+                                          // Parent body, location in parent, 
+                                          // orientation in parent.
+                                          model.getGround(), Vec3(0), Vec3(0),
+                                          // Child body, location in child, 
+                                          // orientation in child.
+                                          *massA, Vec3(0), Vec3(0));
+    // device->adopt(anchorA);
     auto jointAtoB = new OpenSim::SliderJoint("AtoB",
                                               *massA, Vec3(0), Vec3(0), 
                                               *massB, Vec3(0), Vec3(0));
+    // device->adopt(jointAtoB);
     // Set the distance between massA and massB as 1.
     jointAtoB->getCoordinateSet()[0].setDefaultValue(1);
     auto anchorB = new OpenSim::WeldJoint("anchorB",
@@ -142,6 +144,7 @@ int main() {
     pathActuator->setName("cableAtoB");
     pathActuator->addNewPathPoint("point1", *massA, Vec3(0));
     pathActuator->addNewPathPoint("point2", *massB, Vec3(0));
+    device->adopt(pathActuator);
 
     // A controller that specifies the excitation of the biceps muscle.
     auto controller = new OpenSim::PropMyoController();
@@ -150,6 +153,7 @@ int main() {
                 connect(controller->getOutput("constant"));
     controller->updConnector<OpenSim::Actuator>("device").
                 connect(*pathActuator);
+    device->adopt(controller);
 
     // Add bodies and joints to the model.
     model.addModelComponent(device);
@@ -157,8 +161,8 @@ int main() {
     model.addJoint(anchorA);
     model.addJoint(jointAtoB); 
     model.addJoint(anchorB);
-    model.addForce(pathActuator);
-    model.addController(controller);
+    //model.addForce(pathActuator);
+    //model.addController(controller);
 
     // Print the model.
     model.print("exampleHopperDevice.xml");
