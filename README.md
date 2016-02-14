@@ -496,23 +496,28 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
 Your changes will only take effect in new terminal windows.
 
 #### For the impatient (Mac OS X)
-
-* Get **Xcode** from the App store. Open **Xcode** and *Agree* to license agreement.
-* In **Terminal** --
- * `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
- * `brew install cmake`
- * `git clone https://github.com/opensim-org/opensim-core.git`
- * `mkdir opensim_dependencies_build`
- * `cd opensim_dependencies_build`
- * `cmake ../opensim-core/dependencies -DCMAKE_INSTALL_PREFIX="~/opensim_dependencies_install" -DCMAKE_BUILD_TYPE=RelWithDebInfo`
- * `make -j8`
- * `cd ..`
- * `mkdir opensim_build`
- * `cd opensim_build`
- * `cmake ../opensim-core -DCMAKE_INSTALL_PREFIX="~/opensim_install" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install"`
- * `make -j8`
- * `ctest -j8`
-
+Get **Xcode** from the App store. Open **Xcode** and *Agree* to license agreement.
+In **Terminal** --
+```shell
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew install cmake
+git clone https://github.com/opensim-org/opensim-core.git
+mkdir opensim_dependencies_build
+cd opensim_dependencies_build
+cmake ../opensim-core/dependencies \
+      -DCMAKE_INSTALL_PREFIX="~/opensim_dependencies_install" \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo
+make -j8
+cd ..
+mkdir opensim_build
+cd opensim_build
+cmake ../opensim-core \
+      -DCMAKE_INSTALL_PREFIX="~/opensim_install" \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+      -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install"
+make -j8
+ctest -j8
+```
 On Ubuntu using Unix Makefiles
 ==============================
 
