@@ -716,35 +716,62 @@ Your changes will only take effect in new terminal windows.
 [java]: http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase6-419409.html
 
 #### For the impatient (Ubuntu)
-
+##### Ubuntu 14.04
 In **Terminal** --
 ```shell
- sudo add-apt-repository ppa:george-edison55/cmake-3.x
- sudo apt-add-repository ppa:fenics-packages/fenics-exp
- sudo apt-get update
- sudo apt-get install git cmake cmake-curses-gui clang-3.6 \
-                      freeglut3-dev libxi-dev libxmu-dev \
-                      liblapack-dev swig3.0 python-dev openjdk-7-jdk
- sudo rm -f /usr/bin/cc /usr/bin/c++
- sudo ln -s /usr/bin/clang-3.6 /usr/bin/cc
- sudo ln -s /usr/bin/clang++-3.6 /usr/bin/c++
- export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
- git clone https://github.com/opensim-org/opensim-core.git
- mkdir opensim_dependencies_build
- cd opensim_dependencies_build
- cmake ../opensim-core/dependencies/ \
-         -DCMAKE_INSTALL_PREFIX='~/opensim_dependencies_install' \
-         -DCMAKE_BUILD_TYPE=RelWithDebInfo
- make -j8
- cd ..
- mkdir opensim_build
- cd opensim_build
- cmake ../opensim-core \
-         -DCMAKE_INSTALL_PREFIX="~/opensim_install" \
-         -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-         -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" \
-         -DBUILD_PYTHON_WRAPPING=ON \
-         -DBUILD_JAVA_WRAPPING=ON
- make -j8
- ctest -j8
+sudo add-apt-repository ppa:george-edison55/cmake-3.x
+sudo apt-add-repository ppa:fenics-packages/fenics-exp
+sudo apt-get update
+sudo apt-get install git cmake cmake-curses-gui clang-3.6 \
+                     freeglut3-dev libxi-dev libxmu-dev \
+                     liblapack-dev swig3.0 python-dev openjdk-7-jdk
+sudo rm -f /usr/bin/cc /usr/bin/c++
+sudo ln -s /usr/bin/clang-3.6 /usr/bin/cc
+sudo ln -s /usr/bin/clang++-3.6 /usr/bin/c++
+export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+git clone https://github.com/opensim-org/opensim-core.git
+mkdir opensim_dependencies_build
+cd opensim_dependencies_build
+cmake ../opensim-core/dependencies/ \
+      -DCMAKE_INSTALL_PREFIX='~/opensim_dependencies_install' \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo
+make -j8
+cd ..
+mkdir opensim_build
+cd opensim_build
+cmake ../opensim-core \
+      -DCMAKE_INSTALL_PREFIX="~/opensim_install" \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+      -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" \
+      -DBUILD_PYTHON_WRAPPING=ON \
+      -DBUILD_JAVA_WRAPPING=ON
+make -j8
+ctest -j8
  ```
+##### Ubuntu 15.10
+In **Terminal** --
+```shell
+sudo apt-get install git cmake cmake-curses-gui \
+                     freeglut3-dev libxi-dev libxmu-dev \
+                     liblapack-dev swig3.0 python-dev openjdk-7-jdk
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+git clone https://github.com/opensim-org/opensim-core.git
+mkdir opensim_dependencies_build
+cd opensim_dependencies_build
+cmake ../opensim-core/dependencies/ \
+      -DCMAKE_INSTALL_PREFIX='~/opensim_dependencies_install' \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo
+make -j8
+cd ..
+mkdir opensim_build
+cd opensim_build
+cmake ../opensim-core \
+      -DCMAKE_INSTALL_PREFIX="~/opensim_install" \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+      -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" \
+      -DBUILD_PYTHON_WRAPPING=ON \
+      -DBUILD_JAVA_WRAPPING=ON
+make -j8
+ctest -j8
+```
+  
