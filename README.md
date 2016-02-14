@@ -751,6 +751,8 @@ ctest -j8
 ##### Ubuntu 15.10
 In **Terminal** --
 ```shell
+sudo apt-add-repository ppa:fenics-packages/fenics
+sudo apt-get update
 sudo apt-get install git cmake cmake-curses-gui \
                      freeglut3-dev libxi-dev libxmu-dev \
                      liblapack-dev swig3.0 python-dev openjdk-7-jdk
