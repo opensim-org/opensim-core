@@ -498,6 +498,7 @@ Your changes will only take effect in new terminal windows.
 #### For the impatient (Mac OS X)
 ##### Mac OS X 10.11
 Get **Xcode** from the App store. Open **Xcode** and *Agree* to license agreement.
+
 In **Terminal** --
 ```shell
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
