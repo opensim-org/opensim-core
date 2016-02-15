@@ -496,11 +496,13 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
 Your changes will only take effect in new terminal windows.
 
 #### For the impatient (Mac OS X)
+##### Mac OS X 10.11
 Get **Xcode** from the App store. Open **Xcode** and *Agree* to license agreement.
 In **Terminal** --
 ```shell
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-brew install cmake
+brew install cmake swig
+brew cask install java
 git clone https://github.com/opensim-org/opensim-core.git
 mkdir opensim_dependencies_build
 cd opensim_dependencies_build
@@ -514,6 +516,8 @@ cd opensim_build
 cmake ../opensim-core \
       -DCMAKE_INSTALL_PREFIX="~/opensim_install" \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+      -DBUILD_PYTHON_WRAPPING=ON \
+      -DBUILD_JAVA_WRAPPING=ON \
       -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install"
 make -j8
 ctest -j8
