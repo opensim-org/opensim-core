@@ -496,9 +496,8 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
 Your changes will only take effect in new terminal windows.
 
 #### For the impatient (Mac OS X)
-##### Mac OS X 10.11
+##### Mac OS X 10.10 El Capitan and OS X 10.11 Yosemite
 Get **Xcode** from the App store. Open **Xcode** and *Agree* to license agreement.
-
 In **Terminal** --
 ```shell
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
@@ -726,7 +725,7 @@ Your changes will only take effect in new terminal windows.
 [java]: http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase6-419409.html
 
 #### For the impatient (Ubuntu)
-##### Ubuntu 14.04
+##### Ubuntu 14.04 Trusty Tahr
 In **Terminal** --
 ```shell
 sudo add-apt-repository ppa:george-edison55/cmake-3.x
@@ -758,7 +757,7 @@ cmake ../opensim-core \
 make -j8
 ctest -j8
  ```
-##### Ubuntu 15.10
+##### Ubuntu 15.10 Wily Werewolf
 In **Terminal** --
 ```shell
 sudo apt-add-repository ppa:fenics-packages/fenics
