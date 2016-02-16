@@ -304,7 +304,7 @@ On Mac OSX using Xcode
   * [Build on your own](https://github.com/simbody/simbody#installing).
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
   * Let OpenSim get this for you using superbuild (see below).
-  * [Build on your own](https://github.com/Biomechanical-ToolKit/BTKCore).
+  * [Build on your own](https://github.com/klshrinidhi/BTKCore).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git.
@@ -495,7 +495,7 @@ line below, we show the corresponding package.
   * [Build on your own](https://github.com/simbody/simbody#installing).
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
   * Let OpenSim get this for you using superbuild (see below).
-  * [Build on your own](https://github.com/Biomechanical-ToolKit/BTKCore).
+  * [Build on your own](https://github.com/klshrinidhi/BTKCore).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
