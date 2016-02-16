@@ -129,7 +129,7 @@ On Windows using Visual Studio
       https://github.com/simbody/simbody#windows-using-visual-studio).
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
     * Let OpenSim get this for you using superbuild (see below).
-    * [Build on your own](https://github.com/Biomechanical-ToolKit/BTKCore).
+    * [Build on your own](https://github.com/klshrinidhi/BTKCore).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git. There are many options:
