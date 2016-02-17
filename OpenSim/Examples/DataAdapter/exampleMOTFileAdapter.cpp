@@ -44,7 +44,7 @@ int main() {
     // This table will be an AbstractDataTable. It will have to be casted to the
     //  concrete type to access the data.
     auto& abstable2 = OpenSim::FileAdapter::readFile(filename).at("table");
-    auto table2 = static_cast<OpenSim::MOTFileAdapter::Table*>(abstable2.get());
+    auto table2 = static_cast<OpenSim::TimeSeriesTable*>(abstable2.get());
 
     // From this point on, both table1 and table2 represent the same type of
     // DataTable and so both support the same operations. Below code 

@@ -36,9 +36,6 @@ Header in the file is assumed to end with string "endheader" occupying a full
 line.                                                                         */
 class OSIMCOMMON_API DelimFileAdapter : public FileAdapter {
 public:
-    /** Type of the table returned by the read and accepted by the write.     */
-    using Table = TimeSeriesTable_<double>;
-
     DelimFileAdapter()                                   = delete;
     DelimFileAdapter(const DelimFileAdapter&)            = default;
     DelimFileAdapter(DelimFileAdapter&&)                 = default;
@@ -53,11 +50,11 @@ public:
     DelimFileAdapter* clone() const override;
 
     /** Read a given file using the delimiters specified at construction.     */
-    std::unique_ptr<Table> read(const std::string& filename) const;
+    std::unique_ptr<TimeSeriesTable> read(const std::string& filename) const;
 
     /** Write the table to a file using the delimiter specified at 
     construction.                                                             */
-    void write(const Table& table,
+    void write(const TimeSeriesTable& table,
                const std::string& filename) const;
 
     /** Key used for table associative array returned/accepted by write/read. */

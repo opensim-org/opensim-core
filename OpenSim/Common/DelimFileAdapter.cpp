@@ -19,14 +19,15 @@ DelimFileAdapter::clone() const {
     return new DelimFileAdapter{*this};
 }
 
-std::unique_ptr<DelimFileAdapter::Table>
+std::unique_ptr<TimeSeriesTable>
 DelimFileAdapter::read(const std::string& fileName) const {
     auto abs_table = extendRead(fileName).at(_table).release();
-    return std::unique_ptr<Table>{static_cast<Table*>(abs_table)};
+    auto table = static_cast<TimeSeriesTable*>(abs_table);
+    return std::unique_ptr<TimeSeriesTable>{table};
 }
 
 void 
-DelimFileAdapter::write(const DelimFileAdapter::Table& table, 
+DelimFileAdapter::write(const TimeSeriesTable& table, 
                         const std::string& fileName) const {
     InputTables tables{};
     tables.emplace(_table, &table);
@@ -43,7 +44,7 @@ DelimFileAdapter::extendRead(const std::string& fileName) const {
                      FileDoesNotExist,
                      fileName);
 
-    std::unique_ptr<Table> table{new Table{}};
+    std::unique_ptr<TimeSeriesTable> table{new TimeSeriesTable{}};
 
     size_t line_num{};
     // All the lines until "endheader" is header.
@@ -83,7 +84,7 @@ DelimFileAdapter::extendRead(const std::string& fileName) const {
     ValueArray<std::string> value_array{};
     for(const auto& cl : column_labels)
         value_array.upd().push_back(SimTK::Value<std::string>{cl});
-    Table::DependentsMetaData dep_metadata{};
+    TimeSeriesTable::DependentsMetaData dep_metadata{};
     dep_metadata.setValueArrayForKey("labels", value_array);
     table->setDependentsMetaData(dep_metadata);
 
@@ -101,7 +102,8 @@ DelimFileAdapter::extendRead(const std::string& fileName) const {
                          row.size());
 
         // Columns 2 till the end are data.
-        Table::RowVector row_vector{static_cast<int>(column_labels.size())};
+        TimeSeriesTable::RowVector 
+            row_vector{static_cast<int>(column_labels.size())};
         for(std::size_t c = 0; c < column_labels.size(); ++c)
             row_vector[c] = std::stod(row.at(c + 1));
 
@@ -112,7 +114,8 @@ DelimFileAdapter::extendRead(const std::string& fileName) const {
     }
 
     OutputTables output_tables{};
-    output_tables.emplace(_table, std::unique_ptr<Table>(table.release()));
+    output_tables.emplace(_table, 
+                          std::unique_ptr<TimeSeriesTable>(table.release()));
 
     return std::move(output_tables);
 }
@@ -123,9 +126,9 @@ DelimFileAdapter::extendWrite(const InputTables& absTables,
     OPENSIM_THROW_IF(absTables.empty(),
                      NoTableFound);
 
-    const Table* table{};
+    const TimeSeriesTable* table{};
     try {
-        table = dynamic_cast<const Table*>(absTables.at(_table));
+        table = dynamic_cast<const TimeSeriesTable*>(absTables.at(_table));
     } catch(std::out_of_range&) {
         OPENSIM_THROW(KeyMissing,
                       _table);
