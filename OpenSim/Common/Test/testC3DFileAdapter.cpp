@@ -75,8 +75,8 @@ int main() {
     for(const auto& filename : filenames) {
         auto tables = FileAdapter::readFile(filename);
 
-        using MT = C3DFileAdapter::MarkerTable;
-        using FT = C3DFileAdapter::ForceTable;
+        using MT = TimeSeriesTableVec3;
+        using FT = TimeSeriesTableVec3;
 
         auto    marker_table = dynamic_cast<MT*>(tables.at("markers").get());
         auto     force_table = dynamic_cast<FT*>(tables.at("forces").get());

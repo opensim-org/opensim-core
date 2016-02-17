@@ -40,12 +40,10 @@ public:
         std::string description;
     };
 
-    using MarkerTable = TimeSeriesTable_<SimTK::Vec3>;
-    using ForceTable  = TimeSeriesTable_<SimTK::Vec3>;
     using EventTable  = std::vector<Event>; 
-    using Tables      = std::tuple<std::unique_ptr<MarkerTable>, 
-                                   std::unique_ptr< ForceTable>,
-                                   std::unique_ptr< ForceTable>>;
+    using Tables      = std::tuple<std::unique_ptr<TimeSeriesTableVec3>, 
+                                   std::unique_ptr<TimeSeriesTableVec3>,
+                                   std::unique_ptr<TimeSeriesTableVec3>>;
 
     C3DFileAdapter()                                 = default;
     C3DFileAdapter(const C3DFileAdapter&)            = default;

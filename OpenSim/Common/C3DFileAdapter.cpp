@@ -25,12 +25,13 @@ C3DFileAdapter::read(const std::string& fileName) const {
     auto    abs_marker_table = tables.at(_markers  ).release();
     auto     abs_force_table = tables.at(_forces   ).release();
     auto abs_usr_force_table = tables.at(_usrForces).release();
-    auto    marker_table = static_cast<MarkerTable*>(   abs_marker_table);
-    auto     force_table = static_cast< ForceTable*>(    abs_force_table);
-    auto usr_force_table = static_cast< ForceTable*>(abs_usr_force_table);
-    return std::make_tuple(std::unique_ptr<MarkerTable>{   marker_table}, 
-                           std::unique_ptr< ForceTable>{    force_table},
-                           std::unique_ptr< ForceTable>{usr_force_table});
+    auto    marker_table = static_cast<TimeSeriesTableVec3*>(abs_marker_table);
+    auto     force_table = static_cast<TimeSeriesTableVec3*>(abs_force_table);
+    auto usr_force_table = 
+        static_cast<TimeSeriesTableVec3*>(abs_usr_force_table);
+    return std::make_tuple(std::unique_ptr<TimeSeriesTableVec3>{marker_table}, 
+                           std::unique_ptr<TimeSeriesTableVec3>{force_table},
+                           std::unique_ptr<TimeSeriesTableVec3>{usr_force_table});
 }
 
 void
@@ -46,12 +47,12 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     auto acquisition = reader->GetOutput();
 
     OutputTables tables{};
-    auto&    marker_table = *(new MarkerTable{});
-    auto&     force_table = *(new  ForceTable{});
-    auto& usr_force_table = *(new  ForceTable{});
-    tables.emplace(_markers,   std::unique_ptr<MarkerTable>(&marker_table));
-    tables.emplace(_forces,    std::unique_ptr<ForceTable>(&force_table));
-    tables.emplace(_usrForces, std::unique_ptr<ForceTable>(&usr_force_table));
+    auto&    marker_table = *(new TimeSeriesTableVec3{});
+    auto&     force_table = *(new TimeSeriesTableVec3{});
+    auto& usr_force_table = *(new TimeSeriesTableVec3{});
+    tables.emplace(_markers, std::unique_ptr<TimeSeriesTableVec3>(&marker_table));
+    tables.emplace(_forces, std::unique_ptr<TimeSeriesTableVec3>(&force_table));
+    tables.emplace(_usrForces, std::unique_ptr<TimeSeriesTableVec3>(&usr_force_table));
 
     auto    marker_pts = btk::PointCollection::New();
     auto usr_force_pts = btk::PointCollection::New();
@@ -86,7 +87,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             push_back(SimTK::Value<std::string>((*it)->GetLabel()));
         }
 
-        MarkerTable::DependentsMetaData marker_dep_metadata{};
+        TimeSeriesTableVec3::DependentsMetaData marker_dep_metadata{};
         marker_dep_metadata.setValueArrayForKey("labels", marker_labels);
         marker_table.setDependentsMetaData(marker_dep_metadata);
 
@@ -129,7 +130,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
                 upd().
                 push_back(SimTK::Value<std::string>(pt->GetLabel()));
         }
-        ForceTable::DependentsMetaData force_dep_metadata{};
+        TimeSeriesTableVec3::DependentsMetaData force_dep_metadata{};
         force_dep_metadata.setValueArrayForKey("labels", force_labels);
         usr_force_table.setDependentsMetaData(force_dep_metadata);
 
@@ -234,7 +235,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
                 at(_unit_index.at("marker"));
             units.upd().push_back(SimTK::Value<std::string>(position_unit));
         }
-        ForceTable::DependentsMetaData force_dep_metadata{};
+        TimeSeriesTableVec3::DependentsMetaData force_dep_metadata{};
         force_dep_metadata.setValueArrayForKey("labels", labels);
         force_dep_metadata.setValueArrayForKey("units", units);
         force_table.setDependentsMetaData(force_dep_metadata);
