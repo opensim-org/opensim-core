@@ -61,7 +61,7 @@ int main() {
 
     auto& events_table = marker_table->getTableMetaData().
                                       getValueForKey("events").
-                                 getValue<std::vector<C3DFileAdapter::Event>>();
+                                 getValue<std::vector<OpenSim::Event>>();
     for(const auto& elem : events_table)
         std::cout << "label: " << elem.label << " | "
                   << "time: " << elem.time << " | "
