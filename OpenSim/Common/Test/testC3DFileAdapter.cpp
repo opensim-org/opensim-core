@@ -50,19 +50,11 @@ int main() {
 
     auto&    marker_table = std::get<0>(tables);
     auto&     force_table = std::get<1>(tables);
-    auto& usr_force_table = std::get<2>(tables);
 
     if(marker_table->getNumRows() != 0) {
     marker_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
     TRCFileAdapter trc_adapter{};
     trc_adapter.write(*marker_table, filename + ".markers.trc");
-    }
-
-    if(usr_force_table->getNumRows() != 0) {
-    usr_force_table->updTableMetaData().setValueForKey("Units", 
-                                                       std::string{"mm"});
-    TRCFileAdapter trc_adapter{};
-    trc_adapter.write(*usr_force_table, filename + ".usrforces.trc");
     }
 
     if(force_table->getNumRows() != 0) {
@@ -80,19 +72,11 @@ int main() {
 
         auto    marker_table = dynamic_cast<MT*>(tables.at("markers").get());
         auto     force_table = dynamic_cast<FT*>(tables.at("forces").get());
-        auto usr_force_table = dynamic_cast<FT*>(tables.at("usrforces").get());
 
     if(marker_table->getNumRows() != 0) {
     marker_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
     TRCFileAdapter trc_adapter{};
     trc_adapter.write(*marker_table, filename + ".markers.trc");
-    }
-
-    if(usr_force_table->getNumRows() != 0) {
-    usr_force_table->updTableMetaData().setValueForKey("Units", 
-                                                       std::string{"mm"});
-    TRCFileAdapter trc_adapter{};
-    trc_adapter.write(*usr_force_table, filename + ".usrforces.trc");
     }
 
     if(force_table->getNumRows() != 0) {

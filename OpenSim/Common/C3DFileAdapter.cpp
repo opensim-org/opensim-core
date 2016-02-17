@@ -4,7 +4,6 @@ namespace OpenSim {
 
 const std::string C3DFileAdapter::_markers{"markers"};
 const std::string C3DFileAdapter::_forces{"forces"};
-const std::string C3DFileAdapter::_usrForces{"usrforces"};
 
 const std::unordered_map<std::string, size_t>
 C3DFileAdapter::_unit_index{{"marker", 0},
@@ -22,21 +21,18 @@ C3DFileAdapter::clone() const {
 C3DFileAdapter::Tables
 C3DFileAdapter::read(const std::string& fileName) const {
     auto tables = extendRead(fileName);
-    auto    abs_marker_table = tables.at(_markers  ).release();
-    auto     abs_force_table = tables.at(_forces   ).release();
-    auto abs_usr_force_table = tables.at(_usrForces).release();
+    auto    abs_marker_table = tables.at(_markers).release();
+    auto     abs_force_table = tables.at(_forces ).release();
     auto    marker_table = static_cast<TimeSeriesTableVec3*>(abs_marker_table);
     auto     force_table = static_cast<TimeSeriesTableVec3*>(abs_force_table);
-    auto usr_force_table = 
-        static_cast<TimeSeriesTableVec3*>(abs_usr_force_table);
     return std::make_tuple(std::unique_ptr<TimeSeriesTableVec3>{marker_table}, 
-                           std::unique_ptr<TimeSeriesTableVec3>{force_table},
-                           std::unique_ptr<TimeSeriesTableVec3>{usr_force_table});
+                           std::unique_ptr<TimeSeriesTableVec3>{force_table});
 }
 
 void
 C3DFileAdapter::write(const C3DFileAdapter::Tables& tables,
                       const std::string& fileName) const {
+    throw Exception{"Writing C3D not supported yet."};
 }
 
 C3DFileAdapter::OutputTables
@@ -47,15 +43,14 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     auto acquisition = reader->GetOutput();
 
     OutputTables tables{};
-    auto&    marker_table = *(new TimeSeriesTableVec3{});
-    auto&     force_table = *(new TimeSeriesTableVec3{});
-    auto& usr_force_table = *(new TimeSeriesTableVec3{});
-    tables.emplace(_markers, std::unique_ptr<TimeSeriesTableVec3>(&marker_table));
-    tables.emplace(_forces, std::unique_ptr<TimeSeriesTableVec3>(&force_table));
-    tables.emplace(_usrForces, std::unique_ptr<TimeSeriesTableVec3>(&usr_force_table));
+    auto& marker_table = *(new TimeSeriesTableVec3{});
+    auto&  force_table = *(new TimeSeriesTableVec3{});
+    tables.emplace(_markers, 
+                   std::unique_ptr<TimeSeriesTableVec3>(&marker_table));
+    tables.emplace(_forces, 
+                   std::unique_ptr<TimeSeriesTableVec3>(&force_table));
 
-    auto    marker_pts = btk::PointCollection::New();
-    auto usr_force_pts = btk::PointCollection::New();
+    auto marker_pts = btk::PointCollection::New();
 
     for(auto it = acquisition->BeginPoint();
         it != acquisition->EndPoint();
@@ -63,8 +58,6 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         auto pt = *it;
         if(pt->GetType() == btk::Point::Marker)
                marker_pts->InsertItem(pt);
-        else if(pt->GetType() == btk::Point::Force)
-            usr_force_pts->InsertItem(pt);
     }
 
     if(marker_pts->GetItemNumber() != 0) {
@@ -106,49 +99,6 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
                                        pt->GetValues().coeff(f, 2)};
             }
             marker_table.appendRow(0 + f * time_step, row);
-        }
-    }
-
-    if(usr_force_pts->GetItemNumber() != 0) {
-        usr_force_table.
-            updTableMetaData().
-            setValueForKey("DataRate", 
-                           std::to_string(acquisition->GetAnalogFrequency()));
-
-        usr_force_table.
-            updTableMetaData().
-            setValueForKey("Units", 
-                           acquisition->GetPointUnits().
-                           at(_unit_index.at("force")));
-
-        ValueArray<std::string> force_labels{};
-        for(auto it = usr_force_pts->Begin();
-            it != usr_force_pts->End();
-            ++it) {
-            auto pt = *it;
-            force_labels.
-                upd().
-                push_back(SimTK::Value<std::string>(pt->GetLabel()));
-        }
-        TimeSeriesTableVec3::DependentsMetaData force_dep_metadata{};
-        force_dep_metadata.setValueArrayForKey("labels", force_labels);
-        usr_force_table.setDependentsMetaData(force_dep_metadata);
-
-        double time_step{1.0 / acquisition->GetAnalogFrequency()};
-        for(int f = 0;
-            f < usr_force_pts->GetFrontItem()->GetFrameNumber();
-            ++f) {
-            SimTK::RowVector_<SimTK::Vec3> row{usr_force_pts->GetItemNumber()};
-            int m{0};
-            for(auto it = usr_force_pts->Begin();
-                it != usr_force_pts->End();
-                ++it) {
-                auto pt = *it;
-                row[m++] = SimTK::Vec3{pt->GetValues().coeff(f, 0),
-                                       pt->GetValues().coeff(f, 1),
-                                       pt->GetValues().coeff(f, 2)};
-            }
-            usr_force_table.appendRow(0 + f * time_step, row);
         }
     }
 
@@ -284,7 +234,6 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     }
        marker_table.updTableMetaData().setValueForKey("events", event_table);
         force_table.updTableMetaData().setValueForKey("events", event_table);
-    usr_force_table.updTableMetaData().setValueForKey("events", event_table);
 
     return std::move(tables);
 }
@@ -292,6 +241,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
 void
 C3DFileAdapter::extendWrite(const InputTables& absTables,
                             const std::string& fileName) const {
+    throw Exception{"Writing to C3D not supported yet."};
 }
 
 } // namespace OpenSim

@@ -42,7 +42,6 @@ public:
 
     using EventTable  = std::vector<Event>; 
     using Tables      = std::tuple<std::unique_ptr<TimeSeriesTableVec3>, 
-                                   std::unique_ptr<TimeSeriesTableVec3>,
                                    std::unique_ptr<TimeSeriesTableVec3>>;
 
     C3DFileAdapter()                                 = default;
@@ -60,7 +59,6 @@ public:
 
     static const std::string _markers;
     static const std::string _forces;
-    static const std::string _usrForces;
 
 protected:
     OutputTables extendRead(const std::string& fileName) const override;

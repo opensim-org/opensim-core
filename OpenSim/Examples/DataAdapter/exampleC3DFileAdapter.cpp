@@ -39,7 +39,6 @@ int main() {
 
     auto&    marker_table = std::get<0>(tables);
     auto&     force_table = std::get<1>(tables);
-    auto& usr_force_table = std::get<2>(tables);
 
     if(marker_table->getNumRows() != 0) {
         std::cout << "--------------Markers-----------------" << std::endl;
@@ -74,26 +73,6 @@ int main() {
     for(size_t i = 0; i < labels.size(); ++i)
         std::cout << labels[i].getValue<std::string>() << " ";
     std::cout << "\n";
-    }
-
-    if(usr_force_table->getNumRows() != 0) {
-        std::cout << "--------------User Forces-----------------" << std::endl;
-
-    std::cout << "Dim: "
-              << usr_force_table->getNumRows() << " "
-              << usr_force_table->getNumColumns()
-              << std::endl;
-    std::cout << "DataRate: "
-              << usr_force_table->getTableMetaData().
-                                  getValueForKey("DataRate").
-                                  getValue<std::string>()
-              << std::endl;
-    std::cout << "Units: "
-              << usr_force_table->getTableMetaData().
-                                  getValueForKey("Units").
-                                  getValue<std::string>()
-              << std::endl << std::endl;
-    std::cout << usr_force_table->getRow(0) << std::endl;
     }
 
     if(force_table->getNumRows() != 0) {
