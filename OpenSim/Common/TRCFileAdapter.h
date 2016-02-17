@@ -109,9 +109,6 @@ to as Table in this class. Be sure to expect/provide that table when working
 with this adapter.                                                            */
 class OSIMCOMMON_API TRCFileAdapter : public FileAdapter {
 public:
-    /** Type of the table returned by the read and accepted by the write.     */
-    using Table = TimeSeriesTable_<SimTK::Vec3>;
-
     TRCFileAdapter()                                 = default;
     TRCFileAdapter(const TRCFileAdapter&)            = default;
     TRCFileAdapter(TRCFileAdapter&&)                 = default;
@@ -122,11 +119,12 @@ public:
     TRCFileAdapter* clone() const override;
 
     /** Read a given TRC file. The filename provided need not contain ".trc". */
-    std::unique_ptr<Table> read(const std::string& filename) const;
+    std::unique_ptr<TimeSeriesTableVec3> 
+    read(const std::string& filename) const;
 
     /** Write a table to a TRC file. The filename provided need not contain 
     ".trc".                                                                   */
-    void write(const Table& table, 
+    void write(const TimeSeriesTableVec3& table, 
                const std::string& filename) const;
 
     /** Key used for table associative array returned/accepted by write/read. */

@@ -23,14 +23,15 @@ TRCFileAdapter::clone() const {
     return new TRCFileAdapter{*this};
 }
 
-std::unique_ptr<TRCFileAdapter::Table>
+std::unique_ptr<TimeSeriesTableVec3>
 TRCFileAdapter::read(const std::string& fileName) const {
     auto abs_table = extendRead(fileName).at(_markers).release();
-    return std::unique_ptr<Table>{static_cast<Table*>(abs_table)};
+    auto table = static_cast<TimeSeriesTableVec3*>(abs_table);
+    return std::unique_ptr<TimeSeriesTableVec3>{table};
 }
 
 void 
-TRCFileAdapter::write(const TRCFileAdapter::Table& table, 
+TRCFileAdapter::write(const TimeSeriesTableVec3& table, 
                       const std::string& fileName) const {
     InputTables tables{};
     tables.emplace(_markers, &table);
@@ -47,7 +48,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
                      FileDoesNotExist,
                      fileName);
 
-    std::unique_ptr<Table> table{new Table{}};
+    std::unique_ptr<TimeSeriesTableVec3> table{new TimeSeriesTableVec3{}};
 
     // Callable to get the next line in form of vector of tokens.
     auto nextLine = [&] {
@@ -159,7 +160,8 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
                          row.size());
 
         // Columns 2 till the end are data.
-        Table::RowVector row_vector{static_cast<int>(num_markers_expected)};
+        TimeSeriesTableVec3::RowVector 
+            row_vector{static_cast<int>(num_markers_expected)};
         size_t ind{0};
         for(std::size_t c = 2; c < column_labels.size() * 3 + 2; c += 3)
             row_vector[ind++] = SimTK::Vec3{std::stod(row.at(c)),
@@ -176,12 +178,13 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     ValueArray<std::string> value_array{};
     for(const auto& cl : column_labels)
         value_array.upd().push_back(SimTK::Value<std::string>{cl});
-    Table::DependentsMetaData dep_metadata{};
+    TimeSeriesTableVec3::DependentsMetaData dep_metadata{};
     dep_metadata.setValueArrayForKey("labels", value_array);
     table->setDependentsMetaData(dep_metadata);
 
     OutputTables output_tables{};
-    output_tables.emplace(_markers, std::unique_ptr<Table>{table.release()});
+    output_tables.emplace(_markers, 
+                          std::unique_ptr<TimeSeriesTableVec3>{table.release()});
 
     return std::move(output_tables);
 }
@@ -192,9 +195,9 @@ TRCFileAdapter::extendWrite(const InputTables& absTables,
     OPENSIM_THROW_IF(absTables.empty(),
                      NoTableFound);
 
-    const Table* table{};
+    const TimeSeriesTableVec3* table{};
     try {
-        table = dynamic_cast<const Table*>(absTables.at(_markers));
+        table = dynamic_cast<const TimeSeriesTableVec3*>(absTables.at(_markers));
     } catch(std::out_of_range) {
         OPENSIM_THROW(KeyMissing,
                       _markers);
