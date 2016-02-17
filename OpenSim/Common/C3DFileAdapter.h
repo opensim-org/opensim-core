@@ -28,18 +28,12 @@
 #include "btkGroundReactionWrenchFilter.h"
 
 #include "FileAdapter.h"
+#include "Event.h"
 
 namespace OpenSim {
 
 class OSIMCOMMON_API C3DFileAdapter : public FileAdapter {
 public:
-    struct Event {
-        std::string label;
-        double      time;
-        int         frame;
-        std::string description;
-    };
-
     using EventTable  = std::vector<Event>; 
     using Tables      = std::tuple<std::unique_ptr<TimeSeriesTableVec3>, 
                                    std::unique_ptr<TimeSeriesTableVec3>>;
