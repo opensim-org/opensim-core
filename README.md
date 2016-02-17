@@ -766,7 +766,7 @@ sudo apt-add-repository ppa:fenics-packages/fenics
 sudo apt-get update
 sudo apt-get install git cmake cmake-curses-gui \
                      freeglut3-dev libxi-dev libxmu-dev \
-                     liblapack-dev swig3.0 python-dev openjdk-7-jdk
+                     liblapack-dev swig3.0 python-dev openjdk-8-jdk
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 git clone https://github.com/opensim-org/opensim-core.git
 mkdir opensim_dependencies_build
