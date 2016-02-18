@@ -138,7 +138,7 @@ class TestStatesTrajectory(unittest.TestCase):
         self.assertFalse(states.hasIntegrity())
 
         # TODO check violating isConsistent() (might need a different model).
-    
+
     def test_access_by_time(self):
 
         model = osim.Model(os.path.join(test_dir,
@@ -229,15 +229,4 @@ class TestStatesTrajectory(unittest.TestCase):
             for state in states.findBetween(2000.0, 1580.0):
                 print state.getTime()
         self.assertRaises(RuntimeError, func_that_raises_2)
-
-
-
-
-
-
-
-
-
-
-
 

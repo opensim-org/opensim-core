@@ -50,6 +50,10 @@ class Model;
  * (Python/MATLAB) and C++ users to postprocess their results with greater ease
  * and more versatility than with an Analysis.
  *
+ * @note This class is a work in progress. The ability to read and write a
+ * StatesTrajectory to an OSTATES is not available yet, even though the
+ * documentation is written as if this ability exists.
+ *
  * ### Guarantees
  * This class is designed to ensure the following:
  * - The states are ordered nondecreasing in time (adjacent states *can* have
@@ -470,38 +474,6 @@ private:
     std::vector<SimTK::State> m_states;
 
 public:
-
-    /** Thrown when asking for a state at a time that is out of range. */
-    class TimeOutOfRange : public OpenSim::Exception {
-    public:
-        TimeOutOfRange(const std::string& file, size_t line,
-                const std::string& func,
-                const double& requestedTime, const std::string& sense,
-                const double& firstTime, const double& lastTime) :
-                OpenSim::Exception(file, line, func) {
-            std::ostringstream msg;
-            msg << "There are no states with a time " << sense << " " <<
-                requestedTime << "; the range of times is [" <<
-                firstTime << ", " << lastTime << "].";
-            addMessage(msg.str());
-        }
-    };
-
-    /** Thrown when asking for a state at a time at which there is no state. */
-    class NoStateAtTime : public OpenSim::Exception {
-    public:
-        NoStateAtTime(const std::string& file, size_t line,
-                const std::string& func,
-                const double& requestedTime, const double& tolerance) {
-            std::ostringstream msg;
-            auto fullPrecision = std::numeric_limits<double>::max_digits10;
-            msg << std::setprecision(fullPrecision) <<
-                "There are no states at the requested time of " <<
-                requestedTime << " using the provided tolerance of " <<
-                tolerance << ".";
-            addMessage(msg.str());
-        }
-    };
 
     /** Thrown when trying to append a state that is not consistent with the
      * rest of the trajectory. */

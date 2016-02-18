@@ -304,19 +304,6 @@ bool StatesTrajectory::isConsistent(const SimTK::State& stateA,
     return true;
 }
 
-StatesTrajectory::const_iterator
-StatesTrajectory::lowerBound(const double& time) const {
-
-    // Need a custom comparison function to extract the time from the state.
-    auto compare = [](const SimTK::State& s, const double& t) {
-        return s.getTime() < t;
-    };
-    // lower_bound() finds the first element whose time is greater than or
-    // equal to the given time.
-    // If the iterator is end(), there are no states after the given time.
-    return std::lower_bound(begin(), end(), time, compare);
-}
-
 StatesTrajectory StatesTrajectory::createFromStatesStorage(
         const Model& model,
         const Storage& sto,
