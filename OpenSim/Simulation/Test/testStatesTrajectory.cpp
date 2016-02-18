@@ -35,7 +35,6 @@ using namespace SimTK;
 // TODO detailed exceptions when integrity checks fail.
 // TODO currently, one gets segfaults if state is not realized.
 // TODO accessing acceleration-level outputs.
-// TODO test findIndexAt in python.
 
 // Big to-do's:
 // TODO convert to data table (specify which columns).

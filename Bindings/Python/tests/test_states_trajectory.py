@@ -167,6 +167,13 @@ class TestStatesTrajectory(unittest.TestCase):
         self.assertRaises(RuntimeError, states.findIndexNearestBefore, -1.5)
         self.assertRaises(RuntimeError, states.findIndexNearestAfter, 10)
 
+        assert states.findIndexAt(0.8) == 3
+        assert states.findIndexAt(0.9) == 4
+        assert states.findIndexAt(1.2) == 7
+        assert states.findIndexAt(0.61, 0.0100001) == 1
+        self.assertRaises(RuntimeError, states.findIndexAt, 0.4)
+        self.assertRaises(RuntimeError, states.findIndexAt, 0.55)
+
         # findBetween.
         # ------------
         # Iterate across the states between two times.
