@@ -167,7 +167,7 @@ void StatesTrajectory::append(const SimTK::State& state) {
         // We assume the trajectory (before appending) is already consistent, 
         // so we only need to check consistency with a single state in the
         // trajectory.
-        OPENSIM_THROW_IF(!isConsistent(m_states.back(), state),
+        OPENSIM_THROW_IF(!m_states.back().isConsistent(state),
           InconsistentState, state.getTime());
     }
     m_states.push_back(state);
@@ -199,7 +199,7 @@ bool StatesTrajectory::isConsistent() const {
 
     for (int itime = 1; itime < getSize(); ++itime) {
 
-        if (!isConsistent(state0, get(itime))) {
+        if (!state0.isConsistent(get(itime))) {
             return false;
         }
 
@@ -228,79 +228,6 @@ bool StatesTrajectory::isCompatibleWith(const Model& model) const {
     }
     // TODO number of constraints.
 
-    return true;
-}
-
-bool StatesTrajectory::isConsistent(const SimTK::State& stateA,
-                                    const SimTK::State& stateB) {
-    if (stateA.getNumSubsystems() != stateB.getNumSubsystems()) {
-        return false;
-    }
-
-    // State variables.
-    if (stateA.getNQ() != stateB.getNQ()) {
-        return false;
-    }
-    if (stateA.getNU() != stateB.getNU()) {
-        return false;
-    }
-    if (stateA.getNZ() != stateB.getNZ()) {
-        return false;
-    }
-
-    // Constraints.
-    if (stateA.getNQErr() != stateB.getNQErr()) {
-        return false;
-    }
-    if (stateA.getNUErr() != stateB.getNUErr()) {
-        return false;
-    }
-    if (stateA.getNUDotErr() != stateB.getNUDotErr()) {
-        return false;
-    }
-    if (stateA.getNMultipliers() != stateB.getNMultipliers()) {
-        return false;
-    }
-
-    // Events.
-    if (stateA.getNEventTriggers() != stateB.getNEventTriggers()) {
-        return false;
-    }
-
-    // Per-subsystem quantities.
-    // TODO we could get rid of the total-over-subsystems checks above, but
-    // those checks would let us exit earlier.
-    for (SimTK::SubsystemIndex isub(0); isub < stateA.getNumSubsystems();
-            ++isub) {
-        if (stateA.getNQ(isub) != stateB.getNQ(isub)) {
-            return false;
-        }
-        if (stateA.getNU(isub) != stateB.getNU(isub)) {
-            return false;
-        }
-        if (stateA.getNZ(isub) != stateB.getNZ(isub)) {
-            return false;
-        }
-        if (stateA.getNQErr(isub) != stateB.getNQErr(isub)) {
-            return false;
-        }
-        if (stateA.getNUErr(isub) != stateB.getNUErr(isub)) {
-            return false;
-        }
-        if (stateA.getNUDotErr(isub) != stateB.getNUDotErr(isub)) {
-            return false;
-        }
-        if (stateA.getNMultipliers(isub) != stateB.getNMultipliers(isub)) {
-            return false;
-        }
-        for(SimTK::Stage stage = SimTK::Stage::LowestValid;
-                stage <= SimTK::Stage::HighestRuntime; ++stage) {
-            if (stateA.getNEventTriggersByStage(isub, stage) !=
-                    stateB.getNEventTriggersByStage(isub, stage)) {
-                return false;
-            }
-        }
-    }
     return true;
 }
 
