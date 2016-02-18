@@ -298,18 +298,20 @@ directory to your `PATH` environment variable.
 * Get **CMake** from [here](https://cmake.org/download/).
  * Choose *Add CMake to the system PATH for all users*.
 * In **PowerShell** --
- * `git clone https://github.com/opensim-org/opensim-core.git`
- * `mkdir opensim_dependencies_build`
- * `cd .\opensim_dependencies_build`
- * `cmake ..\opensim-core\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\opensim_dependencies_install"`
- * `cmake --build . --config RelWithDebInfo -- /maxcpucount:8`
- * `cd ..`
- * `mkdir opensim_build`
- * `cd .\opensim_build`
- * `cmake ..\opensim-core -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\opensim_install" -DOPENSIM_DEPENDENCIES_DIR="..\opensim_dependencies_install"`
- * `cmake --build . --config RelWithDebInfo -- /maxcpucount:8`
- * `ctest -C RelWithDebInfo --parallel 8`
 
+ ```powershell
+git clone https://github.com/opensim-org/opensim-core.git
+mkdir opensim_dependencies_build
+cd .\opensim_dependencies_build
+cmake ..\opensim-core\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\opensim_dependencies_install"
+cmake --build . --config RelWithDebInfo -- /maxcpucount:8
+cd ..
+mkdir opensim_build
+cd .\opensim_build
+cmake ..\opensim-core -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\opensim_install" -DOPENSIM_DEPENDENCIES_DIR="..\opensim_dependencies_install"
+cmake --build . --config RelWithDebInfo -- /maxcpucount:8
+ctest -C RelWithDebInfo --parallel 8
+```
 
 On Mac OSX using Xcode
 ======================
@@ -764,7 +766,7 @@ sudo apt-add-repository ppa:fenics-packages/fenics
 sudo apt-get update
 sudo apt-get install git cmake cmake-curses-gui \
                      freeglut3-dev libxi-dev libxmu-dev \
-                     liblapack-dev swig3.0 python-dev openjdk-7-jdk
+                     liblapack-dev swig3.0 python-dev openjdk-8-jdk
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 git clone https://github.com/opensim-org/opensim-core.git
 mkdir opensim_dependencies_build
