@@ -74,7 +74,7 @@
 %include <OpenSim/Common/ScaleSet.h>
 %include <OpenSim/Common/MarkerFrame.h>
 %include <OpenSim/Common/MarkerData.h>
-
+%include <OpenSim/Common/TimeSeriesTable.h>
 
 
 
