@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2015 Stanford University and the Authors                     *
+ * Copyright (c) 2016 Stanford University and the Authors                     *
  * Author(s): Chris Dembia                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -32,7 +32,7 @@ size_t StatesTrajectory::getSize() const {
 }
 
 size_t StatesTrajectory::getIndexBefore(const double& time,
-        const double& tolerance) {
+        const double& tolerance) const {
     OPENSIM_THROW_IF(m_states.empty(), Exception, "Trajectory is empty.");
 
     const auto it = getIteratorBefore(time, tolerance);
@@ -45,7 +45,7 @@ size_t StatesTrajectory::getIndexBefore(const double& time,
 }
 
 size_t StatesTrajectory::getIndexAfter(const double& time,
-        const double& tolerance) {
+        const double& tolerance) const {
     OPENSIM_THROW_IF(m_states.empty(), Exception, "Trajectory is empty.");
 
     const auto it = getIteratorAfter(time, tolerance);
@@ -57,9 +57,22 @@ size_t StatesTrajectory::getIndexAfter(const double& time,
     return it - begin();
 }
 
+size_t StatesTrajectory::getIndexAt(const double& time,
+                                    const double& tolerance) const {
+    OPENSIM_THROW_IF(m_states.empty(), Exception, "Trajectory is empty.");
+
+
+    const auto it = getIteratorAt(time, tolerance);
+
+    OPENSIM_THROW_IF(it == end(),
+                     StatesTrajectory::NoStateAtTime, time, tolerance);
+
+    return it - begin();
+}
+
 StatesTrajectory::IteratorRange StatesTrajectory::getBetween(
         const double& startTime, const double& endTime, 
-        const double& tolerance) {
+        const double& tolerance) const {
     SimTK_APIARGCHECK2_ALWAYS(startTime <= endTime,
             "StatesTrajectory", "getBetween",
             "startTime (%f) must be less than or equal to endTime (%f).",
@@ -80,14 +93,13 @@ StatesTrajectory::IteratorRange StatesTrajectory::getBetween(
 
 StatesTrajectory::const_iterator
 StatesTrajectory::getIteratorBefore(const double& time,
-        const double& tolerance) {
-    // Need a custom comparision function to extract the time from the state.
+        const double& tolerance) const {
+    // Need a custom comparison function to extract the time from the state.
     auto compare = [](const double& t, const SimTK::State& s) {
                 return t < s.getTime();
             };
     // upper_bound() finds the first element whose time is greater than the
     // given time.
-    // TODO tolerance.
     auto upper = std::upper_bound(begin(), end(), time + tolerance, compare);
 
     // If the first element is greater than the given time, then there are no
@@ -103,17 +115,43 @@ StatesTrajectory::getIteratorBefore(const double& time,
 
 StatesTrajectory::const_iterator
 StatesTrajectory::getIteratorAfter(const double& time,
-        const double& tolerance) {
-    // Need a custom comparision function to extract the time from the state.
-    auto compare = [](const SimTK::State& s, const double& t) {
-                return s.getTime() < t;
-            };
-    // lower_bound() finds the first element whose time is greater than or
-    // equal to the given time.
-    // If the iterator is end(), there are no states after the given time.
-    auto lower = std::lower_bound(begin(), end(), time - tolerance, compare);
+        const double& tolerance) const {
 
-    return lower;
+    return lowerBound(time - tolerance);
+}
+
+StatesTrajectory::const_iterator
+StatesTrajectory::getIteratorAt(
+        const double& time, const double& tolerance) const {
+
+    if (m_states.empty()) { return end(); }
+
+    // If there are multiple states with the same time as the provided state,
+    // we want the first of them; for this reason, we use lower_bound()
+    // instead of upper_bound().
+    auto greaterOrEqual = lowerBound(time);
+
+    // This may or may not point to a state; we deal with that soon.
+    const auto lessThan = (greaterOrEqual - 1);
+
+    // Figure out which of the two states is closer to the given time.
+    const_iterator closest;
+    // If greaterOrEqual is not valid, or lessThan is valid, and closer to
+    // `time` than greaterOrEqual:
+    if (greaterOrEqual == end() ||
+        (greaterOrEqual != begin() &&
+         (time - lessThan->getTime()) < (greaterOrEqual->getTime() - time))) {
+        closest = lessThan;
+    } else {
+        closest = greaterOrEqual;
+    }
+
+    // If the closest state is not within the tolerance:
+    if (closest == end() || std::abs(closest->getTime() - time) > tolerance) {
+        return end();
+    }
+
+    return closest;
 }
 
 void StatesTrajectory::append(const SimTK::State& state) {
@@ -169,7 +207,7 @@ bool StatesTrajectory::isConsistent() const {
     return true;
 }
 
-bool StatesTrajectory::isCompatibleWith(const Model& model) {
+bool StatesTrajectory::isCompatibleWith(const Model& model) const {
     // An empty trajectory is necessarily compatible.
     if (getSize() == 0) return true;
 
@@ -264,6 +302,19 @@ bool StatesTrajectory::isConsistent(const SimTK::State& stateA,
         }
     }
     return true;
+}
+
+StatesTrajectory::const_iterator
+StatesTrajectory::lowerBound(const double& time) const {
+
+    // Need a custom comparison function to extract the time from the state.
+    auto compare = [](const SimTK::State& s, const double& t) {
+        return s.getTime() < t;
+    };
+    // lower_bound() finds the first element whose time is greater than or
+    // equal to the given time.
+    // If the iterator is end(), there are no states after the given time.
+    return std::lower_bound(begin(), end(), time, compare);
 }
 
 StatesTrajectory StatesTrajectory::createFromStatesStorage(
@@ -387,7 +438,3 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
         const std::string& filepath) {
     return createFromStatesStorage(model, Storage(filepath));
 }
-
-
-
-

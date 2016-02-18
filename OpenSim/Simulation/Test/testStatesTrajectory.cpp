@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2016 Stanford University and the Authors                     *
  * Author(s): Chris Dembia                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -30,10 +30,18 @@
 using namespace OpenSim;
 using namespace SimTK;
 
+// Small to-do's:
+// TODO nondecreasing or increasing? might affect upper_bound/lower_bound.
+// TODO getIndexAt() -> getIndexAtTime().
+// TODO getIndex*() -> findIndex*().
 // TODO detailed exceptions when integrity checks fail.
 // TODO currently, one gets segfaults if state is not realized.
 // TODO accessing acceleration-level outputs.
+// TODO improve doxygen surrounding tolerance.
+// TODO rename getIndexAfter to getIndexNearestAfter.
 
+// Big to-do's:
+// TODO convert to data table (specify which columns).
 // TODO append two StateTrajectories together.
 // TODO test modeling options (locked coordinates, etc.)
 // TODO store a model within a StatesTrajectory.
@@ -641,6 +649,52 @@ void testAccessByTime() {
     SimTK_TEST_MUST_THROW_EXC(states.getIndexAfter(5.800001),
             StatesTrajectory::TimeOutOfRange);
 
+    // Make sure we get the right state when there are multiple within
+    // the tolerance.
+    {
+        // Assume the user views the times with only two decimal places (say
+        // in a console or storage file); they'll see:
+        //      0.50, 1.30, 3.50, 3.50, 3.50, 4.10.
+        // Therefore, the appropriate tolerance
+        // is 0.01. If they ask for the nearest state before 3.50, they should get
+        // the state that is actually at 3.502, since, from the console/file,
+        // this appears to be the first state "before" 3.50.
+        StatesTrajectory states2;
+        state.setTime(0.50);
+        states2.append(state); // 0
+        state.setTime(1.30);
+        states2.append(state); // 1
+        state.setTime(3.500);
+        states2.append(state); // 2
+        state.setTime(3.501);
+        states2.append(state); // 3
+        state.setTime(3.502);
+        states2.append(state); // 4
+        state.setTime(4.10);
+        states2.append(state); // 5
+
+        SimTK_TEST(states2.getIndexBefore(3.499, 0.010) == 4);
+
+        // Likewise, if they ask for the nearest state after 3.50 in the
+        // following scenario, they should get the state that is actually at
+        // 3.497.
+        StatesTrajectory states3;
+        state.setTime(0.50);
+        states3.append(state); // 0
+        state.setTime(1.30);
+        states3.append(state); // 1
+        state.setTime(3.497);
+        states3.append(state); // 2
+        state.setTime(3.498);
+        states3.append(state); // 3
+        state.setTime(3.499);
+        states3.append(state); // 4
+        state.setTime(4.10);
+        states3.append(state); // 5
+
+        SimTK_TEST(states3.getIndexAfter(3.5, 0.010) == 2);
+    }
+
     // Iterate across the states between two times.
     {
         std::vector<int> indices{1, 2, 3};
@@ -709,7 +763,133 @@ void testAccessByTime() {
         }
         SimTK_TEST(count == 0);
     }
+}
 
+void testAccessAtTime() {
+    Model model("arm26.osim");
+    auto& state = model.initSystem();
+
+    {
+        // Accessing a state at a time for an empty trajectory.
+        StatesTrajectory states;
+        // Trying to get the iterator gives end().
+        SimTK_TEST(states.getIteratorAt(4.0) == states.end());
+        // Trying to get the index gives an exception.
+        SimTK_TEST_MUST_THROW_EXC(states.getIndexAt(3.0), OpenSim::Exception);
+    }
+    {
+        // Make a trajectory with different times.
+        StatesTrajectory states;
+        state.setTime(0.5);
+        states.append(state); // 0
+        state.setTime(1.3);
+        states.append(state); // 1
+        state.setTime(3.5);
+        states.append(state); // 2
+        state.setTime(4.1);
+        states.append(state); // 3
+
+        // Without a tolerance (since we have the exact same value).
+        SimTK_TEST(states.getIndexAt(0.5) == 0);
+        SimTK_TEST(states.getIndexAt(1.3) == 1);
+        SimTK_TEST(states.getIndexAt(3.5) == 2);
+        SimTK_TEST(states.getIndexAt(4.1) == 3);
+
+        // Asking for a state at a time that does not exist gives an exception.
+        SimTK_TEST_MUST_THROW_EXC(states.getIndexAt(-10.0),
+                                  StatesTrajectory::NoStateAtTime);
+        SimTK_TEST_MUST_THROW_EXC(states.getIndexAt(0.25),
+                                  StatesTrajectory::NoStateAtTime);
+        SimTK_TEST_MUST_THROW_EXC(states.getIndexAt(0.5 - SignificantReal),
+                                  StatesTrajectory::NoStateAtTime);
+        SimTK_TEST_MUST_THROW_EXC(states.getIndexAt(0.5 + SignificantReal),
+                                  StatesTrajectory::NoStateAtTime);
+        SimTK_TEST_MUST_THROW_EXC(states.getIndexAt(2.0),
+                                  StatesTrajectory::NoStateAtTime);
+        SimTK_TEST_MUST_THROW_EXC(states.getIndexAt(4.0),
+                                  StatesTrajectory::NoStateAtTime);
+        SimTK_TEST_MUST_THROW_EXC(states.getIndexAt(4.1 + SignificantReal),
+                                  StatesTrajectory::NoStateAtTime);
+        SimTK_TEST_MUST_THROW_EXC(states.getIndexAt(4.10000001),
+                                  StatesTrajectory::NoStateAtTime);
+        SimTK_TEST_MUST_THROW_EXC(states.getIndexAt(5.5),
+                                  StatesTrajectory::NoStateAtTime);
+
+        // With a tolerance.
+        SimTK_TEST(states.getIndexAt(0.50001, 1.0e-5) == 0);
+        SimTK_TEST(states.getIndexAt(0.49999, 1.0e-5 + SignificantReal) == 0);
+        SimTK_TEST(states.getIndexAt(1.299999, 1.0e-6 + SignificantReal) == 1);
+        SimTK_TEST(states.getIndexAt(1.300001, 1e-6) == 1);
+        SimTK_TEST(states.getIndexAt(3.499, 1e-3) == 2);
+        SimTK_TEST(states.getIndexAt(3.501, 1e-3) == 2);
+        SimTK_TEST(states.getIndexAt(4.09999999, 1e-8) == 3);
+        SimTK_TEST(states.getIndexAt(4.10000001, 1e-8) == 3);
+
+        // Asking for a state that doesn't exist, even with the tolerance.
+        SimTK_TEST_MUST_THROW_EXC(
+                states.getIndexAt(3.6 + SimTK::SignificantReal, 0.1),
+                StatesTrajectory::NoStateAtTime);
+        SimTK_TEST_MUST_THROW_EXC(
+                states.getIndexAt(4.12 + SimTK::SignificantReal, 0.02),
+                StatesTrajectory::NoStateAtTime);
+    }
+
+    // Make sure that you get the closest state if multiple states are within
+    // the tolerance.
+    {
+        StatesTrajectory states;
+        state.setTime(8.03);
+        states.append(state); // 0
+        state.setTime(8.04);
+        states.append(state); // 1
+        state.setTime(8.05);
+        states.append(state); // 2
+        state.setTime(8.06);
+        states.append(state); // 3
+
+        // Both the 8.04 and 8.05 states are within the tolerance for the
+        // requested times below, but we expect to get the closer of the two.
+        SimTK_TEST(states.getIndexAt(8.044, 0.01) == 1);
+        SimTK_TEST(states.getIndexAt(8.046, 0.01) == 2);
+
+        SimTK_TEST(states.getIndexAt(8.04499999999, 0.01) == 1);
+        SimTK_TEST(states.getIndexAt(8.04500000001, 0.01) == 2);
+
+        // It actually doesn't matter what the tolerance is too much; the
+        // tolerance can even extend beyond the range of times in trajectory.
+        SimTK_TEST(states.getIndexAt(8.044, 5.0) == 1);
+        SimTK_TEST(states.getIndexAt(8.046, 5.0) == 2);
+    }
+
+    // Make sure that you get the closest state if multiple states are within
+    // the tolerance, even at the same time.
+    {
+        StatesTrajectory states;
+        state.setTime(7.2);
+        states.append(state); // 0
+        state.setTime(7.5);
+        states.append(state); // 1
+        state.setTime(7.5);
+        states.append(state); // 2
+        state.setTime(7.5);
+        states.append(state); // 3
+        state.setTime(7.9);
+        states.append(state); // 4
+        state.setTime(7.9);
+        states.append(state); // 5
+        state.setTime(8.0);
+        states.append(state); // 6
+
+        // If you ask for a time at which there are multiple states (with
+        // the same exact time), you get the first of these states.
+        SimTK_TEST(states.getIndexAt(7.5) == 1);
+        SimTK_TEST(states.getIndexAt(7.9) == 4);
+        SimTK_TEST(states.getIndexAt(7.4, 0.1) == 1);
+        SimTK_TEST(states.getIndexAt(7.56, 0.06) == 3);
+        SimTK_TEST(states.getIndexAt(7.56, 0.10) == 3);
+        SimTK_TEST(states.getIndexAt(7.88, 0.03) == 4);
+        SimTK_TEST(states.getIndexAt(7.93, 0.05) == 5);
+    }
 }
 
 void testAppendTimesAreNonDecreasing() {
@@ -848,7 +1028,7 @@ void testIntegrityChecks() {
 
 int main() {
     SimTK_START_TEST("testStatesTrajectory");
-    
+
         // actuators library is not loaded automatically (unless using clang).
         #if !defined(__clang__)
             LoadOpenSimLibrary("osimActuators");
@@ -865,6 +1045,7 @@ int main() {
         SimTK_SUBTEST(testAppendTimesAreNonDecreasing);
         SimTK_SUBTEST(testCopying);
         SimTK_SUBTEST(testAccessByTime);
+        SimTK_SUBTEST(testAccessAtTime);
 
         // Test creation of trajectory from astates storage.
         // -------------------------------------------------
