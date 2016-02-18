@@ -1623,6 +1623,7 @@ std::string Object::dump(bool dumpName) {
     // the list is, etc.
     // TODO abstract classes. for any Object property, allow all subclasses.
     // TODO print XMLDocument version number in the filename for this schema.
+    // TODO use substitution groups for abstract classes.
 
     // An XML schema is itself an XML document.
     Xml::Document schema;
