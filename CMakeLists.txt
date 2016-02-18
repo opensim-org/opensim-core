@@ -484,7 +484,6 @@ endif()
 # Directories for Simbody headers and libraries for building.
 # -----------------------------------------------------------
 include_directories("${Simbody_INCLUDE_DIR}")
-link_directories("${Simbody_LIB_DIR}")
 
 
 # Copy files over from the Simbody installation.
