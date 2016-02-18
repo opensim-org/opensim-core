@@ -33,12 +33,14 @@ namespace OpenSim {
 class Body;
 class Model;
 
+#ifndef SWIG // TODO suppress swig warning 315.
 /**
 VisualRepresentation is the OpenSim name used across the OpenSim API, it is an 
 that describes in what form is Geometry displayed:  
 DrawPoints, DrawWireframe, DrawSurface are supported.
 */
 using VisualRepresentation = SimTK::DecorativeGeometry::Representation;
+#endif
 
 /**
 SurfaceProperties class holds the appearance properties of a piece of Geometry 

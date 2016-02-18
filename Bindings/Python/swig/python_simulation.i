@@ -46,6 +46,14 @@ using namespace SimTK;
 
 %rename(appendNative) OpenSim::ForceSet::append(Force* aForce);
 
+
+// Ignore
+// ======
+// To suppress a warning.
+%ignore OpenSim::TransformAxis::setFunction(OpenSim::Function const &);
+%ignore OpenSim::CoordinateCouplerConstraint::setFunction(OpenSim::Function *);
+
+
 // Memory management
 // =================
 /*

@@ -70,6 +70,11 @@ using namespace SimTK;
 %rename(printToXML) OpenSim::XMLDocument::print();
 %rename(printToFile) OpenSim::Storage::print;
 
+// Ignore
+// ======
+// To suppress a warning.
+%ignore OpenSim::Property<std::string>::appendValue(std::string const *);
+
 
 // Memory management
 // =================

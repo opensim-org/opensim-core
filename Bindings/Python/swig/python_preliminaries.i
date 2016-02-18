@@ -21,6 +21,7 @@ own project.
 /* If needed %extend will be used, these operators are not supported.*/
 %ignore *::operator[];
 %ignore *::operator=;
+%ignore *::operator++;
 
 // For reference (doesn't work and should not be necessary):
 // %rename(__add__) operator+;
