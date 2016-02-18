@@ -37,8 +37,8 @@ using namespace SimTK;
 // TODO detailed exceptions when integrity checks fail.
 // TODO currently, one gets segfaults if state is not realized.
 // TODO accessing acceleration-level outputs.
-// TODO improve doxygen surrounding tolerance.
 // TODO rename getIndexAfter to getIndexNearestAfter.
+// TODO test getIndexAt in python.
 
 // Big to-do's:
 // TODO convert to data table (specify which columns).
