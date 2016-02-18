@@ -37,6 +37,7 @@ using namespace SimTK;
 // TODO accessing acceleration-level outputs.
 
 // Big to-do's:
+// TODO createFromStatesStorage -> createFromDataTable, and change its purpose.
 // TODO convert to data table (specify which columns).
 // TODO append two StateTrajectories together.
 // TODO test modeling options (locked coordinates, etc.)
@@ -641,6 +642,39 @@ void testIntegrityChecks() {
     // and Z's both pass the check. 
 }
 
+void testExport() {
+    Model model("gait2354_simbody.osim");
+    model.initSystem();
+
+    const auto stateNames = model.getStateVariableNames();
+    Storage sto(statesStoFname);
+    auto states = StatesTrajectory::createFromStatesStorage(model, sto);
+
+    auto tableAll = states.export(model);
+    SimTK_TEST(tableAll.getNumColumns() == stateNames.getSize());
+    SimTK_TEST(tableAll.getNumRows() == states.getSize());
+
+
+    auto tableKnee = states.export(model, {"knee_l/knee_angle_l/value",
+                                           "knee_r/knee_angle_r/value",
+                                           "knee_r/knee_angle_r/speed"});
+
+    // TODO incompatible model?
+    // TODO try both a smaller and a larger model.
+
+    SimTK_TEST_MUST_THROW_EXC(
+            states.export(model, {"knee_l/knee_angle_l/value",
+                          "not_an_actual_state",
+                          "knee_r/knee_angle_r/speed"}),
+            TODO);
+    SimTK_TEST_MUST_THROW_EXC(
+            states.export(model, {"knee_l/knee_angle_l/value",
+                          "nor/is/this",
+                          "knee_r/knee_angle_r/speed"}),
+            TODO);
+    });
+    // TODO specifying names that are not actual state names.
+}
 
 int main() {
     SimTK_START_TEST("testStatesTrajectory");
@@ -673,6 +707,8 @@ int main() {
         SimTK_SUBTEST1(testFromStatesStorageInconsistentModel, statesStoFname);
         SimTK_SUBTEST(testFromStatesStorageUniqueColumnLabels);
         SimTK_SUBTEST(testFromStatesStorageAllRowsHaveSameLength);
+
+        SimTK_SUBTEST(testExport);
 
     SimTK_END_TEST();
 }

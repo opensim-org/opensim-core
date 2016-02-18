@@ -27,6 +27,7 @@
 #include <Simbody.h>
 
 #include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/TimeSeriesTable.h>
 
 #include "osimSimulationDLL.h"
 
@@ -278,6 +279,31 @@ public:
      */
     bool isCompatibleWith(const Model& model) const;
     /// @}
+
+    /** Export the continuous state variables to a data table, perhaps to write
+     * to a file and postprocess in MATLAB/Python/Excel. The names of the
+     * columns in the table will be the full names of the continuous state
+     * variables (e.g., `knee/flexion/angle`).
+     *
+     * You must provide the model corresponding to this trajectory, since only
+     * the model knows the names of the state variables.
+     *
+     * By default, all continuous state variables are written to table
+     * (one per column). If you only want some of them to be written to the
+     * table, use the `stateVarNames` argument to specify the full names
+     * (e.g., `knee/flexion/angle`) of the columns to write.
+     *
+     * @code
+     * auto allStateVars = states.export(model);
+     * auto kneeStates = states.export(model, {"knee/flexion/value",
+     *                                         "knee/flexion/speed"});
+     * @endcode
+     *
+     * TODO exceptions if model is not compatible?
+     */
+    TimeSeriesTable export(const Model& model,
+                           const std::vector<std::string>& stateVarNames={})
+            const;
 
 private:
 
