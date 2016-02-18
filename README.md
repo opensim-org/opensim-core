@@ -99,9 +99,9 @@ Building from the source code
 
 We support a few ways of building OpenSim:
 
-1. [On Windows using Microsoft Visual Studio](#on-windows-using-visual-studio).
-2. [On Mac OSX using Xcode](#on-mac-osx-using-xcode).
-3. [On Ubuntu using Unix Makefiles](#on-ubuntu-using-unix-makefiles).
+1. [On Windows using Microsoft Visual Studio](#on-windows-using-visual-studio). In a rush? Use [these instructions](#for-the-impatient-windows). 
+2. [On Mac OSX using Xcode](#on-mac-osx-using-xcode). In a rush? Use [these instructions](#for-the-impatient-mac-os-x).
+3. [On Ubuntu using Unix Makefiles](#on-ubuntu-using-unix-makefiles). In a rush? Use [these instructions](#for-the-impatient-ubuntu).
 
 
 On Windows using Visual Studio
@@ -129,7 +129,7 @@ On Windows using Visual Studio
       https://github.com/simbody/simbody#windows-using-visual-studio).
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
     * Let OpenSim get this for you using superbuild (see below).
-    * [Build on your own](https://github.com/Biomechanical-ToolKit/BTKCore).
+    * [Build on your own](https://github.com/klshrinidhi/BTKCore).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git. There are many options:
@@ -288,6 +288,30 @@ directory to your `PATH` environment variable.
 5. Add **C:/opensim-core/bin;** to the front of of the text field. Don't forget
    the semicolon!
 
+#### For the impatient (Windows)
+
+* Get **Visual Studio Community** from [here](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx).
+ * Choose *Custom' installation*.
+ * Choose *Programming Languages* -> *Visual C++*.
+* Get **git** from [here](https://git-scm.com/downloads).
+ * Choose *Use Git from the Windows Command Prompt*.
+* Get **CMake** from [here](https://cmake.org/download/).
+ * Choose *Add CMake to the system PATH for all users*.
+* In **PowerShell** --
+
+ ```powershell
+git clone https://github.com/opensim-org/opensim-core.git
+mkdir opensim_dependencies_build
+cd .\opensim_dependencies_build
+cmake ..\opensim-core\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\opensim_dependencies_install"
+cmake --build . --config RelWithDebInfo -- /maxcpucount:8
+cd ..
+mkdir opensim_build
+cd .\opensim_build
+cmake ..\opensim-core -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\opensim_install" -DOPENSIM_DEPENDENCIES_DIR="..\opensim_dependencies_install"
+cmake --build . --config RelWithDebInfo -- /maxcpucount:8
+ctest -C RelWithDebInfo --parallel 8
+```
 
 On Mac OSX using Xcode
 ======================
@@ -304,7 +328,7 @@ On Mac OSX using Xcode
   * [Build on your own](https://github.com/simbody/simbody#installing).
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
   * Let OpenSim get this for you using superbuild (see below).
-  * [Build on your own](https://github.com/Biomechanical-ToolKit/BTKCore).
+  * [Build on your own](https://github.com/klshrinidhi/BTKCore).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git.
@@ -473,7 +497,33 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
 
 Your changes will only take effect in new terminal windows.
 
-
+#### For the impatient (Mac OS X)
+##### Mac OS X 10.10 El Capitan and OS X 10.11 Yosemite
+Get **Xcode** from the App store. Open **Xcode** and *Agree* to license agreement.
+In **Terminal** --
+```shell
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew install cmake swig
+brew cask install java
+git clone https://github.com/opensim-org/opensim-core.git
+mkdir opensim_dependencies_build
+cd opensim_dependencies_build
+cmake ../opensim-core/dependencies \
+      -DCMAKE_INSTALL_PREFIX="~/opensim_dependencies_install" \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo
+make -j8
+cd ..
+mkdir opensim_build
+cd opensim_build
+cmake ../opensim-core \
+      -DCMAKE_INSTALL_PREFIX="~/opensim_install" \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+      -DBUILD_PYTHON_WRAPPING=ON \
+      -DBUILD_JAVA_WRAPPING=ON \
+      -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install"
+make -j8
+ctest -j8
+```
 On Ubuntu using Unix Makefiles
 ==============================
 
@@ -495,7 +545,7 @@ line below, we show the corresponding package.
   * [Build on your own](https://github.com/simbody/simbody#installing).
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
   * Let OpenSim get this for you using superbuild (see below).
-  * [Build on your own](https://github.com/Biomechanical-ToolKit/BTKCore).
+  * [Build on your own](https://github.com/klshrinidhi/BTKCore).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
@@ -675,3 +725,66 @@ Your changes will only take effect in new terminal windows.
 [running_gif]: doc/images/opensim_running.gif
 [simple_example_gif]: doc/images/opensim_double_pendulum_muscle.gif
 [java]: http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase6-419409.html
+
+#### For the impatient (Ubuntu)
+##### Ubuntu 14.04 Trusty Tahr
+In **Terminal** --
+```shell
+sudo add-apt-repository ppa:george-edison55/cmake-3.x
+sudo apt-add-repository ppa:fenics-packages/fenics-exp
+sudo apt-get update
+sudo apt-get install git cmake cmake-curses-gui clang-3.6 \
+                     freeglut3-dev libxi-dev libxmu-dev \
+                     liblapack-dev swig3.0 python-dev openjdk-7-jdk
+sudo rm -f /usr/bin/cc /usr/bin/c++
+sudo ln -s /usr/bin/clang-3.6 /usr/bin/cc
+sudo ln -s /usr/bin/clang++-3.6 /usr/bin/c++
+export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+git clone https://github.com/opensim-org/opensim-core.git
+mkdir opensim_dependencies_build
+cd opensim_dependencies_build
+cmake ../opensim-core/dependencies/ \
+      -DCMAKE_INSTALL_PREFIX='~/opensim_dependencies_install' \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo
+make -j8
+cd ..
+mkdir opensim_build
+cd opensim_build
+cmake ../opensim-core \
+      -DCMAKE_INSTALL_PREFIX="~/opensim_install" \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+      -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" \
+      -DBUILD_PYTHON_WRAPPING=ON \
+      -DBUILD_JAVA_WRAPPING=ON
+make -j8
+ctest -j8
+ ```
+##### Ubuntu 15.10 Wily Werewolf
+In **Terminal** --
+```shell
+sudo apt-add-repository ppa:fenics-packages/fenics
+sudo apt-get update
+sudo apt-get install git cmake cmake-curses-gui \
+                     freeglut3-dev libxi-dev libxmu-dev \
+                     liblapack-dev swig3.0 python-dev openjdk-8-jdk
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+git clone https://github.com/opensim-org/opensim-core.git
+mkdir opensim_dependencies_build
+cd opensim_dependencies_build
+cmake ../opensim-core/dependencies/ \
+      -DCMAKE_INSTALL_PREFIX='~/opensim_dependencies_install' \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo
+make -j8
+cd ..
+mkdir opensim_build
+cd opensim_build
+cmake ../opensim-core \
+      -DCMAKE_INSTALL_PREFIX="~/opensim_install" \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+      -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" \
+      -DBUILD_PYTHON_WRAPPING=ON \
+      -DBUILD_JAVA_WRAPPING=ON
+make -j8
+ctest -j8
+```
+  

@@ -61,8 +61,9 @@ endfunction()
 #   CMAKE_ARGS -- (Optional) A CMake list of arguments to be passed to CMake 
 #                 while building the project.
 function(AddDependency)
-    set(onevalueargs NAME URL TAG CMAKE_ARGS)
-    cmake_parse_arguments(DEP "" "${onevalueargs}" "" ${ARGN})
+    set(onevalueargs NAME URL TAG)
+    set(multiValueArgs CMAKE_ARGS)
+    cmake_parse_arguments(DEP "" "${onevalueargs}" "${multiValueArgs}" ${ARGN})
 
     # Check for presence of required arguments.
     if(NOT DEP_NAME OR NOT DEP_URL OR NOT DEP_TAG)
@@ -119,9 +120,11 @@ AddDependency(NAME       BTK
               CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON)
 
 
-AddDependency(NAME simbody
-              URL  https://github.com/simbody/simbody.git
-              TAG  5259e3441732d8c3fb4b36797fcfdcda8c5aa8f8)
+AddDependency(NAME       simbody
+              URL        https://github.com/simbody/simbody.git
+              TAG        5259e3441732d8c3fb4b36797fcfdcda8c5aa8f8
+              CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
+                         -DBUILD_TESTING:BOOL=OFF)
 
 
 #######################
