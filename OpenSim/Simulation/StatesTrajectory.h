@@ -50,6 +50,10 @@ class Model;
  * (Python/MATLAB) and C++ users to postprocess their results with greater ease
  * and more versatility than with an Analysis.
  *
+ * @note This class is a work in progress. The ability to read and write a
+ * StatesTrajectory to an OSTATES is not available yet, even though the
+ * documentation is written as if this ability exists.
+ *
  * ### Guarantees
  * This class is designed to ensure the following:
  * - The states are ordered nondecreasing in time (adjacent states *can* have
