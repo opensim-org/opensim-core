@@ -162,17 +162,17 @@ class TestStatesTrajectory(unittest.TestCase):
         state.setTime(1.2)
         states.append(state)
 
-        assert states.getIndexBefore(0.55) == 0
-        assert states.getIndexAfter(0.55) == 1
-        self.assertRaises(RuntimeError, states.getIndexBefore, -1.5)
-        self.assertRaises(RuntimeError, states.getIndexAfter, 10)
+        assert states.findIndexNearestBefore(0.55) == 0
+        assert states.findIndexNearestAfter(0.55) == 1
+        self.assertRaises(RuntimeError, states.findIndexNearestBefore, -1.5)
+        self.assertRaises(RuntimeError, states.findIndexNearestAfter, 10)
 
-        # getBetween.
-        # -----------
+        # findBetween.
+        # ------------
         # Iterate across the states between two times.
         indices = [1, 2, 3]
         index = 0
-        for state in states.getBetween(0.55, 0.85):
+        for state in states.findBetween(0.55, 0.85):
             assert state.getTime() == states.get(indices[index]).getTime()
             index += 1
         del indices
@@ -180,14 +180,14 @@ class TestStatesTrajectory(unittest.TestCase):
 
         # Iterate over a small interval that doesn't include any states.
         count = 0
-        for state in states.getBetween(0.55, 0.56):
+        for state in states.findBetween(0.55, 0.56):
             count += 1
         assert count == 0
         del count
 
         # Iterate over all states with the same time.
         count_same_time = 0;
-        for state in states.getBetween(0.9, 0.9):
+        for state in states.findBetween(0.9, 0.9):
             count_same_time += 1
         assert count_same_time == 3
         del count_same_time
@@ -195,7 +195,7 @@ class TestStatesTrajectory(unittest.TestCase):
         # Test iterating with a tolerance.
         indices = [2, 3, 4, 5, 6]
         index = 0
-        for state in states.getBetween(0.701, 0.899, 0.01):
+        for state in states.findBetween(0.701, 0.899, 0.01):
             assert state.getTime() == states.get(indices[index]).getTime()
             index += 1
         del indices
@@ -203,30 +203,30 @@ class TestStatesTrajectory(unittest.TestCase):
 
         # Test iterating over an empty range.
         count_empty = 0
-        for state in states.getBetween(1000.0, 1010.0):
+        for state in states.findBetween(1000.0, 1010.0):
             count_empty += 1
         assert count_empty == 0
         count_empty = 0
-        for state in states.getBetween(-10.5, -5.3):
+        for state in states.findBetween(-10.5, -5.3):
             count_empty += 1
         assert count_empty == 0
 
         # Test on an empty trajectory.
         count = 0;
         empty_traj = osim.StatesTrajectory()
-        for state in empty_traj.getBetween(1.6, 6.2):
+        for state in empty_traj.findBetween(1.6, 6.2):
             count += 1
         assert count == 0
 
         # Test trying to use endTime > startTime.
         def func_that_raises():
-            for state in states.getBetween(4.5, 1.1):
+            for state in states.findBetween(4.5, 1.1):
                 print state.getTime()
         self.assertRaises(RuntimeError, func_that_raises)
 
         # Test trying to use endTime > startTime beyond the valid times.
         def func_that_raises_2():
-            for state in states.getBetween(2000.0, 1580.0):
+            for state in states.findBetween(2000.0, 1580.0):
                 print state.getTime()
         self.assertRaises(RuntimeError, func_that_raises_2)
 

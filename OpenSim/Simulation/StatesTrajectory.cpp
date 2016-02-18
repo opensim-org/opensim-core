@@ -31,11 +31,11 @@ size_t StatesTrajectory::getSize() const {
     return m_states.size();
 }
 
-size_t StatesTrajectory::getIndexBefore(const double& time,
-        const double& tolerance) const {
+size_t StatesTrajectory::findIndexNearestBefore(const double& time,
+                                                const double& tolerance) const {
     OPENSIM_THROW_IF(m_states.empty(), Exception, "Trajectory is empty.");
 
-    const auto it = getIteratorBefore(time, tolerance);
+    const auto it = findNearestBefore(time, tolerance);
 
     OPENSIM_THROW_IF(it == end(),
             TimeOutOfRange, time, "before",
@@ -44,11 +44,11 @@ size_t StatesTrajectory::getIndexBefore(const double& time,
     return it - begin();
 }
 
-size_t StatesTrajectory::getIndexAfter(const double& time,
-        const double& tolerance) const {
+size_t StatesTrajectory::findIndexNearestAfter(const double& time,
+                                               const double& tolerance) const {
     OPENSIM_THROW_IF(m_states.empty(), Exception, "Trajectory is empty.");
 
-    const auto it = getIteratorAfter(time, tolerance);
+    const auto it = findNearestAfter(time, tolerance);
 
     OPENSIM_THROW_IF(it == end(),
             TimeOutOfRange, time, "after",
@@ -57,12 +57,12 @@ size_t StatesTrajectory::getIndexAfter(const double& time,
     return it - begin();
 }
 
-size_t StatesTrajectory::getIndexAt(const double& time,
-                                    const double& tolerance) const {
+size_t StatesTrajectory::findIndexAt(const double& time,
+                                     const double& tolerance) const {
     OPENSIM_THROW_IF(m_states.empty(), Exception, "Trajectory is empty.");
 
 
-    const auto it = getIteratorAt(time, tolerance);
+    const auto it = findAt(time, tolerance);
 
     OPENSIM_THROW_IF(it == end(),
                      StatesTrajectory::NoStateAtTime, time, tolerance);
@@ -70,11 +70,11 @@ size_t StatesTrajectory::getIndexAt(const double& time,
     return it - begin();
 }
 
-StatesTrajectory::IteratorRange StatesTrajectory::getBetween(
-        const double& startTime, const double& endTime, 
+StatesTrajectory::IteratorRange StatesTrajectory::findBetween(
+        const double& startTime, const double& endTime,
         const double& tolerance) const {
     SimTK_APIARGCHECK2_ALWAYS(startTime <= endTime,
-            "StatesTrajectory", "getBetween",
+            "StatesTrajectory", "findBetween",
             "startTime (%f) must be less than or equal to endTime (%f).",
             startTime, endTime);
 
@@ -87,13 +87,13 @@ StatesTrajectory::IteratorRange StatesTrajectory::getBetween(
 
     // Must add one to the last iterator since it's supposed to point past
     // the end.
-    return SimTK::makeIteratorRange(getIteratorAfter(startTime, tolerance),
-                             getIteratorBefore(endTime, tolerance) + 1);
+    return SimTK::makeIteratorRange(findNearestAfter(startTime, tolerance),
+                                    findNearestBefore(endTime, tolerance) + 1);
 }
 
 StatesTrajectory::const_iterator
-StatesTrajectory::getIteratorBefore(const double& time,
-        const double& tolerance) const {
+StatesTrajectory::findNearestBefore(const double& time,
+                                    const double& tolerance) const {
     // Need a custom comparison function to extract the time from the state.
     auto compare = [](const double& t, const SimTK::State& s) {
                 return t < s.getTime();
@@ -114,14 +114,14 @@ StatesTrajectory::getIteratorBefore(const double& time,
 }
 
 StatesTrajectory::const_iterator
-StatesTrajectory::getIteratorAfter(const double& time,
-        const double& tolerance) const {
+StatesTrajectory::findNearestAfter(const double& time,
+                                   const double& tolerance) const {
 
     return lowerBound(time - tolerance);
 }
 
 StatesTrajectory::const_iterator
-StatesTrajectory::getIteratorAt(
+StatesTrajectory::findAt(
         const double& time, const double& tolerance) const {
 
     if (m_states.empty()) { return end(); }

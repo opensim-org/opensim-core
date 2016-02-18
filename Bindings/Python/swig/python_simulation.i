@@ -122,7 +122,7 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 // This extend block must appear before the %template call in simulation.i.
 
 // TODO remove.
-%rename(_getBetween) OpenSim::StatesTrajectory::getBetween;
+%rename(_findBetween) OpenSim::StatesTrajectory::findBetween;
 
 %extend OpenSim::StatesTrajectory {
 %pythoncode %{
@@ -138,8 +138,8 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
         while it != self.end():
             yield it.next()
 
-    def getBetween(self, *args, **kwargs):
-        iter_range = self._getBetween(*args, **kwargs)
+    def findBetween(self, *args, **kwargs):
+        iter_range = self._findBetween(*args, **kwargs)
         it = iter_range.begin()
         while it != iter_range.end():
             yield it.next()
