@@ -654,6 +654,22 @@ void testExport() {
     SimTK_TEST(tableAll.getNumColumns() == stateNames.getSize());
     SimTK_TEST(tableAll.getNumRows() == states.getSize());
 
+    // Test that the data table has exactly the same numbers.
+    for (int itime = 0; itime < states.getSize(); ++itime) {
+        // Test time.
+        SimTK_TEST(tableAll.getIndependentColumn()[itime] ==
+                   states[itime].getTime());
+
+        // Test state values.
+        for (const auto& stateName : stateNames) {
+            tableAll.getDependentsMetaData().getValueForKey
+
+        }
+        for (int istate = 0; istate < stateNames.getSize(); ++istate) {
+
+        }
+
+    }
 
     auto tableKnee = states.export(model, {"knee_l/knee_angle_l/value",
                                            "knee_r/knee_angle_r/value",
