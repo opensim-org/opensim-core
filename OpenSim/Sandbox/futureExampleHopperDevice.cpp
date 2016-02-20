@@ -91,10 +91,12 @@ int main() {
     using SimTK::Inertia;
     using SimTK::Pi;
 
-    OpenSim::Model model; 
-    model.setUseVisualizer(true);
-    model.setGravity(Vec3(0));
+    // Create a sphere geometry to reuse later.
+    OpenSim::Sphere sphere{0.1};
+    sphere.setName("sphere");
 
+    // Create the device to hold the components.
+    //-------------------------------------------------------------------------
     auto device = new OpenSim::ComponentContainer{};
     device->setName("device");
 
@@ -102,32 +104,30 @@ int main() {
     // origin of their respective frames, and moments/products of inertia of 
     // zero.
     auto massA   = new OpenSim::Body("massA",    1, Vec3(0), Inertia(1));
-    device->adopt(massA);
     auto massB   = new OpenSim::Body("massB",    1, Vec3(0), Inertia(1));
+    // Add the masses to the device.
+    device->adopt(massA);
     device->adopt(massB);
-    auto loadOnB = new OpenSim::Body("loadOnB", 10, Vec3(0), Inertia(1));
 
-    OpenSim::Sphere sphere{0.1};
-    sphere.setName("sphere");
+    // Sphere geometry for the masses. 
     sphere.setFrameName("massA");
     massA->append_geometry(sphere);
     sphere.setFrameName("massB");
     massB->append_geometry(sphere);
-    sphere.setFrameName("loadOnB");
-    sphere.set_radius(0.2);
-    sphere.setOpacity(0.5);
-    sphere.setColor(Vec3{0, 0, 1});
-    massB->append_geometry(sphere);
 
-    // Joints that connect the bodies together.
-    auto anchorA = new OpenSim::WeldJoint("anchorA", "ground", "massA");
+    // Joint from something in the environment to massA. 
+    auto anchorA = new OpenSim::WeldJoint();
+    anchorA->setName("anchorA");
+    // Set only the child now. Parent will be in the environment.
+    anchorA->setChildFrameName("massA");
     device->adopt(anchorA);
-    auto anchorB = new OpenSim::WeldJoint("anchorB", "loadOnB", "massB");
-    device->adopt(anchorB);
-    auto grndToLoad = new OpenSim::FreeJoint("grndToLoad", "ground", "loadOnB");
 
-    // Set the location of the load to (1, 0, 0).
-    grndToLoad->getCoordinateSet()[3].setDefaultValue(1);
+    // Joint from something in the environment to massB. 
+    auto anchorB = new OpenSim::WeldJoint();
+    anchorB->setName("anchorB");
+    // Set only the child now. Parent will be in the environment.
+    anchorB->setChildFrameName("massB");
+    device->adopt(anchorB);
 
     // Actuator connecting the two masses.
     auto pathActuator = new OpenSim::PathActuator();
@@ -145,10 +145,36 @@ int main() {
                 connect(*pathActuator);
     device->adopt(controller);
 
+    // Build a test environment for the device.
+    //-------------------------------------------------------------------------
+    OpenSim::Model model; 
+    model.setUseVisualizer(true);
+    model.setGravity(Vec3(0));
+
+    // Create a load of mass 10kg.
+    auto load = new OpenSim::Body("load", 10, Vec3(0), Inertia(1));
+    // Set properties of the sphere geometry to be used for the load.
+    sphere.setFrameName("load");
+    sphere.set_radius(0.2);
+    sphere.setOpacity(0.5);
+    sphere.setColor(Vec3{0, 0, 1});
+    load->append_geometry(sphere);
+    model.addBody(load);
+
+    auto grndToLoad = new OpenSim::FreeJoint("grndToLoad", "ground", "load");
+    // Set the location of the load to (1, 0, 0).
+    grndToLoad->getCoordinateSet()[3].setDefaultValue(1);
+    model.addJoint(grndToLoad);
+
+    // Connect device to/from the environment.
+    //-------------------------------------------------------------------------
+    // Set parent of anchorA as ground.
+    anchorA->setParentFrameName("ground");
+    // Set parent of anchorB as load.
+    anchorB->setParentFrameName("load");
+
     // Add bodies and joints to the model.
     model.addModelComponent(device);
-    model.addBody(loadOnB);
-    model.addJoint(grndToLoad);
 
     // Print the model.
     model.print("exampleHopperDevice.xml");
