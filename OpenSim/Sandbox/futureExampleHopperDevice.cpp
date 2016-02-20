@@ -86,7 +86,48 @@ private:
 } // namespace OpenSim
 
 
+OpenSim::Model createTestBed(OpenSim::Sphere& sphere) {
+    using SimTK::Vec3;
+    using SimTK::Inertia;
+
+    OpenSim::Model testBed; 
+    testBed.setUseVisualizer(true);
+    testBed.setGravity(Vec3(0));
+
+    // Create a load of mass 10kg.
+    auto load = new OpenSim::Body("load", 10, Vec3(0), Inertia(1));
+    // Set properties of the sphere geometry to be used for the load.
+    sphere.setFrameName("load");
+    sphere.set_radius(0.2);
+    sphere.setOpacity(0.5);
+    sphere.setColor(Vec3{0, 0, 1});
+    load->append_geometry(sphere);
+    testBed.addBody(load);
+
+    auto grndToLoad = new OpenSim::FreeJoint("grndToLoad", "ground", "load");
+    // Set the location of the load to (1, 0, 0).
+    grndToLoad->getCoordinateSet()[3].setDefaultValue(1);
+    testBed.addJoint(grndToLoad);
+
+    return testBed;
+}
+
+void connectDeviceToTestBed(OpenSim::Joint* anchorA,
+                            OpenSim::Joint* anchorB,
+                            OpenSim::ComponentContainer* device,
+                            OpenSim::Model& testBed) {
+    // Set parent of anchorA as ground.
+    anchorA->setParentFrameName("ground");
+    // Set parent of anchorB as load.
+    anchorB->setParentFrameName("load");
+    // Add the device to the testBed.
+    testBed.addModelComponent(device);
+}
+
 void simulate(OpenSim::Model& model) {
+    // Print the model. 
+    model.print("exampleHopperDevice.xml");
+
     // Configure the model.
     auto& state = model.initSystem();
 
@@ -100,11 +141,17 @@ void simulate(OpenSim::Model& model) {
     manager.integrate(state);
 }
 
-
 int main() {
     using SimTK::Vec3;
     using SimTK::Inertia;
     using SimTK::Pi;
+
+    //----------------------------- HOPPER CODE begin --------------------------
+    // TO DO -- Your code related to hopper goes here.
+    //----------------------------- HOPPER CODE end ----------------------------
+
+
+    //----------------------------- DEVICE CODE begin --------------------------
 
     // Create a sphere geometry to reuse later.
     OpenSim::Sphere sphere{0.1};
@@ -118,8 +165,8 @@ int main() {
     // Two body(s), with mass of 1 kg, center of mass at the
     // origin of their respective frames, and moments/products of inertia of 
     // zero.
-    auto massA   = new OpenSim::Body("massA",    1, Vec3(0), Inertia(1));
-    auto massB   = new OpenSim::Body("massB",    1, Vec3(0), Inertia(1));
+    auto massA = new OpenSim::Body("massA", 1, Vec3(0), Inertia(1));
+    auto massB = new OpenSim::Body("massB", 1, Vec3(0), Inertia(1));
     // Add the masses to the device.
     device->adopt(massA);
     device->adopt(massB);
@@ -160,39 +207,30 @@ int main() {
                 connect(*pathActuator);
     device->adopt(controller);
 
-    // Build a test environment for the device.
+    // Build a test environment for the device. Comment the below function call
+    // when connecting the device built above to the actual hopper because this
+    // testBed is actually for testing this device.
     //-------------------------------------------------------------------------
-    OpenSim::Model testBed; 
-    testBed.setUseVisualizer(true);
-    testBed.setGravity(Vec3(0));
+    auto testBed = createTestBed(sphere);
 
-    // Create a load of mass 10kg.
-    auto load = new OpenSim::Body("load", 10, Vec3(0), Inertia(1));
-    // Set properties of the sphere geometry to be used for the load.
-    sphere.setFrameName("load");
-    sphere.set_radius(0.2);
-    sphere.setOpacity(0.5);
-    sphere.setColor(Vec3{0, 0, 1});
-    load->append_geometry(sphere);
-    testBed.addBody(load);
-
-    auto grndToLoad = new OpenSim::FreeJoint("grndToLoad", "ground", "load");
-    // Set the location of the load to (1, 0, 0).
-    grndToLoad->getCoordinateSet()[3].setDefaultValue(1);
-    testBed.addJoint(grndToLoad);
-
-    // Connect device to/from the environment.
+    // Connect device to/from the environment. Comment the below code and 
+    // make sure to connect the device to the actual hopper and simulate with
+    // hopper connected to the device.
     //-------------------------------------------------------------------------
-    // Set parent of anchorA as ground.
-    anchorA->setParentFrameName("ground");
-    // Set parent of anchorB as load.
-    anchorB->setParentFrameName("load");
+    connectDeviceToTestBed(anchorA, anchorB, device, testBed);
 
-    // Add bodies and joints to the testBed.
-    testBed.addModelComponent(device);
-
-    // Print the testBed.
-    testBed.print("exampleHopperDevice.xml");
-
+    // Simulate the testBed containing the device only. When using the hopper,
+    // make sure to simulate the hopper (with the device) and not the testBed.
     simulate(testBed);
+
+    //----------------------------- DEVICE CODE begin --------------------------
+
+    //----------------------------- HOPPER + DEVICE begin ----------------------
+    // TO DO -- Your code related to hopper with the device goes here.
+    //----------------------------- HOPPER + DEVICE end ------------------------
+
+
+    //------------------------------ ANALYZE begin -----------------------------
+    // TO DO -- Your analysis code goes here.
+    //------------------------------ ANALYZE end -------------------------------
 };
