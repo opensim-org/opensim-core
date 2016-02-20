@@ -86,6 +86,21 @@ private:
 } // namespace OpenSim
 
 
+void simulate(OpenSim::Model& model) {
+    // Configure the model.
+    auto& state = model.initSystem();
+
+    model.updMatterSubsystem().setShowDefaultGeometry(true);
+
+    // Simulate.
+    SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
+    OpenSim::Manager manager(model, integrator);
+    manager.setInitialTime(0); 
+    manager.setFinalTime(10.0);
+    manager.integrate(state);
+}
+
+
 int main() {
     using SimTK::Vec3;
     using SimTK::Inertia;
@@ -147,9 +162,9 @@ int main() {
 
     // Build a test environment for the device.
     //-------------------------------------------------------------------------
-    OpenSim::Model model; 
-    model.setUseVisualizer(true);
-    model.setGravity(Vec3(0));
+    OpenSim::Model testBed; 
+    testBed.setUseVisualizer(true);
+    testBed.setGravity(Vec3(0));
 
     // Create a load of mass 10kg.
     auto load = new OpenSim::Body("load", 10, Vec3(0), Inertia(1));
@@ -159,12 +174,12 @@ int main() {
     sphere.setOpacity(0.5);
     sphere.setColor(Vec3{0, 0, 1});
     load->append_geometry(sphere);
-    model.addBody(load);
+    testBed.addBody(load);
 
     auto grndToLoad = new OpenSim::FreeJoint("grndToLoad", "ground", "load");
     // Set the location of the load to (1, 0, 0).
     grndToLoad->getCoordinateSet()[3].setDefaultValue(1);
-    model.addJoint(grndToLoad);
+    testBed.addJoint(grndToLoad);
 
     // Connect device to/from the environment.
     //-------------------------------------------------------------------------
@@ -173,23 +188,11 @@ int main() {
     // Set parent of anchorB as load.
     anchorB->setParentFrameName("load");
 
-    // Add bodies and joints to the model.
-    model.addModelComponent(device);
+    // Add bodies and joints to the testBed.
+    testBed.addModelComponent(device);
 
-    // Print the model.
-    model.print("exampleHopperDevice.xml");
+    // Print the testBed.
+    testBed.print("exampleHopperDevice.xml");
 
-    // Configure the model.
-    auto& state = model.initSystem();
-
-    // Add display geometry.
-    model.updMatterSubsystem().setShowDefaultGeometry(true);
-    auto& viz = model.updVisualizer().updSimbodyVisualizer();
-
-    // Simulate.
-    SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
-    OpenSim::Manager manager(model, integrator);
-    manager.setInitialTime(0); 
-    manager.setFinalTime(10.0);
-    manager.integrate(state);
+    simulate(testBed);
 };
