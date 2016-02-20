@@ -93,7 +93,7 @@ int main() {
 
     OpenSim::Model model; 
     model.setUseVisualizer(true);
-    // model.setGravity(Vec3(0));
+    model.setGravity(Vec3(0));
 
     auto device = new OpenSim::ComponentContainer{};
     device->setName("device");
@@ -101,11 +101,11 @@ int main() {
     // Two body(s), with mass of 1 kg, center of mass at the
     // origin of their respective frames, and moments/products of inertia of 
     // zero.
-    auto massA   = new OpenSim::Body("massA",    1, Vec3(0), Inertia(0));
+    auto massA   = new OpenSim::Body("massA",    1, Vec3(0), Inertia(1));
     device->adopt(massA);
-    auto massB   = new OpenSim::Body("massB",    1, Vec3(0), Inertia(0));
+    auto massB   = new OpenSim::Body("massB",    1, Vec3(0), Inertia(1));
     device->adopt(massB);
-    auto loadOnB = new OpenSim::Body("loadOnB", 10, Vec3(0), Inertia(0));
+    auto loadOnB = new OpenSim::Body("loadOnB", 10, Vec3(0), Inertia(1));
 
     OpenSim::Sphere sphere{0.1};
     sphere.setName("sphere");
@@ -122,12 +122,12 @@ int main() {
     // Joints that connect the bodies together.
     auto anchorA = new OpenSim::WeldJoint("anchorA", "ground", "massA");
     device->adopt(anchorA);
-    auto jointAtoB = new OpenSim::SliderJoint("AtoB", "massA", "massB");
-    device->adopt(jointAtoB);
-    // Set the distance between massA and massB as 1.
-    jointAtoB->getCoordinateSet()[0].setDefaultValue(1);
-    auto anchorB = new OpenSim::WeldJoint("anchorB", "massB", "loadOnB");
+    auto anchorB = new OpenSim::WeldJoint("anchorB", "loadOnB", "massB");
     device->adopt(anchorB);
+    auto grndToLoad = new OpenSim::FreeJoint("grndToLoad", "ground", "loadOnB");
+
+    // Set the location of the load to (1, 0, 0).
+    grndToLoad->getCoordinateSet()[3].setDefaultValue(1);
 
     // Actuator connecting the two masses.
     auto pathActuator = new OpenSim::PathActuator();
@@ -148,6 +148,7 @@ int main() {
     // Add bodies and joints to the model.
     model.addModelComponent(device);
     model.addBody(loadOnB);
+    model.addJoint(grndToLoad);
 
     // Print the model.
     model.print("exampleHopperDevice.xml");
