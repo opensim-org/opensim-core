@@ -1947,9 +1947,11 @@ void testAutomaticJointReversal()
     thigh->upd_geometry(0).setColor(SimTK::Vec3(0, 0, 1));   // BLUE
     
     //ModelComponent::addGeometry makes a copy of the passed in Geometry
-    shank->addGeometry(Cylinder(0.02, 0.243800));
+    Cylinder cyl(0.02, 0.243800);
+    shank->addGeometry(cyl);
     shank->upd_geometry(0).setColor(SimTK::Vec3(0, 1, 1));   // CYAN
-    foot->addGeometry(Brick(SimTK::Vec3(0.09, 0.025, 0.06)));
+    Brick brick(SimTK::Vec3(0.09, 0.025, 0.06));
+    foot->addGeometry(brick);
     foot->upd_geometry(0).setColor(SimTK::Vec3(1, 0, 0));    // RED
 
     // add them to the model
