@@ -189,9 +189,13 @@ public:
     ///@}
 
     /** Add a Mesh specified by file name to the list of Geometry owned by the Frame.
-    Scale defaults to 1.0 but can be changed on the call line. For convenience 
+    Scale defaults to 1.0 but can be changed on the call line for convenience.
     */
-    void addMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
+    void attachMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
+    /** Add a piece of Geometry to the list of Geometry owned by the Frame.
+    Scale defaults to 1.0 but can be changed on the call line, for convenience.
+    */
+    void attachGeometry(OpenSim::Geometry& geom, const SimTK::Vec3 scale = SimTK::Vec3(1));
 
 protected:
     /** @name Component Extension methods.

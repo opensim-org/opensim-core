@@ -1007,8 +1007,7 @@ void testRollingOnSurfaceConstraint()
     Ground& ground = osimModel->updGround();;
     Mesh arrowGeom("arrow.vtp");
     arrowGeom.setColor(Vec3(1, 0, 0));
-    arrowGeom.setFrameName("ground");
-    ground.addGeometry(arrowGeom);
+    ground.attachGeometry(arrowGeom);
 
     //OpenSim rod
     auto osim_rod = new OpenSim::Body("rod", mass, comInRod, inertiaAboutCom);

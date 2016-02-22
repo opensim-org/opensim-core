@@ -79,9 +79,17 @@ void Frame::extendAddGeometry(OpenSim::Geometry& geom) {
 }
 
 
-void Frame::addMeshGeometry(const std::string& aGeometryFileName, const SimTK::Vec3 scale)
+void Frame::attachMeshGeometry(const std::string& aGeometryFileName, const SimTK::Vec3 scale)
 {
     Mesh geom(aGeometryFileName);
+    geom.set_scale_factors(scale);
+    geom.setFrameName(getName());
+    addGeometry(geom);
+}
+
+
+void Frame::attachGeometry(OpenSim::Geometry& geom, const SimTK::Vec3 scale)
+{
     geom.set_scale_factors(scale);
     geom.setFrameName(getName());
     addGeometry(geom);

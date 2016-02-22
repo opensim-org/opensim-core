@@ -93,7 +93,7 @@ int main()
 
         // Add display geometry to the ground to visualize in the Visualizer and GUI
         // add a checkered floor
-        ground.addMeshGeometry("checkered_floor.vtp");
+        ground.attachMeshGeometry("checkered_floor.vtp");
         // add anchors for the muscles to be fixed to
         Brick leftAnchorGeometry(SimTK::Vec3(0.05, 0.05, 0.05));
         leftAnchorGeometry.upd_Appearance().set_color(SimTK::Vec3(0.0, 1.0, 0.0));
@@ -131,11 +131,11 @@ int main()
         OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
 
         // Add display geometry to the block to visualize in the GUI
-        block->addMeshGeometry("block.vtp");
+        block->attachMeshGeometry("block.vtp");
         
         Sphere sphereGeometry(0.1);
-        sphereGeometry.setFrameName(block->getName());
-        block->addGeometry(sphereGeometry);
+        // Use attachGeometry to set frame name & addGeometry
+        block->attachGeometry(sphereGeometry);
         
         // FREE JOINT
 
