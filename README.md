@@ -498,7 +498,7 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
 Your changes will only take effect in new terminal windows.
 
 #### For the impatient (Mac OS X)
-##### Mac OS X 10.10 El Capitan and OS X 10.11 Yosemite
+##### Mac OS X 10.10 Yosemite and OS X 10.11 El Capitan
 Get **Xcode** from the App store. Open **Xcode** and *Agree* to license agreement.
 In **Terminal** --
 ```shell
