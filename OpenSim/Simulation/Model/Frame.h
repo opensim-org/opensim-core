@@ -193,7 +193,11 @@ public:
     */
     void attachMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
     /** Add a piece of Geometry to the list of Geometry owned by the Frame.
-    Scale defaults to 1.0 but can be changed on the call line, for convenience.
+    This function is a convenience for ModelComponent::addGeometry() for the case 
+    of adding Geometry directly to a Frame, and thus sets the "frame name" of the 
+    Geometry to this frame. The provided geom is copied into the Frame, which will
+    own a copy of the Geometry so any changes you make to geom after calling this 
+    method will not have an effect.
     */
     void attachGeometry(OpenSim::Geometry& geom, const SimTK::Vec3 scale = SimTK::Vec3(1));
 
