@@ -199,7 +199,7 @@ public:
     own a copy of the Geometry so any changes you make to geom after calling this 
     method will not have an effect.
     */
-    void attachGeometry(OpenSim::Geometry& geom, const SimTK::Vec3 scale = SimTK::Vec3(1));
+    void attachGeometry(const OpenSim::Geometry& geom, const SimTK::Vec3 scale = SimTK::Vec3(1));
 
 protected:
     /** @name Component Extension methods.

@@ -69,8 +69,7 @@ int main()
         OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
 
         // Add display geometry to the block to visualize in the GUI
-        Brick brick(SimTK::Vec3(0.05, 0.05, 0.05));
-        block->attachGeometry(brick);
+        block->attachGeometry(Brick(SimTK::Vec3(0.05, 0.05, 0.05)));
 
         // FREE JOINT
 

@@ -88,11 +88,13 @@ void Frame::attachMeshGeometry(const std::string& aGeometryFileName, const SimTK
 }
 
 
-void Frame::attachGeometry(OpenSim::Geometry& geom, const SimTK::Vec3 scale)
+void Frame::attachGeometry(const OpenSim::Geometry& geom, const SimTK::Vec3 scale)
 {
-    geom.set_scale_factors(scale);
-    geom.setFrameName(getName());
-    addGeometry(geom);
+    SimTK::ClonePtr<Geometry> clone = SimTK::ClonePtr<Geometry>(geom);
+    clone->set_scale_factors(scale);
+    clone->setFrameName(getName());
+    addGeometry(clone.updRef());
+
 }
 
 //=============================================================================

@@ -133,9 +133,8 @@ int main()
         // Add display geometry to the block to visualize in the GUI
         block->attachMeshGeometry("block.vtp");
         
-        Sphere sphereGeometry(0.1);
         // Use attachGeometry to set frame name & addGeometry
-        block->attachGeometry(sphereGeometry);
+        block->attachGeometry(Sphere(0.1));
         
         // FREE JOINT
 
