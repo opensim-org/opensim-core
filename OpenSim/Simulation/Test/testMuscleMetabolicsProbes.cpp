@@ -670,7 +670,7 @@ void testProbesUsingMillardMuscleSimulation()
     Inertia blockInertia = blockMass * Inertia::brick(Vec3(blockSideLength/2));
     OpenSim::Body *block = new OpenSim::Body("block", blockMass, Vec3(0),
                                              blockInertia);
-    block->addMeshGeometry("block.vtp");
+    block->attachMeshGeometry("block.vtp");
 
     // Create slider joint between ground and block.
     SliderJoint* prismatic = new SliderJoint("prismatic", ground, Vec3(0), Vec3(0),
