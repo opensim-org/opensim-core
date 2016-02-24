@@ -41,10 +41,13 @@ namespace {
 //                  DataAdapter::registerDataAdapter("csv", CSVFileAdapter{}) &&
 //                  DataAdapter::registerDataAdapter("mot", MOTFileAdapter{})};
 bool 
-registerAdapters{DataAdapter::registerDataAdapter("trc", TRCFileAdapter{}) &&
-                 DataAdapter::registerDataAdapter("mot", MOTFileAdapter{}) &&
-                 DataAdapter::registerDataAdapter("csv", CSVFileAdapter{}) &&
-                 DataAdapter::registerDataAdapter("c3d", C3DFileAdapter{})};
+registerAdapters{DataAdapter::registerDataAdapter("trc", TRCFileAdapter{}) 
+              && DataAdapter::registerDataAdapter("mot", MOTFileAdapter{}) 
+              && DataAdapter::registerDataAdapter("csv", CSVFileAdapter{})
+#ifdef WITH_BTK 
+              && DataAdapter::registerDataAdapter("c3d", C3DFileAdapter{})
+#endif
+                };
 
 }
 

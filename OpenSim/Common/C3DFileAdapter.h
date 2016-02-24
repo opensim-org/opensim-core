@@ -22,6 +22,8 @@
 #ifndef OPENSIM_C3D_FILE_ADAPTER_H_
 #define OPENSIM_C3D_FILE_ADAPTER_H_
 
+#ifdef WITH_BTK
+
 #include "btkAcquisitionFileReader.h"
 #include "btkAcquisition.h"
 #include "btkForcePlatformsExtractor.h"
@@ -65,5 +67,7 @@ private:
 };
 
 } // namespace OpenSim
+
+#endif // WITH_BTK
 
 #endif // OPENSIM_C3D_FILE_ADAPTER_H_
