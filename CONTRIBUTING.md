@@ -59,6 +59,8 @@ When you are ready to make a PR, please adhere to the following guidelines:
 
 A few additional practices will help streamline the code review process. Please use tags (i.e., @user_name) and quoting to help keep the discussion organized. Please also call for a meeting or Skype call when discussions start to stagnate. In addition, we recommend getting input on your interface design before implementing a major new component or other change.
 
+It is important that reviewers also review the effect that your PR has on the doxygen documentation. To facilitate this, we automatically upload the doxygen documentation for each PR to [myosin.sourceforge.net](http://myosin.sourceforge.net); you can view the documentation for a specific PR at `myosin.sourceforge.net/<issue-number>`.
+
 
 Writing tests
 -------------

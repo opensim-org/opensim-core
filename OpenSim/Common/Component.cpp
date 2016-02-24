@@ -24,6 +24,7 @@
 
 // INCLUDES
 #include "OpenSim/Common/Component.h"
+#include "OpenSim/Common/Set.h"
 //#include "OpenSim/Common/ComponentOutput.h"
 
 using namespace SimTK;
@@ -110,44 +111,23 @@ private:
 Component::Component() : Object()
 {
     constructProperty_connectors();
-    finalizeFromProperties();
 }
 
 Component::Component(const std::string& fileName, bool updFromXMLNode)
 :   Object(fileName, updFromXMLNode)
 {
     constructProperty_connectors();
-    finalizeFromProperties();
 }
 
-Component::Component(SimTK::Xml::Element& element) 
-:   Object(element)
+Component::Component(SimTK::Xml::Element& element) : Object(element)
 {
     constructProperty_connectors();
-    finalizeFromProperties();
 }
-
-Component::Component(const Component& source) : Object(source)
-{
-    //Object copy will handle the properties table.
-    //But need to copy Component specific property indices.
-    copyProperty_connectors(source);
-    finalizeFromProperties();
-}
-
-Component& Component::operator=(const Component &component)
-{
-    // Object handles assignment of all properties
-    Super::operator=(component);
-    finalizeFromProperties();
-    return *this;
-}
-
 
 void Component::finalizeFromProperties()
 {
     reset();
-    clearComponents();
+    markPropertiesAsSubcomponents();
     extendFinalizeFromProperties();
     componentsFinalizeFromProperties();
     setObjectIsUpToDateWithProperties();
@@ -202,11 +182,11 @@ void Component::connect(Component &root)
             }
         }
         catch (const std::exception& x) {
-            throw Exception(getConcreteClassName() +
-                "::connect() Failed to connect connector Connector<" +
-                connector.getConnecteeTypeName() + "> of '" + getName() + "' " +
-                "as a subcomponent of " + root.getName() + ".\n Details:" 
-                + x.what());
+            throw Exception(getConcreteClassName() + "'" + getName() +"'"
+                "::connect() \nFailed to connect Connector<" +
+                connector.getConnecteeTypeName() + "> '" + connector.getName() +
+                "' as a subcomponent of " + root.getName() + 
+                ".\n Details:" + x.what());
         }
     }
 
@@ -530,10 +510,20 @@ Component& Component::updComponent(const std::string& name) const
 const Component* Component::findComponent(const std::string& name,
     const StateVariable** rsv) const
 {
+    if (name.empty()) {
+        std::string msg = "Component::findComponent cannot find a nameless subcomponent ";
+        msg +=  "within " + getConcreteClassName()+ " '" + getName() + "'.";
+        throw Exception(msg);
+    }
+
     const Component* found = NULL;
     std::string::size_type front = name.find("/");
     std::string subname = name;
     std::string remainder = "";
+
+    if (this->getName() == name) {
+        return this;
+    }
 
     // Follow the provided path
     if (front < name.length()){
@@ -838,32 +828,90 @@ void Component::constructOutputForStateVariable(const std::string& name)
             SimTK::Stage::Model);
 }
 
-// Include another Component as a subcomponent of this one. If already a
-// subcomponent, it is not added to the list again.
-void Component::addComponent(Component* component)
+// mark components owned as properties as subcomponents
+void Component::markPropertiesAsSubcomponents()
 {
-    // Only add if the Component is not already a part of the model
+    // if being invoked either constructing a new Component
+    // or the properties have been modified. In the latter case
+    // we must make sure that pointers to old properties are cleared
+    _components.clear();
+
+    // Now mark properties that are Components as subcomponents
+    //loop over all its properties
+    for (int i = 0; i < getNumProperties(); ++i) {
+        auto& prop = updPropertyByIndex(i);
+        // check if property is of type Object
+        if (prop.isObjectProperty()) {
+            // a property is a list so cycle through its contents
+            for (int j = 0; j < prop.size(); ++j) {
+                Object& obj = prop.updValueAsObject(j);
+                // if the object is a Component mark it
+                if (Component* comp = dynamic_cast<Component*>(&obj) ) {
+                    markAsSubcomponent(comp);
+                }
+                else {
+                    // otherwise it may be a Set (of objects), and
+                    // would prefer to do something like this to test:
+                    //  Set<Component>* objects = dynamic_cast<Set<Component>*>(obj)
+                    // Instead we can see if the object has a property called
+                    // "objects" which is a PropertyObjArray used by Set<T>.
+                    // knowing the object Type is useful for debugging
+                    // and it could be used to strengthen the test (e.g. scan  
+                    // for "Set" in the type name). 
+                    std::string objType = obj.getConcreteClassName();
+                    if (obj.hasProperty("objects")) {
+                        // get the PropertyObjArray if the object has one
+                        auto& objectsProp = obj.updPropertyByName("objects");
+                        // loop over the objects in the PropertyObjArray
+                        for (int k = 0; k < objectsProp.size(); ++k) {
+                            Object& obj = objectsProp.updValueAsObject(k);
+                            // if the object is a Component mark it
+                            if (Component* comp = dynamic_cast<Component*>(&obj) )
+                                markAsSubcomponent(comp);
+                        } // loop over objects and mark it if it is a component
+                    } // end if property is a Set with "objects" inside
+                } // end of if/else property value is an Object or something else
+            } // loop over the property list
+        } // end if property is an Object
+    } // loop over properties
+}
+
+// mark a Component as a subcomponent of this one. If already a
+// subcomponent, it is not added to the list again.
+void Component::markAsSubcomponent(Component* component)
+{
+    // Only add if the component is not already a part of this Component
     // So, add if empty
     if ( _components.empty() ){
         _components.push_back(component);
     }
-    else{ //otherwise check that it isn't apart of the component already        
+    else{ //otherwise check that it isn't a part of the component already
         SimTK::Array_<Component *>::iterator it =
             std::find(_components.begin(), _components.end(), component);
         if ( it == _components.end() ){
             _components.push_back(component);
-            //std::cout << "Adding component " << aComponent->getName() << " as subcomponent of " << getName() << std::endl;
         }
         else{
-            std::string msg = "ERROR- " +getConcreteClassName()+"::addComponent() '"
+            std::string msg = getConcreteClassName()+"::markAsSubcomponent() '"
                 + getName() + "' already has '" + component->getName() +
                     "' as a subcomponent.";
-            throw Exception(msg, __FILE__, __LINE__);
+            std::cout << msg << std::endl;
+            //throw Exception(msg, __FILE__, __LINE__);
         }
     }
 
     component->setParent(*this);
 }
+
+
+// Include another Component as a subcomponent of this one. If already a
+// subcomponent, it is not added to the list again.
+void Component::adoptSubcomponent(Component* subcomponent)
+{
+    _adoptees.push_back(SimTK::ClonePtr<Component>(subcomponent));
+    markAsSubcomponent(subcomponent);
+}
+
 
 const int Component::getStateIndex(const std::string& name) const
 {
@@ -1126,5 +1174,18 @@ void Component::AddedStateVariable::
 }
 
 
+void Component::dumpSubcomponents(int depth) const
+{
+    std::string tabs;
+    for (int t = 0; t < depth; ++t) {
+        tabs += "\t";
+    }
+
+    std::cout << tabs << getConcreteClassName();
+    std::cout << " '" << getName() << "'s Components:" << std::endl;
+    for (size_t i = 0; i < _components.size(); ++i) {
+        _components[int(i)]->dumpSubcomponents(depth + 1);
+    }
+}
 
 } // end of namespace OpenSim

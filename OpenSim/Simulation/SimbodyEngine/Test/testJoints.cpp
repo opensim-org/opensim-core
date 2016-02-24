@@ -239,6 +239,7 @@ void testAutomaticLoopJointBreaker();
 int main()
 {
     int itc = 0;
+
     SimTK::Array_<std::string> failures;
     //Register new Joint types for testing 
     Object::registerType(CompoundJoint());
@@ -957,7 +958,7 @@ void testWeldJoint(bool randomizeBodyOrder)
     int b_order[] = {0, 1, 2, 3};
     int j_order[] = { 0, 1, 2, 3 };
     if(randomizeBodyOrder){
-        cout << " Randomizing Bodies to exercise SimbodyEngine:: connectBodies() " << endl;
+        cout << " Randomizing Bodies to exercise model's multibody graph maker " << endl;
         cout << "================================================================" << endl;
         Random::Uniform randomOrder(0, 4);
         randomOrder.setSeed(clock());
@@ -993,8 +994,15 @@ void testWeldJoint(bool randomizeBodyOrder)
 
     }
 
+    // Can add bodies in random order, but joints depending on those bodies
+    // have to be added afterwards
     for(int i=0; i<4; i++){
         osimModel->addBody(&tempBodySet[b_order[i]]);
+     }
+
+    // Add joints in any order as long as the bodies (PhysicalFrames) they
+    // must connect to exist.
+    for (int i = 0; i < 4; i++) {
         osimModel->addJoint(&tempJointSet[j_order[i]]);
     }
 
@@ -1656,7 +1664,7 @@ void testCustomVsCompoundJoint()
     //OpenSim thigh
     OpenSim::Body osim_thigh("thigh", femurMass.getMass(),
         femurMass.getMassCenter(), femurMass.getInertia());
-    osim_thigh.addMeshGeometry("femur.vtp");
+    osim_thigh.attachMeshGeometry("femur.vtp");
 
     // Define hip transform in terms of coordinates and axes for custom joint
     SpatialTransform hipTransform;
@@ -1685,7 +1693,7 @@ void testCustomVsCompoundJoint()
     // Add OpenSim shank via a knee joint
     OpenSim::Body osim_shank("shank", tibiaMass.getMass(),
         tibiaMass.getMassCenter(), tibiaMass.getInertia());
-    osim_shank.addMeshGeometry("tibia.vtp");
+    osim_shank.attachMeshGeometry("tibia.vtp");
 
     // Define knee coordinates and axes for custom joint spatial transform
     SpatialTransform kneeTransform;
@@ -1721,7 +1729,7 @@ void testCustomVsCompoundJoint()
     //OpenSim thigh
     OpenSim::Body thigh2("thigh2", femurMass.getMass(),
         femurMass.getMassCenter(), femurMass.getInertia());
-    thigh2.addMeshGeometry("femur.vtp");
+    thigh2.attachMeshGeometry("femur.vtp");
 
     // create compound hip joint
     CompoundJoint hip2("hip2", ground2, hipInPelvis, oInP,
@@ -1734,7 +1742,7 @@ void testCustomVsCompoundJoint()
     // Add OpenSim shank via a knee joint
     OpenSim::Body shank2("shank2", tibiaMass.getMass(),
         tibiaMass.getMassCenter(), tibiaMass.getInertia());
-    shank2.addMeshGeometry("tibia.vtp");
+    shank2.attachMeshGeometry("tibia.vtp");
 
     // create custom knee joint
     CustomJoint knee2("knee2", thigh2, kneeInFemur, Vec3(0),
@@ -1792,7 +1800,7 @@ void testEquivalentBodyForceFromGeneralizedForce()
     // Actuators that will fail to register and the model will not load.
     LoadOpenSimLibrary("osimActuators");
 
-    Model gaitModel("testJointConstraints.osim", false);
+    Model gaitModel("testJointConstraints.osim", true);
     gaitModel.print("testJointConstraints.osim_30503.osim");
 
     testEquivalentBodyForceForGenForces(gaitModel);
@@ -1938,11 +1946,10 @@ void testAutomaticJointReversal()
     //thigh.addGeometry(Cylinder(0.035, 0.4));
     thigh->upd_geometry(0).setColor(SimTK::Vec3(0, 0, 1));   // BLUE
     
-    //TODO fix Bug: ModleComponent::addGeometry assumes ownership but does not
-    // take a pointer to heap allocated Geometry
-    shank->addGeometry(*new Cylinder(0.02, 0.243800));
+    //ModelComponent::addGeometry makes a copy of the passed in Geometry
+    shank->attachGeometry(Cylinder(0.02, 0.243800));
     shank->upd_geometry(0).setColor(SimTK::Vec3(0, 1, 1));   // CYAN
-    foot->addGeometry(*new Brick(SimTK::Vec3(0.09, 0.025, 0.06)));
+    foot->attachGeometry(Brick(SimTK::Vec3(0.09, 0.025, 0.06)));
     foot->upd_geometry(0).setColor(SimTK::Vec3(1, 0, 0));    // RED
 
     // add them to the model
@@ -2075,6 +2082,10 @@ void testAutomaticJointReversal()
 
 void testAutomaticLoopJointBreaker()
 {
+    cout << endl;
+    cout << "===========================================================" << endl;
+    cout << " Test Automatic Loop Joint Breaker  " << endl;
+    cout << "===========================================================" << endl;
     // Setup OpenSim model
     Model model;
     //OpenSim bodies
@@ -2123,7 +2134,7 @@ void testAutomaticLoopJointBreaker()
     UniversalJoint ankle("ankle", shank, ankleInTibia, zvec,
                                    foot, ankleInFoot, zvec);
 
-    // Join the foot to the floor via Weld
+    // Join the foot to the floor via a pin joint
     PinJoint footToFloor("footToFloor", foot, zvec, zvec, 
                                       ground, zvec, zvec);
 
@@ -2151,18 +2162,23 @@ void testAutomaticLoopJointBreaker()
     // number of active constraints
     int nc = model.getMatterSubsystem().getConstraintMultipliers(s).size();
 
+    cout << "Number of model constraints:" << nconstraints << "  Number of system constraints: " << nc << endl;
+
     ASSERT(nc == 6, __FILE__, __LINE__,
         "Loop closure failed to adequately constrain tree.");
 
     std::string file("testModelWithLoopJoint.osim");
     model.print(file);
 
-    
     Model loadedModel(file);
-
     SimTK::State &s2 = loadedModel.initSystem();
 
+    int ncoords2 = loadedModel.getNumCoordinates();
+    int nconstraints2 = loadedModel.getNumConstraints();
+
     ASSERT(model == loadedModel);
+
+    model.print("testModelWithLoopJoint_loadedInitSys.osim");
 
     SimTK::Vec3 acc2 = model.calcMassCenterAcceleration(s2);
 

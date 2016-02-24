@@ -212,14 +212,17 @@ get(const string &aName) const
  * @return Pointer to the property.
  */
 const Property_Deprecated* PropertySet::
-contains(const string& aName) const
+contains(const string& name) const
 {
-    int i;
-    PropertyInt prop(aName,0);
-    for(i=0;i<_array.getSize();i++) {
-        if((*_array[i]) == prop) return(_array[i]);
-    }
-    return NULL;
+    int i = _array.getIndex(name);
+    //PropertyInt prop(aName,0);
+    //for(i=0;i<_array.getSize();i++) {
+    //    if((*_array[i]) == prop) return(_array[i]);
+    //}
+
+    if (i >= 0) return _array.get(i);
+
+    return nullptr;
 }
 //_____________________________________________________________________________
 /**
@@ -229,14 +232,17 @@ contains(const string& aName) const
  * @return Pointer to the property.
  */
 Property_Deprecated* PropertySet::
-contains(const string& aName)
+contains(const string& name)
 {
-    int i;
-    PropertyInt prop(aName,0);
-    for(i=0;i<_array.getSize();i++) {
-        if((*_array[i]) == prop) return(_array[i]);
-    }
-    return NULL;
+    int i  = _array.getIndex(name);
+    //PropertyInt prop(aName,0);
+    //for(i=0;i<_array.getSize();i++) {
+    //    if((*_array[i]) == prop) return(_array[i]);
+    //}
+
+    if (i >= 0) return _array.get(i);
+
+    return nullptr;
 }
 
 

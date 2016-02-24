@@ -117,7 +117,8 @@ Coordinate::Coordinate(const std::string &aName, MotionType aMotionType,
 void Coordinate::constructProperties(void)
 {
     setAuthors("Ajay Seth, Ayman Habib, Michael Sherman");
-    constructProperty_motion_type("rotational");
+    //The motion type of a Coordinate is determined by its parent Joint
+    constructProperty_motion_type("set_by_joint");
     
     constructProperty_default_value(0.0);
     constructProperty_default_speed_value(0.0);
@@ -145,32 +146,22 @@ void Coordinate::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    string prefix = "Coordinate(" + getName() + ")::connectToModel: ";
-
-    if((IO::Lowercase(get_motion_type()) == "rotational") || get_motion_type() == "")
-        _motionType = Rotational;
-    else if(IO::Lowercase(get_motion_type()) == "translational")
-        _motionType = Translational;
-    else if(IO::Lowercase(get_motion_type()) == "coupled")
-        _motionType = Coupled;
-    else
-        throw Exception(prefix+"Unknown motion type. Use rotational, translational, or coupled.");
+    string prefix = "Coordinate("+getName()+")::extendFinalizeFromProperties: ";
 
     // Make sure the default value is within the range when clamped
     if (get_clamped()){
         // Make sure the range is min to max.
-        if (get_range(1) < get_range(0)){
-            throw Exception(prefix+"Maximum coordinate range less than minimum.");
-        }
+        SimTK_ERRCHK_ALWAYS(get_range(0) <= get_range(1), prefix.c_str(),
+            "Maximum coordinate range less than minimum.");
+
         double dv = get_default_value();
-        if (dv < (get_range(0) - SimTK::SqrtEps)){
-            cerr << prefix + "Default coordinate value is less than range minimum." << endl;
-            cerr << "Default value = " << dv << "  < min = " << get_range(0) << endl;
-        }
-        else if (dv >(get_range(1) + SimTK::SqrtEps)){
-            cerr << prefix + "Default coordinate value is greater than range maximum." << endl;
-            cerr << "Default value = " << dv << "  > max = " << get_range(1) << endl;
-        }       
+        SimTK_ERRCHK2_ALWAYS(dv > (get_range(0) - SimTK::SqrtEps), prefix.c_str(),
+            "Default coordinate value is less than range minimum.\n" 
+            "Default value = %d  < min = %d.", dv,  get_range(0));
+
+        SimTK_ERRCHK2_ALWAYS(dv < (get_range(1) + SimTK::SqrtEps), prefix.c_str(),
+            "Default coordinate value is greater than range maximum.\n"
+            "Default value = %d > max = %d.", dv, get_range(1));    
     }
 
     _lockedWarningGiven=false;
@@ -429,20 +420,24 @@ void Coordinate::setRangeMax(double aMax)
  * Set coordinate's motion type.
  *
  */
- void Coordinate::setMotionType(MotionType aMotionType)
+ void Coordinate::setMotionType(MotionType motionType)
  {
-     _motionType = aMotionType;
-     updProperty_motion_type().setValueIsDefault(false);
+     if (_motionType == motionType) {
+         return;
+     }
+
+     _motionType = motionType;
+
      //Also update the motionTypeName so that it is serialized with the model
-     switch(aMotionType){
+     switch(motionType){
         case(Rotational) :  
-            upd_motion_type() = "rotational";
+            //upd_motion_type() = "rotational";
             break;
         case(Translational) :
-            upd_motion_type() = "translational";
+            //upd_motion_type() = "translational";
             break;
         case(Coupled) :
-            upd_motion_type() = "coupled";
+            //upd_motion_type() = "coupled";
             break;
         default :
             throw(Exception("Coordinate: Attempting to specify an undefined motion type."));

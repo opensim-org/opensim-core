@@ -223,9 +223,6 @@ void scaleModelWithLigament()
     Model comp(scaledModelFile);
     Model std(std_scaledModelFile);
 
-    comp.setup(); //required to call connect and build the Component tree 
-    std.setup();
-
     ComponentList<Ligament> compLigs = comp.getComponentList<Ligament>();
     ComponentList<Ligament> stdLigs = std.getComponentList<Ligament>();
 

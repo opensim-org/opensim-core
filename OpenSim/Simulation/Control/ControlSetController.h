@@ -114,7 +114,7 @@ protected:
      */
     void copyData(const ControlSetController &aController);
 
-    // for any post XML deserialization initialization
+    /// read in ControlSet and update Controller's actuator list
     void extendFinalizeFromProperties() override;
 
     //--------------------------------------------------------------------------

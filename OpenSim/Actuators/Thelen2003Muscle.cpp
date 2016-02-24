@@ -78,11 +78,9 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
 
     MuscleFirstOrderActivationDynamicModel& actMdl = 
         upd_MuscleFirstOrderActivationDynamicModel();
-    addComponent(&actMdl);
 
     MuscleFixedWidthPennationModel& pennMdl =
         upd_MuscleFixedWidthPennationModel();
-    addComponent(&pennMdl);
 
     SimTK_ERRCHK1_ALWAYS(get_FmaxTendonStrain() > 0,
         "Thelen2003Muscle::extendFinalizeFromProperties",
