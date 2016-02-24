@@ -438,7 +438,7 @@ set(WITH_BTK
     OFF
     CACHE
     BOOL
-    "Compile OpenSim with BTK ?")
+    "Compile OpenSim with BTK ? BTK provides C3D reading.")
 
 # If compiling with BTK, find and use it.
 if(WITH_BTK)
