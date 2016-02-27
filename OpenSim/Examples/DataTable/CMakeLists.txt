@@ -1,4 +1,7 @@
-file(GLOB EXAMPLES_TO_COMPILE "*.cpp")
+set(EXAMPLES_TO_COMPILE example1.cpp
+                        example2.cpp
+)
+
 include_directories(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors)
 
 foreach(EXAMPLE_PROG ${EXAMPLES_TO_COMPILE})
