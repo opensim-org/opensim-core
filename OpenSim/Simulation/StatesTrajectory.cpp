@@ -108,6 +108,55 @@ bool StatesTrajectory::isCompatibleWith(const Model& model) const {
     return true;
 }
 
+namespace {
+    template <typename T>
+    std::vector<std::string> createVector(const T& strings) {
+        std::vector<std::string> vec;
+        for (int i = 0; i < strings.size(); ++i)
+            vec.push_back(strings[i]);
+        return vec;
+    }
+    template <>
+    std::vector<std::string> createVector(
+            const std::vector<std::string>& strings) {
+        return strings;
+    }
+}
+
+TimeSeriesTable StatesTrajectory::exportToTable(const Model& model,
+        const std::vector<std::string>& requestedStateVars) const {
+    // This code is based on DelimFileAdapter::extendRead().
+    TimeSeriesTable table;
+
+    // Set the column labels as metadata.
+    std::vector<std::string> stateVars = requestedStateVars.empty() ?
+            createVector(model.getStateVariableNames()) :
+            createVector(requestedStateVars);
+    ValueArray<std::string> valueArray;
+    for (const auto& labels : stateVars) {
+        valueArray.upd().push_back(SimTK::Value<std::string>(labels));
+    }
+    int numDepColumns = valueArray.size();
+    TimeSeriesTable::DependentsMetaData depMetadata;
+    depMetadata.setValueArrayForKey("labels", valueArray);
+    table.setDependentsMetaData(depMetadata);
+
+    // Fill up the table with the data.
+    for (size_t itime = 0; itime < getSize(); ++itime) {
+        const auto& state = get(itime);
+        TimeSeriesTable::RowVector row(numDepColumns);
+
+        // Get each state variable's value.
+        for (size_t icol = 0; icol < numDepColumns; ++icol) {
+            row[icol] = model.getStateVariableValue(state, stateVars[icol]);
+        }
+
+        table.appendRow(state.getTime(), row);
+    }
+
+    return table;
+}
+
 StatesTrajectory StatesTrajectory::createFromStatesStorage(
         const Model& model,
         const Storage& sto,

@@ -285,25 +285,24 @@ public:
      * columns in the table will be the full names of the continuous state
      * variables (e.g., `knee/flexion/angle`).
      *
-     * You must provide the model corresponding to this trajectory, since only
-     * the model knows the names of the state variables.
+     * You must provide a model that is compatible with this trajectory,
+     * since only the model knows the names of the state variables.
      *
      * By default, all continuous state variables are written to table
      * (one per column). If you only want some of them to be written to the
-     * table, use the `stateVarNames` argument to specify the full names
+     * table, use the `stateVars` argument to specify the full names
      * (e.g., `knee/flexion/angle`) of the columns to write.
      *
      * @code
      * auto allStateVars = states.export(model);
-     * auto kneeStates = states.export(model, {"knee/flexion/value",
-     *                                         "knee/flexion/speed"});
+     * auto kneeStates = states.exportToTable(model, {"knee/flexion/value",
+     *                                               "knee/flexion/speed"});
      * @endcode
-     *
+     *g
      * TODO exceptions if model is not compatible?
      */
-    TimeSeriesTable export(const Model& model,
-                           const std::vector<std::string>& stateVarNames={})
-            const;
+    TimeSeriesTable exportToTable(const Model& model,
+            const std::vector<std::string>& stateVars = {}) const;
 
 private:
 

@@ -642,54 +642,86 @@ void testIntegrityChecks() {
     // and Z's both pass the check. 
 }
 
-void testExport() {
-    Model model("gait2354_simbody.osim");
-    model.initSystem();
+void tableAndTrajectoryMatch(const Model& model,
+                             const TimeSeriesTable& table,
+                             const StatesTrajectory& states,
+                             std::vector<std::string> columns = {}) {
 
     const auto stateNames = model.getStateVariableNames();
-    Storage sto(statesStoFname);
-    auto states = StatesTrajectory::createFromStatesStorage(model, sto);
 
-    auto tableAll = states.export(model);
-    SimTK_TEST(tableAll.getNumColumns() == stateNames.getSize());
-    SimTK_TEST(tableAll.getNumRows() == states.getSize());
+    int numColumns = -1;
+    if (columns.empty()) {
+        numColumns = stateNames.getSize();
+    } else {
+        numColumns = columns.size();
+    }
+    SimTK_TEST(table.getNumColumns() == numColumns);
+    SimTK_TEST(table.getNumRows() == states.getSize());
+
+    const auto& colNames = table.getDependentsMetaData()
+            .getValueArrayForKey("labels");
 
     // Test that the data table has exactly the same numbers.
     for (int itime = 0; itime < states.getSize(); ++itime) {
         // Test time.
-        SimTK_TEST(tableAll.getIndependentColumn()[itime] ==
+        SimTK_TEST(table.getIndependentColumn()[itime] ==
                    states[itime].getTime());
 
         // Test state values.
-        for (const auto& stateName : stateNames) {
-            tableAll.getDependentsMetaData().getValueForKey
+        for (int icol = 0; icol < table.getNumColumns(); ++icol) {
+            const auto& stateName = colNames[icol].getValue<std::string>();
 
+            const auto& valueInStates = model.getStateVariableValue(
+                    states[itime], stateName);
+            const auto& valueInTable =
+                    table.getDependentColumnAtIndex(icol)[itime];
+
+            SimTK_TEST(valueInStates == valueInTable);
         }
-        for (int istate = 0; istate < stateNames.getSize(); ++istate) {
+    }
+}
 
-        }
+void testExport() {
+    Model gait("gait2354_simbody.osim");
+    gait.initSystem();
 
+    // Exported data exactly matches data in the trajectory.
+    const auto stateNames = gait.getStateVariableNames();
+    Storage sto(statesStoFname);
+    auto states = StatesTrajectory::createFromStatesStorage(gait, sto);
+
+    {
+        auto tableAll = states.exportToTable(gait);
+        tableAndTrajectoryMatch(gait, tableAll, states);
     }
 
-    auto tableKnee = states.export(model, {"knee_l/knee_angle_l/value",
-                                           "knee_r/knee_angle_r/value",
-                                           "knee_r/knee_angle_r/speed"});
+    // Exporting only certain columns.
+    {
+        std::vector<std::string> columns {"knee_l/knee_angle_l/value",
+                                          "knee_r/knee_angle_r/value",
+                                          "knee_r/knee_angle_r/speed"};
+        auto tableKnee = states.exportToTable(gait, columns);
+        tableAndTrajectoryMatch(gait, tableKnee, states, columns);
+    }
 
-    // TODO incompatible model?
-    // TODO try both a smaller and a larger model.
+    // Trying to export the trajectory with an incompatible model.
+    {
+        Model arm26("arm26.osim");
+        SimTK_TEST_MUST_THROW_EXC(states.exportToTable(arm26),
+                                  OpenSim::Exception); // TODO diff exception type
+    }
 
+    // Exception if given a non-existant column name.
     SimTK_TEST_MUST_THROW_EXC(
-            states.export(model, {"knee_l/knee_angle_l/value",
-                          "not_an_actual_state",
-                          "knee_r/knee_angle_r/speed"}),
-            TODO);
+            states.exportToTable(gait, {"knee_l/knee_angle_l/value",
+                                        "not_an_actual_state",
+                                        "knee_r/knee_angle_r/speed"}),
+            OpenSim::Exception); // TODO diff exception type
     SimTK_TEST_MUST_THROW_EXC(
-            states.export(model, {"knee_l/knee_angle_l/value",
-                          "nor/is/this",
-                          "knee_r/knee_angle_r/speed"}),
-            TODO);
-    });
-    // TODO specifying names that are not actual state names.
+            states.exportToTable(gait, {"knee_l/knee_angle_l/value",
+                                        "nor/is/this",
+                                        "knee_r/knee_angle_r/speed"}),
+            OpenSim::Exception); // TODO diff exception type
 }
 
 int main() {
