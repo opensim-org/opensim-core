@@ -214,17 +214,18 @@ setDefaultLength()
 
 We have some conventional starting verbs; you should use the same ones when they apply and avoid them if your methods are doing something different.
 
-   verb   | meaning
-----------|---------
-`get`     | Return a const reference to something that has already been computed.
-`set`     | Change the value of some internal quantity; may cause invalidation of dependent computations.
-`upd`     | (update) Return a writable reference to some internal variable. May cause invalidation of dependent computations.
-`find`    | Perform a small calculation (e.g., find the distance between two points) and return the result without changing anything else.
-`calc`    | (calculate) Perform an expensive calculation and return the result. Does not cause any other changes.
-`realize` | Initiate state-dependent computations and cache results internally; no result returned.
-`add`     | Add the object (Component) to an internal list of references. Should not take over ownership. 
-`adopt`   | Take over ownership (e.g., `Set::adoptAndAppend()`).
-`extend`  | A virtual method intended to extend a defining capability of a Base class. The first line of the derived class implementation must be `Super::extend<DoSomething>()`. For example, a ModelComponent knows how to ``connectToModel``, but the details of how each concrete ModelComponent type does this is implemented by the derived class.
+   verb     | meaning
+------------|---------
+`get`       | Return a const reference to something that has already been computed.
+`set`       | Change the value of some internal quantity; may cause invalidation of dependent computations.
+`upd`       | (update) Return a writable reference to some internal variable. May cause invalidation of dependent computations.
+`find`      | Perform a small calculation (e.g., find the distance between two points) and return the result without changing anything else.
+`calc`      | (calculate) Perform an expensive calculation and return the result. Does not cause any other changes.
+`realize`   | Initiate state-dependent computations and cache results internally; no result returned.
+`add`       | Add the object (Component) to an internal list of references. Should not take over ownership. 
+`adopt`     | Take over ownership (e.g., `Set::adoptAndAppend()`).
+`implement` | A protected virtual method that implements a corresponding public non-virtual method. For example, a base class may have a public method `doSomething()` that simply calls a protected `implementDoSomething()`. This method is related to the non-virtual interface design pattern.
+`extend`    | A protected virtual method intended to extend a defining capability of a base class. This is similar to `implement` above, but the first line of the derived class implementation must be `Super::extendDoSomething()`. For example, a ModelComponent knows how to `connectToModel()`, but the details of how each concrete ModelComponent type does this is implemented by the derived class, in `extendConnectToModel()`. This method is also related to the non-virtual interface design pattern.
 
 ### ``throw`` and ``return`` are not functions
 
