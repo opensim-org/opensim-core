@@ -108,6 +108,7 @@ bool StatesTrajectory::isCompatibleWith(const Model& model) const {
     return true;
 }
 
+// Hide this function from other translation units.
 namespace {
     template <typename T>
     std::vector<std::string> createVector(const T& strings) {

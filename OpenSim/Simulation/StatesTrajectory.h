@@ -294,11 +294,11 @@ public:
      * (e.g., `knee/flexion/angle`) of the columns to write.
      *
      * @code
-     * auto allStateVars = states.export(model);
+     * auto allStateVars = states.exportToTable(model);
      * auto kneeStates = states.exportToTable(model, {"knee/flexion/value",
-     *                                               "knee/flexion/speed"});
+     *                                                "knee/flexion/speed"});
      * @endcode
-     *g
+     *
      * TODO exceptions if model is not compatible?
      */
     TimeSeriesTable exportToTable(const Model& model,
