@@ -225,6 +225,7 @@ We have some conventional starting verbs; you should use the same ones when they
 `add`     | Add the object (Component) to an internal list of references. Should not take over ownership. 
 `adopt`   | Take over ownership (e.g., `Set::adoptAndAppend()`).
 `extend`  | A virtual method intended to extend a defining capability of a Base class. The first line of the derived class implementation must be `Super::extend<DoSomething>()`. For example, a ModelComponent knows how to ``connectToModel``, but the details of how each concrete ModelComponent type does this is implemented by the derived class.
+`implement` | A virtual method intended to implement a pure virtual function of a Base class.
 
 ### ``throw`` and ``return`` are not functions
 
