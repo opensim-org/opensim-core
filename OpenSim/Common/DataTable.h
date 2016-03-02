@@ -38,6 +38,10 @@ namespace OpenSim {
 class InvalidRow : public Exception {
 public:
     using Exception::Exception;
+    // InvalidRow(const std::string& file,
+    //            size_t line,
+    //            const std::string& func) :
+    //     Exception(file, line, func) {}
 };
 
 class IncorrectNumColumns : public InvalidRow {
@@ -123,16 +127,16 @@ This class is abstract and cannot be used directly. Create instances of
 DataTable_ instead. See DataTable_ for details on usage.                     */
 class AbstractDataTable {
 public:
-    using TableMetaData       = ValueArrayDictionary;
-    using DependentsMetaData  = ValueArrayDictionary;
-    using IndependentMetaData = ValueArrayDictionary;
+    typedef ValueArrayDictionary TableMetaData;
+    typedef ValueArrayDictionary DependentsMetaData;
+    typedef ValueArrayDictionary IndependentMetaData;
 
     AbstractDataTable()                                      = default;
     AbstractDataTable(const AbstractDataTable&)              = default;
     AbstractDataTable(AbstractDataTable&&)                   = default;
     AbstractDataTable& operator=(const AbstractDataTable&)   = default;
     AbstractDataTable& operator=(AbstractDataTable&&)        = default;
-    virtual std::unique_ptr<AbstractDataTable> clone() const = 0;
+    virtual std::shared_ptr<AbstractDataTable> clone() const = 0;
     virtual ~AbstractDataTable()                             = default;
 
     /** Get metadata associated with the table.                               */
@@ -210,9 +214,9 @@ whole can contain metadata.                                                   */
 template<typename ETX = double, typename ETY = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
 public:
-    using RowVector     = SimTK::RowVector_<ETY>;
-    using RowVectorView = SimTK::RowVectorView_<ETY>;
-    using VectorView    = SimTK::VectorView_<ETY>;
+    typedef SimTK::RowVector_<ETY>     RowVector;
+    typedef SimTK::RowVectorView_<ETY> RowVectorView;
+    typedef SimTK::VectorView_<ETY>    VectorView;
 
     DataTable_()                             = default;
     DataTable_(const DataTable_&)            = default;
@@ -221,8 +225,8 @@ public:
     DataTable_& operator=(DataTable_&&)      = default;
     ~DataTable_()                            = default;
 
-    std::unique_ptr<AbstractDataTable> clone() const override {
-        return std::unique_ptr<AbstractDataTable>{new DataTable_{*this}};
+    std::shared_ptr<AbstractDataTable> clone() const override {
+        return std::shared_ptr<AbstractDataTable>{new DataTable_{*this}};
     }
 
     /** Append row to the DataTable_.                                         
@@ -404,7 +408,7 @@ protected:
 };  // DataTable_
 
 /** See DataTable_ for details on the interface.                              */
-using DataTable = DataTable_<SimTK::Real>;
+typedef DataTable_<SimTK::Real> DataTable;
 
 } // namespace OpenSim
 

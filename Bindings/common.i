@@ -74,8 +74,11 @@
 %include <OpenSim/Common/ScaleSet.h>
 %include <OpenSim/Common/MarkerFrame.h>
 %include <OpenSim/Common/MarkerData.h>
-%include <OpenSim/Common/TimeSeriesTable.h>
 
+%include <OpenSim/Common/DataTable.h>
+%include <OpenSim/Common/TimeSeriesTable.h>
+%template(DataTableDouble)       OpenSim::DataTable_<double>;
+%template(TimeSeriesTableDouble) OpenSim::TimeSeriesTable_<double>;
 
 
 
