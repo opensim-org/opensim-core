@@ -110,6 +110,10 @@ AbstractTool::AbstractTool(const string &aFileName, bool aUpdateFromXMLNode):
     _analysisSet.setMemoryOwner(false);
     setNull();
     if(aUpdateFromXMLNode) updateFromXMLDocument();
+
+    if(_modelFile.empty())
+        throw Exception{"No model file (with tag <model_file>) specified in"
+                        " the xml."};
 }
 
 //_____________________________________________________________________________
