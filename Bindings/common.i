@@ -75,6 +75,7 @@
 %include <OpenSim/Common/MarkerFrame.h>
 %include <OpenSim/Common/MarkerData.h>
 
+%ignore OpenSim::AbstractDataTable::clone;
 %include <OpenSim/Common/DataTable.h>
 %include <OpenSim/Common/TimeSeriesTable.h>
 %template(DataTableDouble)       OpenSim::DataTable_<double>;
