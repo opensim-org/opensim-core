@@ -707,8 +707,9 @@ void testExport() {
     // Trying to export the trajectory with an incompatible model.
     {
         Model arm26("arm26.osim");
+        states.exportToTable(arm26);
         SimTK_TEST_MUST_THROW_EXC(states.exportToTable(arm26),
-                                  OpenSim::Exception); // TODO diff exception type
+                                  StatesTrajectory::IncompatibleModel);
     }
 
     // Exception if given a non-existant column name.
@@ -716,12 +717,12 @@ void testExport() {
             states.exportToTable(gait, {"knee_l/knee_angle_l/value",
                                         "not_an_actual_state",
                                         "knee_r/knee_angle_r/speed"}),
-            OpenSim::Exception); // TODO diff exception type
+            OpenSim::Exception);
     SimTK_TEST_MUST_THROW_EXC(
             states.exportToTable(gait, {"knee_l/knee_angle_l/value",
                                         "nor/is/this",
                                         "knee_r/knee_angle_r/speed"}),
-            OpenSim::Exception); // TODO diff exception type
+            OpenSim::Exception);
 }
 
 int main() {
@@ -743,7 +744,7 @@ int main() {
         SimTK_SUBTEST(testAppendTimesAreNonDecreasing);
         SimTK_SUBTEST(testCopying);
 
-        // Test creation of trajectory from astates storage.
+        // Test creation of trajectory from a states storage.
         // -------------------------------------------------
         // Using a pre-4.0 states storage file with old column names.
         SimTK_SUBTEST(testFromStatesStoragePre40CorrectStates);
@@ -756,6 +757,7 @@ int main() {
         SimTK_SUBTEST(testFromStatesStorageUniqueColumnLabels);
         SimTK_SUBTEST(testFromStatesStorageAllRowsHaveSameLength);
 
+        // Export to data table.
         SimTK_SUBTEST(testExport);
 
     SimTK_END_TEST();

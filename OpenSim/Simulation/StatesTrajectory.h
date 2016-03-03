@@ -299,7 +299,8 @@ public:
      *                                                "knee/flexion/speed"});
      * @endcode
      *
-     * TODO exceptions if model is not compatible?
+     * @throws IncompatibleModel Thrown if the Model fails the check
+     *      isCompatableWith().
      */
     TimeSeriesTable exportToTable(const Model& model,
             const std::vector<std::string>& stateVars = {}) const;
@@ -325,9 +326,17 @@ public:
         }
     };
 
-    /** Thrown when trying to create a StatesTrajectory from a states Storage, and
-     * the Storage does not contain a column for every continuous state variable.
-     * */
+    /** Thrown when trying to use a StatesTrajectory with an incompatible model.
+     * See isCompatibleWith(). */
+    class IncompatibleModel : public OpenSim::Exception {
+    public:
+        IncompatibleModel(const std::string& file, size_t line,
+                          const std::string& func, const Model& model);
+    };
+
+    /** Thrown when trying to create a StatesTrajectory from a states Storage,
+     * and the Storage does not contain a column for every continuous state
+     * variable. */
     class MissingColumnsInStatesStorage : public OpenSim::Exception {
     public:
         MissingColumnsInStatesStorage(const std::string& file, size_t line,
