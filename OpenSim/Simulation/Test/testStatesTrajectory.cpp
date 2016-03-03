@@ -37,7 +37,6 @@ using namespace SimTK;
 // TODO accessing acceleration-level outputs.
 
 // Big to-do's:
-// TODO createFromStatesStorage -> createFromDataTable, and change its purpose.
 // TODO convert to data table (specify which columns).
 // TODO append two StateTrajectories together.
 // TODO test modeling options (locked coordinates, etc.)
