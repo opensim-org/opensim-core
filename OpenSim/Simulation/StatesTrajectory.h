@@ -288,10 +288,10 @@ public:
      * You must provide a model that is compatible with this trajectory,
      * since only the model knows the names of the state variables.
      *
-     * By default, all continuous state variables are written to table
+     * By default, all continuous state variables are written to the table
      * (one per column). If you only want some of them to be written to the
-     * table, use the `stateVars` argument to specify the full names
-     * (e.g., `knee/flexion/angle`) of the columns to write.
+     * table, use the `stateVars` argument to specify their full names
+     * (e.g., `knee/flexion/angle`).
      *
      * @code
      * auto allStateVars = states.exportToTable(model);
@@ -300,7 +300,7 @@ public:
      * @endcode
      *
      * @throws IncompatibleModel Thrown if the Model fails the check
-     *      isCompatableWith().
+     *      isCompatibleWith().
      */
     TimeSeriesTable exportToTable(const Model& model,
             const std::vector<std::string>& stateVars = {}) const;
