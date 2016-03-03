@@ -283,6 +283,9 @@ bool InverseKinematicsTool::run()
 
         cout<<"Running tool "<<getName()<<".\n";
 
+		// Get the trial name to label data written to files
+		string TrialName = getName();
+
         // Initialize the model's underlying computational system and get its default state.
         SimTK::State& s = _model->initSystem();
 
@@ -372,12 +375,14 @@ bool InverseKinematicsTool::run()
         SimTK::Array_<Vec3> markerLocations(nm, Vec3(0));
         
         Storage *modelMarkerLocations = _reportMarkerLocations ? new Storage(Nframes, "ModelMarkerLocations") : NULL;
+		Storage *modelMarkerErrors = _reportErrors ? new Storage(Nframes, "ModelMarkerErrors") : NULL;
 
         for (int i = 0; i < Nframes; i++) {
             s.updTime() = start_time + i*dt;
             ikSolver.track(s);
             
             if(_reportErrors){
+				Array<double> MarkerErrors(0.0, 3);
                 double totalSquaredMarkerError = 0.0;
                 double maxSquaredMarkerError = 0.0;
                 int worst = -1;
@@ -390,6 +395,13 @@ bool InverseKinematicsTool::run()
                         worst = j;
                     }
                 }
+
+				double rms = sqrt(totalSquaredMarkerError / nm);
+				MarkerErrors.set(0, totalSquaredMarkerError); 
+				MarkerErrors.set(1, rms);
+				MarkerErrors.set(2, sqrt(maxSquaredMarkerError));
+				modelMarkerErrors->append(s.getTime(), 3, &MarkerErrors[0]);
+
                 cout << "Frame " << i << " (t=" << s.getTime() << "):\t";
                 cout << "total squared error = " << totalSquaredMarkerError;
                 cout << ", marker error: RMS=" << sqrt(totalSquaredMarkerError/nm);
@@ -418,6 +430,23 @@ bool InverseKinematicsTool::run()
             kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
         }
 
+		if (modelMarkerErrors) {
+			Array<string> labels("", 4);
+			labels[0] = "time";
+			labels[1] = "total squared error";
+			labels[2] = "marker error RMS";
+			labels[3] = "marker error max";
+
+			modelMarkerErrors->setColumnLabels(labels);
+			modelMarkerErrors->setName("Model Marker Errors from IK");
+
+			IO::makeDir(getResultsDir());
+			string errorFileName = TrialName + "_ik_model_marker_errors";
+			Storage::printResult(modelMarkerErrors, errorFileName, getResultsDir(), -1, ".txt");
+
+			delete modelMarkerErrors;
+		}
+
         if(modelMarkerLocations){
             Array<string> labels("", 3*nm+1);
             labels[0] = "time";
@@ -432,7 +461,8 @@ bool InverseKinematicsTool::run()
             modelMarkerLocations->setName("Model Marker Locations from IK");
     
             IO::makeDir(getResultsDir());
-            Storage::printResult(modelMarkerLocations, "ik_model_marker_locations", getResultsDir(), -1, ".sto");
+			string markerFileName = TrialName + "_ik_model_marker_locations";
+            Storage::printResult(modelMarkerLocations, markerFileName, getResultsDir(), -1, ".sto");
 
             delete modelMarkerLocations;
         }
