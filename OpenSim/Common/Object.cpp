@@ -61,7 +61,7 @@ std::map<string,string>     Object::_renamedTypesMap;
 bool                        Object::_serializeAllDefaults=false;
 const string                Object::DEFAULT_NAME(ObjectDEFAULT_NAME);
 int                         Object::_debugLevel = 0;
-
+bool                        Object::_invalidPropertyException{false};
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
@@ -699,6 +699,41 @@ UpdateFromXMLNodeArrayProperty(Property_Deprecated* aProperty,
 //------------------------------------------------------------------------------
 // OBJECT XML METHODS
 //------------------------------------------------------------------------------
+void
+Object::setInvalidPropertyException(bool toggle) {
+    _invalidPropertyException = toggle;
+}
+
+void
+Object::checkForInvalidPropertiesInXml(SimTK::Xml::Element& aNode) const {
+    for(auto it = aNode.element_begin(); it != aNode.element_end(); ++it) {
+        // Check if attribute named 'name' is a valid property name.
+        auto elemName = it->getOptionalAttributeValueAs<std::string>("name", 
+                                                                     "");
+        if(!elemName.empty() && _propertyTable.hasProperty(elemName))
+            continue;
+        // Check if 'tag-name' is a valid property name.
+        if(_propertyTable.hasProperty(it->getElementTag())) 
+            continue;
+
+        // Create the message.
+        std::string msg = "Element <" + aNode.getElementTag();
+        auto nodeName = aNode.getOptionalAttributeValueAs<std::string>("name", 
+                                                                       "");
+        if(!nodeName.empty())
+            msg += " name=\"" + nodeName + "\"";
+        msg += "> contains sub-element <" + it->getElementTag();
+        if(!elemName.empty())
+            msg += " name=\"" + elemName + "\"";
+        msg += "> that is not a valid property.";
+
+        if(_invalidPropertyException)
+            throw Exception{msg};
+        else
+            std::cerr << msg << std::endl;
+    }
+}
+
 // Populate this Object from XML element corresponding to an Object Property.
 // We check for a file="xxx" attribute and read the object from that file
 // if it is present. Otherwise we punt to updateFromXMLNode() and read the
