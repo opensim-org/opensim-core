@@ -839,6 +839,8 @@ UpdateXMLNodeTransform(const Property_Deprecated*   aProperty,
 //-----------------------------------------------------------------------------
 void Object::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
+    checkForInvalidPropertiesInXml(aNode);
+
 try {
     // NAME
     const string dName = 
