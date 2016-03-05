@@ -193,6 +193,19 @@ private:
     int m_ctr;
     mutable int m_mutableCtr;
 
+    OpenSim_DECLARE_OUTPUT(Output1, double, getSomething, SimTK::Stage::Time)
+    OpenSim_DECLARE_OUTPUT(Output2, SimTK::Vec3, calcSomething,
+            SimTK::Stage::Time)
+
+    OpenSim_DECLARE_OUTPUT_NONMEMBER(Qs, Vector,
+            std::bind([=](const SimTK::State& s)->Vector{return s.getQ(); }, std::placeholders::_1),
+            SimTK::Stage::Position);
+
+    OpenSim_DECLARE_OUTPUT_NONMEMBER(BodyAcc, SpatialVec,
+            std::bind(&Foo::calcSpatialAcc, this, std::placeholders::_1),
+            SimTK::Stage::Velocity)
+
+
     void constructProperties() override {
         constructProperty_mass(1.0);
         Array<double> inertia(0.001, 6);
@@ -209,20 +222,8 @@ private:
     }
 
     void constructOutputs() override {
-        constructOutput<double>("Output1", &Foo::getSomething,
-                SimTK::Stage::Time);
 
-        constructOutput<SimTK::Vec3>("Output2", &Foo::calcSomething,
-                SimTK::Stage::Time);
 
-        double a = 10;
-        constructOutput<Vector>("Qs",
-            std::bind([=](const SimTK::State& s)->Vector{return s.getQ(); }, std::placeholders::_1),
-            SimTK::Stage::Position);
-
-        constructOutput<SpatialVec>("BodyAcc",
-            std::bind(&Foo::calcSpatialAcc, this, std::placeholders::_1),
-            SimTK::Stage::Velocity);
     }
 
     // Keep indices and reference to the world

@@ -1362,14 +1362,14 @@ template <class T> friend class ComponentMeasure;
      */
 #ifndef SWIG // SWIG can't parse the const at the end of the second argument.
     template <typename T, typename Class>
-    void constructOutput(const std::string& name,
+    int constructOutput(const std::string& name,
             T(Class::*const componentMemberFunction)(const SimTK::State&) const,
             const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
         // The `const` in `Class::*const componentMemberFunction` means this
         // function can't assign componentMemberFunction to some other function
         // pointer. This is unlikely, since that function would have to match
         // the same template parameters (T and Class).
-        constructOutput<T>(name, std::bind(componentMemberFunction,
+        return constructOutput<T>(name, std::bind(componentMemberFunction,
                     static_cast<Class*>(this),
                     std::placeholders::_1), dependsOn);
     }
@@ -1395,11 +1395,12 @@ template <class T> friend class ComponentMeasure;
       @see constructOutputForStateVariable()
     */
     template <typename T>
-    void constructOutput(const std::string& name, 
+    int constructOutput(const std::string& name, 
         const std::function<T(const SimTK::State&)> outputFunction, 
         const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
         _outputsTable[name] = SimTK::ClonePtr<AbstractOutput>(new
                 Output<T>(name, outputFunction, dependsOn));
+        return 0;
     }
 
     /** Construct an Output for a StateVariable. While this method is a
@@ -1999,6 +2000,12 @@ void Connector<C>::findAndConnect(const Component& root) {
     const C& comp = root.getComponent<C>(get_connectee_name());
     connectee = comp;
 }
+
+#define OpenSim_DECLARE_OUTPUT(name, T, func, stage) \
+    int _output_##name { constructOutput<T>(#name, &Self::func, stage) };
+
+#define OpenSim_DECLARE_OUTPUT_NONMEMBER(name, T, func, stage) \
+    int _output_##name { constructOutput<T>(#name, func, stage) };
 
 } // end of namespace OpenSim
 
