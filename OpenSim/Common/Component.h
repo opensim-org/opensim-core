@@ -1339,82 +1339,6 @@ template <class T> friend class ComponentMeasure;
             = SimTK::ClonePtr<AbstractInput>(new Input<T>(name, requiredAtStage));
     }
 
-    /**
-       A convenient way to construct an Output.  Here, we assume the following
-       about componentMemberFunction, the function that returns the output:
-
-           -# It is a member function of \a this Component.
-           -# The member function is const.
-           -# It takes only one input, which is const SimTK::State&
-      
-       If these are not true for your case, then use the more general method
-       %Component::constructOutput(const std::string&,
-                                  const std::function<T(const SimTK:State&)>,
-                                  const SimTK::Stage&).
-      
-       Here's an example. Say your Component has a method calcForce:
-        @code
-        constructOutput<SimTK::Vec3>("force", &MyComponent::calcForce,
-                SimTK::Stage::Velocity);
-        @endcode
-
-       @see constructOutputForStateVariable()
-     */
-#ifndef SWIG // SWIG can't parse the const at the end of the second argument.
-    template <typename T, typename Class>
-    int constructOutput(const std::string& name,
-            T(Class::*const componentMemberFunction)(const SimTK::State&) const,
-            const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
-        // The `const` in `Class::*const componentMemberFunction` means this
-        // function can't assign componentMemberFunction to some other function
-        // pointer. This is unlikely, since that function would have to match
-        // the same template parameters (T and Class).
-        return constructOutput<T>(name, std::bind(componentMemberFunction,
-                    static_cast<Class*>(this),
-                    std::placeholders::_1), dependsOn);
-    }
-#endif
-
-    /**
-      Construct an Output (wire) for the Component as function of the State.
-      Specifiy a (member) function of the state implemented by this component to
-      be an Output and include the Stage that output is dependent on. If no
-      Stage is specified it defaults to Acceleration. Here's an example. Say you 
-      have a class Markers that manages markers, you have an instance of this class
-      as a member variable in your Component, and Markers has a method
-      <tt> Vec3 Markers::calcMarkerPos(const SimTK::State& s, std::string
-      marker);</tt>
-      to compute motion capture marker positions, given the name of a marker.
-       @code
-       constructOutput<SimTK::Vec3>("ankle_marker_pos",
-               std::bind(&Markers::calcMarkerPos, _markers,
-               std::placeholders::_1, "ankle"),
-               SimTK::Stage::Position);
-       @endcode
-
-      @see constructOutputForStateVariable()
-    */
-    template <typename T>
-    int constructOutput(const std::string& name, 
-        const std::function<T(const SimTK::State&)> outputFunction, 
-        const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
-        _outputsTable[name] = SimTK::ClonePtr<AbstractOutput>(new
-                Output<T>(name, outputFunction, dependsOn));
-        return 0;
-    }
-
-    /** Construct an Output for a StateVariable. While this method is a
-     * convenient way to construct an Output for a StateVariable, it is
-     * inefficient because it uses a string lookup. To create a more efficient
-     * Output, create a member variable that returns the state variable
-     * directly; see the implementations of Coordinate::getValue() or
-     * Muscle::getActivation() for examples.
-     *
-     * @param name Name of the output, which must be the same as the name of
-     * the corresponding state variable.
-     */
-    void constructOutputForStateVariable(const std::string& name);
-
     /** Clear all designations of (sub)components for this Component. 
       * Components are not deleted- the list of references to its components is cleared. */
     void clearComponents() {
@@ -1603,6 +1527,94 @@ template <class T> friend class ComponentMeasure;
     void setParent(const Component& parent);
 
     //@} 
+
+    /** @name Internal methods for constructing Outputs
+     * To declare Outputs for your component, use the following macros within
+     * your class declaration (ideally at the top near property declarations):
+     *
+     *  - #OpenSim_DECLARE_OUTPUT
+     *  - #OpenSim_DECLARE_OUTPUT_FLEX
+     *  - #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE
+     *
+     * The methods below are used in those macros, and you should not use these
+     * methods yourself.
+     */
+    /// @{
+    /** Construct an output for a member function of the same component. 
+        The following must be true about componentMemberFunction, the function
+        that returns the output:
+
+           -# It is a member function of \a this Component.
+           -# The member function is const.
+           -# It takes only one input, which is `const SimTK::State&`
+      
+       If these are not true for your case, then use the more general method
+       %Component::constructOutput(const std::string&,
+                                  const std::function<T(const SimTK:State&)>,
+                                  const SimTK::Stage&).
+
+       @see constructOutputForStateVariable()
+     */
+#ifndef SWIG // SWIG can't parse the const at the end of the second argument.
+    template <typename T, typename Class>
+    int constructOutput(const std::string& name,
+            T(Class::*const componentMemberFunction)(const SimTK::State&) const,
+            const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
+        // The `const` in `Class::*const componentMemberFunction` means this
+        // function can't assign componentMemberFunction to some other function
+        // pointer. This is unlikely, since that function would have to match
+        // the same template parameters (T and Class).
+        return constructOutput<T>(name, std::bind(componentMemberFunction,
+                    static_cast<Class*>(this),
+                    std::placeholders::_1), dependsOn);
+    }
+#endif
+
+    /**
+      Construct an Output (wire) for the Component as function of the State.
+      Specifiy a (member) function of the state implemented by this component to
+      be an Output and include the Stage that output is dependent on. If no
+      Stage is specified it defaults to Acceleration. Here's an example. Say you 
+      have a class Markers that manages markers, you have an instance of this class
+      as a member variable in your Component, and Markers has a method
+      <tt> Vec3 Markers::calcMarkerPos(const SimTK::State& s, std::string
+      marker);</tt>
+      to compute motion capture marker positions, given the name of a marker.
+       @code
+       constructOutput<SimTK::Vec3>("ankle_marker_pos",
+               std::bind(&Markers::calcMarkerPos, _markers,
+               std::placeholders::_1, "ankle"),
+               SimTK::Stage::Position);
+       @endcode
+
+      @see constructOutputForStateVariable()
+    */
+    template <typename T>
+    int constructOutput(const std::string& name, 
+        const std::function<T(const SimTK::State&)> outputFunction, 
+        const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
+        // TODO OPENSIM_THROW_IF(_outputsTable.count(name) == 1,
+        // TODO         Exception, getConcreteClassName(), getName(),
+        // TODO         "An output with name '" + name + 
+        // TODO         "' (type " + SimTK::NiceTypeName<T>::name() +
+        // TODO         ") already exists.");
+        _outputsTable[name] = SimTK::ClonePtr<AbstractOutput>(
+                new Output<T>(name, outputFunction, dependsOn));
+        return 0;
+    }
+
+    /** Construct an Output for a StateVariable. While this method is a
+     * convenient way to construct an Output for a StateVariable, it is
+     * inefficient because it uses a string lookup. To create a more efficient
+     * Output, create a member variable that returns the state variable
+     * directly; see the implementations of Coordinate::getValue() or
+     * Muscle::getActivation() for examples.
+     *
+     * @param name Name of the output, which must be the same as the name of
+     * the corresponding state variable. */
+    int constructOutputForStateVariable(const std::string& name);
+    
+    /// @}
 
 private:
     // Construct the table of serializeable properties for a Component.
@@ -2000,12 +2012,6 @@ void Connector<C>::findAndConnect(const Component& root) {
     const C& comp = root.getComponent<C>(get_connectee_name());
     connectee = comp;
 }
-
-#define OpenSim_DECLARE_OUTPUT(name, T, func, stage) \
-    int _output_##name { constructOutput<T>(#name, &Self::func, stage) };
-
-#define OpenSim_DECLARE_OUTPUT_NONMEMBER(name, T, func, stage) \
-    int _output_##name { constructOutput<T>(#name, func, stage) };
 
 } // end of namespace OpenSim
 
