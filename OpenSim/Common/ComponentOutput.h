@@ -203,7 +203,11 @@ private:
     int _output_##oname { constructOutput<T>(#oname, &Self::func, ostage) };\
     /** @endcond                                                         */
 
-// TODO std::result_of<decltype(&Self::func)(Self, const SimTK::State&)>::type
+// Note: we could omit the T argument from the above macro by using the
+// following code to deduce T from the provided func
+//      std::result_of<decltype(&Self::func)(Self, const SimTK::State&)>::type
+// However, then we wouldn't be able to document the type for the output in
+// doxygen.
 
 /** The most flexible (and difficult) way to create an output.
    You can specify any function that has the signature `func_name(const
