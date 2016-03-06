@@ -1668,7 +1668,7 @@ void testCustomVsCompoundJoint()
     //OpenSim thigh
     OpenSim::Body osim_thigh("thigh", femurMass.getMass(),
         femurMass.getMassCenter(), femurMass.getInertia());
-    osim_thigh.addMeshGeometry("femur.vtp");
+    osim_thigh.attachMeshGeometry("femur.vtp");
 
     // Define hip transform in terms of coordinates and axes for custom joint
     SpatialTransform hipTransform;
@@ -1697,7 +1697,7 @@ void testCustomVsCompoundJoint()
     // Add OpenSim shank via a knee joint
     OpenSim::Body osim_shank("shank", tibiaMass.getMass(),
         tibiaMass.getMassCenter(), tibiaMass.getInertia());
-    osim_shank.addMeshGeometry("tibia.vtp");
+    osim_shank.attachMeshGeometry("tibia.vtp");
 
     // Define knee coordinates and axes for custom joint spatial transform
     SpatialTransform kneeTransform;
@@ -1733,7 +1733,7 @@ void testCustomVsCompoundJoint()
     //OpenSim thigh
     OpenSim::Body thigh2("thigh2", femurMass.getMass(),
         femurMass.getMassCenter(), femurMass.getInertia());
-    thigh2.addMeshGeometry("femur.vtp");
+    thigh2.attachMeshGeometry("femur.vtp");
 
     // create compound hip joint
     CompoundJoint hip2("hip2", ground2, hipInPelvis, oInP,
@@ -1746,7 +1746,7 @@ void testCustomVsCompoundJoint()
     // Add OpenSim shank via a knee joint
     OpenSim::Body shank2("shank2", tibiaMass.getMass(),
         tibiaMass.getMassCenter(), tibiaMass.getInertia());
-    shank2.addMeshGeometry("tibia.vtp");
+    shank2.attachMeshGeometry("tibia.vtp");
 
     // create custom knee joint
     CustomJoint knee2("knee2", thigh2, kneeInFemur, Vec3(0),
@@ -1950,11 +1950,10 @@ void testAutomaticJointReversal()
     //thigh.addGeometry(Cylinder(0.035, 0.4));
     thigh->upd_geometry(0).setColor(SimTK::Vec3(0, 0, 1));   // BLUE
     
-    //TODO fix Bug: ModleComponent::addGeometry assumes ownership but does not
-    // take a pointer to heap allocated Geometry
-    shank->addGeometry(*new Cylinder(0.02, 0.243800));
+    //ModelComponent::addGeometry makes a copy of the passed in Geometry
+    shank->attachGeometry(Cylinder(0.02, 0.243800));
     shank->upd_geometry(0).setColor(SimTK::Vec3(0, 1, 1));   // CYAN
-    foot->addGeometry(*new Brick(SimTK::Vec3(0.09, 0.025, 0.06)));
+    foot->attachGeometry(Brick(SimTK::Vec3(0.09, 0.025, 0.06)));
     foot->upd_geometry(0).setColor(SimTK::Vec3(1, 0, 0));    // RED
 
     // add them to the model

@@ -360,11 +360,7 @@ public:
         }
     /// destructor
     ~Sphere() {}
-    /// Convenience method to set radius
-    void setSphereRadius(double radius)
-    {
-        upd_radius() = radius;
-    }
+
 protected:
     /// Virtual method to map Sphere to Array of SimTK::DecorativeGeometry.
     /// Appearance, Transforms are handled by base Geometry class

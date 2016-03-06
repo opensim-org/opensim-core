@@ -118,20 +118,6 @@ void Body::extendConnectToModel(Model& aModel)
 //=============================================================================
 // GET AND SET
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Add display geometry to body.
- *
- * @param aGeometryFileName Geometry filename.
- */
-void Body::addMeshGeometry(const std::string& aGeometryFileName, const SimTK::Vec3 scale)
-{
-    Mesh geom(aGeometryFileName);
-    geom.set_scale_factors(scale);
-    if (geom.getFrameName() == "")
-        geom.setFrameName(getName());
-    addGeometry(geom);
-}
 
 //_____________________________________________________________________________
 /**
