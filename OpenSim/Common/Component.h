@@ -55,6 +55,8 @@ namespace OpenSim {
 
 class ModelDisplayHints;
 class ComponentNotFound;
+class ComponentNotFoundOnSpecifedPath;
+
 //==============================================================================
 //                            OPENSIM COMPONENT
 //==============================================================================
@@ -359,7 +361,7 @@ public:
      */
     template <class C = Component>
     const C& getComponent(const std::string& name) const {
-        const C* comp = traversePathToComponent<C>(name);
+        const C* comp = this->template traversePathToComponent<C>(name);
         if (comp) {
             return *comp;
         }
@@ -372,7 +374,7 @@ public:
 
     template <class C = Component>
     C& updComponent(const std::string& name) {
-        return *const_cast<C*>(&getComponent<C>(name));
+        return *const_cast<C*>(&(this->template getComponent<C>(name)));
     }
 
     /**
@@ -918,6 +920,7 @@ protected:
     // Give the ComponentMeasure access to the realize() methods.
     template <class T> friend class ComponentMeasure;
 
+#ifndef SWIG
     /// @class MemberSubcomponentIndex
     /// Unique integer type for local member subcomponent indexing
     SimTK_DEFINE_UNIQUE_INDEX_TYPE(MemberSubcomponentIndex);
@@ -932,6 +935,7 @@ protected:
         _memberSubcomponents.push_back(SimTK::ClonePtr<Component>(component));
         return MemberSubcomponentIndex(_memberSubcomponents.size()-1);
     }
+#endif //SWIG
 
   /** Single call to construct the underlying infrastructure of a Component, which
      include: 1) its properties, 2) its structural connectors (to other components),
@@ -1576,7 +1580,7 @@ protected:
 
         std::string msg = getConcreteClassName() + "'" + getName() + "'::findComponent() ";
 
-        ComponentList<C> compsList = getComponentList<C>();
+        ComponentList<C> compsList = this->template getComponentList<C>();
         std::vector<const C*> foundCs;
         for (const C& comp : compsList) {
             std::string compFullPathName = comp.getFullPathName();
@@ -2102,15 +2106,15 @@ void Connector<C>::findAndConnect(const Component& root) {
 
     try {
         if (path[0] == '/') { //absolute path name
-            comp = &root.getComponent<C>(path);
+            comp =  &root.template getComponent<C>(path);
         }
         else { // relative path name
-            comp = &getOwner().getComponent<C>(path);
+            comp =  &getOwner().template getComponent<C>(path);
         }
     }
     catch (const ComponentNotFoundOnSpecifedPath& ex) {
         std::cout << ex.getMessage() << std::endl;
-        comp = root.findComponent<C>(path);
+        comp =  root.template findComponent<C>(path);
     }
     if (comp)
         connect(*comp);
