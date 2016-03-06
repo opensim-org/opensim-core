@@ -109,10 +109,11 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
     actMdl.set_deactivation_time_constant(get_deactivation_time_constant());
     actMdl.set_minimum_activation(get_minimum_activation());
 
-    // Call finalizeFromProperties() on subcomponents manually. These lines can
-    // be removed once support for subcomponents has been fully implemented in
-    // the Component interface. In particular, finalizeFromProperties() must be
-    // called on all subcomponents, not just subcomponents that are properties.
+    // TODO: Call finalizeFromProperties() on subcomponents manually. These
+    // lines can be removed once support for subcomponents has been fully
+    // implemented in the Component interface. In particular,
+    // finalizeFromProperties() must be called on all subcomponents, not just
+    // subcomponents that are properties.
     pennMdl.finalizeFromProperties();
     actMdl.finalizeFromProperties();
 }
