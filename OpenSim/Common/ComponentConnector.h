@@ -38,7 +38,6 @@
  */
 
 // INCLUDES
-#include "OpenSim/Common/Component.h"
 #include "OpenSim/Common/ComponentOutput.h"
 #include "OpenSim/Common/ComponentList.h"
 
@@ -97,9 +96,11 @@ public:
         Create a Connector with specified name and stage at which it
         should be connected.
     @param name             name of the connector, usually describes its dependency. 
-    @param connectAtStage   Stage at which Connector should be connected. */
-    AbstractConnector(const std::string& name, const SimTK::Stage& connectAtStage) :
-        connectAtStage(connectAtStage) {
+    @param connectAtStage   Stage at which Connector should be connected.
+    @param owner            Component to which this Connector belongs.*/
+    AbstractConnector(const std::string& name, 
+                      const SimTK::Stage& connectAtStage,
+                      const Component& owner) : _owner(&owner), connectAtStage(connectAtStage) {
         constructProperties();
         setName(name);
     }
@@ -133,9 +134,18 @@ public:
     /** Disconnect this Connector from the connectee object */
     virtual void disconnect() = 0;
 
+protected:
+    const Component& getOwner() const { return _owner.getRef(); }
+    void setOwner(const Component& o) { _owner.reset(&o); }
+
 private:
     void constructProperties() { constructProperty_connectee_name(""); }
     SimTK::Stage connectAtStage;
+
+    SimTK::ReferencePtr<const Component> _owner;
+
+    friend Component;
+
 //=============================================================================
 };  // END class AbstractConnector
 
@@ -154,8 +164,8 @@ public:
     name and stage at which it should be connected.
     @param name             name of the connector used to describe its dependency.
     @param connectAtStage   Stage at which Connector should be connected. */
-    Connector(const std::string& name, const SimTK::Stage& connectAtStage) : 
-        AbstractConnector(name, connectAtStage), connectee(nullptr) {}
+    Connector(const std::string& name, const SimTK::Stage& connectAtStage, Component& owner) : 
+        AbstractConnector(name, connectAtStage, owner), connectee(nullptr) {}
 
     virtual ~Connector() {}
 
@@ -176,7 +186,19 @@ public:
         const T* objT = dynamic_cast<const T*>(&object);
         if (objT) {
             connectee = *objT;
-            set_connectee_name(object.getName());
+
+            std::string objPathName = objT->getFullPathName();
+            std::string ownerPathName = getOwner().getFullPathName();
+
+            // This can happen when top level components like a Joint and Body
+            // have the same name like a pelvis Body and pelvis Joint that
+            // connects that connects to a Body of the same name.
+            if(objPathName == ownerPathName)
+                set_connectee_name(objPathName);
+            else { // otherwise store the relative path name to the object
+                std::string relPathName = objT->getRelativePathName(getOwner());
+                set_connectee_name(relPathName);
+            }
         }
         else {
             std::stringstream msg;
@@ -220,8 +242,9 @@ public:
     specified by name and stage at which it should be connected.
     @param name             name of the dependent (Abstract)Output.
     @param connectAtStage   Stage at which Input should be connected. */
-    AbstractInput(const std::string& name, const SimTK::Stage& connectAtStage) :
-        AbstractConnector(name, connectAtStage), connectee(nullptr) {}
+    AbstractInput(const std::string& name,
+                  const SimTK::Stage& connectAtStage, const Component& owner) :
+        AbstractConnector(name, connectAtStage, owner), connectee(nullptr) {}
 
     virtual ~AbstractInput() {}
 
@@ -274,8 +297,8 @@ public:
     name and stage at which it should be connected.
     @param name             name of the Output dependency.
     @param connectAtStage   Stage at which Input should be connected. */
-    Input(const std::string& name, const SimTK::Stage& connectAtStage) :
-        AbstractInput(name, connectAtStage) {}
+    Input(const std::string& name, const SimTK::Stage& connectAtStage, const Component& owner) :
+        AbstractInput(name, connectAtStage, owner) {}
 
     /** Connect this Input the from provided (Abstract)Output */
     void connect(const AbstractOutput& output) const override {

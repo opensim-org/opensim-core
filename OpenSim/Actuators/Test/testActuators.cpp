@@ -652,12 +652,12 @@ void testBodyActuator()
     BodyActuator* actuator = new BodyActuator(*block);
     actuator->setName("BodyAct");
     model->addForce(actuator);
-
-    model->print("TestBodyActuatorModel.osim");
     model->setUseVisualizer(false);
 
     // get a new system and state to reflect additions to the model
     State& state1 = model->initSystem();
+
+    model->print("TestBodyActuatorModel.osim");
 
     // -------------- Provide control signals for bodyActuator ----------
     // Get the default control vector of the model

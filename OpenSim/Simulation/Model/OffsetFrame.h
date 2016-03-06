@@ -258,7 +258,8 @@ calcGroundTransform(const SimTK::State& s) const
 template <class C>
 void OffsetFrame<C>::setParentFrame(const C& parent)
 {
-    this->template updConnector<C>("parent").connect(parent);
+//    this->template updConnector<C>("parent").connect(parent);
+    this->template updConnector<C>("parent").set_connectee_name(parent.getName());
 }
 
 template <class C>

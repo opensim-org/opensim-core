@@ -25,7 +25,7 @@
 // INCLUDES
 #include "OpenSim/Common/Component.h"
 #include "OpenSim/Common/Set.h"
-//#include "OpenSim/Common/ComponentOutput.h"
+#include "OpenSim/Common/IO.h"
 
 using namespace SimTK;
 
@@ -127,6 +127,24 @@ Component::Component(SimTK::Xml::Element& element) : Object(element)
 void Component::finalizeFromProperties()
 {
     reset();
+
+    // TODO use a flag to set whether we are lenient on having nameless
+    // Components. For backward compatibility we need to be able to 
+    // handle nameless components so assign them their class name
+    // - aseth
+    if (getName().empty()) {
+        setName(IO::Lowercase(getConcreteClassName()) + "_");
+    }
+
+    OPENSIM_THROW_IF( getName().empty(), ComponentHasNoName,
+                      getConcreteClassName() );
+
+    for (auto& comp : _memberSubcomponents) {
+        comp->setParent(*this);
+    }
+    for (auto& comp : _adoptedSubcomponents) {
+        comp->setParent(*this);
+    }
     markPropertiesAsSubcomponents();
     extendFinalizeFromProperties();
     componentsFinalizeFromProperties();
@@ -134,11 +152,19 @@ void Component::finalizeFromProperties()
 }
 
 // Base class implementation of virtual method.
-// Call extendFinalizeFromProperties on all components
+// Call finalizeFromProperties on all subcomponents
 void Component::componentsFinalizeFromProperties() const
 {
-    for (unsigned int i = 0; i<_propertySubcomponents.size(); i++){
-        _propertySubcomponents[i]->finalizeFromProperties();
+    for (auto& comp : _memberSubcomponents) {
+        const_cast<Component*>(comp.get())
+            ->finalizeFromProperties();
+    }
+    for (auto& comp : _propertySubcomponents) {
+        comp->finalizeFromProperties();
+    }
+    for (auto& comp : _adoptedSubcomponents) {
+        const_cast<Component*>(comp.get())
+            ->finalizeFromProperties();
     }
 }
 
@@ -157,29 +183,9 @@ void Component::connect(Component &root)
     for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
         AbstractConnector& connector = upd_connectors(ix);
         connector.disconnect();
-        try{
+        try {
             const std::string& compName = connector.get_connectee_name();
-            std::string::size_type front = compName.find("/");
-            if (front != 0) { // local (not path qualified) name
-                // A local Component is considered: 
-                // (1) one of this component's children 
-                const Component* comp = findComponent(compName);
-                // (2) OR, one of this component's siblings (same depth as this)
-                if (!comp && hasParent()) {
-                    comp = getParent().findComponent(compName);
-                }
-                if (comp) {
-                    try { //Could still be the wrong type
-                        connector.connect(*comp);
-                    }
-                    catch (const std::exception& ex) {
-                        std::cout << ex.what() << "\nContinue to find ..." <<std::endl;
-                    }
-                }
-            }
-            if(!connector.isConnected()) {
-                connector.findAndConnect(root);
-            }
+            connector.findAndConnect(root);
         }
         catch (const std::exception& x) {
             throw Exception(getConcreteClassName() + "'" + getName() +"'"
@@ -519,91 +525,79 @@ std::string Component::getFullPathName() const
         up = &up->getParent();
         pathName = up->getName() + "/" + pathName;
     }
+    // The root must have a leading '/' 
+    pathName = "/" + pathName;
+
     return pathName;
 }
 
-
-const Component& Component::getComponent(const std::string& name) const
-{  
-    const Component* found = findComponent(name);
-    if(!found){
-        std::string msg = "Component::getComponent() could not find subcomponent '";
-        msg += name + "' from Component '" + getName() + "'.";
-        throw Exception(msg);
-    }
-    return *found;
-}
-
-Component& Component::updComponent(const std::string& name) const
+std::string Component::getRelativePathName(const Component& wrt) const
 {
-    const Component* found = findComponent(name);
-    if(!found){
-        std::string msg = "Component::updComponent() could not find subcomponent '";
-        msg += name + "' from Component '" + getName() + "'.";
-        throw Exception(msg);
-    }
-    return *const_cast<Component *>(found); 
-}
+    std::string thisP = getFullPathName();
+    std::string wrtP = wrt.getFullPathName();
 
-const Component* Component::findComponent(const std::string& name,
-    const StateVariable** rsv) const
-{
-    if (name.empty()) {
-        std::string msg = "Component::findComponent cannot find a nameless subcomponent ";
-        msg +=  "within " + getConcreteClassName()+ " '" + getName() + "'.";
-        throw Exception(msg);
-    }
+    IO::TrimWhitespace(thisP);
+    IO::TrimWhitespace(wrtP);
 
-    const Component* found = NULL;
-    std::string::size_type front = name.find("/");
-    std::string subname = name;
-    std::string remainder = "";
+    size_t ni = thisP.length();
+    size_t nj = wrtP.length();
+    // the limit on the common substring size is the smallest of the two
+    size_t limit = ni <= nj ? ni : nj;
+    size_t ix = 1, jx = 0;
+    size_t last = 0;
 
-    if (this->getName() == name) {
-        return this;
-    }
+    // Loop through the paths to pick up a bigger substring that matches
+    while ( !thisP.compare(0, ix, wrtP, 0, ix) && (ix < std::string::npos) ) {
+        last = ix;
+        // step ahead to the next node if there is one
+        ix = thisP.find('/', last+1);
+        // step along both strings
+        jx = wrtP.find('/', last+1);
 
-    // Follow the provided path
-    if (front < name.length()){
-        subname = name.substr(0, front);
-        remainder = name.substr(front + 1, name.length() - front);
-    }
+        // if no more nodes for this path try complete match of final node name
+        if (ix == std::string::npos && last < limit)
+            ix = ni;
 
-    for (unsigned int i = 0; i < _propertySubcomponents.size(); ++i){
-        if (_propertySubcomponents[i]->getName() == subname){
-            // if not the end of the path keep drilling
-            if (remainder.length()){
-                // keep traversing the components till we find the component
-                found = _propertySubcomponents[i]->findComponent(remainder, rsv);
-                if (found)
-                    return found;
-            }
-            else{
-                return _propertySubcomponents[i].get();
-            }
+        // if no more nodes for wrt path try complete match of final node name
+        if (jx == std::string::npos && last < limit)
+            jx = nj;
+
+        // verify that the both paths are in sync
+        if (ix != jx) { // if not break to use the current last index of match
+            break;
         }
+     }
+
+    // Include the delimiter in the common string iff we are not at the end of string
+    // and not at the root
+    if ((0 < last) && (last < limit) && thisP[last] == '/') {
+        last = last + 1;
     }
 
-    std::map<std::string, StateVariableInfo>::const_iterator it;
-    it = _namedStateVariableInfo.find(name);
-    if (it != _namedStateVariableInfo.end()){
-        if (rsv){
-            *rsv = it->second.stateVariable.get();
-        }
-        return this;
+    std::string common = thisP.substr(0, last);
+    std::string stri = thisP.substr(last, ni-last);
+    std::string strj = wrtP.substr(last, nj-last);
+
+    std::string prefix  = "";
+
+    // the whole wrt path is part of the common path
+    if (strj.empty() && stri[0] == '/') {
+        prefix = ".";
+    }
+    // if there is a remainder in the wrtP then move at least one
+    else if (!strj.empty() && strj[0] != '/') {
+        prefix += "../";
     }
 
-    // Path not given or could not find it along given path name
-    // Now try complete search.
-    if (!found) {
-        for (unsigned int i = 0; i < _propertySubcomponents.size(); ++i){
-            found = _propertySubcomponents[i]->findComponent(name, rsv);
-            if (found)
-                return found;
-        }
+    last = 0;
+    // process all the '/' nodes in the wrtP up to the common path
+    while ((jx = strj.find('/', last)) < std::string::npos) {
+        prefix += "../";
+        last = jx + 1;
     }
 
-    return found;
+    // return the relative path 
+    return prefix + stri;
 }
 
 const AbstractConnector* Component::findConnector(const std::string& name) const
@@ -648,7 +642,7 @@ const Component::StateVariable* Component::
     }
 
     const StateVariable* found = nullptr;
-    const Component* comp = findComponent(prefix, &found);
+    const Component* comp = traversePathToComponent<Component>(prefix);
 
     if (comp){
         found = comp->findStateVariable(varName);
@@ -931,7 +925,7 @@ void Component::markAsPropertySubcomponent(Component* component)
             _propertySubcomponents.push_back(SimTK::ReferencePtr<Component>(component));
         }
         else{
-            std::string msg = getConcreteClassName()+"::markAsSubcomponent() '"
+            std::string msg = getConcreteClassName()+"::markAsPropertySubcomponent() '"
                 + getName() + "' already has '" + component->getName() +
                     "' as a subcomponent.";
             std::cout << msg << std::endl;

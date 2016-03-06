@@ -636,6 +636,7 @@ void Model::extendConnectToModel(Model &model)
                 SimTK::Transform o(SimTK::Vec3(0));
                 //Now add the constraints that weld the slave to the master at the 
                 // body origin
+                std::string pathName = outb->getFullPathName();
                 WeldConstraint* weld = new WeldConstraint(outb->getName()+"_weld",
                                                           *outbMaster, o, *outb, o);
 
@@ -656,7 +657,7 @@ void Model::extendConnectToModel(Model &model)
 
             std::string jname = "free_" + child->getName();
             SimTK::Vec3 zeroVec(0.0);
-            Joint* free = new FreeJoint(jname, ground->getName(), child->getName());
+            Joint* free = new FreeJoint(jname, ground->getFullPathName(), child->getFullPathName());
             free->upd_reverse() = mob.isReversedFromJoint();
             addJoint(free);
         }

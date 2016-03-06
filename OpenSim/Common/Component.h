@@ -54,6 +54,7 @@
 namespace OpenSim {
 
 class ModelDisplayHints;
+class ComponentNotFound;
 //==============================================================================
 //                            OPENSIM COMPONENT
 //==============================================================================
@@ -341,6 +342,10 @@ public:
      * root is guaranteed to be unique. */
     std::string getFullPathName() const;
 
+
+    /** Get the relative pathname of this Component with respect to another one */
+    std::string getRelativePathName(const Component& wrt) const;
+
     /**
      * Get a subcomponent of this Component by its name. 
      * Note using a component's full "path" name is faster and will provide a
@@ -352,51 +357,22 @@ public:
      * @param name       the name (string) of the Component of interest
      * @return Component the component of interest
      */
-    const Component& getComponent(const std::string& name) const;
-    Component& updComponent(const std::string& name) const;
-
-    template <class C>
+    template <class C = Component>
     const C& getComponent(const std::string& name) const {
-        ComponentList<C> compsList = getComponentList<C>();
-
-        std::vector<const C*> foundCs;
-        for (const C& comp : compsList) {
-            if (comp.getFullPathName() == name) {
-                foundCs.push_back(&comp);
-            } // if a child of this Component, one should not need
-              // to specify this Component's full path name 
-            else if (comp.getFullPathName() == (getFullPathName() + "/" + name) ) {
-                foundCs.push_back(&comp);
-            } // otherwise, we just have a type and name match
-              // which we may need to support for compatibility with older models
-              // where only names were used (not path or type)
-              // TODO replace with an exception 
-            else if (comp.getName() == name) {
-                std::string msg = "WARNING-- Component '" + getName() + "::getComponent<";
-                msg += comp.getConcreteClassName() + ">('" + name + "'):\n located '";
-                msg += comp.getFullPathName() + "' which is not a complete path name match.";
-                std::cout << msg << std::endl;
-                foundCs.push_back(&comp);
-            }
-        }
-
-        if (foundCs.size() == 1) {
-            //unique type and name match!
-            return *foundCs[0];
+        const C* comp = traversePathToComponent<C>(name);
+        if (comp) {
+            return *comp;
         }
 
         // Only error cases remain
-        std::string msg = getConcreteClassName() + " '" + getName() + "': ERROR- ";
+        OPENSIM_THROW(ComponentNotFoundOnSpecifedPath, name,
+                                                       C::getClassName(),
+                                                       getName());
+    }
 
-        // too many components of the right type with the same name
-        if (foundCs.size() > 1) {
-            msg +="Found multiple '" + name + "'s of type "+ C::getClassName() + ".";
-            throw Exception(msg, __FILE__, __LINE__);
-        }
-
-        // otherwise, no component of that name and type exists.
-        msg += "Cannot find '" + name + "' of type " + C::getClassName() + ".";
-        throw Exception(msg, __FILE__, __LINE__);
+    template <class C = Component>
+    C& updComponent(const std::string& name) {
+        return *const_cast<C*>(&getComponent<C>(name));
     }
 
     /**
@@ -478,9 +454,9 @@ public:
 
         if (!found){
             std::stringstream msg;
-            msg << "Component::getConnector: ERR- no Connector '" << name << "' found.\n "
-                << "for component '" << getName() << "' of type "
-                << getConcreteClassName();
+            msg << getConcreteClassName() << " '" << getName();
+            msg << "' ::getConnector() ERROR- Connector '" << name;
+            msg << "' not found.\n" << std::endl;
             throw Exception(msg.str(), __FILE__, __LINE__);
         }
 
@@ -540,7 +516,7 @@ public:
             std::string prefix = name.substr(0, back);
             std::string inName = name.substr(back + 1, name.length() - back);
 
-            const Component* found = findComponent(prefix);
+            const Component* found = findComponent<Component>(prefix);
             if (found)
                 return found->getInput(inName);
         }
@@ -569,7 +545,7 @@ public:
             std::string prefix = name.substr(0, back);
             std::string outName = name.substr(back + 1, name.length() - back);
 
-            const Component* found = findComponent(prefix);
+            const Component* found = findComponent<Component>(prefix);
             // if found is this component again, no point trying to find
             // output again, otherwise we would not have reached here 
             if (found && (found != this)) {
@@ -942,15 +918,19 @@ protected:
     // Give the ComponentMeasure access to the realize() methods.
     template <class T> friend class ComponentMeasure;
 
+    /// @class MemberSubcomponentIndex
+    /// Unique integer type for local member subcomponent indexing
+    SimTK_DEFINE_UNIQUE_INDEX_TYPE(MemberSubcomponentIndex);
+
     /** Construct a subcomponent as a data member of this Component. All Component
         interface calls are automatically invoked on its subcomponents. */
     template<class C=Component>
-    C& constructSubcomponent(const std::string& name) {
+    MemberSubcomponentIndex constructSubcomponent(const std::string& name) {
         C* component = new C();
         component->setName(name);
         component->setParent(*this);
         _memberSubcomponents.push_back(SimTK::ClonePtr<Component>(component));
-        return *component;
+        return MemberSubcomponentIndex(_memberSubcomponents.size()-1);
     }
 
   /** Single call to construct the underlying infrastructure of a Component, which
@@ -1316,7 +1296,7 @@ protected:
     template <typename T>
     void constructConnector(const std::string& name) {
         int ix = updProperty_connectors().adoptAndAppendValue(
-            new Connector<T>(name, SimTK::Stage::Topology));
+            new Connector<T>(name, SimTK::Stage::Topology, *this));
         //add pointer to connectorsTable so we can access connectors easily by name
         _connectorsTable[name] = ix;
     }
@@ -1334,7 +1314,7 @@ protected:
     void constructInput(const std::string& name,
         const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance) {
         _inputsTable[name] 
-            = SimTK::ClonePtr<AbstractInput>(new Input<T>(name, requiredAtStage));
+            = SimTK::ClonePtr<AbstractInput>(new Input<T>(name, requiredAtStage, *this));
     }
 
     /**
@@ -1555,6 +1535,9 @@ protected:
 
     // End of System Creation and Access Methods.
 
+    template<class C>
+    friend void Connector<C>::findAndConnect(const Component& root);
+
     /** Utility method to find a component in the list of sub components of this
         component and any of their sub components, etc..., by name or state variable name.
         The search can be sped up considerably if the "path" or even partial path name
@@ -1569,10 +1552,83 @@ protected:
         of StateVariables by name. 
         
         NOTE: If the component name or the state variable name is ambiguous, the 
-         first instance found is returned. To disambiguate use the full name provided
+         an exception is thrown. To disambiguate use the full name provided
          by owning component(s). */
-    const Component* findComponent(const std::string& name, 
-                                   const StateVariable** rsv = nullptr) const;
+    template<class C = Component>
+    const C* findComponent(const std::string& name, 
+                                   const StateVariable** rsv = nullptr) const {
+        if (name.empty()) {
+            std::string msg = "Component::findComponent cannot find a nameless subcomponent ";
+            msg += "within " + getConcreteClassName() + " '" + getName() + "'.";
+            throw Exception(msg);
+        }
+
+        const C* found = NULL;
+        std::string::size_type front = name.rfind("/");
+        size_t len = name.length();
+        std::string subname = front< len ? name.substr(front + 1, len - front) : name;
+
+        if (this->getName() == subname) {
+            found = dynamic_cast<const C*>(this);
+            if (found)
+                return found;
+        }
+
+        std::string msg = getConcreteClassName() + "'" + getName() + "'::findComponent() ";
+
+        ComponentList<C> compsList = getComponentList<C>();
+        std::vector<const C*> foundCs;
+        for (const C& comp : compsList) {
+            std::string compFullPathName = comp.getFullPathName();
+            if (compFullPathName == subname) {
+                foundCs.push_back(&comp);
+                break;
+            } // if a child of this Component, one should not need
+              // to specify this Component's full path name 
+            else if (compFullPathName == (getFullPathName() + "/" + subname)) {
+                foundCs.push_back(&comp);
+                break;
+            } // otherwise, we just have a type and name match
+              // which we may need to support for compatibility with older models
+              // where only names were used (not path or type)
+              // TODO replace with an exception 
+            else if (comp.getName() == subname) {
+                if (foundCs.size() == 0) {
+                    foundCs.push_back(&comp);
+                    msg += "Match for Component '" + name + "' of type " +
+                        comp.getConcreteClassName() + " found, but it "
+                        "is not in specified path. Please specify Component by path name.";
+                    //throw Exception(msg, __FILE__, __LINE__);
+                    std::cout << msg << std::endl;
+                }
+            }
+        }
+
+        if (foundCs.size() == 1) {
+            //unique type and name match!
+            return foundCs[0];
+        }
+
+        std::map<std::string, StateVariableInfo>::const_iterator it;
+        it = _namedStateVariableInfo.find(name);
+        if (it != _namedStateVariableInfo.end()) {
+            if (rsv) {
+                *rsv = it->second.stateVariable.get();
+            }
+            return dynamic_cast<const C*>(this);
+        }
+
+        // Only error cases remain
+        // too many components of the right type with the same name
+        if (foundCs.size() > 1) {
+            msg += "Found multiple '" + name + "'s of type " +
+                foundCs[0]->getConcreteClassName() + ".";
+            throw Exception(msg, __FILE__, __LINE__);
+        }
+
+        // Not found
+        return nullptr;
+    }
 
     /** Similarly find a Connector of this Component (also amongst its subcomponents) */
     const AbstractConnector* findConnector(const std::string& name) const;
@@ -1591,6 +1647,62 @@ protected:
 
     /** %Set this Component's reference to its parent Component */
     void setParent(const Component& parent);
+
+    template<class C>
+    const C* traversePathToComponent(const std::string& path) const
+    {
+        std::string::size_type front = 0;
+        std::string::size_type back = path.rfind('/');
+        std::string dir = "";
+        std::string currentPath = "";
+        const Component* current = this;
+
+        std::string compName = back < std::string::npos ? path.substr(back) : path;
+        back = 0;
+
+        while (back < std::string::npos && current) {
+            back = path.find('/', front);
+            dir = path.substr(front, back - front);
+
+            if (dir == ".." && current->hasParent())
+                current = &current->getParent();
+            // if current in dir keep drilling down the path 
+            else if (current->getName() == dir) {
+                front = back + 1;
+                continue;
+            }
+            // if dir is empty we are at root or have a nameless comp
+            // if dir is '.' we are in the right parent, and loop again
+            // so that dir is the name of the component we want.
+            else if (!dir.empty() && dir != ".") {
+                auto compsList = current->getComponentList<Component>();
+                // descend to next component in the path otherwise not found
+                currentPath = current->getFullPathName();
+                for (const Component& comp : compsList) {
+                    // Match for the dir
+                    if (comp.getFullPathName() == currentPath + "/" + dir) {
+                        // In the right dir and has matching name
+                        // update current to this comp
+                        current = &comp;
+                        if (comp.getName() == compName) {
+                            // now verify type
+                            const C* compC = dynamic_cast<const C*>(&comp);
+                            if (compC)
+                                return  compC;
+                            else // keep traversing this list
+                                continue;
+                        } 
+                        // get out of this list and start going down the new current
+                        break;
+                    }
+                    // No match in this dir
+                    current = nullptr;
+                }
+            }
+            front = back + 1;
+        }
+        return dynamic_cast<const C*>(current);
+    }
 
     //@} 
 
@@ -1682,10 +1794,10 @@ private:
         _connectorsTable.clear();
         for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
             AbstractConnector& connector = upd_connectors(ix);
+            connector.setOwner(*this);
             _connectorsTable[connector.getName()] = ix;
         }
     }
-
 
 protected:
     //Derived Components must create concrete StateVariables to expose their state 
@@ -1796,12 +1908,10 @@ private:
     // subsystem.
     SimTK::ResetOnCopy<SimTK::MeasureIndex> _simTKcomponentIndex;
 
-
     // Keep fixed list of data member Components upon construction
-    SimTK::Array_<SimTK::ClonePtr<Component>> _memberSubcomponents;
+    SimTK::Array_<SimTK::ClonePtr<Component> > _memberSubcomponents;
     // Hold onto adopted components
-    SimTK::Array_<SimTK::ClonePtr<Component>> _adoptedSubcomponents;
-
+    SimTK::Array_<SimTK::ClonePtr<Component> > _adoptedSubcomponents;
 
     // Structure to hold modeling option information. Modeling options are
     // integers 0..maxOptionValue. At run time we keep them in a Simbody
@@ -1924,6 +2034,7 @@ private:
 //==============================================================================
 };  // END of class Component
 //==============================================================================
+
 //==============================================================================
 //==============================================================================
 // Implement methods for ComponentListIterator
@@ -1985,9 +2096,60 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
 
 template<class C>
 void Connector<C>::findAndConnect(const Component& root) {
-    const C& comp = root.getComponent<C>(get_connectee_name());
-    connectee = comp;
+ 
+    const std::string& path = get_connectee_name();
+    const C* comp = nullptr;
+
+    try {
+        if (path[0] == '/') { //absolute path name
+            comp = &root.getComponent<C>(path);
+        }
+        else { // relative path name
+            comp = &getOwner().getComponent<C>(path);
+        }
+    }
+    catch (const ComponentNotFoundOnSpecifedPath& ex) {
+        std::cout << ex.getMessage() << std::endl;
+        comp = root.findComponent<C>(path);
+    }
+    if (comp)
+        connect(*comp);
+    else
+        OPENSIM_THROW(ComponentNotFoundOnSpecifedPath,
+            path,
+            C::getClassName(),
+            getName() );
 }
+
+class ComponentHasNoName : public Exception {
+public:
+    ComponentHasNoName( const std::string& file,
+                        size_t line,
+                        const std::string& func,
+                        const std::string& componentConcreteClassName) :
+            Exception(file, line, func) {
+        std::string msg = componentConcreteClassName + " was constructed with no name.\n";
+        msg += "Please assign a valid name and try again.";
+        addMessage(msg);
+    }
+};
+
+
+class ComponentNotFoundOnSpecifedPath : public Exception {
+public:
+    ComponentNotFoundOnSpecifedPath(const std::string& file,
+                                    size_t line,
+                                    const std::string& func,
+                                    const std::string& toFindName,
+                                    const std::string& toFindClassName,
+                                    const std::string& thisName) :
+            Exception(file, line, func) {
+        std::string msg = "Component '" + thisName + "' could not find '" + toFindName;
+        msg += "' of type " + toFindClassName + ".";
+        addMessage(msg);
+    }
+};
+
 
 } // end of namespace OpenSim
 

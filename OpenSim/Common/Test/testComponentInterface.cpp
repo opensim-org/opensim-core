@@ -115,7 +115,7 @@ private:
     // keep track of the force added by the component
     mutable ForceIndex fix;
 
-    Sub internalSub{ constructSubcomponent<Sub>("internalSub") };
+    MemberSubcomponentIndex intSubix{ constructSubcomponent<Sub>("internalSub") };
 
 }; // end of TheWorld
 
@@ -252,8 +252,8 @@ protected:
         // do any internal wiring
         world = dynamic_cast<TheWorld*>(&root);
         // perform custom checking
-        if (updConnector<Foo>("parentFoo").getConnectee()
-                == updConnector<Foo>("childFoo").getConnectee()){
+        if (&updConnector<Foo>("parentFoo").getConnectee()
+                == &updConnector<Foo>("childFoo").getConnectee()){
             string msg = "ERROR - Bar::extendConnect()\n";
             msg += " parentFoo and childFoo cannot be the same component.";
             throw OpenSim::Exception(msg);
@@ -366,6 +366,8 @@ private:
 SimTK_NICETYPENAME_LITERAL(Foo);
 SimTK_NICETYPENAME_LITERAL(Bar);
 
+void testComponentPathNames();
+
 int main() {
 
     //Register new types for testing deserialization
@@ -376,17 +378,22 @@ int main() {
     Object::registerType(Connector<Bar>());
 
     try {
+        testComponentPathNames();
+
         // Define the Simbody system
         MultibodySystem system;
 
         TheWorld theWorld;
         theWorld.setName("World");
+        theWorld.finalizeFromProperties();
 
         TheWorld* cloneWorld = theWorld.clone();
         cloneWorld->setName("ClonedWorld");
+        cloneWorld->finalizeFromProperties();
 
         TheWorld copyWorld(theWorld);
         copyWorld.setName("CopiedWorld");
+        copyWorld.finalizeFromProperties();
 
         const Sub& theSub = theWorld.getComponent<Sub>("internalSub");
         const Sub& cloneSub = cloneWorld->getComponent<Sub>("internalSub");
@@ -413,11 +420,11 @@ int main() {
         theWorld.add(&bar);
 
         Bar barEqual(bar);
-        barEqual = bar;
+        ASSERT(barEqual == bar);
 
         //Configure the connector to look for its dependency by this name
         //Will get resolved and connected automatically at Component connect
-        bar.updConnector<Foo>("parentFoo").set_connectee_name("Foo");
+        bar.updConnector<Foo>("parentFoo").set_connectee_name(foo.getFullPathName());
         bar.updConnector<Foo>("childFoo").connect(foo);
         
         // add a subcomponent
@@ -445,7 +452,6 @@ int main() {
         for (auto& component : theWorld.getComponentList<Foo>()) {
             std::cout << "Iterator is at: " << component.getFullPathName() << std::endl;
         }
-        
 
         Foo& foo2 = *new Foo();
         foo2.setName("Foo2");
@@ -458,7 +464,7 @@ int main() {
             std::cout << "Iter at: " << component.getFullPathName() << std::endl;
         }
 
-        bar.updConnector<Foo>("childFoo").set_connectee_name("Foo2");
+        bar.updConnector<Foo>("childFoo").connect(foo2);
         string connectorName = bar.updConnector<Foo>("childFoo").getConcreteClassName();
 
         // Bar should connect now
@@ -537,11 +543,14 @@ int main() {
         // Test copy assignment
         TheWorld world3;
         world3 = *world2;
+
         world3.finalizeFromProperties();
         world3.getComponent("Bar").getConnector<Foo>("parentFoo");
 
         ASSERT(world3 == (*world2), __FILE__, __LINE__, 
             "Model copy assignment FAILED");
+        
+        world3.setName("World3");
 
         // Add second world as the internal model of the first
         theWorld.add(world2);
@@ -561,15 +570,17 @@ int main() {
 
         //Configure the connector to look for its dependency by this name
         //Will get resolved and connected automatically at Component connect
-        bar2.updConnector<Foo>("parentFoo").set_connectee_name("BigFoo");
-        bar2.updConnector<Foo>("childFoo").set_connectee_name("Foo");
+        bar2.updConnector<Foo>("parentFoo")
+            .set_connectee_name(compFoo.getRelativePathName(bar2));
+        bar2.updConnector<Foo>("childFoo").connect(foo);
 
-        world3.setName("World3");
+        world3.finalizeFromProperties();
         world3.print("Compound_" + modelFile);
 
         cout << "Adding world3 to theWorld" << endl;
         theWorld.add(world3.clone());
         cout << "Connecting theWorld:" << endl;
+        theWorld.dumpSubcomponents();
         theWorld.connect();
 
         MultibodySystem system3;
@@ -641,4 +652,147 @@ int main() {
     }
     cout << "Done" << endl;
     return 0;
+}
+
+
+void testComponentPathNames()
+{
+    Foo foo;
+    Bar bar;
+    TheWorld top;
+
+    // These are not valid component names
+    // Only using for testing as surrogates for path names
+    // which are computed by the component. Just testing
+    // the relative path name facility here.
+    top.setName("Top");
+    foo.setName("A/B/C/D");
+    bar.setName("A/B/E");
+
+    std::string fooWrtBar = foo.getRelativePathName(bar);
+    ASSERT(fooWrtBar == "../C/D"); // "/A/B/" as common
+
+    std::string barWrtFoo= bar.getRelativePathName(foo);
+    ASSERT(barWrtFoo == "../../E"); // "/A/B/" as common
+
+    // null case foo wrt foo
+    std::string fooWrtFoo = foo.getRelativePathName(foo);
+    ASSERT(fooWrtFoo == "");
+
+    std::string topFullPath = top.getFullPathName();
+    std::string fooWrtTop = foo.getRelativePathName(top);
+    ASSERT(fooWrtTop == "../A/B/C/D");
+
+    std::string topWrtFoo = top.getRelativePathName(foo);
+    ASSERT(topWrtFoo== "../../../../Top");
+
+    foo.setName("World/Foo");
+    bar.setName("World3/bar2");
+    fooWrtBar = foo.getRelativePathName(bar);
+    ASSERT(fooWrtBar == "../../World/Foo");
+
+    foo.setName("World3/bar2/foo1");
+    fooWrtBar = foo.getRelativePathName(bar);
+    ASSERT(fooWrtBar == "./foo1");
+
+    bar.setName("LegWithConstrainedFoot/footConstraint");
+    foo.setName("LegWithConstrainedFoot/foot");
+    barWrtFoo = bar.getRelativePathName(foo);
+    ASSERT(barWrtFoo == "../footConstraint");
+
+    // Now build use real components and assemble them 
+    // into a tree and test the path names that are 
+    // generated on the fly.
+    TheWorld* A = new TheWorld();
+    TheWorld* B = new TheWorld();
+    TheWorld* C = new TheWorld();
+    TheWorld* D = new TheWorld();
+    TheWorld* E = new TheWorld();
+    A->setName("A");
+    B->setName("B");
+    C->setName("C");
+    D->setName("D");
+    E->setName("E");
+    
+    top.add(A);
+    A->add(B);
+    B->add(C);
+    A->add(D);
+    D->add(E);
+
+    top.dumpSubcomponents();
+
+    std::string fullPathC = C->getFullPathName();
+    ASSERT(fullPathC == "/Top/A/B/C");
+
+    std::string fullPathE = E->getFullPathName();
+    ASSERT(fullPathE == "/Top/A/D/E");
+
+    // Must specify a unique path to E
+    ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifedPath,
+        auto& eref = top.getComponent("E") );
+
+    auto& cref = top.getComponent(fullPathC);
+    auto& eref = top.getComponent(fullPathE);
+
+    auto cFromE = cref.getRelativePathName(eref);
+    ASSERT(cFromE == "../../B/C");
+
+    auto eFromC = eref.getRelativePathName(cref);
+    ASSERT(eFromC == "../../D/E");
+
+    // verify that we can also navigate relative paths properly
+    auto& eref2 = cref.getComponent(eFromC);
+    ASSERT(eref2 == eref);
+
+    Foo* foo1 = new Foo();
+    foo1->setName("Foo1");
+    Foo* foo2 = new Foo();
+    foo2->setName("Foo2");
+    Bar* bar2 = new Bar();
+    bar2->setName("Bar2");
+
+    A->add(foo1);
+    A->add(foo2);
+    A->add(bar2);
+
+    TheWorld* F = A->clone();
+    F->setName("F");
+    top.add(F);
+
+    top.dumpSubcomponents();
+
+    std::string fFoo1FullPath = 
+        F->getComponent<Foo>("Foo1").getFullPathName();
+    std::string aBar2FullPath = 
+        A->getComponent<Bar>("Bar2").getFullPathName();
+    auto bar2FromBarFoo = 
+        bar2->getRelativePathName(F->getComponent<Foo>("Foo1"));
+
+    // Verify deep copy of subcomponents
+    const Foo& foo1inA = top.getComponent<Foo>("/Top/A/Foo1");
+    const Foo& foo1inF = top.getComponent<Foo>("/Top/F/Foo1");
+    ASSERT(&foo1inA != &foo1inF);
+
+    // double check that we have the original Foo foo1 in A
+    ASSERT(&foo1inA == foo1);
+
+    // This bar2 that belongs to A and connects the two foo2s
+    bar2->updConnector<Foo>("parentFoo").connect(*foo2);
+    bar2->updConnector<Foo>("childFoo")
+        .connect(F->getComponent<Foo>("Foo2"));
+
+    auto& foo2inF = bar2->getComponent<Foo>("../../F/Foo2");
+
+    // now wire up bar2 that belongs to F and connect the 
+    // two foo1s one in A and other F
+    auto& fbar2 = F->updComponent<Bar>("Bar2");
+    ASSERT(&fbar2 != bar2);
+
+    fbar2.updConnector<Foo>("parentFoo").connect(*foo1);
+    fbar2.updConnector<Foo>("childFoo")
+        .set_connectee_name("../Foo1");
+
+    top.dumpSubcomponents();
+    top.connect();
 }

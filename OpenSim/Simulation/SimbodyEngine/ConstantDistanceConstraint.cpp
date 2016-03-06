@@ -118,10 +118,8 @@ void ConstantDistanceConstraint::extendAddToSystem(SimTK::MultibodySystem& syste
     Super::extendAddToSystem(system);
 
     // Get underlying mobilized bodies
-    const PhysicalFrame& f1 =
-        getConnector<PhysicalFrame>("body_1").getConnectee();
-    const PhysicalFrame& f2 =
-        getConnector<PhysicalFrame>("body_2").getConnectee();
+    const PhysicalFrame& f1 = getConnectee<PhysicalFrame>("body_1");
+    const PhysicalFrame& f2 = getConnectee<PhysicalFrame>("body_2");
 
     SimTK::MobilizedBody b1 = f1.getMobilizedBody();
     SimTK::MobilizedBody b2 = f2.getMobilizedBody();
@@ -140,12 +138,12 @@ void ConstantDistanceConstraint::extendAddToSystem(SimTK::MultibodySystem& syste
 //=============================================================================
 const PhysicalFrame& ConstantDistanceConstraint::getBody1() const
 {
-    return getConnector<PhysicalFrame>("body_1").getConnectee();
+    return getConnectee<Body>("body_1");
 }
 
 const PhysicalFrame& ConstantDistanceConstraint::getBody2() const
 {
-    return getConnector<PhysicalFrame>("body_2").getConnectee();
+    return getConnectee<PhysicalFrame>("body_2");
 }
 
 /*

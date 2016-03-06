@@ -81,8 +81,8 @@ WeldConstraint::WeldConstraint(const std::string &name,
 WeldConstraint::WeldConstraint(const std::string &name,
     const PhysicalFrame& frame1, const SimTK::Transform& transformInFrame1,
     const PhysicalFrame& frame2, const SimTK::Transform& transformInFrame2)
-    : TwoFrameLinker<Constraint, PhysicalFrame>(name,
-        frame1.getName(), transformInFrame1, frame2.getName(), transformInFrame2)
+    : TwoFrameLinker<Constraint, PhysicalFrame>(name, frame1, transformInFrame1,
+                                                      frame2, transformInFrame2)
 {
     setNull();
 }

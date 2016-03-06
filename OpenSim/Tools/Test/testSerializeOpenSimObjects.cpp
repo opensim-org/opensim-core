@@ -98,6 +98,14 @@ int main()
         // can ignore invalid properties and focus the test on serialization.
         Model deserializedModel("allComponents.osim", false);
 
+        try {
+            deserializedModel.finalizeFromProperties();
+        } //Ignore the validity of the property values
+        catch (const SimTK::Exception::ErrorCheck& err) {
+            const string& errMsg = err.getMessage();
+            //std::cout << errMsg << std::endl;
+        }
+
         nc = deserializedModel.getMiscModelComponentSet().getSize();
         cout << nc << " model components were deserialized from file." << endl;
 
