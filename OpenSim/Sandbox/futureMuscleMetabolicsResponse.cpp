@@ -136,6 +136,9 @@ private:
 template <typename T>
 class ConsoleReporter : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(ConsoleReporter, Component);
+    // TODO interval
+    // TODO constant interval reporting
+    // TODO num significant digits (override).
 public:
     ConsoleReporter() {
         constructInfrastructure();
@@ -143,18 +146,26 @@ public:
 private:
     void constructProperties() override {}
     void constructInputs() override {
-        constructInput<T>("input1", SimTK::Stage::Acceleration);
-        // constructInput<T>("input2", SimTK::Stage::Acceleration);
-        constructInput<T>("input3", SimTK::Stage::Acceleration);
-        // multi input: constructMultiInput<T>("input", SimTK::Stage::Acceleration);
+        // TODO rename as multi-input?
+        constructInput<T>("input", SimTK::Stage::Acceleration);
     }
     void extendRealizeReport(const State& state) const override {
         // multi input: loop through multi-inputs.
         // Output::getNumberOfSignificantDigits().
-        std::cout << std::setw(10) << state.getTime() << ": " <<
-            getInputValue<T>(state, "input1") << " " <<
+        // TODO print column names every 10 outputs.
+        // TODO test by capturing stdout.
+        // TODO prepend each line with "[<name>]" or "[reporter]" if no name is given.
+        std::cout << std::setw(10) << state.getTime() << ": ";
+        const auto& input = getInput("input");
+        for (auto idx = 0; idx < input.getNumConnectees();
+                ++idx) {
+            std::cout << Input<T>::downcast(input).getValue(state, idx) << " ";
+        }
+        std::cout << std::endl;
+        //<<
+          //  getInputValue<T>(state, "input1") << " " <<
             // getInputValue<T>(state, "input2") << " " <<
-            getInputValue<T>(state, "input3") << std::endl;
+            /*getInputValue<T>(state, "input3") << */ //std::endl;
     }
 };
 
@@ -173,6 +184,8 @@ void integrate(const System& system, Integrator& integrator,
 
 void testComplexResponse() {
     Model model;
+    
+    // Bodies and joints.
     auto b1 = new OpenSim::Body("b1", 1, Vec3(0), Inertia(0));
     auto b2 = new OpenSim::Body("b2", 1, Vec3(0), Inertia(0));
     auto b3 = new OpenSim::Body("b3", 1, Vec3(0), Inertia(0));
@@ -183,6 +196,7 @@ void testComplexResponse() {
     auto j3 = new PinJoint("j3", *b2, Vec3(0), Vec3(0),
                *b3, Vec3(0, 1, 0), Vec3(0));
 
+    // Aggregate calculator.
     auto aggregate = new AggregateResponse();
     aggregate->setName("aggregate_response");
     // TODO must fix copying of an output's function first.
@@ -198,12 +212,17 @@ void testComplexResponse() {
 
     auto reporter = new ConsoleReporter<double>();
     reporter->setName("reporter");
-    reporter->getInput("input1").connect(aggregate->get_responses(0).getOutput("sum"));
-    //reporter->getInput("input2").connect(aggregate->responses[1]->getOutput("sum"));
-    reporter->getInput("input3").connect(aggregate->getOutput("total_sum"));
+    reporter->getInput("input").append(
+            aggregate->get_responses(0).getOutput("sum"));
+    reporter->getInput("input").connect(
+            aggregate->get_responses(1).getOutput("sum"));
+    reporter->getInput("input").append(aggregate->getOutput("total_sum"));
+    reporter->getInput("input").append(
+            j1->getCoordinateSet().get(0).getOutput("value"));
     // TODO connect by path: reporter->getInput("input").connect("/complex_response/sum");
     // multi input: reporter->getMultiInput("input").append_connect(cr->getOutput("sum"));
 
+    // Add in the components to the model.
     model.addBody(b1);
     model.addBody(b2);
     model.addBody(b3);

@@ -210,23 +210,23 @@ private:
     An AbstractInput enables maintenance of a list of unconnected Inputs. 
 */
 
-class OSIMCOMMON_API AbstractInput : public AbstractConnector{
+class OSIMCOMMON_API AbstractInput : public AbstractConnector {
     OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractInput, AbstractConnector);
 public:
     /** Default constructor */
-    AbstractInput() : AbstractConnector(), connectee(nullptr) {}
+    AbstractInput() : AbstractConnector()/*, connectee(nullptr)*/ {}
     /** Convenience constructor
     Create an AbstractInput (Connector) that connects only to an AbstractOutput
     specified by name and stage at which it should be connected.
     @param name             name of the dependent (Abstract)Output.
     @param connectAtStage   Stage at which Input should be connected. */
     AbstractInput(const std::string& name, const SimTK::Stage& connectAtStage) :
-        AbstractConnector(name, connectAtStage), connectee(nullptr) {}
+        AbstractConnector(name, connectAtStage)/*, connectee(nullptr)*/ {}
 
     virtual ~AbstractInput() {}
 
     // Connector interface
-    void connect(const Object& object) override{
+    void connect(const Object& object) override {
         std::stringstream msg;
         msg << "Input::connect(): ERR- Cannot connect '" << object.getName()
             << "' of type " << object.getConcreteClassName() <<
@@ -235,29 +235,35 @@ public:
     }
 
     /** Input Specific Connect */
-    virtual void connect(const AbstractOutput& output) const {
+    virtual void connect(const AbstractOutput& output) const = 0;/*{
         connectee = output;
         //std::cout << getConcreteClassName() << "::connected to '";
         //std::cout << output.getName() << "'<" << output.getTypeName();
         //std::cout << ">." << std::endl;
-    }
+    }*/
+    
+    virtual void append(const AbstractOutput& output) const = 0;
+    virtual size_t getNumConnectees() const = 0;
 
+    /*
     void disconnect() override {
         connectee.reset(nullptr);
     }
+     */
 
     /** Is the Input connected to an Output? */
-    bool isConnected() const override {
+    /*bool isConnected() const override {
         return !connectee.empty();
-    }
+    }*/
 
     /** Derived classes must satisfy this Interface */
     /** get the type of object this connector connects to*/
-    std::string getConnecteeTypeName() const override
-    { return SimTK::NiceTypeName<AbstractOutput>::name(); }
+    /*std::string getConnecteeTypeName() const override
+    { return SimTK::NiceTypeName<AbstractOutput>::namestr(); }
+     */
 
 private:
-    mutable SimTK::ReferencePtr<const AbstractOutput> connectee;
+    // TODO mutable SimTK::ReferencePtr<const AbstractOutput> connectee;
 //=============================================================================
 };  // END class AbstractInput
 
@@ -275,31 +281,71 @@ public:
     @param name             name of the Output dependency.
     @param connectAtStage   Stage at which Input should be connected. */
     Input(const std::string& name, const SimTK::Stage& connectAtStage) :
-        AbstractInput(name, connectAtStage) {}
+            AbstractInput(name, connectAtStage) {
+        
+    }
 
     /** Connect this Input the from provided (Abstract)Output */
     void connect(const AbstractOutput& output) const override {
         // enable interaction through AbstractInterface
-        Super::connect(output);
+        // TODO Super::connect(output);
+        // TODO do the type check here as well.
         // and value specific interface
-        connectee = Output<T>::downcast(output);
+        const_cast<Input<T>*>(this)->disconnect();
+        append(output);
+        //const_cast<Input<T>*>(this)->_connectees[0] = Output<T>::downcast(output);
     }
+    
+    void append(const AbstractOutput& output) const override {
+        const auto* outT = dynamic_cast<const Output<T>*>(&output);
+        if (outT) {
+            const_cast<Input<T>*>(this)->_connectees.push_back(
+                SimTK::ReferencePtr<const Output<T>>(outT));
+        }
+        else {
+            throw Exception();
+            /* TODO
+            std::stringstream msg;
+            msg << "Input::connect(): ERR- Cannot connect '" << output.getName()
+            << "' of type " << object.getConcreteClassName() << ". Input requires "
+            << getConnecteeTypeName() << ".";
+            throw Exception(msg.str(), __FILE__, __LINE__);
+             */
+        }
+    }
+    
+    void disconnect() override {
+        _connectees.clear();
+        // TODO _connectees[0].reset(nullptr);
+    }
+    
+    bool isConnected() const override {
+        return !_connectees.empty();
+    }
+    
+    size_t getNumConnectees() const override {
+        return _connectees.size();
+    }
+    
+    std::string getConnecteeTypeName() const override
+    { return SimTK::NiceTypeName<Output<T>>::namestr(); }
 
     /** Connect this Input given a root Component to search for
         the Output according to the connectee_name of this Input  */
-    void findAndConnect(const Component& root) override {
-    }
+    void findAndConnect(const Component& root) override {}
 
     /**Get the value of this Input when it is connected. Redirects to connected
        Output<T>'s getValue() with minimal overhead. */
-    const T& getValue(const SimTK::State &state) const {
-        return connectee.getRef().getValue(state);
+    const T& getValue(const SimTK::State &state, size_t index=0) const {
+        return _connectees[index].getRef().getValue(state);
     }
 
     SimTK_DOWNCAST(Input, AbstractInput);
 
 private:
-    mutable SimTK::ReferencePtr< const Output<T>  > connectee;
+    // Initialize the vector to have one element.
+    std::vector<SimTK::ReferencePtr<const Output<T>>> _connectees;
+    //        { std::vector<SimTK::ReferencePtr<const Output<T>>>(1) };
 }; // END class Input<Y>
 
 
