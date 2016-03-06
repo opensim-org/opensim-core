@@ -70,8 +70,21 @@ exception()
 Exception::Exception(const std::string& file,
                      size_t line,
                      const std::string& func) {
-    addMessage(file + ":" + std::to_string(line) + "\n" + "In function '" + 
-               func + "'");
+    addMessage("\tIn file " + file + ":" + std::to_string(line) + "\n" +
+               "\tIn function '" + func + "'");
+}
+
+Exception::Exception(const std::string& file,
+              size_t line,
+              const std::string& func,
+              const std::string& className,
+              std::string objName,
+              const std::string& msg) {
+    addMessage("\tIn file " + file + ":" + std::to_string(line) + "\n" +
+               "\tIn function '" + func + "'");
+    if (objName.empty()) objName = "<no-name>";
+    addMessage("\tIn object '" + objName + "' of type " + className + ".");
+    addMessage(msg);
 }
 
 void

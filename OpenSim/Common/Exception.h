@@ -142,6 +142,15 @@ public:
               size_t line,
               const std::string& func);
 
+    /** The message created by this constructor will contain the provided class
+     * name and object name, and also accepts a message. */
+    Exception(const std::string& file,
+              size_t line,
+              const std::string& func,
+              const std::string& className,
+              std::string objName,
+              const std::string& msg);
+
     virtual ~Exception() throw() {}
 
 protected:
