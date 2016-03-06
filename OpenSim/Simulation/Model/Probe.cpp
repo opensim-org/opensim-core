@@ -120,12 +120,6 @@ void Probe::constructProperties(void)
     constructProperty_gain(1.0);
 }
 
-void Probe::constructOutputs()
-{
-    constructOutput<SimTK::Vector>("probe_outputs", &Probe::getProbeOutputs,
-            Stage::Report);
-}
-
 //_____________________________________________________________________________
 /**
  * Create an underlying OpenSim::Probe
