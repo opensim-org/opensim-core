@@ -138,7 +138,7 @@ void ConstantDistanceConstraint::extendAddToSystem(SimTK::MultibodySystem& syste
 //=============================================================================
 const PhysicalFrame& ConstantDistanceConstraint::getBody1() const
 {
-    return getConnectee<Body>("body_1");
+    return getConnectee<PhysicalFrame>("body_1");
 }
 
 const PhysicalFrame& ConstantDistanceConstraint::getBody2() const
