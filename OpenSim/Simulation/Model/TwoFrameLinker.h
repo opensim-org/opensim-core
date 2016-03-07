@@ -281,7 +281,7 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     // Append the offset frames to the Joints internal list of frames
     int ix1 = append_frames(frame1Offset);
     int ix2 = append_frames(frame2Offset);
-    finalizeFromProperties();
+    this->finalizeFromProperties();
 
     this->template updConnector<F>("frame1").connect(get_frames(ix1));
     this->template updConnector<F>("frame2").connect(get_frames(ix2));
@@ -308,7 +308,7 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     // Append the offset frames to the Joints internal list of frames
     int ix1 = append_frames(frame1Offset);
     int ix2 = append_frames(frame2Offset);
-    finalizeFromProperties();
+    this->finalizeFromProperties();
 
     this->template updConnector<F>("frame1").connect(get_frames(ix1));
     this->template updConnector<F>("frame2").connect(get_frames(ix2));
