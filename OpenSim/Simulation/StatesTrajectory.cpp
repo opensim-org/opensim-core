@@ -31,6 +31,10 @@ size_t StatesTrajectory::getSize() const {
     return m_states.size();
 }
 
+void StatesTrajectory::clear() {
+    m_states.clear();
+}
+
 void StatesTrajectory::append(const SimTK::State& state) {
     if (!m_states.empty()) {
 

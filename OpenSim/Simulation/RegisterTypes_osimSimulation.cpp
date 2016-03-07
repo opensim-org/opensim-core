@@ -122,6 +122,8 @@
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
 
+#include "StatesCollector.h"
+
 #include <string>
 #include <iostream>
 #include <exception>
@@ -258,6 +260,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( Bhargava2004MuscleMetabolicsProbe() );
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet() );
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter() );
+
+    Object::registerType( StatesCollector() );
 
     // Register commonly used Connectors for de/serialization
     Object::registerType(Connector<Frame>());

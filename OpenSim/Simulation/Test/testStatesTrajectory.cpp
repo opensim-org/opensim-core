@@ -54,11 +54,16 @@ Real getStorageEntry(const Storage& sto,
     return value;
 }
 
-void testPopulateTrajectory() {
+void testPopulateTrajectoryAndStatesCollector() {
     Model model("gait2354_simbody.osim");
 
     // To assist with creating interesting (non-zero) coordinate values:
     model.updCoordinateSet().get("pelvis_ty").setDefaultLocked(true);
+
+    // Also, test the StatesCollector.
+    auto* statesCol = new StatesCollector();
+    statesCol->setName("states_collector");
+    model.addModelComponent(statesCol);
 
     auto& state = model.initSystem();
 
@@ -76,13 +81,18 @@ void testPopulateTrajectory() {
         times.push_back(ts.getState().getTime());
         // StatesTrajectory API for appending states:
         states.append(ts.getState());
+        // For the StatesCollector:
+        model.realizeReport(ts.getState());
+        model.getMultibodySystem().realize(ts.getState(), SimTK::Stage::Report);
     }
 
     // Make sure we have all the states
     SimTK_TEST_EQ((int)states.getSize(), (int)times.size());
+    SimTK_TEST_EQ((int)statesCol->getStates().getSize(), (int)times.size());
     // ...and that they aren't all just references to the same single state.
     for (int i = 0; i < states.getSize(); ++i) {
         SimTK_TEST_EQ(states[i].getTime(), times[i]);
+        SimTK_TEST_EQ(statesCol->getStates()[i].getTime(), times[i]);
     }
 
 }
@@ -654,7 +664,7 @@ int main() {
         // generate it later and we don't want to use a stale one by accident.
         remove(statesStoFname.c_str());
 
-        SimTK_SUBTEST(testPopulateTrajectory);
+        SimTK_SUBTEST(testPopulateTrajectoryAndStatesCollector);
         SimTK_SUBTEST(testFrontBack);
         SimTK_SUBTEST(testBoundsCheck);
         SimTK_SUBTEST(testIntegrityChecks);

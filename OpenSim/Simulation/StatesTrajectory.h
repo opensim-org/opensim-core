@@ -221,8 +221,10 @@ public:
     const_iterator end() const { return m_states.cend(); }
     /// @}
 
-    /// @name Populating the trajectory with states
+    /// @name Modify the contents of the trajectory
     /// @{
+    /** Clear all the states in the trajectory. */
+    void clear();
     /** Append a SimTK::State to this trajectory.
      * This function ensures that the time in the new SimTK::State is
      * greater than the time in the last SimTK::State in the trajectory.
