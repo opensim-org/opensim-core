@@ -54,8 +54,40 @@
 namespace OpenSim {
 
 class ModelDisplayHints;
-class ComponentNotFound;
-class ComponentNotFoundOnSpecifedPath;
+
+
+//==============================================================================
+/// Component Exceptions
+//==============================================================================
+class ComponentHasNoName : public Exception {
+public:
+    ComponentHasNoName(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& componentConcreteClassName) :
+        Exception(file, line, func) {
+        std::string msg = componentConcreteClassName;
+        msg += " was constructed with no name.\n";
+        msg += "Please assign a valid name and try again.";
+        addMessage(msg);
+    }
+};
+
+class ComponentNotFoundOnSpecifedPath : public Exception {
+public:
+    ComponentNotFoundOnSpecifedPath(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& toFindName,
+        const std::string& toFindClassName,
+        const std::string& thisName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName;
+        msg += "' could not find '" + toFindName;
+        msg += "' of type " + toFindClassName + ".";
+        addMessage(msg);
+    }
+};
 
 //==============================================================================
 //                            OPENSIM COMPONENT
@@ -349,15 +381,16 @@ public:
     std::string getRelativePathName(const Component& wrt) const;
 
     /**
-     * Get a subcomponent of this Component by its name. 
+     * Get a subcomponent of this Component by its path name. 
      * Note using a component's full "path" name is faster and will provide a
-     * unique result. Otherwise, the first component to satisfy the name match 
-     * will be returned.
+     * unique result. Throws ComponentNotFoundOnSpecifedPath if the component
+     * at that location does not exist OR it is not of the correct type.
      * For example right_elbow/elbow_flexion will return a Coordinate 
      * Component that is a member of the model's right elbow joint Component.
      *
      * @param name       the name (string) of the Component of interest
      * @return Component the component of interest
+     * @throws ComponentNotFoundOnSpecifedPath if no component exists
      */
     template <class C = Component>
     const C& getComponent(const std::string& name) const {
@@ -372,6 +405,12 @@ public:
                                                        getName());
     }
 
+    /** Get a writable reference to a subcomponent.
+    * @param name       the name(string) of the Component of interest
+    * @return Component the component of interest
+    * @throws ComponentNotFoundOnSpecifedPath if no component exists
+    * @see getComponent()
+    */
     template <class C = Component>
     C& updComponent(const std::string& name) {
         return *const_cast<C*>(&(this->template getComponent<C>(name)));
@@ -1560,10 +1599,11 @@ protected:
          by owning component(s). */
     template<class C = Component>
     const C* findComponent(const std::string& name, 
-                                   const StateVariable** rsv = nullptr) const {
+                           const StateVariable** rsv = nullptr) const {
+        std::string msg = getConcreteClassName() + "'" + getName() +
+                          "'::findComponent() ";
         if (name.empty()) {
-            std::string msg = "Component::findComponent cannot find a nameless subcomponent ";
-            msg += "within " + getConcreteClassName() + " '" + getName() + "'.";
+            msg += "cannot find a nameless subcomponent.";
             throw Exception(msg);
         }
 
@@ -1577,8 +1617,6 @@ protected:
             if (found)
                 return found;
         }
-
-        std::string msg = getConcreteClassName() + "'" + getName() + "'::findComponent() ";
 
         ComponentList<C> compsList = this->template getComponentList<C>();
         std::vector<const C*> foundCs;
@@ -1595,13 +1633,13 @@ protected:
             } // otherwise, we just have a type and name match
               // which we may need to support for compatibility with older models
               // where only names were used (not path or type)
-              // TODO replace with an exception 
+              // TODO replace with an exception -aseth
             else if (comp.getName() == subname) {
                 if (foundCs.size() == 0) {
                     foundCs.push_back(&comp);
-                    msg += "Match for Component '" + name + "' of type " +
+                    msg += "a match for Component '" + name + "' of type " +
                         comp.getConcreteClassName() + " found, but it "
-                        "is not in specified path. Please specify Component by path name.";
+                        "is not in specified path.";
                     //throw Exception(msg, __FILE__, __LINE__);
                     std::cout << msg << std::endl;
                 }
@@ -2039,8 +2077,6 @@ private:
 };  // END of class Component
 //==============================================================================
 
-//==============================================================================
-//==============================================================================
 // Implement methods for ComponentListIterator
 /// ComponentListIterator<T> pre-increment operator, advances the iterator to
 /// the next valid entry.
@@ -2125,34 +2161,7 @@ void Connector<C>::findAndConnect(const Component& root) {
             getName() );
 }
 
-class ComponentHasNoName : public Exception {
-public:
-    ComponentHasNoName( const std::string& file,
-                        size_t line,
-                        const std::string& func,
-                        const std::string& componentConcreteClassName) :
-            Exception(file, line, func) {
-        std::string msg = componentConcreteClassName + " was constructed with no name.\n";
-        msg += "Please assign a valid name and try again.";
-        addMessage(msg);
-    }
-};
 
-
-class ComponentNotFoundOnSpecifedPath : public Exception {
-public:
-    ComponentNotFoundOnSpecifedPath(const std::string& file,
-                                    size_t line,
-                                    const std::string& func,
-                                    const std::string& toFindName,
-                                    const std::string& toFindClassName,
-                                    const std::string& thisName) :
-            Exception(file, line, func) {
-        std::string msg = "Component '" + thisName + "' could not find '" + toFindName;
-        msg += "' of type " + toFindClassName + ".";
-        addMessage(msg);
-    }
-};
 
 
 } // end of namespace OpenSim
