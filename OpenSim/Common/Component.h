@@ -73,9 +73,9 @@ public:
     }
 };
 
-class ComponentNotFoundOnSpecifedPath : public Exception {
+class ComponentNotFoundOnSpecifiedPath : public Exception {
 public:
-    ComponentNotFoundOnSpecifedPath(const std::string& file,
+    ComponentNotFoundOnSpecifiedPath(const std::string& file,
         size_t line,
         const std::string& func,
         const std::string& toFindName,
@@ -383,14 +383,14 @@ public:
     /**
      * Get a subcomponent of this Component by its path name. 
      * Note using a component's full "path" name is faster and will provide a
-     * unique result. Throws ComponentNotFoundOnSpecifedPath if the component
+     * unique result. Throws ComponentNotFoundOnSpecifiedPath if the component
      * at that location does not exist OR it is not of the correct type.
      * For example right_elbow/elbow_flexion will return a Coordinate 
      * Component that is a member of the model's right elbow joint Component.
      *
      * @param name       the name (string) of the Component of interest
      * @return Component the component of interest
-     * @throws ComponentNotFoundOnSpecifedPath if no component exists
+     * @throws ComponentNotFoundOnSpecifiedPath if no component exists
      */
     template <class C = Component>
     const C& getComponent(const std::string& name) const {
@@ -400,7 +400,7 @@ public:
         }
 
         // Only error cases remain
-        OPENSIM_THROW(ComponentNotFoundOnSpecifedPath, name,
+        OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath, name,
                                                        C::getClassName(),
                                                        getName());
     }
@@ -408,7 +408,7 @@ public:
     /** Get a writable reference to a subcomponent.
     * @param name       the name(string) of the Component of interest
     * @return Component the component of interest
-    * @throws ComponentNotFoundOnSpecifedPath if no component exists
+    * @throws ComponentNotFoundOnSpecifiedPath if no component exists
     * @see getComponent()
     */
     template <class C = Component>
@@ -2148,14 +2148,14 @@ void Connector<C>::findAndConnect(const Component& root) {
             comp =  &getOwner().template getComponent<C>(path);
         }
     }
-    catch (const ComponentNotFoundOnSpecifedPath& ex) {
+    catch (const ComponentNotFoundOnSpecifiedPath& ex) {
         std::cout << ex.getMessage() << std::endl;
         comp =  root.template findComponent<C>(path);
     }
     if (comp)
         connect(*comp);
     else
-        OPENSIM_THROW(ComponentNotFoundOnSpecifedPath,
+        OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath,
             path,
             C::getClassName(),
             getName() );

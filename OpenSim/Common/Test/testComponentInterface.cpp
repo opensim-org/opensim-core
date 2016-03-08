@@ -729,7 +729,7 @@ void testComponentPathNames()
     ASSERT(fullPathE == "/Top/A/D/E");
 
     // Must specify a unique path to E
-    ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifedPath,
+    ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifiedPath,
         auto& eref = top.getComponent("E") );
 
     auto& cref = top.getComponent(fullPathC);
