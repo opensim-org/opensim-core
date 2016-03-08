@@ -168,7 +168,7 @@ private:
 /// Use these macros at the top of your component class declaration,
 /// near where you declare @ref Property properties.
 /// @{
-/** Create an output for a member function of the same component. 
+/** Create an output for a member function of this component.
  *  The following must be true about componentMemberFunction, the function
  *  that returns the output:
  *
@@ -200,7 +200,7 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, oname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    int _output_##oname { constructOutput<T>(#oname, &Self::func, ostage) };\
+    OutputIndex _output_##oname { constructOutput<T>(#oname, &Self::func, ostage) }; \
     /** @endcond                                                         */
 
 // Note: we could omit the T argument from the above macro by using the
@@ -237,10 +237,10 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, oname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    int _output_##oname { constructOutput<T>(#oname, func, ostage) };       \
+    OutputIndex _output_##oname { constructOutput<T>(#oname, func, ostage) }; \
     /** @endcond                                                         */
 
-/** Create an Output for a StateVariable in the same component. The provided
+/** Create an Output for a StateVariable in this component. The provided
  * name is both the name of the output and of the state variable.
  *
  * While this macro is a convenient way to construct an Output for a
@@ -269,7 +269,7 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, oname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    int _output_##oname { constructOutputForStateVariable(#oname) };        \
+    OutputIndex _output_##oname { constructOutputForStateVariable(#oname) }; \
     /** @endcond                                                         */
 /// @}
 //=============================================================================
