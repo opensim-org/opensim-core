@@ -91,8 +91,8 @@ public:
     @param[in] offsetOnFrame2   offset Transform on the second frame
     */
     TwoFrameLinker(const std::string &name,
-        const F& frame1, const SimTK::Transform& transformInFrame1,
-        const F& frame2, const SimTK::Transform& transformInFrame2);
+        const F& frame1, const SimTK::Transform& offsetOnFrame1,
+        const F& frame2, const SimTK::Transform& offsetOnFrame2);
 
     /** Convenience Constructor
     Construct a TwoFrameLinker where the two frames are specified by name 

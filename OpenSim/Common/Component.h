@@ -210,6 +210,41 @@ public:
  *
  * Public methods enable access to component variables via their names.
  *
+ * ### Subcomponents
+ *
+ * A %Component can have any number of %Components within it; we call these
+ * subcomponents. Subcomponents can also contain their own subcomponents as
+ * well. There are three categories of subcomponents, which vary in whether
+ * they are *configurable* and *fixed in number*:
+ *
+ * - **property subcomponents** Any Property in a Component that is of type
+ *   Component is a subcomponent. This includes list properties and Set%s. This
+ *   is the most common category of subcomponent, and its distinguishing
+ *   feature is that these subcomponents are *configurable* by the user of this
+ *   component. These subcomponents appear in the XML for this component, and
+ *   can be modified in XML or through the API. They are also not fixed in
+ *   number; users can add more property subcomponents to an existing
+ *   component (though it is possible to enforce a fixed number by using
+ *   one-value properties or limiting the size of a list property). The bodies,
+ *   joints, forces, etc. in a Model's BodySet, JointSet, ForceSet, etc. are
+ *   all examples of property subcomponents. This category of subcomponent is
+ *   the most similar to what was available pre-v4.0. 
+ * - **member subcomponents** These are *not* configurable by the user of this
+ *   Component, and can only be modified by this Component. You can
+ *   still access member subcomponents through the API, but only the component
+ *   containing the subcomponents can modify them. Any Component class can have
+ *   any number of member subcomponents, but this number is *fixed* for every
+ *   instance of the component.
+ * - **adopted subcomponents** These are *not* configurable (does not appear in
+ *   XML) and *not* fixed in number. For example, a component can decide,
+ *   based on other aspects of the model, that it needs to create a new
+ *   subcomponent. This can be done using adopted subcomponents.
+ *
+ * Also, any specific Component can end up in any of these three categories.
+ * That is, if you have a MySpecialForce Component, any other Component can
+ * have it as a property subcomponent, a member subcomponent, or as an adopted
+ * subcomponent.
+ *
  * @author Ajay Seth, Michael Sherman
  */
 class OSIMCOMMON_API Component : public Object {
