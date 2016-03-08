@@ -59,7 +59,7 @@ int main()
 //==========================================================================================================
 void testAssembleModelWithConstraints(string modelFile)
 {
-    double accuracy = 1e-6;
+    double accuracy = 1e-5;
     using namespace SimTK;
 
     cout << "\n****************************************************************************" << endl;
