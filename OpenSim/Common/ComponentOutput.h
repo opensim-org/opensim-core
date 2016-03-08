@@ -200,7 +200,7 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, oname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    OutputIndex _output_##oname { constructOutput<T>(#oname, &Self::func, ostage) }; \
+    bool _output_##oname { constructOutput<T>(#oname, &Self::func, ostage) }; \
     /** @endcond                                                         */
 
 // Note: we could omit the T argument from the above macro by using the
@@ -237,7 +237,7 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, oname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    OutputIndex _output_##oname { constructOutput<T>(#oname, func, ostage) }; \
+    bool _output_##oname { constructOutput<T>(#oname, func, ostage) };      \
     /** @endcond                                                         */
 
 /** Create an Output for a StateVariable in this component. The provided
@@ -269,7 +269,7 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, oname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    OutputIndex _output_##oname { constructOutputForStateVariable(#oname) }; \
+    bool _output_##oname { constructOutputForStateVariable(#oname) };       \
     /** @endcond                                                         */
 /// @}
 //=============================================================================

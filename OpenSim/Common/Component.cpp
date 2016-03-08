@@ -820,8 +820,7 @@ setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value)
     }
 }
 
-Component::OutputIndex
-Component::constructOutputForStateVariable(const std::string& name)
+bool Component::constructOutputForStateVariable(const std::string& name)
 {
     return constructOutput<double>(name,
             std::bind(&Component::getStateVariableValue,

@@ -1540,9 +1540,6 @@ template <class T> friend class ComponentMeasure;
      * methods yourself.
      */
     /// @{
-#ifndef SWIG
-    SimTK_DEFINE_UNIQUE_INDEX_TYPE(OutputIndex);
-#endif
     /** Construct an output for a member function of the same component. 
         The following must be true about componentMemberFunction, the function
         that returns the output:
@@ -1561,7 +1558,7 @@ template <class T> friend class ComponentMeasure;
 
 #ifndef SWIG // SWIG can't parse the const at the end of the second argument.
     template <typename T, typename Class>
-    OutputIndex constructOutput(const std::string& name,
+    bool constructOutput(const std::string& name,
             T(Class::*const componentMemberFunction)(const SimTK::State&) const,
             const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
         // The `const` in `Class::*const componentMemberFunction` means this
@@ -1594,7 +1591,7 @@ template <class T> friend class ComponentMeasure;
       @see constructOutputForStateVariable()
     */
     template <typename T>
-    OutputIndex constructOutput(const std::string& name, 
+    bool constructOutput(const std::string& name, 
         const std::function<T(const SimTK::State&)> outputFunction, 
         const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
         // TODO OPENSIM_THROW_IF(_outputsTable.count(name) == 1,
@@ -1604,7 +1601,7 @@ template <class T> friend class ComponentMeasure;
         // TODO         ") already exists.");
         _outputsTable[name] = SimTK::ClonePtr<AbstractOutput>(
                 new Output<T>(name, outputFunction, dependsOn));
-        return OutputIndex(0);
+        return true;
     }
 
     /** Construct an Output for a StateVariable. While this method is a
@@ -1616,7 +1613,7 @@ template <class T> friend class ComponentMeasure;
      *
      * @param name Name of the output, which must be the same as the name of
      * the corresponding state variable. */
-    OutputIndex constructOutputForStateVariable(const std::string& name);
+    bool constructOutputForStateVariable(const std::string& name);
     
     /// @}
 
