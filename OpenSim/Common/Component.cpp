@@ -479,8 +479,14 @@ int Component::getNumStateVariables() const
     //Get the number of state variables added (or exposed) by this Component
     int ns = getNumStateVariablesAddedByComponent(); 
     // And then include the states of its subcomponents
+    for (unsigned int i = 0; i<_memberSubcomponents.size(); i++)
+        ns += _memberSubcomponents[i]->getNumStateVariables();
+
     for(unsigned int i=0; i<_propertySubcomponents.size(); i++)
         ns += _propertySubcomponents[i]->getNumStateVariables();
+
+    for (unsigned int i = 0; i<_adoptedSubcomponents.size(); i++)
+        ns += _adoptedSubcomponents[i]->getNumStateVariables();
 
     return ns;
 }
@@ -670,11 +676,27 @@ const Component::StateVariable* Component::
 Array<std::string> Component::getStateVariableNames() const
 {
     Array<std::string> names = getStateVariablesNamesAddedByComponent();
+
     // Include the states of its subcomponents
+    for (unsigned int i = 0; i<_memberSubcomponents.size(); i++) {
+        Array<std::string> subnames = _propertySubcomponents[i]->getStateVariableNames();
+        int nsubs = subnames.getSize();
+        const std::string& subCompName = _memberSubcomponents[i]->getName();
+        std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
+        std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
+        std::string prefix = "";
+        if (back > front) // have non-whitespace name
+            prefix = subCompName + "/";
+        for (int j = 0; j<nsubs; ++j) {
+            names.append(prefix + subnames[j]);
+        }
+    }
     for(unsigned int i=0; i<_propertySubcomponents.size(); i++){
         Array<std::string> subnames = _propertySubcomponents[i]->getStateVariableNames();
         int nsubs = subnames.getSize();
         const std::string& subCompName =  _propertySubcomponents[i]->getName();
+        // TODO: We should implement checks that names do not have whitespace at the time 
+        // they are assigned and not here where it is a waste of time - aseth
         std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
         std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
         std::string prefix = "";
@@ -682,6 +704,20 @@ Array<std::string> Component::getStateVariableNames() const
             prefix = subCompName+"/";
         for(int j =0; j<nsubs; ++j){
             names.append(prefix+subnames[j]);
+        }
+    }
+
+    for (unsigned int i = 0; i<_adoptedSubcomponents.size(); i++) {
+        Array<std::string> subnames = _adoptedSubcomponents[i]->getStateVariableNames();
+        int nsubs = subnames.getSize();
+        const std::string& subCompName = _adoptedSubcomponents[i]->getName();
+        std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
+        std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
+        std::string prefix = "";
+        if (back > front) // have non-whitespace name
+            prefix = subCompName + "/";
+        for (int j = 0; j<nsubs; ++j) {
+            names.append(prefix + subnames[j]);
         }
     }
 
