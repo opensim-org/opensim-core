@@ -144,7 +144,7 @@ public:
     
     /** determine the value type for this Output*/
     std::string getTypeName() const override 
-        { return SimTK::NiceTypeName<T>::name(); }
+        { return SimTK::NiceTypeName<T>::namestr(); }
 
     std::string getValueAsString(const SimTK::State& state) const override
     {
