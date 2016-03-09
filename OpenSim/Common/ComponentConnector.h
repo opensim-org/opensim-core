@@ -348,6 +348,39 @@ private:
     //        { std::vector<SimTK::ReferencePtr<const Output<T>>>(1) };
 }; // END class Input<Y>
 
+/// @name Creating Inputs for your Component
+/// Use these macros at the top of your component class declaration,
+/// near where you declare @ref Property properties.
+/// @{
+/** Create a socket for this component's dependence on an output signal from
+ *  another component. It is a placeholder for an Output that can be connected
+ *  to it. An output must have the same type T as an input to be connected
+ *  to it. You must also specify the stage at which you require this input
+ *  quantity. The comment should describe how the input quantity is used.
+ *
+ *  Here's an example for using this macro:
+ *  @code{.cpp}
+ *  class MyComponent : public Component {
+ *  public:
+ *      OpenSim_DECLARE_INPUT(emg, double, SimTK::Stage::Velocity, "For validation.");
+ *      ...
+ *  };
+ *  @endcode
+ * @see Component::constructInput()
+ * @relates OpenSim::Input
+ */
+#define OpenSim_DECLARE_INPUT(iname, T, istage, comment)                    \
+    /** @name Inputs                                                     */ \
+    /** @{                                                               */ \
+    /** comment                                                          */ \
+    /** This input is needed at stage istage.                            */ \
+    /** This input was generated with the                                */ \
+    /** #OpenSim_DECLARE_INPUT macro.                                    */ \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
+    /** @}                                                               */ \
+    /** @cond                                                            */ \
+    bool _has_input_##iname { constructInput<T>(#iname, istage) };          \
+    /** @endcond                                                         */
 
 } // end of namespace OpenSim
 
