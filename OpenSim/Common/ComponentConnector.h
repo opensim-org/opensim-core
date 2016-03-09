@@ -163,7 +163,8 @@ public:
     Create a Connector that can only connect to Object of type T with specified 
     name and stage at which it should be connected.
     @param name             name of the connector used to describe its dependency.
-    @param connectAtStage   Stage at which Connector should be connected. */
+    @param connectAtStage   Stage at which Connector should be connected.
+    @param owner The component that contains this input. */
     Connector(const std::string& name, const SimTK::Stage& connectAtStage, Component& owner) : 
         AbstractConnector(name, connectAtStage, owner), connectee(nullptr) {}
 
@@ -241,7 +242,8 @@ public:
     Create an AbstractInput (Connector) that connects only to an AbstractOutput
     specified by name and stage at which it should be connected.
     @param name             name of the dependent (Abstract)Output.
-    @param connectAtStage   Stage at which Input should be connected. */
+    @param connectAtStage   Stage at which Input should be connected.
+    @param owner The component that contains this input. */
     AbstractInput(const std::string& name,
                   const SimTK::Stage& connectAtStage, const Component& owner) :
         AbstractConnector(name, connectAtStage, owner), connectee(nullptr) {}
@@ -296,7 +298,8 @@ public:
     Create an Input<T> (Connector) that can only connect to an Output<T>
     name and stage at which it should be connected.
     @param name             name of the Output dependency.
-    @param connectAtStage   Stage at which Input should be connected. */
+    @param connectAtStage   Stage at which Input should be connected.
+    @param owner The component that contains this input. */
     Input(const std::string& name, const SimTK::Stage& connectAtStage, const Component& owner) :
         AbstractInput(name, connectAtStage, owner) {}
 
