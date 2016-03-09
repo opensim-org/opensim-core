@@ -70,13 +70,6 @@ void PathSpring::constructProperties()
     constructProperty_dissipation(SimTK::NaN);
 }
 
-void PathSpring::constructOutputs()
-{
-    constructOutput<double>("stretch", 
-           std::bind(&PathSpring::getStretch, this, std::placeholders::_1),
-                      SimTK::Stage::Position);
-}
-
 //_____________________________________________________________________________
 /*
  * Set the resting length.

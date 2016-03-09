@@ -78,6 +78,74 @@ public:
         "Compute muscle dynamics ignoring activation dynamics. Activation is equivalent to excitation.");
 
 //=============================================================================
+// OUTPUTS
+//=============================================================================
+    OpenSim_DECLARE_OUTPUT(excitation, double, getExcitation,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(activation, double, getActivation,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(fiber_length, double, getFiberLength,
+            SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(pennation_angle, double, getPennationAngle,
+            SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(cos_pennation_angle, double, getCosPennationAngle,
+            SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(tendon_length, double, getTendonLength,
+            SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(normalized_fiber_length, double,
+            getNormalizedFiberLength, SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(fiber_length_along_tendon, double,
+            getFiberLengthAlongTendon, SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(tendon_strain, double, getTendonStrain,
+            SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(passive_force_multiplier, double,
+            getPassiveForceMultiplier, SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(active_force_length_multiplier, double,
+            getActiveForceLengthMultiplier, SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(fiber_velocity, double, getFiberVelocity,
+            SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(normalized_fiber_velocity, double,
+            getNormalizedFiberVelocity, SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(fiber_velocity_along_tendon, double,
+            getFiberVelocityAlongTendon, SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(tendon_velocity, double, getTendonVelocity,
+            SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(force_velocity_multiplier, double,
+            getForceVelocityMultiplier, SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(pennation_angular_velocity, double,
+            getPennationAngularVelocity, SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(fiber_force, double, getFiberForce,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(fiber_force_along_tendon, double,
+            getFiberForceAlongTendon, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(active_fiber_force, double, getActiveFiberForce,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(passive_fiber_force, double, getPassiveFiberForce,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(active_fiber_force_along_tendon, double,
+            getActiveFiberForceAlongTendon, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(passive_fiber_force_along_tendon, double,
+            getPassiveFiberForceAlongTendon, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(tendon_force, double, getTendonForce,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(fiber_stiffness, double, getFiberStiffness,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(fiber_stiffness_along_tendon, double,
+            getFiberStiffnessAlongTendon, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(tendon_stiffness, double, getTendonStiffness,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(muscle_stiffness, double, getMuscleStiffness,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(fiber_active_power, double, getFiberActivePower,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(fiber_passive_power, double, getFiberPassivePower,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(tendon_power, double, getTendonPower,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(muscle_power, double, getMusclePower,
+            SimTK::Stage::Dynamics);
+
+//=============================================================================
 // PUBLIC METHODS
 //=============================================================================
     /** @name Constructors and Destructor
@@ -368,7 +436,6 @@ protected:
 private:
     void setNull();
     void constructProperties() override;
-    void constructOutputs() override;
     void copyData(const Muscle &aMuscle);
 
     //--------------------------------------------------------------------------

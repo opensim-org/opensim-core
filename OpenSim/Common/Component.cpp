@@ -127,6 +127,16 @@ Component::Component(SimTK::Xml::Element& element) : Object(element)
 void Component::finalizeFromProperties()
 {
     reset();
+
+    // Provide each Output with a pointer to this component so that it can
+    // invoke its methods.
+    // TODO if we implement custom copy constructor and assignment methods,
+    // then this could be moved there (and then Output could take owner as an
+    // argument to its constructor).
+    for (auto& it : _outputsTable) {
+        it.second->setOwner(*this);
+    }
+
     markPropertiesAsSubcomponents();
     extendFinalizeFromProperties();
     componentsFinalizeFromProperties();
@@ -824,7 +834,8 @@ bool Component::constructOutputForStateVariable(const std::string& name)
 {
     return constructOutput<double>(name,
             std::bind(&Component::getStateVariableValue,
-                this, std::placeholders::_1, name),
+             // (const Component*    , const SimTK::State&  , std::string)
+                std::placeholders::_1, std::placeholders::_2, name),
             SimTK::Stage::Model);
 }
 
