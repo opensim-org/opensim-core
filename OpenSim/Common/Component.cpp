@@ -209,7 +209,7 @@ void Component::connect(Component &root)
 // invoke connect on all (sub)components of this component
 void Component::componentsConnect(Component& root) 
 {
-    // First give the subcomponents the opportunity to connect themselves
+    // enable the subcomponents the opportunity to connect themselves
     for (unsigned int i = 0; i<_memberSubcomponents.size(); ++i) {
         _memberSubcomponents[i].upd()->connect(root);
     }
@@ -224,8 +224,14 @@ void Component::componentsConnect(Component& root)
 void Component::disconnect()
 {
     // First give the subcomponents the opportunity to disconnect themselves
+    for (unsigned int i = 0; i<_memberSubcomponents.size(); i++) {
+        _memberSubcomponents[i]->disconnect();
+    }
     for (unsigned int i = 0; i<_propertySubcomponents.size(); i++){
         _propertySubcomponents[i]->disconnect();
+    }
+    for (unsigned int i = 0; i<_adoptedSubcomponents.size(); i++) {
+        _adoptedSubcomponents[i]->disconnect();
     }
 
     //Now cycle through and disconnect all connectors for this component

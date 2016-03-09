@@ -397,26 +397,31 @@ public:
     std::string getRelativePathName(const Component& wrt) const;
 
     /**
-     * Get a subcomponent of this Component by its path name. 
-     * Note using a component's full "path" name is faster and will provide a
-     * unique result. Throws ComponentNotFoundOnSpecifiedPath if the component
-     * at that location does not exist OR it is not of the correct type.
-     * For example right_elbow/elbow_flexion will return a Coordinate 
-     * Component that is a member of the model's right elbow joint Component.
+     * Get a unique subcomponent of this Component by its path name and type 'C'. 
+     * Throws ComponentNotFoundOnSpecifiedPath exception if the component at
+     * that path name location does not exist OR it is not of the correct type.
+     * For example, 
+     * @code 
+     *    auto& coord = model.getComponent<Coordinate>("right_elbow/elbow_flexion");
+     * @endcode
+     * returns coord which is a Coordinate named "elbow_flexion" from a Joint
+     * named "right_elbow" given it is a child of the Component (Model) model.
+     * If unsure of a Component's path or whether or not it exists in the model,
+     * use findComponent() 
      *
-     * @param name       the name (string) of the Component of interest
-     * @return Component the component of interest
+     * @param  pathname        a pathname (string) of a Component of interest
+     * @return const reference to component of type C at 
      * @throws ComponentNotFoundOnSpecifiedPath if no component exists
      */
     template <class C = Component>
-    const C& getComponent(const std::string& name) const {
-        const C* comp = this->template traversePathToComponent<C>(name);
+    const C& getComponent(const std::string& pathname) const {
+        const C* comp = this->template traversePathToComponent<C>(pathname);
         if (comp) {
             return *comp;
         }
 
         // Only error cases remain
-        OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath, name,
+        OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath, pathname,
                                                        C::getClassName(),
                                                        getName());
     }
@@ -1607,7 +1612,7 @@ protected:
         StateVariable object that was found. This facilitates the getting and setting
         of StateVariables by name. 
         
-        NOTE: If the component name or the state variable name is ambiguous, the 
+        NOTE: If the component name or the state variable name is ambiguous, 
          an exception is thrown. To disambiguate use the full name provided
          by owning component(s). */
     template<class C = Component>
