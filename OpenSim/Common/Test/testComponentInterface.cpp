@@ -488,7 +488,6 @@ int main() {
         // Ensure the "this" pointer inside the output function is for the
         // correct Bar.
         system.realize(s, Stage::Model);
-        std::cout << "bar0f " << std::endl;
         // Since bar0 is not part of any "world", we must call
         // finalizeFromProperties() on it ourselves in order to set the
         // "owner" of its outputs.
