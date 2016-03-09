@@ -1323,22 +1323,6 @@ template <class T> friend class ComponentMeasure;
         _connectorsTable[name] = ix;
     }
 
-    /**
-    * Construct an Input (socket) for this Component's dependence on an Output signal.
-    * It is a placeholder for the Output and its type and enables the Component
-    * to automatically traverse its dependencies and provide a meaningful message
-    * if the provided Output is incompatible or non-existant. The also specifies at what
-    * stage the output must be valid for the the component to consume it as an input.
-    * if the Output's dependsOnStage is above the Input's requiredAtStage, an Exception
-    * is thrown because the output cannot satisfy the Input's requirement.
-    */
-    template <typename T>
-    void constructInput(const std::string& name,
-        const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance) {
-        _inputsTable[name] 
-            = SimTK::ClonePtr<AbstractInput>(new Input<T>(name, requiredAtStage));
-    }
-
     /** Clear all designations of (sub)components for this Component. 
       * Components are not deleted- the list of references to its components is cleared. */
     void clearComponents() {
@@ -1528,13 +1512,15 @@ template <class T> friend class ComponentMeasure;
 
     //@} 
 
-    /** @name Internal methods for constructing Outputs
-     * To declare Outputs for your component, use the following macros within
-     * your class declaration (ideally at the top near property declarations):
+    /** @name Internal methods for constructing Outputs, Inputs
+     * To declare Outputs and Inputs for your component,
+     * use the following macros within your class declaration (ideally at
+     * the top near property declarations):
      *
      *  - #OpenSim_DECLARE_OUTPUT
      *  - #OpenSim_DECLARE_OUTPUT_FLEX
      *  - #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE
+     *  - #OpenSim_DECLARE_INPUT
      *
      * The methods below are used in those macros, and you should not use these
      * methods yourself.
@@ -1614,6 +1600,23 @@ template <class T> friend class ComponentMeasure;
      * @param name Name of the output, which must be the same as the name of
      * the corresponding state variable. */
     bool constructOutputForStateVariable(const std::string& name);
+
+    /**
+    * Construct an Input (socket) for this Component's dependence on an Output signal.
+    * It is a placeholder for the Output and its type and enables the Component
+    * to automatically traverse its dependencies and provide a meaningful message
+    * if the provided Output is incompatible or non-existant. The also specifies at what
+    * stage the output must be valid for the the component to consume it as an input.
+    * if the Output's dependsOnStage is above the Input's requiredAtStage, an Exception
+    * is thrown because the output cannot satisfy the Input's requirement.
+    */
+    template <typename T>
+    bool constructInput(const std::string& name,
+        const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance) {
+        _inputsTable[name] 
+            = SimTK::ClonePtr<AbstractInput>(new Input<T>(name, requiredAtStage));
+        return true;
+    }
     
     /// @}
 
