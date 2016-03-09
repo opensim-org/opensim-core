@@ -800,9 +800,6 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
 
         if( status != SimTK::Integrator::EndOfSimulation ) {
             const SimTK::State& s =  _integ->getState();
-
-            _model->realizeReport(s);
-
             if(_performAnalyses)_model->updAnalysisSet().step(s,step);
             tReal = s.getTime();
             if( _writeToStorage) {
