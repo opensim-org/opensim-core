@@ -1673,7 +1673,7 @@ protected:
                 return found;
         }
         else if (this->getName() == subname) {
-            if (found = dynamic_cast<const C*>(this))
+            if ( (found = dynamic_cast<const C*>(this)) )
                 foundCs.push_back(found);
         }
 
