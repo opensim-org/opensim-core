@@ -1551,9 +1551,10 @@ template <class T> friend class ComponentMeasure;
 
        @see constructOutputForStateVariable()
      */
+
 #ifndef SWIG // SWIG can't parse the const at the end of the second argument.
     template <typename T, typename CompType>
-    int constructOutput(const std::string& name,
+    bool constructOutput(const std::string& name,
             T (CompType::*const componentMemberFunction)(const SimTK::State&) const,
             const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
         // The `const` in `CompType::*const componentMemberFunction` means this
@@ -1584,7 +1585,7 @@ template <class T> friend class ComponentMeasure;
      *
      * @param name Name of the output, which must be the same as the name of
      * the corresponding state variable. */
-    int constructOutputForStateVariable(const std::string& name);
+    bool constructOutputForStateVariable(const std::string& name);
     
     /// @}
 
@@ -1656,7 +1657,7 @@ private:
      this variant of constructOutput should be used with care.
     */
     template <typename T>
-    int constructOutput(const std::string& name, 
+    bool constructOutput(const std::string& name,
         const std::function<T (const Component*, const SimTK::State&)> outputFunction, 
         const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
         // TODO OPENSIM_THROW_IF(_outputsTable.count(name) == 1,
@@ -1666,7 +1667,7 @@ private:
         // TODO         ") already exists.");
         _outputsTable[name].reset(
                 new Output<T>(name, outputFunction, dependsOn));
-        return 0;
+        return true;
     }
 
     // Get the number of continuous states that the Component added to the 

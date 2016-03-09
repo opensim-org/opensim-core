@@ -157,7 +157,7 @@ public:
     
     /** determine the value type for this Output*/
     std::string getTypeName() const override 
-        { return SimTK::NiceTypeName<T>::name(); }
+        { return SimTK::NiceTypeName<T>::namestr(); }
 
     std::string getValueAsString(const SimTK::State& state) const override
     {
@@ -184,7 +184,7 @@ private:
 /// Use these macros at the top of your component class declaration,
 /// near where you declare @ref Property properties.
 /// @{
-/** Create an output for a member function of the same component. 
+/** Create an output for a member function of this component.
  *  The following must be true about componentMemberFunction, the function
  *  that returns the output:
  *
@@ -214,7 +214,7 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, oname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    int _output_##oname { constructOutput<T>(#oname, &Self::func, ostage) };\
+    bool _has_output_##oname { constructOutput<T>(#oname, &Self::func, ostage) }; \
     /** @endcond                                                         */
 
 // Note: we could omit the T argument from the above macro by using the
@@ -223,7 +223,7 @@ private:
 // However, then we wouldn't be able to document the type for the output in
 // doxygen.
 
-/** Create an Output for a StateVariable in the same component. The provided
+/** Create an Output for a StateVariable in this component. The provided
  * name is both the name of the output and of the state variable.
  *
  * While this macro is a convenient way to construct an Output for a
@@ -252,7 +252,7 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(double, oname)                               \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    int _output_##oname { constructOutputForStateVariable(#oname) };        \
+    bool _has_output_##oname { constructOutputForStateVariable(#oname) }; \
     /** @endcond                                                         */
 /// @}
 //=============================================================================
