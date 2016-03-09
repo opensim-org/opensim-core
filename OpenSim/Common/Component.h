@@ -261,7 +261,7 @@ public:
  * have it as a property subcomponent, a member subcomponent, or as an adopted
  * subcomponent.
  *
- * @author Ajay Seth, Michael Sherman
+ * @author Ajay Seth, Michael Sherman, Chris Dembia
  */
 class OSIMCOMMON_API Component : public Object {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Component, Object);
