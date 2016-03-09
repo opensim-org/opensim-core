@@ -310,22 +310,23 @@ private:
  *  another component. It is a placeholder for an Output that can be connected
  *  to it. An output must have the same type T as an input to be connected
  *  to it. You must also specify the stage at which you require this input
- *  quantity.
+ *  quantity. The comment should describe how the input quantity is used.
  *
  *  Here's an example for using this macro:
  *  @code{.cpp}
  *  class MyComponent : public Component {
  *  public:
- *      OpenSim_DECLARE_INPUT(emg, double, SimTK::Stage::Velocity);
+ *      OpenSim_DECLARE_INPUT(emg, double, SimTK::Stage::Velocity, "For validation.");
  *      ...
  *  };
  *  @endcode
  * @see Component::constructInput()
  * @relates OpenSim::Input
  */
-#define OpenSim_DECLARE_INPUT(iname, T, istage) \
+#define OpenSim_DECLARE_INPUT(iname, T, istage, comment)                    \
     /** @name Inputs                                                     */ \
     /** @{                                                               */ \
+    /** comment                                                          */ \
     /** This input is needed at stage istage.                            */ \
     /** This input was generated with the                                */ \
     /** #OpenSim_DECLARE_INPUT macro.                                    */ \

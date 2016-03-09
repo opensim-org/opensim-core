@@ -143,10 +143,10 @@ public:
             std::bind(&Foo::calcSpatialAcc, this, std::placeholders::_1),
             SimTK::Stage::Velocity, "")
     
-    OpenSim_DECLARE_INPUT(input1, double, SimTK::Stage::Model);
-    OpenSim_DECLARE_INPUT(AnglesIn, Vector, SimTK::Stage::Model);
-    OpenSim_DECLARE_INPUT(fiberLength, double, SimTK::Stage::Model);
-    OpenSim_DECLARE_INPUT(activation, double, SimTK::Stage::Model);
+    OpenSim_DECLARE_INPUT(input1, double, SimTK::Stage::Model, "");
+    OpenSim_DECLARE_INPUT(AnglesIn, Vector, SimTK::Stage::Model, "");
+    OpenSim_DECLARE_INPUT(fiberLength, double, SimTK::Stage::Model, "");
+    OpenSim_DECLARE_INPUT(activation, double, SimTK::Stage::Model, "");
 
     Foo() : Component() {
         constructInfrastructure();
