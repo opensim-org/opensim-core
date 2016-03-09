@@ -89,6 +89,22 @@ public:
     }
 };
 
+
+class ComponentAlreadyPartOfOwnershipTree : public Exception {
+public:
+    ComponentAlreadyPartOfOwnershipTree(const std::string& file,
+                                        size_t line,
+                                        const std::string& func,
+                                        const std::string& compName,
+                                        const std::string& thisName) :
+            Exception(file, line, func) {
+        std::string msg = "Component '" + compName;
+        msg += "' already owned by tree to which '" + thisName;
+        msg += "' belongs. Clone the component to adopt a fresh copy.";
+        addMessage(msg);
+    }
+};
+
 //==============================================================================
 //                            OPENSIM COMPONENT
 //==============================================================================
@@ -1079,15 +1095,12 @@ protected:
     @endcode   */
     virtual void extendConnect(Component& root) {};
 
-    /** Build a tree of Components from this component and its descendants. 
-    This method needs to be invoked after ALL calls to addComponent have been 
-    made, otherwise any newly added component will not be included in the tree 
-    and will not be found for iteration or for connection. Accordingly the 
-    method is called from Model::extendConnectToModel after all internal 
-    components due to Body splits, and welds have been performed.
-    
-    The implementation populates _nextComponent ReferencePtr with a pointer to 
-    the next Component in tree pre-order traversal.
+    /** Build the tree of Components from this component through its descendants. 
+    This method is invoked whenever a ComponentList<C> is requested. Note, all
+    components must been added to the model (or its subcomponents), otherwise it
+    will not be included in the tree and will not be found for iteration or for
+    connection. The implementation populates _nextComponent ReferencePtr with a
+    pointer to the next Component in tree pre-order traversal.
     */
     void initComponentTreeTraversal(const Component &root) const;
 
@@ -1607,19 +1620,25 @@ protected:
             throw Exception(msg);
         }
 
+        std::vector<const C*> foundCs;
+
         const C* found = NULL;
         std::string::size_type front = name.rfind("/");
         size_t len = name.length();
         std::string subname = front< len ? name.substr(front + 1, len - front) : name;
 
-        if (this->getName() == subname) {
+        if (this->getFullPathName() == name) {
             found = dynamic_cast<const C*>(this);
             if (found)
                 return found;
         }
+        else if (this->getName() == subname) {
+            if (found = dynamic_cast<const C*>(this))
+                foundCs.push_back(found);
+        }
 
         ComponentList<C> compsList = this->template getComponentList<C>();
-        std::vector<const C*> foundCs;
+        
         for (const C& comp : compsList) {
             std::string compFullPathName = comp.getFullPathName();
             if (compFullPathName == subname) {
@@ -1639,7 +1658,7 @@ protected:
                     foundCs.push_back(&comp);
                     msg += "a match for Component '" + name + "' of type " +
                         comp.getConcreteClassName() + " found, but it "
-                        "is not in specified path.";
+                        "is not on specified path.";
                     //throw Exception(msg, __FILE__, __LINE__);
                     std::cout << msg << std::endl;
                 }

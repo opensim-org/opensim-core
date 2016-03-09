@@ -65,7 +65,20 @@ public:
     void add(Component* comp) {
         // add it the property list of components that owns and serializes them
         updProperty_components().adoptAndAppendValue(comp);
-        finalizeFromProperties();
+        try {
+            finalizeFromProperties();
+        }
+        catch (ComponentAlreadyPartOfOwnershipTree& ex) {
+            auto& compsProp = updProperty_components();
+            //undo the adopt and append
+            int ix = compsProp.findIndex(*comp);
+            if (ix >= 0) {
+                compsProp[ix].disconnect();
+                // release the pointer to component in ix to undo adopt
+                // erase pointer at ix from the property list to
+            }
+            throw ex;
+        }
     }
 
     // Top level connection method for all encompassing Component
@@ -544,12 +557,22 @@ int main() {
         TheWorld world3;
         world3 = *world2;
 
+        ASSERT(&world3 != world2, __FILE__, __LINE__,
+            "Model copy assignment FAILED: A copy was not made.");
+
         world3.finalizeFromProperties();
+
+        ASSERT(world3 == *world2, __FILE__, __LINE__,
+            "Model copy assignment FAILED: Property values are not identical.");
+
         world3.getComponent("Bar").getConnector<Foo>("parentFoo");
 
-        ASSERT(world3 == (*world2), __FILE__, __LINE__, 
-            "Model copy assignment FAILED");
-        
+        auto& barInWorld3 = world3.getComponent<Bar>("Bar");
+        auto& barInWorld2 = world2->getComponent<Bar>("Bar");
+        ASSERT(&barInWorld3 != &barInWorld2, __FILE__, __LINE__, 
+            "Model copy assignment FAILED: property was not copied but "
+            "assigned the same memory");
+
         world3.setName("World3");
 
         // Add second world as the internal model of the first
@@ -579,6 +602,15 @@ int main() {
 
         cout << "Adding world3 to theWorld" << endl;
         theWorld.add(world3.clone());
+        
+        // TODO add the bar component again, which gets adopted by world3.
+        // This must trigger an exception, which it does, but the problem 
+        // is that the we don't have access to the property list to now
+        // remove it. Uncommenting current results in a fault when the 
+        // the destructor attempts to delete bar2 a second time around.
+        // ASSERT_THROW( ComponentAlreadyPartOfOwnershipTree,
+        //              world3.add(&bar2));
+
         cout << "Connecting theWorld:" << endl;
         theWorld.dumpSubcomponents();
         theWorld.connect();

@@ -206,8 +206,7 @@ void Component::connect(Component &root)
     setObjectIsUpToDateWithProperties();
 }
 
-
-// Call connect on all components and find unconnected Connectors a
+// invoke connect on all (sub)components of this component
 void Component::componentsConnect(Component& root) 
 {
     // First give the subcomponents the opportunity to connect themselves
@@ -961,11 +960,10 @@ void Component::markAsPropertySubcomponent(Component* component)
             _propertySubcomponents.push_back(SimTK::ReferencePtr<Component>(component));
         }
         else{
-            std::string msg = getConcreteClassName()+"::markAsPropertySubcomponent() '"
-                + getName() + "' already has '" + component->getName() +
-                    "' as a subcomponent.";
-            std::cout << msg << std::endl;
-            //throw Exception(msg, __FILE__, __LINE__);
+            auto compPath = component->getFullPathName();
+            auto foundPath = it->get()->getFullPathName();
+            OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
+                           component->getName(), getName());
         }
     }
 
@@ -977,6 +975,23 @@ void Component::markAsPropertySubcomponent(Component* component)
 // subcomponent, it is not added to the list again.
 void Component::adoptSubcomponent(Component* subcomponent)
 {
+    OPENSIM_THROW_IF(subcomponent->hasParent(),
+        ComponentAlreadyPartOfOwnershipTree,
+        subcomponent->getName(), this->getName());
+
+    //get the top-level component
+    const Component* top = this;
+    while (top->hasParent())
+        top = &top->getParent();
+
+    // cycle through all components from the top level component
+    // down to verify the component is not already in the tree
+    for (auto& comp : top->getComponentList<Component>()) {
+        OPENSIM_THROW_IF(subcomponent->hasParent(),
+            ComponentAlreadyPartOfOwnershipTree,
+            subcomponent->getName(), comp.getName());
+    }
+
     subcomponent->setParent(*this);
     _adoptedSubcomponents.push_back(SimTK::ClonePtr<Component>(subcomponent));
 }
