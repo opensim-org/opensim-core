@@ -134,14 +134,10 @@ public:
     OpenSim_DECLARE_OUTPUT(Output2, SimTK::Vec3, calcSomething,
             SimTK::Stage::Time)
 
-    OpenSim_DECLARE_OUTPUT_FLEX(Qs, Vector,
-            std::bind([=](const SimTK::State& s)->Vector{return s.getQ(); },
-                std::placeholders::_1),
-            SimTK::Stage::Position, "")
+    OpenSim_DECLARE_OUTPUT(Qs, Vector, getQ, SimTK::Stage::Position)
 
-    OpenSim_DECLARE_OUTPUT_FLEX(BodyAcc, SpatialVec,
-            std::bind(&Foo::calcSpatialAcc, this, std::placeholders::_1),
-            SimTK::Stage::Velocity, "")
+    OpenSim_DECLARE_OUTPUT(BodyAcc, SpatialVec, calcSpatialAcc,
+            SimTK::Stage::Velocity)
 
     Foo() : Component() {
         constructInfrastructure();
@@ -162,6 +158,10 @@ public:
 
         double t = state.getTime();
         return SimTK::Vec3(t, t*t, sqrt(t));
+    }
+
+    SimTK::Vector getQ(const SimTK::State& state) const {
+        return state.getQ();
     }
 
     SimTK::SpatialVec calcSpatialAcc(const SimTK::State& state) const {
@@ -237,9 +237,13 @@ class Bar : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(Bar, Component);
 public:
 
-    OpenSim_DECLARE_OUTPUT_FLEX(PotentialEnergy, double,
-        std::bind(&Bar::getPotentialEnergy, this, std::placeholders::_1),
-        SimTK::Stage::Velocity, "")
+    double copytesting2 = 5;
+    OpenSim_DECLARE_OUTPUT(copytesting, size_t, myself, SimTK::Stage::Model);
+    OpenSim_DECLARE_OUTPUT(copytesting2, double, getCopytesting2,
+                           SimTK::Stage::Model);
+
+    OpenSim_DECLARE_OUTPUT(PotentialEnergy, double, getPotentialEnergy,
+            SimTK::Stage::Velocity);
 
     OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE(fiberLength);
     OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE(activation);
@@ -254,6 +258,12 @@ public:
     
         return spring.calcPotentialEnergyContribution(state);
     }
+    
+    /** Returns the `this` pointer. Used to ensure that the std::function 
+     within Outputs is properly copied when copying components. */
+    size_t myself(const SimTK::State& s) const { return size_t(this); }
+    
+    double getCopytesting2(const SimTK::State& s) const { return copytesting2; }
 
 protected:
     /** Component Interface */
@@ -392,7 +402,10 @@ int main() {
 
         Foo* footTest = foo.clone();
 
-        Bar& bar = *new Bar();
+        // bar0 is to test copying of the function within a component's outputs.
+        std::unique_ptr<Bar> bar0(new Bar());
+        Bar& bar = *bar0->clone();
+        bar.copytesting2 = 6;
         bar.setName("Bar");
         theWorld.add(&bar);
 
@@ -472,6 +485,30 @@ int main() {
         const Vector q = Vector(s.getNQ(), SimTK::Pi/2);
         const Vector u = Vector(s.getNU(), 1.0);
         
+        // Ensure the "this" pointer inside the output function is for the
+        // correct Bar.
+        system.realize(s, Stage::Model);
+        std::cout << "bar0f " << std::endl;
+        // Since bar0 is not part of any "world", we must call
+        // finalizeFromProperties() on it ourselves in order to set the
+        // "owner" of its outputs.
+        bar0->finalizeFromProperties();
+        // If bar's copytesting output is 0, then the following tests will pass
+        // accidentally.
+        SimTK_TEST(bar.getOutputValue<size_t>(s, "copytesting") != 0);
+        // Make sure bar's outputs don't point to bar0.
+        SimTK_TEST(bar.getOutputValue<size_t>(s, "copytesting") != size_t(bar0.get()));
+        // Make sure bar's outputs are using bar underneath.
+        SimTK_TEST(bar.getOutputValue<size_t>(s, "copytesting") == size_t(&bar));
+        SimTK_TEST(bar0->getOutputValue<double>(s, "copytesting2") == 5);
+        SimTK_TEST(bar.getOutputValue<double>(s, "copytesting2") == 6);
+        
+        // By deleting bar0 then calling getOutputValue on bar without a
+        // segfault (throughout the remaining code), we ensure that bar
+        // does not depend on bar0.
+        bar0.reset(nullptr);
+
+    
         for (int i = 0; i < 10; ++i){
             s.updTime() = i*0.01234;
             s.updQ() = (i+1)*q/10.0;
