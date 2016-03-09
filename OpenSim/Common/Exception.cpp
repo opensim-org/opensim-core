@@ -33,8 +33,7 @@
 #include "osimCommonDLL.h"
 #include "Exception.h"
 #include "IO.h"
-
-
+#include "Object.h"
 
 
 using namespace OpenSim;
@@ -77,11 +76,12 @@ Exception::Exception(const std::string& file,
 Exception::Exception(const std::string& file,
               size_t line,
               const std::string& func,
-              const std::string& className,
-              std::string objName,
+              const Object& obj,
               const std::string& msg) {
     addMessage("\tIn file " + file + ":" + std::to_string(line) + "\n" +
                "\tIn function '" + func + "'");
+    std::string className = obj.getConcreteClassName();
+    std::string objName = obj.getName();
     if (objName.empty()) objName = "<no-name>";
     addMessage("\tIn object '" + objName + "' of type " + className + ".");
     addMessage(msg);

@@ -49,6 +49,8 @@
 
 namespace OpenSim {
 
+class Object;
+
 
 /** @name Macros to throw OpenSim exceptions
 The purpose of these macros is to aid with consistent message formatting,
@@ -147,8 +149,7 @@ public:
     Exception(const std::string& file,
               size_t line,
               const std::string& func,
-              const std::string& className,
-              std::string objName,
+              const Object& obj,
               const std::string& msg);
 
     virtual ~Exception() throw() {}
