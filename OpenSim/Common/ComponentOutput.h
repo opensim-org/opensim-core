@@ -252,7 +252,7 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(double, oname)                               \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    bool _has_output_##oname { constructOutputForStateVariable(#oname) }; \
+    bool _has_output_##oname { constructOutputForStateVariable(#oname) };   \
     /** @endcond                                                         */
 /// @}
 //=============================================================================
