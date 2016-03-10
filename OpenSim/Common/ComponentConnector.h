@@ -254,7 +254,7 @@ public:
     }
 
     /** Input Specific Connect */
-    virtual void connect(const AbstractOutput& output) const = 0;
+    virtual void connect(const AbstractOutput& output) = 0;
     // TODO this method should NOT be const.
     
 //=============================================================================
@@ -280,16 +280,14 @@ public:
     }
 
     /** Connect this Input the from provided (Abstract)Output */
-    void connect(const AbstractOutput& output) const override {
+    void connect(const AbstractOutput& output) override {
         const auto* outT = dynamic_cast<const Output<T>*>(&output);
         if (outT) {
             if (!isListInput()) {
                 // Remove the existing connecteee (if it exists).
-                const_cast<Input<T>*>(this)->disconnect();
+                disconnect();
             }
-            const_cast<Input<T>*>(this)->_connectees.push_back(
-                SimTK::ReferencePtr<const Output<T>>(outT));
-            // TODO remove these const casts.
+            _connectees.push_back(SimTK::ReferencePtr<const Output<T>>(outT));
         }
         else {
             std::stringstream msg;
@@ -399,7 +397,7 @@ private:
 /** Create a list input, which can connect to more than one Output. This
  * makes sense for components like reporters that can handle a flexible
  * number of input values. 
- * 
+ *
  * @see Component::constructInput()
  * @relates OpenSim::Input
  */

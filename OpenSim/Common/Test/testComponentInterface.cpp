@@ -456,7 +456,7 @@ void testMisc() {
     ASSERT(foo2 == foo2found);
 
     // do any other input/output connections
-    foo.getInput("input1").connect(bar.getOutput("PotentialEnergy"));
+    foo.updInput("input1").connect(bar.getOutput("PotentialEnergy"));
 
     // check how this model serializes
     string modelFile("testComponentInterfaceModel.osim");
@@ -583,8 +583,8 @@ void testMisc() {
     //SimTK::Visualizer viz2(system2);
 
     // Connect our state variables.
-    foo.getInput("fiberLength").connect(bar.getOutput("fiberLength"));
-    foo.getInput("activation").connect(bar.getOutput("activation"));
+    foo.updInput("fiberLength").connect(bar.getOutput("fiberLength"));
+    foo.updInput("activation").connect(bar.getOutput("activation"));
     // Since hiddenStateVar is a hidden state variable, it has no
     // corresponding output.
     ASSERT_THROW( OpenSim::Exception,
@@ -696,10 +696,10 @@ void testListInputs() {
     reporter->setName("rep0");
     theWorld.add(reporter);
     
-    reporter->getInput("input").connect(foo.getOutput("Output1"));
-    reporter->getInput("input").connect(bar.getOutput("PotentialEnergy"));
-    reporter->getInput("input").connect(bar.getOutput("fiberLength"));
-    reporter->getInput("input").connect(bar.getOutput("activation"));
+    reporter->updInput("input").connect(foo.getOutput("Output1"));
+    reporter->updInput("input").connect(bar.getOutput("PotentialEnergy"));
+    reporter->updInput("input").connect(bar.getOutput("fiberLength"));
+    reporter->updInput("input").connect(bar.getOutput("activation"));
     
     bar.updConnector<Foo>("parentFoo").set_connectee_name("Foo");
     bar.updConnector<Foo>("childFoo").set_connectee_name("Foo2");

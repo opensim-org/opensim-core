@@ -538,6 +538,34 @@ public:
                 << getConcreteClassName();
         throw Exception(msg.str(), __FILE__, __LINE__);
     }
+    /**
+    * Get a writable reference to an Input provided by this Component by name.
+    *
+    * @param name   the name of the Input
+    * @return       reference to the AbstractInput
+    */
+    AbstractInput& updInput(const std::string& name)
+    {
+        auto it = _inputsTable.find(name);
+
+        if (it != _inputsTable.end()) {
+            return it->second.updRef();
+        }
+        else {
+            std::string::size_type back = name.rfind("/");
+            std::string prefix = name.substr(0, back);
+            std::string inName = name.substr(back + 1, name.length() - back);
+
+            const Component* found = findComponent(prefix);
+            if (found)
+                return const_cast<Component*>(found)->updInput(inName);
+        }
+        std::stringstream msg;
+        msg << "Component::getInput: ERR- no input '" << name << "' found.\n "
+                << "for component '" << getName() << "' of type "
+                << getConcreteClassName();
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
 
     /**
     * Get the Output provided by this Component by name.
@@ -1491,7 +1519,7 @@ template <class T> friend class ComponentMeasure;
         NOTE: If the component name or the state variable name is ambiguous, the 
          first instance found is returned. To disambiguate use the full name provided
          by owning component(s). */
-    const Component* findComponent(const std::string& name, 
+    const Component* findComponent(const std::string& name,
                                    const StateVariable** rsv = nullptr) const;
 
     /** Similarly find a Connector of this Component (also amongst its subcomponents) */
