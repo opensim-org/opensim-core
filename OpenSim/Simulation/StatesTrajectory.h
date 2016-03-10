@@ -155,6 +155,16 @@ class Model;
  *               << std::endl;
  * }
  * @endcode
+ *
+ * Here's an example of iterating from a state at `timeA` to the last state
+ * before `timeB`:
+ * @code{.cpp}
+ * for (const auto& state : SimTK::makeIteratorRange(
+ *                              states.findAt(timeA),
+ *                              states.findNearestBefore(timeB)) {
+ *     ...
+ * }
+ * @endcode
  */
 class OSIMSIMULATION_API StatesTrajectory {
 public:
@@ -212,13 +222,170 @@ public:
 
     /// @name Iterating through the trajectory
     /// @{
-
     /** Iterator pointing to first SimTK::State; does not allow modifying the
      * states. Allows using this class in a range for loop. */
     const_iterator begin() const { return m_states.cbegin(); }
     /** Iterator pointing past the end of the trajectory. Allows using this
      * class in a range for loop. */
     const_iterator end() const { return m_states.cend(); }
+    /// @}
+
+
+    /// @name Accessing states by time
+    /// @{
+    /** Get the index of the nearest state before the given time
+     * (possibly *at* the given time).
+     *
+     * The tolerance exists to handle imprecise
+     * times. For example, if the trajectory contains states with times 1.3
+     * and 1.5 and you ask for the index of the state before time 1.4, you'll
+     * normally get the state with time 1.3. However, if you set a tolerance of
+     * 0.15, then you'll get the state with time 1.5 (because it is the state
+     * just before 1.55 = 1.4 + 0.15).
+     *
+     * It is unlikely you'll need to use this tolerance, but it is useful
+     * in cases where you observe the state times in less than full precision
+     * (perhaps in console output or storage files). Consider this scenario:
+     * the in-memory time of a state is actually 1.500001 but it is printed to
+     * the console as 1.500; you might be tempted to get this state by asking
+     * for the one that is before/at time 1.5, but this would end up giving you
+     * the state at time 1.3. You could remedy this issue by setting the
+     * tolerance to 1e-3 (the precision of the console output). So, this
+     * function actually gives the nearest state before `time + tolerance`.
+     *
+     * For a trajectory with times 0.2, 0.5, 0.7, this code will get the state
+     * at time 0.5:
+     * @code
+     * const auto& state = states[states.findIndexNearestBefore(0.6)];
+     * @endcode
+     *
+     * @throws TimeOutOfRange If there are no states before the given time.
+     * @throws Exception If the trajectory is empty.
+     */
+    size_t findIndexNearestBefore(const double& time,
+                                  const double& tolerance = 0) const;
+    /** Get the index of the nearest state after the given time
+     * (possibly *at* the given time).
+     *
+     * See findIndexNearestBefore() for an explanation of the tolerance; this
+     * function gives the nearest state after `time - tolerance`.
+     *
+     * For a trajectory with times 0.2, 0.5, 0.7, this code will get the state
+     * at time 0.5:
+     * @code
+     * const auto& state = states[states.findIndexNearestAfter(0.4)];
+     * @endcode
+     *
+     * @throws TimeOutOfRange If there are no states after the given time.
+     * @throws Exception If the trajectory is empty.
+     */
+    size_t findIndexNearestAfter(const double& time,
+                                 const double& tolerance = 0) const;
+
+    /** Get the index of the state closest to the given time within the
+     * interval [time - tolerance, time + tolerance].
+     * If there are multiple states exactly at the given time, the
+     * index is that of the first of these states.
+     *
+     * This tolerance is *different* from the one used in
+     * findIndexNearestBefore(), but should still be set to the precision of
+     * the desired time where you observed it (perhaps in console output or
+     * storage files).
+     *
+     * For a trajectory with times 0.2, 0.501, 0.7, this code gives the index
+     * for the state at time 0.5:
+     * @code
+     * states.findIndexAt(0.5, 0.01);
+     * @endcode
+     *
+     * @throws NoStateAtTime If there is no state at the given time.
+     * @throws Exception If the trajectory is empty.
+     */
+    size_t findIndexAt(const double& time, const double& tolerance = 0) const;
+    /** Iterate over the states in a given time interval (inclusive).
+     *
+     * For a trajectory with times 0.2, 0.5, 0.7, 1.5, 1.8, this code will
+     * iterate through the states at times 0.5, 0.7, 1.5:
+     * @code
+     * for (const auto& state : states.findBetween(0.5, 1.5)) {
+     *     state.getTime();
+     * }
+     * @endcode
+     *
+     * The startTime must be less than or equal to the endTime, otherwise an
+     * exception is thrown.
+     *
+     * See findIndexNearestBefore() for an explanation of the tolerance.
+     */
+    IteratorRange findBetween(const double& startTime, const double& endTime,
+                              const double& tolerance = 0) const;
+    /** Iterator pointing to the nearest state before the given time
+     * (possibly *at* the given time).
+     *
+     * For a trajectory with times 0.2, 0.5, 0.7, this code finds the state
+     * at time 0.5:
+     * @code
+     * states.findNearestBefore(0.6)->getTime();
+     * @endcode
+     *
+     * If there are no states before the given time, then the returned iterator
+     * matches end():
+     * @code
+     * auto it = states.findNearestBefore(0.1);
+     * if (it == states.end()) std::cout << "No states before." << std::endl;
+     * @endcode
+     *
+     * See findIndexNearestBefore() for an explanation of the tolerance; this
+     * function gives the nearest state before `time + tolerance`.
+     * */
+    const_iterator findNearestBefore(const double& time,
+                                     const double& tolerance = 0) const;
+    /** Iterator pointing to the nearest state after the given time
+     * (possibly *at* the given time).
+     *
+     * For a trajectory with times 0.2, 0.5, 0.7, this code finds the state
+     * at time 0.5:
+     * @code
+     * states.findNearestAfter(0.4)->getTime();
+     * @endcode
+     *
+     * If there are no states after the given time, then the returned iterator
+     * matches end():
+     * @code
+     * auto it = states.findNearestAfter(0.9);
+     * if (it == states.end()) std::cout << "No states after." << std::endl;
+     * @endcode
+     *
+     * See findIndexNearestBefore() for an explanation of the tolerance; this
+     * function gives the nearest state after `time - tolerance`.
+     * */
+    const_iterator findNearestAfter(const double& time,
+                                    const double& tolerance = 0) const;
+    /** Iterator pointing to the state closest to the given time within the
+     * interval [time - tolerance, time + tolerance].
+     * If there are multiple states exactly at the given time,
+     * the iterator points to the first of these states.
+     *
+     * This tolerance is *different* from the one described in
+     * findIndexNearestBefore(), but should still be set to the precision of
+     * the desired time where you observed it (perhaps in console output or
+     * storage files).
+     *
+     * For a trajectory with times 0.2, 0.501, 0.7, this code finds the state
+     * at time 0.5:
+     * @code
+     * states.findAt(0.5, 0.01)->getTime();
+     * @endcode
+     *
+     * If there is no state at the given time (within the tolerance), then the
+     * returned iterator matches end():
+     * @code
+     * auto it = states.findAt(2.5);
+     * if (it == states.end()) std::cout << "No state at time." << std::endl;
+     * @endcode
+     */
+    const_iterator findAt(const double& time,
+                          const double& tolerance = 0) const;
     /// @}
 
     /// @name Populating the trajectory with states
@@ -281,9 +448,43 @@ public:
 
 private:
 
+    const_iterator lowerBound(const double& time) const;
+
     std::vector<SimTK::State> m_states;
 
 public:
+
+    /** Thrown when asking for a state at a time that is out of range. */
+    class TimeOutOfRange : public OpenSim::Exception {
+    public:
+        TimeOutOfRange(const std::string& file, size_t line,
+                const std::string& func,
+                const double& requestedTime, const std::string& sense,
+                const double& firstTime, const double& lastTime) :
+                OpenSim::Exception(file, line, func) {
+            std::ostringstream msg;
+            msg << "There are no states with a time " << sense << " " <<
+                requestedTime << "; the range of times is [" <<
+                firstTime << ", " << lastTime << "].";
+            addMessage(msg.str());
+        }
+    };
+
+    /** Thrown when asking for a state at a time at which there is no state. */
+    class NoStateAtTime : public OpenSim::Exception {
+    public:
+        NoStateAtTime(const std::string& file, size_t line,
+                const std::string& func,
+                const double& requestedTime, const double& tolerance) {
+            std::ostringstream msg;
+            auto fullPrecision = std::numeric_limits<double>::max_digits10;
+            msg << std::setprecision(fullPrecision) <<
+                "There are no states at the requested time of " <<
+                requestedTime << " using the provided tolerance of " <<
+                tolerance << ".";
+            addMessage(msg.str());
+        }
+    };
 
     /** Thrown when trying to append a state that is not consistent with the
      * rest of the trajectory. */
@@ -300,9 +501,10 @@ public:
         }
     };
 
-    /** Thrown when trying to create a StatesTrajectory from a states Storage, and
-     * the Storage does not contain a column for every continuous state variable.
-     * */
+    /** Thrown when trying to create a StatesTrajectory from a states Storage,
+     * and the Storage does not contain a column for every continuous state
+     * variable.
+     */
     class MissingColumnsInStatesStorage : public OpenSim::Exception {
     public:
         MissingColumnsInStatesStorage(const std::string& file, size_t line,
@@ -311,7 +513,8 @@ public:
                 std::vector<std::string> missingStates) :
                 OpenSim::Exception(file, line, func) {
             std::string msg = "The following ";
-            msg += std::to_string(missingStates.size()) + " states from Model '";
+            msg += std::to_string(missingStates.size());
+            msg += " states from Model '";
             msg += modelName + "' are missing from the states Storage:\n";
             for (int i = 0; i < (missingStates.size() - 1); ++i) {
                 msg += "    " + missingStates[i] + "\n";
@@ -322,10 +525,10 @@ public:
         }
     };
     
-    /** Thrown when trying to create a StatesTrajectory from a states Storage, and
-     * the Storage contains columns that do not correspond to continuous state
-     * variables.
-     * */
+    /** Thrown when trying to create a StatesTrajectory from a states Storage,
+     * and the Storage contains columns that do not correspond to continuous
+     * state variables.
+     */
     class ExtraColumnsInStatesStorage : public OpenSim::Exception {
     public:
         ExtraColumnsInStatesStorage(
@@ -336,7 +539,8 @@ public:
                 OpenSim::Exception(file, line, func) {
             std::string msg = "The following ";
             msg += std::to_string(extraStates.size()) + " columns from the ";
-            msg += "states Storage are not states in Model '" + modelName + "':\n";
+            msg += "states Storage are not states in Model '" + modelName;
+            msg += "':\n";
             for (int i = 0; i < (extraStates.size() - 1); ++i) {
                 msg += "    " + extraStates[i] + "\n";
             }
@@ -350,7 +554,8 @@ public:
     class NonUniqueColumnsInStatesStorage : public OpenSim::Exception {
     public:
         NonUniqueColumnsInStatesStorage(const std::string& file, size_t line,
-                const std::string& func) : OpenSim::Exception(file, line, func) {
+                const std::string& func) : OpenSim::Exception(file, line, func)
+        {
             addMessage("States Storage column labels are not unique.");
         }
     };
@@ -359,7 +564,8 @@ public:
     class StatesStorageIsInDegrees : public OpenSim::Exception {
     public:
         StatesStorageIsInDegrees(const std::string& file, size_t line,
-                const std::string& func) : OpenSim::Exception(file, line, func) {
+                const std::string& func) : OpenSim::Exception(file, line, func)
+        {
             addMessage("States Storage is in degrees, but this is inappropriate "
                     "for creating a StatesTrajectory. Edit the Storage so that "
                     "angles are in radians, and set 'inDegrees' to "
@@ -375,7 +581,8 @@ public:
                 int numDepColumns, int smallestNumStates) :
                     OpenSim::Exception(file, line, func) {
             std::string msg = "States Storage has varying number of entries ";
-            msg += "per row (from " + std::to_string(smallestNumStates) + " to ";
+            msg += "per row (from " + std::to_string(smallestNumStates);
+            msg += " to ";
             msg += std::to_string(numDepColumns) + "). You must provide a ";
             msg += "States Storage that has the same number ";
             msg += "of entires in every row.";

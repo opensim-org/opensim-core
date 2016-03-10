@@ -31,6 +31,129 @@ size_t StatesTrajectory::getSize() const {
     return m_states.size();
 }
 
+size_t StatesTrajectory::findIndexNearestBefore(const double& time,
+                                                const double& tolerance) const {
+    OPENSIM_THROW_IF(m_states.empty(), Exception, "Trajectory is empty.");
+
+    const auto it = findNearestBefore(time, tolerance);
+
+    OPENSIM_THROW_IF(it == end(),
+            TimeOutOfRange, time, "before",
+            m_states.front().getTime(), m_states.back().getTime());
+
+    return it - begin();
+}
+
+size_t StatesTrajectory::findIndexNearestAfter(const double& time,
+                                               const double& tolerance) const {
+    OPENSIM_THROW_IF(m_states.empty(), Exception, "Trajectory is empty.");
+
+    const auto it = findNearestAfter(time, tolerance);
+
+    OPENSIM_THROW_IF(it == end(),
+            TimeOutOfRange, time, "after",
+            m_states.front().getTime(), m_states.back().getTime());
+
+    return it - begin();
+}
+
+size_t StatesTrajectory::findIndexAt(const double& time,
+                                     const double& tolerance) const {
+    OPENSIM_THROW_IF(m_states.empty(), Exception, "Trajectory is empty.");
+
+
+    const auto it = findAt(time, tolerance);
+
+    OPENSIM_THROW_IF(it == end(),
+                     StatesTrajectory::NoStateAtTime, time, tolerance);
+
+    return it - begin();
+}
+
+StatesTrajectory::IteratorRange StatesTrajectory::findBetween(
+        const double& startTime, const double& endTime,
+        const double& tolerance) const {
+    SimTK_APIARGCHECK2_ALWAYS(startTime <= endTime,
+            "StatesTrajectory", "findBetween",
+            "startTime (%f) must be less than or equal to endTime (%f).",
+            startTime, endTime);
+
+    // If startTime < endTime < front().getTime(), then `start` points to
+    // front(), which will cause iterating over the *entire* trajectory. To
+    // prevent this, we have to detect if front().getTime() > endTime.
+    if (m_states.empty() || front().getTime() > endTime) {
+        return SimTK::makeIteratorRange(end(), end());
+    }
+
+    // Must add one to the last iterator since it's supposed to point past
+    // the end.
+    return SimTK::makeIteratorRange(findNearestAfter(startTime, tolerance),
+                                    findNearestBefore(endTime, tolerance) + 1);
+}
+
+StatesTrajectory::const_iterator
+StatesTrajectory::findNearestBefore(const double& time,
+                                    const double& tolerance) const {
+    // Need a custom comparison function to extract the time from the state.
+    auto compare = [](const double& t, const SimTK::State& s) {
+                return t < s.getTime();
+            };
+    // upper_bound() finds the first element whose time is greater than the
+    // given time.
+    auto upper = std::upper_bound(begin(), end(), time + tolerance, compare);
+
+    // If the first element is greater than the given time, then there are no
+    // elements before the given time.
+    if (upper == begin()) {
+        return end();
+    }
+
+    // We step back one element to get the last element whose time is less than
+    // or equal to the given time.
+    return upper - 1;
+}
+
+StatesTrajectory::const_iterator
+StatesTrajectory::findNearestAfter(const double& time,
+                                   const double& tolerance) const {
+
+    return lowerBound(time - tolerance);
+}
+
+StatesTrajectory::const_iterator
+StatesTrajectory::findAt(
+        const double& time, const double& tolerance) const {
+
+    if (m_states.empty()) { return end(); }
+
+    // If there are multiple states with the same time as the provided state,
+    // we want the first of them; for this reason, we use lower_bound()
+    // instead of upper_bound().
+    auto greaterOrEqual = lowerBound(time);
+
+    // This may or may not point to a state; we deal with that soon.
+    const auto lessThan = (greaterOrEqual - 1);
+
+    // Figure out which of the two states is closer to the given time.
+    const_iterator closest;
+    // If greaterOrEqual is not valid, or lessThan is valid, and closer to
+    // `time` than greaterOrEqual:
+    if (greaterOrEqual == end() ||
+        (greaterOrEqual != begin() &&
+         (time - lessThan->getTime()) < (greaterOrEqual->getTime() - time))) {
+        closest = lessThan;
+    } else {
+        closest = greaterOrEqual;
+    }
+
+    // If the closest state is not within the tolerance:
+    if (closest == end() || std::abs(closest->getTime() - time) > tolerance) {
+        return end();
+    }
+
+    return closest;
+}
+
 void StatesTrajectory::append(const SimTK::State& state) {
     if (!m_states.empty()) {
 
@@ -106,6 +229,19 @@ bool StatesTrajectory::isCompatibleWith(const Model& model) const {
     // TODO number of constraints.
 
     return true;
+}
+
+StatesTrajectory::const_iterator
+StatesTrajectory::lowerBound(const double& time) const {
+
+    // Need a custom comparison function to extract the time from the state.
+    auto compare = [](const SimTK::State& s, const double& t) {
+        return s.getTime() < t;
+    };
+    // lower_bound() finds the first element whose time is greater than or
+    // equal to the given time.
+    // If the iterator is end(), there are no states after the given time.
+    return std::lower_bound(begin(), end(), time, compare);
 }
 
 StatesTrajectory StatesTrajectory::createFromStatesStorage(
