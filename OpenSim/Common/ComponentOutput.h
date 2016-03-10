@@ -66,14 +66,17 @@ class Component;
 class OSIMCOMMON_API AbstractOutput {
 public:
     AbstractOutput() : dependsOnStage(SimTK::Stage::Infinity) {}
-    AbstractOutput(const std::string& name, SimTK::Stage dependsOnStage) : 
-        name(name), dependsOnStage(dependsOnStage) {}
+    AbstractOutput(const std::string& name, SimTK::Stage dependsOnStage,
+                   bool isList) :
+        name(name), dependsOnStage(dependsOnStage), _isList(isList) {}
     virtual ~AbstractOutput() { }
 
     /** Output's name */
     const std::string& getName() const { return name; }
     /** Output's dependence on System being realized to at least this System::Stage */
     const SimTK::Stage& getDependsOnStage() const { return dependsOnStage; }
+    /** Can this Output have more than one channel? */
+    bool isListOutput() const { return _isList; }
 
     /** Output Interface */
     virtual std::string     getTypeName() const = 0;
@@ -103,6 +106,7 @@ private:
     std::string name;
     SimTK::Stage dependsOnStage;
     unsigned int _numSigFigs = 8;
+    bool _isList = false;
 
     // For calling setOwner().
     friend Component;
@@ -113,7 +117,7 @@ template<class T>
 class Output : public AbstractOutput {
 public:
     //default construct output function pointer and result container
-    Output() : AbstractOutput(), _outputFcn(nullptr) {}   
+    Output() {}
     /** Convenience constructor
     Create a Component::Output bound to a specific method of the Component and 
     valid at a given realization Stage.
@@ -121,10 +125,13 @@ public:
     @param outputFunction   The output function to be invoked (returns Output T)
     @param dependsOnStage   Stage at which Output can be evaluated. */
     explicit Output(const std::string& name,
-        const std::function<T (const Component* comp, const SimTK::State&)>&
-                outputFunction,
-        const SimTK::Stage&     dependsOnStage) : 
-            AbstractOutput(name, dependsOnStage), _outputFcn(outputFunction)
+        const std::function<T (const Component* comp,
+                               const SimTK::State&,
+                               const std::string& channel)>& outputFunction,
+        const SimTK::Stage&     dependsOnStage,
+        bool                    isList) :
+            AbstractOutput(name, dependsOnStage, isList),
+            _outputFcn(outputFunction)
     {}
     
     virtual ~Output() {}
@@ -151,7 +158,7 @@ public:
                     state.getSystemStage(), getDependsOnStage(),
                     "Output::getValue(state)");
         }
-        _result = _outputFcn(_owner.get(), state);
+        _result = _outputFcn(_owner.get(), state, "");
         return _result;
     }
     
@@ -159,8 +166,7 @@ public:
     std::string getTypeName() const override 
         { return SimTK::NiceTypeName<T>::namestr(); }
 
-    std::string getValueAsString(const SimTK::State& state) const override
-    {
+    std::string getValueAsString(const SimTK::State& state) const override {
         unsigned int ns = getNumberOfSignificantDigits();
         std::stringstream s;
         s << std::setprecision(ns) << getValue(state);
@@ -172,7 +178,9 @@ public:
 
 private:
     mutable T _result;
-    std::function<T (const Component*, const SimTK::State&)> _outputFcn;
+    std::function<T (const Component*,
+                     const SimTK::State&,
+                     const std::string& channel)> _outputFcn { nullptr };
 
 //=============================================================================
 };  // END class Output
@@ -215,6 +223,19 @@ private:
     /** @}                                                               */ \
     /** @cond                                                            */ \
     bool _has_output_##oname { constructOutput<T>(#oname, &Self::func, ostage) }; \
+    /** @endcond                                                         */
+    
+#define OpenSim_DECLARE_LIST_OUTPUT(oname, T, func, ostage)                 \
+    /** @name Outputs (list)                                             */ \
+    /** @{                                                               */ \
+    /** Provides the value of func##() and is available at stage ostage. */ \
+    /** This output can have multiple channels. TODO                     */ \
+    /** This output was generated with the                               */ \
+    /** #OpenSim_DECLARE_LIST_OUTPUT macro.                              */ \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, oname)                                    \
+    /** @}                                                               */ \
+    /** @cond                                                            */ \
+    bool _has_output_##oname { constructListOutput<T>(#oname, &Self::func, ostage) }; \
     /** @endcond                                                         */
 
 // Note: we could omit the T argument from the above macro by using the

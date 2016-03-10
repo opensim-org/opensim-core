@@ -6,15 +6,18 @@ using namespace SimTK;
 template <typename T>
 class DataSource_ : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(DataSource_, T, ModelComponent);
-    OpenSim_DECLARE_OUTPUT(columns, T, getColumnAtTime, SimTK::Stage::Instance);
+    OpenSim_DECLARE_LIST_OUTPUT(columns, T, getColumnAtTime,
+                                SimTK::Stage::Instance);
 // OpenSim_DECLARE_OUTPUT(all, Vector<T>, getRow, SimTK::Stage::Instance);
 public:
     
-    T getColumnAtTime(const SimTK::State& s) const {
-        return interpolate(s.getTime(), 0);
+    T getColumnAtTime(const SimTK::State& s, const std::string& label) const {
+        // TODO change "col1" to label.
+        return interpolate(s.getTime(), "col1");
     }
     
-    T interpolate(const double& time, int rowIndex) const {
+    T interpolate(const double& time, const std::string& label) const {
+        const auto& colIndex = _table.getColumnIndex(label);
         const auto& times(_table.getIndependentColumn());
         
         // Get the first time greater or equal to the requested time.
@@ -24,7 +27,7 @@ public:
         // If the the time is an exact match to an existing column.
         if (timeLowerb == time) {
             const auto& row = _table.getRowAtIndex(ilowerb);
-            return row[rowIndex];
+            return row[colIndex];
         }
         
         // Get the latest time that is less than the requested time.
@@ -46,20 +49,27 @@ public:
         const auto& rowBelow = _table.getRowAtIndex(ibelow);
         const auto& rowAbove = _table.getRowAtIndex(iabove);
         
-        const T& delta = rowAbove[rowIndex] - rowBelow[rowIndex];
-        return rowBelow[rowIndex] + fraction * delta;
+        const T& delta = rowAbove[colIndex] - rowBelow[colIndex];
+        return rowBelow[colIndex] + fraction * delta;
     }
     
     TimeSeriesTable_<T>& updTable() { return _table; }
     const TimeSeriesTable_<T> getTable() const { return _table; }
     
-private:
+protected:
 
-//    void extendFinalizeFromProperties() const {
-//        for (int icol = 0; ++icol < _table.getNumColumns(); ++icol) {
-//            getOutput("columns").addChannel()
-//        }
-//    }
+    void extendFinalizeFromProperties() override {
+        Super::extendFinalizeFromProperties();
+        const auto& keys = _table.getDependentsMetaData().getKeys();
+        // TODO tables should be initialized with a labels metadata.
+        if (std::find(keys.begin(), keys.end(), "labels") != keys.end()) {
+            for (const auto& label : _table.getColumnLabels()) {
+                // TODO getOutput("columns").addChannel(label);
+            }
+        }
+    }
+    
+private:
     
     TimeSeriesTable_<T> _table;
 };
@@ -73,14 +83,13 @@ public:
     OpenSim_DECLARE_LIST_INPUT(input, T, SimTK::Stage::Acceleration, "");
 private:
     void extendRealizeReport(const State& state) const override {
-        const auto& input = getInput("input");
+        const auto& input = getInput<T>("input");
         
         if (_printCount % 20 == 0) {
             std::cout << "[" << getName() << "] "
-                      << std::setw(_width) << "time" << "  ";
-            for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
-                const auto& output = Input<T>::downcast(input).getOutput(idx);
-                const auto& outName = output.getName();
+                      << std::setw(_width) << "time" << "| ";
+            for (const auto& output : input.getOutputs()) {
+                const auto& outName = output->getName();
                 const auto& truncName = outName.size() <= _width ?
                     outName : outName.substr(outName.size() - _width);
                 std::cout << std::setw(_width) << truncName << "|";
@@ -89,10 +98,9 @@ private:
         }
         std::cout << "[" << getName() << "] "
                   << std::setw(_width) << state.getTime() << "| ";
-        for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
-            const auto& output = Input<T>::downcast(input).getOutput(idx);
-            const auto& value = output.getValue(state);
-            const auto& nSigFigs = output.getNumberOfSignificantDigits();
+        for (const auto& output : input.getOutputs()) {
+            const auto& value = output->getValue(state);
+            const auto& nSigFigs = output->getNumberOfSignificantDigits();
             std::cout << std::setw(_width)
                       << std::setprecision(nSigFigs) << value << "|";
         }
@@ -130,17 +138,15 @@ void testOutputVectorsAndChannels() {
     // Fill up the DataSource.
     auto& table = src->updTable();
     
-    // Column labels (in only 7 lines!)
-    ValueArray<std::string> labelValues;
-    auto& vec = labelValues.upd();
+    // Column labels.
+    std::vector<std::string> columnLabels;
     for (unsigned i = 0; i < 5; ++i) {
-        vec.push_back(SimTK::Value<std::string>("col" + std::to_string(i)));
+        columnLabels.push_back("col" + std::to_string(i));
     }
-    TimeSeriesTable::DependentsMetaData depMeta;
-    depMeta.setValueArrayForKey("labels", labelValues);
-    table.setDependentsMetaData(depMeta);
+    table.setColumnLabels(columnLabels);
     
     TimeSeriesTable::RowVector row(5, 0.0);
+    row[1] = 1; row[2] = 2; row[3] = 3; row[4] = 4;
     table.appendRow(0.0, row);
     row += 1;
     table.appendRow(0.25, row);
@@ -159,6 +165,7 @@ void testOutputVectorsAndChannels() {
     rep->setName("interped");
     model.addModelComponent(rep);
     
+    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col1")));
     rep->updInput("input").connect(src->getOutput("columns"));
     
     SimTK::State& s = model.initSystem();

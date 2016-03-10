@@ -1399,11 +1399,9 @@ template <class T> friend class ComponentMeasure;
     option you may choose to hide the state variable from being accessed outside
     of this component, in which case it is considered to be "hidden". 
     You may also want to create an Output for this state variable; see
-    constructOutputForStateVariable() for more information. Reporters should
-    use such an Output to get the StateVariable's value (instead of using
+    #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE for more information. Reporters
+    should use such an Output to get the StateVariable's value (instead of using
     getStateVariableValue()).
-
-    @see constructOutputForStateVariable()
 
     @param[in] stateVariableName     string value to access variable by name
     @param[in] invalidatesStage      the system realization stage that is
@@ -1561,8 +1559,10 @@ template <class T> friend class ComponentMeasure;
      * the top near property declarations):
      *
      *  - #OpenSim_DECLARE_OUTPUT
+     *  - #OpenSim_DECLARE_LIST_OUTPUT
      *  - #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE
      *  - #OpenSim_DECLARE_INPUT
+     *  - #OpenSim_DECLARE_LIST_INPUT
      *
      * The methods below are used in those macros, and you should not use these
      * methods yourself.
@@ -1587,7 +1587,7 @@ template <class T> friend class ComponentMeasure;
 #ifndef SWIG // SWIG can't parse the const at the end of the second argument.
     template <typename T, typename CompType>
     bool constructOutput(const std::string& name,
-            T (CompType::*const componentMemberFunction)(const SimTK::State&) const,
+            T (CompType::*const memFunc)(const SimTK::State&) const,
             const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
         // The `const` in `CompType::*const componentMemberFunction` means this
         // function can't assign componentMemberFunction to some other function
@@ -1599,12 +1599,34 @@ template <class T> friend class ComponentMeasure;
         // This lambda takes a pointer to a component, downcasts it to the
         // appropriate derived type, then calls the member function of the
         // derived type. Thank you, klshrinidhi!
-        auto outputFunc = [componentMemberFunction] (const Component* comp,
-                const SimTK::State& s) -> T {
-            return std::mem_fn(componentMemberFunction)(
-                    dynamic_cast<const CompType*>(comp), s);
+        auto outputFunc = [memFunc] (const Component* comp,
+                const SimTK::State& s, const std::string&) -> T {
+            return std::mem_fn(memFunc)(dynamic_cast<const CompType*>(comp), s);
         };
         return constructOutput<T>(name, outputFunc, dependsOn);
+    }
+    // TODO
+    template <typename T, typename CompType>
+    bool constructListOutput(const std::string& name,
+             T (CompType::*const memFunc)(const SimTK::State&,
+                                          const std::string& channel) const,
+            const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
+        // The `const` in `CompType::*const componentMemberFunction` means this
+        // function can't assign componentMemberFunction to some other function
+        // pointer. This is unlikely, since that function would have to match
+        // the same template parameters (T and CompType).
+        static_assert(std::is_base_of<Component, CompType>::value,
+            "Template parameter 'CompType' must be derived from Component.");
+
+        // This lambda takes a pointer to a component, downcasts it to the
+        // appropriate derived type, then calls the member function of the
+        // derived type. Thank you, klshrinidhi!
+        auto outputFunc = [memFunc] (const Component* comp,
+                const SimTK::State& s, const std::string& channel) -> T {
+            return std::mem_fn(memFunc)(
+                    dynamic_cast<const CompType*>(comp), s, channel);
+        };
+        return constructOutput<T>(name, outputFunc, dependsOn, true);
     }
 #endif
 
@@ -1707,15 +1729,18 @@ private:
     */
     template <typename T>
     bool constructOutput(const std::string& name,
-        const std::function<T (const Component*, const SimTK::State&)> outputFunction, 
-        const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
+            const std::function<T (const Component*,
+                                   const SimTK::State&,
+                                   const std::string& channel)> outputFunction,
+            const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration,
+            bool isList = false) {
         // TODO OPENSIM_THROW_IF(_outputsTable.count(name) == 1,
         // TODO         Exception, getConcreteClassName(), getName(),
         // TODO         "An output with name '" + name + 
         // TODO         "' (type " + SimTK::NiceTypeName<T>::name() +
         // TODO         ") already exists.");
         _outputsTable[name].reset(
-                new Output<T>(name, outputFunction, dependsOn));
+                new Output<T>(name, outputFunction, dependsOn, isList));
         return true;
     }
 
