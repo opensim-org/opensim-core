@@ -127,7 +127,7 @@ protected:
     /** Validate the given row. 
 
     \throws InvalidRow If the timestamp for the row breaks strictly increasing
-                       property of the indpedent column.                      */
+                       property of the indepedent column.                     */
     void validateRow(size_t rowIndex,
                      const double& time, 
                      const RowVector& row) const override {
