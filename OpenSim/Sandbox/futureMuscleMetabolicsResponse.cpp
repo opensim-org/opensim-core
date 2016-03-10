@@ -7,6 +7,11 @@ class ComplexResponse : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(ComplexResponse, ModelComponent);
 public:
     OpenSim_DECLARE_PROPERTY(strength, double, "per-coord param.");
+
+    OpenSim_DECLARE_OUTPUT(term_1, double, getTerm1, SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(term_2, double, getTerm2, SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(sum, double, getTotal, SimTK::Stage::Velocity);
+
     ComplexResponse() {
         constructInfrastructure();
         constructProperty_strength(3.0);
@@ -39,14 +44,6 @@ private:
     void constructConnectors() override {
         constructConnector<Coordinate>("coord");
     }
-    void constructOutputs() override {
-        constructOutput<double>("term_1",
-                &ComplexResponse::getTerm1, SimTK::Stage::Position);
-        constructOutput<double>("term_2",
-                &ComplexResponse::getTerm2, SimTK::Stage::Velocity);
-        constructOutput<double>("sum", &ComplexResponse::getTotal,
-                SimTK::Stage::Velocity);
-    }
     void extendAddToSystem(MultibodySystem& system) const override {
         Super::extendAddToSystem(system);
         addCacheVariable<double>("term_1",
@@ -71,9 +68,12 @@ public:
     // Component::getParent.
     OpenSim_DECLARE_PROPERTY(scaling_factor, double, "Affects each coord.");
 
-    void addResponse(ComplexResponse* response) {
-        adoptSubcomponent(response);
-    }
+    OpenSim_DECLARE_OUTPUT(total_sum, double, getTotalSum,
+            SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(total_term_1, double, getTotalTerm1,
+            SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(total_term_2, double, getTotalTerm2,
+            SimTK::Stage::Velocity);
 
     double getTotalSum(const State& s) const {
         const double basalRate = 1.0;
@@ -101,14 +101,6 @@ public:
     }
 
 private:
-    void constructOutputs() override {
-        constructOutput<double>("total_sum",
-                &AggregateResponse::getTotalSum, SimTK::Stage::Position);
-        constructOutput<double>("total_term_1",
-                &AggregateResponse::getTotalTerm1, SimTK::Stage::Velocity);
-        constructOutput<double>("total_term_2",
-                &AggregateResponse::getTotalTerm2, SimTK::Stage::Velocity);
-    }
 };
 
 template <typename T>
