@@ -22,18 +22,16 @@ Connector<T>::iterator getConnectees_##name() const;
 
 class Component : public Object {
 public:
-    AbstractInput& updInput(std::string name);
-    const AbstractInput& getInput(std::string name) const;
+x   AbstractInput& updInput(std::string name);
+x   const AbstractInput& getInput(std::string name) const;
     
     template <typename T>
-    Input<T>& updInput(std::string name);
-    template <typename T>
-    const Input<T>& getInput(std::string name) const;
+x   const Input<T>& getInput(std::string name) const;
     
     template <typename T>
-    const T& getInputValue(const SimTK::State&, std::string name); // exception if listinput.
+x   const T& getInputValue(const SimTK::State&, std::string name); // exception if listinput.
     template <typename T>
-    Input<T>::OutputValuesIterator& getInputValues(const SimTK::State&, std::string name) const;
+x   Input<T>::OutputValuesIterator& getInputValues(const SimTK::State&, std::string name) const;
     
     template <typename T>
     const T& getConnectee(std::string name) const; // exception if listconnector
@@ -43,9 +41,9 @@ public:
     
 protected:
     template <typename T>
-    void constructInput(std::string name, SimTK::Stage);
+x   void constructInput(std::string name, SimTK::Stage);
     template <typename T>
-    void constructListInput(std::string name, SimTK::Stage
+x   void constructListInput(std::string name, SimTK::Stage
     /*, int minSize, int maxSize*/);
     
     template <typename T>
@@ -86,26 +84,26 @@ public:
 };
 
 class AbstractInput : public AbstractConnector {
-    AbstractInput();
-    AbstractInput(std::string name, SimTK::Stage, bool isListConnector);
-    void connect(const Object&) override;
-    virtual void connect(const AbstractOutput&) const = 0; // appends if can.
+x   AbstractInput();
+x   AbstractInput(std::string name, SimTK::Stage, bool isListConnector);
+x   void connect(const Object&) override;
+x   virtual void connect(const AbstractOutput&) const = 0; // appends if can.
     // TODO iterator through connectees.
 };
 
 template <class T>
 class Input : public AbstractInput {
-    Input();
-    Input(std::string name, SimTK::Stage, bool isListConnector);
-    void connect(const AbstractOutput&) const override;
-    void disconnect() override;
-    bool isConnected() const override;
-    size_t getNumConnectees() const override;
-    std::string getConnecteeTypeName() const override;
-    void findAndConnect(const Component&) override;
-    const T& getValue(const SimTK::State&, size_t index=-1) const;
-    class OutputValueIterator;
-    SimTK::IteratorRange<OutputValueIterator> getValues() const;
+x   Input();
+x   Input(std::string name, SimTK::Stage, bool isListConnector);
+x   void connect(const AbstractOutput&) const override;
+x   void disconnect() override;
+x   bool isConnected() const override;
+x   size_t getNumConnectees() const override;
+x   std::string getConnecteeTypeName() const override;
+x   void findAndConnect(const Component&) override;
+x   const T& getValue(const SimTK::State&, size_t index=-1) const;
+x   class OutputValueIterator;
+x   SimTK::IteratorRange<OutputValueIterator> getValues() const;
 };
 
 
