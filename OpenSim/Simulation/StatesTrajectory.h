@@ -448,6 +448,8 @@ public:
 
 private:
 
+    const_iterator lowerBound(const double& time) const;
+
     std::vector<SimTK::State> m_states;
 
 public:
