@@ -255,7 +255,6 @@ public:
 
     /** Input Specific Connect */
     virtual void connect(const AbstractOutput& output) = 0;
-    // TODO this method should NOT be const.
     
 //=============================================================================
 };  // END class AbstractInput
