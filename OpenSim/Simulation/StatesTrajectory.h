@@ -452,6 +452,22 @@ private:
 
 public:
 
+    /** Thrown when asking for a state at a time that is out of range. */
+    class TimeOutOfRange : public OpenSim::Exception {
+    public:
+        TimeOutOfRange(const std::string& file, size_t line,
+                const std::string& func,
+                const double& requestedTime, const std::string& sense,
+                const double& firstTime, const double& lastTime) :
+                OpenSim::Exception(file, line, func) {
+            std::ostringstream msg;
+            msg << "There are no states with a time " << sense << " " <<
+                requestedTime << "; the range of times is [" <<
+                firstTime << ", " << lastTime << "].";
+            addMessage(msg.str());
+        }
+    };
+
     /** Thrown when trying to append a state that is not consistent with the
      * rest of the trajectory. */
     class InconsistentState : public OpenSim::Exception {
