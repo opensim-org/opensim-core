@@ -47,9 +47,9 @@ x   void constructListInput(std::string name, SimTK::Stage
     /*, int minSize, int maxSize*/);
     
     template <typename T>
-    void constructConnector(std::string name);
+x   void constructConnector(std::string name);
     template <typename T>
-    void constructListConnector(std::string name);
+x   void constructListConnector(std::string name);
 };
 
 class AbstractConnector : public Object {
