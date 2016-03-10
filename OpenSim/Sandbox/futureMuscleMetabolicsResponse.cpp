@@ -135,16 +135,13 @@ class ConsoleReporter : public ModelComponent {
     // TODO interval
     // TODO constant interval reporting
     // TODO num significant digits (override).
+    OpenSim_DECLARE_LIST_INPUT(input, T, SimTK::Stage::Acceleration, "");
 public:
     ConsoleReporter() {
         constructInfrastructure();
     }
 private:
     void constructProperties() override {}
-    void constructInputs() override {
-        // TODO rename as multi-input?
-        constructInput<T>("input", SimTK::Stage::Acceleration);
-    }
     void extendRealizeReport(const State& state) const override {
         // multi input: loop through multi-inputs.
         // Output::getNumberOfSignificantDigits().
@@ -226,12 +223,12 @@ void testComplexResponse() {
 
     auto reporter = new ConsoleReporter<double>();
     reporter->setName("reporter");
-    reporter->getInput("input").connect(
+    reporter->updInput("input").connect(
             aggregate->get_responses(0).getOutput("sum"));
-    reporter->getInput("input").connect(
+    reporter->updInput("input").connect(
             aggregate->get_responses(1).getOutput("sum"));
-    reporter->getInput("input").connect(aggregate->getOutput("total_sum"));
-    reporter->getInput("input").connect(
+    reporter->updInput("input").connect(aggregate->getOutput("total_sum"));
+    reporter->updInput("input").connect(
             j1->getCoordinateSet().get(0).getOutput("value"));
     // TODO connect by path: reporter->getInput("input").connect("/complex_response/sum");
     // multi input: reporter->getMultiInput("input").append_connect(cr->getOutput("sum"));

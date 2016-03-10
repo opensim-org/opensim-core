@@ -540,6 +540,7 @@ public:
     }
     /**
     * Get a writable reference to an Input provided by this Component by name.
+    * You can use this method to connect the input to an output.
     *
     * @param name   the name of the Input
     * @return       reference to the AbstractInput
@@ -565,6 +566,17 @@ public:
                 << "for component '" << getName() << "' of type "
                 << getConcreteClassName();
         throw Exception(msg.str(), __FILE__, __LINE__);
+    }
+    
+    /**
+    * Get a concrete Input that you can direclty ask for its values.
+    * @param name   the name of the Input
+    * @throws Exception if an Input with the given name does not exist.
+    * @throws std::bad_cast if the provided type T is incorrect for the given name.
+    */
+    template<typename T>
+    const Input<T>& getInput(const std::string& name) const {
+        return dynamic_cast<const Input<T>&>(getInput(name));
     }
 
     /**

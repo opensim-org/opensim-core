@@ -640,7 +640,9 @@ private:
         // TODO print column names every 10 outputs.
         // TODO test by capturing stdout.
         // TODO prepend each line with "[<name>]" or "[reporter]" if no name is given.
-        const auto& input = getInput("input");
+        // TODO an actual implementation should do a static cast, since we
+        // know that T is correct.
+        const auto& input = getInput<T>("input");
         
         if (_printCount % 20 == 0) {
             std::cout << "[" << getName() << "] "
@@ -657,7 +659,7 @@ private:
         // TODO set width based on number of significant digits.
         std::cout << "[" << getName() << "] "
                   << std::setw(_width) << state.getTime() << "| ";
-        for (const auto& output : Input<T>::downcast(input).getOutputs()) {
+        for (const auto& output : input.getOutputs()) {
             const auto& value = output->getValue(state);
             const auto& nSigFigs = output->getNumberOfSignificantDigits();
             std::cout << std::setw(_width)
@@ -676,7 +678,6 @@ void testListInputs() {
     TheWorld theWorld;
     theWorld.setName("World");
     
-    // let component add its stuff to the system
     Foo& foo = *new Foo();
     foo.setName("Foo");
     theWorld.add(&foo);
@@ -688,7 +689,6 @@ void testListInputs() {
     theWorld.add(&foo2);
 
     Bar& bar = *new Bar();
-    bar.copytesting2 = 6;
     bar.setName("Bar");
     theWorld.add(&bar);
     
