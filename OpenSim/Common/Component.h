@@ -1030,23 +1030,23 @@ protected:
         _memberSubcomponents.push_back(SimTK::ClonePtr<Component>(component));
         return MemberSubcomponentIndex(_memberSubcomponents.size()-1);
     }
-#endif //SWIG
-
     template<class C = Component>
     const C& getMemberSubcomponent(MemberSubcomponentIndex ix) const {
-        const C* comp = dynamics_cast<const C*>(_memberSubcomponents[ix].get());
-        OPENSIM_THROW_IF(!comp, Excpetion, 
-            "Component::getMemberSubcomponent() - Incorrect type requested.")
-    return *comp;
+        const C* comp = dynamic_cast<const C*>(_memberSubcomponents[ix].get());
+        if(comp)
+            return *comp;
+
+        throw Exception("Component::getMemberSubcomponent() - Incorrect type requested.");
     }
     template<class C = Component>
     C& updMemberSubcomponent(MemberSubcomponentIndex ix) {
-        C* comp = dynamics_cast<C*>(_memberSubcomponents[ix].get());
-        OPENSIM_THROW_IF(!comp, Excpetion,
-            "Component::updMemberSubcomponent() - Incorrect type requested.")
-        return *comp;
-    }
+        C* comp = dynamic_cast<C*>(_memberSubcomponents[ix].upd());
+        if (comp)
+            return *comp;
 
+        throw Exception("Component::updMemberSubcomponent() - Incorrect type requested.");
+    }
+#endif //SWIG
 
   /** Single call to construct the underlying infrastructure of a Component, which
      include: 1) its properties, 2) its structural connectors (to other components),

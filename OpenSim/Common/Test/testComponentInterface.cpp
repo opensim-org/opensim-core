@@ -63,6 +63,9 @@ public:
     }
 
     void add(Component* comp) {
+        // Edit Sub 
+        Sub& subc = updMemberSubcomponent<Sub>(intSubix);
+
         // add it the property list of components that owns and serializes them
         updProperty_components().adoptAndAppendValue(comp);
         try {
@@ -100,6 +103,8 @@ protected:
             matter = system.updMatterSubsystem();
         }
         else{
+            const Sub& subc = getMemberSubcomponent<Sub>(intSubix);
+
             SimbodyMatterSubsystem* old_matter = matter.release();
             delete old_matter;
             matter = new SimbodyMatterSubsystem(system);
