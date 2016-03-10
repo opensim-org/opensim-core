@@ -41,6 +41,7 @@
 #include "OpenSim/Common/Component.h"
 #include "OpenSim/Common/ComponentOutput.h"
 #include "OpenSim/Common/ComponentList.h"
+#include <Simbody.h>
 
 namespace OpenSim {
 
@@ -80,8 +81,8 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(connectee_name, std::string,
-        "Name of the component this Connector should be connected to.");
+    OpenSim_DECLARE_LIST_PROPERTY(connectee_name, std::string,
+        "Name of the component(s) this Connector should be connected to.");
 
     //--------------------------------------------------------------------------
     // CONSTRUCTION
@@ -114,8 +115,27 @@ public:
         return connectAtStage;
     }
     
-    bool isListInput() const { return _isList; }
-
+    bool isListConnector() const { return _isList; }
+    
+    void set_connectee_name(const std::string& name) {
+        if (isListConnector()) {
+            throw Exception("TODO");
+        }
+        // Make sure the connectee_name property will have just one value.
+        // We ensure that this property only has one value if this is a
+        // non-list connector by setting its allowable list size to 1.
+        //updProperty_connectee_name().clear();
+        //append_connectee_name(name);
+        set_connectee_name(0, name);
+    }
+    
+    // TODO just set min size of the property to 1?
+    const std::string& get_connectee_name() const {
+        if (isListConnector()) {
+            throw Exception("TODO");
+        }
+        return get_connectee_name(0);
+    }
 
     //--------------------------------------------------------------------------
     /** Derived classes must satisfy this Interface */
@@ -138,13 +158,22 @@ public:
     /** Connect this Connector according to its connectee_name property
         given a root Component to search its subcomponents for the connect_to
         Component. */
-    virtual void findAndConnect(const Component& root) = 0;
+    virtual void findAndConnect(const Component& root, int index=-1) {
+        throw Exception("findAndConnect() not implemented; not supported "
+                        "for this type of connector", __FILE__, __LINE__);
+    }
 
     /** Disconnect this Connector from all connectee objects. */
     virtual void disconnect() = 0;
 
 private:
-    void constructProperties() { constructProperty_connectee_name(""); }
+    void constructProperties() {
+        constructProperty_connectee_name();
+        if (!isListConnector()) {
+            append_connectee_name("");
+            updProperty_connectee_name().setAllowableListSize(1);
+        }
+    }
     SimTK::Stage connectAtStage;
     bool _isList = false;
 //=============================================================================
@@ -155,8 +184,10 @@ template<class T>
 class  Connector : public AbstractConnector {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(Connector, T, AbstractConnector);
 public:
+    typedef std::vector<SimTK::ReferencePtr<const T>> ConnecteeList;
+    
     /** Default constructor */
-    Connector() : connectee(nullptr) {}
+    Connector() {}
 
     // default destructor, copy constructor
 
@@ -168,17 +199,20 @@ public:
     @param isList           Whether this Connector can have multiple connectees. */
     Connector(const std::string& name, const SimTK::Stage& connectAtStage,
               bool isList) :
-        AbstractConnector(name, connectAtStage, isList), connectee(nullptr) {}
+        AbstractConnector(name, connectAtStage, isList) {}
 
     virtual ~Connector() {}
 
     /** Is the Connector connected to object of type T? */
     bool isConnected() const override {
-        return !connectee.empty();
+        // TODO a better check is if the length of the
+        // connectee_names is equal to the number of connectees pointers.
+        return !_connectees.empty();
     }
     
     size_t getNumConnectees() const override {
-        return isConnected() ? 1 : 0; // TODO
+        // TODO should this be obtained from the list property instead?
+        return _connectees.size();
     }
 
     /** Temporary access to the connectee for testing purposes. Real usage
@@ -186,29 +220,57 @@ public:
         For example, Input should short circuit to its Output's getValue()
         once it is connected.
     Return a const reference to the object connected to this Connector */
-    const T& getConnectee() const { return connectee.getRef(); }
+    // TODO update comment for list connectors.
+    const T& getConnectee(int index=-1) const {
+        if (index < 0) {
+            if (!isListConnector()) index = 0;
+            else throw Exception(
+                    "Connector<T>::getConnectee(): an index must be "
+                    "provided for a list connector.");
+        }
+        OPENSIM_THROW_IF(index >= getNumConnectees(),
+                         IndexOutOfRange<int>,
+                         index, 0, (int)getNumConnectees() - 1);
+        return _connectees[index].getRef();
+    }
 
     /** Connect this Connector to the provided connectee object */
     void connect(const Object& object) override {
         const T* objT = dynamic_cast<const T*>(&object);
-        if (objT) {
-            connectee = *objT;
-            set_connectee_name(object.getName());
-        }
-        else {
+        if (!objT) {
             std::stringstream msg;
             msg << "Connector::connect(): ERR- Cannot connect '" << object.getName()
                 << "' of type " << object.getConcreteClassName() << ". Connector requires "
                 << getConnecteeTypeName() << ".";
             throw Exception(msg.str(), __FILE__, __LINE__);
         }
+        if (!isListConnector()) {
+            // Remove the existing connectee (if it exists).
+            disconnect();
+            updProperty_connectee_name().clear();
+        } else {
+            // Make sure we aren't already connected to this object.
+            if (std::find(_connectees.begin(), _connectees.end(), objT) !=
+                    _connectees.end()) {
+                
+                std::stringstream msg;
+                msg << "Connector::connect(): Already connected to '" << object.getName()
+                    << "' (of type " << object.getConcreteClassName() << ").";
+                throw Exception(msg.str(), __FILE__, __LINE__);
+            }
+        }
+        _connectees.push_back(SimTK::ReferencePtr<const T>(objT));
+        append_connectee_name(object.getName());
     }
 
     /** Connect this Connector given its connectee_name property  */
-    void findAndConnect(const Component& root) override;
+    void findAndConnect(const Component& root, int index=-1) override;
 
     void disconnect() override {
-        connectee.reset(nullptr);
+        _connectees.clear();
+        // Leave the connectee_name property alone, since we might
+        // want to reconnect to those same connectees later.
+        // TODO this could cause accumulation of connectee_names unintentionally.
     }
     
     /** Derived classes must satisfy this Interface */
@@ -219,7 +281,8 @@ public:
     SimTK_DOWNCAST(Connector, AbstractConnector);
 
 private:
-    mutable SimTK::ReferencePtr<const T> connectee;
+    SimTK::ResetOnCopy<ConnecteeList> _connectees;
+//TODO    ConnecteeList _connectees;
 }; // END class Connector<T>
 
 
@@ -265,6 +328,9 @@ template<class T>
 class  Input : public AbstractInput {
     OpenSim_DECLARE_CONCRETE_OBJECT(Input, AbstractInput);
 public:
+
+    typedef std::vector<SimTK::ReferencePtr<const Output<T>>> ConnecteeList;
+    
     /** Default constructor */
     Input() : AbstractInput() {}
     /** Convenience constructor
@@ -282,7 +348,7 @@ public:
     void connect(const AbstractOutput& output) override {
         const auto* outT = dynamic_cast<const Output<T>*>(&output);
         if (outT) {
-            if (!isListInput()) {
+            if (!isListConnector()) {
                 // Remove the existing connecteee (if it exists).
                 disconnect();
             }
@@ -312,22 +378,19 @@ public:
     std::string getConnecteeTypeName() const override
     { return SimTK::NiceTypeName<Output<T>>::namestr(); }
 
-    /** Connect this Input given a root Component to search for
-        the Output according to the connectee_name of this Input  */
-    void findAndConnect(const Component& root) override {}
-
     /**Get the value of this Input when it is connected. Redirects to connected
        Output<T>'s getValue() with minimal overhead. If this is a list input,
        you must specify the specific Output whose value you want. */
     const T& getValue(const SimTK::State &state, int index=-1) const {
         if (index < 0) {
-            if (!isListInput()) index = 0;
+            if (!isListConnector()) index = 0;
             else throw Exception("Input<T>::getValue(): an index must be "
-                                 "provided for an list input.");
+                                 "provided for a list input.");
         }
         // TODO remove this check in order to improve speed?
         OPENSIM_THROW_IF(index >= getNumConnectees(),
-                         IndexOutOfRange, index, 0, (int)getNumConnectees() - 1);
+                         IndexOutOfRange<int>,
+                         index, 0, (int)getNumConnectees() - 1);
         return _connectees[index].getRef().getValue(state);
     }
     
@@ -335,16 +398,15 @@ public:
         value you want. */
     const Output<T>& getOutput(int index=-1) const {
         if (index == -1) {
-            if (!isListInput()) index = 0;
+            if (!isListConnector()) index = 0;
             else throw Exception("Input<T>::getOutput(): an index must be "
-                                 "provided for an list input.");
+                                 "provided for a list input.");
         }
         OPENSIM_THROW_IF(index >= getNumConnectees(),
-                         IndexOutOfRange, index, 0, (int)getNumConnectees() - 1);
+                         IndexOutOfRange<int>,
+                         index, 0, (int)getNumConnectees() - 1);
         return _connectees[index].getRef();
     }
-    
-    typedef std::vector<SimTK::ReferencePtr<const Output<T>>> ConnecteeList;
     
     /** Get const access to the outputs connected to this input. */
     const ConnecteeList& getOutputs() const {
@@ -354,7 +416,7 @@ public:
     SimTK_DOWNCAST(Input, AbstractInput);
 
 private:
-    std::vector<SimTK::ReferencePtr<const Output<T>>> _connectees;
+    ConnecteeList _connectees;
 }; // END class Input<Y>
 
 /// @name Creating Inputs for your Component

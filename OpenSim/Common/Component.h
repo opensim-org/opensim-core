@@ -1361,9 +1361,9 @@ template <class T> friend class ComponentMeasure;
     * message if the provided Component is incompatible or non-existant.
     */
     template <typename T>
-    void constructConnector(const std::string& name) {
+    void constructConnector(const std::string& name, bool isList = false) {
         int ix = updProperty_connectors().adoptAndAppendValue(
-            new Connector<T>(name, SimTK::Stage::Topology, false));
+            new Connector<T>(name, SimTK::Stage::Topology, isList));
         //add pointer to connectorsTable so we can access connectors easily by name
         _connectorsTable[name] = ix;
     }
@@ -2050,10 +2050,27 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
 }
 
 
-template<class C>
-void Connector<C>::findAndConnect(const Component& root) {
-    const C& comp = root.getComponent<C>(get_connectee_name());
-    connectee = comp;
+template<class T>
+void Connector<T>::findAndConnect(const Component& root, int index) {
+    if (index < 0) {
+        if (!isListConnector()) index = 0;
+        else throw Exception(
+            "Connector<T>::findAndConnect(): an index must be "
+            "provided for a list connector.");
+    }
+    const int numConnecteeNames = getProperty_connectee_name().size();
+    OPENSIM_THROW_IF(index >= numConnecteeNames,
+                     IndexOutOfRange<int>,
+                     index, 0, numConnecteeNames - 1);
+    _connectees.resize(getProperty_connectee_name().size());
+    const T& comp = root.getComponent<T>(get_connectee_name(index));
+    if (index < _connectees.size()) {
+        _connectees[index] = comp;
+    } else if (index == _connectees.size()) {
+        _connectees.push_back(SimTK::ReferencePtr<const T>(comp));
+    } else {
+        throw Exception();
+    }
 }
 
 } // end of namespace OpenSim

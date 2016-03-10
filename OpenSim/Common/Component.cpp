@@ -168,28 +168,31 @@ void Component::connect(Component &root)
         AbstractConnector& connector = upd_connectors(ix);
         connector.disconnect();
         try{
-            const std::string& compName = connector.get_connectee_name();
-            std::string::size_type front = compName.find("/");
-            if (front != 0) { // local (not path qualified) name
-                // A local Component is considered: 
-                // (1) one of this component's children 
-                const Component* comp = findComponent(compName);
-                // (2) OR, one of this component's siblings (same depth as this)
-                if (!comp && hasParent()) {
-                    comp = getParent().findComponent(compName);
-                }
-                if (comp) {
-                    try { //Could still be the wrong type
-                        connector.connect(*comp);
+            int numConnecteeNames = connector.getProperty_connectee_name().size();
+            for (int ic = 0; ic < numConnecteeNames; ++ic) {
+                const std::string& compName = connector.get_connectee_name(ic);
+                std::string::size_type front = compName.find("/");
+                if (front != 0) { // local (not path qualified) name
+                    // A local Component is considered: 
+                    // (1) one of this component's children 
+                    const Component* comp = findComponent(compName);
+                    // (2) OR, one of this component's siblings (same depth as this)
+                    if (!comp && hasParent()) {
+                        comp = getParent().findComponent(compName);
                     }
-                    catch (const std::exception& ex) {
-                        std::cout << ex.what() << "\nContinue to find ..." <<std::endl;
+                    if (comp) {
+                        try { //Could still be the wrong type
+                            connector.connect(*comp);
+                            continue;
+                        }
+                        catch (const std::exception& ex) {
+                            std::cout << ex.what() << "\nContinue to find ..." <<std::endl;
+                        }
                     }
                 }
-            }
-            if(!connector.isConnected()) {
-                connector.findAndConnect(root);
-            }
+                // If we still haven't been able to connect to this component:
+                connector.findAndConnect(root, ic);
+            } // for each connectee_name
         }
         catch (const std::exception& x) {
             throw Exception(getConcreteClassName() + "'" + getName() +"'"

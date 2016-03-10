@@ -527,8 +527,10 @@ void testMisc() {
     
     world2->updComponent("Bar").getConnector<Foo>("childFoo");
     // We haven't called connect yet, so this connection isn't made yet.
-    ASSERT_THROW( OpenSim::Exception,
-            world2->updComponent("Bar").getConnectee<Foo>("childFoo") );
+    SimTK_TEST_MUST_THROW_EXC(
+            world2->updComponent("Bar").getConnectee<Foo>("childFoo"),
+            OpenSim::Exception
+             );
 
     ASSERT(theWorld == *world2, __FILE__, __LINE__,
         "Model serialization->deserialization FAILED");
@@ -717,6 +719,73 @@ void testListInputs() {
     }
 }
 
+
+
+
+class HasListConnector : public Component {
+    OpenSim_DECLARE_CONCRETE_OBJECT(HasListConnector, Component);
+public:
+    HasListConnector() { constructInfrastructure(); }
+    void constructConnectors() override {
+        constructConnector<Foo>("foos", true);
+    }
+};
+
+void testListConnectors() {
+    MultibodySystem system;
+    TheWorld theWorld;
+    theWorld.setName("world");
+    
+    Foo& foo = *new Foo(); foo.setName("foo"); foo.set_mass(2.0);
+    theWorld.add(&foo);
+
+    Foo& foo2 = *new Foo(); foo2.setName("foo2"); foo2.set_mass(3.0);
+    theWorld.add(&foo2);
+
+    Bar& bar = *new Bar(); bar.setName("bar");
+    theWorld.add(&bar);
+    
+    auto* haslist = new HasListConnector(); haslist->setName("haslist");
+    theWorld.add(haslist);
+    
+    // Non-list connectors.
+    bar.updConnector<Foo>("parentFoo").set_connectee_name("foo");
+    bar.updConnector<Foo>("childFoo").set_connectee_name("foo2");
+    
+    // Ensure that calling connect() on bar's "parentFoo" doesn't increase
+    // its number of connectees.
+    bar.updConnector<Foo>("parentFoo").connect(foo);
+    // TODO The "Already connected to 'foo'" is caught by `connect()`.
+    SimTK_TEST(bar.getConnector<Foo>("parentFoo").getNumConnectees() == 1);
+    
+    // haslist is not connected, so there's an exception when connecting.
+    // TODO or maybe list connectors are connected even if empty?
+    // TODO maybe they just need to have paths to valid components to be connected.
+    // haslist's "foos" is unconnected.
+    // TODO SimTK_TEST_MUST_THROW_EXC(theWorld.connect(), OpenSim::Exception);
+    // As it is now, it's OK for a list connector to have 0 connectees.
+    theWorld.connect();
+    
+    // Now, configure haslist's connections.
+    haslist->updConnector<Foo>("foos").connect(foo);
+    
+    // One connectee is all it needs to be connected.
+    theWorld.connect();
+    
+    // But we can still add more connectees.
+    haslist->updConnector<Foo>("foos").connect(foo2);
+    SimTK_TEST(haslist->getConnector<Foo>("foos").getNumConnectees() == 2);
+    
+    theWorld.connect();
+    theWorld.buildUpSystem(system);
+    
+    State s = system.realizeTopology();
+    
+    std::cout << bar.getConnectee<Foo>("parentFoo").get_mass() << std::endl;
+    
+    // TODO redo with the property list / the reference connect().
+}
+
 int main() {
 
     //Register new types for testing deserialization
@@ -726,8 +795,9 @@ int main() {
     Object::registerType(Connector<Foo>());
     Object::registerType(Connector<Bar>());
 
-    SimTK_START_TEST("testComponentIterface");
+ // TODO   SimTK_START_TEST("testComponentIterface");
         SimTK_SUBTEST(testMisc);
         SimTK_SUBTEST(testListInputs);
-    SimTK_END_TEST();
+        SimTK_SUBTEST(testListConnectors);
+//    SimTK_END_TEST();
 }
