@@ -468,6 +468,22 @@ public:
         }
     };
 
+    /** Thrown when asking for a state at a time at which there is no state. */
+    class NoStateAtTime : public OpenSim::Exception {
+    public:
+        NoStateAtTime(const std::string& file, size_t line,
+                const std::string& func,
+                const double& requestedTime, const double& tolerance) {
+            std::ostringstream msg;
+            auto fullPrecision = std::numeric_limits<double>::max_digits10;
+            msg << std::setprecision(fullPrecision) <<
+                "There are no states at the requested time of " <<
+                requestedTime << " using the provided tolerance of " <<
+                tolerance << ".";
+            addMessage(msg.str());
+        }
+    };
+
     /** Thrown when trying to append a state that is not consistent with the
      * rest of the trajectory. */
     class InconsistentState : public OpenSim::Exception {
