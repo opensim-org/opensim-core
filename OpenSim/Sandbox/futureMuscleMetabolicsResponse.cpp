@@ -75,6 +75,10 @@ public:
     OpenSim_DECLARE_OUTPUT(total_term_2, double, getTotalTerm2,
             SimTK::Stage::Velocity);
 
+    void addResponse(ComplexResponse* response) {
+        adoptSubcomponent(response);
+    }
+
     double getTotalSum(const State& s) const {
         const double basalRate = 1.0;
         double totalSum = 1.0;

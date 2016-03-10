@@ -1032,6 +1032,22 @@ protected:
     }
 #endif //SWIG
 
+    template<class C = Component>
+    const C& getMemberSubcomponent(MemberSubcomponentIndex ix) const {
+        const C* comp = dynamics_cast<const C*>(_memberSubcomponents[ix].get());
+        OPENSIM_THROW_IF(!comp, Excpetion, 
+            "Component::getMemberSubcomponent() - Incorrect type requested.")
+    return *comp;
+    }
+    template<class C = Component>
+    C& updMemberSubcomponent(MemberSubcomponentIndex ix) {
+        C* comp = dynamics_cast<C*>(_memberSubcomponents[ix].get());
+        OPENSIM_THROW_IF(!comp, Excpetion,
+            "Component::updMemberSubcomponent() - Incorrect type requested.")
+        return *comp;
+    }
+
+
   /** Single call to construct the underlying infrastructure of a Component, which
      include: 1) its properties, 2) its structural connectors (to other components),
      3) its Inputs (slots) for expected Output(s) of other components and, 4) its 
