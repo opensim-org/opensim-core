@@ -672,8 +672,8 @@ void tableAndTrajectoryMatch(const Model& model,
 
             const auto& valueInStates = model.getStateVariableValue(
                     states[itime], stateName);
-            const auto& valueInTable =
-                    table.getDependentColumnAtIndex(icol)[itime];
+            const auto& column = table.getDependentColumnAtIndex(icol);
+            const auto& valueInTable = column[itime];
 
             SimTK_TEST(valueInStates == valueInTable);
         }
@@ -706,7 +706,6 @@ void testExport() {
     // Trying to export the trajectory with an incompatible model.
     {
         Model arm26("arm26.osim");
-        states.exportToTable(arm26);
         SimTK_TEST_MUST_THROW_EXC(states.exportToTable(arm26),
                                   StatesTrajectory::IncompatibleModel);
     }
