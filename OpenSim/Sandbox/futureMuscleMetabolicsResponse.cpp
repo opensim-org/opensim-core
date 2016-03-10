@@ -151,18 +151,36 @@ private:
         // TODO print column names every 10 outputs.
         // TODO test by capturing stdout.
         // TODO prepend each line with "[<name>]" or "[reporter]" if no name is given.
-        std::cout << std::setw(10) << state.getTime() << ": ";
         const auto& input = getInput("input");
-        for (auto idx = 0; idx < input.getNumConnectees();
-                ++idx) {
-            std::cout << Input<T>::downcast(input).getValue(state, idx) << " ";
+        
+        if (_printCount % 20 == 0) {
+            std::cout << "[" << getName() << "] "
+                      << std::setw(_width) << "time" << "  ";
+            for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
+                const auto& output = Input<T>::downcast(input).getOutput(idx);
+                const auto& outName = output.getName();
+                const auto& truncName = outName.size() <= _width ?
+                    outName : outName.substr(outName.size() - _width);
+                std::cout << std::setw(_width) << truncName << "|";
+            }
+            std::cout << "\n";
+        }
+        // TODO set width based on number of significant digits.
+        std::cout << "[" << getName() << "] "
+                  << std::setw(_width) << state.getTime() << "| ";
+        for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
+            const auto& output = Input<T>::downcast(input).getOutput(idx);
+            const auto& value = output.getValue(state);
+            const auto& nSigFigs = output.getNumberOfSignificantDigits();
+            std::cout << std::setw(_width)
+                      << std::setprecision(nSigFigs) << value << "|";
         }
         std::cout << std::endl;
-        //<<
-          //  getInputValue<T>(state, "input1") << " " <<
-            // getInputValue<T>(state, "input2") << " " <<
-            /*getInputValue<T>(state, "input3") << */ //std::endl;
+        
+        const_cast<ConsoleReporter<T>*>(this)->_printCount++;
     }
+    unsigned int _printCount = 0;
+    int _width = 12;
 };
 
 void integrate(const System& system, Integrator& integrator,
@@ -208,12 +226,12 @@ void testComplexResponse() {
 
     auto reporter = new ConsoleReporter<double>();
     reporter->setName("reporter");
-    reporter->getInput("input").append(
+    reporter->getInput("input").connect(
             aggregate->get_responses(0).getOutput("sum"));
     reporter->getInput("input").connect(
             aggregate->get_responses(1).getOutput("sum"));
-    reporter->getInput("input").append(aggregate->getOutput("total_sum"));
-    reporter->getInput("input").append(
+    reporter->getInput("input").connect(aggregate->getOutput("total_sum"));
+    reporter->getInput("input").connect(
             j1->getCoordinateSet().get(0).getOutput("value"));
     // TODO connect by path: reporter->getInput("input").connect("/complex_response/sum");
     // multi input: reporter->getMultiInput("input").append_connect(cr->getOutput("sum"));

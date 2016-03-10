@@ -375,6 +375,348 @@ private:
 SimTK_NICETYPENAME_LITERAL(Foo);
 SimTK_NICETYPENAME_LITERAL(Bar);
 
+void testMisc() {
+    // Define the Simbody system
+    MultibodySystem system;
+
+    TheWorld theWorld;
+    theWorld.setName("World");
+    
+    // let component add its stuff to the system
+    Foo& foo = *new Foo();
+    foo.setName("Foo");
+    theWorld.add(&foo);
+    foo.set_mass(2.0);
+
+    Foo* footTest = foo.clone();
+
+    // bar0 is to test copying of the function within a component's outputs.
+    std::unique_ptr<Bar> bar0(new Bar());
+    Bar& bar = *bar0->clone();
+    bar.copytesting2 = 6;
+    bar.setName("Bar");
+    theWorld.add(&bar);
+
+    Bar barEqual(bar);
+    barEqual = bar;
+
+    //Configure the connector to look for its dependency by this name
+    //Will get resolved and connected automatically at Component connect
+    bar.updConnector<Foo>("parentFoo").set_connectee_name("Foo");
+    bar.updConnector<Foo>("childFoo").connect(foo);
+    
+    // add a subcomponent
+    // connect internals
+    ASSERT_THROW( OpenSim::Exception,
+                  theWorld.connect() );
+
+
+    ComponentList<Component> worldTreeAsList = theWorld.getComponentList();
+    std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
+    for (auto it = worldTreeAsList.begin();
+              it != worldTreeAsList.end(); ++it) {
+        std::cout << "Iterator is at: " << it->getName() << std::endl;
+    }
+
+    
+    std::cout << "Using range-for loop: " << std::endl;
+    for (const Component& component : worldTreeAsList) {
+        std::cout << "Iterator is at: " << component.getName() << std::endl;
+    }
+    for (auto& component : worldTreeAsList) {
+        std::cout << "Iterator is at: " << component.getName() << std::endl;
+    }
+    
+    std::cout << "Iterate over only Foo's." << std::endl;
+    for (auto& component : theWorld.getComponentList<Foo>()) {
+        std::cout << "Iterator is at: " << component.getName() << std::endl;
+    }
+    
+
+    Foo& foo2 = *new Foo();
+    foo2.setName("Foo2");
+    foo2.set_mass(3.0);
+
+    theWorld.add(&foo2);
+
+    bar.updConnector<Foo>("childFoo").set_connectee_name("Foo2");
+    string connectorName = bar.updConnector<Foo>("childFoo").getConcreteClassName();
+
+    // Bar should connect now
+    theWorld.connect();
+
+    std::cout << "Iterate over only Foo's." << std::endl;
+    for (auto& component : theWorld.getComponentList<Foo>()) {
+        std::cout << "Iterator is at: " << component.getName() << std::endl;
+    }
+
+    theWorld.buildUpSystem(system);
+
+    const Foo& foo2found = theWorld.getComponent<Foo>("Foo2");
+    ASSERT(foo2 == foo2found);
+
+    // do any other input/output connections
+    foo.getInput("input1").connect(bar.getOutput("PotentialEnergy"));
+
+    // check how this model serializes
+    string modelFile("testComponentInterfaceModel.osim");
+    theWorld.print(modelFile);
+
+    // Simbody model state setup
+    State s = system.realizeTopology();
+
+    int nu = system.getMatterSubsystem().getNumMobilities();
+
+    //SimTK::Visualizer viz(system);
+    //viz.drawFrameNow(s);
+    const Vector q = Vector(s.getNQ(), SimTK::Pi/2);
+    const Vector u = Vector(s.getNU(), 1.0);
+    
+    // Ensure the "this" pointer inside the output function is for the
+    // correct Bar.
+    system.realize(s, Stage::Model);
+    std::cout << "bar0f " << std::endl;
+    // Since bar0 is not part of any "world", we must call
+    // finalizeFromProperties() on it ourselves in order to set the
+    // "owner" of its outputs.
+    bar0->finalizeFromProperties();
+    // If bar's copytesting output is 0, then the following tests will pass
+    // accidentally.
+    SimTK_TEST(bar.getOutputValue<size_t>(s, "copytesting") != 0);
+    // Make sure bar's outputs don't point to bar0.
+    SimTK_TEST(bar.getOutputValue<size_t>(s, "copytesting") != size_t(bar0.get()));
+    // Make sure bar's outputs are using bar underneath.
+    SimTK_TEST(bar.getOutputValue<size_t>(s, "copytesting") == size_t(&bar));
+    SimTK_TEST(bar0->getOutputValue<double>(s, "copytesting2") == 5);
+    SimTK_TEST(bar.getOutputValue<double>(s, "copytesting2") == 6);
+    
+    // By deleting bar0 then calling getOutputValue on bar without a
+    // segfault (throughout the remaining code), we ensure that bar
+    // does not depend on bar0.
+    bar0.reset(nullptr);
+
+
+    for (int i = 0; i < 10; ++i){
+        s.updTime() = i*0.01234;
+        s.updQ() = (i+1)*q/10.0;
+        system.realize(s, Stage::Velocity);
+
+        const AbstractOutput& out1 = foo.getOutput("Output1");
+        const AbstractOutput& out2 = foo.getOutput("Output2");
+        const AbstractOutput& out3 = foo.getOutput("Qs");
+        const AbstractOutput& out4 = foo.getOutput("BodyAcc");
+        const AbstractOutput& out5 = bar.getOutput("PotentialEnergy");
+
+        cout << "=========================[Time " << s.getTime() << "s]======================="<<endl;
+        cout << out1.getName() <<"|"<< out1.getTypeName() <<"|"<< out1.getValueAsString(s) << endl;
+        cout << out2.getName() <<"|"<< out2.getTypeName() <<"|"<< out2.getValueAsString(s) << endl;
+        cout << out3.getName() <<"|"<< out3.getTypeName() <<"|"<< out3.getValueAsString(s) << endl;
+        
+        system.realize(s, Stage::Acceleration);
+        cout << out4.getName() <<"|"<< out4.getTypeName() <<"|"<< out4.getValueAsString(s) << endl;
+        cout << out5.getName() <<"|"<< out5.getTypeName() <<"|"<< out5.getValueAsString(s) << endl;
+
+        //viz.report(s);
+        system.realize(s, Stage::Report);
+
+        cout << "foo.input1 = " << foo.getInputValue<double>(s, "input1") << endl;
+    }
+
+    MultibodySystem system2;
+    TheWorld *world2 = new TheWorld(modelFile, true);
+    
+    world2->updComponent("Bar").getConnector<Foo>("childFoo");
+    // We haven't called connect yet, so this connection isn't made yet.
+    ASSERT_THROW( OpenSim::Exception,
+            world2->updComponent("Bar").getConnectee<Foo>("childFoo") );
+
+    ASSERT(theWorld == *world2, __FILE__, __LINE__,
+        "Model serialization->deserialization FAILED");
+
+    world2->setName("InternalWorld");
+    world2->connect();
+
+    world2->updComponent("Bar").getConnector<Foo>("childFoo");
+    ASSERT("Foo2" ==
+            world2->updComponent("Bar").getConnectee<Foo>("childFoo").getName());
+
+    world2->buildUpSystem(system2);
+    s = system2.realizeTopology();
+
+    world2->print("clone_" + modelFile);
+
+    // Test copy assignment
+    TheWorld world3;
+    world3 = *world2;
+    world3.finalizeFromProperties();
+    world3.getComponent("Bar").getConnector<Foo>("parentFoo");
+
+    ASSERT(world3 == (*world2), __FILE__, __LINE__, 
+        "Model copy assignment FAILED");
+
+    // Add second world as the internal model of the first
+    theWorld.add(world2);
+    theWorld.connect();
+
+    Bar& bar2 = *new Bar();
+    bar2.setName("bar2");
+    CompoundFoo& compFoo = *new CompoundFoo();
+    compFoo.setName("BigFoo");
+
+    compFoo.set_Foo1(foo);
+    compFoo.set_Foo2(foo2);
+    compFoo.finalizeFromProperties();
+
+    world3.add(&compFoo);
+    world3.add(&bar2);
+
+    //Configure the connector to look for its dependency by this name
+    //Will get resolved and connected automatically at Component connect
+    bar2.updConnector<Foo>("parentFoo").set_connectee_name("BigFoo");
+    bar2.updConnector<Foo>("childFoo").set_connectee_name("Foo");
+
+    //world3.connect();
+    world3.print("Compound_" + modelFile);
+
+    MultibodySystem system3;
+    theWorld.buildUpSystem(system3);
+    //SimTK::Visualizer viz2(system2);
+
+    // Connect our state variables.
+    foo.getInput("fiberLength").connect(bar.getOutput("fiberLength"));
+    foo.getInput("activation").connect(bar.getOutput("activation"));
+    // Since hiddenStateVar is a hidden state variable, it has no
+    // corresponding output.
+    ASSERT_THROW( OpenSim::Exception,
+        const AbstractOutput& out = bar.getOutput("hiddenStateVar") );
+
+    s = system3.realizeTopology();
+
+    bar.setStateVariableValue(s, "fiberLength", 1.5);
+    bar.setStateVariableValue(s, "activation", 0);
+
+    int nu3 = system3.getMatterSubsystem().getNumMobilities();
+
+    // realize simbody system to velocity stage
+    system3.realize(s, Stage::Velocity);
+
+    RungeKuttaFeldbergIntegrator integ(system3);
+    integ.setAccuracy(1.0e-3);
+
+    TimeStepper ts(system3, integ);
+    ts.initialize(s);
+    ts.stepTo(1.0);
+    s = ts.getState();
+
+    // Check the result of the integration on our state variables.
+    ASSERT_EQUAL(3.5, bar.getOutputValue<double>(s, "fiberLength"), 1e-10);
+    ASSERT_EQUAL(1.5, bar.getOutputValue<double>(s, "activation"), 1e-10);
+
+    // Ensure the connection works.
+    ASSERT_EQUAL(3.5, foo.getInputValue<double>(s, "fiberLength"), 1e-10);
+    ASSERT_EQUAL(1.5, foo.getInputValue<double>(s, "activation"), 1e-10);
+
+    theWorld.dumpSubcomponents();
+
+    theWorld.print("Doubled" + modelFile);
+}
+
+template <typename T>
+class ConsoleReporter : public Component {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ConsoleReporter, Component);
+    // TODO interval
+    // TODO constant interval reporting
+    // TODO num significant digits (override).
+    OpenSim_DECLARE_LIST_INPUT(input, T, SimTK::Stage::Acceleration,
+                               "Quantities to print to console.");
+public:
+    ConsoleReporter() {
+        constructInfrastructure();
+    }
+private:
+    void extendRealizeReport(const State& state) const override {
+        // multi input: loop through multi-inputs.
+        // Output::getNumberOfSignificantDigits().
+        // TODO print column names every 10 outputs.
+        // TODO test by capturing stdout.
+        // TODO prepend each line with "[<name>]" or "[reporter]" if no name is given.
+        const auto& input = getInput("input");
+        
+        if (_printCount % 20 == 0) {
+            std::cout << "[" << getName() << "] "
+                      << std::setw(_width) << "time" << "| ";
+            for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
+                const auto& output = Input<T>::downcast(input).getOutput(idx);
+                const auto& outName = output.getName();
+                const auto& truncName = outName.size() <= _width ?
+                    outName : outName.substr(outName.size() - _width);
+                std::cout << std::setw(_width) << truncName << "|";
+            }
+            std::cout << "\n";
+        }
+        // TODO set width based on number of significant digits.
+        std::cout << "[" << getName() << "] "
+                  << std::setw(_width) << state.getTime() << "| ";
+        for (const auto& output : Input<T>::downcast(input).getOutputs()) {
+            const auto& value = output->getValue(state);
+            const auto& nSigFigs = output->getNumberOfSignificantDigits();
+            std::cout << std::setw(_width)
+                      << std::setprecision(nSigFigs) << value << "|";
+        }
+        std::cout << std::endl;
+        
+        const_cast<ConsoleReporter<T>*>(this)->_printCount++;
+    }
+    unsigned int _printCount = 0;
+    int _width = 12;
+};
+
+void testListInputs() {
+    MultibodySystem system;
+    TheWorld theWorld;
+    theWorld.setName("World");
+    
+    // let component add its stuff to the system
+    Foo& foo = *new Foo();
+    foo.setName("Foo");
+    theWorld.add(&foo);
+    foo.set_mass(2.0);
+
+    Foo& foo2 = *new Foo();
+    foo2.setName("Foo2");
+    foo2.set_mass(3.0);
+    theWorld.add(&foo2);
+
+    Bar& bar = *new Bar();
+    bar.copytesting2 = 6;
+    bar.setName("Bar");
+    theWorld.add(&bar);
+    
+    auto* reporter = new ConsoleReporter<double>();
+    reporter->setName("rep0");
+    theWorld.add(reporter);
+    
+    reporter->getInput("input").connect(foo.getOutput("Output1"));
+    reporter->getInput("input").connect(bar.getOutput("PotentialEnergy"));
+    reporter->getInput("input").connect(bar.getOutput("fiberLength"));
+    reporter->getInput("input").connect(bar.getOutput("activation"));
+    
+    bar.updConnector<Foo>("parentFoo").set_connectee_name("Foo");
+    bar.updConnector<Foo>("childFoo").set_connectee_name("Foo2");
+    
+    theWorld.connect();
+    theWorld.buildUpSystem(system);
+    
+    State s = system.realizeTopology();
+    
+    const Vector q = Vector(s.getNQ(), SimTK::Pi/2);
+    for (int i = 0; i < 10; ++i){
+        s.updTime() = i*0.01234;
+        s.updQ() = (i+1)*q/10.0;
+        system.realize(s, Stage::Report);
+    }
+}
+
 int main() {
 
     //Register new types for testing deserialization
@@ -384,256 +726,8 @@ int main() {
     Object::registerType(Connector<Foo>());
     Object::registerType(Connector<Bar>());
 
-    try {
-        // Define the Simbody system
-        MultibodySystem system;
-
-        TheWorld theWorld;
-        theWorld.setName("World");
-        
-        // let component add its stuff to the system
-        Foo& foo = *new Foo();
-        foo.setName("Foo");
-        theWorld.add(&foo);
-        foo.set_mass(2.0);
-
-        Foo* footTest = foo.clone();
-
-        // bar0 is to test copying of the function within a component's outputs.
-        std::unique_ptr<Bar> bar0(new Bar());
-        Bar& bar = *bar0->clone();
-        bar.copytesting2 = 6;
-        bar.setName("Bar");
-        theWorld.add(&bar);
-
-        Bar barEqual(bar);
-        barEqual = bar;
-
-        //Configure the connector to look for its dependency by this name
-        //Will get resolved and connected automatically at Component connect
-        bar.updConnector<Foo>("parentFoo").set_connectee_name("Foo");
-        bar.updConnector<Foo>("childFoo").connect(foo);
-        
-        // add a subcomponent
-        // connect internals
-        ASSERT_THROW( OpenSim::Exception,
-                      theWorld.connect() );
-
-
-        ComponentList<Component> worldTreeAsList = theWorld.getComponentList();
-        std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
-        for (ComponentList<Component>::const_iterator it = worldTreeAsList.begin();
-            it != worldTreeAsList.end();
-            ++it) {
-            std::cout << "Iterator is at: " << it->getName() << std::endl;
-        }
-
-        
-        std::cout << "Using range-for loop: " << std::endl;
-        for (const Component& component : worldTreeAsList) {
-            std::cout << "Iterator is at: " << component.getName() << std::endl;
-        }
-        for (auto& component : worldTreeAsList) {
-            std::cout << "Iterator is at: " << component.getName() << std::endl;
-        }
-        
-        std::cout << "Iterate over only Foo's." << std::endl;
-        for (auto& component : theWorld.getComponentList<Foo>()) {
-            std::cout << "Iterator is at: " << component.getName() << std::endl;
-        }
-        
-
-        Foo& foo2 = *new Foo();
-        foo2.setName("Foo2");
-        foo2.set_mass(3.0);
-
-        theWorld.add(&foo2);
-
-        bar.updConnector<Foo>("childFoo").set_connectee_name("Foo2");
-        string connectorName = bar.updConnector<Foo>("childFoo").getConcreteClassName();
-
-        // Bar should connect now
-        theWorld.connect();
-
-        std::cout << "Iterate over only Foo's." << std::endl;
-        for (auto& component : theWorld.getComponentList<Foo>()) {
-            std::cout << "Iterator is at: " << component.getName() << std::endl;
-        }
-
-        theWorld.buildUpSystem(system);
-
-        const Foo& foo2found = theWorld.getComponent<Foo>("Foo2");
-        ASSERT(foo2 == foo2found);
-
-        // do any other input/output connections
-        foo.getInput("input1").connect(bar.getOutput("PotentialEnergy"));
-    
-        // check how this model serializes
-        string modelFile("testComponentInterfaceModel.osim");
-        theWorld.print(modelFile);
-
-        // Simbody model state setup
-        State s = system.realizeTopology();
-
-        int nu = system.getMatterSubsystem().getNumMobilities();
-
-        //SimTK::Visualizer viz(system);
-        //viz.drawFrameNow(s);
-        const Vector q = Vector(s.getNQ(), SimTK::Pi/2);
-        const Vector u = Vector(s.getNU(), 1.0);
-        
-        // Ensure the "this" pointer inside the output function is for the
-        // correct Bar.
-        system.realize(s, Stage::Model);
-        std::cout << "bar0f " << std::endl;
-        // Since bar0 is not part of any "world", we must call
-        // finalizeFromProperties() on it ourselves in order to set the
-        // "owner" of its outputs.
-        bar0->finalizeFromProperties();
-        // If bar's copytesting output is 0, then the following tests will pass
-        // accidentally.
-        SimTK_TEST(bar.getOutputValue<size_t>(s, "copytesting") != 0);
-        // Make sure bar's outputs don't point to bar0.
-        SimTK_TEST(bar.getOutputValue<size_t>(s, "copytesting") != size_t(bar0.get()));
-        // Make sure bar's outputs are using bar underneath.
-        SimTK_TEST(bar.getOutputValue<size_t>(s, "copytesting") == size_t(&bar));
-        SimTK_TEST(bar0->getOutputValue<double>(s, "copytesting2") == 5);
-        SimTK_TEST(bar.getOutputValue<double>(s, "copytesting2") == 6);
-        
-        // By deleting bar0 then calling getOutputValue on bar without a
-        // segfault (throughout the remaining code), we ensure that bar
-        // does not depend on bar0.
-        bar0.reset(nullptr);
-
-    
-        for (int i = 0; i < 10; ++i){
-            s.updTime() = i*0.01234;
-            s.updQ() = (i+1)*q/10.0;
-            system.realize(s, Stage::Velocity);
-
-            const AbstractOutput& out1 = foo.getOutput("Output1");
-            const AbstractOutput& out2 = foo.getOutput("Output2");
-            const AbstractOutput& out3 = foo.getOutput("Qs");
-            const AbstractOutput& out4 = foo.getOutput("BodyAcc");
-            const AbstractOutput& out5 = bar.getOutput("PotentialEnergy");
-
-            cout << "=========================[Time " << s.getTime() << "s]======================="<<endl;
-            cout << out1.getName() <<"|"<< out1.getTypeName() <<"|"<< out1.getValueAsString(s) << endl;
-            cout << out2.getName() <<"|"<< out2.getTypeName() <<"|"<< out2.getValueAsString(s) << endl;
-            cout << out3.getName() <<"|"<< out3.getTypeName() <<"|"<< out3.getValueAsString(s) << endl;
-            
-            system.realize(s, Stage::Acceleration);
-            cout << out4.getName() <<"|"<< out4.getTypeName() <<"|"<< out4.getValueAsString(s) << endl;
-            cout << out5.getName() <<"|"<< out5.getTypeName() <<"|"<< out5.getValueAsString(s) << endl;
-
-            //viz.report(s); 
-            system.realize(s, Stage::Report);
-
-            cout << "foo.input1 = " << foo.getInputValue<double>(s, "input1") << endl;
-        }
-
-        MultibodySystem system2;
-        TheWorld *world2 = new TheWorld(modelFile, true);
-        
-        world2->updComponent("Bar").getConnector<Foo>("childFoo");
-        // We haven't called connect yet, so this connection isn't made yet.
-        ASSERT_THROW( OpenSim::Exception,
-                world2->updComponent("Bar").getConnectee<Foo>("childFoo") );
-
-        ASSERT(theWorld == *world2, __FILE__, __LINE__,
-            "Model serialization->deserialization FAILED");
-
-        world2->setName("InternalWorld");
-        world2->connect();
-
-        world2->updComponent("Bar").getConnector<Foo>("childFoo");
-        ASSERT("Foo2" ==
-                world2->updComponent("Bar").getConnectee<Foo>("childFoo").getName());
-
-        world2->buildUpSystem(system2);
-        s = system2.realizeTopology();
-    
-        world2->print("clone_" + modelFile);
-
-        // Test copy assignment
-        TheWorld world3;
-        world3 = *world2;
-        world3.finalizeFromProperties();
-        world3.getComponent("Bar").getConnector<Foo>("parentFoo");
-
-        ASSERT(world3 == (*world2), __FILE__, __LINE__, 
-            "Model copy assignment FAILED");
-
-        // Add second world as the internal model of the first
-        theWorld.add(world2);
-        theWorld.connect();
-
-        Bar& bar2 = *new Bar();
-        bar2.setName("bar2");
-        CompoundFoo& compFoo = *new CompoundFoo();
-        compFoo.setName("BigFoo");
-
-        compFoo.set_Foo1(foo);
-        compFoo.set_Foo2(foo2);
-        compFoo.finalizeFromProperties();
-    
-        world3.add(&compFoo);
-        world3.add(&bar2);
-
-        //Configure the connector to look for its dependency by this name
-        //Will get resolved and connected automatically at Component connect
-        bar2.updConnector<Foo>("parentFoo").set_connectee_name("BigFoo");
-        bar2.updConnector<Foo>("childFoo").set_connectee_name("Foo");
-
-        //world3.connect();
-        world3.print("Compound_" + modelFile);
-
-        MultibodySystem system3;
-        theWorld.buildUpSystem(system3);
-        //SimTK::Visualizer viz2(system2);
-
-        // Connect our state variables.
-        foo.getInput("fiberLength").connect(bar.getOutput("fiberLength"));
-        foo.getInput("activation").connect(bar.getOutput("activation"));
-        // Since hiddenStateVar is a hidden state variable, it has no
-        // corresponding output.
-        ASSERT_THROW( OpenSim::Exception,
-            const AbstractOutput& out = bar.getOutput("hiddenStateVar") );
-
-        s = system3.realizeTopology();
-
-        bar.setStateVariableValue(s, "fiberLength", 1.5);
-        bar.setStateVariableValue(s, "activation", 0);
-
-        int nu3 = system3.getMatterSubsystem().getNumMobilities();
-
-        // realize simbody system to velocity stage
-        system3.realize(s, Stage::Velocity);
-
-        RungeKuttaFeldbergIntegrator integ(system3);
-        integ.setAccuracy(1.0e-3);
-
-        TimeStepper ts(system3, integ);
-        ts.initialize(s);
-        ts.stepTo(1.0);
-        s = ts.getState();
-
-        // Check the result of the integration on our state variables.
-        ASSERT_EQUAL(3.5, bar.getOutputValue<double>(s, "fiberLength"), 1e-10);
-        ASSERT_EQUAL(1.5, bar.getOutputValue<double>(s, "activation"), 1e-10);
-
-        // Ensure the connection works.
-        ASSERT_EQUAL(3.5, foo.getInputValue<double>(s, "fiberLength"), 1e-10);
-        ASSERT_EQUAL(1.5, foo.getInputValue<double>(s, "activation"), 1e-10);
-
-        theWorld.dumpSubcomponents();
-
-        theWorld.print("Doubled" + modelFile);
-    }
-    catch (const std::exception& e) {
-        cout << e.what() <<endl;
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
+    SimTK_START_TEST("testComponentIterface");
+        SimTK_SUBTEST(testMisc);
+        SimTK_SUBTEST(testListInputs);
+    SimTK_END_TEST();
 }

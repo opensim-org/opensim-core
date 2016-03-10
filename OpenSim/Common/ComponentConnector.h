@@ -98,31 +98,41 @@ public:
         should be connected.
     @param name             name of the connector, usually describes its dependency. 
     @param connectAtStage   Stage at which Connector should be connected. */
-    AbstractConnector(const std::string& name, const SimTK::Stage& connectAtStage) :
-        connectAtStage(connectAtStage) {
+    AbstractConnector(const std::string& name, const SimTK::Stage& connectAtStage,
+                      bool isList) :
+        connectAtStage(connectAtStage), _isList(isList) {
         constructProperties();
         setName(name);
     }
 
     // default copy assignment
 
+    virtual ~AbstractConnector() {};
+    
     /** get the system Stage when the connection should be made */
     SimTK::Stage getConnectAtStage() const {
         return connectAtStage;
     }
+    
+    bool isListInput() const { return _isList; }
 
-    virtual ~AbstractConnector() {};
 
     //--------------------------------------------------------------------------
     /** Derived classes must satisfy this Interface */
     //--------------------------------------------------------------------------
     /** Is the Connector connected to anything? */
     virtual bool isConnected() const = 0;
+    
+    /** The number of connectees connected to this connector. This is either
+        0 or 1 for a non-list connector. */
+    virtual size_t getNumConnectees() const = 0;
 
-    /** get the type of object this connector connects to*/
+    /** Get the type of object this connector connects to*/
     virtual std::string getConnecteeTypeName() const = 0;
 
-    /** Connect this Connector to the provided connectee object */
+    /** Connect this Connector to the provided connectee object. If this is a
+        list connector, the connectee is appended to the list of connectees;
+        otherwise, the provided connectee replaces the single connectee. */
     virtual void connect(const Object& connectee) = 0;
 
     /** Connect this Connector according to its connectee_name property
@@ -130,12 +140,13 @@ public:
         Component. */
     virtual void findAndConnect(const Component& root) = 0;
 
-    /** Disconnect this Connector from the connectee object */
+    /** Disconnect this Connector from all connectee objects. */
     virtual void disconnect() = 0;
 
 private:
     void constructProperties() { constructProperty_connectee_name(""); }
     SimTK::Stage connectAtStage;
+    bool _isList = false;
 //=============================================================================
 };  // END class AbstractConnector
 
@@ -153,15 +164,21 @@ public:
     Create a Connector that can only connect to Object of type T with specified 
     name and stage at which it should be connected.
     @param name             name of the connector used to describe its dependency.
-    @param connectAtStage   Stage at which Connector should be connected. */
-    Connector(const std::string& name, const SimTK::Stage& connectAtStage) : 
-        AbstractConnector(name, connectAtStage), connectee(nullptr) {}
+    @param connectAtStage   Stage at which Connector should be connected.
+    @param isList           Whether this Connector can have multiple connectees. */
+    Connector(const std::string& name, const SimTK::Stage& connectAtStage,
+              bool isList) :
+        AbstractConnector(name, connectAtStage, isList), connectee(nullptr) {}
 
     virtual ~Connector() {}
 
     /** Is the Connector connected to object of type T? */
     bool isConnected() const override {
         return !connectee.empty();
+    }
+    
+    size_t getNumConnectees() const override {
+        return isConnected() ? 1 : 0; // TODO
     }
 
     /** Temporary access to the connectee for testing purposes. Real usage
@@ -219,9 +236,11 @@ public:
     Create an AbstractInput (Connector) that connects only to an AbstractOutput
     specified by name and stage at which it should be connected.
     @param name             name of the dependent (Abstract)Output.
-    @param connectAtStage   Stage at which Input should be connected. */
-    AbstractInput(const std::string& name, const SimTK::Stage& connectAtStage) :
-        AbstractConnector(name, connectAtStage)/*, connectee(nullptr)*/ {}
+    @param connectAtStage   Stage at which Input should be connected.
+    @param isList           Whether this Input can have multiple connectees. */
+    AbstractInput(const std::string& name, const SimTK::Stage& connectAtStage,
+                  bool isList) :
+        AbstractConnector(name, connectAtStage, isList) {}
 
     virtual ~AbstractInput() {}
 
@@ -235,35 +254,9 @@ public:
     }
 
     /** Input Specific Connect */
-    virtual void connect(const AbstractOutput& output) const = 0;/*{
-        connectee = output;
-        //std::cout << getConcreteClassName() << "::connected to '";
-        //std::cout << output.getName() << "'<" << output.getTypeName();
-        //std::cout << ">." << std::endl;
-    }*/
+    virtual void connect(const AbstractOutput& output) const = 0;
+    // TODO this method should NOT be const.
     
-    virtual void append(const AbstractOutput& output) const = 0;
-    virtual size_t getNumConnectees() const = 0;
-
-    /*
-    void disconnect() override {
-        connectee.reset(nullptr);
-    }
-     */
-
-    /** Is the Input connected to an Output? */
-    /*bool isConnected() const override {
-        return !connectee.empty();
-    }*/
-
-    /** Derived classes must satisfy this Interface */
-    /** get the type of object this connector connects to*/
-    /*std::string getConnecteeTypeName() const override
-    { return SimTK::NiceTypeName<AbstractOutput>::namestr(); }
-     */
-
-private:
-    // TODO mutable SimTK::ReferencePtr<const AbstractOutput> connectee;
 //=============================================================================
 };  // END class AbstractInput
 
@@ -279,44 +272,36 @@ public:
     Create an Input<T> (Connector) that can only connect to an Output<T>
     name and stage at which it should be connected.
     @param name             name of the Output dependency.
-    @param connectAtStage   Stage at which Input should be connected. */
-    Input(const std::string& name, const SimTK::Stage& connectAtStage) :
-            AbstractInput(name, connectAtStage) {
-        
+    @param connectAtStage   Stage at which Input should be connected.
+    @param isList           Whether this Input can have multiple connectees. */
+    Input(const std::string& name, const SimTK::Stage& connectAtStage,
+          bool isList) :
+            AbstractInput(name, connectAtStage, isList) {
     }
 
     /** Connect this Input the from provided (Abstract)Output */
     void connect(const AbstractOutput& output) const override {
-        // enable interaction through AbstractInterface
-        // TODO Super::connect(output);
-        // TODO do the type check here as well.
-        // and value specific interface
-        const_cast<Input<T>*>(this)->disconnect();
-        append(output);
-        //const_cast<Input<T>*>(this)->_connectees[0] = Output<T>::downcast(output);
-    }
-    
-    void append(const AbstractOutput& output) const override {
         const auto* outT = dynamic_cast<const Output<T>*>(&output);
         if (outT) {
+            if (!isListInput()) {
+                // Remove the existing connecteee (if it exists).
+                const_cast<Input<T>*>(this)->disconnect();
+            }
             const_cast<Input<T>*>(this)->_connectees.push_back(
                 SimTK::ReferencePtr<const Output<T>>(outT));
+            // TODO remove these const casts.
         }
         else {
-            throw Exception();
-            /* TODO
             std::stringstream msg;
             msg << "Input::connect(): ERR- Cannot connect '" << output.getName()
-            << "' of type " << object.getConcreteClassName() << ". Input requires "
+            << "' of type Output<" << output.getTypeName() << ">. Input requires "
             << getConnecteeTypeName() << ".";
             throw Exception(msg.str(), __FILE__, __LINE__);
-             */
         }
     }
     
     void disconnect() override {
         _connectees.clear();
-        // TODO _connectees[0].reset(nullptr);
     }
     
     bool isConnected() const override {
@@ -335,17 +320,44 @@ public:
     void findAndConnect(const Component& root) override {}
 
     /**Get the value of this Input when it is connected. Redirects to connected
-       Output<T>'s getValue() with minimal overhead. */
-    const T& getValue(const SimTK::State &state, size_t index=0) const {
+       Output<T>'s getValue() with minimal overhead. If this is a list input,
+       you must specify the specific Output whose value you want. */
+    const T& getValue(const SimTK::State &state, int index=-1) const {
+        if (index < 0) {
+            if (!isListInput()) index = 0;
+            else throw Exception("Input<T>::getValue(): an index must be "
+                                 "provided for an list input.");
+        }
+        // TODO remove this check in order to improve speed?
+        OPENSIM_THROW_IF(index >= getNumConnectees(),
+                         IndexOutOfRange, index, 0, (int)getNumConnectees() - 1);
         return _connectees[index].getRef().getValue(state);
     }
-
+    
+    /** If this is a list input, you must specify the specific Output whose
+        value you want. */
+    const Output<T>& getOutput(int index=-1) const {
+        if (index == -1) {
+            if (!isListInput()) index = 0;
+            else throw Exception("Input<T>::getOutput(): an index must be "
+                                 "provided for an list input.");
+        }
+        OPENSIM_THROW_IF(index >= getNumConnectees(),
+                         IndexOutOfRange, index, 0, (int)getNumConnectees() - 1);
+        return _connectees[index].getRef();
+    }
+    
+    typedef std::vector<SimTK::ReferencePtr<const Output<T>>> ConnecteeList;
+    
+    /** Get const access to the outputs connected to this input. */
+    const ConnecteeList& getOutputs() const {
+        return _connectees;
+    }
+    
     SimTK_DOWNCAST(Input, AbstractInput);
 
 private:
-    // Initialize the vector to have one element.
     std::vector<SimTK::ReferencePtr<const Output<T>>> _connectees;
-    //        { std::vector<SimTK::ReferencePtr<const Output<T>>>(1) };
 }; // END class Input<Y>
 
 /// @name Creating Inputs for your Component
@@ -357,6 +369,8 @@ private:
  *  to it. An output must have the same type T as an input to be connected
  *  to it. You must also specify the stage at which you require this input
  *  quantity. The comment should describe how the input quantity is used.
+ *
+ *  An Input declared with this macro can connect to only one Output.
  *
  *  Here's an example for using this macro:
  *  @code{.cpp}
@@ -381,6 +395,28 @@ private:
     /** @cond                                                            */ \
     bool _has_input_##iname { constructInput<T>(#iname, istage) };          \
     /** @endcond                                                         */
+    
+/** Create a list input, which can connect to more than one Output. This
+ * makes sense for components like reporters that can handle a flexible
+ * number of input values. 
+ * 
+ * @see Component::constructInput()
+ * @relates OpenSim::Input
+ */
+#define OpenSim_DECLARE_LIST_INPUT(iname, T, istage, comment)               \
+    /** @name Inputs (list)                                              */ \
+    /** @{                                                               */ \
+    /** comment                                                          */ \
+    /** This input can connect to multiple outputs, all of which are     */ \
+    /** needed at stage istage.                                          */ \
+    /** This input was generated with the                                */ \
+    /** #OpenSim_DECLARE_LIST_INPUT macro.                               */ \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
+    /** @}                                                               */ \
+    /** @cond                                                            */ \
+    bool _has_input_##iname { constructInput<T>(#iname, istage, true) };    \
+    /** @endcond                                                         */
+/// @}
 
 } // end of namespace OpenSim
 
