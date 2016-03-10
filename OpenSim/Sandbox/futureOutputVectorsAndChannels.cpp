@@ -54,6 +54,12 @@ public:
     const TimeSeriesTable_<T> getTable() const { return _table; }
     
 private:
+
+//    void extendFinalizeFromProperties() const {
+//        for (int icol = 0; ++icol < _table.getNumColumns(); ++icol) {
+//            getOutput("columns").addChannel()
+//        }
+//    }
     
     TimeSeriesTable_<T> _table;
 };
