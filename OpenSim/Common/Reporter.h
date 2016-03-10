@@ -38,7 +38,7 @@ class TimeSeriesTable;
  * @author Ajay Seth
  */
 class OSIMSIMULATION_API Reporter : public Component {
-OpenSim_DECLARE_ABSTRACT_OBJECT(Reporter, ModelComponent);
+OpenSim_DECLARE_ABSTRACT_OBJECT(Reporter, Component);
 public:
 //==============================================================================
 // PROPERTIES
@@ -56,9 +56,9 @@ public:
 //==============================================================================
     /** Variable list of Inputs by name that will be recorded by the Reporter 
         and corresponds to a Model (Component) Output during a simulation. */
-    OpenSim_DECLARE_INPUTS("output_names", SimTK::Report,
-        " The Outputs listed by name that are to be recorded on each reporting "
-        " event that occurs during a simulation.");
+//    OpenSim_DECLARE_INPUTS("output_names", SimTK::Report,
+//        " The Outputs listed by name that are to be recorded on each reporting "
+//        " event that occurs during a simulation.");
 
 //=============================================================================
 // PUBLIC METHODS
@@ -70,14 +70,6 @@ public:
     /** Report values given the state and top-level Component (e.g. Model) */
     const TimeSeriesTable& getReport();
 
-
-    /** Return if the Reporter is disabled or not. */
-    bool isDisabled(const SimTK::State& s) const;
-    /** %Set the Reporter as disabled (true) or not (false). */
-    void setDisabled(SimTK::State& s, bool disabled) const;
-
-
-
 protected:
     /** Default constructor sets up Reporter-level properties; can only be
     called from a derived class constructor. **/
@@ -85,14 +77,14 @@ protected:
 
     /** Deserialization from XML, necessary so that derived classes can 
     (de)serialize. **/
-    Reporter(SimTK::Xml::Element& node) : Super(node);
+    Reporter(SimTK::Xml::Element& node) : Super(node)
     {   setNull(); constructProperties(); }
 
 
     //--------------------------------------------------------------------------
     // Reporter interface.
     //--------------------------------------------------------------------------
-    virtual void implementReport(const SimTK::State& s);
+    virtual void implementReport(const SimTK::State& s) = 0;
 
     //--------------------------------------------------------------------------
     // Component interface.
