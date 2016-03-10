@@ -328,11 +328,13 @@ public:
 
     /** Thrown when trying to use a StatesTrajectory with an incompatible model.
      * See isCompatibleWith(). */
+#ifndef SWIG
     class IncompatibleModel : public OpenSim::Exception {
     public:
         IncompatibleModel(const std::string& file, size_t line,
                           const std::string& func, const Model& model);
     };
+#endif
 
     /** Thrown when trying to create a StatesTrajectory from a states Storage,
      * and the Storage does not contain a column for every continuous state
