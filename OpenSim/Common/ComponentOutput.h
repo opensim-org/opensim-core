@@ -65,9 +65,9 @@ class Component;
  */
 class OSIMCOMMON_API AbstractOutput {
 public:
-    AbstractOutput() : numSigFigs(8), dependsOnStage(SimTK::Stage::Infinity) {}
+    AbstractOutput() : dependsOnStage(SimTK::Stage::Infinity) {}
     AbstractOutput(const std::string& name, SimTK::Stage dependsOnStage) : 
-        name(name), dependsOnStage(dependsOnStage), numSigFigs(8) {}
+        name(name), dependsOnStage(dependsOnStage) {}
     virtual ~AbstractOutput() { }
 
     /** Output's name */
@@ -87,9 +87,9 @@ public:
     virtual AbstractOutput* clone() const = 0;
 
     /** Specification for number of significant figures in string value. */
-    unsigned int getNumberOfSignificantDigits() const { return numSigFigs; }
+    unsigned int getNumberOfSignificantDigits() const { return _numSigFigs; }
     void         setNumberOfSignificantDigits(unsigned int numSigFigs) 
-    { numSigFigs = numSigFigs; }
+    { _numSigFigs = numSigFigs; }
 
 protected:
 
@@ -100,9 +100,9 @@ protected:
     SimTK::ReferencePtr<const Component> _owner;
 
 private:
-    unsigned int numSigFigs;
-    SimTK::Stage dependsOnStage;
     std::string name;
+    SimTK::Stage dependsOnStage;
+    unsigned int _numSigFigs = 8;
 
     // For calling setOwner().
     friend Component;
@@ -130,7 +130,7 @@ public:
     virtual ~Output() {}
 
     bool isCompatible(const AbstractOutput& o) const override { return isA(o); }
-        void compatibleAssign(const AbstractOutput& o) override {
+    void compatibleAssign(const AbstractOutput& o) override {
         if (!isA(o)) 
             SimTK_THROW2(SimTK::Exception::IncompatibleValues, o.getTypeName(), getTypeName());
         *this = downcast(o);

@@ -631,26 +631,30 @@ public:
 
     /**
     * Get the Input value that this component is dependent on.
-    * Check if Input is connected, otherwise it will throw an
-    * exception.
+    * Checks if Input is connected, otherwise it will throw an
+    * exception. You can only call this method for non-list inputs.
+    * For list inputs, you must get the input using getInput(),
+    * from which you can ask for its values.
     *
     * @param state      the State for which to set the value
     * @param name       the name of the input
     * @return T         const Input value
     */
     template<typename T> const T&
-        getInputValue(const SimTK::State& state, const std::string& name) const {
+    getInputValue(const SimTK::State& state, const std::string& name) const {
         // get the input and check if it is connected.
         const AbstractInput& in = getInput(name);
+        // TODO could maybe remove this check and have the Input do it. Or,
+        // here, we could catch Input's exception and give a different message.
         if (in.isConnected()){
             return (Input<T>::downcast(in)).getValue(state);
-            }
+        }
         else{
-        std::stringstream msg;
+            std::stringstream msg;
             msg << "Component::getInputValue: ERR- input '" << name << "' not connected.\n "
                 << "for component '" << getName() << "' of type "<< getConcreteClassName();
-        throw Exception(msg.str(), __FILE__, __LINE__);
-    }
+            throw Exception(msg.str(), __FILE__, __LINE__);
+        }
     }
 
     /**
@@ -933,6 +937,7 @@ protected:
 
     template<class C=Component>
     C& constructSubcomponent(const std::string& name) {
+        // TODO memory leak
         C* component = new C();
         component->setName(name);
         this->markAsSubcomponent(component);
@@ -1318,7 +1323,7 @@ template <class T> friend class ComponentMeasure;
     template <typename T>
     void constructConnector(const std::string& name) {
         int ix = updProperty_connectors().adoptAndAppendValue(
-            new Connector<T>(name, SimTK::Stage::Topology));
+            new Connector<T>(name, SimTK::Stage::Topology, false));
         //add pointer to connectorsTable so we can access connectors easily by name
         _connectorsTable[name] = ix;
     }
@@ -1585,8 +1590,9 @@ template <class T> friend class ComponentMeasure;
     */
     template <typename T>
     bool constructInput(const std::string& name,
-        const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance) {
-        _inputsTable[name].reset(new Input<T>(name, requiredAtStage));
+        const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance,
+        const bool& isList = false) {
+        _inputsTable[name].reset(new Input<T>(name, requiredAtStage, isList));
         return true;
     }
     
