@@ -416,7 +416,7 @@ public:
     SimTK_DOWNCAST(Input, AbstractInput);
 
 private:
-    ConnecteeList _connectees;
+    SimTK::ResetOnCopy<ConnecteeList> _connectees;
 }; // END class Input<Y>
 
 /// @name Creating Inputs for your Component
