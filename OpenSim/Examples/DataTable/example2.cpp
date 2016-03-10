@@ -28,58 +28,53 @@
 int main() {
     using namespace OpenSim;
 
-    DataTable data_table{};
+    DataTable dataTable{};
 
-    ValueArray<std::string> labelValues{};
-    auto& vec = labelValues.upd();
-    for(unsigned i = 0; i < 5; ++i)
-        vec.push_back(SimTK::Value<std::string>{std::to_string(i)});
+    // Add column labels to the table. 
+    dataTable.setColumnLabels({"0", "1", "2", "3", "4"});
 
-    TimeSeriesTable::DependentsMetaData dep_metadata{};
-    dep_metadata.setValueArrayForKey("labels", labelValues);
-
-    data_table.setDependentsMetaData(dep_metadata);
+    // Append rows to the table.
 
     SimTK::RowVector_<double> row0{5, double{0}};
     
-    data_table.appendRow(0.00, row0);
+    dataTable.appendRow(0.00, row0);
 
     auto row1 = row0 + 1;
 
-    data_table.appendRow(0.25, row1);
+    dataTable.appendRow(0.25, row1);
 
     auto row2 = row1 + 1;
 
-    data_table.appendRow(0.50, row2);
+    dataTable.appendRow(0.50, row2);
 
     auto row3 = row2 + 1;
 
-    data_table.appendRow(0.75, row3);
+    dataTable.appendRow(0.75, row3);
     
     auto row4 = row3 + 1;
 
-    data_table.appendRow(1.00, row4);
+    dataTable.appendRow(1.00, row4);
 
     // Following construction of TimeSeriesTable succeeds because the DataTable
     // has its independent column strictly increasing.
-    TimeSeriesTable timeseries_table1{data_table};
+    TimeSeriesTable timeseries_table1{dataTable};
 
     // Editing the DataTable to not have strictly increasing independent column
     // will fail the construction of TimeSeriesTable.
     auto row5 = row4 + 1;
     
-    data_table.appendRow(0.9, row5); // 0.9 is less than previous value (1.00).
+    dataTable.appendRow(0.9, row5); // 0.9 is less than previous value (1.00).
 
     // Contruction of TimeSeriesTable fails because independent column is not
     // strictly increasing. 
     ASSERT_THROW(OpenSim::Exception,
-                 TimeSeriesTable timeseries_table2{data_table});
+                 TimeSeriesTable timeseries_table2{dataTable});
 
     // Edit the entry in the independent column to make the column strictly
     // increasing.
-    data_table.setIndependentColumnAtIndex(5, 1.25);
+    dataTable.setIndependentColumnAtIndex(5, 1.25);
     // TimeSeriesTable construction now successful. 
-    TimeSeriesTable timeseries_table3{data_table};
+    TimeSeriesTable timeseries_table3{dataTable};
 
     return 0;
 }
