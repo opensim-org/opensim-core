@@ -27,10 +27,14 @@ namespace SimTK {
 // Vector and Matrix
 %include <SWIGSimTK/BigMatrix.h>
 namespace SimTK {
-%template(MatrixBaseDouble) SimTK::MatrixBase<double>;
-%template(VectorBaseDouble) SimTK::VectorBase<double>;
-%template(Vector) SimTK::Vector_<double>;
-%template(Matrix) SimTK::Matrix_<double>;
+%template(MatrixBaseDouble)    SimTK::MatrixBase<double>;
+%template(Matrix)              SimTK::Matrix_<double>;
+%template(VectorBaseDouble)    SimTK::VectorBase<double>;
+%template(VectorViewDouble)    SimTK::VectorView_<double>;
+%template(Vector)              SimTK::Vector_<double>;
+%template(RowVectorBaseDouble) SimTK::RowVectorBase<double>;
+%template(RowVectorView)       SimTK::RowVectorView_<double>;
+%template(RowVectorDouble)     SimTK::RowVector_<double>;
 }
 
 %include <SWIGSimTK/SpatialAlgebra.h>

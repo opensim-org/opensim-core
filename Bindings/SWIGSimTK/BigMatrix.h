@@ -1495,14 +1495,13 @@ private:
 #endif
 };
 
-
-#ifndef SWIG
 //  ------------------------------- RowVectorBase ------------------------------
 /// This is a dataless rehash of the MatrixBase class to specialize it for RowVectors.
 /// This mostly entails overriding a few of the methods. Note that all the MatrixBase
 /// operations remain available if you static_cast<> this up to a MatrixBase.
 //  ----------------------------------------------------------------------------
 template <class ELT> class RowVectorBase : public MatrixBase<ELT> {
+#ifndef SWIG
     typedef MatrixBase<ELT>                             Base;
     typedef typename CNT<ELT>::Scalar                   Scalar;
     typedef typename CNT<ELT>::Number                   Number;
@@ -1511,6 +1510,7 @@ template <class ELT> class RowVectorBase : public MatrixBase<ELT> {
     typedef RowVectorBase<typename CNT<ELT>::TAbs>      TAbs;
     typedef RowVectorBase<typename CNT<ELT>::TNeg>      TNeg;
     typedef VectorView_<typename CNT<ELT>::THerm>       THerm;
+#endif
 public: 
     //  ------------------------------------------------------------------------
     /// @name       RowVectorBase "owner" construction
@@ -1532,8 +1532,10 @@ public:
     /// initialized from the source object.    
     RowVectorBase(const RowVectorBase& source) : Base(source) {}
 
+#ifndef SWIG
     /// Implicit conversion from compatible row vector with negated elements.
     RowVectorBase(const TNeg& source) : Base(source) {}
+#endif
 
     /// Construct an owner row vector of length n, with each element initialized to
     /// the given value.
@@ -1558,6 +1560,7 @@ public:
     /// both read-only and writable external data.
     /// @{
 
+#ifndef SWIG
     /// Construct a read-only view of existing data.
     RowVectorBase(int n, int stride, const Scalar* s)
     :   Base(MatrixCommitment::RowVector(n), MatrixCharacter::RowVector(n),stride,s) { }
@@ -1565,6 +1568,7 @@ public:
     RowVectorBase(int n, int stride, Scalar* s)
     :   Base(MatrixCommitment::RowVector(n), MatrixCharacter::RowVector(n),stride,s) { }
     /// @}
+#endif
 
     //  ------------------------------------------------------------------------
     /// @name       RowVectorBase construction from an existing Helper.
@@ -1574,6 +1578,7 @@ public:
     /// view of the original data and one providing a writable view into the original data.
     /// @{
 
+#ifndef SWIG
     /// Construct a writable view into the source data.
     RowVectorBase(MatrixHelper<Scalar>& h, const typename MatrixHelper<Scalar>::ShallowCopy& s) 
     :   Base(MatrixCommitment::RowVector(), h,s) { }
@@ -1593,6 +1598,7 @@ public:
         typedef RowVectorBase<typename CNT<ELT>::template Result<P>::Add> Add;
         typedef RowVectorBase<typename CNT<ELT>::template Result<P>::Sub> Sub;
     };
+#endif
 
     /// Copy assignment is deep copy but behavior depends on type of lhs: if view, rhs
     /// must match. If owner, we reallocate and copy rhs.
@@ -1644,6 +1650,8 @@ public:
     // elementwise multiply from left
     template <class EE> RowVectorBase& elementwiseMultiplyFromLeftInPlace(const RowVectorBase<EE>& r)
     { Base::template elementwiseMultiplyFromLeftInPlace<EE>(r); return *this; }
+
+#ifndef SWIG
     template <class EE> inline void 
     elementwiseMultiplyFromLeft(
         const RowVectorBase<EE>& v, 
@@ -1651,6 +1659,7 @@ public:
     { 
         Base::template elementwiseMultiplyFromLeft<EE>(v,out);
     }
+
     template <class EE> inline 
     typename RowVectorBase<EE>::template EltResult<ELT>::Mul 
     elementwiseMultiplyFromLeft(const RowVectorBase<EE>& v) const {
@@ -1658,6 +1667,7 @@ public:
         Base::template elementwiseMultiplyFromLeft<EE>(v,out); 
         return out;
     }
+#endif
 
     // elementwise divide
     template <class EE> RowVectorBase& elementwiseDivideInPlace(const RowVectorBase<EE>& r)
@@ -1670,6 +1680,8 @@ public:
     // elementwise divide from left
     template <class EE> RowVectorBase& elementwiseDivideFromLeftInPlace(const RowVectorBase<EE>& r)
     { Base::template elementwiseDivideFromLeftInPlace<EE>(r); return *this; }
+
+#ifndef SWIG
     template <class EE> inline void 
     elementwiseDivideFromLeft
        (const RowVectorBase<EE>& v, 
@@ -1683,6 +1695,7 @@ public:
         Base::template elementwiseDivideFromLeft<EE>(v,out); 
         return out;
     }
+#endif
 
     // Implicit conversions are allowed to RowVector or Matrix, but not to Vector.   
     operator const RowVector_<ELT>&()     const {return *reinterpret_cast<const RowVector_<ELT>*>(this);}
@@ -1706,10 +1719,12 @@ public:
     int       ncol() const {assert(Base::nrow()==1); return Base::ncol();}
     ptrdiff_t nelt() const {assert(Base::nrow()==1); return Base::nelt();}
 
+#ifndef SWIG
     // Override MatrixBase operators to return the right shape
     TAbs abs() const {
         TAbs result; Base::abs(result); return result;
     }
+#endif
 
     // Override MatrixBase indexing operators          
     const ELT& operator[](int j) const {return *reinterpret_cast<const ELT*>(Base::getHelper().getElt(j));}
@@ -1734,22 +1749,25 @@ public:
     RowVectorView_<ELT> operator()(const Array_<int>& indices) const {return index(indices);}
     RowVectorView_<ELT> operator()(const Array_<int>& indices)       {return updIndex(indices);}
  
+#ifndef SWIG
     // Hermitian transpose.
     THerm transpose() const {return Base::transpose().getAsVectorView();}
     THerm updTranspose()    {return Base::updTranspose().updAsVectorView();}
 
     THerm operator~() const {return transpose();}
     THerm operator~()       {return updTranspose();}
+#endif
 
     const RowVectorBase& operator+() const {return *this; }
 
+#ifndef SWIG
     // Negation
-
     const TNeg& negate()    const {return *reinterpret_cast<const TNeg*>(this); }
     TNeg&       updNegate()       {return *reinterpret_cast<TNeg*>(this); }
 
     const TNeg& operator-() const {return negate();}
     TNeg&       operator-()       {return updNegate();}
+#endif
 
     RowVectorBase& resize(int n)     {Base::resize(1,n); return *this;}
     RowVectorBase& resizeKeep(int n) {Base::resizeKeep(1,n); return *this;}
@@ -1773,6 +1791,7 @@ private:
     // NO DATA MEMBERS ALLOWED
 };
 
+#ifndef SWIG
 
 
 //  ------------------------------- MatrixView_ --------------------------------
@@ -2003,7 +2022,6 @@ private:
     // NO DATA MEMBERS ALLOWED
 };
 
-#ifndef SWIG
 //  -------------------------------- VectorView_ -------------------------------
 /// This class is identical to a Vector_; it is used only to manage the C++ rules
 /// for when copy constructors are called by introducing a separate type to
@@ -2012,6 +2030,7 @@ private:
 /// However, there are no owner constructors for VectorView_. 
 //  ----------------------------------------------------------------------------
 template <class ELT> class VectorView_ : public VectorBase<ELT> {
+#ifndef SWIG
     typedef VectorBase<ELT>                             Base;
     typedef typename CNT<ELT>::Scalar                   S;
     typedef typename CNT<ELT>::Number                   Number;
@@ -2019,12 +2038,15 @@ template <class ELT> class VectorView_ : public VectorBase<ELT> {
     typedef VectorView_<ELT>                            T;
     typedef VectorView_< typename CNT<ELT>::TNeg >      TNeg;
     typedef RowVectorView_< typename CNT<ELT>::THerm >  THerm;
+#endif
 public:
     // Default construction is suppressed.
     // Uses default destructor.
 
+#ifndef SWIG
     // Create a VectorView_ handle using a given helper rep. 
     explicit VectorView_(MatrixHelperRep<S>* hrep) : Base(hrep) {}
+#endif
 
     // Copy constructor is shallow. CAUTION: despite const argument, this preserves writability
     // if it was present in the source. This is necessary to allow temporary views to be
@@ -2037,9 +2059,11 @@ public:
         Base::operator=(v); return *this;
     }
 
+#ifndef SWIG
     // Ask for shallow copy    
     explicit VectorView_(const MatrixHelper<S>& h) : Base(h, typename MatrixHelper<S>::ShallowCopy()) { }
     explicit VectorView_(MatrixHelper<S>&       h) : Base(h, typename MatrixHelper<S>::ShallowCopy()) { }
+#endif
     
     VectorView_& operator=(const Base& b) { Base::operator=(b); return *this; }
 
@@ -2062,7 +2086,6 @@ private:
     VectorView_(); // default construction suppressed (what's it a View of?)
 };
 
-#endif
 
 //  ---------------------------------- Vector_ ---------------------------------
 /// This is the Vector class intended to appear in user code. It can be a 
@@ -2158,7 +2181,6 @@ private:
 
 };
 
-#ifndef SWIG
 
 //  ------------------------------ RowVectorView_ ------------------------------
 /// This class is identical to a RowVector_; it is used only to manage the C++ 
@@ -2168,6 +2190,7 @@ private:
 /// RowVectorView_. However, there are no owner constructors for RowVectorView_. 
 //  ----------------------------------------------------------------------------
 template <class ELT> class RowVectorView_ : public RowVectorBase<ELT> {
+#ifndef SWIG
     typedef RowVectorBase<ELT>                              Base;
     typedef typename CNT<ELT>::Scalar                       S;
     typedef typename CNT<ELT>::Number                       Number;
@@ -2175,12 +2198,15 @@ template <class ELT> class RowVectorView_ : public RowVectorBase<ELT> {
     typedef RowVectorView_<ELT>                             T;
     typedef RowVectorView_< typename CNT<ELT>::TNeg >       TNeg;
     typedef VectorView_< typename CNT<ELT>::THerm >         THerm;
+#endif
 public:
     // Default construction is suppressed.
     // Uses default destructor.
 
+#ifndef SWIG
     // Create a RowVectorView_ handle using a given helper rep. 
     explicit RowVectorView_(MatrixHelperRep<S>* hrep) : Base(hrep) {}
+#endif
 
     // Copy constructor is shallow. CAUTION: despite const argument, this preserves writability
     // if it was present in the source. This is necessary to allow temporary views to be
@@ -2193,9 +2219,11 @@ public:
         Base::operator=(r); return *this;
     }
 
+#ifndef SWIG
     // Ask for shallow copy    
     explicit RowVectorView_(const MatrixHelper<S>& h) : Base(h, typename MatrixHelper<S>::ShallowCopy()) { }
     explicit RowVectorView_(MatrixHelper<S>&       h) : Base(h, typename MatrixHelper<S>::ShallowCopy()) { }
+#endif
     
     RowVectorView_& operator=(const Base& b) { Base::operator=(b); return *this; }
 
@@ -2227,6 +2255,7 @@ private:
 /// itself, although of course it will always have just one row.
 //  ----------------------------------------------------------------------------
 template <class ELT> class RowVector_ : public RowVectorBase<ELT> {
+#ifndef SWIG
     typedef typename CNT<ELT>::Scalar       S;
     typedef typename CNT<ELT>::Number       Number;
     typedef typename CNT<ELT>::StdNumber    StdNumber;
@@ -2234,6 +2263,7 @@ template <class ELT> class RowVector_ : public RowVectorBase<ELT> {
 
     typedef RowVectorBase<ELT>              Base;
     typedef RowVectorBase<ENeg>             BaseNeg;
+#endif
 public:
     RowVector_() : Base() {}   // 1x0 reallocatable
     // Uses default destructor.
@@ -2241,9 +2271,11 @@ public:
     // Copy constructor is deep.
     RowVector_(const RowVector_& src) : Base(src) {}
 
+#ifndef SWIG
     // Implicit conversions.
     RowVector_(const Base& src) : Base(src) {}    // e.g., RowVectorView
     RowVector_(const BaseNeg& src) : Base(src) {}  
+#endif
 
     // Copy assignment is deep and can be reallocating if this RowVector
     // has no View.
@@ -2256,6 +2288,7 @@ public:
     RowVector_(int n, const ELT* cppInitialValues) : Base(n, cppInitialValues) {}
     RowVector_(int n, const ELT& initialValue)     : Base(n, initialValue) {}
 
+#ifndef SWIG
     /// Construct a Vector which uses borrowed space with assumed
     /// element-to-element stride equal to the C++ element spacing.
     /// Last parameter is a dummy to avoid overload conflicts when ELT=S;
@@ -2268,6 +2301,7 @@ public:
     /// dummy to avoid overload conflicts; pass it as "true".
     RowVector_(int n, int stride, const S* data, bool) : Base(n, stride, data) {}
     RowVector_(int n, int stride,       S* data, bool) : Base(n, stride, data) {}
+#endif
     
     /// Convert a Row to a RowVector_.
     template <int M>
@@ -2294,6 +2328,7 @@ private:
     // NO DATA MEMBERS ALLOWED
 };
 
+#ifndef SWIG
 
 
 //  ------------------------ MatrixBase definitions ----------------------------
