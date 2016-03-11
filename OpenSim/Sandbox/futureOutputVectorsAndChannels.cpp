@@ -141,12 +141,12 @@ void testOutputVectorsAndChannels() {
     
     // Column labels.
     std::vector<std::string> columnLabels;
-    for (unsigned i = 0; i < 5; ++i) {
+    for (unsigned i = 0; i < 9; ++i) {
         columnLabels.push_back("col" + std::to_string(i));
     }
     table.setColumnLabels(columnLabels);
     
-    TimeSeriesTable::RowVector row(5, 0.0);
+    TimeSeriesTable::RowVector row(9, 0.0);
     row[1] = 1; row[2] = 2; row[3] = 3; row[4] = 4;
     table.appendRow(0.0, row); row += 1;
     table.appendRow(0.25, row); row += 1;
@@ -161,12 +161,19 @@ void testOutputVectorsAndChannels() {
     rep->setName("interped");
     model.addModelComponent(rep);
     
-    rep->updInput("input").connect(src->getOutput("columns").getChannel("col0"));
-    rep->updInput("input").connect(src->getOutput("columns").getChannel("col1"));
-    rep->updInput("input").connect(src->getOutput("columns").getChannel("col2"));
-    //rep->updInput("input").connect(src->getOutput("columns"));
-    
     SimTK::State& s = model.initSystem();
+    
+    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col0"));
+    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col1"));
+    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col2"));
+    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col3"));
+    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col4"));
+    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col5"));
+    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col6"));
+    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col7"));
+    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col8"));
+    rep->updInput("input").connect(src->getOutput("columns"));
+    
     RungeKuttaMersonIntegrator integrator(model.getSystem());
     integrator.setFixedStepSize(0.1);
     integrate(model.getSystem(), integrator, s, 1.0);
