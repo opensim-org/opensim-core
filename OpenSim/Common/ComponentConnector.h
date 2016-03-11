@@ -282,7 +282,6 @@ public:
 
 private:
     SimTK::ResetOnCopy<ConnecteeList> _connectees;
-//TODO    ConnecteeList _connectees;
 }; // END class Connector<T>
 
 

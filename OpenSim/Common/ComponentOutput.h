@@ -67,6 +67,7 @@ class Component;
 
 class AbstractChannel {
 public:
+    virtual ~AbstractChannel() = default;
     virtual const std::string& getName() const = 0;
 };
 
@@ -150,6 +151,7 @@ public:
             AbstractOutput(name, dependsOnStage, isList),
             _outputFcn(outputFunction) {
         if (!isList) {
+            // TODO rename.
             _channels["one"] = Channel(this, "one");
         }
     
@@ -186,7 +188,8 @@ public:
     bool isCompatible(const AbstractOutput& o) const override { return isA(o); }
     void compatibleAssign(const AbstractOutput& o) override {
         if (!isA(o)) 
-            SimTK_THROW2(SimTK::Exception::IncompatibleValues, o.getTypeName(), getTypeName());
+            SimTK_THROW2(SimTK::Exception::IncompatibleValues,
+                         o.getTypeName(), getTypeName());
         *this = downcast(o);
     }
     
@@ -260,7 +263,7 @@ private:
 template <typename T>
 class Output<T>::Channel : public AbstractChannel {
 public:
-    Channel() {} // TODO remove?
+    Channel() = default;
     Channel(const Output<T>* output, const std::string& name)
      : _output(output), _name(name) {}
     const T& getValue(const SimTK::State& state) const {
