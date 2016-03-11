@@ -106,12 +106,6 @@ public:
     double getRestlength() const {return get_rest_length();}
 
     //-----------------------------------------------------------------------------
-    // ModelComponent interface
-    //-----------------------------------------------------------------------------
-    void extendConnectToModel(Model& model) override;
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-
-    //-----------------------------------------------------------------------------
     // Reporting
     //-----------------------------------------------------------------------------
     /** 
@@ -124,6 +118,10 @@ public:
     OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
 protected:
+    //-----------------------------------------------------------------------------
+    // ModelComponent interface
+    //-----------------------------------------------------------------------------
+    void extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) const override;
 
 private:
     void setNull();
