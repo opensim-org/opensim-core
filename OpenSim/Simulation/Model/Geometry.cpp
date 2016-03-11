@@ -52,7 +52,7 @@ void Geometry::setFrameName(const std::string& name)
 
 void Geometry::setFrame(const Frame& frame)
 {
-    updConnector<Frame>("frame").set_connectee_name(frame.getName());
+    updConnector<Frame>("frame").set_connectee_name(frame.getRelativePathName(*this));
 }
 
 

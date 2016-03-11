@@ -59,7 +59,7 @@ int main()
 //==========================================================================================================
 void testAssembleModelWithConstraints(string modelFile)
 {
-    double accuracy = 1e-6;
+    double accuracy = 1e-5;
     using namespace SimTK;
 
     cout << "\n****************************************************************************" << endl;
@@ -177,6 +177,11 @@ void testAssembleModelWithConstraints(string modelFile)
 
     model.equilibrateMuscles(state);
 
+    // set default (properties) which capture an accurate snapshot of the model
+    // prior to simulation.
+    model.setPropertiesFromState(state);
+    state = model.initSystem();
+
     //==========================================================================================================
     // Integrate forward and init the state and update defaults to make sure
     // assembler is not effecting anything more than the pose.
@@ -184,11 +189,7 @@ void testAssembleModelWithConstraints(string modelFile)
     integrator.setAccuracy(accuracy);
     Manager manager(model, integrator);
     manager.setInitialTime(0.0);
-    manager.setFinalTime(0.1);
-
-    // set default (properties) which capture an accurate snapshot of the model
-    // prior to simulation.
-    model.setPropertiesFromState(state);
+    manager.setFinalTime(0.05);
 
     // Simulate forward in time
     manager.integrate(state);
