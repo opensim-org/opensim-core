@@ -154,7 +154,7 @@ public:
     size_t getNumColumns() const {
         return implementGetNumColumns();
     }
-    
+
     /** Get metadata associated with the independent column.                  */
     const IndependentMetaData& getIndependentMetaData() const {
         return _independentMetaData;
@@ -171,7 +171,7 @@ public:
     const DependentsMetaData& getDependentsMetaData() const {
         return _dependentsMetaData;
     }
-    
+
     /** Set metadata associated with the dependent columns.                   */
     void 
     setDependentsMetaData(const DependentsMetaData& dependentsMetaData) {
@@ -179,6 +179,39 @@ public:
         validateDependentsMetaData();
     }
 
+    /** Get column labels.                                                    */
+    std::vector<std::string> getColumnLabels() const {
+        const auto& metadata = getDependentsMetaData();
+        const auto& absArray = metadata.getValueArrayForKey("labels");
+        std::vector<std::string> labels{};
+        for(size_t i = 0; i < absArray.size(); ++i)
+            labels.push_back(absArray[i].getValue<std::string>());
+
+        return labels;
+    }
+
+    /** Set column labels.                                                    */
+    void setColumnLabels(const std::vector<std::string>& columnLabels) {
+        ValueArray<std::string> newLabels{};
+        for(const auto& label : columnLabels)
+            newLabels.upd().push_back(SimTK::Value<std::string>(label));
+        _dependentsMetaData.removeValueArrayForKey("labels");
+        _dependentsMetaData.setValueArrayForKey("labels", newLabels);
+
+        validateDependentsMetaData();
+    }
+
+    /** Get index of a column label.                                          */
+    size_t getColumnIndex(const std::string& columnLabel) const {
+        const auto& metadata = getDependentsMetaData();
+        const auto& absArray = metadata.getValueArrayForKey("labels");
+        for(size_t i = 0; i < absArray.size(); ++i)
+            if(absArray[i].getValue<std::string>() == columnLabel)
+                return i;
+        
+        OPENSIM_THROW(KeyNotFound, columnLabel);
+    }
+    
 protected:
     /** Get number of rows. Implemented by derived classes.                   */
     virtual size_t implementGetNumRows() const       = 0;
@@ -238,7 +271,8 @@ public:
             try {
                 auto& labels = 
                     _dependentsMetaData.getValueArrayForKey("labels");
-                OPENSIM_THROW_IF(depRow.ncol() != labels.size(),
+                OPENSIM_THROW_IF(static_cast<unsigned>(depRow.ncol()) != 
+                                 labels.size(),
                                  IncorrectNumColumns, 
                                  labels.size(), 
                                  static_cast<size_t>(depRow.ncol()));
@@ -311,6 +345,11 @@ public:
         return _depData.col((int)index);
     }
 
+    /** Get dependent Column which has the given column label.                */
+    VectorView getDependentColumn(const std::string& columnLabel) {
+        return _depData.col(getColumnIndex(columnLabel));
+    }
+
     /** Set independent column at index.                                      
 
     \throws RowIndexOutOfRange If index is out of range.                        
@@ -363,7 +402,7 @@ protected:
                             entries in the metadata for dependent columns have
                             the correct length (equal to nubmer of columns).  */
     void validateDependentsMetaData() const override {
-        unsigned numCols{};
+        size_t numCols{};
         try {
             numCols = (unsigned)_dependentsMetaData
                                         .getValueArrayForKey("labels").size();
@@ -374,7 +413,8 @@ protected:
         OPENSIM_THROW_IF(numCols == 0,
                          MetaDataLengthZero,"labels");
 
-        OPENSIM_THROW_IF(_depData.ncol() != 0 && numCols != _depData.ncol(),
+        OPENSIM_THROW_IF(_depData.ncol() != 0 && 
+                         numCols != static_cast<unsigned>(_depData.ncol()),
                          IncorrectMetaDataLength, "labels", 
                          static_cast<size_t>(_depData.ncol()), numCols);
 

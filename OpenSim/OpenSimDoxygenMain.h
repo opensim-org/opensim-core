@@ -211,6 +211,7 @@ model components, such as body, constraint, or joint.
 - OpenSim::Function
 - OpenSim::Joint
 - OpenSim::Muscle
+- OpenSim::StatesTrajectory
 
 <b>Classes of interest in Simbody:</b>
 

@@ -80,6 +80,20 @@ public:
         const std::string& frame1Name,
         const std::string& frame2Name);
 
+    /** Convenience Constructor with two Frames
+    Construct a TwoFrameLinker where the two frames are specified by name
+    and offset transforms on the respective frames.
+
+    @param[in] name             the name of this TwoFrameLinker component
+    @param[in] frame1           the first Frame being linked
+    @param[in] offsetOnFrame1   offset Transform on the first frame
+    @param[in] frame2           the second Frame being linked
+    @param[in] offsetOnFrame2   offset Transform on the second frame
+    */
+    TwoFrameLinker(const std::string &name,
+        const F& frame1, const SimTK::Transform& offsetOnFrame1,
+        const F& frame2, const SimTK::Transform& offsetOnFrame2);
+
     /** Convenience Constructor
     Construct a TwoFrameLinker where the two frames are specified by name 
     and offset transforms on the respective frames.
@@ -252,6 +266,33 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
 
 template <class C, class F>
 TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
+    const F& frame1, const SimTK::Transform& transformInFrame1,
+    const F& frame2, const SimTK::Transform& transformInFrame2)
+    : TwoFrameLinker()
+{
+    this->setName(name);
+
+    PhysicalOffsetFrame frame1Offset(frame1.getName() + "_offset",
+        frame1, transformInFrame1);
+
+    PhysicalOffsetFrame frame2Offset(frame2.getName() + "_offset",
+        frame2, transformInFrame2);
+
+    // Append the offset frames to the Joints internal list of frames
+    int ix1 = append_frames(frame1Offset);
+    int ix2 = append_frames(frame2Offset);
+    this->finalizeFromProperties();
+
+    this->template updConnector<F>("frame1").connect(get_frames(ix1));
+    this->template updConnector<F>("frame2").connect(get_frames(ix2));
+
+    static_cast<PhysicalOffsetFrame&>(upd_frames(ix1)).setParentFrame(frame1);
+    static_cast<PhysicalOffsetFrame&>(upd_frames(ix2)).setParentFrame(frame2);
+}
+
+
+template <class C, class F>
+TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     const std::string& frame1Name, const SimTK::Transform& transformInFrame1,
     const std::string& frame2Name, const SimTK::Transform& transformInFrame2)
     : TwoFrameLinker()
@@ -265,13 +306,12 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
         frame2Name, transformInFrame2);
 
     // Append the offset frames to the Joints internal list of frames
-    append_frames(frame1Offset);
-    append_frames(frame2Offset);
+    int ix1 = append_frames(frame1Offset);
+    int ix2 = append_frames(frame2Offset);
+    this->finalizeFromProperties();
 
-    this->template updConnector<PhysicalFrame>("frame1")
-        .set_connectee_name(frame1Offset.getName());
-    this->template updConnector<PhysicalFrame>("frame2")
-        .set_connectee_name(frame2Offset.getName());
+    this->template updConnector<F>("frame1").connect(get_frames(ix1));
+    this->template updConnector<F>("frame2").connect(get_frames(ix2));
 }
 
 template <class C, class F>
@@ -309,7 +349,7 @@ void TwoFrameLinker<C,F>::constructConnectors()
 template <class C, class F>
 const F& TwoFrameLinker<C, F>::getFrame1() const
 {
-    if (!(this->isObjectUpToDateWithProperties() && !this->hasSystem())) {
+    if (!(this->isObjectUpToDateWithProperties() && this->hasSystem())) {
         _frame1 = &(this->template getConnector<F>("frame1").getConnectee());
     }
     return _frame1.getRef();
