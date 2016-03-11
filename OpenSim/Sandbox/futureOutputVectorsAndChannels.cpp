@@ -3,12 +3,20 @@
 using namespace OpenSim;
 using namespace SimTK;
 
+class Sugar : public ModelComponent {
+    OpenSim_DECLARE_CONCRETE_OBJECT(Sugar, ModelComponent);
+public:
+    OpenSim_DECLARE_OUTPUT(fructose, double, getFructose,
+                           SimTK::Stage::Time);
+    double getFructose(const SimTK::State& s) const { return 5.3; }
+};
+
 template <typename T>
 class DataSource_ : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(DataSource_, T, ModelComponent);
 public:
-    OpenSim_DECLARE_LIST_OUTPUT(columns, T, getColumnAtTime,
-                                SimTK::Stage::Instance);
+    OpenSim_DECLARE_LIST_OUTPUT(col, T, getColumnAtTime,
+                                SimTK::Stage::Time);
 // OpenSim_DECLARE_OUTPUT(all, Vector<T>, getRow, SimTK::Stage::Instance);
     
     T getColumnAtTime(const SimTK::State& s, const std::string& label) const {
@@ -62,10 +70,10 @@ protected:
         Super::extendFinalizeFromProperties();
         const auto& keys = _table.getDependentsMetaData().getKeys();
         // TODO tables should be initialized with a labels metadata.
-        updOutput("columns").clearChannels();
+        updOutput("col").clearChannels();
         if (std::find(keys.begin(), keys.end(), "labels") != keys.end()) {
             for (const auto& label : _table.getColumnLabels()) {
-                updOutput("columns").addChannel(label);
+                updOutput("col").addChannel(label);
             }
         }
     }
@@ -130,10 +138,12 @@ void integrate(const System& system, Integrator& integrator,
 
 void testOutputVectorsAndChannels() {
     Model model;
+    model.setName("ironman");
     
     // DataSource
     // ----------
     auto* src = new DataSource();
+    src->setName("exp_data");
     model.addModelComponent(src);
     
     // Fill up the DataSource.
@@ -161,6 +171,12 @@ void testOutputVectorsAndChannels() {
     rep->setName("interped");
     model.addModelComponent(rep);
     
+    // A component with a non-list output
+    // -----------------------------------
+    auto* sugar = new Sugar();
+    sugar->setName("calories");
+    model.addModelComponent(sugar);
+    
     SimTK::State& s = model.initSystem();
     
     //rep->updInput("input").connect(src->getOutput("columns").getChannel("col0"));
@@ -172,7 +188,10 @@ void testOutputVectorsAndChannels() {
     //rep->updInput("input").connect(src->getOutput("columns").getChannel("col6"));
     //rep->updInput("input").connect(src->getOutput("columns").getChannel("col7"));
     //rep->updInput("input").connect(src->getOutput("columns").getChannel("col8"));
-    rep->updInput("input").connect(src->getOutput("columns"));
+    // Must connect *after* initSystem(), since it first clears all
+    // existing connections.
+    rep->updInput("input").connect(src->getOutput("col"));
+    rep->updInput("input").connect(sugar->getOutput("fructose"));
     
     RungeKuttaMersonIntegrator integrator(model.getSystem());
     integrator.setFixedStepSize(0.1);

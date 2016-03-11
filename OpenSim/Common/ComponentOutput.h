@@ -68,7 +68,8 @@ class Component;
 class AbstractChannel {
 public:
     virtual ~AbstractChannel() = default;
-    virtual const std::string& getName() const = 0;
+    virtual const std::string& getChannelName() const = 0;
+    virtual std::string getName() const = 0;
 };
 
 class OSIMCOMMON_API AbstractOutput {
@@ -151,8 +152,8 @@ public:
             AbstractOutput(name, dependsOnStage, isList),
             _outputFcn(outputFunction) {
         if (!isList) {
-            // TODO rename.
-            _channels["one"] = Channel(this, "one");
+            // We want just one channel with an empty name.
+            _channels[""] = Channel(this, "");
         }
     
     }
@@ -264,19 +265,25 @@ template <typename T>
 class Output<T>::Channel : public AbstractChannel {
 public:
     Channel() = default;
-    Channel(const Output<T>* output, const std::string& name)
-     : _output(output), _name(name) {}
+    Channel(const Output<T>* output, const std::string& channelName)
+     : _output(output), _channelName(channelName) {}
     const T& getValue(const SimTK::State& state) const {
         // Must cache, since we're returning a reference.
-        _result =_output->_outputFcn(_output->_owner.get(), state, _name);
+        _result =_output->_outputFcn(_output->_owner.get(), state, _channelName);
         return _result;
     }
     const Output<T>& getOutput() const { return _output.getRef(); }
-    const std::string& getName() const override { return _name; }
+    const std::string& getChannelName() const override { return _channelName; }
+    std::string getName() const override {
+        if (_channelName.empty()) return getOutput().getName();
+        return getOutput().getName() + ":" + _channelName;
+    }
 private:
     mutable T _result; // TODO remove
     SimTK::ReferencePtr<const Output<T>> _output;
-    std::string _name;
+    std::string _channelName;
+    
+    // To allow Output<T> to set the _output pointer upon copy.
     friend Output<T>::Output(const Output&);
     friend Output<T>& Output<T>::operator=(const Output&);
 };
