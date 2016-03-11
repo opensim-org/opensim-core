@@ -650,8 +650,8 @@ private:
             std::cout << "[" << getName() << "] "
                       << std::setw(_width) << "time" << "| ";
             for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
-                const auto& output = Input<T>::downcast(input).getOutput(idx);
-                const auto& outName = output.getName();
+                const auto& chan = Input<T>::downcast(input).getChannel(idx);
+                const auto& outName = chan.getName();
                 const auto& truncName = outName.size() <= _width ?
                     outName : outName.substr(outName.size() - _width);
                 std::cout << std::setw(_width) << truncName << "|";
@@ -661,9 +661,9 @@ private:
         // TODO set width based on number of significant digits.
         std::cout << "[" << getName() << "] "
                   << std::setw(_width) << state.getTime() << "| ";
-        for (const auto& output : input.getOutputs()) {
-            const auto& value = output->getValue(state);
-            const auto& nSigFigs = output->getNumberOfSignificantDigits();
+        for (const auto& chan : input.getChannels()) {
+            const auto& value = chan->getValue(state);
+            const auto& nSigFigs = chan->getOutput().getNumberOfSignificantDigits();
             std::cout << std::setw(_width)
                       << std::setprecision(nSigFigs) << value << "|";
         }

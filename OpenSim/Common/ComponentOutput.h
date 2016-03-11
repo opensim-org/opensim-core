@@ -116,11 +116,18 @@ private:
 //=============================================================================
 };  // END class AbstractOutput
 
+class AbstractChannel {
+public:
+    virtual const std::string& getName() const = 0;
+};
+
 template<class T>
 class Output : public AbstractOutput {
 public:
 
     class Channel;
+    
+    typedef std::unordered_map<std::string, Channel> ChannelMap;
     
     //default construct output function pointer and result container
     Output() {}
@@ -138,7 +145,7 @@ public:
         bool                    isList) :
             AbstractOutput(name, dependsOnStage, isList),
             _outputFcn(outputFunction) {
-        if (isList) {
+        if (!isList) {
             _channels["one"] = Channel(this, "one");
         }
     
@@ -188,6 +195,8 @@ public:
         if (!isListOutput()) throw Exception("TODO");
         _channels[channelName] = Channel(this, channelName);
     }
+    
+    const ChannelMap& getChannels() const { return _channels; }
 
     //--------------------------------------------------------------------------
     // OUTPUT VALUE
@@ -241,16 +250,20 @@ private:
 
 
 template <typename T>
-class Output<T>::Channel {
+class Output<T>::Channel : public AbstractChannel {
 public:
     Channel() {} // TODO remove?
     Channel(const Output<T>* output, const std::string& name)
      : _output(output), _name(name) {}
     const T& getValue(const SimTK::State& state) const {
-        return _output._outputFcn(_output._owner.get(), state, _name);
+        // Must cache, since we're returning a reference.
+        _result =_output->_outputFcn(_output->_owner.get(), state, _name);
+        return _result;
     }
     const Output<T>& getOutput() const { return _output.getRef(); }
+    const std::string& getName() const override { return _name; }
 private:
+    mutable T _result; // TODO remove
     SimTK::ReferencePtr<const Output<T>> _output;
     std::string _name;
     friend Output<T>::Output(const Output&);

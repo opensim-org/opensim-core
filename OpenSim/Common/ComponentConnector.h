@@ -294,7 +294,7 @@ class OSIMCOMMON_API AbstractInput : public AbstractConnector {
     OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractInput, AbstractConnector);
 public:
     /** Default constructor */
-    AbstractInput() : AbstractConnector()/*, connectee(nullptr)*/ {}
+    AbstractInput() : AbstractConnector() {}
     /** Convenience constructor
     Create an AbstractInput (Connector) that connects only to an AbstractOutput
     specified by name and stage at which it should be connected.
@@ -318,6 +318,7 @@ public:
 
     /** Input Specific Connect */
     virtual void connect(const AbstractOutput& output) = 0;
+    virtual void connect(const AbstractChannel& channel) = 0;
     
 //=============================================================================
 };  // END class AbstractInput
@@ -329,7 +330,9 @@ class  Input : public AbstractInput {
     OpenSim_DECLARE_CONCRETE_OBJECT(Input, AbstractInput);
 public:
 
-    typedef std::vector<SimTK::ReferencePtr<const Output<T>>> ConnecteeList;
+    typedef typename Output<T>::Channel Channel;
+
+    typedef std::vector<SimTK::ReferencePtr<const Channel>> ChannelList;
     
     /** Default constructor */
     Input() : AbstractInput() {}
@@ -349,10 +352,16 @@ public:
         const auto* outT = dynamic_cast<const Output<T>*>(&output);
         if (outT) {
             if (!isListConnector()) {
+                if (outT->isListOutput()) {
+                    throw Exception("TODO non-list input cannot connect to list output");
+                }
                 // Remove the existing connecteee (if it exists).
                 disconnect();
             }
-            _connectees.push_back(SimTK::ReferencePtr<const Output<T>>(outT));
+            // For a non-list connector, there will only be one channel.
+            for (const auto& chan : outT->getChannels()) {
+                _connectees.push_back(SimTK::ReferencePtr<const Channel>(&chan.second));
+            }
         }
         else {
             std::stringstream msg;
@@ -360,6 +369,27 @@ public:
             << "' of type Output<" << output.getTypeName() << ">. Input requires "
             << getConnecteeTypeName() << ".";
             throw Exception(msg.str(), __FILE__, __LINE__);
+        }
+    }
+    
+    void connect(const AbstractChannel& channel) override {
+        const auto* chanT = dynamic_cast<const Channel*>(&channel);
+        if (chanT) {
+            if (!isListConnector()) {
+                // Remove the existing connecteee (if it exists).
+                disconnect();
+            }
+            _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
+        }
+        else {
+            throw Exception("TODO incompatible channel");
+            /*
+            std::stringstream msg;
+            msg << "Input::connect(): ERR- Cannot connect '" << output.getName()
+            << "' of type Output<" << output.getTypeName() << ">. Input requires "
+            << getConnecteeTypeName() << ".";
+            throw Exception(msg.str(), __FILE__, __LINE__);
+            */
         }
     }
     
@@ -396,10 +426,10 @@ public:
     
     /** If this is a list input, you must specify the specific Output whose
         value you want. */
-    const Output<T>& getOutput(int index=-1) const {
+    const Channel& getChannel(int index=-1) const {
         if (index == -1) {
             if (!isListConnector()) index = 0;
-            else throw Exception("Input<T>::getOutput(): an index must be "
+            else throw Exception("Input<T>::getChannel(): an index must be "
                                  "provided for a list input.");
         }
         OPENSIM_THROW_IF(index >= getNumConnectees(),
@@ -409,14 +439,14 @@ public:
     }
     
     /** Get const access to the outputs connected to this input. */
-    const ConnecteeList& getOutputs() const {
+    const ChannelList& getChannels() const {
         return _connectees;
     }
     
     SimTK_DOWNCAST(Input, AbstractInput);
 
 private:
-    SimTK::ResetOnCopy<ConnecteeList> _connectees;
+    SimTK::ResetOnCopy<ChannelList> _connectees;
 }; // END class Input<Y>
 
 /// @name Creating Inputs for your Component
