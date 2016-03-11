@@ -235,6 +235,7 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     // Create external forces
     try {
         _externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
+        aModel.finalizeFromProperties();
     }
      catch (const Exception& ex) {
         // Important to catch exceptions here so we can restore current working directory...
