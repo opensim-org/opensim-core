@@ -201,6 +201,8 @@ public:
     
     void addChannel(const std::string& channelName) override {
         if (!isListOutput()) throw Exception("TODO");
+        if (channelName.empty())
+            throw Exception("Channel name cannot be empty.");
         _channels[channelName] = Channel(this, channelName);
     }
     

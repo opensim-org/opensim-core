@@ -179,17 +179,10 @@ void testOutputVectorsAndChannels() {
     
     SimTK::State& s = model.initSystem();
     
-    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col0"));
-    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col1"));
-    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col2"));
-    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col3"));
-    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col4"));
-    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col5"));
-    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col6"));
-    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col7"));
-    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col8"));
     // Must connect *after* initSystem(), since it first clears all
     // existing connections.
+    rep->updInput("input").connect(src->getOutput("col").getChannel("col0"));
+    rep->updInput("input").connect(src->getOutput("col").getChannel("col1"));
     rep->updInput("input").connect(src->getOutput("col"));
     rep->updInput("input").connect(sugar->getOutput("fructose"));
     
