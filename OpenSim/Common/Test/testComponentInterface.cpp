@@ -161,6 +161,9 @@ public:
             std::bind(&Foo::calcSpatialAcc, this, std::placeholders::_1),
             SimTK::Stage::Velocity, "")
 
+    OpenSim_DECLARE_OUTPUT(return_by_ref, double, getReturnByRef,
+            SimTK::Stage::Time)
+
     Foo() : Component() {
         constructInfrastructure();
         m_ctr = 0;
@@ -188,6 +191,11 @@ public:
 
         return getSystem().getMatterSubsystem().getMobilizedBody(bindex)
             .getBodyAcceleration(state);
+    }
+
+    double valueToReturnByRef = 13;
+    const double& getReturnByRef(const SimTK::State& s) const {
+        return valueToReturnByRef;
     }
 
 protected:
@@ -536,6 +544,8 @@ int main() {
 
             cout << "foo.input1 = " << foo.getInputValue<double>(s, "input1") << endl;
         }
+
+        SimTK_TEST(foo.getOutputValue<double>(s, "return_by_ref") == 13);
 
         MultibodySystem system2;
         TheWorld *world2 = new TheWorld(modelFile, true);

@@ -1789,6 +1789,24 @@ protected:
                     static_cast<Class*>(this),
                     std::placeholders::_1), dependsOn);
     }
+
+    /** This handles functions component member functions that return a
+     * quantity by const reference by making a copy of the output vaue.
+     */
+    template <typename T, typename Class>
+    bool constructOutput(const std::string& name,
+            const T& (Class::*const componentMemberFunction)(const SimTK::State&) const,
+            const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
+        // The `const` in `Class::*const componentMemberFunction` means this
+        // function can't assign componentMemberFunction to some other function
+        // pointer. This is unlikely, since that function would have to match
+        // the same template parameters (T and Class).
+        auto outputFunc = [this, componentMemberFunction](const SimTK::State& s) -> T {
+            return std::mem_fn(componentMemberFunction)(
+                    static_cast<Class*>(this), s);
+        };
+        return constructOutput<T>(name, outputFunc, dependsOn);
+    }
 #endif
 
     /**
