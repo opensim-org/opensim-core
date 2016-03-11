@@ -1413,22 +1413,6 @@ protected:
         _connectorsTable[name] = ix;
     }
 
-    /**
-    * Construct an Input (socket) for this Component's dependence on an Output signal.
-    * It is a placeholder for the Output and its type and enables the Component
-    * to automatically traverse its dependencies and provide a meaningful message
-    * if the provided Output is incompatible or non-existant. The also specifies at what
-    * stage the output must be valid for the the component to consume it as an input.
-    * if the Output's dependsOnStage is above the Input's requiredAtStage, an Exception
-    * is thrown because the output cannot satisfy the Input's requirement.
-    */
-    template <typename T>
-    void constructInput(const std::string& name,
-        const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance) {
-        _inputsTable[name] 
-            = SimTK::ClonePtr<AbstractInput>(new Input<T>(name, requiredAtStage, *this));
-    }
-
     /** Add a modeling option (integer flag stored in the State) for use by 
     this Component. Each modeling option is identified by its own 
     \a optionName, specified here. Modeling options enable the model
@@ -1849,8 +1833,7 @@ protected:
     template <typename T>
     bool constructInput(const std::string& name,
         const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance) {
-        _inputsTable[name] 
-            = SimTK::ClonePtr<AbstractInput>(new Input<T>(name, requiredAtStage));
+        _inputsTable[name].reset(new Input<T>(name, requiredAtStage, *this));
         return true;
     }
     
