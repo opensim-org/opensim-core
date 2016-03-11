@@ -13,7 +13,7 @@ public:
     
     T getColumnAtTime(const SimTK::State& s, const std::string& label) const {
         // TODO change "col1" to label.
-        return interpolate(s.getTime(), "col1");
+        return interpolate(s.getTime(), label);
     }
     
     T interpolate(const double& time, const std::string& label) const {
@@ -89,19 +89,19 @@ private:
         if (_printCount % 20 == 0) {
             std::cout << "[" << getName() << "] "
                       << std::setw(_width) << "time" << "| ";
-            for (const auto& output : input.getOutputs()) {
-                const auto& outName = output->getName();
-                const auto& truncName = outName.size() <= _width ?
-                    outName : outName.substr(outName.size() - _width);
+            for (const auto& chan : input.getChannels()) {
+                const auto& chanName = chan->getName();
+                const auto& truncName = chanName.size() <= _width ?
+                    chanName : chanName.substr(chanName.size() - _width);
                 std::cout << std::setw(_width) << truncName << "|";
             }
             std::cout << "\n";
         }
         std::cout << "[" << getName() << "] "
                   << std::setw(_width) << state.getTime() << "| ";
-        for (const auto& output : input.getOutputs()) {
-            const auto& value = output->getValue(state);
-            const auto& nSigFigs = output->getNumberOfSignificantDigits();
+        for (const auto& chan : input.getChannels()) {
+            const auto& value = chan->getValue(state);
+            const auto& nSigFigs = chan->getOutput().getNumberOfSignificantDigits();
             std::cout << std::setw(_width)
                       << std::setprecision(nSigFigs) << value << "|";
         }
@@ -161,8 +161,10 @@ void testOutputVectorsAndChannels() {
     rep->setName("interped");
     model.addModelComponent(rep);
     
-    //rep->updInput("input").connect(src->getOutput("columns").getChannel("col1")));
-    rep->updInput("input").connect(src->getOutput("columns"));
+    rep->updInput("input").connect(src->getOutput("columns").getChannel("col0"));
+    rep->updInput("input").connect(src->getOutput("columns").getChannel("col1"));
+    rep->updInput("input").connect(src->getOutput("columns").getChannel("col2"));
+    //rep->updInput("input").connect(src->getOutput("columns"));
     
     SimTK::State& s = model.initSystem();
     RungeKuttaMersonIntegrator integrator(model.getSystem());

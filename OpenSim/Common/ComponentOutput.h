@@ -64,6 +64,12 @@ class Component;
  *
  * @author  Ajay Seth
  */
+
+class AbstractChannel {
+public:
+    virtual const std::string& getName() const = 0;
+};
+
 class OSIMCOMMON_API AbstractOutput {
 public:
     AbstractOutput() : dependsOnStage(SimTK::Stage::Infinity) {}
@@ -82,6 +88,9 @@ public:
     /** Output Interface */
     virtual void clearChannels() = 0;
     virtual void addChannel(const std::string& channelName) = 0;
+    virtual const AbstractChannel& getChannel(const std::string& name) const = 0;
+    // TODO other channel accessors.
+    
     virtual std::string     getTypeName() const = 0;
     virtual std::string     getValueAsString(const SimTK::State& state) const = 0;
     virtual bool        isCompatible(const AbstractOutput&) const = 0;
@@ -115,11 +124,6 @@ private:
     friend Component;
 //=============================================================================
 };  // END class AbstractOutput
-
-class AbstractChannel {
-public:
-    virtual const std::string& getName() const = 0;
-};
 
 template<class T>
 class Output : public AbstractOutput {
@@ -194,6 +198,10 @@ public:
     void addChannel(const std::string& channelName) override {
         if (!isListOutput()) throw Exception("TODO");
         _channels[channelName] = Channel(this, channelName);
+    }
+    
+    const AbstractChannel& getChannel(const std::string& name) const override {
+        return _channels.at(name);
     }
     
     const ChannelMap& getChannels() const { return _channels; }
