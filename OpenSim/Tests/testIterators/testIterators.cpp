@@ -62,7 +62,7 @@ int main()
         for (ComponentList<Component>::const_iterator it = componentsList.begin();
             it != componentsList.end();
             ++it) {
-                std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getName() << std::endl;
+                std::cout << "Iterator is at: " << it->getFullPathName() << " <" << it->getConcreteClassName() << ">" << std::endl;
                 numComponents++;
         }
         
@@ -106,7 +106,7 @@ int main()
         for (ComponentList<Component>::const_iterator it = jComponentsList.begin();
             it != jComponentsList.end();
             ++it) {
-            std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getName() << std::endl;
+            std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getFullPathName() << std::endl;
             numJntComponents++;
         }
         cout << "Num all components = " << numComponents << std::endl;
@@ -126,14 +126,14 @@ int main()
         ComponentWithStateVariables myFilter;
         jointsWithStates.setFilter(myFilter); 
         for (const Joint& comp : jointsWithStates) {
-            cout << comp.getConcreteClassName() << ":" << comp.getName() << endl;
+            cout << comp.getConcreteClassName() << ":" << comp.getFullPathName() << endl;
             numJointsWithStateVariables++;
         }
         int numModelComponentsWithStateVariables = 0;
         ComponentList<ModelComponent> comps = model.getComponentList<ModelComponent>();
         comps.setFilter(myFilter);
         for (const ModelComponent& comp : comps) {
-            cout << comp.getConcreteClassName() << ":" << comp.getName() << endl;
+            cout << comp.getConcreteClassName() << ":" << comp.getFullPathName() << endl;
             numModelComponentsWithStateVariables++;
         }
         //Now test a std::iterator method
@@ -141,7 +141,7 @@ int main()
         ComponentList<ModelComponent>::const_iterator skipIter = allModelComps.begin();
         int countSkipComponent = 0;
         while (skipIter != allModelComps.end()){
-            cout << skipIter->getConcreteClassName() << ":" << skipIter->getName() << endl;
+            cout << skipIter->getConcreteClassName() << ":" << skipIter->getFullPathName() << endl;
             std::advance(skipIter, 2);
             countSkipComponent++;
         }
