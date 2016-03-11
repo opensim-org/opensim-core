@@ -65,9 +65,9 @@ int main()
         Ground& ground = osimModel.updGround();
 
         // Add display geometry to the ground to visualize in the GUI
-        ground.addMeshGeometry("ground.vtp");
-        ground.addMeshGeometry("anchor1.vtp");
-        ground.addMeshGeometry("anchor2.vtp");
+        ground.attachMeshGeometry("ground.vtp");
+        ground.attachMeshGeometry("anchor1.vtp");
+        ground.attachMeshGeometry("anchor2.vtp");
 
         // BLOCK BODY
 
@@ -82,7 +82,7 @@ int main()
             blockMassCenter, blockInertia);
 
         // Add display geometry to the block to visualize in the GUI
-        block->addMeshGeometry("block.vtp");
+        block->attachMeshGeometry("block.vtp");
 
         // FREE JOINT
 

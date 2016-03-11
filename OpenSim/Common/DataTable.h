@@ -158,7 +158,7 @@ public:
     size_t getNumColumns() const {
         return implementGetNumColumns();
     }
-    
+
     /** Get metadata associated with the independent column.                  */
     const IndependentMetaData& getIndependentMetaData() const {
         return _independentMetaData;
@@ -175,7 +175,7 @@ public:
     const DependentsMetaData& getDependentsMetaData() const {
         return _dependentsMetaData;
     }
-    
+
     /** Set metadata associated with the dependent columns.                   */
     void 
     setDependentsMetaData(const DependentsMetaData& dependentsMetaData) {
@@ -183,6 +183,39 @@ public:
         validateDependentsMetaData();
     }
 
+    /** Get column labels.                                                    */
+    std::vector<std::string> getColumnLabels() const {
+        const auto& metadata = getDependentsMetaData();
+        const auto& absArray = metadata.getValueArrayForKey("labels");
+        std::vector<std::string> labels{};
+        for(size_t i = 0; i < absArray.size(); ++i)
+            labels.push_back(absArray[i].getValue<std::string>());
+
+        return labels;
+    }
+
+    /** Set column labels.                                                    */
+    void setColumnLabels(const std::vector<std::string>& columnLabels) {
+        ValueArray<std::string> newLabels{};
+        for(const auto& label : columnLabels)
+            newLabels.upd().push_back(SimTK::Value<std::string>(label));
+        _dependentsMetaData.removeValueArrayForKey("labels");
+        _dependentsMetaData.setValueArrayForKey("labels", newLabels);
+
+        validateDependentsMetaData();
+    }
+
+    /** Get index of a column label.                                          */
+    size_t getColumnIndex(const std::string& columnLabel) const {
+        const auto& metadata = getDependentsMetaData();
+        const auto& absArray = metadata.getValueArrayForKey("labels");
+        for(size_t i = 0; i < absArray.size(); ++i)
+            if(absArray[i].getValue<std::string>() == columnLabel)
+                return i;
+        
+        OPENSIM_THROW(KeyNotFound, columnLabel);
+    }
+    
 protected:
     /** Get number of rows. Implemented by derived classes.                   */
     virtual size_t implementGetNumRows() const       = 0;
@@ -313,6 +346,11 @@ public:
                          ColumnIndexOutOfRange, index, 0,
                          static_cast<size_t>(_depData.ncol()));
         return _depData.col((int)index);
+    }
+
+    /** Get dependent Column which has the given column label.                */
+    VectorView getDependentColumn(const std::string& columnLabel) {
+        return _depData.col(getColumnIndex(columnLabel));
     }
 
     /** Set independent column at index.                                      

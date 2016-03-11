@@ -1,5 +1,5 @@
 
-add_subdirectory(TaskSpace)
+add_subdirectory(TaskSpace EXCLUDE_FROM_ALL)
 
 file(GLOB TO_COMPILE "future*.cpp")
 
@@ -16,6 +16,8 @@ set(SANDBOX_FILES
 foreach(dataFile ${SANDBOX_FILES})
     configure_file(${dataFile} ${CMAKE_CURRENT_BINARY_DIR}/${dataFile} COPYONLY)
 endforeach()
+
+OpenSimCopySharedTestFiles(gait10dof18musc_subject01.osim)
 
 foreach(exec_file ${TO_COMPILE})
     get_filename_component(_target_name ${exec_file} NAME_WE)

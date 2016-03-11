@@ -208,14 +208,14 @@ void simulateMuscle(
 
     // Get a reference to the model's ground body
     Ground& ground = model.updGround();
-    ground.addMeshGeometry("box.vtp");
+    ground.attachMeshGeometry("box.vtp");
 
     OpenSim::Body * ball = new OpenSim::Body("ball",
         ballMass,
         Vec3(0),
                         ballMass*SimTK::Inertia::sphere(ballRadius));
 
-    ball->addMeshGeometry("sphere.vtp");
+    ball->attachMeshGeometry("sphere.vtp");
     // ball connected  to ground via a slider along X
     double xSinG = optimalFiberLength*cos(pennationAngle) + tendonSlackLength;
 

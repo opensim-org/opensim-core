@@ -97,6 +97,14 @@ public:
         "this flag set to false, to dictate the value of unimportant coordinates " 
         "if they are linked via constraints."); 
 
+//==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(value, double, getValue, SimTK::Stage::Model);
+    OpenSim_DECLARE_OUTPUT(speed, double, getSpeedValue, SimTK::Stage::Model);
+    OpenSim_DECLARE_OUTPUT(acceleration, double, getAccelerationValue,
+            SimTK::Stage::Acceleration);
+
     /** Motion type that describes the motion dictated by the coordinate.
         Types include: Rotational, Translational and Coupled (both) */
     enum MotionType
@@ -309,7 +317,6 @@ private:
 
     // PRIVATE METHODS implementing the Component interface
     void constructProperties() override;
-    void constructOutputs() override;
     void extendFinalizeFromProperties() override;
 
     friend class CoordinateCouplerConstraint; 
