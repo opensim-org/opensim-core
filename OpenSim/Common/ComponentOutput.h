@@ -32,6 +32,7 @@
 
 // INCLUDES
 #include <functional>
+#include <unordered_map>
 
 namespace OpenSim {
 
@@ -79,6 +80,8 @@ public:
     bool isListOutput() const { return _isList; }
 
     /** Output Interface */
+    virtual void clearChannels() = 0;
+    virtual void addChannel(const std::string& channelName) = 0;
     virtual std::string     getTypeName() const = 0;
     virtual std::string     getValueAsString(const SimTK::State& state) const = 0;
     virtual bool        isCompatible(const AbstractOutput&) const = 0;
@@ -116,6 +119,9 @@ private:
 template<class T>
 class Output : public AbstractOutput {
 public:
+
+    class Channel;
+    
     //default construct output function pointer and result container
     Output() {}
     /** Convenience constructor
@@ -131,10 +137,40 @@ public:
         const SimTK::Stage&     dependsOnStage,
         bool                    isList) :
             AbstractOutput(name, dependsOnStage, isList),
-            _outputFcn(outputFunction)
-    {}
+            _outputFcn(outputFunction) {
+        if (isList) {
+            _channels["one"] = Channel(this, "one");
+        }
+    
+    }
+    
+    /** Custom copy constructor is for setting the Channel's pointer
+     * back to this Output. */
+    Output(const Output& source) : AbstractOutput(source),
+            _outputFcn(source._outputFcn), _channels(source._channels) {
+        for (auto& it : _channels) {
+            it.second._output.reset(this);
+        }
+    }
+    
+    /** Custom copy assignment operator is for setting the Channel's pointer
+     * back to this Output. */
+    Output& operator=(const Output& source) {
+        if (&source == this) return *this;
+        AbstractOutput::operator=(source);
+        _outputFcn = source._outputFcn;
+        _channels = source._channels;
+        for (auto& it : _channels) {
+            it.second._output.reset(this);
+        }
+        return *this;
+    }
     
     virtual ~Output() {}
+    
+    // TODO someone more knowledgable could try to implement these.
+    Output(Output&&) = delete;
+    Output& operator=(Output&&) = delete;
 
     bool isCompatible(const AbstractOutput& o) const override { return isA(o); }
     void compatibleAssign(const AbstractOutput& o) override {
@@ -142,7 +178,16 @@ public:
             SimTK_THROW2(SimTK::Exception::IncompatibleValues, o.getTypeName(), getTypeName());
         *this = downcast(o);
     }
-
+    
+    void clearChannels() override {
+        if (!isListOutput()) throw Exception("TODO");
+        _channels.clear();
+    }
+    
+    void addChannel(const std::string& channelName) override {
+        if (!isListOutput()) throw Exception("TODO");
+        _channels[channelName] = Channel(this, channelName);
+    }
 
     //--------------------------------------------------------------------------
     // OUTPUT VALUE
@@ -152,6 +197,9 @@ public:
         Exception. */
     const T& getValue(const SimTK::State& state) const {
         _result = SimTK::NaN;
+        if (isListOutput()) {
+            throw Exception("TODO");
+        }
         if (state.getSystemStage() < getDependsOnStage())
         {
             throw SimTK::Exception::StageTooLow(__FILE__, __LINE__,
@@ -167,6 +215,9 @@ public:
         { return SimTK::NiceTypeName<T>::namestr(); }
 
     std::string getValueAsString(const SimTK::State& state) const override {
+        if (isListOutput()) {
+            throw Exception("TODO");
+        }
         unsigned int ns = getNumberOfSignificantDigits();
         std::stringstream s;
         s << std::setprecision(ns) << getValue(state);
@@ -177,13 +228,34 @@ public:
     SimTK_DOWNCAST(Output, AbstractOutput);
 
 private:
-    mutable T _result;
+    mutable T _result; // TODO remove
     std::function<T (const Component*,
                      const SimTK::State&,
                      const std::string& channel)> _outputFcn { nullptr };
+    // TODO consider using indices, and having a parallel data structure
+    // for names.
+    std::unordered_map<std::string, Channel> _channels;
 
 //=============================================================================
 };  // END class Output
+
+
+template <typename T>
+class Output<T>::Channel {
+public:
+    Channel() {} // TODO remove?
+    Channel(const Output<T>* output, const std::string& name)
+     : _output(output), _name(name) {}
+    const T& getValue(const SimTK::State& state) const {
+        return _output._outputFcn(_output._owner.get(), state, _name);
+    }
+    const Output<T>& getOutput() const { return _output.getRef(); }
+private:
+    SimTK::ReferencePtr<const Output<T>> _output;
+    std::string _name;
+    friend Output<T>::Output(const Output&);
+    friend Output<T>& Output<T>::operator=(const Output&);
+};
 
 // TODO consider using std::reference_wrapper<T> as type for _output_##oname,
 // since it is copyable.

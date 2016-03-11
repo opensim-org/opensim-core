@@ -6,10 +6,10 @@ using namespace SimTK;
 template <typename T>
 class DataSource_ : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(DataSource_, T, ModelComponent);
+public:
     OpenSim_DECLARE_LIST_OUTPUT(columns, T, getColumnAtTime,
                                 SimTK::Stage::Instance);
 // OpenSim_DECLARE_OUTPUT(all, Vector<T>, getRow, SimTK::Stage::Instance);
-public:
     
     T getColumnAtTime(const SimTK::State& s, const std::string& label) const {
         // TODO change "col1" to label.
@@ -62,9 +62,10 @@ protected:
         Super::extendFinalizeFromProperties();
         const auto& keys = _table.getDependentsMetaData().getKeys();
         // TODO tables should be initialized with a labels metadata.
+        updOutput("columns").clearChannels();
         if (std::find(keys.begin(), keys.end(), "labels") != keys.end()) {
             for (const auto& label : _table.getColumnLabels()) {
-                // TODO getOutput("columns").addChannel(label);
+                updOutput("columns").addChannel(label);
             }
         }
     }
@@ -147,16 +148,11 @@ void testOutputVectorsAndChannels() {
     
     TimeSeriesTable::RowVector row(5, 0.0);
     row[1] = 1; row[2] = 2; row[3] = 3; row[4] = 4;
-    table.appendRow(0.0, row);
-    row += 1;
-    table.appendRow(0.25, row);
-    row += 1;
-    table.appendRow(0.50, row);
-    row += 1;
-    table.appendRow(0.75, row);
-    row += 1;
-    table.appendRow(1.0, row);
-    row += 1;
+    table.appendRow(0.0, row); row += 1;
+    table.appendRow(0.25, row); row += 1;
+    table.appendRow(0.50, row); row += 1;
+    table.appendRow(0.75, row); row += 1;
+    table.appendRow(1.0, row); row += 1;
     table.appendRow(1.1, row);
     
     // Reporter

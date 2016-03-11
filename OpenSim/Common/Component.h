@@ -588,7 +588,7 @@ public:
     const AbstractOutput& getOutput(const std::string& name) const
     {
         auto it = _outputsTable.find(name);
-
+        
         if (it != _outputsTable.end()) {
             return it->second.getRef();
         }
@@ -596,7 +596,7 @@ public:
             std::string::size_type back = name.rfind("/");
             std::string prefix = name.substr(0, back);
             std::string outName = name.substr(back + 1, name.length() - back);
-
+            
             const Component* found = findComponent(prefix);
             // if found is this component again, no point trying to find
             // output again, otherwise we would not have reached here 
@@ -604,13 +604,46 @@ public:
                 return found->getOutput(outName);
             }
         }
-
-            std::stringstream msg;
+        
+        std::stringstream msg;
         msg << "Component::getOutput: ERR-  no output '" << name << "' found.\n "
-            << "for component '" << getName() << "' of type "
-            << getConcreteClassName();
-            throw Exception(msg.str(), __FILE__, __LINE__);
+        << "for component '" << getName() << "' of type "
+        << getConcreteClassName();
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
+
+    /**
+    * Get a writable reference to an Output provided by this Component by name.
+    *
+    * @param name   the name of the cache variable
+    * @return       reference to the AbstractOutput
+    */
+    AbstractOutput& updOutput(const std::string& name)
+    {
+        auto it = _outputsTable.find(name);
+        
+        if (it != _outputsTable.end()) {
+            return it->second.updRef();
         }
+        else {
+            std::string::size_type back = name.rfind("/");
+            std::string prefix = name.substr(0, back);
+            std::string outName = name.substr(back + 1, name.length() - back);
+            
+            const Component* found = findComponent(prefix);
+            // if found is this component again, no point trying to find
+            // output again, otherwise we would not have reached here 
+            if (found && (found != this)) {
+                return const_cast<Component*>(found)->updOutput(outName);
+            }
+        }
+        
+        std::stringstream msg;
+        msg << "Component::getOutput: ERR-  no output '" << name << "' found.\n "
+        << "for component '" << getName() << "' of type "
+        << getConcreteClassName();
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
 
     /** An iterator to traverse all the Outputs of this component, pointing at the
     * first Output. This can be used in a loop as such:
