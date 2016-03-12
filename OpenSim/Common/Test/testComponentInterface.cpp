@@ -255,9 +255,13 @@ class Bar : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(Bar, Component);
 public:
 
-    double copytesting2 = 5;
+    // This is used to test output copying and returns the address of the 
+    // component.
     OpenSim_DECLARE_OUTPUT(copytesting, size_t, myself, SimTK::Stage::Model);
-    OpenSim_DECLARE_OUTPUT(copytesting2, double, getCopytesting2,
+    // Use this member variable to ensure that output functions get copied
+    // correctly.
+    double copytestingViaMemberVariable = 5;
+    OpenSim_DECLARE_OUTPUT(copytestingMemVar, double, getCopytestingMemVar,
                            SimTK::Stage::Model);
 
     OpenSim_DECLARE_OUTPUT(PotentialEnergy, double, getPotentialEnergy,
@@ -281,7 +285,8 @@ public:
      within Outputs is properly copied when copying components. */
     size_t myself(const SimTK::State& s) const { return size_t(this); }
     
-    double getCopytesting2(const SimTK::State& s) const { return copytesting2; }
+    double getCopytestingMemVar(const SimTK::State& s) const
+    { return copytestingViaMemberVariable; }
 
 protected:
     /** Component Interface */
@@ -448,7 +453,7 @@ int main() {
         // bar0 is to test copying of the function within a component's outputs.
         std::unique_ptr<Bar> bar0(new Bar());
         Bar& bar = *bar0->clone();
-        bar.copytesting2 = 6;
+        bar.copytestingViaMemberVariable = 6;
         bar.setName("Bar");
         theWorld.add(&bar);
 
@@ -538,8 +543,8 @@ int main() {
         SimTK_TEST(bar.getOutputValue<size_t>(s, "copytesting") != size_t(bar0.get()));
         // Make sure bar's outputs are using bar underneath.
         SimTK_TEST(bar.getOutputValue<size_t>(s, "copytesting") == size_t(&bar));
-        SimTK_TEST(bar0->getOutputValue<double>(s, "copytesting2") == 5);
-        SimTK_TEST(bar.getOutputValue<double>(s, "copytesting2") == 6);
+        SimTK_TEST(bar0->getOutputValue<double>(s, "copytestingMemVar") == 5);
+        SimTK_TEST(bar.getOutputValue<double>(s, "copytestingMemVar") == 6);
         
         // By deleting bar0 then calling getOutputValue on bar without a
         // segfault (throughout the remaining code), we ensure that bar
