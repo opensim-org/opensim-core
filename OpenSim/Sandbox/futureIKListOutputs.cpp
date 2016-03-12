@@ -6,6 +6,11 @@ using namespace SimTK;
 
 // TODO Multiplexer, channels of type T into 1 vector. with the same annotations.
 
+// TODO this could be a type of component that has a minimum required number
+// of inputs: need 3 markers to define a body.
+// TODO however, this component is a little unrealistic, since you need an
+// entire trajectory of the markers to compute the trajectory of the joint
+// center. What makes more sense is a component that just averages markers.
 class JointCenter : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(JointCenter, ModelComponent);
 public:
@@ -107,6 +112,10 @@ private:
 typedef DataSource_<double> DataSource;
 typedef DataSource_<SimTK::Vec3> DataSourceVec3;
 
+// TODO InverseKinematics shouldn't really produce a coordinates output;
+// it's more of a states solver--it should be editing the coordinate values
+// in the State. So, this example is really mostly for demonstration.
+// TODO It actually would work really well as a task space controller.
 class InverseKinematics : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(InverseKinematics, ModelComponent);
 public:
@@ -125,17 +134,33 @@ public:
     Vec3 getModelMarkerPosition(const SimTK::State& s,
                                 const std::string& marker) const {
         solve(s); // TODO
-        // TODO
-        // TODO How to handle creating the right number of outputs?
-        return Vec3(0, 0, 0);
+        return getModel().getMarkerSet().get(marker).findLocationInFrame(s,
+                getModel().getGround());
     }
     
     double getSolution(const SimTK::State& s, const std::string& coord) const {
         solve(s); // TODO
-        // TODO
-        return 0;
+        // TODO just pretend to do something.
+        return getModel().getCoordinateSet().get(coord).getValue(s);
     }
-    void solve(const SimTK::State& s) const {}
+    void solve(const SimTK::State& s) const {
+    
+    }
+protected:
+    void extendFinalizeFromProperties() override {
+        Super::extendFinalizeFromProperties();
+        // TODO or use a model connected to us via a connectee?
+        for (const auto& coord : getParent().getComponentList<Coordinate>()) {
+            updOutput("coords").addChannel(coord.getName());
+        }
+        // TODO available channels could depend on what target markers are
+        // given to us. Consider a callback "updateChannels()" that is called
+        // whenever the inputs are updated, so that we can create new output
+        // channels.
+        for (const auto& marker : getParent().getComponentList<Marker>()) {
+            updOutput("model_marker_pos").addChannel(marker.getName());
+        }
+    }
 private:
 };
 
@@ -197,6 +222,46 @@ void integrate(const System& system, Integrator& integrator,
     }
 }
 
+void createModel(Model& model) {
+    auto* pelvis = new OpenSim::Body("pelvis", 1.0, Vec3(0), Inertia(1));
+    model.addBody(pelvis);
+    auto* femur = new OpenSim::Body("femur", 1.0, Vec3(0), Inertia(1));
+    model.addBody(femur);
+    auto* hog = new PinJoint("hog",
+                             model.getGround(), Vec3(0), Vec3(0),
+                             *pelvis,           Vec3(0, 1, 0), Vec3(0));
+    model.addJoint(hog);
+    auto* hip = new PinJoint("hip",
+                             *pelvis, Vec3(0), Vec3(0),
+                             *femur,  Vec3(0, 1, 0), Vec3(0));
+    model.addJoint(hip);
+    hog->getCoordinateSet().get(0).setDefaultValue(0.5 * SimTK::Pi);
+    
+    auto* asis = new OpenSim::Marker();
+    asis->setName("asis"); asis->setReferenceFrame(*pelvis);
+    model.addMarker(asis);
+    
+    auto* psis = new OpenSim::Marker();
+    psis->setName("psis"); psis->setReferenceFrame(*pelvis);
+    model.addMarker(psis);
+    
+    auto* med_knee = new OpenSim::Marker();
+    med_knee->setName("med_knee"); med_knee->setReferenceFrame(*femur);
+    model.addMarker(med_knee);
+    
+    auto* lat_knee = new OpenSim::Marker();
+    lat_knee->setName("lat_knee"); lat_knee->setReferenceFrame(*femur);
+    model.addMarker(lat_knee);
+    
+    auto* thigh = new OpenSim::Marker();
+    thigh->setName("thigh"); thigh->setReferenceFrame(*femur);
+    model.addMarker(thigh);
+    
+    auto* hjc = new OpenSim::Marker();
+    hjc->setName("hjc"); hjc->setReferenceFrame(*femur);
+    model.addMarker(hjc);
+}
+
 void fabricateExperimentalMarkers(TimeSeriesTable_<Vec3>& table) {
     table.setColumnLabels({"asis", "psis", "med_knee", "lat_knee", "thigh"});
     
@@ -212,8 +277,13 @@ void fabricateExperimentalMarkers(TimeSeriesTable_<Vec3>& table) {
 }
 
 void testFutureIKListOutputs() {
+
+    // Create a model.
+    // ---------------
     Model model;
     model.setName("ironman");
+    createModel(model);
+    // model.setUseVisualizer(true);
     
     // DataSource
     // ----------
@@ -235,14 +305,17 @@ void testFutureIKListOutputs() {
     // ---------
     auto* expRep = new ConsoleReporterVec3();
     expRep->setName("exp_computed");
+    expRep->set_enabled(false);
     model.addModelComponent(expRep);
     
     auto* solution = new ConsoleReporter();
     solution->setName("coords");
+    //solution->set_enabled(false);
     model.addModelComponent(solution);
     
     auto* modelMarkers = new ConsoleReporterVec3();
     modelMarkers->setName("model_markers");
+    //modelMarkers->set_enabled(false);
     model.addModelComponent(modelMarkers);
     
     // A component with a non-list output
@@ -273,7 +346,6 @@ void testFutureIKListOutputs() {
     // DataSource can list the columns to export.
     ik->updInput("targets").connect(exp->getOutput("col"));
     ik->updInput("targets").connect(hjc->getOutput("joint_center"));
-    
     
     // Connect up the reporters.
     expRep->updInput("input").connect(exp->getOutput("col").getChannel("asis"));
