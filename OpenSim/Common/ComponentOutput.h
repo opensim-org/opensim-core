@@ -70,6 +70,7 @@ public:
     virtual ~AbstractChannel() = default;
     virtual const std::string& getChannelName() const = 0;
     virtual std::string getName() const = 0;
+    virtual std::string getPathName() const = 0;
 };
 
 class OSIMCOMMON_API AbstractOutput {
@@ -113,6 +114,9 @@ protected:
     // Set the component that contains this Output.
     void setOwner(const Component& owner) {
         _owner.reset(&owner);
+    }
+    const Component& getOwner() const {
+        return _owner.getRef();
     }
     SimTK::ReferencePtr<const Component> _owner;
 
@@ -279,6 +283,9 @@ public:
     std::string getName() const override {
         if (_channelName.empty()) return getOutput().getName();
         return getOutput().getName() + ":" + _channelName;
+    }
+    std::string getPathName() const override {
+        return getOutput().getOwner().getPathName() + "/" + getName();
     }
 private:
     mutable T _result; // TODO remove

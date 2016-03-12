@@ -20,7 +20,6 @@ public:
 // OpenSim_DECLARE_OUTPUT(all, Vector<T>, getRow, SimTK::Stage::Instance);
     
     T getColumnAtTime(const SimTK::State& s, const std::string& label) const {
-        // TODO change "col1" to label.
         return interpolate(s.getTime(), label);
     }
     
@@ -65,7 +64,6 @@ public:
     const TimeSeriesTable_<T> getTable() const { return _table; }
     
 protected:
-
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
         const auto& keys = _table.getDependentsMetaData().getKeys();
@@ -77,9 +75,7 @@ protected:
             }
         }
     }
-    
 private:
-    
     TimeSeriesTable_<T> _table;
 };
 
@@ -91,16 +87,17 @@ class ConsoleReporter_ : public ModelComponent {
 public:
     OpenSim_DECLARE_LIST_INPUT(input, T, SimTK::Stage::Acceleration, "");
 private:
-    void extendRealizeReport(const State& state) const override {
+    void extendRealizeReport(const State& state) const override
+    {
         const auto& input = getInput<T>("input");
         
         if (_printCount % 20 == 0) {
             std::cout << "[" << getName() << "] "
                       << std::setw(_width) << "time" << "| ";
             for (const auto& chan : input.getChannels()) {
-                const auto& chanName = chan->getName();
-                const auto& truncName = chanName.size() <= _width ?
-                    chanName : chanName.substr(chanName.size() - _width);
+                const auto& name = chan->getPathName();
+                const auto& truncName = name.size() <= _width ?
+                    name : name.substr(name.size() - _width);
                 std::cout << std::setw(_width) << truncName << "|";
             }
             std::cout << "\n";
@@ -118,7 +115,7 @@ private:
         const_cast<ConsoleReporter_<T>*>(this)->_printCount++;
     }
     unsigned int _printCount = 0;
-    int _width = 12;
+    int _width = 17;
 };
 
 typedef ConsoleReporter_<double> ConsoleReporter;
@@ -177,12 +174,14 @@ void testOutputVectorsAndChannels() {
     sugar->setName("calories");
     model.addModelComponent(sugar);
     
+    model.finalizeFromProperties();
+    
     SimTK::State& s = model.initSystem();
     
     // Must connect *after* initSystem(), since it first clears all
     // existing connections.
     rep->updInput("input").connect(src->getOutput("col").getChannel("col0"));
-    rep->updInput("input").connect(src->getOutput("col").getChannel("col1"));
+    //rep->updInput("input").connect(src->getOutput("col").getChannel("col1"));
     rep->updInput("input").connect(src->getOutput("col"));
     rep->updInput("input").connect(sugar->getOutput("fructose"));
     
