@@ -316,8 +316,15 @@ public:
     }
 
     /** Input Specific Connect */
-    virtual void connect(const AbstractOutput& output) = 0;
-    virtual void connect(const AbstractChannel& channel) = 0;
+    virtual void connect(const AbstractOutput& output,
+                         const std::string& annotation = "") = 0;
+    virtual void connect(const AbstractChannel& channel,
+                         const std::string& annotation = "") = 0;
+    
+    /** If no annotation was provided when connecting,
+        this is just the name of the output.*/
+    virtual const std::string& getAnnotation(int index = -1) const = 0;
+    // TODO what's the best way to serialize annotations?
     
 //=============================================================================
 };  // END class AbstractInput
@@ -332,6 +339,7 @@ public:
     typedef typename Output<T>::Channel Channel;
 
     typedef std::vector<SimTK::ReferencePtr<const Channel>> ChannelList;
+    typedef std::vector<std::string> AnnotationList;
     
     /** Default constructor */
     Input() : AbstractInput() {}
@@ -346,8 +354,12 @@ public:
             AbstractInput(name, connectAtStage, isList) {
     }
 
-    /** Connect this Input the from provided (Abstract)Output */
-    void connect(const AbstractOutput& output) override {
+    /** Connect this Input to the provided (Abstract)Output.
+        You can provide an annotation of the output that is specific to its
+        use by the component that owns this input.
+     */
+    void connect(const AbstractOutput& output,
+                 const std::string& annotation = "") override {
         const auto* outT = dynamic_cast<const Output<T>*>(&output);
         if (outT) {
             if (!isListConnector()) {
@@ -360,6 +372,10 @@ public:
             // For a non-list connector, there will only be one channel.
             for (const auto& chan : outT->getChannels()) {
                 _connectees.push_back(SimTK::ReferencePtr<const Channel>(&chan.second));
+                // Use the same annotation for each channel.
+                if (annotation.empty())
+                    _annotations.push_back(chan.second.getChannelName());
+                else _annotations.push_back(annotation);
             }
         }
         else {
@@ -371,7 +387,8 @@ public:
         }
     }
     
-    void connect(const AbstractChannel& channel) override {
+    void connect(const AbstractChannel& channel,
+                 const std::string& annotation = "") override {
         const auto* chanT = dynamic_cast<const Channel*>(&channel);
         if (chanT) {
             if (!isListConnector()) {
@@ -379,6 +396,8 @@ public:
                 disconnect();
             }
             _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
+            if (annotation.empty()) _annotations.push_back(chanT->getChannelName());
+            else _annotations.push_back(annotation);
         }
         else {
             throw Exception("TODO incompatible channel");
@@ -394,6 +413,7 @@ public:
     
     void disconnect() override {
         _connectees.clear();
+        _annotations.clear();
     }
     
     bool isConnected() const override {
@@ -437,6 +457,18 @@ public:
         return _connectees[index].getRef();
     }
     
+    const std::string& getAnnotation(int index = -1) const override {
+        if (index == -1) {
+            if (!isListConnector()) index = 0;
+            else throw Exception("Input<T>::getAnnotation(): an index must be "
+                                 "provided for a list input.");
+        }
+        OPENSIM_THROW_IF(index >= getNumConnectees(),
+                         IndexOutOfRange<int>,
+                         index, 0, (int)getNumConnectees() - 1);
+        return _annotations[index];
+    }
+    
     /** Get const access to the outputs connected to this input. */
     const ChannelList& getChannels() const {
         return _connectees;
@@ -446,6 +478,7 @@ public:
 
 private:
     SimTK::ResetOnCopy<ChannelList> _connectees;
+    SimTK::ResetOnCopy<AnnotationList> _annotations;
 }; // END class Input<Y>
 
 /// @name Creating Inputs for your Component

@@ -93,9 +93,7 @@ public:
             // TODO this is all probably very inefficient, but I had trouble
             // converting a RowVector_<T> to a Vector_<T>.
             SimTK::Vector_<T> transposed(rowBelow.size());
-            for (int i = 0; i < rowBelow.size(); ++i) {
-                transposed[i] = rowBelow[i];
-            }
+            for (int i = 0; i < rowBelow.size(); ++i) transposed[i] = rowBelow[i];
             return transposed;
         }
         
@@ -109,9 +107,7 @@ public:
         // converting a RowVector_<T> to a Vector_<T>.
         SimTK::Vector_<T> transposed(result.size());
         // TODO transposed.copyAssign(result.transpose());
-        for (int i = 0; i < result.size(); ++i) {
-            transposed[i] = result[i];
-        }
+        for (int i = 0; i < result.size(); ++i) transposed[i] = result[i];
         return transposed;
     }
     void getSurroundingIndices(const double& time, int& ibelow, int& iabove,
@@ -182,7 +178,8 @@ public:
     OpenSim_DECLARE_LIST_OUTPUT(coords, double, getSolution,
         SimTK::Stage::Position);
     OpenSim_DECLARE_LIST_INPUT(targets, Vec3, SimTK::Stage::Position,
-        "The target (experimental) marker positions.");
+        "The target (experimental) marker positions. Input annotations must "
+        "be the name of the model marker to pair with each target.");
     // TODO OpenSim_DECLARE_LIST_INPUT(marker_weights, double, SimTK::Stage::Position,
     // TODO     "Weights for each marker specified in targets.");
     
@@ -199,7 +196,35 @@ public:
         return getModel().getCoordinateSet().get(coord).getValue(s);
     }
     void solve(const SimTK::State& s) const {
-    
+        // These target markers could have come from mixed sources.
+        const auto& targets = vectorify<Vec3>(s, getInput<Vec3>("targets").getChannels());
+        // To pretend like we're doing something useful, we'll multiply by
+        // the station jacobian transpose.
+        // TODO
+        const auto& smss = getModel().getMatterSubsystem();
+        SimTK::Vector f;
+        smss.multiplyByStationJacobianTranspose(s, _onBodyB, _stationPinB,
+                                                targets, f);
+        
+    }
+    void extendRealizeInstance(const SimTK::State& s) const override {
+        Super::extendRealizeInstance(s);
+        // TODO I need to do some initialization *after* the connections are set,
+        // because the channels connected to "targets" tell me what I need to cache
+        // here.
+        // Logically, the connections are serialized, so I *should* also be able
+        // to do this in finalizeFromProperties(); it'd be neat if we could make
+        // that work.
+        const_cast<Self*>(this)->_onBodyB.clear();
+        const_cast<Self*>(this)->_stationPinB.clear();
+        const auto& input = getInput<Vec3>("targets");
+        for (int ichan = 0; ichan < input.getNumConnectees(); ++ichan) {
+            const auto& markerName = input.getAnnotation(ichan);
+            const auto& marker = getModel().getMarkerSet().get(markerName);
+            const auto& mbi = marker.getReferenceFrame().getMobilizedBodyIndex();
+            const_cast<Self*>(this)->_onBodyB.push_back(mbi);
+            const_cast<Self*>(this)->_stationPinB.push_back(marker.get_location());
+        }
     }
 protected:
     void extendFinalizeFromProperties() override {
@@ -217,6 +242,23 @@ protected:
         }
     }
 private:
+    // TODO this should not be necessary if we use the vector inputs.
+    template <typename T>
+    Vector_<T> vectorify(const SimTK::State& s,
+            const typename Input<T>::ChannelList& channels) const {
+        // TODO vector outputs would get rid of this.
+        // TODO or some way to get all inputs as a vector.
+        Vector_<T> vec(channels.size());
+        for (int ichan = 0; ichan < channels.size(); ++ichan) {
+            vec[ichan] = channels[ichan]->getValue(s);
+        }
+        return vec;
+    }
+    // These are arguments to multiplybyStationJacobianTranspose() and describe
+    // the stations that the targets correspond to.
+    // TODO we could also achieve this maybe using the Marker (Station) component?
+    SimTK::Array_<SimTK::MobilizedBodyIndex> _onBodyB;
+    SimTK::Array_<SimTK::Vec3> _stationPinB;
 };
 
 template <typename T>
@@ -366,7 +408,7 @@ void testFutureIKListOutputs() {
     
     auto* solution = new ConsoleReporter();
     solution->setName("coords");
-    solution->set_enabled(false);
+    //solution->set_enabled(false);
     model.addModelComponent(solution);
     
     auto* modelMarkers = new ConsoleReporterVec3();
@@ -376,7 +418,7 @@ void testFutureIKListOutputs() {
     
     auto* vecRep = new ConsoleReporterVectorVec3();
     vecRep->setName("exp");
-    //expRep->set_enabled(false);
+    expRep->set_enabled(false);
     model.addModelComponent(vecRep);
     
     // A component with a non-list output
@@ -395,6 +437,7 @@ void testFutureIKListOutputs() {
     // Connect up the study.
     
     // Compute joint centers.
+    // TODO this would more naturally be a vector input.
     hjc->updInput("seg1_markers").connect(exp->getOutput("col").getChannel("asis"));
     hjc->updInput("seg1_markers").connect(exp->getOutput("col").getChannel("psis"));
     hjc->updInput("seg2_markers").connect(exp->getOutput("col").getChannel("med_knee"));
@@ -402,15 +445,20 @@ void testFutureIKListOutputs() {
     hjc->updInput("seg2_markers").connect(exp->getOutput("col").getChannel("thigh"));
     
     // Set the marker targets for IK.
+    ik->updInput("targets").connect(exp->getOutput("col"));
+    // TODO this is what I want to do, for efficiency maybe.
     // TODO how to ignore a single element of the vector?
     // TODO need some kind of "reducer" component or the
     // DataSource can list the columns to export.
-    ik->updInput("targets").connect(exp->getOutput("col"));
-    ik->updInput("targets").connect(hjc->getOutput("joint_center"));
+    // TODO ik->updInput("targets").connect(exp->getOutput("all"));
+    ik->updInput("targets").connect(hjc->getOutput("joint_center"), "hjc");
     
     // Connect up the reporters.
     expRep->updInput("input").connect(exp->getOutput("col").getChannel("asis"));
     expRep->updInput("input").connect(exp->getOutput("col").getChannel("psis"));
+    // Must annotate this output since we need a way to figure out which marker
+    // it corresponds to. The InverseKinematics component uses annotations to
+    // pair target Vec3's with model markers.
     expRep->updInput("input").connect(hjc->getOutput("joint_center"));
     vecRep->updInput("input").connect(exp->getOutput("all"));
     

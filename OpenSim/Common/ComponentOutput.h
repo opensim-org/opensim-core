@@ -278,7 +278,10 @@ public:
         return _result;
     }
     const Output<T>& getOutput() const { return _output.getRef(); }
-    const std::string& getChannelName() const override { return _channelName; }
+    const std::string& getChannelName() const override {
+        if (_channelName.empty()) return getOutput().getName();
+        return _channelName;
+    }
     std::string getName() const override {
         if (_channelName.empty()) return getOutput().getName();
         return getOutput().getName() + ":" + _channelName;
