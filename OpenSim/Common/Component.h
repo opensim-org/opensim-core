@@ -1773,7 +1773,7 @@ protected:
      */
 
 #ifndef SWIG // SWIG can't parse the const at the end of the second argument.
-    template <typename T, typename CompType>
+    template <typename T, typename CompType = Component>
     bool constructOutput(const std::string& name,
             T (CompType::*const componentMemberFunction)(const SimTK::State&) const,
             const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
@@ -1879,11 +1879,9 @@ private:
     bool constructOutput(const std::string& name,
         const std::function<T (const Component*, const SimTK::State&)> outputFunction, 
         const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
-        // TODO OPENSIM_THROW_IF(_outputsTable.count(name) == 1,
-        // TODO         Exception, getConcreteClassName(), getName(),
-        // TODO         "An output with name '" + name + 
-        // TODO         "' (type " + SimTK::NiceTypeName<T>::name() +
-        // TODO         ") already exists.");
+        if (_outputsTable.count(name) == 1) {
+            throw Exception("Output with name '" + name + "' already exists.");
+        }
         _outputsTable[name].reset(
                 new Output<T>(name, outputFunction, dependsOn));
         return true;
