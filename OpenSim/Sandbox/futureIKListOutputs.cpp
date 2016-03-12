@@ -43,20 +43,81 @@ private:
     }
 };
 
+// TODO this should have an internal component for interpolating.
 template <typename T>
 class DataSource_ : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(DataSource_, T, ModelComponent);
 public:
     OpenSim_DECLARE_LIST_OUTPUT(col, T, getColumnAtTime,
                                 SimTK::Stage::Time);
-// OpenSim_DECLARE_OUTPUT(all, Vector<T>, getRow, SimTK::Stage::Instance);
+    OpenSim_DECLARE_OUTPUT(all, SimTK::Vector_<T>, getAllColumnsAtTime,
+                                SimTK::Stage::Time);
     
     T getColumnAtTime(const SimTK::State& s, const std::string& label) const {
-        return interpolate(s.getTime(), label);
-    }
-    T interpolate(const double& time, const std::string& label) const {
+        // TODO I have not tested the interpolation.
         const auto& colIndex = _table.getColumnIndex(label);
-        const auto& times(_table.getIndependentColumn());
+        
+        // Get help with the interpolating.
+        int ibelow, iabove;
+        double fraction;
+        getSurroundingIndices(s.getTime(), ibelow, iabove, fraction);
+        
+        // Get the row at or below the requested time.
+        const auto& rowBelow = _table.getRowAtIndex(ibelow);
+        
+        // This means that requested time is an exact match.
+        if (iabove == -1) { return rowBelow[colIndex]; }
+        
+        // Get the row above the requested time.
+        const auto& rowAbove = _table.getRowAtIndex(iabove);
+        
+        const auto& elementBelow = rowBelow[colIndex];
+        const auto& elementAbove = rowAbove[colIndex];
+        
+        const T& delta = elementAbove - elementBelow;
+        return elementBelow + fraction * delta;
+    }
+    SimTK::Vector_<T> getAllColumnsAtTime(const SimTK::State& s) const {
+        // TODO I have not tested the interpolation.
+    
+        // Get help with the interpolating.
+        int ibelow, iabove;
+        double fraction;
+        getSurroundingIndices(s.getTime(), ibelow, iabove, fraction);
+        
+        // Get the row at or below the requested time.
+        const auto& rowBelow = _table.getRowAtIndex(ibelow);
+        
+        // This means that requested time is an exact match.
+        if (iabove == -1) {
+            // TODO this is all probably very inefficient, but I had trouble
+            // converting a RowVector_<T> to a Vector_<T>.
+            SimTK::Vector_<T> transposed(rowBelow.size());
+            for (int i = 0; i < rowBelow.size(); ++i) {
+                transposed[i] = rowBelow[i];
+            }
+            return transposed;
+        }
+        
+        // Get the row above the requested time.
+        const auto& rowAbove = _table.getRowAtIndex(iabove);
+        
+        const auto& delta = rowAbove - rowBelow;
+        const auto& result = rowBelow + fraction * delta;
+        
+        // TODO this is all probably very inefficient, but I had trouble
+        // converting a RowVector_<T> to a Vector_<T>.
+        SimTK::Vector_<T> transposed(result.size());
+        // TODO transposed.copyAssign(result.transpose());
+        for (int i = 0; i < result.size(); ++i) {
+            transposed[i] = result[i];
+        }
+        return transposed;
+    }
+    void getSurroundingIndices(const double& time, int& ibelow, int& iabove,
+                               double& fraction) const {
+        // TODO I have not tested the interpolation.
+        const auto& times = _table.getIndependentColumn();
         
         // Get the first time greater or equal to the requested time.
         const auto& lowerb = std::lower_bound(times.begin(), times.end(), time);
@@ -64,31 +125,25 @@ public:
         const auto& ilowerb = lowerb - times.begin();
         // If the the time is an exact match to an existing column.
         if (timeLowerb == time) {
-            const auto& row = _table.getRowAtIndex(ilowerb);
-            return row[colIndex];
+            ibelow = ilowerb;
+            iabove = -1;
+            return;
         }
         
         // Get the latest time that is less than the requested time.
         const auto& below = lowerb - 1;
         const auto& timeBelow = (*below);
-        const auto& ibelow = below - times.begin();
+        ibelow = below - times.begin();
         
         // If we got this far, then lowerb is the first time greater than
         // the requested time.
-        const auto& iabove = ilowerb;
+        iabove = ilowerb;
         const auto& timeAbove = timeLowerb;
         
         // Compute fraction within the interval.
         const double numer = time - timeBelow;
         const double denom = timeAbove - timeBelow;
-        const double fraction = denom < SimTK::Eps ? 0.0 : numer / denom;
-        
-        // Get the rows at the below and above times.
-        const auto& rowBelow = _table.getRowAtIndex(ibelow);
-        const auto& rowAbove = _table.getRowAtIndex(iabove);
-        
-        const T& delta = rowAbove[colIndex] - rowBelow[colIndex];
-        return rowBelow[colIndex] + fraction * delta;
+        fraction = denom < SimTK::Eps ? 0.0 : numer / denom;
     }
     TimeSeriesTable_<T>& updTable() { return _table; }
     const TimeSeriesTable_<T> getTable() const { return _table; }
@@ -133,13 +188,13 @@ public:
     
     Vec3 getModelMarkerPosition(const SimTK::State& s,
                                 const std::string& marker) const {
-        solve(s); // TODO
+        solve(s); // TODO cache the result in some way.
         return getModel().getMarkerSet().get(marker).findLocationInFrame(s,
                 getModel().getGround());
     }
     
     double getSolution(const SimTK::State& s, const std::string& coord) const {
-        solve(s); // TODO
+        solve(s); // TODO cache the result in some way.
         // TODO just pretend to do something.
         return getModel().getCoordinateSet().get(coord).getValue(s);
     }
@@ -208,6 +263,7 @@ private:
 
 typedef ConsoleReporter_<double> ConsoleReporter;
 typedef ConsoleReporter_<Vec3> ConsoleReporterVec3;
+typedef ConsoleReporter_<Vector_<Vec3>> ConsoleReporterVectorVec3;
 
 void integrate(const System& system, Integrator& integrator,
         const State& initialState,
@@ -310,13 +366,18 @@ void testFutureIKListOutputs() {
     
     auto* solution = new ConsoleReporter();
     solution->setName("coords");
-    //solution->set_enabled(false);
+    solution->set_enabled(false);
     model.addModelComponent(solution);
     
     auto* modelMarkers = new ConsoleReporterVec3();
     modelMarkers->setName("model_markers");
-    //modelMarkers->set_enabled(false);
+    modelMarkers->set_enabled(false);
     model.addModelComponent(modelMarkers);
+    
+    auto* vecRep = new ConsoleReporterVectorVec3();
+    vecRep->setName("exp");
+    //expRep->set_enabled(false);
+    model.addModelComponent(vecRep);
     
     // A component with a non-list output
     // -----------------------------------
@@ -351,6 +412,8 @@ void testFutureIKListOutputs() {
     expRep->updInput("input").connect(exp->getOutput("col").getChannel("asis"));
     expRep->updInput("input").connect(exp->getOutput("col").getChannel("psis"));
     expRep->updInput("input").connect(hjc->getOutput("joint_center"));
+    vecRep->updInput("input").connect(exp->getOutput("all"));
+    
     modelMarkers->updInput("input").connect(ik->getOutput("model_marker_pos"));
     solution->updInput("input").connect(ik->getOutput("coords"));
     

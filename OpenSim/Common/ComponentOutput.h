@@ -223,7 +223,6 @@ public:
         to a stage at or beyond the dependsOnStage, otherwise expect an
         Exception. */
     const T& getValue(const SimTK::State& state) const {
-        _result = SimTK::NaN;
         if (isListOutput()) {
             throw Exception("TODO");
         }
