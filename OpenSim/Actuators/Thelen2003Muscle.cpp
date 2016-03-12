@@ -100,22 +100,18 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
         getName().c_str());
 
     // Set properties of subcomponents.
+    auto& pennMdl =
+        updMemberSubcomponent<MuscleFixedWidthPennationModel>(pennMdlIdx);
     pennMdl.set_optimal_fiber_length(getOptimalFiberLength());
     pennMdl.set_pennation_angle_at_optimal(
         getPennationAngleAtOptimalFiberLength());
     pennMdl.set_maximum_pennation_angle(get_maximum_pennation_angle());
 
+    auto& actMdl =
+        updMemberSubcomponent<MuscleFirstOrderActivationDynamicModel>(actMdlIdx);
     actMdl.set_activation_time_constant(get_activation_time_constant());
     actMdl.set_deactivation_time_constant(get_deactivation_time_constant());
     actMdl.set_minimum_activation(get_minimum_activation());
-
-    // TODO: Call finalizeFromProperties() on subcomponents manually. These
-    // lines can be removed once support for subcomponents has been fully
-    // implemented in the Component interface. In particular,
-    // finalizeFromProperties() must be called on all subcomponents, not just
-    // subcomponents that are properties.
-    pennMdl.finalizeFromProperties();
-    actMdl.finalizeFromProperties();
 }
 
 //====================================================================
@@ -179,11 +175,14 @@ double Thelen2003Muscle::getMinimumActivation() const
 
 const MuscleFirstOrderActivationDynamicModel& Thelen2003Muscle::
 getActivationModel() const
-{   return actMdl; }
+{
+    return getMemberSubcomponent<MuscleFirstOrderActivationDynamicModel>(
+           actMdlIdx);
+}
 
 const MuscleFixedWidthPennationModel& Thelen2003Muscle::
 getPennationModel() const
-{   return pennMdl; }
+{   return getMemberSubcomponent<MuscleFixedWidthPennationModel>(pennMdlIdx); }
 
 double Thelen2003Muscle::getMaximumPennationAngle() const
 {   return get_maximum_pennation_angle(); }
@@ -225,14 +224,14 @@ calcInextensibleTendonActiveFiberForce(SimTK::State& s,
         double tendonSlackLength = getTendonSlackLength();
         double tendonVelocity = 0.0; //Inextensible tendon;
 
-        double fiberLength  = pennMdl.calcFiberLength(muscleLength,
+        double fiberLength  = getPennationModel().calcFiberLength(muscleLength,
                                              tendonSlackLength);
         
-        if(fiberLength > pennMdl.getMinimumFiberLength()) {
-            double phi = pennMdl.calcPennationAngle(fiberLength);
+        if(fiberLength > getPennationModel().getMinimumFiberLength()) {
+            double phi = getPennationModel().calcPennationAngle(fiberLength);
         
-            double fiberVelocity = pennMdl.calcFiberVelocity(cos(phi),
-                                          muscleVelocity,tendonVelocity);
+            double fiberVelocity = getPennationModel().calcFiberVelocity(
+                                        cos(phi),muscleVelocity,tendonVelocity);
 
             inextensibleTendonActiveFiberForce = 
                 calcActiveFiberForceAlongTendon(    aActivation,
@@ -257,13 +256,15 @@ double Thelen2003Muscle::
     caller.append("::Thelen2003Muscle::calcActiveFiberForceAlongTendon");
 
     double activeFiberForce = 0;    
-    double clampedFiberLength = pennMdl.clampFiberLength(fiberLength);
+    double clampedFiberLength = getPennationModel()
+                                .clampFiberLength(fiberLength);
 
     //If the fiber is in a legal range, compute the force its generating
-    if(fiberLength > pennMdl.getMinimumFiberLength())
+    if(fiberLength > getPennationModel().getMinimumFiberLength())
     {
         //Clamp activation to a legal range
-        double clampedActivation = actMdl.clampActivation(activation);
+        double clampedActivation = getActivationModel()
+                                   .clampActivation(activation);
 
         //Normalize fiber length and velocity
         double normFiberLength    = clampedFiberLength/getOptimalFiberLength();
@@ -290,7 +291,7 @@ double Thelen2003Muscle::
         double fiso = getMaxIsometricForce();
 
         //Evaluate the pennation angle
-        double phi = pennMdl.calcPennationAngle(fiberLength);
+        double phi = getPennationModel().calcPennationAngle(fiberLength);
 
         //Compute the active fiber force 
         activeFiberForce = fiso * clampedActivation * fal * fv * cos(phi);
@@ -371,7 +372,8 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
                 std::string muscleName = getName();            
                 printf( "\n\nThelen2003Muscle Initialization Message:"
                         " %s is at its minimum length of %f",
-                        muscleName.c_str(), pennMdl.getMinimumFiberLength());
+                        muscleName.c_str(),
+                        getPennationModel().getMinimumFiberLength());
             }break;
 
             case 2: //Maximum number of iterations exceeded.
@@ -462,19 +464,21 @@ void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s,
         caller.append("_Thelen2003Muscle::calcMuscleLengthInfo");
 
         //Clamp the minimum fiber length to its minimum physical value.
-        mli.fiberLength  = pennMdl.clampFiberLength(
+        mli.fiberLength  = getPennationModel().clampFiberLength(
                                 getStateVariableValue(s, STATE_FIBER_LENGTH_NAME));
 
         mli.normFiberLength = mli.fiberLength/optFiberLength;       
-        mli.pennationAngle  = pennMdl.calcPennationAngle(mli.fiberLength);    
+        mli.pennationAngle  = getPennationModel()
+                              .calcPennationAngle(mli.fiberLength);
 
         mli.cosPennationAngle = cos(mli.pennationAngle);
         mli.sinPennationAngle = sin(mli.pennationAngle);
 
         mli.fiberLengthAlongTendon = mli.fiberLength*mli.cosPennationAngle;
     
-        mli.tendonLength      = pennMdl.calcTendonLength(mli.cosPennationAngle,
-                                                  mli.fiberLength,mclLength);
+        mli.tendonLength      = getPennationModel().calcTendonLength(
+                                    mli.cosPennationAngle,
+                                    mli.fiberLength,mclLength );
         mli.normTendonLength  = mli.tendonLength / tendonSlackLen;
         mli.tendonStrain      = mli.normTendonLength -  1.0;
         
@@ -549,7 +553,7 @@ void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s,
         //1. Get fiber/tendon kinematic information
 
         //clamp activation to a legal range
-        double a = actMdl.clampActivation(getStateVariableValue(s,
+        double a = getActivationModel().clampActivation(getStateVariableValue(s,
                                           STATE_ACTIVATION_NAME));
    
 
@@ -603,10 +607,11 @@ void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s,
         double dlceN  = calcdlceN(a,fal,afalfv);
         double dlce   = dlceN*getMaxContractionVelocity()*optFiberLen;
         double tanPhi = tan(phi);
-        double dphidt = pennMdl.calcPennationAngularVelocity(tanPhi,lce,dlce);
-        double dlceAT = pennMdl.calcFiberVelocityAlongTendon(
+        double dphidt = getPennationModel().calcPennationAngularVelocity(
+                                            tanPhi,lce,dlce);
+        double dlceAT = getPennationModel().calcFiberVelocityAlongTendon(
                             lce, dlce, sinphi, cosphi, dphidt);
-        double dtl    = pennMdl.calcTendonVelocity(
+        double dtl    = getPennationModel().calcTendonVelocity(
                             cosphi, sinphi, dphidt, lce, dlce, dmcldt);
     
     
@@ -675,7 +680,7 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
             double tendonSlackLen = getTendonSlackLength();
             double optFiberLen    = getOptimalFiberLength();
             double fiso           = getMaxIsometricForce();
-            double penHeight      = pennMdl.getParallelogramHeight();
+            double penHeight      = getPennationModel().getParallelogramHeight();
 
         //Prep strings that will be useful to make sensible exception messages
             std::string muscleName = getName();
@@ -690,7 +695,8 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
         //=========================================================================
 
         //1. Get fiber/tendon kinematic information
-        double a = actMdl.clampActivation(getStateVariableValue(s, STATE_ACTIVATION_NAME));
+        double a = getActivationModel().clampActivation(
+                       getStateVariableValue(s, STATE_ACTIVATION_NAME) );
 
         double lce      = mli.fiberLength;
         double fiberStateClamped = mvi.userDefinedVelocityExtras[1];
@@ -820,7 +826,7 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
 
 double Thelen2003Muscle::getMinimumFiberLength() const
 {
-    return pennMdl.getMinimumFiberLength();
+    return getPennationModel().getMinimumFiberLength();
 }
 
 
@@ -850,7 +856,7 @@ double Thelen2003Muscle::calcActivationRate(const SimTK::State& s) const
 {    
     double excitation = getExcitation(s);
     double activation = getActivation(s);
-    double dadt = actMdl.calcDerivative(activation,excitation);
+    double dadt = getActivationModel().calcDerivative(activation,excitation);
     return dadt;
 }  
 
@@ -912,9 +918,9 @@ SimTK::Vector Thelen2003Muscle::
     double tl  = getTendonSlackLength()*1.01;
 
    
-    lce = pennMdl.calcFiberLength( ml, tl);
+    lce = getPennationModel().calcFiberLength( ml, tl);
     
-    double phi      = pennMdl.calcPennationAngle(lce);
+    double phi      = getPennationModel().calcPennationAngle(lce);
     double cosphi   = cos(phi);
     double sinphi   = sin(phi);  
 
@@ -1008,17 +1014,17 @@ SimTK::Vector Thelen2003Muscle::
                     lce = lce + lengthPerturbation;
                 }
 
-                if(lce < pennMdl.getMinimumFiberLength())
+                if(lce < getPennationModel().getMinimumFiberLength())
                 {
                     minFiberLengthCtr++;
-                    lce = pennMdl.getMinimumFiberLength();
+                    lce = getPennationModel().getMinimumFiberLength();
                 }
 
                 
                 //Update position level quantities, only if they won't go 
                 //singular
 
-                phi = pennMdl.calcPennationAngle(lce);
+                phi = getPennationModel().calcPennationAngle(lce);
                 cosphi = cos(phi);
                 tl  = ml - lce*cosphi;
                 lceN = lce/ofl;
@@ -1053,11 +1059,12 @@ SimTK::Vector Thelen2003Muscle::
                     dtl     = dml;
                 }
 
-                dlce = pennMdl.calcFiberVelocity(cosphi,dml,dtl); 
+                dlce = getPennationModel().calcFiberVelocity(cosphi,dml,dtl);
                 dlceN    = dlce/(vmax*ofl);
-                dphi = pennMdl.calcPennationAngularVelocity(tan(phi),lce,dlce);
-                dlceAT = pennMdl.calcFiberVelocityAlongTendon(lce,dlce,
-                                                    sinphi,cosphi,dphi);               
+                dphi = getPennationModel().calcPennationAngularVelocity(
+                                           tan(phi),lce,dlce);
+                dlceAT = getPennationModel().calcFiberVelocityAlongTendon(
+                                             lce,dlce,sinphi,cosphi,dphi);
             }
         
         iter++;
@@ -1089,10 +1096,10 @@ SimTK::Vector Thelen2003Muscle::
         
         if(iter < aMaxIterations){ //if the fiber length hit its lower bound
 
-            lce = pennMdl.getMinimumFiberLength();
-            phi = pennMdl.calcPennationAngle(lce);
+            lce = getPennationModel().getMinimumFiberLength();
+            phi = getPennationModel().calcPennationAngle(lce);
             cosphi = cos(phi);
-            tl  = pennMdl.calcTendonLength(cosphi,lce,ml);
+            tl  = getPennationModel().calcTendonLength(cosphi,lce,ml);
             lceN = lce/ofl;
             tlN  = tl/tsl;                
             fse = calcfse(tlN);

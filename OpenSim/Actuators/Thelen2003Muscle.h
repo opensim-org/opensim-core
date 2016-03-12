@@ -290,9 +290,9 @@ private:
     // Subcomponents owned by the muscle. The properties of these subcomponents
     // are set (in extendFinalizeFromProperties()) from the properties of the
     // muscle.
-    MuscleFixedWidthPennationModel pennMdl{
+    MemberSubcomponentIndex pennMdlIdx{
       constructSubcomponent<MuscleFixedWidthPennationModel>("pennMdl") };
-    MuscleFirstOrderActivationDynamicModel actMdl{
+    MemberSubcomponentIndex actMdlIdx{
       constructSubcomponent<MuscleFirstOrderActivationDynamicModel>("actMdl") };
 
     //=====================================================================
