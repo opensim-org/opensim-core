@@ -24,10 +24,9 @@
  * -------------------------------------------------------------------------- */
 // INCLUDE
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/TimeSeriesTable.h>
 
 namespace OpenSim {
-
-class TimeSeriesTable;
 
 /**
  * This abstract class represents a Reporter that collects and reports Outputs
@@ -35,9 +34,13 @@ class TimeSeriesTable;
  * Inputs of a Reporter are the named Outputs of Components that compose a
  * Model.
  *
+ * The how and where Outputs are reported (e.g. to the console, DataTable, 
+ * device, etc...) are the purview of concrete Reporters.
+ *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API Reporter : public Component {
+
+class OSIMCOMMON_API Reporter : public Component {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Reporter, Component);
 public:
 //==============================================================================
@@ -47,7 +50,7 @@ public:
         "Flag indicating whether the Reporter is disabled or not. Disabled means"
         " that the Reporter does not record in subsequent Report realizations.");
 
-    OpenSim_DECLARE_PROPERTY(report_time_iterval, double,
+    OpenSim_DECLARE_PROPERTY(report_time_interval, double,
         "The recording time interval (s). If interval < 0 or NaN defaults to"
         "every valid integration time step.");
 
@@ -65,10 +68,7 @@ public:
 //=============================================================================
 
     /** Report values given the state and top-level Component (e.g. Model) */
-    void report(const SimTK::State& s);
-
-    /** Report values given the state and top-level Component (e.g. Model) */
-    const TimeSeriesTable& getReport();
+    void report(const SimTK::State& s) const;
 
 protected:
     /** Default constructor sets up Reporter-level properties; can only be
@@ -84,7 +84,7 @@ protected:
     //--------------------------------------------------------------------------
     // Reporter interface.
     //--------------------------------------------------------------------------
-    virtual void implementReport(const SimTK::State& s) = 0;
+    virtual void implementReport(const SimTK::State& state) const = 0;
 
     //--------------------------------------------------------------------------
     // Component interface.
@@ -92,19 +92,57 @@ protected:
     /** Add reporter required resources to the underlying System */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
+    /** extend the Reporting functionality */
+    void extendRealizeReport(const SimTK::State& state) const override;
+
 
 private:
+
+
+
     void setNull();
     void constructProperties();
-
-    /** The TimeSeriesTable that contains the report  */
-    TimeSeriesTable _reportTable;
 
 //=============================================================================
 };  // END of class Reporter
 //=============================================================================
-//=============================================================================
 
+/**
+* This concrete Reporter class collects and reports Output<T>s within a 
+* TimeSeriesTable. The column labels are the Output names and the contents are
+* the Output values with each row being the value of all outputs at subsequent
+* times determined by the reporting interval.
+*
+* @author Ajay Seth
+*/
+template<typename T>
+class OSIMCOMMON_API TableReporter : public Reporter {
+OpenSim_DECLARE_CONCRETE_OBJECT(TableReporter, Reporter);
+public:
+    using Reporter::Reporter;
+    const TimeSeriesTable_<T>& getReport() const {
+        return _outputTable;
+    }
+
+protected:
+    void implementReport(const SimTK::State& state) const override;
+
+    void extendConnect(Component& root) override;
+
+private:
+    void constructInputs() override {
+        constructInput<T>("model_outputs", SimTK::Stage::Acceleration);
+    }
+
+    // Hold the output values in a table with values as columns and time rows
+    mutable TimeSeriesTable_<T> _outputTable;
+};
+
+
+
+
+
+//=============================================================================
 } // end of namespace OpenSim
 
 #endif // OPENSIM_REPORTER_H_

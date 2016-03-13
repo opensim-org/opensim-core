@@ -196,6 +196,22 @@ void Component::connect(Component &root)
         }
     }
 
+    for (auto& inputPair : _inputsTable) {
+        AbstractInput& input = inputPair.second.updRef();
+        input.disconnect();
+        try {
+            const std::string& outName = input.get_connectee_name();
+            input.findAndConnect(root);
+        }
+        catch (const std::exception& x) {
+            throw Exception(getConcreteClassName() + "'" + getName() + "'"
+                "::connect() \nFailed to connect Input<" +
+                input.getConnecteeTypeName() + "> '" + input.getName() +
+                "' as an Input of " + root.getName() +
+                ".\n Details:" + x.what());
+        }
+    }
+
     // Allow derived Components to handle/check their connections
     extendConnect(root);
 

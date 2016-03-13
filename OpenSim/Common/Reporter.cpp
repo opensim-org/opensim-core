@@ -24,10 +24,31 @@
 #include "Reporter.h"
 #include <OpenSim/Common/TimeSeriesTable.h>
 
-
 using namespace SimTK;
 
 namespace OpenSim {
+
+class OutputPeriodicReporter : public SimTK::PeriodicEventReporter {
+public:
+    OutputPeriodicReporter(const OpenSim::Reporter& owner,
+        const MultibodySystem& system,
+        const Real reportInterval) : PeriodicEventReporter(reportInterval), 
+        _owner(owner), _system(system) {
+    }
+
+    void handleEvent(const State& state) const override {
+        // This should be triggered every (interval) time units.
+        SimTK_ASSERT(state.getTime() == getNextEventTime(state, true),
+            "Reporter did not report at specified time interval.");
+
+        // delegate back to the OpenSim::Reporter to do the reporting
+        _owner.report(state);
+    }
+
+private:
+    const OpenSim::Reporter& _owner;
+    const MultibodySystem& _system;
+};
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -55,8 +76,8 @@ void Reporter::setNull()
 // Define properties.
 void Reporter::constructProperties()
 {
-    constructProperty_isDisabled(false);
-    constructProperty_report_time_iterval(0.0);
+    constructProperty_is_disabled(false);
+    constructProperty_report_time_interval(0.0);
 }
 
 // Create an underlying SimTK::Reporter to represent the OpenSim::Reporter in the 
@@ -64,8 +85,58 @@ void Reporter::constructProperties()
 void Reporter::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
+    if (get_is_disabled())
+        return;
+
+    double reportInterval = get_report_time_interval();
+
+    if (reportInterval >= SimTK::Eps) {
+        auto* simTKreporter =
+            new OpenSim::OutputPeriodicReporter(*this, system, reportInterval);
+        system.addEventReporter(simTKreporter);
+    }
 }
 
+void Reporter::extendRealizeReport(const SimTK::State& state) const
+{
+    report(state);
+}
+
+void Reporter::report(const SimTK::State& s) const
+{
+    implementReport(s);
+}
+
+//=============================================================================
+// TableReporter Implementation
+//=============================================================================
+
+
+template<typename T>
+void TableReporter<T>::extendConnect(Component& root)
+{
+    Super::extendConnect(root);
+
+    const AbstractInput& input = getInput("model_outputs");
+
+    std::vector<std::string>columnNames;
+    columnNames[0] = input.getName();
+
+    _outputTable.setColumnLabels(columnNames);
+}
+
+template<typename T>
+void TableReporter<T>::implementReport(const SimTK::State& s) const
+{
+    RowVector row;
+    const AbstractInput& input = getInput("model_outputs");
+
+    int numColumns = 1;
+    for (int i = 0; i < numColumns; ++i)
+        row[i] = getInputValue<T>(s, "model_outputs");
+
+    _outputTable.appendRow(s.getTime(), row);
+}
 
 
 } // end of namespace OpenSim

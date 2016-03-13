@@ -314,6 +314,17 @@ public:
     /** Connect this Input given a root Component to search for
         the Output according to the connectee_name of this Input  */
     void findAndConnect(const Component& root) override {
+        const std::string& path = get_connectee_name();
+        try {
+            connect(root.getOutput(path));
+        }
+        catch (const Exception& ex) {
+            std::stringstream msg;
+            msg << getConcreteClassName() << " '" << getName();
+            msg << "' ::findAndConnect() ERROR- Could not connect to Output.";
+            msg << "\nDetails: " << ex.getMessage();
+            throw Exception(msg.str(), __FILE__, __LINE__);
+        }
     }
 
     /**Get the value of this Input when it is connected. Redirects to connected
