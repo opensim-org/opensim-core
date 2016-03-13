@@ -75,8 +75,7 @@
 %include <OpenSim/Common/MarkerFrame.h>
 %include <OpenSim/Common/MarkerData.h>
 
-%include "std_vector.i"
-%template(StdVectorDouble) std::vector<double>;
+%include <Bindings/std.i>
 %ignore OpenSim::AbstractDataTable::clone;
 %ignore OpenSim::AbstractDataTable::getTableMetaData;
 %ignore OpenSim::AbstractDataTable::updTableMetaData;
@@ -86,8 +85,8 @@
 %ignore OpenSim::AbstractDataTable::setDependentsMetaData;
 %include <OpenSim/Common/DataTable.h>
 %include <OpenSim/Common/TimeSeriesTable.h>
-%template(DataTableDouble)       OpenSim::DataTable_<double>;
-%template(TimeSeriesTableDouble) OpenSim::TimeSeriesTable_<double>;
+%template(DataTable)       OpenSim::DataTable_<double, double>;
+%template(TimeSeriesTable) OpenSim::TimeSeriesTable_<double>;
 
 
 
