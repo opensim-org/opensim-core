@@ -469,6 +469,14 @@ public:
         return _annotations[index];
     }
     
+    SimTK::Vector_<T> getVector(const SimTK::State& state) const {
+        SimTK::Vector_<T> v(getNumConnectees());
+        for (int ichan = 0; ichan < _connectees.size(); ++ichan) {
+            v[ichan] = _connectees[ichan]->getValue(state);
+        }
+        return v;
+    }
+    
     /** Get const access to the outputs connected to this input. */
     const ChannelList& getChannels() const {
         return _connectees;

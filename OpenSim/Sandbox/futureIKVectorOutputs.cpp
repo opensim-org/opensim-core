@@ -1,4 +1,5 @@
 
+
 #include <OpenSim/OpenSim.h>
 
 using namespace OpenSim;
@@ -20,6 +21,11 @@ public:
         "Markers on segment 1.");
     OpenSim_DECLARE_LIST_INPUT(seg2_markers, Vec3, SimTK::Stage::Time,
         "Markers on segment 2.");
+    // TODOv
+    //OpenSim_DECLARE_VECTOR_INPUT(seg1_markers, Vec3, SimTK::Stage::Time,
+    //    "Markers on segment 1.");
+    //OpenSim_DECLARE_VECTOR_INPUT(seg2_markers, Vec3, SimTK::Stage::Time,
+    //    "Markers on segment 2.");
     OpenSim_DECLARE_OUTPUT(joint_center, Vec3, getJointCenter,
                            SimTK::Stage::Time);
     Vec3 getJointCenter(const SimTK::State& s) const {
@@ -38,8 +44,12 @@ class DataSource_ : public ModelComponent {
 public:
     OpenSim_DECLARE_LIST_OUTPUT(col, T, getColumnAtTime,
                                 SimTK::Stage::Time);
-    OpenSim_DECLARE_OUTPUT(all, SimTK::Vector_<T>, getAllColumnsAtTime,
+    OpenSim_DECLARE_LIST_OUTPUT(all, Vector_<T>, getAllColumnsAtTime,
                                 SimTK::Stage::Time);
+    // TODOv
+    //OpenSim_DECLARE_VECTOR_OUTPUT(all, T, getAllColumnsAtTime,
+    //                            SimTK::Stage::Time,
+    //                            getColumnLabels);
     
     T getColumnAtTime(const SimTK::State& s, const std::string& label) const {
         // TODO I have not tested the interpolation.
@@ -164,28 +174,55 @@ public:
     // TODO connector to a model.
     
     // TODO convert these to vectors.
-    OpenSim_DECLARE_LIST_OUTPUT(model_marker_pos, Vec3, getModelMarkerPosition,
+    OpenSim_DECLARE_VECTOR_OUTPUT(model_marker_pos, Vec3, getModelMarkerPositions,
         SimTK::Stage::Position);
-    OpenSim_DECLARE_LIST_OUTPUT(coords, double, getSolution,
+    OpenSim_DECLARE_VECTOR_OUTPUT(coords, double, getSolution,
         SimTK::Stage::Position);
-    OpenSim_DECLARE_LIST_INPUT(targets, Vec3, SimTK::Stage::Position,
+    OpenSim_DECLARE_VECTOR_INPUT(targets, Vec3, SimTK::Stage::Position,
         "The target (experimental) marker positions. Input annotations must "
         "be the name of the model marker to pair with each target.");
     // TODO OpenSim_DECLARE_LIST_INPUT(marker_weights, double, SimTK::Stage::Position,
     // TODO     "Weights for each marker specified in targets.");
     
-    Vec3 getModelMarkerPosition(const SimTK::State& s, const std::string& name) const {
+    SimTK::Vector_<Vec3> getModelMarkerPositions(const SimTK::State& s) const {
         solve(s); // TODO cache the result in some way.
         const auto& markerSet = getModel().getMarkerSet();
         const auto& ground = getModel().getGround();
-        return markerSet.get(name).findLocationInFrame(s, ground);
+        SimTK::Vector_<Vec3> v(markerset.getSize());
+        for (int imark = 0; imark < markerSet.getSize(); ++imark) {
+            v[imark] = markerSet()[imark].findLocationInFrame(s, ground);
+        }
+        return v;
     }
+    /* TODOv
+    std::vector<std::string> getModelMarkerNames() const {
+        // TODO or use a model connected to us via a connectee?
+        // TODO available channels could depend on what target markers are
+        // given to us. Consider a callback "updateChannels()" that is called
+        // whenever the inputs are updated, so that we can create new output
+        // channels.
+        std::vector<std::string> labels;
+        for (const auto& marker : getParent().getComponentList<Marker>()) {
+            labels.push_back(marker.getName());
+        }
+    }
+    */
     
-    double getSolution(const SimTK::State& s, const std::string& coord) const {
+    SimTK::Vector getSolution(const SimTK::State& s, const std::string& coord) const {
         solve(s); // TODO cache the result in some way.
-        // Just pretend to do something.
-        return getModel().getCoordinateSet().get(coord).getValue(s);
+        // TODO just pretend to do something.
+        // TODOv return getModel().getCoordinateSet().get(coord).getValue(s);
+        return s.getQ();
     }
+    /* TODOv
+    std::vector<std::string> getSolutionLabels() const {
+        std::vector<std::string> labels;
+        for (const auto& coord : getParent().getComponentList<Coordinate>()) {
+            labels.push_back(coord.getName());
+        }
+        return labels;
+    }
+    */
     
     void solve(const SimTK::State& s) const {
         // These target markers could have come from mixed sources.
@@ -202,8 +239,8 @@ public:
     void extendRealizeInstance(const SimTK::State& s) const override {
         Super::extendRealizeInstance(s);
         // TODO I need to do some initialization *after* the connections are set,
-        // because the channels connected to the input "targets" tell me what
-        // I need to cache.
+        // because the channels connected to "targets" tell me what I need to cache
+        // here.
         // Logically, the connections are serialized, so I *should* also be able
         // to do this in finalizeFromProperties(); it'd be neat if we could make
         // that work.
@@ -220,13 +257,16 @@ public:
     }
 protected:
     void extendFinalizeFromProperties() override {
-        // Create the output channels.
+        std::vector<std::string> modelMarkerLabels;
         for (const auto& marker : getParent().getComponentList<Marker>()) {
-            updOutput("model_marker_pos").addChannel(marker.getName());
+            modelMarkerLabels.push_back(marker.getName());
         }
+        updOutput("model_marker_pos").setLabels(modelMarkerLabels);
+        std::vector<std::string> coordLabels;
         for (const auto& coord : getParent().getComponentList<Coordinate>()) {
-            updOutput("coords").addChannel(coord.getName());
+            coordLabels.push_back(coord.getName());
         }
+        updOutput("coords").setLabels(coordLabels);
     }
 private:
     // These are arguments to multiplybyStationJacobianTranspose() and describe
@@ -349,7 +389,7 @@ void fabricateExperimentalMarkers(TimeSeriesTable_<Vec3>& table) {
     table.appendRow(1.1, row);
 }
 
-void testFutureIKListOutputs() {
+void testFutureIKVectorOutputs() {
 
     // Create a model.
     // ---------------
@@ -378,7 +418,7 @@ void testFutureIKListOutputs() {
     // ---------
     auto* expRep = new ConsoleReporterVec3();
     expRep->setName("exp_computed");
-    //expRep->set_enabled(false);
+    expRep->set_enabled(false);
     model.addModelComponent(expRep);
     
     auto* solution = new ConsoleReporter();
@@ -388,12 +428,12 @@ void testFutureIKListOutputs() {
     
     auto* modelMarkers = new ConsoleReporterVec3();
     modelMarkers->setName("model_markers");
-    //modelMarkers->set_enabled(false);
+    modelMarkers->set_enabled(false);
     model.addModelComponent(modelMarkers);
     
     auto* vecRep = new ConsoleReporterVectorVec3();
     vecRep->setName("exp");
-    //expRep->set_enabled(false);
+    expRep->set_enabled(false);
     model.addModelComponent(vecRep);
     
     // A component with a non-list output
@@ -419,23 +459,27 @@ void testFutureIKListOutputs() {
     hjc->updInput("seg2_markers").connect(exp->getOutput("col").getChannel("lat_knee"));
     hjc->updInput("seg2_markers").connect(exp->getOutput("col").getChannel("thigh"));
     
-    // Set the marker targets for IK. Connect to all channels in the "col"
-    // list output.
-    ik->updInput("targets").connect(exp->getOutput("col"));
-    // Must annotate this output since we need a way to figure out which marker
-    // it corresponds to. The InverseKinematics component uses annotations to
-    // pair target Vec3's with model markers.
+    // Set the marker targets for IK.
+    //ik->updInput("targets").connect(exp->getOutput("col"));
+    // TODO this is what I want to do, for efficiency maybe.
+    // TODO how to ignore a single element of the vector?
+    // TODO need some kind of "reducer" component or the
+    // DataSource can list the columns to export.
+    ik->updInput("targets").connect(exp->getOutput("all"));
+    // TODO how to annotate a single element of a vector output?
+    // TODO maybe you just can't.
     ik->updInput("targets").connect(hjc->getOutput("joint_center"), "hjc");
     
     // Connect up the reporters.
     expRep->updInput("input").connect(exp->getOutput("col").getChannel("asis"));
     expRep->updInput("input").connect(exp->getOutput("col").getChannel("psis"));
+    // Must annotate this output since we need a way to figure out which marker
+    // it corresponds to. The InverseKinematics component uses annotations to
+    // pair target Vec3's with model markers.
     expRep->updInput("input").connect(hjc->getOutput("joint_center"));
-    // This outputs a Vector_<Vec3>.
     vecRep->updInput("input").connect(exp->getOutput("all"));
     
     modelMarkers->updInput("input").connect(ik->getOutput("model_marker_pos"));
-    // Connect to all channels in the "coords" list output.
     solution->updInput("input").connect(ik->getOutput("coords"));
     
     // TODO replace with a driver / time step advancer.
@@ -446,10 +490,9 @@ void testFutureIKListOutputs() {
 }
 
 int main() {
-    // TODO SimTK_START_TEST("futureIKListOutputs");
-        SimTK_SUBTEST(testFutureIKListOutputs);
-    //SimTK_END_TEST();
+    SimTK_START_TEST("futureIKVectorOutputs");
+        SimTK_SUBTEST(testFutureIKVectorOutputs);
+    SimTK_END_TEST();
 }
-
 
 
