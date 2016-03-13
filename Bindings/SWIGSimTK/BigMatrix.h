@@ -598,9 +598,10 @@ public:
     MatrixBase& elementwiseAssign(int s)
     {   return elementwiseAssign<Real>(Real(s)); }
 
+#ifndef SWIG
     /// Set M(i,j) = M(i,j)^-1.
     MatrixBase& elementwiseInvertInPlace();
-#ifndef SWIG
+
     void elementwiseInvert(MatrixBase<typename CNT<E>::TInvert>& out) const;
 
     MatrixBase<typename CNT<E>::TInvert> elementwiseInvert() const {
