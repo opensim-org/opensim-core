@@ -35,14 +35,14 @@ namespace SimTK {
 %extend RowVectorBase<double> {
      double __getitem__(size_t i) {
          if(i >= $self->nelt())
-             throw Exception::Base{"Index out of Range."};
+             throw SimTK::Exception::Base{"Index out of Range."};
 
          return $self->getElt(0, i);
      }
 
      void __setitem__(size_t i, double value) {
          if(i >= $self->nelt())
-             throw Exception::Base{"Index out of Range."};
+             throw SimTK::Exception::Base{"Index out of Range."};
 
          $self->updElt(0, i) = value;
      }
@@ -56,14 +56,14 @@ namespace SimTK {
 %extend VectorBase<double> {
      double __getitem__(size_t i) {
          if(i >= $self->nelt())
-             throw Exception::Base{"Index out of Range."};
+             throw SimTK::Exception::Base{"Index out of Range."};
 
          return $self->getElt(i, 0);
      }
 
      void __setitem__(size_t i, double value) {
          if(i >= $self->nelt())
-             throw Exception::Base{"Index out of Range."};
+             throw SimTK::Exception::Base{"Index out of Range."};
 
          $self->updElt(i, 0) = value;
      }
@@ -86,14 +86,14 @@ namespace SimTK {
 %extend RowVectorBase<Vec3> {
      Vec3 __getitem__(size_t i) {
          if(i >= $self->nelt())
-             throw Exception::Base{"Index out of Range."};
+             throw SimTK::Exception::Base{"Index out of Range."};
 
          return $self->getElt(0, i);
      }
 
      void __setitem__(size_t i, Vec3 value) {
          if(i >= $self->nelt())
-             throw Exception::Base{"Index out of Range."};
+             throw SimTK::Exception::Base{"Index out of Range."};
 
          $self->updElt(0, i) = value;
      }
@@ -107,14 +107,14 @@ namespace SimTK {
 %extend VectorBase<Vec3> {
      Vec3 __getitem__(size_t i) {
          if(i >= $self->nelt())
-             throw Exception::Base{"Index out of Range."};
+             throw SimTK::Exception::Base{"Index out of Range."};
 
          return $self->getElt(i, 0);
      }
 
      void __setitem__(size_t i, Vec3 value) {
          if(i >= $self->nelt())
-             throw Exception::Base{"Index out of Range."};
+             throw SimTK::Exception::Base{"Index out of Range."};
 
          $self->updElt(i, 0) = value;
      }
