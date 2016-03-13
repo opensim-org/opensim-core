@@ -5,6 +5,11 @@
 using namespace OpenSim;
 using namespace SimTK;
 
+// This example attempts to describe the use-case for vector outputs:
+// outputs that are of type SimTK::Vector_<T> and contain a label for each
+// element of the vector. Tools that return a vector of calculations are
+// naturally suited to this type of output.
+
 // TODO Multiplexer, channels of type T into 1 vector. with the same annotations.
 
 // TODO this could be a type of component that has a minimum required number

@@ -4,6 +4,10 @@
 using namespace OpenSim;
 using namespace SimTK;
 
+// This example only deals with "list outputs" in which each output is a
+// single value of type T. The key notion here is that outputs can contain
+// any number of channels.
+
 // TODO Multiplexer, channels of type T into 1 vector. with the same annotations.
 
 // TODO this could be a type of component that has a minimum required number
