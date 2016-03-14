@@ -77,6 +77,7 @@ namespace OpenSim {
 class OSIMCOMMON_API AbstractConnector : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractConnector, Object);
 public:
+    
 //==============================================================================
 // PROPERTIES
 //==============================================================================
@@ -144,6 +145,9 @@ template<class T>
 class  Connector : public AbstractConnector {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(Connector, T, AbstractConnector);
 public:
+    
+    struct TypeHelper;
+    
     /** Default constructor */
     Connector() : connectee(nullptr) {}
 
@@ -196,8 +200,7 @@ public:
     
     /** Derived classes must satisfy this Interface */
     /** get the type of object this connector connects to*/
-    std::string getConnecteeTypeName() const override
-    { return T::getClassName(); }
+    std::string getConnecteeTypeName() const override;
 
     SimTK_DOWNCAST(Connector, AbstractConnector);
 
@@ -206,6 +209,23 @@ private:
 }; // END class Connector<T>
 
 
+template <class T>
+struct Connector<T>::TypeHelper {
+    static Connector<T>* create(const std::string& name);
+    static const std::string& getTypeName() { return T::getClassName(); }
+};
+            
+template <class T>
+inline Connector<T>* Connector<T>::TypeHelper::create(const std::string& name) {
+    return new Connector<T>(name, SimTK::Stage::Topology);
+}
+            
+template <class T>
+inline std::string Connector<T>::getConnecteeTypeName() const {
+    return TypeHelper::getTypeName();
+}
+            
+            
 /** A specialized Connector that connects to an Output signal is an Input.
     An AbstractInput enables maintenance of a list of unconnected Inputs. 
 */
@@ -301,6 +321,46 @@ public:
 private:
     mutable SimTK::ReferencePtr< const Output<T>  > connectee;
 }; // END class Input<Y>
+        
+/// @name Creating Connectors to other objects for your Component
+/// Use these macros at the top of your component class declaration,
+/// near where you declare @ref Property properties.
+/// @{
+/** Create a socket for this component's dependence on another component.
+ *  You must specify the type of the component that can be connected to this
+ *  connector. The comment should describe how the connected component
+ * (connectee) is used by this component.
+ *
+ *  Here's an example for using this macro:
+ *  @code{.cpp}
+ *  class MyComponent : public Component {
+ *  public:
+ *      OpenSim_DECLARE_CONNECTOR(parent, PhysicalOffsetFrame, "To locate this component.");
+ *      ...
+ *  };
+ *  @endcode
+ * @see Component::constructConnector()
+ * @relates OpenSim::Connector
+ */
+#define OpenSim_DECLARE_CONNECTOR(cname, T, comment)                        \
+    /** @name Connectors                                                 */ \
+    /** @{                                                               */ \
+    /** comment                                                          */ \
+    /** This connector was generated with the                            */ \
+    /** #OpenSim_DECLARE_CONNECTOR macro.                                */ \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
+    /** @}                                                               */ \
+    /** @cond                                                            */ \
+    int _connector_##cname { constructConnector<T>(#cname) };               \
+    /** @endcond                                                         */
+
+            
+#define OpenSim_DECLARE_CONNECTOR_FD(cname, T, comment) \
+    int _connector_##cname;               \
+    void constructConnector_##cname() { \
+        _connector_##cname = this->template constructConnector<T>(#cname); \
+    }
+/// @}
 
 /// @name Creating Inputs for your Component
 /// Use these macros at the top of your component class declaration,

@@ -75,13 +75,6 @@ void BodyActuator::constructProperties()
     constructProperty_point_is_global(false);
     constructProperty_spatial_force_is_global(true);
 }
-//_____________________________________________________________________________
-/**
-* Construct Structural Connectors
-*/
-void BodyActuator::constructConnectors() {
-    constructConnector<Body>("body");
-}
 
 void BodyActuator::setBodyName(const std::string& name)
 {

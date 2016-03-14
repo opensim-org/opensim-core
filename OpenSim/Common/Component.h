@@ -1309,19 +1309,6 @@ template <class T> friend class ComponentMeasure;
      **/
 
     //@{
-    /**
-    * Construct a specialized Connector for this Component's dependence on an another
-    * Component. It serves as a placeholder for the Component and its type and enables
-    * the Component to automatically traverse its dependencies and provide a meaningful 
-    * message if the provided Component is incompatible or non-existant.
-    */
-    template <typename T>
-    void constructConnector(const std::string& name) {
-        int ix = updProperty_connectors().adoptAndAppendValue(
-            new Connector<T>(name, SimTK::Stage::Topology));
-        //add pointer to connectorsTable so we can access connectors easily by name
-        _connectorsTable[name] = ix;
-    }
 
     /** Clear all designations of (sub)components for this Component. 
       * Components are not deleted- the list of references to its components is cleared. */
@@ -1512,11 +1499,12 @@ template <class T> friend class ComponentMeasure;
 
     //@} 
 
-    /** @name Internal methods for constructing Outputs, Inputs
-     * To declare Outputs and Inputs for your component,
+    /** @name Internal methods for constructing Connectors, Outputs, Inputs
+     * To declare Connector%s, Output%s, and Input%s for your component,
      * use the following macros within your class declaration (ideally at
      * the top near property declarations):
      *
+     *  - #OpenSim_DECLARE_CONNECTOR
      *  - #OpenSim_DECLARE_OUTPUT
      *  - #OpenSim_DECLARE_OUTPUT_FLEX
      *  - #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE
@@ -1526,7 +1514,16 @@ template <class T> friend class ComponentMeasure;
      * methods yourself.
      */
     /// @{
-    /** Construct an output for a member function of the same component. 
+    /**
+    * Construct a specialized Connector for this Component's dependence on an another
+    * Component. It serves as a placeholder for the Component and its type and enables
+    * the Component to automatically traverse its dependencies and provide a meaningful 
+    * message if the provided Component is incompatible or non-existant.
+    */
+    template <typename T>
+    int constructConnector(const std::string& name);
+    
+    /** Construct an output for a member function of the same component.
         The following must be true about componentMemberFunction, the function
         that returns the output:
 
@@ -1967,6 +1964,17 @@ private:
 };  // END of class Component
 //==============================================================================
 //==============================================================================
+    
+template <typename T>
+int Component::constructConnector(const std::string& name) {
+    int ix = updProperty_connectors().adoptAndAppendValue(
+         Connector<T>::TypeHelper::create(name));
+        // TODO new Connector<T>(name, SimTK::Stage::Topology));
+    //add pointer to connectorsTable so we can access connectors easily by name
+    _connectorsTable[name] = ix;
+    return ix;
+}
+    
 //==============================================================================
 // Implement methods for ComponentListIterator
 /// ComponentListIterator<T> pre-increment operator, advances the iterator to

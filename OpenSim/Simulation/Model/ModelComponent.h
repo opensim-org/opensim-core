@@ -45,12 +45,13 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Component.h>
-#include <OpenSim/Simulation/Model/Geometry.h>
 #include "Simbody.h"
 
 namespace OpenSim {
 
 class Model;
+class Geometry;
+
 //==============================================================================
 //                            MODEL COMPONENT
 //==============================================================================

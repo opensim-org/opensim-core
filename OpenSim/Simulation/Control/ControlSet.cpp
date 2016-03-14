@@ -34,7 +34,7 @@
 #include <OpenSim/Common/Storage.h>
 #include "ControlSet.h"
 #include "ControlLinear.h"
-#include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
+// TODO #include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 
 
 
