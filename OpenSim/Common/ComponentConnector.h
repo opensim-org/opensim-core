@@ -389,8 +389,8 @@ public:
         }
         else {
             std::stringstream msg;
-            msg << "Input::connect(): ERR- Cannot connect '" << chanT.getFullPathName()
-            << "' of type Output<" << output.getTypeName() << ">::Channel. Input requires "
+            msg << "Input::connect(): ERR- Cannot connect '" << chanT->getPathName()
+            << "' of type Output<" << chanT->getOutput().getTypeName() << ">::Channel. Input requires "
             << getConnecteeTypeName() << ".";
             throw Exception(msg.str(), __FILE__, __LINE__);
         }
