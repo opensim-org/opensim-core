@@ -194,8 +194,6 @@ public:
 
     /** Is the Connector connected to object of type T? */
     bool isConnected() const override {
-        // TODO a better check is if the length of the
-        // connectee_names is equal to the number of connectees pointers.
         return !connectee.empty();
     }
     
@@ -261,8 +259,9 @@ private:
 
 /** A specialized Connector that connects to an Output signal is an Input.
     An AbstractInput enables maintenance of a list of unconnected Inputs. 
+    An Input can either be a single-value Input or a list Input. A list Input
+    can connect to multiple (Output) Channels.
 */
-
 class OSIMCOMMON_API AbstractInput : public AbstractConnector {
     OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractInput, AbstractConnector);
 public:
@@ -291,14 +290,29 @@ public:
         throw Exception(msg.str(), __FILE__, __LINE__);
     }
 
-    /** Input Specific Connect */
+    /** Input-specific Connect. Connect this Input to a single-value Output or
+     if this is a list Input and the output is a list Output, connect to 
+     all the channels of the Output.
+     You can optionally provide an annotation of the output that is specific
+     to its use by the component that owns this input. If this method
+     connects to multiple channels, the annotation will be used for all 
+     the channels. */
     virtual void connect(const AbstractOutput& output,
                          const std::string& annotation = "") = 0;
+    /** Connect to a single output channel. This can be used with either
+    single-value or list Inputs.
+    You can optionally provide an annotation of the output that is specific
+    to its use by the component that owns this input. */
     virtual void connect(const AbstractChannel& channel,
                          const std::string& annotation = "") = 0;
     
-    /** If no annotation was provided when connecting,
-        this is just the name of the output.*/
+    /** An Annotation is a description of a channel that is specific to how
+        this input should use that channel. For example, the component
+        containing this Input might expect the annotations to be the names
+        of markers in the model.
+        If no annotation was provided when connecting,
+        the annotation is the name of the channel.
+        If this is a list input, you must specify the specific Channel you want.*/
     virtual const std::string& getAnnotation(int index = -1) const = 0;
     // TODO what's the best way to serialize annotations?
     
@@ -331,8 +345,6 @@ public:
         AbstractInput(name, connectAtStage, isList, owner) {}
 
     /** Connect this Input to the provided (Abstract)Output.
-        You can provide an annotation of the output that is specific to its
-        use by the component that owns this input.
      */
     void connect(const AbstractOutput& output,
                  const std::string& annotation = "") override {
@@ -376,14 +388,11 @@ public:
             else _annotations.push_back(annotation);
         }
         else {
-            throw Exception("TODO incompatible channel");
-            /*
             std::stringstream msg;
-            msg << "Input::connect(): ERR- Cannot connect '" << output.getName()
-            << "' of type Output<" << output.getTypeName() << ">. Input requires "
+            msg << "Input::connect(): ERR- Cannot connect '" << chanT.getFullPathName()
+            << "' of type Output<" << output.getTypeName() << ">::Channel. Input requires "
             << getConnecteeTypeName() << ".";
             throw Exception(msg.str(), __FILE__, __LINE__);
-            */
         }
     }
     
@@ -405,7 +414,7 @@ public:
 
     /**Get the value of this Input when it is connected. Redirects to connected
        Output<T>'s getValue() with minimal overhead. If this is a list input,
-       you must specify the specific Output whose value you want. */
+       you must specify the specific Channel whose value you want. */
     const T& getValue(const SimTK::State &state, int index=-1) const {
         if (index < 0) {
             if (!isListConnector()) index = 0;
@@ -419,8 +428,7 @@ public:
         return _connectees[index].getRef().getValue(state);
     }
     
-    /** If this is a list input, you must specify the specific Output whose
-        value you want. */
+    /** If this is a list input, you must specify the specific Channel you want.*/
     const Channel& getChannel(int index=-1) const {
         if (index == -1) {
             if (!isListConnector()) index = 0;
@@ -445,6 +453,9 @@ public:
         return _annotations[index];
     }
     
+    /** Access the values of all the channels connected to this Input as a 
+    SimTK::Vector_<T>. The elements are in the same order as the channels.
+    */
     SimTK::Vector_<T> getVector(const SimTK::State& state) const {
         SimTK::Vector_<T> v(getNumConnectees());
         for (int ichan = 0; ichan < _connectees.size(); ++ichan) {
@@ -453,7 +464,14 @@ public:
         return v;
     }
     
-    /** Get const access to the outputs connected to this input. */
+    /** Get const access to the channels connected to this input.
+        You can use this to iterate through the channels.
+        @code{.cpp}
+        for (const auto& chan : getChannels()) {
+            std::cout << chan.getValue(state) << std::endl;
+        }
+        @endcode
+    */
     const ChannelList& getChannels() const {
         return _connectees;
     }
@@ -501,7 +519,7 @@ private:
     bool _has_input_##iname { constructInput<T>(#iname, istage) };          \
     /** @endcond                                                         */
     
-/** Create a list input, which can connect to more than one Output. This
+/** Create a list input, which can connect to more than one Channel. This
  * makes sense for components like reporters that can handle a flexible
  * number of input values. 
  *

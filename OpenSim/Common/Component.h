@@ -1857,7 +1857,11 @@ protected:
         };
         return constructOutput<T>(name, outputFunc, dependsOn);
     }
-    // TODO
+    /** Construct an output that can have multiple channels. You add Channels
+    to this Output in extendFinalizeFromProperties() using
+    AbstractOutput::addChannel(). The member function
+    you provide must take the name of the channel whose value is requested.
+    */
     template <typename T, typename CompType>
     bool constructListOutput(const std::string& name,
              T (CompType::*const memFunc)(const SimTK::State&,
@@ -2025,6 +2029,10 @@ private:
             AbstractConnector& connector = upd_connectors(ix);
             connector.setOwner(*this);
             _connectorsTable[connector.getName()] = ix;
+        }
+        
+        for (auto& it : _inputsTable) {
+            it.second->setOwner(*this);
         }
     }
 

@@ -62,14 +62,29 @@ class Component;
  * the overhead is a single redirect to the corresponding member function
  * for the value.
  *
+ * An Output can either be a single-value Output or a list Output. A list Output
+ * is one that can have multiple Channels. The Channels are what get connected
+ * to Inputs.
  * @author  Ajay Seth
  */
 
+/** One of the values of an Output. */
 class AbstractChannel {
 public:
     virtual ~AbstractChannel() = default;
+    /** The name of this channel, or the name of the output that
+    contains this Channel if it's in a single-value Output. */
     virtual const std::string& getChannelName() const = 0;
+    /** The name of this channel appended to the name of the output that
+     * contains this channel. The output name and channel name are separated by
+     * a colon (e.g., "markers:medial_knee"). If the output that contains
+     * this channel is a single-value Output, then this is just the Output's 
+     * name. */
     virtual std::string getName() const = 0;
+    /** This returns the full path name of the component to which this channel
+     * belongs prepended to the channel's name. For example, this 
+     * method might return something like "/model/metabolics/heat_rate:soleus_r".
+     */
     virtual std::string getPathName() const = 0;
 };
 
@@ -89,10 +104,13 @@ public:
     bool isListOutput() const { return _isList; }
 
     /** Output Interface */
+    
+    /** Remove all channels from this Output (for list Outputs). */
     virtual void clearChannels() = 0;
+    /** Add a channel to this Output. This should be called within the
+     * component's extendFinalizeFromProperties() .*/
     virtual void addChannel(const std::string& channelName) = 0;
     virtual const AbstractChannel& getChannel(const std::string& name) const = 0;
-    // TODO other channel accessors.
     
     virtual std::string     getTypeName() const = 0;
     virtual std::string     getValueAsString(const SimTK::State& state) const = 0;
@@ -135,8 +153,10 @@ template<class T>
 class Output : public AbstractOutput {
 public:
 
+    /// The concrete Channel type that corresponds to Output<T>.
     class Channel;
     
+    /// The container type that holds onto all of Channels in an Output.
     typedef std::unordered_map<std::string, Channel> ChannelMap;
     
     //default construct output function pointer and result container
@@ -199,12 +219,14 @@ public:
     }
     
     void clearChannels() override {
-        if (!isListOutput()) throw Exception("TODO");
+        if (!isListOutput())
+            throw Exception("Cannot clear Channels of single-value Output.");
         _channels.clear();
     }
     
     void addChannel(const std::string& channelName) override {
-        if (!isListOutput()) throw Exception("TODO");
+        if (!isListOutput())
+            throw Exception("Cannot add Channels to single-value Output.");
         if (channelName.empty())
             throw Exception("Channel name cannot be empty.");
         _channels[channelName] = Channel(this, channelName);
@@ -214,6 +236,15 @@ public:
         return _channels.at(name);
     }
     
+    /** Use this to iterate through this Output's channels
+     (even for single-value Channels).
+     
+     @code{.cpp}
+     for (const auto& chan : getChannels()) {
+        std::cout << chan.second->getName() << std::endl;
+     }
+     @endcode
+     */
     const ChannelMap& getChannels() const { return _channels; }
 
     //--------------------------------------------------------------------------
@@ -224,7 +255,8 @@ public:
         Exception. */
     const T& getValue(const SimTK::State& state) const {
         if (isListOutput()) {
-            throw Exception("TODO");
+            throw Exception("Cannot get value for list Output. "
+                            "Ask a specific channel for its value.");
         }
         if (state.getSystemStage() < getDependsOnStage())
         {
@@ -242,7 +274,8 @@ public:
 
     std::string getValueAsString(const SimTK::State& state) const override {
         if (isListOutput()) {
-            throw Exception("TODO");
+            throw Exception("Cannot get value for list Output. "
+                            "Ask a specific channel for its value.");
         }
         unsigned int ns = getNumberOfSignificantDigits();
         std::stringstream s;
@@ -339,6 +372,29 @@ private:
     bool _has_output_##oname { constructOutput<T>(#oname, &Self::func, ostage) }; \
     /** @endcond                                                         */
     
+/**
+ * Create a list output for a member function of this component. A list output
+ * can have multiple values, or channels. The component must publish what channels
+ * its outputs have by calling AbstractOutput::addChannel() within  
+ * Component::extendFinalizeFromProperties(). The provided member function must
+ * take the name of the channel whose value is requested.
+ * @code{.cpp}
+ * class MyComponent : public Component {
+ * public:
+ *     double getData(const SimTK::State& s, const std::string& requestedChannel) const;
+ *     OpenSim_DECLARE_LIST_OUTPUT(data, double, getData, SimTK::Stage::Dynamics);
+ *     ...
+ * protected:
+ *     void extendFinalizeFromProperties() {
+ *          Super::extendFinalizeFromProperties();
+ *          for (const auto& name : getChannelsToAdd()) {
+ *              updOutput("data").addChannel(name);
+ *          }
+ *     }
+ * };
+ * @endcode
+ *
+ */
 #define OpenSim_DECLARE_LIST_OUTPUT(oname, T, func, ostage)                 \
     /** @name Outputs (list)                                             */ \
     /** @{                                                               */ \
