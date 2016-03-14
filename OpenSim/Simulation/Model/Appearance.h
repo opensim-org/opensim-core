@@ -38,7 +38,11 @@ VisualRepresentation is the OpenSim name used across the OpenSim API, it is an
 that describes in what form is Geometry displayed:  
 DrawPoints, DrawWireframe, DrawSurface are supported.
 */
+#ifndef SWIG
 using VisualRepresentation = SimTK::DecorativeGeometry::Representation;
+#else
+typedef VisualRepresentation SimTK::DecorativeGeometry::Representation;
+#endif
 
 /**
 SurfaceProperties class holds the appearance properties of a piece of Geometry 
@@ -148,10 +152,10 @@ public:
     }
     virtual ~Appearance() {};
 
-    VisualRepresentation get_representation() const { 
+    OpenSim::VisualRepresentation get_representation() const { 
         return (VisualRepresentation)get_surface_properties().get_representation(); }
 
-    void set_representation(const VisualRepresentation& rep) { 
+    void set_representation(const OpenSim::VisualRepresentation& rep) { 
         upd_surface_properties().set_representation(rep); }
 
 protected:

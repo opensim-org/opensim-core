@@ -2,6 +2,8 @@
 // osimSimulation
 %include <OpenSim/Simulation/osimSimulationDLL.h>
 
+%typedef SimTK::DecorativeGeometry::Representation VisualRepresentation;
+
 %include <OpenSim/Simulation/Model/Appearance.h>
 %include <OpenSim/Simulation/Model/Geometry.h>
 %include <OpenSim/Simulation/Model/ModelComponent.h>
