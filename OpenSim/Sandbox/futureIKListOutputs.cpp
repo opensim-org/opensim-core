@@ -402,7 +402,8 @@ void testFutureIKListOutputs() {
     
     // A component with a non-list output
     // -----------------------------------
-    auto* hjc = new JointCenter();
+    auto* hjc0 = new JointCenter();
+    auto* hjc = hjc0->clone();
     hjc->setName("hip_joint_center");
     model.addModelComponent(hjc);
     
