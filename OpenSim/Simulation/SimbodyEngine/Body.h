@@ -122,7 +122,9 @@ private:
     // mutable because fist get constructs tensor from properties
     mutable SimTK::Inertia _inertia;
 
-    SimTK::Array_<Body*> _slaves;
+    // Keep track of the slave bodies used to partition this Body
+    // in order break kinematic loops
+    SimTK::Array_<SimTK::ReferencePtr<Body>> _slaves;
 
     // Internal use for a Master body. Differs from its public MassProperties
     // which is the "effective" mass of the Body including internal slave

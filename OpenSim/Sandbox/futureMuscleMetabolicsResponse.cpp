@@ -60,6 +60,10 @@ class AggregateResponse : public ModelComponent {
 public:
     AggregateResponse() { constructInfrastructure(); }
 
+    // TODO propagate this scaling_factor to the ComplexResponses using
+    // Component::getParent.
+    OpenSim_DECLARE_PROPERTY(scaling_factor, double, "Affects each coord.");
+    
     /* TODO would prefer to use this, but waiting until the function within
      outputs is copied correctly.
      */
@@ -70,10 +74,6 @@ public:
         updProperty_responses().adoptAndAppendValue(resp);
         finalizeFromProperties();
     }
-    
-    // TODO propagate this scaling_factor to the ComplexResponses using
-    // Component::getParent.
-    OpenSim_DECLARE_PROPERTY(scaling_factor, double, "Affects each coord.");
 
     OpenSim_DECLARE_OUTPUT(total_sum, double, getTotalSum,
             SimTK::Stage::Position);
@@ -82,11 +82,14 @@ public:
     OpenSim_DECLARE_OUTPUT(total_term_2, double, getTotalTerm2,
             SimTK::Stage::Velocity);
 
+    void addResponse(ComplexResponse* response) {
+        adoptSubcomponent(response);
+    }
+
     double getTotalSum(const State& s) const {
         const double basalRate(1.0);
         double totalSum = basalRate;
-        for (int ir = 0; ir < getProperty_responses().size(); ++ir) {
-            const auto& response = get_responses(ir);
+        for (const auto& response : getComponentList<ComplexResponse>()) {
             totalSum += response.getOutputValue<double>(s, "sum");
         }
         return totalSum;
@@ -94,8 +97,7 @@ public:
 
     double getTotalTerm1(const State& s) const {
         double totalTerm1=0;
-        for (int ir = 0; ir < getProperty_responses().size(); ++ir) {
-            const auto& response = get_responses(ir);
+        for (const auto& response : getComponentList<ComplexResponse>()) {
             totalTerm1 += response.getOutputValue<double>(s, "term_1");
         }
         return totalTerm1;
@@ -103,8 +105,7 @@ public:
 
     double getTotalTerm2(const State& s) const {
         double totalTerm2=0;
-        for (int ir = 0; ir < getProperty_responses().size(); ++ir) {
-            const auto& response = get_responses(ir);
+        for (const auto& response : getComponentList<ComplexResponse>()) {
             totalTerm2 += response.getOutputValue<double>(s, "term_2");
         }
         return totalTerm2;
@@ -115,13 +116,6 @@ public:
      */
 
 private:
-    /*void extendFinalizeFromProperties() {
-        Super::extendFinalizeFromProperties();
-        for (auto& response : responses) {
-            markAsSubcomponent(response.get());
-        }
-    }
-    */
     
     void constructProperties() override {
         constructProperty_responses();
@@ -210,23 +204,24 @@ void testComplexResponse() {
     // Aggregate calculator.
     auto aggregate = new AggregateResponse();
     aggregate->setName("aggregate_response");
-    // TODO must fix copying of an output's function first.
-    auto* complexResponse1 = new ComplexResponse();
-    complexResponse1->setName("complex_response_j1");
-    complexResponse1->updConnector<Coordinate>("coord").set_connectee_name("j1_coord_0");
-    aggregate->adopt(complexResponse1);
-    auto* complexResponse2 = new ComplexResponse();
-    complexResponse2->setName("complex_response_j2");
-    complexResponse2->updConnector<Coordinate>("coord").set_connectee_name("j2_coord_0");
-    aggregate->adopt(complexResponse2);
-     
+    // Add individual responses to the aggregate response
+    auto response1 = new ComplexResponse();
+    response1->setName("complex_response_j1");
+    response1->updConnector<Coordinate>("coord").connect(j1->get_CoordinateSet()[0]);
+    // add to aggregate which takes ownership
+    aggregate->addResponse(response1);
 
-    auto reporter = new ConsoleReporter<double>();
+    // now create response 2
+    auto response2 = new ComplexResponse();
+    response2->setName("complex_response_j2");
+    response2->updConnector<Coordinate>("coord").connect(j2->get_CoordinateSet()[0]);
+    // add to aggregate which takes ownership
+    aggregate->addResponse(response2);
+    
+
     reporter->setName("reporter");
-    reporter->updInput("input").connect(
-            aggregate->get_responses(0).getOutput("sum"));
-    reporter->updInput("input").connect(
-            aggregate->get_responses(1).getOutput("sum"));
+    reporter->updInput("input").connect(response1->getOutput("sum"));
+    reporter->updInput("input").connect(response2->getOutput("sum"));
     reporter->updInput("input").connect(aggregate->getOutput("total_sum"));
     reporter->updInput("input").connect(
             j1->getCoordinateSet().get(0).getOutput("value"));

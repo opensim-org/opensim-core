@@ -287,7 +287,7 @@ public:
         return getOutput().getName() + ":" + _channelName;
     }
     std::string getPathName() const override {
-        return getOutput().getOwner().getPathName() + "/" + getName();
+        return getOutput().getOwner().getFullPathName() + "/" + getName();
     }
 private:
     mutable T _result; // TODO remove

@@ -137,10 +137,17 @@ public:
               int aLine=-1);
 
     /** Call this constructor from derived classes to add file, line and 
-    function information to the error message                                 */
+    function information to the error message.                                */
     Exception(const std::string& file,
               size_t line,
               const std::string& func);
+
+    /** Use this when you want to throw an Exception (with OPENSIM_THROW or
+    OPENSIM_THROW_IF) and also provide a message.                             */
+    Exception(const std::string& file,
+              size_t line,
+              const std::string& func,
+              const std::string& msg);
 
     virtual ~Exception() throw() {}
 
@@ -166,6 +173,18 @@ public:
 //=============================================================================
 };  // END CLASS Exception
 
+
+class InvalidArgument : public Exception {
+public:
+    InvalidArgument(const std::string& file,
+                    size_t line,
+                    const std::string& func) :
+        Exception(file, line, func) {
+        std::string msg = "Invalid Argument.";
+
+        addMessage(msg);
+    }
+};
 
 template <typename T>
 class IndexOutOfRange : public Exception {
@@ -196,6 +215,11 @@ public:
 
         addMessage(msg);
     }
+};
+
+class IOError : public Exception {
+public:
+    using Exception::Exception;
 };
 
 }; //namespace

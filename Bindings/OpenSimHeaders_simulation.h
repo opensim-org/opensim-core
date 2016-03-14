@@ -138,5 +138,7 @@
 #include <OpenSim/Simulation/CoordinateReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 
+#include <OpenSim/Simulation/StatesTrajectory.h>
+
 #endif // OPENSIM_OPENSIM_HEADERS_SIMULATION_H_
 

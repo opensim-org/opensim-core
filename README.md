@@ -308,7 +308,7 @@ cmake --build . --config RelWithDebInfo -- /maxcpucount:8
 cd ..
 mkdir opensim_build
 cd .\opensim_build
-cmake ..\opensim-core -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\opensim_install" -DOPENSIM_DEPENDENCIES_DIR="..\opensim_dependencies_install"
+cmake ..\opensim-core -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\opensim_install" -DOPENSIM_DEPENDENCIES_DIR="..\opensim_dependencies_install" -DWITH_BTK=ON
 cmake --build . --config RelWithDebInfo -- /maxcpucount:8
 ctest -C RelWithDebInfo --parallel 8
 ```
@@ -520,7 +520,8 @@ cmake ../opensim-core \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DBUILD_PYTHON_WRAPPING=ON \
       -DBUILD_JAVA_WRAPPING=ON \
-      -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install"
+      -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" \
+      -DWITH_BTK=ON
 make -j8
 ctest -j8
 ```
@@ -756,7 +757,8 @@ cmake ../opensim-core \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" \
       -DBUILD_PYTHON_WRAPPING=ON \
-      -DBUILD_JAVA_WRAPPING=ON
+      -DBUILD_JAVA_WRAPPING=ON \
+      -DWITH_BTK=ON
 make -j8
 ctest -j8
  ```
@@ -785,7 +787,8 @@ cmake ../opensim-core \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" \
       -DBUILD_PYTHON_WRAPPING=ON \
-      -DBUILD_JAVA_WRAPPING=ON
+      -DBUILD_JAVA_WRAPPING=ON \
+      -DWITH_BTK=ON
 make -j8
 ctest -j8
 ```

@@ -218,9 +218,19 @@ public:
     void setHeaderToken(const std::string &aToken);
     const std::string& getHeaderToken() const;
     // COLUMN LABELS
+    /** Get the column index corresponding to specified column name. This
+     * function attempts to handle the change in state variable names that
+     * occurred in OpenSim version 4.0; for example, if you search for
+     * `<coord-name>/speed` and it is not found, then this function looks for
+     * `<coord-name>_u`.
+     *
+     * @return State index of column or -1.  Note that the returned index is
+     * equivalent to the state index.  For example, for the first column in a
+     * storage (usually time) -1 would be returned.  For the second column in a
+     * storage (the first state) 0 would be returned. */
     const int getStateIndex(const std::string &aColumnName, int startIndex=0) const;
-    void setColumnLabels(const Array<std::string> &aColumnLabels);
-    const Array<std::string> &getColumnLabels() const;
+    void setColumnLabels(const Array<std::string>& aColumnLabels);
+    const Array<std::string>& getColumnLabels() const;
     //--------------------------------------------------------------------------
     // RESET
     //--------------------------------------------------------------------------
@@ -292,7 +302,13 @@ public:
                          double startTime=SimTK::NaN, double endTime=SimTK::NaN);
     //void checkAgainstStandard(Storage standard, Array<double> &tolerances, std::string testFile = "", int testFileLine = -1, std::string errorMessage = "Exception");
     void compareWithStandard(Storage& standard, Array<std::string> &columnsUsed, Array<double> &comparisons);
+    /** Force column labels for a Storage object to become unique. This is done
+     * by prepending the string (n_) as needed where n=1, 2, ...
+     *
+     * @returns true if labels were already unique.
+     **/
     bool makeStorageLabelsUnique();
+    bool storageLabelsAreUnique() const;
     //--------------------------------------------------------------------------
     // IO
     //--------------------------------------------------------------------------

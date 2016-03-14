@@ -271,7 +271,8 @@ public:
             try {
                 auto& labels = 
                     _dependentsMetaData.getValueArrayForKey("labels");
-                OPENSIM_THROW_IF(depRow.ncol() != labels.size(),
+                OPENSIM_THROW_IF(static_cast<unsigned>(depRow.ncol()) != 
+                                 labels.size(),
                                  IncorrectNumColumns, 
                                  labels.size(), 
                                  static_cast<size_t>(depRow.ncol()));
@@ -401,7 +402,7 @@ protected:
                             entries in the metadata for dependent columns have
                             the correct length (equal to nubmer of columns).  */
     void validateDependentsMetaData() const override {
-        unsigned numCols{};
+        size_t numCols{};
         try {
             numCols = (unsigned)_dependentsMetaData
                                         .getValueArrayForKey("labels").size();
@@ -412,7 +413,8 @@ protected:
         OPENSIM_THROW_IF(numCols == 0,
                          MetaDataLengthZero,"labels");
 
-        OPENSIM_THROW_IF(_depData.ncol() != 0 && numCols != _depData.ncol(),
+        OPENSIM_THROW_IF(_depData.ncol() != 0 && 
+                         numCols != static_cast<unsigned>(_depData.ncol()),
                          IncorrectMetaDataLength, "labels", 
                          static_cast<size_t>(_depData.ncol()), numCols);
 
