@@ -32,7 +32,7 @@
 
 // INCLUDES
 #include <functional>
-#include <unordered_map>
+#include <map>
 
 namespace OpenSim {
 
@@ -157,7 +157,7 @@ public:
     class Channel;
     
     /// The container type that holds onto all of Channels in an Output.
-    typedef std::unordered_map<std::string, Channel> ChannelMap;
+    typedef std::map<std::string, Channel> ChannelMap;
     
     //default construct output function pointer and result container
     Output() {}
@@ -293,7 +293,7 @@ private:
                      const std::string& channel)> _outputFcn { nullptr };
     // TODO consider using indices, and having a parallel data structure
     // for names.
-    std::unordered_map<std::string, Channel> _channels;
+    std::map<std::string, Channel> _channels;
 
 //=============================================================================
 };  // END class Output
