@@ -154,7 +154,7 @@ protected:
 typedef TimeSeriesTable_<SimTK::Real> TimeSeriesTable;
 
 /** See TimeSeriesTable_ for details on the interface.                        */
-using TimeSeriesTableVec3 = TimeSeriesTable_<SimTK::Vec3>;
+typedef TimeSeriesTable_<SimTK::Vec3> TimeSeriesTableVec3;
 } // namespace OpenSim
 
 #endif // OPENSIM_TIME_SERIES_DATA_TABLE_H_

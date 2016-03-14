@@ -448,7 +448,9 @@ protected:
 };  // DataTable_
 
 /** See DataTable_ for details on the interface.                              */
-typedef DataTable_<SimTK::Real> DataTable;
+typedef DataTable_<double, double> DataTable;
+/** See DataTable_ for details on the interface.                              */
+typedef DataTable_<double, SimTK::Vec3> DataTableVec3;
 
 } // namespace OpenSim
 
