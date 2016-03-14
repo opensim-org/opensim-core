@@ -352,7 +352,7 @@ public:
         if (outT) {
             if (!isListConnector()) {
                 if (outT->isListOutput()) {
-                    throw Exception("TODO non-list input cannot connect to list output");
+                    throw Exception("Non-list input cannot connect to list output");
                 }
                 // Remove the existing connecteee (if it exists).
                 disconnect();
