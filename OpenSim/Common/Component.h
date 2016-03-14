@@ -1463,11 +1463,9 @@ protected:
     implementing a concrete StateVariable and adding it to the component using
     this method.
     You may also want to create an Output for this state variable; see
-    constructOutputForStateVariable() for more information. Reporters should
-    use such an Output to get the StateVariable's value (instead of using
-    getStateVariableValue()).
-
-    @see constructOutputForStateVariable()
+    #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE for more information. Reporters
+    should use such an Output to get the StateVariable's value (instead of
+    using getStateVariableValue()).
     */
     void addStateVariable(Component::StateVariable*  stateVariable) const;
 
@@ -1738,7 +1736,6 @@ protected:
      * the top near property declarations):
      *
      *  - #OpenSim_DECLARE_OUTPUT
-     *  - #OpenSim_DECLARE_OUTPUT_FLEX
      *  - #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE
      *  - #OpenSim_DECLARE_INPUT
      *
@@ -1750,65 +1747,41 @@ protected:
         The following must be true about componentMemberFunction, the function
         that returns the output:
 
-           -# It is a member function of \a this Component.
+           -# It is a member function of \a this component.
            -# The member function is const.
            -# It takes only one input, which is `const SimTK::State&`
-      
-       If these are not true for your case, then use the more general method
-       %Component::constructOutput(const std::string&,
-                                  const std::function<T(const SimTK:State&)>,
-                                  const SimTK::Stage&).
+
+        You must also provide the stage on which the output depends.
+
+        You can ask outputs for their value only after you call
+        `finalizeFromProperties()`.
 
        @see constructOutputForStateVariable()
      */
 
 #ifndef SWIG // SWIG can't parse the const at the end of the second argument.
-    template <typename T, typename Class>
+    template <typename T, typename CompType = Component>
     bool constructOutput(const std::string& name,
-            T(Class::*const componentMemberFunction)(const SimTK::State&) const,
+            T (CompType::*const componentMemberFunction)(const SimTK::State&) const,
             const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
-        // The `const` in `Class::*const componentMemberFunction` means this
+        // The `const` in `CompType::*const componentMemberFunction` means this
         // function can't assign componentMemberFunction to some other function
         // pointer. This is unlikely, since that function would have to match
-        // the same template parameters (T and Class).
-        return constructOutput<T>(name, std::bind(componentMemberFunction,
-                    static_cast<Class*>(this),
-                    std::placeholders::_1), dependsOn);
+        // the same template parameters (T and CompType).
+        static_assert(std::is_base_of<Component, CompType>::value,
+            "Template parameter 'CompType' must be derived from Component.");
+
+        // This lambda takes a pointer to a component, downcasts it to the
+        // appropriate derived type, then calls the member function of the
+        // derived type. Thank you, klshrinidhi!
+        auto outputFunc = [componentMemberFunction] (const Component* comp,
+                const SimTK::State& s) -> T {
+            return std::mem_fn(componentMemberFunction)(
+                    dynamic_cast<const CompType*>(comp), s);
+        };
+        return constructOutput<T>(name, outputFunc, dependsOn);
     }
 #endif
-
-    /**
-      Construct an Output (wire) for the Component as function of the State.
-      Specifiy a (member) function of the state implemented by this component to
-      be an Output and include the Stage that output is dependent on. If no
-      Stage is specified it defaults to Acceleration. Here's an example. Say you 
-      have a class Markers that manages markers, you have an instance of this class
-      as a member variable in your Component, and Markers has a method
-      <tt> Vec3 Markers::calcMarkerPos(const SimTK::State& s, std::string
-      marker);</tt>
-      to compute motion capture marker positions, given the name of a marker.
-       @code
-       constructOutput<SimTK::Vec3>("ankle_marker_pos",
-               std::bind(&Markers::calcMarkerPos, _markers,
-               std::placeholders::_1, "ankle"),
-               SimTK::Stage::Position);
-       @endcode
-
-      @see constructOutputForStateVariable()
-    */
-    template <typename T>
-    bool constructOutput(const std::string& name, 
-        const std::function<T(const SimTK::State&)> outputFunction, 
-        const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
-        // TODO OPENSIM_THROW_IF(_outputsTable.count(name) == 1,
-        // TODO         Exception, getConcreteClassName(), getName(),
-        // TODO         "An output with name '" + name + 
-        // TODO         "' (type " + SimTK::NiceTypeName<T>::name() +
-        // TODO         ") already exists.");
-        _outputsTable[name] = SimTK::ClonePtr<AbstractOutput>(
-                new Output<T>(name, outputFunction, dependsOn));
-        return true;
-    }
 
     /** Construct an Output for a StateVariable. While this method is a
      * convenient way to construct an Output for a StateVariable, it is
@@ -1897,6 +1870,25 @@ private:
 
     /// Invoke setPropertiesFromState() on (sub)components of this Component
     void componentsSetPropertiesFromState(const SimTK::State& state);
+
+    /** Used internally to construct outputs. Creating the functions for
+     outputs is potentially error-prone if the function binds to (or
+     captures) a pointer to a class. When the component is copied, the
+     pointer bound to the function is also copied and points to the original
+     object. This is unlikely to be the intended behavior. For this reason,
+     this variant of constructOutput should be used with care.
+    */
+    template <typename T>
+    bool constructOutput(const std::string& name,
+        const std::function<T (const Component*, const SimTK::State&)> outputFunction, 
+        const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
+        if (_outputsTable.count(name) == 1) {
+            throw Exception("Output with name '" + name + "' already exists.");
+        }
+        _outputsTable[name].reset(
+                new Output<T>(name, outputFunction, dependsOn));
+        return true;
+    }
 
     // Get the number of continuous states that the Component added to the 
     // underlying computational system. It includes the number of built-in states  
