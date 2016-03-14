@@ -83,7 +83,7 @@ int main()
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testP2PSpringMass");
     }
-    
+
     try { testBushingForce(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testBushingForce");
@@ -94,7 +94,7 @@ int main()
         cout << e.what() <<endl; 
         failures.push_back("testFunctionBasedBushingForce");
     }
-    
+
     try { testExpressionBasedBushingForceTranslational(); }
     catch (const std::exception& e){
         cout << e.what() <<endl;
@@ -182,7 +182,7 @@ void testExpressionBasedCoordinateForce()
     ball.scale(Vec3(ball_radius), false);
 
     // Add joints
-    SliderJoint slider("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+    SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
     // Rename coordinates for a slider joint
@@ -486,7 +486,7 @@ void testSpringMass()
     ball.scale(Vec3(ball_radius), false);
 
     // Add joints
-    SliderJoint slider("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+    SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
     // Rename coordinates for a slider joint
@@ -585,7 +585,7 @@ void testBushingForce()
     ball.scale(Vec3(ball_radius), false);
 
     // Add joints
-    SliderJoint slider("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+    SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
     // Rename coordinates for a slider joint
@@ -810,7 +810,7 @@ void testExpressionBasedBushingForceTranslational()
     ball.attachMeshGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
     
-    SliderJoint sliderY("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+    SliderJoint sliderY("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
     
     double positionRange[2] = {-10, 10};
     // Rename coordinates for a slider joint
@@ -827,7 +827,7 @@ void testExpressionBasedBushingForceTranslational()
     base.attachMeshGeometry("sphere.vtp");
     base.scale(Vec3(ball_radius), false);
     
-    WeldJoint weld("", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
+    WeldJoint weld("weld", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
     osimModel->addBody(&base);
     osimModel->addJoint(&weld);
     
@@ -929,7 +929,7 @@ void testExpressionBasedBushingForceRotational()
     OpenSim::Body base("base_body", mass, Vec3(0),
         mass*SimTK::Inertia::sphere(ball_radius));
 
-    WeldJoint weld("", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
+    WeldJoint weld("weld", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
     osimModel->addBody(&base);
     osimModel->addJoint(&weld);
 
@@ -939,7 +939,7 @@ void testExpressionBasedBushingForceRotational()
     OpenSim::Body ball("ball", mass, Vec3(0), 
         mass*SimTK::Inertia::sphere(ball_radius));
 
-    PinJoint pin("", ground, Vec3(0), Vec3( Pi / 2, 0, 0), 
+    PinJoint pin("pin", ground, Vec3(0), Vec3( Pi / 2, 0, 0), 
         ball, Vec3(0), Vec3(Pi / 2, 0, 0));
 
     double thetaRange[2] = { -2*Pi, 2*Pi };
@@ -1213,7 +1213,7 @@ void testCoordinateLimitForce()
     ball.scale(Vec3(ball_radius), false);
 
     // Add joints
-    SliderJoint slider("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+    SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {0.1, 2};
     // Rename coordinates for a slider joint
@@ -1357,7 +1357,7 @@ void testCoordinateLimitForceRotational()
     block.scale(Vec3(edge), false);
 
     // Add joints
-    PinJoint pin("", ground, Vec3(0), Vec3(0,0,0), block, Vec3(0,-edge,0), Vec3(0,0,0));
+    PinJoint pin("pin", ground, Vec3(0), Vec3(0,0,0), block, Vec3(0,-edge,0), Vec3(0,0,0));
 
     // NOTE: Angular limits are in degrees NOT radians
     double positionRange[2] = {-30, 90};

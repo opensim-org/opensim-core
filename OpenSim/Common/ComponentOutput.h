@@ -31,10 +31,11 @@
  */
 
 // INCLUDES
-#include "OpenSim/Common/Component.h"
 #include <functional>
 
 namespace OpenSim {
+
+class Component;
 
 //=============================================================================
 //                           OPENSIM COMPONENT OUTPUT
@@ -90,10 +91,21 @@ public:
     void         setNumberOfSignificantDigits(unsigned int numSigFigs) 
     { numSigFigs = numSigFigs; }
 
+protected:
+
+    // Set the component that contains this Output.
+    void setOwner(const Component& owner) {
+        _owner.reset(&owner);
+    }
+    SimTK::ReferencePtr<const Component> _owner;
+
 private:
     unsigned int numSigFigs;
     SimTK::Stage dependsOnStage;
     std::string name;
+
+    // For calling setOwner().
+    friend Component;
 //=============================================================================
 };  // END class AbstractOutput
 
@@ -109,7 +121,8 @@ public:
     @param outputFunction   The output function to be invoked (returns Output T)
     @param dependsOnStage   Stage at which Output can be evaluated. */
     explicit Output(const std::string& name,
-        const std::function<T(const SimTK::State&)> outputFunction,
+        const std::function<T (const Component* comp, const SimTK::State&)>&
+                outputFunction,
         const SimTK::Stage&     dependsOnStage) : 
             AbstractOutput(name, dependsOnStage), _outputFcn(outputFunction)
     {}
@@ -138,7 +151,7 @@ public:
                     state.getSystemStage(), getDependsOnStage(),
                     "Output::getValue(state)");
         }
-        _result = _outputFcn(state); 
+        _result = _outputFcn(_owner.get(), state);
         return _result;
     }
     
@@ -154,15 +167,18 @@ public:
         return s.str();
     }
 
-    AbstractOutput* clone() const override { return new Output(*this); }
+    Output<T>* clone() const override { return new Output(*this); }
     SimTK_DOWNCAST(Output, AbstractOutput);
 
 private:
     mutable T _result;
-    std::function<T(const SimTK::State&)> _outputFcn;
+    std::function<T (const Component*, const SimTK::State&)> _outputFcn;
 
 //=============================================================================
 };  // END class Output
+
+// TODO consider using std::reference_wrapper<T> as type for _output_##oname,
+// since it is copyable.
 
 /// @name Creating Outputs for your Component
 /// Use these macros at the top of your component class declaration,
@@ -175,8 +191,6 @@ private:
  *     -# It is a member function of your component.
  *     -# The member function is const.
  *     -# It takes only one input, which is `const SimTK::State&`
- *
- *  Use #OpenSim_DECLARE_OUTPUT_FLEX if these are not true for you.
  *
  *  You must also provide the stage on which the output depends.
  *
@@ -209,37 +223,6 @@ private:
 // However, then we wouldn't be able to document the type for the output in
 // doxygen.
 
-/** The most flexible (and difficult) way to create an output.
-   You can specify any function that has the signature `func_name(const
-   SimTK::State&)`.  You must also provide the stage on which the output
-   depends, and a comment describing the output.
-  
-   Here's an example. Say you have a class Markers that manages markers, you
-   have an instance of this class as a member variable in your Component, and
-   Markers has a method <tt> Vec3 Markers::calcMarkerPos(const SimTK::State& s,
-   std::string marker);</tt> to compute motion capture marker positions, given
-   the name of a marker.
-   @code{.cpp}
-   OpenSim_DECLARE_OUTPUT_FLEX(ankle_marker_pos,
-           std::bind(&Markers::calcMarkerPos, _markers,  std::placeholders::_1, "ankle"),
-           SimTK::Stage::Position);
-   @endcode
-   @see Component::constructOutput()
-   @relates OpenSim::Output
- */
-#define OpenSim_DECLARE_OUTPUT_FLEX(oname, T, func, ostage, comment)        \
-    /** @name Outputs                                                    */ \
-    /** @{                                                               */ \
-    /** comment                                                          */ \
-    /** Available at stage ostage.                                       */ \
-    /** This output was generated with the                               */ \
-    /** #OpenSim_DECLARE_OUTPUT_FLEX macro.                              */ \
-    OpenSim_DOXYGEN_Q_PROPERTY(T, oname)                                    \
-    /** @}                                                               */ \
-    /** @cond                                                            */ \
-    bool _has_output_##oname { constructOutput<T>(#oname, func, ostage) }; \
-    /** @endcond                                                         */
-
 /** Create an Output for a StateVariable in this component. The provided
  * name is both the name of the output and of the state variable.
  *
@@ -266,10 +249,10 @@ private:
     /** Available at stage SimTK::Stage::Model.                          */ \
     /** This output was generated with the                               */ \
     /** #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE macro.                */ \
-    OpenSim_DOXYGEN_Q_PROPERTY(T, oname)                                    \
+    OpenSim_DOXYGEN_Q_PROPERTY(double, oname)                               \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    bool _has_output_##oname { constructOutputForStateVariable(#oname) }; \
+    bool _has_output_##oname { constructOutputForStateVariable(#oname) };   \
     /** @endcond                                                         */
 /// @}
 //=============================================================================

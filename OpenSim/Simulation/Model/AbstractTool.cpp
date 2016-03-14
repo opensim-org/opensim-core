@@ -580,6 +580,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         throw(ex);
     }
     _externalLoads.setMemoryOwner(false);
+    aModel.finalizeFromProperties();
     _externalLoads.invokeConnectToModel(aModel);
 
     string loadKinematicsFileName = _externalLoads.getExternalLoadsModelKinematicsFileName();
@@ -632,7 +633,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     
     // Add external loads to the set of all model forces
     for(int i=0; i<_externalLoads.getSize(); ++i){
-        aModel.updForceSet().adoptAndAppend(&_externalLoads[i]);
+        aModel.addForce(&_externalLoads[i]);
     }
 
     if(!loadKinematics)

@@ -1564,7 +1564,6 @@ EXPAND_AS_DEFINED      = OpenSim_DECLARE_PROPERTY \
                          OpenSim_DECLARE_LIST_PROPERTY_RANGE \
                          OpenSim_DECLARE_PROPERTY_HELPER \
                          OpenSim_DECLARE_OUTPUT \
-                         OpenSim_DECLARE_OUTPUT_NONMEM \
                          OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE \
                          SWIG_DECLARE_EXCEPTION
 
