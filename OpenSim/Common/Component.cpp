@@ -209,6 +209,12 @@ void Component::connect(Component &root)
                 ".\n Details:" + x.what());
         }
     }
+    
+    // Must also clear the inputs' existing connections, which may otherwise
+    // be stale.
+    for (auto& it : _inputsTable) {
+        it.second->disconnect();
+    }
 
     for (auto& inputPair : _inputsTable) {
         AbstractInput& input = inputPair.second.updRef();
@@ -277,6 +283,11 @@ void Component::disconnect()
     std::map<std::string, int>::const_iterator it;
     for (it = _connectorsTable.begin(); it != _connectorsTable.end(); ++it){
         upd_connectors(it->second).disconnect();
+    }
+    
+    // Must also clear the input's connections.
+    for (auto& it : _inputsTable) {
+        it.second->disconnect();
     }
 
     //now clear all the stored system indices from this component

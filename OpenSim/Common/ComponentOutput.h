@@ -32,6 +32,7 @@
 
 // INCLUDES
 #include <functional>
+#include <map>
 
 namespace OpenSim {
 
@@ -61,24 +62,59 @@ class Component;
  * the overhead is a single redirect to the corresponding member function
  * for the value.
  *
+ * An Output can either be a single-value Output or a list Output. A list Output
+ * is one that can have multiple Channels. The Channels are what get connected
+ * to Inputs.
  * @author  Ajay Seth
  */
+
+/** One of the values of an Output. */
+class AbstractChannel {
+public:
+    virtual ~AbstractChannel() = default;
+    /** The name of this channel, or the name of the output that
+    contains this Channel if it's in a single-value Output. */
+    virtual const std::string& getChannelName() const = 0;
+    /** The name of this channel appended to the name of the output that
+     * contains this channel. The output name and channel name are separated by
+     * a colon (e.g., "markers:medial_knee"). If the output that contains
+     * this channel is a single-value Output, then this is just the Output's 
+     * name. */
+    virtual std::string getName() const = 0;
+    /** This returns the full path name of the component to which this channel
+     * belongs prepended to the channel's name. For example, this 
+     * method might return something like "/model/metabolics/heat_rate:soleus_r".
+     */
+    virtual std::string getPathName() const = 0;
+};
+
 class OSIMCOMMON_API AbstractOutput {
 public:
-    AbstractOutput() : numSigFigs(8), dependsOnStage(SimTK::Stage::Infinity) {}
-    AbstractOutput(const std::string& name, SimTK::Stage dependsOnStage) : 
-        name(name), dependsOnStage(dependsOnStage), numSigFigs(8) {}
+    AbstractOutput() : dependsOnStage(SimTK::Stage::Infinity) {}
+    AbstractOutput(const std::string& name, SimTK::Stage dependsOnStage,
+                   bool isList) :
+        name(name), dependsOnStage(dependsOnStage), _isList(isList) {}
     virtual ~AbstractOutput() { }
 
     /** Output's name */
     const std::string& getName() const { return name; }
     /** Output's dependence on System being realized to at least this System::Stage */
     const SimTK::Stage& getDependsOnStage() const { return dependsOnStage; }
+    /** Can this Output have more than one channel? */
+    bool isListOutput() const { return _isList; }
 
     /** Output's owning Component */
     const Component& getOwner() const { return _owner.getRef(); }
 
     /** Output Interface */
+    
+    /** Remove all channels from this Output (for list Outputs). */
+    virtual void clearChannels() = 0;
+    /** Add a channel to this Output. This should be called within the
+     * component's extendFinalizeFromProperties() .*/
+    virtual void addChannel(const std::string& channelName) = 0;
+    virtual const AbstractChannel& getChannel(const std::string& name) const = 0;
+    
     virtual std::string     getTypeName() const = 0;
     virtual std::string     getValueAsString(const SimTK::State& state) const = 0;
     virtual bool        isCompatible(const AbstractOutput&) const = 0;
@@ -90,9 +126,9 @@ public:
     virtual AbstractOutput* clone() const = 0;
 
     /** Specification for number of significant figures in string value. */
-    unsigned int getNumberOfSignificantDigits() const { return numSigFigs; }
+    unsigned int getNumberOfSignificantDigits() const { return _numSigFigs; }
     void         setNumberOfSignificantDigits(unsigned int numSigFigs) 
-    { numSigFigs = numSigFigs; }
+    { _numSigFigs = numSigFigs; }
 
 protected:
 
@@ -100,12 +136,16 @@ protected:
     void setOwner(const Component& owner) {
         _owner.reset(&owner);
     }
+    const Component& getOwner() const {
+        return _owner.getRef();
+    }
     SimTK::ReferencePtr<const Component> _owner;
 
 private:
-    unsigned int numSigFigs;
-    SimTK::Stage dependsOnStage;
     std::string name;
+    SimTK::Stage dependsOnStage;
+    unsigned int _numSigFigs = 8;
+    bool _isList = false;
 
     // For calling setOwner().
     friend Component;
@@ -115,8 +155,15 @@ private:
 template<class T>
 class Output : public AbstractOutput {
 public:
+
+    /// The concrete Channel type that corresponds to Output<T>.
+    class Channel;
+    
+    /// The container type that holds onto all of Channels in an Output.
+    typedef std::map<std::string, Channel> ChannelMap;
+    
     //default construct output function pointer and result container
-    Output() : AbstractOutput(), _outputFcn(nullptr) {}   
+    Output() {}
     /** Convenience constructor
     Create a Component::Output bound to a specific method of the Component and 
     valid at a given realization Stage.
@@ -124,21 +171,84 @@ public:
     @param outputFunction   The output function to be invoked (returns Output T)
     @param dependsOnStage   Stage at which Output can be evaluated. */
     explicit Output(const std::string& name,
-        const std::function<T (const Component* comp, const SimTK::State&)>&
-                outputFunction,
-        const SimTK::Stage&     dependsOnStage) : 
-            AbstractOutput(name, dependsOnStage), _outputFcn(outputFunction)
-    {}
+        const std::function<T (const Component* comp,
+                               const SimTK::State&,
+                               const std::string& channel)>& outputFunction,
+        const SimTK::Stage&     dependsOnStage,
+        bool                    isList) :
+            AbstractOutput(name, dependsOnStage, isList),
+            _outputFcn(outputFunction) {
+        if (!isList) {
+            // We want just one channel with an empty name.
+            _channels[""] = Channel(this, "");
+        }
+    
+    }
+    
+    /** Custom copy constructor is for setting the Channel's pointer
+     * back to this Output. */
+    Output(const Output& source) : AbstractOutput(source),
+            _outputFcn(source._outputFcn), _channels(source._channels) {
+        for (auto& it : _channels) {
+            it.second._output.reset(this);
+        }
+    }
+    
+    /** Custom copy assignment operator is for setting the Channel's pointer
+     * back to this Output. */
+    Output& operator=(const Output& source) {
+        if (&source == this) return *this;
+        AbstractOutput::operator=(source);
+        _outputFcn = source._outputFcn;
+        _channels = source._channels;
+        for (auto& it : _channels) {
+            it.second._output.reset(this);
+        }
+        return *this;
+    }
     
     virtual ~Output() {}
+    
+    // TODO someone more knowledgable could try to implement these.
+    Output(Output&&) = delete;
+    Output& operator=(Output&&) = delete;
 
     bool isCompatible(const AbstractOutput& o) const override { return isA(o); }
-        void compatibleAssign(const AbstractOutput& o) override {
+    void compatibleAssign(const AbstractOutput& o) override {
         if (!isA(o)) 
-            SimTK_THROW2(SimTK::Exception::IncompatibleValues, o.getTypeName(), getTypeName());
+            SimTK_THROW2(SimTK::Exception::IncompatibleValues,
+                         o.getTypeName(), getTypeName());
         *this = downcast(o);
     }
-
+    
+    void clearChannels() override {
+        if (!isListOutput())
+            throw Exception("Cannot clear Channels of single-value Output.");
+        _channels.clear();
+    }
+    
+    void addChannel(const std::string& channelName) override {
+        if (!isListOutput())
+            throw Exception("Cannot add Channels to single-value Output.");
+        if (channelName.empty())
+            throw Exception("Channel name cannot be empty.");
+        _channels[channelName] = Channel(this, channelName);
+    }
+    
+    const AbstractChannel& getChannel(const std::string& name) const override {
+        return _channels.at(name);
+    }
+    
+    /** Use this to iterate through this Output's channels
+     (even for single-value Channels).
+     
+     @code{.cpp}
+     for (const auto& chan : getChannels()) {
+        std::cout << chan.second->getName() << std::endl;
+     }
+     @endcode
+     */
+    const ChannelMap& getChannels() const { return _channels; }
 
     //--------------------------------------------------------------------------
     // OUTPUT VALUE
@@ -147,14 +257,17 @@ public:
         to a stage at or beyond the dependsOnStage, otherwise expect an
         Exception. */
     const T& getValue(const SimTK::State& state) const {
-        _result = SimTK::NaN;
+        if (isListOutput()) {
+            throw Exception("Cannot get value for list Output. "
+                            "Ask a specific channel for its value.");
+        }
         if (state.getSystemStage() < getDependsOnStage())
         {
             throw SimTK::Exception::StageTooLow(__FILE__, __LINE__,
                     state.getSystemStage(), getDependsOnStage(),
                     "Output::getValue(state)");
         }
-        _result = _outputFcn(_owner.get(), state);
+        _result = _outputFcn(_owner.get(), state, "");
         return _result;
     }
     
@@ -162,8 +275,11 @@ public:
     std::string getTypeName() const override 
         { return SimTK::NiceTypeName<T>::namestr(); }
 
-    std::string getValueAsString(const SimTK::State& state) const override
-    {
+    std::string getValueAsString(const SimTK::State& state) const override {
+        if (isListOutput()) {
+            throw Exception("Cannot get value for list Output. "
+                            "Ask a specific channel for its value.");
+        }
         unsigned int ns = getNumberOfSignificantDigits();
         std::stringstream s;
         s << std::setprecision(ns) << getValue(state);
@@ -174,11 +290,50 @@ public:
     SimTK_DOWNCAST(Output, AbstractOutput);
 
 private:
-    mutable T _result;
-    std::function<T (const Component*, const SimTK::State&)> _outputFcn;
+    mutable T _result; // TODO remove
+    std::function<T (const Component*,
+                     const SimTK::State&,
+                     const std::string& channel)> _outputFcn { nullptr };
+    // TODO consider using indices, and having a parallel data structure
+    // for names.
+    std::map<std::string, Channel> _channels;
 
 //=============================================================================
 };  // END class Output
+
+
+template <typename T>
+class Output<T>::Channel : public AbstractChannel {
+public:
+    Channel() = default;
+    Channel(const Output<T>* output, const std::string& channelName)
+     : _output(output), _channelName(channelName) {}
+    const T& getValue(const SimTK::State& state) const {
+        // Must cache, since we're returning a reference.
+        _result =_output->_outputFcn(_output->_owner.get(), state, _channelName);
+        return _result;
+    }
+    const Output<T>& getOutput() const { return _output.getRef(); }
+    const std::string& getChannelName() const override {
+        if (_channelName.empty()) return getOutput().getName();
+        return _channelName;
+    }
+    std::string getName() const override {
+        if (_channelName.empty()) return getOutput().getName();
+        return getOutput().getName() + ":" + _channelName;
+    }
+    std::string getPathName() const override {
+        return getOutput().getOwner().getFullPathName() + "/" + getName();
+    }
+private:
+    mutable T _result; // TODO remove
+    SimTK::ReferencePtr<const Output<T>> _output;
+    std::string _channelName;
+    
+    // To allow Output<T> to set the _output pointer upon copy.
+    friend Output<T>::Output(const Output&);
+    friend Output<T>& Output<T>::operator=(const Output&);
+};
 
 // TODO consider using std::reference_wrapper<T> as type for _output_##oname,
 // since it is copyable.
@@ -218,6 +373,42 @@ private:
     /** @}                                                               */ \
     /** @cond                                                            */ \
     bool _has_output_##oname { constructOutput<T>(#oname, &Self::func, ostage) }; \
+    /** @endcond                                                         */
+    
+/**
+ * Create a list output for a member function of this component. A list output
+ * can have multiple values, or channels. The component must publish what channels
+ * its outputs have by calling AbstractOutput::addChannel() within  
+ * Component::extendFinalizeFromProperties(). The provided member function must
+ * take the name of the channel whose value is requested.
+ * @code{.cpp}
+ * class MyComponent : public Component {
+ * public:
+ *     double getData(const SimTK::State& s, const std::string& requestedChannel) const;
+ *     OpenSim_DECLARE_LIST_OUTPUT(data, double, getData, SimTK::Stage::Dynamics);
+ *     ...
+ * protected:
+ *     void extendFinalizeFromProperties() {
+ *          Super::extendFinalizeFromProperties();
+ *          for (const auto& name : getChannelsToAdd()) {
+ *              updOutput("data").addChannel(name);
+ *          }
+ *     }
+ * };
+ * @endcode
+ *
+ */
+#define OpenSim_DECLARE_LIST_OUTPUT(oname, T, func, ostage)                 \
+    /** @name Outputs (list)                                             */ \
+    /** @{                                                               */ \
+    /** Provides the value of func##() and is available at stage ostage. */ \
+    /** This output can have multiple channels. TODO                     */ \
+    /** This output was generated with the                               */ \
+    /** #OpenSim_DECLARE_LIST_OUTPUT macro.                              */ \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, oname)                                    \
+    /** @}                                                               */ \
+    /** @cond                                                            */ \
+    bool _has_output_##oname { constructListOutput<T>(#oname, &Self::func, ostage) }; \
     /** @endcond                                                         */
 
 // Note: we could omit the T argument from the above macro by using the

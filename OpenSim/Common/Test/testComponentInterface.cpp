@@ -409,25 +409,7 @@ private:
 SimTK_NICETYPENAME_LITERAL(Foo);
 SimTK_NICETYPENAME_LITERAL(Bar);
 
-void testComponentPathNames();
-
-void testInputOutputConnections();
-
-int main() {
-
-    //Register new types for testing deserialization
-    Object::registerType(Foo());
-    Object::registerType(Bar());
-    // Register connector objects that are in use
-    Object::registerType(Connector<Foo>());
-    Object::registerType(Connector<Bar>());
-
-try {
-
-    //testInputOutputConnections();
-
-    testComponentPathNames();
-
+void testMisc() {
     // Define the Simbody system
     MultibodySystem system;
 
@@ -481,14 +463,13 @@ try {
     // add a subcomponent
     // connect internals
     ASSERT_THROW( OpenSim::Exception,
-                    theWorld.connect() );
+                  theWorld.connect() );
 
 
     ComponentList<Component> worldTreeAsList = theWorld.getComponentList();
     std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
-    for (ComponentList<Component>::const_iterator it = worldTreeAsList.begin();
-        it != worldTreeAsList.end();
-        ++it) {
+    for (auto it = worldTreeAsList.begin();
+              it != worldTreeAsList.end(); ++it) {
         std::cout << "Iterator is at: " << it->getFullPathName() << std::endl;
     }
 
@@ -564,7 +545,7 @@ try {
     // does not depend on bar0.
     bar0.reset(nullptr);
 
-    
+
     for (int i = 0; i < 10; ++i){
         s.updTime() = i*0.01234;
         s.updQ() = (i+1)*q/10.0;
@@ -585,7 +566,7 @@ try {
         cout << out4.getName() <<"|"<< out4.getTypeName() <<"|"<< out4.getValueAsString(s) << endl;
         cout << out5.getName() <<"|"<< out5.getTypeName() <<"|"<< out5.getValueAsString(s) << endl;
 
-        //viz.report(s); 
+        //viz.report(s);
         system.realize(s, Stage::Report);
 
         cout << "foo.input1 = " << foo.getInputValue<double>(s, "input1") << endl;
@@ -596,8 +577,10 @@ try {
         
     world2->updComponent("Bar").getConnector<Foo>("childFoo");
     // We haven't called connect yet, so this connection isn't made yet.
-    ASSERT_THROW( OpenSim::Exception,
-            world2->updComponent("Bar").getConnectee<Foo>("childFoo") );
+    SimTK_TEST_MUST_THROW_EXC(
+            world2->updComponent("Bar").getConnectee<Foo>("childFoo"),
+            OpenSim::Exception
+             );
 
     ASSERT(theWorld == *world2, __FILE__, __LINE__,
         "Model serialization->deserialization FAILED");
@@ -611,7 +594,7 @@ try {
 
     world2->buildUpSystem(system2);
     s = system2.realizeTopology();
-    
+
     world2->print("clone_" + modelFile);
 
     // Test copy assignment
@@ -648,7 +631,7 @@ try {
     compFoo.set_Foo1(foo);
     compFoo.set_Foo2(foo2);
     compFoo.finalizeFromProperties();
-    
+
     world3.add(&compFoo);
     world3.add(&bar2);
 
@@ -763,14 +746,137 @@ try {
 
     theWorld.print("Nested_" + modelFile);
 }
-    catch (const std::exception& e) {
-        cout << e.what() <<endl;
-        return 1;
+
+template <typename T>
+class ConsoleReporter : public Component {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ConsoleReporter, Component);
+    // TODO interval
+    // TODO constant interval reporting
+    // TODO num significant digits (override).
+    OpenSim_DECLARE_LIST_INPUT(input, T, SimTK::Stage::Acceleration,
+                               "Quantities to print to console.");
+public:
+    ConsoleReporter() {
+        constructInfrastructure();
     }
-    cout << "Done" << endl;
-    return 0;
+private:
+    void extendRealizeReport(const State& state) const override {
+        // multi input: loop through multi-inputs.
+        // Output::getNumberOfSignificantDigits().
+        // TODO print column names every 10 outputs.
+        // TODO test by capturing stdout.
+        // TODO prepend each line with "[<name>]" or "[reporter]" if no name is given.
+        // TODO an actual implementation should do a static cast, since we
+        // know that T is correct.
+        const auto& input = getInput<T>("input");
+        
+        if (_printCount % 20 == 0) {
+            std::cout << "[" << getName() << "] "
+                      << std::setw(_width) << "time" << "| ";
+            for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
+                const auto& chan = Input<T>::downcast(input).getChannel(idx);
+                const auto& outName = chan.getName();
+                const auto& truncName = outName.size() <= _width ?
+                    outName : outName.substr(outName.size() - _width);
+                std::cout << std::setw(_width) << truncName << "|";
+    }
+            std::cout << "\n";
+        }
+        // TODO set width based on number of significant digits.
+        std::cout << "[" << getName() << "] "
+                  << std::setw(_width) << state.getTime() << "| ";
+        for (const auto& chan : input.getChannels()) {
+            const auto& value = chan->getValue(state);
+            const auto& nSigFigs = chan->getOutput().getNumberOfSignificantDigits();
+            std::cout << std::setw(_width)
+                      << std::setprecision(nSigFigs) << value << "|";
+        }
+        std::cout << std::endl;
+        
+        const_cast<ConsoleReporter<T>*>(this)->_printCount++;
+    }
+    unsigned int _printCount = 0;
+    int _width = 12;
+};
+
+void testListInputs() {
+    MultibodySystem system;
+    TheWorld theWorld;
+    theWorld.setName("World");
+    
+    Foo& foo = *new Foo();
+    foo.setName("Foo");
+    theWorld.add(&foo);
+    foo.set_mass(2.0);
+
+    Foo& foo2 = *new Foo();
+    foo2.setName("Foo2");
+    foo2.set_mass(3.0);
+    theWorld.add(&foo2);
+
+    Bar& bar = *new Bar();
+    bar.setName("Bar");
+    theWorld.add(&bar);
+    
+    auto* reporter = new ConsoleReporter<double>();
+    reporter->setName("rep0");
+    theWorld.add(reporter);
+    
+    reporter->updInput("input").connect(foo.getOutput("Output1"));
+    reporter->updInput("input").connect(bar.getOutput("PotentialEnergy"));
+    reporter->updInput("input").connect(bar.getOutput("fiberLength"));
+    reporter->updInput("input").connect(bar.getOutput("activation"));
+    
+    bar.updConnector<Foo>("parentFoo").set_connectee_name("Foo");
+    bar.updConnector<Foo>("childFoo").set_connectee_name("Foo2");
+    
+    theWorld.connect();
+    theWorld.buildUpSystem(system);
+    
+    State s = system.realizeTopology();
+    
+    const Vector q = Vector(s.getNQ(), SimTK::Pi/2);
+    for (int i = 0; i < 10; ++i){
+        s.updTime() = i*0.01234;
+        s.updQ() = (i+1)*q/10.0;
+        system.realize(s, Stage::Report);
+    }
 }
 
+
+void testListConnectors() {
+    MultibodySystem system;
+    TheWorld theWorld;
+    theWorld.setName("world");
+    
+    Foo& foo = *new Foo(); foo.setName("foo"); foo.set_mass(2.0);
+    theWorld.add(&foo);
+
+    Foo& foo2 = *new Foo(); foo2.setName("foo2"); foo2.set_mass(3.0);
+    theWorld.add(&foo2);
+
+    Bar& bar = *new Bar(); bar.setName("bar");
+    theWorld.add(&bar);
+    
+    // Non-list connectors.
+    bar.updConnector<Foo>("parentFoo").set_connectee_name("foo");
+    bar.updConnector<Foo>("childFoo").set_connectee_name("foo2");
+    
+    // Ensure that calling connect() on bar's "parentFoo" doesn't increase
+    // its number of connectees.
+    bar.updConnector<Foo>("parentFoo").connect(foo);
+    // TODO The "Already connected to 'foo'" is caught by `connect()`.
+    SimTK_TEST(bar.getConnector<Foo>("parentFoo").getNumConnectees() == 1);
+    
+    theWorld.connect();
+    theWorld.buildUpSystem(system);
+    
+    State s = system.realizeTopology();
+    
+    std::cout << bar.getConnectee<Foo>("parentFoo").get_mass() << std::endl;
+    
+    // TODO redo with the property list / the reference connect().
+}
 
 void testComponentPathNames()
 {
@@ -958,3 +1064,21 @@ void testInputOutputConnections()
     world.connect();
     world.buildUpSystem(mbs);
 }
+
+int main() {
+
+    //Register new types for testing deserialization
+    Object::registerType(Foo());
+    Object::registerType(Bar());
+    // Register connector objects that are in use
+    Object::registerType(Connector<Foo>());
+    Object::registerType(Connector<Bar>());
+
+ // TODO   SimTK_START_TEST("testComponentIterface");
+        SimTK_SUBTEST(testMisc);
+        SimTK_SUBTEST(testListInputs);
+        SimTK_SUBTEST(testListConnectors);
+        SimTK_SUBTEST(testComponentPathNames);
+//    SimTK_END_TEST();
+}
+
