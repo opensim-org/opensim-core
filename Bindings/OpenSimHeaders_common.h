@@ -42,6 +42,8 @@
 #include <OpenSim/Common/Component.h>
 
 #include <OpenSim/Common/MarkerData.h>
+#include <OpenSim/Common/DataTable.h>
+#include <OpenSim/Common/TimeSeriesTable.h>
 
 #endif // OPENSIM_OPENSIM_HEADERS_OPENSIM_H_
 

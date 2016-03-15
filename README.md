@@ -303,12 +303,18 @@ directory to your `PATH` environment variable.
 git clone https://github.com/opensim-org/opensim-core.git
 mkdir opensim_dependencies_build
 cd .\opensim_dependencies_build
-cmake ..\opensim-core\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\opensim_dependencies_install"
+cmake ..\opensim-core\dependencies `
+      -G"Visual Studio 14 2015 Win64" `
+      -DCMAKE_INSTALL_PREFIX="..\opensim_dependencies_install"
 cmake --build . --config RelWithDebInfo -- /maxcpucount:8
 cd ..
 mkdir opensim_build
 cd .\opensim_build
-cmake ..\opensim-core -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\opensim_install" -DOPENSIM_DEPENDENCIES_DIR="..\opensim_dependencies_install" -DWITH_BTK=ON
+cmake ..\opensim-core `
+      -G"Visual Studio 14 2015 Win64" `
+      -DCMAKE_INSTALL_PREFIX="..\opensim_install" `
+      -DOPENSIM_DEPENDENCIES_DIR="..\opensim_dependencies_install" `
+      -DWITH_BTK=ON
 cmake --build . --config RelWithDebInfo -- /maxcpucount:8
 ctest -C RelWithDebInfo --parallel 8
 ```

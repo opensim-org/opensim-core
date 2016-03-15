@@ -44,24 +44,31 @@ int main() {
     filenames.push_back("walking2.c3d");
     filenames.push_back("walking5.c3d");
 
+    std::cout << "Starting testC3DFileAdpapter" << std::endl;
+
     for(const auto& filename : filenames) {
-    C3DFileAdapter c3d_adapter{};
-    auto tables = c3d_adapter.read(filename);
+        C3DFileAdapter c3d_adapter{};
+        auto tables = c3d_adapter.read(filename);
 
-    auto&    marker_table = std::get<0>(tables);
-    auto&     force_table = std::get<1>(tables);
+        std::cout << "Read in " << filename << std::endl;
 
-    if(marker_table->getNumRows() != 0) {
-    marker_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
-    TRCFileAdapter trc_adapter{};
-    trc_adapter.write(*marker_table, filename + ".markers.trc");
-    }
+        auto&    marker_table = std::get<0>(tables);
+        auto&     force_table = std::get<1>(tables);
 
-    if(force_table->getNumRows() != 0) {
-    force_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
-    TRCFileAdapter trc_adapter{};
-    trc_adapter.write(*force_table, filename + ".forces.trc");
-    }
+        std::cout << "Got tables out from " << filename << std::endl;
+
+        if(marker_table->getNumRows() != 0) {
+            marker_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
+            TRCFileAdapter trc_adapter{};
+            trc_adapter.write(*marker_table, filename + ".markers.trc");
+        }
+
+        if(force_table->getNumRows() != 0) {
+            force_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
+            TRCFileAdapter trc_adapter{};
+            trc_adapter.write(*force_table, filename + ".forces.trc");
+        }
+        
     }
 
     for(const auto& filename : filenames) {

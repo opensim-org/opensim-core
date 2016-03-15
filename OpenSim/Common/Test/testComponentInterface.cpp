@@ -167,6 +167,11 @@ public:
 
     OpenSim_DECLARE_OUTPUT(BodyAcc, SpatialVec, calcSpatialAcc,
             SimTK::Stage::Velocity)
+    
+    OpenSim_DECLARE_INPUT(input1, double, SimTK::Stage::Model, "");
+    OpenSim_DECLARE_INPUT(AnglesIn, Vector, SimTK::Stage::Model, "");
+    OpenSim_DECLARE_INPUT(fiberLength, double, SimTK::Stage::Model, "");
+    OpenSim_DECLARE_INPUT(activation, double, SimTK::Stage::Model, "");
 
     Foo() : Component() {
         constructInfrastructure();
@@ -241,14 +246,6 @@ private:
         Array<double> inertia(0.001, 6);
         inertia[0] = inertia[1] = inertia[2] = 0.1;
         constructProperty_inertia(inertia);
-    }
-
-    void constructInputs() override {
-        constructInput<double>("input1", SimTK::Stage::Model);
-        constructInput<Vector>("AnglesIn", SimTK::Stage::Model);
-
-        constructInput<double>("fiberLength", SimTK::Stage::Model);
-        constructInput<double>("activation", SimTK::Stage::Model);
     }
 
     void constructOutputs() override {
