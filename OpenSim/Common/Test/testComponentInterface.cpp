@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/Reporter.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -33,8 +34,18 @@ class Bar;
 class Sub : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(Sub, Component);
 public:
+    OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE(subState);
     Sub() = default;
     virtual ~Sub() = default;
+private:
+    void extendAddToSystem(MultibodySystem &system) const override {
+        Super::extendAddToSystem(system);
+        addStateVariable("subState", Stage::Dynamics);
+    }
+    void computeStateVariableDerivatives(const SimTK::State& s) const override {
+        double deriv = exp(-2.0*s.getTime());
+        setStateVariableDerivativeValue(s, "subState", deriv);
+    }
 }; //end class Sub
 
 class TheWorld : public Component {
@@ -403,6 +414,8 @@ SimTK_NICETYPENAME_LITERAL(Bar);
 
 void testComponentPathNames();
 
+void testInputOutputConnections();
+
 int main() {
 
     //Register new types for testing deserialization
@@ -413,6 +426,9 @@ int main() {
     Object::registerType(Connector<Bar>());
 
     try {
+
+        //testInputOutputConnections();
+
         testComponentPathNames();
 
         // Define the Simbody system
@@ -513,7 +529,7 @@ int main() {
         ASSERT(foo2 == foo2found);
 
         // do any other input/output connections
-        foo.getInput("input1").connect(bar.getOutput("PotentialEnergy"));
+        foo.updInput("input1").connect(bar.getOutput("PotentialEnergy"));
     
         // check how this model serializes
         string modelFile("testComponentInterfaceModel.osim");
@@ -661,15 +677,21 @@ int main() {
 
         cout << "Connecting theWorld:" << endl;
         theWorld.dumpSubcomponents();
+        theWorld.finalizeFromProperties();
         theWorld.connect();
+
+        TableReporter<Real>* reporter = new TableReporter<Real>();
+        reporter->set_report_time_interval(0.1);
+        reporter->updInput("model_outputs").connect(foo.getOutput("Qs"));
+        theWorld.add(reporter);
 
         MultibodySystem system3;
         cout << "Building theWorld's system:" << endl;
         theWorld.buildUpSystem(system3);
 
         // Connect our state variables.
-        foo.getInput("fiberLength").connect(bar.getOutput("fiberLength"));
-        foo.getInput("activation").connect(bar.getOutput("activation"));
+        foo.updInput("fiberLength").connect(bar.getOutput("fiberLength"));
+        foo.updInput("activation").connect(bar.getOutput("activation"));
         // Since hiddenStateVar is a hidden state variable, it has no
         // corresponding output.
         ASSERT_THROW( OpenSim::Exception,
@@ -692,6 +714,24 @@ int main() {
         ts.initialize(s);
         ts.stepTo(1.0);
         s = ts.getState();
+
+        // realize simbody system to velocity stage
+        system3.realize(s, Stage::Velocity);
+
+        // Get the results of integrating the system forward
+        const TimeSeriesTable_<Real>& results = reporter->getReport();
+        ASSERT(results.getNumRows() == 11, __FILE__, __LINE__,
+            "Number of rows in Reporter results not equal to number of time intervals.");
+        cout << "************** Contents of Table of Results ****************" << endl;
+        for (size_t i = 0; i < results.getNumRows(); ++i) {
+            results.getRowAtIndex(i).dump();
+        }
+        cout << "***************** Qs Output at Final state *****************" << endl;
+        auto& finalVal = foo.getOutputValue<Vector>(s, "Qs");
+        (~finalVal).dump();
+        size_t ncols = results.getNumColumns();
+        ASSERT(ncols == finalVal.size(), __FILE__, __LINE__,
+            "Number of cols in Reporter results not equal to size of Output'Qs' size.");
 
         // Check the result of the integration on our state variables.
         ASSERT_EQUAL(3.5, bar.getOutputValue<double>(s, "fiberLength"), 1e-10);
@@ -875,4 +915,49 @@ void testComponentPathNames()
 
     top.dumpSubcomponents();
     top.connect();
+}
+
+void testInputOutputConnections()
+{
+    TheWorld world;
+    Foo* foo1 = new Foo();
+    Foo* foo2 = new Foo();
+    Bar* bar = new Bar();
+
+    foo1->setName("foo1");
+    foo2->setName("foo2");
+    bar->setName("bar");
+    bar->updConnector<Foo>("parentFoo").connect(*foo1);
+    bar->updConnector<Foo>("childFoo").connect(*foo2);
+    
+    world.add(foo1);
+    world.add(foo2);
+    world.add(bar);
+
+    MultibodySystem mbs;
+
+    // Should yield warnings about unconnected Inputs
+    cout << "Unsatisfied Inputs during world.connect()" << endl;
+    world.connect();
+
+    // do any other input/output connections
+    foo1->updInput("input1").connect(bar->getOutput("PotentialEnergy"));
+    // Must throw an exception since subState0 is not a state of internalSub.
+    ASSERT_THROW(OpenSim::Exception, 
+        foo2->updInput("input1").connect(world.getOutput("./internalSub/subState0")));
+    // internalSub's state is "subState"
+    foo2->updInput("input1").connect(world.getOutput("./internalSub/subState"));
+
+    foo1->updInput("AnglesIn").connect(foo2->getOutput("Qs"));
+    foo2->updInput("AnglesIn").connect(foo1->getOutput("Qs"));
+
+    foo1->updInput("activation").connect(bar->getOutput("activation"));
+    foo1->updInput("fiberLength").connect(bar->getOutput("fiberLength"));
+
+    foo2->updInput("activation").connect(bar->getOutput("activation"));
+    foo2->updInput("fiberLength").connect(bar->getOutput("fiberLength"));
+
+    cout << "Unsatisfied Inputs after wiring Outputs to Inputs." << endl;
+    world.connect();
+    world.buildUpSystem(mbs);
 }

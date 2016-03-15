@@ -147,11 +147,14 @@ void Component::finalizeFromProperties()
         comp->setParent(*this);
     }
 
-    // Provide each Output with a pointer to this component so that it can
-    // invoke its methods.
+    // Provide each Input and Output with a pointer to its component (this) so 
+    // that it can invoke its methods.
     // TODO if we implement custom copy constructor and assignment methods,
     // then this could be moved there (and then Output could take owner as an
     // argument to its constructor).
+    for (auto& it : _inputsTable) {
+        it.second->setOwner(*this);
+    }
     for (auto& it : _outputsTable) {
         it.second->setOwner(*this);
     }
@@ -209,9 +212,18 @@ void Component::connect(Component &root)
 
     for (auto& inputPair : _inputsTable) {
         AbstractInput& input = inputPair.second.updRef();
-        input.disconnect();
+
+        const std::string& outName = input.get_connectee_name();
+        if (outName.empty()) {
+            std::cout << getConcreteClassName() << "'" << getName() << "'";
+            std::cout << "::connect() Input<" << input.getConnecteeTypeName();
+            std::cout << ">`" << input.getName();
+            std::cout << "' Output has not been specified." << std::endl;
+            continue;
+        }
+
         try {
-            const std::string& outName = input.get_connectee_name();
+            input.disconnect();
             input.findAndConnect(root);
         }
         catch (const std::exception& x) {

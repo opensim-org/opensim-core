@@ -70,6 +70,7 @@ Reporter::Reporter()
 void Reporter::setNull()
 {
     setAuthors("Ajay Seth");
+    setName("reporter");
 }
 
 //_____________________________________________________________________________
@@ -105,37 +106,6 @@ void Reporter::extendRealizeReport(const SimTK::State& state) const
 void Reporter::report(const SimTK::State& s) const
 {
     implementReport(s);
-}
-
-//=============================================================================
-// TableReporter Implementation
-//=============================================================================
-
-
-template<typename T>
-void TableReporter<T>::extendConnect(Component& root)
-{
-    Super::extendConnect(root);
-
-    const AbstractInput& input = getInput("model_outputs");
-
-    std::vector<std::string>columnNames;
-    columnNames[0] = input.getName();
-
-    _outputTable.setColumnLabels(columnNames);
-}
-
-template<typename T>
-void TableReporter<T>::implementReport(const SimTK::State& s) const
-{
-    RowVector row;
-    const AbstractInput& input = getInput("model_outputs");
-
-    int numColumns = 1;
-    for (int i = 0; i < numColumns; ++i)
-        row[i] = getInputValue<T>(s, "model_outputs");
-
-    _outputTable.appendRow(s.getTime(), row);
 }
 
 

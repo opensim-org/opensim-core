@@ -251,7 +251,7 @@ public:
     virtual ~AbstractInput() {}
 
     // Connector interface
-    void connect(const Object& object) override{
+    void connect(const Object& object) override {
         std::stringstream msg;
         msg << "Input::connect(): ERR- Cannot connect '" << object.getName()
             << "' of type " << object.getConcreteClassName() <<
@@ -260,7 +260,7 @@ public:
     }
 
     /** Input Specific Connect */
-    virtual void connect(const AbstractOutput& output) const {
+    virtual void connect(const AbstractOutput& output) {
         connectee = output;
         //std::cout << getConcreteClassName() << "::connected to '";
         //std::cout << output.getName() << "'<" << output.getTypeName();
@@ -304,11 +304,15 @@ public:
         AbstractInput(name, connectAtStage, owner) {}
 
     /** Connect this Input the from provided (Abstract)Output */
-    void connect(const AbstractOutput& output) const override {
+    void connect(const AbstractOutput& output)  override {
         // enable interaction through AbstractInterface
         Super::connect(output);
         // and value specific interface
         connectee = Output<T>::downcast(output);
+        std::string pathName =
+            output.getOwner().getRelativePathName(getOwner());
+        pathName = pathName + "/" + output.getName();
+        set_connectee_name(pathName);
     }
 
     /** Connect this Input given a root Component to search for
@@ -331,6 +335,10 @@ public:
        Output<T>'s getValue() with minimal overhead. */
     const T& getValue(const SimTK::State &state) const {
         return connectee.getRef().getValue(state);
+    }
+
+    std::string getConnecteeTypeName() const override {
+        return SimTK::NiceTypeName<T>::namestr();
     }
 
     SimTK_DOWNCAST(Input, AbstractInput);

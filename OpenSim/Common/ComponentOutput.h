@@ -75,6 +75,9 @@ public:
     /** Output's dependence on System being realized to at least this System::Stage */
     const SimTK::Stage& getDependsOnStage() const { return dependsOnStage; }
 
+    /** Output's owning Component */
+    const Component& getOwner() const { return _owner.getRef(); }
+
     /** Output Interface */
     virtual std::string     getTypeName() const = 0;
     virtual std::string     getValueAsString(const SimTK::State& state) const = 0;

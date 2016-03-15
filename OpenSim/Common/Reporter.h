@@ -59,7 +59,7 @@ public:
 //==============================================================================
     /** Variable list of Inputs by name that will be recorded by the Reporter 
         and corresponds to a Model (Component) Output during a simulation. */
-//    OpenSim_DECLARE_INPUTS("output_names", SimTK::Report,
+//    OpenSim_DECLARE_INPUTS("model_outputs", SimTK::Report,
 //        " The Outputs listed by name that are to be recorded on each reporting "
 //        " event that occurs during a simulation.");
 
@@ -74,6 +74,8 @@ protected:
     /** Default constructor sets up Reporter-level properties; can only be
     called from a derived class constructor. **/
     Reporter();
+
+    virtual ~Reporter() = default;
 
     /** Deserialization from XML, necessary so that derived classes can 
     (de)serialize. **/
@@ -95,10 +97,7 @@ protected:
     /** extend the Reporting functionality */
     void extendRealizeReport(const SimTK::State& state) const override;
 
-
 private:
-
-
 
     void setNull();
     void constructProperties();
@@ -116,22 +115,37 @@ private:
 * @author Ajay Seth
 */
 template<typename T>
-class OSIMCOMMON_API TableReporter : public Reporter {
-OpenSim_DECLARE_CONCRETE_OBJECT(TableReporter, Reporter);
+class TableReporter : public Reporter {
+OpenSim_DECLARE_CONCRETE_OBJECT_T(TableReporter, T, Reporter);
 public:
-    using Reporter::Reporter;
+    TableReporter()  {
+        constructInputs();
+    }
     const TimeSeriesTable_<T>& getReport() const {
         return _outputTable;
     }
 
 protected:
-    void implementReport(const SimTK::State& state) const override;
+    void implementReport(const SimTK::State& state) const override {
+        auto& result = getInputValue< Vector_<T> >(state, "model_outputs");
+        _outputTable.appendRow(state.getTime(), ~result);
+    }
 
-    void extendConnect(Component& root) override;
+
+    void extendConnect(Component& root) override {
+        Super::extendConnect(root);
+
+        const AbstractInput& input = getInput("model_outputs");
+
+        std::vector<std::string>columnNames;
+        columnNames[0] = input.getName();
+
+        _outputTable.setColumnLabels(columnNames);
+    }
 
 private:
     void constructInputs() override {
-        constructInput<T>("model_outputs", SimTK::Stage::Acceleration);
+        constructInput<Vector_<T>>("model_outputs", SimTK::Stage::Acceleration);
     }
 
     // Hold the output values in a table with values as columns and time rows

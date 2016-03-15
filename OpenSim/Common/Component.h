@@ -596,7 +596,7 @@ public:
     //@{ 
 
     /**
-    * Get the Input provided by this Component by name.
+    * Get an Input provided by this Component by name.
     *
     * @param name   the name of the Input
     * @return       const reference to the AbstractInput
@@ -623,6 +623,12 @@ public:
                 << getConcreteClassName();
         throw Exception(msg.str(), __FILE__, __LINE__);
     }
+    
+    AbstractInput& updInput(const std::string& name)
+    {
+        return *const_cast<AbstractInput *>(&getInput(name));
+    }
+
 
     /**
     * Get the Output provided by this Component by name.
@@ -1417,8 +1423,8 @@ protected:
     * Construct an Input (socket) for this Component's dependence on an Output signal.
     * It is a placeholder for the Output and its type and enables the Component
     * to automatically traverse its dependencies and provide a meaningful message
-    * if the provided Output is incompatible or non-existant. The also specifies at what
-    * stage the output must be valid for the the component to consume it as an input.
+    * if the provided Output is incompatible or non-existant. It also specifies at what
+    * stage the output must be valid for this component to consume it as an input.
     * if the Output's dependsOnStage is above the Input's requiredAtStage, an Exception
     * is thrown because the output cannot satisfy the Input's requirement.
     */
