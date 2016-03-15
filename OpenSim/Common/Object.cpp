@@ -730,10 +730,11 @@ Object::checkForInvalidPropertiesInXml(SimTK::Xml::Element& aNode) const {
             msg += " name=\"" + elemName + "\"";
         msg += "> that is not a valid property.";
 
-        if(_invalidPropertyException)
-            throw Exception{msg};
-        else
-            std::cerr << msg << std::endl;
+        OPENSIM_THROW_IF(_invalidPropertyException,
+                         InvalidXmlProperty,
+                         msg);
+        
+        std::cerr << msg << std::endl;
     }
 }
 

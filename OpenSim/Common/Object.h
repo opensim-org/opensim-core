@@ -35,6 +35,7 @@
 
 // INCLUDES
 
+#include "Exception.h"
 #include "osimCommonDLL.h"
 #include "XMLDocument.h"
 #include "PropertySet.h"
@@ -78,6 +79,17 @@ namespace OpenSim {
 const char ObjectDEFAULT_NAME[] = "default";
 
 class XMLDocument;
+
+class InvalidXmlProperty : public Exception {
+public:
+    InvalidXmlProperty(const std::string& file,
+                       size_t line,
+                       const std::string& func,
+                       const std::string& msg) :
+        Exception(file, line, func) {
+        addMessage(msg);
+    }
+};
 
 //==============================================================================
 //                                 OBJECT
