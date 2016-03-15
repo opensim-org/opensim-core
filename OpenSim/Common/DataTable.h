@@ -449,7 +449,7 @@ protected:
     SimTK::Matrix_<ETY> _depData;
 };  // DataTable_
 
-/** Print DataTable out to a stream. Metadata is not printed to the steam as it
+/** Print DataTable out to a stream. Metadata is not printed to the stream as it
 is currently allowed to contain objects that do not support this operation.   
 Meant to be used for Debugging only.                                          */
 template<typename ETX, typename ETY>
