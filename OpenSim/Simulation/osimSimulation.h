@@ -112,6 +112,7 @@
 #include "SimbodyEngine/SpatialTransform.h"
 
 #include "MomentArmSolver.h"
+#include "StatesTrajectory.h"
 
 #include "RegisterTypes_osimSimulation.h"   // to expose RegisterTypes_osimSimulation
 

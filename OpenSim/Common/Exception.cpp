@@ -87,6 +87,14 @@ Exception::Exception(const std::string& file,
     addMessage(msg);
 }
 
+Exception::Exception(const std::string& file,
+                     size_t line,
+                     const std::string& func,
+                     const std::string& msg)
+        : Exception(file, line, func) {
+    addMessage(msg);
+}
+
 void
 Exception::addMessage(const std::string& msg) {
     if(_msg.length() == 0)

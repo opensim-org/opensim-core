@@ -103,11 +103,13 @@ public:
     // will be removed before release 4.0 in favor of a mechanism that 
     // handles local/global/shared Appearance objects
     /// Convenient access to set Appearance/Color
+    /// color is RGB, each components is in the range [0, 1].
     void setColor(const SimTK::Vec3& color) { 
         upd_Appearance().set_color(color); 
     };
 
     /// Convenient access to get Appearance/Color
+    /// returns RGB , each components is in the range [0, 1].
     const SimTK::Vec3& getColor() const { 
         return get_Appearance().get_color(); 
     };

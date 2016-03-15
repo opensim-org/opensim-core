@@ -38,7 +38,6 @@
  */
 
 // INCLUDES
-#include "OpenSim/Common/Component.h"
 #include "OpenSim/Common/ComponentOutput.h"
 #include "OpenSim/Common/ComponentList.h"
 
@@ -97,9 +96,11 @@ public:
         Create a Connector with specified name and stage at which it
         should be connected.
     @param name             name of the connector, usually describes its dependency. 
-    @param connectAtStage   Stage at which Connector should be connected. */
-    AbstractConnector(const std::string& name, const SimTK::Stage& connectAtStage) :
-        connectAtStage(connectAtStage) {
+    @param connectAtStage   Stage at which Connector should be connected.
+    @param owner            Component to which this Connector belongs.*/
+    AbstractConnector(const std::string& name, 
+                      const SimTK::Stage& connectAtStage,
+                      const Component& owner) : _owner(&owner), connectAtStage(connectAtStage) {
         constructProperties();
         setName(name);
     }
@@ -133,9 +134,18 @@ public:
     /** Disconnect this Connector from the connectee object */
     virtual void disconnect() = 0;
 
+protected:
+    const Component& getOwner() const { return _owner.getRef(); }
+    void setOwner(const Component& o) { _owner.reset(&o); }
+
 private:
     void constructProperties() { constructProperty_connectee_name(""); }
     SimTK::Stage connectAtStage;
+
+    SimTK::ReferencePtr<const Component> _owner;
+
+    friend Component;
+
 //=============================================================================
 };  // END class AbstractConnector
 
@@ -153,9 +163,10 @@ public:
     Create a Connector that can only connect to Object of type T with specified 
     name and stage at which it should be connected.
     @param name             name of the connector used to describe its dependency.
-    @param connectAtStage   Stage at which Connector should be connected. */
-    Connector(const std::string& name, const SimTK::Stage& connectAtStage) : 
-        AbstractConnector(name, connectAtStage), connectee(nullptr) {}
+    @param connectAtStage   Stage at which Connector should be connected.
+    @param owner The component that contains this input. */
+    Connector(const std::string& name, const SimTK::Stage& connectAtStage, Component& owner) : 
+        AbstractConnector(name, connectAtStage, owner), connectee(nullptr) {}
 
     virtual ~Connector() {}
 
@@ -176,7 +187,19 @@ public:
         const T* objT = dynamic_cast<const T*>(&object);
         if (objT) {
             connectee = *objT;
-            set_connectee_name(object.getName());
+
+            std::string objPathName = objT->getFullPathName();
+            std::string ownerPathName = getOwner().getFullPathName();
+
+            // This can happen when top level components like a Joint and Body
+            // have the same name like a pelvis Body and pelvis Joint that
+            // connects that connects to a Body of the same name.
+            if(objPathName == ownerPathName)
+                set_connectee_name(objPathName);
+            else { // otherwise store the relative path name to the object
+                std::string relPathName = objT->getRelativePathName(getOwner());
+                set_connectee_name(relPathName);
+            }
         }
         else {
             std::stringstream msg;
@@ -219,9 +242,11 @@ public:
     Create an AbstractInput (Connector) that connects only to an AbstractOutput
     specified by name and stage at which it should be connected.
     @param name             name of the dependent (Abstract)Output.
-    @param connectAtStage   Stage at which Input should be connected. */
-    AbstractInput(const std::string& name, const SimTK::Stage& connectAtStage) :
-        AbstractConnector(name, connectAtStage), connectee(nullptr) {}
+    @param connectAtStage   Stage at which Input should be connected.
+    @param owner The component that contains this input. */
+    AbstractInput(const std::string& name,
+                  const SimTK::Stage& connectAtStage, const Component& owner) :
+        AbstractConnector(name, connectAtStage, owner), connectee(nullptr) {}
 
     virtual ~AbstractInput() {}
 
@@ -273,9 +298,10 @@ public:
     Create an Input<T> (Connector) that can only connect to an Output<T>
     name and stage at which it should be connected.
     @param name             name of the Output dependency.
-    @param connectAtStage   Stage at which Input should be connected. */
-    Input(const std::string& name, const SimTK::Stage& connectAtStage) :
-        AbstractInput(name, connectAtStage) {}
+    @param connectAtStage   Stage at which Input should be connected.
+    @param owner The component that contains this input. */
+    Input(const std::string& name, const SimTK::Stage& connectAtStage, const Component& owner) :
+        AbstractInput(name, connectAtStage, owner) {}
 
     /** Connect this Input the from provided (Abstract)Output */
     void connect(const AbstractOutput& output) const override {
@@ -302,6 +328,39 @@ private:
     mutable SimTK::ReferencePtr< const Output<T>  > connectee;
 }; // END class Input<Y>
 
+/// @name Creating Inputs for your Component
+/// Use these macros at the top of your component class declaration,
+/// near where you declare @ref Property properties.
+/// @{
+/** Create a socket for this component's dependence on an output signal from
+ *  another component. It is a placeholder for an Output that can be connected
+ *  to it. An output must have the same type T as an input to be connected
+ *  to it. You must also specify the stage at which you require this input
+ *  quantity. The comment should describe how the input quantity is used.
+ *
+ *  Here's an example for using this macro:
+ *  @code{.cpp}
+ *  class MyComponent : public Component {
+ *  public:
+ *      OpenSim_DECLARE_INPUT(emg, double, SimTK::Stage::Velocity, "For validation.");
+ *      ...
+ *  };
+ *  @endcode
+ * @see Component::constructInput()
+ * @relates OpenSim::Input
+ */
+#define OpenSim_DECLARE_INPUT(iname, T, istage, comment)                    \
+    /** @name Inputs                                                     */ \
+    /** @{                                                               */ \
+    /** comment                                                          */ \
+    /** This input is needed at stage istage.                            */ \
+    /** This input was generated with the                                */ \
+    /** #OpenSim_DECLARE_INPUT macro.                                    */ \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
+    /** @}                                                               */ \
+    /** @cond                                                            */ \
+    bool _has_input_##iname { constructInput<T>(#iname, istage) };          \
+    /** @endcond                                                         */
 
 } // end of namespace OpenSim
 

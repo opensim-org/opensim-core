@@ -31,10 +31,11 @@
  */
 
 // INCLUDES
-#include "OpenSim/Common/Component.h"
 #include <functional>
 
 namespace OpenSim {
+
+class Component;
 
 //=============================================================================
 //                           OPENSIM COMPONENT OUTPUT
@@ -90,10 +91,21 @@ public:
     void         setNumberOfSignificantDigits(unsigned int numSigFigs) 
     { numSigFigs = numSigFigs; }
 
+protected:
+
+    // Set the component that contains this Output.
+    void setOwner(const Component& owner) {
+        _owner.reset(&owner);
+    }
+    SimTK::ReferencePtr<const Component> _owner;
+
 private:
     unsigned int numSigFigs;
     SimTK::Stage dependsOnStage;
     std::string name;
+
+    // For calling setOwner().
+    friend Component;
 //=============================================================================
 };  // END class AbstractOutput
 
@@ -109,7 +121,8 @@ public:
     @param outputFunction   The output function to be invoked (returns Output T)
     @param dependsOnStage   Stage at which Output can be evaluated. */
     explicit Output(const std::string& name,
-        const std::function<T(const SimTK::State&)> outputFunction,
+        const std::function<T (const Component* comp, const SimTK::State&)>&
+                outputFunction,
         const SimTK::Stage&     dependsOnStage) : 
             AbstractOutput(name, dependsOnStage), _outputFcn(outputFunction)
     {}
@@ -138,13 +151,13 @@ public:
                     state.getSystemStage(), getDependsOnStage(),
                     "Output::getValue(state)");
         }
-        _result = _outputFcn(state); 
+        _result = _outputFcn(_owner.get(), state);
         return _result;
     }
     
     /** determine the value type for this Output*/
     std::string getTypeName() const override 
-        { return SimTK::NiceTypeName<T>::name(); }
+        { return SimTK::NiceTypeName<T>::namestr(); }
 
     std::string getValueAsString(const SimTK::State& state) const override
     {
@@ -154,16 +167,94 @@ public:
         return s.str();
     }
 
-    AbstractOutput* clone() const override { return new Output(*this); }
+    Output<T>* clone() const override { return new Output(*this); }
     SimTK_DOWNCAST(Output, AbstractOutput);
 
 private:
     mutable T _result;
-    std::function<T(const SimTK::State&)> _outputFcn;
+    std::function<T (const Component*, const SimTK::State&)> _outputFcn;
 
 //=============================================================================
 };  // END class Output
 
+// TODO consider using std::reference_wrapper<T> as type for _output_##oname,
+// since it is copyable.
+
+/// @name Creating Outputs for your Component
+/// Use these macros at the top of your component class declaration,
+/// near where you declare @ref Property properties.
+/// @{
+/** Create an output for a member function of this component.
+ *  The following must be true about componentMemberFunction, the function
+ *  that returns the output:
+ *
+ *     -# It is a member function of your component.
+ *     -# The member function is const.
+ *     -# It takes only one input, which is `const SimTK::State&`
+ *
+ *  You must also provide the stage on which the output depends.
+ *
+ *  Here's an example for using this macro:
+ *  @code{.cpp}
+ *  class MyComponent : public Component {
+ *  public:
+ *      OpenSim_DECLARE_OUTPUT(force, double, getForce, SimTK::Stage::Dynamics);
+ *      ...
+ *  };
+ *  @endcode
+ * @see Component::constructOutput()
+ * @relates OpenSim::Output
+ */
+#define OpenSim_DECLARE_OUTPUT(oname, T, func, ostage)                      \
+    /** @name Outputs                                                    */ \
+    /** @{                                                               */ \
+    /** Provides the value of func##() and is available at stage ostage. */ \
+    /** This output was generated with the                               */ \
+    /** #OpenSim_DECLARE_OUTPUT macro.                                   */ \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, oname)                                    \
+    /** @}                                                               */ \
+    /** @cond                                                            */ \
+    bool _has_output_##oname { constructOutput<T>(#oname, &Self::func, ostage) }; \
+    /** @endcond                                                         */
+
+// Note: we could omit the T argument from the above macro by using the
+// following code to deduce T from the provided func
+//      std::result_of<decltype(&Self::func)(Self, const SimTK::State&)>::type
+// However, then we wouldn't be able to document the type for the output in
+// doxygen.
+
+/** Create an Output for a StateVariable in this component. The provided
+ * name is both the name of the output and of the state variable.
+ *
+ * While this macro is a convenient way to construct an Output for a
+ * StateVariable, it is inefficient because it uses a string lookup at runtime.
+ * To create a more efficient Output, create a member variable that returns the
+ * state variable directly (see Coordinate::getValue() or
+ * Muscle::getActivation()) and then use the #OpenSim_DECLARE_OUTPUT macro.
+ *
+ * @code{.cpp}
+ * class MyComponent : public Component {
+ * public:
+ *     OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE(activation);
+ *     ...
+ * };
+ * @endcode
+ * @see Component::constructOutputForStateVariable()
+ * @relates OpenSim::Output
+ */
+#define OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE(oname)                    \
+    /** @name Outputs                                                    */ \
+    /** @{                                                               */ \
+    /** Provides the value of this class's oname state variable.         */ \
+    /** Available at stage SimTK::Stage::Model.                          */ \
+    /** This output was generated with the                               */ \
+    /** #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE macro.                */ \
+    OpenSim_DOXYGEN_Q_PROPERTY(double, oname)                               \
+    /** @}                                                               */ \
+    /** @cond                                                            */ \
+    bool _has_output_##oname { constructOutputForStateVariable(#oname) };   \
+    /** @endcond                                                         */
+/// @}
 //=============================================================================
 //=============================================================================
 
