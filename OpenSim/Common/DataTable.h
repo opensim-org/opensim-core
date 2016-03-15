@@ -33,6 +33,8 @@ in-memory container for data access and manipulation.                         */
 #include "OpenSim/Common/Exception.h"
 #include "OpenSim/Common/ValueArrayDictionary.h"
 
+#include <ostream>
+
 namespace OpenSim {
 
 class InvalidRow : public Exception {
@@ -446,6 +448,33 @@ protected:
     std::vector<ETX>    _indData;
     SimTK::Matrix_<ETY> _depData;
 };  // DataTable_
+
+/** Print DataTable out to a stream. Metadata is not printed to the steam as it
+is currently allowed to contain objects that do not support this operation.   
+Meant to be used for Debugging only.                                          */
+template<typename ETX, typename ETY>
+std::ostream& operator<<(std::ostream& outStream,
+                         const DataTable_<ETX, ETY>& table) {
+    outStream << "----------------------------------------------------------\n";
+    outStream << "NumRows: " << table.getNumRows()    << std::endl;
+    outStream << "NumCols: " << table.getNumColumns() << std::endl;
+    outStream << "Column-Labels: ";
+    const auto& labels = table.getColumnLabels();
+    if(!labels.empty()) {
+        outStream << "['" << labels[0] << "'";
+        if(labels.size() > 1)
+            for(size_t l = 1; l < labels.size(); ++l)
+                outStream << " '" << labels[l] << "'";
+        outStream << "]" << std::endl;
+    }
+    for(size_t r = 0; r < table.getNumRows(); ++r) {
+        outStream << table.getIndependentColumn().at(r) << " ";
+        outStream << table.getRowAtIndex(r) << std::endl;
+    }
+
+    outStream << "----------------------------------------------------------\n";
+    return outStream;
+}
 
 /** See DataTable_ for details on the interface.                              */
 typedef DataTable_<double, double> DataTable;
