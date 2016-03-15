@@ -59,12 +59,12 @@ public:
     }
 };
 
-class RowIndexOutOfRange : public IndexOutOfRange {
+class RowIndexOutOfRange : public IndexOutOfRange<size_t> {
 public:
     using IndexOutOfRange::IndexOutOfRange;
 };
 
-class ColumnIndexOutOfRange : public IndexOutOfRange {
+class ColumnIndexOutOfRange : public IndexOutOfRange<size_t> {
 public:
     using IndexOutOfRange::IndexOutOfRange;
 };

@@ -186,14 +186,15 @@ public:
     }
 };
 
+template <typename T>
 class IndexOutOfRange : public Exception {
 public:
     IndexOutOfRange(const std::string& file,
                     size_t line,
                     const std::string& func,
-                    size_t index, 
-                    size_t min, 
-                    size_t max) :
+                    T index,
+                    T min, 
+                    T max) :
         Exception(file, line, func) {
         std::string msg = "min = " + std::to_string(min);
         msg += " max = " + std::to_string(max);
