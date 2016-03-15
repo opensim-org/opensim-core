@@ -61,7 +61,7 @@ std::map<string,string>     Object::_renamedTypesMap;
 bool                        Object::_serializeAllDefaults=false;
 const string                Object::DEFAULT_NAME(ObjectDEFAULT_NAME);
 int                         Object::_debugLevel = 0;
-bool                        Object::_invalidPropertyException{false};
+bool                        Object::_invalidPropertyException{true};
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
@@ -710,10 +710,13 @@ Object::checkForInvalidPropertiesInXml(SimTK::Xml::Element& aNode) const {
         // Check if attribute named 'name' is a valid property name.
         auto elemName = it->getOptionalAttributeValueAs<std::string>("name", 
                                                                      "");
-        if(!elemName.empty() && _propertyTable.hasProperty(elemName))
+        if(!elemName.empty() && 
+           (_propertyTable.hasProperty(elemName) ||
+            _propertySet.contains(elemName)))
             continue;
         // Check if 'tag-name' is a valid property name.
-        if(_propertyTable.hasProperty(it->getElementTag())) 
+        if(_propertyTable.hasProperty(it->getElementTag()) ||
+           _propertySet.contains(it->getElementTag())) 
             continue;
 
         // Create the message.
