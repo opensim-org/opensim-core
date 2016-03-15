@@ -174,9 +174,9 @@ void testComplexResponse() {
 
     auto reporter = new ConsoleReporter<double>();
     reporter->setName("reporter");
-    reporter->getInput("input1").connect(response1->getOutput("sum"));
+    reporter->updInput("input1").connect(response1->getOutput("sum"));
     //reporter->getInput("input2").connect(aggregate->responses[1]->getOutput("sum"));
-    reporter->getInput("input3").connect(aggregate->getOutput("total_sum"));
+    reporter->updInput("input3").connect(aggregate->getOutput("total_sum"));
     // TODO connect by path: reporter->getInput("input").connect("/complex_response/sum");
     // multi input: reporter->getMultiInput("input").append_connect(cr->getOutput("sum"));
 
