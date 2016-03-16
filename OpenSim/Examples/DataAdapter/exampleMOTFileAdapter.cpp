@@ -25,8 +25,7 @@
 #include <algorithm>
 
 int main() {
-    std::string filename{"OpenSim/Examples/DataAdapter/"
-                         "std_tugOfWar_forces.mot"};
+    std::string filename{"std_tugOfWar_forces.mot"};
 
     // There are two ways to read the file:
     // (1) Use the specific adapter to read the file. This requires you to know
