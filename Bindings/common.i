@@ -98,7 +98,8 @@
 %include <OpenSim/Common/Event.h>
 %template(StdVectorEvent) std::vector<OpenSim::Event>;
 %template(StdMapStringTimeSeriesTableVec3)
-        std::map<std::string, OpenSim::TimeSeriesTableVec3>;
+        std::map<std::string, 
+                 std::shared_ptr<OpenSim::TimeSeriesTable_<SimTK::Vec3>>>;
 %shared_ptr(OpenSim::DataAdapter)
 %shared_ptr(OpenSim::FileAdapter)
 %shared_ptr(OpenSim::DelimFileAdapter)

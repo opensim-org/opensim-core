@@ -51,16 +51,16 @@ int main() {
     auto& marker_table = tables.at("markers");
     auto&  force_table = tables.at("markers");
 
-    if(marker_table.getNumRows() != 0) {
-    marker_table.updTableMetaData().setValueForKey("Units", std::string{"mm"});
+    if(marker_table->getNumRows() != 0) {
+    marker_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
     TRCFileAdapter trc_adapter{};
-    trc_adapter.write(marker_table, filename + ".markers.trc");
+    trc_adapter.write(*marker_table, filename + ".markers.trc");
     }
 
-    if(force_table.getNumRows() != 0) {
-    force_table.updTableMetaData().setValueForKey("Units", std::string{"mm"});
+    if(force_table->getNumRows() != 0) {
+    force_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
     TRCFileAdapter trc_adapter{};
-    trc_adapter.write(force_table, filename + ".forces.trc");
+    trc_adapter.write(*force_table, filename + ".forces.trc");
     }
     }
 

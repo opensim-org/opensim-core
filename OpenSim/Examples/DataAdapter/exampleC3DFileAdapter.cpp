@@ -40,26 +40,26 @@ int main() {
     auto& marker_table = tables.at("markers");
     auto&  force_table = tables.at("forces");
 
-    if(marker_table.getNumRows() != 0) {
+    if(marker_table->getNumRows() != 0) {
         std::cout << "--------------Markers-----------------" << std::endl;
 
     std::cout << "Dim: " 
-              << marker_table.getNumRows() << " "
-              << marker_table.getNumColumns() 
+              << marker_table->getNumRows() << " "
+              << marker_table->getNumColumns() 
               << std::endl;
     std::cout << "DataRate: " 
-              << marker_table.getTableMetaData().
+              << marker_table->getTableMetaData().
                                getValueForKey("DataRate").
                                getValue<std::string>()
               << std::endl;
     std::cout << "Units: " 
-              << marker_table.getTableMetaData().
+              << marker_table->getTableMetaData().
                                getValueForKey("Units").
                                getValue<std::string>()
               << std::endl << std::endl;
-    std::cout << marker_table.getRow(0) << std::endl;
+    std::cout << marker_table->getRow(0) << std::endl;
 
-    auto& events_table = marker_table.getTableMetaData().
+    auto& events_table = marker_table->getTableMetaData().
                                       getValueForKey("events").
                                  getValue<std::vector<OpenSim::Event>>();
     for(const auto& elem : events_table)
@@ -68,55 +68,55 @@ int main() {
                   << "frame: " << elem.frame << " | "
                   << "description: " << elem.description << "\n";
 
-    auto& labels = marker_table.getDependentsMetaData().
+    auto& labels = marker_table->getDependentsMetaData().
                                  getValueArrayForKey("labels");
     for(size_t i = 0; i < labels.size(); ++i)
         std::cout << labels[i].getValue<std::string>() << " ";
     std::cout << "\n";
     }
 
-    if(force_table.getNumRows() != 0) {
+    if(force_table->getNumRows() != 0) {
         std::cout << "--------------Forces-----------------" << std::endl;
 
     std::cout << "Dim: "
-              << force_table.getNumRows() << " "
-              << force_table.getNumColumns()
+              << force_table->getNumRows() << " "
+              << force_table->getNumColumns()
               << std::endl;
     std::cout << "DataRate: "
-              << force_table.getTableMetaData().
+              << force_table->getTableMetaData().
                               getValueForKey("DataRate").
                               getValue<std::string>()
               << std::endl;
     std::cout << "CalibrationMatrices: \n";
-    for(const auto& elem : force_table.getTableMetaData().
+    for(const auto& elem : force_table->getTableMetaData().
             getValueForKey("CalibrationMatrices").
             getValue<std::vector<btk::ForcePlatform::CalMatrix>>())
         std::cout << elem << std::endl;
     std::cout << "Corners: \n";
-    for(const auto& elem : force_table.getTableMetaData().
+    for(const auto& elem : force_table->getTableMetaData().
             getValueForKey("Corners").
             getValue<std::vector<btk::ForcePlatform::Corners>>())
         std::cout << elem << std::endl;
     std::cout << "Origins: \n";
-    for(const auto& elem : force_table.getTableMetaData().
+    for(const auto& elem : force_table->getTableMetaData().
             getValueForKey("Origins").
             getValue<std::vector<btk::ForcePlatform::Origin>>())
         std::cout << elem << std::endl;
     std::cout << "Types: \n";
-    for(const auto& elem : force_table.getTableMetaData().
+    for(const auto& elem : force_table->getTableMetaData().
             getValueForKey("Types").
             getValue<std::vector<unsigned>>())
         std::cout << elem << std::endl;
 
-    const auto& labels = force_table.getDependentsMetaData().
+    const auto& labels = force_table->getDependentsMetaData().
         getValueArrayForKey("labels");
-    const auto& units = force_table.getDependentsMetaData().
+    const auto& units = force_table->getDependentsMetaData().
         getValueArrayForKey("units");
     for(size_t i = 0; i < labels.size(); ++i)
         std::cout << "[ " << labels[i].getValue<std::string>() << " " 
                   << units[i].getValue<std::string>() << " ] ";
     std::cout << std::endl;
-    std::cout << force_table.getRow(0) << std::endl;
+    std::cout << force_table->getRow(0) << std::endl;
     }
 
 

@@ -21,11 +21,13 @@ C3DFileAdapter::clone() const {
 C3DFileAdapter::Tables
 C3DFileAdapter::read(const std::string& fileName) const {
     auto abstables = extendRead(fileName);
+    auto marker_table = 
+        std::static_pointer_cast<TimeSeriesTableVec3>(abstables.at(_markers));
+    auto force_table = 
+        std::static_pointer_cast<TimeSeriesTableVec3>(abstables.at(_forces));
     Tables tables{};
-    tables.emplace(_markers, 
-                   static_cast<TimeSeriesTableVec3&>(*abstables.at(_markers)));
-    tables.emplace( _forces, 
-                    static_cast<TimeSeriesTableVec3&>(*abstables.at( _forces)));
+    tables.emplace(_markers, marker_table);
+    tables.emplace( _forces,  force_table);
     return tables;
 }
 

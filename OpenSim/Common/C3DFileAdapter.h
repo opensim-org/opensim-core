@@ -37,7 +37,7 @@ namespace OpenSim {
 class OSIMCOMMON_API C3DFileAdapter : public FileAdapter {
 public:
     typedef std::vector<Event>                         EventTable; 
-    typedef std::map<std::string, TimeSeriesTableVec3> Tables;
+    typedef std::map<std::string, std::shared_ptr<TimeSeriesTableVec3>> Tables;
 
     C3DFileAdapter()                                 = default;
     C3DFileAdapter(const C3DFileAdapter&)            = default;
