@@ -24,7 +24,7 @@
 #include "OpenSim/Common/TimeSeriesTable.h"
 
 #include <vector>
-
+#include <iostream>
 
 int main() {
     using namespace OpenSim;
@@ -58,6 +58,10 @@ int main() {
 
     // Retrieve a column by its label.
     table.getDependentColumn("3");
+
+    // Print the DataTable to console. This is for debugging only. Do not
+    // rely on this output.
+    std::cout << table << std::endl;
 
     return 0;
 }
