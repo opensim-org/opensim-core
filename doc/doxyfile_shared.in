@@ -1564,7 +1564,10 @@ EXPAND_AS_DEFINED      = OpenSim_DECLARE_PROPERTY \
                          OpenSim_DECLARE_LIST_PROPERTY_RANGE \
                          OpenSim_DECLARE_PROPERTY_HELPER \
                          OpenSim_DECLARE_OUTPUT \
+                         OpenSim_DECLARE_LIST_OUTPUT \
                          OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE \
+                         OpenSim_DECLARE_INPUT \
+                         OpenSim_DECLARE_LIST_INPUT \
                          SWIG_DECLARE_EXCEPTION
 
 # If the SKIP_FUNCTION_MACROS tag is set to YES (the default) then 

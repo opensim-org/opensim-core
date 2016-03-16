@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <iostream>
 
 int main() {
     using namespace SimTK;
@@ -60,6 +61,9 @@ int main() {
                 throw Exception{"Test failed: "
                                 "table.getColumnIndex(labels.at(i)) != i"};
     }
+    // Print out the DataTable to console.
+    std::cout << table << std::endl;
+
     table.setDependentsMetaData(dep_metadata);
     table.setIndependentMetaData(ind_metadata);
 
@@ -81,6 +85,9 @@ int main() {
     table.updTableMetaData().setValueForKey("DataRate", 600);
     table.updTableMetaData().setValueForKey("Filename", 
                                             std::string{"/path/to/file"});
+
+    // Print out the DataTable to console.
+    std::cout << table << std::endl;
 
     // Retrieve added metadata and rows to check.
     if(table.getNumRows() != unsigned{5})

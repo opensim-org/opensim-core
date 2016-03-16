@@ -180,14 +180,14 @@ public:
 //==============================================================================
 // OUTPUTS
 //==============================================================================
-   OpenSim_DECLARE_OUTPUT(com_position, SimTK::Vec3,
-           calcMassCenterPosition, SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(com_position, SimTK::Vec3,
+            calcMassCenterPosition, SimTK::Stage::Position);
 
-   OpenSim_DECLARE_OUTPUT(com_velocity, SimTK::Vec3,
-           calcMassCenterVelocity, SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(com_velocity, SimTK::Vec3,
+            calcMassCenterVelocity, SimTK::Stage::Velocity);
 
-   OpenSim_DECLARE_OUTPUT(com_acceleration, SimTK::Vec3,
-           calcMassCenterAcceleration, SimTK::Stage::Acceleration);
+    OpenSim_DECLARE_OUTPUT(com_acceleration, SimTK::Vec3,
+            calcMassCenterAcceleration, SimTK::Stage::Acceleration);
 
 //=============================================================================
 // METHODS

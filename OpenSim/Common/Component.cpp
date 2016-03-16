@@ -206,6 +206,12 @@ void Component::connect(Component &root)
                 ".\n Details:" + x.what());
         }
     }
+    
+    // Must also clear the inputs' existing connections, which may otherwise
+    // be stale.
+    for (auto& it : _inputsTable) {
+        it.second->disconnect();
+    }
 
     // Allow derived Components to handle/check their connections
     extendConnect(root);
@@ -249,6 +255,11 @@ void Component::disconnect()
     std::map<std::string, int>::const_iterator it;
     for (it = _connectorsTable.begin(); it != _connectorsTable.end(); ++it){
         upd_connectors(it->second).disconnect();
+    }
+    
+    // Must also clear the input's connections.
+    for (auto& it : _inputsTable) {
+        it.second->disconnect();
     }
 
     //now clear all the stored system indices from this component
@@ -906,11 +917,12 @@ setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value)
 
 bool Component::constructOutputForStateVariable(const std::string& name)
 {
-    return constructOutput<double>(name,
-            std::bind(&Component::getStateVariableValue,
-             // (const Component*    , const SimTK::State&  , std::string)
-                std::placeholders::_1, std::placeholders::_2, name),
-            SimTK::Stage::Model);
+    auto func = [name](const Component* comp,
+                       const SimTK::State& s, const std::string&,
+                       double& result) -> void {
+        result = comp->getStateVariableValue(s, name);
+    };
+    return constructOutput<double>(name, func, SimTK::Stage::Model);
 }
 
 // mark components owned as properties as subcomponents
