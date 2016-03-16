@@ -376,9 +376,10 @@ public:
                 }
             }
 
-            int ix = _connectees.size();
+            int ix = 0; 
             // For a non-list connector, there will only be one channel.
             for (const auto& chan : outT->getChannels()) {
+                ix = int(_connectees.size());
                 _connectees.push_back(
                     SimTK::ReferencePtr<const Channel>(&chan.second) );
 
@@ -393,7 +394,6 @@ public:
                     setConnecteeName(pathName, ix);
                 else
                     appendConnecteeName(pathName);
-                ++ix;
 
                 // Use the same annotation for each channel.
                 if (annotation.empty())

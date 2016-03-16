@@ -95,11 +95,14 @@ public:
         }
     }
 
-    // Top level connection method for all encompassing Component
+    // Top level connection method for this all encompassing component, TheWorld
     void connect() {
         Super::connect(*this);
     }
-    void buildUpSystem(MultibodySystem& system) { addToSystem(system); }
+    void buildUpSystem(MultibodySystem& system) { 
+        connect();
+        addToSystem(system);
+    }
 
     const SimbodyMatterSubsystem& getMatterSubsystem() const { return *matter; }
     SimbodyMatterSubsystem& updMatterSubsystem() const { return *matter; }
@@ -703,9 +706,7 @@ void testMisc() {
     ASSERT(results.getNumRows() == 11, __FILE__, __LINE__,
         "Number of rows in Reporter results not equal to number of time intervals.");
     cout << "************** Contents of Table of Results ****************" << endl;
-    for (size_t i = 0; i < results.getNumRows(); ++i) {
-        results.getRowAtIndex(i).dump();
-    }
+    cout << results << endl;
     cout << "***************** Qs Output at Final state *****************" << endl;
     auto& finalVal = foo.getOutputValue<Vector>(s, "Qs");
     (~finalVal).dump();
@@ -767,19 +768,31 @@ void testListInputs() {
     Bar& bar = *new Bar();
     bar.setName("Bar");
     theWorld.add(&bar);
+
+    bar.updConnector<Foo>("parentFoo").setConnecteeName("Foo");
+    bar.updConnector<Foo>("childFoo").setConnecteeName("Foo2");
     
     auto* reporter = new ConsoleReporter<double>();
     reporter->setName("rep0");
     theWorld.add(reporter);
-    
+
+    // wire up console reporter inputs to desired model outputs
     reporter->updInput("inputs").connect(foo.getOutput("Output1"));
     reporter->updInput("inputs").connect(bar.getOutput("PotentialEnergy"));
     reporter->updInput("inputs").connect(bar.getOutput("fiberLength"));
     reporter->updInput("inputs").connect(bar.getOutput("activation"));
-    
-    bar.updConnector<Foo>("parentFoo").setConnecteeName("Foo");
-    bar.updConnector<Foo>("childFoo").setConnecteeName("Foo2");
-    
+
+    auto*tabReporter = new TableReporter<SimTK::Real, SimTK::Real>();
+    tabReporter->setName("TableReporterMixedOutputs");
+    theWorld.add(tabReporter);
+
+    // wire up table reporter inputs to desired model outputs
+    tabReporter->updInput("inputs").connect(bar.getOutput("fiberLength"));
+    tabReporter->updInput("inputs").connect(bar.getOutput("activation"));
+    tabReporter->updInput("inputs").connect(foo.getOutput("Output1"));
+    tabReporter->updInput("inputs").connect(bar.getOutput("PotentialEnergy"));
+
+   
     theWorld.connect();
     theWorld.buildUpSystem(system);
     
@@ -791,6 +804,9 @@ void testListInputs() {
         s.updQ() = (i+1)*q/10.0;
         system.realize(s, Stage::Report);
     }
+
+    cout << "  TableReporterMixedOutputs (contents)" << endl;
+    cout << tabReporter->getReport() << endl;
 }
 
 

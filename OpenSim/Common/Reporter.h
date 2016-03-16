@@ -79,7 +79,7 @@ protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     /** extend the Reporting functionality */
-    void extendRealizeReport(const SimTK::State& state) const override;
+    void extendRealizeReport(const SimTK::State& state) const override final;
 
 private:
     void setNull();
@@ -156,12 +156,16 @@ protected:
 
         const auto& input = getInput<InputT>("inputs");
 
-        std::vector<std::string>columnNames;
+        std::vector<std::string> labels;
         for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
             const auto& chan = Input<InputT>::downcast(input).getChannel(idx);
-            columnNames.push_back(chan.getName());
+            std::string label = chan.getName();
+            if (label.empty()) {
+                label = chan.getOutput().getName();
+            }
+            labels.push_back(label);
         }
-        _outputTable.setColumnLabels(columnNames);
+        _outputTable.setColumnLabels(labels);
     }
 
 private:
@@ -227,6 +231,16 @@ inline void TableReporter<SimTK::Vector, SimTK::Real>::
 {
     const auto& input = getInput<SimTK::Vector>("inputs");
     const SimTK::Vector& result = input.getValue(state, 0);
+    
+    if (_outputTable.getNumRows() == 0) {
+        std::vector<std::string> labels;
+        const std::string& base = input.getChannel(0).getName();
+        for (int ix = 0; ix < result.size(); ++ix) {
+            labels.push_back(base + "[" + std::to_string(ix)+"]");
+        }
+        _outputTable.setColumnLabels(labels);
+    }
+
     _outputTable.appendRow(state.getTime(), ~result);
 }
 
