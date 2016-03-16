@@ -68,8 +68,8 @@ Joint::Joint(const std::string &name, const std::string& parentName,
     setName(name);
     set_reverse(reverse);
 
-    updConnector<PhysicalFrame>("parent_frame").set_connectee_name(parentName);
-    updConnector<PhysicalFrame>("child_frame").set_connectee_name(childName);
+    updConnector<PhysicalFrame>("parent_frame").setConnecteeName(parentName);
+    updConnector<PhysicalFrame>("child_frame").setConnecteeName(childName);
 }
 
 /* Convenience Constructor*/
@@ -174,20 +174,20 @@ void Joint::constructConnectors()
 
 void Joint::setParentFrameName(const std::string& name)
 {
-    updConnector<PhysicalFrame>("parent_frame").set_connectee_name(name);
+    updConnector<PhysicalFrame>("parent_frame").setConnecteeName(name);
 }
 const std::string& Joint::getParentFrameName() const
 {
-    return getConnector<PhysicalFrame>("parent_frame").get_connectee_name();
+    return getConnector<PhysicalFrame>("parent_frame").getConnecteeName();
 }
 
 void Joint::setChildFrameName(const std::string& name)
 {
-    updConnector<PhysicalFrame>("child_frame").set_connectee_name(name);
+    updConnector<PhysicalFrame>("child_frame").setConnecteeName(name);
 }
 const std::string& Joint::getChildFrameName() const
 {
-    return getConnector<PhysicalFrame>("child_frame").get_connectee_name();
+    return getConnector<PhysicalFrame>("child_frame").getConnecteeName();
 }
 
 void Joint::extendFinalizeFromProperties()

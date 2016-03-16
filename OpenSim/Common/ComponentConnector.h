@@ -76,13 +76,12 @@ namespace OpenSim {
  */
 class OSIMCOMMON_API AbstractConnector : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractConnector, Object);
-public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(connectee_name, std::string,
+    OpenSim_DECLARE_LIST_PROPERTY(connectee_name, std::string,
         "Name of the component this Connector should be connected to.");
-
+public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
@@ -129,7 +128,9 @@ public:
     
     /** The number of connectees connected to this connector. This is either
         0 or 1 for a non-list connector. */
-    virtual size_t getNumConnectees() const = 0;
+    int getNumConnectees() const {
+        return getProperty_connectee_name().size();
+    }
 
     /** Get the type of object this connector connects to*/
     virtual std::string getConnecteeTypeName() const = 0;
@@ -147,6 +148,25 @@ public:
                         "for this type of connector", __FILE__, __LINE__);
     }
 
+    void setConnecteeName(const std::string& name, int ix = 0) {
+        OPENSIM_THROW_IF((ix > 0 && !_isList), Exception,
+            "Multiple connectee names can only be set on a list Connector.");
+        upd_connectee_name(ix) = name;
+    }
+
+    const std::string& getConnecteeName(int ix  =0) const {
+        OPENSIM_THROW_IF((ix > 0 && !_isList), Exception,
+            "Multiple connectee names are only available with a list Connector.");
+        return get_connectee_name(ix);
+    }
+
+    void appendConnecteeName(const std::string& name) {
+        OPENSIM_THROW_IF((getProperty_connectee_name().size() > 0 && !_isList), Exception,
+            "Multiple connectee names can only be appended to a list Connector.");
+        updProperty_connectee_name().appendValue(name);
+    }
+
+
     /** Disconnect this Connector from its connectee. */
     virtual void disconnect() = 0;
 
@@ -156,7 +176,11 @@ protected:
 
 private:
     void constructProperties() {
-        constructProperty_connectee_name("");
+        constructProperty_connectee_name();
+        if (!_isList) {
+            updProperty_connectee_name().appendValue("");
+            updProperty_connectee_name().setAllowableListSize(1);
+        }
     }
     SimTK::Stage connectAtStage;
     bool _isList = false;
@@ -196,10 +220,6 @@ public:
     bool isConnected() const override {
         return !connectee.empty();
     }
-    
-    size_t getNumConnectees() const override {
-        return 1;
-    }
 
     /** Temporary access to the connectee for testing purposes. Real usage
         will be through the Connector (and Input) interfaces. 
@@ -223,10 +243,10 @@ public:
             // have the same name like a pelvis Body and pelvis Joint that
             // connects that connects to a Body of the same name.
             if(objPathName == ownerPathName)
-                set_connectee_name(objPathName);
+                setConnecteeName(objPathName);
             else { // otherwise store the relative path name to the object
                 std::string relPathName = objT->getRelativePathName(getOwner());
-                set_connectee_name(relPathName);
+                setConnecteeName(relPathName);
             }
         }
         else {
@@ -354,13 +374,27 @@ public:
                 if (outT->isListOutput()) {
                     throw Exception("Non-list input cannot connect to list output");
                 }
-
-                // Remove the existing connecteee (if it exists).
-                disconnect();
             }
+
+            int ix = _connectees.size();
             // For a non-list connector, there will only be one channel.
             for (const auto& chan : outT->getChannels()) {
-                _connectees.push_back(SimTK::ReferencePtr<const Channel>(&chan.second));
+                _connectees.push_back(
+                    SimTK::ReferencePtr<const Channel>(&chan.second) );
+
+                //update the connectee_name as /<OwnerPath>/<Output::Channel> name
+                std::string pathName =
+                    output.getOwner().getRelativePathName(getOwner());
+                pathName = pathName + "/" + chan.second.getChannelName();
+
+                // set the connectee name so that the connection can be
+                // serialized
+                if (ix < getNumConnectees())
+                    setConnecteeName(pathName, ix);
+                else
+                    appendConnecteeName(pathName);
+                ++ix;
+
                 // Use the same annotation for each channel.
                 if (annotation.empty())
                     _annotations.push_back(chan.second.getChannelName());
@@ -396,6 +430,24 @@ public:
             throw Exception(msg.str(), __FILE__, __LINE__);
         }
     }
+
+    /** Connect this Input given a root Component to search for
+    the Output according to the connectee_name of this Input  */
+    void findAndConnect(const Component& root) override {
+        for (int ix = 0; ix < getNumConnectees(); ++ix) {
+            const std::string& path = getConnecteeName(ix);
+            try {
+                connect(root.getOutput(path));
+            }
+            catch (const Exception& ex) {
+                std::stringstream msg;
+                msg << getConcreteClassName() << " '" << getName();
+                msg << "' ::findAndConnect() ERROR- Could not connect to Output.";
+                msg << "\nDetails: " << ex.getMessage();
+                throw Exception(msg.str(), __FILE__, __LINE__);
+            }
+        }
+    }
     
     void disconnect() override {
         _connectees.clear();
@@ -406,12 +458,7 @@ public:
         return !_connectees.empty();
     }
     
-    size_t getNumConnectees() const override {
-        return _connectees.size();
-    }
-    
-    std::string getConnecteeTypeName() const override
-    { return SimTK::NiceTypeName<Output<T>>::namestr(); }
+
 
     /**Get the value of this Input when it is connected. Redirects to connected
        Output<T>'s getValue() with minimal overhead. If this is a list input,
@@ -477,6 +524,9 @@ public:
         return _connectees;
     }
     
+    /** Return the typename of the Output value, T, that satisfies
+        this Input<T>. No reason to return Output<T> since it is a
+        given that only an Output can satisfy an Input. */
     std::string getConnecteeTypeName() const override {
         return SimTK::NiceTypeName<T>::namestr();
     }

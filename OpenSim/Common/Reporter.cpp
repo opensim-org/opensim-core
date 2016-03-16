@@ -30,7 +30,7 @@ namespace OpenSim {
 
 class OutputPeriodicReporter : public SimTK::PeriodicEventReporter {
 public:
-    OutputPeriodicReporter(const OpenSim::Reporter& owner,
+    OutputPeriodicReporter(const AbstractReporter& owner,
         const MultibodySystem& system,
         const Real reportInterval) : PeriodicEventReporter(reportInterval), 
         _owner(owner), _system(system) {
@@ -46,7 +46,7 @@ public:
     }
 
 private:
-    const OpenSim::Reporter& _owner;
+    const AbstractReporter& _owner;
     const MultibodySystem& _system;
 };
 
@@ -55,11 +55,19 @@ private:
 //=============================================================================
 //_____________________________________________________________________________
 // Default constructor.
-Reporter::Reporter()
+AbstractReporter::AbstractReporter()
 {
     setNull();
     constructProperties();
 }
+
+AbstractReporter::AbstractReporter(SimTK::Xml::Element& node) : Super(node)
+{
+    setNull();
+    constructProperties();
+}
+
+
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -67,7 +75,7 @@ Reporter::Reporter()
 
 //_____________________________________________________________________________
 // Set the data members of this Reporter to their null values.
-void Reporter::setNull()
+void AbstractReporter::setNull()
 {
     setAuthors("Ajay Seth");
     setName("reporter");
@@ -75,7 +83,7 @@ void Reporter::setNull()
 
 //_____________________________________________________________________________
 // Define properties.
-void Reporter::constructProperties()
+void AbstractReporter::constructProperties()
 {
     constructProperty_is_disabled(false);
     constructProperty_report_time_interval(0.0);
@@ -83,7 +91,7 @@ void Reporter::constructProperties()
 
 // Create an underlying SimTK::Reporter to represent the OpenSim::Reporter in the 
 // computational system.  Create a SimTK::Reporter::Custom by default.
-void Reporter::extendAddToSystem(SimTK::MultibodySystem& system) const
+void AbstractReporter::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
     if (get_is_disabled())
@@ -98,12 +106,12 @@ void Reporter::extendAddToSystem(SimTK::MultibodySystem& system) const
     }
 }
 
-void Reporter::extendRealizeReport(const SimTK::State& state) const
+void AbstractReporter::extendRealizeReport(const SimTK::State& state) const
 {
     report(state);
 }
 
-void Reporter::report(const SimTK::State& s) const
+void AbstractReporter::report(const SimTK::State& s) const
 {
     implementReport(s);
 }

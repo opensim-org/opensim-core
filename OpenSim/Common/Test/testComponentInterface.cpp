@@ -457,7 +457,7 @@ void testMisc() {
 
     //Configure the connector to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
-    bar.updConnector<Foo>("parentFoo").set_connectee_name(foo.getFullPathName());
+    bar.updConnector<Foo>("parentFoo").setConnecteeName(foo.getFullPathName());
     bar.updConnector<Foo>("childFoo").connect(foo);
         
     // add a subcomponent
@@ -638,7 +638,7 @@ void testMisc() {
     //Configure the connector to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
     bar2.updConnector<Foo>("parentFoo")
-        .set_connectee_name(compFoo.getRelativePathName(bar2));
+  .setConnecteeName(compFoo.getRelativePathName(bar2));
     bar2.updConnector<Foo>("childFoo").connect(foo);
 
     world3.finalizeFromProperties();
@@ -660,9 +660,9 @@ void testMisc() {
     theWorld.finalizeFromProperties();
     theWorld.connect();
 
-    TableReporter<Real>* reporter = new TableReporter<Real>();
+    auto* reporter = new TableReporter<Vector, Real>();
     reporter->set_report_time_interval(0.1);
-    reporter->updInput("model_outputs").connect(foo.getOutput("Qs"));
+    reporter->updInput("inputs").connect(foo.getOutput("Qs"));
     theWorld.add(reporter);
 
     MultibodySystem system3;
@@ -747,57 +747,7 @@ void testMisc() {
     theWorld.print("Nested_" + modelFile);
 }
 
-template <typename T>
-class ConsoleReporter : public Component {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ConsoleReporter, Component);
-    // TODO interval
-    // TODO constant interval reporting
-    // TODO num significant digits (override).
-    OpenSim_DECLARE_LIST_INPUT(input, T, SimTK::Stage::Acceleration,
-                               "Quantities to print to console.");
-public:
-    ConsoleReporter() {
-        constructInfrastructure();
-    }
-private:
-    void extendRealizeReport(const State& state) const override {
-        // multi input: loop through multi-inputs.
-        // Output::getNumberOfSignificantDigits().
-        // TODO print column names every 10 outputs.
-        // TODO test by capturing stdout.
-        // TODO prepend each line with "[<name>]" or "[reporter]" if no name is given.
-        // TODO an actual implementation should do a static cast, since we
-        // know that T is correct.
-        const auto& input = getInput<T>("input");
-        
-        if (_printCount % 20 == 0) {
-            std::cout << "[" << getName() << "] "
-                      << std::setw(_width) << "time" << "| ";
-            for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
-                const auto& chan = Input<T>::downcast(input).getChannel(idx);
-                const auto& outName = chan.getName();
-                const auto& truncName = outName.size() <= _width ?
-                    outName : outName.substr(outName.size() - _width);
-                std::cout << std::setw(_width) << truncName << "|";
-    }
-            std::cout << "\n";
-        }
-        // TODO set width based on number of significant digits.
-        std::cout << "[" << getName() << "] "
-                  << std::setw(_width) << state.getTime() << "| ";
-        for (const auto& chan : input.getChannels()) {
-            const auto& value = chan->getValue(state);
-            const auto& nSigFigs = chan->getOutput().getNumberOfSignificantDigits();
-            std::cout << std::setw(_width)
-                      << std::setprecision(nSigFigs) << value << "|";
-        }
-        std::cout << std::endl;
-        
-        const_cast<ConsoleReporter<T>*>(this)->_printCount++;
-    }
-    unsigned int _printCount = 0;
-    int _width = 12;
-};
+
 
 void testListInputs() {
     MultibodySystem system;
@@ -822,13 +772,13 @@ void testListInputs() {
     reporter->setName("rep0");
     theWorld.add(reporter);
     
-    reporter->updInput("input").connect(foo.getOutput("Output1"));
-    reporter->updInput("input").connect(bar.getOutput("PotentialEnergy"));
-    reporter->updInput("input").connect(bar.getOutput("fiberLength"));
-    reporter->updInput("input").connect(bar.getOutput("activation"));
+    reporter->updInput("inputs").connect(foo.getOutput("Output1"));
+    reporter->updInput("inputs").connect(bar.getOutput("PotentialEnergy"));
+    reporter->updInput("inputs").connect(bar.getOutput("fiberLength"));
+    reporter->updInput("inputs").connect(bar.getOutput("activation"));
     
-    bar.updConnector<Foo>("parentFoo").set_connectee_name("Foo");
-    bar.updConnector<Foo>("childFoo").set_connectee_name("Foo2");
+    bar.updConnector<Foo>("parentFoo").setConnecteeName("Foo");
+    bar.updConnector<Foo>("childFoo").setConnecteeName("Foo2");
     
     theWorld.connect();
     theWorld.buildUpSystem(system);
@@ -859,8 +809,8 @@ void testListConnectors() {
     theWorld.add(&bar);
     
     // Non-list connectors.
-    bar.updConnector<Foo>("parentFoo").set_connectee_name("foo");
-    bar.updConnector<Foo>("childFoo").set_connectee_name("foo2");
+    bar.updConnector<Foo>("parentFoo").setConnecteeName("foo");
+    bar.updConnector<Foo>("childFoo").setConnecteeName("foo2");
     
     // Ensure that calling connect() on bar's "parentFoo" doesn't increase
     // its number of connectees.
@@ -1014,7 +964,7 @@ void testComponentPathNames()
 
     fbar2.updConnector<Foo>("parentFoo").connect(*foo1);
     fbar2.updConnector<Foo>("childFoo")
-        .set_connectee_name("../Foo1");
+        .setConnecteeName("../Foo1");
 
     top.dumpSubcomponents();
     top.connect();

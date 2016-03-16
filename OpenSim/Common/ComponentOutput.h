@@ -136,9 +136,7 @@ protected:
     void setOwner(const Component& owner) {
         _owner.reset(&owner);
     }
-    const Component& getOwner() const {
-        return _owner.getRef();
-    }
+
     SimTK::ReferencePtr<const Component> _owner;
 
 private:

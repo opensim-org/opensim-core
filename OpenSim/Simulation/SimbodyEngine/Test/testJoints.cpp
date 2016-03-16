@@ -2049,14 +2049,11 @@ void testAutomaticJointReversal()
     auto off1Path = off1.getFullPathName();
     auto off2Path = off2.getFullPathName();
 
-    auto& pathOff1 = c1.get_connectee_name();
-    auto& pathOff2 = c2.get_connectee_name();
+    auto& pathOff1 = c1.getConnecteeName();
+    auto& pathOff2 = c2.getConnecteeName();
 
     auto relPathOff1 = cfoot.getRelativePathName(off1);
     auto relPathOff2 = cground.getRelativePathName(off2);
-
-    //const_cast<Connector<PhysicalFrame>*>(&c1)->set_connectee_name(relPathOff1);
-    //const_cast<Connector<PhysicalFrame>*>(&c2)->set_connectee_name(relPathOff2);
 
     //modelConstrained.setUseVisualizer(true);
     modelConstrained.dumpSubcomponents();

@@ -44,18 +44,12 @@ int main() {
     filenames.push_back("walking2.c3d");
     filenames.push_back("walking5.c3d");
 
-    std::cout << "Starting testC3DFileAdpapter" << std::endl;
-
     for(const auto& filename : filenames) {
         C3DFileAdapter c3d_adapter{};
         auto tables = c3d_adapter.read(filename);
 
-        std::cout << "Read in " << filename << std::endl;
-
         auto&    marker_table = std::get<0>(tables);
         auto&     force_table = std::get<1>(tables);
-
-        std::cout << "Got tables out from " << filename << std::endl;
 
         if(marker_table->getNumRows() != 0) {
             marker_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
@@ -68,7 +62,6 @@ int main() {
             TRCFileAdapter trc_adapter{};
             trc_adapter.write(*force_table, filename + ".forces.trc");
         }
-        
     }
 
     for(const auto& filename : filenames) {

@@ -198,7 +198,7 @@ void Component::connect(Component &root)
         AbstractConnector& connector = upd_connectors(ix);
         connector.disconnect();
         try {
-            const std::string& compName = connector.get_connectee_name();
+            const std::string& compName = connector.getConnecteeName();
             connector.findAndConnect(root);
         }
         catch (const std::exception& x) {
@@ -219,7 +219,7 @@ void Component::connect(Component &root)
     for (auto& inputPair : _inputsTable) {
         AbstractInput& input = inputPair.second.updRef();
 
-        const std::string& outName = input.get_connectee_name();
+        const std::string& outName = input.getConnecteeName();
         if (outName.empty()) {
             std::cout << getConcreteClassName() << "'" << getName() << "'";
             std::cout << "::connect() Input<" << input.getConnecteeTypeName();

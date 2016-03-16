@@ -215,7 +215,7 @@ OffsetFrame<C>::OffsetFrame(const std::string& name,
     : OffsetFrame()
 {
     this->setName(name);
-    this->template updConnector<C>("parent").set_connectee_name(parentName);
+    this->template updConnector<C>("parent").setConnecteeName(parentName);
     setOffsetTransform(offset);
 }
 
@@ -259,7 +259,7 @@ template <class C>
 void OffsetFrame<C>::setParentFrame(const C& parent)
 {
 //    this->template updConnector<C>("parent").connect(parent);
-    this->template updConnector<C>("parent").set_connectee_name(parent.getName());
+    this->template updConnector<C>("parent").setConnecteeName(parent.getName());
 }
 
 template <class C>

@@ -2309,7 +2309,7 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
 template<class C>
 void Connector<C>::findAndConnect(const Component& root) {
  
-    const std::string& path = get_connectee_name();
+    const std::string& path = getConnecteeName();
     const C* comp = nullptr;
 
     try {
