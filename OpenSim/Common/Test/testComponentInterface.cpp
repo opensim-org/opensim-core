@@ -690,6 +690,7 @@ void testMisc() {
     s = ts.getState();
 
     // Check the result of the integration on our state variables.
+    std::cout << "DEBUG " <<  bar.getOutputValue<double>(s, "fiberLength") << std::endl;
     ASSERT_EQUAL(3.5, bar.getOutputValue<double>(s, "fiberLength"), 1e-10);
     ASSERT_EQUAL(1.5, bar.getOutputValue<double>(s, "activation"), 1e-10);
 
@@ -1005,11 +1006,11 @@ int main() {
     Object::registerType(Connector<Foo>());
     Object::registerType(Connector<Bar>());
 
- // TODO   SimTK_START_TEST("testComponentIterface");
+    SimTK_START_TEST("testComponentIterface");
         SimTK_SUBTEST(testMisc);
         SimTK_SUBTEST(testListInputs);
         SimTK_SUBTEST(testListConnectors);
         SimTK_SUBTEST(testComponentPathNames);
-//    SimTK_END_TEST();
+    SimTK_END_TEST();
 }
 

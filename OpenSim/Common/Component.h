@@ -1854,8 +1854,8 @@ protected:
         // appropriate derived type, then calls the member function of the
         // derived type. Thank you, klshrinidhi!
         auto outputFunc = [memFunc] (const Component* comp,
-                const SimTK::State& s, const std::string&) -> T {
-            return std::mem_fn(memFunc)(dynamic_cast<const CompType*>(comp), s);
+                const SimTK::State& s, const std::string&, T& result) -> void {
+            result = std::mem_fn(memFunc)(dynamic_cast<const CompType*>(comp), s);
         };
         return constructOutput<T>(name, outputFunc, dependsOn);
     }
@@ -1876,8 +1876,8 @@ protected:
         // appropriate derived type, then calls the member function of the
         // derived type. Thank you, klshrinidhi!
         auto outputFunc = [memFunc] (const Component* comp,
-                const SimTK::State& s, const std::string&) -> T {
-            return std::mem_fn(memFunc)(dynamic_cast<const CompType*>(comp), s);
+                const SimTK::State& s, const std::string&, T& result) -> void {
+            result = std::mem_fn(memFunc)(dynamic_cast<const CompType*>(comp), s);
         };
         return constructOutput<T>(name, outputFunc, dependsOn);
     }
@@ -1902,8 +1902,8 @@ protected:
         // appropriate derived type, then calls the member function of the
         // derived type. Thank you, klshrinidhi!
         auto outputFunc = [memFunc] (const Component* comp,
-                const SimTK::State& s, const std::string& channel) -> T {
-            return std::mem_fn(memFunc)(
+                const SimTK::State& s, const std::string& channel, T& result) -> void {
+            result = std::mem_fn(memFunc)(
                     dynamic_cast<const CompType*>(comp), s, channel);
         };
         return constructOutput<T>(name, outputFunc, dependsOn, true);
@@ -2009,9 +2009,9 @@ private:
     */
     template <typename T>
     bool constructOutput(const std::string& name,
-            const std::function<T (const Component*,
-                                   const SimTK::State&,
-                                   const std::string& channel)> outputFunction,
+            const std::function<void (const Component*,
+                                      const SimTK::State&,
+                                      const std::string& channel, T&)> outputFunction,
             const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration,
             bool isList = false) {
         if (_outputsTable.count(name) == 1) {
