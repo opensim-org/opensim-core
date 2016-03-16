@@ -1853,6 +1853,8 @@ protected:
         // This lambda takes a pointer to a component, downcasts it to the
         // appropriate derived type, then calls the member function of the
         // derived type. Thank you, klshrinidhi!
+        // TODO right now, the assignment to result within the lambda is
+        // making a copy! We can fix this using a reference pointer.
         auto outputFunc = [memFunc] (const Component* comp,
                 const SimTK::State& s, const std::string&, T& result) -> void {
             result = std::mem_fn(memFunc)(dynamic_cast<const CompType*>(comp), s);
