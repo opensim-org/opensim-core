@@ -137,9 +137,9 @@ public:
     OpenSim_DECLARE_PROPERTY(color, SimTK::Vec3,
         "The color, (red, green, blue), [0, 1], used to display the geometry. ");
 
-    OpenSim_DECLARE_PROPERTY(surface_properties, SurfaceProperties,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(SurfaceProperties,
         "Visuals applied to surfaces associated with this Appearance.");
-    OpenSim_DECLARE_PROPERTY(curve_properties, CurveProperties,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(CurveProperties,
         "Visuals applied to curves or line drawings associated with this Appearance.");
 
 
@@ -153,10 +153,10 @@ public:
     virtual ~Appearance() {};
 
     OpenSim::VisualRepresentation get_representation() const { 
-        return (VisualRepresentation)get_surface_properties().get_representation(); }
+        return (VisualRepresentation)this->get_SurfaceProperties().get_representation(); }
 
     void set_representation(const OpenSim::VisualRepresentation& rep) { 
-        upd_surface_properties().set_representation(rep); }
+        upd_SurfaceProperties().set_representation(rep); }
 
 protected:
     /** Updating XML formating to latest revision */
@@ -186,8 +186,6 @@ private:
         constructProperty_opacity(1.0);
         // White by default, shows as a shade of gray
         constructProperty_color(SimTK::Vec3(1.0)); 
-        constructProperty_surface_properties(SurfaceProperties());
-        constructProperty_curve_properties(CurveProperties());
     }
     //=========================================================================
 };  // END of class Appearance
