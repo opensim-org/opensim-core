@@ -44,6 +44,7 @@
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/DataTable.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Common/Event.h>
 #include <OpenSim/Common/DataAdapter.h>
 #include <OpenSim/Common/FileAdapter.h>
 #include <OpenSim/Common/TRCFileAdapter.h>
