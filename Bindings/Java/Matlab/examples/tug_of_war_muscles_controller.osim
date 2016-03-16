@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30505">
+	<Model name="TugOfWar">
+		<!--Acceleration due to gravity, expressed in ground.-->
+		<gravity>0 0 0</gravity>
+		<!--List of bodies that make up this model.-->
+		<BodySet>
+			<objects>
+				<Body name="Block">
+					<!--List of Geometry that is attached to this Model Component.-->
+					<geometry>
+						<FrameGeometry name="frame_geometry">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_Frame_ name="frame">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>../</connectee_name>
+								</Connector_Frame_>
+							</connectors>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							<!--Default appearance for this Geometry-->
+							<Appearance>
+								<!--Flag indicating whether the associated Geometry is visible or hidden.-->
+								<visible>false</visible>
+							</Appearance>
+						</FrameGeometry>
+						<Mesh name="Block_geom_1">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_Frame_ name="frame">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>../</connectee_name>
+								</Connector_Frame_>
+							</connectors>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Name of geometry file.-->
+							<mesh_file>block.vtp</mesh_file>
+						</Mesh>
+					</geometry>
+					<!--The mass of the body (kg)-->
+					<mass>20</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+				</Body>
+			</objects>
+			<groups />
+		</BodySet>
+		<!--Controllers that provide the control inputs for Actuators.-->
+		<ControllerSet>
+			<objects>
+				<PrescribedController name="LinearRamp Controller">
+					<!--The list of model actuators that this controller will control.The keyword ALL indicates the controller will control all the actuators in the model-->
+					<actuator_list>muscle1 muscle2</actuator_list>
+					<!--Functions (one per control) describing the controls for actuatorsspecified for this controller.-->
+					<FunctionSet name="ControlFunctions">
+						<objects>
+							<LinearFunction>
+								<coefficients> -0.333333 1</coefficients>
+							</LinearFunction>
+							<LinearFunction>
+								<coefficients> 0.316667 0.05</coefficients>
+							</LinearFunction>
+						</objects>
+						<groups />
+					</FunctionSet>
+				</PrescribedController>
+			</objects>
+			<groups />
+		</ControllerSet>
+		<!--Forces in the model (includes Actuators).-->
+		<ForceSet>
+			<objects>
+				<Thelen2003Muscle name="muscle1">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="muscle1-point1">
+									<location> 0 0.05 -0.35</location>
+									<body>ground</body>
+								</PathPoint>
+								<PathPoint name="muscle1-point2">
+									<location> 0 0 -0.05</location>
+									<body>Block</body>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+					</GeometryPath>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>1000</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.25</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.10000000000000001</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
+					<!--The model governing the excitation-to-activation dynamics.-->
+					<MuscleFirstOrderActivationDynamicModel>
+						<!--Activation time constant in seconds-->
+						<activation_time_constant>0.014999999999999999</activation_time_constant>
+						<!--Deactivation time constant in seconds-->
+						<deactivation_time_constant>0.050000000000000003</deactivation_time_constant>
+					</MuscleFirstOrderActivationDynamicModel>
+					<!--The model governing the fiber and tendon kinematics.-->
+					<MuscleFixedWidthPennationModel>
+						<!--Optimal length of the muscle fibers (overridden when this is a subcomponent of Muscle)-->
+						<optimal_fiber_length>0.25</optimal_fiber_length>
+						<!--Angle between tendon and fibers at optimal fiber length expressed in radians (overridden when this is a subcomponent of Muscle)-->
+						<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
+						<!--Maximum pennation angle (radians)-->
+						<maximum_pennation_angle>1.4706289056333368</maximum_pennation_angle>
+					</MuscleFixedWidthPennationModel>
+				</Thelen2003Muscle>
+				<Thelen2003Muscle name="muscle2">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="muscle2-point1">
+									<location> 0 0.05 0.35</location>
+									<body>ground</body>
+								</PathPoint>
+								<PathPoint name="muscle2-point2">
+									<location> 0 0 0.05</location>
+									<body>Block</body>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+					</GeometryPath>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>1000</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.25</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.10000000000000001</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
+					<!--The model governing the excitation-to-activation dynamics.-->
+					<MuscleFirstOrderActivationDynamicModel>
+						<!--Activation time constant in seconds-->
+						<activation_time_constant>0.014999999999999999</activation_time_constant>
+						<!--Deactivation time constant in seconds-->
+						<deactivation_time_constant>0.050000000000000003</deactivation_time_constant>
+					</MuscleFirstOrderActivationDynamicModel>
+					<!--The model governing the fiber and tendon kinematics.-->
+					<MuscleFixedWidthPennationModel>
+						<!--Optimal length of the muscle fibers (overridden when this is a subcomponent of Muscle)-->
+						<optimal_fiber_length>0.25</optimal_fiber_length>
+						<!--Angle between tendon and fibers at optimal fiber length expressed in radians (overridden when this is a subcomponent of Muscle)-->
+						<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
+						<!--Maximum pennation angle (radians)-->
+						<maximum_pennation_angle>1.4706289056333368</maximum_pennation_angle>
+					</MuscleFixedWidthPennationModel>
+				</Thelen2003Muscle>
+			</objects>
+			<groups />
+		</ForceSet>
+	</Model>
+</OpenSimDocument>

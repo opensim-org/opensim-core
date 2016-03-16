@@ -1,3 +1,4 @@
+
 # Generate C++ and Java wrapper code with SWIG.
 # ---------------------------------------------
 
@@ -17,9 +18,14 @@ set(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling"
 #                      <target variable> <source string>)
 string(REGEX REPLACE "\\." "/"
        SWIG_JAVA_PACKAGE_PATH ${OPENSIM_JAVA_WRAPPING_PACKAGE})
+string(REGEX REPLACE "\\." "-"
+       SWIG_JAVA_JAR_NAME ${OPENSIM_JAVA_WRAPPING_PACKAGE})
+set(SWIG_JAVA_JAR_NAME "${SWIG_JAVA_JAR_NAME}.jar")
 
 set(SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR
     ${CMAKE_CURRENT_BINARY_DIR}/src/${SWIG_JAVA_PACKAGE_PATH})
+set(SWIG_JAVA_JAR_BUILD_OUTPUT_PATH
+    "${CMAKE_CURRENT_BINARY_DIR}/src/${SWIG_JAVA_JAR_NAME}")
 
 # We place the .java files in this folder.
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
@@ -38,7 +44,7 @@ add_subdirectory(OpenSimJNI)
 find_package(Java 1.6 REQUIRED)
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/src/org-opensim-modeling.jar
+    OUTPUT "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
     DEPENDS "${swig_generated_file_fullname}"
     COMMAND ${JAVA_COMPILE} 
             ${CMAKE_CURRENT_BINARY_DIR}/src/org/opensim/modeling/*.java 
@@ -52,7 +58,7 @@ add_custom_command(
 # Umbrella target for assembling the java bindings in the build tree.
 # -------------------------------------------------------------------
 add_custom_target(JavaBindings ALL
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/src/org-opensim-modeling.jar
+    DEPENDS "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
     )
 
 add_dependencies(JavaBindings osimJavaJNI)
@@ -63,16 +69,10 @@ set_target_properties(JavaBindings PROPERTIES
 
 # Install.
 # --------
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/org-opensim-modeling.jar
+install(FILES "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
     DESTINATION ${OPENSIM_INSTALL_JAVAJARDIR})
 
-install(DIRECTORY Matlab/ DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}"
-    PATTERN "Matlab/Dynamic_Walker_Example" EXCLUDE
-    PATTERN "Matlab/configureOpenSim.m.in" EXCLUDE)
 
-# This script contains paths into the OpenSim installation that may be
-# different on different platforms, so we configure it with CMake variables.
-configure_file(Matlab/configureOpenSim.m.in
-    "${CMAKE_CURRENT_BINARY_DIR}/configureOpenSim.m" @ONLY)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/configureOpenSim.m"
-        DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
+# MATLAB tests and installing.
+# ----------------------------
+add_subdirectory(Matlab)
