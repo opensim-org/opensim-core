@@ -20,13 +20,13 @@ C3DFileAdapter::clone() const {
 
 C3DFileAdapter::Tables
 C3DFileAdapter::read(const std::string& fileName) const {
-    auto tables = extendRead(fileName);
-    auto    abs_marker_table = tables.at(_markers).release();
-    auto     abs_force_table = tables.at(_forces ).release();
-    auto    marker_table = static_cast<TimeSeriesTableVec3*>(abs_marker_table);
-    auto     force_table = static_cast<TimeSeriesTableVec3*>(abs_force_table);
-    return std::make_tuple(std::unique_ptr<TimeSeriesTableVec3>{marker_table}, 
-                           std::unique_ptr<TimeSeriesTableVec3>{force_table});
+    auto abstables = extendRead(fileName);
+    Tables tables{};
+    tables.emplace(_markers, 
+                   static_cast<TimeSeriesTableVec3&>(*abstables.at(_markers)));
+    tables.emplace( _forces, 
+                    static_cast<TimeSeriesTableVec3&>(*abstables.at( _forces)));
+    return tables;
 }
 
 void
@@ -46,9 +46,9 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     auto& marker_table = *(new TimeSeriesTableVec3{});
     auto&  force_table = *(new TimeSeriesTableVec3{});
     tables.emplace(_markers, 
-                   std::unique_ptr<TimeSeriesTableVec3>(&marker_table));
+                   std::shared_ptr<TimeSeriesTableVec3>(&marker_table));
     tables.emplace(_forces, 
-                   std::unique_ptr<TimeSeriesTableVec3>(&force_table));
+                   std::shared_ptr<TimeSeriesTableVec3>(&force_table));
 
     auto marker_pts = btk::PointCollection::New();
 
@@ -235,7 +235,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
        marker_table.updTableMetaData().setValueForKey("events", event_table);
         force_table.updTableMetaData().setValueForKey("events", event_table);
 
-    return std::move(tables);
+    return tables;
 }
 
 void

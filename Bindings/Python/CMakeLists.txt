@@ -94,11 +94,12 @@ macro(OpenSimAddPythonModule)
     add_custom_command(
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${OSIMSWIGPY_MODULE}.py"
             ${_output_cxx_file} ${_output_header_file}
-        COMMAND ${SWIG_EXECUTABLE} -v -c++ -python
+        COMMAND ${SWIG_EXECUTABLE} -v -c++  -python
             #-debug-tmused # Which typemaps were used?
             -I${OpenSim_SOURCE_DIR}
             -I${OpenSim_SOURCE_DIR}/Bindings/
             -I${Simbody_INCLUDE_DIR}
+            ${SWIG_FLAGS}
             -o ${_output_cxx_file}
             -outdir "${CMAKE_CURRENT_BINARY_DIR}"
             ${_interface_file}
