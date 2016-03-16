@@ -283,8 +283,8 @@ bool InverseKinematicsTool::run()
 
         cout<<"Running tool "<<getName()<<".\n";
 
-		// Get the trial name to label data written to files
-		string TrialName = getName();
+        // Get the trial name to label data written to files
+        string trialName = getName();
 
         // Initialize the model's underlying computational system and get its default state.
         SimTK::State& s = _model->initSystem();
@@ -375,14 +375,14 @@ bool InverseKinematicsTool::run()
         SimTK::Array_<Vec3> markerLocations(nm, Vec3(0));
         
         Storage *modelMarkerLocations = _reportMarkerLocations ? new Storage(Nframes, "ModelMarkerLocations") : NULL;
-		Storage *modelMarkerErrors = _reportErrors ? new Storage(Nframes, "ModelMarkerErrors") : NULL;
+        Storage *modelMarkerErrors = _reportErrors ? new Storage(Nframes, "ModelMarkerErrors") : NULL;
 
         for (int i = 0; i < Nframes; i++) {
             s.updTime() = start_time + i*dt;
             ikSolver.track(s);
             
             if(_reportErrors){
-				Array<double> MarkerErrors(0.0, 3);
+                Array<double> markerErrors(0.0, 3);
                 double totalSquaredMarkerError = 0.0;
                 double maxSquaredMarkerError = 0.0;
                 int worst = -1;
@@ -396,15 +396,15 @@ bool InverseKinematicsTool::run()
                     }
                 }
 
-				double rms = sqrt(totalSquaredMarkerError / nm);
-				MarkerErrors.set(0, totalSquaredMarkerError); 
-				MarkerErrors.set(1, rms);
-				MarkerErrors.set(2, sqrt(maxSquaredMarkerError));
-				modelMarkerErrors->append(s.getTime(), 3, &MarkerErrors[0]);
+                double rms = sqrt(totalSquaredMarkerError / nm);
+                markerErrors.set(0, totalSquaredMarkerError); 
+                markerErrors.set(1, rms);
+                markerErrors.set(2, sqrt(maxSquaredMarkerError));
+                modelMarkerErrors->append(s.getTime(), 3, &markerErrors[0]);
 
                 cout << "Frame " << i << " (t=" << s.getTime() << "):\t";
                 cout << "total squared error = " << totalSquaredMarkerError;
-                cout << ", marker error: RMS=" << sqrt(totalSquaredMarkerError/nm);
+                cout << ", marker error: RMS=" << rms;
                 cout << ", max=" << sqrt(maxSquaredMarkerError) << " (" << ikSolver.getMarkerNameForIndex(worst) << ")" << endl;
             }
 
@@ -430,22 +430,22 @@ bool InverseKinematicsTool::run()
             kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
         }
 
-		if (modelMarkerErrors) {
-			Array<string> labels("", 4);
-			labels[0] = "time";
-			labels[1] = "total squared error";
-			labels[2] = "marker error RMS";
-			labels[3] = "marker error max";
+        if (modelMarkerErrors) {
+            Array<string> labels("", 4);
+            labels[0] = "time";
+            labels[1] = "total_squared_error";
+            labels[2] = "marker_error_RMS";
+            labels[3] = "marker_error_max";
 
-			modelMarkerErrors->setColumnLabels(labels);
-			modelMarkerErrors->setName("Model Marker Errors from IK");
+            modelMarkerErrors->setColumnLabels(labels);
+            modelMarkerErrors->setName("Model Marker Errors from IK");
 
-			IO::makeDir(getResultsDir());
-			string errorFileName = TrialName + "_ik_model_marker_errors";
-			Storage::printResult(modelMarkerErrors, errorFileName, getResultsDir(), -1, ".txt");
+            IO::makeDir(getResultsDir());
+            string errorFileName = trialName + "_ik_marker_errors";
+            Storage::printResult(modelMarkerErrors, errorFileName, getResultsDir(), -1, ".sto");
 
-			delete modelMarkerErrors;
-		}
+            delete modelMarkerErrors;
+        }
 
         if(modelMarkerLocations){
             Array<string> labels("", 3*nm+1);
@@ -461,7 +461,7 @@ bool InverseKinematicsTool::run()
             modelMarkerLocations->setName("Model Marker Locations from IK");
     
             IO::makeDir(getResultsDir());
-			string markerFileName = TrialName + "_ik_model_marker_locations";
+            string markerFileName = trialName + "_ik_model_marker_locations";
             Storage::printResult(modelMarkerLocations, markerFileName, getResultsDir(), -1, ".sto");
 
             delete modelMarkerLocations;

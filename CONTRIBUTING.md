@@ -313,6 +313,7 @@ Kate Saul          |              |Original MuscleAnalysis
 Jack Middleton     |              |Initial Simbody integration
 Jeffrey Reinbolt   |              |Static Optimization; Examples; Musculoskeletal modeling
 Shrinidhi Lakshmikanth|@klshrinidhi|Data interface
+Andrew LaPre       |@ankela       |IK error output to file
 
 Contributor License Agreement
 -----------------------------

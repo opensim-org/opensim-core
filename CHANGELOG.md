@@ -64,6 +64,8 @@ Other Changes
 - Lepton was upgraded to the latest version (PR #349)
 - Made Object::print a const member function (PR #191)
 - Improved the testOptimization/OptimizationExample to reduce the runtime (PR #416)
+- InverseKinematics tool outputs marker error .sto file if report error flag is true.
+- Marker location file output name in IK changed to reflect trial name for batch processing. 
 
 Documentation
 --------------
