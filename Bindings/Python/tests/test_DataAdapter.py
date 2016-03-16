@@ -30,7 +30,11 @@ class TestDataAdapter(unittest.TestCase):
         assert table.getNumColumns() == 23
 
     def test_C3DFileAdapter(self):
-        adapter = osim.C3DFileAdapter()
+        try:
+            adapter = osim.C3DFileAdapter()
+        except AttributeError:
+            # C3D support not available. OpenSim was not compiled with BTK.
+            return
         tables = adapter.read('../../../OpenSim/Common/Test/' + 
                              'singleLeglanding_2.c3d')
         markers = tables['markers']
