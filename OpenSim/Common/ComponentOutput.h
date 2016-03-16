@@ -345,7 +345,9 @@ private:
  *
  *     -# It is a member function of your component.
  *     -# The member function is const.
- *     -# It takes only one input, which is `const SimTK::State&`
+ *     -# It takes only one argument, which is `const SimTK::State&`.
+ *     -# The function returns the computed quantity *by value* (e.g., 
+ *        `double computeQuantity(const SimTK::State&) const`).
  *
  *  You must also provide the stage on which the output depends.
  *
@@ -357,6 +359,14 @@ private:
  *      ...
  *  };
  *  @endcode
+ *
+ *  @warning The fourth requirement above can be lifted if the function returns
+ *  a quantity that is stored in the provided SimTK::State (as a state
+ *  variable, cache variable, etc.); in this case, your function's return type
+ *  should be `const T&` (e.g, `const double&`). If your function returns a
+ *  `const T&` but the quantity is NOT stored in the provided SimTK::State, the
+ *  output value will be invalid!
+ *
  * @see Component::constructOutput()
  * @relates OpenSim::Output
  */

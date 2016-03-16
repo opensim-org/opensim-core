@@ -1827,6 +1827,8 @@ protected:
            -# It is a member function of \a this component.
            -# The member function is const.
            -# It takes only one input, which is `const SimTK::State&`
+           -# The function returns the computed quantity *by value* (e.g., 
+              `double computeQuantity(const SimTK::State&) const`).
 
         You must also provide the stage on which the output depends.
 
@@ -1845,6 +1847,28 @@ protected:
         // function can't assign componentMemberFunction to some other function
         // pointer. This is unlikely, since that function would have to match
         // the same template parameters (T and CompType).
+        static_assert(std::is_base_of<Component, CompType>::value,
+            "Template parameter 'CompType' must be derived from Component.");
+
+        // This lambda takes a pointer to a component, downcasts it to the
+        // appropriate derived type, then calls the member function of the
+        // derived type. Thank you, klshrinidhi!
+        auto outputFunc = [memFunc] (const Component* comp,
+                const SimTK::State& s, const std::string&) -> T {
+            return std::mem_fn(memFunc)(dynamic_cast<const CompType*>(comp), s);
+        };
+        return constructOutput<T>(name, outputFunc, dependsOn);
+    }
+    /** This variant handles component member functions that return the
+     * output value by const reference (const T&). 
+     * @warning ONLY use this with member functions that fetch quantities that
+     * are stored within the passed-in SimTK::State. The function cannot return
+     * local variables.
+     */
+    template <typename T, typename CompType = Component>
+    bool constructOutput(const std::string& name,
+            const T& (CompType::*const memFunc)(const SimTK::State&) const,
+            const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
         static_assert(std::is_base_of<Component, CompType>::value,
             "Template parameter 'CompType' must be derived from Component.");
 
