@@ -917,11 +917,12 @@ setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value)
 
 bool Component::constructOutputForStateVariable(const std::string& name)
 {
-    return constructOutput<double>(name,
-            std::bind(&Component::getStateVariableValue,
-             // (const Component*    , const SimTK::State&  , std::string)
-                std::placeholders::_1, std::placeholders::_2, name),
-            SimTK::Stage::Model);
+    auto func = [name](const Component* comp,
+                       const SimTK::State& s, const std::string&,
+                       double& result) -> void {
+        result = comp->getStateVariableValue(s, name);
+    };
+    return constructOutput<double>(name, func, SimTK::Stage::Model);
 }
 
 // mark components owned as properties as subcomponents

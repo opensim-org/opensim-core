@@ -1827,6 +1827,8 @@ protected:
            -# It is a member function of \a this component.
            -# The member function is const.
            -# It takes only one input, which is `const SimTK::State&`
+           -# The function returns the computed quantity *by value* (e.g., 
+              `double computeQuantity(const SimTK::State&) const`).
 
         You must also provide the stage on which the output depends.
 
@@ -1851,9 +1853,33 @@ protected:
         // This lambda takes a pointer to a component, downcasts it to the
         // appropriate derived type, then calls the member function of the
         // derived type. Thank you, klshrinidhi!
+        // TODO right now, the assignment to result within the lambda is
+        // making a copy! We can fix this using a reference pointer.
         auto outputFunc = [memFunc] (const Component* comp,
-                const SimTK::State& s, const std::string&) -> T {
-            return std::mem_fn(memFunc)(dynamic_cast<const CompType*>(comp), s);
+                const SimTK::State& s, const std::string&, T& result) -> void {
+            result = std::mem_fn(memFunc)(dynamic_cast<const CompType*>(comp), s);
+        };
+        return constructOutput<T>(name, outputFunc, dependsOn);
+    }
+    /** This variant handles component member functions that return the
+     * output value by const reference (const T&). 
+     * @warning ONLY use this with member functions that fetch quantities that
+     * are stored within the passed-in SimTK::State. The function cannot return
+     * local variables.
+     */
+    template <typename T, typename CompType = Component>
+    bool constructOutput(const std::string& name,
+            const T& (CompType::*const memFunc)(const SimTK::State&) const,
+            const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
+        static_assert(std::is_base_of<Component, CompType>::value,
+            "Template parameter 'CompType' must be derived from Component.");
+
+        // This lambda takes a pointer to a component, downcasts it to the
+        // appropriate derived type, then calls the member function of the
+        // derived type. Thank you, klshrinidhi!
+        auto outputFunc = [memFunc] (const Component* comp,
+                const SimTK::State& s, const std::string&, T& result) -> void {
+            result = std::mem_fn(memFunc)(dynamic_cast<const CompType*>(comp), s);
         };
         return constructOutput<T>(name, outputFunc, dependsOn);
     }
@@ -1878,8 +1904,8 @@ protected:
         // appropriate derived type, then calls the member function of the
         // derived type. Thank you, klshrinidhi!
         auto outputFunc = [memFunc] (const Component* comp,
-                const SimTK::State& s, const std::string& channel) -> T {
-            return std::mem_fn(memFunc)(
+                const SimTK::State& s, const std::string& channel, T& result) -> void {
+            result = std::mem_fn(memFunc)(
                     dynamic_cast<const CompType*>(comp), s, channel);
         };
         return constructOutput<T>(name, outputFunc, dependsOn, true);
@@ -1985,9 +2011,9 @@ private:
     */
     template <typename T>
     bool constructOutput(const std::string& name,
-            const std::function<T (const Component*,
-                                   const SimTK::State&,
-                                   const std::string& channel)> outputFunction,
+            const std::function<void (const Component*,
+                                      const SimTK::State&,
+                                      const std::string& channel, T&)> outputFunction,
             const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration,
             bool isList = false) {
         if (_outputsTable.count(name) == 1) {
