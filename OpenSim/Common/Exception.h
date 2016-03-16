@@ -56,15 +56,13 @@ class Object;
 The purpose of these macros is to aid with consistent message formatting,
 include file/line/function information in all messages, and to make it easier
 for developers to produce good messages.
-@{
- */
+@{                                                                            */
 /**  
-@relates OpenSim::Exception */
+@relates OpenSim::Exception                                                   */
 #define OPENSIM_THROW(EXCEPTION, ...)                                \
     throw EXCEPTION{__FILE__, __LINE__, __func__, __VA_ARGS__};
 
-/**
-This macro checks the given condition and throws the given exception if the
+/** This macro checks the given condition and throws the given exception if the
 condition is true. Here's an example that throws an exception if some result is
 incorrect, and passes `result` and `5` to the constructor of the
 `ResultIsIncorrect` exception:
@@ -72,8 +70,7 @@ incorrect, and passes `result` and `5` to the constructor of the
 auto result = getSomeResult();
 OPENSIM_THROW_IF(result != 5, ResultIsIncorrect, result, 5);
 @endcode
-@relates OpenSim::Exception
- */
+@relates OpenSim::Exception                                                   */
 // These macros also allow us to add more details (eg class name) later easily.
 // Note -- Extra braces enclosing "if" are to avoid problems when these macros 
 // are called within if-else statements like:
@@ -87,7 +84,20 @@ OPENSIM_THROW_IF(result != 5, ResultIsIncorrect, result, 5);
         OPENSIM_THROW(EXCEPTION, __VA_ARGS__)                        \
     }
 
-/** @} **/
+/** Macro to throw from within an Object. This macro picks up implicit pointer
+to the object and uses it to print information.                               */
+#define OPENSIM_THROW_FRMOBJ(EXCEPTION, ...)                         \
+    throw EXCEPTION{__FILE__, __LINE__, __func__, *this, __VA_ARGS__};
+
+/** Macro to throw from within an Object if a condition evaluates to TRUE. This 
+macro picks up implicit pointer to the object and uses it to print 
+information.                                                                  */
+#define OPENSIM_THROW_IF_FRMOBJ(CONDITION, EXCEPTION, ...)           \
+    {                                                                \
+    if(CONDITION)                                                    \
+        OPENSIM_THROW_FRMOBJ(EXCEPTION, __VA_ARGS__)                 \
+    }
+/** @}                                                                        */
 
 
 /**
@@ -139,7 +149,8 @@ public:
               int aLine=-1);
 
     /** Call this constructor from derived classes to add file, line and 
-    function information to the error message.                                */
+    function information to the error message. Use this when throwing
+    Derived classes. Use OPENSIM_THROW_<> macros at throw sites.              */
     Exception(const std::string& file,
               size_t line,
               const std::string& func);
@@ -152,7 +163,17 @@ public:
               const std::string& msg);
 
     /** The message created by this constructor will contain the class name and
-     * instance name of the provided Object, and also accepts a message. */
+    instance name of the provided Object. Use this when throwing derived
+    classes. Use OPENSIM_THROW_<> macros at throw sites.                      */
+    Exception(const std::string& file,
+              size_t line,
+              const std::string& func,
+              const Object& obj);
+
+    /** The message created by this constructor will contain the class name and
+    instance name of the provided Object, and also accepts a message. Use this
+    when throwing Exception directly. Use OPENSIM_THROW_<> macros at throw 
+    sites.                                                                    */
     Exception(const std::string& file,
               size_t line,
               const std::string& func,

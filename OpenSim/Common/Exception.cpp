@@ -74,6 +74,26 @@ Exception::Exception(const std::string& file,
 }
 
 Exception::Exception(const std::string& file,
+                     size_t line,
+                     const std::string& func,
+                     const std::string& msg)
+        : Exception(file, line, func) {
+    addMessage(msg);
+}
+
+Exception::Exception(const std::string& file,
+              size_t line,
+              const std::string& func,
+              const Object& obj) {
+    addMessage("\tIn file " + file + ":" + std::to_string(line) + "\n" +
+               "\tIn function '" + func + "'");
+    std::string className = obj.getConcreteClassName();
+    std::string objName = obj.getName();
+    if (objName.empty()) objName = "<no-name>";
+    addMessage("\tIn object '" + objName + "' of type " + className + ".");
+}
+
+Exception::Exception(const std::string& file,
               size_t line,
               const std::string& func,
               const Object& obj,
@@ -84,14 +104,6 @@ Exception::Exception(const std::string& file,
     std::string objName = obj.getName();
     if (objName.empty()) objName = "<no-name>";
     addMessage("\tIn object '" + objName + "' of type " + className + ".");
-    addMessage(msg);
-}
-
-Exception::Exception(const std::string& file,
-                     size_t line,
-                     const std::string& func,
-                     const std::string& msg)
-        : Exception(file, line, func) {
     addMessage(msg);
 }
 
