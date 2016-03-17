@@ -90,7 +90,7 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::registerType( ObjectGroup() );
     
     Object::registerType( TableReporter() );
-    // TODO can't transpose Vector<Vec3> Object::registerType( TableReporterVec3() );
+    Object::registerType( TableReporterVec3() );
     Object::registerType( TableReporterVector() );
     Object::registerType( ConsoleReporter() );
     Object::registerType( ConsoleReporterVec3() );

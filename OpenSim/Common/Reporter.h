@@ -151,14 +151,14 @@ public:
 protected:
     void implementReport(const SimTK::State& state) const override {
         const auto& input = this->template getInput<InputT>("inputs");
-        SimTK::Vector_<ValueT> result(int(input.getNumConnectees()));
+        SimTK::RowVector_<ValueT> result(int(input.getNumConnectees()));
 
         for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
               const auto& chan = input.getChannel(idx);
               const auto& value = chan.getValue(state);
               result[idx] = value;
         }
-        const_cast<Self*>(this)->_outputTable.appendRow(state.getTime(), ~result);
+        const_cast<Self*>(this)->_outputTable.appendRow(state.getTime(), result);
     }
 
 
