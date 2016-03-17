@@ -299,6 +299,7 @@ directory to your `PATH` environment variable.
  * Choose *Add CMake to the system PATH for all users*.
 * Get **Chocolatey** from [here](https://chocolatey.org/).
 * In **PowerShell**, *run as Administrator* --
+
  ```powershell
  choco install python
  choco install jdk8
