@@ -1,5 +1,10 @@
 #include "C3DFileAdapter.h"
 
+#include "btkAcquisitionFileReader.h"
+#include "btkAcquisition.h"
+#include "btkForcePlatformsExtractor.h"
+#include "btkGroundReactionWrenchFilter.h"
+
 namespace OpenSim {
 
 const std::string C3DFileAdapter::_markers{"markers"};
