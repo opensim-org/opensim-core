@@ -193,7 +193,7 @@ public:
     */
     SimTK::Transform findTransformInBaseFrame() const;
 
-    /** Accessor for position of Frame in Ground frame as output. */
+    /** Accessor for position of the origin of the Frame in Ground. */
     SimTK::Vec3 getPositionInGround(const SimTK::State& state) const {
         return getGroundTransform(state).p();
     };
