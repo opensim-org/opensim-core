@@ -218,7 +218,7 @@ void testComplexResponse() {
     // add to aggregate which takes ownership
     aggregate->addResponse(response2);
     
-
+    auto* reporter = new ConsoleReporter<double>();
     reporter->setName("reporter");
     reporter->updInput("input").connect(response1->getOutput("sum"));
     reporter->updInput("input").connect(response2->getOutput("sum"));
