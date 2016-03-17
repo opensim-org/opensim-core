@@ -77,16 +77,16 @@ file extensions.                                                              */
 class OSIMCOMMON_API DataAdapter {
 public:
     /** Type of the registry containing registered adapters.                  */
-    using RegisteredDataAdapters = 
-        std::unordered_map<std::string, std::unique_ptr<DataAdapter>>;
+    typedef std::map<std::string, std::shared_ptr<DataAdapter>> 
+            RegisteredDataAdapters;
     /** Collection of tables returned by reading methods implemented in derived
     classes.                                                                  */
-    using OutputTables = std::unordered_map<std::string,
-                                            std::unique_ptr<AbstractDataTable>>;
+    typedef std::map<std::string, std::shared_ptr<AbstractDataTable>>
+            OutputTables;
     /** Collection of tables accepted by writing methods implemented in derived
     classes.                                                                  */
-    using InputTables  = std::unordered_map<std::string,
-                                            const AbstractDataTable*>;
+    typedef std::map<std::string, const AbstractDataTable*>
+            InputTables;
 
     virtual DataAdapter* clone() const = 0;
 
@@ -116,7 +116,7 @@ protected:
     component can acquire the necessary adapter instance to read the data
     by the file extension if the extension is used as its identifier.         */
     static
-    std::unique_ptr<DataAdapter> createAdapter(const std::string& identifier);
+    std::shared_ptr<DataAdapter> createAdapter(const std::string& identifier);
 
     /** Immplements reading functionality.                                    */
     virtual OutputTables extendRead(const std::string& sourceName) const = 0;
