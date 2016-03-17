@@ -518,6 +518,14 @@ public:
         return int(_outputsTable.size());
     }
 
+    /** Collect and return the names of Outputs as an std::vector. */
+    std::vector<std::string> getOutputNames() const {
+        std::vector<std::string> names;
+        for (auto it = getOutputsBegin(); it != getOutputsEnd(); it++)
+            names.push_back(it->first);
+        return names;
+    }
+
     /** Access a read-only Connector by index.
     @see getNumConnectors()
      */
