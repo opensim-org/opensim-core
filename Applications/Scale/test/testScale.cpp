@@ -240,6 +240,13 @@ void scaleModelWithLigament()
     std.print("std_toyLigamentModelScaled_latest.osim");
     comp.print("comp_toyLigamentModelScaled_latest.osim");
 
+    // the latest model will not match the standard because the naming convention has
+    // been updated to store path names and connecting a model results in connectors
+    // storing relative paths so that collections of components are more portable.
+    // The models must be equivalent after being connected.
+    comp.setup();
+    std.setup();
+
     //Finally make sure we didn't incorrectly scale anything else in the model
     ASSERT(std == comp);
 

@@ -11,7 +11,7 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 v4.0 (in development)
 =====================
 
-Converting from v3.2 to v4.0
+Converting from v3.x to v4.0
 -----------------------------
 - The Actuator class has been renamed to ScalarActuator (and Actuator_ has been renamed to Actuator) (PR #126).
   If you have subclassed from Actuator, you must now subclass from ScalarActuator.
@@ -50,6 +50,7 @@ New Classes
 - Connections to Bodies upgraded to PhysicalFrames and locations on these frames are now represented by PhysicalOffsetFrame (PR #370)
 - Joints were refactored so that the base Joint manages the parent and child frame connections, including the definition of local PhysicalOffsetFrames to handle offsets defined as separate location and orientation properties. (PR #589)  
 - The WeldConstraint and BushingForces (BushingForce, CoupledBushingForce, FunctionBasedBushingForce, and ExpressionBasedBushingForce) were similarly unified (like Joints) to handle the two Frames that these classes require to operate. A LinkTwoFrames intermediate class was introduced to house the common operations. Convenience constructors for WeldConstraint and BushingFrames were affected and now require the name of the Component as the first argument. (PR #649)
+- The new StatesTrajectory class allows users to load an exact representation of previously-computed states from a file. (PR #730)
 
 
 Python
@@ -64,6 +65,8 @@ Other Changes
 - Lepton was upgraded to the latest version (PR #349)
 - Made Object::print a const member function (PR #191)
 - Improved the testOptimization/OptimizationExample to reduce the runtime (PR #416)
+- InverseKinematics tool outputs marker error .sto file if report error flag is true.
+- Marker location file output name in IK changed to reflect trial name for batch processing. 
 
 Documentation
 --------------

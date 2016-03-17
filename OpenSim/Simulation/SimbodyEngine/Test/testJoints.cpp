@@ -266,7 +266,7 @@ int main()
         cout << e.what() <<endl; 
         failures.push_back("testAutomaticLoopJointBreaker");
     }
-        
+
     // Compare behavior of a double pendulum with OpenSim pin hip and pin knee
     try { ++itc; testPinJoint(); }
     catch (const std::exception& e){
@@ -1253,6 +1253,9 @@ void testPinJoint()
     OpenSim::Body osim_thigh("thigh", femurMass.getMass(),
         femurMass.getMassCenter(), femurMass.getInertia());
 
+    // Add the thigh body to the model
+    osimModel->addBody(&osim_thigh);
+
     // create hip as a pin joint
     PinJoint hip("hip", ground, hipInPelvis, Vec3(0),
                     osim_thigh, hipInFemur, Vec3(0));
@@ -1265,13 +1268,15 @@ void testPinJoint()
         hip_coords.get(i).setName(coord_name.str());
     }
 
-    // Add the thigh body which now also contains the hip joint to the model
-    osimModel->addBody(&osim_thigh);
+    // Add hip joint to the model
     osimModel->addJoint(&hip);
 
     // Add OpenSim shank via a knee joint
     OpenSim::Body osim_shank("shank", tibiaMass.getMass(),
         tibiaMass.getMassCenter(), tibiaMass.getInertia());
+
+    // Add the shank body to the model
+    osimModel->addBody(&osim_shank);
 
     // create pin knee joint
     PinJoint knee("knee", osim_thigh, kneeInFemur, oInP,
@@ -1298,12 +1303,11 @@ void testPinJoint()
             oInB[0], XAxis,
             oInB[1], YAxis,
             oInB[2], ZAxis), kneeInTibia)));
+    knee3.finalizeFromProperties();
 
     ASSERT(knee3 == knee);
 
-    // Add the shank body which now also contains the knee joint to the model
-    osimModel->addBody(&osim_shank);
-    osimModel->addJoint(&knee);
+    osimModel->addJoint(&knee3);
 
     // BAD: have to set memoryOwner to false or program will crash when this test is complete.
     osimModel->disownAllComponents();
@@ -2035,7 +2039,24 @@ void testAutomaticJointReversal()
                                   cfoot, zvec, zvec, cground, footInGround, zvec);
     modelConstrained.addConstraint(footConstraint);
 
+    auto fcpath = footConstraint->getRelativePathName(cfoot);
+
+    auto& off1 = footConstraint->getFrame1();
+    auto& c1 = off1.getConnector<PhysicalFrame>("parent");
+    auto& off2 = footConstraint->getFrame2();
+    auto& c2 = off2.getConnector<PhysicalFrame>("parent");
+
+    auto off1Path = off1.getFullPathName();
+    auto off2Path = off2.getFullPathName();
+
+    auto& pathOff1 = c1.getConnecteeName();
+    auto& pathOff2 = c2.getConnecteeName();
+
+    auto relPathOff1 = cfoot.getRelativePathName(off1);
+    auto relPathOff2 = cground.getRelativePathName(off2);
+
     //modelConstrained.setUseVisualizer(true);
+    modelConstrained.dumpSubcomponents();
     SimTK::State& sc = modelConstrained.initSystem();
 
     SimTK::Transform pelvisXc = cpelvis.getGroundTransform(sc);
@@ -2095,6 +2116,9 @@ void testAutomaticLoopJointBreaker()
     OpenSim::Body thigh("thigh", femurMass.getMass(),
         femurMass.getMassCenter(), femurMass.getInertia());
 
+    // Add the thigh body to the model
+    model.addBody(&thigh);
+
     SimTK::Vec3 zvec(0);
 
     // create hip as an Ball joint
@@ -2109,13 +2133,15 @@ void testAutomaticLoopJointBreaker()
         hip_coords.get(i).setName(coord_name.str());
     }
 
-    // Add the thigh body which now also contains the hip joint to the model
-    model.addBody(&thigh);
+    // Add the thigh hip to the model
     model.addJoint(&hip);
 
     // Add OpenSim shank via a knee joint
     Body shank("shank", tibiaMass.getMass(),
         tibiaMass.getMassCenter(), tibiaMass.getInertia());
+
+    // Add the shank body to the model
+    model.addBody(&shank);
 
     // create pin knee joint
     PinJoint knee("knee", thigh, kneeInFemur, zvec,
@@ -2124,23 +2150,26 @@ void testAutomaticLoopJointBreaker()
     // Rename knee coordinate for a pin joint
     knee.getCoordinateSet()[0].setName("knee_q");
 
-    // Add the shank body and the knee joint to the model
-    model.addBody(&shank);
+    // Add the knee joint to the model
     model.addJoint(&knee);
 
     // Add foot body at ankle
     Body foot("foot", footMass.getMass(),
         footMass.getMassCenter(), footMass.getInertia());
+
+    // Add foot
+    model.addBody(&foot);
+
     UniversalJoint ankle("ankle", shank, ankleInTibia, zvec,
                                    foot, ankleInFoot, zvec);
 
-    // Join the foot to the floor via a pin joint
-    PinJoint footToFloor("footToFloor", foot, zvec, zvec, 
-                                      ground, zvec, zvec);
-
-    // Add foot and joints
-    model.addBody(&foot);
+    // Add ankle joint
     model.addJoint(&ankle);
+
+    // Join the foot to the floor via a pin joint
+    PinJoint footToFloor("footToFloor", foot, zvec, zvec,
+        ground, zvec, zvec);
+
     // This forms the closed loop kinematic chain
     model.addJoint(&footToFloor);
 

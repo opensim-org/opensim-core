@@ -414,61 +414,66 @@ getHeaderToken() const
 // COLUMN LABELS
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Get the column index corresponding to specified column name.
- *
- * @return State index of column or -1.  Note that the returned index is equivalent
- * to the state index.  For example, for the first column in a storage (usually
- * time) -1 would be returned.  For the second column in a storage (the first
- * state) 0 would be returned.
- * @todo Rename this method getStateIndex()
- * 
- * added a default Parameter for startIndex. -Ayman
- */
+// added a default Parameter for startIndex. -Ayman
+// TODO startIndex is being ignored.
 const int Storage::
 getStateIndex(const std::string &aColumnName, int startIndex) const
 {
-    int thisColumnIndex = _columnLabels.findIndex(aColumnName);
-    if (thisColumnIndex >= 0)
-        // subtract 1 because time is included in the labels but not 
-        // in the "state vector"
-        return thisColumnIndex-1;
+    int thisColumnIndex = -1;
 
-    // Assume a mismatch between earlier and the latest component state variable 
-    // labeling mechanism and redo find with the just the ending substring instead
-    // of its full path name
-    std::string::size_type back = aColumnName.rfind("/");
-    std::string prefix = aColumnName.substr(0, back);
-    std::string shortName = aColumnName.substr(back + 1, aColumnName.length() - back);
-    thisColumnIndex = _columnLabels.findIndex(shortName);
+    // This uses the `do while(false)` idiom to run common code if one of a
+    // number of conditions succeeds (much like what a goto would be used for).
+    do {
+        thisColumnIndex = _columnLabels.findIndex(aColumnName);
+        if (thisColumnIndex != -1) break;
 
-    // additional checking for old coordinate state names that have been renamed
-    // <coord_name>/value and <coord_name>/speed
-    if (thisColumnIndex < 0){
-        if (shortName == "value"){
-            // old formats did not have "/value" so remove it if here
+        // Assume column labels follow pre-v4.0 state variable labeling.
+        // Redo search with what the pre-v4.0 label might have been.
+
+        // First, try just the last element of the path.
+        std::string::size_type back = aColumnName.rfind("/");
+        std::string prefix = aColumnName.substr(0, back);
+        std::string shortName = aColumnName.substr(back + 1,
+                                                   aColumnName.length() - back);
+        thisColumnIndex = _columnLabels.findIndex(shortName);
+        if (thisColumnIndex != -1) break;
+
+        // If that didn't work, specifically check for coordinate state names
+        // (<coord_name>/value and <coord_name>/speed) and muscle state names
+        // (<muscle_name>/activation <muscle_name>/fiber_length).
+        if (shortName == "value") {
+            // pre-v4.0 did not have "/value" so remove it if here
             back = prefix.rfind("/");
             shortName = prefix.substr(back + 1, prefix.length());
             thisColumnIndex = _columnLabels.findIndex(shortName);
         }
-        else if (shortName == "speed"){
-            // replace "/speed" (the latest labeling for speeds) with "_u"
+        else if (shortName == "speed") {
+            // replace "/speed" (the v4.0 labeling for speeds) with "_u"
             back = prefix.rfind("/");
-            shortName = prefix.substr(back + 1, prefix.length() - back) + "_u";
+            shortName =
+                    prefix.substr(back + 1, prefix.length() - back) + "_u";
             thisColumnIndex = _columnLabels.findIndex(shortName);
         }
         else if (back < aColumnName.length()) {
-            // try replacing the '/' with '.' in the last connection
+            // try replacing the '/' with '.' in the last segment
             shortName = aColumnName;
             shortName.replace(back, 1, ".");
             back = shortName.rfind("/");
-            shortName = shortName.substr(back + 1, shortName.length() - back);
+            shortName = shortName.substr(back + 1,
+                                         shortName.length() - back);
             thisColumnIndex = _columnLabels.findIndex(shortName);
         }
-    }
-    // subtract 1 because time is included in the labels but not 
-    // in the "state vector"
-    return thisColumnIndex-1;
+        if (thisColumnIndex != -1) break;
+
+        // If all of the above checks failed, return -1.
+        return -1;
+
+    } while (false);
+
+    // If we get here, we successfully found a column.
+    // Subtract 1 because time is included in the labels but not
+    // in the "state vector".
+    return thisColumnIndex - 1;
 }
 
 
@@ -3314,34 +3319,39 @@ void Storage::compareWithStandard(Storage& standard, Array<string> &columnsUsed,
     columnsUsed.setSize(columns);
     comparisons.setSize(columns);
 }
-/**
- * Force column labels for a Storage object to become unique. This is done by prepending the string (n_)
- * as needed where n=1, 2, ...
- *
- * @returns true if labels were changed false otherwise.
- **/
+
 bool Storage::makeStorageLabelsUnique() {
     Array<std::string> lbls = getColumnLabels();
-    std::string offending="";
-    bool changedLabels=false;
-    for(int i=0; i< lbls.getSize(); i++){
-        bool isUnique= (lbls.findIndex(lbls[i])==i);
-        if (!isUnique){ // Make new names
-            offending =lbls[i];
-            bool exist=true;
-            std::string newName =offending;
+    std::string offending = "";
+    bool changedLabels = false;
+    for(int i = 0; i < lbls.getSize(); i++){
+        bool isUnique = (lbls.findIndex(lbls[i]) == i);
+        if (!isUnique) { // Make new names
+            offending = lbls[i];
+            bool exist = true;
+            std::string newName = offending;
             changedLabels = true;
-            int c=1;
-            while(exist){
+            int c = 1;
+            while (exist) {
                 char cString[20];
                 sprintf(cString,"%d", c);
-                newName = std::string(cString)+"_"+offending;
-                exist= (lbls.findIndex(newName)!=-1);
+                newName = std::string(cString) + "_" + offending;
+                exist = (lbls.findIndex(newName) != -1);
                 c++;
             }
-            lbls[i]= newName;
+            lbls[i] = newName;
         }
     }
     if (changedLabels) setColumnLabels(lbls);
-    return (!changedLabels);
+    const bool labelsWereUnique = (!changedLabels);
+    return labelsWereUnique;
+}
+
+bool Storage::storageLabelsAreUnique() const {
+    const auto& lbls = getColumnLabels();
+    for(int i = 0; i < lbls.getSize(); i++) {
+        const bool isUnique = (lbls.findIndex(lbls[i]) == i);
+        if (!isUnique) return false;
+    }
+    return true;
 }

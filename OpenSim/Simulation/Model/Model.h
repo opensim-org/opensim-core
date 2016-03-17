@@ -177,6 +177,18 @@ public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(ModelVisualPreferences,
         "Visual preferences for this model.");
 
+//==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(com_position, SimTK::Vec3,
+            calcMassCenterPosition, SimTK::Stage::Position);
+
+    OpenSim_DECLARE_OUTPUT(com_velocity, SimTK::Vec3,
+            calcMassCenterVelocity, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(com_acceleration, SimTK::Vec3,
+            calcMassCenterAcceleration, SimTK::Stage::Acceleration);
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -959,9 +971,6 @@ private:
     // Construct the properties of a Model.
     void constructProperties();
     void setDefaultProperties();
-
-    // construct outputs
-    void constructOutputs() override;
 
     // Utility to build a connected graph (tree) of the multibody system
     void createMultibodyTree();

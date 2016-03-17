@@ -43,6 +43,8 @@
 
 #include "ObjectGroup.h"
 
+#include "Reporter.h"
+
 #include <string>
 #include <iostream>
 #include <exception>
@@ -86,8 +88,14 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::registerType( MultiplierFunction() );
     Object::registerType(PolynomialFunction());
     Object::registerType( ObjectGroup() );
+    
+    Object::registerType( TableReporter() );
+    Object::registerType( TableReporterVec3() );
+    Object::registerType( TableReporterVector() );
+    Object::registerType( ConsoleReporter() );
+    Object::registerType( ConsoleReporterVec3() );
 
-    // TODO: temporarily map old NaturalCubicSpline (which wasn't a 
+    // TODO: temporarily map old NaturalCubicSpline (which wasn't a
     // natural cubic spline) to renamed SimmSpline class. Later we
     // will replace this with an actual natural cubic spline.
     Object::renameType("NaturalCubicSpline", "SimmSpline");
