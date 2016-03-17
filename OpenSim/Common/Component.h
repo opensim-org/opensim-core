@@ -2370,7 +2370,7 @@ void Connector<C>::findAndConnect(const Component& root) {
         }
     }
     catch (const ComponentNotFoundOnSpecifiedPath& ex) {
-        std::cout << ex.getMessage() << std::endl;
+        // TODO leave out for hackathon std::cout << ex.getMessage() << std::endl;
         comp =  root.template findComponent<C>(path);
     }
     if (comp)
