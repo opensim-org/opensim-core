@@ -33,11 +33,17 @@ in-memory container for data access and manipulation.                         */
 #include "OpenSim/Common/Exception.h"
 #include "OpenSim/Common/ValueArrayDictionary.h"
 
+#include <ostream>
+
 namespace OpenSim {
 
 class InvalidRow : public Exception {
 public:
     using Exception::Exception;
+    // InvalidRow(const std::string& file,
+    //            size_t line,
+    //            const std::string& func) :
+    //     Exception(file, line, func) {}
 };
 
 class IncorrectNumColumns : public InvalidRow {
@@ -55,12 +61,12 @@ public:
     }
 };
 
-class RowIndexOutOfRange : public IndexOutOfRange {
+class RowIndexOutOfRange : public IndexOutOfRange<size_t> {
 public:
     using IndexOutOfRange::IndexOutOfRange;
 };
 
-class ColumnIndexOutOfRange : public IndexOutOfRange {
+class ColumnIndexOutOfRange : public IndexOutOfRange<size_t> {
 public:
     using IndexOutOfRange::IndexOutOfRange;
 };
@@ -123,16 +129,16 @@ This class is abstract and cannot be used directly. Create instances of
 DataTable_ instead. See DataTable_ for details on usage.                     */
 class AbstractDataTable {
 public:
-    using TableMetaData       = ValueArrayDictionary;
-    using DependentsMetaData  = ValueArrayDictionary;
-    using IndependentMetaData = ValueArrayDictionary;
+    typedef ValueArrayDictionary TableMetaData;
+    typedef ValueArrayDictionary DependentsMetaData;
+    typedef ValueArrayDictionary IndependentMetaData;
 
     AbstractDataTable()                                      = default;
     AbstractDataTable(const AbstractDataTable&)              = default;
     AbstractDataTable(AbstractDataTable&&)                   = default;
     AbstractDataTable& operator=(const AbstractDataTable&)   = default;
     AbstractDataTable& operator=(AbstractDataTable&&)        = default;
-    virtual std::unique_ptr<AbstractDataTable> clone() const = 0;
+    virtual std::shared_ptr<AbstractDataTable> clone() const = 0;
     virtual ~AbstractDataTable()                             = default;
 
     /** Get metadata associated with the table.                               */
@@ -243,9 +249,9 @@ whole can contain metadata.                                                   */
 template<typename ETX = double, typename ETY = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
 public:
-    using RowVector     = SimTK::RowVector_<ETY>;
-    using RowVectorView = SimTK::RowVectorView_<ETY>;
-    using VectorView    = SimTK::VectorView_<ETY>;
+    typedef SimTK::RowVector_<ETY>     RowVector;
+    typedef SimTK::RowVectorView_<ETY> RowVectorView;
+    typedef SimTK::VectorView_<ETY>    VectorView;
 
     DataTable_()                             = default;
     DataTable_(const DataTable_&)            = default;
@@ -254,13 +260,13 @@ public:
     DataTable_& operator=(DataTable_&&)      = default;
     ~DataTable_()                            = default;
 
-    std::unique_ptr<AbstractDataTable> clone() const override {
-        return std::unique_ptr<AbstractDataTable>{new DataTable_{*this}};
+    std::shared_ptr<AbstractDataTable> clone() const override {
+        return std::shared_ptr<AbstractDataTable>{new DataTable_{*this}};
     }
 
     /** Append row to the DataTable_.                                         
 
-    \throws IncorrectNumCoilumns If the row added is invalid. Validity of the 
+    \throws IncorrectNumColumns If the row added is invalid. Validity of the 
     row added is decided by the derived class.                                */
     void appendRow(const ETX& indRow, const RowVector& depRow) {
         validateRow(_indData.size(), indRow, depRow);
@@ -443,8 +449,37 @@ protected:
     SimTK::Matrix_<ETY> _depData;
 };  // DataTable_
 
+/** Print DataTable out to a stream. Metadata is not printed to the stream as it
+is currently allowed to contain objects that do not support this operation.   
+Meant to be used for Debugging only.                                          */
+template<typename ETX, typename ETY>
+std::ostream& operator<<(std::ostream& outStream,
+                         const DataTable_<ETX, ETY>& table) {
+    outStream << "----------------------------------------------------------\n";
+    outStream << "NumRows: " << table.getNumRows()    << std::endl;
+    outStream << "NumCols: " << table.getNumColumns() << std::endl;
+    outStream << "Column-Labels: ";
+    const auto& labels = table.getColumnLabels();
+    if(!labels.empty()) {
+        outStream << "['" << labels[0] << "'";
+        if(labels.size() > 1)
+            for(size_t l = 1; l < labels.size(); ++l)
+                outStream << " '" << labels[l] << "'";
+        outStream << "]" << std::endl;
+    }
+    for(size_t r = 0; r < table.getNumRows(); ++r) {
+        outStream << table.getIndependentColumn().at(r) << " ";
+        outStream << table.getRowAtIndex(r) << std::endl;
+    }
+
+    outStream << "----------------------------------------------------------\n";
+    return outStream;
+}
+
 /** See DataTable_ for details on the interface.                              */
-using DataTable = DataTable_<SimTK::Real>;
+typedef DataTable_<double, double> DataTable;
+/** See DataTable_ for details on the interface.                              */
+typedef DataTable_<double, SimTK::Vec3> DataTableVec3;
 
 } // namespace OpenSim
 
