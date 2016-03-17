@@ -51,12 +51,6 @@ private:
 class TheWorld : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(TheWorld, Component);
 public:
-//=============================================================================
-// PROPERTIES
-//=============================================================================
-    OpenSim_DECLARE_LIST_PROPERTY(components, Component, 
-        "List of serialized internal components");
-
     TheWorld() : Component() {
         // Constructing own properties, connectors, inputs or connectors? Must invoke!
         constructInfrastructure();
@@ -74,25 +68,9 @@ public:
     }
 
     void add(Component* comp) {
+        addComponent(comp);
         // Edit Sub 
         Sub& subc = updMemberSubcomponent<Sub>(intSubix);
-
-        // add it the property list of components that owns and serializes them
-        updProperty_components().adoptAndAppendValue(comp);
-        try {
-            finalizeFromProperties();
-        }
-        catch (ComponentAlreadyPartOfOwnershipTree& ex) {
-            auto& compsProp = updProperty_components();
-            //undo the adopt and append
-            int ix = compsProp.findIndex(*comp);
-            if (ix >= 0) {
-                compsProp[ix].disconnect();
-                // release the pointer to component in ix to undo adopt
-                // erase pointer at ix from the property list to
-            }
-            throw ex;
-        }
     }
 
     // Top level connection method for this all encompassing component, TheWorld
@@ -652,7 +630,7 @@ void testMisc() {
     //Configure the connector to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
     bar2.updConnector<Foo>("parentFoo")
-  .setConnecteeName(compFoo.getRelativePathName(bar2));
+    .setConnecteeName(compFoo.getRelativePathName(bar2));
     bar2.updConnector<Foo>("childFoo").connect(foo);
 
     world3.finalizeFromProperties();
@@ -660,14 +638,10 @@ void testMisc() {
 
     cout << "Adding world3 to theWorld" << endl;
     theWorld.add(world3.clone());
-        
-    // TODO add the bar component again, which gets adopted by world3.
-    // This must trigger an exception, which it does, but the problem 
-    // is that the we don't have access to the property list to now
-    // remove it. Uncommenting current results in a fault when the 
-    // the destructor attempts to delete bar2 a second time around.
-    // ASSERT_THROW( ComponentAlreadyPartOfOwnershipTree,
-    //              world3.add(&bar2));
+
+    // Should not be able to add the same Component twice within the same tree
+    ASSERT_THROW( ComponentAlreadyPartOfOwnershipTree,
+                  world3.add(&bar2));
 
     cout << "Connecting theWorld:" << endl;
     theWorld.dumpSubcomponents();
@@ -1081,7 +1055,7 @@ int main() {
     Object::registerType(Connector<Foo>());
     Object::registerType(Connector<Bar>());
 
-    SimTK_START_TEST("testComponentIterface");
+    SimTK_START_TEST("testComponentInterface");
         SimTK_SUBTEST(testMisc);
         SimTK_SUBTEST(testListInputs);
         SimTK_SUBTEST(testListConnectors);

@@ -223,9 +223,7 @@ private:
         _filter(filter) {
         advanceToNextValidComponent(); // in case node is not a match.
     }
-
-};
-
+}; // end of ComponentListIterator
 } // end of namespace OpenSim
 
 #endif // OPENSIM_COMPONENT_LIST_H_

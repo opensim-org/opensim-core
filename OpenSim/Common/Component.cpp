@@ -124,10 +124,28 @@ Component::Component(SimTK::Xml::Element& element) : Object(element)
     constructProperty_connectors();
 }
 
+void Component::addComponent(Component* comp) {
+    //get to the root Component
+    const Component* root = this;
+    while (root->hasParent()) {
+        root = &(root->getParent());
+    }
+
+    auto components = root->getComponentList<Component>();
+    for (auto& c : components) {
+        if (comp == &c) {
+            OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
+                comp->getName(), getName());
+        }
+    }
+
+    updProperty_components().adoptAndAppendValue(comp);
+    finalizeFromProperties();
+}
+
 void Component::finalizeFromProperties()
 {
     reset();
-
 
     // TODO use a flag to set whether we are lenient on having nameless
     // Components. For backward compatibility we need to be able to 
