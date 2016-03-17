@@ -60,6 +60,11 @@
 %template(ArrayPtrsObj) OpenSim::ArrayPtrs<OpenSim::Object>;
 
 %include <OpenSim/Common/ComponentOutput.h>
+%template(OutputDouble) OpenSim::Output<double>;
+%template(OutputVec3) OpenSim::Output<SimTK::Vec3>;
+%template(OutputTransform) OpenSim::Output<SimTK::Transform>;
+%template(OutputVector) OpenSim::Output<SimTK::Vector>;
+
 %include <OpenSim/Common/ComponentConnector.h>
 
 %include <OpenSim/Common/ComponentList.h>
