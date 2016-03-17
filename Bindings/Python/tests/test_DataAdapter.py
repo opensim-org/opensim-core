@@ -4,28 +4,29 @@ Test DataAdapter interface.
 import os, unittest
 import opensim as osim
 
+test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
+                        'tests')
+
 class TestDataAdapter(unittest.TestCase):
     def test_TRCFileAdapter(self):
         adapter = osim.TRCFileAdapter()
-        table = adapter.read('../../../OpenSim/Sandbox/' + 
-                             'futureOrientationInverseKinematics.trc')
+        table = adapter.read(os.path.join(test_dir, 
+                             'futureOrientationInverseKinematics.trc'))
         assert table.getNumRows()    == 1202
         assert table.getNumColumns() == 2
 
-        table = adapter.read('../../../OpenSim/Examples/DataAdapter/' + 
-                             'TRCFileWithNANs.trc')
+        table = adapter.read(os.path.join(test_dir, 'TRCFileWithNANs.trc'))
         assert table.getNumRows()    == 5
         assert table.getNumColumns() == 14
 
     def test_MOTFileAdapter(self):
         adapter = osim.MOTFileAdapter()
-        table = adapter.read('../../../OpenSim/Common/Test/' + 
-                             'subject02_grf_HiFreq.mot')
+        table = adapter.read(os.path.join(test_dir, 'subject02_grf_HiFreq.mot'))
         assert table.getNumRows()    == 439
         assert table.getNumColumns() == 18
 
-        table = adapter.read('../../../OpenSim/Common/Test/' + 
-                             'std_subject01_walk1_ik.mot')
+        table = adapter.read(os.path.join(test_dir, 
+                                          'std_subject01_walk1_ik.mot')
         assert table.getNumRows()    == 73
         assert table.getNumColumns() == 23
 
@@ -35,8 +36,7 @@ class TestDataAdapter(unittest.TestCase):
         except AttributeError:
             # C3D support not available. OpenSim was not compiled with BTK.
             return
-        tables = adapter.read('../../../OpenSim/Common/Test/' + 
-                             'singleLeglanding_2.c3d')
+        tables = adapter.read(os.path.join(test_dir, 'singleLeglanding_2.c3d')
         markers = tables['markers']
         forces = tables['forces']
         assert markers.getNumRows()    == 1219
@@ -44,8 +44,7 @@ class TestDataAdapter(unittest.TestCase):
         assert forces.getNumRows()     == 9752
         assert forces.getNumColumns()  == 3
 
-        tables = adapter.read('../../../OpenSim/Common/Test/' + 
-                             'jogging.c3d')
+        tables = adapter.read(os.path.join(test_dir, 'jogging.c3d')
         markers = tables['markers']
         forces = tables['forces']
         assert markers.getNumRows()    == 406
