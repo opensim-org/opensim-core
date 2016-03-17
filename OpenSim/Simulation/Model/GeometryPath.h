@@ -62,7 +62,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, ModelComponent);
     //=============================================================================
     OpenSim_DECLARE_OUTPUT(length, double, getLength, SimTK::Stage::Position);
     // 
-    OpenSim_DECLARE_OUTPUT(speed, double, getLengtheningSpeed, SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(lengthening_speed, double, getLengtheningSpeed, SimTK::Stage::Velocity);
 
 //=============================================================================
 // DATA

@@ -189,6 +189,13 @@ public:
     OpenSim_DECLARE_OUTPUT(com_acceleration, SimTK::Vec3,
             calcMassCenterAcceleration, SimTK::Stage::Acceleration);
 
+    OpenSim_DECLARE_OUTPUT(kinetic_energy, double,
+            calcKineticEnergy, SimTK::Stage::Position);
+
+    OpenSim_DECLARE_OUTPUT(potential_energy, double,
+        calcPotentialEnergy, SimTK::Stage::Velocity);
+
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -761,7 +768,12 @@ public:
     SimTK::Vec3 calcMassCenterPosition(const SimTK::State &s) const;
     SimTK::Vec3 calcMassCenterVelocity(const SimTK::State &s) const;
     SimTK::Vec3 calcMassCenterAcceleration(const SimTK::State &s) const;
-
+    double calcKineticEnergy(const SimTK::State &s) const {
+        return getMultibodySystem().calcKineticEnergy(s);
+    }    
+    double calcPotentialEnergy(const SimTK::State &s) const {
+        return getMultibodySystem().calcPotentialEnergy(s);
+    }
     //--------------------------------------------------------------------------
     // STATES
     //--------------------------------------------------------------------------
