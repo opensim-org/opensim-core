@@ -126,27 +126,13 @@ before_install:
   # Run superbuild to download, configure, build and install dependencies.
   - mkdir $OPENSIM_DEPENDENCIES_BUILD_DIR
   - cd $OPENSIM_DEPENDENCIES_BUILD_DIR
-  - cmake $TRAVIS_BUILD_DIR/dependencies                           \
-          -DCMAKE_INSTALL_PREFIX=$OPENSIM_DEPENDENCIES_INSTALL_DIR \
-          -DCMAKE_BUILD_TYPE=$BTYPE                                \
-          -DSUPERBUILD_simbody=OFF
+  - cmake $TRAVIS_BUILD_DIR/dependencies -DCMAKE_INSTALL_PREFIX=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_BUILD_TYPE=$BTYPE -DSUPERBUILD_simbody=OFF
   - make -j8
 
 install:
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
   # Configure OpenSim.
-  - cmake $TRAVIS_BUILD_DIR                                                               \
-          -DBUILD_JAVA_WRAPPING=$WRAP                                                     \
-          -DBUILD_PYTHON_WRAPPING=$WRAP                                                   \
-          -DSWIG_EXECUTABLE=$HOME/swig/bin/swig                                           \
-          -DSIMBODY_HOME=~/simbody                                                        \
-          -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR                    \
-          -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME                                            \
-          -DCMAKE_BUILD_TYPE=$BTYPE                                                       \
-          -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen                   \
-          -DOPENSIM_DOXYGEN_USE_MATHJAX=off                                               \
-          -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/" \
-          -DWITH_BTK:BOOL=ON
+  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/" -DWITH_BTK:BOOL=ON
 
   # Build OpenSim.
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
