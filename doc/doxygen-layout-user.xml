@@ -39,7 +39,8 @@
   <navindex>
     <tab type="mainpage" visible="yes" title=""/>
     <tab type="pages" visible="yes" title="" intro=""/>
-    <tab type="modules" visible="no" title="" intro=""/>
+    <tab type="modules" visible="yes" title="Class Groups"
+        intro="Here is a list of manually-curated class groupings:"/>
     <tab type="namespaces" visible="yes" title="">
       <tab type="namespaces" visible="yes" title="" intro=""/>
       <tab type="namespacemembers" visible="yes" title="" intro=""/>

@@ -1,4 +1,5 @@
 #include <OpenSim/OpenSim.h>
+#include <OpenSim/Common/Reporter.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -123,57 +124,6 @@ private:
     }
 };
 
-template <typename T>
-class ConsoleReporter : public ModelComponent {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ConsoleReporter, Component);
-    // TODO interval
-    // TODO constant interval reporting
-    // TODO num significant digits (override).
-    OpenSim_DECLARE_LIST_INPUT(input, T, SimTK::Stage::Acceleration, "");
-public:
-    ConsoleReporter() {
-        constructInfrastructure();
-    }
-private:
-    void constructProperties() override {}
-    void extendRealizeReport(const State& state) const override {
-        // multi input: loop through multi-inputs.
-        // Output::getNumberOfSignificantDigits().
-        // TODO print column names every 10 outputs.
-        // TODO test by capturing stdout.
-        // TODO prepend each line with "[<name>]" or "[reporter]" if no name is given.
-        const auto& input = getInput("input");
-        
-        if (_printCount % 20 == 0) {
-            std::cout << "[" << getName() << "] "
-                      << std::setw(_width) << "time" << "  ";
-            for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
-                const auto& output = Input<T>::downcast(input).getOutput(idx);
-                const auto& outName = output.getName();
-                const auto& truncName = outName.size() <= _width ?
-                    outName : outName.substr(outName.size() - _width);
-                std::cout << std::setw(_width) << truncName << "|";
-            }
-            std::cout << "\n";
-        }
-        // TODO set width based on number of significant digits.
-        std::cout << "[" << getName() << "] "
-                  << std::setw(_width) << state.getTime() << "| ";
-        for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
-            const auto& output = Input<T>::downcast(input).getOutput(idx);
-            const auto& value = output.getValue(state);
-            const auto& nSigFigs = output.getNumberOfSignificantDigits();
-            std::cout << std::setw(_width)
-                      << std::setprecision(nSigFigs) << value << "|";
-        }
-        std::cout << std::endl;
-        
-        const_cast<ConsoleReporter<T>*>(this)->_printCount++;
-    }
-    unsigned int _printCount = 0;
-    int _width = 12;
-};
-
 void integrate(const System& system, Integrator& integrator,
         const State& initialState,
         Real finalTime) {
@@ -218,7 +168,7 @@ void testComplexResponse() {
     // add to aggregate which takes ownership
     aggregate->addResponse(response2);
     
-
+    auto* reporter = new ConsoleReporter();
     reporter->setName("reporter");
     reporter->updInput("input").connect(response1->getOutput("sum"));
     reporter->updInput("input").connect(response2->getOutput("sum"));
@@ -236,7 +186,7 @@ void testComplexResponse() {
     model.addJoint(j2);
     model.addJoint(j3);
     model.addModelComponent(aggregate); 
-    model.addModelComponent(reporter);
+    model.addComponent(reporter);
 
     State& state = model.initSystem();
 

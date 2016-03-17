@@ -147,11 +147,14 @@ void Component::finalizeFromProperties()
         comp->setParent(*this);
     }
 
-    // Provide each Output with a pointer to this component so that it can
-    // invoke its methods.
+    // Provide each Input and Output with a pointer to its component (this) so 
+    // that it can invoke its methods.
     // TODO if we implement custom copy constructor and assignment methods,
     // then this could be moved there (and then Output could take owner as an
     // argument to its constructor).
+    for (auto& it : _inputsTable) {
+        it.second->setOwner(*this);
+    }
     for (auto& it : _outputsTable) {
         it.second->setOwner(*this);
     }
@@ -195,22 +198,39 @@ void Component::connect(Component &root)
         AbstractConnector& connector = upd_connectors(ix);
         connector.disconnect();
         try {
-            const std::string& compName = connector.get_connectee_name();
             connector.findAndConnect(root);
         }
         catch (const std::exception& x) {
             throw Exception(getConcreteClassName() + "'" + getName() +"'"
                 "::connect() \nFailed to connect Connector<" +
                 connector.getConnecteeTypeName() + "> '" + connector.getName() +
-                "' as a subcomponent of " + root.getName() + 
-                ".\n Details:" + x.what());
+                "' within " + root.getConcreteClassName() + " '" + root.getName() +
+                "' (details: " + x.what() + ").");
         }
     }
-    
-    // Must also clear the inputs' existing connections, which may otherwise
-    // be stale.
-    for (auto& it : _inputsTable) {
-        it.second->disconnect();
+
+    for (auto& inputPair : _inputsTable) {
+        AbstractInput& input = inputPair.second.updRef();
+
+        if (!input.isListConnector() && input.getConnecteeName(0).empty()) {
+            std::cout << getConcreteClassName() << "'" << getName() << "'";
+            std::cout << "::connect() Input<" << input.getConnecteeTypeName();
+            std::cout << ">`" << input.getName();
+            std::cout << "' Output has not been specified." << std::endl;
+            continue;
+        }
+
+        try {
+            input.disconnect();
+            input.findAndConnect(root);
+        }
+        catch (const std::exception& x) {
+            throw Exception(getConcreteClassName() + "'" + getName() + "'"
+                "::connect() \nFailed to connect Input<" +
+                input.getConnecteeTypeName() + "> '" + input.getName() +
+                "' within " + root.getConcreteClassName() + " '" +
+                root.getName() + "' (details: " + x.what() + ").");
+        }
     }
 
     // Allow derived Components to handle/check their connections
@@ -1313,7 +1333,7 @@ void Component::dumpSubcomponents(int depth) const
     }
 
     std::cout << tabs << getConcreteClassName();
-    std::cout << " '" << getName() << "'s Components:" << std::endl;
+    std::cout << " '" << getName() << "'" << std::endl;
     for (size_t i = 0; i < _memberSubcomponents.size(); ++i) {
         _memberSubcomponents[int(i)]->dumpSubcomponents(depth + 1);
     }
@@ -1322,6 +1342,45 @@ void Component::dumpSubcomponents(int depth) const
     }
     for (size_t i = 0; i < _adoptedSubcomponents.size(); ++i) {
         _adoptedSubcomponents[int(i)]->dumpSubcomponents(depth + 1);
+    }
+}
+
+void Component::dumpConnections() const {
+    std::cout << "Connectors for " << getConcreteClassName() << " '"
+              << getName() << "':";
+    if (getNumConnectors() == 0) std::cout << " none";
+    std::cout << std::endl;
+    for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
+        const auto& connector = get_connectors(ix);
+        std::cout << "  " << connector.getConnecteeTypeName() << " '"
+                  << connector.getName() << "': ";
+        if (connector.getNumConnectees() == 0) {
+            std::cout << "no connectees" << std::endl;
+        } else {
+            for (int i = 0; i < connector.getNumConnectees(); ++i) {
+                std::cout << connector.getConnecteeName(i) << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+    
+    std::cout << "Inputs for " << getConcreteClassName() << " '"
+              << getName() << "':";
+    if (getNumInputs() == 0) std::cout << " none";
+    std::cout << std::endl;
+    for (const auto it : _inputsTable) {
+        const auto& input = it.second.getRef();
+        std::cout << "  " << input.getConnecteeTypeName() << " '"
+                  << input.getName() << "': ";
+        if (input.getNumConnectees() == 0) {
+            std::cout << "no connectees" << std::endl;
+        } else {
+            for (int i = 0; i < input.getNumConnectees(); ++i) {
+                std::cout << input.getConnecteeName(i) << " ";
+                // TODO as is, requires the input connections to be satisfied. std::cout << " (annotation: " << input.getAnnotation(i) << ") ";
+            }
+            std::cout << std::endl;
+        }
     }
 }
 

@@ -266,7 +266,7 @@ public:
 
     /** Append row to the DataTable_.                                         
 
-    \throws IncorrectNumCoilumns If the row added is invalid. Validity of the 
+    \throws IncorrectNumColumns If the row added is invalid. Validity of the 
     row added is decided by the derived class.                                */
     void appendRow(const ETX& indRow, const RowVector& depRow) {
         validateRow(_indData.size(), indRow, depRow);
