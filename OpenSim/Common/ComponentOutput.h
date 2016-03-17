@@ -169,9 +169,9 @@ public:
     @param outputFunction   The output function to be invoked (returns Output T)
     @param dependsOnStage   Stage at which Output can be evaluated. */
     explicit Output(const std::string& name,
-        const std::function<T (const Component* comp,
-                               const SimTK::State&,
-                               const std::string& channel)>& outputFunction,
+        const std::function<void (const Component* comp,
+                                 const SimTK::State&,
+                                 const std::string& channel, T&)>& outputFunction,
         const SimTK::Stage&     dependsOnStage,
         bool                    isList) :
             AbstractOutput(name, dependsOnStage, isList),
@@ -270,7 +270,7 @@ public:
                     state.getSystemStage(), getDependsOnStage(),
                     "Output::getValue(state)");
         }
-        _result = _outputFcn(_owner.get(), state, "");
+        _outputFcn(_owner.get(), state, "", _result);
         return _result;
     }
     
@@ -293,10 +293,11 @@ public:
     SimTK_DOWNCAST(Output, AbstractOutput);
 
 private:
-    mutable T _result; // TODO remove
-    std::function<T (const Component*,
-                     const SimTK::State&,
-                     const std::string& channel)> _outputFcn { nullptr };
+    mutable T _result;
+    std::function<void (const Component*,
+                        const SimTK::State&,
+                        const std::string& channel,
+                        T& result)> _outputFcn { nullptr };
     // TODO consider using indices, and having a parallel data structure
     // for names.
     std::map<std::string, Channel> _channels;
@@ -313,7 +314,7 @@ public:
      : _output(output), _channelName(channelName) {}
     const T& getValue(const SimTK::State& state) const {
         // Must cache, since we're returning a reference.
-        _result =_output->_outputFcn(_output->_owner.get(), state, _channelName);
+        _output->_outputFcn(_output->_owner.get(), state, _channelName, _result);
         return _result;
     }
     const Output<T>& getOutput() const { return _output.getRef(); }
@@ -329,7 +330,7 @@ public:
         return getOutput().getOwner().getFullPathName() + "/" + getName();
     }
 private:
-    mutable T _result; // TODO remove
+    mutable T _result;
     SimTK::ReferencePtr<const Output<T>> _output;
     std::string _channelName;
     
@@ -351,7 +352,9 @@ private:
  *
  *     -# It is a member function of your component.
  *     -# The member function is const.
- *     -# It takes only one input, which is `const SimTK::State&`
+ *     -# It takes only one argument, which is `const SimTK::State&`.
+ *     -# The function returns the computed quantity *by value* (e.g., 
+ *        `double computeQuantity(const SimTK::State&) const`).
  *
  *  You must also provide the stage on which the output depends.
  *
@@ -363,6 +366,14 @@ private:
  *      ...
  *  };
  *  @endcode
+ *
+ *  @warning The fourth requirement above can be lifted if the function returns
+ *  a quantity that is stored in the provided SimTK::State (as a state
+ *  variable, cache variable, etc.); in this case, your function's return type
+ *  should be `const T&` (e.g, `const double&`). If your function returns a
+ *  `const T&` but the quantity is NOT stored in the provided SimTK::State, the
+ *  output value will be invalid!
+ *
  * @see Component::constructOutput()
  * @relates OpenSim::Output
  */

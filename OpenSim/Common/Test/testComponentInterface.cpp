@@ -170,6 +170,9 @@ public:
 
     OpenSim_DECLARE_OUTPUT(BodyAcc, SpatialVec, calcSpatialAcc,
             SimTK::Stage::Velocity)
+
+    OpenSim_DECLARE_OUTPUT(return_by_ref, double, getReturnByRef,
+            SimTK::Stage::Time);
     
     OpenSim_DECLARE_INPUT(input1, double, SimTK::Stage::Model, "");
     OpenSim_DECLARE_INPUT(AnglesIn, Vector, SimTK::Stage::Model, "");
@@ -207,6 +210,11 @@ public:
 
         return getSystem().getMatterSubsystem().getMobilizedBody(bindex)
             .getBodyAcceleration(state);
+    }
+
+    const double& getReturnByRef(const SimTK::State& s) const {
+        // Must return something that is stored in the state!
+        return s.getTime();
     }
 
 protected:
@@ -574,6 +582,9 @@ void testMisc() {
 
         cout << "foo.input1 = " << foo.getInputValue<double>(s, "input1") << endl;
     }
+
+    // Test the output that returns by const T&.
+    SimTK_TEST(foo.getOutputValue<double>(s, "return_by_ref") == s.getTime());
 
     MultibodySystem system2;
     TheWorld *world2 = new TheWorld(modelFile, true);
