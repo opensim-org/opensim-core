@@ -77,6 +77,11 @@
 %include <OpenSim/Common/MarkerData.h>
 
 %include <Bindings/std.i>
+%shared_ptr(OpenSim::AbstractDataTable);
+%shared_ptr(OpenSim::DataTable_<double, double>);
+%shared_ptr(OpenSim::DataTable_<double, SimTK::Vec3>);
+%shared_ptr(OpenSim::TimeSeriesTable_<double>);
+%shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Vec3>);
 %ignore OpenSim::AbstractDataTable::clone;
 %ignore OpenSim::AbstractDataTable::getTableMetaData;
 %ignore OpenSim::AbstractDataTable::updTableMetaData;
@@ -87,6 +92,30 @@
 %include <OpenSim/Common/DataTable.h>
 %include <OpenSim/Common/TimeSeriesTable.h>
 %template(DataTable)           OpenSim::DataTable_<double, double>;
-%template(TimeSeriesTable)     OpenSim::TimeSeriesTable_<double>;
 %template(DataTableVec3)       OpenSim::DataTable_<double, SimTK::Vec3>;
+%template(TimeSeriesTable)     OpenSim::TimeSeriesTable_<double>;
 %template(TimeSeriesTableVec3) OpenSim::TimeSeriesTable_<SimTK::Vec3>;
+
+%include <OpenSim/Common/Event.h>
+%template(StdVectorEvent) std::vector<OpenSim::Event>;
+%template(StdMapStringTimeSeriesTableVec3)
+        std::map<std::string, 
+                 std::shared_ptr<OpenSim::TimeSeriesTable_<SimTK::Vec3>>>;
+%shared_ptr(OpenSim::DataAdapter)
+%shared_ptr(OpenSim::FileAdapter)
+%shared_ptr(OpenSim::DelimFileAdapter)
+%shared_ptr(OpenSim::MOTFileAdapter)
+%shared_ptr(OpenSim::CSVFileAdapter)
+%shared_ptr(OpenSim::TRCFileAdapter)
+%shared_ptr(OpenSim::C3DFileAdapter)
+%template(StdMapStringDataAdapter)
+        std::map<std::string, std::shared_ptr<OpenSim::DataAdapter>>;
+%template(StdMapStringAbstractDataTable)
+        std::map<std::string, std::shared_ptr<OpenSim::AbstractDataTable>>;
+%include <OpenSim/Common/DataAdapter.h>
+%include <OpenSim/Common/FileAdapter.h>
+%include <OpenSim/Common/TRCFileAdapter.h>
+%include <OpenSim/Common/DelimFileAdapter.h>
+%include <OpenSim/Common/MOTFileAdapter.h>
+%include <OpenSim/Common/CSVFileAdapter.h>
+%include <OpenSim/Common/C3DFileAdapter.h>

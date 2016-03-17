@@ -100,12 +100,12 @@ int main() {
     for(const auto& filename : filenames) {
         MOTFileAdapter motfileadapter{};
         auto table = motfileadapter.read(filename);
-        motfileadapter.write(*table, tmpfile);
+        motfileadapter.write(table, tmpfile);
         compareFiles(filename, tmpfile);
     }
 
     for(const auto& filename : filenames) {
-        auto table = std::move(FileAdapter::readFile(filename).at("table"));
+        auto table = FileAdapter::readFile(filename).at("table");
         DataAdapter::InputTables tables{};
         tables.emplace(std::string{"table"}, table.get());
         FileAdapter::writeFile(tables, tmpfile);

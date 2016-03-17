@@ -13,6 +13,7 @@ add_custom_command(
         -I${OpenSim_SOURCE_DIR}
         -I${OpenSim_SOURCE_DIR}/Bindings
         -I${Simbody_INCLUDE_DIR}
+        ${SWIG_FLAGS}
         -o ${swig_generated_file_fullname}
         -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
         ${swig_interface_file_fullname}
