@@ -58,7 +58,7 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(Actuator, Force);
 //=============================================================================
 // OUTPUTS
 //=============================================================================
-OpenSim_DECLARE_OUTPUT(power, double, getPower, SimTK::Stage::Velocity);
+OpenSim_DECLARE_OUTPUT(power, double, getPower, SimTK::Stage::Dynamics);
 
 //=============================================================================
 // DATA
