@@ -1031,6 +1031,36 @@ void testInputOutputConnections()
     world.buildUpSystem(mbs);
 }
 
+void testInputConnecteeNames() {
+    std::string outputPath, channelName, annotation;
+    
+    AbstractInput::parseConnecteeName("/foo/bar/output",
+                                      outputPath, channelName, annotation);
+    SimTK_TEST(outputPath == "/foo/bar/output");
+    SimTK_TEST(channelName == "");
+    SimTK_TEST(annotation == "output");
+    
+    AbstractInput::parseConnecteeName("/foo/bar/output:channel",
+                                      outputPath, channelName, annotation);
+    SimTK_TEST(outputPath == "/foo/bar/output");
+    SimTK_TEST(channelName == "channel");
+    SimTK_TEST(annotation == "channel");
+    
+    AbstractInput::parseConnecteeName("/foo/bar/output(anno)",
+                                      outputPath, channelName, annotation);
+    SimTK_TEST(outputPath == "/foo/bar/output");
+    SimTK_TEST(channelName == "");
+    SimTK_TEST(annotation == "anno");
+    
+    AbstractInput::parseConnecteeName("/foo/bar/output:channel(anno)",
+                                      outputPath, channelName, annotation);
+    SimTK_TEST(outputPath == "/foo/bar/output");
+    SimTK_TEST(channelName == "channel");
+    SimTK_TEST(annotation == "anno");
+    
+    // TODO test invalid names as well.
+}
+
 int main() {
 
     //Register new types for testing deserialization
@@ -1040,11 +1070,12 @@ int main() {
     Object::registerType(Connector<Foo>());
     Object::registerType(Connector<Bar>());
 
- // TODO   SimTK_START_TEST("testComponentIterface");
+    SimTK_START_TEST("testComponentIterface");
         SimTK_SUBTEST(testMisc);
         SimTK_SUBTEST(testListInputs);
         SimTK_SUBTEST(testListConnectors);
         SimTK_SUBTEST(testComponentPathNames);
-//    SimTK_END_TEST();
+        SimTK_SUBTEST(testInputConnecteeNames);
+    SimTK_END_TEST();
 }
 

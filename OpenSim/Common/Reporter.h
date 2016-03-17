@@ -126,7 +126,7 @@ protected:
 *
 * @author Ajay Seth
 */
-template<class InputT=Real, typename ValueT=Real>
+template<class InputT=SimTK::Real, typename ValueT=SimTK::Real>
 class TableReporter : public Reporter<InputT> {
 OpenSim_DECLARE_CONCRETE_OBJECT_T(TableReporter, InputT, Reporter<InputT>);
 public:
@@ -139,7 +139,7 @@ public:
 
 protected:
     void implementReport(const SimTK::State& state) const override {
-        const auto& input = getInput<InputT>("inputs");
+        const auto& input = this->template getInput<InputT>("inputs");
         SimTK::Vector_<ValueT> result(int(input.getNumConnectees()));
 
         for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
@@ -154,7 +154,7 @@ protected:
     void extendConnect(Component& root) override {
         Super::extendConnect(root);
 
-        const auto& input = getInput<InputT>("inputs");
+        const auto& input = this->template getInput<InputT>("inputs");
 
         std::vector<std::string> labels;
         for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
@@ -191,12 +191,11 @@ private:
         // TODO print column names every 10 outputs.
         // TODO test by capturing stdout.
         // TODO prepend each line with "[<name>]" or "[reporter]" if no name is given.
-        // TODO an actual implementation should do a static cast, since we
-        // know that T is correct.
-        const auto& input = getInput<T>("inputs");
+        // TODO do a static cast, since we know that T is correct.
+        const auto& input = this->template getInput<T>("inputs");
 
         if (_printCount % 20 == 0) {
-            std::cout << "[" << getName() << "] "
+            std::cout << "[" << this->getName() << "] "
                 << std::setw(_width) << "time" << "| ";
             for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
                 const auto& chan = Input<T>::downcast(input).getChannel(idx);
@@ -208,7 +207,7 @@ private:
             std::cout << "\n";
         }
         // TODO set width based on number of significant digits.
-        std::cout << "[" << getName() << "] "
+        std::cout << "[" << this->getName() << "] "
             << std::setw(_width) << state.getTime() << "| ";
         for (const auto& chan : input.getChannels()) {
             const auto& value = chan->getValue(state);

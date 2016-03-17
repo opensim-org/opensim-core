@@ -198,29 +198,21 @@ void Component::connect(Component &root)
         AbstractConnector& connector = upd_connectors(ix);
         connector.disconnect();
         try {
-            const std::string& compName = connector.getConnecteeName();
             connector.findAndConnect(root);
         }
         catch (const std::exception& x) {
             throw Exception(getConcreteClassName() + "'" + getName() +"'"
                 "::connect() \nFailed to connect Connector<" +
                 connector.getConnecteeTypeName() + "> '" + connector.getName() +
-                "' as a subcomponent of " + root.getName() + 
-                ".\n Details:" + x.what());
+                "' within " + root.getConcreteClassName() + " '" + root.getName() +
+                "' (details: " + x.what() + ").");
         }
-    }
-    
-    // Must also clear the inputs' existing connections, which may otherwise
-    // be stale.
-    for (auto& it : _inputsTable) {
-        it.second->disconnect();
     }
 
     for (auto& inputPair : _inputsTable) {
         AbstractInput& input = inputPair.second.updRef();
 
-        const std::string& outName = input.getConnecteeName();
-        if (outName.empty()) {
+        if (!input.isListConnector() && input.getConnecteeName(0).empty()) {
             std::cout << getConcreteClassName() << "'" << getName() << "'";
             std::cout << "::connect() Input<" << input.getConnecteeTypeName();
             std::cout << ">`" << input.getName();
@@ -236,8 +228,8 @@ void Component::connect(Component &root)
             throw Exception(getConcreteClassName() + "'" + getName() + "'"
                 "::connect() \nFailed to connect Input<" +
                 input.getConnecteeTypeName() + "> '" + input.getName() +
-                "' as an Input of " + root.getName() +
-                ".\n Details:" + x.what());
+                "' within " + root.getConcreteClassName() + " '" +
+                root.getName() + "' (details: " + x.what() + ").");
         }
     }
 
@@ -1340,7 +1332,7 @@ void Component::dumpSubcomponents(int depth) const
     }
 
     std::cout << tabs << getConcreteClassName();
-    std::cout << " '" << getName() << "'s Components:" << std::endl;
+    std::cout << " '" << getName() << "'" << std::endl;
     for (size_t i = 0; i < _memberSubcomponents.size(); ++i) {
         _memberSubcomponents[int(i)]->dumpSubcomponents(depth + 1);
     }
@@ -1349,6 +1341,45 @@ void Component::dumpSubcomponents(int depth) const
     }
     for (size_t i = 0; i < _adoptedSubcomponents.size(); ++i) {
         _adoptedSubcomponents[int(i)]->dumpSubcomponents(depth + 1);
+    }
+}
+
+void Component::dumpConnections() const {
+    std::cout << "Connectors for " << getConcreteClassName() << " '"
+              << getName() << "':";
+    if (getNumConnectors() == 0) std::cout << " none";
+    std::cout << std::endl;
+    for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
+        const auto& connector = get_connectors(ix);
+        std::cout << "  " << connector.getConnecteeTypeName() << " '"
+                  << connector.getName() << "': ";
+        if (connector.getNumConnectees() == 0) {
+            std::cout << "no connectees" << std::endl;
+        } else {
+            for (int i = 0; i < connector.getNumConnectees(); ++i) {
+                std::cout << connector.getConnecteeName(i) << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+    
+    std::cout << "Inputs for " << getConcreteClassName() << " '"
+              << getName() << "':";
+    if (getNumInputs() == 0) std::cout << " none";
+    std::cout << std::endl;
+    for (const auto it : _inputsTable) {
+        const auto& input = it.second.getRef();
+        std::cout << "  " << input.getConnecteeTypeName() << " '"
+                  << input.getName() << "': ";
+        if (input.getNumConnectees() == 0) {
+            std::cout << "no connectees" << std::endl;
+        } else {
+            for (int i = 0; i < input.getNumConnectees(); ++i) {
+                std::cout << input.getConnecteeName(i) << " ";
+                // TODO as is, requires the input connections to be satisfied. std::cout << " (annotation: " << input.getAnnotation(i) << ") ";
+            }
+            std::cout << std::endl;
+        }
     }
 }
 

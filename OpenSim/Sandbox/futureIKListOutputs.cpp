@@ -407,8 +407,6 @@ void testFutureIKListOutputs() {
     hjc->setName("hip_joint_center");
     model.addModelComponent(hjc);
     
-    SimTK::State& s = model.initSystem();
-    
     // Set up input-output connections.
     // --------------------------------
     // Must connect *after* initSystem(), since it first clears all
@@ -442,6 +440,9 @@ void testFutureIKListOutputs() {
     modelMarkers->updInput("input").connect(ik->getOutput("model_marker_pos"));
     // Connect to all channels in the "coords" list output.
     solution->updInput("input").connect(ik->getOutput("coords"));
+    hjc->dumpConnections();
+    ik->dumpConnections();
+    SimTK::State& s = model.initSystem();
     
     // TODO replace with a driver / time step advancer.
     RungeKuttaMersonIntegrator integrator(model.getSystem());

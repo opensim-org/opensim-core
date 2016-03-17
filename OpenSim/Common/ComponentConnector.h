@@ -148,20 +148,32 @@ public:
                         "for this type of connector", __FILE__, __LINE__);
     }
 
-    void setConnecteeName(const std::string& name, int ix = 0) {
-        OPENSIM_THROW_IF((ix > 0 && !_isList), Exception,
-            "Multiple connectee names can only be set on a list Connector.");
+    void setConnecteeName(const std::string& name, int ix = -1) {
+        if (ix == -1) {
+            if (!_isList) ix = 0;
+            else OPENSIM_THROW(Exception,
+                "An index must be provided for a list Connector.");
+        }
+        OPENSIM_THROW_IF(ix >= getNumConnectees(),
+                         IndexOutOfRange<int>,
+                         ix, 0, (int)getNumConnectees() - 1);
         upd_connectee_name(ix) = name;
     }
 
-    const std::string& getConnecteeName(int ix  =0) const {
-        OPENSIM_THROW_IF((ix > 0 && !_isList), Exception,
-            "Multiple connectee names are only available with a list Connector.");
+    const std::string& getConnecteeName(int ix = -1) const {
+        if (ix == -1) {
+            if (!_isList) ix = 0;
+            else OPENSIM_THROW(Exception,
+                "An index must be provided for a list Connector.");
+        }
+        OPENSIM_THROW_IF(ix >= getNumConnectees(),
+                         IndexOutOfRange<int>,
+                         ix, 0, (int)getNumConnectees() - 1);
         return get_connectee_name(ix);
     }
 
     void appendConnecteeName(const std::string& name) {
-        OPENSIM_THROW_IF((getProperty_connectee_name().size() > 0 && !_isList), Exception,
+        OPENSIM_THROW_IF((getNumConnectees() > 0 && !_isList), Exception,
             "Multiple connectee names can only be appended to a list Connector.");
         updProperty_connectee_name().appendValue(name);
     }
@@ -336,6 +348,67 @@ public:
     virtual const std::string& getAnnotation(int index = -1) const = 0;
     // TODO what's the best way to serialize annotations?
     
+    /** Break up a connectee name into its output path, channel name
+     (empty for single-value outputs), and annotation. This function writes
+     to the passed-in outputPath, channelName, and annotation.
+     
+     Examples:
+     @verbatim
+     /foo/bar/output
+     outputPath is "/foo/bar/output"
+     channelName is ""
+     annotation is "output"
+     
+      /foo/bar/output:channel
+      outputPath is "/foo/bar/output"
+      channelName is "channel"
+      annotation is "channel"
+     
+      /foo/bar/output(anno)
+      outputPath is "/foo/bar/output"
+      channelName is ""
+      annotation is "anno"
+     
+      /foo/bar/output:channel(anno)
+      outputPath is "/foo/bar/output"
+      channelName is "channel"
+      annotation is "anno"
+      @endverbatim
+     */
+    static bool parseConnecteeName(const std::string& connecteeName,
+                                   std::string& outputPath,
+                                   std::string& channelName,
+                                   std::string& annotation) {
+        auto lastSlash = connecteeName.rfind("/");
+        auto colon = connecteeName.rfind(":");
+        auto leftParen = connecteeName.rfind("(");
+        auto rightParen = connecteeName.rfind(")");
+        
+        std::string outputName = connecteeName.substr(lastSlash + 1,
+                                    std::min(colon, leftParen) - lastSlash);
+        outputPath = connecteeName.substr(0, std::min(colon, leftParen));
+        
+        // Channel name.
+        if (colon != std::string::npos) {
+            channelName = connecteeName.substr(colon + 1, leftParen - (colon + 1));
+        } else {
+            channelName = "";
+        }
+        
+        // Annotation.
+        if (leftParen != std::string::npos && rightParen != std::string::npos) {
+            annotation = connecteeName.substr(leftParen + 1,
+                                              rightParen - (leftParen + 1));
+        } else {
+            if (!channelName.empty()) {
+                annotation = channelName;
+            } else {
+                annotation = outputName;
+            }
+        }
+        return true;
+    }
+    
 //=============================================================================
 };  // END class AbstractInput
 
@@ -366,88 +439,16 @@ public:
 
     /** Connect this Input to the provided (Abstract)Output.
      */
+    // Definition is in Component.h
     void connect(const AbstractOutput& output,
-                 const std::string& annotation = "") override {
-        const auto* outT = dynamic_cast<const Output<T>*>(&output);
-        if (outT) {
-            if (!isListConnector()) {
-                if (outT->isListOutput()) {
-                    throw Exception("Non-list input cannot connect to list output");
-                }
-            }
-
-            int ix = 0; 
-            // For a non-list connector, there will only be one channel.
-            for (const auto& chan : outT->getChannels()) {
-                ix = int(_connectees.size());
-                _connectees.push_back(
-                    SimTK::ReferencePtr<const Channel>(&chan.second) );
-
-                //update the connectee_name as /<OwnerPath>/<Output::Channel> name
-                std::string pathName =
-                    output.getOwner().getRelativePathName(getOwner());
-                pathName = pathName + "/" + chan.second.getChannelName();
-
-                // set the connectee name so that the connection can be
-                // serialized
-                if (ix < getNumConnectees())
-                    setConnecteeName(pathName, ix);
-                else
-                    appendConnecteeName(pathName);
-
-                // Use the same annotation for each channel.
-                if (annotation.empty())
-                    _annotations.push_back(chan.second.getChannelName());
-                else _annotations.push_back(annotation);
-            }
-        }
-        else {
-            std::stringstream msg;
-            msg << "Input::connect(): ERR- Cannot connect '" << output.getName()
-            << "' of type Output<" << output.getTypeName() << ">. Input requires "
-            << getConnecteeTypeName() << ".";
-            throw Exception(msg.str(), __FILE__, __LINE__);
-        }
-    }
+                 const std::string& annotation = "") override;
     
     void connect(const AbstractChannel& channel,
-                 const std::string& annotation = "") override {
-        const auto* chanT = dynamic_cast<const Channel*>(&channel);
-        if (chanT) {
-            if (!isListConnector()) {
-                // Remove the existing connecteee (if it exists).
-                disconnect();
-            }
-            _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
-            if (annotation.empty()) _annotations.push_back(chanT->getChannelName());
-            else _annotations.push_back(annotation);
-        }
-        else {
-            std::stringstream msg;
-            msg << "Input::connect(): ERR- Cannot connect '" << chanT->getPathName()
-            << "' of type Output<" << chanT->getOutput().getTypeName() << ">::Channel. Input requires "
-            << getConnecteeTypeName() << ".";
-            throw Exception(msg.str(), __FILE__, __LINE__);
-        }
-    }
+                 const std::string& annotation = "") override;
 
     /** Connect this Input given a root Component to search for
     the Output according to the connectee_name of this Input  */
-    void findAndConnect(const Component& root) override {
-        for (int ix = 0; ix < getNumConnectees(); ++ix) {
-            const std::string& path = getConnecteeName(ix);
-            try {
-                connect(root.getOutput(path));
-            }
-            catch (const Exception& ex) {
-                std::stringstream msg;
-                msg << getConcreteClassName() << " '" << getName();
-                msg << "' ::findAndConnect() ERROR- Could not connect to Output.";
-                msg << "\nDetails: " << ex.getMessage();
-                throw Exception(msg.str(), __FILE__, __LINE__);
-            }
-        }
-    }
+    void findAndConnect(const Component& root) override;
     
     void disconnect() override {
         _connectees.clear();
@@ -505,7 +506,7 @@ public:
     SimTK::Vector_<T>. The elements are in the same order as the channels.
     */
     SimTK::Vector_<T> getVector(const SimTK::State& state) const {
-        SimTK::Vector_<T> v(getNumConnectees());
+        SimTK::Vector_<T> v(_connectees.size());
         for (int ichan = 0; ichan < _connectees.size(); ++ichan) {
             v[ichan] = _connectees[ichan]->getValue(state);
         }
@@ -535,6 +536,8 @@ public:
 
 private:
     SimTK::ResetOnCopy<ChannelList> _connectees;
+    // TODO I think the annotations need to be serialized, since
+    // tools may depend on them for interpreting the connected channels.
     SimTK::ResetOnCopy<AnnotationList> _annotations;
 }; // END class Input<Y>
 

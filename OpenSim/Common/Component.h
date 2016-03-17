@@ -1059,9 +1059,15 @@ public:
     // End of Model Component State Accessors.
     //@} 
 
+    /** @name Dump debugging information to the console */
+    /// @{
     /** Debugging method to list all subcomponents by name and recurse
         into these components to list their subcomponents, and so on. */
     void dumpSubcomponents(int depth=0) const;
+    /** List all the Connectors and Inputs and whether or not they are
+     * connected. */
+    void dumpConnections() const;
+    /// @}
 
 protected:
     class StateVariable;
@@ -2333,7 +2339,124 @@ void Connector<C>::findAndConnect(const Component& root) {
             getName() );
 }
 
+template<class T>
+void Input<T>::connect(const AbstractOutput& output,
+                       const std::string& annotation) {
+    const auto* outT = dynamic_cast<const Output<T>*>(&output);
+    if (outT) {
+        if (!isListConnector()) {
+            if (outT->isListOutput()) {
+                throw Exception("Non-list input cannot connect to list output");
+            }
+        }
 
+        int ix = 0; 
+        // For a non-list connector, there will only be one channel.
+        for (const auto& chan : outT->getChannels()) {
+            ix = int(_connectees.size());
+            _connectees.push_back(
+                SimTK::ReferencePtr<const Channel>(&chan.second) );
+
+            //update the connectee_name as /<OwnerPath>/<Output:Channel> name
+            std::string pathName =
+                output.getOwner().getRelativePathName(getOwner());
+            pathName = pathName + "/" + chan.second.getName();
+            if (!annotation.empty() && annotation != chan.second.getChannelName()) {
+                pathName += "(" + annotation + ")";
+            }
+
+            // set the connectee name so that the connection can be
+            // serialized
+            int numPreexistingConnectees = getNumConnectees();
+            if (ix < numPreexistingConnectees)
+                setConnecteeName(pathName, ix);
+            else
+                appendConnecteeName(pathName);
+
+            // Use the same annotation for each channel.
+            std::string annoToStore = annotation.empty() ?
+                                      chan.second.getChannelName() :
+                                      annotation;
+            _annotations.push_back(annoToStore);
+        }
+    }
+    else {
+        std::stringstream msg;
+        msg << "Input::connect(): ERR- Cannot connect '" << output.getName()
+        << "' of type Output<" << output.getTypeName() << ">. Input requires "
+        << getConnecteeTypeName() << ".";
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
+}
+
+template<class T>
+void Input<T>::connect(const AbstractChannel& channel,
+             const std::string& annotation) {
+    const auto* chanT = dynamic_cast<const Channel*>(&channel);
+    if (chanT) {
+        if (!isListConnector()) {
+            // Remove the existing connecteee (if it exists).
+            disconnect();
+        }
+        
+        // Record the number of existing satisfied connections.
+        int ix = int(_connectees.size());
+        _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
+        
+        // Update the connectee name as
+        // /<OwnerPath>/<Output>:<Channel><(annotation)>
+        const auto& outputsOwner = chanT->getOutput().getOwner();
+        std::string pathName = outputsOwner.getRelativePathName(getOwner());
+        pathName += "/" + chanT->getName();
+        if (!annotation.empty() && annotation != chanT->getChannelName()) {
+            pathName += "(" + annotation + ")";
+        }
+        
+        // Set the connectee name so the connection can be serialized.
+        int numPreexistingConnectees = getNumConnectees();
+        if (ix < numPreexistingConnectees)
+            setConnecteeName(pathName, ix);
+        else
+            appendConnecteeName(pathName);
+        
+        // Annotation.
+        std::string annoToStore = annotation.empty() ? chanT->getChannelName() :
+                                  annotation;
+        _annotations.push_back(annoToStore);
+    }
+    else {
+        std::stringstream msg;
+        msg << "Input::connect(): ERR- Cannot connect '" << chanT->getPathName()
+        << "' of type Output<" << chanT->getOutput().getTypeName() << ">::Channel. Input requires "
+        << getConnecteeTypeName() << ".";
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
+}
+
+template<class T>
+void Input<T>::findAndConnect(const Component& root) {
+    std::string outputPath, channelName, annotation;
+    for (int ix = 0; ix < getNumConnectees(); ++ix) {
+        parseConnecteeName(getConnecteeName(ix), outputPath, channelName,
+                           annotation);
+        try {
+            const auto& output = root.getOutput(outputPath);
+            const auto& channel = output.getChannel(channelName);
+            connect(channel, annotation);
+        }
+        catch (const Exception& ex) {
+            std::stringstream msg;
+            msg << getConcreteClassName() << " '" << getName();
+            msg << "' ::findAndConnect() ERROR- Could not connect to Output '";
+            msg << outputPath << "'";
+            if (!channelName.empty()) {
+                msg << " and channel '" << channelName << "'";
+            }
+            msg << " (details: " << ex.getMessage() << ").";
+            throw Exception(msg.str(), __FILE__, __LINE__);
+        }
+    }
+}
 
 
 } // end of namespace OpenSim
