@@ -663,7 +663,7 @@ void testMisc() {
     theWorld.finalizeFromProperties();
     theWorld.connect();
 
-    auto* reporter = new TableReporter<Vector, Real>();
+    auto* reporter = new TableReporterVector();
     reporter->set_report_time_interval(0.1);
     reporter->updInput("inputs").connect(foo.getOutput("Qs"));
     theWorld.add(reporter);
@@ -772,7 +772,7 @@ void testListInputs() {
     bar.updConnector<Foo>("parentFoo").setConnecteeName("Foo");
     bar.updConnector<Foo>("childFoo").setConnecteeName("Foo2");
     
-    auto* reporter = new ConsoleReporter<double>();
+    auto* reporter = new ConsoleReporter();
     reporter->setName("rep0");
     theWorld.add(reporter);
 
@@ -782,7 +782,7 @@ void testListInputs() {
     reporter->updInput("inputs").connect(bar.getOutput("fiberLength"));
     reporter->updInput("inputs").connect(bar.getOutput("activation"));
 
-    auto*tabReporter = new TableReporter<SimTK::Real, SimTK::Real>();
+    auto* tabReporter = new TableReporter();
     tabReporter->setName("TableReporterMixedOutputs");
     theWorld.add(tabReporter);
 

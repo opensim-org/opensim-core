@@ -85,7 +85,6 @@ void AbstractReporter::setNull()
 // Define properties.
 void AbstractReporter::constructProperties()
 {
-    constructProperty_is_disabled(false);
     constructProperty_report_time_interval(0.0);
 }
 
@@ -94,8 +93,6 @@ void AbstractReporter::constructProperties()
 void AbstractReporter::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
-    if (get_is_disabled())
-        return;
 
     double reportInterval = get_report_time_interval();
 
@@ -108,7 +105,9 @@ void AbstractReporter::extendAddToSystem(SimTK::MultibodySystem& system) const
 
 void AbstractReporter::extendRealizeReport(const SimTK::State& state) const
 {
-    report(state);
+    if (get_report_time_interval() == 0) {
+        report(state);
+    }
 }
 
 void AbstractReporter::report(const SimTK::State& s) const
