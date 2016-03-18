@@ -26,7 +26,7 @@ macro(OpenSimAddMatlabTest MFILE)
     endif()
     matlab_add_unit_test(NAME Matlab_TugOfWar
         UNITTEST_FILE "${_full_path_to_mfile}"
-        TEST_ARGS CONFIGURATION Release RelWithDebInfo MinSizeRel
+        TEST_ARGS CONFIGURATIONS Release RelWithDebInfo MinSizeRel
         ADDITIONAL_PATH "${_additional_path}"
         NO_UNITTEST_FRAMEWORK
         )

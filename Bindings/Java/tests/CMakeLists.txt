@@ -14,6 +14,10 @@ macro(OpenSimAddJavaTest TESTNAME)
         OUTPUT_NAME "${TESTNAME}"
         OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${TESTNAME}"
         )
+        
+    set_target_properties(Java_${TESTNAME} PROPERTIES
+        PROJECT_LABEL "Compile - Java_${TESTNAME}" 
+        FOLDER "Bindings")
 
     add_dependencies(Java_${TESTNAME} JavaBindings)
 
@@ -63,7 +67,10 @@ macro(OpenSimAddJavaTest TESTNAME)
         #    "PATH=${CMAKE_BINARY_DIR}/$<CONFIG>")
         foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
             set_tests_properties(Java_${TESTNAME}_${cfg} PROPERTIES ENVIRONMENT
-                "PATH=${CMAKE_BINARY_DIR}/${cfg}")
+                "PATH=${CMAKE_BINARY_DIR}/${cfg}"
+                TIMEOUT 30)
+            # Timeout (seconds) is because Java might hang if it can't find
+            # the DLL's.
         endforeach()
     endif()
 
@@ -76,10 +83,10 @@ add_custom_target(RunJavaTests
     COMMAND ${CMAKE_CTEST_COMMAND} --tests-regex Java
                                    ${OPENSIM_TEST_BUILD_CONFIG}
                                    --extra-verbose
-    PROJECT_LABEL "Java - run tests"
-    FOLDER "Bindings"
     )
 
+set_target_properties(RunJavaTests PROPERTIES
+    PROJECT_LABEL "Java - run tests" FOLDER "Bindings")
 
 
 
