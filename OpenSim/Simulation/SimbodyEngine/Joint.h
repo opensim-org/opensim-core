@@ -115,10 +115,12 @@ public:
 // OUTPUTS
 //=============================================================================
     OpenSim_DECLARE_OUTPUT(power, double, calcPower, SimTK::Stage::Acceleration);
-    OpenSim_DECLARE_OUTPUT(reaction_child_origin_in_ground, SimTK::SpatialVec, 
-        calcReactionOnChildAtOriginInGround, SimTK::Stage::Acceleration);
-    OpenSim_DECLARE_OUTPUT(reaction_parent_origin_in_ground, SimTK::SpatialVec, 
-        calcReactionOnParentAtOriginInGround, SimTK::Stage::Acceleration);
+    // reaction_load_at_parent_frame
+    OpenSim_DECLARE_OUTPUT(reaction_load_at_parent_frame_in_ground_frame, SimTK::SpatialVec,
+        calcReactionAtParentFrameInGround, SimTK::Stage::Acceleration);
+    // reaction_load_at_child_frame
+    OpenSim_DECLARE_OUTPUT(reaction_load_at_child_frame_in_ground_frame, SimTK::SpatialVec,
+        calcReactionAtChildFrameInGround, SimTK::Stage::Acceleration);
 
 //=============================================================================
 // METHODS
@@ -253,17 +255,17 @@ public:
     SimTK::SpatialVec 
     calcEquivalentSpatialForce(const SimTK::State &s, 
                                const SimTK::Vector &mobilityForces) const;
-
+    
     // Reaction forces (direct calls into Simbody methods)
-    /** Reaction forces on Child Body at Origin in Ground frame @see SimTK::MobilizedBody method. */
+    /** Reaction forces on Parent Frame at Mobilizer in Ground @see SimTK::MobilizedBody method. */
     SimTK::SpatialVec
-        calcReactionOnChildAtOriginInGround(const SimTK::State &s) const {
-        return getChildFrame().getMobilizedBody().findMobilizerReactionOnBodyAtOriginInGround(s);
+        calcReactionAtParentFrameInGround(const SimTK::State &s) const {
+        return getChildFrame().getMobilizedBody().findMobilizerReactionOnParentAtFInGround(s);
     }
-    /** Reaction forces on Parent Body at Origin in Ground frame @see SimTK::MobilizedBody method. */
+    /** Reaction forces on Child Frame at Mobilizer Frame in Ground @see SimTK::MobilizedBody method. */
     SimTK::SpatialVec
-        calcReactionOnParentAtOriginInGround(const SimTK::State &s) const {
-        return getChildFrame().getMobilizedBody().findMobilizerReactionOnParentAtOriginInGround(s);
+        calcReactionAtChildFrameInGround(const SimTK::State &s) const {
+        return getChildFrame().getMobilizedBody().findMobilizerReactionOnBodyAtMInGround(s);
     }
 
     /** Joints in general do not contribute power since the reaction space
