@@ -88,6 +88,14 @@ public:
 
     virtual ~Frame() {};
 
+    //=============================================================================
+    // OUTPUTS
+    //=============================================================================
+    OpenSim_DECLARE_OUTPUT(position, SimTK::Vec3, getPositionInGround,
+        SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(transform, SimTK::Transform, getGroundTransform,
+        SimTK::Stage::Position);
+
     /** @name Spatial Operations for Frames
     These methods allow access to the frame's transform and some convenient
     operations that could be performed with this transform.*/
@@ -184,6 +192,11 @@ public:
     @return X_BF     The Transform of F in B
     */
     SimTK::Transform findTransformInBaseFrame() const;
+
+    /** Accessor for position of the origin of the Frame in Ground. */
+    SimTK::Vec3 getPositionInGround(const SimTK::State& state) const {
+        return getGroundTransform(state).p();
+    };
 
     // End of Base Frame and Transform accessors
     ///@}

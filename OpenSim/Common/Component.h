@@ -273,6 +273,9 @@ protected:
     OpenSim_DECLARE_LIST_PROPERTY(connectors, AbstractConnector,
         "List of connectors (structural dependencies) that this component has.");
 
+    OpenSim_DECLARE_LIST_PROPERTY(components, Component,
+        "List of components that this component owns and serializes.");
+
 public:
 //==============================================================================
 // METHODS
@@ -395,6 +398,16 @@ public:
     * Returns false if the System has not been created OR if this
     * Component has not added itself to the System.  */
     bool hasSystem() const { return !_system.empty(); }
+
+    /**
+    * Add a Component to this component's property list.
+    * This component takes ownership of the added component.
+    * 
+    * TODO rename to adoptComponent() when Model::add#ModelComponent#()
+    * methods are also renamed. For the time being remain consistent. -aseth 
+    *
+    * @throws ComponentAlreadyPartOfOwnershipTree  */
+    void addComponent(Component* comp);
 
     /**
      * Get an iterator through the underlying subcomponents that this component is 

@@ -112,6 +112,11 @@ public:
         "to the Joint. When the joint is delete so are the Frames in this list.");
 
 //=============================================================================
+// OUTPUTS
+//=============================================================================
+    OpenSim_DECLARE_OUTPUT(power, double, calcPower, SimTK::Stage::Acceleration);
+
+//=============================================================================
 // METHODS
 //=============================================================================
     /** Default Constructor. Create an unnamed Joint with parent and child
