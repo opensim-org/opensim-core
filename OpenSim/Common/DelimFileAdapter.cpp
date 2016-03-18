@@ -19,11 +19,10 @@ DelimFileAdapter::clone() const {
     return new DelimFileAdapter{*this};
 }
 
-std::unique_ptr<TimeSeriesTable>
+TimeSeriesTable
 DelimFileAdapter::read(const std::string& fileName) const {
-    auto abs_table = extendRead(fileName).at(_table).release();
-    auto table = static_cast<TimeSeriesTable*>(abs_table);
-    return std::unique_ptr<TimeSeriesTable>{table};
+    auto abs_table = extendRead(fileName).at(_table);
+    return static_cast<TimeSeriesTable&>(*abs_table);
 }
 
 void 
@@ -44,7 +43,7 @@ DelimFileAdapter::extendRead(const std::string& fileName) const {
                      FileDoesNotExist,
                      fileName);
 
-    std::unique_ptr<TimeSeriesTable> table{new TimeSeriesTable{}};
+    auto table = std::make_shared<TimeSeriesTable>();
 
     size_t line_num{};
     // All the lines until "endheader" is header.
@@ -114,10 +113,9 @@ DelimFileAdapter::extendRead(const std::string& fileName) const {
     }
 
     OutputTables output_tables{};
-    output_tables.emplace(_table, 
-                          std::unique_ptr<TimeSeriesTable>(table.release()));
+    output_tables.emplace(_table, table);
 
-    return std::move(output_tables);
+    return output_tables;
 }
 
 void
@@ -128,7 +126,8 @@ DelimFileAdapter::extendWrite(const InputTables& absTables,
 
     const TimeSeriesTable* table{};
     try {
-        table = dynamic_cast<const TimeSeriesTable*>(absTables.at(_table));
+        auto abs_table = absTables.at(_table);
+        table = dynamic_cast<const TimeSeriesTable*>(abs_table);
     } catch(std::out_of_range&) {
         OPENSIM_THROW(KeyMissing,
                       _table);

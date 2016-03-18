@@ -94,11 +94,12 @@ macro(OpenSimAddPythonModule)
     add_custom_command(
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${OSIMSWIGPY_MODULE}.py"
             ${_output_cxx_file} ${_output_header_file}
-        COMMAND ${SWIG_EXECUTABLE} -v -c++ -python
+        COMMAND ${SWIG_EXECUTABLE} -v -c++  -python
             #-debug-tmused # Which typemaps were used?
             -I${OpenSim_SOURCE_DIR}
             -I${OpenSim_SOURCE_DIR}/Bindings/
             -I${Simbody_INCLUDE_DIR}
+            ${SWIG_FLAGS}
             -o ${_output_cxx_file}
             -outdir "${CMAKE_CURRENT_BINARY_DIR}"
             ${_interface_file}
@@ -214,6 +215,12 @@ foreach(test_file
         "${CMAKE_CURRENT_SOURCE_DIR}/tests/storage.sto"
         "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
         "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
+        "${CMAKE_SOURCE_DIR}/OpenSim/Sandbox/futureOrientationInverseKinematics.trc"
+        "${CMAKE_SOURCE_DIR}/OpenSim/Common/Test/TRCFileWithNANs.trc"
+        "${CMAKE_SOURCE_DIR}/Applications/Analyze/test/subject02_grf_HiFreq.mot"
+        "${CMAKE_SOURCE_DIR}/Applications/IK/test/std_subject01_walk1_ik.mot"
+        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/singleLeglanding_2.c3d"
+        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/jogging.c3d"
         )
 
     OpenSimPutFileInPythonPackage("${test_file}" opensim/tests)

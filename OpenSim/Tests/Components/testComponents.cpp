@@ -185,7 +185,7 @@ void testComponent(const Component& instanceToTest)
             if (dependency) {
                 //give it some random values including a name
                 randomize(dependency);
-                connector.set_connectee_name(dependency->getName());
+                connector.setConnecteeName(dependency->getName());
 
                 // add the dependency 
                 addObjectAsComponentToModel(dependency, model);

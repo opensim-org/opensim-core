@@ -45,23 +45,23 @@ int main() {
     filenames.push_back("walking5.c3d");
 
     for(const auto& filename : filenames) {
-    C3DFileAdapter c3d_adapter{};
-    auto tables = c3d_adapter.read(filename);
+        C3DFileAdapter c3d_adapter{};
+        auto tables = c3d_adapter.read(filename);
 
-    auto&    marker_table = std::get<0>(tables);
-    auto&     force_table = std::get<1>(tables);
+        auto& marker_table = tables.at("markers");
+        auto&  force_table = tables.at("markers");
 
-    if(marker_table->getNumRows() != 0) {
-    marker_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
-    TRCFileAdapter trc_adapter{};
-    trc_adapter.write(*marker_table, filename + ".markers.trc");
-    }
+        if(marker_table->getNumRows() != 0) {
+            marker_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
+            TRCFileAdapter trc_adapter{};
+            trc_adapter.write(*marker_table, filename + ".markers.trc");
+        }
 
-    if(force_table->getNumRows() != 0) {
-    force_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
-    TRCFileAdapter trc_adapter{};
-    trc_adapter.write(*force_table, filename + ".forces.trc");
-    }
+        if(force_table->getNumRows() != 0) {
+            force_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});
+            TRCFileAdapter trc_adapter{};
+            trc_adapter.write(*force_table, filename + ".forces.trc");
+        }
     }
 
     for(const auto& filename : filenames) {
@@ -70,8 +70,8 @@ int main() {
         using MT = TimeSeriesTableVec3;
         using FT = TimeSeriesTableVec3;
 
-        auto    marker_table = dynamic_cast<MT*>(tables.at("markers").get());
-        auto     force_table = dynamic_cast<FT*>(tables.at("forces").get());
+        auto marker_table = dynamic_cast<MT*>(tables.at("markers").get());
+        auto  force_table = dynamic_cast<FT*>(tables.at("forces").get());
 
     if(marker_table->getNumRows() != 0) {
     marker_table->updTableMetaData().setValueForKey("Units", std::string{"mm"});

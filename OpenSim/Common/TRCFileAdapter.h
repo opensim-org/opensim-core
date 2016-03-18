@@ -119,8 +119,7 @@ public:
     TRCFileAdapter* clone() const override;
 
     /** Read a given TRC file. The filename provided need not contain ".trc". */
-    std::unique_ptr<TimeSeriesTableVec3> 
-    read(const std::string& filename) const;
+    TimeSeriesTableVec3 read(const std::string& filename) const;
 
     /** Write a table to a TRC file. The filename provided need not contain 
     ".trc".                                                                   */
