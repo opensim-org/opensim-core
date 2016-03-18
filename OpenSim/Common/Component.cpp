@@ -111,17 +111,20 @@ private:
 Component::Component() : Object()
 {
     constructProperty_connectors();
+    constructProperty_components();
 }
 
 Component::Component(const std::string& fileName, bool updFromXMLNode)
 :   Object(fileName, updFromXMLNode)
 {
     constructProperty_connectors();
+    constructProperty_components();
 }
 
 Component::Component(SimTK::Xml::Element& element) : Object(element)
 {
     constructProperty_connectors();
+    constructProperty_components();
 }
 
 void Component::addComponent(Component* comp) {

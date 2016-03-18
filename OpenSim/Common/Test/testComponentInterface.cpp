@@ -113,11 +113,6 @@ protected:
     }
 
 private:
-    void constructProperties() override {
-        constructProperty_components();
-    }
-
-private:
     // Keep track of pointers to the underlying computational subsystems. 
     mutable ReferencePtr<SimbodyMatterSubsystem> matter;
     mutable ReferencePtr<GeneralForceSubsystem> forces;
