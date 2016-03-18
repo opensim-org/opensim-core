@@ -1160,6 +1160,7 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
 // don't want to prevent our users from potentially using OpenSim in
 // conjunction with Qt.  You can see how this empty macro is used in some of
 // the macros below.
+// We actually also use this macro to document component outputs, etc.
 #define OpenSim_DOXYGEN_Q_PROPERTY(T, name)
 
 /** Declare a required, single-value property of the given \a pname and 
@@ -1188,6 +1189,8 @@ A data member is also created but is intended for internal use only:
             this->template addProperty<T>(#pname,comment,initValue);        \
     }                                                                       \
     /** @endcond **/                                                        \
+    /** @name Properties (single-value)                                  */ \
+    /** @{                                                               */ \
     /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##pname##\></b>.                                    */ \
@@ -1197,6 +1200,7 @@ A data member is also created but is intended for internal use only:
     /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##()   */ \
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
+    /** @}                                                               */ \
     /** @name Property-related methods                                   */ \
     /** @{                                                               */ \
     /** Get the value of the <b> pname </b> property.                    */ \
@@ -1222,6 +1226,8 @@ initialized with an object of type T.
     {   PropertyIndex_##T =                                                 \
             this->template addProperty<T>("", comment, initValue); }        \
     /** @endcond **/                                                        \
+    /** @name Properties (unnamed)                                       */ \
+    /** @{                                                               */ \
     /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<%##T##\></b>.                                       */ \
@@ -1231,6 +1237,7 @@ initialized with an object of type T.
     /** @propmethods get_##T##(), upd_##T##(), set_##T##()               */ \
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, T)                                        \
+    /** @}                                                               */ \
     /** @name Property-related methods                                   */ \
     /** @{                                                               */ \
     /** Get the value of the <b> %##T </b> property.                     */ \
@@ -1260,6 +1267,8 @@ value of type T.
             this->template addOptionalProperty<T>(#pname, comment,          \
                                                   initValue); }             \
     /** @endcond **/                                                        \
+    /** @name Properties (optional)                                      */ \
+    /** @{                                                               */ \
     /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##pname##\></b>.                                    */ \
@@ -1269,6 +1278,7 @@ value of type T.
     /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##()   */ \
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
+    /** @}                                                               */ \
     /** @name Property-related methods                                   */ \
     /** @{                                                               */ \
     /** Get the value of the <b> pname </b> property.                    */ \
@@ -1292,6 +1302,8 @@ supports a %size() method and operator[] element selection.
 @see OpenSim_DECLARE_LIST_PROPERTY_RANGE()
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY(pname, T, comment)                    \
+    /** @name Properties (list)                                          */ \
+    /** @{                                                               */ \
     /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##pname##\></b>.                                    */ \
@@ -1302,6 +1314,7 @@ supports a %size() method and operator[] element selection.
     /**     append_##pname##()                                           */ \
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
+    /** @}                                                               */ \
     /** @name Property-related methods                                   */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
@@ -1321,6 +1334,8 @@ the right number of elements, using any Container that supports a %size()
 method and operator[] element selection.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_SIZE(pname, T, listSize, comment)     \
+    /** @name Properties (list)                                          */ \
+    /** @{                                                               */ \
     /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##pname##\></b>.                                    */ \
@@ -1331,6 +1346,7 @@ method and operator[] element selection.
     /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##()   */ \
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
+    /** @}                                                               */ \
     /** @name Property-related methods                                   */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
@@ -1345,6 +1361,8 @@ using any Container that supports a %size() method and operator[] element
 selection.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(pname, T, minSize, comment)   \
+    /** @name Properties (list)                                          */ \
+    /** @{                                                               */ \
     /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##pname##\></b>.                                    */ \
@@ -1356,6 +1374,7 @@ selection.
     /**     append_##pname##()                                           */ \
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
+    /** @}                                                               */ \
     /** @name Property-related methods                                   */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
@@ -1370,6 +1389,8 @@ no more than \a maxSize elements, using any Container that supports a %size()
 method and operator[] element selection.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_ATMOST(pname, T, maxSize, comment)    \
+    /** @name Properties (list)                                          */ \
+    /** @{                                                               */ \
     /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##pname##\></b>.                                    */ \
@@ -1381,6 +1402,7 @@ method and operator[] element selection.
     /**     append_##pname##()                                           */ \
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
+    /** @}                                                               */ \
     /** @name Property-related methods                                   */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment, 0, (maxSize))   \
@@ -1400,6 +1422,8 @@ OpenSim_DECLARE_PROPERTY_ATMOST() rather than this macro.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_RANGE(pname, T, minSize, maxSize,     \
                                             comment)                        \
+    /** @name Properties (list)                                          */ \
+    /** @{                                                               */ \
     /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##pname##\></b>.                                    */ \
@@ -1412,6 +1436,7 @@ OpenSim_DECLARE_PROPERTY_ATMOST() rather than this macro.
     /**     append_##pname##()                                           */ \
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
+    /** @}                                                               */ \
     /** @name Property-related methods                                   */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \

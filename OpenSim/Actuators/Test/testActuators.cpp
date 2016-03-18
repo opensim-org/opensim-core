@@ -373,7 +373,7 @@ void testClutchedPathSpring()
     // body the path spring is connected to at both ends
     OpenSim::Body* block =
         new OpenSim::Body("block", mass ,Vec3(0),  mass*Inertia::brick(0.2, 0.1, 0.1));
-    block->addMeshGeometry("box.vtp");
+    block->attachMeshGeometry("box.vtp");
     block->scale(Vec3(0.2, 0.1, 0.1), false);
 
     double dh = mass*gravity_vec(1)/stiffness;
@@ -574,7 +574,7 @@ void testBodyActuator()
                                              blockMassCenter, blockInertia);
 
     // Add display geometry to the block to visualize in the GUI
-    block->addMeshGeometry("block.vtp");
+    block->attachMeshGeometry("block.vtp");
 
     Vec3 locationInParent(0, blockSideLength / 2, 0), orientationInParent(0), 
         locationInBody(0), orientationInBody(0);
@@ -652,12 +652,12 @@ void testBodyActuator()
     BodyActuator* actuator = new BodyActuator(*block);
     actuator->setName("BodyAct");
     model->addForce(actuator);
-
-    model->print("TestBodyActuatorModel.osim");
     model->setUseVisualizer(false);
 
     // get a new system and state to reflect additions to the model
     State& state1 = model->initSystem();
+
+    model->print("TestBodyActuatorModel.osim");
 
     // -------------- Provide control signals for bodyActuator ----------
     // Get the default control vector of the model
@@ -757,7 +757,7 @@ void testActuatorsCombination()
                                     blockMassCenter, blockInertia);
 
     // Add display geometry to the block to visualize in the GUI
-    block->addMeshGeometry("block.vtp");
+    block->attachMeshGeometry("block.vtp");
 
     // Make a FreeJoint from block to ground
     Vec3 locationInParent(0, blockSideLength/2, 0), orientationInParent(0), //locationInParent(0, blockSideLength, 0)

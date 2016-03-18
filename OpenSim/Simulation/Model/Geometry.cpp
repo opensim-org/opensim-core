@@ -47,18 +47,18 @@ void Geometry::constructConnectors()
 
 void Geometry::setFrameName(const std::string& name)
 {
-    updConnector<Frame>("frame").set_connectee_name(name);
+    updConnector<Frame>("frame").setConnecteeName(name);
 }
 
 void Geometry::setFrame(const Frame& frame)
 {
-    updConnector<Frame>("frame").set_connectee_name(frame.getName());
+    updConnector<Frame>("frame").setConnecteeName(frame.getRelativePathName(*this));
 }
 
 
 const std::string& Geometry::getFrameName() const
 {
-    return getConnector<Frame>("frame").get_connectee_name();
+    return getConnector<Frame>("frame").getConnecteeName();
 }
 
 const OpenSim::Frame& Geometry::getFrame() const

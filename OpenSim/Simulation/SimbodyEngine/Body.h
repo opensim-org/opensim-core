@@ -95,11 +95,6 @@ public:
     void scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass = false);
     void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true);
     void scaleMass(double aScaleFactor);
-    /** Add a Mesh specified by file name to the list of Geometry owned by the Body.
-        Transform is assumed to be the same as the Body.
-        Scale defaults to 1.0 but can be changed on the call line.
-    */
-    void addMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
  protected:
 
     // Model component interface.
@@ -127,7 +122,9 @@ private:
     // mutable because fist get constructs tensor from properties
     mutable SimTK::Inertia _inertia;
 
-    SimTK::Array_<Body*> _slaves;
+    // Keep track of the slave bodies used to partition this Body
+    // in order break kinematic loops
+    SimTK::Array_<SimTK::ReferencePtr<Body>> _slaves;
 
     // Internal use for a Master body. Differs from its public MassProperties
     // which is the "effective" mass of the Body including internal slave

@@ -62,11 +62,14 @@ Joint::Joint(const std::string &name, const std::string& parentName,
                                       const std::string& childName,
                                       bool reverse) : Joint()
 {
+    OPENSIM_THROW_IF( name.empty(), ComponentHasNoName,
+                      getClassName());
+
     setName(name);
     set_reverse(reverse);
 
-    updConnector<PhysicalFrame>("parent_frame").set_connectee_name(parentName);
-    updConnector<PhysicalFrame>("child_frame").set_connectee_name(childName);
+    updConnector<PhysicalFrame>("parent_frame").setConnecteeName(parentName);
+    updConnector<PhysicalFrame>("child_frame").setConnecteeName(childName);
 }
 
 /* Convenience Constructor*/
@@ -84,14 +87,18 @@ Joint::Joint(const std::string &name,
     // from the root of the tree.
     : Joint(name, parent.getName() + "_offset", child.getName() + "_offset")
 {
+
     // PARENT TRANSFORM
     Rotation parentRotation(BodyRotationSequence,
         orientationInParent[0], XAxis,
         orientationInParent[1], YAxis,
         orientationInParent[2], ZAxis);
     SimTK::Transform parentTransform(parentRotation, locationInParent);
-    PhysicalOffsetFrame parentOffset(parent, parentTransform);
-    parentOffset.setName(parent.getName() + "_offset");
+    
+    // Append the offset frame to the Joint's internal list of frames
+    int pix = append_frames( PhysicalOffsetFrame(parent.getName() + "_offset",
+                                                 parent.getName(),
+                                                 parentTransform) );
 
     // CHILD TRANSFORM
     Rotation childRotation(BodyRotationSequence,
@@ -99,12 +106,22 @@ Joint::Joint(const std::string &name,
         orientationInChild[1], YAxis,
         orientationInChild[2], ZAxis);
     SimTK::Transform childTransform(childRotation, locationInChild);
-    PhysicalOffsetFrame childOffset(child, childTransform);
-    childOffset.setName(child.getName() + "_offset");
 
-    // Append the offset frames to the Joints internal list of frames
-    append_frames(parentOffset);
-    append_frames(childOffset);
+    // Append the child offset frame to the Joint's internal list of frames
+    int cix = append_frames( PhysicalOffsetFrame(child.getName() + "_offset",
+                                                 child.getName(),
+                                                 childTransform) );
+
+    // finalize recognizes the offset frames as the Joint's subcomponents
+    finalizeFromProperties();
+    
+    // When the PhysicalOffsetFrames are constructed they are unaware that this
+    // Joint contains them as subcomponents and the path name associated with 
+    // them will not be valid. This a temporary fix to set the name once the
+    // added frames have been included as subcomponents which occurs during
+    // finaliFromProperties() above.
+    static_cast<PhysicalOffsetFrame&>(upd_frames(pix)).setParentFrame(parent);
+    static_cast<PhysicalOffsetFrame&>(upd_frames(cix)).setParentFrame(child);
 }
 
 //=============================================================================
@@ -157,27 +174,28 @@ void Joint::constructConnectors()
 
 void Joint::setParentFrameName(const std::string& name)
 {
-    updConnector<PhysicalFrame>("parent_frame").set_connectee_name(name);
+    updConnector<PhysicalFrame>("parent_frame").setConnecteeName(name);
 }
 const std::string& Joint::getParentFrameName() const
 {
-    return getConnector<PhysicalFrame>("parent_frame").get_connectee_name();
+    return getConnector<PhysicalFrame>("parent_frame").getConnecteeName();
 }
 
 void Joint::setChildFrameName(const std::string& name)
 {
-    updConnector<PhysicalFrame>("child_frame").set_connectee_name(name);
+    updConnector<PhysicalFrame>("child_frame").setConnecteeName(name);
 }
 const std::string& Joint::getChildFrameName() const
 {
-    return getConnector<PhysicalFrame>("child_frame").get_connectee_name();
+    return getConnector<PhysicalFrame>("child_frame").getConnecteeName();
 }
 
 void Joint::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
-    CoordinateSet& coords = upd_CoordinateSet();
 
+
+    CoordinateSet& coords = upd_CoordinateSet();
     // add all coordinates listed under this joint 
     for (int i = 0; i < coords.getSize(); ++i) {
         coords[i].setJoint(*this);

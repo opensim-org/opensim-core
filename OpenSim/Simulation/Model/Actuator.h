@@ -145,6 +145,14 @@ public:
         "for control values.");
 
 //==============================================================================
+// OUTPUTS 
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(actuation, double, getActuation,
+            SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(speed, double, getSpeed, SimTK::Stage::Velocity);
+
+
+//==============================================================================
 // PUBLIC METHODS
 //==============================================================================
     ScalarActuator();
@@ -245,7 +253,6 @@ protected:
 
 private:
     void constructProperties() override;
-    void constructOutputs() override;
 
 //=============================================================================
 };  // END of class ScalarActuator

@@ -98,7 +98,7 @@ type double. The time column is enforced to be strictly increasing.           */
 template<typename ETY = SimTK::Real>
 class TimeSeriesTable_ : public DataTable_<double, ETY> {
 public:
-    using RowVector = SimTK::RowVector_<ETY>;
+    typedef SimTK::RowVector_<ETY> RowVector;
 
     TimeSeriesTable_()                                   = default;
     TimeSeriesTable_(const TimeSeriesTable_&)            = default;
@@ -151,8 +151,10 @@ protected:
 }; // TimeSeriesTable_
 
 /** See TimeSeriesTable_ for details on the interface.                        */
-using TimeSeriesTable = TimeSeriesTable_<SimTK::Real>;
+typedef TimeSeriesTable_<SimTK::Real> TimeSeriesTable;
 
+/** See TimeSeriesTable_ for details on the interface.                        */
+typedef TimeSeriesTable_<SimTK::Vec3> TimeSeriesTableVec3;
 } // namespace OpenSim
 
 #endif // OPENSIM_TIME_SERIES_DATA_TABLE_H_

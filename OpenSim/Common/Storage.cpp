@@ -419,9 +419,14 @@ getHeaderToken() const
 const int Storage::
 getStateIndex(const std::string &aColumnName, int startIndex) const
 {
-    int thisColumnIndex = _columnLabels.findIndex(aColumnName);
+    int thisColumnIndex = -1;
 
-    if (thisColumnIndex == -1) {
+    // This uses the `do while(false)` idiom to run common code if one of a
+    // number of conditions succeeds (much like what a goto would be used for).
+    do {
+        thisColumnIndex = _columnLabels.findIndex(aColumnName);
+        if (thisColumnIndex != -1) break;
+
         // Assume column labels follow pre-v4.0 state variable labeling.
         // Redo search with what the pre-v4.0 label might have been.
 
@@ -431,41 +436,43 @@ getStateIndex(const std::string &aColumnName, int startIndex) const
         std::string shortName = aColumnName.substr(back + 1,
                                                    aColumnName.length() - back);
         thisColumnIndex = _columnLabels.findIndex(shortName);
+        if (thisColumnIndex != -1) break;
 
-        if (thisColumnIndex == -1) {
-            // If that didn't work, do specific checks for coordinate state names
-            // (<coord_name>/value and <coord_name>/speed) and muscle state names
-            // (<muscle_name>/activation <muscle_name>/fiber_length).
-            if (shortName == "value") {
-                // pre-v4.0 did not have "/value" so remove it if here
-                back = prefix.rfind("/");
-                shortName = prefix.substr(back + 1, prefix.length());
-                thisColumnIndex = _columnLabels.findIndex(shortName);
-            }
-            else if (shortName == "speed") {
-                // replace "/speed" (the v4.0 labeling for speeds) with "_u"
-                back = prefix.rfind("/");
-                shortName =
-                        prefix.substr(back + 1, prefix.length() - back) + "_u";
-                thisColumnIndex = _columnLabels.findIndex(shortName);
-            }
-            else if (back < aColumnName.length()) {
-                // try replacing the '/' with '.' in the last segment
-                shortName = aColumnName;
-                shortName.replace(back, 1, ".");
-                back = shortName.rfind("/");
-                shortName = shortName.substr(back + 1,
-                                             shortName.length() - back);
-                thisColumnIndex = _columnLabels.findIndex(shortName);
-            }
+        // If that didn't work, specifically check for coordinate state names
+        // (<coord_name>/value and <coord_name>/speed) and muscle state names
+        // (<muscle_name>/activation <muscle_name>/fiber_length).
+        if (shortName == "value") {
+            // pre-v4.0 did not have "/value" so remove it if here
+            back = prefix.rfind("/");
+            shortName = prefix.substr(back + 1, prefix.length());
+            thisColumnIndex = _columnLabels.findIndex(shortName);
         }
-    }
+        else if (shortName == "speed") {
+            // replace "/speed" (the v4.0 labeling for speeds) with "_u"
+            back = prefix.rfind("/");
+            shortName =
+                    prefix.substr(back + 1, prefix.length() - back) + "_u";
+            thisColumnIndex = _columnLabels.findIndex(shortName);
+        }
+        else if (back < aColumnName.length()) {
+            // try replacing the '/' with '.' in the last segment
+            shortName = aColumnName;
+            shortName.replace(back, 1, ".");
+            back = shortName.rfind("/");
+            shortName = shortName.substr(back + 1,
+                                         shortName.length() - back);
+            thisColumnIndex = _columnLabels.findIndex(shortName);
+        }
+        if (thisColumnIndex != -1) break;
 
-    if (thisColumnIndex == -1)
+        // If all of the above checks failed, return -1.
         return -1;
 
-    // subtract 1 because time is included in the labels but not
-    // in the "state vector"
+    } while (false);
+
+    // If we get here, we successfully found a column.
+    // Subtract 1 because time is included in the labels but not
+    // in the "state vector".
     return thisColumnIndex - 1;
 }
 

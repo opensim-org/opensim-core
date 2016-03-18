@@ -151,12 +151,12 @@ void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) co
  * Following methods set attributes of the point on line constraint */
 void PointOnLineConstraint::setLineBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("line_body").set_connectee_name(aBodyName);
+    updConnector<PhysicalFrame>("line_body").setConnecteeName(aBodyName);
 }
 
 void PointOnLineConstraint::setFollowerBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("follower_body").set_connectee_name(aBodyName);
+    updConnector<PhysicalFrame>("follower_body").setConnecteeName(aBodyName);
 
 }
 

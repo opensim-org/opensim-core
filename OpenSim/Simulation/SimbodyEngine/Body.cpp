@@ -118,20 +118,6 @@ void Body::extendConnectToModel(Model& aModel)
 //=============================================================================
 // GET AND SET
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Add display geometry to body.
- *
- * @param aGeometryFileName Geometry filename.
- */
-void Body::addMeshGeometry(const std::string& aGeometryFileName, const SimTK::Vec3 scale)
-{
-    Mesh geom(aGeometryFileName);
-    geom.set_scale_factors(scale);
-    if (geom.getFrameName() == "")
-        geom.setFrameName(getName());
-    addGeometry(geom);
-}
 
 //_____________________________________________________________________________
 /**
@@ -425,8 +411,8 @@ Body* Body::addSlave()
     name << getName() << "_slave_" << count;
     slave->setName(name.str());
 
-    //add to internal list as memory owner
-    _slaves.push_back(slave);
+    //add to internal list of references 
+    _slaves.push_back(SimTK::ReferencePtr<Body>(slave));
 
     //add to list of subcomponents to automatically add to system and initialize
     adoptSubcomponent(slave);

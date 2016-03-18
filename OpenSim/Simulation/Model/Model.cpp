@@ -605,7 +605,6 @@ void Model::extendConnectToModel(Model &model)
     //_multibodyTree.dumpGraph(cout);
     //cout << endl;
 
-    SimTK::Array_<Component *>::iterator it = nullptr;
     JointSet& joints = upd_JointSet();
     BodySet& bodies = upd_BodySet();
     int nb = bodies.getSize();
@@ -637,12 +636,11 @@ void Model::extendConnectToModel(Model &model)
                 SimTK::Transform o(SimTK::Vec3(0));
                 //Now add the constraints that weld the slave to the master at the 
                 // body origin
+                std::string pathName = outb->getFullPathName();
                 WeldConstraint* weld = new WeldConstraint(outb->getName()+"_weld",
                                                           *outbMaster, o, *outb, o);
 
-                // TODO: add all added compoents to a private list of owned components
-                // that are not serialized so that they are destroyed.
-                // Currently this is a leak.
+                // include within adopted list of owned components
                 adoptSubcomponent(weld);
             }
         }
@@ -659,34 +657,42 @@ void Model::extendConnectToModel(Model &model)
 
             std::string jname = "free_" + child->getName();
             SimTK::Vec3 zeroVec(0.0);
-            Joint* free = new FreeJoint(jname, ground->getName(), child->getName());
+            Joint* free = new FreeJoint(jname, ground->getFullPathName(), child->getFullPathName());
+            free->upd_reverse() = mob.isReversedFromJoint();
             addJoint(free);
         }
         else{
-            Component* compToMoveOut = _components.at(m+nb);
+            Component* compToMoveOut = _propertySubcomponents.at(m+nb).get();
             // reorder the joint components in the order of the multibody tree
             Joint* jointToSwap = static_cast<Joint*>(mob.getJointRef());
-            it = std::find(_components.begin(), _components.end(), jointToSwap);
-            if (it != _components.end()){
+            auto it = std::find(_propertySubcomponents.begin(),
+                                _propertySubcomponents.end(), 
+                                SimTK::ReferencePtr<Component>(jointToSwap));
+            if (it != _propertySubcomponents.end()){
                 // Only if the joint is not in the correct sequence the swap
                 if (compToMoveOut != jointToSwap){
-                    _components[m + nb] = jointToSwap;
-                    *it = compToMoveOut;
+                    _propertySubcomponents[m + nb].reset(jointToSwap);
+                    it->reset(compToMoveOut);
                 }
             }
-            //(static_cast<Component*>(jointToSwap));
             int jx = joints.getIndex(jointToSwap, m);
             //if in the set but not already in the right order
-            if ((jx >= 0) && (jx != m)){
-                // perform a move to put the joint in correct order
+            if ((jx >= 0) && (jx != m)) {
+                // perform a move to put the joint in tree order
+                // this is necessary ONLY because some tools assume that the
+                // order or joints and specifically coordinates is the
+                // order of the mobility (generalized) forces.
+                // IDTool, StaticOptimization and RRA for example will fail.
+                // TODO: when the tools are fixed/removed remove this as well.
                 jointToSwap = &joints.get(jx);
                 joints.set(jx, &joints.get(m));
                 joints.set(m, jointToSwap);
             }
+            // Update the directionality of the joint according to tree's
+            // preferential direction
+            static_cast<Joint*>(mob.getJointRef())->upd_reverse() =
+                mob.isReversedFromJoint();
         }
-        // Update the directionality of the joint to tree's preferential direction
-        joints[m].upd_reverse() = mob.isReversedFromJoint();
-    
     }
     joints.setMemoryOwner(isMemoryOwner);
 
@@ -864,8 +870,8 @@ void Model::addProbe(OpenSim::Probe *probe)
 void Model::removeProbe(OpenSim::Probe *aProbe)
 {
     disconnect();
-    clearComponents();
     updProbeSet().remove(aProbe);
+    finalizeFromProperties();
 }
 
 //_____________________________________________________________________________
@@ -905,8 +911,6 @@ void Model::setup()
     finalizeFromProperties();
     //now connect the Model and all its subcomponents all up
     connect(*this);
-
-    populatePathName("");
 }
 
 //_____________________________________________________________________________
@@ -2077,18 +2081,4 @@ SimTK::Vec3 Model::calcMassCenterAcceleration(const SimTK::State &s) const
 * Construct outputs
 *
 **/
-
-void Model::constructOutputs()
-{
-    //return the position of the center of mass
-   constructOutput<SimTK::Vec3>("com_position",
-       std::bind(&Model::calcMassCenterPosition,this,std::placeholders::_1), SimTK::Stage::Position);
-   //return the velocity of the center of mass 
-   constructOutput<SimTK::Vec3>("com_velocity",
-       std::bind(&Model::calcMassCenterVelocity,this,std::placeholders::_1), SimTK::Stage::Velocity);
-   //return the acceleration of the center of mass
-   constructOutput<SimTK::Vec3>("com_acceleration",
-       std::bind(&Model::calcMassCenterAcceleration,this,std::placeholders::_1), SimTK::Stage::Acceleration);
-    
-}
 

@@ -28,6 +28,15 @@ Mainpage, the first page that a user sees when entering the Doxygen-
 generated API documentation. This is not actually included as part of the
 OpenSim source and it is not installed with OpenSim. **/
 
+/** @page reporters Reporter Components 
+ * @defgroup reporters Reporter Components
+ * These components allow you to report the quantities calculated by your 
+ * model in a unified way. You can wire the outputs of Component%s into one 
+ * of these reporters to either save the quantities to a DataTable_ (that you
+ * could then print to file) or print the quantities to the console. All
+ * Reporters have a single list Input named "inputs".
+ */
+
 /** @mainpage Overview
 
 \if developer

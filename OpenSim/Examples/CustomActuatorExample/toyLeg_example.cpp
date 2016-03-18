@@ -55,7 +55,7 @@ int main()
             
         // Get the ground body
         Ground& ground = osimModel.updGround();
-        ground.addMeshGeometry("checkered_floor.vtp");
+        ground.attachMeshGeometry("checkered_floor.vtp");
 
         // create linkage body
         double linkageMass = 0.001, linkageLength = 0.5, linkageDiameter = 0.06;
@@ -75,8 +75,7 @@ int main()
         cyl.setFrameName("Cyl1_frame");
         linkage1->addGeometry(cyl);
 
-        Sphere sphere(0.1);
-        linkage1->addGeometry(sphere);
+        linkage1->attachGeometry(Sphere(0.1));
          
         // Create a second linkage body
         OpenSim::Body* linkage2 = new OpenSim::Body(*linkage1);
@@ -90,8 +89,7 @@ int main()
         Vec3 blockMassCenter(0);
         Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
         OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
-        Brick brick(SimTK::Vec3(0.05, 0.05, 0.05));
-        block->addGeometry(brick);
+        block->attachGeometry(Brick(SimTK::Vec3(0.05, 0.05, 0.05)));
 
         // Create 1 degree-of-freedom pin joints between the bodies to create a kinematic chain from ground through the block
         Vec3 orientationInGround(0), locationInGround(0), locationInParent(0.0, linkageLength, 0.0), orientationInChild(0), locationInChild(0);
@@ -215,7 +213,6 @@ int main()
         si.getU().dump("Initial u's");
         std::cout << "Initial time: " << si.getTime() << std::endl;
 
-        osimModel.dumpPathName();
         // Integrate
         manager.setInitialTime(t0);
         manager.setFinalTime(tf);
