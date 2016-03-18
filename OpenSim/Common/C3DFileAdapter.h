@@ -24,13 +24,10 @@
 
 #ifdef WITH_BTK
 
-#include "btkAcquisitionFileReader.h"
-#include "btkAcquisition.h"
-#include "btkForcePlatformsExtractor.h"
-#include "btkGroundReactionWrenchFilter.h"
-
 #include "FileAdapter.h"
 #include "Event.h"
+
+template<typename> class shrik;
 
 namespace OpenSim {
 
