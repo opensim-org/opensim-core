@@ -23,6 +23,11 @@ macro(OpenSimAddJavaTest TESTNAME)
     set(_deps_for_RunJavaTests ${_deps_for_RunJavaTests} Java_${TESTNAME})
 
     # For running the test.
+    if(WIN32)
+        set(_sep ";")
+    else()
+        set(_sep ":")
+    endif()
     if(MSVC OR XCODE)
         # TODO make sure this works, using xcode. Look at Python for an
         # example.
@@ -30,7 +35,7 @@ macro(OpenSimAddJavaTest TESTNAME)
             add_test(NAME Java_${TESTNAME}_${cfg}
                 COMMAND ${Java_JAVA_EXECUTABLE}
                         -Djava.library.path=${CMAKE_BINARY_DIR}/${cfg}
-                        -classpath "${TESTNAME}.jar:${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
+                        -classpath "${TESTNAME}.jar${_sep}${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
                         ${TESTNAME}
                 WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${TESTNAME}"
                 CONFIGURATIONS ${cfg}
@@ -40,7 +45,7 @@ macro(OpenSimAddJavaTest TESTNAME)
         add_test(NAME Java_${TESTNAME}
             COMMAND ${Java_JAVA_EXECUTABLE}
                     -Djava.library.path=${CMAKE_BINARY_DIR}
-                    -classpath "${TESTNAME}.jar:${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
+                    -classpath "${TESTNAME}.jar${_sep}${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
                     ${TESTNAME}
             WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${TESTNAME}"
             )
