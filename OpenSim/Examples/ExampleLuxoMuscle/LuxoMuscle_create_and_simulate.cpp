@@ -167,6 +167,13 @@ double back_extensor_F0 = 100.0,
 Vec3 back_extensor_origin = 0.5*peg_z_offset,
 back_extensor_insertion = back_peg_center + 0.5*peg_z_offset;
 
+// Frame locations for assistive device attachments
+//--------------------------------------------------
+Vec3 device_superior_location_in_head(0.5*cervicle_joint_center);
+Vec3 device_inferior_location_in_bottom_bracket(knee_extensor_insertion[0],
+                                                knee_extensor_insertion[1],
+                                                0.0);
+
 
 //______________________________________________________________________________
 /**
@@ -768,7 +775,22 @@ void createLuxoJr(OpenSim::Model &model){
     model.addController(backController);
 
     
+    /* You'll find that these muscles can make Luxo Myo stand, but not jump.
+     * Jumping will require an assistive device. We'll add two frames for
+     * attaching a point to point assistive actuator.
+     */
+    PhysicalOffsetFrame* device_superior_frame = new PhysicalOffsetFrame(
+                        "device_superior_attachment",
+                        *head,
+                        Transform(device_superior_location_in_head));
     
+    PhysicalOffsetFrame* device_inferior_frame = new PhysicalOffsetFrame(
+                        "device_inferior_attachment",
+                        *bottom_bracket,
+                        Transform(device_inferior_location_in_bottom_bracket));
+    
+    model.addFrame(device_superior_frame);
+    model.addFrame(device_inferior_frame);
     
     
     
