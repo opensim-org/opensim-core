@@ -224,8 +224,8 @@ public:
 
     @param[in]  pathname    The name of a mesh file with a recognized extension.
     **/
-    void loadFile(const String& pathname);
-
+    void loadFile(const std::string& pathname);
+#ifndef SWIG
     /** Load a Wavefront OBJ (.obj) file, adding the vertices and faces it 
     contains to this mesh, and ignoring anything else in the file. The suffix
     for these files is typically ".obj" but we don't check here.
@@ -254,7 +254,7 @@ public:
     is some hope of getting a connected surface.
     @param[in]  pathname    The name of a .stl or .stla file. **/
     void loadStlFile(const String& pathname);
-
+#endif
 private:
     explicit PolygonalMesh(PolygonalMeshImpl* impl) : HandleBase(impl) {}
     void initializeHandleIfEmpty();
