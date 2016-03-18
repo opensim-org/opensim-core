@@ -521,64 +521,14 @@ public:
         return getProperty_connectors().size();
     }
 
-    /** Access the number of Inputs that this component has. */
-    int getNumInputs() const {
-        return int(_inputsTable.size());
-    }
-
-    /** Access the number of Outputs that this component has. */
-    int getNumOutputs() const {
-        return int(_outputsTable.size());
-    }
-
-    /** Collect and return the names of Outputs as an std::vector. */
-    std::vector<std::string> getOutputNames() const {
-        std::vector<std::string> names;
-        for (auto it = getOutputsBegin(); it != getOutputsEnd(); it++)
-            names.push_back(it->first);
-        return names;
-    }
-
-    /** Access a read-only Connector by index.
-    @see getNumConnectors()
-     */
-    const AbstractConnector& getConnector(int i) const {
-        return get_connectors(i);
-    }
-
-    /** Access a writeable Connector by index.
-    @see getNumConnectors()
-    */
-    AbstractConnector& updConnector(int i) {
-        return upd_connectors(i);
-    }
-
-    /**
-    * Get the Connector provided by this Component by name.
-    *
-    * @param name       the name of the Connector
-    * @return const reference to the (Abstract)Connector
-    */
-    template<typename T> Connector<T>&
-        updConnector(const std::string& name)
-    {
-        return *const_cast<Connector<T>*>(&getConnector<T>(name));
-    }
-
-    template<typename T>
-    const Connector<T>& getConnector(const std::string& name) const
-    {
-        const AbstractConnector* found = findConnector(name);
-
-        if (!found){
-            std::stringstream msg;
-            msg << getConcreteClassName() << " '" << getName();
-            msg << "' ::getConnector() ERROR- Connector '" << name;
-            msg << "' not found.\n" << std::endl;
-            throw Exception(msg.str(), __FILE__, __LINE__);
+    /** Collect and return the names of the connectors in this
+     * component. The names are in the same order as the connectors. */
+    std::vector<std::string> getConnectorNames() {
+        std::vector<std::string> names(getNumConnectors());
+        for (int i = 0; i < getNumConnectors(); ++i) {
+            names[i] = get_connectors(i).getName(); 
         }
-
-        return (Connector<T>::downcast(*found));
+        return names;
     }
 
     /**
@@ -590,8 +540,28 @@ public:
     * @param name       the name of the connector
     * @return T         const reference to object that satisfies
     *                   the Connector
+    *
+    * If you omit the template argument, then you get the connectee
+    * as an Object and cannot use the methods of its concrete type:
+    * @code{.cpp}
+    * const Object& obj = joint.getConnectee("parent_frame");
+    * obj.getName(); // method on Object works.
+    * obj.getMobilizedBody(); // method on PhysicalFrame doesn't work.
+    * @endcode
+    *
+    * To get the concrete type, you must supply the template argument:
+    * @code{.cpp}
+    * const PhysicalFrame& f = joint.getConnectee("parent_frame");
+    * f.getMobilizedBody(); // method on PhysicalFrame works.
+    * @endcode
+    *
+    * In Python, you'll always get the concrete type:
+    * @code{.py}
+    * f = joint.getConnectee("parent_frame"); 
+    * f.getMass() # works (if the parent frame is a body)
+    * @endcode
     */
-    template<typename T>
+    template<typename T = Object>
     const T& getConnectee(const std::string& name) const    {
         // get the Connector and check if it is connected.
         const AbstractConnector& connector = getConnector<T>(name);
@@ -605,6 +575,77 @@ public:
             throw Exception(msg.str(), __FILE__, __LINE__);
         }
     }
+
+    /** Get an AbstractConnector for the given connector name. This
+     * lets you get information about the connection (like if the connector is
+     * connected), but does not give you access to the connector's connectee.
+     * For that, use getConnectee().
+     */
+    const AbstractConnector& getConnector(const std::string& name) const {
+        const AbstractConnector* found = findConnector(name);
+
+        if (!found){
+            std::stringstream msg;
+            msg << getConcreteClassName() << " '" << getName();
+            msg << "' ::getConnector() ERROR- Connector '" << name;
+            msg << "' not found.\n" << std::endl;
+            throw Exception(msg.str(), __FILE__, __LINE__);
+        }
+
+        return *found;
+    }
+
+    /** Get a writable reference to the AbstractConnector for the given
+     * connector name. Use this method to connect the Connector to something.
+     * @code
+     * joint.updConnector("parent_frame").connect(model.getGround());
+     * @endcode
+     */
+    AbstractConnector& updConnector(const std::string& name) {
+        return const_cast<AbstractConnector&>(getConnector(name));
+    }
+
+    /**
+    * Get a const reference to the concrete Connector provided by this
+    * Component by name.
+    *
+    * @param name       the name of the Connector
+    * @return const reference to the (Abstract)Connector
+    */
+    template<typename T>
+    const Connector<T>& getConnector(const std::string& name) const {
+        return Connector<T>::downcast(getConnector(name));
+    }
+
+    /**
+    * Get a writable reference to the concrete Connector provided by this
+    * Component by name.
+    *
+    * @param name       the name of the Connector
+    * @return const reference to the (Abstract)Connector
+    */
+    template<typename T> Connector<T>& updConnector(const std::string& name) {
+        return const_cast<Connector<T>&>(getConnector<T>(name));
+    }
+
+    /** Access a read-only Connector by index. Make sure to provide a valid
+    index; this function does not check that the index is valid.
+    @see getNumConnectors()
+    @see getConnector(const std::string& name)
+     */
+    const AbstractConnector& getConnector(int i) const {
+        return get_connectors(i);
+    }
+
+    /** Access a writeable Connector by index. Make sure to provide a valid
+    index; this function does not check that the index is valid.
+    @see getNumConnectors()
+    @see updConnector(const std::string& name)
+    */
+    AbstractConnector& updConnector(int i) {
+        return upd_connectors(i);
+    }
+
     //@} end of Component Connector Access methods
 
     /** Define OutputsIterator for convenience */
@@ -615,6 +656,35 @@ public:
         Access inputs and outputs by name and iterate over all outputs.
     */
     //@{ 
+
+    /** Access the number of Inputs that this component has. */
+    int getNumInputs() const {
+        return int(_inputsTable.size());
+    }
+
+    /** Access the number of Outputs that this component has. */
+    int getNumOutputs() const {
+        return int(_outputsTable.size());
+    }
+
+    /** Collect and return the names of Outputs in this component as an
+     * std::vector. */
+    std::vector<std::string> getInputNames() const {
+        std::vector<std::string> names;
+        for (const auto& it : _inputsTable) {
+            names.push_back(it.first);
+        }
+        return names;
+    }
+
+    /** Collect and return the names of Outputs in this compoonent as an
+     * std::vector. */
+    std::vector<std::string> getOutputNames() const {
+        std::vector<std::string> names;
+        for (auto it = getOutputsBegin(); it != getOutputsEnd(); it++)
+            names.push_back(it->first);
+        return names;
+    }
 
     /**
     * Get an Input provided by this Component by name.
