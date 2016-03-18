@@ -27,7 +27,7 @@ endforeach(dataFile)
 
 add_executable(exampleHopperDevice exampleHopperDevice.cpp answers.cpp)
 target_link_libraries(exampleHopperDevice osimTools)
-set_target_properties(exampleLuxoMuscle PROPERTIES
+set_target_properties(exampleHopperDevice PROPERTIES
     PROJECT_LABEL "Hopper Device"
     FOLDER "Examples"
     EXCLUDE_FROM_ALL TRUE
