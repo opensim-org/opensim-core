@@ -5,6 +5,7 @@ option(BUILD_API_EXAMPLES
 if(BUILD_API_EXAMPLES)
 
     install(DIRECTORY ExampleMain
+        ExampleLuxoMuscle
         ControllerExample
         MuscleExample
         CustomActuatorExample
@@ -25,6 +26,7 @@ install(DIRECTORY DataAdapter
 elseif()
 
     add_subdirectory(ControllerExample)
+    add_subdirectory(ExampleLuxoMuscle)
     add_subdirectory(ExampleMain)
     add_subdirectory(OptimizationExample_Arm26)
     add_subdirectory(CustomActuatorExample)
