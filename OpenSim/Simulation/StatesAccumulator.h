@@ -1,5 +1,7 @@
+#ifndef OPENSIM_STATES_ACCUMULATOR_H_
+#define OPENSIM_STATES_ACCUMULATOR_H_
 /* -------------------------------------------------------------------------- *
- *                       OpenSim:  StatesCollector.cpp                        *
+ *                       OpenSim:  StatesAccumulator.h                        *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -21,25 +23,43 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "StatesCollector.h"
+#include "StatesTrajectory.h"
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/Reporter.h>
 
-using namespace OpenSim;
+#include "osimSimulationDLL.h"
 
+namespace OpenSim {
 
-void StatesCollector::clear() {
-    m_states.clear();
-}
+/** Stores the states during a simulation in a StatesTrajectory.
+ *
+ * This class was introduced in v4.0 and is intended to replace the
+ * StatesReporter analysis.
+ *
+ * @ingroup reporters
+ */
+class OSIMSIMULATION_API StatesAccumulator : public AbstractReporter {
+OpenSim_DECLARE_CONCRETE_OBJECT(StatesAccumulator, AbstractReporter);
 
-const StatesTrajectory& StatesCollector::getStates() const {
-    return m_states;
-}
+public:
+    /** Access the recorded states. */
+    const StatesTrajectory& getStates() const; 
+    /** Clear the recorded states. */ 
+    void clear();
 
-void StatesCollector::extendRealizeInstance(const SimTK::State& state) const {
-    Super::extendRealizeInstance(state);
-    const_cast<StatesCollector*>(this)->clear();
-}
+protected:
+    // /** Clears the internal StatesTrajectory in preparation for a (new)
+    //  * simulation */
+    // TODO we have to discuss if the trajectory should be cleared.
+    //  void extendRealizeInstance(const SimTK::State& state) const override;
 
-void StatesCollector::extendRealizeReport(const SimTK::State& state) const {
-    Super::extendRealizeReport(state);
-    const_cast<StatesCollector*>(this)->m_states.append(state);
-}
+    /** Appends the provided state to the trajectory. */
+    void implementReport(const SimTK::State& state) const override;
+
+private:
+    StatesTrajectory m_states;
+};
+
+} // namespace
+
+#endif // OPENSIM_STATES_ACCUMULATOR_H_
