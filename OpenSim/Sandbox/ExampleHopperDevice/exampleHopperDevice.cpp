@@ -190,18 +190,18 @@ OpenSim::Model createTestBed() {
     return testBed;
 }
 
-void connectDeviceToTestBed(OpenSim::Joint* anchorA,
-    OpenSim::Joint* anchorB,
-    OpenSim::Device* device,
-    OpenSim::Model& testBed) {
-    // Set parent of anchorA as ground.
-    anchorA->setParentFrameName("ground");
-    // Set parent of anchorB as load.
-    anchorB->setParentFrameName("load");
+void connectDeviceToModel(OpenSim::Joint* anchorA, const std::string& frameAname,
+                          OpenSim::Joint* anchorB, const std::string& frameBname,
+                          OpenSim::Device* device, OpenSim::Model& model) {
+    // Set parent of anchorA as frameA.
+    anchorA->setParentFrameName(frameAname);
+    // Set parent of anchorB as frameB.
+    anchorB->setParentFrameName(frameBname);
     // Add the device to the testBed.
-    testBed.addModelComponent(device);
+    model.addModelComponent(device);
 }
 
+// Simulate any model from an initial state
 void simulate(OpenSim::Model& model, SimTK::State& state) {
 
     // Configure to view in the API SimTK::Visualizer
@@ -213,29 +213,13 @@ void simulate(OpenSim::Model& model, SimTK::State& state) {
     manager.setInitialTime(0);
     manager.setFinalTime(10.0);
     manager.integrate(state);
-
+    // generate states output debugging
     manager.getStateStorage().print("exampleHopperStates.sto");
-}
-
-void integrate(const SimTK::System& system, SimTK::Integrator& integrator,
-    const SimTK::State& initialState,
-    SimTK::Real finalTime) {
-    SimTK::TimeStepper ts(system, integrator);
-    ts.initialize(initialState);
-    ts.setReportAllSignificantStates(true);
-    integrator.setReturnEveryInternalStep(true);
-    while (ts.getState().getTime() < finalTime) {
-        ts.stepTo(finalTime);
-        system.realize(ts.getState(), SimTK::Stage::Report);
-    }
 }
 
 int main() {
     using SimTK::Vec3;
     using SimTK::Inertia;
-    using SimTK::Pi;
-
-
 
     //-----------------Code to Assemble the Device begin -----------------------
     // Create a sphere geometry to reuse later.
@@ -314,9 +298,8 @@ int main() {
     // make sure to connect the device to the actual hopper and simulate with
     // hopper connected to the device.
     //-------------------------------------------------------------------------
-    connectDeviceToTestBed(anchorA, anchorB, device, testBed);
-    //connectDeviceToHopper(
-
+    connectDeviceToModel(anchorA, "ground", anchorB, "load", device, testBed);
+   
     // Wire up the Controller to use the generator for fake activations
     controller->updInput("activation").
         connect(generator->getOutput("signal"));
