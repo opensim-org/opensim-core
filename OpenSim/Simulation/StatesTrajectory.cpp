@@ -136,15 +136,9 @@ TimeSeriesTable StatesTrajectory::exportToTable(const Model& model,
     // Set the column labels as metadata.
     std::vector<std::string> stateVars = requestedStateVars.empty() ?
             createVector(model.getStateVariableNames()) :
-            createVector(requestedStateVars);
-    ValueArray<std::string> valueArray;
-    for (const auto& labels : stateVars) {
-        valueArray.upd().push_back(SimTK::Value<std::string>(labels));
-    }
-    int numDepColumns = valueArray.size();
-    TimeSeriesTable::DependentsMetaData depMetadata;
-    depMetadata.setValueArrayForKey("labels", valueArray);
-    table.setDependentsMetaData(depMetadata);
+            requestedStateVars;
+    table.setColumnLabels(stateVars);
+    int numDepColumns = stateVars.size();
 
     // Fill up the table with the data.
     for (size_t itime = 0; itime < getSize(); ++itime) {

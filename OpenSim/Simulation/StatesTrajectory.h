@@ -301,6 +301,8 @@ public:
      *
      * @throws IncompatibleModel Thrown if the Model fails the check
      *      isCompatibleWith().
+     *
+     * See DataAdapter for details on writing to files.
      */
     TimeSeriesTable exportToTable(const Model& model,
             const std::vector<std::string>& stateVars = {}) const;

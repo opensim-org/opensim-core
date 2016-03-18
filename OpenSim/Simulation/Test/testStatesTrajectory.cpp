@@ -657,8 +657,7 @@ void tableAndTrajectoryMatch(const Model& model,
     SimTK_TEST(table.getNumColumns() == numColumns);
     SimTK_TEST(table.getNumRows() == states.getSize());
 
-    const auto& colNames = table.getDependentsMetaData()
-            .getValueArrayForKey("labels");
+    const auto& colNames = table.getColumnLabels();
 
     // Test that the data table has exactly the same numbers.
     for (int itime = 0; itime < states.getSize(); ++itime) {
@@ -668,7 +667,7 @@ void tableAndTrajectoryMatch(const Model& model,
 
         // Test state values.
         for (int icol = 0; icol < table.getNumColumns(); ++icol) {
-            const auto& stateName = colNames[icol].getValue<std::string>();
+            const auto& stateName = colNames[icol];
 
             const auto& valueInStates = model.getStateVariableValue(
                     states[itime], stateName);
