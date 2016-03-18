@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/Reporter.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -33,19 +34,23 @@ class Bar;
 class Sub : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(Sub, Component);
 public:
+    OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE(subState);
     Sub() = default;
     virtual ~Sub() = default;
+private:
+    void extendAddToSystem(MultibodySystem &system) const override {
+        Super::extendAddToSystem(system);
+        addStateVariable("subState", Stage::Dynamics);
+    }
+    void computeStateVariableDerivatives(const SimTK::State& s) const override {
+        double deriv = exp(-2.0*s.getTime());
+        setStateVariableDerivativeValue(s, "subState", deriv);
+    }
 }; //end class Sub
 
 class TheWorld : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(TheWorld, Component);
 public:
-//=============================================================================
-// PROPERTIES
-//=============================================================================
-    OpenSim_DECLARE_LIST_PROPERTY(components, Component, 
-        "List of serialized internal components");
-
     TheWorld() : Component() {
         // Constructing own properties, connectors, inputs or connectors? Must invoke!
         constructInfrastructure();
@@ -63,32 +68,19 @@ public:
     }
 
     void add(Component* comp) {
+        addComponent(comp);
         // Edit Sub 
         Sub& subc = updMemberSubcomponent<Sub>(intSubix);
-
-        // add it the property list of components that owns and serializes them
-        updProperty_components().adoptAndAppendValue(comp);
-        try {
-            finalizeFromProperties();
-        }
-        catch (ComponentAlreadyPartOfOwnershipTree& ex) {
-            auto& compsProp = updProperty_components();
-            //undo the adopt and append
-            int ix = compsProp.findIndex(*comp);
-            if (ix >= 0) {
-                compsProp[ix].disconnect();
-                // release the pointer to component in ix to undo adopt
-                // erase pointer at ix from the property list to
-            }
-            throw ex;
-        }
     }
 
-    // Top level connection method for all encompassing Component
+    // Top level connection method for this all encompassing component, TheWorld
     void connect() {
         Super::connect(*this);
     }
-    void buildUpSystem(MultibodySystem& system) { addToSystem(system); }
+    void buildUpSystem(MultibodySystem& system) { 
+        connect();
+        addToSystem(system);
+    }
 
     const SimbodyMatterSubsystem& getMatterSubsystem() const { return *matter; }
     SimbodyMatterSubsystem& updMatterSubsystem() const { return *matter; }
@@ -118,11 +110,6 @@ protected:
 
             system.updMatterSubsystem().setShowDefaultGeometry(true);
         }
-    }
-
-private:
-    void constructProperties() override {
-        constructProperty_components();
     }
 
 private:
@@ -454,9 +441,9 @@ void testMisc() {
 
     //Configure the connector to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
-    bar.updConnector<Foo>("parentFoo").set_connectee_name(foo.getFullPathName());
+    bar.updConnector<Foo>("parentFoo").setConnecteeName(foo.getFullPathName());
     bar.updConnector<Foo>("childFoo").connect(foo);
-    
+        
     // add a subcomponent
     // connect internals
     ASSERT_THROW( OpenSim::Exception,
@@ -470,13 +457,13 @@ void testMisc() {
         std::cout << "Iterator is at: " << it->getFullPathName() << std::endl;
     }
 
-    
+        
     std::cout << "Using range-for loop: " << std::endl;
     for (const Component& component : worldTreeAsList) {
         std::cout << "Iterator is at: " << component.getFullPathName() << std::endl;
     }
 
-    
+        
     std::cout << "Iterate over only Foo's." << std::endl;
     for (auto& component : theWorld.getComponentList<Foo>()) {
         std::cout << "Iterator is at: " << component.getFullPathName() << std::endl;
@@ -505,7 +492,7 @@ void testMisc() {
 
     // do any other input/output connections
     foo.updInput("input1").connect(bar.getOutput("PotentialEnergy"));
-
+    
     // check how this model serializes
     string modelFile("testComponentInterfaceModel.osim");
     theWorld.print(modelFile);
@@ -519,7 +506,7 @@ void testMisc() {
     //viz.drawFrameNow(s);
     const Vector q = Vector(s.getNQ(), SimTK::Pi/2);
     const Vector u = Vector(s.getNU(), 1.0);
-    
+        
     // Ensure the "this" pointer inside the output function is for the
     // correct Bar.
     system.realize(s, Stage::Model);
@@ -536,7 +523,7 @@ void testMisc() {
     SimTK_TEST(bar.getOutputValue<size_t>(s, "copytesting") == size_t(&bar));
     SimTK_TEST(bar0->getOutputValue<double>(s, "copytestingMemVar") == 5);
     SimTK_TEST(bar.getOutputValue<double>(s, "copytestingMemVar") == 6);
-    
+        
     // By deleting bar0 then calling getOutputValue on bar without a
     // segfault (throughout the remaining code), we ensure that bar
     // does not depend on bar0.
@@ -558,7 +545,7 @@ void testMisc() {
         cout << out1.getName() <<"|"<< out1.getTypeName() <<"|"<< out1.getValueAsString(s) << endl;
         cout << out2.getName() <<"|"<< out2.getTypeName() <<"|"<< out2.getValueAsString(s) << endl;
         cout << out3.getName() <<"|"<< out3.getTypeName() <<"|"<< out3.getValueAsString(s) << endl;
-        
+            
         system.realize(s, Stage::Acceleration);
         cout << out4.getName() <<"|"<< out4.getTypeName() <<"|"<< out4.getValueAsString(s) << endl;
         cout << out5.getName() <<"|"<< out5.getTypeName() <<"|"<< out5.getValueAsString(s) << endl;
@@ -574,7 +561,7 @@ void testMisc() {
 
     MultibodySystem system2;
     TheWorld *world2 = new TheWorld(modelFile, true);
-    
+        
     world2->updComponent("Bar").getConnector<Foo>("childFoo");
     // We haven't called connect yet, so this connection isn't made yet.
     SimTK_TEST_MUST_THROW_EXC(
@@ -638,7 +625,7 @@ void testMisc() {
     //Configure the connector to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
     bar2.updConnector<Foo>("parentFoo")
-        .set_connectee_name(compFoo.getRelativePathName(bar2));
+    .setConnecteeName(compFoo.getRelativePathName(bar2));
     bar2.updConnector<Foo>("childFoo").connect(foo);
 
     world3.finalizeFromProperties();
@@ -646,18 +633,20 @@ void testMisc() {
 
     cout << "Adding world3 to theWorld" << endl;
     theWorld.add(world3.clone());
-    
-    // TODO add the bar component again, which gets adopted by world3.
-    // This must trigger an exception, which it does, but the problem 
-    // is that the we don't have access to the property list to now
-    // remove it. Uncommenting current results in a fault when the 
-    // the destructor attempts to delete bar2 a second time around.
-    // ASSERT_THROW( ComponentAlreadyPartOfOwnershipTree,
-    //              world3.add(&bar2));
+
+    // Should not be able to add the same Component twice within the same tree
+    ASSERT_THROW( ComponentAlreadyPartOfOwnershipTree,
+                  world3.add(&bar2));
 
     cout << "Connecting theWorld:" << endl;
     theWorld.dumpSubcomponents();
+    theWorld.finalizeFromProperties();
     theWorld.connect();
+
+    auto* reporter = new TableReporterVector();
+    reporter->set_report_time_interval(0.1);
+    reporter->updInput("inputs").connect(foo.getOutput("Qs"));
+    theWorld.add(reporter);
 
     MultibodySystem system3;
     cout << "Building theWorld's system:" << endl;
@@ -689,8 +678,23 @@ void testMisc() {
     ts.stepTo(1.0);
     s = ts.getState();
 
+    // realize simbody system to velocity stage
+    system3.realize(s, Stage::Velocity);
+
+    // Get the results of integrating the system forward
+    const TimeSeriesTable_<Real>& results = reporter->getReport();
+    ASSERT(results.getNumRows() == 11, __FILE__, __LINE__,
+        "Number of rows in Reporter results not equal to number of time intervals.");
+    cout << "************** Contents of Table of Results ****************" << endl;
+    cout << results << endl;
+    cout << "***************** Qs Output at Final state *****************" << endl;
+    auto& finalVal = foo.getOutputValue<Vector>(s, "Qs");
+    (~finalVal).dump();
+    size_t ncols = results.getNumColumns();
+    ASSERT(ncols == finalVal.size(), __FILE__, __LINE__,
+        "Number of cols in Reporter results not equal to size of Output'Qs' size.");
+
     // Check the result of the integration on our state variables.
-    std::cout << "DEBUG " <<  bar.getOutputValue<double>(s, "fiberLength") << std::endl;
     ASSERT_EQUAL(3.5, bar.getOutputValue<double>(s, "fiberLength"), 1e-10);
     ASSERT_EQUAL(1.5, bar.getOutputValue<double>(s, "activation"), 1e-10);
 
@@ -712,7 +716,7 @@ void testMisc() {
     // With path to the component it should work
     auto& bigFoo = theWorld.getComponent<CompoundFoo>("World/World3/BigFoo");
     const Sub& topSub = theWorld.getComponent<Sub>("InternalWorld/internalSub");
-    
+        
     // Should also be able to get top-level
     auto& topFoo = theWorld.getComponent<Foo>("Foo2");
     cout << "Top level Foo2 path name: " << topFoo.getFullPathName() << endl;
@@ -724,57 +728,7 @@ void testMisc() {
     theWorld.print("Nested_" + modelFile);
 }
 
-template <typename T>
-class ConsoleReporter : public Component {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ConsoleReporter, Component);
-    // TODO interval
-    // TODO constant interval reporting
-    // TODO num significant digits (override).
-    OpenSim_DECLARE_LIST_INPUT(input, T, SimTK::Stage::Acceleration,
-                               "Quantities to print to console.");
-public:
-    ConsoleReporter() {
-        constructInfrastructure();
-    }
-private:
-    void extendRealizeReport(const State& state) const override {
-        // multi input: loop through multi-inputs.
-        // Output::getNumberOfSignificantDigits().
-        // TODO print column names every 10 outputs.
-        // TODO test by capturing stdout.
-        // TODO prepend each line with "[<name>]" or "[reporter]" if no name is given.
-        // TODO an actual implementation should do a static cast, since we
-        // know that T is correct.
-        const auto& input = getInput<T>("input");
-        
-        if (_printCount % 20 == 0) {
-            std::cout << "[" << getName() << "] "
-                      << std::setw(_width) << "time" << "| ";
-            for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
-                const auto& chan = Input<T>::downcast(input).getChannel(idx);
-                const auto& outName = chan.getName();
-                const auto& truncName = outName.size() <= _width ?
-                    outName : outName.substr(outName.size() - _width);
-                std::cout << std::setw(_width) << truncName << "|";
-            }
-            std::cout << "\n";
-        }
-        // TODO set width based on number of significant digits.
-        std::cout << "[" << getName() << "] "
-                  << std::setw(_width) << state.getTime() << "| ";
-        for (const auto& chan : input.getChannels()) {
-            const auto& value = chan->getValue(state);
-            const auto& nSigFigs = chan->getOutput().getNumberOfSignificantDigits();
-            std::cout << std::setw(_width)
-                      << std::setprecision(nSigFigs) << value << "|";
-        }
-        std::cout << std::endl;
-        
-        const_cast<ConsoleReporter<T>*>(this)->_printCount++;
-    }
-    unsigned int _printCount = 0;
-    int _width = 12;
-};
+
 
 void testListInputs() {
     MultibodySystem system;
@@ -794,19 +748,31 @@ void testListInputs() {
     Bar& bar = *new Bar();
     bar.setName("Bar");
     theWorld.add(&bar);
+
+    bar.updConnector<Foo>("parentFoo").setConnecteeName("Foo");
+    bar.updConnector<Foo>("childFoo").setConnecteeName("Foo2");
     
-    auto* reporter = new ConsoleReporter<double>();
+    auto* reporter = new ConsoleReporter();
     reporter->setName("rep0");
     theWorld.add(reporter);
-    
-    reporter->updInput("input").connect(foo.getOutput("Output1"));
-    reporter->updInput("input").connect(bar.getOutput("PotentialEnergy"));
-    reporter->updInput("input").connect(bar.getOutput("fiberLength"));
-    reporter->updInput("input").connect(bar.getOutput("activation"));
-    
-    bar.updConnector<Foo>("parentFoo").set_connectee_name("Foo");
-    bar.updConnector<Foo>("childFoo").set_connectee_name("Foo2");
-    
+
+    // wire up console reporter inputs to desired model outputs
+    reporter->updInput("inputs").connect(foo.getOutput("Output1"));
+    reporter->updInput("inputs").connect(bar.getOutput("PotentialEnergy"));
+    reporter->updInput("inputs").connect(bar.getOutput("fiberLength"));
+    reporter->updInput("inputs").connect(bar.getOutput("activation"));
+
+    auto* tabReporter = new TableReporter();
+    tabReporter->setName("TableReporterMixedOutputs");
+    theWorld.add(tabReporter);
+
+    // wire up table reporter inputs to desired model outputs
+    tabReporter->updInput("inputs").connect(bar.getOutput("fiberLength"));
+    tabReporter->updInput("inputs").connect(bar.getOutput("activation"));
+    tabReporter->updInput("inputs").connect(foo.getOutput("Output1"));
+    tabReporter->updInput("inputs").connect(bar.getOutput("PotentialEnergy"));
+
+   
     theWorld.connect();
     theWorld.buildUpSystem(system);
     
@@ -818,6 +784,9 @@ void testListInputs() {
         s.updQ() = (i+1)*q/10.0;
         system.realize(s, Stage::Report);
     }
+
+    cout << "  TableReporterMixedOutputs (contents)" << endl;
+    cout << tabReporter->getReport() << endl;
 }
 
 
@@ -836,8 +805,8 @@ void testListConnectors() {
     theWorld.add(&bar);
     
     // Non-list connectors.
-    bar.updConnector<Foo>("parentFoo").set_connectee_name("foo");
-    bar.updConnector<Foo>("childFoo").set_connectee_name("foo2");
+    bar.updConnector<Foo>("parentFoo").setConnecteeName("foo");
+    bar.updConnector<Foo>("childFoo").setConnecteeName("foo2");
     
     // Ensure that calling connect() on bar's "parentFoo" doesn't increase
     // its number of connectees.
@@ -991,10 +960,85 @@ void testComponentPathNames()
 
     fbar2.updConnector<Foo>("parentFoo").connect(*foo1);
     fbar2.updConnector<Foo>("childFoo")
-        .set_connectee_name("../Foo1");
+        .setConnecteeName("../Foo1");
 
     top.dumpSubcomponents();
     top.connect();
+}
+
+void testInputOutputConnections()
+{
+    TheWorld world;
+    Foo* foo1 = new Foo();
+    Foo* foo2 = new Foo();
+    Bar* bar = new Bar();
+
+    foo1->setName("foo1");
+    foo2->setName("foo2");
+    bar->setName("bar");
+    bar->updConnector<Foo>("parentFoo").connect(*foo1);
+    bar->updConnector<Foo>("childFoo").connect(*foo2);
+    
+    world.add(foo1);
+    world.add(foo2);
+    world.add(bar);
+
+    MultibodySystem mbs;
+
+    // Should yield warnings about unconnected Inputs
+    cout << "Unsatisfied Inputs during world.connect()" << endl;
+    world.connect();
+
+    // do any other input/output connections
+    foo1->updInput("input1").connect(bar->getOutput("PotentialEnergy"));
+    // Must throw an exception since subState0 is not a state of internalSub.
+    ASSERT_THROW(OpenSim::Exception, 
+        foo2->updInput("input1").connect(world.getOutput("./internalSub/subState0")));
+    // internalSub's state is "subState"
+    foo2->updInput("input1").connect(world.getOutput("./internalSub/subState"));
+
+    foo1->updInput("AnglesIn").connect(foo2->getOutput("Qs"));
+    foo2->updInput("AnglesIn").connect(foo1->getOutput("Qs"));
+
+    foo1->updInput("activation").connect(bar->getOutput("activation"));
+    foo1->updInput("fiberLength").connect(bar->getOutput("fiberLength"));
+
+    foo2->updInput("activation").connect(bar->getOutput("activation"));
+    foo2->updInput("fiberLength").connect(bar->getOutput("fiberLength"));
+
+    cout << "Unsatisfied Inputs after wiring Outputs to Inputs." << endl;
+    world.connect();
+    world.buildUpSystem(mbs);
+}
+
+void testInputConnecteeNames() {
+    std::string outputPath, channelName, annotation;
+    
+    AbstractInput::parseConnecteeName("/foo/bar/output",
+                                      outputPath, channelName, annotation);
+    SimTK_TEST(outputPath == "/foo/bar/output");
+    SimTK_TEST(channelName == "");
+    SimTK_TEST(annotation == "output");
+    
+    AbstractInput::parseConnecteeName("/foo/bar/output:channel",
+                                      outputPath, channelName, annotation);
+    SimTK_TEST(outputPath == "/foo/bar/output");
+    SimTK_TEST(channelName == "channel");
+    SimTK_TEST(annotation == "channel");
+    
+    AbstractInput::parseConnecteeName("/foo/bar/output(anno)",
+                                      outputPath, channelName, annotation);
+    SimTK_TEST(outputPath == "/foo/bar/output");
+    SimTK_TEST(channelName == "");
+    SimTK_TEST(annotation == "anno");
+    
+    AbstractInput::parseConnecteeName("/foo/bar/output:channel(anno)",
+                                      outputPath, channelName, annotation);
+    SimTK_TEST(outputPath == "/foo/bar/output");
+    SimTK_TEST(channelName == "channel");
+    SimTK_TEST(annotation == "anno");
+    
+    // TODO test invalid names as well.
 }
 
 int main() {
@@ -1006,11 +1050,12 @@ int main() {
     Object::registerType(Connector<Foo>());
     Object::registerType(Connector<Bar>());
 
-    SimTK_START_TEST("testComponentIterface");
+    SimTK_START_TEST("testComponentInterface");
         SimTK_SUBTEST(testMisc);
         SimTK_SUBTEST(testListInputs);
         SimTK_SUBTEST(testListConnectors);
         SimTK_SUBTEST(testComponentPathNames);
+        SimTK_SUBTEST(testInputConnecteeNames);
     SimTK_END_TEST();
 }
 

@@ -103,6 +103,9 @@ public:
     /** Can this Output have more than one channel? */
     bool isListOutput() const { return _isList; }
 
+    /** Output's owning Component */
+    const Component& getOwner() const { return _owner.getRef(); }
+
     /** Output Interface */
     
     /** Remove all channels from this Output (for list Outputs). */
@@ -133,9 +136,7 @@ protected:
     void setOwner(const Component& owner) {
         _owner.reset(&owner);
     }
-    const Component& getOwner() const {
-        return _owner.getRef();
-    }
+
     SimTK::ReferencePtr<const Component> _owner;
 
 private:
@@ -233,7 +234,12 @@ public:
     }
     
     const AbstractChannel& getChannel(const std::string& name) const override {
-        return _channels.at(name);
+        try {
+            return _channels.at(name);
+        } catch (const std::out_of_range& e) {
+            OPENSIM_THROW(Exception, "Output '" + getName() + "' does not have "
+                          "a channel named '" + name + "'.");
+        }
     }
     
     /** Use this to iterate through this Output's channels

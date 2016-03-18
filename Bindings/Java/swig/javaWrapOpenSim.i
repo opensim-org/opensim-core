@@ -1,5 +1,6 @@
 %module(directors="1") opensimModel
 %module opensimModel
+#pragma SWIG nowarn=822,451,503,516,325,401
 %{
 
 #include <Bindings/OpenSimHeaders_common.h>

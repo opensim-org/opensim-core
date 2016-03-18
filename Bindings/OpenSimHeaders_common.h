@@ -44,6 +44,14 @@
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/DataTable.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Common/Event.h>
+#include <OpenSim/Common/DataAdapter.h>
+#include <OpenSim/Common/FileAdapter.h>
+#include <OpenSim/Common/TRCFileAdapter.h>
+#include <OpenSim/Common/DelimFileAdapter.h>
+#include <OpenSim/Common/MOTFileAdapter.h>
+#include <OpenSim/Common/CSVFileAdapter.h>
+#include <OpenSim/Common/C3DFileAdapter.h>
 
 #endif // OPENSIM_OPENSIM_HEADERS_OPENSIM_H_
 

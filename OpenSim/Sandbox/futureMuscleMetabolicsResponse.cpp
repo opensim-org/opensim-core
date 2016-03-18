@@ -1,4 +1,5 @@
 #include <OpenSim/OpenSim.h>
+#include <OpenSim/Common/Reporter.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -64,16 +65,7 @@ public:
     // Component::getParent.
     OpenSim_DECLARE_PROPERTY(scaling_factor, double, "Affects each coord.");
     
-    /* TODO would prefer to use this, but waiting until the function within
-     outputs is copied correctly.
-     */
-    OpenSim_DECLARE_LIST_PROPERTY(responses, ComplexResponse,
-            "for individual coordinates.");
-     
-    void adopt(ComplexResponse* resp) {
-        updProperty_responses().adoptAndAppendValue(resp);
-        finalizeFromProperties();
-    }
+   
 
     OpenSim_DECLARE_OUTPUT(total_sum, double, getTotalSum,
             SimTK::Stage::Position);
@@ -82,9 +74,7 @@ public:
     OpenSim_DECLARE_OUTPUT(total_term_2, double, getTotalTerm2,
             SimTK::Stage::Velocity);
 
-    void addResponse(ComplexResponse* response) {
-        adoptSubcomponent(response);
-    }
+
 
     double getTotalSum(const State& s) const {
         const double basalRate(1.0);
@@ -118,60 +108,8 @@ public:
 private:
     
     void constructProperties() override {
-        constructProperty_responses();
         constructProperty_scaling_factor(1.0);
     }
-};
-
-template <typename T>
-class ConsoleReporter : public ModelComponent {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ConsoleReporter, Component);
-    // TODO interval
-    // TODO constant interval reporting
-    // TODO num significant digits (override).
-    OpenSim_DECLARE_LIST_INPUT(input, T, SimTK::Stage::Acceleration, "");
-public:
-    ConsoleReporter() {
-        constructInfrastructure();
-    }
-private:
-    void constructProperties() override {}
-    void extendRealizeReport(const State& state) const override {
-        // multi input: loop through multi-inputs.
-        // Output::getNumberOfSignificantDigits().
-        // TODO print column names every 10 outputs.
-        // TODO test by capturing stdout.
-        // TODO prepend each line with "[<name>]" or "[reporter]" if no name is given.
-        const auto& input = getInput("input");
-        
-        if (_printCount % 20 == 0) {
-            std::cout << "[" << getName() << "] "
-                      << std::setw(_width) << "time" << "  ";
-            for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
-                const auto& output = Input<T>::downcast(input).getOutput(idx);
-                const auto& outName = output.getName();
-                const auto& truncName = outName.size() <= _width ?
-                    outName : outName.substr(outName.size() - _width);
-                std::cout << std::setw(_width) << truncName << "|";
-            }
-            std::cout << "\n";
-        }
-        // TODO set width based on number of significant digits.
-        std::cout << "[" << getName() << "] "
-                  << std::setw(_width) << state.getTime() << "| ";
-        for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
-            const auto& output = Input<T>::downcast(input).getOutput(idx);
-            const auto& value = output.getValue(state);
-            const auto& nSigFigs = output.getNumberOfSignificantDigits();
-            std::cout << std::setw(_width)
-                      << std::setprecision(nSigFigs) << value << "|";
-        }
-        std::cout << std::endl;
-        
-        const_cast<ConsoleReporter<T>*>(this)->_printCount++;
-    }
-    unsigned int _printCount = 0;
-    int _width = 12;
 };
 
 void integrate(const System& system, Integrator& integrator,
@@ -209,24 +147,14 @@ void testComplexResponse() {
     response1->setName("complex_response_j1");
     response1->updConnector<Coordinate>("coord").connect(j1->get_CoordinateSet()[0]);
     // add to aggregate which takes ownership
-    aggregate->addResponse(response1);
+    aggregate->addComponent(response1);
 
     // now create response 2
     auto response2 = new ComplexResponse();
     response2->setName("complex_response_j2");
     response2->updConnector<Coordinate>("coord").connect(j2->get_CoordinateSet()[0]);
     // add to aggregate which takes ownership
-    aggregate->addResponse(response2);
-    
-    auto* reporter = new ConsoleReporter<double>();
-    reporter->setName("reporter");
-    reporter->updInput("input").connect(response1->getOutput("sum"));
-    reporter->updInput("input").connect(response2->getOutput("sum"));
-    reporter->updInput("input").connect(aggregate->getOutput("total_sum"));
-    reporter->updInput("input").connect(
-            j1->getCoordinateSet().get(0).getOutput("value"));
-    // TODO connect by path: reporter->getInput("input").connect("/complex_response/sum");
-    // multi input: reporter->getMultiInput("input").append_connect(cr->getOutput("sum"));
+    aggregate->addComponent(response2);
 
     // Add in the components to the model.
     model.addBody(b1);
@@ -235,8 +163,19 @@ void testComplexResponse() {
     model.addJoint(j1);
     model.addJoint(j2);
     model.addJoint(j3);
-    model.addModelComponent(aggregate); 
-    model.addModelComponent(reporter);
+    model.addModelComponent(aggregate);
+    
+    auto* reporter = new ConsoleReporter();
+    reporter->setName("reporter");
+    reporter->updInput("inputs").connect(response1->getOutput("sum"));
+    reporter->updInput("inputs").connect(response2->getOutput("sum"));
+    reporter->updInput("inputs").connect(aggregate->getOutput("total_sum"));
+    reporter->updInput("inputs").connect(
+            j1->getCoordinateSet().get(0).getOutput("value"));
+    // TODO connect by path: reporter->getInput("input").connect("/complex_response/sum");
+    // multi input: reporter->getMultiInput("input").append_connect(cr->getOutput("sum"));
+ 
+    model.addComponent(reporter);
 
     State& state = model.initSystem();
 

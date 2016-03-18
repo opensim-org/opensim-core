@@ -51,13 +51,13 @@ int main() {
     // as well.
 
     // Metadata of the table.
-    std::cout << table1->
+    std::cout << table1.
                  getTableMetaData().
                  getValueForKey("header").
                  getValue<std::string>() << std::endl;
 
     // Column labels of the table.
-    auto& labels = table1->
+    auto& labels = table1.
                    getDependentsMetaData().
                    getValueArrayForKey("labels");
     for(size_t i = 0; i < labels.size(); ++i)
@@ -65,12 +65,12 @@ int main() {
     std::cout << std::endl;
 
     // Dimensions of the table.
-    std::cout << table1->getNumRows() << "\t"
-              << table1->getNumColumns() << std::endl;
+    std::cout << table1.getNumRows() << "\t"
+              << table1.getNumColumns() << std::endl;
 
     // Individual rows of the table.
-    for(size_t i = 0; i < std::min(table1->getNumRows(), size_t(3)); ++i)
-        std::cout << table1->getRowAtIndex(i) << std::endl;
+    for(size_t i = 0; i < std::min(table1.getNumRows(), size_t(3)); ++i)
+        std::cout << table1.getRowAtIndex(i) << std::endl;
 
     // See documentation for TimeSeriesTable for full set of operations
     // possible for table1 and table2.
