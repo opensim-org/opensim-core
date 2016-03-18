@@ -245,7 +245,7 @@ void testComponent(const Component& instanceToTest)
         {
             model.getSystem().realize(state,
                     thisOutput->getDependsOnStage().prev());
-            ASSERT_THROW(Exception,
+            ASSERT_THROW(SimTK::Exception::StageTooLow,
                     thisOutput->getValueAsString(state);
             );
         }
