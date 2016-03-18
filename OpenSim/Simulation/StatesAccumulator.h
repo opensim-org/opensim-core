@@ -42,9 +42,9 @@ class OSIMSIMULATION_API StatesAccumulator : public AbstractReporter {
 OpenSim_DECLARE_CONCRETE_OBJECT(StatesAccumulator, AbstractReporter);
 
 public:
-    /** Access the recorded states. */
+    /** Access the accumulated states. */
     const StatesTrajectory& getStates() const; 
-    /** Clear the recorded states. */ 
+    /** Clear the accumulated states. */ 
     void clear();
 
 protected:
