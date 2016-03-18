@@ -161,7 +161,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
         // Columns 2 till the end are data.
         TimeSeriesTableVec3::RowVector 
             row_vector{static_cast<int>(num_markers_expected)};
-        size_t ind{0};
+        int ind{0};
         for(std::size_t c = 2; c < column_labels.size() * 3 + 2; c += 3)
             row_vector[ind++] = SimTK::Vec3{std::stod(row.at(c)),
                                             std::stod(row.at(c+1)),
