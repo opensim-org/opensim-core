@@ -49,7 +49,7 @@ add_custom_command(
     COMMAND ${JAVA_COMPILE} 
             ${CMAKE_CURRENT_BINARY_DIR}/src/org/opensim/modeling/*.java 
             -source 1.6 -target 1.6
-    COMMAND ${JAVA_ARCHIVE} -cvf org-opensim-modeling.jar
+    COMMAND ${JAVA_ARCHIVE} -cvf ${SWIG_JAVA_JAR_NAME}
             org/opensim/modeling/*.class
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
     COMMENT "Compiling Java sources and creating jar archive."
@@ -72,6 +72,14 @@ set_target_properties(JavaBindings PROPERTIES
 install(FILES "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
     DESTINATION ${OPENSIM_INSTALL_JAVAJARDIR})
 
+
+# Java tests.
+# -----------
+
+if(BUILD_TESTING)
+    # Now actually add the tests.
+    add_subdirectory(tests)
+endif()
 
 # MATLAB tests and installing.
 # ----------------------------
