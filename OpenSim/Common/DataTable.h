@@ -353,7 +353,7 @@ public:
 
     /** Get dependent Column which has the given column label.                */
     VectorView getDependentColumn(const std::string& columnLabel) {
-        return _depData.col(getColumnIndex(columnLabel));
+        return _depData.col(static_cast<int>(getColumnIndex(columnLabel)));
     }
 
     /** Set independent column at index.                                      
