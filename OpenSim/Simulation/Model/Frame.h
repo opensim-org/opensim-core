@@ -88,6 +88,14 @@ public:
 
     virtual ~Frame() {};
 
+    //=============================================================================
+    // OUTPUTS
+    //=============================================================================
+    OpenSim_DECLARE_OUTPUT(position, SimTK::Vec3, getPositionInGround,
+        SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(transform, SimTK::Transform, getGroundTransform,
+        SimTK::Stage::Position);
+
     /** @name Spatial Operations for Frames
     These methods allow access to the frame's transform and some convenient
     operations that could be performed with this transform.*/
@@ -185,13 +193,26 @@ public:
     */
     SimTK::Transform findTransformInBaseFrame() const;
 
+    /** Accessor for position of the origin of the Frame in Ground. */
+    SimTK::Vec3 getPositionInGround(const SimTK::State& state) const {
+        return getGroundTransform(state).p();
+    };
+
     // End of Base Frame and Transform accessors
     ///@}
 
     /** Add a Mesh specified by file name to the list of Geometry owned by the Frame.
-    Scale defaults to 1.0 but can be changed on the call line. For convenience 
+    Scale defaults to 1.0 but can be changed on the call line for convenience.
     */
-    void addMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
+    void attachMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
+    /** Add a piece of Geometry to the list of Geometry owned by the Frame.
+    This function is a convenience for ModelComponent::addGeometry() for the case 
+    of adding Geometry directly to a Frame, and thus sets the "frame name" of the 
+    Geometry to this frame. The provided geom is copied into the Frame, which will
+    own a copy of the Geometry so any changes you make to geom after calling this 
+    method will not have an effect.
+    */
+    void attachGeometry(const OpenSim::Geometry& geom, const SimTK::Vec3 scale = SimTK::Vec3(1));
 
 protected:
     /** @name Component Extension methods.

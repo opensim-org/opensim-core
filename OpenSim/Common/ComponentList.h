@@ -158,7 +158,7 @@ for (const GeometryPath& gpath : geomPathList) {
 @endcode
 */
 template <typename T>
-class ComponentListIterator : 
+class ComponentListIterator :
     public std::iterator<std::forward_iterator_tag, Component>
 {
     friend class ComponentList<T>;
@@ -174,13 +174,13 @@ public:
     }
     /// Check for inequality using same convention as operator==.
     bool operator!=(const ComponentListIterator& iter) const {
-         return _node != &*iter;
+        return _node != &*iter;
     }
-    /** Dereference the iterator to get a const ref to Component of proper 
-     type (matching Filter if specified) this is const iterator, use only 
-     const methods. 
+    /** Dereference the iterator to get a const ref to Component of proper
+     type (matching Filter if specified) this is const iterator, use only
+     const methods.
     */
-    const T& operator*() const { return *dynamic_cast<const T*>(_node); } 
+    const T& operator*() const { return *dynamic_cast<const T*>(_node); }
 
     /// Another dereferencing operator that returns a const pointer.
     const T* operator->() const { return dynamic_cast<const T*>(_node); }
@@ -213,8 +213,8 @@ private:
     Filter by type. */
     const ComponentFilter& _filter;
     /** Constructor that takes a Component and ComponentFilter.
-     The iterator contains a const ref to filter and doesn't take ownership 
-     of it. A pointer is used since iterator at end() doesn't have a valid 
+     The iterator contains a const ref to filter and doesn't take ownership
+     of it. A pointer is used since iterator at end() doesn't have a valid
      Component underneath it.
      */
     ComponentListIterator(const Component* node, const ComponentFilter& filter) :
@@ -223,8 +223,7 @@ private:
         _filter(filter) {
         advanceToNextValidComponent(); // in case node is not a match.
     }
-};
-
+}; // end of ComponentListIterator
 } // end of namespace OpenSim
 
 #endif // OPENSIM_COMPONENT_LIST_H_

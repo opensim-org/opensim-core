@@ -88,7 +88,7 @@ void testControlSetControllerOnBlock()
 
     //Create a free joint with 6 degrees-of-freedom
     SimTK::Vec3 noRotation(0);
-    SliderJoint blockToGround("",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
+    SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
     
     // Create coordinates (degrees-of-freedom) between the ground and block
     CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
@@ -184,7 +184,7 @@ void testPrescribedControllerOnBlock(bool disabled)
 
     //Create a free joint with 6 degrees-of-freedom
     SimTK::Vec3 noRotation(0);
-    SliderJoint blockToGround("",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
+    SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
     // Create 6 coordinates (degrees-of-freedom) between the ground and block
     CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
     double posRange[2] = {-1, 1};
@@ -279,7 +279,7 @@ void testCorrectionControllerOnBlock()
 
     //Create a free joint with 6 degrees-of-freedom
     SimTK::Vec3 noRotation(0);
-    SliderJoint blockToGround("",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
+    SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
     // Create coordinates (degrees-of-freedom) between the ground and block
     CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
     double posRange[2] = {-1, 1};

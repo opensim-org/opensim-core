@@ -406,7 +406,7 @@ void testStationOnFrame()
     Station* myStation = new Station();
     myStation->set_location(com);
     myStation->updConnector<PhysicalFrame>("reference_frame")
-        .set_connectee_name("rod1");
+        .setConnecteeName("rod1");
     pendulum->addModelComponent(myStation);
     // myStation should coincide with com location of rod1 in ground
     SimTK::State& s = pendulum->initSystem();

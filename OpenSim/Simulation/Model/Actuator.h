@@ -55,6 +55,10 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(Actuator, Force);
 //=============================================================================
 // NO PROPERTIES
 //=============================================================================
+//=============================================================================
+// OUTPUTS
+//=============================================================================
+OpenSim_DECLARE_OUTPUT(power, double, getPower, SimTK::Stage::Dynamics);
 
 //=============================================================================
 // DATA
@@ -143,6 +147,14 @@ public:
     OpenSim_DECLARE_PROPERTY(max_control, double,
         "Maximum allowed value for control signal. Used primarily when solving "
         "for control values.");
+
+//==============================================================================
+// OUTPUTS 
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(actuation, double, getActuation,
+            SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(speed, double, getSpeed, SimTK::Stage::Velocity);
+
 
 //==============================================================================
 // PUBLIC METHODS
@@ -245,7 +257,6 @@ protected:
 
 private:
     void constructProperties() override;
-    void constructOutputs() override;
 
 //=============================================================================
 };  // END of class ScalarActuator

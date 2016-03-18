@@ -539,7 +539,7 @@ GENERATE_DEPRECATEDLIST= YES
 # documentation can be controlled using \showinitializer or \hideinitializer 
 # command in the documentation regardless of this setting.
 
-MAX_INITIALIZER_LINES  = 30
+MAX_INITIALIZER_LINES  = 1
 
 # Set the SHOW_USED_FILES tag to NO to disable the list of files generated 
 # at the bottom of the documentation of classes and structs. If set to YES the 
@@ -1563,6 +1563,11 @@ EXPAND_AS_DEFINED      = OpenSim_DECLARE_PROPERTY \
                          OpenSim_DECLARE_LIST_PROPERTY_ATMOST \
                          OpenSim_DECLARE_LIST_PROPERTY_RANGE \
                          OpenSim_DECLARE_PROPERTY_HELPER \
+                         OpenSim_DECLARE_OUTPUT \
+                         OpenSim_DECLARE_LIST_OUTPUT \
+                         OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE \
+                         OpenSim_DECLARE_INPUT \
+                         OpenSim_DECLARE_LIST_INPUT \
                          SWIG_DECLARE_EXCEPTION
 
 # If the SKIP_FUNCTION_MACROS tag is set to YES (the default) then 

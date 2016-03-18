@@ -54,6 +54,57 @@
 namespace OpenSim {
 
 class ModelDisplayHints;
+
+
+//==============================================================================
+/// Component Exceptions
+//==============================================================================
+class ComponentHasNoName : public Exception {
+public:
+    ComponentHasNoName(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& componentConcreteClassName) :
+        Exception(file, line, func) {
+        std::string msg = componentConcreteClassName;
+        msg += " was constructed with no name.\n";
+        msg += "Please assign a valid name and try again.";
+        addMessage(msg);
+    }
+};
+
+class ComponentNotFoundOnSpecifiedPath : public Exception {
+public:
+    ComponentNotFoundOnSpecifiedPath(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& toFindName,
+        const std::string& toFindClassName,
+        const std::string& thisName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName;
+        msg += "' could not find '" + toFindName;
+        msg += "' of type " + toFindClassName + ".";
+        addMessage(msg);
+    }
+};
+
+
+class ComponentAlreadyPartOfOwnershipTree : public Exception {
+public:
+    ComponentAlreadyPartOfOwnershipTree(const std::string& file,
+                                        size_t line,
+                                        const std::string& func,
+                                        const std::string& compName,
+                                        const std::string& thisName) :
+            Exception(file, line, func) {
+        std::string msg = "Component '" + compName;
+        msg += "' already owned by tree to which '" + thisName;
+        msg += "' belongs. Clone the component to adopt a fresh copy.";
+        addMessage(msg);
+    }
+};
+
 //==============================================================================
 //                            OPENSIM COMPONENT
 //==============================================================================
@@ -175,7 +226,42 @@ class ModelDisplayHints;
  *
  * Public methods enable access to component variables via their names.
  *
- * @author Ajay Seth, Michael Sherman
+ * ### Subcomponents
+ *
+ * A %Component can have any number of %Components within it; we call these
+ * subcomponents. Subcomponents can also contain their own subcomponents as
+ * well. There are three categories of subcomponents, which vary in whether
+ * they are *configurable* and *fixed in number*:
+ *
+ * - **property subcomponents** Any Property in a Component that is of type
+ *   Component is a subcomponent. This includes list properties and Set%s. This
+ *   is the most common category of subcomponent, and its distinguishing
+ *   feature is that these subcomponents are *configurable* by the user of this
+ *   component. These subcomponents appear in the XML for this component, and
+ *   can be modified in XML or through the API. They are also not fixed in
+ *   number; users can add more property subcomponents to an existing
+ *   component (though it is possible to enforce a fixed number by using
+ *   one-value properties or limiting the size of a list property). The bodies,
+ *   joints, forces, etc. in a Model's BodySet, JointSet, ForceSet, etc. are
+ *   all examples of property subcomponents. This category of subcomponent is
+ *   the most similar to what was available pre-v4.0. 
+ * - **member subcomponents** These are *not* configurable by the user of this
+ *   Component, and can only be modified by this Component. You can
+ *   still access member subcomponents through the API, but only the component
+ *   containing the subcomponents can modify them. Any Component class can have
+ *   any number of member subcomponents, but this number is *fixed* for every
+ *   instance of the component.
+ * - **adopted subcomponents** These are *not* configurable (does not appear in
+ *   XML) and *not* fixed in number. For example, a component can decide,
+ *   based on other aspects of the model, that it needs to create a new
+ *   subcomponent. This can be done using adopted subcomponents.
+ *
+ * Also, any specific Component can end up in any of these three categories.
+ * That is, if you have a MySpecialForce Component, any other Component can
+ * have it as a property subcomponent, a member subcomponent, or as an adopted
+ * subcomponent.
+ *
+ * @author Ajay Seth, Michael Sherman, Chris Dembia
  */
 class OSIMCOMMON_API Component : public Object {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Component, Object);
@@ -186,6 +272,9 @@ protected:
 //==============================================================================
     OpenSim_DECLARE_LIST_PROPERTY(connectors, AbstractConnector,
         "List of connectors (structural dependencies) that this component has.");
+
+    OpenSim_DECLARE_LIST_PROPERTY(components, Component,
+        "List of components that this component owns and serializes.");
 
 public:
 //==============================================================================
@@ -305,29 +394,36 @@ public:
     const SimTK::MultibodySystem& getSystem() const;
 
     /**
-
     * Check if this component has an underlying MultibodySystem.
     * Returns false if the System has not been created OR if this
     * Component has not added itself to the System.  */
     bool hasSystem() const { return !_system.empty(); }
 
     /**
+    * Add a Component to this component's property list.
+    * This component takes ownership of the added component.
+    * 
+    * TODO rename to adoptComponent() when Model::add#ModelComponent#()
+    * methods are also renamed. For the time being remain consistent. -aseth 
+    *
+    * @throws ComponentAlreadyPartOfOwnershipTree  */
+    void addComponent(Component* comp);
+
+    /**
      * Get an iterator through the underlying subcomponents that this component is 
      * composed of. The hierarchy of Components/subComponents forms a tree. The 
      * tree structure is fixed when the system is created.
      * The order of the Components is that of tree preorder traversal so that a
-     * component is processed before its subcomponents. All addComponent calls 
-     * must be done before calling this method on the top model. */
+     * component is traversed before its subcomponents. */
     template <typename T = Component>
     ComponentList<T> getComponentList() const {
-        Component* mutableThis = const_cast<Component*>(this);
-        mutableThis->initComponentTreeTraversal(*mutableThis);
+        initComponentTreeTraversal(*this);
         return ComponentList<T>(*this);
     }
 
     /**
      * Class to hold the list of components/subcomponents to iterate over.
-    */
+     */
     template <typename T>
     friend class ComponentList;
     /**
@@ -335,56 +431,58 @@ public:
      */
     template <typename T>
     friend class ComponentListIterator;
+
+
+    /** Get the complete pathname for this Component to its ancestral Component,
+     *  which is the root of the tree to which this Component belongs.
+     * For example: a Coordinate Components would have a full path name like:
+     *  `/arm26/elbow_r/flexion`. Accessing a Component by its fullPathName from
+     * root is guaranteed to be unique. */
+    std::string getFullPathName() const;
+
+
+    /** Get the relative pathname of this Component with respect to another one */
+    std::string getRelativePathName(const Component& wrt) const;
+
     /**
-     * Get a subcomponent of this Component by its name. 
-     * Note using a component's full "path" name is faster and will provide a
-     * unique result. Otherwise, the first component to satisfy the name match 
-     * will be returned.
-     * For example right_elbow/elbow_flexion will return a Coordinate 
-     * Component that is a member of the model's right elbow joint Component.
+     * Get a unique subcomponent of this Component by its path name and type 'C'. 
+     * Throws ComponentNotFoundOnSpecifiedPath exception if the component at
+     * that path name location does not exist OR it is not of the correct type.
+     * For example, 
+     * @code 
+     *    auto& coord = model.getComponent<Coordinate>("right_elbow/elbow_flexion");
+     * @endcode
+     * returns coord which is a Coordinate named "elbow_flexion" from a Joint
+     * named "right_elbow" given it is a child of the Component (Model) model.
+     * If unsure of a Component's path or whether or not it exists in the model,
+     * use findComponent() 
      *
-     * @param name       the name (string) of the Component of interest
-     * @return Component the component of interest
+     * @param  pathname        a pathname (string) of a Component of interest
+     * @return const reference to component of type C at 
+     * @throws ComponentNotFoundOnSpecifiedPath if no component exists
      */
-    const Component& getComponent(const std::string& name) const;
-    Component& updComponent(const std::string& name) const;
-
-    template <class C>
-    const C& getComponent(const std::string& name) const {
-        const Component& comp = getComponent(name);
-        const C* compC = dynamic_cast<const C*>(&comp);
-
-        if (compC) {
-            return *compC;
-        }
-
-        //TODO only use the component iterator when they can be used upon construction
-        ComponentList<C> compsList = getComponentList<C>();
-
-        std::vector<const C*> foundCs;
-        for (const C& comp : compsList) {
-            if (comp.getName() == name) {
-                foundCs.push_back(&comp);
-            }
-        }
-
-        if (foundCs.size() == 1) {
-            //unique type and name match!
-            return *foundCs[0];
+    template <class C = Component>
+    const C& getComponent(const std::string& pathname) const {
+        const C* comp = this->template traversePathToComponent<C>(pathname);
+        if (comp) {
+            return *comp;
         }
 
         // Only error cases remain
-        std::string msg = getConcreteClassName() + " '" + getName() + "': ERROR- ";
+        OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath, pathname,
+                                                       C::getClassName(),
+                                                       getName());
+    }
 
-        // too many components of the right type with the same name
-        if (foundCs.size() > 1) {
-            msg +="Found multiple '" + name + "'s of type "+ C::getClassName() + ".";
-            throw Exception(msg, __FILE__, __LINE__);
-        }
-
-        // otherwise, no component of that name and type exists.
-        msg += "Cannot find '" + name + "' of type " + C::getClassName() + ".";
-        throw Exception(msg, __FILE__, __LINE__);
+    /** Get a writable reference to a subcomponent.
+    * @param name       the name(string) of the Component of interest
+    * @return Component the component of interest
+    * @throws ComponentNotFoundOnSpecifiedPath if no component exists
+    * @see getComponent()
+    */
+    template <class C = Component>
+    C& updComponent(const std::string& name) {
+        return *const_cast<C*>(&(this->template getComponent<C>(name)));
     }
 
     /**
@@ -433,6 +531,14 @@ public:
         return int(_outputsTable.size());
     }
 
+    /** Collect and return the names of Outputs as an std::vector. */
+    std::vector<std::string> getOutputNames() const {
+        std::vector<std::string> names;
+        for (auto it = getOutputsBegin(); it != getOutputsEnd(); it++)
+            names.push_back(it->first);
+        return names;
+    }
+
     /** Access a read-only Connector by index.
     @see getNumConnectors()
      */
@@ -466,9 +572,9 @@ public:
 
         if (!found){
             std::stringstream msg;
-            msg << "Component::getConnector: ERR- no Connector '" << name << "' found.\n "
-                << "for component '" << getName() << "' of type "
-                << getConcreteClassName();
+            msg << getConcreteClassName() << " '" << getName();
+            msg << "' ::getConnector() ERROR- Connector '" << name;
+            msg << "' not found.\n" << std::endl;
             throw Exception(msg.str(), __FILE__, __LINE__);
         }
 
@@ -511,7 +617,7 @@ public:
     //@{ 
 
     /**
-    * Get the Input provided by this Component by name.
+    * Get an Input provided by this Component by name.
     *
     * @param name   the name of the Input
     * @return       const reference to the AbstractInput
@@ -528,7 +634,7 @@ public:
             std::string prefix = name.substr(0, back);
             std::string inName = name.substr(back + 1, name.length() - back);
 
-            const Component* found = findComponent(prefix);
+            const Component* found = findComponent<Component>(prefix);
             if (found)
                 return found->getInput(inName);
         }
@@ -537,6 +643,23 @@ public:
                 << "for component '" << getName() << "' of type "
                 << getConcreteClassName();
         throw Exception(msg.str(), __FILE__, __LINE__);
+    }
+    
+    AbstractInput& updInput(const std::string& name)
+    {
+        return *const_cast<AbstractInput *>(&getInput(name));
+    }
+
+
+    /**
+    * Get a concrete Input that you can direclty ask for its values.
+    * @param name   the name of the Input
+    * @throws Exception if an Input with the given name does not exist.
+    * @throws std::bad_cast if the provided type T is incorrect for the given name.
+    */
+    template<typename T>
+    const Input<T>& getInput(const std::string& name) const {
+        return dynamic_cast<const Input<T>&>(getInput(name));
     }
 
     /**
@@ -548,7 +671,7 @@ public:
     const AbstractOutput& getOutput(const std::string& name) const
     {
         auto it = _outputsTable.find(name);
-
+        
         if (it != _outputsTable.end()) {
             return it->second.getRef();
         }
@@ -557,14 +680,47 @@ public:
             std::string prefix = name.substr(0, back);
             std::string outName = name.substr(back + 1, name.length() - back);
 
-            const Component* found = findComponent(prefix);
+            const Component* found = findComponent<Component>(prefix);
             // if found is this component again, no point trying to find
             // output again, otherwise we would not have reached here 
             if (found && (found != this)) {
                 return found->getOutput(outName);
             }
         }
+        
+        std::stringstream msg;
+        msg << "Component::getOutput: ERR-  no output '" << name << "' found.\n "
+        << "for component '" << getName() << "' of type "
+        << getConcreteClassName();
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
 
+    /**
+    * Get a writable reference to an Output provided by this Component by name.
+    *
+    * @param name   the name of the cache variable
+    * @return       reference to the AbstractOutput
+    */
+    AbstractOutput& updOutput(const std::string& name)
+    {
+        auto it = _outputsTable.find(name);
+        
+        if (it != _outputsTable.end()) {
+            return it->second.updRef();
+        }
+        else {
+            std::string::size_type back = name.rfind("/");
+            std::string prefix = name.substr(0, back);
+            std::string outName = name.substr(back + 1, name.length() - back);
+            
+            const Component* found = findComponent(prefix);
+            // if found is this component again, no point trying to find
+            // output again, otherwise we would not have reached here 
+            if (found && (found != this)) {
+                return const_cast<Component*>(found)->updOutput(outName);
+            }
+        }
+        
             std::stringstream msg;
         msg << "Component::getOutput: ERR-  no output '" << name << "' found.\n "
             << "for component '" << getName() << "' of type "
@@ -631,8 +787,10 @@ public:
 
     /**
     * Get the Input value that this component is dependent on.
-    * Check if Input is connected, otherwise it will throw an
-    * exception.
+    * Checks if Input is connected, otherwise it will throw an
+    * exception. You can only call this method for non-list inputs.
+    * For list inputs, you must get the input using getInput(),
+    * from which you can ask for its values.
     *
     * @param state      the State for which to set the value
     * @param name       the name of the input
@@ -642,6 +800,8 @@ public:
         getInputValue(const SimTK::State& state, const std::string& name) const {
         // get the input and check if it is connected.
         const AbstractInput& in = getInput(name);
+        // TODO could maybe remove this check and have the Input do it. Or,
+        // here, we could catch Input's exception and give a different message.
         if (in.isConnected()){
             return (Input<T>::downcast(in)).getValue(state);
             }
@@ -920,29 +1080,54 @@ public:
     // End of Model Component State Accessors.
     //@} 
 
+    /** @name Dump debugging information to the console */
+    /// @{
     /** Debugging method to list all subcomponents by name and recurse
         into these components to list their subcomponents, and so on. */
     void dumpSubcomponents(int depth=0) const;
+    /** List all the Connectors and Inputs and whether or not they are
+     * connected. */
+    void dumpConnections() const;
+    /// @}
 
 protected:
+    class StateVariable;
+    //template <class T> friend class ComponentSet;
+    // Give the ComponentMeasure access to the realize() methods.
+    template <class T> friend class ComponentMeasure;
 
-    /** Construct Component as a subcomponent member of another Component.
-    Automatically marks this component as a subcomponent of the owner.
-    A subcomponent MUST be named. **/
-    explicit Component(const std::string& name, Component* owner);
+#ifndef SWIG
+    /// @class MemberSubcomponentIndex
+    /// Unique integer type for local member subcomponent indexing
+    SimTK_DEFINE_UNIQUE_INDEX_TYPE(MemberSubcomponentIndex);
 
+    /** Construct a subcomponent as a data member of this Component. All Component
+        interface calls are automatically invoked on its subcomponents. */
     template<class C=Component>
-    C& constructSubcomponent(const std::string& name) {
+    MemberSubcomponentIndex constructSubcomponent(const std::string& name) {
         C* component = new C();
         component->setName(name);
-        this->markAsSubcomponent(component);
-        return *component;
+        component->setParent(*this);
+        _memberSubcomponents.push_back(SimTK::ClonePtr<Component>(component));
+        return MemberSubcomponentIndex(_memberSubcomponents.size()-1);
     }
+    template<class C = Component>
+    const C& getMemberSubcomponent(MemberSubcomponentIndex ix) const {
+        const C* comp = dynamic_cast<const C*>(_memberSubcomponents[ix].get());
+        if(comp)
+            return *comp;
 
-class StateVariable;
-//template <class T> friend class ComponentSet;
-// Give the ComponentMeasure access to the realize() methods.
-template <class T> friend class ComponentMeasure;
+        throw Exception("Component::getMemberSubcomponent() - Incorrect type requested.");
+    }
+    template<class C = Component>
+    C& updMemberSubcomponent(MemberSubcomponentIndex ix) {
+        C* comp = dynamic_cast<C*>(_memberSubcomponents[ix].upd());
+        if (comp)
+            return *comp;
+
+        throw Exception("Component::updMemberSubcomponent() - Incorrect type requested.");
+    }
+#endif //SWIG
 
   /** Single call to construct the underlying infrastructure of a Component, which
      include: 1) its properties, 2) its structural connectors (to other components),
@@ -964,6 +1149,13 @@ template <class T> friend class ComponentMeasure;
     * subcomponents are owned, therefore this Component also takes ownership.
     */
     void adoptSubcomponent(Component* subcomponent);
+
+    /** Get the number of Subcomponents that are data members of this Component */
+    size_t getNumMemberSubcomponents() const;
+    /** Get the number of Subcomponents that are properties of this Component */
+    size_t getNumPropertySubcomponents() const;
+    /** Get the number of Subcomponents adopted by this Component */
+    size_t getNumAdoptedSubcomponents() const;
 
     /** @name  Component Extension Interface
     The interface ensures that deserialization, resolution of inter-connections,
@@ -1040,35 +1232,14 @@ template <class T> friend class ComponentMeasure;
     @endcode   */
     virtual void extendConnect(Component& root) {};
 
-    /** Build a tree of Components from this component and its descendants. 
-    This method needs to be invoked after ALL calls to addComponent have been 
-    made, otherwise any newly added component will not be included in the tree 
-    and will not be found for iteration or for connection. Accordingly the 
-    method is called from Model::extendConnectToModel after all internal 
-    components due to Body splits, and welds have been performed.
-    
-    The implementation populates _nextComponent ReferencePtr with a pointer to 
-    the next Component in tree pre-order traversal.
+    /** Build the tree of Components from this component through its descendants. 
+    This method is invoked whenever a ComponentList<C> is requested. Note, all
+    components must been added to the model (or its subcomponents), otherwise it
+    will not be included in the tree and will not be found for iteration or for
+    connection. The implementation populates _nextComponent ReferencePtr with a
+    pointer to the next Component in tree pre-order traversal.
     */
-    void initComponentTreeTraversal(Component &root) {
-        // Going down the tree, node is followed by all its
-        // children in order, last child's successor is the parent's successor.
-        for (unsigned int i = 0; i < _components.size(); i++){
-            if (i == _components.size() - 1){
-                // use parent's sibling if any
-                if (this == &root) // only to be safe if root changes
-                    _components[i]->_nextComponent = nullptr;
-                else
-                    _components[i]->_nextComponent = _nextComponent.get();
-            }
-            else
-                _components[i]->_nextComponent = _components[i + 1];
-        }
-        // recur to handle children of subcomponents
-        for (unsigned int i = 0; i < _components.size(); i++){
-            _components[i]->initComponentTreeTraversal(root);
-        }
-    }
+    void initComponentTreeTraversal(const Component &root) const;
 
     ///@cond
     /** Opportunity to remove connection related information. 
@@ -1316,108 +1487,11 @@ template <class T> friend class ComponentMeasure;
     * message if the provided Component is incompatible or non-existant.
     */
     template <typename T>
-    void constructConnector(const std::string& name) {
+    void constructConnector(const std::string& name, bool isList = false) {
         int ix = updProperty_connectors().adoptAndAppendValue(
-            new Connector<T>(name, SimTK::Stage::Topology));
+            new Connector<T>(name, SimTK::Stage::Topology, *this));
         //add pointer to connectorsTable so we can access connectors easily by name
         _connectorsTable[name] = ix;
-    }
-
-    /**
-    * Construct an Input (socket) for this Component's dependence on an Output signal.
-    * It is a placeholder for the Output and its type and enables the Component
-    * to automatically traverse its dependencies and provide a meaningful message
-    * if the provided Output is incompatible or non-existant. The also specifies at what
-    * stage the output must be valid for the the component to consume it as an input.
-    * if the Output's dependsOnStage is above the Input's requiredAtStage, an Exception
-    * is thrown because the output cannot satisfy the Input's requirement.
-    */
-    template <typename T>
-    void constructInput(const std::string& name,
-        const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance) {
-        _inputsTable[name] 
-            = SimTK::ClonePtr<AbstractInput>(new Input<T>(name, requiredAtStage));
-    }
-
-    /**
-       A convenient way to construct an Output.  Here, we assume the following
-       about componentMemberFunction, the function that returns the output:
-
-           -# It is a member function of \a this Component.
-           -# The member function is const.
-           -# It takes only one input, which is const SimTK::State&
-      
-       If these are not true for your case, then use the more general method
-       %Component::constructOutput(const std::string&,
-                                  const std::function<T(const SimTK:State&)>,
-                                  const SimTK::Stage&).
-      
-       Here's an example. Say your Component has a method calcForce:
-        @code
-        constructOutput<SimTK::Vec3>("force", &MyComponent::calcForce,
-                SimTK::Stage::Velocity);
-        @endcode
-
-       @see constructOutputForStateVariable()
-     */
-#ifndef SWIG // SWIG can't parse the const at the end of the second argument.
-    template <typename T, typename Class>
-    void constructOutput(const std::string& name,
-            T(Class::*const componentMemberFunction)(const SimTK::State&) const,
-            const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
-        // The `const` in `Class::*const componentMemberFunction` means this
-        // function can't assign componentMemberFunction to some other function
-        // pointer. This is unlikely, since that function would have to match
-        // the same template parameters (T and Class).
-        constructOutput<T>(name, std::bind(componentMemberFunction,
-                    static_cast<Class*>(this),
-                    std::placeholders::_1), dependsOn);
-    }
-#endif
-
-    /**
-      Construct an Output (wire) for the Component as function of the State.
-      Specifiy a (member) function of the state implemented by this component to
-      be an Output and include the Stage that output is dependent on. If no
-      Stage is specified it defaults to Acceleration. Here's an example. Say you 
-      have a class Markers that manages markers, you have an instance of this class
-      as a member variable in your Component, and Markers has a method
-      <tt> Vec3 Markers::calcMarkerPos(const SimTK::State& s, std::string
-      marker);</tt>
-      to compute motion capture marker positions, given the name of a marker.
-       @code
-       constructOutput<SimTK::Vec3>("ankle_marker_pos",
-               std::bind(&Markers::calcMarkerPos, _markers,
-               std::placeholders::_1, "ankle"),
-               SimTK::Stage::Position);
-       @endcode
-
-      @see constructOutputForStateVariable()
-    */
-    template <typename T>
-    void constructOutput(const std::string& name, 
-        const std::function<T(const SimTK::State&)> outputFunction, 
-        const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
-        _outputsTable[name] = SimTK::ClonePtr<AbstractOutput>(new
-                Output<T>(name, outputFunction, dependsOn));
-    }
-
-    /** Construct an Output for a StateVariable. While this method is a
-     * convenient way to construct an Output for a StateVariable, it is
-     * inefficient because it uses a string lookup. To create a more efficient
-     * Output, create a member variable that returns the state variable
-     * directly; see the implementations of Coordinate::getValue() or
-     * Muscle::getActivation() for examples.
-     *
-     * @param name Name of the output, which must be the same as the name of
-     * the corresponding state variable.
-     */
-    void constructOutputForStateVariable(const std::string& name);
-
-    /** Clear all designations of (sub)components for this Component. 
-      * Components are not deleted- the list of references to its components is cleared. */
-    void clearComponents() {
-        _components.clear();
     }
 
     /** Add a modeling option (integer flag stored in the State) for use by 
@@ -1445,11 +1519,9 @@ template <class T> friend class ComponentMeasure;
     option you may choose to hide the state variable from being accessed outside
     of this component, in which case it is considered to be "hidden". 
     You may also want to create an Output for this state variable; see
-    constructOutputForStateVariable() for more information. Reporters should
-    use such an Output to get the StateVariable's value (instead of using
+    #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE for more information. Reporters
+    should use such an Output to get the StateVariable's value (instead of using
     getStateVariableValue()).
-
-    @see constructOutputForStateVariable()
 
     @param[in] stateVariableName     string value to access variable by name
     @param[in] invalidatesStage      the system realization stage that is
@@ -1470,11 +1542,9 @@ template <class T> friend class ComponentMeasure;
     implementing a concrete StateVariable and adding it to the component using
     this method.
     You may also want to create an Output for this state variable; see
-    constructOutputForStateVariable() for more information. Reporters should
-    use such an Output to get the StateVariable's value (instead of using
-    getStateVariableValue()).
-
-    @see constructOutputForStateVariable()
+    #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE for more information. Reporters
+    should use such an Output to get the StateVariable's value (instead of
+    using getStateVariableValue()).
     */
     void addStateVariable(Component::StateVariable*  stateVariable) const;
 
@@ -1563,6 +1633,9 @@ template <class T> friend class ComponentMeasure;
 
     // End of System Creation and Access Methods.
 
+    template<class C>
+    friend void Connector<C>::findAndConnect(const Component& root);
+
     /** Utility method to find a component in the list of sub components of this
         component and any of their sub components, etc..., by name or state variable name.
         The search can be sped up considerably if the "path" or even partial path name
@@ -1576,11 +1649,89 @@ template <class T> friend class ComponentMeasure;
         StateVariable object that was found. This facilitates the getting and setting
         of StateVariables by name. 
         
-        NOTE: If the component name or the state variable name is ambiguous, the 
-         first instance found is returned. To disambiguate use the full name provided
+        NOTE: If the component name or the state variable name is ambiguous, 
+         an exception is thrown. To disambiguate use the full name provided
          by owning component(s). */
-    const Component* findComponent(const std::string& name, 
-                                   const StateVariable** rsv = nullptr) const;
+    template<class C = Component>
+    const C* findComponent(const std::string& name, 
+                           const StateVariable** rsv = nullptr) const {
+        std::string msg = getConcreteClassName() + "'" + getName() +
+                          "'::findComponent() ";
+        if (name.empty()) {
+            msg += "cannot find a nameless subcomponent.";
+            throw Exception(msg);
+        }
+
+        std::vector<const C*> foundCs;
+
+        const C* found = NULL;
+        std::string::size_type front = name.rfind("/");
+        size_t len = name.length();
+        std::string subname = front< len ? name.substr(front + 1, len - front) : name;
+
+        if (this->getFullPathName() == name) {
+            found = dynamic_cast<const C*>(this);
+            if (found)
+                return found;
+        }
+        else if (this->getName() == subname) {
+            if ( (found = dynamic_cast<const C*>(this)) )
+                foundCs.push_back(found);
+        }
+
+        ComponentList<C> compsList = this->template getComponentList<C>();
+        
+        for (const C& comp : compsList) {
+            std::string compFullPathName = comp.getFullPathName();
+            if (compFullPathName == subname) {
+                foundCs.push_back(&comp);
+                break;
+            } // if a child of this Component, one should not need
+              // to specify this Component's full path name 
+            else if (compFullPathName == (getFullPathName() + "/" + subname)) {
+                foundCs.push_back(&comp);
+                break;
+            } // otherwise, we just have a type and name match
+              // which we may need to support for compatibility with older models
+              // where only names were used (not path or type)
+              // TODO replace with an exception -aseth
+            else if (comp.getName() == subname) {
+                if (foundCs.size() == 0) {
+                    foundCs.push_back(&comp);
+                    msg += "a match for Component '" + name + "' of type " +
+                        comp.getConcreteClassName() + " found, but it "
+                        "is not on specified path.";
+                    //throw Exception(msg, __FILE__, __LINE__);
+                    std::cout << msg << std::endl;
+                }
+            }
+        }
+
+        if (foundCs.size() == 1) {
+            //unique type and name match!
+            return foundCs[0];
+        }
+
+        std::map<std::string, StateVariableInfo>::const_iterator it;
+        it = _namedStateVariableInfo.find(name);
+        if (it != _namedStateVariableInfo.end()) {
+            if (rsv) {
+                *rsv = it->second.stateVariable.get();
+            }
+            return dynamic_cast<const C*>(this);
+        }
+
+        // Only error cases remain
+        // too many components of the right type with the same name
+        if (foundCs.size() > 1) {
+            msg += "Found multiple '" + name + "'s of type " +
+                foundCs[0]->getConcreteClassName() + ".";
+            throw Exception(msg, __FILE__, __LINE__);
+        }
+
+        // Not found
+        return nullptr;
+    }
 
     /** Similarly find a Connector of this Component (also amongst its subcomponents) */
     const AbstractConnector* findConnector(const std::string& name) const;
@@ -1592,7 +1743,6 @@ template <class T> friend class ComponentMeasure;
         @see hasParent() */
     const Component& getParent() const;
 
-
     /** Check if this Component has a parent assigned or not.
         A component may not have a parent assigned if it:
         1) is the root component, or 2) has not been added to its parent. */
@@ -1601,7 +1751,201 @@ template <class T> friend class ComponentMeasure;
     /** %Set this Component's reference to its parent Component */
     void setParent(const Component& parent);
 
+    template<class C>
+    const C* traversePathToComponent(const std::string& path) const
+    {
+        std::string::size_type front = 0;
+        std::string::size_type back = path.rfind('/');
+        std::string dir = "";
+        std::string currentPath = "";
+        const Component* current = this;
+
+        std::string compName = back < std::string::npos ? path.substr(back) : path;
+        back = 0;
+
+        while (back < std::string::npos && current) {
+            back = path.find('/', front);
+            dir = path.substr(front, back - front);
+
+            if (dir == ".." && current->hasParent())
+                current = &current->getParent();
+            // if current in dir keep drilling down the path 
+            else if (current->getName() == dir) {
+                front = back + 1;
+                continue;
+            }
+            // if dir is empty we are at root or have a nameless comp
+            // if dir is '.' we are in the right parent, and loop again
+            // so that dir is the name of the component we want.
+            else if (!dir.empty() && dir != ".") {
+                auto compsList = current->getComponentList<Component>();
+                // descend to next component in the path otherwise not found
+                currentPath = current->getFullPathName();
+                for (const Component& comp : compsList) {
+                    // Match for the dir
+                    if (comp.getFullPathName() == currentPath + "/" + dir) {
+                        // In the right dir and has matching name
+                        // update current to this comp
+                        current = &comp;
+                        if (comp.getName() == compName) {
+                            // now verify type
+                            const C* compC = dynamic_cast<const C*>(&comp);
+                            if (compC)
+                                return  compC;
+                            else // keep traversing this list
+                                continue;
+                        } 
+                        // get out of this list and start going down the new current
+                        break;
+                    }
+                    // No match in this dir
+                    current = nullptr;
+                }
+            }
+            front = back + 1;
+        }
+        return dynamic_cast<const C*>(current);
+    }
+
     //@} 
+
+    /** @name Internal methods for constructing Outputs, Inputs
+     * To declare Outputs and Inputs for your component,
+     * use the following macros within your class declaration (ideally at
+     * the top near property declarations):
+     *
+     *  - #OpenSim_DECLARE_OUTPUT
+     *  - #OpenSim_DECLARE_LIST_OUTPUT
+     *  - #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE
+     *  - #OpenSim_DECLARE_INPUT
+     *  - #OpenSim_DECLARE_LIST_INPUT
+     *
+     * The methods below are used in those macros, and you should not use these
+     * methods yourself.
+     */
+    /// @{
+    /** Construct an output for a member function of the same component. 
+        The following must be true about componentMemberFunction, the function
+        that returns the output:
+
+           -# It is a member function of \a this component.
+           -# The member function is const.
+           -# It takes only one input, which is `const SimTK::State&`
+           -# The function returns the computed quantity *by value* (e.g., 
+              `double computeQuantity(const SimTK::State&) const`).
+
+        You must also provide the stage on which the output depends.
+
+        You can ask outputs for their value only after you call
+        `finalizeFromProperties()`.
+
+       @see constructOutputForStateVariable()
+     */
+
+#ifndef SWIG // SWIG can't parse the const at the end of the second argument.
+    template <typename T, typename CompType = Component>
+    bool constructOutput(const std::string& name,
+            T (CompType::*const memFunc)(const SimTK::State&) const,
+            const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
+        // The `const` in `CompType::*const componentMemberFunction` means this
+        // function can't assign componentMemberFunction to some other function
+        // pointer. This is unlikely, since that function would have to match
+        // the same template parameters (T and CompType).
+        static_assert(std::is_base_of<Component, CompType>::value,
+            "Template parameter 'CompType' must be derived from Component.");
+
+        // This lambda takes a pointer to a component, downcasts it to the
+        // appropriate derived type, then calls the member function of the
+        // derived type. Thank you, klshrinidhi!
+        // TODO right now, the assignment to result within the lambda is
+        // making a copy! We can fix this using a reference pointer.
+        auto outputFunc = [memFunc] (const Component* comp,
+                const SimTK::State& s, const std::string&, T& result) -> void {
+            result = std::mem_fn(memFunc)(dynamic_cast<const CompType*>(comp), s);
+        };
+        return constructOutput<T>(name, outputFunc, dependsOn);
+    }
+    /** This variant handles component member functions that return the
+     * output value by const reference (const T&). 
+     * @warning ONLY use this with member functions that fetch quantities that
+     * are stored within the passed-in SimTK::State. The function cannot return
+     * local variables.
+     */
+    template <typename T, typename CompType = Component>
+    bool constructOutput(const std::string& name,
+            const T& (CompType::*const memFunc)(const SimTK::State&) const,
+            const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
+        static_assert(std::is_base_of<Component, CompType>::value,
+            "Template parameter 'CompType' must be derived from Component.");
+
+        // This lambda takes a pointer to a component, downcasts it to the
+        // appropriate derived type, then calls the member function of the
+        // derived type. Thank you, klshrinidhi!
+        auto outputFunc = [memFunc] (const Component* comp,
+                const SimTK::State& s, const std::string&, T& result) -> void {
+            result = std::mem_fn(memFunc)(dynamic_cast<const CompType*>(comp), s);
+        };
+        return constructOutput<T>(name, outputFunc, dependsOn);
+    }
+    /** Construct an output that can have multiple channels. You add Channels
+    to this Output in extendFinalizeFromProperties() using
+    AbstractOutput::addChannel(). The member function
+    you provide must take the name of the channel whose value is requested.
+    */
+    template <typename T, typename CompType>
+    bool constructListOutput(const std::string& name,
+             T (CompType::*const memFunc)(const SimTK::State&,
+                                          const std::string& channel) const,
+            const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
+        // The `const` in `CompType::*const componentMemberFunction` means this
+        // function can't assign componentMemberFunction to some other function
+        // pointer. This is unlikely, since that function would have to match
+        // the same template parameters (T and CompType).
+        static_assert(std::is_base_of<Component, CompType>::value,
+            "Template parameter 'CompType' must be derived from Component.");
+
+        // This lambda takes a pointer to a component, downcasts it to the
+        // appropriate derived type, then calls the member function of the
+        // derived type. Thank you, klshrinidhi!
+        auto outputFunc = [memFunc] (const Component* comp,
+                const SimTK::State& s, const std::string& channel, T& result) -> void {
+            result = std::mem_fn(memFunc)(
+                    dynamic_cast<const CompType*>(comp), s, channel);
+        };
+        return constructOutput<T>(name, outputFunc, dependsOn, true);
+    }
+#endif
+
+    /** Construct an Output for a StateVariable. While this method is a
+     * convenient way to construct an Output for a StateVariable, it is
+     * inefficient because it uses a string lookup. To create a more efficient
+     * Output, create a member variable that returns the state variable
+     * directly; see the implementations of Coordinate::getValue() or
+     * Muscle::getActivation() for examples.
+     *
+     * @param name Name of the output, which must be the same as the name of
+     * the corresponding state variable. */
+    bool constructOutputForStateVariable(const std::string& name);
+
+    /**
+    * Construct an Input (socket) for this Component's dependence on an Output signal.
+    * It is a placeholder for the Output and its type and enables the Component
+    * to automatically traverse its dependencies and provide a meaningful message
+    * if the provided Output is incompatible or non-existant. The also specifies at what
+    * stage the output must be valid for the the component to consume it as an input.
+    * if the Output's dependsOnStage is above the Input's requiredAtStage, an Exception
+    * is thrown because the output cannot satisfy the Input's requirement.
+    */
+    template <typename T>
+    bool constructInput(const std::string& name,
+        const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance,
+        const bool& isList = false) {
+        _inputsTable[name].reset(
+                new Input<T>(name, requiredAtStage, isList, *this));
+        return true;
+    }
+    
+    /// @}
 
 private:
     // Construct the table of serializeable properties for a Component.
@@ -1636,20 +1980,19 @@ private:
 
     //Mark components that are properties of this Component as subcomponents of
     //this Component. This happens automatically upon construction of the 
-    //component. If Component property added programmatically, then you must
-    //also markAsSubcomponent() on that component.
+    //component. If a Component property is added programmatically, then one must
+    //also mark it by calling markAsPropertySubcomponent() with that component.
     void markPropertiesAsSubcomponents();
 
-    // Internal use: mark the subcomponents that are owned by this Component
-    // because they are data member, properties or adoptees of this Component.
-    void markAsSubcomponent(Component* subcomponent);
-
+    // Internal use: mark as a subcomponent, a component that is owned by this 
+    // Component by virtue of being one of its properties.
+    void markAsPropertySubcomponent(Component* subcomponent);
 
     /// Invoke finalizeFromProperties() on the (sub)components of this Component.
     void componentsFinalizeFromProperties() const;
 
     /// Invoke connect() on the (sub)components of this Component.
-    void componentsConnect(Component& root) const;
+    void componentsConnect(Component& root);
 
     /// Base Component must create underlying resources in computational System.
     void baseAddToSystem(SimTK::MultibodySystem& system) const;
@@ -1662,6 +2005,28 @@ private:
 
     /// Invoke setPropertiesFromState() on (sub)components of this Component
     void componentsSetPropertiesFromState(const SimTK::State& state);
+
+    /** Used internally to construct outputs. Creating the functions for
+     outputs is potentially error-prone if the function binds to (or
+     captures) a pointer to a class. When the component is copied, the
+     pointer bound to the function is also copied and points to the original
+     object. This is unlikely to be the intended behavior. For this reason,
+     this variant of constructOutput should be used with care.
+    */
+    template <typename T>
+    bool constructOutput(const std::string& name,
+            const std::function<void (const Component*,
+                                      const SimTK::State&,
+                                      const std::string& channel, T&)> outputFunction,
+            const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration,
+            bool isList = false) {
+        if (_outputsTable.count(name) == 1) {
+            throw Exception("Output with name '" + name + "' already exists.");
+        }
+        _outputsTable[name].reset(
+                new Output<T>(name, outputFunction, dependsOn, isList));
+        return true;
+    }
 
     // Get the number of continuous states that the Component added to the 
     // underlying computational system. It includes the number of built-in states  
@@ -1692,29 +2057,16 @@ private:
         _connectorsTable.clear();
         for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
             AbstractConnector& connector = upd_connectors(ix);
+            connector.setOwner(*this);
             _connectorsTable[connector.getName()] = ix;
         }
+        
+        for (auto& it : _inputsTable) {
+            it.second->setOwner(*this);
     }
-public:
-    const std::string& getPathName() const {
-        return _pathName;
     }
-    void dumpPathName() const {
-         std::cout << getConcreteClassName() << ": ID= " << getPathName() << std::endl;
-         for (unsigned int i = 0; i<_components.size(); i++)
-             _components[i]->dumpPathName();
 
-     }
 protected:
-    // Populate _pathName for Component and all its children
-    void populatePathName(const std::string& parentPath) {
-        if (getName().empty())
-            _pathName = parentPath + "/" + getConcreteClassName();
-        else
-            _pathName = parentPath+"/"+getName();
-        for (unsigned int i = 0; i<_components.size(); i++)
-            _components[i]->populatePathName(getPathName());
-    }
     //Derived Components must create concrete StateVariables to expose their state 
     //variables. When exposing state variables allocated by the underlying Simbody
     //component (MobilizedBody, Constraint, Force, etc...) use its interface to 
@@ -1790,7 +2142,7 @@ protected:
     // These are just references, don't delete them!
     // TODO: subcomponents should not be exposed to derived classes to trash.
     //       Need to provide universal access via const iterators -aseth
-    SimTK::Array_<Component *>  _components;
+    SimTK::Array_<SimTK::ReferencePtr<Component> >  _propertySubcomponents;
 
 private:
     // Reference to the parent Component of this Component. It is not the previous
@@ -1798,9 +2150,7 @@ private:
     SimTK::ReferencePtr<const Component> _parent;
 
     // Reference pointer to the successor of the current Component in Pre-order traversal
-    SimTK::ReferencePtr<Component> _nextComponent;
-    // PathName
-    std::string _pathName;
+    mutable SimTK::ReferencePtr<const Component> _nextComponent;
 
     // Reference pointer to the system that this component belongs to.
     SimTK::ReferencePtr<SimTK::MultibodySystem> _system;
@@ -1825,8 +2175,10 @@ private:
     // subsystem.
     SimTK::ResetOnCopy<SimTK::MeasureIndex> _simTKcomponentIndex;
 
+    // Keep fixed list of data member Components upon construction
+    SimTK::Array_<SimTK::ClonePtr<Component> > _memberSubcomponents;
     // Hold onto adopted components
-    std::vector<SimTK::ClonePtr<Component>> _adoptees;
+    SimTK::Array_<SimTK::ClonePtr<Component> > _adoptedSubcomponents;
 
     // Structure to hold modeling option information. Modeling options are
     // integers 0..maxOptionValue. At run time we keep them in a Simbody
@@ -1949,8 +2301,7 @@ private:
 //==============================================================================
 };  // END of class Component
 //==============================================================================
-//==============================================================================
-//==============================================================================
+
 // Implement methods for ComponentListIterator
 /// ComponentListIterator<T> pre-increment operator, advances the iterator to
 /// the next valid entry.
@@ -1960,8 +2311,15 @@ ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
         return *this;
     // If _node has children then successor is first child
     // move _node to point to it
-    if (_node->_components.size() > 0)
-        _node = _node->_components[0];
+    if (_node->_memberSubcomponents.size() > 0) {
+        _node = _node->_memberSubcomponents[0].get();
+    }
+    else if (_node->_propertySubcomponents.size() > 0) {
+        _node = _node->_propertySubcomponents[0].get();
+    }
+    else if (_node->_adoptedSubcomponents.size() > 0) {
+        _node = _node->_adoptedSubcomponents[0].get();
+    }
     // If processing a subtree under _root we stop when our successor is the same
     // as the successor of _root as this indicates we're leaving the _root's subtree.
     else if (_node->_nextComponent.get() == _root._nextComponent.get())
@@ -1980,8 +2338,15 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
     while (_node != nullptr && (dynamic_cast<const T*>(_node) == nullptr || 
                                 !_filter.isMatch(*_node) || 
                                 (_node == &_root))){
-        if (_node->_components.size() > 0)
-            _node = _node->_components[0];
+        if (_node->_memberSubcomponents.size() > 0) {
+            _node = _node->_memberSubcomponents[0].get();
+        }
+        else if (_node->_propertySubcomponents.size() > 0) {
+            _node = _node->_propertySubcomponents[0].get();
+        }
+        else if (_node->_adoptedSubcomponents.size() > 0) {
+            _node = _node->_adoptedSubcomponents[0].get();
+        }
         else {
             if (_node->_nextComponent.get() == _root._nextComponent.get()){ // end of subtree under _root
                 _node = nullptr;
@@ -1996,9 +2361,150 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
 
 template<class C>
 void Connector<C>::findAndConnect(const Component& root) {
-    const C& comp = root.getComponent<C>(get_connectee_name());
-    connectee = comp;
+ 
+    const std::string& path = getConnecteeName();
+    const C* comp = nullptr;
+
+    try {
+        if (path[0] == '/') { //absolute path name
+            comp =  &root.template getComponent<C>(path);
+        }
+        else { // relative path name
+            comp =  &getOwner().template getComponent<C>(path);
+        }
+    }
+    catch (const ComponentNotFoundOnSpecifiedPath& ex) {
+        // TODO leave out for hackathon std::cout << ex.getMessage() << std::endl;
+        comp =  root.template findComponent<C>(path);
+    }
+    if (comp)
+        connect(*comp);
+    else
+        OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath,
+            path,
+            C::getClassName(),
+            getName() );
 }
+
+template<class T>
+void Input<T>::connect(const AbstractOutput& output,
+                       const std::string& annotation) {
+    const auto* outT = dynamic_cast<const Output<T>*>(&output);
+    if (outT) {
+        if (!isListConnector()) {
+            if (outT->isListOutput()) {
+                throw Exception("Non-list input cannot connect to list output");
+            }
+        }
+
+        int ix = 0; 
+        // For a non-list connector, there will only be one channel.
+        for (const auto& chan : outT->getChannels()) {
+            ix = int(_connectees.size());
+            _connectees.push_back(
+                SimTK::ReferencePtr<const Channel>(&chan.second) );
+
+            //update the connectee_name as /<OwnerPath>/<Output:Channel> name
+            std::string pathName =
+                output.getOwner().getRelativePathName(getOwner());
+            pathName = pathName + "/" + chan.second.getName();
+            if (!annotation.empty() && annotation != chan.second.getChannelName()) {
+                pathName += "(" + annotation + ")";
+            }
+
+            // set the connectee name so that the connection can be
+            // serialized
+            int numPreexistingConnectees = getNumConnectees();
+            if (ix < numPreexistingConnectees)
+                setConnecteeName(pathName, ix);
+            else
+                appendConnecteeName(pathName);
+
+            // Use the same annotation for each channel.
+            std::string annoToStore = annotation.empty() ?
+                                      chan.second.getChannelName() :
+                                      annotation;
+            _annotations.push_back(annoToStore);
+        }
+    }
+    else {
+        std::stringstream msg;
+        msg << "Input::connect(): ERR- Cannot connect '" << output.getName()
+        << "' of type Output<" << output.getTypeName() << ">. Input requires "
+        << getConnecteeTypeName() << ".";
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
+}
+
+template<class T>
+void Input<T>::connect(const AbstractChannel& channel,
+             const std::string& annotation) {
+    const auto* chanT = dynamic_cast<const Channel*>(&channel);
+    if (chanT) {
+        if (!isListConnector()) {
+            // Remove the existing connecteee (if it exists).
+            disconnect();
+        }
+        
+        // Record the number of existing satisfied connections.
+        int ix = int(_connectees.size());
+        _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
+        
+        // Update the connectee name as
+        // /<OwnerPath>/<Output>:<Channel><(annotation)>
+        const auto& outputsOwner = chanT->getOutput().getOwner();
+        std::string pathName = outputsOwner.getRelativePathName(getOwner());
+        pathName += "/" + chanT->getName();
+        if (!annotation.empty() && annotation != chanT->getChannelName()) {
+            pathName += "(" + annotation + ")";
+        }
+        
+        // Set the connectee name so the connection can be serialized.
+        int numPreexistingConnectees = getNumConnectees();
+        if (ix < numPreexistingConnectees)
+            setConnecteeName(pathName, ix);
+        else
+            appendConnecteeName(pathName);
+        
+        // Annotation.
+        std::string annoToStore = annotation.empty() ? chanT->getChannelName() :
+                                  annotation;
+        _annotations.push_back(annoToStore);
+    }
+    else {
+        std::stringstream msg;
+        msg << "Input::connect(): ERR- Cannot connect '" << chanT->getPathName()
+        << "' of type Output<" << chanT->getOutput().getTypeName() << ">::Channel. Input requires "
+        << getConnecteeTypeName() << ".";
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
+}
+
+template<class T>
+void Input<T>::findAndConnect(const Component& root) {
+    std::string outputPath, channelName, annotation;
+    for (int ix = 0; ix < getNumConnectees(); ++ix) {
+        parseConnecteeName(getConnecteeName(ix), outputPath, channelName,
+                           annotation);
+        try {
+            const auto& output = root.getOutput(outputPath);
+            const auto& channel = output.getChannel(channelName);
+            connect(channel, annotation);
+        }
+        catch (const Exception& ex) {
+            std::stringstream msg;
+            msg << getConcreteClassName() << " '" << getName();
+            msg << "' ::findAndConnect() ERROR- Could not connect to Output '";
+            msg << outputPath << "'";
+            if (!channelName.empty()) {
+                msg << " and channel '" << channelName << "'";
+            }
+            msg << " (details: " << ex.getMessage() << ").";
+            throw Exception(msg.str(), __FILE__, __LINE__);
+        }
+    }
+}
+
 
 } // end of namespace OpenSim
 

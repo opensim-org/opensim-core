@@ -113,6 +113,7 @@
 
 #include "MomentArmSolver.h"
 #include "StatesTrajectory.h"
+#include "StatesAccumulator.h"
 
 #include "RegisterTypes_osimSimulation.h"   // to expose RegisterTypes_osimSimulation
 
