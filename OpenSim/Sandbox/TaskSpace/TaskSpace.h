@@ -42,7 +42,7 @@ namespace OpenSim
     */
 #define TASKSPACEQUANTITY_MEMBERS(CLASS, MEMVAR, SHORT) \
 private: \
-    CLASS m_ ## MEMVAR; \
+    CLASS m_ ## MEMVAR{ constructSubcomponent<CLASS>(#MEMVAR) }; \
 public: \
     const CLASS & get ## CLASS () const { \
         return m_ ## MEMVAR; \
@@ -219,25 +219,15 @@ protected:
     {
         Super::extendConnectToModel(model);
 
-        markAsSubcomponent(&m_jacobian);
         m_jacobian.setTaskSpace(this);
-        markAsSubcomponent(&m_jacobianTranspose);
         m_jacobianTranspose.setTaskSpace(this);
-        markAsSubcomponent(&m_inertia);
         m_inertia.setTaskSpace(this);
-        markAsSubcomponent(&m_inertiaInverse);
         m_inertiaInverse.setTaskSpace(this);
-        markAsSubcomponent(&m_jacobianInverse);
         m_jacobianInverse.setTaskSpace(this);
-        markAsSubcomponent(&m_jacobianInverseTranspose);
         m_jacobianInverseTranspose.setTaskSpace(this);
-        markAsSubcomponent(&m_inertialForces);
         m_inertialForces.setTaskSpace(this);
-        markAsSubcomponent(&m_gravity);
         m_gravity.setTaskSpace(this);
-        markAsSubcomponent(&m_nullspace);
         m_nullspace.setTaskSpace(this);
-        markAsSubcomponent(&m_nullspaceTranspose);
         m_nullspaceTranspose.setTaskSpace(this);
     }
 
@@ -501,7 +491,7 @@ public:
     public:
 
         DynamicallyConsistentJacobianInverseTranspose()
-            : TaskSpaceQuantity<Matrix>("jacobianInverseTranspoase")
+            : TaskSpaceQuantity<Matrix>("jacobianInverseTranspose")
         {
 
         }

@@ -5,6 +5,7 @@ option(BUILD_API_EXAMPLES
 if(BUILD_API_EXAMPLES)
 
     install(DIRECTORY ExampleMain
+        ExampleLuxoMuscle
         ControllerExample
         MuscleExample
         CustomActuatorExample
@@ -18,9 +19,14 @@ if(BUILD_API_EXAMPLES)
     add_subdirectory(SymbolicExpressionReporter)
     add_subdirectory(DataTable)
 
+add_subdirectory(DataAdapter)
+install(DIRECTORY DataAdapter 
+        DESTINATION sdk/APIExamples)
+
 elseif()
 
     add_subdirectory(ControllerExample)
+    add_subdirectory(ExampleLuxoMuscle)
     add_subdirectory(ExampleMain)
     add_subdirectory(OptimizationExample_Arm26)
     add_subdirectory(CustomActuatorExample)

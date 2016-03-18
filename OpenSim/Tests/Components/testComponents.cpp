@@ -185,7 +185,7 @@ void testComponent(const Component& instanceToTest)
             if (dependency) {
                 //give it some random values including a name
                 randomize(dependency);
-                connector.set_connectee_name(dependency->getName());
+                connector.setConnecteeName(dependency->getName());
 
                 // add the dependency 
                 addObjectAsComponentToModel(dependency, model);
@@ -245,7 +245,7 @@ void testComponent(const Component& instanceToTest)
         {
             model.getSystem().realize(state,
                     thisOutput->getDependsOnStage().prev());
-            ASSERT_THROW(Exception,
+            ASSERT_THROW(SimTK::Exception::StageTooLow,
                     thisOutput->getValueAsString(state);
             );
         }

@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <iostream>
 
 int main() {
     using namespace SimTK;
@@ -47,6 +48,22 @@ int main() {
     ind_metadata.setValueForKey("column-index", unsigned{0});
 
     TimeSeriesTable table{};
+    {
+        table.setColumnLabels({"0", "1", "2", "3"});
+        const auto& labels = table.getColumnLabels();
+        for(size_t i = 0; i < labels.size(); ++i) 
+            if(labels.at(i) != std::to_string(i))
+                throw Exception{"Test failed: labels.at(i) != "
+                                "std::to_string(i)"};
+
+        for(size_t i = 0; i < labels.size(); ++i)
+            if(table.getColumnIndex(labels.at(i)) != i)
+                throw Exception{"Test failed: "
+                                "table.getColumnIndex(labels.at(i)) != i"};
+    }
+    // Print out the DataTable to console.
+    std::cout << table << std::endl;
+
     table.setDependentsMetaData(dep_metadata);
     table.setIndependentMetaData(ind_metadata);
 
@@ -69,6 +86,9 @@ int main() {
     table.updTableMetaData().setValueForKey("Filename", 
                                             std::string{"/path/to/file"});
 
+    // Print out the DataTable to console.
+    std::cout << table << std::endl;
+
     // Retrieve added metadata and rows to check.
     if(table.getNumRows() != unsigned{5})
         throw Exception{"Test Failed: table.getNumRows() != unsigned{5}"};
@@ -83,6 +103,13 @@ int main() {
         if(labels_ref[i].getValue<std::string>() != std::to_string(i + 1))
             throw Exception{"Test failed: labels_ref[i].getValue<std::string>()"
                     " != std::to_string(i + 1)"};
+    {
+    const auto& labels = table.getColumnLabels();
+    for(unsigned i = 0; i < 5; ++i)
+        if(labels.at(i) != std::to_string(i + 1))
+            throw Exception{"Test failed: labels[i].getValue<std::string>()"
+                    " != std::to_string(i + 1)"};
+    }
 
     const auto& col_index_ref 
         = dep_metadata_ref.getValueArrayForKey("column-index");

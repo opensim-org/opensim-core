@@ -103,11 +103,13 @@ public:
     // will be removed before release 4.0 in favor of a mechanism that 
     // handles local/global/shared Appearance objects
     /// Convenient access to set Appearance/Color
+    /// color is RGB, each components is in the range [0, 1].
     void setColor(const SimTK::Vec3& color) { 
         upd_Appearance().set_color(color); 
     };
 
     /// Convenient access to get Appearance/Color
+    /// returns RGB , each components is in the range [0, 1].
     const SimTK::Vec3& getColor() const { 
         return get_Appearance().get_color(); 
     };
@@ -360,11 +362,7 @@ public:
         }
     /// destructor
     ~Sphere() {}
-    /// Convenience method to set radius
-    void setSphereRadius(double radius)
-    {
-        upd_radius() = radius;
-    }
+
 protected:
     /// Virtual method to map Sphere to Array of SimTK::DecorativeGeometry.
     /// Appearance, Transforms are handled by base Geometry class

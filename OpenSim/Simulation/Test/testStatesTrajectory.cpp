@@ -549,9 +549,9 @@ void testBoundsCheck() {
         states[4];
         states[5];
     #endif
-    SimTK_TEST_MUST_THROW_EXC(states.get(4), IndexOutOfRange);
+    SimTK_TEST_MUST_THROW_EXC(states.get(4), IndexOutOfRange<size_t>);
     SimTK_TEST_MUST_THROW_EXC(states.get(states.getSize() + 100),
-            IndexOutOfRange);
+            IndexOutOfRange<size_t>);
 }
 
 void testIntegrityChecks() {

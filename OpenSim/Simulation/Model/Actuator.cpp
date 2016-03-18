@@ -157,12 +157,6 @@ void ScalarActuator::constructProperties()
     constructProperty_max_control( Infinity);
 }
 
-void ScalarActuator::constructOutputs() 
-{
-    constructOutput<double>("actuation", &ScalarActuator::getActuation, SimTK::Stage::Velocity);
-    constructOutput<double>("speed", &ScalarActuator::getSpeed, SimTK::Stage::Velocity);
-}
-
 // Create the underlying computational system component(s) that support the
 // ScalarActuator model component
 void ScalarActuator::extendAddToSystem(SimTK::MultibodySystem& system) const

@@ -177,6 +177,25 @@ public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(ModelVisualPreferences,
         "Visual preferences for this model.");
 
+//==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(com_position, SimTK::Vec3,
+            calcMassCenterPosition, SimTK::Stage::Position);
+
+    OpenSim_DECLARE_OUTPUT(com_velocity, SimTK::Vec3,
+            calcMassCenterVelocity, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(com_acceleration, SimTK::Vec3,
+            calcMassCenterAcceleration, SimTK::Stage::Acceleration);
+
+    OpenSim_DECLARE_OUTPUT(kinetic_energy, double,
+            calcKineticEnergy, SimTK::Stage::Position);
+
+    OpenSim_DECLARE_OUTPUT(potential_energy, double,
+        calcPotentialEnergy, SimTK::Stage::Velocity);
+
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -749,7 +768,12 @@ public:
     SimTK::Vec3 calcMassCenterPosition(const SimTK::State &s) const;
     SimTK::Vec3 calcMassCenterVelocity(const SimTK::State &s) const;
     SimTK::Vec3 calcMassCenterAcceleration(const SimTK::State &s) const;
-
+    double calcKineticEnergy(const SimTK::State &s) const {
+        return getMultibodySystem().calcKineticEnergy(s);
+    }    
+    double calcPotentialEnergy(const SimTK::State &s) const {
+        return getMultibodySystem().calcPotentialEnergy(s);
+    }
     //--------------------------------------------------------------------------
     // STATES
     //--------------------------------------------------------------------------
@@ -959,9 +983,6 @@ private:
     // Construct the properties of a Model.
     void constructProperties();
     void setDefaultProperties();
-
-    // construct outputs
-    void constructOutputs() override;
 
     // Utility to build a connected graph (tree) of the multibody system
     void createMultibodyTree();

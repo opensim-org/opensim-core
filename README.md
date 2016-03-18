@@ -297,18 +297,34 @@ directory to your `PATH` environment variable.
  * Choose *Use Git from the Windows Command Prompt*.
 * Get **CMake** from [here](https://cmake.org/download/).
  * Choose *Add CMake to the system PATH for all users*.
+* Get **Chocolatey** from [here](https://chocolatey.org/).
+* In **PowerShell**, *run as Administrator* --
+
+ ```powershell
+ choco install python
+ choco install jdk8
+ choco install swig
+ ```
 * In **PowerShell** --
 
  ```powershell
 git clone https://github.com/opensim-org/opensim-core.git
 mkdir opensim_dependencies_build
 cd .\opensim_dependencies_build
-cmake ..\opensim-core\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\opensim_dependencies_install"
+cmake ..\opensim-core\dependencies                             `
+      -G"Visual Studio 14 2015 Win64"                          `
+      -DCMAKE_INSTALL_PREFIX="..\opensim_dependencies_install"
 cmake --build . --config RelWithDebInfo -- /maxcpucount:8
 cd ..
 mkdir opensim_build
 cd .\opensim_build
-cmake ..\opensim-core -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\opensim_install" -DOPENSIM_DEPENDENCIES_DIR="..\opensim_dependencies_install"
+cmake ..\opensim-core                                              `
+      -G"Visual Studio 14 2015 Win64"                              `
+      -DCMAKE_INSTALL_PREFIX="..\opensim_install"                  `
+      -DOPENSIM_DEPENDENCIES_DIR="..\opensim_dependencies_install" `
+      -DBUILD_JAVA_WRAPPING=ON                                     `
+      -DBUILD_PYTHON_WRAPPING=ON                                   `
+      -DWITH_BTK=ON
 cmake --build . --config RelWithDebInfo -- /maxcpucount:8
 ctest -C RelWithDebInfo --parallel 8
 ```
@@ -498,7 +514,7 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
 Your changes will only take effect in new terminal windows.
 
 #### For the impatient (Mac OS X)
-##### Mac OS X 10.10 El Capitan and OS X 10.11 Yosemite
+##### Mac OS X 10.10 Yosemite and OS X 10.11 El Capitan
 Get **Xcode** from the App store. Open **Xcode** and *Agree* to license agreement.
 In **Terminal** --
 ```shell
@@ -520,7 +536,8 @@ cmake ../opensim-core \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DBUILD_PYTHON_WRAPPING=ON \
       -DBUILD_JAVA_WRAPPING=ON \
-      -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install"
+      -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" \
+      -DWITH_BTK=ON
 make -j8
 ctest -j8
 ```
@@ -730,12 +747,13 @@ Your changes will only take effect in new terminal windows.
 ##### Ubuntu 14.04 Trusty Tahr
 In **Terminal** --
 ```shell
-sudo add-apt-repository ppa:george-edison55/cmake-3.x
-sudo apt-add-repository ppa:fenics-packages/fenics-exp
+sudo add-apt-repository --yes ppa:george-edison55/cmake-3.x
+sudo apt-add-repository --yes ppa:fenics-packages/fenics-exp
 sudo apt-get update
-sudo apt-get install git cmake cmake-curses-gui clang-3.6 \
-                     freeglut3-dev libxi-dev libxmu-dev \
-                     liblapack-dev swig3.0 python-dev openjdk-7-jdk
+sudo apt-get --yes install git cmake cmake-curses-gui clang-3.6 \
+                           freeglut3-dev libxi-dev libxmu-dev \
+                           liblapack-dev swig3.0 python-dev \
+                           openjdk-7-jdk
 sudo rm -f /usr/bin/cc /usr/bin/c++
 sudo ln -s /usr/bin/clang-3.6 /usr/bin/cc
 sudo ln -s /usr/bin/clang++-3.6 /usr/bin/c++
@@ -755,18 +773,20 @@ cmake ../opensim-core \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" \
       -DBUILD_PYTHON_WRAPPING=ON \
-      -DBUILD_JAVA_WRAPPING=ON
+      -DBUILD_JAVA_WRAPPING=ON \
+      -DWITH_BTK=ON
 make -j8
 ctest -j8
  ```
 ##### Ubuntu 15.10 Wily Werewolf
 In **Terminal** --
 ```shell
-sudo apt-add-repository ppa:fenics-packages/fenics
+sudo apt-add-repository --yes ppa:fenics-packages/fenics
 sudo apt-get update
-sudo apt-get install git cmake cmake-curses-gui \
-                     freeglut3-dev libxi-dev libxmu-dev \
-                     liblapack-dev swig3.0 python-dev openjdk-8-jdk
+sudo apt-get --yes install git cmake cmake-curses-gui \
+                           freeglut3-dev libxi-dev libxmu-dev \
+                           liblapack-dev swig3.0 python-dev \
+                           openjdk-8-jdk
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 git clone https://github.com/opensim-org/opensim-core.git
 mkdir opensim_dependencies_build
@@ -783,8 +803,8 @@ cmake ../opensim-core \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" \
       -DBUILD_PYTHON_WRAPPING=ON \
-      -DBUILD_JAVA_WRAPPING=ON
+      -DBUILD_JAVA_WRAPPING=ON \
+      -DWITH_BTK=ON
 make -j8
 ctest -j8
 ```
-  

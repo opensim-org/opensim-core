@@ -434,11 +434,21 @@ set(OPENSIM_DEPENDENCIES_DIR
     "Directory containing installed binaries of OpenSim dependencies. Set this
      only if you used the Superbuild procedure to install dependencies. ")
 
-find_package(BTK 
-    REQUIRED
-    HINTS "${OPENSIM_DEPENDENCIES_DIR}/BTK/share/btk-0.4dev")
-CopyDependencyDLLsForWin(BTK ${BTK_INSTALL_PREFIX})
+set(WITH_BTK
+    OFF
+    CACHE
+    BOOL
+    "Compile OpenSim with BTK ? BTK provides C3D reading.")
 
+# If compiling with BTK, find and use it.
+if(WITH_BTK)
+    find_package(BTK 
+                 REQUIRED
+                 HINTS "${OPENSIM_DEPENDENCIES_DIR}/BTK/share/btk-0.4dev")
+    include(${BTK_USE_FILE})
+    add_definitions(-DWITH_BTK)
+    CopyDependencyDLLsForWin(BTK ${BTK_INSTALL_PREFIX})
+endif()
 
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
     set(SIMBODY_HOME "${OPENSIM_DEPENDENCIES_DIR}/simbody")

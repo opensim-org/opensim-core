@@ -83,7 +83,7 @@ int main()
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testP2PSpringMass");
     }
-    
+
     try { testBushingForce(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testBushingForce");
@@ -94,7 +94,7 @@ int main()
         cout << e.what() <<endl; 
         failures.push_back("testFunctionBasedBushingForce");
     }
-    
+
     try { testExpressionBasedBushingForceTranslational(); }
     catch (const std::exception& e){
         cout << e.what() <<endl;
@@ -178,11 +178,11 @@ void testExpressionBasedCoordinateForce()
     //OpenSim bodies
     const Ground& ground = osimModel->getGround();;
     OpenSim::Body ball("ball", mass ,Vec3(0),  mass*SimTK::Inertia::sphere(0.1));
-    ball.addMeshGeometry("sphere.vtp");
+    ball.attachMeshGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
 
     // Add joints
-    SliderJoint slider("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+    SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
     // Rename coordinates for a slider joint
@@ -274,7 +274,7 @@ void testExpressionBasedPointToPointForce()
     //OpenSim bodies
     const Ground& ground = model->getGround();
     OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(ball_radius));
-    ball.addMeshGeometry("sphere.vtp");
+    ball.attachMeshGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
 
     // define body's joint
@@ -368,7 +368,7 @@ void testPathSpring()
     const Ground& ground = osimModel->getGround();;
     OpenSim::Body pulleyBody("PulleyBody", mass ,Vec3(0),  mass*SimTK::Inertia::brick(0.1, 0.1, 0.1));
     OpenSim::Body block("block", mass ,Vec3(0),  mass*SimTK::Inertia::brick(0.2, 0.1, 0.1));
-    block.addMeshGeometry("box.vtp");
+    block.attachMeshGeometry("box.vtp");
     block.scale(Vec3(0.2, 0.1, 0.1), false);
     
     WrapCylinder* pulley = new WrapCylinder();
@@ -482,11 +482,11 @@ void testSpringMass()
     //OpenSim bodies
     const Ground& ground = osimModel->getGround();;
     OpenSim::Body ball("ball", mass ,Vec3(0),  mass*SimTK::Inertia::sphere(0.1));
-    ball.addMeshGeometry("sphere.vtp");
+    ball.attachMeshGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
 
     // Add joints
-    SliderJoint slider("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+    SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
     // Rename coordinates for a slider joint
@@ -581,11 +581,11 @@ void testBushingForce()
     //OpenSim bodies
     const Ground& ground = osimModel->getGround();;
     OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
-    ball.addMeshGeometry("sphere.vtp");
+    ball.attachMeshGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
 
     // Add joints
-    SliderJoint slider("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+    SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
     // Rename coordinates for a slider joint
@@ -696,7 +696,7 @@ void testFunctionBasedBushingForce()
     //OpenSim bodies
     const Ground& ground = osimModel->getGround();;
     OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
-    ball.addMeshGeometry("sphere.vtp");
+    ball.attachMeshGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
 
     // Add joints
@@ -807,10 +807,10 @@ void testExpressionBasedBushingForceTranslational()
     const Ground& ground = osimModel->getGround();
 
     OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
-    ball.addMeshGeometry("sphere.vtp");
+    ball.attachMeshGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
     
-    SliderJoint sliderY("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+    SliderJoint sliderY("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
     
     double positionRange[2] = {-10, 10};
     // Rename coordinates for a slider joint
@@ -824,10 +824,10 @@ void testExpressionBasedBushingForceTranslational()
     // Create base body and attach it to ground with a weld
 
     OpenSim::Body base("base_body", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
-    base.addMeshGeometry("sphere.vtp");
+    base.attachMeshGeometry("sphere.vtp");
     base.scale(Vec3(ball_radius), false);
     
-    WeldJoint weld("", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
+    WeldJoint weld("weld", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
     osimModel->addBody(&base);
     osimModel->addJoint(&weld);
     
@@ -929,7 +929,7 @@ void testExpressionBasedBushingForceRotational()
     OpenSim::Body base("base_body", mass, Vec3(0),
         mass*SimTK::Inertia::sphere(ball_radius));
 
-    WeldJoint weld("", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
+    WeldJoint weld("weld", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
     osimModel->addBody(&base);
     osimModel->addJoint(&weld);
 
@@ -939,7 +939,7 @@ void testExpressionBasedBushingForceRotational()
     OpenSim::Body ball("ball", mass, Vec3(0), 
         mass*SimTK::Inertia::sphere(ball_radius));
 
-    PinJoint pin("", ground, Vec3(0), Vec3( Pi / 2, 0, 0), 
+    PinJoint pin("pin", ground, Vec3(0), Vec3( Pi / 2, 0, 0), 
         ball, Vec3(0), Vec3(Pi / 2, 0, 0));
 
     double thetaRange[2] = { -2*Pi, 2*Pi };
@@ -1209,11 +1209,11 @@ void testCoordinateLimitForce()
     //OpenSim bodies
     const Ground& ground = osimModel->getGround();;
     OpenSim::Body ball("ball", mass ,Vec3(0),  mass*SimTK::Inertia::sphere(0.1));
-    ball.addMeshGeometry("sphere.vtp");
+    ball.attachMeshGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
 
     // Add joints
-    SliderJoint slider("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+    SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {0.1, 2};
     // Rename coordinates for a slider joint
@@ -1353,11 +1353,11 @@ void testCoordinateLimitForceRotational()
     //OpenSim bodies
     const Ground& ground = osimModel->getGround();;
     OpenSim::Body block("block", mass ,Vec3(0),  mass*SimTK::Inertia::brick(edge,edge,edge));
-    block.addMeshGeometry("box.vtp");
+    block.attachMeshGeometry("box.vtp");
     block.scale(Vec3(edge), false);
 
     // Add joints
-    PinJoint pin("", ground, Vec3(0), Vec3(0,0,0), block, Vec3(0,-edge,0), Vec3(0,0,0));
+    PinJoint pin("pin", ground, Vec3(0), Vec3(0,0,0), block, Vec3(0,-edge,0), Vec3(0,0,0));
 
     // NOTE: Angular limits are in degrees NOT radians
     double positionRange[2] = {-30, 90};
@@ -1479,7 +1479,7 @@ void testExternalForce()
     //OpenSim bodies
     const Ground& ground = model.getGround();
     OpenSim::Body tower("tower", mass, Vec3(0), mass*SimTK::Inertia::brick(0.1, 1.0, 0.2));
-    tower.addMeshGeometry("box.vtp");
+    tower.attachMeshGeometry("box.vtp");
     tower.scale(Vec3(0.1, 1.0, 0.2));
 
     // Add joint connecting the tower to the ground and associate joint to tower body
@@ -1624,7 +1624,7 @@ void testExternalForce()
     // Add joint connecting a "sensor" reference to the ground in which to describe
     // the applied external force
     OpenSim::Body sensor("sensor", 1 ,Vec3(0),  SimTK::Inertia::brick(0.1, 0.1, 0.1));
-    sensor.addMeshGeometry("box.vtp");
+    sensor.attachMeshGeometry("box.vtp");
     sensor.scale(Vec3(0.02, 0.1, 0.01));
 
     // locate joint at 0.3m above tower COM
