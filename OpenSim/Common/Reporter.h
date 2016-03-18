@@ -206,7 +206,7 @@ private:
         // Output::getNumberOfSignificantDigits().
         const auto& input = this->template getInput<T>("inputs");
 
-        if (_printCount % 20 == 0) {
+        if (_printCount % 40 == 0) {
             std::cout << "[" << this->getName() << "] "
                 << std::setw(_width) << "time" << "| ";
             for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {

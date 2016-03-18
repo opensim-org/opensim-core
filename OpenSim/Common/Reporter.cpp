@@ -112,6 +112,10 @@ void AbstractReporter::extendRealizeReport(const SimTK::State& state) const
 
 void AbstractReporter::report(const SimTK::State& s) const
 {
+    // Guarantee that the system is at the reporting stage
+    if (s.getSystemStage() < SimTK::Stage::Report) {
+        getSystem().realize(s, SimTK::Stage::Report);
+    }
     implementReport(s);
 }
 
