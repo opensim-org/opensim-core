@@ -7,7 +7,9 @@ add_executable(exampleLuxoMuscle ${SOURCE_FILES})
 target_link_libraries(exampleLuxoMuscle osimTools)
 set_target_properties(exampleLuxoMuscle PROPERTIES
     PROJECT_LABEL "Luxo Muscle"
-    FOLDER "Examples")
+    FOLDER "Examples"
+    EXCLUDE_FROM_ALL TRUE
+    )
 
 file(GLOB RESOURCE_FILES
     ${LUXO_DIR}/*.obj 
@@ -27,7 +29,9 @@ add_executable(exampleHopperDevice exampleHopperDevice.cpp answers.cpp)
 target_link_libraries(exampleHopperDevice osimTools)
 set_target_properties(exampleLuxoMuscle PROPERTIES
     PROJECT_LABEL "Hopper Device"
-    FOLDER "Examples")
+    FOLDER "Examples"
+    EXCLUDE_FROM_ALL TRUE
+    )
 
 
 # Create a custom target 
