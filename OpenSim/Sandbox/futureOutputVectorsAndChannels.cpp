@@ -81,45 +81,6 @@ private:
 
 typedef DataSource_<double> DataSource;
 
-template <typename T>
-class ConsoleReporter_ : public ModelComponent {
-    OpenSim_DECLARE_CONCRETE_OBJECT_T(ConsoleReporter_, T, Component);
-public:
-    OpenSim_DECLARE_LIST_INPUT(input, T, SimTK::Stage::Acceleration, "");
-private:
-    void extendRealizeReport(const State& state) const override
-    {
-        const auto& input = getInput<T>("input");
-        
-        if (_printCount % 20 == 0) {
-            std::cout << "[" << getName() << "] "
-                      << std::setw(_width) << "time" << "| ";
-            for (const auto& chan : input.getChannels()) {
-                const auto& name = chan->getPathName();
-                const auto& truncName = name.size() <= _width ?
-                    name : name.substr(name.size() - _width);
-                std::cout << std::setw(_width) << truncName << "|";
-            }
-            std::cout << "\n";
-        }
-        std::cout << "[" << getName() << "] "
-                  << std::setw(_width) << state.getTime() << "| ";
-        for (const auto& chan : input.getChannels()) {
-            const auto& value = chan->getValue(state);
-            const auto& nSigFigs = chan->getOutput().getNumberOfSignificantDigits();
-            std::cout << std::setw(_width)
-                      << std::setprecision(nSigFigs) << value << "|";
-        }
-        std::cout << std::endl;
-        
-        const_cast<ConsoleReporter_<T>*>(this)->_printCount++;
-    }
-    unsigned int _printCount = 0;
-    int _width = 17;
-};
-
-typedef ConsoleReporter_<double> ConsoleReporter;
-
 void integrate(const System& system, Integrator& integrator,
         const State& initialState,
         Real finalTime) {
@@ -166,7 +127,7 @@ void testOutputVectorsAndChannels() {
     // --------
     auto* rep = new ConsoleReporter();
     rep->setName("interped");
-    model.addModelComponent(rep);
+    model.addComponent(rep);
     
     // A component with a non-list output
     // -----------------------------------
@@ -180,10 +141,10 @@ void testOutputVectorsAndChannels() {
     
     // Must connect *after* initSystem(), since it first clears all
     // existing connections.
-    rep->updInput("input").connect(src->getOutput("col").getChannel("col0"));
+    rep->updInput("inputs").connect(src->getOutput("col").getChannel("col0"));
     //rep->updInput("input").connect(src->getOutput("col").getChannel("col1"));
-    rep->updInput("input").connect(src->getOutput("col"));
-    rep->updInput("input").connect(sugar->getOutput("fructose"));
+    rep->updInput("inputs").connect(src->getOutput("col"));
+    rep->updInput("inputs").connect(sugar->getOutput("fructose"));
     
     RungeKuttaMersonIntegrator integrator(model.getSystem());
     integrator.setFixedStepSize(0.1);
