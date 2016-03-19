@@ -509,7 +509,7 @@
                     <FunctionSet name="ControlFunctions">
                         <objects>
                             <PiecewiseConstantFunction name="vastus">
-                                <x>0 2 4</x>
+                                <x>0 2 3.9</x>
                                 <y>0.1 1.0 0.1</y>
                             </PiecewiseConstantFunction>
                         </objects>
@@ -570,6 +570,50 @@
 		<ForceSet>
 			<objects>
                 <Thelen2003Muscle name="vastus">
+                    <components>
+						<PhysicalOffsetFrame name="attachment1">
+							<connectors>
+								<Connector_PhysicalFrame_ name="parent">
+                                    <connectee_name>/toy_with_forces/link1</connectee_name>
+								</Connector_PhysicalFrame_>
+							</connectors>
+							<geometry>
+								<FrameGeometry name="frame_geometry">
+									<connectors>
+										<Connector_Frame_ name="frame">
+											<connectee_name>../</connectee_name>
+										</Connector_Frame_>
+									</connectors>
+									<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+									<Appearance>
+										<visible>false</visible>
+									</Appearance>
+								</FrameGeometry>
+							</geometry>
+							<translation>0.03 0.35 0</translation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="attachment2">
+							<connectors>
+								<Connector_PhysicalFrame_ name="parent">
+                                    <connectee_name>/toy_with_forces/link2</connectee_name>
+								</Connector_PhysicalFrame_>
+							</connectors>
+							<geometry>
+								<FrameGeometry name="frame_geometry">
+									<connectors>
+										<Connector_Frame_ name="frame">
+											<connectee_name>../</connectee_name>
+										</Connector_Frame_>
+									</connectors>
+									<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+									<Appearance>
+										<visible>false</visible>
+									</Appearance>
+								</FrameGeometry>
+							</geometry>
+							<translation>0.03 0.40 0</translation>
+						</PhysicalOffsetFrame>
+                    </components>
                     <max_isometric_force>1800</max_isometric_force>
                     <optimal_fiber_length>0.55</optimal_fiber_length>
                     <default_activation>0.1</default_activation>
