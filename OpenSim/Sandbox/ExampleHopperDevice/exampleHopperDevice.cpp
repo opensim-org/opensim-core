@@ -30,7 +30,8 @@ messaging using Connectors and information flow is enabled by Inputs and
 Outputs. Components are easier to construct and generate Outputs, which can
 be reported using new Data Components. */
 
-#define LUXO 0
+#define LUXO 1
+// or: #define LUXO 1
 
 #if LUXO
     #define OPTIMAL_FORCE 1
@@ -90,7 +91,8 @@ namespace OpenSim {
         virtual void extendRealizeDynamics(const SimTK::State& s) const override {
             const auto& actu = getComponent<PathActuator>("cableAtoB");
             actu.getGeometryPath().setColor(s,
-                    SimTK::Vec3(getTension(s) / actu.get_optimal_force()));
+                    SimTK::Vec3(fmin(1.0,
+                            getTension(s) / actu.get_optimal_force())));
         }
 
     };
@@ -364,9 +366,11 @@ int main() {
     std::string modelFile, attachmentA, attachmentB, signalForDevice;
     if (LUXO) {
         modelFile = "Luxo_Myo.osim";
-        attachmentA = "device_inferior_attachment";
-        attachmentB = "device_superior_attachment";
-        signalForDevice = "/LuxoMuscle/back_extensor_right/excitation";
+        //attachmentA = "knee_assist_origin";
+        //attachmentB = "knee_assist_insertion"; 
+        attachmentA = "back_assist_origin";
+        attachmentB = "back_assist_insertion";
+        signalForDevice = /*"/LuxoMuscle/gentemp/signal";*/ "/LuxoMuscle/back_extensor_right/excitation";
     } else {
         modelFile = "bouncing_block.osim";
         attachmentA = "/toy_with_forces/thigh_attachment";
@@ -375,14 +379,23 @@ int main() {
     }
     OpenSim::Model luxo(modelFile);
     luxo.setUseVisualizer(true);
+
+    // TODO temporary signal generator (for debugging):
+    auto genTemp = new OpenSim::SignalGenerator();
+    genTemp->setName("gentemp");
+    // Trying changing the constant value and even changing
+    // the function, e.g. try a LinearFunction
+    genTemp->set_function(OpenSim::Constant(100));
+    luxo.addComponent(genTemp);
+
     auto reporterH = new OpenSim::ConsoleReporter();
     reporterH->setName("resultsH");
     reporterH->set_report_time_interval(0.5);
     reporterH->updInput("inputs").connect(luxo.getOutput(signalForDevice));
     luxo.addComponent(reporterH);
 
-    SimTK::State& sH = luxo.initSystem();
-    simulate(luxo, sH);
+    // TODO put this back in SimTK::State& sH = luxo.initSystem();
+    // TODO put this back in simulate(luxo, sH);
     //----------------------------- HOPPER CODE end ----------------------------
 
 
@@ -395,8 +408,17 @@ int main() {
     connectDeviceToModel(luxAnchorA, attachmentA,
                          luxAnchorB, attachmentB, 
                          luxoDevice, luxo);
+
+    // TODO this next line works for bouncing_block, but NOT for Luxo; you'll
+    // get a segfault because (I think) infinite recursion: the controller is
+    // depending on a control signal, so computeControls keeps gettig invoked.
+    // I think it's b/c the rigid tendon muscle has no activation dynaimcs. I
+    // tried Thelen2003 and Millard2013Equil muscles and they didn't work out
+    // of the box so I gave up.
     luxoDevice->updInput("controller/activation").
         connect(luxo.getOutput(signalForDevice));
+     // TODO remove this luxoDevice->updInput("controller/activation").
+     // TODO remove this            connect(luxo.getOutput("gentemp/signal"));
 
     // Add some more quantities to report.
     reporterH->updInput("inputs").connect(luxoDevice->getOutput("controller/myo_control"));
