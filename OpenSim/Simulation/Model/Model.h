@@ -768,9 +768,11 @@ public:
     SimTK::Vec3 calcMassCenterPosition(const SimTK::State &s) const;
     SimTK::Vec3 calcMassCenterVelocity(const SimTK::State &s) const;
     SimTK::Vec3 calcMassCenterAcceleration(const SimTK::State &s) const;
+    /** return the total Kinetic Energy for the underlying system.*/
     double calcKineticEnergy(const SimTK::State &s) const {
         return getMultibodySystem().calcKineticEnergy(s);
     }    
+    /** return the total Potential Energy for the underlying system.*/
     double calcPotentialEnergy(const SimTK::State &s) const {
         return getMultibodySystem().calcPotentialEnergy(s);
     }
