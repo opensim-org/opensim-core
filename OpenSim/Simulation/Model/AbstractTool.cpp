@@ -72,8 +72,8 @@ AbstractTool::AbstractTool():
     _analysisSet((AnalysisSet&)_analysisSetProp.getValueObj()),
     _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
     _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
-    _externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-    _toolOwnsModel(true)
+    _toolOwnsModel(true),
+    _externalLoadsFileName(_externalLoadsFileNameProp.getValueStr())
 {
     setNull();
 }
@@ -104,8 +104,8 @@ AbstractTool::AbstractTool(const string &aFileName, bool aUpdateFromXMLNode):
     _analysisSet((AnalysisSet&)_analysisSetProp.getValueObj()),
     _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
     _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
-    _externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-    _toolOwnsModel(true)
+    _toolOwnsModel(true),
+    _externalLoadsFileName(_externalLoadsFileNameProp.getValueStr())
 {
     _analysisSet.setMemoryOwner(false);
     setNull();
@@ -166,8 +166,8 @@ AbstractTool::AbstractTool(const AbstractTool &aTool):
     _analysisSet((AnalysisSet&)_analysisSetProp.getValueObj()),
     _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
     _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
-    _externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-    _toolOwnsModel(true)
+    _toolOwnsModel(true),
+    _externalLoadsFileName(_externalLoadsFileNameProp.getValueStr())
 {
     _analysisSet.setMemoryOwner(false);
     setNull();
