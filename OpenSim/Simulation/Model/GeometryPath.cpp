@@ -247,8 +247,6 @@ getPointForceDirections(const SimTK::State& s,
 
     int np = currentPath.getSize();
 
-    const SimbodyEngine& engine = _model->getSimbodyEngine();
-
     rPFDs->ensureCapacity(np);
     
     for (i = 0; i < np; i++) {
@@ -853,8 +851,6 @@ void GeometryPath::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 void GeometryPath::computePath(const SimTK::State& s) const
 {
-    const SimTK::Stage& sg = s.getSystemStage();
-    
     if (isCacheVariableValid(s, "current_path"))  {
         return;
     }
@@ -904,8 +900,6 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
     const Array<PathPoint*>& currentPath = getCurrentPath(s);
 
     double speed = 0.0;
-
-    const SimbodyEngine& engine = _model->getSimbodyEngine();
 
     for (int i = 0; i < currentPath.getSize() - 1; i++) {
         start = currentPath[i];
