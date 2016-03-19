@@ -30,11 +30,11 @@ messaging using Connectors and information flow is enabled by Inputs and
 Outputs. Components are easier to construct and generate Outputs, which can
 be reported using new Data Components. */
 
-#define LUXO 1
+#define LUXO 0
 // or: #define LUXO 1
 
 #if LUXO
-    #define OPTIMAL_FORCE 10
+    #define OPTIMAL_FORCE 200
     #define MASS 0.1
     #define GAIN 2
     #define LOAD 10
@@ -75,7 +75,7 @@ namespace OpenSim {
         /** The power produced(+)/dissipated(-) by the device. */
         OpenSim_DECLARE_OUTPUT(power, double, getPower, SimTK::Stage::Dynamics);
 
-        /** Add corresponding member functions */
+        /** Member functions to access values of interest from the device. */
         double getLength(const SimTK::State& s) const {
             return getComponent<PathActuator>("cableAtoB").getLength(s);
         }
@@ -213,12 +213,17 @@ OpenSim::Model createTestBed() {
     return testBed;
 }
 
-void connectDeviceToModel(OpenSim::Joint& anchorA, const std::string& frameAname,
-                          OpenSim::Joint& anchorB, const std::string& frameBname,
+// Use any two (PhysicalFrame) frame's in a model to attach the device
+void connectDeviceToModel(const std::string& frameAname,
+                          const std::string& frameBname,
                           OpenSim::Device* device, OpenSim::Model& model) {
-    // Set parent of anchorA as frameA.
+
+    //Get the known anchors (joints) that attach the device to a model
+    auto& anchorA = device->updComponent<OpenSim::Joint>("anchorA");
+    auto& anchorB = device->updComponent<OpenSim::Joint>("anchorB");
+    // Attach anchorA to frameA as anchor's (joint's) parent frame.
     anchorA.setParentFrameName(frameAname);
-    // Set parent of anchorB as frameB.
+    // Attach anchorB to frameB as anchor's (joint's) parent frame.
     anchorB.setParentFrameName(frameBname);
     // Add the device to the testBed.
     model.addModelComponent(device);
@@ -226,6 +231,7 @@ void connectDeviceToModel(OpenSim::Joint& anchorA, const std::string& frameAname
 
 // Simulate any model from an initial state
 void simulate(OpenSim::Model& model, SimTK::State& state) {
+    SimTK::State s0 = state;
     // Configure the 3D visualizer environment
     if (model.getUseVisualizer()) {
         model.updMatterSubsystem().setShowDefaultGeometry(false);
@@ -238,18 +244,22 @@ void simulate(OpenSim::Model& model, SimTK::State& state) {
         std::cin.get();
     }
 
-    // Simulate.
-    SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
-    OpenSim::Manager manager(model, integrator);
-    manager.setInitialTime(0);
-    manager.setFinalTime(5.0);
-    manager.integrate(state);
-    // generate states output debugging
-    manager.getStateStorage().print("exampleHopperStates.sto");
+    // Simulate in a replay loop if necessary
+    char replay = 'r';
+    while (replay == 'r') {
+        state = s0;
+        SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
+        OpenSim::Manager manager(model, integrator);
+        manager.setInitialTime(0);
+        manager.setFinalTime(5.0);
+        manager.integrate(state);
+        // generate states output debugging
+        manager.getStateStorage().print("exampleHopperStates.sto");
 
-    // wait for user input to proceed.
-    std::cout << "Press enter/return to continue:" << std::endl;
-    std::cin.get();
+        // wait for user input to proceed.
+        std::cout << "Press enter/return to continue OR 'r' to replay." << std::endl;
+        std::cin >> replay;
+    }
 }
 
 OpenSim::Device* createDevice() {
@@ -266,42 +276,44 @@ OpenSim::Device* createDevice() {
     auto device = new OpenSim::Device{};
     device->setName("device");
 
-    // Mass of the device distributed between two body(s) that attach to the
-    // model. Each have a mass of 1 kg, center of mass at the
-    // origin of their respective frames, and moment of inertia of 0.5
+    // Mass of the device distributed between two cuffs that attach to a
+    // model (person, test-bed). Each cuff has a mass of 1 kg, center of mass
+    // at the origin of their respective frames, and moment of inertia of 0.5
     // and products of zero.
-    auto massA = new OpenSim::Body("massA", MASS, Vec3(0), Inertia(0.5));
-    auto massB = new OpenSim::Body("massB", MASS, Vec3(0), Inertia(0.5));
+    auto cuffA = new OpenSim::Body("cuffA", 1, Vec3(0), Inertia(0.5));
+    auto cuffB = new OpenSim::Body("cuffB", 1, Vec3(0), Inertia(0.5));
     // Add the masses to the device.
-    device->addComponent(massA);
-    device->addComponent(massB);
+    device->addComponent(cuffA);
+    device->addComponent(cuffB);
 
     // Sphere geometry for the masses. 
-    sphere.setFrameName("massA");
-    massA->addGeometry(sphere);
-    sphere.setFrameName("massB");
-    massB->addGeometry(sphere);
+    sphere.setFrameName("cuffA");
+    cuffA->addGeometry(sphere);
+    sphere.setFrameName("cuffB");
+    cuffB->addGeometry(sphere);
 
-    // Joint from something in the environment to massA. 
+    // Joint from something in the environment to cuffA.
+    // It will be used to attach the device at cuffA to a model.
     auto anchorA = new OpenSim::WeldJoint();
     anchorA->setName("anchorA");
     // Set only the child now. Parent will be in the environment.
-    anchorA->setChildFrameName("massA");
+    anchorA->setChildFrameName("cuffA");
     device->addComponent(anchorA);
 
-    // Joint from something in the environment to massB. 
+    // Joint from something in the environment to cuffB.
+    // It will be used to attach the device at cuffA to a model.
     auto anchorB = new OpenSim::WeldJoint();
     anchorB->setName("anchorB");
     // Set only the child now. Parent will be in the environment.
-    anchorB->setChildFrameName("massB");
+    anchorB->setChildFrameName("cuffB");
     device->addComponent(anchorB);
 
     // Actuator connecting the two masses.
     auto pathActuator = new OpenSim::PathActuator();
     pathActuator->setName("cableAtoB");
     pathActuator->set_optimal_force(OPTIMAL_FORCE);
-    pathActuator->addNewPathPoint("point1", *massA, Vec3(0));
-    pathActuator->addNewPathPoint("point2", *massB, Vec3(0));
+    pathActuator->addNewPathPoint("point1", *cuffA, Vec3(0));
+    pathActuator->addNewPathPoint("point2", *cuffB, Vec3(0));
     device->addComponent(pathActuator);
 
     // A controller that specifies the excitation of the biceps muscle.
@@ -325,15 +337,12 @@ int main() {
     //-------------------------------------------------------------------------
     auto testBed = createTestBed(); // or load a model
 
-    // Connect device to/from the environment. Comment the below code and 
-    // make sure to connect the device to the actual hopper and simulate with
-    // hopper connected to the device.
+    // Connect device to a parent model. 
+    // Here we connect the device to the testBed at its ground and load frames
     //-------------------------------------------------------------------------
-    auto& anchorA = device->updComponent<OpenSim::Joint>("anchorA");
-    auto& anchorB = device->updComponent<OpenSim::Joint>("anchorB");
-    connectDeviceToModel(anchorA, "ground", anchorB, "load", device, testBed);
+    connectDeviceToModel("ground", "load", device, testBed);
     // Print the model. 
-    testBed.print("exampleHopperDevice.xml");
+    testBed.print("exampleHopperDeviceOnTestBed.osim");
 
     auto generator = new OpenSim::SignalGenerator();
     generator->setName("generator");
@@ -359,7 +368,7 @@ int main() {
 
     // Simulate the testBed containing the device only. When using the hopper,
     // make sure to simulate the hopper (with the device) and not the testBed.
-    simulate(testBed, state);
+    //simulate(testBed, state);
     //----------------------------- DEVICE CODE end --------------------------
 
 
@@ -367,11 +376,11 @@ int main() {
     std::string modelFile, attachmentA, attachmentB, signalForDevice;
     if (LUXO) {
         modelFile = "Luxo_Myo.osim";
-        attachmentA = "knee_assist_origin";
-        attachmentB = "knee_assist_insertion"; 
-        //attachmentA = "back_assist_origin";
-        //attachmentB = "back_assist_insertion";
-        signalForDevice = /*"/LuxoMuscle/gentemp/signal";//*/ "/LuxoMuscle/back_extensor_right/activation";
+        //attachmentA = "knee_assist_origin";
+        //attachmentB = "knee_assist_insertion"; 
+        attachmentA = "back_assist_origin";
+        attachmentB = "back_assist_insertion";
+        signalForDevice = "/LuxoMuscle/back_extensor_right/activation";
     } else {
         modelFile = "bouncing_block.osim";
         attachmentA = "/toy_with_forces/thigh_attachment";
@@ -381,13 +390,6 @@ int main() {
     OpenSim::Model luxo(modelFile);
     luxo.setUseVisualizer(true);
 
-    // TODO temporary signal generator (for debugging):
-    auto genTemp = new OpenSim::SignalGenerator();
-    genTemp->setName("gentemp");
-    // Trying changing the constant value and even changing
-    // the function, e.g. try a LinearFunction
-    genTemp->set_function(OpenSim::Constant(100));
-    luxo.addComponent(genTemp);
 
     auto reporterH = new OpenSim::ConsoleReporter();
     reporterH->setName("resultsH");
@@ -403,23 +405,11 @@ int main() {
     //----------------------------- HOPPER + DEVICE begin ----------------------
     OpenSim::Device* luxoDevice = device->clone();
     luxoDevice->finalizeFromProperties();
+    connectDeviceToModel(attachmentA, attachmentB, luxoDevice, luxo);
 
-    auto& luxAnchorA = luxoDevice->updComponent<OpenSim::Joint>("anchorA");
-    auto& luxAnchorB = luxoDevice->updComponent<OpenSim::Joint>("anchorB");
-    connectDeviceToModel(luxAnchorA, attachmentA,
-                         luxAnchorB, attachmentB, 
-                         luxoDevice, luxo);
+    // set the controller 
+    luxoDevice->updInput("controller/activation").connect(luxo.getOutput(signalForDevice));
 
-    // TODO this next line works for bouncing_block, but NOT for Luxo; you'll
-    // get a segfault because (I think) infinite recursion: the controller is
-    // depending on a control signal, so computeControls keeps gettig invoked.
-    // I think it's b/c the rigid tendon muscle has no activation dynaimcs. I
-    // tried Thelen2003 and Millard2013Equil muscles and they didn't work out
-    // of the box so I gave up.
-    luxoDevice->updInput("controller/activation").
-        connect(luxo.getOutput(signalForDevice));
-     // TODO remove this luxoDevice->updInput("controller/activation").
-     // TODO remove this            connect(luxo.getOutput("gentemp/signal"));
 
     // Add some more quantities to report.
     reporterH->updInput("inputs").connect(luxoDevice->getOutput("controller/myo_control"));
