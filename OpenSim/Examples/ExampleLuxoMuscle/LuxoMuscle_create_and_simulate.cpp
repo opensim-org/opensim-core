@@ -54,7 +54,7 @@ double sim_time = 5; // seconds
 double low_excitation = 0.3; // fraction of effort at start
 double high_excitation = 1.0 ; // fraction of effort during jump
 double activate_time = 2.0; // time jumping maneuver starts
-double deactivate_time = 3.0; // time jumping ends
+double deactivate_time = 2.2; // time jumping ends
 double times[4] = { 0.0,
                     activate_time,
                     deactivate_time,
