@@ -103,8 +103,7 @@ public:
                       const SimTK::Stage& connectAtStage,
                       bool isList,
                       const Component& owner) :
-                      connectAtStage(connectAtStage), _owner(&owner),
-                      _isList(isList) {
+        connectAtStage(connectAtStage), _isList(isList), _owner(&owner) {
         constructProperties();
         setName(name);
     }
