@@ -47,12 +47,12 @@ model.setGravity(zeroVec3);
 % GROUND BODY
 
 % Get a reference to the model's ground body
-ground = model.getGroundBody();
+ground = model.getGround();
 
 % Add display geometry to the ground to visualize in the GUI
-ground.addDisplayGeometry('ground.vtp');
-ground.addDisplayGeometry('anchor1.vtp');
-ground.addDisplayGeometry('anchor2.vtp');
+ground.attachMeshGeometry('ground.vtp');
+ground.attachMeshGeometry('anchor1.vtp');
+ground.attachMeshGeometry('anchor2.vtp');
 
 % "BLOCK" BODY
 
@@ -62,14 +62,16 @@ block.setName('Block');
 block.setMass(20);
 block.setMassCenter(zeroVec3);
 % Need to set inertia
-block.addDisplayGeometry('block.vtp');
+block.attachMeshGeometry('block.vtp');
 
 % FREE JOINT
 
 % Create a new free joint with 6 degrees-of-freedom (coordinates) between the block and ground bodies
 blockSideLength      = 0.1;
 locationInParentVec3 = ArrayDouble.createVec3([0, blockSideLength/2, 0]);
-blockToGround        = FreeJoint('blockToGround', ground, locationInParentVec3, zeroVec3, block, zeroVec3, zeroVec3, false);
+blockToGround        = FreeJoint('blockToGround', ...
+                            ground, locationInParentVec3, zeroVec3, ...
+                            block, zeroVec3, zeroVec3);
 
 % Set bounds on coordinates
 jointCoordinateSet=blockToGround.getCoordinateSet();
@@ -150,5 +152,4 @@ muscleController.prescribeControlForActuator('muscle2', LinearFunction(slopeAndI
 % Add the control set controller to the model
 model.addController(muscleController);
 
-model.disownAllComponents();
 model.print('tug_of_war_muscles_controller.osim');
