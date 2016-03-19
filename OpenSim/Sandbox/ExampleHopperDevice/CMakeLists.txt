@@ -13,6 +13,7 @@ set_target_properties(exampleLuxoMuscle PROPERTIES
 
 file(GLOB RESOURCE_FILES
     ${LUXO_DIR}/*.obj 
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.osim
     )
 
 foreach(dataFile ${RESOURCE_FILES})
@@ -23,6 +24,14 @@ foreach(dataFile ${RESOURCE_FILES})
         ${dataFile}
         ${CMAKE_CURRENT_BINARY_DIR})
 endforeach(dataFile) 
+
+
+add_custom_command(
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/bouncing_block.osim"
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/bouncing_block.osim"
+    COMMAND ${CMAKE_COMMAND} -E copy
+    "${CMAKE_CURRENT_SOURCE_DIR}/bouncing_block.osim"
+    "${CMAKE_CURRENT_BINARY_DIR}")
 
 
 add_executable(exampleHopperDevice exampleHopperDevice.cpp answers.cpp)
@@ -47,6 +56,7 @@ if(MSVC OR XCODE)
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         DEPENDS exampleHopperDevice
                 "${CMAKE_CURRENT_BINARY_DIR}/Luxo_Myo.osim"
+                "${CMAKE_CURRENT_BINARY_DIR}/bouncing_block.osim"
         )
 else()
     add_custom_command(
@@ -60,6 +70,7 @@ else()
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         DEPENDS exampleHopperDevice
                 "${CMAKE_CURRENT_BINARY_DIR}/Luxo_Myo.osim"
+                "${CMAKE_CURRENT_BINARY_DIR}/bouncing_block.osim"
         )
 endif()
 

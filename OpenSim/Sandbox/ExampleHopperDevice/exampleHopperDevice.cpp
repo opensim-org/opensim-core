@@ -26,10 +26,25 @@ features of the OpenSim 4.0 API. The Component paradigm is more complete,
 rigorous and functional to enable models of devices or sub-assemblies to be
 embedded in other models, for example of the lower extremity or whole body.
 Components handle their dependencies consistently and with better error
-messaging using Connectors and information flow is enable by Inputs and
+messaging using Connectors and information flow is enabled by Inputs and
 Outputs. Components are easier to construct and generate Outputs, which can
 be reported using new Data Components. */
 
+#define LUXO 0
+
+#if LUXO
+    #define OPTIMAL_FORCE 1
+    #define GAIN 2
+    #define LOAD 10
+    #define SPRINGSTIFF 50
+    #define SIGNALGEN 1
+#else
+    #define OPTIMAL_FORCE 80
+    #define GAIN 10
+    #define LOAD 1000
+    #define SPRINGSTIFF 500
+    #define SIGNALGEN 0.1
+#endif
 
 #include <OpenSim/OpenSim.h>
 
@@ -71,6 +86,12 @@ namespace OpenSim {
         double getPower(const SimTK::State& s) const {
             return getComponent<PathActuator>("cableAtoB").getPower(s);
         }
+    protected:
+        virtual void extendRealizeDynamics(const SimTK::State& s) const override {
+            const auto& actu = getComponent<PathActuator>("cableAtoB");
+            actu.getGeometryPath().setColor(s,
+                    SimTK::Vec3(getTension(s) / actu.get_optimal_force()));
+        }
 
     };
 
@@ -90,6 +111,10 @@ namespace OpenSim {
             "Gain used in converting muscle activation into a"
             " control signal (units depend on the device)");
         OpenSim_DECLARE_OUTPUT(myo_control, double, computeControl, SimTK::Stage::Time);
+
+        OpenSim_DECLARE_INPUT(activation, double, SimTK::Stage::Model,
+                "The activation signal that this controller's signal is "
+                "proportional to.");
 
         PropMyoController() {
             constructInfrastructure();
@@ -119,11 +144,6 @@ namespace OpenSim {
         void constructConnectors() override {
             // The ScalarActuator for which we're computing a control signal.
             constructConnector<Actuator>("actuator");
-        }
-
-        void constructInputs() override {
-            // The control signal is proportional to this input.
-            constructInput<double>("activation", SimTK::Stage::Model);
         }
     };
 
@@ -183,7 +203,7 @@ OpenSim::Model createTestBed() {
     auto spring = new OpenSim::PointToPointSpring(
         testBed.getGround(), Vec3(0), // point 1's frame and location in that frame
         *load, Vec3(0),               // point 2's frame and location in that frame
-        50.0, 1.0);                   // spring stiffness and rest-length
+        SPRINGSTIFF, 1.0);                   // spring stiffness and rest-length
 
     testBed.addForce(spring);
 
@@ -276,6 +296,7 @@ OpenSim::Device* createDevice() {
     // Actuator connecting the two masses.
     auto pathActuator = new OpenSim::PathActuator();
     pathActuator->setName("cableAtoB");
+    pathActuator->set_optimal_force(OPTIMAL_FORCE);
     pathActuator->addNewPathPoint("point1", *massA, Vec3(0));
     pathActuator->addNewPathPoint("point2", *massB, Vec3(0));
     device->addComponent(pathActuator);
@@ -283,7 +304,7 @@ OpenSim::Device* createDevice() {
     // A controller that specifies the excitation of the biceps muscle.
     auto controller = new OpenSim::PropMyoController();
     controller->setName("controller");
-    controller->set_gain(2.0);
+    controller->set_gain(GAIN);
 
     controller->updConnector<OpenSim::Actuator>("actuator").
         connect(*pathActuator);
@@ -315,7 +336,7 @@ int main() {
     generator->setName("generator");
     // Trying changing the constant value and even changing
     // the function, e.g. try a LinearFunction
-    generator->set_function(OpenSim::Constant(1.0));
+    generator->set_function(OpenSim::Constant(SIGNALGEN));
     device->addComponent(generator);
     // Wire up the Controller to use the generator for fake activations
     device->updInput("controller/activation").
@@ -340,10 +361,28 @@ int main() {
 
 
     //----------------------------- HOPPER CODE begin --------------------------
-    OpenSim::Model luxo("Luxo_Myo.osim");
+    std::string modelFile, attachmentA, attachmentB, signalForDevice;
+    if (LUXO) {
+        modelFile = "Luxo_Myo.osim";
+        attachmentA = "device_inferior_attachment";
+        attachmentB = "device_superior_attachment";
+        signalForDevice = "/LuxoMuscle/back_extensor_right/excitation";
+    } else {
+        modelFile = "bouncing_block.osim";
+        attachmentA = "/toy_with_forces/thigh_attachment";
+        attachmentB = "/toy_with_forces/shank_attachment";
+        signalForDevice = "/toy_with_forces/vastus/activation";
+    }
+    OpenSim::Model luxo(modelFile);
     luxo.setUseVisualizer(true);
-    //SimTK::State& s = luxo.initSystem();
-    //simulate(luxo, s);
+    auto reporterH = new OpenSim::ConsoleReporter();
+    reporterH->setName("resultsH");
+    reporterH->set_report_time_interval(0.5);
+    reporterH->updInput("inputs").connect(luxo.getOutput(signalForDevice));
+    luxo.addComponent(reporterH);
+
+    SimTK::State& sH = luxo.initSystem();
+    simulate(luxo, sH);
     //----------------------------- HOPPER CODE end ----------------------------
 
 
@@ -353,14 +392,20 @@ int main() {
 
     auto& luxAnchorA = luxoDevice->updComponent<OpenSim::Joint>("anchorA");
     auto& luxAnchorB = luxoDevice->updComponent<OpenSim::Joint>("anchorB");
-    connectDeviceToModel(luxAnchorA, "device_inferior_attachment",
-                         luxAnchorB, "device_superior_attachment", 
+    connectDeviceToModel(luxAnchorA, attachmentA,
+                         luxAnchorB, attachmentB, 
                          luxoDevice, luxo);
+    luxoDevice->updInput("controller/activation").
+        connect(luxo.getOutput(signalForDevice));
+
+    // Add some more quantities to report.
+    reporterH->updInput("inputs").connect(luxoDevice->getOutput("controller/myo_control"));
+    reporterH->updInput("inputs").connect(luxoDevice->getOutput("tension"));
     //----------------------------- HOPPER + DEVICE end ------------------------
 
-    SimTK::State& s = luxo.initSystem();
+    SimTK::State& sHD = luxo.initSystem();
     // Simulate the Luxo model with the device. 
-    simulate(luxo, s);
+    simulate(luxo, sHD);
     //------------------------------ ANALYZE begin -----------------------------
     // TO DO -- Your analysis code goes here.
     //------------------------------ ANALYZE end -------------------------------
