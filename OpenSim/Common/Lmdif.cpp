@@ -346,7 +346,6 @@ void lmdif_C(
    static double p75 = 0.75;
    static double p0001 = 1.0e-4;
    static double zero = 0.0;
-   static double p05 = 0.05;
    
    *info = 0;
    iflag = 0;
@@ -804,7 +803,6 @@ void lmpar(
    double sum;
    double temp;
    static double zero = 0.0;
-   static double one = 1.0;
    static double p1 = 0.1;
    static double p001 = 0.001;
    
@@ -1719,7 +1717,6 @@ void fdjac2(void (*fcn)(int, int, double[], double[], int *, void *),
    double eps;
    double h;
    double temp;
-   static double zero = 0.0;
 
    //dkb - changed to equal TvdB solver code, use constant delta = 1e-5
    //    temp = dmax1(epsfcn,MACHEP);
