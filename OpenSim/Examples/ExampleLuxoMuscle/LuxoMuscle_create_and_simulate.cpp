@@ -169,10 +169,15 @@ back_extensor_insertion = back_peg_center + 0.5*peg_z_offset;
 
 // Frame locations for assistive device attachments
 //--------------------------------------------------
-Vec3 device_superior_location_in_head(0.5*cervicle_joint_center);
-Vec3 device_inferior_location_in_bottom_bracket(knee_extensor_insertion[0],
-                                                knee_extensor_insertion[1],
-                                                0.0);
+Transform back_assist_origin_transform(back_peg_center); // in chest piece
+Transform back_assist_insertion_transform(
+                                  posterior_superior_pelvis_pin_location);
+
+Transform knee_assist_origin_transform(Vec3(0)); // in posterior leg bar
+Transform knee_assist_insertion_transform(Vec3(knee_extensor_insertion[0],
+                                               knee_extensor_insertion[1],
+                                               0.0));
+
 
 
 //______________________________________________________________________________
@@ -779,19 +784,36 @@ void createLuxoJr(OpenSim::Model &model){
      * Jumping will require an assistive device. We'll add two frames for
      * attaching a point to point assistive actuator.
      */
-    PhysicalOffsetFrame* device_superior_frame = new PhysicalOffsetFrame(
-                        "device_superior_attachment",
-                        *head,
-                        Transform(device_superior_location_in_head));
     
-    PhysicalOffsetFrame* device_inferior_frame = new PhysicalOffsetFrame(
-                        "device_inferior_attachment",
+    
+    // add frames for connecting a back assitance device between the chest
+    // and pelvis
+    PhysicalOffsetFrame* back_assist_origin_frame = new
+        PhysicalOffsetFrame("back_assist_origin",
+                            *chest,
+                            back_assist_origin_transform);
+    
+    PhysicalOffsetFrame* back_assist_insertion_frame = new
+        PhysicalOffsetFrame("back_assist_insertion",
+                            *pelvisBracket,
+                            back_assist_insertion_transform);
+    
+    model.addFrame(back_assist_origin_frame);
+    model.addFrame(back_assist_insertion_frame);
+    
+    // add frames for connecting a knee assistance device between the posterior
+    // leg and bottom bracket.
+    PhysicalOffsetFrame* knee_assist_origin_frame = new
+    PhysicalOffsetFrame("knee_assist_origin",
+                        *posteriorLegBar,
+                        knee_assist_origin_transform);
+    
+    PhysicalOffsetFrame* knee_assist_insertion_frame = new
+    PhysicalOffsetFrame("knee_assist_insertion",
                         *bottom_bracket,
-                        Transform(device_inferior_location_in_bottom_bracket));
+                        knee_assist_insertion_transform);
     
-    model.addFrame(device_superior_frame);
-    model.addFrame(device_inferior_frame);
-    
-    
+    model.addFrame(knee_assist_origin_frame);
+    model.addFrame(knee_assist_insertion_frame);
     
 }
