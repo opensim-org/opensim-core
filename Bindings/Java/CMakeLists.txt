@@ -41,7 +41,7 @@ add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/src/org-opensim-modeling.jar
     DEPENDS "${swig_generated_file_fullname}"
     COMMAND ${JAVA_COMPILE} 
-            ${CMAKE_CURRENT_BINARY_DIR}/src/org/opensim/modeling/*.java 
+            org/opensim/modeling/*.java 
             -source 1.6 -target 1.6
     COMMAND ${JAVA_ARCHIVE} -cvf org-opensim-modeling.jar
             org/opensim/modeling/*.class
