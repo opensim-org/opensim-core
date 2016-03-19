@@ -169,7 +169,7 @@ OpenSim::Model createTestBed() {
     // Set properties of a sphere geometry to be used for the load.
     OpenSim::Sphere sphere;
     sphere.setFrameName("load");
-    sphere.set_radius(0.2);
+    sphere.set_radius(0.02);
     sphere.setOpacity(0.5);
     sphere.setColor(Vec3{ 0, 0, 1 });
     load->addGeometry(sphere);
@@ -183,51 +183,63 @@ OpenSim::Model createTestBed() {
     auto spring = new OpenSim::PointToPointSpring(
         testBed.getGround(), Vec3(0), // point 1's frame and location in that frame
         *load, Vec3(0),               // point 2's frame and location in that frame
-        50.0, 1.0);                 // spring stiffness and rest-length
+        50.0, 1.0);                   // spring stiffness and rest-length
 
     testBed.addForce(spring);
 
     return testBed;
 }
 
-void connectDeviceToModel(OpenSim::Joint* anchorA, const std::string& frameAname,
-                          OpenSim::Joint* anchorB, const std::string& frameBname,
+void connectDeviceToModel(OpenSim::Joint& anchorA, const std::string& frameAname,
+                          OpenSim::Joint& anchorB, const std::string& frameBname,
                           OpenSim::Device* device, OpenSim::Model& model) {
     // Set parent of anchorA as frameA.
-    anchorA->setParentFrameName(frameAname);
+    anchorA.setParentFrameName(frameAname);
     // Set parent of anchorB as frameB.
-    anchorB->setParentFrameName(frameBname);
+    anchorB.setParentFrameName(frameBname);
     // Add the device to the testBed.
     model.addModelComponent(device);
 }
 
 // Simulate any model from an initial state
 void simulate(OpenSim::Model& model, SimTK::State& state) {
-
-    // Configure to view in the API SimTK::Visualizer
-    //model.updMatterSubsystem().setShowDefaultGeometry(true);
+    // Configure the 3D visualizer environment
+    if (model.getUseVisualizer()) {
+        model.updMatterSubsystem().setShowDefaultGeometry(false);
+        SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
+        viz.setBackgroundType(viz.GroundAndSky);
+        viz.setShowSimTime(true);
+        viz.drawFrameNow(state);
+        // wait for user input to start the simulation.
+        std::cout << "Press enter/return to continue:" << std::endl;
+        std::cin.get();
+    }
 
     // Simulate.
     SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
     OpenSim::Manager manager(model, integrator);
     manager.setInitialTime(0);
-    manager.setFinalTime(10.0);
+    manager.setFinalTime(5.0);
     manager.integrate(state);
     // generate states output debugging
     manager.getStateStorage().print("exampleHopperStates.sto");
+
+    // wait for user input to proceed.
+    std::cout << "Press enter/return to continue:" << std::endl;
+    std::cin.get();
 }
 
-int main() {
+OpenSim::Device* createDevice() {
     using SimTK::Vec3;
     using SimTK::Inertia;
 
     //-----------------Code to Assemble the Device begin -----------------------
     // Create a sphere geometry to reuse later.
-    OpenSim::Sphere sphere{ 0.1 };
+    OpenSim::Sphere sphere{ 0.01 };
     sphere.setName("sphere");
+    sphere.setColor(Vec3{ 0, 1, 0 });
 
     // Create the device to hold the components.
-    //-------------------------------------------------------------------------
     auto device = new OpenSim::Device{};
     device->setName("device");
 
@@ -273,44 +285,48 @@ int main() {
     controller->setName("controller");
     controller->set_gain(2.0);
 
+    controller->updConnector<OpenSim::Actuator>("actuator").
+        connect(*pathActuator);
+    device->addComponent(controller);
+
+    return device;
+}
+
+int main() {
+    //--------------------------- DEVICE CODE begin ------------------_--------
+    auto device = createDevice();
+    // Build a test environment for the device. You can comment out the call
+    // when connecting the device built above to the actual hopper because this
+    // testBed is actually for testing this device.
+    //-------------------------------------------------------------------------
+    auto testBed = createTestBed(); // or load a model
+
+    // Connect device to/from the environment. Comment the below code and 
+    // make sure to connect the device to the actual hopper and simulate with
+    // hopper connected to the device.
+    //-------------------------------------------------------------------------
+    auto& anchorA = device->updComponent<OpenSim::Joint>("anchorA");
+    auto& anchorB = device->updComponent<OpenSim::Joint>("anchorB");
+    connectDeviceToModel(anchorA, "ground", anchorB, "load", device, testBed);
+    // Print the model. 
+    testBed.print("exampleHopperDevice.xml");
+
     auto generator = new OpenSim::SignalGenerator();
     generator->setName("generator");
     // Trying changing the constant value and even changing
     // the function, e.g. try a LinearFunction
     generator->set_function(OpenSim::Constant(1.0));
     device->addComponent(generator);
-
-    controller->updConnector<OpenSim::Actuator>("actuator").
-        connect(*pathActuator);
-    device->addComponent(controller);
-
-    // Build a test environment for the device. Comment the below function call
-    // when connecting the device built above to the actual hopper because this
-    // testBed is actually for testing this device.
-    //-------------------------------------------------------------------------
-    auto testBed = createTestBed();
-    auto& state0 = testBed.initSystem();
-
-    // Print the model. 
-    testBed.print("exampleHopperDevice.xml");
-
-    // Connect device to/from the environment. Comment the below code and 
-    // make sure to connect the device to the actual hopper and simulate with
-    // hopper connected to the device.
-    //-------------------------------------------------------------------------
-    connectDeviceToModel(anchorA, "ground", anchorB, "load", device, testBed);
-   
     // Wire up the Controller to use the generator for fake activations
-    controller->updInput("activation").
+    device->updInput("controller/activation").
         connect(generator->getOutput("signal"));
 
     auto reporter = new OpenSim::ConsoleReporter();
     reporter->setName("results");
     reporter->set_report_time_interval(0.5);
     reporter->updInput("inputs").connect(device->getOutput("length"));
-    //reporter->updInput("inputs").connect(device->getOutput("speed"));
     reporter->updInput("inputs").connect(device->getOutput("tension"));
-    //reporter->updInput("inputs").connect(device->getOutput("power"));
+    reporter->updInput("inputs").connect(device->getOutput("power"));
     reporter->updInput("inputs").connect(device->getOutput("controller/myo_control"));
 
     testBed.addComponent(reporter);
@@ -320,43 +336,34 @@ int main() {
     // Simulate the testBed containing the device only. When using the hopper,
     // make sure to simulate the hopper (with the device) and not the testBed.
     simulate(testBed, state);
-    // wait for user input to proceed.
-    std::cout << "Press enter/return to continue:" << std::endl;
-    std::cin.get();
-
     //----------------------------- DEVICE CODE end --------------------------
+
+
     //----------------------------- HOPPER CODE begin --------------------------
-    // TO DO -- Your code related to hopper goes here.
-    //----------------------------- HOPPER CODE end ----------------------------
     OpenSim::Model luxo("Luxo_Myo.osim");
-    std::cout << "Loaded model." << std::endl;
     luxo.setUseVisualizer(true);
-
-    SimTK::State& s = luxo.initSystem();
-
-    // Configure the 3D visualizer environment
-    luxo.updMatterSubsystem().setShowDefaultGeometry(false);
-    SimTK::Visualizer& viz = luxo.updVisualizer().updSimbodyVisualizer();
-    viz.setBackgroundType(viz.GroundAndSky);
-    viz.setShowSimTime(true);
-
-    simulate(luxo, s);
-    std::cout << "Press enter/return to continue:" << std::endl;
-    std::cin.get();
-
-    getAnswer();
-
+    //SimTK::State& s = luxo.initSystem();
+    //simulate(luxo, s);
+    //----------------------------- HOPPER CODE end ----------------------------
 
 
     //----------------------------- HOPPER + DEVICE begin ----------------------
-    // TO DO -- Your code related to hopper with the device goes here.
+    OpenSim::Device* luxoDevice = device->clone();
+    luxoDevice->finalizeFromProperties();
+
+    auto& luxAnchorA = luxoDevice->updComponent<OpenSim::Joint>("anchorA");
+    auto& luxAnchorB = luxoDevice->updComponent<OpenSim::Joint>("anchorB");
+    connectDeviceToModel(luxAnchorA, "device_inferior_attachment",
+                         luxAnchorB, "device_superior_attachment", 
+                         luxoDevice, luxo);
     //----------------------------- HOPPER + DEVICE end ------------------------
 
-
+    SimTK::State& s = luxo.initSystem();
+    // Simulate the Luxo model with the device. 
+    simulate(luxo, s);
     //------------------------------ ANALYZE begin -----------------------------
     // TO DO -- Your analysis code goes here.
     //------------------------------ ANALYZE end -------------------------------
 
-
-
+    getAnswer();
 };
