@@ -706,13 +706,11 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
                     string saveWorkingDirectory = IO::getCwd();
                     string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
                     IO::chDir(directoryOfSetupFile);
-                    bool extLoadsFile=false;
                     try {
                         SimTK::Xml::Document doc(fileName);
                         doc.setIndentString("\t");
                         Xml::Element root = doc.getRootElement();
                         if (root.getElementTag()=="OpenSimDocument"){
-                            int curVersion = root.getRequiredAttributeValueAs<int>("Version");
                             Xml::element_iterator rootIter(root.element_begin("ForceSet"));
                             if (rootIter!=root.element_end()){
                                 rootIter->setElementTag("ExternalLoads");
