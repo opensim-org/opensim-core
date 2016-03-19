@@ -33,21 +33,21 @@ using namespace OpenSim;
 using namespace std;
 
 
-static int NUM_SAMPLE_PTS = 100; //The number of knot points to use to sample
+//static int NUM_SAMPLE_PTS = 100; //The number of knot points to use to sample
                                 //each Bezier corner section
 
-static double SMOOTHING = 0;   //The amount of smoothing to use when fitting 
+//static double SMOOTHING = 0;   //The amount of smoothing to use when fitting 
                                 //3rd order splines to the quintic Bezier
                                 //functions
-static bool DEBUG = true;    //When this is set to true, each function's debug
+//static bool DEBUG = true;    //When this is set to true, each function's debug
                             //routine will be called, which usually results
                             //in a text file of its output being produced
 
-static double UTOL = (double)SimTK::Eps*1e2;
+//static double UTOL = (double)SimTK::Eps*1e2;
 
-static double INTTOL = (double)SimTK::Eps*1e4;
+//static double INTTOL = (double)SimTK::Eps*1e4;
 
-static int MAXITER = 20;
+//static int MAXITER = 20;
 //=============================================================================
 // UTILITY FUNCTIONS
 //=============================================================================
@@ -654,7 +654,6 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     //has to intersect the x axis to the right of the origin
         double xFoot = 1.0+(xToe-1.0)/10.0;
         double yFoot = 0;
-    double dydxToe = (yToe-yFoot)/(xToe-xFoot);
 
     //Compute the location of the corner formed by the average slope of the
     //toe and the slope of the linear section
