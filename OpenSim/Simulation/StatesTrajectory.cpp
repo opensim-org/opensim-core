@@ -74,7 +74,7 @@ bool StatesTrajectory::isConsistent() const {
 
     const auto& state0 = get(0);
 
-    for (int itime = 1; itime < getSize(); ++itime) {
+    for (unsigned itime = 1; itime < getSize(); ++itime) {
 
         if (!state0.isConsistent(get(itime))) {
             return false;
