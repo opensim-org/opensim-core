@@ -65,16 +65,7 @@ public:
     // Component::getParent.
     OpenSim_DECLARE_PROPERTY(scaling_factor, double, "Affects each coord.");
     
-    /* TODO would prefer to use this, but waiting until the function within
-     outputs is copied correctly.
-     */
-    OpenSim_DECLARE_LIST_PROPERTY(responses, ComplexResponse,
-            "for individual coordinates.");
-     
-    void adopt(ComplexResponse* resp) {
-        updProperty_responses().adoptAndAppendValue(resp);
-        finalizeFromProperties();
-    }
+   
 
     OpenSim_DECLARE_OUTPUT(total_sum, double, getTotalSum,
             SimTK::Stage::Position);
@@ -83,9 +74,7 @@ public:
     OpenSim_DECLARE_OUTPUT(total_term_2, double, getTotalTerm2,
             SimTK::Stage::Velocity);
 
-    void addResponse(ComplexResponse* response) {
-        adoptSubcomponent(response);
-    }
+
 
     double getTotalSum(const State& s) const {
         const double basalRate(1.0);
@@ -119,7 +108,6 @@ public:
 private:
     
     void constructProperties() override {
-        constructProperty_responses();
         constructProperty_scaling_factor(1.0);
     }
 };
@@ -159,24 +147,14 @@ void testComplexResponse() {
     response1->setName("complex_response_j1");
     response1->updConnector<Coordinate>("coord").connect(j1->get_CoordinateSet()[0]);
     // add to aggregate which takes ownership
-    aggregate->addResponse(response1);
+    aggregate->addComponent(response1);
 
     // now create response 2
     auto response2 = new ComplexResponse();
     response2->setName("complex_response_j2");
     response2->updConnector<Coordinate>("coord").connect(j2->get_CoordinateSet()[0]);
     // add to aggregate which takes ownership
-    aggregate->addResponse(response2);
-    
-    auto* reporter = new ConsoleReporter();
-    reporter->setName("reporter");
-    reporter->updInput("input").connect(response1->getOutput("sum"));
-    reporter->updInput("input").connect(response2->getOutput("sum"));
-    reporter->updInput("input").connect(aggregate->getOutput("total_sum"));
-    reporter->updInput("input").connect(
-            j1->getCoordinateSet().get(0).getOutput("value"));
-    // TODO connect by path: reporter->getInput("input").connect("/complex_response/sum");
-    // multi input: reporter->getMultiInput("input").append_connect(cr->getOutput("sum"));
+    aggregate->addComponent(response2);
 
     // Add in the components to the model.
     model.addBody(b1);
@@ -185,7 +163,18 @@ void testComplexResponse() {
     model.addJoint(j1);
     model.addJoint(j2);
     model.addJoint(j3);
-    model.addModelComponent(aggregate); 
+    model.addModelComponent(aggregate);
+    
+    auto* reporter = new ConsoleReporter();
+    reporter->setName("reporter");
+    reporter->updInput("inputs").connect(response1->getOutput("sum"));
+    reporter->updInput("inputs").connect(response2->getOutput("sum"));
+    reporter->updInput("inputs").connect(aggregate->getOutput("total_sum"));
+    reporter->updInput("inputs").connect(
+            j1->getCoordinateSet().get(0).getOutput("value"));
+    // TODO connect by path: reporter->getInput("input").connect("/complex_response/sum");
+    // multi input: reporter->getMultiInput("input").append_connect(cr->getOutput("sum"));
+ 
     model.addComponent(reporter);
 
     State& state = model.initSystem();

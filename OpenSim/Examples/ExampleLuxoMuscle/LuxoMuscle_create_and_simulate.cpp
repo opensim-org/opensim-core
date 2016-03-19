@@ -167,6 +167,18 @@ double back_extensor_F0 = 100.0,
 Vec3 back_extensor_origin = 0.5*peg_z_offset,
 back_extensor_insertion = back_peg_center + 0.5*peg_z_offset;
 
+// Frame locations for assistive device attachments
+//--------------------------------------------------
+Transform back_assist_origin_transform(back_peg_center); // in chest piece
+Transform back_assist_insertion_transform(
+                                  posterior_superior_pelvis_pin_location);
+
+Transform knee_assist_origin_transform(Vec3(0)); // in posterior leg bar
+Transform knee_assist_insertion_transform(Vec3(knee_extensor_insertion[0],
+                                               knee_extensor_insertion[1],
+                                               0.0));
+
+
 
 //______________________________________________________________________________
 /**
@@ -768,8 +780,40 @@ void createLuxoJr(OpenSim::Model &model){
     model.addController(backController);
 
     
+    /* You'll find that these muscles can make Luxo Myo stand, but not jump.
+     * Jumping will require an assistive device. We'll add two frames for
+     * attaching a point to point assistive actuator.
+     */
     
     
+    // add frames for connecting a back assitance device between the chest
+    // and pelvis
+    PhysicalOffsetFrame* back_assist_origin_frame = new
+        PhysicalOffsetFrame("back_assist_origin",
+                            *chest,
+                            back_assist_origin_transform);
     
+    PhysicalOffsetFrame* back_assist_insertion_frame = new
+        PhysicalOffsetFrame("back_assist_insertion",
+                            *pelvisBracket,
+                            back_assist_insertion_transform);
+    
+    model.addFrame(back_assist_origin_frame);
+    model.addFrame(back_assist_insertion_frame);
+    
+    // add frames for connecting a knee assistance device between the posterior
+    // leg and bottom bracket.
+    PhysicalOffsetFrame* knee_assist_origin_frame = new
+    PhysicalOffsetFrame("knee_assist_origin",
+                        *posteriorLegBar,
+                        knee_assist_origin_transform);
+    
+    PhysicalOffsetFrame* knee_assist_insertion_frame = new
+    PhysicalOffsetFrame("knee_assist_insertion",
+                        *bottom_bracket,
+                        knee_assist_insertion_transform);
+    
+    model.addFrame(knee_assist_origin_frame);
+    model.addFrame(knee_assist_insertion_frame);
     
 }

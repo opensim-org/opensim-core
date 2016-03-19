@@ -1778,7 +1778,11 @@ const Vector& Model::getControls(const SimTK::State &s) const
 /** Compute the controls the model */
 void Model::computeControls(const SimTK::State& s, SimTK::Vector &controls) const
 {
-    getControllerSet().computeControls(s, controls);
+    for (auto& controller : getComponentList<Controller>()) {
+        if (!controller.isDisabled()) {
+            controller.computeControls(s, controls);
+        }
+    }
 }
 
 

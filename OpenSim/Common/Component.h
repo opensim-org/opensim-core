@@ -273,6 +273,9 @@ protected:
     OpenSim_DECLARE_LIST_PROPERTY(connectors, AbstractConnector,
         "List of connectors (structural dependencies) that this component has.");
 
+    OpenSim_DECLARE_LIST_PROPERTY(components, Component,
+        "List of components that this component owns and serializes.");
+
 public:
 //==============================================================================
 // METHODS
@@ -395,6 +398,16 @@ public:
     * Returns false if the System has not been created OR if this
     * Component has not added itself to the System.  */
     bool hasSystem() const { return !_system.empty(); }
+
+    /**
+    * Add a Component to this component's property list.
+    * This component takes ownership of the added component.
+    * 
+    * TODO rename to adoptComponent() when Model::add#ModelComponent#()
+    * methods are also renamed. For the time being remain consistent. -aseth 
+    *
+    * @throws ComponentAlreadyPartOfOwnershipTree  */
+    void addComponent(Component* comp);
 
     /**
      * Get an iterator through the underlying subcomponents that this component is 
@@ -1623,6 +1636,7 @@ protected:
     template<class C>
     friend void Connector<C>::findAndConnect(const Component& root);
 
+public:
     /** Utility method to find a component in the list of sub components of this
         component and any of their sub components, etc..., by name or state variable name.
         The search can be sped up considerably if the "path" or even partial path name
@@ -1720,11 +1734,12 @@ protected:
         return nullptr;
     }
 
-    /** Similarly find a Connector of this Component (also amongst its subcomponents) */
+    /** Similarly find a Connector of this Component (includes its subcomponents) */
     const AbstractConnector* findConnector(const std::string& name) const;
-
+    /** Similarly find a StateVariable of this Component (includes its subcomponents) */
     const StateVariable* findStateVariable(const std::string& name) const;
 
+protected:
     /** Access the parent of this Component.
         An exception is thrown if the Component has no parent.
         @see hasParent() */
@@ -2361,7 +2376,9 @@ void Connector<C>::findAndConnect(const Component& root) {
         }
     }
     catch (const ComponentNotFoundOnSpecifiedPath& ex) {
-        // TODO leave out for hackathon std::cout << ex.getMessage() << std::endl;
+        const char* msg = ex.getMessage();
+        // TODO leave out for hackathon:
+        //std::cout << msg << std::endl;
         comp =  root.template findComponent<C>(path);
     }
     if (comp)
