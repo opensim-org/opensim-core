@@ -34,12 +34,16 @@ be reported using new Data Components. */
 // or: #define LUXO 1
 
 #if LUXO
-    #define OPTIMAL_FORCE 130
+    #define DEVMASS 0.07
+    #define DEVI 0.005
+    #define OPTIMAL_FORCE 135
     #define GAIN 2
     #define LOAD 10
     #define SPRINGSTIFF 50
     #define SIGNALGEN 1
 #else
+    #define DEVMASS 1.0
+    #define DEVI 0.5
     #define OPTIMAL_FORCE 80
     #define GAIN 10
     #define LOAD 1000
@@ -269,8 +273,8 @@ OpenSim::Device* createDevice() {
     // model. Each have a mass of 1 kg, center of mass at the
     // origin of their respective frames, and moment of inertia of 0.5
     // and products of zero.
-    auto massA = new OpenSim::Body("massA", 0.01, Vec3(0), Inertia(0.005));
-    auto massB = new OpenSim::Body("massB", 0.01, Vec3(0), Inertia(0.005));
+    auto massA = new OpenSim::Body("massA", DEVMASS, Vec3(0), Inertia(DEVI));
+    auto massB = new OpenSim::Body("massB", DEVMASS, Vec3(0), Inertia(DEVI));
     // Add the masses to the device.
     device->addComponent(massA);
     device->addComponent(massB);
