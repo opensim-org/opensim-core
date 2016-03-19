@@ -18,7 +18,7 @@ void integrate(const System& system, Integrator& integrator,
 }
 
 int main() {
-    OpenSim::Model luxo("Luxo_Myo.osim");
+    OpenSim::Model luxo("bouncing_block_v4.0.osim");
     std::cout << "Loaded model." << std::endl;
     luxo.setUseVisualizer(true);
     
@@ -33,7 +33,7 @@ int main() {
     
     // TODO replace with a driver / time step advancer.
     SimTK::RungeKuttaMersonIntegrator integrator(luxo.getSystem());
-    integrate(luxo.getSystem(), integrator, s, 5.0);
+    integrate(luxo.getSystem(), integrator, s, 30.0);
 
     getAnswer();
 
