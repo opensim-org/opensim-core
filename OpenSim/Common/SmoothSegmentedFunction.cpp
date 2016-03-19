@@ -32,7 +32,6 @@ using namespace SimTK;
 using namespace OpenSim;
 using namespace std;
 
-static bool DEBUG=false;
 static double UTOL = (double)SimTK::Eps*1e2;
 static double INTTOL = (double)SimTK::Eps*1e2;
 static int MAXITER = 20;
