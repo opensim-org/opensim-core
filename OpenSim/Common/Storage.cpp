@@ -2620,8 +2620,7 @@ setOutputFileName(const std::string& aFileName)
     _fp = IO::OpenFile(aFileName,"w");
     if(_fp==NULL) throw(Exception("Could not open file "+aFileName));
     // WRITE THE HEADER
-    int n=0,nTotal=0;
-    n = writeHeader(_fp);
+    int n = writeHeader(_fp);
     n = writeDescription(_fp);
     // WRITE THE COLUMN LABELS
     n = writeColumnLabels(_fp);
