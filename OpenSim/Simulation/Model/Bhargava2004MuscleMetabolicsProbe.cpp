@@ -285,7 +285,6 @@ computeProbeInputs(const State& s) const
 
         // Get important muscle values at the current time state
         const double max_isometric_force = m->getMaxIsometricForce();
-        const double max_shortening_velocity = m->getMaxContractionVelocity();
         const double activation = get_muscle_effort_scaling_factor()
                                   * m->getActivation(s);
         const double excitation = get_muscle_effort_scaling_factor()
@@ -297,7 +296,6 @@ computeProbeInputs(const State& s) const
                                          + fiber_force_passive;
         const double fiber_length_normalized = m->getNormalizedFiberLength(s);
         const double fiber_velocity = m->getFiberVelocity(s);
-        const double fiber_velocity_normalized = m->getNormalizedFiberVelocity(s);
         const double slow_twitch_excitation = mm.get_ratio_slow_twitch_fibers() * sin(Pi/2 * excitation);
         const double fast_twitch_excitation = (1 - mm.get_ratio_slow_twitch_fibers()) * (1 - cos(Pi/2 * excitation));
         double alpha, fiber_length_dependence;
