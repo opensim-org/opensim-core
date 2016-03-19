@@ -115,6 +115,12 @@ public:
 // OUTPUTS
 //=============================================================================
     OpenSim_DECLARE_OUTPUT(power, double, calcPower, SimTK::Stage::Acceleration);
+    // reaction_load_at_parent_frame
+    OpenSim_DECLARE_OUTPUT(reaction_load_at_parent_frame_in_ground_frame, SimTK::SpatialVec,
+        calcReactionAtParentFrameInGround, SimTK::Stage::Acceleration);
+    // reaction_load_at_child_frame
+    OpenSim_DECLARE_OUTPUT(reaction_load_at_child_frame_in_ground_frame, SimTK::SpatialVec,
+        calcReactionAtChildFrameInGround, SimTK::Stage::Acceleration);
 
 //=============================================================================
 // METHODS
@@ -249,9 +255,20 @@ public:
     SimTK::SpatialVec 
     calcEquivalentSpatialForce(const SimTK::State &s, 
                                const SimTK::Vector &mobilityForces) const;
+    
+    // Reaction forces (direct calls into Simbody methods)
+    /** Reaction forces on Parent Frame at Mobilizer in Ground @see SimTK::MobilizedBody method. */
+    SimTK::SpatialVec
+        calcReactionAtParentFrameInGround(const SimTK::State &s) const {
+        return getChildFrame().getMobilizedBody().findMobilizerReactionOnParentAtFInGround(s);
+    }
+    /** Reaction forces on Child Frame at Mobilizer Frame in Ground @see SimTK::MobilizedBody method. */
+    SimTK::SpatialVec
+        calcReactionAtChildFrameInGround(const SimTK::State &s) const {
+        return getChildFrame().getMobilizedBody().findMobilizerReactionOnBodyAtMInGround(s);
+    }
 
-
-    /** Joints in general do not contribute power since the reaction space 
+    /** Joints in general do not contribute power since the reaction space
         forces are orthogonal to the mobility space. However, when joint motion 
         is prescribed, the internal forces that move the joint will do work. In 
         that case, the power is non-zero and the supplied SimTK::State

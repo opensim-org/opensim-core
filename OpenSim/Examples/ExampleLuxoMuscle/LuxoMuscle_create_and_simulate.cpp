@@ -815,5 +815,11 @@ void createLuxoJr(OpenSim::Model &model){
     
     model.addFrame(knee_assist_origin_frame);
     model.addFrame(knee_assist_insertion_frame);
+
+    // Temporary: make the frame geometry disappear.
+    for (auto& c : model.getComponentList<OpenSim::FrameGeometry>()) {
+        const_cast<OpenSim::FrameGeometry*>(&c)->set_scale_factors(
+                SimTK::Vec3(0.001, 0.001, 0.001));
+    }
     
 }
