@@ -34,10 +34,11 @@ be reported using new Data Components. */
 // or: #define LUXO 1
 
 #if LUXO
-    #define OPTIMAL_FORCE 1
+    #define OPTIMAL_FORCE 10
+    #define MASS 0.1
     #define GAIN 2
     #define LOAD 10
-    #define SPRINGSTIFF 50
+    #define SPRINGSTIFF 5
     #define SIGNALGEN 1
 #else
     #define OPTIMAL_FORCE 80
@@ -186,8 +187,8 @@ OpenSim::Model createTestBed() {
     testBed.setUseVisualizer(true);
     testBed.setGravity(Vec3(0));
 
-    // Create a load of mass 10kg.
-    auto load = new OpenSim::Body("load", 10, Vec3(0), Inertia(1));
+    // Create a load of mass 1kg.
+    auto load = new OpenSim::Body("load", 1, Vec3(0), Inertia(1));
     // Set properties of a sphere geometry to be used for the load.
     OpenSim::Sphere sphere;
     sphere.setFrameName("load");
@@ -269,8 +270,8 @@ OpenSim::Device* createDevice() {
     // model. Each have a mass of 1 kg, center of mass at the
     // origin of their respective frames, and moment of inertia of 0.5
     // and products of zero.
-    auto massA = new OpenSim::Body("massA", 1, Vec3(0), Inertia(0.5));
-    auto massB = new OpenSim::Body("massB", 1, Vec3(0), Inertia(0.5));
+    auto massA = new OpenSim::Body("massA", MASS, Vec3(0), Inertia(0.5));
+    auto massB = new OpenSim::Body("massB", MASS, Vec3(0), Inertia(0.5));
     // Add the masses to the device.
     device->addComponent(massA);
     device->addComponent(massB);
@@ -366,11 +367,11 @@ int main() {
     std::string modelFile, attachmentA, attachmentB, signalForDevice;
     if (LUXO) {
         modelFile = "Luxo_Myo.osim";
-        //attachmentA = "knee_assist_origin";
-        //attachmentB = "knee_assist_insertion"; 
-        attachmentA = "back_assist_origin";
-        attachmentB = "back_assist_insertion";
-        signalForDevice = /*"/LuxoMuscle/gentemp/signal";*/ "/LuxoMuscle/back_extensor_right/excitation";
+        attachmentA = "knee_assist_origin";
+        attachmentB = "knee_assist_insertion"; 
+        //attachmentA = "back_assist_origin";
+        //attachmentB = "back_assist_insertion";
+        signalForDevice = /*"/LuxoMuscle/gentemp/signal";//*/ "/LuxoMuscle/back_extensor_right/activation";
     } else {
         modelFile = "bouncing_block.osim";
         attachmentA = "/toy_with_forces/thigh_attachment";
