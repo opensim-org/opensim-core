@@ -72,10 +72,10 @@ Manager::~Manager()
 Manager::Manager(Model& model):
        _model(&model),
        _integ(NULL),               
-       _controllerSet(&model.updControllerSet() ),
        _stateStore(NULL),
        _performAnalyses(true),
-       _writeToStorage(true)
+       _writeToStorage(true),
+       _controllerSet(&model.updControllerSet() )
 {
     setNull();
 
@@ -705,11 +705,10 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     // Halts must arrive during an integration.
     clearHalt();
 
-    double dt,dtPrev,tReal;
+    double dt,tReal;
     double time =_ti;
     dt=dtFirst;
     if(dt>_dtMax) dt = _dtMax;
-    dtPrev=dt;
 
     // CHECK SPECIFIED DT STEPPING
     
