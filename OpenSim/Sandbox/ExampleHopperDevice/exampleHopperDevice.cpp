@@ -34,7 +34,7 @@ be reported using new Data Components. */
 // or: #define LUXO 1
 
 #if LUXO
-    #define OPTIMAL_FORCE 1
+    #define OPTIMAL_FORCE 130
     #define GAIN 2
     #define LOAD 10
     #define SPRINGSTIFF 50
@@ -269,8 +269,8 @@ OpenSim::Device* createDevice() {
     // model. Each have a mass of 1 kg, center of mass at the
     // origin of their respective frames, and moment of inertia of 0.5
     // and products of zero.
-    auto massA = new OpenSim::Body("massA", 1, Vec3(0), Inertia(0.5));
-    auto massB = new OpenSim::Body("massB", 1, Vec3(0), Inertia(0.5));
+    auto massA = new OpenSim::Body("massA", 0.01, Vec3(0), Inertia(0.005));
+    auto massB = new OpenSim::Body("massB", 0.01, Vec3(0), Inertia(0.005));
     // Add the masses to the device.
     device->addComponent(massA);
     device->addComponent(massB);
@@ -358,19 +358,22 @@ int main() {
 
     // Simulate the testBed containing the device only. When using the hopper,
     // make sure to simulate the hopper (with the device) and not the testBed.
-    simulate(testBed, state);
+    // TODO simulate(testBed, state);
     //----------------------------- DEVICE CODE end --------------------------
 
 
     //----------------------------- HOPPER CODE begin --------------------------
-    std::string modelFile, attachmentA, attachmentB, signalForDevice;
+    std::string modelFile, attachmentA, attachmentB, signalForDevice,
+        attachment2A, attachment2B;
     if (LUXO) {
         modelFile = "Luxo_Myo.osim";
-        //attachmentA = "knee_assist_origin";
-        //attachmentB = "knee_assist_insertion"; 
-        attachmentA = "back_assist_origin";
-        attachmentB = "back_assist_insertion";
-        signalForDevice = /*"/LuxoMuscle/gentemp/signal";*/ "/LuxoMuscle/back_extensor_right/excitation";
+        attachmentA = "knee_assist_origin";
+        attachmentB = "knee_assist_insertion"; 
+        attachment2A = "back_assist_origin";
+        attachment2B = "back_assist_insertion";
+        //attachmentA = "back_assist_origin";
+        //attachmentB = "back_assist_insertion";
+        signalForDevice = "/LuxoMuscle/gentemp/signal"; /*"/LuxoMuscle/back_extensor_right/excitation"*/;
     } else {
         modelFile = "bouncing_block.osim";
         attachmentA = "/toy_with_forces/thigh_attachment";
@@ -383,9 +386,21 @@ int main() {
     // TODO temporary signal generator (for debugging):
     auto genTemp = new OpenSim::SignalGenerator();
     genTemp->setName("gentemp");
-    // Trying changing the constant value and even changing
-    // the function, e.g. try a LinearFunction
-    genTemp->set_function(OpenSim::Constant(100));
+    double sim_time = 5; // seconds
+    double low_excitation = 0.0; // fraction of effort at start
+    double high_excitation = 1.0 ; // fraction of effort during jump
+    double activate_time = 2.0; // time jumping maneuver starts
+    double deactivate_time = 2.2; // time jumping ends
+    double times[4] = { 0.0,
+        activate_time,
+        deactivate_time,
+        sim_time};
+    double excitations[4] = {low_excitation,
+        high_excitation,
+        low_excitation,
+        low_excitation};
+    OpenSim::PiecewiseConstantFunction x_of_t(3, times, excitations);
+    genTemp->set_function(x_of_t); //TODO OpenSim::Constant(100));
     luxo.addComponent(genTemp);
 
     auto reporterH = new OpenSim::ConsoleReporter();
@@ -401,13 +416,20 @@ int main() {
 
     //----------------------------- HOPPER + DEVICE begin ----------------------
     OpenSim::Device* luxoDevice = device->clone();
+    OpenSim::Device* luxoDevice2 = device->clone();
     luxoDevice->finalizeFromProperties();
+    luxoDevice2->finalizeFromProperties();
 
     auto& luxAnchorA = luxoDevice->updComponent<OpenSim::Joint>("anchorA");
     auto& luxAnchorB = luxoDevice->updComponent<OpenSim::Joint>("anchorB");
     connectDeviceToModel(luxAnchorA, attachmentA,
                          luxAnchorB, attachmentB, 
                          luxoDevice, luxo);
+    auto& luxAnchor2A = luxoDevice2->updComponent<OpenSim::Joint>("anchorA");
+    auto& luxAnchor2B = luxoDevice2->updComponent<OpenSim::Joint>("anchorB");
+    connectDeviceToModel(luxAnchor2A, attachment2A,
+                         luxAnchor2B, attachment2B, 
+                         luxoDevice2, luxo);
 
     // TODO this next line works for bouncing_block, but NOT for Luxo; you'll
     // get a segfault because (I think) infinite recursion: the controller is
@@ -417,8 +439,10 @@ int main() {
     // of the box so I gave up.
     luxoDevice->updInput("controller/activation").
         connect(luxo.getOutput(signalForDevice));
-     // TODO remove this luxoDevice->updInput("controller/activation").
-     // TODO remove this            connect(luxo.getOutput("gentemp/signal"));
+    luxoDevice2->updInput("controller/activation").
+        connect(luxo.getOutput(signalForDevice));
+    // TODO luxoDevice->updInput("controller/activation").
+    // TODO            connect(luxo.getOutput("gentemp/signal"));
 
     // Add some more quantities to report.
     reporterH->updInput("inputs").connect(luxoDevice->getOutput("controller/myo_control"));
