@@ -58,7 +58,7 @@ bool StatesTrajectory::isNondecreasingInTime() const {
     // An empty or size-1 trajectory necessarily has nondecreasing times.
     if (getSize() <= 1) return true;
 
-    for (int itime = 1; itime < getSize(); ++itime) {
+    for (unsigned itime = 1; itime < getSize(); ++itime) {
 
         if (get(itime).getTime() < get(itime - 1).getTime()) {
             return false;
@@ -171,7 +171,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     // Check if the Storage has columns that are not states in the Model.
     // ------------------------------------------------------------------
     if (!allowExtraColumns) {
-        if (numDependentColumns > statesToFillUp.size()) {
+        if ((unsigned)numDependentColumns > statesToFillUp.size()) {
             std::vector<std::string> extraColumnNames;
             // We want the actual column names, not the state names; the two
             // might be different b/c the state names changed in v4.0.
