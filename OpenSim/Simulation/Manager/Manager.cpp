@@ -705,7 +705,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     // Halts must arrive during an integration.
     clearHalt();
 
-    double dt,tReal;
+    double dt/*,dtPrev*/,tReal;
     double time =_ti;
     dt=dtFirst;
     if(dt>_dtMax) dt = _dtMax;
