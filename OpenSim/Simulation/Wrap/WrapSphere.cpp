@@ -252,6 +252,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
         aWrapResult.sv[i] = previousWrap.sv[i];
     }
 
+   //maxit = 50;
    aFlag = true;
 
     aWrapResult.wrap_pts.setSize(0);
