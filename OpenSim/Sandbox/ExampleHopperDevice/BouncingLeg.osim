@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="30505">
-    <Model name="toy_with_forces">
+    <Model name="bouncing_leg">
         <!--The model's ground reference frame.-->
         <Ground name="ground">
             <!--List of Geometry that is attached to this Model Component.-->
@@ -41,7 +41,7 @@
                 <PhysicalOffsetFrame name="thigh_attachment">
                     <connectors>
                         <Connector_PhysicalFrame_ name="parent">
-                            <connectee_name>/toy_with_forces/link1</connectee_name>
+                            <connectee_name>/bouncing_leg/link1</connectee_name>
                         </Connector_PhysicalFrame_>
                     </connectors>
                     <geometry>
@@ -62,7 +62,7 @@
                 <PhysicalOffsetFrame name="shank_attachment">
                     <connectors>
                         <Connector_PhysicalFrame_ name="parent">
-                            <connectee_name>/toy_with_forces/link2</connectee_name>
+                            <connectee_name>/bouncing_leg/link2</connectee_name>
                         </Connector_PhysicalFrame_>
                     </connectors>
                     <geometry>
@@ -665,29 +665,24 @@
 					<!--Slip velocity (creep) at which peak static friction occurs.-->
 					<transition_velocity>0.10000000000000001</transition_velocity>
 				</HuntCrossleyForce>
-				<PointToPointSpring name="spring">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="body1">
-							<!--Name of the component this Connector should be connected to.-->
-                            <connectee_name>../block</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="body2">
-							<!--Name of the component this Connector should be connected to.-->
-                            <connectee_name>../link1</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+				<CoordinateLimitForce name="hip_limit">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<isDisabled>true</isDisabled>
-					<!--Spring attachment point on body1.-->
-					<point1>0 0 0</point1>
-					<!--Spring attachment point on body2.-->
-					<point2>0 0 0</point2>
-					<!--Spring stiffness (N/m).-->
-					<stiffness>2000</stiffness>
-					<!--Spring resting length (m).-->
-					<rest_length>0.80000000000000004</rest_length>
-				</PointToPointSpring>
+					<isDisabled>false</isDisabled>
+					<!--Coordinate (name) to be limited.-->
+					<coordinate>pin1_rot</coordinate>
+					<!--Stiffness of the passive limit force when coordinate exceeds upper limit. Note, rotational stiffness expected in N*m/degree.-->
+					<upper_stiffness>20</upper_stiffness>
+					<!--The upper limit of the coordinate range of motion (rotations in degrees).-->
+					<upper_limit>90</upper_limit>
+					<!--Stiffness of the passive limit force when coordinate exceeds lower limit. Note, rotational stiffness expected in N*m/degree.-->
+					<lower_stiffness>20</lower_stiffness>
+					<!--The lower limit of the coordinate range of motion (rotations in degrees).-->
+					<lower_limit>-110</lower_limit>
+					<!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
+					<damping>5</damping>
+					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
+					<transition>10</transition>
+				</CoordinateLimitForce>
 				<CoordinateLimitForce name="knee_limit">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
 					<isDisabled>false</isDisabled>
@@ -706,64 +701,6 @@
 					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
 					<transition>5</transition>
 				</CoordinateLimitForce>
-				<BushingForce name="hip_bushing">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="frame1">
-							<!--Name of the component this Connector should be connected to.-->
-							<connectee_name>block</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="frame2">
-							<!--Name of the component this Connector should be connected to.-->
-							<connectee_name>link1</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<isDisabled>false</isDisabled>
-					<!--Frames created/added to satisfy this component's connections.-->
-					<frames>
-						<PhysicalOffsetFrame name="link1_offset">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_PhysicalFrame_ name="parent">
-									<!--Name of the component this Connector should be connected to.-->
-									<connectee_name>link1</connectee_name>
-								</Connector_PhysicalFrame_>
-							</connectors>
-							<!--List of Geometry that is attached to this Model Component.-->
-							<geometry>
-								<FrameGeometry name="frame_geometry">
-									<!--List of connectors (structural dependencies) that this component has.-->
-									<connectors>
-										<Connector_Frame_ name="frame">
-											<!--Name of the component this Connector should be connected to.-->
-											<connectee_name>../</connectee_name>
-										</Connector_Frame_>
-									</connectors>
-									<!--Scale factors in X, Y, Z directions respectively.-->
-									<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
-									<!--Default appearance for this Geometry-->
-									<Appearance>
-										<!--Flag indicating whether the associated Geometry is visible or hidden.-->
-										<visible>false</visible>
-									</Appearance>
-								</FrameGeometry>
-							</geometry>
-							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
-							<translation>0 0.5 0</translation>
-							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
-							<orientation>0 0 0</orientation>
-						</PhysicalOffsetFrame>
-					</frames>
-					<!--Stiffness parameters resisting rotational deviation (Nm/rad).-->
-					<rotational_stiffness>10 10 10</rotational_stiffness>
-					<!--Stiffness parameters resisting relative translation (N/m).-->
-					<translational_stiffness>0 0 0</translational_stiffness>
-					<!--Damping parameters resisting angular deviation rate. (Nm/(rad/s))-->
-					<rotational_damping>0.10000000000000001 0.10000000000000001 0.10000000000000001</rotational_damping>
-					<!--Damping parameters resisting relative translational velocity. (N/(m/s)-->
-					<translational_damping>0 0 0</translational_damping>
-				</BushingForce>
 			</objects>
 			<groups />
 		</ForceSet>

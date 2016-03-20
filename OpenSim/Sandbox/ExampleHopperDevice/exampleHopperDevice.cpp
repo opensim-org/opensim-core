@@ -52,142 +52,143 @@ be reported using new Data Components. */
 
 namespace OpenSim {
 
-    /* We begin by creating a container to hold all the parts for the model of
-    our device. This is similar to how OpenSim uses Model to hold the parts
-    of a musculoskeletal model. In a Model the parts are ModelComponents.
-    Since the device will eventually be mounted on a musculoskeletal Model,
-    we'll make it a type of ModelComponent. Since Components can be composed
-    by subcomponents by their nature, we don't need to implement any additional
-    functionality. Later we will add methods to evaluate the performance of the
-    device. This will be the scaffold for our device, so we'll call the class,
-    Device. */
-    class Device : public ModelComponent {
-        OpenSim_DECLARE_CONCRETE_OBJECT(Device, Component);
+/* We begin by creating a class to conatin all the parts for the model of
+our device. This is similar to how OpenSim uses Model to hold the parts
+of a musculoskeletal model. In a Model the parts are ModelComponents.
+Since the device will eventually be mounted on a musculoskeletal Model,
+we'll make it a type of ModelComponent. Since Components can be composed
+by subcomponents by their nature, we don't need to implement any additional
+functionality. Later we will add methods to evaluate the performance of the
+device. This will be the scaffold for our device, so we'll call the class,
+Device. */
+class Device : public ModelComponent {
+    OpenSim_DECLARE_CONCRETE_OBJECT(Device, Component);
 
-    public:
-        /** Add outputs so we can report device quantities we care about. */
-        /** The length of the device from anchor to anchor point. */
-        OpenSim_DECLARE_OUTPUT(length, double, getLength, SimTK::Stage::Position);
-        /** The lengthening speed of the device. */
-        OpenSim_DECLARE_OUTPUT(speed, double, getSpeed, SimTK::Stage::Velocity);
-        /** The force transmitted by the device. */
-        OpenSim_DECLARE_OUTPUT(tension, double, getTension, SimTK::Stage::Dynamics);
-        /** The power produced(+)/dissipated(-) by the device. */
-        OpenSim_DECLARE_OUTPUT(power, double, getPower, SimTK::Stage::Dynamics);
-        /** The height of the model that device is attached to. */
-        OpenSim_DECLARE_OUTPUT(height, double, getCenterOfMassHeight,
-            SimTK::Stage::Position);
+public:
+    /** Add outputs so we can report device quantities we care about. */
+    /** The length of the device from anchor to anchor point. */
+    OpenSim_DECLARE_OUTPUT(length, double, getLength, SimTK::Stage::Position);
+    /** The lengthening speed of the device. */
+    OpenSim_DECLARE_OUTPUT(speed, double, getSpeed, SimTK::Stage::Velocity);
+    /** The force transmitted by the device. */
+    OpenSim_DECLARE_OUTPUT(tension, double, getTension, SimTK::Stage::Dynamics);
+    /** The power produced(+)/dissipated(-) by the device. */
+    OpenSim_DECLARE_OUTPUT(power, double, getPower, SimTK::Stage::Dynamics);
+    /** The height of the model that device is attached to. */
+    OpenSim_DECLARE_OUTPUT(height, double, getCenterOfMassHeight,
+        SimTK::Stage::Position);
 
-        /** Member functions to access values of interest from the device. */
-        double getLength(const SimTK::State& s) const {
-            return getComponent<PathActuator>("cableAtoB").getLength(s);
-        }
-        double getSpeed(const SimTK::State& s) const {
-            return getComponent<PathActuator>("cableAtoB").getLengtheningSpeed(s);
-        }
-        double getTension(const SimTK::State& s) const {
-            return getComponent<PathActuator>("cableAtoB").computeActuation(s);
-        }
-        double getPower(const SimTK::State& s) const {
-            return getComponent<PathActuator>("cableAtoB").getPower(s);
-        }
+    /** Member functions to access values of interest from the device. */
+    double getLength(const SimTK::State& s) const {
+        return getComponent<PathActuator>("cableAtoB").getLength(s);
+    }
+    double getSpeed(const SimTK::State& s) const {
+        return getComponent<PathActuator>("cableAtoB").getLengtheningSpeed(s);
+    }
+    double getTension(const SimTK::State& s) const {
+        return getComponent<PathActuator>("cableAtoB").computeActuation(s);
+    }
+    double getPower(const SimTK::State& s) const {
+        return getComponent<PathActuator>("cableAtoB").getPower(s);
+    }
 
-        //device can also "sense" the model center of mass height 
-        double getCenterOfMassHeight(const SimTK::State& s) const {
-            SimTK::Vec3 compos = getModel().calcMassCenterPosition(s);
-            return compos[1];
-        }
+    //device can also "sense" the model center of mass height 
+    double getCenterOfMassHeight(const SimTK::State& s) const {
+        SimTK::Vec3 compos = getModel().calcMassCenterPosition(s);
+        return compos[1];
+    }
 
 
-    protected:
-        virtual void extendRealizeDynamics(const SimTK::State& s) const override {
-            const auto& actu = getComponent<PathActuator>("cableAtoB");
-            actu.getGeometryPath().setColor(s,
-                    SimTK::Vec3(fmin(1.0,
-                            getTension(s) / actu.get_optimal_force())));
-        }
+protected:
+    /** Optionally change the color of the device's actuator path
+        as its tension changes. */
+    void extendRealizeDynamics(const SimTK::State& s) const override {
+        const auto& actuator = getComponent<PathActuator>("cableAtoB");
+        double level = fmin(1.0, getTension(s) / actuator.get_optimal_force());
+        actuator.getGeometryPath().setColor(s, SimTK::Vec3(level, 0.5, 0.5));
+    }
 
-    };
+};
 
-    /**
-    * Create a Controller that produces a control signal = k * a, where `k` is
-    * the gain property, and `a` is the activation input. This is intended to model
-    * proportional myoelectric device controllers. This Controller can control any
-    * ScalarActuator. The ScalarActuator that this control controls is set using
-    * the `device` connector.
-    *
-    * http://en.wikipedia.org/wiki/Proportional_Myoelectric_Control
-    */
-    class PropMyoController : public OpenSim::Controller {
-        OpenSim_DECLARE_CONCRETE_OBJECT(PropMyoController, OpenSim::Controller);
-    public:
-        OpenSim_DECLARE_PROPERTY(gain, double,
-            "Gain used in converting muscle activation into a"
-            " control signal (units depend on the device)");
+/**
+* Create a Controller that produces a control signal = k * a, where `k` is
+* the gain property, and `a` is the activation input. This is intended to model
+* proportional myoelectric device controllers. This Controller can control any
+* ScalarActuator. The ScalarActuator that this control controls is set using
+* the `device` connector.
+* http://en.wikipedia.org/wiki/Proportional_Myoelectric_Control
+*/
+class PropMyoController : public OpenSim::Controller {
+    OpenSim_DECLARE_CONCRETE_OBJECT(PropMyoController, OpenSim::Controller);
+public:
+    OpenSim_DECLARE_PROPERTY(gain, double,
+        "Gain used in converting muscle activation into a"
+        " control signal (units depend on the device)");
 
-        OpenSim_DECLARE_OUTPUT(myo_control, double, computeControl, SimTK::Stage::Time);
+    OpenSim_DECLARE_OUTPUT( myo_control, double, computeControl, 
+                            SimTK::Stage::Time);
 
-        OpenSim_DECLARE_INPUT(activation, double, SimTK::Stage::Model,
-                "The activation signal that this controller's signal is "
-                "proportional to.");
+    OpenSim_DECLARE_INPUT(activation, double, SimTK::Stage::Model,
+            "The activation signal that this controller's signal is "
+            "proportional to.");
 
-        PropMyoController() {
-            constructInfrastructure();
-        }
+    PropMyoController() {
+        constructInfrastructure();
+    }
 
-        double computeControl(const SimTK::State& s) const {
-            double activation = getInputValue<double>(s, "activation");
-            if (activation < 0.31)
-                return 0;
-            // Compute the control signal.
-            return get_gain() * activation;
-        }
+    double computeControl(const SimTK::State& s) const {
+        double activation = getInputValue<double>(s, "activation");
+        if (activation < 0.31)
+            return 0;
+        // Compute the control signal.
+        return get_gain() * activation;
+    }
 
-        void computeControls(const SimTK::State& s,
-            SimTK::Vector& controls) const override {
-            double signal = computeControl(s);
-            // Add in this control signal to controls.
-            const auto& actuator = getConnectee<Actuator>("actuator");
-            SimTK::Vector thisActuatorsControls(1, signal);
-            actuator.addInControls(thisActuatorsControls, controls);
-        }
+    void computeControls(const SimTK::State& s,
+        SimTK::Vector& controls) const override {
+        double signal = computeControl(s);
+        // Add in this control signal to controls.
+        const auto& actuator = getConnectee<Actuator>("actuator");
+        SimTK::Vector thisActuatorsControls(1, signal);
+        actuator.addInControls(thisActuatorsControls, controls);
+    }
 
-    private:
+private:
+    void constructProperties() override {
+        constructProperty_gain(1.0);
+    }
 
-        void constructProperties() override {
-            constructProperty_gain(1.0);
-        }
+    void constructConnectors() override {
+        // The ScalarActuator for which we're computing a control signal.
+        constructConnector<Actuator>("actuator");
+    }
+};
 
-        void constructConnectors() override {
-            // The ScalarActuator for which we're computing a control signal.
-            constructConnector<Actuator>("actuator");
-        }
-    };
+/* A Generator is a component with no Inputs and only Outputs. This
+SignalGenerator evaluates an OpenSim::Function, specified as a property,
+as a function of time determined from the state. It's function is only
+evaluated when the Output must provide its value (e.g. to an Input) */
+class SignalGenerator : public Component {
+    OpenSim_DECLARE_CONCRETE_OBJECT(SignalGenerator, Component);
+public:
+    OpenSim_DECLARE_PROPERTY(function, OpenSim::Function,
+        "Function used to generate the signal (waveform) w.r.t time.");
 
-    /* A simple Component with no Inputs and only one Output. It evaluates
-    an OpenSim::Function, specified as a property, as a function of time
-    determined from the state. It's function is only evaluated when the
-    Output must provide its value (e.g. to an Input) */
-    class SignalGenerator : public Component {
-        OpenSim_DECLARE_CONCRETE_OBJECT(SignalGenerator, Component);
-    public:
-        OpenSim_DECLARE_PROPERTY(function, OpenSim::Function,
-            "Function used to generate the signal (waveform) w.r.t time.");
+    OpenSim_DECLARE_OUTPUT(signal, double, getSignal, SimTK::Stage::Time);
 
-        OpenSim_DECLARE_OUTPUT(signal, double, getSignal, SimTK::Stage::Time);
+    SignalGenerator() {
+        constructInfrastructure();
+    }
 
-        SignalGenerator() {
-            constructInfrastructure();
-        }
+    double getSignal(const SimTK::State& s) const {
+        return get_function().calcValue(SimTK::Vector(1, s.getTime()));
+    }
+private:
+    void constructProperties() override {
+        constructProperty_function(Constant(0.0));
+    }
+}; // End of SignalGenerator
 
-        double getSignal(const SimTK::State& s) const {
-            return get_function().calcValue(SimTK::Vector(1, s.getTime()));
-        }
-    private:
-        void constructProperties() override {
-            constructProperty_function(Constant(0.0));
-        }
-    };
 } // namespace OpenSim
 
 
@@ -218,9 +219,9 @@ OpenSim::Model createTestBed() {
     testBed.addJoint(grndToLoad);
 
     auto spring = new OpenSim::PointToPointSpring(
-        testBed.getGround(), Vec3(0), // point 1's frame and location in that frame
-        *load, Vec3(0),               // point 2's frame and location in that frame
-        SPRINGSTIFF, 1.0);                   // spring stiffness and rest-length
+        testBed.getGround(), Vec3(0),// point 1's frame and location in that frame
+        *load, Vec3(0),              // point 2's frame and location in that frame
+        SPRINGSTIFF, 1.0);           // spring stiffness and rest-length
 
     testBed.addForce(spring);
 
@@ -386,10 +387,10 @@ int main() {
         attachmentB = "back_assist_insertion";
         signalForDevice = "/LuxoMuscle/knee_extensor_right/activation";
     } else {
-        modelFile = "bouncing_block.osim";
-        attachmentA = "/toy_with_forces/thigh_attachment";
-        attachmentB = "/toy_with_forces/shank_attachment";
-        signalForDevice = "/toy_with_forces/vastus/activation";
+        modelFile = "BouncingLeg.osim";
+        attachmentA = "/bouncing_leg/thigh_attachment";
+        attachmentB = "/bouncing_leg/shank_attachment";
+        signalForDevice = "/bouncing_leg/vastus/activation";
     }
     OpenSim::Model luxo(modelFile);
     luxo.setUseVisualizer(true);
