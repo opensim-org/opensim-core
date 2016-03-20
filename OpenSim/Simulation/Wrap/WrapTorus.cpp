@@ -512,7 +512,7 @@ void WrapTorus::calcCircleResids(int numResid, int numQs, double q[],
    c3 = cb->p1[0]*nx + cb->p1[1]*ny;
    c4 = nx*nx + ny*ny;
    c5 = cb->p1[0]*cb->p1[0] + cb->p1[1]*cb->p1[1];
-   //double c6 = sqrt (u * u * c4 + 2.0 * c3 * u + c5);
+   //c6 = sqrt (u * u * c4 + 2.0 * c3 * u + c5);
 
    resid[0] = c2 + 2.0 * u - 2.0 * cb->r * (2.0 * c4 * u + 2.0 * c3) / sqrt (u * u * c4 + 2.0 * c3 * u + c5);
 }
