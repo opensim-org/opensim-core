@@ -1198,7 +1198,7 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
     double u2 = u*u, v2 = v*v;
     double a2u2 = a2*u2, b2v2 = b2*v2;
     double dx, dy, xda, ydb;
-    int i, which;
+    int i;
     double t, P, Q, P2, Q2, f, fp;
 
     bool nearXOrigin = (bool) EQUAL_WITHIN_ERROR(0.0,u);
@@ -1260,14 +1260,11 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
     // initial guess
     if ( (u/a)*(u/a) + (v/b)*(v/b) < 1.0 )
     {
-        which = 0;
         t = 0.0;
     }
     else
     {
         double max = a;
-
-        which = 1;
 
         if ( b > max )
             max = b;
