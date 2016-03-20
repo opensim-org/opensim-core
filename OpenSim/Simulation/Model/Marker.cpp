@@ -199,7 +199,7 @@ void Marker::generateDecorations(bool fixed, const ModelDisplayHints& hints, con
         // @TODO default color, size, shape should be obtained from hints
         const Vec3 pink(1, .6, .8);
         const OpenSim::PhysicalFrame& frame = getReferenceFrame();
-        //onst Frame& bf = frame.findBaseFrame();
+        //const Frame& bf = frame.findBaseFrame();
         //SimTK::Transform bTrans = frame.findTransformInBaseFrame();
         //const Vec3& p_BM = bTrans*get_location();
         appendToThis.push_back(
