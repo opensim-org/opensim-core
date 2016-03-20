@@ -175,11 +175,11 @@
 						<groups />
 					</WrapObjectSet>
 					<!--The mass of the body (kg)-->
-					<mass>20</mass>
+					<mass>25</mass>
 					<!--The location (Vec3) of the mass center in the body frame.-->
 					<mass_center>0 0 0</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>0.53333299999999995 0.53333299999999995 0.53333299999999995 0 0 0</inertia>
+					<inertia>0.55 0.55 0.55 0 0 0</inertia>
 				</Body>
 				<Body name="link1">
                     <components>
@@ -242,7 +242,7 @@
 						<groups />
 					</WrapObjectSet>
 					<!--The mass of the body (kg)-->
-					<mass>5</mass>
+					<mass>10</mass>
 					<!--The location (Vec3) of the mass center in the body frame.-->
 					<mass_center>0 0.25 0</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
@@ -303,7 +303,7 @@
 						<groups />
 					</WrapObjectSet>
 					<!--The mass of the body (kg)-->
-					<mass>5</mass>
+					<mass>10</mass>
 					<!--The location (Vec3) of the mass center in the body frame.-->
 					<mass_center>0 0.25 0</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
@@ -370,7 +370,7 @@
 								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 								<motion_type>rotational</motion_type>
 								<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-								<default_value>0.69813170079773201</default_value>
+								<default_value>0.0</default_value>
 								<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 								<default_speed_value>0</default_speed_value>
 								<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -388,7 +388,7 @@
 								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 								<motion_type>translational</motion_type>
 								<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-								<default_value>0.00027798352570300103</default_value>
+								<default_value>0.0</default_value>
 								<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 								<default_speed_value>0</default_speed_value>
 								<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -406,7 +406,7 @@
 								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 								<motion_type>translational</motion_type>
 								<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-								<default_value>0.9000000000000001</default_value>
+								<default_value>1.0</default_value>
 								<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 								<default_speed_value>0</default_speed_value>
 								<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -463,7 +463,7 @@
 								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 								<motion_type>rotational</motion_type>
 								<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-								<default_value>0</default_value>
+								<default_value>0.35</default_value>
 								<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 								<default_speed_value>0</default_speed_value>
 								<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -537,7 +537,7 @@
 								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 								<motion_type>rotational</motion_type>
 								<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-								<default_value>-1.39626340159546</default_value>
+								<default_value>-0.75</default_value>
 								<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 								<default_speed_value>0</default_speed_value>
 								<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -603,7 +603,7 @@
                         <objects>
                             <PiecewiseConstantFunction name="vastus">
                                 <x>0 2 3.9</x>
-                                <y>0.1 1.0 0.1</y>
+                                <y>0.3 1.0 0.1</y>
                             </PiecewiseConstantFunction>
                         </objects>
                     </FunctionSet>
@@ -663,10 +663,10 @@
 		<ForceSet>
 			<objects>
                 <Thelen2003Muscle name="vastus">
-                    <max_isometric_force>1800</max_isometric_force>
+                    <max_isometric_force>4000</max_isometric_force>
                     <optimal_fiber_length>0.55</optimal_fiber_length>
-                    <default_activation>0.1</default_activation>
                     <tendon_slack_length>0.25</tendon_slack_length>
+                    <default_activation>0.3</default_activation>
                     <GeometryPath>
                         <PathPointSet>
                             <objects>
@@ -736,17 +736,17 @@
 					<!--Coordinate (name) to be limited.-->
 					<coordinate>pin2_rot</coordinate>
 					<!--Stiffness of the passive limit force when coordinate exceeds upper limit. Note, rotational stiffness expected in N*m/degree.-->
-					<upper_stiffness>20</upper_stiffness>
+					<upper_stiffness>50</upper_stiffness>
 					<!--The upper limit of the coordinate range of motion (rotations in degrees).-->
-					<upper_limit>0</upper_limit>
+					<upper_limit>-10</upper_limit>
 					<!--Stiffness of the passive limit force when coordinate exceeds lower limit. Note, rotational stiffness expected in N*m/degree.-->
-					<lower_stiffness>20</lower_stiffness>
+					<lower_stiffness>40</lower_stiffness>
 					<!--The lower limit of the coordinate range of motion (rotations in degrees).-->
 					<lower_limit>-140</lower_limit>
 					<!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
-					<damping>1</damping>
+					<damping>2</damping>
 					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
-					<transition>5</transition>
+					<transition>10</transition>
 				</CoordinateLimitForce>
 			</objects>
 			<groups />
