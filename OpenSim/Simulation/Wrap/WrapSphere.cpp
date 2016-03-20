@@ -235,7 +235,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
             p1p2, np2, hp2, r1m, r2m, y, z, n, r1a, r2a,
             r1b, r2b, r1am, r2am, r1bm, r2bm;
             
-   int i,/* maxit, */j, return_code = wrapped;
+   int i, j,/* maxit, */ return_code = wrapped;
    bool far_side_wrap = false;
    static SimTK::Vec3 origin(0,0,0);
 
