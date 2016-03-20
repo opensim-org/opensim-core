@@ -180,12 +180,15 @@ typedef int SystemUIndex;
 typedef int SystemUErrIndex;
 typedef int SystemUDotErrIndex;
 
+
 namespace SimTK {
 %template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>; 
 %template(ArrayIndexInt) ArrayIndexTraits<int>; 
 }
 
 %include <SWIGSimTK/DecorativeGeometry.h>
+
+%include <SWIGSimTK/PolygonalMesh.h>
 
 namespace SimTK {
 %template(ArrayDecorativeGeometry) SimTK::Array_<SimTK::DecorativeGeometry>;

@@ -236,7 +236,7 @@ public:
     const AbstractChannel& getChannel(const std::string& name) const override {
         try {
             return _channels.at(name);
-        } catch (const std::out_of_range& e) {
+        } catch (const std::out_of_range& ) {
             OPENSIM_THROW(Exception, "Output '" + getName() + "' does not have "
                           "a channel named '" + name + "'.");
         }
