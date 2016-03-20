@@ -90,11 +90,11 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
 }
    CMCActuatorSubsystemRep::CMCActuatorSubsystemRep(Model* model) 
        : SimTK::Subsystem::Guts( "CMCActuatorSubsystem", "2.0"),
+       _model(model),
        _holdCoordinatesConstant(false),
        _holdTime(0.0),
        _qSet(NULL),
-       _uSet(NULL),
-       _model(model) {
+       _uSet(NULL) {
 
        _qCorrections.setSize(_model->getNumCoordinates() );
        _uCorrections.setSize(_model->getNumSpeeds() );
