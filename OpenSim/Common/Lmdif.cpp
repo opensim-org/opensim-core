@@ -1719,6 +1719,7 @@ void fdjac2(void (*fcn)(int, int, double[], double[], int *, void *),
    double eps;
    double h;
    double temp;
+   //static double zero = 0.0;		
 
    //dkb - changed to equal TvdB solver code, use constant delta = 1e-5
    //    temp = dmax1(epsfcn,MACHEP);
