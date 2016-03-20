@@ -364,20 +364,20 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s,
 
     std::set<SimTK::MobilizedBodyIndex>::const_iterator it = mbds.begin();
 
-    const SimTK::MobilizedBody &G = getModel().getMatterSubsystem().getGround();
-    const SimTK::MobilizedBody &B = getModel().getMatterSubsystem().getMobilizedBody(mbx);
-    SimTK::Vec3 r_BG =
-        B.expressVectorInAnotherBodyFrame(s, B.getOutboardFrame(s).p(), G);
+    //const SimTK::MobilizedBody &G = getModel().getMatterSubsystem().getGround();
+    //const SimTK::MobilizedBody &B = getModel().getMatterSubsystem().getMobilizedBody(mbx);
+    //SimTK::Vec3 r_BG =
+    //    B.expressVectorInAnotherBodyFrame(s, B.getOutboardFrame(s).p(), G);
 
     while(it != mbds.end()){
         FBx_G = calcEquivalentSpatialForceForMobilizedBody(s, *it, mobilityForces);
 
-        const SimTK::MobilizedBody &b = 
-            getModel().getMatterSubsystem().getMobilizedBody(*it);
+        //const SimTK::MobilizedBody &b = 
+        //   getModel().getMatterSubsystem().getMobilizedBody(*it);
 
         
-        SimTK::Vec3 r_bG = 
-            b.expressVectorInAnotherBodyFrame(s, b.getOutboardFrame(s).p(), G);
+        //SimTK::Vec3 r_bG = 
+        //    b.expressVectorInAnotherBodyFrame(s, b.getOutboardFrame(s).p(), G);
 
         // Torques add and include term due to offset in forces
         FB_G += FBx_G; // shiftForceFromTo(FBx_G, r_bG, r_BG);
@@ -519,7 +519,7 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForceForMobilizedBody(const SimTK:
 void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     int documentVersion = versionNumber;
-    bool converting = false;
+    //bool converting = false;
     if (documentVersion < XMLDocument::getLatestVersion()){
         if (documentVersion<30500){
             XMLDocument::renameChildNode(aNode, "location", "location_in_child"); 
