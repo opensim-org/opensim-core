@@ -1260,6 +1260,7 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
     // initial guess
     if ( (u/a)*(u/a) + (v/b)*(v/b) < 1.0 )
     {
+        //which = 0;
         t = 0.0;
     }
     else
