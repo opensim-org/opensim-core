@@ -701,7 +701,7 @@ void createLuxoJr(OpenSim::Model &model){
     //-----------------------------------------------------------------------
     
     // add a knee extensor to control the lower 4-bar linkage
-    RigidTendonMuscle* kneeExtensorRight = new RigidTendonMuscle(
+    Millard2012EquilibriumMuscle* kneeExtensorRight = new Millard2012EquilibriumMuscle(
                                             "knee_extensor_right",
                                             knee_extensor_F0, knee_extensor_lm0,
                                             knee_extensor_lts, pennationAngle);
@@ -710,12 +710,12 @@ void createLuxoJr(OpenSim::Model &model){
     kneeExtensorRight->addNewPathPoint("knee_extensor_right_insertion",
                                       *bottom_bracket,
                                         knee_extensor_insertion);
-    
+    kneeExtensorRight->set_ignore_tendon_compliance(true);
     model.addForce(kneeExtensorRight);
     
     // add a second copy of this knee extensor for the left side
-    RigidTendonMuscle* kneeExtensorLeft =
-                                new RigidTendonMuscle(*kneeExtensorRight);
+    Millard2012EquilibriumMuscle* kneeExtensorLeft =
+                                new Millard2012EquilibriumMuscle(*kneeExtensorRight);
     kneeExtensorLeft->setName("kneeExtensorLeft");
     
     // flip the z coordinates of all path points
@@ -723,11 +723,12 @@ void createLuxoJr(OpenSim::Model &model){
     for (int i=0; i<points.getSize(); ++i) {
         points[i].setLocationCoord(2, -1*points[i].getLocationCoord(2));
     }
-    
+
+    kneeExtensorLeft->set_ignore_tendon_compliance(true);
     model.addForce(kneeExtensorLeft);
     
     // add a back extensor to controll the upper 4-bar linkage
-    RigidTendonMuscle* backExtensorRight = new RigidTendonMuscle(
+    Millard2012EquilibriumMuscle* backExtensorRight = new Millard2012EquilibriumMuscle(
                                             "back_extensor_right",
                                             back_extensor_F0, back_extensor_lm0,
                                             back_extensor_lts, pennationAngle);
@@ -736,12 +737,12 @@ void createLuxoJr(OpenSim::Model &model){
                                       back_extensor_origin);
     backExtensorRight->addNewPathPoint("back_extensor_right_insertion", *back,
                                       back_extensor_insertion);
-    
+    backExtensorRight->set_ignore_tendon_compliance(true);
     model.addForce(backExtensorRight);
     
     // copy right back extensor and use to make left extensor
-    RigidTendonMuscle* backExtensorLeft =
-            new RigidTendonMuscle(*backExtensorRight);
+    Millard2012EquilibriumMuscle* backExtensorLeft =
+            new Millard2012EquilibriumMuscle(*backExtensorRight);
     
     backExtensorLeft->setName("back_extensor_left");
     
@@ -750,7 +751,7 @@ void createLuxoJr(OpenSim::Model &model){
     for (int i=0; i<points.getSize(); ++i) {
         pointsLeft[i].setLocationCoord(2, -1*pointsLeft[i].getLocationCoord(2));
     }
-    
+    backExtensorLeft->set_ignore_tendon_compliance(true);
     model.addForce(backExtensorLeft);
     
     
