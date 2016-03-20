@@ -496,7 +496,7 @@ void WrapTorus::calcCircleResids(int numResid, int numQs, double q[],
                                             double resid[], int *flag2, void *ptr)
 {
    double mag, nx, ny, nz, u;
-   double c2, c3, c4, c5;
+   double c2, c3, c4, c5/*, c6*/;
    CircleCallback *cb = (CircleCallback*)ptr;
 
    u = q[0];
