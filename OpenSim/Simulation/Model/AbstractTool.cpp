@@ -707,6 +707,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
                     string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
                     IO::chDir(directoryOfSetupFile);
                     try {
+                        //bool extLoadsFile=false;
                         SimTK::Xml::Document doc(fileName);
                         doc.setIndentString("\t");
                         Xml::Element root = doc.getRootElement();
