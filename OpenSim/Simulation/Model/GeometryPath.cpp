@@ -247,6 +247,8 @@ getPointForceDirections(const SimTK::State& s,
 
     int np = currentPath.getSize();
 
+    //const SimbodyEngine& engine = _model->getSimbodyEngine();
+ 
     rPFDs->ensureCapacity(np);
     
     for (i = 0; i < np; i++) {
