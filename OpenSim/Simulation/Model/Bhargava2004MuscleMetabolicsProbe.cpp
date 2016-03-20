@@ -285,6 +285,7 @@ computeProbeInputs(const State& s) const
 
         // Get important muscle values at the current time state
         const double max_isometric_force = m->getMaxIsometricForce();
+        //const double max_shortening_velocity = m->getMaxContractionVelocity();
         const double activation = get_muscle_effort_scaling_factor()
                                   * m->getActivation(s);
         const double excitation = get_muscle_effort_scaling_factor()
