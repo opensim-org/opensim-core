@@ -530,7 +530,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
             COPY_1X3VECTOR(r2b, aWrapResult.r2);
             //r11 = &r1a[0];
             //r22 = &r2a[0];
-    }
+        }
     }
 
     // bisect angle between r1 & r2 vectors to find the apex edge of the
