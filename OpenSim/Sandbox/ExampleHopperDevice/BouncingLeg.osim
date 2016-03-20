@@ -38,7 +38,7 @@
         <force_units>N</force_units>
         <FrameSet>
             <objects>
-                <PhysicalOffsetFrame name="thigh_attachment">
+			    <PhysicalOffsetFrame name="thigh_attachment">
                     <connectors>
                         <Connector_PhysicalFrame_ name="parent">
                             <connectee_name>/bouncing_leg/link1</connectee_name>
@@ -51,13 +51,36 @@
                                     <connectee_name>../</connectee_name>
                                 </Connector_Frame_>
                             </connectors>
-                            <scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+                            <scale_factors>0.1 0.1 0.1</scale_factors>
                             <Appearance>
                                 <visible>false</visible>
+								<color> 0.9 0.9 0.1 </color>
                             </Appearance>
                         </FrameGeometry>
                     </geometry>
                     <translation>0.05 0.35 0</translation>
+                </PhysicalOffsetFrame>
+                <PhysicalOffsetFrame name="thigh_attachment2">
+                    <connectors>
+                        <Connector_PhysicalFrame_ name="parent">
+                            <connectee_name>/bouncing_leg/link1</connectee_name>
+                        </Connector_PhysicalFrame_>
+                    </connectors>
+                    <geometry>
+                        <FrameGeometry name="frame_geometry">
+                            <connectors>
+                                <Connector_Frame_ name="frame">
+                                    <connectee_name>../</connectee_name>
+                                </Connector_Frame_>
+                            </connectors>
+                            <scale_factors>0.1 0.1 0.1</scale_factors>
+                            <Appearance>
+                                <visible>false</visible>
+								<color> 0.9 0.1 0.9 </color>
+                            </Appearance>
+                        </FrameGeometry>
+                    </geometry>
+                    <translation>0.05 0.25 0</translation>
                 </PhysicalOffsetFrame>
                 <PhysicalOffsetFrame name="shank_attachment">
                     <connectors>
@@ -72,15 +95,39 @@
                                     <connectee_name>../</connectee_name>
                                 </Connector_Frame_>
                             </connectors>
-                            <scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+                            <scale_factors>0.1 0.1 0.1</scale_factors>
                             <Appearance>
                                 <visible>false</visible>
+								<color> 0.9 0.9 0.1 </color>
                             </Appearance>
                         </FrameGeometry>
                     </geometry>
                     <translation>0.00 0.65 0</translation>
                 </PhysicalOffsetFrame>
-            </objects>
+                <PhysicalOffsetFrame name="shank_attachment2">
+                    <connectors>
+                        <Connector_PhysicalFrame_ name="parent">
+                            <connectee_name>/bouncing_leg/link2</connectee_name>
+                        </Connector_PhysicalFrame_>
+                    </connectors>
+                    <geometry>
+                        <FrameGeometry name="frame_geometry">
+                            <connectors>
+                                <Connector_Frame_ name="frame">
+                                    <connectee_name>../</connectee_name>
+                                </Connector_Frame_>
+                            </connectors>
+                            <scale_factors>0.1 0.1 0.1</scale_factors>
+                            <Appearance>
+                                <visible>false</visible>
+								<color> 0.9 0.1 0.9 </color>
+                            </Appearance>
+                        </FrameGeometry>
+                    </geometry>
+                    <translation>0.035 0.25 0</translation>
+                </PhysicalOffsetFrame>
+
+				</objects>
         </FrameSet>
 		<!--List of bodies that make up this model.-->
 		<BodySet>
@@ -103,7 +150,7 @@
 								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
 								<opacity>1</opacity>
 								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
-								<color>0.86274499999999998 0.117647 0.117647</color>
+								<color>0.8 0.2 0.2</color>
 							</Appearance>
                             <half_lengths>0.1 0.1 0.1 </half_lengths>
 						</Brick>
@@ -142,7 +189,7 @@
                                     <connectee_name>../</connectee_name>
                                 </Connector_PhysicalFrame_>
                             </connectors>
-                            <translation>0 +0.25 0</translation>
+                            <translation>0 0.25 0</translation>
                             <geometry>
                                 <Brick name="geom_1">
                                     <!--List of connectors (structural dependencies) that this component has.-->
@@ -159,7 +206,7 @@
                                         <!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
                                         <opacity>1</opacity>
                                         <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
-                                        <color>0.86274499999999998 0.117647 0.117647</color>
+                                        <color>0.8 0.2 0.2</color>
                                     </Appearance>
                                     <half_lengths>0.035 0.25 0.035</half_lengths>
                                 </Brick>
@@ -199,7 +246,7 @@
 					<!--The location (Vec3) of the mass center in the body frame.-->
 					<mass_center>0 0.25 0</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>8.3330000000000003e-05 7.9999999999999996e-06 8.3330000000000003e-05 0 0 0</inertia>
+					<inertia>8.333e-05 8.0e-06 8.333e-05 0 0 0</inertia>
 				</Body>
 				<Body name="link2">
                     <components>
@@ -209,7 +256,7 @@
                                     <connectee_name>../</connectee_name>
                                 </Connector_PhysicalFrame_>
                             </connectors>
-                            <translation>0 +0.25 0</translation>
+                            <translation>0 0.25 0</translation>
                             <geometry>
                                 <Brick name="geom_1">
                                     <!--List of connectors (structural dependencies) that this component has.-->
@@ -226,7 +273,7 @@
                                         <!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
                                         <opacity>1</opacity>
                                         <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
-                                        <color>0.86274499999999998 0.117647 0.117647</color>
+                                        <color>0.8 0.2 0.2</color>
                                     </Appearance>
                                     <half_lengths>0.035 0.25 0.035</half_lengths>
                                 </Brick>
@@ -260,7 +307,7 @@
 					<!--The location (Vec3) of the mass center in the body frame.-->
 					<mass_center>0 0.25 0</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>8.3330000000000003e-05 7.9999999999999996e-06 8.3330000000000003e-05 0 0 0</inertia>
+					<inertia>8.333e-05 8.0e-06 8.333e-05 0 0 0</inertia>
 				</Body>
 			</objects>
 			<groups />
@@ -456,7 +503,7 @@
 										</Connector_Frame_>
 									</connectors>
 									<!--Scale factors in X, Y, Z directions respectively.-->
-									<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+									<scale_factors>0.01 0.01 0.01</scale_factors>
 									<!--Default appearance for this Geometry-->
 									<Appearance>
 										<!--Flag indicating whether the associated Geometry is visible or hidden.-->
@@ -530,7 +577,7 @@
 										</Connector_Frame_>
 									</connectors>
 									<!--Scale factors in X, Y, Z directions respectively.-->
-									<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+									<scale_factors>0.01 0.01 0.01</scale_factors>
 									<!--Default appearance for this Geometry-->
 									<Appearance>
 										<!--Flag indicating whether the associated Geometry is visible or hidden.-->

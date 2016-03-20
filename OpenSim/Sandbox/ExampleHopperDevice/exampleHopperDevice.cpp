@@ -41,11 +41,11 @@ be reported using new Data Components. */
     #define SPRINGSTIFF 5
     #define SIGNALGEN 1
 #else
-    #define OPTIMAL_FORCE 80
-    #define GAIN 10
-    #define LOAD 1000
-    #define SPRINGSTIFF 500
-    #define SIGNALGEN 0.1
+    #define OPTIMAL_FORCE 4000
+    #define GAIN 1
+    #define LOAD 2500
+    #define SPRINGSTIFF 5000
+    #define SIGNALGEN 0.33
 #endif
 
 #include <OpenSim/OpenSim.h>
@@ -105,10 +105,9 @@ protected:
     void extendRealizeDynamics(const SimTK::State& s) const override {
         const auto& actuator = getComponent<PathActuator>("cableAtoB");
         double level = fmin(1.0, getTension(s) / actuator.get_optimal_force());
-        actuator.getGeometryPath().setColor(s, SimTK::Vec3(level, 0.5, 0.5));
+        actuator.getGeometryPath().setColor(s, SimTK::Vec3(level, 0.9, 0.1));
     }
-
-};
+}; // end Device
 
 /**
 * Create a Controller that produces a control signal = k * a, where `k` is
@@ -162,7 +161,7 @@ private:
         // The ScalarActuator for which we're computing a control signal.
         constructConnector<Actuator>("actuator");
     }
-};
+}; // end of PropMyoController
 
 /* A Generator is a component with no Inputs and only Outputs. This
 SignalGenerator evaluates an OpenSim::Function, specified as a property,
@@ -187,7 +186,7 @@ private:
     void constructProperties() override {
         constructProperty_function(Constant(0.0));
     }
-}; // End of SignalGenerator
+}; // end of SignalGenerator
 
 } // namespace OpenSim
 
@@ -199,11 +198,12 @@ OpenSim::Model createTestBed() {
     using SimTK::Inertia;
 
     OpenSim::Model testBed;
+    testBed.setName("testbed");
     testBed.setUseVisualizer(true);
     testBed.setGravity(Vec3(0));
 
-    // Create a load of mass 1kg.
-    auto load = new OpenSim::Body("load", 1, Vec3(0), Inertia(1));
+    // Create a load of mass LOAD kg.
+    auto load = new OpenSim::Body("load", LOAD, Vec3(0), Inertia(1));
     // Set properties of a sphere geometry to be used for the load.
     OpenSim::Sphere sphere;
     sphere.setFrameName("load");
@@ -240,6 +240,25 @@ void connectDeviceToModel(const std::string& frameAname,
     anchorA.setParentFrameName(frameAname);
     // Attach anchorB to frameB as anchor's (joint's) parent frame.
     anchorB.setParentFrameName(frameBname);
+
+    if (model.getName() != "testbed") {
+        const OpenSim::Body* link1 = model.findComponent<OpenSim::Body>("link1");
+        // get the knee wrap object from the model
+        const OpenSim::WrapObject* wrap = link1->getWrapObject("patella");
+        if (wrap) {
+            auto& body = model.
+                updComponent<OpenSim::Body>(link1->getFullPathName());
+            auto& patella = body.upd_WrapObjectSet().get(wrap->getName());
+            auto& actuator = device->
+                updComponent<OpenSim::PathActuator>("cableAtoB");
+            // bug in GeometryPath that needs the model to be set
+            // this happens in connect
+            actuator.connect(model);
+            body.connect(model);
+            actuator.updGeometryPath().addPathWrap(patella);
+        }
+    }
+
     // Add the device to the testBed.
     model.addModelComponent(device);
 }
@@ -276,6 +295,9 @@ void simulate(OpenSim::Model& model, SimTK::State& state) {
         std::cin >> replay;
     }
 }
+
+void editModel(const std::string& modelFile);
+
 
 OpenSim::Device* createDevice() {
     using SimTK::Vec3;
@@ -343,8 +365,29 @@ OpenSim::Device* createDevice() {
     return device;
 }
 
+/* Create and add a Reporter to a model that reports device outputs 
+   as listed by name. */
+void addReporterToModel(OpenSim::Device& device, OpenSim::Model& model,
+                        const std::vector<std::string>& deviceOutputs)
+{
+    auto reporter = new OpenSim::ConsoleReporter();
+    reporter->setName(model.getName() +"_"+ device.getName()+"_results");
+
+    std::cout << "Made Reporter: " << reporter->getName() << std::endl;
+
+    reporter->set_report_time_interval(0.2);
+
+    // loop through desired device outputs by name
+    for (auto outputName : deviceOutputs) {
+        std::cout << "trying to wire output: " << outputName << std::endl;
+        reporter->updInput("inputs").connect(device.getOutput(outputName));
+        std::cout << "Wired output: " << outputName << std::endl;
+    }
+    model.addComponent(reporter);
+}
+
 int main() {
-    //--------------------------- DEVICE CODE begin ------------------_--------
+    //--------------------------- DEVICE CODE begin ---------------------------
     auto device = createDevice();
     // Build a test environment for the device. You can comment out the call
     // when connecting the device built above to the actual hopper because this
@@ -356,24 +399,32 @@ int main() {
     // Here we connect the device to the testBed at its ground and load frames
     //-------------------------------------------------------------------------
     connectDeviceToModel("ground", "load", device, testBed);
+
+    auto generator = new OpenSim::SignalGenerator();
+    generator->setName("generator");
+    // Trying changing the constant value and even changing
+    // the function, e.g. try a LinearFunction
+    generator->set_function(OpenSim::Constant(SIGNALGEN));
+    device->addComponent(generator);
+    // Wire up the Controller to use the generator for fake activations
+    device->updInput("controller/activation").
+        connect(generator->getOutput("signal"));
+
     // Print the model. 
     testBed.print("exampleHopperDeviceOnTestBed.osim");
 
-    auto reporter = new OpenSim::ConsoleReporter();
-    reporter->setName("results");
-    reporter->set_report_time_interval(0.2);
-    reporter->updInput("inputs").connect(device->getOutput("length"));
-    reporter->updInput("inputs").connect(device->getOutput("tension"));
-    reporter->updInput("inputs").connect(device->getOutput("power"));
-    reporter->updInput("inputs").connect(device->getOutput("controller/myo_control"));
+    // list desired device outputs (values of interest) by name
+    std::vector<std::string> deviceOutputs{ "length", "tension",
+                                "power", "controller/myo_control" };
+    // add a ConsoleReporter to report device values during a simulation
+    addReporterToModel(*device, testBed, deviceOutputs);
 
-    testBed.addComponent(reporter);
-
+    // create the system and initialize the corresponding state an return it
     auto& state = testBed.initSystem();
 
     // Simulate the testBed containing the device only. When using the hopper,
     // make sure to simulate the hopper (with the device) and not the testBed.
-    //simulate(testBed, state);
+    simulate(testBed, state);
     //----------------------------- DEVICE CODE end --------------------------
 
 
@@ -388,22 +439,27 @@ int main() {
         signalForDevice = "/LuxoMuscle/knee_extensor_right/activation";
     } else {
         modelFile = "BouncingLeg.osim";
-        attachmentA = "/bouncing_leg/thigh_attachment";
-        attachmentB = "/bouncing_leg/shank_attachment";
+        attachmentA = "/bouncing_leg/thigh_attachment2";
+        attachmentB = "/bouncing_leg/shank_attachment2";
         signalForDevice = "/bouncing_leg/vastus/activation";
     }
-    OpenSim::Model luxo(modelFile);
-    luxo.setUseVisualizer(true);
+
+    //editModel(modelFile);
+
+    // Load the hopper model to assist
+    OpenSim::Model hopper(modelFile);
+    hopper.setUseVisualizer(true);
 
 
     auto reporterH = new OpenSim::ConsoleReporter();
-    reporterH->setName("resultsH");
+    reporterH->setName("hopper_results");
     reporterH->set_report_time_interval(0.2);
-    reporterH->updInput("inputs").connect(luxo.getOutput(signalForDevice));
-    luxo.addComponent(reporterH);
+    reporterH->updInput("inputs")
+        .connect(hopper.getOutput(signalForDevice));
+    hopper.addComponent(reporterH);
 
-    // TODO put this back in SimTK::State& sH = luxo.initSystem();
-    // TODO put this back in simulate(luxo, sH);
+    SimTK::State& sH = hopper.initSystem();
+    simulate(hopper, sH);
     //----------------------------- HOPPER CODE end ----------------------------
 
 
@@ -411,31 +467,36 @@ int main() {
 /**
     OpenSim::Device* backDevice = device->clone();
     backDevice->finalizeFromProperties();
-    connectDeviceToModel(attachmentA, attachmentB, backDevice, luxo);
+    connectDeviceToModel(attachmentA, attachmentB, backDevice, hopper);
 
     attachmentA = "knee_assist_origin";
     attachmentB = "knee_assist_insertion"; 
 
-    backDevice->updInput("controller/activation").connect(luxo.getOutput(signalForDevice));
+    backDevice->updInput("controller/activation").connect(hopper.getOutput(signalForDevice));
 */
+
     OpenSim::Device* kneeDevice = device->clone();
     kneeDevice->finalizeFromProperties();
-    connectDeviceToModel(attachmentA, attachmentB, kneeDevice, luxo);
+    connectDeviceToModel(attachmentA, attachmentB, kneeDevice, hopper);
+    kneeDevice->updInput("controller/activation")
+        .connect(hopper.getOutput(signalForDevice));
 
-    // set the controller input
-    kneeDevice->updInput("controller/activation").
-        connect(luxo.getOutput(signalForDevice));
+    std::cout << "WIRED device input to: " << signalForDevice << std::endl;
 
-    reporterH->updInput("inputs").connect(kneeDevice->getOutput("controller/myo_control"));
+    // list desired device outputs (values of interest) by name
+    std::vector<std::string> deviceOutputs2{ "controller/myo_control",
+                                             "tension", "height" };
+    // add a ConsoleReporter to report device values during a simulation
+    addReporterToModel(*kneeDevice, hopper, deviceOutputs2);
 
-    // Add some more quantities to report.
-
-    reporterH->updInput("inputs").connect(kneeDevice->getOutput("tension"));
-    reporterH->updInput("inputs").connect(kneeDevice->getOutput("height"));
+    std::cout << "Added knee Device: " << kneeDevice->getName() << std::endl;
 
     // Simulate the hopper with the device.
-    SimTK::State& sHD = luxo.initSystem();
-    simulate(luxo, sHD);
+    SimTK::State& sHD = hopper.initSystem();
+
+    std::cout << "Done InitSystem "<< std::endl;
+
+    simulate(hopper, sHD);
     //----------------------------- HOPPER + DEVICE end ------------------------
 
 

@@ -27,10 +27,10 @@ endforeach(dataFile)
 
 
 add_custom_command(
-    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/bouncing_block.osim"
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/bouncing_block.osim"
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/BouncingLeg.osim"
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/BouncingLeg.osim"
     COMMAND ${CMAKE_COMMAND} -E copy
-    "${CMAKE_CURRENT_SOURCE_DIR}/bouncing_block.osim"
+    "${CMAKE_CURRENT_SOURCE_DIR}/BouncingLeg.osim"
     "${CMAKE_CURRENT_BINARY_DIR}")
 
 
@@ -56,7 +56,7 @@ if(MSVC OR XCODE)
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         DEPENDS exampleHopperDevice
                 "${CMAKE_CURRENT_BINARY_DIR}/Luxo_Myo.osim"
-                "${CMAKE_CURRENT_BINARY_DIR}/bouncing_block.osim"
+                "${CMAKE_CURRENT_BINARY_DIR}/BouncingLeg.osim"
         )
 else()
     add_custom_command(
@@ -70,7 +70,7 @@ else()
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         DEPENDS exampleHopperDevice
                 "${CMAKE_CURRENT_BINARY_DIR}/Luxo_Myo.osim"
-                "${CMAKE_CURRENT_BINARY_DIR}/bouncing_block.osim"
+                "${CMAKE_CURRENT_BINARY_DIR}/BouncingLeg.osim"
         )
 endif()
 
