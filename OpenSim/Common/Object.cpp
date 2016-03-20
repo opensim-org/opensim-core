@@ -1209,6 +1209,7 @@ updateXMLNode(SimTK::Xml::Element& aParent) const
 
         // Obj
         case(Property_Deprecated::Obj) : {
+            //PropertyObj *propObj = (PropertyObj*)prop;		
             const Object &object = prop->getValueObj();
             object.updateXMLNode(myObjectElement);
             break; }
