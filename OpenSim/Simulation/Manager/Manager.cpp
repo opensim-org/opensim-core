@@ -709,6 +709,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     double time =_ti;
     dt=dtFirst;
     if(dt>_dtMax) dt = _dtMax;
+    //dtPrev=dt;
 
     // CHECK SPECIFIED DT STEPPING
     
