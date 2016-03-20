@@ -273,8 +273,8 @@ int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3
 {
     int i;
     SimTK::Vec3 closestPt;
-    bool constrained = (bool) (_wrapSign != 0);
-    bool far_side_wrap = false;
+    //bool constrained = (bool) (_wrapSign != 0);
+    //bool far_side_wrap = false;
     aFlag = true;
 
     if (findClosestPoint(_outerRadius, &aPoint1[0], &aPoint2[0], &closestPt[0], &closestPt[1], &closestPt[2], _wrapSign, _wrapAxis) == 0)
@@ -496,7 +496,7 @@ void WrapTorus::calcCircleResids(int numResid, int numQs, double q[],
                                             double resid[], int *flag2, void *ptr)
 {
    double mag, nx, ny, nz, u;
-   double c2, c3, c4, c5, c6;
+   double c2, c3, c4, c5;
    CircleCallback *cb = (CircleCallback*)ptr;
 
    u = q[0];
@@ -512,7 +512,7 @@ void WrapTorus::calcCircleResids(int numResid, int numQs, double q[],
    c3 = cb->p1[0]*nx + cb->p1[1]*ny;
    c4 = nx*nx + ny*ny;
    c5 = cb->p1[0]*cb->p1[0] + cb->p1[1]*cb->p1[1];
-   c6 = sqrt (u * u * c4 + 2.0 * c3 * u + c5);
+   //double c6 = sqrt (u * u * c4 + 2.0 * c3 * u + c5);
 
    resid[0] = c2 + 2.0 * u - 2.0 * cb->r * (2.0 * c4 * u + 2.0 * c3) / sqrt (u * u * c4 + 2.0 * c3 * u + c5);
 }
