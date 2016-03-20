@@ -1267,6 +1267,8 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
     {
         double max = a;
 
+        //which = 1;
+        
         if ( b > max )
             max = b;
 
