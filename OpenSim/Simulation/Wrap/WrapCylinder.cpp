@@ -521,6 +521,8 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
         {
             COPY_1X3VECTOR(r1b, aWrapResult.r1);
             COPY_1X3VECTOR(r2a, aWrapResult.r2);
+            //r11 = &r1a[0];
+            //r22 = &r2b[0];
         }
         else
         {
