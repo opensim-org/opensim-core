@@ -654,6 +654,7 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     //has to intersect the x axis to the right of the origin
         double xFoot = 1.0+(xToe-1.0)/10.0;
         double yFoot = 0;
+        //double dydxToe = (yToe-yFoot)/(xToe-xFoot);
 
     //Compute the location of the corner formed by the average slope of the
     //toe and the slope of the linear section
