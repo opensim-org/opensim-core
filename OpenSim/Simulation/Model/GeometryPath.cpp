@@ -905,6 +905,8 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
 
     double speed = 0.0;
 
+    //const SimbodyEngine& engine = _model->getSimbodyEngine()
+    
     for (int i = 0; i < currentPath.getSize() - 1; i++) {
         start = currentPath[i];
         end   = currentPath[i+1];
