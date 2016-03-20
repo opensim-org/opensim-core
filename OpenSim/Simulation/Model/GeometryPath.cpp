@@ -853,6 +853,8 @@ void GeometryPath::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 void GeometryPath::computePath(const SimTK::State& s) const
 {
+    //const SimTK::Stage& sg = s.getSystemStage();
+    
     if (isCacheVariableValid(s, "current_path"))  {
         return;
     }
