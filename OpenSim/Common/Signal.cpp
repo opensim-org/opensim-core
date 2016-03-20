@@ -157,7 +157,7 @@ int Signal::
 LowpassIIR(double T,double fc,int N,double *sig,double *sigf)
 {
 int i,j;
-double fs,wc,wa,wa2,wa3;
+double fs,ws,wc,wa,wa2,wa3;
 double a[4],b[4],denom;
 double *sigr;
 
