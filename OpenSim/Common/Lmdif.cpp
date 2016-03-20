@@ -804,6 +804,7 @@ void lmpar(
    double sum;
    double temp;
    static double zero = 0.0;
+   //static double one = 1.0;
    static double p1 = 0.1;
    static double p001 = 0.001;
    
