@@ -297,6 +297,7 @@ computeProbeInputs(const State& s) const
                                          + fiber_force_passive;
         const double fiber_length_normalized = m->getNormalizedFiberLength(s);
         const double fiber_velocity = m->getFiberVelocity(s);
+        //const double fiber_velocity_normalized = m->getNormalizedFiberVelocity(s);
         const double slow_twitch_excitation = mm.get_ratio_slow_twitch_fibers() * sin(Pi/2 * excitation);
         const double fast_twitch_excitation = (1 - mm.get_ratio_slow_twitch_fibers()) * (1 - cos(Pi/2 * excitation));
         double alpha, fiber_length_dependence;
