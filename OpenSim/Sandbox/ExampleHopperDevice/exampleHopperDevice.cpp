@@ -23,32 +23,24 @@
 
 /* This example was designed to present and demonstrate some of the key new
 features of the OpenSim 4.0 API. The Component paradigm is more complete,
-rigorous and functional to enable models of devices or sub-assemblies to be
-embedded in other models, for example of the lower extremity or whole body.
+rigorous and functional to enable models of devices (e.g. sub-assemblies) to
+be embedded in other models, for example to a lower extremity or whole body.
 Components handle their dependencies consistently and with better error
 messaging using Connectors and information flow is enabled by Inputs and
 Outputs. Components are easier to construct and generate Outputs, which can
-be reported using new Data Components. */
-
-#define LUXO 0
-// or: #define LUXO 1
-
-#if LUXO
-    #define OPTIMAL_FORCE 2000
-    #define MASS 0.5
-    #define GAIN 2
-    #define LOAD 10
-    #define SPRINGSTIFF 5
-    #define SIGNALGEN 1
-#else
-    #define OPTIMAL_FORCE 4000
-    #define GAIN 1
-    #define LOAD 2500
-    #define SPRINGSTIFF 5000
-    #define SIGNALGEN 0.33
-#endif
+be reported using new Data Components. We will exercise these features in 
+this interactive example. */
 
 #include <OpenSim/OpenSim.h>
+
+// Some model and device values that are useful to have
+#define OPTIMAL_FORCE 4000
+#define GAIN 1
+#define LOAD 2500
+#define SPRINGSTIFF 5000
+#define SIGNALGEN 0.33
+#define REPORTING_INTERVAL 0.2
+
 
 namespace OpenSim {
 
@@ -75,7 +67,9 @@ public:
     /** The power produced(+)/dissipated(-) by the device. */
     OpenSim_DECLARE_OUTPUT(power, double, getPower, SimTK::Stage::Dynamics);
     /** The height of the model that device is attached to. */
-    OpenSim_DECLARE_OUTPUT(height, double, getCenterOfMassHeight,
+    OpenSim_DECLARE_OUTPUT(height, double, getHeight, SimTK::Stage::Position);
+    /** The COM height of the model that device is attached to. */
+    OpenSim_DECLARE_OUTPUT(com_height, double, getCenterOfMassHeight,
         SimTK::Stage::Position);
 
     /** Member functions to access values of interest from the device. */
@@ -90,6 +84,12 @@ public:
     }
     double getPower(const SimTK::State& s) const {
         return getComponent<PathActuator>("cableAtoB").getPower(s);
+    }
+
+    //device can read model height as measured from the block to ground
+    double getHeight(const SimTK::State& s) const {
+        return getModel().getOutputValue<double>(s,
+            "/bouncing_leg/ground_block/yTranslation/value");
     }
 
     //device can also "sense" the model center of mass height 
@@ -188,10 +188,24 @@ private:
     }
 }; // end of SignalGenerator
 
-} // namespace OpenSim
 
 
-void getAnswer();
+/*************** HELPER FUNCTIONS: Implemented in answers.cpp ****************/
+ // Utility to load and draw a model in a refresh loop
+ // so that edits to the modelFile can be visualized immediately.
+void refreshModel(const std::string& modelFile);
+
+// Helper method to edit a device's path (if it has one) to handle
+// wrapping over a wrap surface already in the model.
+void handlePathWrapping(OpenSim::ModelComponent* device,
+    OpenSim::Model& model);
+
+// Main driver to simulate a model from an initial state
+// Simulate means to integrate the model equations forward in time.
+// The State is updated so that it returns the final state of integration.
+void simulate(OpenSim::Model& model, SimTK::State& state);
+/************ end of HELPER FUNCTIONS: Implemented in answers.cpp ************/
+
 
 OpenSim::Model createTestBed() {
     using SimTK::Vec3;
@@ -241,62 +255,16 @@ void connectDeviceToModel(const std::string& frameAname,
     // Attach anchorB to frameB as anchor's (joint's) parent frame.
     anchorB.setParentFrameName(frameBname);
 
-    if (model.getName() != "testbed") {
-        const OpenSim::Body* link1 = model.findComponent<OpenSim::Body>("link1");
-        // get the knee wrap object from the model
-        const OpenSim::WrapObject* wrap = link1->getWrapObject("patella");
-        if (wrap) {
-            auto& body = model.
-                updComponent<OpenSim::Body>(link1->getFullPathName());
-            auto& patella = body.upd_WrapObjectSet().get(wrap->getName());
-            auto& actuator = device->
-                updComponent<OpenSim::PathActuator>("cableAtoB");
-            // bug in GeometryPath that needs the model to be set
-            // this happens in connect
-            actuator.connect(model);
-            body.connect(model);
-            actuator.updGeometryPath().addPathWrap(patella);
-        }
-    }
+    // handle wrapping if there is a wrap surface between the device
+    // origin and insertion on the model.
+    handlePathWrapping(device, model);
 
     // Add the device to the testBed.
     model.addModelComponent(device);
 }
 
-// Simulate any model from an initial state
-void simulate(OpenSim::Model& model, SimTK::State& state) {
-    SimTK::State s0 = state;
-    // Configure the 3D visualizer environment
-    if (model.getUseVisualizer()) {
-        model.updMatterSubsystem().setShowDefaultGeometry(false);
-        SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
-        viz.setBackgroundType(viz.GroundAndSky);
-        viz.setShowSimTime(true);
-        viz.drawFrameNow(state);
-        // wait for user input to start the simulation.
-        std::cout << "Press enter/return to continue:" << std::endl;
-        std::cin.get();
-    }
+} // namespace OpenSim
 
-    // Simulate in a replay loop if necessary
-    char replay = 'r';
-    while (replay == 'r') {
-        state = s0;
-        SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
-        OpenSim::Manager manager(model, integrator);
-        manager.setInitialTime(0);
-        manager.setFinalTime(5.0);
-        manager.integrate(state);
-        // generate states output debugging
-        manager.getStateStorage().print("exampleHopperStates.sto");
-
-        // wait for user input to proceed.
-        std::cout << "Press enter/return to continue OR 'r' to replay." << std::endl;
-        std::cin >> replay;
-    }
-}
-
-void editModel(const std::string& modelFile);
 
 
 OpenSim::Device* createDevice() {
@@ -372,21 +340,57 @@ void addReporterToModel(OpenSim::Device& device, OpenSim::Model& model,
 {
     auto reporter = new OpenSim::ConsoleReporter();
     reporter->setName(model.getName() +"_"+ device.getName()+"_results");
-
-    std::cout << "Made Reporter: " << reporter->getName() << std::endl;
-
-    reporter->set_report_time_interval(0.2);
+    reporter->set_report_time_interval(REPORTING_INTERVAL);
 
     // loop through desired device outputs by name
     for (auto outputName : deviceOutputs) {
-        std::cout << "trying to wire output: " << outputName << std::endl;
         reporter->updInput("inputs").connect(device.getOutput(outputName));
-        std::cout << "Wired output: " << outputName << std::endl;
+        //std::cout << "Connected Output: " << outputName << std::endl;
     }
     model.addComponent(reporter);
+    //std::cout << "Added reporter '" << reporter->getName()  << 
+    //    "' to model '" << model.getName() << "'." << std::endl;
 }
 
 int main() {
+    using namespace OpenSim;
+    // Configure which hopper model to use and the attachments (by frame name)
+    // for the device that will be created.
+    std::string modelFile, attachmentA, attachmentB, signalForKneeDevice;
+    modelFile = "BouncingLeg.osim";
+    attachmentA = "/bouncing_leg/thigh_attachment2";
+    attachmentB = "/bouncing_leg/shank_attachment2";
+    signalForKneeDevice = "/bouncing_leg/vastus/activation";
+    std::string yCoordinate = "/bouncing_leg/ground_block/yTranslation/value";
+
+    // refreshModel(modelFile);
+
+    //----------------------------- HOPPER CODE begin --------------------------
+    // Load the hopper model and simulate (unassisted)
+    Model hopper(modelFile);
+    hopper.setUseVisualizer(true);
+
+    /**** EXERCISE 1: Add a Console Reporter ***********************************
+    /* Report the models height and muscle activation during the simulation.   *
+    /***************************************************************************/
+    auto reporter = new OpenSim::ConsoleReporter();
+    reporter->setName("hopper_results");
+    reporter->set_report_time_interval(REPORTING_INTERVAL);
+    // A reporter has a multi channel Input called inputs that can connect to
+    // any number of Ouputs as long as they are of type double.
+    reporter->updInput("inputs")
+        .connect(hopper.getOutput(signalForKneeDevice));
+    reporter->updInput("inputs")
+        .connect(hopper.getOutput(yCoordinate));
+
+    hopper.addComponent(reporter);
+    /**** EXERCISE 1: end *****************************************************/
+
+    SimTK::State& sH = hopper.initSystem();
+    simulate(hopper, sH);
+    //----------------------------- HOPPER CODE end ----------------------------
+
+
     //--------------------------- DEVICE CODE begin ---------------------------
     auto device = createDevice();
     // Build a test environment for the device. You can comment out the call
@@ -400,11 +404,11 @@ int main() {
     //-------------------------------------------------------------------------
     connectDeviceToModel("ground", "load", device, testBed);
 
-    auto generator = new OpenSim::SignalGenerator();
+    auto generator = new SignalGenerator();
     generator->setName("generator");
     // Trying changing the constant value and even changing
     // the function, e.g. try a LinearFunction
-    generator->set_function(OpenSim::Constant(SIGNALGEN));
+    generator->set_function(Constant(SIGNALGEN));
     device->addComponent(generator);
     // Wire up the Controller to use the generator for fake activations
     device->updInput("controller/activation").
@@ -420,85 +424,45 @@ int main() {
     addReporterToModel(*device, testBed, deviceOutputs);
 
     // create the system and initialize the corresponding state an return it
-    auto& state = testBed.initSystem();
+    auto& sD = testBed.initSystem();
 
     // Simulate the testBed containing the device only. When using the hopper,
     // make sure to simulate the hopper (with the device) and not the testBed.
-    simulate(testBed, state);
-    //----------------------------- DEVICE CODE end --------------------------
+    simulate(testBed, sD);
+    //----------------------------- DEVICE CODE end ---------------------------
 
 
-    //----------------------------- HOPPER CODE begin --------------------------
-    std::string modelFile, attachmentA, attachmentB, signalForDevice;
-    if (LUXO) {
-        modelFile = "Luxo_Myo.osim";
-        //attachmentA = "knee_assist_origin";
-        //attachmentB = "knee_assist_insertion"; 
-        attachmentA = "back_assist_origin";
-        attachmentB = "back_assist_insertion";
-        signalForDevice = "/LuxoMuscle/knee_extensor_right/activation";
-    } else {
-        modelFile = "BouncingLeg.osim";
-        attachmentA = "/bouncing_leg/thigh_attachment2";
-        attachmentB = "/bouncing_leg/shank_attachment2";
-        signalForDevice = "/bouncing_leg/vastus/activation";
-    }
 
-    //editModel(modelFile);
+    //---------------------------- HOPPER + DEVICE begin ----------------------
+    // Begin by loading the hopper from file and then we'll connect the device.
+    Model hopperWithDevice(modelFile);
+    hopperWithDevice.setUseVisualizer(true);
 
-    // Load the hopper model to assist
-    OpenSim::Model hopper(modelFile);
-    hopper.setUseVisualizer(true);
-
-
-    auto reporterH = new OpenSim::ConsoleReporter();
-    reporterH->setName("hopper_results");
-    reporterH->set_report_time_interval(0.2);
-    reporterH->updInput("inputs")
-        .connect(hopper.getOutput(signalForDevice));
-    hopper.addComponent(reporterH);
-
-    SimTK::State& sH = hopper.initSystem();
-    simulate(hopper, sH);
-    //----------------------------- HOPPER CODE end ----------------------------
-
-
-    //----------------------------- HOPPER + DEVICE begin ----------------------
-/**
-    OpenSim::Device* backDevice = device->clone();
-    backDevice->finalizeFromProperties();
-    connectDeviceToModel(attachmentA, attachmentB, backDevice, hopper);
-
-    attachmentA = "knee_assist_origin";
-    attachmentB = "knee_assist_insertion"; 
-
-    backDevice->updInput("controller/activation").connect(hopper.getOutput(signalForDevice));
-*/
-
-    OpenSim::Device* kneeDevice = device->clone();
+    // Make a copy (clone) of the device as a knee specific device to connect
+    // to the hopper model
+    Device* kneeDevice = device->clone();
     kneeDevice->finalizeFromProperties();
-    connectDeviceToModel(attachmentA, attachmentB, kneeDevice, hopper);
-    kneeDevice->updInput("controller/activation")
-        .connect(hopper.getOutput(signalForDevice));
 
-    std::cout << "WIRED device input to: " << signalForDevice << std::endl;
+    // Connect the kneeDevice to the hopper so it really becomes hopperWithDevice
+    connectDeviceToModel(attachmentA, attachmentB, kneeDevice, hopperWithDevice);
+
+    // hook up the device's controller input ("activation") to its signal, which
+    // is an Output from the hopper corresponding to the vastus muscle activation
+    kneeDevice->updInput("controller/activation")
+        .connect(hopperWithDevice.getOutput(signalForKneeDevice));
 
     // list desired device outputs (values of interest) by name
     std::vector<std::string> deviceOutputs2{ "controller/myo_control",
                                              "tension", "height" };
     // add a ConsoleReporter to report device values during a simulation
-    addReporterToModel(*kneeDevice, hopper, deviceOutputs2);
-
-    std::cout << "Added knee Device: " << kneeDevice->getName() << std::endl;
+    addReporterToModel(*kneeDevice, hopperWithDevice, deviceOutputs2);
 
     // Simulate the hopper with the device.
-    SimTK::State& sHD = hopper.initSystem();
-
-    std::cout << "Done InitSystem "<< std::endl;
-
-    simulate(hopper, sHD);
+    SimTK::State& sHD = hopperWithDevice.initSystem();
+    simulate(hopperWithDevice, sHD);
     //----------------------------- HOPPER + DEVICE end ------------------------
 
-
-    getAnswer();
+    return 0;
 };
+
+

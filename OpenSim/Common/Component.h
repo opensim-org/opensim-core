@@ -703,30 +703,8 @@ public:
     */
     AbstractOutput& updOutput(const std::string& name)
     {
-        auto it = _outputsTable.find(name);
-        
-        if (it != _outputsTable.end()) {
-            return it->second.updRef();
-        }
-        else {
-            std::string::size_type back = name.rfind("/");
-            std::string prefix = name.substr(0, back);
-            std::string outName = name.substr(back + 1, name.length() - back);
-            
-            const Component* found = findComponent(prefix);
-            // if found is this component again, no point trying to find
-            // output again, otherwise we would not have reached here 
-            if (found && (found != this)) {
-                return const_cast<Component*>(found)->updOutput(outName);
-            }
-        }
-        
-            std::stringstream msg;
-        msg << "Component::getOutput: ERR-  no output '" << name << "' found.\n "
-            << "for component '" << getName() << "' of type "
-            << getConcreteClassName();
-            throw Exception(msg.str(), __FILE__, __LINE__);
-        }
+        return *const_cast<AbstractOutput *>(&getOutput(name));
+    }
 
     /** An iterator to traverse all the Outputs of this component, pointing at the
     * first Output. This can be used in a loop as such:
@@ -1699,11 +1677,14 @@ public:
             else if (comp.getName() == subname) {
                 if (foundCs.size() == 0) {
                     foundCs.push_back(&comp);
-                    msg += "a match for Component '" + name + "' of type " +
+                    // Silenced this Message for Hackathon
+                    // TODO Revisit why the exact match isn't found when
+                    // when what appears to be the complete path.
+                    /*msg += "a match for Component '" + name + "' of type " +
                         comp.getConcreteClassName() + " found, but it "
-                        "is not on specified path.";
+                        "is not on specified path."; */
                     //throw Exception(msg, __FILE__, __LINE__);
-                    std::cout << msg << std::endl;
+                    //std::cout << msg << std::endl;
                 }
             }
         }
