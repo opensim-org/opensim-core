@@ -346,6 +346,7 @@ void lmdif_C(
    static double p75 = 0.75;
    static double p0001 = 1.0e-4;
    static double zero = 0.0;
+   //static double p05 = 0.05;
    
    *info = 0;
    iflag = 0;
