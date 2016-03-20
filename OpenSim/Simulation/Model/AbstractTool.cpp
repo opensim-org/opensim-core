@@ -712,6 +712,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
                         doc.setIndentString("\t");
                         Xml::Element root = doc.getRootElement();
                         if (root.getElementTag()=="OpenSimDocument"){
+                            //int curVersion = root.getRequiredAttributeValueAs<int>("Version");
                             Xml::element_iterator rootIter(root.element_begin("ForceSet"));
                             if (rootIter!=root.element_end()){
                                 rootIter->setElementTag("ExternalLoads");
