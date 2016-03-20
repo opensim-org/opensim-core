@@ -157,7 +157,7 @@ int Signal::
 LowpassIIR(double T,double fc,int N,double *sig,double *sigf)
 {
 int i,j;
-double fs,ws,wc,wa,wa2,wa3;
+double fs/*,ws*/,wc,wa,wa2,wa3;
 double a[4],b[4],denom;
 double *sigr;
 
@@ -177,6 +177,7 @@ double *sigr;
     }
 
     // INITIALIZE SOME VARIABLES
+    //ws = 2*SimTK_PI*fs;
     wc = 2*SimTK_PI*fc;
 
     // CALCULATE THE FREQUENCY WARPING
