@@ -414,8 +414,8 @@ protected:
 
         T simtkBody(inboard, inboardTransform, outboard, outboardTransform, dir);
 
-        const CoordinateSet& coords = get_CoordinateSet();
-        int nc = numCoordinates();
+        //const CoordinateSet& coords = get_CoordinateSet();
+        //int nc = numCoordinates();
 
         SimTK_ASSERT1(nc == coords.getSize(), "%s list of coordinates does not match number of mobilities.",
                       getConcreteClassName().c_str());
