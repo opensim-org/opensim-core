@@ -185,7 +185,7 @@ void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeom
     // File is a .vtp or .obj. See if we can find it.
     Array_<string> attempts;
     const Model& model = getFrame().getModel();
-    bool foundIt = model.getVisualizer().findGeometryFile(model, file, isAbsolutePath, attempts);
+    bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);
 
     if (!foundIt) {
         std::clog << "ModelVisualizer couldn't find file '" << file
