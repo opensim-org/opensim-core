@@ -246,7 +246,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
                                     const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
     double dist, p11_dist, p22_dist, t, dot1, dot2, dot3, dot4, d, sin_theta,
-        /**r11, *r22, */alpha, beta, r_squared = _radius * _radius;
+        /* *r11, *r22, */alpha, beta, r_squared = _radius * _radius;
     double dist1, dist2;
     double t12, t00;
 
@@ -507,6 +507,8 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
         {
             COPY_1X3VECTOR(r1a, aWrapResult.r1);
             COPY_1X3VECTOR(r2a, aWrapResult.r2);
+            //r11 = &r1b[0];		
+            //r22 = &r2b[0];
         }
         else if (dot2 > dot3 && dot2 > dot4)
         {
