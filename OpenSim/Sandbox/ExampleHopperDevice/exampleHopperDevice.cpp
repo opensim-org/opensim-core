@@ -34,12 +34,22 @@ this interactive example. */
 #include <OpenSim/OpenSim.h>
 
 // Some model and device values that are useful to have
-#define OPTIMAL_FORCE 4000
-#define GAIN 1
-#define LOAD 2500
-#define SPRINGSTIFF 5000
-#define SIGNALGEN 0.33
-#define REPORTING_INTERVAL 0.2
+static const double OPTIMAL_FORCE{ 4000 };
+static const double GAIN{ 1.0 };
+static const double LOAD{ 2500.0 };
+static const double SPRINGSTIFF{ 5000 };
+static const double SIGNALGEN{ 0.33 };
+static const double REPORTING_INTERVAL{ 0.2 };
+
+// Configure which hopper model to use and the attachments (by frame name)
+// and any signals (Outputs) for the device that will be created.
+static const std::string HopperModelFile{ "BouncingLeg.osim" };
+static const std::string DeviceAttachmentA{ "/bouncing_leg/thigh_attachment2" };
+static const std::string DeviceAttachmentB{ "/bouncing_leg/shank_attachment2" };
+static const std::string SignalForKneeDevice{
+                            "/bouncing_leg/vastus/activation" };
+static const std::string HopperHeightOutput{
+                            "/bouncing_leg/ground_block/yTranslation/value" };
 
 
 namespace OpenSim {
@@ -88,8 +98,7 @@ public:
 
     //device can read model height as measured from the block to ground
     double getHeight(const SimTK::State& s) const {
-        return getModel().getOutputValue<double>(s,
-            "/bouncing_leg/ground_block/yTranslation/value");
+        return getModel().getOutputValue<double>(s, HopperHeightOutput);
     }
 
     //device can also "sense" the model center of mass height 
@@ -335,7 +344,7 @@ OpenSim::Device* createDevice() {
 
 /* Create and add a Reporter to a model that reports device outputs 
    as listed by name. */
-void addReporterToModel(OpenSim::Device& device, OpenSim::Model& model,
+void addDeviceReporterToModel(OpenSim::Device& device, OpenSim::Model& model,
                         const std::vector<std::string>& deviceOutputs)
 {
     auto reporter = new OpenSim::ConsoleReporter();
@@ -352,38 +361,36 @@ void addReporterToModel(OpenSim::Device& device, OpenSim::Model& model,
     //    "' to model '" << model.getName() << "'." << std::endl;
 }
 
+void addReporterToHopper(OpenSim::Model& hopper) {
+    auto reporter = new OpenSim::ConsoleReporter();
+    reporter->setName("hopper_results");
+    reporter->set_report_time_interval(REPORTING_INTERVAL);
+    // A reporter has a multi channel Input called inputs that can connect to
+    // any number of Outputs as long as they are of type double.
+    reporter->updInput("inputs")
+        .connect(hopper.getOutput(SignalForKneeDevice));
+    reporter->updInput("inputs")
+        .connect(hopper.getOutput(HopperHeightOutput));
+
+    hopper.addComponent(reporter);
+}
+
 int main() {
     using namespace OpenSim;
-    // Configure which hopper model to use and the attachments (by frame name)
-    // for the device that will be created.
-    std::string modelFile, attachmentA, attachmentB, signalForKneeDevice;
-    modelFile = "BouncingLeg.osim";
-    attachmentA = "/bouncing_leg/thigh_attachment2";
-    attachmentB = "/bouncing_leg/shank_attachment2";
-    signalForKneeDevice = "/bouncing_leg/vastus/activation";
-    std::string yCoordinate = "/bouncing_leg/ground_block/yTranslation/value";
 
-    // refreshModel(modelFile);
+
+    // refreshModel(HopperModelFile);
 
     //----------------------------- HOPPER CODE begin --------------------------
     // Load the hopper model and simulate (unassisted)
-    Model hopper(modelFile);
+    Model hopper(HopperModelFile);
     hopper.setUseVisualizer(true);
 
     /**** EXERCISE 1: Add a Console Reporter ***********************************
     /* Report the models height and muscle activation during the simulation.   *
     /***************************************************************************/
-    auto reporter = new OpenSim::ConsoleReporter();
-    reporter->setName("hopper_results");
-    reporter->set_report_time_interval(REPORTING_INTERVAL);
-    // A reporter has a multi channel Input called inputs that can connect to
-    // any number of Ouputs as long as they are of type double.
-    reporter->updInput("inputs")
-        .connect(hopper.getOutput(signalForKneeDevice));
-    reporter->updInput("inputs")
-        .connect(hopper.getOutput(yCoordinate));
+    addReporterToHopper(hopper);
 
-    hopper.addComponent(reporter);
     /**** EXERCISE 1: end *****************************************************/
 
     SimTK::State& sH = hopper.initSystem();
@@ -421,7 +428,7 @@ int main() {
     std::vector<std::string> deviceOutputs{ "length", "tension",
                                 "power", "controller/myo_control" };
     // add a ConsoleReporter to report device values during a simulation
-    addReporterToModel(*device, testBed, deviceOutputs);
+    addDeviceReporterToModel(*device, testBed, deviceOutputs);
 
     // create the system and initialize the corresponding state an return it
     auto& sD = testBed.initSystem();
@@ -435,7 +442,7 @@ int main() {
 
     //---------------------------- HOPPER + DEVICE begin ----------------------
     // Begin by loading the hopper from file and then we'll connect the device.
-    Model hopperWithDevice(modelFile);
+    Model hopperWithDevice(HopperModelFile);
     hopperWithDevice.setUseVisualizer(true);
 
     // Make a copy (clone) of the device as a knee specific device to connect
@@ -444,18 +451,19 @@ int main() {
     kneeDevice->finalizeFromProperties();
 
     // Connect the kneeDevice to the hopper so it really becomes hopperWithDevice
-    connectDeviceToModel(attachmentA, attachmentB, kneeDevice, hopperWithDevice);
+    connectDeviceToModel(DeviceAttachmentA, DeviceAttachmentB, 
+                         kneeDevice, hopperWithDevice);
 
     // hook up the device's controller input ("activation") to its signal, which
     // is an Output from the hopper corresponding to the vastus muscle activation
     kneeDevice->updInput("controller/activation")
-        .connect(hopperWithDevice.getOutput(signalForKneeDevice));
+        .connect(hopperWithDevice.getOutput(SignalForKneeDevice));
 
     // list desired device outputs (values of interest) by name
     std::vector<std::string> deviceOutputs2{ "controller/myo_control",
                                              "tension", "height" };
     // add a ConsoleReporter to report device values during a simulation
-    addReporterToModel(*kneeDevice, hopperWithDevice, deviceOutputs2);
+    addDeviceReporterToModel(*kneeDevice, hopperWithDevice, deviceOutputs2);
 
     // Simulate the hopper with the device.
     SimTK::State& sHD = hopperWithDevice.initSystem();
