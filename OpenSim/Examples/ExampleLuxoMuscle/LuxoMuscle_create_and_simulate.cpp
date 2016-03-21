@@ -169,10 +169,15 @@ back_extensor_insertion = back_peg_center + 0.5*peg_z_offset;
 
 // Frame locations for assistive device attachments
 //--------------------------------------------------
-Vec3 device_superior_location_in_head(0.5*cervicle_joint_center);
-Vec3 device_inferior_location_in_bottom_bracket(knee_extensor_insertion[0],
-                                                knee_extensor_insertion[1],
-                                                0.0);
+Transform back_assist_origin_transform(back_peg_center); // in chest piece
+Transform back_assist_insertion_transform(
+                                  posterior_superior_pelvis_pin_location);
+
+Transform knee_assist_origin_transform(Vec3(0)); // in posterior leg bar
+Transform knee_assist_insertion_transform(Vec3(knee_extensor_insertion[0],
+                                               knee_extensor_insertion[1],
+                                               0.0));
+
 
 
 //______________________________________________________________________________
@@ -696,7 +701,7 @@ void createLuxoJr(OpenSim::Model &model){
     //-----------------------------------------------------------------------
     
     // add a knee extensor to control the lower 4-bar linkage
-    RigidTendonMuscle* kneeExtensorRight = new RigidTendonMuscle(
+    Millard2012EquilibriumMuscle* kneeExtensorRight = new Millard2012EquilibriumMuscle(
                                             "knee_extensor_right",
                                             knee_extensor_F0, knee_extensor_lm0,
                                             knee_extensor_lts, pennationAngle);
@@ -705,12 +710,12 @@ void createLuxoJr(OpenSim::Model &model){
     kneeExtensorRight->addNewPathPoint("knee_extensor_right_insertion",
                                       *bottom_bracket,
                                         knee_extensor_insertion);
-    
+    kneeExtensorRight->set_ignore_tendon_compliance(true);
     model.addForce(kneeExtensorRight);
     
     // add a second copy of this knee extensor for the left side
-    RigidTendonMuscle* kneeExtensorLeft =
-                                new RigidTendonMuscle(*kneeExtensorRight);
+    Millard2012EquilibriumMuscle* kneeExtensorLeft =
+                                new Millard2012EquilibriumMuscle(*kneeExtensorRight);
     kneeExtensorLeft->setName("kneeExtensorLeft");
     
     // flip the z coordinates of all path points
@@ -718,11 +723,12 @@ void createLuxoJr(OpenSim::Model &model){
     for (int i=0; i<points.getSize(); ++i) {
         points[i].setLocationCoord(2, -1*points[i].getLocationCoord(2));
     }
-    
+
+    kneeExtensorLeft->set_ignore_tendon_compliance(true);
     model.addForce(kneeExtensorLeft);
     
     // add a back extensor to controll the upper 4-bar linkage
-    RigidTendonMuscle* backExtensorRight = new RigidTendonMuscle(
+    Millard2012EquilibriumMuscle* backExtensorRight = new Millard2012EquilibriumMuscle(
                                             "back_extensor_right",
                                             back_extensor_F0, back_extensor_lm0,
                                             back_extensor_lts, pennationAngle);
@@ -731,12 +737,12 @@ void createLuxoJr(OpenSim::Model &model){
                                       back_extensor_origin);
     backExtensorRight->addNewPathPoint("back_extensor_right_insertion", *back,
                                       back_extensor_insertion);
-    
+    backExtensorRight->set_ignore_tendon_compliance(true);
     model.addForce(backExtensorRight);
     
     // copy right back extensor and use to make left extensor
-    RigidTendonMuscle* backExtensorLeft =
-            new RigidTendonMuscle(*backExtensorRight);
+    Millard2012EquilibriumMuscle* backExtensorLeft =
+            new Millard2012EquilibriumMuscle(*backExtensorRight);
     
     backExtensorLeft->setName("back_extensor_left");
     
@@ -745,7 +751,7 @@ void createLuxoJr(OpenSim::Model &model){
     for (int i=0; i<points.getSize(); ++i) {
         pointsLeft[i].setLocationCoord(2, -1*pointsLeft[i].getLocationCoord(2));
     }
-    
+    backExtensorLeft->set_ignore_tendon_compliance(true);
     model.addForce(backExtensorLeft);
     
     
@@ -779,19 +785,42 @@ void createLuxoJr(OpenSim::Model &model){
      * Jumping will require an assistive device. We'll add two frames for
      * attaching a point to point assistive actuator.
      */
-    PhysicalOffsetFrame* device_superior_frame = new PhysicalOffsetFrame(
-                        "device_superior_attachment",
-                        *head,
-                        Transform(device_superior_location_in_head));
     
-    PhysicalOffsetFrame* device_inferior_frame = new PhysicalOffsetFrame(
-                        "device_inferior_attachment",
+    
+    // add frames for connecting a back assitance device between the chest
+    // and pelvis
+    PhysicalOffsetFrame* back_assist_origin_frame = new
+        PhysicalOffsetFrame("back_assist_origin",
+                            *chest,
+                            back_assist_origin_transform);
+    
+    PhysicalOffsetFrame* back_assist_insertion_frame = new
+        PhysicalOffsetFrame("back_assist_insertion",
+                            *pelvisBracket,
+                            back_assist_insertion_transform);
+    
+    model.addFrame(back_assist_origin_frame);
+    model.addFrame(back_assist_insertion_frame);
+    
+    // add frames for connecting a knee assistance device between the posterior
+    // leg and bottom bracket.
+    PhysicalOffsetFrame* knee_assist_origin_frame = new
+    PhysicalOffsetFrame("knee_assist_origin",
+                        *posteriorLegBar,
+                        knee_assist_origin_transform);
+    
+    PhysicalOffsetFrame* knee_assist_insertion_frame = new
+    PhysicalOffsetFrame("knee_assist_insertion",
                         *bottom_bracket,
-                        Transform(device_inferior_location_in_bottom_bracket));
+                        knee_assist_insertion_transform);
     
-    model.addFrame(device_superior_frame);
-    model.addFrame(device_inferior_frame);
-    
-    
+    model.addFrame(knee_assist_origin_frame);
+    model.addFrame(knee_assist_insertion_frame);
+
+    // Temporary: make the frame geometry disappear.
+    for (auto& c : model.getComponentList<OpenSim::FrameGeometry>()) {
+        const_cast<OpenSim::FrameGeometry*>(&c)->set_scale_factors(
+                SimTK::Vec3(0.001, 0.001, 0.001));
+    }
     
 }
