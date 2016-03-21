@@ -400,14 +400,17 @@ int main() {
     /***************************************************************************/
     addReporterToHopper(hopper);
     /**** EXERCISE 1: end *****************************************************/
-
+    
+    // Create the system and initialize the corresponding state an return it
     SimTK::State& sH = hopper.initSystem();
+    // Simulate the hopper from the initial state. The state is updated during
+    // the simulation.
     simulate(hopper, sH);
     //----------------------------- HOPPER CODE end ----------------------------
 
     //--------------------------- DEVICE CODE begin ----------------------------
     /**** EXERCISE 2: Create the Device ****************************************
-    /* Populate a Device instance with the parts need: anchors, actuator,...   *
+    /* Populate a Device instance with parts you need: anchors, actuator,...   *
     /***************************************************************************/
     auto device = createDevice();
     /**** EXERCISE 2: end *****************************************************/
@@ -435,14 +438,11 @@ int main() {
     // add a ConsoleReporter to report device values during a simulation
     addDeviceReporterToModel(*device, testBed, deviceOutputs);
 
-    // create the system and initialize the corresponding state an return it
     auto& sD = testBed.initSystem();
 
-    // Simulate the testBed containing the device only. When using the hopper,
-    // make sure to simulate the hopper (with the device) and not the testBed.
+    // Simulate the testBed containing the device only.
     simulate(testBed, sD);
     //----------------------------- DEVICE CODE end ---------------------------
-
 
     //---------------------------- HOPPER + DEVICE begin ----------------------
     /**** EXERCISE 4: Simulate Hopper with the Device **************************
@@ -461,12 +461,12 @@ int main() {
     connectDeviceToModel(DeviceAttachmentA, DeviceAttachmentB, 
                          kneeDevice, hopperWithDevice);
 
-    // hook up the device's controller input ("activation") to its signal, which
+    // Hook-up the device's controller input ("activation") to its signal, which
     // is an Output from the hopper corresponding to the vastus muscle activation
     kneeDevice->updInput("controller/activation")
         .connect(hopperWithDevice.getOutput(SignalForKneeDevice));
 
-    // list desired device outputs (values of interest) by name
+    // List desired device outputs (values of interest) by name
     std::vector<std::string> deviceOutputs2{ "controller/myo_control",
                                              "tension", "height" };
     // add a ConsoleReporter to report device values during a simulation
