@@ -375,6 +375,19 @@ void addReporterToHopper(OpenSim::Model& hopper) {
     hopper.addComponent(reporter);
 }
 
+void addSignalGeneratorToDevice(OpenSim::Device* device) {
+    auto generator = new OpenSim::SignalGenerator();
+    generator->setName("generator");
+    // Trying changing the constant value and even changing
+    // the function, e.g. try a LinearFunction
+    generator->set_function(OpenSim::Constant(SIGNALGEN));
+    device->addComponent(generator);
+    // Wire up the Controller to use the generator for fake activations
+    device->updInput("controller/activation").
+        connect(generator->getOutput("signal"));
+}
+
+
 int main() {
     using namespace OpenSim;
     //----------------------------- HOPPER CODE begin --------------------------
@@ -413,15 +426,7 @@ int main() {
     /**** EXERCISE 3: Create a Signal Generator ********************************
     /* Make a SignalGenerator class and use it to input signals to test device *
     /***************************************************************************/
-    auto generator = new SignalGenerator();
-    generator->setName("generator");
-    // Trying changing the constant value and even changing
-    // the function, e.g. try a LinearFunction
-    generator->set_function(Constant(SIGNALGEN));
-    device->addComponent(generator);
-    // Wire up the Controller to use the generator for fake activations
-    device->updInput("controller/activation").
-        connect(generator->getOutput("signal"));
+    addSignalGeneratorToDevice(device);
     /**** EXERCISE 3: end *****************************************************/
 
     // list desired device outputs (values of interest) by name
