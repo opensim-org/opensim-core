@@ -47,7 +47,7 @@ add_custom_command(
     OUTPUT "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
     DEPENDS "${swig_generated_file_fullname}"
     COMMAND ${JAVA_COMPILE} 
-            ${CMAKE_CURRENT_BINARY_DIR}/src/org/opensim/modeling/*.java 
+            org/opensim/modeling/*.java 
             -source 1.6 -target 1.6
     COMMAND ${JAVA_ARCHIVE} -cvf ${SWIG_JAVA_JAR_NAME}
             org/opensim/modeling/*.class

@@ -172,23 +172,20 @@ void FrameGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::Decor
 void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const std::string& file = get_mesh_file();
-    // TODO: when API visualizer changes to use DecorativeGeometry::MeshFile instead of 
-    // DecorativeGeometry::DecorativeMesh with PolygonalMesh underneath it, the logic below 
-    // to locate the files will need to be transferred there. -Ayman 05/15
-#if 1
     bool isAbsolutePath; string directory, fileName, extension;
     SimTK::Pathname::deconstructPathname(file,
         isAbsolutePath, directory, fileName, extension);
     const string lowerExtension = SimTK::String::toLower(extension);
-    if (lowerExtension != ".vtp" && lowerExtension != ".obj") {
+    if (lowerExtension != ".vtp" && lowerExtension != ".obj" && lowerExtension != ".stl") {
         std::clog << "ModelVisualizer ignoring '" << file
-            << "'; only .vtp and .obj files currently supported.\n";
+            << "'; only .vtp .stl and .obj files currently supported.\n";
         return;
     }
 
     // File is a .vtp or .obj. See if we can find it.
     Array_<string> attempts;
-    bool foundIt = getFrame().getModel().getVisualizer().findGeometryFile(getFrame().getModel(), file, isAbsolutePath, attempts);
+    const Model& model = getFrame().getModel();
+    bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);
 
     if (!foundIt) {
         std::clog << "ModelVisualizer couldn't find file '" << file
@@ -211,13 +208,13 @@ void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeom
         
     }
     catch (const std::exception& e) {
-        std::clog << "ModelVisualizer couldn't read "
+        std::clog << "Visualizer couldn't read "
             << attempts.back() << " because:\n"
             << e.what() << "\n";
         return;
     }
-#endif
-    DecorativeMesh dmesh(pmesh);
+
+    DecorativeMeshFile dmesh(attempts.back().c_str());
     dmesh.setScaleFactors(get_scale_factors());
     decoGeoms.push_back(dmesh);
 }

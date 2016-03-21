@@ -90,17 +90,17 @@ int main() {
     std::cout << "CalibrationMatrices: \n";
     for(const auto& elem : force_table->getTableMetaData().
             getValueForKey("CalibrationMatrices").
-            getValue<std::vector<btk::ForcePlatform::CalMatrix>>())
+            getValue<std::vector<SimTK::Matrix_<double>>>())
         std::cout << elem << std::endl;
     std::cout << "Corners: \n";
     for(const auto& elem : force_table->getTableMetaData().
             getValueForKey("Corners").
-            getValue<std::vector<btk::ForcePlatform::Corners>>())
+            getValue<std::vector<SimTK::Matrix_<double>>>())
         std::cout << elem << std::endl;
     std::cout << "Origins: \n";
     for(const auto& elem : force_table->getTableMetaData().
             getValueForKey("Origins").
-            getValue<std::vector<btk::ForcePlatform::Origin>>())
+            getValue<std::vector<SimTK::Matrix_<double>>>())
         std::cout << elem << std::endl;
     std::cout << "Types: \n";
     for(const auto& elem : force_table->getTableMetaData().

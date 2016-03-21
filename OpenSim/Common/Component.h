@@ -2356,10 +2356,8 @@ void Connector<C>::findAndConnect(const Component& root) {
             comp =  &getOwner().template getComponent<C>(path);
         }
     }
-    catch (const ComponentNotFoundOnSpecifiedPath& ex) {
-        const char* msg = ex.getMessage();
-        // TODO leave out for hackathon:
-        //std::cout << msg << std::endl;
+    catch (const ComponentNotFoundOnSpecifiedPath& ) {
+        // TODO leave out for hackathon std::cout << ex.getMessage() << std::endl;
         comp =  root.template findComponent<C>(path);
     }
     if (comp)
