@@ -115,31 +115,5 @@ void handlePathWrapping(ModelComponent* device, Model& model) {
         }
     }
 }
-/************ end of HELPER FUNCTIONS: Implemented in answers.cpp ************/
-
-/*
-if (LUXO) {
-    modelFile = "Luxo_Myo.osim";
-    attachmentA = "knee_assist_origin";
-    attachmentB = "knee_assist_insertion";
-    signalForKneeDevice = "/LuxoMuscle/knee_extensor_right/activation";
-    //attachmentA = "back_assist_origin";
-    //attachmentB = "back_assist_insertion";
-    //signalFoBackDevice = "/LuxoMuscle/back_extensor_right/activation";
-}
-*/
-
-//----------------------------- HOPPER + DEVICE begin ----------------------
-/** For using LUXO only
-OpenSim::Device* backDevice = device->clone();
-backDevice->finalizeFromProperties();
-connectDeviceToModel(attachmentA, attachmentB, backDevice, hopper);
-
-attachmentA = "knee_assist_origin";
-attachmentB = "knee_assist_insertion";
-
-backDevice->updInput("controller/activation").connect(hopper.getOutput(signalForDevice));
-*/
-
 
 }

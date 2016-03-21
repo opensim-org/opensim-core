@@ -275,17 +275,16 @@ void connectDeviceToModel(const std::string& frameAname,
 } // namespace OpenSim
 
 
-
+// Build the Device composed of 1kg "cuffs" that attach to two frames in a
+// model. Between these two cuffs there is an actuator that can conform 
+// to wrap over a joint. The actuator receives its control from its controller.
+// The controller generates a control signal proportional to an "activation"
+// signal, which is an output of an unknown model.
 OpenSim::Device* createDevice() {
     using SimTK::Vec3;
     using SimTK::Inertia;
 
     //-----------------Code to Assemble the Device begin -----------------------
-    // Create a sphere geometry to reuse later.
-    OpenSim::Sphere sphere{ 0.0075 };
-    sphere.setName("sphere");
-    sphere.setColor(Vec3{ 0.8, 0, 0 });
-
     // Create the device to hold the components.
     auto device = new OpenSim::Device{};
     device->setName("device");
@@ -300,7 +299,11 @@ OpenSim::Device* createDevice() {
     device->addComponent(cuffA);
     device->addComponent(cuffB);
 
-    // Sphere geometry for the masses. 
+    // Create a sphere geometry to visually represent the cuffs
+    OpenSim::Sphere sphere{ 0.01 };
+    sphere.setName("sphere");
+    sphere.setColor(Vec3{ 0.0, 0.8, 0 });
+    // Add sphere (geometry) attach them to the cuffs
     sphere.setFrameName("cuffA");
     cuffA->addGeometry(sphere);
     sphere.setFrameName("cuffB");
@@ -322,7 +325,7 @@ OpenSim::Device* createDevice() {
     anchorB->setChildFrameName("cuffB");
     device->addComponent(anchorB);
 
-    // Actuator connecting the two masses.
+    // Actuator connecting the two cuffs (A and B).
     auto pathActuator = new OpenSim::PathActuator();
     pathActuator->setName("cableAtoB");
     pathActuator->set_optimal_force(OPTIMAL_FORCE);
@@ -330,13 +333,16 @@ OpenSim::Device* createDevice() {
     pathActuator->addNewPathPoint("point2", *cuffB, Vec3(0));
     device->addComponent(pathActuator);
 
-    // A controller that specifies the excitation of the biceps muscle.
+    // A controller that specifies the control to the actuator
     auto controller = new OpenSim::PropMyoController();
     controller->setName("controller");
     controller->set_gain(GAIN);
 
+    // Connect the the controller to the device actuator
     controller->updConnector<OpenSim::Actuator>("actuator").
         connect(*pathActuator);
+
+    // Don't forget to add the controller to your device
     device->addComponent(controller);
 
     return device;
