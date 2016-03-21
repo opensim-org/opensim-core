@@ -377,10 +377,6 @@ void addReporterToHopper(OpenSim::Model& hopper) {
 
 int main() {
     using namespace OpenSim;
-
-
-    // refreshModel(HopperModelFile);
-
     //----------------------------- HOPPER CODE begin --------------------------
     // Load the hopper model and simulate (unassisted)
     Model hopper(HopperModelFile);
@@ -390,17 +386,20 @@ int main() {
     /* Report the models height and muscle activation during the simulation.   *
     /***************************************************************************/
     addReporterToHopper(hopper);
-
     /**** EXERCISE 1: end *****************************************************/
 
     SimTK::State& sH = hopper.initSystem();
     simulate(hopper, sH);
     //----------------------------- HOPPER CODE end ----------------------------
 
-
-    //--------------------------- DEVICE CODE begin ---------------------------
+    //--------------------------- DEVICE CODE begin ----------------------------
+    /**** EXERCISE 2: Create the Device ****************************************
+    /* Populate a Device instance with the parts need: anchors, actuator,...   *
+    /***************************************************************************/
     auto device = createDevice();
-    // Build a test environment for the device. You can comment out the call
+    /**** EXERCISE 2: end *****************************************************/
+
+    // Create a test environment for the device. You can comment out the call
     // when connecting the device built above to the actual hopper because this
     // testBed is actually for testing this device.
     //-------------------------------------------------------------------------
@@ -411,6 +410,9 @@ int main() {
     //-------------------------------------------------------------------------
     connectDeviceToModel("ground", "load", device, testBed);
 
+    /**** EXERCISE 3: Create a Signal Generator ********************************
+    /* Make a SignalGenerator class and use it to input signals to test device *
+    /***************************************************************************/
     auto generator = new SignalGenerator();
     generator->setName("generator");
     // Trying changing the constant value and even changing
@@ -420,9 +422,7 @@ int main() {
     // Wire up the Controller to use the generator for fake activations
     device->updInput("controller/activation").
         connect(generator->getOutput("signal"));
-
-    // Print the model. 
-    testBed.print("exampleHopperDeviceOnTestBed.osim");
+    /**** EXERCISE 3: end *****************************************************/
 
     // list desired device outputs (values of interest) by name
     std::vector<std::string> deviceOutputs{ "length", "tension",
@@ -439,8 +439,10 @@ int main() {
     //----------------------------- DEVICE CODE end ---------------------------
 
 
-
     //---------------------------- HOPPER + DEVICE begin ----------------------
+    /**** EXERCISE 4: Simulate Hopper with the Device **************************
+    /* Make a SignalGenerator class and use it to input signals to test device *
+    /***************************************************************************/
     // Begin by loading the hopper from file and then we'll connect the device.
     Model hopperWithDevice(HopperModelFile);
     hopperWithDevice.setUseVisualizer(true);
@@ -468,6 +470,7 @@ int main() {
     // Simulate the hopper with the device.
     SimTK::State& sHD = hopperWithDevice.initSystem();
     simulate(hopperWithDevice, sHD);
+    /**** EXERCISE 4: end *****************************************************/
     //----------------------------- HOPPER + DEVICE end ------------------------
 
     return 0;
