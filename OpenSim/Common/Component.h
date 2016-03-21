@@ -1631,6 +1631,7 @@ public:
         NOTE: If the component name or the state variable name is ambiguous, 
          an exception is thrown. To disambiguate use the full name provided
          by owning component(s). */
+#ifndef SWIG // StateVariable is protected.
     template<class C = Component>
     const C* findComponent(const std::string& name, 
                            const StateVariable** rsv = nullptr) const {
@@ -1714,11 +1715,14 @@ public:
         // Not found
         return nullptr;
     }
+#endif
 
     /** Similarly find a Connector of this Component (includes its subcomponents) */
     const AbstractConnector* findConnector(const std::string& name) const;
     /** Similarly find a StateVariable of this Component (includes its subcomponents) */
+#ifndef SWIG // StateVariable is protected.
     const StateVariable* findStateVariable(const std::string& name) const;
+#endif
 
 protected:
     /** Access the parent of this Component.
