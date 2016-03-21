@@ -124,11 +124,11 @@ public:
     };
 
     /// Convenient access to set Appearance/representation
-    void setRepresentation(VisualRepresentation rep) { 
+    void setRepresentation(OpenSim::VisualRepresentation rep) { 
         upd_Appearance().set_representation(rep); 
     };
     /// Convenient access to get Appearance/representation
-    VisualRepresentation getRepresentation() { return
+    OpenSim::VisualRepresentation getRepresentation() { return
         get_Appearance().get_representation(); 
     };
     // END DEPRECATED
