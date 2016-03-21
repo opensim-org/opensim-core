@@ -112,3 +112,10 @@ SimTK::Vec3 Station::findLocationInFrame(const SimTK::State& s,
     return getReferenceFrame().findLocationInAnotherFrame(s, currentLocation,
             aFrame);
 }
+
+SimTK::Vec3 Station::findLocationInGround(const SimTK::State& s) const
+{
+    // Get the transform from the station's frame to the other frame
+    SimTK::Vec3 currentLocation = get_location();
+    return getReferenceFrame().findLocationInAnotherFrame(s, currentLocation, getModel().getGround());
+}

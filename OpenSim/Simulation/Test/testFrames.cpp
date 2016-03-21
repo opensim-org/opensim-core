@@ -415,12 +415,22 @@ void testStationOnFrame()
         const Coordinate& coord = pendulum->getCoordinateSet().get("q1");
         coord.setValue(s, radAngle);
 
+        // test findLocationInFrame
         SimTK::Vec3 comInGround = 
             myStation->findLocationInFrame(s, pendulum->getGround());
         SimTK::Vec3 comBySimbody = 
             rod1.getMobilizedBody().findStationLocationInGround(s, com);
         ASSERT_EQUAL(comInGround, comBySimbody, tolerance, __FILE__, __LINE__,
             "testStationOnFrame(): failed to resolve station position in ground.");
+        
+        // test findLocationInGround
+        SimTK::Vec3 stationInGround =
+            myStation->findLocationInGround(s);
+        ASSERT_EQUAL(stationInGround, comBySimbody, tolerance, __FILE__, __LINE__,
+                     "testStationOnFrame()/testStationInGround(): failed to resolve station position in ground.");
+        
+        
+        
     }
 }
 

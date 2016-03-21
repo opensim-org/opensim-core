@@ -68,6 +68,9 @@ public:
     void setReferenceFrame(const OpenSim::PhysicalFrame& aFrame);
     /** Find this Station's location in any Frame */
     SimTK::Vec3 findLocationInFrame(const SimTK::State& s, const OpenSim::Frame& aFrame) const;
+    /** FInd thus Station's location in Ground */
+    SimTK::Vec3 findLocationInGround(const SimTK::State& s) const;
+
 private:
     void setNull();
     void constructProperties() override;
