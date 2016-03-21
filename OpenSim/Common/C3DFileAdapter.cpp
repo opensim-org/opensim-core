@@ -1,5 +1,10 @@
 #include "C3DFileAdapter.h"
 
+#include "btkAcquisitionFileReader.h"
+#include "btkAcquisition.h"
+#include "btkForcePlatformsExtractor.h"
+#include "btkGroundReactionWrenchFilter.h"
+
 namespace OpenSim {
 
 const std::string C3DFileAdapter::_markers{"markers"};
@@ -20,13 +25,15 @@ C3DFileAdapter::clone() const {
 
 C3DFileAdapter::Tables
 C3DFileAdapter::read(const std::string& fileName) const {
-    auto tables = extendRead(fileName);
-    auto    abs_marker_table = tables.at(_markers).release();
-    auto     abs_force_table = tables.at(_forces ).release();
-    auto    marker_table = static_cast<TimeSeriesTableVec3*>(abs_marker_table);
-    auto     force_table = static_cast<TimeSeriesTableVec3*>(abs_force_table);
-    return std::make_tuple(std::unique_ptr<TimeSeriesTableVec3>{marker_table}, 
-                           std::unique_ptr<TimeSeriesTableVec3>{force_table});
+    auto abstables = extendRead(fileName);
+    auto marker_table = 
+        std::static_pointer_cast<TimeSeriesTableVec3>(abstables.at(_markers));
+    auto force_table = 
+        std::static_pointer_cast<TimeSeriesTableVec3>(abstables.at(_forces));
+    Tables tables{};
+    tables.emplace(_markers, marker_table);
+    tables.emplace( _forces,  force_table);
+    return tables;
 }
 
 void
@@ -46,9 +53,9 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     auto& marker_table = *(new TimeSeriesTableVec3{});
     auto&  force_table = *(new TimeSeriesTableVec3{});
     tables.emplace(_markers, 
-                   std::unique_ptr<TimeSeriesTableVec3>(&marker_table));
+                   std::shared_ptr<TimeSeriesTableVec3>(&marker_table));
     tables.emplace(_forces, 
-                   std::unique_ptr<TimeSeriesTableVec3>(&force_table));
+                   std::shared_ptr<TimeSeriesTableVec3>(&force_table));
 
     auto marker_pts = btk::PointCollection::New();
 
@@ -143,18 +150,60 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         }
     }
 
+    //shrik<btk::ForcePlatform::Origin> foo;
+
     if(fp_force_pts->GetItemNumber() != 0) {
-        force_table.
-            updTableMetaData().
-            setValueForKey("CalibrationMatrices", std::move(fp_cal_matrices));
+        // Convert Eigen matrices into SimTK matrices before updating metadata
+        // of the force table.
+
+        std::vector<SimTK::Matrix_<double>> cal_matrices{};
+        for(const auto& eigen_mat : fp_cal_matrices) {
+            SimTK::Matrix_<double> 
+                simtk_mat{static_cast<int>(eigen_mat.rows()),
+                          static_cast<int>(eigen_mat.cols())};
+            
+            for(int r = 0; r < eigen_mat.rows(); ++r)
+                for(int c = 0; c < eigen_mat.cols(); ++c)
+                    simtk_mat(r, c) = eigen_mat(r, c);
+            
+            cal_matrices.push_back(simtk_mat);
+        }
+
+        std::vector<SimTK::Matrix_<double>> corners{};
+        for(const auto& eigen_mat : fp_corners) {
+            SimTK::Matrix_<double> 
+                simtk_mat{static_cast<int>(eigen_mat.rows()),
+                          static_cast<int>(eigen_mat.cols())};
+            
+            for(int r = 0; r < eigen_mat.rows(); ++r)
+                for(int c = 0; c < eigen_mat.cols(); ++c)
+                    simtk_mat(r, c) = eigen_mat(r, c);
+            
+            corners.push_back(simtk_mat);
+        }
+
+        std::vector<SimTK::Vector_<double>> origins{};
+        for(const auto& eigen_vec : fp_origins) {
+            SimTK::Vector_<double> 
+                simtk_vec{static_cast<int>(eigen_vec.rows())};
+
+            for(int r = 0; r < eigen_vec.rows(); ++r)
+                simtk_vec(r) = eigen_vec(r, 0);
+
+            origins.push_back(simtk_vec);
+        }
 
         force_table.
             updTableMetaData().
-            setValueForKey("Corners",             std::move(fp_corners));
+            setValueForKey("CalibrationMatrices", std::move(cal_matrices));
 
         force_table.
             updTableMetaData().
-            setValueForKey("Origins",             std::move(fp_origins));
+            setValueForKey("Corners",             std::move(corners));
+
+        force_table.
+            updTableMetaData().
+            setValueForKey("Origins",             std::move(origins));
 
         force_table.
             updTableMetaData().
@@ -235,7 +284,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
        marker_table.updTableMetaData().setValueForKey("events", event_table);
         force_table.updTableMetaData().setValueForKey("events", event_table);
 
-    return std::move(tables);
+    return tables;
 }
 
 void

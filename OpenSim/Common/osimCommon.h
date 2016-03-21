@@ -49,4 +49,9 @@
 #include "RegisterTypes_osimCommon.h"   // to expose RegisterTypes_osimCommon
 #include "SmoothSegmentedFunctionFactory.h"
 
+#include "DataTable.h"
+#include "TimeSeriesTable.h"
+
+#include "Reporter.h"
+
 #endif // _osimCommon_h_

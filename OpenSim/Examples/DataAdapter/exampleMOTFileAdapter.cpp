@@ -25,8 +25,7 @@
 #include <algorithm>
 
 int main() {
-    std::string filename{"OpenSim/Examples/DataAdapter/"
-                         "std_tugOfWar_forces.mot"};
+    std::string filename{"std_tugOfWar_forces.mot"};
 
     // There are two ways to read the file:
     // (1) Use the specific adapter to read the file. This requires you to know
@@ -52,13 +51,13 @@ int main() {
     // as well.
 
     // Metadata of the table.
-    std::cout << table1->
+    std::cout << table1.
                  getTableMetaData().
                  getValueForKey("header").
                  getValue<std::string>() << std::endl;
 
     // Column labels of the table.
-    auto& labels = table1->
+    auto& labels = table1.
                    getDependentsMetaData().
                    getValueArrayForKey("labels");
     for(size_t i = 0; i < labels.size(); ++i)
@@ -66,12 +65,12 @@ int main() {
     std::cout << std::endl;
 
     // Dimensions of the table.
-    std::cout << table1->getNumRows() << "\t"
-              << table1->getNumColumns() << std::endl;
+    std::cout << table1.getNumRows() << "\t"
+              << table1.getNumColumns() << std::endl;
 
     // Individual rows of the table.
-    for(size_t i = 0; i < std::min(table1->getNumRows(), size_t(3)); ++i)
-        std::cout << table1->getRowAtIndex(i) << std::endl;
+    for(size_t i = 0; i < std::min(table1.getNumRows(), size_t(3)); ++i)
+        std::cout << table1.getRowAtIndex(i) << std::endl;
 
     // See documentation for TimeSeriesTable for full set of operations
     // possible for table1 and table2.

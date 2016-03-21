@@ -24,21 +24,17 @@
 
 #ifdef WITH_BTK
 
-#include "btkAcquisitionFileReader.h"
-#include "btkAcquisition.h"
-#include "btkForcePlatformsExtractor.h"
-#include "btkGroundReactionWrenchFilter.h"
-
 #include "FileAdapter.h"
 #include "Event.h"
+
+template<typename> class shrik;
 
 namespace OpenSim {
 
 class OSIMCOMMON_API C3DFileAdapter : public FileAdapter {
 public:
-    using EventTable  = std::vector<Event>; 
-    using Tables      = std::tuple<std::unique_ptr<TimeSeriesTableVec3>, 
-                                   std::unique_ptr<TimeSeriesTableVec3>>;
+    typedef std::vector<Event>                         EventTable; 
+    typedef std::map<std::string, std::shared_ptr<TimeSeriesTableVec3>> Tables;
 
     C3DFileAdapter()                                 = default;
     C3DFileAdapter(const C3DFileAdapter&)            = default;

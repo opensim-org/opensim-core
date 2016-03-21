@@ -1,4 +1,3 @@
-
 add_subdirectory(TaskSpace EXCLUDE_FROM_ALL)
 
 file(GLOB TO_COMPILE "future*.cpp")
@@ -7,6 +6,9 @@ file(GLOB TO_COMPILE "future*.cpp")
 
 include_directories(${OpenSim_SOURCE_DIR}
                     ${OpenSim_SOURCE_DIR}/Vendors)
+
+add_subdirectory(ExampleHopperDevice)
+
 
 set(SANDBOX_FILES
     "futureOrientationInverseKinematics.osim"

@@ -70,8 +70,14 @@ public:
 //=============================================================================
 // OUTPUTS
 //=============================================================================
+    OpenSim_DECLARE_OUTPUT(length, double, getLength,
+        SimTK::Stage::Position);
     OpenSim_DECLARE_OUTPUT(stretch, double, getStretch,
-            SimTK::Stage::Position);
+        SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(lengthening_speed, double, getLengtheningSpeed,
+        SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(tension, double, getTension,
+        SimTK::Stage::Dynamics);
 
 //==============================================================================
 // PUBLIC METHODS

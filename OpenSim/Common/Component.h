@@ -273,6 +273,9 @@ protected:
     OpenSim_DECLARE_LIST_PROPERTY(connectors, AbstractConnector,
         "List of connectors (structural dependencies) that this component has.");
 
+    OpenSim_DECLARE_LIST_PROPERTY(components, Component,
+        "List of components that this component owns and serializes.");
+
 public:
 //==============================================================================
 // METHODS
@@ -397,6 +400,16 @@ public:
     bool hasSystem() const { return !_system.empty(); }
 
     /**
+    * Add a Component to this component's property list.
+    * This component takes ownership of the added component.
+    * 
+    * TODO rename to adoptComponent() when Model::add#ModelComponent#()
+    * methods are also renamed. For the time being remain consistent. -aseth 
+    *
+    * @throws ComponentAlreadyPartOfOwnershipTree  */
+    void addComponent(Component* comp);
+
+    /**
      * Get an iterator through the underlying subcomponents that this component is 
      * composed of. The hierarchy of Components/subComponents forms a tree. The 
      * tree structure is fixed when the system is created.
@@ -518,6 +531,14 @@ public:
         return int(_outputsTable.size());
     }
 
+    /** Collect and return the names of Outputs as an std::vector. */
+    std::vector<std::string> getOutputNames() const {
+        std::vector<std::string> names;
+        for (auto it = getOutputsBegin(); it != getOutputsEnd(); it++)
+            names.push_back(it->first);
+        return names;
+    }
+
     /** Access a read-only Connector by index.
     @see getNumConnectors()
      */
@@ -596,7 +617,7 @@ public:
     //@{ 
 
     /**
-    * Get the Input provided by this Component by name.
+    * Get an Input provided by this Component by name.
     *
     * @param name   the name of the Input
     * @return       const reference to the AbstractInput
@@ -623,6 +644,23 @@ public:
                 << getConcreteClassName();
         throw Exception(msg.str(), __FILE__, __LINE__);
     }
+    
+    AbstractInput& updInput(const std::string& name)
+    {
+        return *const_cast<AbstractInput *>(&getInput(name));
+    }
+
+
+    /**
+    * Get a concrete Input that you can direclty ask for its values.
+    * @param name   the name of the Input
+    * @throws Exception if an Input with the given name does not exist.
+    * @throws std::bad_cast if the provided type T is incorrect for the given name.
+    */
+    template<typename T>
+    const Input<T>& getInput(const std::string& name) const {
+        return dynamic_cast<const Input<T>&>(getInput(name));
+    }
 
     /**
     * Get the Output provided by this Component by name.
@@ -633,7 +671,7 @@ public:
     const AbstractOutput& getOutput(const std::string& name) const
     {
         auto it = _outputsTable.find(name);
-
+        
         if (it != _outputsTable.end()) {
             return it->second.getRef();
         }
@@ -649,13 +687,24 @@ public:
                 return found->getOutput(outName);
             }
         }
-
-            std::stringstream msg;
+        
+        std::stringstream msg;
         msg << "Component::getOutput: ERR-  no output '" << name << "' found.\n "
-            << "for component '" << getName() << "' of type "
-            << getConcreteClassName();
-            throw Exception(msg.str(), __FILE__, __LINE__);
-        }
+        << "for component '" << getName() << "' of type "
+        << getConcreteClassName();
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
+
+    /**
+    * Get a writable reference to an Output provided by this Component by name.
+    *
+    * @param name   the name of the cache variable
+    * @return       reference to the AbstractOutput
+    */
+    AbstractOutput& updOutput(const std::string& name)
+    {
+        return *const_cast<AbstractOutput *>(&getOutput(name));
+    }
 
     /** An iterator to traverse all the Outputs of this component, pointing at the
     * first Output. This can be used in a loop as such:
@@ -716,8 +765,10 @@ public:
 
     /**
     * Get the Input value that this component is dependent on.
-    * Check if Input is connected, otherwise it will throw an
-    * exception.
+    * Checks if Input is connected, otherwise it will throw an
+    * exception. You can only call this method for non-list inputs.
+    * For list inputs, you must get the input using getInput(),
+    * from which you can ask for its values.
     *
     * @param state      the State for which to set the value
     * @param name       the name of the input
@@ -727,6 +778,8 @@ public:
         getInputValue(const SimTK::State& state, const std::string& name) const {
         // get the input and check if it is connected.
         const AbstractInput& in = getInput(name);
+        // TODO could maybe remove this check and have the Input do it. Or,
+        // here, we could catch Input's exception and give a different message.
         if (in.isConnected()){
             return (Input<T>::downcast(in)).getValue(state);
             }
@@ -1005,9 +1058,15 @@ public:
     // End of Model Component State Accessors.
     //@} 
 
+    /** @name Dump debugging information to the console */
+    /// @{
     /** Debugging method to list all subcomponents by name and recurse
         into these components to list their subcomponents, and so on. */
     void dumpSubcomponents(int depth=0) const;
+    /** List all the Connectors and Inputs and whether or not they are
+     * connected. */
+    void dumpConnections() const;
+    /// @}
 
 protected:
     class StateVariable;
@@ -1406,26 +1465,11 @@ protected:
     * message if the provided Component is incompatible or non-existant.
     */
     template <typename T>
-    void constructConnector(const std::string& name) {
+    void constructConnector(const std::string& name, bool isList = false) {
         int ix = updProperty_connectors().adoptAndAppendValue(
             new Connector<T>(name, SimTK::Stage::Topology, *this));
         //add pointer to connectorsTable so we can access connectors easily by name
         _connectorsTable[name] = ix;
-    }
-
-    /**
-    * Construct an Input (socket) for this Component's dependence on an Output signal.
-    * It is a placeholder for the Output and its type and enables the Component
-    * to automatically traverse its dependencies and provide a meaningful message
-    * if the provided Output is incompatible or non-existant. The also specifies at what
-    * stage the output must be valid for the the component to consume it as an input.
-    * if the Output's dependsOnStage is above the Input's requiredAtStage, an Exception
-    * is thrown because the output cannot satisfy the Input's requirement.
-    */
-    template <typename T>
-    void constructInput(const std::string& name,
-        const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance) {
-        _inputsTable[name].reset(new Input<T>(name, requiredAtStage, *this));
     }
 
     /** Add a modeling option (integer flag stored in the State) for use by 
@@ -1453,11 +1497,9 @@ protected:
     option you may choose to hide the state variable from being accessed outside
     of this component, in which case it is considered to be "hidden". 
     You may also want to create an Output for this state variable; see
-    constructOutputForStateVariable() for more information. Reporters should
-    use such an Output to get the StateVariable's value (instead of using
+    #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE for more information. Reporters
+    should use such an Output to get the StateVariable's value (instead of using
     getStateVariableValue()).
-
-    @see constructOutputForStateVariable()
 
     @param[in] stateVariableName     string value to access variable by name
     @param[in] invalidatesStage      the system realization stage that is
@@ -1572,6 +1614,7 @@ protected:
     template<class C>
     friend void Connector<C>::findAndConnect(const Component& root);
 
+public:
     /** Utility method to find a component in the list of sub components of this
         component and any of their sub components, etc..., by name or state variable name.
         The search can be sped up considerably if the "path" or even partial path name
@@ -1588,6 +1631,7 @@ protected:
         NOTE: If the component name or the state variable name is ambiguous, 
          an exception is thrown. To disambiguate use the full name provided
          by owning component(s). */
+#ifndef SWIG // StateVariable is protected.
     template<class C = Component>
     const C* findComponent(const std::string& name, 
                            const StateVariable** rsv = nullptr) const {
@@ -1634,11 +1678,14 @@ protected:
             else if (comp.getName() == subname) {
                 if (foundCs.size() == 0) {
                     foundCs.push_back(&comp);
-                    msg += "a match for Component '" + name + "' of type " +
+                    // Silenced this Message for Hackathon
+                    // TODO Revisit why the exact match isn't found when
+                    // when what appears to be the complete path.
+                    /*msg += "a match for Component '" + name + "' of type " +
                         comp.getConcreteClassName() + " found, but it "
-                        "is not on specified path.";
+                        "is not on specified path."; */
                     //throw Exception(msg, __FILE__, __LINE__);
-                    std::cout << msg << std::endl;
+                    //std::cout << msg << std::endl;
                 }
             }
         }
@@ -1668,12 +1715,16 @@ protected:
         // Not found
         return nullptr;
     }
+#endif
 
-    /** Similarly find a Connector of this Component (also amongst its subcomponents) */
+    /** Similarly find a Connector of this Component (includes its subcomponents) */
     const AbstractConnector* findConnector(const std::string& name) const;
-
+    /** Similarly find a StateVariable of this Component (includes its subcomponents) */
+#ifndef SWIG // StateVariable is protected.
     const StateVariable* findStateVariable(const std::string& name) const;
+#endif
 
+protected:
     /** Access the parent of this Component.
         An exception is thrown if the Component has no parent.
         @see hasParent() */
@@ -1745,12 +1796,16 @@ protected:
 
     //@} 
 
-    /** @name Internal methods for constructing Outputs
-     * To declare Outputs for your component, use the following macros within
-     * your class declaration (ideally at the top near property declarations):
+    /** @name Internal methods for constructing Outputs, Inputs
+     * To declare Outputs and Inputs for your component,
+     * use the following macros within your class declaration (ideally at
+     * the top near property declarations):
      *
      *  - #OpenSim_DECLARE_OUTPUT
+     *  - #OpenSim_DECLARE_LIST_OUTPUT
      *  - #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE
+     *  - #OpenSim_DECLARE_INPUT
+     *  - #OpenSim_DECLARE_LIST_INPUT
      *
      * The methods below are used in those macros, and you should not use these
      * methods yourself.
@@ -1763,6 +1818,8 @@ protected:
            -# It is a member function of \a this component.
            -# The member function is const.
            -# It takes only one input, which is `const SimTK::State&`
+           -# The function returns the computed quantity *by value* (e.g., 
+              `double computeQuantity(const SimTK::State&) const`).
 
         You must also provide the stage on which the output depends.
 
@@ -1775,7 +1832,7 @@ protected:
 #ifndef SWIG // SWIG can't parse the const at the end of the second argument.
     template <typename T, typename CompType = Component>
     bool constructOutput(const std::string& name,
-            T (CompType::*const componentMemberFunction)(const SimTK::State&) const,
+            T (CompType::*const memFunc)(const SimTK::State&) const,
             const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
         // The `const` in `CompType::*const componentMemberFunction` means this
         // function can't assign componentMemberFunction to some other function
@@ -1787,12 +1844,62 @@ protected:
         // This lambda takes a pointer to a component, downcasts it to the
         // appropriate derived type, then calls the member function of the
         // derived type. Thank you, klshrinidhi!
-        auto outputFunc = [componentMemberFunction] (const Component* comp,
-                const SimTK::State& s) -> T {
-            return std::mem_fn(componentMemberFunction)(
-                    dynamic_cast<const CompType*>(comp), s);
+        // TODO right now, the assignment to result within the lambda is
+        // making a copy! We can fix this using a reference pointer.
+        auto outputFunc = [memFunc] (const Component* comp,
+                const SimTK::State& s, const std::string&, T& result) -> void {
+            result = std::mem_fn(memFunc)(dynamic_cast<const CompType*>(comp), s);
         };
         return constructOutput<T>(name, outputFunc, dependsOn);
+    }
+    /** This variant handles component member functions that return the
+     * output value by const reference (const T&). 
+     * @warning ONLY use this with member functions that fetch quantities that
+     * are stored within the passed-in SimTK::State. The function cannot return
+     * local variables.
+     */
+    template <typename T, typename CompType = Component>
+    bool constructOutput(const std::string& name,
+            const T& (CompType::*const memFunc)(const SimTK::State&) const,
+            const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
+        static_assert(std::is_base_of<Component, CompType>::value,
+            "Template parameter 'CompType' must be derived from Component.");
+
+        // This lambda takes a pointer to a component, downcasts it to the
+        // appropriate derived type, then calls the member function of the
+        // derived type. Thank you, klshrinidhi!
+        auto outputFunc = [memFunc] (const Component* comp,
+                const SimTK::State& s, const std::string&, T& result) -> void {
+            result = std::mem_fn(memFunc)(dynamic_cast<const CompType*>(comp), s);
+        };
+        return constructOutput<T>(name, outputFunc, dependsOn);
+    }
+    /** Construct an output that can have multiple channels. You add Channels
+    to this Output in extendFinalizeFromProperties() using
+    AbstractOutput::addChannel(). The member function
+    you provide must take the name of the channel whose value is requested.
+    */
+    template <typename T, typename CompType>
+    bool constructListOutput(const std::string& name,
+             T (CompType::*const memFunc)(const SimTK::State&,
+                                          const std::string& channel) const,
+            const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
+        // The `const` in `CompType::*const componentMemberFunction` means this
+        // function can't assign componentMemberFunction to some other function
+        // pointer. This is unlikely, since that function would have to match
+        // the same template parameters (T and CompType).
+        static_assert(std::is_base_of<Component, CompType>::value,
+            "Template parameter 'CompType' must be derived from Component.");
+
+        // This lambda takes a pointer to a component, downcasts it to the
+        // appropriate derived type, then calls the member function of the
+        // derived type. Thank you, klshrinidhi!
+        auto outputFunc = [memFunc] (const Component* comp,
+                const SimTK::State& s, const std::string& channel, T& result) -> void {
+            result = std::mem_fn(memFunc)(
+                    dynamic_cast<const CompType*>(comp), s, channel);
+        };
+        return constructOutput<T>(name, outputFunc, dependsOn, true);
     }
 #endif
 
@@ -1806,6 +1913,24 @@ protected:
      * @param name Name of the output, which must be the same as the name of
      * the corresponding state variable. */
     bool constructOutputForStateVariable(const std::string& name);
+
+    /**
+    * Construct an Input (socket) for this Component's dependence on an Output signal.
+    * It is a placeholder for the Output and its type and enables the Component
+    * to automatically traverse its dependencies and provide a meaningful message
+    * if the provided Output is incompatible or non-existant. The also specifies at what
+    * stage the output must be valid for the the component to consume it as an input.
+    * if the Output's dependsOnStage is above the Input's requiredAtStage, an Exception
+    * is thrown because the output cannot satisfy the Input's requirement.
+    */
+    template <typename T>
+    bool constructInput(const std::string& name,
+        const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance,
+        const bool& isList = false) {
+        _inputsTable[name].reset(
+                new Input<T>(name, requiredAtStage, isList, *this));
+        return true;
+    }
     
     /// @}
 
@@ -1877,13 +2002,16 @@ private:
     */
     template <typename T>
     bool constructOutput(const std::string& name,
-        const std::function<T (const Component*, const SimTK::State&)> outputFunction, 
-        const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
+            const std::function<void (const Component*,
+                                      const SimTK::State&,
+                                      const std::string& channel, T&)> outputFunction,
+            const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration,
+            bool isList = false) {
         if (_outputsTable.count(name) == 1) {
             throw Exception("Output with name '" + name + "' already exists.");
         }
         _outputsTable[name].reset(
-                new Output<T>(name, outputFunction, dependsOn));
+                new Output<T>(name, outputFunction, dependsOn, isList));
         return true;
     }
 
@@ -1919,6 +2047,10 @@ private:
             connector.setOwner(*this);
             _connectorsTable[connector.getName()] = ix;
         }
+        
+        for (auto& it : _inputsTable) {
+            it.second->setOwner(*this);
+    }
     }
 
 protected:
@@ -2217,7 +2349,7 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
 template<class C>
 void Connector<C>::findAndConnect(const Component& root) {
  
-    const std::string& path = get_connectee_name();
+    const std::string& path = getConnecteeName();
     const C* comp = nullptr;
 
     try {
@@ -2228,8 +2360,8 @@ void Connector<C>::findAndConnect(const Component& root) {
             comp =  &getOwner().template getComponent<C>(path);
         }
     }
-    catch (const ComponentNotFoundOnSpecifiedPath& ex) {
-        std::cout << ex.getMessage() << std::endl;
+    catch (const ComponentNotFoundOnSpecifiedPath& ) {
+        // TODO leave out for hackathon std::cout << ex.getMessage() << std::endl;
         comp =  root.template findComponent<C>(path);
     }
     if (comp)
@@ -2241,7 +2373,124 @@ void Connector<C>::findAndConnect(const Component& root) {
             getName() );
 }
 
+template<class T>
+void Input<T>::connect(const AbstractOutput& output,
+                       const std::string& annotation) {
+    const auto* outT = dynamic_cast<const Output<T>*>(&output);
+    if (outT) {
+        if (!isListConnector()) {
+            if (outT->isListOutput()) {
+                throw Exception("Non-list input cannot connect to list output");
+            }
+        }
 
+        int ix = 0; 
+        // For a non-list connector, there will only be one channel.
+        for (const auto& chan : outT->getChannels()) {
+            ix = int(_connectees.size());
+            _connectees.push_back(
+                SimTK::ReferencePtr<const Channel>(&chan.second) );
+
+            //update the connectee_name as /<OwnerPath>/<Output:Channel> name
+            std::string pathName =
+                output.getOwner().getRelativePathName(getOwner());
+            pathName = pathName + "/" + chan.second.getName();
+            if (!annotation.empty() && annotation != chan.second.getChannelName()) {
+                pathName += "(" + annotation + ")";
+            }
+
+            // set the connectee name so that the connection can be
+            // serialized
+            int numPreexistingConnectees = getNumConnectees();
+            if (ix < numPreexistingConnectees)
+                setConnecteeName(pathName, ix);
+            else
+                appendConnecteeName(pathName);
+
+            // Use the same annotation for each channel.
+            std::string annoToStore = annotation.empty() ?
+                                      chan.second.getChannelName() :
+                                      annotation;
+            _annotations.push_back(annoToStore);
+        }
+    }
+    else {
+        std::stringstream msg;
+        msg << "Input::connect(): ERR- Cannot connect '" << output.getName()
+        << "' of type Output<" << output.getTypeName() << ">. Input requires "
+        << getConnecteeTypeName() << ".";
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
+}
+
+template<class T>
+void Input<T>::connect(const AbstractChannel& channel,
+             const std::string& annotation) {
+    const auto* chanT = dynamic_cast<const Channel*>(&channel);
+    if (chanT) {
+        if (!isListConnector()) {
+            // Remove the existing connecteee (if it exists).
+            disconnect();
+        }
+        
+        // Record the number of existing satisfied connections.
+        int ix = int(_connectees.size());
+        _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
+        
+        // Update the connectee name as
+        // /<OwnerPath>/<Output>:<Channel><(annotation)>
+        const auto& outputsOwner = chanT->getOutput().getOwner();
+        std::string pathName = outputsOwner.getRelativePathName(getOwner());
+        pathName += "/" + chanT->getName();
+        if (!annotation.empty() && annotation != chanT->getChannelName()) {
+            pathName += "(" + annotation + ")";
+        }
+        
+        // Set the connectee name so the connection can be serialized.
+        int numPreexistingConnectees = getNumConnectees();
+        if (ix < numPreexistingConnectees)
+            setConnecteeName(pathName, ix);
+        else
+            appendConnecteeName(pathName);
+        
+        // Annotation.
+        std::string annoToStore = annotation.empty() ? chanT->getChannelName() :
+                                  annotation;
+        _annotations.push_back(annoToStore);
+    }
+    else {
+        std::stringstream msg;
+        msg << "Input::connect(): ERR- Cannot connect '" << chanT->getPathName()
+        << "' of type Output<" << chanT->getOutput().getTypeName() << ">::Channel. Input requires "
+        << getConnecteeTypeName() << ".";
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
+}
+
+template<class T>
+void Input<T>::findAndConnect(const Component& root) {
+    std::string outputPath, channelName, annotation;
+    for (int ix = 0; ix < getNumConnectees(); ++ix) {
+        parseConnecteeName(getConnecteeName(ix), outputPath, channelName,
+                           annotation);
+        try {
+            const auto& output = root.getOutput(outputPath);
+            const auto& channel = output.getChannel(channelName);
+            connect(channel, annotation);
+        }
+        catch (const Exception& ex) {
+            std::stringstream msg;
+            msg << getConcreteClassName() << " '" << getName();
+            msg << "' ::findAndConnect() ERROR- Could not connect to Output '";
+            msg << outputPath << "'";
+            if (!channelName.empty()) {
+                msg << " and channel '" << channelName << "'";
+            }
+            msg << " (details: " << ex.getMessage() << ").";
+            throw Exception(msg.str(), __FILE__, __LINE__);
+        }
+    }
+}
 
 
 } // end of namespace OpenSim

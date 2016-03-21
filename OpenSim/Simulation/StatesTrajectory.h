@@ -27,6 +27,7 @@
 #include <Simbody.h>
 
 #include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/TimeSeriesTable.h>
 
 #include "osimSimulationDLL.h"
 
@@ -189,7 +190,7 @@ public:
         try {
             return m_states.at(index);
         } catch (const std::out_of_range&) {
-            OPENSIM_THROW(IndexOutOfRange, index, 0, m_states.size() - 1);
+            OPENSIM_THROW(IndexOutOfRange<size_t>, index, 0, m_states.size() - 1);
         }
     }
     /** Get a const reference to the first state in the trajectory. */
@@ -279,6 +280,33 @@ public:
     bool isCompatibleWith(const Model& model) const;
     /// @}
 
+    /** Export the continuous state variables to a data table, perhaps to write
+     * to a file and postprocess in MATLAB/Python/Excel. The names of the
+     * columns in the table will be the full names of the continuous state
+     * variables (e.g., `knee/flexion/angle`).
+     *
+     * You must provide a model that is compatible with this trajectory,
+     * since only the model knows the names of the state variables.
+     *
+     * By default, all continuous state variables are written to the table
+     * (one per column). If you only want some of them to be written to the
+     * table, use the `stateVars` argument to specify their full names
+     * (e.g., `knee/flexion/angle`).
+     *
+     * @code
+     * auto allStateVars = states.exportToTable(model);
+     * auto kneeStates = states.exportToTable(model, {"knee/flexion/value",
+     *                                                "knee/flexion/speed"});
+     * @endcode
+     *
+     * @throws IncompatibleModel Thrown if the Model fails the check
+     *      isCompatibleWith().
+     *
+     * See DataAdapter for details on writing to files.
+     */
+    TimeSeriesTable exportToTable(const Model& model,
+            const std::vector<std::string>& stateVars = {}) const;
+
 private:
 
     std::vector<SimTK::State> m_states;
@@ -300,9 +328,19 @@ public:
         }
     };
 
-    /** Thrown when trying to create a StatesTrajectory from a states Storage, and
-     * the Storage does not contain a column for every continuous state variable.
-     * */
+    /** Thrown when trying to use a StatesTrajectory with an incompatible model.
+     * See isCompatibleWith(). */
+#ifndef SWIG
+    class IncompatibleModel : public OpenSim::Exception {
+    public:
+        IncompatibleModel(const std::string& file, size_t line,
+                          const std::string& func, const Model& model);
+    };
+#endif
+
+    /** Thrown when trying to create a StatesTrajectory from a states Storage,
+     * and the Storage does not contain a column for every continuous state
+     * variable. */
     class MissingColumnsInStatesStorage : public OpenSim::Exception {
     public:
         MissingColumnsInStatesStorage(const std::string& file, size_t line,

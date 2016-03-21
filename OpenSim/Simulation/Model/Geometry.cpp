@@ -47,18 +47,18 @@ void Geometry::constructConnectors()
 
 void Geometry::setFrameName(const std::string& name)
 {
-    updConnector<Frame>("frame").set_connectee_name(name);
+    updConnector<Frame>("frame").setConnecteeName(name);
 }
 
 void Geometry::setFrame(const Frame& frame)
 {
-    updConnector<Frame>("frame").set_connectee_name(frame.getRelativePathName(*this));
+    updConnector<Frame>("frame").setConnecteeName(frame.getRelativePathName(*this));
 }
 
 
 const std::string& Geometry::getFrameName() const
 {
-    return getConnector<Frame>("frame").get_connectee_name();
+    return getConnector<Frame>("frame").getConnecteeName();
 }
 
 const OpenSim::Frame& Geometry::getFrame() const
@@ -172,23 +172,20 @@ void FrameGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::Decor
 void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const std::string& file = get_mesh_file();
-    // TODO: when API visualizer changes to use DecorativeGeometry::MeshFile instead of 
-    // DecorativeGeometry::DecorativeMesh with PolygonalMesh underneath it, the logic below 
-    // to locate the files will need to be transferred there. -Ayman 05/15
-#if 0
     bool isAbsolutePath; string directory, fileName, extension;
     SimTK::Pathname::deconstructPathname(file,
         isAbsolutePath, directory, fileName, extension);
     const string lowerExtension = SimTK::String::toLower(extension);
-    if (lowerExtension != ".vtp" && lowerExtension != ".obj") {
+    if (lowerExtension != ".vtp" && lowerExtension != ".obj" && lowerExtension != ".stl") {
         std::clog << "ModelVisualizer ignoring '" << file
-            << "'; only .vtp and .obj files currently supported.\n";
+            << "'; only .vtp .stl and .obj files currently supported.\n";
         return;
     }
 
     // File is a .vtp or .obj. See if we can find it.
     Array_<string> attempts;
-    bool foundIt = ModelVisualizer::findGeometryFile(getFrame().getModel(), file, isAbsolutePath, attempts);
+    const Model& model = getFrame().getModel();
+    bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);
 
     if (!foundIt) {
         std::clog << "ModelVisualizer couldn't find file '" << file
@@ -204,24 +201,20 @@ void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeom
 
     SimTK::PolygonalMesh pmesh;
     try {
-        if (lowerExtension == ".vtp") {
-            pmesh.loadVtpFile(attempts.back());
-        }
-        else {
             std::ifstream objFile;
             objFile.open(attempts.back().c_str());
-            pmesh.loadObjFile(objFile);
+            pmesh.loadFile(attempts.back().c_str());
             // objFile closes when destructed
-        }
+        
     }
     catch (const std::exception& e) {
-        std::clog << "ModelVisualizer couldn't read "
+        std::clog << "Visualizer couldn't read "
             << attempts.back() << " because:\n"
             << e.what() << "\n";
         return;
     }
-#endif
-    DecorativeMeshFile dmesh(file);
+
+    DecorativeMeshFile dmesh(attempts.back().c_str());
     dmesh.setScaleFactors(get_scale_factors());
     decoGeoms.push_back(dmesh);
 }
