@@ -150,11 +150,7 @@ int main()
         // to recompose existing components, this will need continual updating. For example,
         // Joint's often add PhysicalOffsetFrames to handle what used to be baked in location
         // and orientation offsets.
-
-        // Updated below from 77 to 65 when pennation and activation models in
-        // Thelen2003Muscle were converted into private (non-serialized)
-        // subcomponents (2 subcomponents x 6 muscles).
-        ASSERT(numComponents == 65); 
+        ASSERT(numComponents == 77); 
         ASSERT(numBodies == model.getNumBodies());
         ASSERT(numBodiesPost == numBodies);
         ASSERT(numMuscles == model.getMuscles().getSize());
@@ -165,9 +161,7 @@ int main()
         // Unclear what the following tests. But given that 4 more components were added
         // and skipIter seems to be skipping by 2 (counting every other ModelComponent),
         // then 77 components - 35 mesh geometry - 5 frame geom = 37 now /2 = 18 
-        // Updated from 18 to 12 when pennation and activation models in
-        // Thelen2003Muscle were converted into private subcomponents.
-        ASSERT(countSkipComponent == 12);
+        ASSERT(countSkipComponent == 18);
     }
     catch (Exception &ex) {
         ex.print(std::cout);
