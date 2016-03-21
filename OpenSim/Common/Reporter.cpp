@@ -40,7 +40,10 @@ public:
         // This should be triggered every (interval) time units.
         SimTK_ASSERT(state.getTime() == getNextEventTime(state, true),
             "Reporter did not report at specified time interval.");
-
+        // Guarantee that the system is at the reporting stage
+        if (state.getSystemStage() < SimTK::Stage::Report) {
+            _system.realize(state, SimTK::Stage::Report);
+        }
         // delegate back to the OpenSim::Reporter to do the reporting
         _owner.report(state);
     }
@@ -112,7 +115,6 @@ void AbstractReporter::extendRealizeReport(const SimTK::State& state) const
 
 void AbstractReporter::report(const SimTK::State& s) const
 {
-    // Guarantee that the system is at the reporting stage
     implementReport(s);
 }
 
