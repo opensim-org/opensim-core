@@ -356,9 +356,9 @@ void SimbodyEngine::computeReactions(const SimTK::State& s, Vector_<Vec3>& rForc
 
     // there may be more mobilized bodies than joint exposed in the OpenSim model
     // since joints and other components may use (massless) bodies internally
-    assert(nmb >= nj);
-    assert(nj == nf);
-    assert(nf == ntorq);
+    assert(_model->getMatterSubsystem().getNumBodies() >= nj);
+    assert(nj == rForces.size());
+    assert(rForces.size() == rTorques.size());
 
     SimTK::Vector_<SpatialVec> reactionForces(nj);
 
