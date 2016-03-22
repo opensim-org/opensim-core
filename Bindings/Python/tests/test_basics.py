@@ -17,10 +17,10 @@ class TestBasics(unittest.TestCase):
         # not accessibly in the bindings.
         muscle = osim.Thelen2003Muscle()
 
-        fwpm = muscle.get_MuscleFixedWidthPennationModel()
+        fwpm = muscle.getPennationModel()
         fwpm.get_optimal_fiber_length()
 
-        adm = muscle.get_MuscleFirstOrderActivationDynamicModel()
+        adm = muscle.getActivationModel()
         adm.get_activation_time_constant()
 
     def test_SimTKArray(self):
