@@ -747,7 +747,7 @@ Array<std::string> Component::getStateVariableNames() const
 
     // Include the states of its subcomponents
     for (unsigned int i = 0; i<_memberSubcomponents.size(); i++) {
-        Array<std::string> subnames = _propertySubcomponents[i]->getStateVariableNames();
+        Array<std::string> subnames = _memberSubcomponents[i]->getStateVariableNames();
         int nsubs = subnames.getSize();
         const std::string& subCompName = _memberSubcomponents[i]->getName();
         std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
