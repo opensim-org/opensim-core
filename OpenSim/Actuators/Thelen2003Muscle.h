@@ -27,6 +27,7 @@
 // INCLUDE
 #include <simbody/internal/common.h>
 
+#include <OpenSim/Common/Component.h>
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 #include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
@@ -138,11 +139,17 @@ public:
     OpenSim_DECLARE_PROPERTY(fv_linear_extrap_threshold, double,
         "fv threshold where linear extrapolation is used");
 
-    OpenSim_DECLARE_UNNAMED_PROPERTY(MuscleFirstOrderActivationDynamicModel,
-        "The model governing the excitation-to-activation dynamics.");
+    OpenSim_DECLARE_PROPERTY(maximum_pennation_angle, double,
+        "Maximum pennation angle, in radians");
 
-    OpenSim_DECLARE_UNNAMED_PROPERTY(MuscleFixedWidthPennationModel,
-        "The model governing the fiber and tendon kinematics.");
+    OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
+        "Activation time constant, in seconds");
+
+    OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
+        "Deactivation time constant, in seconds");
+
+    OpenSim_DECLARE_PROPERTY(minimum_activation, double,
+        "Lower bound on activation");
 
     enum CurveType{FiberActiveForceLength,
                     FiberPassiveForceLength,
@@ -279,6 +286,14 @@ protected:
 private:
     void setNull();
     void constructProperties() override;
+
+    // Subcomponents owned by the muscle. The properties of these subcomponents
+    // are set (in extendFinalizeFromProperties()) from the properties of the
+    // muscle.
+    MemberSubcomponentIndex pennMdlIdx{
+      constructSubcomponent<MuscleFixedWidthPennationModel>("pennMdl") };
+    MemberSubcomponentIndex actMdlIdx{
+      constructSubcomponent<MuscleFirstOrderActivationDynamicModel>("actMdl") };
 
     //=====================================================================
     // Private Utility Class Members
