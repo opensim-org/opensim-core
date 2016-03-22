@@ -434,7 +434,8 @@ protected:
         //const CoordinateSet& coords = get_CoordinateSet();
         //int nc = numCoordinates();
 
-        SimTK_ASSERT1(nc == coords.getSize(), "%s list of coordinates does not match number of mobilities.",
+        SimTK_ASSERT1(numCoordinates() == get_CoordinateSet().getSize(), 
+                      "%s list of coordinates does not match number of mobilities.",
                       getConcreteClassName().c_str());
 
         startingCoordinateIndex = assignSystemIndicesToBodyAndCoordinates(simtkBody,
