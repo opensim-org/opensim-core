@@ -73,10 +73,12 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
         //      dlceAT = dlcedt*cos(phi) - lce*sin(phi)*dphidt
         //      dlcedt = (dlceAT + lce*sin(phi)*dphidt) / cos(phi)
 
-        // Ensure the maximum_pennation_angle property is within bounds (the
-        // bound will be checked if setMaximumPennationAngle() is called, but
-        // not if set_maximum_pennation_angle() is called).
-        setMaximumPennationAngle(get_maximum_pennation_angle());
+        // Ensure property values are within appropriate ranges.
+        SimTK_ERRCHK1(
+            cos(get_maximum_pennation_angle()) > SimTK::SignificantReal,
+            "Millard2012EquilibriumMuscle::extendFinalizeFromProperties",
+            "%s: cos(maximum_pennation_angle) must be greater than zero",
+            getName().c_str());
 
         // Set properties of pennation model subcomponent.
         auto& pennMdl =
@@ -84,7 +86,7 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
         pennMdl.set_optimal_fiber_length(getOptimalFiberLength());
         pennMdl.set_pennation_angle_at_optimal(
             getPennationAngleAtOptimalFiberLength());
-        pennMdl.set_maximum_pennation_angle(getMaximumPennationAngle());
+        pennMdl.set_maximum_pennation_angle(get_maximum_pennation_angle());
 
         // Ensure object names are up-to-date
         const std::string& aName = getName();
@@ -244,8 +246,6 @@ const MuscleFixedWidthPennationModel& Millard2012EquilibriumMuscle::
 getPennationModel() const
 {   return getMemberSubcomponent<MuscleFixedWidthPennationModel>(pennMdlIdx); }
 
-double Millard2012EquilibriumMuscle::getMaximumPennationAngle() const
-{   return get_maximum_pennation_angle(); }
 double Millard2012EquilibriumMuscle::getMinimumFiberLength() const
 {   return m_minimumFiberLength; }
 double Millard2012EquilibriumMuscle::getMinimumFiberLengthAlongTendon() const
@@ -302,6 +302,8 @@ void Millard2012EquilibriumMuscle::setFiberDamping(double dampingCoefficient)
     }
 }
 
+// Checks on property bounds should be moved to extendFinalizeFromProperties().
+// An exception should be thrown if a property is out of bounds.
 void Millard2012EquilibriumMuscle::setDefaultActivation(double activation)
 {
     set_default_activation(clampActivation(activation));
@@ -342,15 +344,6 @@ void Millard2012EquilibriumMuscle::
 setMinimumActivation(double minimumActivation)
 {
     set_minimum_activation(min(1.0, max(0.0, minimumActivation)));
-}
-
-void Millard2012EquilibriumMuscle::
-setMaximumPennationAngle(double maximumPennationAngle)
-{
-    if (cos(maximumPennationAngle) < SimTK::SignificantReal)
-        set_maximum_pennation_angle(acos(0.1));
-    else
-        set_maximum_pennation_angle(maximumPennationAngle);
 }
 
 void Millard2012EquilibriumMuscle::setActiveForceLengthCurve(

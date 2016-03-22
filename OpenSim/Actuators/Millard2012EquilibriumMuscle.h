@@ -286,12 +286,6 @@ public:
     /** @returns The MuscleFixedWidthPennationModel used by this model. */
     const MuscleFixedWidthPennationModel& getPennationModel() const;
 
-    /** @returns The maximum pennation angle permitted by this muscle model.
-    Note that this equilibrium model, like all equilibrium models, has a
-    singularity when pennation approaches Pi/2. Thus, the maximum pennation
-    angle must be less than Pi/2. */
-    double getMaximumPennationAngle() const;
-
     /** @returns The minimum fiber length, which is the maximum of two values:
     the smallest fiber length allowed by the pennation model, and the minimum
     fiber length on the active-force-length curve. When the fiber reaches this
@@ -360,9 +354,6 @@ public:
 
     /** @param minimumActivation The minimum permissible activation level. */
     void setMinimumActivation(double minimumActivation);
-
-    /** @param maximumPennationAngle The maximum pennation angle, in radians. */
-    void setMaximumPennationAngle(double maximumPennationAngle);
 
     /** @param aActiveForceLengthCurve The ActiveForceLengthCurve used by the
     muscle model to scale active fiber force as a function of fiber length. */
