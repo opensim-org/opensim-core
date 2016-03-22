@@ -178,9 +178,10 @@ myMuscle.setMuscleConfiguration(ignoreTendonCompliance,
                                 dampingCoefficient);
 @endcode
 
-Please refer to the doxygen for more information on the properties that are
-objects themselves (MuscleFixedWidthPennationModel, ActiveForceLengthCurve,
-FiberForceLengthCurve, TendonForceLengthCurve, and ForceVelocityInverseCurve).
+Please refer to the doxygen for more information on the properties and
+subcomponents that are objects themselves (MuscleFixedWidthPennationModel,
+ActiveForceLengthCurve, FiberForceLengthCurve, TendonForceLengthCurve, and
+ForceVelocityInverseCurve).
 
 <B>Reference</B>
 
@@ -211,6 +212,8 @@ public:
         "Deactivation time constant (in seconds).");
     OpenSim_DECLARE_PROPERTY(minimum_activation, double,
         "Activation lower bound.");
+    OpenSim_DECLARE_PROPERTY(maximum_pennation_angle, double,
+        "Maximum pennation angle, in radians.");
     OpenSim_DECLARE_UNNAMED_PROPERTY(ActiveForceLengthCurve,
         "Active-force-length curve.");
     OpenSim_DECLARE_UNNAMED_PROPERTY(ForceVelocityCurve,
@@ -357,6 +360,9 @@ public:
 
     /** @param minimumActivation The minimum permissible activation level. */
     void setMinimumActivation(double minimumActivation);
+
+    /** @param maximumPennationAngle The maximum pennation angle, in radians. */
+    void setMaximumPennationAngle(double maximumPennationAngle);
 
     /** @param aActiveForceLengthCurve The ActiveForceLengthCurve used by the
     muscle model to scale active fiber force as a function of fiber length. */
@@ -530,9 +536,6 @@ private:
     void setNull();
     void constructProperties() override;
 
-    // Builds the components that are necessary to simulate using this muscle.
-    void buildMuscle();
-
     // Rebuilds muscle model if any of its properties have changed.
     void extendFinalizeFromProperties() override;
 
@@ -677,11 +680,11 @@ private:
 // PRIVATE UTILITY CLASS MEMBERS
 //==============================================================================
 
-    // This object defines the pennation model used for this muscle model. Using
-    // a ClonePtr saves us from having to write a destructor, copy constructor,
-    // or copy assignment. This will be zeroed on construction, cleaned up on
-    // destruction, and cloned when copying.
-    MuscleFixedWidthPennationModel penMdl;
+    // Subcomponent owned by the muscle. The properties of this subcomponent are
+    // set (in extendFinalizeFromProperties()) from the properties of the
+    // muscle.
+    MemberSubcomponentIndex pennMdlIdx{
+        constructSubcomponent<MuscleFixedWidthPennationModel>("pennMdl") };
 
     // Singularity-free inverse of ForceVelocityCurve.
     ForceVelocityInverseCurve fvInvCurve;
