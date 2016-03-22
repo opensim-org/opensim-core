@@ -52,6 +52,8 @@
 #include "DataTable.h"
 #include "TimeSeriesTable.h"
 
+#include "FileSystemPath.h"
+
 #include "Reporter.h"
 
 #endif // _osimCommon_h_
