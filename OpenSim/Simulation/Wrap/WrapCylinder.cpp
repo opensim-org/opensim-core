@@ -507,14 +507,14 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
         {
             COPY_1X3VECTOR(r1a, aWrapResult.r1);
             COPY_1X3VECTOR(r2a, aWrapResult.r2);
-            //r11 = &r1b[0];		
+            //r11 = &r1b[0];
             //r22 = &r2b[0];
         }
         else if (dot2 > dot3 && dot2 > dot4)
         {
             COPY_1X3VECTOR(r1a, aWrapResult.r1);
             COPY_1X3VECTOR(r2b, aWrapResult.r2);
-            //r11 = &r1b[0];		
+            //r11 = &r1b[0];
             //r22 = &r2a[0];
         }
         else if (dot3 > dot4)

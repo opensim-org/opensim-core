@@ -217,7 +217,7 @@ getRecordValues(const SimTK::State& state) const
     const PhysicalFrame& frame1 = getFrame1();
     const PhysicalFrame& frame2 = getFrame2();
 
-    //const string& frame1Name = frame1.getName();		
+    //const string& frame1Name = frame1.getName();
     //const string& frame2Name = frame2.getName();
     
     OpenSim::Array<double> values(1);
