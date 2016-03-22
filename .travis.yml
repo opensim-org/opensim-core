@@ -63,6 +63,16 @@ addons:
 
 before_install:
 
+  ## Ensure that there are no tabs in source code.
+  - cd $TRAVIS_BUILD_DIR
+  # GREP returns 0 (true) if there are any matches, and
+  # we don't want any matches. If there are matches,
+  # print a helpful message, and make the test fail by using "false".
+  # The GREP command here checks for any tab characters in the the files
+  # that match the specified pattern. GREP does not pick up explicit tabs
+  # (e.g., literally a \t in a source file).
+  - if grep --line-num --recursive --exclude-dir="*dependencies*" --include={CMakeLists.txt,*.cpp,*.c,*.h} -P "\t" . ; then echo "Tabs found in the lines shown above. See CONTRIBUTING.md about tabs."; false; fi
+
   ## Set up environment variables.
   # Only if compiling with gcc, update environment variables
   # to use the new gcc.
@@ -188,16 +198,6 @@ script:
   # The "shutdown" command shuts down the ssh environment.
   - if [ $CLEAN_UP_MYOSIN = "0" ]; then sshpass -p rectusfemoris ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null opensim-bot,myosin@shell.sourceforge.net 'cd /home/project-web/myosin/htdocs && find . -mindepth 1 -maxdepth 1 -type d -mtime +30 | xargs rm -rf && shutdown'; fi
   
-  ## Ensure that there are no tabs in source code.
-  - cd $TRAVIS_BUILD_DIR
-  # GREP returns 0 (true) if there are any matches, and
-  # we don't want any matches. If there are matches,
-  # print a helpful message, and make the test fail by using "false".
-  # The GREP command here checks for any tab characters in the the files
-  # that match the specified pattern. GREP does not pick up explicit tabs
-  # (e.g., literally a \t in a source file).
-  - if grep --recursive --exclude-dir="*dependencies*" --include={CMakeLists.txt,*.cpp,*.c,*.h} -P "\t" . ; then echo "Tabs found in the lines shown above. See CONTRIBUTING.md about tabs."; false; fi
-
   # Maximum size of cache is 100 MB.
   # TODO 100 MB is not big enough. Using default limit of 1 GB for now.
   #- ccache --max-size 100M
