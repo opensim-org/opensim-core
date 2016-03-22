@@ -100,7 +100,7 @@ int main()
     
     try { testStationInGround(); }
     catch (const std::exception& e){
-        cout << e.what() << endl; failures.push_back("testStationOnFrame");
+        cout << e.what() << endl; failures.push_back("testStationInGround");
     }
     
     
@@ -405,7 +405,7 @@ void testStationOnFrame()
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
     
-    cout << "Running testStationInFrame" << endl;
+    cout << "Running testStationOnFrame" << endl;
     
     Model* pendulum = new Model("double_pendulum.osim");
     // Get the frames for the two rods of the pendulum
@@ -460,7 +460,7 @@ void testStationInGround()
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
     
-    cout << "Running testStationOnFrame" << endl;
+    cout << "Running testStationInGround" << endl;
     
     Model* pendulum = new Model("double_pendulum.osim");
     // Get "rod1" frame
