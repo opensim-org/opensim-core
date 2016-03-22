@@ -433,7 +433,7 @@ double ActivationFiberLengthMuscle_Deprecated::
     const double &pennationAngleAtOptimal = get_pennation_angle_at_optimal();
     const double &maxContractionVelocity = get_max_contraction_velocity();
 
-    double normalizedLength = getFiberLength(s) / optimalFiberLength;
+    //double normalizedLength = getFiberLength(s) / optimalFiberLength;
     double normalizedVelocity = -cos(pennationAngleAtOptimal) * getLengtheningSpeed(s) / (maxContractionVelocity * optimalFiberLength);
     double normalizedForceVelocity = evaluateForceLengthVelocityCurve(1.0,1.0,normalizedVelocity);
 

@@ -173,7 +173,7 @@ void EllipsoidJoint::extendInitStateFromProperties(SimTK::State& s) const
         Rotation r(BodyRotationSequence, xangle, XAxis, 
                                          yangle, YAxis, zangle, ZAxis);
 
-        EllipsoidJoint* mutableThis = const_cast<EllipsoidJoint*>(this);
+        //EllipsoidJoint* mutableThis = const_cast<EllipsoidJoint*>(this);
         getChildFrame().getMobilizedBody().setQToFitRotation(s, r);
     }
 }

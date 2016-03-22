@@ -310,7 +310,7 @@ void ContDerivMuscle_Deprecated::
  */
 void ContDerivMuscle_Deprecated::computeEquilibrium(SimTK::State& s) const
 {
-    double force = computeIsometricForce(s, getActivation(s));
+    computeIsometricForce(s, getActivation(s));
 
     //cout<<getName()<<": isometric force = "<<force<<endl;
     //cout<<getName()<<": fiber length = "<<_fiberLength<<endl;

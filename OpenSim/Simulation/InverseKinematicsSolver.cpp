@@ -104,7 +104,8 @@ void InverseKinematicsSolver::updateMarkerWeight(int markerIndex, double value)
     construct the solver. */
 void InverseKinematicsSolver::updateMarkerWeights(const SimTK::Array_<double> &weights)
 {
-    if(_markersReference.updMarkerWeightSet().getSize() == weights.size()){
+    if(static_cast<unsigned>(_markersReference.updMarkerWeightSet().getSize()) 
+       == weights.size()){
         for(unsigned int i=0; i<weights.size(); i++){
             _markersReference.updMarkerWeightSet()[i].setWeight(weights[i]);
             _markerAssemblyCondition->changeMarkerWeight(SimTK::Markers::MarkerIx(i), weights[i]);

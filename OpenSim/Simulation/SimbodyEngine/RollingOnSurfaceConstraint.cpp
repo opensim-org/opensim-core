@@ -371,7 +371,7 @@ void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state,
             
             int sbi = -1;
             int rbi = -1;
-            int anc = simConstraint.getAncestorMobilizedBody().getMobilizedBodyIndex();
+            //int anc = simConstraint.getAncestorMobilizedBody().getMobilizedBodyIndex();
             
             for(int j=0; j< ncb; j++){
                 if (_surfaceFrame->getMobilizedBodyIndex() == simConstraint.getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex(j)).getMobilizedBodyIndex())
