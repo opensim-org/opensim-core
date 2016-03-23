@@ -168,8 +168,10 @@ computeRollPitch(const std::array<double, 3>& gravity) {
     const double x = gravity[0];
     const double y = gravity[1];
     const double z = gravity[2];
-    double roll  = std::atan(x / std::sqrt(y*y + z*z));
-    double pitch = std::atan(y / std::sqrt(x*x + z*z));
+
+    const double z_sq = z * z;
+    double roll  = std::atan(x / std::sqrt(y*y + z_sq));
+    double pitch = std::atan(y / std::sqrt(x*x + z_sq));
     return {roll, pitch};
 }
 
@@ -193,6 +195,7 @@ unsigned openUdpSocket() {
 }
 
 int main() {
+    // --------------------- Opensim model.
     OpenSim::Model model{};
     model.setUseVisualizer(true);
     
@@ -225,33 +228,18 @@ int main() {
     viz.setShowSimTime(true);
     viz.drawFrameNow(state);
 
-    // for(unsigned i = 0; i < 3; ++i) {
-    //     double value0 = model.getCoordinateSet()[0].getValue(state);
-    //     double value1 = model.getCoordinateSet()[1].getValue(state);
-    //     double value2 = model.getCoordinateSet()[2].getValue(state);
-    //     std::cout << std::setprecision(6)
-    //               << value0 << ", "
-    //               << value1 << ", "
-    //               << value2;
-
-    //     std::cin.get();
-
-    //     // model.getCoordinateSet()[0].setValue(state, value0 + 0.1745);
-    //     // model.getCoordinateSet()[1].setValue(state, value1 + 0.1745);
-    //     model.getCoordinateSet()[2].setValue(state, value2 + 0.1745);
-
-    //     viz.drawFrameNow(state);
-    // }
-
-
+    // -------------------------- UDP Socket.
     constexpr unsigned BUFFSIZE{8192};
 
     auto sock = openUdpSocket();
 
+    // ------------------------- Kalman filter.
     Kalman kalman_roll{};
     Kalman kalman_pitch{};
     double oldtimestamp{};
     bool firstrow{true};
+
+    // ------------------------ Streaming.
     while(true) {
         char buffer[BUFFSIZE];
         auto bytes = recvfrom(sock, buffer, BUFFSIZE, 0, 0, 0);
@@ -289,16 +277,14 @@ int main() {
             auto roll_hat  =  kalman_roll.getAngle( roll, omega[1], deltat);
             auto pitch_hat = kalman_pitch.getAngle(pitch, omega[0], deltat);
 
-            model.getCoordinateSet()[0].setValue(state, degToRad( roll_hat));
-        // model.getCoordinateSet()[1].setValue(state, value1 + 0.1745);
+            // Multiplying -1 to roll just for display. This way visualizaiton moves
+            // like the physical phone.
+            model.getCoordinateSet()[0].setValue(state, -1 * degToRad( roll_hat));
             model.getCoordinateSet()[2].setValue(state, degToRad(pitch_hat));
             
             viz.drawFrameNow(state);
             
-
-            // std::cout << std::setprecision(4) << roll << ", " << pitch << ", " 
-            //           << roll_hat << ", " << pitch_hat << std::endl;
-            // std::cout << buffer << std::endl;
+            std::cout << buffer << std::endl;
         } else
             std::cout << "skipping....." << std::endl;
     }
