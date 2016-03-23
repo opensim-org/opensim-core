@@ -1,3 +1,13 @@
+/* This file builds an executable that can receive IMU data from a phone and
+control the pose (roll and pitch) of a rectangular slab in OpenSim. The phone needs to be Android,
+have an accelerometer and a gyroscope, and have the app 'Wireless IMU' installed. To run the
+executable, make sure to set the IP address of the machine that is running the executable into
+app. Just run the executable, wait for the visualizer to show up, and then in the app(on the phone), 
+turn on streaming.
+This file only compiles on UNIX machines. It uses UNIX headers for socket work.
+Use 'Release' mode for compilation. It generates faster code and results in slightly quicker
+tracking of pose.*/
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 
@@ -284,7 +294,7 @@ int main() {
             
             viz.drawFrameNow(state);
             
-            std::cout << buffer << std::endl;
+            //std::cout << buffer << std::endl;
         } else
             std::cout << "skipping....." << std::endl;
     }
