@@ -489,3 +489,40 @@ void testStationInGround()
         
     }
 }
+
+void testVelocityandAcceletationInGround()
+{
+    SimTK::Vec3 tolerance(SimTK::Eps);
+    
+    cout << "Running testVelocityandAcceletationInGround" << endl;
+    
+    OpenSim::Model testBed;
+    
+    auto load = new OpenSim::Body("load", 10, SimTK::Vec3(0), SimTK::Inertia(1));
+    
+    testBed.addBody(load);
+    
+    // Joints that connect the bodies together.
+    auto grndToLoad = new OpenSim::FreeJoint("grndToLoad", "ground", "load");
+    testBed.addJoint(grndToLoad);
+    
+    Station* myStation = new Station();
+    myStation->set_location(SimTK::Vec3(0));
+    myStation->updConnector<PhysicalFrame>("reference_frame").setConnecteeName("load");
+    testBed.addModelComponent(myStation);
+    auto& state = testBed.initSystem();
+    
+    // Simulate.
+    SimTK::RungeKuttaMersonIntegrator integrator(testBed.getSystem());
+    OpenSim::Manager manager(testBed, integrator);
+    manager.setInitialTime(0);
+    manager.setFinalTime(1);
+    manager.integrate(state);
+    
+    testBed.realizeAcceleration(state);
+    
+    // after simulating for 1 second the velocity should be
+    SimTK_TEST_EQ(SimTK::Vec3(0,-9.80665,0), myStation->findVelocityInGround(state))
+    // and the acceleration should
+    SimTK_TEST_EQ(SimTK::Vec3(0,-9.80665,0), myStation->findAccelerationInGround(state))
+}

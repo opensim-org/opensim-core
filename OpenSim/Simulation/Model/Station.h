@@ -70,7 +70,11 @@ namespace OpenSim {
         SimTK::Vec3 findLocationInFrame(const SimTK::State& s, const OpenSim::Frame& aFrame) const;
         /** Find this Station's location in Ground */
         SimTK::Vec3 findLocationInGround(const SimTK::State& s) const;
-        
+        /** Find this Station's Velocity in Ground */
+        SimTK::Vec3 findVelocityInGround(const SimTK::State& s) const;
+        /** Find this Station's Acceleration in Ground */
+        SimTK::Vec3 findAccelerationInGround(const SimTK::State& s) const;
+
     private:
         void setNull();
         void constructProperties() override;
