@@ -54,46 +54,46 @@ class FileSystemPath : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(FileSystemPath, Object);
 
 public:
-    /** Default constructor **/
+    /// Default constructor
     FileSystemPath();
 
-    /** Construct FileSystemPath from a string. **/
+    ///Construct FileSystemPath from a string.
     FileSystemPath(std::string& pathName);
     FileSystemPath(std::string& pathName, bool isFile);
 
-    /** Use default copy constructor and assignment operator. */
+    /// Use default copy constructor and assignment operator.
     FileSystemPath(const FileSystemPath&) = default;
     FileSystemPath& operator=(const FileSystemPath&) = default;
 
-    /** Destructor. **/
+    /// Destructor.
     ~FileSystemPath() = default;
 
-    // Get a FileSystemPath for the current working directory.
+    /// Get a FileSystemPath for the current working directory.
     FileSystemPath getWorkingDirPath();
 
-    // Get absolute path to a file or directory. getAbsoluteFilePath() and
-    // getAbsoluteDirPath() checks if the FileSystemPath is a file or dir
-    // first. getAbsolutePath() checks if the FileSystemPath is a file or dir
-    // then calls the corresponding function. If the path was not an absolute 
-    // path, then the directory is resolved with respect to the current working 
-    // directory.
+    /// Get absolute path to a file or directory. getAbsoluteFilePath() and
+    /// getAbsoluteDirPath() checks if the FileSystemPath is a file or dir
+    /// first. getAbsolutePath() checks if the FileSystemPath is a file or dir
+    /// then calls the corresponding function. If the path was not an absolute
+    /// path, then the directory is resolved with respect to the current
+    /// working directory.
     FileSystemPath getAbsolutePath();
     FileSystemPath getAbsoluteFilePath();
     FileSystemPath getAbsoluteDirPath();
 
-    // Get the absolute path for the directory of a file. Checks if it is
-    // given a file first, then gives the absolute path to the directory
-    // containing the file. If the path was not an absolute path, then the
-    // directory is resolved with respect to the current working directory.
+    /// Get the absolute path for the directory of a file. Checks if it is
+    /// given a file first, then gives the absolute path to the directory
+    /// containing the file. If the path was not an absolute path, then the
+    /// directory is resolved with respect to the current working directory.
     FileSystemPath getAbsoluteDirPathForFile();
 
-    // Return the absolute path relative to some specified relativeDir.
+    /// Return the absolute path relative to some specified relativeDir.
     FileSystemPath getAbsolutePathWithRelativeDir(FileSystemPath relativeDir);
 
-    // Get relative pathname
+    /// Get relative pathname
     FileSystemPath getRelativePathFromOtherDir(FileSystemPath otherDir);
 
-    // Convience methods for getting parts of the path as strings.
+    /// Convience methods for getting parts of the path as strings.
     std::string getDirString();
     std::string getFileString();
     std::string getExtString();
@@ -101,7 +101,7 @@ public:
                                  std::string& fileName,
                                  std::string& extension);
 
-    // GET AND SET MEMBER VARIABLES
+    /// GET AND SET MEMBER VARIABLES
     std::string getPathString() { return _pathStr; }
     bool isFile() { return _isFile; }
 
