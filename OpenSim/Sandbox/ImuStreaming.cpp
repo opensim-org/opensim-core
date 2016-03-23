@@ -1,6 +1,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include <memory>
 #include <tuple>
 #include <iostream>
 #include <stdexcept>
@@ -157,6 +158,11 @@ double radToDeg(double rad) {
     return rad * RADTODEG;
 }
 
+double degToRad(double deg) {
+    constexpr double DEGTORAD{0.01745329};
+    return deg * DEGTORAD;
+}
+
 std::pair<double, double> 
 computeRollPitch(const std::array<double, 3>& gravity) {
     const double x = gravity[0];
@@ -187,6 +193,57 @@ unsigned openUdpSocket() {
 }
 
 int main() {
+    OpenSim::Model model{};
+    model.setUseVisualizer(true);
+    
+    auto slab = new OpenSim::Body{"slab", 
+                                  1, 
+                                  SimTK::Vec3{0}, 
+                                  SimTK::Inertia{0}};
+
+    auto balljoint = new OpenSim::BallJoint{"balljoint",
+                                            model.getGround(),
+                                            SimTK::Vec3{0, 1, 0},
+                                            SimTK::Vec3{0},
+                                            *slab,
+                                            SimTK::Vec3{0},
+                                            SimTK::Vec3{0}};
+
+    OpenSim::Brick brick{};
+    brick.setFrameName("slab");
+    brick.set_half_lengths(SimTK::Vec3{0.5, 0.05, 0.25});
+    slab->addGeometry(brick);
+
+    model.addBody(slab);
+    model.addJoint(balljoint);
+
+    auto& state = model.initSystem();
+
+    model.updMatterSubsystem().setShowDefaultGeometry(false);
+    SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
+    viz.setBackgroundType(viz.GroundAndSky);
+    viz.setShowSimTime(true);
+    viz.drawFrameNow(state);
+
+    // for(unsigned i = 0; i < 3; ++i) {
+    //     double value0 = model.getCoordinateSet()[0].getValue(state);
+    //     double value1 = model.getCoordinateSet()[1].getValue(state);
+    //     double value2 = model.getCoordinateSet()[2].getValue(state);
+    //     std::cout << std::setprecision(6)
+    //               << value0 << ", "
+    //               << value1 << ", "
+    //               << value2;
+
+    //     std::cin.get();
+
+    //     // model.getCoordinateSet()[0].setValue(state, value0 + 0.1745);
+    //     // model.getCoordinateSet()[1].setValue(state, value1 + 0.1745);
+    //     model.getCoordinateSet()[2].setValue(state, value2 + 0.1745);
+
+    //     viz.drawFrameNow(state);
+    // }
+
+
     constexpr unsigned BUFFSIZE{8192};
 
     auto sock = openUdpSocket();
@@ -232,8 +289,15 @@ int main() {
             auto roll_hat  =  kalman_roll.getAngle( roll, omega[1], deltat);
             auto pitch_hat = kalman_pitch.getAngle(pitch, omega[0], deltat);
 
-            std::cout << std::setprecision(4) << roll << ", " << pitch << ", " 
-                      << roll_hat << ", " << pitch_hat << std::endl;
+            model.getCoordinateSet()[0].setValue(state, degToRad( roll_hat));
+        // model.getCoordinateSet()[1].setValue(state, value1 + 0.1745);
+            model.getCoordinateSet()[2].setValue(state, degToRad(pitch_hat));
+            
+            viz.drawFrameNow(state);
+            
+
+            // std::cout << std::setprecision(4) << roll << ", " << pitch << ", " 
+            //           << roll_hat << ", " << pitch_hat << std::endl;
             // std::cout << buffer << std::endl;
         } else
             std::cout << "skipping....." << std::endl;
