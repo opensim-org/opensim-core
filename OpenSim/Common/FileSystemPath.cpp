@@ -24,9 +24,18 @@
 
 // C++ INCLUDES
 #include "FileSystemPath.h"
+#include "OpenSim/Common/IO.h"
+
+#include <algorithm>
 
 using namespace OpenSim;
 using namespace std;
+
+#ifdef WIN32
+    bool isWindows = true;
+#else
+    bool isWindows = false;
+#endif
 
 //=============================================================================
 // CONSTRUCTORS
@@ -39,40 +48,102 @@ using namespace std;
  */
 FileSystemPath::FileSystemPath() :
     _isFile(false),
-    _isDir(false),
+    //_isDir(false),
     _pathStr("")
 {}
 
-FileSystemPath::FileSystemPath(const std::string& aFileName) : FileSystemPath()
+FileSystemPath::FileSystemPath(std::string& pathName) : FileSystemPath()
 {
-    _pathStr = aFileName;
+    IO::TrimWhitespace(pathName);
+    _pathStr = pathName;
 }
 
-FileSystemPath FileSystemPath::getAbsolutePathName()
+FileSystemPath::FileSystemPath(std::string& pathName, bool isFile) :
+    FileSystemPath()
 {
-    FileSystemPath workingDir(SimTK::Pathname::getCurrentWorkingDirectory());
-    workingDir.setIsDir(true);
-    return getAbsolutePathNameWithRelativeDir(workingDir);
+    IO::TrimWhitespace(pathName);
+    _pathStr = pathName;
+    _isFile = isFile;
 }
 
-FileSystemPath FileSystemPath::getAbsolutePathNameWithRelativeDir(FileSystemPath relativeDir)
+FileSystemPath FileSystemPath::getAbsolutePath()
 {
-    if (!relativeDir.isDir()) {
+    FileSystemPath absPath(
+        SimTK::Pathname::getAbsolutePathname(getPathString()), isFile());
+    return absPath;
+}
+
+FileSystemPath FileSystemPath::getAbsolutePathNameWithRelativeDir(
+    FileSystemPath relativeDir)
+{
+    if (relativeDir.isFile()) 
+    {
         throw Exception("relativeDir is not a directory.");
     }
 
-    std::string absolutePathStr = 
+    std::string absPathStr = 
         SimTK::Pathname::getAbsolutePathnameUsingSpecifiedWorkingDirectory(relativeDir.getFileString(), 
                                                                            getFileString());
-    FileSystemPath absolutePath = FileSystemPath(absolutePathStr);
-    return absolutePath;
+    FileSystemPath absPath = FileSystemPath(absPathStr, isFile());
+    return absPath;
+}
+
+FileSystemPath FileSystemPath::getRelativePathNameFromOtherDir(
+    FileSystemPath otherDir)
+{
+    // Initialize thisPath and otherPath strings. Also error check.
+    std::string thisPath, otherPath;
+    if (otherDir.isFile())
+    {
+        throw Exception("otherDir is not a directory.");
+    }
+
+    else {
+        otherPath = otherDir.getPathString();
+    }
+
+    if (isFile())
+    {
+        thisPath = getAbsoluteDirForFile().getPathString();
+    } 
+    
+    else {
+        thisPath = getPathString();
+    }
+
+    // Change all "\\" to "/" for consistency
+    if (isWindows)
+    {
+        
+    }
+}
+
+FileSystemPath FileSystemPath::getAbsoluteDirForFile()
+{
+    if (!isFile())
+    {
+        throw Exception("getAbsoluteDirForFile(): given a directory");
+    }
+
+    std::string directory, fileName, extension;
+    deconstructFilePathName(directory, fileName, extension);
+    FileSystemPath dirPath(
+        SimTK::Pathname::getAbsoluteDirectoryPathname(directory), false);
 }
 
 std::string FileSystemPath::getDirString()
 {
-    std::string directory, fileName, extension;
-    deconstructFilePathName(directory, fileName, extension);
-    return directory;
+    if (isFile())
+    {
+        std::string directory, fileName, extension;
+        deconstructFilePathName(directory, fileName, extension);
+        return directory;
+    }
+
+    else if (!isFile())
+    {
+        return getPathString();
+    }
 }
 
 std::string FileSystemPath::getFileString()

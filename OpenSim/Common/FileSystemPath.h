@@ -26,13 +26,7 @@
 // INCLUDES
 #include <OpenSim/Common/osimCommonDLL.h>
 #include "OpenSim/Common/Object.h"
-//#include "OpenSim/Common/Property.h"
-//#include "OpenSim/Common/ComponentConnector.h"
-//#include "OpenSim/Common/ComponentOutput.h"
-//#include "ComponentList.h"
 #include "Simbody.h"
-//#include <functional>
-//#include <memory>
 
 namespace OpenSim {
 
@@ -54,8 +48,9 @@ public:
     /** Default constructor **/
     FileSystemPath();
 
-    /** Construct Component from an XML file. **/
-    FileSystemPath(const std::string& aFileName);
+    /** Construct FileSystemPath from a string. **/
+    FileSystemPath(std::string& pathName);
+    FileSystemPath(std::string& pathName, bool isFile);
 
     /** Use default copy constructor and assignment operator. */
     FileSystemPath(const FileSystemPath&) = default;
@@ -65,11 +60,19 @@ public:
     ~FileSystemPath() = default;
 
     // Return the absolute pathname relative to the working directory
-    FileSystemPath getAbsolutePathName();
+    FileSystemPath getAbsolutePath();
+    FileSystemPath getAbsoluteFileName();
+    FileSystemPath getAbsoluteDir();
 
     // Return the absolute pathname relative to some specified relativeDir
-    FileSystemPath getAbsolutePathNameWithRelativeDir(const FileSystemPath relativeDir);
+    FileSystemPath getAbsolutePathNameWithRelativeDir(FileSystemPath relativeDir);
 
+    // Get relative pathname
+    FileSystemPath getRelativePathNameFromOtherDir(FileSystemPath otherDir);
+
+    FileSystemPath getAbsoluteDirForFile();
+
+    // Convience methods for getting parts of the path as strings.
     std::string getDirString();
     std::string getFileString();
     std::string getExtString();
@@ -80,16 +83,20 @@ public:
     // GET AND SET MEMBER VARIABLES
     std::string getPathString() { return _pathStr; }
     bool isFile() { return _isFile; }
-    bool isDir() { return _isDir; }
+    //bool isDir() { return _isDir; }
 
-    void setPathString(const std::string& aFileName) { _pathStr = aFileName; }
+    void setPathString(std::string& aFileName) 
+    {
+        IO::TrimWhitespace(aFileName);
+        _pathStr = aFileName; 
+    }
     void setIsFile(bool isFile) { _isFile = isFile; }
-    void setIsDir(bool isDir) { _isDir = isDir; }
+    //void setIsDir(bool isDir) { _isDir = isDir; }
 
 private:
     std::string _pathStr;
     bool _isFile;
-    bool _isDir;
+    //bool _isDir;
 }; // end class FilePathName
 
 } // end of namespace OpenSim
