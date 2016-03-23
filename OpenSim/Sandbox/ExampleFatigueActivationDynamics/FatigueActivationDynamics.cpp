@@ -187,21 +187,62 @@ computeStateVariableDerivatives(const SimTK::State& s) const
 // STATE-DEPENDENT METHODS
 //==============================================================================
 double FatigueMuscleActivationDynamics::
-getActivation(const SimTK::State& s) const
+getTargetActivation(const SimTK::State& s) const
 {
-    return clampToValidInterval(getStateVariableValue(s, STATE_NAME_ACTIVATION));
+    return clampToValidInterval(getStateVariableValue(s, STATE_NAME_TARGETACTIVATION));
+}
+double FatigueMuscleActivationDynamics::getActivation(const SimTK::State& s) const
+{
+	return clamptoValidInterval(getStateVariableValue(s, STATE_NAME_ACTIVATION));
+}
+double FatigueMuscleActivationDynamics::getFatigueMotorUnits(const SimTK::State& s) const
+{
+	double fatigueMotorUnits = getStateVariableValue(s, STATE_NAME_FATIGUEMOTORUNITS);
+	OPENSIM_THROW_IF_FRMOBJ(fatigueMotorUnits < 0.0, Exception, "Fatigue Motor Units must be non-negative");
+	OPENSIM_THROW_IF_FRMOBJ(fatigueMotorUnits > 1.0, Exception, "Fatigue Motor Units must be less than or equal to 1");
+	return fatigueMotorUnits;
+}
+double FatigueMuscleActivationDynamics::getActiveMotorUnits(const SimTK::State& s) const
+{
+	double activeMotorUnits = getStateVariableValue(s, STATE_NAME_ACTIVEMOTORUNITS);
+	OPENSIM_THROW_IF_FRMOBJ(activeMotorUnits < 0.0, Exception, "Active Motor Units must be non-negative");
+	OPENSIM_THROW_IF_FRMOBJ(activeMotorUnits > 1.0, Exception, "Active Motor Units must be less than or equal to 1");
+	return activeMotorUnits;
+}
+double FatigueMuscleActivationDynamics::getRestingMotorUnits(const SimTK::State& s) const
+{
+	double fatigueMotorUnits = getStateVariableValue(s, STATE_NAME_FATIGUEMOTORUNITS);
+	double activeMotorUnits = getStateVariableValue(s, STATE_NAME_ACTIVEMOTORUNITS);
+	double restingMotorUnits = getStateVariableValue(s, STATE_NAME_RESTINGMOTORUNITS);
+	OPENSIM_THROW_IF_FRMOBJ(restingMotorUnits < 0.0, Exception, "Resting Motor Units must be non-negative");
+	OPENSIM_THROW_IF_FRMOBJ(restingMotorUnits > 1.0, Exception, "Resting Motor Units must be less than or equal to 1");
+	OPENSIM_THROW_IF_FRMOBJ(restingMotorUnits + fatigueMotorUnits + activeMotorUnits != 1.0, Exception, "Motor Units must sum to 1");
+	return restingMotorUnits;
 }
 
-void FatigueMuscleActivationDynamics::setActivation(SimTK::State& s,
-                                                       double activation) const
+void FatigueMuscleActivationDynamics::setTargetActivation(SimTK::State& s,
+                                                       double targetActivation) const
 {
-    setStateVariableValue(s, STATE_NAME_ACTIVATION,
-                          clampToValidInterval(activation));
+    setStateVariableValue(s, STATE_NAME_TARGETACTIVATION,
+                          clampToValidInterval(targetActivation));
+}
+void FatigueMuscleActivationDynamics::setActivation(SimTK::State& s, double activation) const
+{
+	setStateVariableValue(s, STATE_NAME_ACTIVATION, clampToValidInterval(activation));
+}
+void FatigueMuscleActivationDynamics::setFatigueMotorUnits(SimTK::State& s, double fatigueMotorUnits) const
+{
+	setStateVariableValue(s, STATE_NAME_FATIGUEMOTORUNITS, fatigueMotorUnits);
+}
+void FatigueMuscleActivationDynamics::setActiveMotorUnits(SimTK::State& s, double activeMotorUnits) const
+{
+	setStateVariableValue(s, STATE_NAME_ACTIVEMOTORUNITS, activeMotorUnits);
+}
+void FatigueMuscleActivationDynamics::setRestingMotorUnits(SimTK::State& s, double restingMotorUnits) const
+{
+	setStateVariableValue(s, STATE_NAME_RESTINGMOTORUNITS, restingMotorUnits);
 }
 
-// TO DO (*#&$(*&#Q$()*&@#()$*&@#(*$&@)#(*&$(*)@#&$*(
-// SERIOUSLY
-// JENNY NEEDS TO DO THIS :D
 
 //==============================================================================
 // PRIVATE METHODS
