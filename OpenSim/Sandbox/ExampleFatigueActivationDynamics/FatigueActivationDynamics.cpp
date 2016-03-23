@@ -193,7 +193,7 @@ getTargetActivation(const SimTK::State& s) const
 }
 double FatigueMuscleActivationDynamics::getActivation(const SimTK::State& s) const
 {
-	return clamptoValidInterval(getStateVariableValue(s, STATE_NAME_ACTIVATION));
+	return clampToValidInterval(getStateVariableValue(s, STATE_NAME_ACTIVATION));
 }
 double FatigueMuscleActivationDynamics::getFatigueMotorUnits(const SimTK::State& s) const
 {
