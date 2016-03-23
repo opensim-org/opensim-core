@@ -109,6 +109,7 @@ public:
         Types include: Rotational, Translational and Coupled (both) */
     enum MotionType
     {
+        Undefined,
         Rotational,
         Translational,
         Coupled
@@ -127,8 +128,7 @@ public:
 
     /** access to the generalized Coordinate's motion type
         This can be Rotational, Translational, or Coupled (both) */
-    MotionType getMotionType() const { return _motionType; }
-    void setMotionType(MotionType aMotionType);
+    MotionType getMotionType() const;
 
     /** get the value of the Coordinate from the state */
     double getValue(const SimTK::State& s) const;
@@ -302,9 +302,6 @@ private:
     /* Keep a reference to the SimTK function owned by the PrescribedMotion
     Constraint, so we can change the value at which to lock the joint. */
     SimTK::ReferencePtr<ModifiableConstant> _lockFunction;
-
-    /* Motion type (translational, rotational or combination). */
-    MotionType _motionType;
 
     /* Label for the related state that is the generalized speed of
        this coordinate. */

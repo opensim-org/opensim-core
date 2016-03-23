@@ -130,15 +130,15 @@ Joint::Joint(const std::string &name,
 Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt)
 {
     Coordinate* coord = new Coordinate();
-    coord->setMotionType(mt);
-    //Joint has control over what is the motion type during construction
-    //and it should be considered its default value
-    coord->updProperty_motion_type().setValueIsDefault(true);
     coord->setName(getName() + "_coord_"
         + std::to_string(get_CoordinateSet().getSize()));
     // CoordinateSet takes ownership
     upd_CoordinateSet().adoptAndAppend(coord);
-    return CoordinateIndex(get_CoordinateSet().getIndex(coord));
+    auto cix = CoordinateIndex(get_CoordinateSet().getIndex(coord));
+    _motionTypes.push_back(mt);
+    SimTK_ASSERT_ALWAYS(numCoordinates() == _motionTypes.size(),
+        "Joint::constructCoordinate() MotionTypes do not correspond to coordinates");
+    return cix;
 }
 
 //_____________________________________________________________________________
@@ -194,7 +194,6 @@ void Joint::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-
     CoordinateSet& coords = upd_CoordinateSet();
     // add all coordinates listed under this joint 
     for (int i = 0; i < coords.getSize(); ++i) {
@@ -206,9 +205,8 @@ void Joint::extendFinalizeFromProperties()
 // GET AND SET
 //=============================================================================
 //-----------------------------------------------------------------------------
-// CHILD BODY
+// CHILD Frame
 //-----------------------------------------------------------------------------
-//_____________________________________________________________________________
 const PhysicalFrame& Joint::getChildFrame() const
 {
     return getConnector<PhysicalFrame>("child_frame").getConnectee();
@@ -221,6 +219,24 @@ const OpenSim::PhysicalFrame& Joint::getParentFrame() const
 {
     return getConnector<PhysicalFrame>("parent_frame").getConnectee();
 }
+
+Coordinate::MotionType Joint::getMotionType(CoordinateIndex cix) const
+{
+    OPENSIM_THROW_IF(cix >= _motionTypes.size(), Exception,
+        "Joint::getMotionType() given an invalid CoordinateIndex");
+    return _motionTypes[cix];
+}
+
+void Joint::setMotionType(CoordinateIndex cix, Coordinate::MotionType mt)
+{
+    OPENSIM_THROW_IF(cix >= numCoordinates(), Exception,
+        "Joint::setMotionType() for an invalid CoordinateIndex");
+    if (_motionTypes.size() < cix)
+        _motionTypes.resize(numCoordinates());
+
+    _motionTypes[cix] = mt;
+}
+
 
 //_____________________________________________________________________________
 /**
