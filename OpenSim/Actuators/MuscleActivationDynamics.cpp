@@ -90,7 +90,8 @@ void MuscleActivationDynamics::setExcitationGetter(ExcitationGetter* getter)
 double MuscleActivationDynamics::getExcitation(const SimTK::State& s) const
 {
     if(!_excitationGetter)
-        return 0;
+        return getInputValue<double>(s, "excitation");
+        //return 0;
     return _excitationGetter->getExcitation(s);
 }
 

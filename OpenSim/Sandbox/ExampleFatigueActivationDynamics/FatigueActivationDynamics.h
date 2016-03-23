@@ -100,6 +100,11 @@ namespace OpenSim {
         OpenSim_DECLARE_PROPERTY(default_resting_motor_units, double, "default state value for the fraction of motor units that are resting");
         
         //==============================================================================
+        // INPUTS
+        //==============================================================================
+        OpenSim_DECLARE_INPUT(excitation, double, SimTK::Stage::Time, "excitation signal to the activation dynamics model that will be used to compute the activation and fatigue states");
+        
+        //==============================================================================
         // OUTPUTS
         //==============================================================================
         OpenSim_DECLARE_OUTPUT(fatigue_activation, double, getActivation, SimTK::Stage::Time);
@@ -217,7 +222,7 @@ namespace OpenSim {
         double getTargetActivation(const SimTK::State& s) const;
 
         /** Set the current target activation from the state (fatigue state will lower this to the actual activation). **/
-        double setTargetActivation(SimTK::State& s, double targetActivation) const;
+        void setTargetActivation(SimTK::State& s, double targetActivation) const;
         
         /** Get the current fatigue motor units from the state. **/
         double getFatigueMotorUnits(const SimTK::State& s) const;
