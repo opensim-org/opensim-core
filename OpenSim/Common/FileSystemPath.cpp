@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                  OpenSim:  FileSystemPath.cpp                              *
+ *                    OpenSim:  FileSystemPath.cpp                            *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -47,21 +47,14 @@ using namespace std;
  */
 FileSystemPath::FileSystemPath() :
     _isFile(false),
-    //_isDir(false),
     _pathStr("")
 {}
 
-FileSystemPath::FileSystemPath(std::string& pathName) : FileSystemPath()
-{
-    IO::TrimWhitespace(pathName);
-    _pathStr = pathName;
-}
-
-FileSystemPath::FileSystemPath(std::string& pathName, bool isFile) :
+FileSystemPath::FileSystemPath(std::string& path, bool isFile) :
     FileSystemPath()
 {
-    IO::TrimWhitespace(pathName);
-    _pathStr = pathName;
+    IO::TrimWhitespace(path);
+    _pathStr = path;
     _isFile = isFile;
 }
 

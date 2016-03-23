@@ -1,7 +1,7 @@
 #ifndef OPENSIM_FILESYSTEMPATH_H_
 #define OPENSIM_FILESYSTEMPATH_H_
 /* -------------------------------------------------------------------------- *
- *                             OpenSim: FileSystemPath.h                      *
+ *                         OpenSim: FileSystemPath.h                          *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -57,9 +57,8 @@ public:
     /// Default constructor
     FileSystemPath();
 
-    ///Construct FileSystemPath from a string.
-    FileSystemPath(std::string& pathName);
-    FileSystemPath(std::string& pathName, bool isFile);
+    /// Construct FileSystemPath from a string.
+    FileSystemPath(std::string& path, bool isFile = true);
 
     /// Use default copy constructor and assignment operator.
     FileSystemPath(const FileSystemPath&) = default;
@@ -71,15 +70,9 @@ public:
     /// Get a FileSystemPath for the current working directory.
     FileSystemPath getWorkingDirPath();
 
-    /// Get absolute path to a file or directory. getAbsoluteFilePath() and
-    /// getAbsoluteDirPath() checks if the FileSystemPath is a file or dir
-    /// first. getAbsolutePath() checks if the FileSystemPath is a file or dir
-    /// then calls the corresponding function. If the path was not an absolute
-    /// path, then the directory is resolved with respect to the current
-    /// working directory.
+    /// Get absolute path to a file or directory. Checks if the FileSystemPath
+    /// is a file or directory first.
     FileSystemPath getAbsolutePath();
-    FileSystemPath getAbsoluteFilePath();
-    FileSystemPath getAbsoluteDirPath();
 
     /// Get the absolute path for the directory of a file. Checks if it is
     /// given a file first, then gives the absolute path to the directory
@@ -97,9 +90,6 @@ public:
     std::string getDirString();
     std::string getFileString();
     std::string getExtString();
-    void deconstructFilePathName(std::string& directory,
-                                 std::string& fileName,
-                                 std::string& extension);
 
     /// GET AND SET MEMBER VARIABLES
     std::string getPathString() { return _pathStr; }
@@ -113,6 +103,16 @@ public:
     void setIsFile(bool isFile) { _isFile = isFile; }
 
 private:
+    // Helper functions for getAbsolutePath()
+    FileSystemPath getAbsoluteFilePath();
+    FileSystemPath getAbsoluteDirPath();
+
+    // Helper function for getXString() functions
+    void deconstructFilePathName(std::string& directory,
+        std::string& fileName,
+        std::string& extension);
+
+    // FileSystemPath variables
     std::string _pathStr;
     bool _isFile;
 }; // end class FilePathName
