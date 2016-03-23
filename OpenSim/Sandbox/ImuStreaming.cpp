@@ -167,9 +167,8 @@ computeRollPitch(const std::array<double, 3>& gravity) {
     return {roll, pitch};
 }
 
-int main() {
+unsigned openUdpSocket() {
     constexpr short PORT{5555};
-    constexpr unsigned BUFFSIZE{8192};
 
     auto sock = socket(AF_INET, SOCK_DGRAM, 0);
     if(sock < 0)
@@ -183,6 +182,14 @@ int main() {
 
     if(bind(sock, (struct sockaddr*)&saddr, sizeof(saddr)) < 0)
         throw std::runtime_error{"Could not bind Socket."};
+
+    return sock;
+}
+
+int main() {
+    constexpr unsigned BUFFSIZE{8192};
+
+    auto sock = openUdpSocket();
 
     Kalman kalman_roll{};
     Kalman kalman_pitch{};
