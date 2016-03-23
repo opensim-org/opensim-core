@@ -1,5 +1,5 @@
-#ifndef OPENSIM_FATIGUE_MUSCLE_ACTIVATION_DYNAMICS_H_
-#define OPENSIM_FATIGUE_MUSCLE_ACTIVATION_DYNAMICS_H_
+#ifndef OPENSIM_FATIGUE_ACTIVATION_DYNAMICS_H_
+#define OPENSIM_FATIGUE_ACTIVATION_DYNAMICS_H_
 /* -------------------------------------------------------------------------- *
  *               OpenSim:  FatigueMuscleActivationDynamics.h               *
  * -------------------------------------------------------------------------- *
@@ -102,7 +102,7 @@ namespace OpenSim {
         //==============================================================================
         // OUTPUTS
         //==============================================================================
-        OpenSim_DECLARE_OUTPUT(fatigue_activation, double, getFatigueActivation, SimTK::Stage::Time);
+        OpenSim_DECLARE_OUTPUT(fatigue_activation, double, getActivation, SimTK::Stage::Time);
         OpenSim_DECLARE_OUTPUT(target_activation, double, getTargetActivation, SimTK::Stage::Time);
         OpenSim_DECLARE_OUTPUT(fatigue_motor_units, double, getFatigueMotorUnits, SimTK::Stage::Time);
         OpenSim_DECLARE_OUTPUT(active_motor_units, double, getActiveMotorUnits, SimTK::Stage::Time);
@@ -214,28 +214,28 @@ namespace OpenSim {
         void setActivation(SimTK::State& s, double activation) const override;
         
         /** Get the current target activation from the state (fatigue state will lower this to the actual activation). **/
-        double getTargetActivation(const SimTK::State& s) const override;
+        double getTargetActivation(const SimTK::State& s) const;
 
         /** Set the current target activation from the state (fatigue state will lower this to the actual activation). **/
-        double setTargetActivation(SimTK::State& s, double targetActivation);
+        double setTargetActivation(SimTK::State& s, double targetActivation) const;
         
         /** Get the current fatigue motor units from the state. **/
-        double getFatigueMotorUnits(const SimTK::State& s) const override;
+        double getFatigueMotorUnits(const SimTK::State& s) const;
         
         /** %Set fatigue motor units variable to the value provided. **/
-        void setFatigueMotorUnits(SimTK::State& s, double fatigueMotorUnits) const override;
+        void setFatigueMotorUnits(SimTK::State& s, double fatigueMotorUnits) const;
         
         /** Get the current resting motor units from the state. **/
-        double getRestingMotorUnits(const SimTK::State& s) const override;
+        double getRestingMotorUnits(const SimTK::State& s) const;
         
         /** %Set resting motor units to the value provided. **/
-        void setRestingMotorUnits(SimTK::State& s, double, restingMotorUnits) const override;
+        void setRestingMotorUnits(SimTK::State& s, double restingMotorUnits) const;
         
         /** Get the current active motor units from the state. **/
-        double getActiveMotorUnits(const SimTK::State& s) const override;
+        double getActiveMotorUnits(const SimTK::State& s) const;
         
         /** %Set active motor units to the value provided. **/
-        void setActiveMotorUnits(SimTK::State& s, double, activeMotorUnits) const override;
+        void setActiveMotorUnits(SimTK::State& s, double activeMotorUnits) const;
         
     
         
@@ -255,7 +255,7 @@ namespace OpenSim {
         
         double calcFatigueMotorUnitsDeriv(double fatigueMotorUnits, double activeMotorUnits) const;
         double calcActiveMotorUnitsDeriv(double excitation, double targetActivation, double activeMotorUnits, double fatigueMotorUnits) const;
-        double calcRestingMotorUnitsDeriv(double fatigueMotorUnitsDeriv, activeMotorUnitsDeriv) const;
+        double calcRestingMotorUnitsDeriv(double fatigueMotorUnitsDeriv, double activeMotorUnitsDeriv) const;
         
         double calcRestingMotorUnits(double fatigueMotorUnits, double activeMotorUnits) const;
         double calcRecruitmentOfResting(double excitation, double targetActivation, double activeMotorUnits, double fatigueMotorUnits) const;

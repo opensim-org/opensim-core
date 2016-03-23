@@ -1,5 +1,5 @@
 
-add_executable(futureFatigueActivationDynamics EXCLUDE_FROM_ALL FatigueActivationDynamics.h FatigueActivationDynamics.cpp)
+add_executable(futureFatigueActivationDynamics EXCLUDE_FROM_ALL testFatigueActivationDynamics.cpp FatigueActivationDynamics.h FatigueActivationDynamics.cpp)
 target_link_libraries(futureFatigueActivationDynamics osimTools)
 set_target_properties(futureFatigueActivationDynamics PROPERTIES
     FOLDER "Future sandbox"

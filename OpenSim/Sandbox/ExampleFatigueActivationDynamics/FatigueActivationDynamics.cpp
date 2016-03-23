@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "FatigueMuscleActivationDynamics.h"
+#include "FatigueActivationDynamics.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -118,17 +118,17 @@ void FatigueMuscleActivationDynamics::setRecruitmentFromRestingTimeConstant(doub
 
 void FatigueMuscleActivationDynamics::setDefaultActiveMotorUnits(double defaultActiveMotorUnits)
 {
-    set_default_active_motor_units(min(max(SimTK::SignificantReal, defaultActiveMotorUnits),1));
+    set_default_active_motor_units(min(max(SimTK::SignificantReal, defaultActiveMotorUnits),1.0));
 }
 
 void FatigueMuscleActivationDynamics::setDefaultFatigueMotorUnits(double defaultFatigueMotorUnits)
 {
-    set_default_fatigue_motor_units(min(max(SimTK::SignificantReal, defaultActiveMotorUnits),1));
+    set_default_fatigue_motor_units(min(max(SimTK::SignificantReal, defaultFatigueMotorUnits),1.0));
 }
 
 void FatigueMuscleActivationDynamics::setDefaultRestingMotorUnits(double defaultRestingMotorUnits)
 {
-    set_default_resting_motor_units(min(max(SimTK::SignificantReal, defaultRestingMotorUnits),1));
+    set_default_resting_motor_units(min(max(SimTK::SignificantReal, defaultRestingMotorUnits),1.0));
 }
 
 
@@ -151,7 +151,7 @@ extendInitStateFromProperties(SimTK::State& s) const
 {
     Super::extendInitStateFromProperties(s);
     setTargetActivation(s, getDefaultActivation());
-    setActivation(s, getDefaultActivation()*(1 - getDefaultFatigueMotorUnits));
+    setActivation(s, getDefaultActivation()*(1 - getDefaultFatigueMotorUnits()));
     setActiveMotorUnits(s, getDefaultActiveMotorUnits());
     setFatigueMotorUnits(s, getDefaultFatigueMotorUnits());
     setRestingMotorUnits(s, getDefaultRestingMotorUnits());
@@ -237,7 +237,7 @@ calcTargetActivationDerivative(double excitation, double targetActivation) const
 double FatigueMuscleActivationDynamics::calcActivationDerivative(double excitation, double targetActivation, double fatigueMotorUnits, double activeMotorUnits) const
 {
     excitation = clampToValidInterval(excitation);
-    targetActivation = clamptoValidInterval(targetActivation);
+    targetActivation = clampToValidInterval(targetActivation);
     double targetActivationDeriv = calcTargetActivationDerivative(excitation, targetActivation);
     double fatigueMotorUnitsDeriv = calcFatigueMotorUnitsDeriv(fatigueMotorUnits, activeMotorUnits);
     return (targetActivationDeriv * (1 - fatigueMotorUnits) - (targetActivation * fatigueMotorUnitsDeriv));
@@ -261,12 +261,12 @@ double FatigueMuscleActivationDynamics::calcActiveMotorUnitsDeriv(double excitat
     return (restingMotorUnits * ((recruitmentOfResting/tau) - (F*activeMotorUnits)));
 }
 
-double FatigueMuscleActivationDynamics::calcRestingMotorUnitsDeriv(double fatigueMotorUnitsDeriv, activeMotorUnitsDeriv) const
+double FatigueMuscleActivationDynamics::calcRestingMotorUnitsDeriv(double fatigueMotorUnitsDeriv, double activeMotorUnitsDeriv) const
 {
     return (-fatigueMotorUnitsDeriv-activeMotorUnitsDeriv);
 }
 
-double FatigueMuscleActivationDyamics::calcRestingMotorUnits(double fatigueMotorUnits, double activeMotorUnits) const
+double FatigueMuscleActivationDynamics::calcRestingMotorUnits(double fatigueMotorUnits, double activeMotorUnits) const
 {
     return (1 - fatigueMotorUnits - activeMotorUnits);
 }
