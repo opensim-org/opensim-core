@@ -25,6 +25,7 @@
 
 // INCLUDES
 #include <OpenSim/Common/osimCommonDLL.h>
+#include "OpenSim/Common/IO.h"
 #include "OpenSim/Common/Object.h"
 #include "Simbody.h"
 
@@ -34,7 +35,18 @@ namespace OpenSim {
 //                            OPENSIM FILESYSTEMPATH
 //==============================================================================
 /**
-
+* A class for handling file system paths. The class holds two variables: 1) a
+* string for the path and 2) a bool _isFile to denote of the path is a file
+* or a directory.
+*
+* For convention, the word "Path" can refer to the FileSystemPath for either
+* a file or directory. "FilePath" and "DirPath" are specific to a file or
+* directory, respectively.
+*
+* This class has methods for resolving paths with respect to some other given
+* directory (i.e. not necessarily the current working directory). In order to
+* resolve these cases, we use methods in SimTK::Pathname. Refer to that class's
+* documentation for the rules of how these are evaluated.
 *
 * @author Carmichael Ong
 */
@@ -42,9 +54,6 @@ class FileSystemPath : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(FileSystemPath, Object);
 
 public:
-    //==============================================================================
-    // METHODS
-    //==============================================================================
     /** Default constructor **/
     FileSystemPath();
 
@@ -59,18 +68,30 @@ public:
     /** Destructor. **/
     ~FileSystemPath() = default;
 
-    // Return the absolute pathname relative to the working directory
-    FileSystemPath getAbsolutePath();
-    FileSystemPath getAbsoluteFileName();
-    FileSystemPath getAbsoluteDir();
+    // Get a FileSystemPath for the current working directory.
+    FileSystemPath getWorkingDirPath();
 
-    // Return the absolute pathname relative to some specified relativeDir
-    FileSystemPath getAbsolutePathNameWithRelativeDir(FileSystemPath relativeDir);
+    // Get absolute path to a file or directory. getAbsoluteFilePath() and
+    // getAbsoluteDirPath() checks if the FileSystemPath is a file or dir
+    // first. getAbsolutePath() checks if the FileSystemPath is a file or dir
+    // then calls the corresponding function. If the path was not an absolute 
+    // path, then the directory is resolved with respect to the current working 
+    // directory.
+    FileSystemPath getAbsolutePath();
+    FileSystemPath getAbsoluteFilePath();
+    FileSystemPath getAbsoluteDirPath();
+
+    // Get the absolute path for the directory of a file. Checks if it is
+    // given a file first, then gives the absolute path to the directory
+    // containing the file. If the path was not an absolute path, then the
+    // directory is resolved with respect to the current working directory.
+    FileSystemPath getAbsoluteDirPathForFile();
+
+    // Return the absolute path relative to some specified relativeDir.
+    FileSystemPath getAbsolutePathWithRelativeDir(FileSystemPath relativeDir);
 
     // Get relative pathname
-    FileSystemPath getRelativePathNameFromOtherDir(FileSystemPath otherDir);
-
-    FileSystemPath getAbsoluteDirForFile();
+    FileSystemPath getRelativePathFromOtherDir(FileSystemPath otherDir);
 
     // Convience methods for getting parts of the path as strings.
     std::string getDirString();
@@ -83,7 +104,6 @@ public:
     // GET AND SET MEMBER VARIABLES
     std::string getPathString() { return _pathStr; }
     bool isFile() { return _isFile; }
-    //bool isDir() { return _isDir; }
 
     void setPathString(std::string& aFileName) 
     {
@@ -91,12 +111,10 @@ public:
         _pathStr = aFileName; 
     }
     void setIsFile(bool isFile) { _isFile = isFile; }
-    //void setIsDir(bool isDir) { _isDir = isDir; }
 
 private:
     std::string _pathStr;
     bool _isFile;
-    //bool _isDir;
 }; // end class FilePathName
 
 } // end of namespace OpenSim

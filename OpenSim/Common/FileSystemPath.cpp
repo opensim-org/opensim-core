@@ -24,7 +24,6 @@
 
 // C++ INCLUDES
 #include "FileSystemPath.h"
-#include "OpenSim/Common/IO.h"
 
 #include <algorithm>
 
@@ -68,14 +67,45 @@ FileSystemPath::FileSystemPath(std::string& pathName, bool isFile) :
 
 FileSystemPath FileSystemPath::getAbsolutePath()
 {
-    FileSystemPath absPath(
-        SimTK::Pathname::getAbsolutePathname(getPathString()), isFile());
-    return absPath;
+    if (isFile())
+    {
+        return getAbsoluteFilePath();
+    } 
+    else {
+        return getAbsoluteDirPath();
+    }
 }
 
-FileSystemPath FileSystemPath::getAbsolutePathNameWithRelativeDir(
+FileSystemPath FileSystemPath::getAbsoluteFilePath()
+{
+    if (!isFile())
+    {
+        throw Exception("getAbsoluteFilePath(): not a file");
+    }
+    auto absPathStr = 
+        SimTK::Pathname::getAbsolutePathname(getPathString());
+    FileSystemPath absPath(absPathStr);
+}
+
+FileSystemPath FileSystemPath::getAbsoluteDirPath()
+{
+    if (!isFile())
+    {
+        throw Exception("getAbsoluteDirPath(): not a directory");
+    }
+    auto absPathStr = 
+        SimTK::Pathname::getAbsoluteDirectoryPathname(getPathString());
+    FileSystemPath absPath(absPathStr);
+}
+
+FileSystemPath FileSystemPath::getAbsolutePathWithRelativeDir(
     FileSystemPath relativeDir)
 {
+    if (!isFile())
+    {
+        throw Exception("expected a file, given a directory");
+    }
+
     if (relativeDir.isFile()) 
     {
         throw Exception("relativeDir is not a directory.");
@@ -84,11 +114,11 @@ FileSystemPath FileSystemPath::getAbsolutePathNameWithRelativeDir(
     std::string absPathStr = 
         SimTK::Pathname::getAbsolutePathnameUsingSpecifiedWorkingDirectory(relativeDir.getFileString(), 
                                                                            getFileString());
-    FileSystemPath absPath = FileSystemPath(absPathStr, isFile());
+    auto absPath = FileSystemPath(absPathStr, isFile());
     return absPath;
 }
 
-FileSystemPath FileSystemPath::getRelativePathNameFromOtherDir(
+FileSystemPath FileSystemPath::getRelativePathFromOtherDir(
     FileSystemPath otherDir)
 {
     // Initialize thisPath and otherPath strings. Also error check.
@@ -104,7 +134,7 @@ FileSystemPath FileSystemPath::getRelativePathNameFromOtherDir(
 
     if (isFile())
     {
-        thisPath = getAbsoluteDirForFile().getPathString();
+        thisPath = getAbsoluteDirPathForFile().getPathString();
     } 
     
     else {
@@ -116,9 +146,19 @@ FileSystemPath FileSystemPath::getRelativePathNameFromOtherDir(
     {
         
     }
+
+    FileSystemPath dummy;
+    return dummy;
 }
 
-FileSystemPath FileSystemPath::getAbsoluteDirForFile()
+FileSystemPath FileSystemPath::getWorkingDirPath()
+{
+    FileSystemPath workingDir(
+        SimTK::Pathname::getCurrentWorkingDirectory(), false);
+    return workingDir;
+}
+
+FileSystemPath FileSystemPath::getAbsoluteDirPathForFile()
 {
     if (!isFile())
     {
