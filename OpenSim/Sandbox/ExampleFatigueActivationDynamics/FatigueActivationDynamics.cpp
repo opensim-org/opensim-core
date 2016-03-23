@@ -33,7 +33,6 @@ const std::string FatigueMuscleActivationDynamics::STATE_NAME_FATIGUEMOTORUNITS 
 const std::string FatigueMuscleActivationDynamics::STATE_NAME_ACTIVEMOTORUNITS = "active_motor_units";
 const std::string FatigueMuscleActivationDynamics::STATE_NAME_RESTINGMOTORUNITS = "resting_motor_units";
 
-
 //==============================================================================
 // CONSTRUCTORS
 //==============================================================================
@@ -54,8 +53,8 @@ MuscleActivationDynamics(name, getter)
     constructProperties();
 }
 
-FatigueMuscleActivationDynamics::FatigueMuscleActivationDynamics(double fatigueFactor, double recoveryFactor, double recruitmentFromRestingTimeConstant) :
-MuscleActivationDynamics()
+FatigueMuscleActivationDynamics::FatigueMuscleActivationDynamics(const std::string& name, ExcitationGetter* getter, double fatigueFactor, double recoveryFactor, double recruitmentFromRestingTimeConstant) :
+MuscleActivationDynamics(name, getter)
 {
     setNull();
     constructProperties();

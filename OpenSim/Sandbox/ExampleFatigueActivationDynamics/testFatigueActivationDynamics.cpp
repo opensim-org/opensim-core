@@ -32,12 +32,34 @@ be reported using new Data Components. We will exercise these features in
 this interactive example. */
 
 #include <OpenSim/OpenSim.h>
+#include "FatigueActivationDynamics.h"
 
 // Some parameters that are useful to have
 static const double FATIGUE_FACTOR{ 0.0 };
 static const double RECOVERY_FACTOR{ 0.0 };
 static const double CONSTANT_EXCITATION{ 0.0 };
 static const double REPORTING_INTERVAL{ 0.2 };
+
+class MyExcitationGetter : public OpenSim::MuscleActivationDynamics::ExcitationGetter {
+public:
+	double getExcitation(const SimTK::State& s) const override
+	{
+		//return 0.1*s.getTime();
+		return 1.0;
+		//return 0.5;
+	}
+};
+
+void simulate(OpenSim::Model& model, SimTK::State& state) {
+	SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
+	OpenSim::Manager manager(model, integrator);
+	manager.setInitialTime(0.0);
+	manager.setFinalTime(1.0);
+	manager.integrate(state);
+}
+
+//inside main
+//FatigueActiva().setExcitationGetter(new MyExcitationGetter());
 
 // names of any outputs?
 //static const std::string HopperModelFile{ "BouncingLeg.osim" };
@@ -50,9 +72,26 @@ static const double REPORTING_INTERVAL{ 0.2 };
 
 //using namespace OpenSim; //{
 
+
 int main() {
     using namespace OpenSim;
-    return 0;
+	Model testBed;
+	testBed.setName("testbed");
+	auto dynamics = new OpenSim::FatigueMuscleActivationDynamics();
+	testBed.addModelComponent(dynamics);
+	auto reporter = new OpenSim::ConsoleReporter();
+	reporter->setName("Fatigue_Results");
+	reporter->set_report_time_interval(0.05);
+	std::vector<std::string> deviceOutputs{ "fatigue_activation", "target_activation", "fatigue_motor_units", "active_motor_units", "resting_motor_units" };
+	for (auto outputName : deviceOutputs) {
+		reporter->updInput("inputs").connect(dynamics->getOutput(outputName));
+	}
+	testBed.addComponent(reporter);
+	dynamics->setExcitationGetter(new MyExcitationGetter());
+	auto& sF = testBed.initSystem();
+	simulate(testBed, sF);
+
+	return 0;
 }
 
 //};

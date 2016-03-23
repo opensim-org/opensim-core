@@ -77,7 +77,7 @@ namespace OpenSim {
      @author Thomas Uchida, Matthew Millard, Ajay Seth
      **/
     
-    class OSIMACTUATORS_API FatigueMuscleActivationDynamics :
+    class FatigueMuscleActivationDynamics :
     public MuscleActivationDynamics {
         OpenSim_DECLARE_CONCRETE_OBJECT(FatigueMuscleActivationDynamics,
                                         MuscleActivationDynamics);
@@ -130,7 +130,7 @@ namespace OpenSim {
          values for activation and deactivation time constants and the specified 
          fatigue and recovery factors. An %ExcitationGetter must be
          created for obtaining muscle excitation. **/
-        FatigueMuscleActivationDynamics(double fatigueFactor, double recoveryFactor, double recruitmentFromRestingTimeConstant);
+        FatigueMuscleActivationDynamics(const std::string& name, ExcitationGetter* getter, double fatigueFactor, double recoveryFactor, double recruitmentFromRestingTimeConstant);
         
         /** Creates a fatigue activation dynamic model with the default property
          values, the specified name, and the specified %ExcitationGetter. Takes
@@ -271,6 +271,7 @@ namespace OpenSim {
         static const std::string STATE_NAME_FATIGUEMOTORUNITS;
         static const std::string STATE_NAME_ACTIVEMOTORUNITS;
         static const std::string STATE_NAME_RESTINGMOTORUNITS;
+
         
     }; // end of class FatigueMuscleActivationDynamics
 }  // end of namespace OpenSim

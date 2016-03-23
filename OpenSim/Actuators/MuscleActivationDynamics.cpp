@@ -90,8 +90,7 @@ void MuscleActivationDynamics::setExcitationGetter(ExcitationGetter* getter)
 double MuscleActivationDynamics::getExcitation(const SimTK::State& s) const
 {
     if(!_excitationGetter)
-        return getInputValue<double>(s, "excitation");
-        //return 0;
+        return 0;
     return _excitationGetter->getExcitation(s);
 }
 
@@ -114,5 +113,5 @@ void MuscleActivationDynamics::constructProperties()
 {
     constructProperty_minimum_activation(0);
     constructProperty_maximum_activation(1);
-    constructProperty_default_activation(0.5);
+    constructProperty_default_activation(0.01);
 }
