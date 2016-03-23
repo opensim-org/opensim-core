@@ -32,4 +32,4 @@ endforeach()
 
 
 add_executable(ImuStreaming ImuStreaming.cpp)
-target_link_libraries(ImuStreaming osimCommon osimSimulation)
+target_link_libraries(ImuStreaming osimCommon osimSimulation osimTools)
