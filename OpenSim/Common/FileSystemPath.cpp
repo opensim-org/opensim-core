@@ -85,6 +85,8 @@ FileSystemPath FileSystemPath::getAbsoluteFilePath()
     auto absPathStr = 
         SimTK::Pathname::getAbsolutePathname(getPathString());
     FileSystemPath absPath(absPathStr);
+
+    return absPath;
 }
 
 FileSystemPath FileSystemPath::getAbsoluteDirPath()
@@ -96,16 +98,13 @@ FileSystemPath FileSystemPath::getAbsoluteDirPath()
     auto absPathStr = 
         SimTK::Pathname::getAbsoluteDirectoryPathname(getPathString());
     FileSystemPath absPath(absPathStr);
+
+    return absPath;
 }
 
 FileSystemPath FileSystemPath::getAbsolutePathWithRelativeDir(
     FileSystemPath relativeDir)
 {
-    if (!isFile())
-    {
-        throw Exception("expected a file, given a directory");
-    }
-
     if (relativeDir.isFile()) 
     {
         throw Exception("relativeDir is not a directory.");
@@ -169,6 +168,8 @@ FileSystemPath FileSystemPath::getAbsoluteDirPathForFile()
     deconstructFilePathName(directory, fileName, extension);
     FileSystemPath dirPath(
         SimTK::Pathname::getAbsoluteDirectoryPathname(directory), false);
+
+    return dirPath;
 }
 
 std::string FileSystemPath::getDirString()
@@ -179,11 +180,8 @@ std::string FileSystemPath::getDirString()
         deconstructFilePathName(directory, fileName, extension);
         return directory;
     }
-
-    else if (!isFile())
-    {
-        return getPathString();
-    }
+   
+    return getPathString();
 }
 
 std::string FileSystemPath::getFileString()
