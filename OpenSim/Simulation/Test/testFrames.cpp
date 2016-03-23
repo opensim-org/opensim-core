@@ -36,6 +36,10 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+
 
 using namespace OpenSim;
 using namespace std;
@@ -48,6 +52,7 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame();
 void testFilterByFrameType();
 void testStationOnFrame();
 void testStationInGround();
+void testVelocityandAcceletationInGround();
 
 class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
     OpenSim_DECLARE_CONCRETE_OBJECT(OrdinaryOffsetFrame, OffsetFrame<Frame>);
@@ -103,6 +108,11 @@ int main()
         cout << e.what() << endl; failures.push_back("testStationInGround");
     }
     
+
+    try { testVelocityandAcceletationInGround(); }
+    catch (const std::exception& e){
+        cout << e.what() << endl; failures.push_back("testStationInGround");
+    }
     
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
