@@ -133,6 +133,7 @@ Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt)
     coord->setName(getName() + "_coord_"
         + std::to_string(get_CoordinateSet().getSize()));
     // CoordinateSet takes ownership
+    coord->setJoint(*this);
     upd_CoordinateSet().adoptAndAppend(coord);
     auto cix = CoordinateIndex(get_CoordinateSet().getIndex(coord));
     _motionTypes.push_back(mt);
