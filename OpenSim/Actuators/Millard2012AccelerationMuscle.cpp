@@ -1068,7 +1068,7 @@ void Millard2012AccelerationMuscle::
         // double mcl            = getLength(s);
         double dmcl_dt        = getLengtheningSpeed(s);
         // double tsl            = getTendonSlackLength();
-        double ofl            = getOptimalFiberLength();
+        // double ofl            = getOptimalFiberLength();
         double fiso           = getMaxIsometricForce();
         // const TendonForceLengthCurve& fseCurve= get_TendonForceLengthCurve();
 
@@ -1408,7 +1408,7 @@ SimTK::Vector Millard2012AccelerationMuscle::
         //Compute visco elastic multipliers derivatives
         //==================================================================
         SimTK::Vec2 fiberForceIJ = calcFiberForceIJ(a,ami);
-        Fce  = calcFiberForce(fiberForceIJ,ami);    
+        /*Fce  = */calcFiberForce(fiberForceIJ,ami);    
         FceAT= calcFiberForceAlongTendon(fiberForceIJ);
         Fse = calcTendonForce(ami);            
 
@@ -1473,7 +1473,7 @@ SimTK::Vector Millard2012AccelerationMuscle::
             }
            
             phi = m_penMdl.calcPennationAngle(lce);
-            sinphi = sin(phi);
+            // sinphi = sin(phi);
             cosphi = cos(phi);
             tl  =m_penMdl.calcTendonLength(cosphi,lce,ml);
             lceN = lce/ofl;
@@ -1569,7 +1569,7 @@ SimTK::Vector Millard2012AccelerationMuscle::
 
             lce = m_penMdl.getMinimumFiberLength();
             phi = m_penMdl.calcPennationAngle(lce);
-            sinphi = sin(phi);
+            // sinphi = sin(phi);
             cosphi = cos(phi);
             
             tl  = m_penMdl.calcTendonLength(cosphi,lce,ml);
