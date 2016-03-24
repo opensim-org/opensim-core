@@ -206,7 +206,7 @@ void FatigableMuscle::computeStateVariableDerivatives(const SimTK::State& s) con
     // Allow Super to assign any state derivative values for states it allocated
     Super::computeStateVariableDerivatives(s);
 
-    int nd = getNumStateVariables();
+    // int nd = getNumStateVariables();
 
     SimTK_ASSERT1(nd == 5, "FatigableMuscle: Expected 5 state variables"
         " but encountered  %f.", nd);
