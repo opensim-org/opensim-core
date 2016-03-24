@@ -138,7 +138,7 @@ TimeSeriesTable StatesTrajectory::exportToTable(const Model& model,
             createVector(model.getStateVariableNames()) :
             requestedStateVars;
     table.setColumnLabels(stateVars);
-    int numDepColumns = stateVars.size();
+    size_t numDepColumns = stateVars.size();
 
     // Fill up the table with the data.
     for (size_t itime = 0; itime < getSize(); ++itime) {
