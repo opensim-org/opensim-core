@@ -130,7 +130,7 @@ void BodyActuator::computeForce(const SimTK::State& s,
     const bool spatialForceIsGlobal = getSpatialForceIsGlobal();
     
     const Body& body = getBody();
-    const SimTK::MobilizedBody& body_mb = body.getMobilizedBody();
+    // const SimTK::MobilizedBody& body_mb = body.getMobilizedBody();
 
     Vec3 pointOfApplication = get_point(); 
 
