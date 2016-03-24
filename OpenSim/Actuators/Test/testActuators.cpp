@@ -397,7 +397,6 @@ void testClutchedPathSpring()
     CoordinateSet &slider_coords = slider->upd_CoordinateSet();
     slider_coords[0].setName("block_h");
     slider_coords[0].setRange(positionRange);
-    slider_coords[0].setMotionType(Coordinate::Translational);
 
     model->addBody(pulleyBody);
     model->addJoint(weld);

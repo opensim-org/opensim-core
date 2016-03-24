@@ -212,7 +212,7 @@ void CustomJoint::constructCoordinates()
                 }
             }
         }
-        coord->setMotionType(mt);
+        setMotionType(CoordinateIndex(i), mt);
     }
 }
 
