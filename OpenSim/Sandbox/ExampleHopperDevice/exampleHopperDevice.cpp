@@ -39,7 +39,7 @@ static const double GAIN{ 1.0 };
 static const double LOAD{ 2500.0 };
 static const double SPRINGSTIFF{ 5000 };
 static const double SIGNALGEN{ 0.33 };
-static const double REPORTING_INTERVAL{ 0.2 };
+static const double REPORTING_INTERVAL{ 0.20 };
 
 // Configure which hopper model to use and the attachments (by frame name)
 // and any signals (Outputs) for the device that will be created.
@@ -54,7 +54,7 @@ static const std::string HopperHeightOutput{
 
 namespace OpenSim {
 
-/* We begin by creating a class to contain all the parts for the model of
+/* We begin by creating a class to conatin all the parts for the model of
 our device. This is similar to how OpenSim uses Model to hold the parts
 of a musculoskeletal model. In a Model the parts are ModelComponents.
 Since the device will eventually be mounted on a musculoskeletal Model,
@@ -70,20 +70,51 @@ public:
     /** Add outputs so we can report device quantities we care about. */
     /** The length of the device from anchor to anchor point. */
     OpenSim_DECLARE_OUTPUT(length, double, getLength, SimTK::Stage::Position);
-
-    // TODO: add other outputs.
+    /** The lengthening speed of the device. */
+    OpenSim_DECLARE_OUTPUT(speed, double, getSpeed, SimTK::Stage::Velocity);
+    /** The force transmitted by the device. */
+    OpenSim_DECLARE_OUTPUT(tension, double, getTension, SimTK::Stage::Dynamics);
+    /** The power produced(+)/dissipated(-) by the device. */
+    OpenSim_DECLARE_OUTPUT(power, double, getPower, SimTK::Stage::Dynamics);
+    /** The height of the model that device is attached to. */
+    OpenSim_DECLARE_OUTPUT(height, double, getHeight, SimTK::Stage::Position);
+    /** The COM height of the model that device is attached to. */
+    OpenSim_DECLARE_OUTPUT(com_height, double, getCenterOfMassHeight,
+        SimTK::Stage::Position);
 
     /** Member functions to access values of interest from the device. */
     double getLength(const SimTK::State& s) const {
         return getComponent<PathActuator>("cableAtoB").getLength(s);
     }
+    double getSpeed(const SimTK::State& s) const {
+        return getComponent<PathActuator>("cableAtoB").getLengtheningSpeed(s);
+    }
+    double getTension(const SimTK::State& s) const {
+        return getComponent<PathActuator>("cableAtoB").computeActuation(s);
+    }
+    double getPower(const SimTK::State& s) const {
+        return getComponent<PathActuator>("cableAtoB").getPower(s);
+    }
 
-    // TODO: add other output functions.
+    //device can read model height as measured from the block to ground
+    double getHeight(const SimTK::State& s) const {
+        return getModel().getOutputValue<double>(s, HopperHeightOutput);
+    }
+
+    //device can also "sense" the model center of mass height 
+    double getCenterOfMassHeight(const SimTK::State& s) const {
+        SimTK::Vec3 compos = getModel().calcMassCenterPosition(s);
+        return compos[1];
+    }
+
 
 protected:
     /** Optionally change the color of the device's actuator path
         as its tension changes. */
     void extendRealizeDynamics(const SimTK::State& s) const override {
+        const auto& actuator = getComponent<PathActuator>("cableAtoB");
+        double level = fmin(1.0, getTension(s) / actuator.get_optimal_force());
+        actuator.getGeometryPath().setColor(s, SimTK::Vec3(level, 0.9, 0.1));
     }
 }; // end Device
 
@@ -98,10 +129,12 @@ protected:
 class PropMyoController : public OpenSim::Controller {
     OpenSim_DECLARE_CONCRETE_OBJECT(PropMyoController, OpenSim::Controller);
 public:
+    OpenSim_DECLARE_PROPERTY(gain, double,
+        "Gain used in converting muscle activation into a"
+        " control signal (units depend on the device)");
 
-    // TODO: gain property
-
-    // TODO: myo_control output
+    OpenSim_DECLARE_OUTPUT( myo_control, double, computeControl, 
+                            SimTK::Stage::Time);
 
     OpenSim_DECLARE_INPUT(activation, double, SimTK::Stage::Model,
             "The activation signal that this controller's signal is "
@@ -112,30 +145,30 @@ public:
     }
 
     double computeControl(const SimTK::State& s) const {
-        // Compute the proportional control of GAIN * activation (Input)
-        // TODO
-        return 0;
+        double activation = getInputValue<double>(s, "activation");
+        if (activation < 0.31)
+            return 0;
+        // Compute the control signal.
+        return get_gain() * activation;
     }
 
     void computeControls(const SimTK::State& s,
         SimTK::Vector& controls) const override {
         double signal = computeControl(s);
         // Add in this control signal to controls.
-        // TODO
-        // const auto& actuator = getConnectee<Actuator>("actuator");
+        const auto& actuator = getConnectee<Actuator>("actuator");
         SimTK::Vector thisActuatorsControls(1, signal);
-        // Add in this controller's controls for the actuator
-        // TODO
+        actuator.addInControls(thisActuatorsControls, controls);
     }
 
 private:
-
-    // TODO constructProperties()
+    void constructProperties() override {
+        constructProperty_gain(1.0);
+    }
 
     void constructConnectors() override {
         // The ScalarActuator for which we're computing a control signal.
-        // TODO
-        
+        constructConnector<Actuator>("actuator");
     }
 }; // end of PropMyoController
 
@@ -224,22 +257,19 @@ void connectDeviceToModel(const std::string& frameAname,
                           OpenSim::Device* device, OpenSim::Model& model) {
 
     //Get the known anchors (joints) that attach the device to a model
-    // TODO
-
+    auto& anchorA = device->updComponent<OpenSim::Joint>("anchorA");
+    auto& anchorB = device->updComponent<OpenSim::Joint>("anchorB");
     // Attach anchorA to frameA as anchor's (joint's) parent frame.
-    // TODO
-
+    anchorA.setParentFrameName(frameAname);
     // Attach anchorB to frameB as anchor's (joint's) parent frame.
-    // TODO
-
+    anchorB.setParentFrameName(frameBname);
 
     // handle wrapping if there is a wrap surface between the device
     // origin and insertion on the model.
-    // TODO
+    handlePathWrapping(device, model);
 
     // Add the device to the testBed.
-    // TODO
-
+    model.addModelComponent(device);
 }
 
 } // namespace OpenSim
@@ -264,11 +294,10 @@ OpenSim::Device* createDevice() {
     // at the origin of their respective frames, and moment of inertia of 0.5
     // and products of zero.
     auto cuffA = new OpenSim::Body("cuffA", 1, Vec3(0), Inertia(0.5));
-    // TODO: cuffB
-
-    // Add the cuffs to the device.
-    // TODO
-
+    auto cuffB = new OpenSim::Body("cuffB", 1, Vec3(0), Inertia(0.5));
+    // Add the masses to the device.
+    device->addComponent(cuffA);
+    device->addComponent(cuffB);
 
     // Create a sphere geometry to visually represent the cuffs
     OpenSim::Sphere sphere{ 0.01 };
@@ -277,33 +306,44 @@ OpenSim::Device* createDevice() {
     // Add sphere (geometry) attach them to the cuffs
     sphere.setFrameName("cuffA");
     cuffA->addGeometry(sphere);
-    // TODO: cuffB
+    sphere.setFrameName("cuffB");
+    cuffB->addGeometry(sphere);
 
     // Joint from something in the environment to cuffA.
     // It will be used to attach the device at cuffA to a model.
     auto anchorA = new OpenSim::WeldJoint();
-    // TODO: set name
-
+    anchorA->setName("anchorA");
     // Set only the child now. Parent will be in the environment.
-    // TODO
-
+    anchorA->setChildFrameName("cuffA");
+    device->addComponent(anchorA);
 
     // Joint from something in the environment to cuffB.
     // It will be used to attach the device at cuffA to a model.
-    // TODO
+    auto anchorB = new OpenSim::WeldJoint();
+    anchorB->setName("anchorB");
+    // Set only the child now. Parent will be in the environment.
+    anchorB->setChildFrameName("cuffB");
+    device->addComponent(anchorB);
 
-    // PathActuator connecting the two cuffs (A and B).
-    // TODO
+    // Actuator connecting the two cuffs (A and B).
+    auto pathActuator = new OpenSim::PathActuator();
+    pathActuator->setName("cableAtoB");
+    pathActuator->set_optimal_force(OPTIMAL_FORCE);
+    pathActuator->addNewPathPoint("point1", *cuffA, Vec3(0));
+    pathActuator->addNewPathPoint("point2", *cuffB, Vec3(0));
+    device->addComponent(pathActuator);
 
     // A controller that specifies the control to the actuator
-    // TODO
-    // TODO: finish implementing the PropMyoController class, above.
+    auto controller = new OpenSim::PropMyoController();
+    controller->setName("controller");
+    controller->set_gain(GAIN);
 
     // Connect the the controller to the device actuator
-    // TODO
+    controller->updConnector<OpenSim::Actuator>("actuator").
+        connect(*pathActuator);
 
     // Don't forget to add the controller to your device
-    // TODO
+    device->addComponent(controller);
 
     return device;
 }
@@ -328,11 +368,29 @@ void addDeviceReporterToModel(OpenSim::Device& device, OpenSim::Model& model,
 }
 
 void addReporterToHopper(OpenSim::Model& hopper) {
-    // TODO
+    auto reporter = new OpenSim::ConsoleReporter();
+    reporter->setName("hopper_results");
+    reporter->set_report_time_interval(REPORTING_INTERVAL);
+    // A reporter has a multi channel Input called inputs that can connect to
+    // any number of Outputs as long as they are of type double.
+    reporter->updInput("inputs")
+        .connect(hopper.getOutput(SignalForKneeDevice));
+    reporter->updInput("inputs")
+        .connect(hopper.getOutput(HopperHeightOutput));
+    // don't forget to add the reporter to the hopper
+    hopper.addComponent(reporter);
 }
 
 void addSignalGeneratorToDevice(OpenSim::Device* device) {
-    // TODO
+    auto generator = new OpenSim::SignalGenerator();
+    generator->setName("generator");
+    // Trying changing the constant value and even changing
+    // the function, e.g. try a LinearFunction
+    generator->set_function(OpenSim::Constant(SIGNALGEN));
+    device->addComponent(generator);
+    // Wire up the Controller to use the generator for fake activations
+    device->updInput("controller/activation").
+        connect(generator->getOutput("signal"));
 }
 
 
@@ -343,9 +401,15 @@ int main() {
     Model hopper(HopperModelFile);
     hopper.setUseVisualizer(true);
 
+    ForceReporter* fp = new ForceReporter(&hopper);
+    fp->setOn(true);
+    fp->setPrintResultFiles(true);
+
+    hopper.addAnalysis(fp);
+
     /**** EXERCISE 1: Add a Console Reporter ***********************************
-     * Report the models height and muscle activation during the simulation.   *
-     ***************************************************************************/
+    /* Report the models height and muscle activation during the simulation.   *
+    /***************************************************************************/
     addReporterToHopper(hopper);
     /**** EXERCISE 1: end *****************************************************/
     
@@ -354,12 +418,13 @@ int main() {
     // Simulate the hopper from the initial state. The state is updated during
     // the simulation.
     simulate(hopper, sH);
+    fp->printResults("hopperForces");
     //----------------------------- HOPPER CODE end ----------------------------
 
     //--------------------------- DEVICE CODE begin ----------------------------
     /**** EXERCISE 2: Create the Device ****************************************
-     * Populate a Device instance with parts you need: anchors, actuator,...   *
-     ***************************************************************************/
+    /* Populate a Device instance with parts you need: anchors, actuator,...   *
+    /***************************************************************************/
     auto device = createDevice();
     /**** EXERCISE 2: end *****************************************************/
 
@@ -375,8 +440,8 @@ int main() {
     connectDeviceToModel("ground", "load", device, testBed);
 
     /**** EXERCISE 3: Create a Signal Generator ********************************
-     * Make a SignalGenerator class and use it to input signals to test device *
-     ***************************************************************************/
+    /* Make a SignalGenerator class and use it to input signals to test device *
+    /***************************************************************************/
     addSignalGeneratorToDevice(device);
     /**** EXERCISE 3: end *****************************************************/
 
@@ -384,43 +449,45 @@ int main() {
     std::vector<std::string> deviceOutputs{ "length", "tension",
                                 "power", "controller/myo_control" };
     // add a ConsoleReporter to report device values during a simulation
-    // addDeviceReporterToModel(*device, testBed, deviceOutputs);
+    addDeviceReporterToModel(*device, testBed, deviceOutputs);
 
-    // initialize the system and the initial state
-    // auto& sD = testBed.initSystem();
+    auto& sD = testBed.initSystem();
 
     // Simulate the testBed containing the device only.
-    // TODO
-
+    simulate(testBed, sD);
     //----------------------------- DEVICE CODE end ---------------------------
 
     //---------------------------- HOPPER + DEVICE begin ----------------------
     /**** EXERCISE 4: Simulate Hopper with the Device **************************
-     * Combine Hopper and Device models to simulate an assisted jump           *
-     ***************************************************************************/
+    /* Make a SignalGenerator class and use it to input signals to test device *
+    /***************************************************************************/
     // Begin by loading the hopper from file and then we'll connect the device.
-    // TODO
+    Model hopperWithDevice(HopperModelFile);
+    hopperWithDevice.setUseVisualizer(true);
 
     // Make a copy (clone) of the device as a knee specific device to connect
     // to the hopper model
-    // TODO
+    Device* kneeDevice = device->clone();
+    kneeDevice->finalizeFromProperties();
 
     // Connect the kneeDevice to the hopper so it really becomes hopperWithDevice
-    // TODO
+    connectDeviceToModel(DeviceAttachmentA, DeviceAttachmentB, 
+                         kneeDevice, hopperWithDevice);
 
     // Hook-up the device's controller input ("activation") to its signal, which
     // is an Output from the hopper corresponding to the vastus muscle activation
-    // TODO
+    kneeDevice->updInput("controller/activation")
+        .connect(hopperWithDevice.getOutput(SignalForKneeDevice));
 
     // List desired device outputs (values of interest) by name
-    // TODO
-
+    std::vector<std::string> deviceOutputs2{ "controller/myo_control",
+                                             "tension", "height" };
     // add a ConsoleReporter to report device values during a simulation
-    // TODO
+    addDeviceReporterToModel(*kneeDevice, hopperWithDevice, deviceOutputs2);
 
     // Simulate the hopper with the device.
-    // TODO
-
+    SimTK::State& sHD = hopperWithDevice.initSystem();
+    simulate(hopperWithDevice, sHD);
     /**** EXERCISE 4: end *****************************************************/
     //----------------------------- HOPPER + DEVICE end ------------------------
 

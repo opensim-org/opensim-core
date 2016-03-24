@@ -94,7 +94,6 @@ void testControlSetControllerOnBlock()
     CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
     double posRange[2] = {-1, 1};
     jointCoordinateSet[0].setName("xTranslation");
-    jointCoordinateSet[0].setMotionType(Coordinate::Translational);
     jointCoordinateSet[0].setRange(posRange);
 
     // Add the block and joint to the model
@@ -188,8 +187,6 @@ void testPrescribedControllerOnBlock(bool disabled)
     // Create 6 coordinates (degrees-of-freedom) between the ground and block
     CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
     double posRange[2] = {-1, 1};
-    jointCoordinateSet[0].setName("xTranslation");
-    jointCoordinateSet[0].setMotionType(Coordinate::Translational);
     jointCoordinateSet[0].setRange(posRange);
 
     // Add the block body to the model
@@ -284,7 +281,6 @@ void testCorrectionControllerOnBlock()
     CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
     double posRange[2] = {-1, 1};
     jointCoordinateSet[0].setName("xTranslation");
-    jointCoordinateSet[0].setMotionType(Coordinate::Translational);
     jointCoordinateSet[0].setRange(posRange);
 
     // Add the block body to the model
