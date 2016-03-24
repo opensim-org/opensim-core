@@ -316,8 +316,8 @@ double  Thelen2003Muscle::computeActuation(const SimTK::State& s) const
                     "Thelen2003Muscle: Muscle is not"
                     " up to date with properties");
 
-    const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
-    const FiberVelocityInfo& mvi = getFiberVelocityInfo(s);
+    // const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
+    // const FiberVelocityInfo& mvi = getFiberVelocityInfo(s);
     const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
     setActuation(s,         mdi.tendonForce);
     return( mdi.tendonForce );
@@ -352,7 +352,7 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
         double solnErr        = soln[1];
         int iterations     = (int)soln[2];
         double fiberLength    = soln[3];
-        double passiveForce   = soln[4];
+        // double passiveForce   = soln[4];
         double tendonForce    = soln[5];
 
 
@@ -385,7 +385,7 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
                 std::string fcnName = "\n\nWARNING: Thelen2003Muscle::"
                                  "computeInitialFiberEquilibrium(SimTK::State& s)";
                     char msgBuffer[1000];
-                    int n = sprintf(msgBuffer,
+                    sprintf(msgBuffer,
                         "WARNING: No suitable initial conditions found for\n"
                         "  %s: \n"
                         "  by %s \n"
@@ -453,7 +453,7 @@ void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s,
                     "Thelen2003Muscle: Muscle is not"
                     " to date with properties");
 
-    double simTime = s.getTime(); //for debugging purposes
+    // double simTime = s.getTime(); //for debugging purposes
 
     try{
         double optFiberLength   = getOptimalFiberLength();
@@ -526,14 +526,14 @@ void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s,
                     "Thelen2003Muscle: Muscle is not"
                     " to date with properties");
 
-    double simTime = s.getTime(); //for debugging purposes
+    // double simTime = s.getTime(); //for debugging purposes
 
     try{
         //Get the quantities that we've already computed
             const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
 
         //Get the static properties of this muscle
-            double mclLength      = getLength(s);
+            // double mclLength      = getLength(s);
             double tendonSlackLen = getTendonSlackLength();
             double optFiberLen    = getOptimalFiberLength();
 
@@ -669,14 +669,14 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
                     "Thelen2003Muscle: Muscle is not"
                     " to date with properties");
 
-        double simTime = s.getTime(); //for debugging purposes
+        // double simTime = s.getTime(); //for debugging purposes
 
     try{
         //Get the quantities that we've already computed
             const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
             const FiberVelocityInfo &mvi = getFiberVelocityInfo(s);
         //Get the static properties of this muscle
-            double mclLength      = getLength(s);
+            // double mclLength      = getLength(s);
             double tendonSlackLen = getTendonSlackLength();
             double optFiberLen    = getOptimalFiberLength();
             double fiso           = getMaxIsometricForce();
@@ -703,11 +703,11 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
         double dlce     = mvi.fiberVelocity;
         double phi      = mli.pennationAngle;
         double cosphi   = mli.cosPennationAngle;
-        double sinphi   = mli.sinPennationAngle;
+        // double sinphi   = mli.sinPennationAngle;
 
         double tl   = mli.tendonLength; 
         double dtl  = mvi.tendonVelocity;
-        double tlN  = mli.normTendonLength;
+        // double tlN  = mli.normTendonLength;
    
 
     
@@ -907,9 +907,9 @@ SimTK::Vector Thelen2003Muscle::
     double fpe = 0; //Normalized parallel element force
     double fv  = 0; //Normalized force-velocity multiplier
 
-    double dfse_d_tlN = 0; //Partial derivative of fse w.r.t. norm. tendon len
-    double dfal_d_lceN = 0; //Partial derivative of fal w.r.t. norm. fiber len
-    double dfpe_d_lceN = 0; //Partial derivative of fpe w.r.t. norm. fiber len
+    // double dfse_d_tlN = 0; //Partial derivative of fse w.r.t. norm. tendon len
+    // double dfal_d_lceN = 0; //Partial derivative of fal w.r.t. norm. fiber len
+    // double dfpe_d_lceN = 0; //Partial derivative of fpe w.r.t. norm. fiber len
 
 
     //*******************************
@@ -932,7 +932,7 @@ SimTK::Vector Thelen2003Muscle::
     double dlce     = (dml - dtl) * cos(phi);
     double dlceN    = dlce/(vmax*ofl);
     double dphi     = -(dlce/lce)*tan(phi);
-    double dlceAT   = dlce*cosphi -vol*dphi;
+    // double dlceAT   = dlce*cosphi -vol*dphi;
 
     //*******************************
     //Internal variables for the loop
@@ -941,9 +941,9 @@ SimTK::Vector Thelen2003Muscle::
     double Ft = 0;          // Tendon force
     double ferr = 1;        // Solution error
     
-    double dphi_d_lce  = 0;  // Partial derivative of phi w.r.t. lce
-    double dtl_d_lce   = 0;  // Partial derivative of tendon length w.r.t lce
-    double dcosphi_d_lce=0;  // Partial derivative of cos(phi) w.r.t. lce
+    // double dphi_d_lce  = 0;  // Partial derivative of phi w.r.t. lce
+    // double dtl_d_lce   = 0;  // Partial derivative of tendon length w.r.t lce
+    // double dcosphi_d_lce=0;  // Partial derivative of cos(phi) w.r.t. lce
     
     double dFm_dlce     = 0;  // Partial derivative of muscle force w.r.t. lce
     double dFmAT_dlce   = 0;  // Partial derivative of muscle force along 
@@ -961,9 +961,9 @@ SimTK::Vector Thelen2003Muscle::
     double Ke          = 0;  // Linearized local stiffness of the muscle
     
     SimTK::Vector fvInv(2);
-    double tmp1         = 0;
-    double tmp2         = 0;
-    double tmp3         = 0;
+    // double tmp1         = 0;
+    // double tmp2         = 0;
+    // double tmp3         = 0;
     //*******************************
     //Initialize the loop
     
@@ -1063,7 +1063,7 @@ SimTK::Vector Thelen2003Muscle::
                 dlceN    = dlce/(vmax*ofl);
                 dphi = getPennationModel().calcPennationAngularVelocity(
                                            tan(phi),lce,dlce);
-                dlceAT = getPennationModel().calcFiberVelocityAlongTendon(
+                /*dlceAT = */getPennationModel().calcFiberVelocityAlongTendon(
                                              lce,dlce,sinphi,cosphi,dphi);
             }
         
@@ -1553,7 +1553,7 @@ double Thelen2003Muscle::calcfsefisoPE(double tendonStrain) const
         double toePE_0    =  (fiso*Ftoe/(exp(kToe)-1.0))
                             *((lenR*eToe/kToe)
                             *exp(kToe*(len-lenR)/(lenR*eToe)) - len);
-        double toePEtest = toePE_len-toePE_0;
+        // double toePEtest = toePE_len-toePE_0;
 
         //compute the energy stored in the linear section of the 
         //tendon strain curve from ..... 0 to len
@@ -1693,7 +1693,7 @@ double Thelen2003Muscle::calcdlceN(double act,double fal,double actFalFv) const
     double afl  = a*fal; //afl = a*fl
     double Fm   = actFalFv;     //Fm = a*fl*fv    
     double flen = get_Flen();
-    double Fmlen_afl = flen*afl;
+    // double Fmlen_afl = flen*afl;
 
     double dlcedFm = 0.0; //partial derivative of contractile element
                           // velocity w.r.t. Fm
@@ -1771,14 +1771,14 @@ double Thelen2003Muscle::calcDdlceDaFalFv(double aAct,
 {
     //The variable names have all been switched to closely match with 
     //the notation in Thelen 2003.
-    double dlceN = 0.0;      //contractile element velocity    
+    // double dlceN = 0.0;      //contractile element velocity    
     double af   = get_Af();
 
     double a    = aAct;
     double afl  = aAct*aFal;  //afl = a*fl
     double Fm   = aFalFv;    //Fm = a*fl*fv    
     double flen = get_Flen();
-    double Fmlen_afl = flen*aAct*aFal;
+    // double Fmlen_afl = flen*aAct*aFal;
 
     double dlcedFm = 0.0; //partial derivative of contractile element 
                           //velocity w.r.t. Fm
