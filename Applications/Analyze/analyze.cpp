@@ -120,7 +120,7 @@ int main(int argc,char **argv)
     AnalyzeTool analyze(setupFileName);
 
     // PRINT MODEL INFORMATION
-    Model& model = analyze.getModel();
+    // Model& model = analyze.getModel();
     cout<<"-----------------------------------------------------------------------\n";
     cout<<"Loaded library\n";
     cout<<"-----------------------------------------------------------------------\n";
