@@ -737,7 +737,7 @@ void Millard2012AccelerationMuscle::
         int iterations     = (int)soln[2];
         double fiberLength    = soln[3];
         double fiberVelocity  = soln[4];
-        double passiveForce   = soln[5];
+        // double passiveForce   = soln[5];
         double tendonForce    = soln[6];
 
         switch(flag_status){
@@ -771,7 +771,7 @@ void Millard2012AccelerationMuscle::
                 std::string fcnName = "\n\nWARNING: Millard2012AccelerationMuscle::"
                                  "computeInitialFiberEquilibrium(SimTK::State& s)";
                     char msgBuffer[1000];
-                    int n = sprintf(msgBuffer,
+                    sprintf(msgBuffer,
                         "WARNING: No suitable initial conditions found for\n"
                         "  %s: \n"
                         "  by %s \n"
@@ -842,11 +842,11 @@ void Millard2012AccelerationMuscle::
         "Millard2012AccelerationMuscle: Muscle is not"
         " to date with properties");
     
-    double simTime = s.getTime(); //for debugging purposes
+    // double simTime = s.getTime(); //for debugging purposes
 
     try{
         //Get whole muscle properties
-        double maxIsoForce      = getMaxIsometricForce();
+        // double maxIsoForce      = getMaxIsometricForce();
         double optFiberLength   = getOptimalFiberLength();
         double mclLength        = getLength(s);
         double tendonSlackLen   = getTendonSlackLength();
@@ -912,7 +912,7 @@ void Millard2012AccelerationMuscle::calcMusclePotentialEnergyInfo(const SimTK::S
         //Get whole muscle properties
         double maxIsoForce      = getMaxIsometricForce();
         double optFiberLength   = getOptimalFiberLength();
-        double mclLength        = getLength(s);
+        // double mclLength        = getLength(s);
         double tendonSlackLen   = getTendonSlackLength();
 
         // Get the quantities that we've already computed.
@@ -921,7 +921,7 @@ void Millard2012AccelerationMuscle::calcMusclePotentialEnergyInfo(const SimTK::S
         //Get muscle model specific properties
         const TendonForceLengthCurve& fseCurve = get_TendonForceLengthCurve(); 
         const FiberForceLengthCurve& fpeCurve  = get_FiberForceLengthCurve(); 
-        const ActiveForceLengthCurve& falCurve = get_ActiveForceLengthCurve(); 
+        // const ActiveForceLengthCurve& falCurve = get_ActiveForceLengthCurve(); 
 
         const FiberCompressiveForceLengthCurve& fkCurve
             = get_FiberCompressiveForceLengthCurve(); 
@@ -965,16 +965,16 @@ void Millard2012AccelerationMuscle::
         "Millard2012AccelerationMuscle: Muscle is not"
         " to date with properties");
 
-    double simTime = s.getTime(); //for debugging purposes
+    // double simTime = s.getTime(); //for debugging purposes
 
     try{
         //Get the quantities that we've already computed
             const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
 
         //Get the static properties of this muscle
-            double mclLength      = getLength(s);
+            // double mclLength      = getLength(s);
             double mclVelocity    = getLengtheningSpeed(s);
-            double tendonSlackLen = getTendonSlackLength();
+            // double tendonSlackLen = getTendonSlackLength();
             double optFiberLen    = getOptimalFiberLength();
 
         //Prep strings that will be useful to make sensible exception messages
@@ -997,11 +997,11 @@ void Millard2012AccelerationMuscle::
         double cosphi = mli.cosPennationAngle;
         double sinphi = mli.sinPennationAngle;
 
-        double fal  = mli.fiberActiveForceLengthMultiplier;
-        double fpe  = mli.fiberPassiveForceLengthMultiplier;
-        double fse  = mli.userDefinedLengthExtras[MLIfse];
-        double fk   = mli.userDefinedLengthExtras[MLIfk];
-        double fcphi= mli.userDefinedLengthExtras[MLIfcphi];
+        // double fal  = mli.fiberActiveForceLengthMultiplier;
+        // double fpe  = mli.fiberPassiveForceLengthMultiplier;
+        // double fse  = mli.userDefinedLengthExtras[MLIfse];
+        // double fk   = mli.userDefinedLengthExtras[MLIfk];
+        // double fcphi= mli.userDefinedLengthExtras[MLIfcphi];
 
     
         //2. Compute fv - but check for singularities first     
@@ -1054,7 +1054,7 @@ void Millard2012AccelerationMuscle::
         "Millard2012AccelerationMuscle: Muscle is not"
         " to date with properties");
     
-        double simTime = s.getTime(); //for debugging purposes
+        // double simTime = s.getTime(); //for debugging purposes
 
     try{
     //Get the quantities that we've already computed
@@ -1065,12 +1065,12 @@ void Millard2012AccelerationMuscle::
         double a   = getStateVariableValue(s, STATE_ACTIVATION_NAME); 
 
     //Get the properties of this muscle
-        double mcl            = getLength(s);
+        // double mcl            = getLength(s);
         double dmcl_dt        = getLengtheningSpeed(s);
-        double tsl            = getTendonSlackLength();
+        // double tsl            = getTendonSlackLength();
         double ofl            = getOptimalFiberLength();
         double fiso           = getMaxIsometricForce();
-        const TendonForceLengthCurve& fseCurve= get_TendonForceLengthCurve();
+        // const TendonForceLengthCurve& fseCurve= get_TendonForceLengthCurve();
 
     //Prep strings that will be useful to make sensible exception messages
         std::string muscleName = getName();
@@ -1085,18 +1085,18 @@ void Millard2012AccelerationMuscle::
     //Get fiber/tendon kinematic information
 
         double lce          = mli.fiberLength;
-        double lceN         = lce/ofl;    
+        // double lceN         = lce/ofl;    
         double dlce_dt      = mvi.fiberVelocity;
-        double dlceN1_dt    = mvi.normFiberVelocity;
+        // double dlceN1_dt    = mvi.normFiberVelocity;
     
         double phi          = mli.pennationAngle;
         double cosPhi       = mli.cosPennationAngle;
-        double sinPhi       = mli.sinPennationAngle;
+        // double sinPhi       = mli.sinPennationAngle;
         double dphi_dt      = mvi.pennationAngularVelocity;
     
         double tl       = mli.tendonLength; 
         double dtl_dt   = mvi.tendonVelocity;
-        double tlN      = mli.normTendonLength;
+        // double tlN      = mli.normTendonLength;
    
         double fal  = mli.fiberActiveForceLengthMultiplier;
         double fpe  = mli.fiberPassiveForceLengthMultiplier;
@@ -1180,10 +1180,10 @@ void Millard2012AccelerationMuscle::
         double dfseVdt    = -(ami.fseV)                 * fiso * ami.dtl_dt;
         double dfibVdt    = -(ami.fibV                  * fiso * ami.dlce_dt);
 
-        double dfpeVEMdt   =  ami.fpeVEM   * ami.cosphi  * fiso * ami.dlceAT_dt;
-        double dfkVEMdt    = -ami.fkVEM    * ami.cosphi  * fiso * ami.dlceAT_dt;
-        double dfcphiVEMdt = -ami.fcphiVEM *               fiso * ami.dlceAT_dt;
-        double dfseVEMdt   =  ami.fseVEM   *               fiso * ami.dtl_dt;
+        // double dfpeVEMdt   =  ami.fpeVEM   * ami.cosphi  * fiso * ami.dlceAT_dt;
+        // double dfkVEMdt    = -ami.fkVEM    * ami.cosphi  * fiso * ami.dlceAT_dt;
+        // double dfcphiVEMdt = -ami.fcphiVEM *               fiso * ami.dlceAT_dt;
+        // double dfseVEMdt   =  ami.fseVEM   *               fiso * ami.dtl_dt;
 
         double ddphi_dtt = m_penMdl.calcPennationAngularAcceleration(ami.lce,
                                                                 ami.dlce_dt,
@@ -1209,13 +1209,13 @@ void Millard2012AccelerationMuscle::
                              - dBoundaryWdt 
                              + (dfpeVdt + dfkVdt + dfcphiVdt + dfseVdt);
                              */
-        double dSysEdt = dKEdt 
-                        + (dfpePEdt + dfkPEdt + dfcphiPEdt + dfsePEdt)
-                        - (dFibWdt + dBoundaryWdt)
-                        - (dfpeVdt + dfkVdt + dfcphiVdt + dfseVdt)
-                        - dfibVdt;
+        // double dSysEdt = dKEdt 
+        //                 + (dfpePEdt + dfkPEdt + dfcphiPEdt + dfsePEdt)
+        //                 - (dFibWdt + dBoundaryWdt)
+        //                 - (dfpeVdt + dfkVdt + dfcphiVdt + dfseVdt)
+        //                 - dfibVdt;
 
-        double tol = sqrt(SimTK::Eps);
+        // double tol = sqrt(SimTK::Eps);
     
         //For debugging purposes
         //if(abs(dSysEdt) >= tol){
@@ -1295,8 +1295,8 @@ SimTK::Vector Millard2012AccelerationMuscle::
     double tsl = getTendonSlackLength();
     double ofl = getOptimalFiberLength();
 
-    double ophi= getPennationAngleAtOptimalFiberLength();
-    double penHeight = m_penMdl.getParallelogramHeight();
+    // double ophi= getPennationAngleAtOptimalFiberLength();
+    // double penHeight = m_penMdl.getParallelogramHeight();
     double fiso= getMaxIsometricForce();
     double vmax = getMaxContractionVelocity();//getPropertyValue<double>(VmaxName);
 
@@ -1330,7 +1330,7 @@ SimTK::Vector Millard2012AccelerationMuscle::
     
     double phi      = m_penMdl.calcPennationAngle(lce);
     double cosphi   = cos(phi);
-    double sinphi   = sin(phi);       
+    // double sinphi   = sin(phi);       
     double tlN      = tl/tsl;
     double lceN     = lce/ofl;
     
@@ -1346,34 +1346,34 @@ SimTK::Vector Millard2012AccelerationMuscle::
 
     //*******************************
     //Internal Kinematics Related Variables for the loop
-    double dphi_dlce = 0;
-    double dtl_dlce = 0;
+    // double dphi_dlce = 0;
+    // double dtl_dlce = 0;
     //*******************************
     //Internal Force Related Variables for the loop
-    double Fce = 0;          // Fiber force
+    // double Fce = 0;          // Fiber force
     double FceAT=0;          // Fiber force along tendon
     double Fse = 0;          // Tendon force
     double m = getMass();
     double ddlce_dtt = 1;        // Solution error
     
-    double dFce_dlce     = 0;  // Partial derivative of fiber force w.r.t. lce
-    double dFceAT_dlce   = 0;  // Partial derivative of fiber force along 
+    // double dFce_dlce     = 0;  // Partial derivative of fiber force w.r.t. lce
+    // double dFceAT_dlce   = 0;  // Partial derivative of fiber force along 
                                // tendon w.r.t. lce
-    double dFceAT_dlceAT = 0;  // Partial derivative of muscle force along
+    // double dFceAT_dlceAT = 0;  // Partial derivative of muscle force along
                                // tendon w.r.t. lce along the tendon.
 
-    double dFse_dlce   = 0;  // Partial derivative of tendon force w.r.t. lce
-    double dFse_dtl   = 0;   // Partial derivative of tendon force w.r.t. tl
+    // double dFse_dlce   = 0;  // Partial derivative of tendon force w.r.t. lce
+    // double dFse_dtl   = 0;   // Partial derivative of tendon force w.r.t. tl
 
-    double d_ddlcedtt_dlce = 0; // Partial derivative of the solution error w.r.t
+    // double d_ddlcedtt_dlce = 0; // Partial derivative of the solution error w.r.t
                                 // lce
     double delta_lce   = 0;     // Chance in lce
 
     double Ke          = 0;  // Linearized local stiffness of the muscle
     
-    double tmp1         = 0;
-    double tmp2         = 0;
-    double tmp3         = 0;
+    // double tmp1         = 0;
+    // double tmp2         = 0;
+    // double tmp3         = 0;
     //*******************************
     //Initialize the loop
     
@@ -1421,7 +1421,7 @@ SimTK::Vector Millard2012AccelerationMuscle::
         //Compute the stiffness of the fiber along the tendon
         SimTK::Vec2 fiberStiffnessIJ = calcFiberStiffnessIJ(a,ami);
 
-        double dFce_dlce = 
+        /* double dFce_dlce = */
             calcFiberStiffness(fiberForceIJ,fiberStiffnessIJ, ami);
 
         double dFceAT_dlce = 
@@ -1727,7 +1727,7 @@ SimTK::Vec2 Millard2012AccelerationMuscle::
     double fv       = ami.fv;
     double fpeVEM   = ami.fpeVEM;
     double fkVEM    = ami.fkVEM;
-    double fcphiVEM = ami.fcphiVEM;
+    // double fcphiVEM = ami.fcphiVEM;
     double fibV     = ami.fibV;
 
     double dfal_dlce        = ami.dfal_dlce;    
@@ -1835,8 +1835,8 @@ void Millard2012AccelerationMuscle::
         = get_TendonForceLengthCurve();    
     const ActiveForceLengthCurve& falCurve
         = get_ActiveForceLengthCurve(); 
-    const ForceVelocityCurve& fvCurve 
-        = get_ForceVelocityCurve(); 
+    // const ForceVelocityCurve& fvCurve 
+    //     = get_ForceVelocityCurve(); 
     const FiberForceLengthCurve& fpeCurve 
         = get_FiberForceLengthCurve(); 
     const FiberCompressiveForceLengthCurve& fkCurve
@@ -1844,7 +1844,7 @@ void Millard2012AccelerationMuscle::
     const FiberCompressiveForceCosPennationCurve& fcphiCurve
         = get_FiberCompressiveForceCosPennationCurve(); 
     
-    double m = get_mass();
+    // double m = get_mass();
 
     //Get a record of the kinematic independent variables
         ami.lce      = lce;
@@ -1927,7 +1927,7 @@ void Millard2012AccelerationMuscle::
         double dlceN_dt     = dlce_dt*dlceN_dlce;
         
         double dlceNAT_dlceAT=1/(optimalFiberLength*cos(optimalPennationAngle)); 
-        double lceNAT        = ami.lceAT * dlceNAT_dlceAT;
+        // double lceNAT        = ami.lceAT * dlceNAT_dlceAT;
         double dlceNAT_dt    = ami.dlceAT_dt * dlceNAT_dlceAT;
 
     
