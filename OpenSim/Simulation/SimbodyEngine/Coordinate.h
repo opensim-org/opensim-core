@@ -56,10 +56,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(motion_type, std::string, 
-        "Coordinate can describe rotational, translational, or coupled motion. "
-        "Defaults to rotational.");
-
     OpenSim_DECLARE_PROPERTY(default_value, double, 
         "The value of this coordinate before any value has been set. "
         "Rotational coordinate value is in radians and Translational in meters.");
