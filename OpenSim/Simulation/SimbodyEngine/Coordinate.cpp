@@ -294,7 +294,8 @@ const Joint& Coordinate::getJoint() const
 
 Coordinate::MotionType Coordinate::getMotionType() const
 {
-    return getJoint().getMotionType(Joint::CoordinateIndex(_mobilizerQIndex));
+    int ix = getJoint().get_CoordinateSet().getIndex(this);
+    return getJoint().getMotionType(Joint::CoordinateIndex(ix));
 }
 
 
