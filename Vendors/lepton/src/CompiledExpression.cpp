@@ -90,7 +90,7 @@ void CompiledExpression::compileExpression(const ExpressionTreeNode& node, vecto
     // Process the child nodes.
     
     vector<int> args;
-    for (int i = 0; i < node.getChildren().size(); i++) {
+    for (size_t i = 0; i < node.getChildren().size(); i++) {
         compileExpression(node.getChildren()[i], temps);
         args.push_back(findTempIndex(node.getChildren()[i], temps));
     }
@@ -112,7 +112,7 @@ void CompiledExpression::compileExpression(const ExpressionTreeNode& node, vecto
             // If the arguments are sequential, we can just pass a pointer to the first one.
             
             bool sequential = true;
-            for (int i = 1; i < args.size(); i++)
+            for (size_t i = 1; i < args.size(); i++)
                 if (args[i] != args[i-1]+1)
                     sequential = false;
             if (sequential)
@@ -149,12 +149,12 @@ double CompiledExpression::evaluate() const {
 #else
     // Loop over the operations and evaluate each one.
     
-    for (int step = 0; step < operation.size(); step++) {
+    for (size_t step = 0; step < operation.size(); step++) {
         const vector<int>& args = arguments[step];
         if (args.size() == 1)
             workspace[target[step]] = operation[step]->evaluate(&workspace[args[0]], dummyVariables);
         else {
-            for (int i = 0; i < args.size(); i++)
+            for (size_t i = 0; i < args.size(); i++)
                 argValues[i] = workspace[args[i]];
             workspace[target[step]] = operation[step]->evaluate(&argValues[0], dummyVariables);
         }
