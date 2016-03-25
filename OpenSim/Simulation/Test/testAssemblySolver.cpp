@@ -138,9 +138,9 @@ void testAssembleModelWithConstraints(string modelFile)
     // They should sum to body-weight (more or less)
     model.getMultibodySystem().realize(state, Stage::Acceleration);
 
-    Vec3 comVel = model.calcMassCenterVelocity(state);
+    /*Vec3 comVel = */model.calcMassCenterVelocity(state);
     Vec3 comAcc = model.calcMassCenterAcceleration(state);
-    SpatialVec momentum = model.getMatterSubsystem().calcSystemCentralMomentum(state);
+    /*SpatialVec momentum = */model.getMatterSubsystem().calcSystemCentralMomentum(state);
 
     const ConstraintSet &constraints = model.getConstraintSet();
 
@@ -196,8 +196,8 @@ void testAssembleModelWithConstraints(string modelFile)
     model.getMultibodySystem().realize(state, SimTK::Stage::Velocity);
 
     Vector positionErr = state.getQErr();
-    int nPerr = positionErr.size();
-    double pErrMag = positionErr.norm();
+    // int nPerr = positionErr.size();
+    // double pErrMag = positionErr.norm();
 
     // get the configuration at the end of the simulation
     Vector q1 = state.getQ();
