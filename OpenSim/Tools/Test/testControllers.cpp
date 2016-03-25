@@ -292,7 +292,7 @@ void testCorrectionControllerOnBlock()
     osimModel.addJoint(&blockToGround);
 
     // Generate tracking data
-    Storage *desiredXTranslation = new Storage();
+    // Storage *desiredXTranslation = new Storage();
 
     CorrectionController tracker;
 
@@ -300,7 +300,7 @@ void testCorrectionControllerOnBlock()
     osimModel.addController(&tracker);
 
     // Initialize the system and get the state representing the state system
-    SimTK::State& si = osimModel.initSystem();
+    /*SimTK::State& si = */osimModel.initSystem();
 
     // Create the integrator and manager for the simulation.
     SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
@@ -404,7 +404,7 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     Storage controls(outfileName);
 
     int nstates = osimModel.getNumStateVariables();
-    int ncontrols = osimModel.getNumControls();
+    /*int ncontrols = */osimModel.getNumControls();
 
     CHECK_STORAGE_AGAINST_STANDARD(states, std_states, 
         Array<double>(0.005, nstates), __FILE__, __LINE__,
