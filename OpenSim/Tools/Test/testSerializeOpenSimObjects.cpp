@@ -83,7 +83,7 @@ int main()
                 testModel.addModelComponent(ModelComponent::safeDownCast(randClone));
             } //Ignore the validity of the property values
             catch (const SimTK::Exception::ErrorCheck& err) {
-                const string& errMsg = err.getMessage();
+                // const string& errMsg = err.getMessage();
                 //std::cout << errMsg << std::endl;
             }
         }
@@ -102,7 +102,7 @@ int main()
             deserializedModel.finalizeFromProperties();
         } //Ignore the validity of the property values
         catch (const SimTK::Exception::ErrorCheck& err) {
-            const string& errMsg = err.getMessage();
+            // const string& errMsg = err.getMessage();
             //std::cout << errMsg << std::endl;
         }
 
