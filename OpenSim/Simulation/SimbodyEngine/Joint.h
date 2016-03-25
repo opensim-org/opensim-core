@@ -293,9 +293,11 @@ public:
     /// @class CoordinateIndex
     /// Unique integer type for local Coordinate indexing
     SimTK_DEFINE_UNIQUE_INDEX_TYPE(CoordinateIndex);
-#endif //SWIG
 
+    /** Get the MotionType for a Coordinate that this Joint has enabled by
+        its CoordinateIndex (in the Joints list of Coordinates). */
     Coordinate::MotionType getMotionType(CoordinateIndex cix) const;
+#endif //SWIG
 protected:
     /** A CoordinateIndex member is created by constructCoordinate(). E.g.:  
     \code{.cpp}
@@ -311,11 +313,12 @@ protected:
     Derived Joints must construct as many Coordinates as reflected by the
     Mobilizer Qs. */
     CoordinateIndex constructCoordinate(Coordinate::MotionType mt); 
-#endif //SWIG
+
 
     // This is only intended to allow the CustomJoint to set the MotionTypes
     // of its Coordinates
     void setMotionType(CoordinateIndex cix, Coordinate::MotionType mt);
+#endif //SWIG
 
     // build Joint transforms from properties
     void extendFinalizeFromProperties() override;
