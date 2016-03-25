@@ -397,7 +397,7 @@ void simulateMuscle(
     //cout << "Muscle initial energy = " << Emuscle0 << endl;
     double Esys0 = model.getMultibodySystem().calcEnergy(si);
     Esys0 += (Emuscle0 + jointWorkProbe->getProbeOutputs(si)(0));
-    double PEsys0 = model.getMultibodySystem().calcPotentialEnergy(si);
+    /*double PEsys0 = */model.getMultibodySystem().calcPotentialEnergy(si);
     //cout << "Total initial system energy = " << Esys0 << endl; 
 
 //==========================================================================
@@ -494,10 +494,10 @@ void simulateMuscle(
     if(false){
         model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
         double Esys = model.getMultibodySystem().calcEnergy(si);
-        double KEsys =  model.getMultibodySystem().calcKineticEnergy(si);
-        double xSpeed = modelCoordinateSet[0].getSpeedValue(si);
-        double KEsysCheck =  0.5*ballMass*xSpeed*xSpeed;
-        double PEsys =  model.getMultibodySystem().calcPotentialEnergy(si);
+        /*double KEsys =  */model.getMultibodySystem().calcKineticEnergy(si);
+        /*double xSpeed = */modelCoordinateSet[0].getSpeedValue(si);
+        // double KEsysCheck = 0.5*ballMass*xSpeed*xSpeed;
+        /*double PEsys =  */model.getMultibodySystem().calcPotentialEnergy(si);
         double jointWork = jointWorkProbe->computeProbeInputs(si)(0);
         double ESysMinusWork = Esys 
                                 - muscWorkProbe->computeProbeInputs(si)(0)
