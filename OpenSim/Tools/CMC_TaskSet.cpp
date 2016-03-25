@@ -63,7 +63,7 @@ CMC_TaskSet::~CMC_TaskSet()
  * @param aModel Model for which tasks will be set.
  */
 CMC_TaskSet::CMC_TaskSet() :
-    _pTask(0.0),
+    _pTask(0.0), 
     _vTask(0.0),
     _aTask(0.0),
     _pErrLast(0.0),
@@ -87,7 +87,7 @@ CMC_TaskSet::CMC_TaskSet() :
  * @param aFileName Name of the file.
  */
 CMC_TaskSet::CMC_TaskSet(const string &aFileName) :
-    // Set<TrackingTask>(aFileName, false),
+    Set<TrackingTask>(aFileName, false),
     _pTask(0.0),
     _vTask(0.0),
     _aTask(0.0),
