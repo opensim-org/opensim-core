@@ -244,7 +244,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
     _modelCopy.getMultibodySystem().realize(s_solver, SimTK::Stage::Acceleration);
 
     // Sanity check that constraints hasn't totally changed the configuration of the model
-    double error = (s.getQ()-s_solver.getQ()).norm();
+    // double error = (s.getQ()-s_solver.getQ()).norm();
 
     // Report reaction forces for debugging
     /*
