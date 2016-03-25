@@ -229,8 +229,8 @@ void testAssembleModelWithConstraints(string modelFile)
     // get the configuration from post simulation defaults (properties)
     Vector q1_2 = state1.getQ();
 
-    double q0Err = (q0_2 - q0_1).norm();
-    double q1Err_1 = (q1_2 - q1_1).norm();
+    // double q0Err = (q0_2 - q0_1).norm();
+    // double q1Err_1 = (q1_2 - q1_1).norm();
 
     //cout << "******************* Init System Initial State *******************" << endl;
     for (int i = 0; i < q0_1.size(); i++) {
@@ -291,14 +291,14 @@ void testAssemblySatisfiesConstraints(string modelFile)
     double lower = -2*Pi/3, upper = Pi/18;
     double delta = (upper-lower)/N;
 
-    double qerr = 0;
+    // double qerr = 0;
     
     for(int i=0; i<N; ++i){
         kneeAngle = upper-i*delta;
         coords[0].setValue(state, kneeAngle, true);
 //        model.getVisualizer().show(state);
         cerr = calcLigamentLengthError(state, model);
-        qerr = coords[0].getValue(state)-kneeAngle;
+        // qerr = coords[0].getValue(state)-kneeAngle;
 //        cout << "Assembly errors:: cerr = " << cerr << " m,  qerr = " 
 //          << convertRadiansToDegrees(qerr) << " degrees" << endl;
         ASSERT_EQUAL(0.0, cerr, model.get_assembly_accuracy(),
