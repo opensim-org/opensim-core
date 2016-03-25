@@ -266,11 +266,11 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
     // Load the coordinate data
     // create CoordinateReferences for Coordinate Tasks
     FunctionSet *coordFunctions = NULL;
-    bool haveCoordinateFile = false;
+    // bool haveCoordinateFile = false;
     if(_coordinateFileName != "" && _coordinateFileName != "Unassigned"){
         Storage coordinateValues(aPathToSubject + _coordinateFileName);
         aModel->getSimbodyEngine().convertDegreesToRadians(coordinateValues);
-        haveCoordinateFile = true;
+        // haveCoordinateFile = true;
         coordFunctions = new GCVSplineSet(5,&coordinateValues);
     }
     
@@ -391,7 +391,7 @@ void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel, Marker
     aPose.averageFrames(0.01);
     const MarkerFrame &frame = aPose.getFrame(0);
 
-    const SimbodyEngine& engine = aModel.getSimbodyEngine();
+    // const SimbodyEngine& engine = aModel.getSimbodyEngine();
 
     MarkerSet& markerSet = aModel.updMarkerSet();
 
