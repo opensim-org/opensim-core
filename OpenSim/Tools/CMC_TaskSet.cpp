@@ -63,11 +63,20 @@ CMC_TaskSet::~CMC_TaskSet()
  * @param aModel Model for which tasks will be set.
  */
 CMC_TaskSet::CMC_TaskSet() :
-    _dataFileName(_dataFileNameProp.getValueStr()),
-    _pTask(0.0),_vTask(0.0),_aTask(0.0),
-    _pErrLast(0.0),_pErr(0.0),_vErrLast(0.0),_vErr(0.0),
-    _kp(0.0),_kv(0.0),_ka(0.0),
-    _w(0.0),_aDes(0.0),_a(0.0)
+    _pTask(0.0),
+    _vTask(0.0),
+    _aTask(0.0),
+    _pErrLast(0.0),
+    _pErr(0.0),
+    _vErrLast(0.0),
+    _vErr(0.0),
+    _kp(0.0),
+    _kv(0.0),
+    _ka(0.0),
+    _w(0.0),
+    _aDes(0.0),
+    _a(0.0),
+    _dataFileName(_dataFileNameProp.getValueStr())
 {
     setNull();
 }
@@ -78,12 +87,21 @@ CMC_TaskSet::CMC_TaskSet() :
  * @param aFileName Name of the file.
  */
 CMC_TaskSet::CMC_TaskSet(const string &aFileName) :
-    _dataFileName(_dataFileNameProp.getValueStr()),
-    Set<TrackingTask>(aFileName, false),
-    _pTask(0.0),_vTask(0.0),_aTask(0.0),
-    _pErrLast(0.0),_pErr(0.0),_vErrLast(0.0),_vErr(0.0),
-    _kp(0.0),_kv(0.0),_ka(0.0),
-    _w(0.0),_aDes(0.0),_a(0.0)
+    // Set<TrackingTask>(aFileName, false),
+    _pTask(0.0),
+    _vTask(0.0),
+    _aTask(0.0),
+    _pErrLast(0.0),
+    _pErr(0.0),
+    _vErrLast(0.0),
+    _vErr(0.0),
+    _kp(0.0),
+    _kv(0.0),
+    _ka(0.0),
+    _w(0.0),
+    _aDes(0.0),
+    _a(0.0),
+    _dataFileName(_dataFileNameProp.getValueStr())
 {
     setNull();
     updateFromXMLDocument();
