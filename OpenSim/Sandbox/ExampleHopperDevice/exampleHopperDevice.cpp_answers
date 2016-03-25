@@ -97,7 +97,7 @@ public:
     }
 
     //device can read model height (the distance between the bottom of the block
-	//and the ground)
+    //and the ground)
     double getHeight(const SimTK::State& s) const {
         return getModel().getOutputValue<double>(s, HopperHeightOutput);
     }
@@ -147,7 +147,7 @@ public:
 
     double computeControl(const SimTK::State& s) const {
         double activation = getInputValue<double>(s, "activation");
-		// A very simple control strategy that improves jump height.
+        // A very simple control strategy that improves jump height.
         if (activation < 0.31)
             return 0;
         // Compute the control signal.
