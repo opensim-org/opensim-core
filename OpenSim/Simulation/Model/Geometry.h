@@ -589,13 +589,17 @@ public:
 public:
     /// Default constructor
     Mesh() :
-        Geometry()
+        Geometry(),
+        cachedMesh(nullptr),
+        triedToLoad(false)
     {
         constructProperty_mesh_file("");
     }
     /// Constructor that takes a mesh file name
     Mesh(const std::string& geomFile) :
-        Geometry()
+        Geometry(),
+        cachedMesh(nullptr),
+        triedToLoad(false)
     {
         constructProperty_mesh_file("");
         upd_mesh_file() = geomFile;
@@ -611,7 +615,9 @@ protected:
     /// Method to map Mesh to Array of SimTK::DecorativeGeometry.
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
-
+private:
+    mutable std::shared_ptr<SimTK::DecorativeMeshFile> cachedMesh;
+    mutable bool triedToLoad;
 };
 
 /**
