@@ -230,10 +230,16 @@ Coordinate::MotionType Joint::getMotionType(CoordinateIndex cix) const
 
 void Joint::setMotionType(CoordinateIndex cix, Coordinate::MotionType mt)
 {
-    OPENSIM_THROW_IF(cix >= numCoordinates(), Exception,
+    int nc = numCoordinates();
+
+    // Ensure that coordinate index is less than the number of coordinates
+    // this Joint has in its CoordinateSet.
+    OPENSIM_THROW_IF(cix >= nc, Exception,
         "Joint::setMotionType() for an invalid CoordinateIndex");
-    if (_motionTypes.size() <= cix)
-        _motionTypes.resize(numCoordinates());
+    // Grow the size of _motionTypes (array) if it is less than the number of
+    // coordinates. Joint's _motionTypes must correspond to its CoordinateSet.
+    if (_motionTypes.size() < unsigned int(nc))
+        _motionTypes.resize(nc);
 
     _motionTypes[cix] = mt;
 }
